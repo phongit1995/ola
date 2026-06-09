@@ -21,6 +21,7 @@ Phân tích ngược APK **Ola 2.1.11** (`chat.ola.vn`) + dựng fake server (RE
 - [api/socket-protocol.md](docs/api/socket-protocol.md) — giao thức socket chat (kiểu YMSG) + **luồng login đã kiểm chứng thực tế**
 - [api/http-rest-api.md](docs/api/http-rest-api.md) — REST API (`api.ola.vn`) + JS bridge
 - [api/cau-hinh-api-server.md](docs/api/cau-hinh-api-server.md) — tổng quan kiến trúc mạng
+- [huong-dan-doi-url.md](docs/huong-dan-doi-url.md) — **đổi URL/IP trong smali để chạy với fake API** (file + dòng cụ thể + build lại)
 
 ## Fake server ([fake-api/](fake-api/))
 Đã chạy thực tế trên thiết bị: **đăng nhập + chat 1-1 + danh sách tin nhắn**.
