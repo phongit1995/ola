@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:background="@drawable/balloon_current_indicate_selector"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+    <chat.ola.vn.view.OlaCachedImageView
+        android:id="@+id/chattingRoundOvatar"
+        android:layout_width="@dimen/metric.64dp"
+        android:layout_height="@dimen/metric.64dp"/>
+    <TextView
+        android:layout_gravity="top|right"
+        android:id="@+id/txtChatNotify"
+        android:visibility="gone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        style="?attr/commont.text.unread"/>
+</FrameLayout>

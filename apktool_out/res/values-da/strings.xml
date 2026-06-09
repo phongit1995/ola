@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="abc_action_bar_home_description">Naviger hjem</string>
+    <string name="abc_action_bar_up_description">Naviger op</string>
+    <string name="abc_action_menu_overflow_description">Flere muligheder</string>
+    <string name="abc_action_mode_done">Luk</string>
+    <string name="abc_activity_chooser_view_see_all">Se alle</string>
+    <string name="abc_activitychooserview_choose_application">Vælg en app</string>
+    <string name="abc_capital_off">FRA</string>
+    <string name="abc_capital_on">TIL</string>
+    <string name="abc_search_hint">Søg…</string>
+    <string name="abc_searchview_description_clear">Ryd forespørgslen</string>
+    <string name="abc_searchview_description_query">Søgeforespørgsel</string>
+    <string name="abc_searchview_description_search">Søg</string>
+    <string name="abc_searchview_description_submit">Indsend forespørgslen</string>
+    <string name="abc_searchview_description_voice">Talesøgning</string>
+    <string name="abc_shareactionprovider_share_with">Del med</string>
+    <string name="abc_shareactionprovider_share_with_application">Del med %s</string>
+    <string name="abc_toolbar_collapse_description">Skjul</string>
+    <string name="com_accountkit_account_verified">Kontoen er godkendt!</string>
+    <string name="com_accountkit_button_begin">Start</string>
+    <string name="com_accountkit_button_cancel">Annuller</string>
+    <string name="com_accountkit_button_confirm">Bekræft</string>
+    <string name="com_accountkit_button_continue">Fortsæt</string>
+    <string name="com_accountkit_button_edit">REDIGER</string>
+    <string name="com_accountkit_button_log_in">Log på</string>
+    <string name="com_accountkit_button_next">Næste</string>
+    <string name="com_accountkit_button_resend_code_in">Send sms igen om %1$d</string>
+    <string name="com_accountkit_button_resend_sms">Send sms igen</string>
+    <string name="com_accountkit_button_send_code_in_call">Modtag et opkald</string>
+    <string name="com_accountkit_button_send_code_in_call_details">Få din kode i et taleopkald</string>
+    <string name="com_accountkit_button_send_code_in_call_from_facebook_details">Få din kode i et taleopkald fra Facebook</string>
+    <string name="com_accountkit_button_send_code_in_fb">Få en kode på Facebook</string>
+    <string name="com_accountkit_button_send_code_in_fb_details">Koden kommer som en Facebook-notifikation</string>
+    <string name="com_accountkit_button_start_over">Prøv igen</string>
+    <string name="com_accountkit_button_submit">Indsend</string>
+    <string name="com_accountkit_check_email">Åbn din e-mail</string>
+    <string name="com_accountkit_code_sent_to">Bekræft dit mobilnummer %1$s</string>
+    <string name="com_accountkit_confirmation_code_agreement">Tryk på %1$s for at acceptere Facebooks &lt;a href=%2$s>vilkår&lt;/a>, &lt;a href=%3$s>datapolitik&lt;/a> og &lt;a href=%4$s>brug af cookies&lt;/a>.</string>
+    <string name="com_accountkit_confirmation_code_agreement_app_privacy_policy">Tryk på %1$s for at acceptere Facebooks &lt;a href=%2$s>vilkår&lt;/a>, &lt;a href=%3$s>datapolitik&lt;/a>, &lt;a href=%4$s>brug af cookies&lt;/a> og &lt;a href=%5$s>politik om beskyttelse af personlige oplysninger&lt;/a> for %6$s.</string>
+    <string name="com_accountkit_confirmation_code_agreement_app_privacy_policy_and_terms">Tryk på %1$s for at acceptere Facebooks &lt;a href=%2$s>vilkår&lt;/a>, &lt;a href=%3$s>datapolitik&lt;/a>, &lt;a href=%4$s>brug af cookies&lt;/a> og &lt;a href=%5$s>politik om beskyttelse af personlige oplysninger&lt;/a> og &lt;a href=%6$s>tjenestevilkår&lt;/a> for %7$s.</string>
+    <string name="com_accountkit_confirmation_code_agreement_app_privacy_policy_and_terms_instant_verification">Tryk på %1$s for at acceptere Facebooks &lt;a href=%2$s>vilkår&lt;/a>, &lt;a href=%3$s>datapolitik&lt;/a>, &lt;a href=%4$s>brug af cookies&lt;/a> og &lt;a href=%5$s>politik om beskyttelse af personlige oplysninger&lt;/a> og &lt;a href=%6$s>tjenestevilkår&lt;/a> for %7$s. &lt;a href=%8$s>Læs mere&lt;/a> om, hvordan din konto blev verificeret.</string>
+    <string name="com_accountkit_confirmation_code_agreement_app_privacy_policy_instant_verification">Tryk på %1$s for at acceptere Facebooks &lt;a href=%2$s>vilkår&lt;/a>, &lt;a href=%3$s>datapolitik&lt;/a>, &lt;a href=%4$s>brug af cookies&lt;/a> og &lt;a href=%5$s>politik om beskyttelse af personlige oplysninger&lt;/a> for %6$s. &lt;a href=%7$s>Læs mere&lt;/a> om, hvordan din konto er blevet verificeret.</string>
+    <string name="com_accountkit_confirmation_code_agreement_instant_verification">Tryk på %1$s for at acceptere Facebooks &lt;a href=%2$s>vilkår&lt;/a>, &lt;a href=%3$s>datapolitik&lt;/a> og &lt;a href=%4$s>brug af cookies&lt;/a>. &lt;a href=%5$s>Læs mere&lt;/a> om, hvordan din konto er blevet verificeret</string>
+    <string name="com_accountkit_confirmation_code_text">Jeg modtog ikke en kode</string>
+    <string name="com_accountkit_confirmation_code_title">Indtast din kode</string>
+    <string name="com_accountkit_email_invalid">Denne e-mailadresse er ikke korrekt. Prøv igen.</string>
+    <string name="com_accountkit_email_loading_title">Bekræfter din e-mailadresse ...</string>
+    <string name="com_accountkit_email_login_retry_title">Bekræft din e-mail</string>
+    <string name="com_accountkit_email_login_text">Tryk på %1$s for at modtage en e-mailbekræftelse fra Account Kit fra Facebook, så du bedre kan bruge %2$s. Du behøver ikke at have en Facebook-konto for at bruge appen. &lt;a href=%3$s>Se, hvordan Facebook bruger dine oplysninger&lt;/a>.</string>
+    <string name="com_accountkit_email_login_title">Indtast din e-mailadresse</string>
+    <string name="com_accountkit_email_not_received">Send e-mail igen</string>
+    <string name="com_accountkit_email_verify_title">Åbn e-mailen, og bekræft din e-mailadresse</string>
+    <string name="com_accountkit_enter_code_sent_to">Indtast den kode, der er sendt til %1$s</string>
+    <string name="com_accountkit_error_title">Der opstod en systemfejl. Prøv igen.</string>
+    <string name="com_accountkit_facebook_code_entry_title">Indtast din kode fra Facebook</string>
+    <string name="com_accountkit_logging_in">Logger på ...</string>
+    <string name="com_accountkit_other_ways_to_get_code">Andre måder at få koden på:</string>
+    <string name="com_accountkit_phone_error_title">Indtast et gyldigt mobilnummer.</string>
+    <string name="com_accountkit_phone_loading_title">Bekræfter dit nummer ...</string>
+    <string name="com_accountkit_phone_login_retry_title">Bekræft dit mobilnummer</string>
+    <string name="com_accountkit_phone_login_text">Tryk på %1$s for at få verificeret din konto med Account Kit leveret af Facebook. Du behøver ikke at have en Facebook-konto for at kunne bruge Account Kit. Du kan få tilsendt en sms i forbindelse med verificeringen af dit nummer. Du kan blive opkrævet betaling for beskeder og dataforbrug. &lt;a href=%2$s>Se, hvordan Facebook bruger dine oplysninger&lt;/a>.</string>
+    <string name="com_accountkit_phone_login_title">Indtast dit mobilnummer</string>
+    <string name="com_accountkit_phone_sending_code_on_fb_title">Sender kode via Facebook ...</string>
+    <string name="com_accountkit_phone_update_title">Indtast dit nye mobilnummer</string>
+    <string name="com_accountkit_resend_check">Tjek din sms-indbakke</string>
+    <string name="com_accountkit_resend_email_text">Send ny e-mail</string>
+    <string name="com_accountkit_resend_title">Hvis du ikke har fået en kode:</string>
+    <string name="com_accountkit_return_title">Fører dig tilbage til %1$s ...</string>
+    <string name="com_accountkit_sent_title">Sendt!</string>
+    <string name="com_accountkit_success_title">Bekræftet!</string>
+    <string name="com_accountkit_toolbar_title">Log på %1$s</string>
+    <string name="com_accountkit_verify_confirmation_code_title">Vi kunne ikke bekræfte din kode. Prøv igen:</string>
+    <string name="com_accountkit_verify_title">Bekræfter din kode ...</string>
+    <string name="com_accountkit_voice_call_code_entry_title">Indtast din kode fra taleopkald</string>
+    <string name="com_facebook_device_auth_instructions">Gå til &lt;b>facebook.com/device&lt;/b> og indtast koden, som er vist ovenfor.</string>
+    <string name="com_facebook_image_download_unknown_error">Uventet fejl under download af billede.</string>
+    <string name="com_facebook_internet_permission_error_message">WebView-login kræver INTERNET-tilladelse</string>
+    <string name="com_facebook_internet_permission_error_title">Fejl i AndroidManifest</string>
+    <string name="com_facebook_like_button_liked">Synes godt om</string>
+    <string name="com_facebook_like_button_not_liked">Synes godt om</string>
+    <string name="com_facebook_loading">Indlæser …</string>
+    <string name="com_facebook_loginview_cancel_action">Annuller</string>
+    <string name="com_facebook_loginview_log_in_button">Log på</string>
+    <string name="com_facebook_loginview_log_in_button_continue">Fortsæt med Facebook</string>
+    <string name="com_facebook_loginview_log_in_button_long">Log på med Facebook</string>
+    <string name="com_facebook_loginview_log_out_action">Log af</string>
+    <string name="com_facebook_loginview_log_out_button">Log af</string>
+    <string name="com_facebook_loginview_logged_in_as">Logget på som %1$s</string>
+    <string name="com_facebook_loginview_logged_in_using_facebook">Logget på med Facebook</string>
+    <string name="com_facebook_share_button_text">Del</string>
+    <string name="com_facebook_smart_device_instructions">For at tilslutte din konto skal du åbne Facebook-appen på din mobilenhed og se efter, om der er notifikationer.</string>
+    <string name="com_facebook_smart_device_instructions_or">- ELLER -</string>
+    <string name="com_facebook_smart_login_confirmation_cancel">Ikke dig?</string>
+    <string name="com_facebook_smart_login_confirmation_continue_as">Fortsæt som %1$s</string>
+    <string name="com_facebook_smart_login_confirmation_title">Bekræft login</string>
+    <string name="com_facebook_tooltip_default">Du har kontrollen – Vælg, hvilke informationer du vil dele med apps.</string>
+    <string name="common_google_play_services_enable_button">Aktivér</string>
+    <string name="common_google_play_services_enable_text">Du skal aktivere Google Play-tjenester, for at %1$s kan fungere.</string>
+    <string name="common_google_play_services_enable_title">Aktivér Google Play-tjenester</string>
+    <string name="common_google_play_services_install_button">Installer</string>
+    <string name="common_google_play_services_install_text">Du skal installere Google Play-tjenester, før %1$s kan køre på din enhed.</string>
+    <string name="common_google_play_services_install_title">Hent Google Play-tjenester</string>
+    <string name="common_google_play_services_notification_channel_name">Google Play-tjenesters tilgængelighed</string>
+    <string name="common_google_play_services_notification_ticker">Fejl i Google Play-tjenester</string>
+    <string name="common_google_play_services_unknown_issue">%1$s har problemer med Google Play-tjenester. Prøv igen.</string>
+    <string name="common_google_play_services_unsupported_text">%1$s fungerer ikke uden Google Play-tjenester, som ikke understøttes på din enhed.</string>
+    <string name="common_google_play_services_update_button">Opdater</string>
+    <string name="common_google_play_services_update_text">%1$s kan ikke køre, medmindre du opdaterer Google Play-tjenester.</string>
+    <string name="common_google_play_services_update_title">Opdater Google Play-tjenester</string>
+    <string name="common_google_play_services_updating_text">%1$s kan ikke køre uden Google Play-tjenester, som i øjeblikket opdateres.</string>
+    <string name="common_google_play_services_wear_update_text">Du skal bruge en ny version af Google Play-tjenester. Opdateringen gennemføres automatisk om et øjeblik.</string>
+    <string name="common_open_on_phone">Åbn på telefonen</string>
+    <string name="common_signin_button_text">Log ind</string>
+    <string name="common_signin_button_text_long">Log ind med Google</string>
+    <string name="fcm_fallback_notification_channel_label">Diverse</string>
+    <string name="s1">Gem billede</string>
+    <string name="s2">Vil du tillade, at annoncen gemmer billedet i Galleri?</string>
+    <string name="s3">Acceptér</string>
+    <string name="s4">Afvis</string>
+    <string name="s5">Opret kalenderbegivenhed</string>
+    <string name="s6">Vil du tillade, at annoncen opretter en kalenderbegivenhed?</string>
+    <string name="s7">Testannonce</string>
+    <string name="search_menu_title">Søg</string>
+    <string name="status_bar_notification_info_overflow">999+</string>
+</resources>

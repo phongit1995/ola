@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView android:background="@color/white" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout android:orientation="vertical" android:paddingLeft="@dimen/metric.16dp" android:paddingTop="@dimen/metric.8dp" android:paddingRight="@dimen/metric.16dp" android:paddingBottom="@dimen/metric.8dp" android:layout_width="match_parent" android:layout_height="wrap_content">
+        <Button android:id="@id/sendLocationButton" android:layout_width="match_parent" android:layout_height="@dimen/metric.36dp" android:layout_marginLeft="@dimen/metric.16dp" android:layout_marginTop="@dimen/metric.4dp" android:layout_marginRight="@dimen/metric.16dp" android:layout_marginBottom="@dimen/metric.4dp" android:text="@string/string_send_your_location" style="@style/defaultStyle.button" />
+        <Button android:id="@id/transferKenButton" android:layout_width="match_parent" android:layout_height="@dimen/metric.36dp" android:layout_marginLeft="@dimen/metric.16dp" android:layout_marginTop="@dimen/metric.4dp" android:layout_marginRight="@dimen/metric.16dp" android:layout_marginBottom="@dimen/metric.4dp" android:text="@string/string_transfer_ken" style="@style/defaultStyle.button" />
+        <Button android:id="@id/tradingVipButton" android:layout_width="match_parent" android:layout_height="@dimen/metric.36dp" android:layout_marginLeft="@dimen/metric.16dp" android:layout_marginTop="@dimen/metric.4dp" android:layout_marginRight="@dimen/metric.16dp" android:layout_marginBottom="@dimen/metric.4dp" android:text="@string/string_tradding_vip" style="@style/defaultStyle.button" />
+        <Button android:id="@id/sendVipDayButton" android:layout_width="match_parent" android:layout_height="@dimen/metric.36dp" android:layout_marginLeft="@dimen/metric.16dp" android:layout_marginTop="@dimen/metric.4dp" android:layout_marginRight="@dimen/metric.16dp" android:layout_marginBottom="@dimen/metric.4dp" android:text="@string/string_send_vip_days" style="@style/defaultStyle.button" />
+    </LinearLayout>
+</ScrollView>

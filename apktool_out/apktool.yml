@@ -1,0 +1,20 @@
+version: 3.0.2
+apkFileName: Ola_2.1.11_APKPure.apk
+usesFramework:
+  ids:
+  - 1
+sdkInfo:
+  minSdkVersion: 16
+  targetSdkVersion: 27
+versionInfo:
+  versionCode: 15240093
+  versionName: 2.1.11
+resourcesInfo:
+  packageId: 127
+doNotCompress:
+- arsc
+- m4a
+- mp3
+- ogg
+- png
+- res/drawable/widget_me_preview.jpg

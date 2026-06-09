@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent">
+    <TextView
+        android:textSize="@dimen/text.size.caption"
+        android:textStyle="bold"
+        android:textColor="#e79200"
+        android:gravity="center"
+        android:id="@+id/txtCategoryTitle"
+        android:background="@drawable/bg_me_comment_top_item"
+        android:padding="@dimen/metric.8dp"
+        android:focusable="false"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/metric.72dp"
+        android:layout_marginTop="@dimen/metric.16dp"/>
+</LinearLayout>

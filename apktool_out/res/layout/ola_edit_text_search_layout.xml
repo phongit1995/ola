@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="vertical" android:background="@color/app_background_color" android:layout_width="match_parent" android:layout_height="wrap_content"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <FrameLayout android:id="@id/searchViewLayout" android:paddingLeft="@dimen/metric.16dp" android:paddingTop="@dimen/metric.12dp" android:paddingRight="@dimen/metric.16dp" android:paddingBottom="@dimen/metric.12dp" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_weight="1.0">
+        <LinearLayout android:gravity="center" android:background="@drawable/bg_search_box" android:paddingLeft="@dimen/metric.4dp" android:paddingTop="@dimen/metric.2dp" android:paddingRight="@dimen/metric.4dp" android:paddingBottom="@dimen/metric.2dp" android:focusableInTouchMode="true" android:layout_width="match_parent" android:layout_height="@dimen/metric.40dp">
+            <ImageView android:layout_gravity="center" android:layout_width="@dimen/metric.16dp" android:layout_height="@dimen/metric.16dp" android:src="@drawable/ic_action_search_small_gray" android:adjustViewBounds="true" />
+            <EditText android:gravity="left|center" android:id="@id/searchEditText" android:layout_width="wrap_content" android:layout_height="match_parent" android:layout_marginLeft="@dimen/metric.4dp" android:hint="@string/string_search" android:maxLines="1" android:selectAllOnFocus="true" android:imeOptions="actionSearch" style="@style/defaultStyle.edittext.nobackground" />
+        </LinearLayout>
+    </FrameLayout>
+    <View android:background="@color/top_tab_unselect_color" android:layout_width="match_parent" android:layout_height="1.0dp" />
+</LinearLayout>

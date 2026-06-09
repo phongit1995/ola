@@ -1,0 +1,35 @@
+package com.google.android.gms.internal.ads;
+
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
+import com.google.android.gms.dynamic.IObjectWrapper;
+import com.google.android.gms.dynamic.ObjectWrapper;
+
+/* JADX INFO: loaded from: classes.dex */
+@zzadh
+public final class zzon extends zzpx {
+    private final Uri mUri;
+    private final Drawable zzbhu;
+    private final double zzbhv;
+
+    public zzon(Drawable drawable, Uri uri, double d) {
+        this.zzbhu = drawable;
+        this.mUri = uri;
+        this.zzbhv = d;
+    }
+
+    @Override // com.google.android.gms.internal.ads.zzpw
+    public final double getScale() {
+        return this.zzbhv;
+    }
+
+    @Override // com.google.android.gms.internal.ads.zzpw
+    public final Uri getUri() {
+        return this.mUri;
+    }
+
+    @Override // com.google.android.gms.internal.ads.zzpw
+    public final IObjectWrapper zzjy() {
+        return ObjectWrapper.wrap(this.zzbhu);
+    }
+}

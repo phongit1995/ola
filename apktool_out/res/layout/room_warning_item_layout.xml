@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:gravity="center_vertical" android:orientation="vertical" android:id="@id/roomRowViewLayout" android:background="@color/translucent_white_80_percent" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="@dimen/metric.72dp"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <include android:id="@id/warningLayout" android:visibility="gone" layout="@layout/top_warning_layout" />
+    <View android:id="@id/listViewBottomDividerView" android:background="@color/colorTextBlackDivider" android:layout_width="match_parent" android:layout_height="1.0dp" android:layout_marginLeft="@dimen/metric.16dp" android:layout_marginRight="@dimen/metric.16dp" />
+</LinearLayout>

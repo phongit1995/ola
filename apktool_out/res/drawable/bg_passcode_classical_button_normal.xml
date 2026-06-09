@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape android:shape="ring" android:thicknessRatio="2.1" android:useLevel="false" android:innerRadius="0.0dp"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="@color/translucent_white_80_percent" />
+    <stroke android:width="@dimen/metric.1dp" android:color="@color/colorTextBlackDivider" />
+</shape>

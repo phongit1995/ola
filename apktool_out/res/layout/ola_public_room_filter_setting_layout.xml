@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout android:background="@color/white" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout android:orientation="vertical" android:paddingLeft="@dimen/metric.16dp" android:paddingTop="@dimen/metric.topbar.noshadow.42dp" android:paddingRight="@dimen/metric.16dp" android:paddingBottom="@dimen/metric.16dp" android:layout_width="match_parent" android:layout_height="match_parent">
+        <CheckBox android:id="@id/filterShowAllCheckBox" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="@dimen/metric.16dp" android:text="@string/filter_show_all" />
+        <CheckBox android:id="@id/filterMediaCheckBox" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="@dimen/metric.8dp" android:text="@string/filter_media_status" />
+        <CheckBox android:id="@id/filterFemaleCheckBox" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="@dimen/metric.8dp" android:text="@string/filter_gender_female" />
+        <CheckBox android:id="@id/filterMaleCheckBox" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="@dimen/metric.8dp" android:text="@string/filter_gender_male" />
+        <CheckBox android:id="@id/filterFlexibleCheckBox" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="@dimen/metric.8dp" android:text="@string/filter_gender_flexible" />
+    </LinearLayout>
+    <include layout="@layout/ola_top_action_bar_center_title_layout" />
+</FrameLayout>

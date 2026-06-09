@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:gravity="center_vertical" android:orientation="vertical" android:layout_width="match_parent" android:layout_height="wrap_content"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <chat.ola.vn.view.AutoScrollTextView android:gravity="center" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/string_tradding_vip" style="?dialog.header" />
+    <LinearLayout android:gravity="center" android:orientation="vertical" android:padding="@dimen/metric.4dp" android:layout_width="match_parent" android:layout_height="wrap_content">
+        <ImageView android:id="@id/imgVipThumbnail" android:layout_width="@dimen/general.icon.vip.thumb.size" android:layout_height="@dimen/general.icon.vip.thumb.size" android:src="@drawable/smiles_online" />
+        <TextView android:id="@id/txtVipName" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+    </LinearLayout>
+    <chat.ola.vn.view.OlaSuggestEditText android:id="@id/txtVipReceiver" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginLeft="@dimen/metric.16dp" android:layout_marginRight="@dimen/metric.16dp" android:hint="@string/general_hint_remind_receiver_nick" android:maxLines="1" android:inputType="textEmailAddress" android:imeOptions="actionNext" style="?common.editText" />
+    <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginLeft="@dimen/metric.16dp" android:layout_marginTop="@dimen/metric.16dp" android:layout_marginRight="@dimen/metric.16dp">
+        <EditText android:gravity="center" android:id="@id/txtVipDay" android:layout_width="0.0dp" android:layout_height="wrap_content" android:hint="@string/string_duration_vip" android:maxLines="1" android:selectAllOnFocus="true" android:layout_weight="1.0" android:inputType="numberSigned" android:imeOptions="actionNext" style="?common.editText" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/string_unit_day" />
+    </LinearLayout>
+    <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginLeft="@dimen/metric.16dp" android:layout_marginTop="@dimen/metric.16dp" android:layout_marginRight="@dimen/metric.16dp">
+        <EditText android:gravity="center" android:id="@id/txtVipPrice" android:layout_width="0.0dp" android:layout_height="wrap_content" android:hint="@string/string_price_vip" android:maxLines="1" android:selectAllOnFocus="true" android:layout_weight="1.0" android:inputType="numberSigned" android:imeOptions="actionDone" style="?common.editText" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="x 1,000 KEN" />
+    </LinearLayout>
+    <LinearLayout android:padding="@dimen/metric.4dp" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="25.0dp">
+        <Button android:id="@id/btnAccept" android:layout_width="0.0dp" android:layout_height="wrap_content" android:text="@string/string_tradding" android:layout_weight="1.0" style="@style/defaultStyle.button.green" />
+        <Button android:id="@id/btnCancel" android:layout_width="0.0dp" android:layout_height="wrap_content" android:layout_marginLeft="@dimen/metric.4dp" android:text="@string/string_cancel" android:layout_weight="1.0" style="?commont.button" />
+    </LinearLayout>
+</LinearLayout>

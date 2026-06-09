@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.mg.ola.common.widget.SoftKeyLinearLayout android:gravity="center_horizontal" android:orientation="vertical" android:id="@id/softKeyResizableViewLayout" android:layout_width="match_parent" android:layout_height="match_parent" android:baselineAligned="false"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <include layout="@layout/ola_chat_view_and_drawer_layout" />
+</com.mg.ola.common.widget.SoftKeyLinearLayout>

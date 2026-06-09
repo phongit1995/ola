@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+    <chat.ola.vn.view.OlaCachedImageView
+        android:id="@+id/imgIcon"
+        android:layout_width="@dimen/general.icon.category.size"
+        android:layout_height="@dimen/general.icon.category.size"
+        android:layout_marginLeft="@dimen/metric.4dp"
+        android:layout_marginRight="@dimen/metric.4dp"
+        android:scaleType="centerInside"/>
+    <TextView
+        android:textStyle="bold"
+        android:textColor="#9fa2a6"
+        android:gravity="center_vertical"
+        android:id="@+id/txtLable"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:shadowColor="@color/black"
+        android:layout_weight="1"
+        style="?attr/commont.list.item.simple.medium"/>
+    <ImageView
+        android:id="@+id/btnCategoryButton"
+        android:background="@drawable/btn_transparent_image_selector"
+        android:padding="@dimen/metric.4dp"
+        android:layout_width="@dimen/general.icon.category.size"
+        android:layout_height="@dimen/general.icon.category.size"
+        android:scaleType="centerInside"/>
+</LinearLayout>

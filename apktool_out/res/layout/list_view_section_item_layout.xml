@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="vertical" android:background="@color/app_background_color" android:paddingLeft="@dimen/metric.16dp" android:paddingTop="@dimen/metric.8dp" android:paddingRight="@dimen/metric.16dp" android:paddingBottom="@dimen/metric.8dp" android:layout_width="match_parent" android:layout_height="@dimen/metric.72dp"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <TextView android:textColor="@color/colorTextWhitePrimary" android:ellipsize="end" android:gravity="left|center" android:id="@id/labelTextView" android:focusable="false" android:layout_width="match_parent" android:layout_height="match_parent" android:maxLines="1" style="@style/defaultStyle.text.subhead" />
+</LinearLayout>

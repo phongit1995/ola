@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="abc_action_bar_home_description">Gå til startsiden</string>
+    <string name="abc_action_bar_up_description">Gå opp</string>
+    <string name="abc_action_menu_overflow_description">Flere alternativer</string>
+    <string name="abc_action_mode_done">Ferdig</string>
+    <string name="abc_activity_chooser_view_see_all">Se alle</string>
+    <string name="abc_activitychooserview_choose_application">Velg en app</string>
+    <string name="abc_capital_off">AV</string>
+    <string name="abc_capital_on">PÅ</string>
+    <string name="abc_search_hint">Søk …</string>
+    <string name="abc_searchview_description_clear">Slett søket</string>
+    <string name="abc_searchview_description_query">Søkeord</string>
+    <string name="abc_searchview_description_search">Søk</string>
+    <string name="abc_searchview_description_submit">Utfør søket</string>
+    <string name="abc_searchview_description_voice">Talesøk</string>
+    <string name="abc_shareactionprovider_share_with">Del med</string>
+    <string name="abc_shareactionprovider_share_with_application">Del med %s</string>
+    <string name="abc_toolbar_collapse_description">Skjul</string>
+    <string name="com_accountkit_account_verified">Kontoen er bekreftet!</string>
+    <string name="com_accountkit_button_begin">Start</string>
+    <string name="com_accountkit_button_cancel">Avbryt</string>
+    <string name="com_accountkit_button_confirm">Bekreft</string>
+    <string name="com_accountkit_button_continue">Fortsett</string>
+    <string name="com_accountkit_button_edit">REDIGER</string>
+    <string name="com_accountkit_button_log_in">Logg inn</string>
+    <string name="com_accountkit_button_next">Neste</string>
+    <string name="com_accountkit_button_resend_code_in">Send SMS på nytt om %1$d</string>
+    <string name="com_accountkit_button_resend_sms">Send SMS på nytt</string>
+    <string name="com_accountkit_button_send_code_in_call">Bli oppringt</string>
+    <string name="com_accountkit_button_send_code_in_call_details">Få koden din i et taleanrop</string>
+    <string name="com_accountkit_button_send_code_in_call_from_facebook_details">Få koden din i et taleanrop fra Facebook</string>
+    <string name="com_accountkit_button_send_code_in_fb">Få en kode på Facebook</string>
+    <string name="com_accountkit_button_send_code_in_fb_details">Du får koden som et Facebook-varsel</string>
+    <string name="com_accountkit_button_start_over">Prøv på nytt</string>
+    <string name="com_accountkit_button_submit">Send inn</string>
+    <string name="com_accountkit_check_email">Åpne e-posten din</string>
+    <string name="com_accountkit_code_sent_to">Bekreft mobilnummeret ditt %1$s</string>
+    <string name="com_accountkit_confirmation_code_agreement">Trykk på %1$s for å godta Facebooks &lt;a href=%2$s&gt;betingelser&lt;/a&gt;, &lt;a href=%3$s&gt;retningslinjer for data&lt;/a&gt; og &lt;a href=%4$s&gt;bruk av informasjonskapsler&lt;/a&gt;.</string>
+    <string name="com_accountkit_confirmation_code_agreement_app_privacy_policy">Trykk på %1$s for å godta Facebooks &lt;a href=%2$s&gt;betingelser&lt;/a&gt;, &lt;a href=%3$s&gt;retningslinjer for data&lt;/a&gt; og &lt;a href=%4$s&gt;bruk av informasjonskapsler&lt;/a&gt;, og &lt;a href=%5$s&gt;retningslinjene for personvern&lt;/a&gt; for %6$s.</string>
+    <string name="com_accountkit_confirmation_code_agreement_app_privacy_policy_and_terms">Trykk på %1$s for å godta Facebooks &lt;a href=%2$s&gt;betingelser&lt;/a&gt;, &lt;a href=%3$s&gt;retningslinjer for data&lt;/a&gt; og &lt;a href=%4$s&gt;bruk av informasjonskapsler&lt;/a&gt;, og &lt;a href=%5$s&gt;retningslinjene for personvern&lt;/a&gt; og &lt;a href=%6$s&gt;betingelsene&lt;/a&gt; for %7$s.</string>
+    <string name="com_accountkit_confirmation_code_agreement_app_privacy_policy_and_terms_instant_verification">Trykk på %1$s for å godta Facebooks &lt;a href=%2$s&gt;betingelser&lt;/a&gt;, &lt;a href=%3$s&gt;retningsinjer for data&lt;/a&gt; og &lt;a href=%4$s&gt;bruk av informasjonskapsler&lt;/a&gt;, og &lt;a href=%5$s&gt;retningslinjene for personvern&lt;/a&gt; og &lt;a href=%6$s&gt;betingelsene&lt;/a&gt; for %7$s. &lt;a href=%8$s&gt;Finn ut mer&lt;/a&gt; om hvordan kontoen din ble bekreftet.</string>
+    <string name="com_accountkit_confirmation_code_agreement_app_privacy_policy_instant_verification">Trykk på %1$s for å godta Facebooks &lt;a href=%2$sbetingelser&lt;/a&gt;, &lt;a href=%3$s&gt;retningslinjer for data&lt;/a&gt; og &lt;a href=%4$s&gt;bruk av informasjonskapsler&lt;/a&gt;, samt &lt;a href=%5$s&gt;retningslinjene for personvern&lt;/a&gt; for %6$s. &lt;a href=%7$s&gt;Finn ut mer&lt;/a&gt; om hvordan kontoen din har blitt bekreftet.</string>
+    <string name="com_accountkit_confirmation_code_agreement_instant_verification">Trykk på %1$s for å godta Facebooks &lt;a href=%2$s&gt;betingelser&lt;/a&gt;, &lt;a href=%3$s&gt;retningslinjer for data&lt;/a&gt; og &lt;a href=%4$s&gt;bruk av informasjonskapsler&lt;/a&gt;. &lt;a href=%5$s&gt;Finn ut mer&lt;/a&gt; om hvordan kontoen din ble bekreftet.</string>
+    <string name="com_accountkit_confirmation_code_text">Jeg mottok ikke koden</string>
+    <string name="com_accountkit_confirmation_code_title">Oppgi koden din</string>
+    <string name="com_accountkit_email_invalid">E-postadressen er feil. Prøv på nytt.</string>
+    <string name="com_accountkit_email_loading_title">Bekrefter e-postadressen din ...</string>
+    <string name="com_accountkit_email_login_retry_title">Bekreft e-postadressen</string>
+    <string name="com_accountkit_email_login_text">Trykk på %1$s og få en bekreftelse via e-post fra Account Kit levert av Facebook for å hjelpe deg å bruke %2$s. Du trenger ikke en Facebook-konto for å bruke appen. &lt;a href=%3$s&gt;Fiinn ut hvordan Facebook bruker opplysningene dine&lt;/a&gt;.</string>
+    <string name="com_accountkit_email_login_title">Skriv inn e-postadressen din</string>
+    <string name="com_accountkit_email_not_received">Send e-post på nytt</string>
+    <string name="com_accountkit_email_verify_title">Åpne e-posten og bekreft e-postadressen din</string>
+    <string name="com_accountkit_enter_code_sent_to">Oppgi koden som ble sendt til %1$s.</string>
+    <string name="com_accountkit_error_title">Det oppstod en systemfeil. Prøv på nytt.</string>
+    <string name="com_accountkit_facebook_code_entry_title">Oppgi koden fra Facebook</string>
+    <string name="com_accountkit_logging_in">Logger inn …</string>
+    <string name="com_accountkit_other_ways_to_get_code">Andre måter å skaffe koden på:</string>
+    <string name="com_accountkit_phone_error_title">Oppgi et gyldig mobiltelefonnummer.</string>
+    <string name="com_accountkit_phone_loading_title">Bekreft nummeret ditt ...</string>
+    <string name="com_accountkit_phone_login_retry_title">Bekreft mobilnummeret ditt</string>
+    <string name="com_accountkit_phone_login_text">Trykk på %1$s og bekreft kontoen din med Account Kit levert av Facebook. Du trenger ikke en Facebook-konto for å bruke Account Kit. En SMS kan bli sendt for å bekrefte nummeret ditt. Meldings- og datakostnader kan påløpe. &lt;a href=%2$s&gt;Finn ut hvordan Facebook bruker opplysningene dine&lt;/a&gt;.</string>
+    <string name="com_accountkit_phone_login_title">Skriv inn mobilnummeret ditt</string>
+    <string name="com_accountkit_phone_sending_code_on_fb_title">Sender kode på Facebook ...</string>
+    <string name="com_accountkit_phone_update_title">Skriv inn ditt nye mobilnummer</string>
+    <string name="com_accountkit_resend_check">Sjekk SMS-innboksen</string>
+    <string name="com_accountkit_resend_email_text">Send ny e-post</string>
+    <string name="com_accountkit_resend_title">Hvis du ikke har mottatt en kode:</string>
+    <string name="com_accountkit_return_title">Du kommer tilbake til %1$s …</string>
+    <string name="com_accountkit_sent_title">Sendt!</string>
+    <string name="com_accountkit_success_title">Bekreftet!</string>
+    <string name="com_accountkit_toolbar_title">Logg inn på %1$s</string>
+    <string name="com_accountkit_verify_confirmation_code_title">Vi kunne ikke bekrefte koden din. Prøv på nytt:</string>
+    <string name="com_accountkit_verify_title">Bekrefter koden din ...</string>
+    <string name="com_accountkit_voice_call_code_entry_title">Oppgi koden din fra taleanropet</string>
+    <string name="com_facebook_device_auth_instructions">Gå til &lt;b&gt;facebook.com/device&lt;/b&gt; og skriv inn koden som vises over.</string>
+    <string name="com_facebook_image_download_unknown_error">Det oppstod en uvented feil under nedlasting av et bilde.</string>
+    <string name="com_facebook_internet_permission_error_message">WebView-innlogging krever INTERNETT-tillatelse</string>
+    <string name="com_facebook_internet_permission_error_title">AndroidManifest-feil</string>
+    <string name="com_facebook_like_button_liked">Likt</string>
+    <string name="com_facebook_like_button_not_liked">Liker</string>
+    <string name="com_facebook_loading">Laster inn ...</string>
+    <string name="com_facebook_loginview_cancel_action">Avbryt</string>
+    <string name="com_facebook_loginview_log_in_button">Logg inn</string>
+    <string name="com_facebook_loginview_log_in_button_continue">Fortsett med Facebook</string>
+    <string name="com_facebook_loginview_log_in_button_long">Logg inn med Facebook</string>
+    <string name="com_facebook_loginview_log_out_action">Logg av</string>
+    <string name="com_facebook_loginview_log_out_button">Logg av</string>
+    <string name="com_facebook_loginview_logged_in_as">Logget inn som %1$s</string>
+    <string name="com_facebook_loginview_logged_in_using_facebook">Innlogget med Facebook</string>
+    <string name="com_facebook_share_button_text">Del</string>
+    <string name="com_facebook_smart_device_instructions">Koble til kontoen din ved å åpne Facebook-appen på mobilenheten din og se etter varsler.</string>
+    <string name="com_facebook_smart_device_instructions_or">– ELLER –</string>
+    <string name="com_facebook_smart_login_confirmation_cancel">Ikke deg?</string>
+    <string name="com_facebook_smart_login_confirmation_continue_as">Fortsett som %1$s</string>
+    <string name="com_facebook_smart_login_confirmation_title">Bekreft innlogging</string>
+    <string name="com_facebook_tooltip_default">Du bestemmer – velg hvilke opplysninger du vil dele med apper.</string>
+    <string name="common_google_play_services_enable_button">Slå på</string>
+    <string name="common_google_play_services_enable_text">%1$s fungerer ikke med mindre du slår på Google Play-tjenester.</string>
+    <string name="common_google_play_services_enable_title">Slå på Google Play-tjenester</string>
+    <string name="common_google_play_services_install_button">Installer</string>
+    <string name="common_google_play_services_install_text">%1$s kan ikke kjøre uten Google Play-tjenester, som ikke er installert på enheten din.</string>
+    <string name="common_google_play_services_install_title">Installer Google Play-tjenester</string>
+    <string name="common_google_play_services_notification_channel_name">Google Play Tjenester-tilgjengelighet</string>
+    <string name="common_google_play_services_notification_ticker">Google Play Tjenester-feil</string>
+    <string name="common_google_play_services_unknown_issue">%1$s har problemer med Google Play-tjenester. Prøv på nytt.</string>
+    <string name="common_google_play_services_unsupported_text">%1$s kan ikke kjøre uten Google Play-tjenester, som ikke støttes av enheten din.</string>
+    <string name="common_google_play_services_update_button">Oppdater</string>
+    <string name="common_google_play_services_update_text">%1$s kjører ikke med mindre du oppdaterer Google Play Tjenester.</string>
+    <string name="common_google_play_services_update_title">Oppdater Google Play-tjenester</string>
+    <string name="common_google_play_services_updating_text">%1$s kjører ikke uten Google Play-tjenester, som oppdateres akkurat nå.</string>
+    <string name="common_google_play_services_wear_update_text">Du må installere en ny versjon av Google Play-tjenester. Appen oppdateres automatisk om en kort stund.</string>
+    <string name="common_open_on_phone">Åpne på telefonen</string>
+    <string name="common_signin_button_text">Logg på</string>
+    <string name="common_signin_button_text_long">Logg på med Google</string>
+    <string name="fcm_fallback_notification_channel_label">Diverse</string>
+    <string name="s1">Lagre bilde</string>
+    <string name="s2">Vil du la annonsen lagre bildet i bildegalleriet?</string>
+    <string name="s3">Godta</string>
+    <string name="s4">Avslå</string>
+    <string name="s5">Opprett kalenderaktivitet</string>
+    <string name="s6">Vil du la annonsen opprette en kalenderaktivitet?</string>
+    <string name="s7">Testannonse</string>
+    <string name="search_menu_title">Søk</string>
+    <string name="status_bar_notification_info_overflow">999+</string>
+</resources>

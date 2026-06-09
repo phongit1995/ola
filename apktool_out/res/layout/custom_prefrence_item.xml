@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="horizontal" android:background="@color/translucent_white_80_percent" android:paddingLeft="0.0dp" android:layout_width="match_parent" android:layout_height="wrap_content" style="?commont.list.item.simple.small"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <ImageView android:id="@id/imgItemIcon" android:background="?commont.button.image" android:focusable="false" android:layout_width="@dimen/general.list.item.height.small" android:layout_height="match_parent" android:scaleType="centerInside" android:adjustViewBounds="true" />
+    <LinearLayout android:gravity="center_vertical" android:orientation="vertical" android:id="@id/linearLayout1" android:paddingLeft="@dimen/metric.2dp" android:layout_width="0.0dp" android:layout_height="match_parent" android:layout_weight="1.0">
+        <TextView android:gravity="center_vertical" android:id="@id/txtItemTitle" android:focusable="false" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="title" android:maxLines="1" style="?contact.item.title" />
+        <TextView android:gravity="center_vertical" android:id="@id/txtItemSubTitle" android:focusable="false" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="subtitle" android:maxLines="1" style="?contact.item.subTitle" />
+    </LinearLayout>
+</LinearLayout>

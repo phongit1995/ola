@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="horizontal" android:id="@id/albumViewLayout" android:background="@drawable/bg_white_with_bottom_border" android:padding="@dimen/metric.8dp" android:layout_width="match_parent" android:layout_height="wrap_content"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <chat.ola.vn.view.OlaCachedImageView android:id="@id/albumThumbImageView" android:layout_width="@dimen/metric.56dp" android:layout_height="@dimen/metric.56dp" android:src="@drawable/ic_contact_photo" android:scaleType="centerCrop" android:cropToPadding="true" />
+    <LinearLayout android:gravity="left|center" android:layout_gravity="left|center" android:orientation="vertical" android:layout_width="0.0dp" android:layout_height="wrap_content" android:layout_marginLeft="@dimen/metric.8dp" android:layout_weight="1.0">
+        <TextView android:ellipsize="end" android:id="@id/albumNameTextView" android:layout_width="wrap_content" android:layout_height="wrap_content" android:maxLines="1" style="@style/defaultStyle.text.headline" />
+        <TextView android:ellipsize="end" android:id="@id/albumCountTextView" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="@dimen/metric.8dp" android:maxLines="1" style="@style/defaultStyle.text.caption" />
+    </LinearLayout>
+    <ImageView android:layout_gravity="center" android:id="@id/checkIndicatorImageView" android:visibility="gone" android:layout_width="wrap_content" android:layout_height="wrap_content" android:src="@drawable/ic_check_icon" />
+</LinearLayout>

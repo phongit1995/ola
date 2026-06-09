@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:orientation="vertical" android:layout_width="wrap_content" android:layout_height="match_parent" android:minHeight="200.0dp"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <ListView android:id="@id/listView" android:scrollbars="none" android:layout_width="match_parent" android:layout_height="match_parent" android:layout_marginTop="-4.0px" android:cacheColorHint="@color/transparent" android:dividerHeight="0.0dp" android:layout_below="@id/linearWrap" style="?commont.list" />
+    <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:id="@id/linearWrap" android:layout_width="match_parent" style="@style/defaultStyle.actionBar.background">
+        <ImageView android:layout_width="wrap_content" android:layout_height="match_parent" android:layout_marginLeft="@dimen/metric.8dp" android:layout_marginTop="@dimen/metric.8dp" android:layout_marginBottom="@dimen/metric.8dp" android:src="@drawable/ola_logo_trans" android:adjustViewBounds="true" />
+        <TextView android:gravity="left|center" android:id="@id/txtActionTitle" android:layout_width="0.0dp" android:layout_height="match_parent" android:layout_marginLeft="@dimen/metric.8dp" android:text="@string/string_draft_me" android:layout_weight="1.0" style="?actionBar.title" />
+        <ImageView android:id="@id/btnActionButtonLeft" android:layout_width="@dimen/metric.48dp" android:layout_height="match_parent" android:src="@drawable/ic_action_quit" style="?actionBar.button" />
+    </LinearLayout>
+    <ProgressBar android:id="@id/progressBar" android:background="@drawable/bg_progress_player" android:visibility="invisible" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_centerInParent="true" style="@style/defaultStyle.progresswatting" />
+</RelativeLayout>

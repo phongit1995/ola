@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:background="@color/colorOlaPrimary" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout android:orientation="vertical" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_centerInParent="true">
+        <ProgressBar android:layout_gravity="center_horizontal" android:id="@id/progressBar" android:layout_width="wrap_content" android:layout_height="wrap_content" style="@style/defaultStyle.progresswatting" />
+        <TextView android:textColor="@color/colorOlaAccent" android:layout_gravity="center_horizontal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="@dimen/metric.4dp" android:text="@string/general_load_form_info" style="@style/defaultStyle.text.body2" />
+    </LinearLayout>
+</RelativeLayout>

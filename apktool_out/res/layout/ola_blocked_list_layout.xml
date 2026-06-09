@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <FrameLayout android:paddingTop="@dimen/metric.topbar.noshadow.42dp" android:layout_width="match_parent" android:layout_height="match_parent">
+        <ListView android:id="@id/blockedListView" android:layout_width="match_parent" android:layout_height="match_parent" style="@style/defaultStyle.list.noDivider" />
+        <ProgressBar android:layout_gravity="center" android:id="@id/wattingProgressBar" android:layout_width="@dimen/metric.48dp" android:layout_height="@dimen/metric.48dp" style="@style/defaultStyle.progresswatting" />
+    </FrameLayout>
+    <include layout="@layout/ola_top_action_bar_layout" />
+</FrameLayout>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="vertical" android:layout_width="match_parent" android:layout_height="wrap_content"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <FrameLayout android:layout_width="match_parent" android:layout_height="wrap_content">
+        <chat.ola.vn.view.OlaRatioImageView android:id="@id/imgVideoThumbnail" android:background="@color/black" android:layout_width="match_parent" android:layout_height="match_parent" />
+        <LinearLayout android:gravity="center|bottom" android:layout_gravity="right|bottom" android:orientation="horizontal" android:background="@drawable/bg_time_info" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_margin="@dimen/metric.4dp" android:minWidth="28.0dp">
+            <ImageView android:gravity="center_vertical" android:layout_gravity="center_vertical" android:id="@id/imgVideoTypeIcon" android:layout_width="@dimen/text.size.body1" android:layout_height="wrap_content" android:layout_marginRight="@dimen/metric.2dp" android:src="@drawable/ic_item_type_video" android:scaleType="centerInside" />
+            <TextView android:textSize="@dimen/text.size.caption" android:textColor="@color/white" android:gravity="center_vertical" android:layout_gravity="center_vertical" android:id="@id/txtVideoDuration" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+        </LinearLayout>
+    </FrameLayout>
+    <LinearLayout android:orientation="vertical" android:background="@color/white" android:layout_width="match_parent" android:layout_height="wrap_content">
+        <LinearLayout android:orientation="horizontal" android:id="@id/linearTitleSpan" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginLeft="@dimen/metric.8dp" android:layout_marginTop="@dimen/metric.4dp" android:layout_marginRight="@dimen/metric.8dp">
+            <TextView android:textSize="@dimen/text.size.body1" android:textColor="#414141" android:id="@id/txtVideoTitle" android:layout_width="0.0dp" android:layout_height="wrap_content" android:text="title" android:maxLines="2" android:layout_weight="1.0" />
+            <ImageView android:id="@id/btnMallInfo" android:paddingLeft="@dimen/metric.16dp" android:layout_width="@dimen/metric.36dp" android:layout_height="match_parent" android:src="@drawable/ic_expander_show_span" android:scaleType="fitStart" android:adjustViewBounds="true" />
+        </LinearLayout>
+        <TextView android:textSize="@dimen/text.size.caption" android:textColor="#ababab" android:id="@id/txtMallItemTagList" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginLeft="@dimen/metric.8dp" android:layout_marginTop="@dimen/metric.4dp" android:layout_marginRight="@dimen/metric.8dp" android:layout_marginBottom="@dimen/metric.4dp" android:maxLines="2" />
+        <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:id="@id/linearViewNumberSpan" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginLeft="@dimen/metric.8dp" android:layout_marginRight="@dimen/metric.8dp">
+            <ImageView android:paddingTop="@dimen/metric.1dp" android:paddingBottom="@dimen/metric.1dp" android:layout_width="@dimen/text.size.body1" android:layout_height="match_parent" android:src="@drawable/ic_indicate_view" android:scaleType="centerInside" android:adjustViewBounds="true" />
+            <TextView android:textSize="@dimen/text.size.caption" android:textColor="@color/color_action_tab" android:gravity="center_vertical" android:id="@id/txtVideoViewCount" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="viewCount" />
+        </LinearLayout>
+        <TextView android:textSize="@dimen/text.size.caption" android:textColor="@color/color_action_tab" android:id="@id/txtVideoCreatedDate" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="@dimen/metric.8dp" android:layout_marginRight="@dimen/metric.8dp" android:layout_marginBottom="@dimen/metric.2dp" android:text="createDate" android:maxLines="1" />
+        <LinearLayout android:orientation="vertical" android:id="@id/mallInfoSpan" android:layout_width="match_parent" android:layout_height="wrap_content">
+            <TextView android:id="@id/txtVideoDescription" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="@dimen/metric.8dp" android:layout_marginTop="@dimen/metric.1dp" android:layout_marginRight="@dimen/metric.8dp" style="@style/defaultStyle.text.body1" />
+            <View android:background="#e1e1e1" android:layout_width="match_parent" android:layout_height="1.0px" android:layout_marginLeft="@dimen/metric.8dp" android:layout_marginTop="@dimen/metric.4dp" android:layout_marginRight="@dimen/metric.8dp" android:layout_marginBottom="@dimen/metric.4dp" />
+        </LinearLayout>
+        <include layout="@layout/mall_detail_action_span" />
+    </LinearLayout>
+    <View android:background="#ababab" android:layout_width="match_parent" android:layout_height="1.0px" />
+</LinearLayout>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="vertical" android:background="@color/white" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <ListView android:id="@id/roomListView" android:layout_width="match_parent" android:layout_height="0.0dp" android:layout_weight="1.0" style="@style/defaultStyle.list.noDivider" />
+    <FrameLayout android:background="@drawable/bg_white_with_top_border" android:padding="@dimen/metric.8dp" android:layout_width="match_parent" android:layout_height="wrap_content">
+        <Button android:textSize="@dimen/text.size.subhead" android:id="@id/enterChatRoomButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="@dimen/metric.36dp" android:text="@string/string_enter_chat_room" style="@style/defaultStyle.button.green" />
+    </FrameLayout>
+</LinearLayout>

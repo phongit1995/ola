@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:gravity="center" android:orientation="horizontal" android:id="@id/undoViewLayout" android:background="@drawable/elv_popup_bg" android:paddingRight="@dimen/metric.8dp" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <TextView android:textSize="@dimen/text.size.subhead" android:textColor="@color/colorTextWhiteSecondary" android:ellipsize="end" android:id="@id/text" android:padding="@dimen/metric.8dp" android:layout_width="wrap_content" android:layout_height="wrap_content" android:maxLines="1" android:layout_weight="1.0" />
+    <View android:background="@color/colorTextBlackDivider" android:layout_width="1.0dp" android:layout_height="match_parent" android:layout_marginLeft="@dimen/metric.8dp" android:layout_marginTop="@dimen/metric.16dp" android:layout_marginRight="@dimen/metric.8dp" android:layout_marginBottom="@dimen/metric.16dp" android:layout_weight="0.0" />
+    <Button android:textColor="@color/colorTextWhiteSecondary" android:gravity="center_vertical" android:layout_gravity="center_vertical" android:id="@id/undo" android:background="@color/transparent" android:paddingRight="@dimen/metric.8dp" android:layout_width="wrap_content" android:layout_height="wrap_content" android:drawableLeft="@drawable/elv_ic_action_undo" android:layout_weight="0.0" />
+</LinearLayout>

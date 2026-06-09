@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.mg.ola.common.widget.SoftKeyLinearLayout android:id="@id/softKeyResizableViewLayout" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <FrameLayout android:layout_width="match_parent" android:layout_height="match_parent">
+        <FrameLayout android:id="@id/meComposerGlobalLayout" android:layout_width="match_parent" android:layout_height="match_parent">
+            <LinearLayout android:orientation="vertical" android:background="@color/white" android:paddingTop="@dimen/metric.topbar.noshadow.42dp" android:layout_width="match_parent" android:layout_height="match_parent">
+                <ScrollView android:id="@id/meContentScrollView" android:layout_width="match_parent" android:layout_height="0.0dp" android:layout_weight="1.0">
+                    <LinearLayout android:orientation="vertical" android:id="@id/vLinearContentEditNote" android:paddingLeft="@dimen/metric.32dp" android:paddingTop="@dimen/metric.16dp" android:paddingRight="@dimen/metric.32dp" android:paddingBottom="@dimen/metric.16dp" android:layout_width="match_parent" android:layout_height="wrap_content">
+                        <EditText android:textSize="@dimen/text.size.title" android:textColor="@color/colorTextBlackPrimary" android:textColorHint="@color/colorTextBlackHintOrDisable" android:ellipsize="end" android:id="@id/noteTitleEditText" android:paddingTop="@dimen/metric.16dp" android:paddingBottom="@dimen/metric.16dp" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="@string/string_note_title" android:maxLines="1" android:inputType="textCapSentences" style="@style/defaultStyle.edittext.nobackground" />
+                        <View android:background="@color/colorTextBlackDivider" android:layout_width="match_parent" android:layout_height="1.0px" />
+                        <chat.ola.vn.view.OlaTypingSuggestedText android:gravity="left|top" android:id="@id/meContentEditText" android:paddingTop="@dimen/metric.16dp" android:paddingBottom="@dimen/metric.16dp" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="@dimen/metric.164dp" android:hint="@string/general_hint_note_content" android:maxLines="204800" android:lineSpacingMultiplier="1.2" android:inputType="textCapSentences|textMultiLine" style="@style/defaultStyle.edittext.nobackground" />
+                    </LinearLayout>
+                </ScrollView>
+                <View android:background="@color/colorTextBlackDivider" android:layout_width="match_parent" android:layout_height="1.0dp" />
+                <include android:id="@id/chatAttachmentLayout" layout="@layout/ola_chat_message_attachment_layout" />
+            </LinearLayout>
+            <include layout="@layout/ola_top_action_bar_center_title_layout" />
+        </FrameLayout>
+        <FrameLayout android:layout_gravity="bottom" android:id="@id/chatAttachmentFrameLayout" android:visibility="gone" android:layout_width="match_parent" android:layout_height="@dimen/metric.100dp" />
+    </FrameLayout>
+</com.mg.ola.common.widget.SoftKeyLinearLayout>

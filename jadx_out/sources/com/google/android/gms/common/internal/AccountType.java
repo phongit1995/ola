@@ -1,0 +1,12 @@
+package com.google.android.gms.common.internal;
+
+/* JADX INFO: loaded from: classes.dex */
+public final class AccountType {
+    public static final String[] ACCEPTABLE_ACCOUNT_TYPES = {"com.google", "com.google.work", "cn.google"};
+    public static final String GOOGLE = "com.google";
+    public static final String SIDEWINDER = "cn.google";
+    public static final String WORK = "com.google.work";
+
+    private AccountType() {
+    }
+}

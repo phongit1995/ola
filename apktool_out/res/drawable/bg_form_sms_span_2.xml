@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:left="@dimen/general.form.content.span.margin" android:top="@dimen/general.form.content.span.margin" android:right="@dimen/general.form.content.span.margin" android:bottom="@dimen/general.form.content.span.margin">
+        <shape>
+            <corners android:radius="4.0dp" />
+            <padding android:left="@dimen/general.form.content.span.padding" android:top="@dimen/general.form.content.span.padding" android:right="@dimen/general.form.content.span.padding" android:bottom="@dimen/general.form.content.span.padding" />
+            <solid android:color="#f4e4d4" />
+        </shape>
+    </item>
+</layer-list>

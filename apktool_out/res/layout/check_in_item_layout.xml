@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="horizontal" android:id="@id/vLinearCheckInItem" android:background="@color/white" android:padding="@dimen/metric.16dp" android:layout_width="match_parent" android:layout_height="wrap_content"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <chat.ola.vn.view.OlaCachedImageView android:layout_gravity="center_vertical" android:id="@id/imgCheckInAvatar" android:background="@drawable/bg_shadown_border" android:layout_width="@dimen/metric.64dp" android:layout_height="@dimen/metric.64dp" android:scaleType="centerCrop" android:adjustViewBounds="true" />
+    <LinearLayout android:orientation="vertical" android:id="@id/vLinearCheckInInfo" android:layout_width="0.0dp" android:layout_height="match_parent" android:layout_marginLeft="@dimen/metric.8dp" android:layout_weight="1.0">
+        <TextView android:ellipsize="end" android:layout_gravity="top" android:id="@id/txtPlaceName" android:layout_width="wrap_content" android:layout_height="wrap_content" android:maxLines="1" style="@style/defaultStyle.text.subhead" />
+        <LinearLayout android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="0.0dp" android:layout_weight="1.0">
+            <TextView android:textSize="@dimen/text.size.body1" android:textColor="@color/text_color_1" android:layout_gravity="center_vertical" android:id="@id/txtDistanceHint" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginRight="@dimen/metric.4dp" android:text="@string/string_distance" />
+            <TextView android:textSize="@dimen/text.size.body1" android:textColor="#add6f6" android:layout_gravity="center_vertical" android:id="@id/txtPlaceDistanceInfo" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginRight="@dimen/metric.4dp" />
+            <TextView android:textSize="@dimen/text.size.body1" android:ellipsize="end" android:layout_gravity="center_vertical" android:id="@id/txtAmountPepleCheckedInfo" android:layout_width="0.0dp" android:layout_height="wrap_content" android:maxLines="1" android:layout_weight="1.0" />
+        </LinearLayout>
+        <LinearLayout android:layout_gravity="bottom" android:orientation="vertical" android:layout_width="match_parent" android:layout_height="wrap_content">
+            <TextView android:textSize="@dimen/text.size.caption" android:textStyle="italic" android:ellipsize="end" android:id="@id/txtPlaceAddress" android:layout_width="wrap_content" android:layout_height="wrap_content" android:maxLines="1" />
+        </LinearLayout>
+    </LinearLayout>
+    <ImageView android:id="@id/btnDetail" android:paddingLeft="@dimen/metric.4dp" android:paddingRight="@dimen/metric.4dp" android:layout_width="wrap_content" android:layout_height="match_parent" android:src="@drawable/ic_arrow_right" android:scaleType="centerInside" android:adjustViewBounds="true" />
+</LinearLayout>

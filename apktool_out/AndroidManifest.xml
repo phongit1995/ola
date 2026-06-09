@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:installLocation="auto" package="chat.ola.vn">
+    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE"/>
+    <uses-permission android:name="chat.ola.vn.permission.C2D_MESSAGE"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <permission android:name="chat.ola.vn.permission.C2D_MESSAGE" android:protectionLevel="signature"/>
+    <permission android:name="chat.ola.vn.permission.MAPS_RECEIVE" android:protectionLevel="signature"/>
+    <permission android:icon="@drawable/app_icon" android:name="chat.ola.vn.permission.OPEN_LOGIN" android:protectionLevel="signature"/>
+    <uses-permission android:name="chat.ola.vn.permission.MAPS_RECEIVE"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <uses-permission android:name="android.permission.READ_CONTACTS"/>
+    <uses-permission android:name="android.permission.READ_PROFILE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <uses-permission android:name="com.android.vending.BILLING"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
+    <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS"/>
+    <uses-permission android:name="android.permission.MANAGE_ACCOUNTS"/>
+    <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+    <uses-permission android:name="com.sec.android.provider.badge.permission.WRITE"/>
+    <uses-permission android:name="com.sec.android.provider.badge.permission.READ"/>
+    <uses-permission android:name="com.sonyericsson.home.permission.BROADCAST_BADGE"/>
+    <uses-permission android:name="com.htc.launcher.permission.READ_SETTINGS"/>
+    <uses-permission android:name="com.htc.launcher.permission.UPDATE_SHORTCUT"/>
+    <uses-feature android:name="android.hardware.camera" android:required="false"/>
+    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false"/>
+    <uses-feature android:name="android.hardware.telephony" android:required="false"/>
+    <uses-feature android:name="android.hardware.location" android:required="false"/>
+    <uses-feature android:name="android.hardware.location.gps" android:required="false"/>
+    <uses-feature android:name="android.hardware.location.network" android:required="false"/>
+    <uses-feature android:name="android.hardware.wifi" android:required="false"/>
+    <uses-feature android:glEsVersion="0x20000" android:required="true"/>
+    <uses-permission android:name="com.google.android.finsky.permission.BIND_GET_INSTALL_REFERRER_SERVICE"/>
+    <meta-data android:name="android.support.VERSION" android:value="25.3.1"/>
+    <application android:allowBackup="true" android:allowClearUserData="false" android:icon="@drawable/app_icon" android:label="@string/app_name" android:largeHeap="true" android:name="chat.ola.vn.OlaApplication" android:supportsRtl="true" android:theme="@style/Theme.ola.default">
+        <uses-library android:name="com.google.android.maps"/>
+        <activity android:configChanges="orientation|screenSize" android:label="@string/app_name" android:name="chat.ola.vn.activity.OlaLoginActivity" android:windowSoftInputMode="stateHidden|adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <action android:name="android.intent.action.SEARCH"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+            <meta-data android:name="android.app.searchable" android:resource="@xml/searchable"/>
+        </activity>
+        <activity android:configChanges="orientation|screenSize" android:label="@string/app_name" android:launchMode="singleTop" android:name="chat.ola.vn.activity.ContactFinderActivity" android:screenOrientation="sensorPortrait" android:windowSoftInputMode="stateVisible|adjustResize"/>
+        <activity android:configChanges="orientation|screenSize" android:label="@string/app_name" android:name="chat.ola.vn.signup.OlaSignUpActivity" android:windowSoftInputMode="adjustResize"/>
+        <activity android:configChanges="orientation|screenSize" android:label="@string/app_name" android:name="chat.ola.vn.signup.OlaSignUpBySmsActivity" android:windowSoftInputMode="adjustResize"/>
+        <activity android:configChanges="orientation|screenSize" android:label="@string/app_name" android:name="chat.ola.vn.activity.OlaOAuthenRegisterHtmlActivity" android:screenOrientation="sensorPortrait" android:windowSoftInputMode="adjustResize"/>
+        <activity android:configChanges="orientation|screenSize" android:label="@string/app_name" android:name="chat.ola.vn.activity.OlaWebLoginActivity" android:screenOrientation="sensorPortrait" android:windowSoftInputMode="adjustResize"/>
+        <activity android:configChanges="keyboardHidden" android:launchMode="singleTop" android:name="chat.ola.vn.activity.OlaChatViewActivity" android:windowSoftInputMode="stateHidden|adjustResize"/>
+        <activity android:name="chat.ola.vn.activity.ClanManagementActivity"/>
+        <activity android:name="chat.ola.vn.tutorial.OlaTutorialActivity"/>
+        <activity android:configChanges="keyboard|orientation|screenSize" android:launchMode="singleTop" android:name="chat.ola.vn.activity.OlaBottomTabActivity" android:windowSoftInputMode="stateHidden|adjustPan">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="ola"/>
+            </intent-filter>
+        </activity>
+        <activity android:configChanges="keyboard|orientation|screenSize" android:name="chat.ola.vn.activity.OlaQuickReplyComposerActivity" android:windowSoftInputMode="stateHidden|adjustResize"/>
+        <activity android:configChanges="keyboard|orientation|screenSize" android:icon="@drawable/app_icon" android:label="@string/string_send_marry_request" android:name="chat.ola.vn.activity.MarriageRequestComposerActivity" android:windowSoftInputMode="stateVisible|adjustResize"/>
+        <service android:label="Ola Mriya" android:name="chat.ola.vn.network.OlaNetworkService"/>
+        <service android:exported="true" android:name="chat.ola.vn.service.OlaOAuthAccountAuthenticatorService" android:permission="chat.ola.vn.permission.OPEN_LOGIN">
+            <intent-filter>
+                <action android:name="android.accounts.AccountAuthenticator"/>
+            </intent-filter>
+            <meta-data android:name="android.accounts.AccountAuthenticator" android:resource="@xml/authenticator"/>
+        </service>
+        <service android:label="Ola Balloon" android:name="chat.ola.vn.balloon.OlaBalloonService"/>
+        <service android:label="Ola SINCGARS" android:name="chat.ola.vn.service.OlaVoiceChatService"/>
+        <service android:label="" android:name="chat.ola.vn.service.OlaLikeOnNotificationService"/>
+        <activity android:configChanges="keyboard|orientation|screenSize" android:name="chat.ola.vn.me.OlaMeCommentActivity" android:windowSoftInputMode="adjustNothing|stateHidden"/>
+        <activity android:configChanges="keyboard|orientation|screenSize" android:name="chat.ola.vn.me.OlaMeLikerListActivity"/>
+        <activity android:configChanges="keyboard|orientation|screenSize" android:name="chat.ola.vn.me.OlaAdMeLikeListActivity"/>
+        <activity android:configChanges="keyboard|orientation|screenSize" android:name="chat.ola.vn.me.OlaPeopleListActivity"/>
+        <activity android:configChanges="keyboard|orientation|screenSize" android:name="chat.ola.vn.me.OlaDiaryActivity"/>
+        <activity android:configChanges="orientation|screenSize" android:launchMode="singleTop" android:name="chat.ola.vn.activity.OlaImageViewerActivity" android:screenOrientation="sensorPortrait" android:theme="@style/Theme.ola.default.transparent"/>
+        <activity android:configChanges="keyboardHidden" android:excludeFromRecents="true" android:name="chat.ola.vn.activity.OlaBalloonChatViewActivity" android:noHistory="true" android:theme="@style/Theme.ola.default.transparent" android:windowSoftInputMode="stateHidden|adjustResize"/>
+        <activity android:configChanges="orientation|screenSize" android:name="chat.ola.vn.activity.OlaImageCropToolActivity" android:screenOrientation="sensorPortrait"/>
+        <receiver android:enabled="true" android:exported="false" android:name="chat.ola.vn.service.AppReceiver">
+            <intent-filter>
+                <action android:name="chat.ola.vn.ACTION_SHOW_CHATGROUP"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
+                <action android:name="android.net.wifi.WIFI_STATE_CHANGED"/>
+                <action android:name="android.net.wifi.STATE_CHANGE"/>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+            </intent-filter>
+        </receiver>
+        <service android:name="chat.ola.vn.OlaFirebaseInstanceIdService">
+            <intent-filter>
+                <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
+            </intent-filter>
+        </service>
+        <service android:name="chat.ola.vn.OlaFirebaseMessagingService">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+            </intent-filter>
+        </service>
+        <activity android:name="chat.ola.vn.activity.OlaAppSettingActivity" android:theme="@style/Theme.ola.default.setting"/>
+        <activity android:name="chat.ola.vn.activity.CreateClanActivity" android:theme="@style/Theme.ola.default"/>
+        <activity android:configChanges="keyboardHidden|orientation|screenSize" android:name="chat.ola.vn.activity.OlaChangePasswordActivity" android:windowSoftInputMode="stateAlwaysVisible|adjustResize"/>
+        <activity android:configChanges="keyboard|orientation|screenSize" android:name="chat.ola.vn.activity.ChangeChatGroupTopticDialog" android:theme="@style/Theme.ola.default.dialog"/>
+        <activity android:configChanges="orientation|screenSize" android:name="chat.ola.vn.activity.BuyVipActivity"/>
+        <activity android:configChanges="orientation|screenSize" android:name="chat.ola.vn.transferken.OlaTransferKenActivity"/>
+        <activity android:configChanges="orientation|screenSize" android:name="chat.ola.vn.tradingvip.OlaTraddingVipActivity"/>
+        <activity android:configChanges="orientation|screenSize" android:name="chat.ola.vn.activity.OlaVipStoreActivity"/>
+        <activity android:excludeFromRecents="true" android:icon="@drawable/ic_tab_appstore" android:label="@string/general_tab_ola_mall" android:name="chat.ola.vn.activity.OlaMallHandlerIntent" android:noHistory="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="http"/>
+                <data android:scheme="https"/>
+                <data android:host="mall.ola.vn"/>
+                <data android:pathPattern=".*"/>
+            </intent-filter>
+        </activity>
+        <activity android:excludeFromRecents="true" android:icon="@drawable/app_icon" android:label="@string/app_name" android:name="chat.ola.vn.activity.OlaMeHandlerIntent" android:noHistory="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="http"/>
+                <data android:scheme="https"/>
+                <data android:host="me.ola.vn"/>
+                <data android:host="mobile.ola.vn"/>
+                <data android:host="m.ola.vn"/>
+                <data android:pathPattern=".*"/>
+            </intent-filter>
+        </activity>
+        <activity android:name="chat.ola.vn.activity.OlaLanguageChooser"/>
+        <activity android:label="@string/string_login" android:name="chat.ola.vn.activity.OlaOAuthenLoginActivity" android:parentActivityName="android.accounts.AccountAuthenticatorActivity" android:windowSoftInputMode="stateVisible|adjustResize">
+            <meta-data android:name="android.support.PARENT_ACTIVITY" android:value="android.accounts.AccountAuthenticatorActivity"/>
+        </activity>
+        <meta-data android:name="com.google.android.maps.v2.API_KEY" android:value="@string/ola_google_api_key"/>
+        <meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version"/>
+        <activity android:configChanges="keyboard|orientation|screenSize" android:name="chat.ola.vn.activity.PurchaseKENActivity"/>
+        <activity android:configChanges="keyboard|orientation|screenSize" android:name="chat.ola.vn.checkin.OlaCheckInNearbyPlacesActivity"/>
+        <activity android:configChanges="keyboard|orientation|screenSize" android:name="chat.ola.vn.checkin.OlaCheckInActivity"/>
+        <activity android:configChanges="keyboard|orientation|screenSize" android:name="chat.ola.vn.checkin.OlaVenueDetailActivity"/>
+        <activity android:configChanges="keyboard|orientation|screenSize" android:name="chat.ola.vn.checkin.OlaCheckInCreateVenueItemActivity"/>
+        <activity android:configChanges="orientation|screenSize" android:name="chat.ola.vn.pickercontacts.OlaPickerContactActivity" android:theme="@style/Theme.ola.default.transparent" android:windowSoftInputMode="stateHidden|adjustResize"/>
+        <activity android:configChanges="keyboard|orientation|screenSize" android:name="chat.ola.vn.checkin.OlaCheckInChooseActionActivity"/>
+        <activity android:configChanges="keyboard|orientation|screenSize" android:name="chat.ola.vn.checkin.OlaCheckInSelectOrCreateItemActivity"/>
+        <activity android:configChanges="keyboard|orientation|screenSize" android:label="@string/app_name" android:launchMode="singleTop" android:name="chat.ola.vn.game.caro.CaroActivity" android:theme="@android:style/Theme.Light.NoTitleBar"/>
+        <activity android:configChanges="keyboard|orientation|screenSize" android:name="chat.ola.vn.activity.OlaFacebookActivity" android:theme="@style/Theme.ola.default.transparent"/>
+        <activity android:configChanges="keyboard|orientation|screenSize" android:name="chat.ola.vn.activity.OlaReplyMeOnNotificationActivity" android:theme="@style/Theme.ola.default.transparent"/>
+        <activity android:configChanges="keyboard|orientation|screenSize" android:name="chat.ola.vn.activity.OlaReleaseAppActivity" android:theme="@style/Theme.ola.default.transparent"/>
+        <activity android:configChanges="keyboard|orientation|screenSize" android:name="chat.ola.vn.me.OlaUserMePageActivity"/>
+        <activity android:configChanges="keyboard|orientation|screenSize" android:name="chat.ola.vn.me.OlaClanMePageActivity"/>
+        <activity android:configChanges="keyboard|orientation|screenSize" android:name="chat.ola.vn.signup.fb.OlaSignUpByFacebookActivity" android:windowSoftInputMode="adjustResize"/>
+        <activity android:configChanges="keyboardHidden|orientation|screenSize" android:name="chat.ola.vn.activity.RecoverPassStep1Activity" android:windowSoftInputMode="stateHidden|adjustResize"/>
+        <activity android:configChanges="keyboardHidden|orientation|screenSize" android:name="chat.ola.vn.countrypicker.OlaCountryPickerActivity" android:windowSoftInputMode="adjustResize"/>
+        <activity android:configChanges="keyboardHidden|orientation|screenSize" android:name="chat.ola.vn.activity.OlaChatGroupListActivity" android:windowSoftInputMode="stateHidden|adjustResize"/>
+        <activity android:configChanges="keyboardHidden|orientation|screenSize" android:name="chat.ola.vn.activity.OlaSuggestedFriendListActivity" android:windowSoftInputMode="stateHidden|adjustResize"/>
+        <activity android:configChanges="orientation|screenSize" android:name="chat.ola.vn.me.OlaVisitorListActivity"/>
+        <activity android:configChanges="orientation|screenSize" android:name="chat.ola.vn.activity.OlaRecoveredAccountListActivity"/>
+        <activity android:configChanges="orientation|screenSize" android:name="chat.ola.vn.message.OlaOtherPeopleListActivity"/>
+        <activity android:configChanges="keyboardHidden|orientation|screenSize" android:name="chat.ola.vn.activity.OlaBirthdayCheerActivity" android:windowSoftInputMode="adjustResize"/>
+        <activity android:configChanges="keyboardHidden|orientation|screenSize" android:name="chat.ola.vn.activity.OlaAttachmentPhotoListActivity" android:windowSoftInputMode="stateHidden|adjustResize"/>
+        <activity android:configChanges="keyboardHidden|orientation|screenSize" android:name="chat.ola.vn.activity.OlaSnapPicViewerActivity" android:windowSoftInputMode="stateHidden|adjustResize"/>
+        <activity android:configChanges="keyboardHidden|orientation|screenSize" android:name="chat.ola.vn.contactpicker.OlaContactPickerActivity" android:windowSoftInputMode="stateHidden|adjustResize"/>
+        <activity android:configChanges="keyboardHidden|orientation|screenSize" android:name="chat.ola.vn.activity.OlaAddContactActivity" android:windowSoftInputMode="stateAlwaysVisible|adjustResize"/>
+        <activity android:configChanges="orientation|screenSize" android:name="chat.ola.vn.activity.OlaPhoneVerificationActivity" android:windowSoftInputMode="stateAlwaysVisible|adjustResize"/>
+        <activity android:configChanges="orientation|screenSize" android:name="chat.ola.vn.activity.OlaPhoneVerifyByAccountKitActivity" android:theme="@style/Theme.ola.default.transparent" android:windowSoftInputMode="stateAlwaysHidden"/>
+        <activity android:configChanges="keyboard|orientation|screenSize" android:icon="@drawable/app_icon" android:label="@string/app_name" android:name="chat.ola.vn.me.OlaMeComposerActivity" android:windowSoftInputMode="stateVisible|adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:mimeType="image/*"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND_MULTIPLE"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:mimeType="image/*"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:mimeType="text/plain"/>
+            </intent-filter>
+        </activity>
+        <activity android:configChanges="keyboard|orientation|screenSize" android:name="chat.ola.vn.note.OlaNoteComposerActivity" android:windowSoftInputMode="stateVisible|adjustResize"/>
+        <activity android:configChanges="keyboard|orientation|screenSize" android:name="chat.ola.vn.cloud.OlaCloudAlbumListActivity"/>
+        <activity android:configChanges="keyboard|orientation|screenSize" android:name="chat.ola.vn.cloud.OlaGalleryAlbumListActivity"/>
+        <activity android:configChanges="keyboard|orientation|screenSize" android:name="chat.ola.vn.cloud.OlaGalleryPhotoListActivity"/>
+        <activity android:configChanges="keyboard|orientation|screenSize" android:name="chat.ola.vn.cloud.OlaCloudPhotoListActivity"/>
+        <activity android:configChanges="keyboard|orientation|screenSize" android:name="chat.ola.vn.cloud.OlaCloudPhotoChooserActivity"/>
+        <activity android:configChanges="keyboard|orientation|screenSize" android:name="chat.ola.vn.cloud.OlaLocalPhotoChooserActivity"/>
+        <activity android:configChanges="keyboard|orientation|screenSize" android:excludeFromRecents="true" android:name="chat.ola.vn.activity.OlaCropImageActivity" android:theme="@style/Theme.ola.default.transparent"/>
+        <activity android:configChanges="keyboard|orientation|screenSize" android:excludeFromRecents="true" android:name="chat.ola.vn.sms.OlaSmsSendingActivity" android:noHistory="true" android:theme="@style/Theme.ola.default.transparent"/>
+        <activity android:configChanges="keyboard|orientation|screenSize" android:name="chat.ola.vn.activity.OlaUserProfileActivity" android:windowSoftInputMode="stateHidden"/>
+        <activity android:configChanges="keyboard|orientation|screenSize" android:name="chat.ola.vn.room.OlaPublicRoomFilterSettingActivity" android:windowSoftInputMode="stateAlwaysHidden"/>
+        <activity android:configChanges="keyboard|orientation|screenSize" android:name="chat.ola.vn.message.OlaChatBlockedListActivity" android:windowSoftInputMode="stateAlwaysHidden"/>
+        <activity android:name="chat.ola.vn.lock.OlaLockScreenActivity" android:noHistory="true" android:screenOrientation="portrait" android:windowSoftInputMode="stateAlwaysHidden"/>
+        <activity android:name="chat.ola.vn.lock.OlaPasscodeSettingActivity" android:screenOrientation="portrait" android:windowSoftInputMode="stateAlwaysHidden"/>
+        <activity android:exported="true" android:name="chat.ola.vn.LoginActivity" android:screenOrientation="portrait"/>
+        <activity android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|screenSize" android:label="@string/app_name" android:name="com.facebook.FacebookActivity" android:screenOrientation="portrait" android:theme="@style/com_facebook_activity_theme"/>
+        <provider android:authorities="com.facebook.app.FacebookContentProvider715582638484821" android:exported="true" android:name="com.facebook.FacebookContentProvider"/>
+        <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/fb_app_id"/>
+        <meta-data android:name="com.facebook.sdk.ApplicationName" android:value="@string/app_name"/>
+        <meta-data android:name="com.facebook.accountkit.ApplicationName" android:value="@string/app_name"/>
+        <meta-data android:name="com.facebook.accountkit.ClientToken" android:value="@string/account_kit_client_token"/>
+        <meta-data android:name="com.google.firebase.messaging.default_notification_icon" android:resource="@drawable/ic_notify_new_message"/>
+        <meta-data android:name="com.google.firebase.messaging.default_notification_color" android:resource="@color/colorPrimary"/>
+        <activity android:label="@string/com_accountkit_button_log_in" android:launchMode="singleTop" android:name="com.facebook.accountkit.ui.AccountKitActivity" android:theme="@style/AccountKitLoginTheme" android:windowSoftInputMode="adjustResize"/>
+        <activity android:exported="true" android:name="com.facebook.accountkit.ui.AccountKitEmailRedirectActivity" android:noHistory="true"/>
+        <provider android:authorities="chat.ola.vn.AccountKitInitialization" android:exported="false" android:name="com.facebook.accountkit.internal.AccountKitInitProvider"/>
+        <activity android:excludeFromRecents="true" android:exported="false" android:name="com.google.android.gms.auth.api.signin.internal.SignInHubActivity" android:theme="@android:style/Theme.Translucent.NoTitleBar"/>
+        <service android:exported="true" android:name="com.google.android.gms.auth.api.signin.RevocationBoundService" android:permission="com.google.android.gms.auth.api.signin.permission.REVOCATION_NOTIFICATION"/>
+        <activity android:excludeFromRecents="true" android:exported="true" android:launchMode="singleInstance" android:name="com.google.firebase.auth.internal.FederatedSignInActivity" android:permission="com.google.firebase.auth.api.gms.permission.LAUNCH_FEDERATED_SIGN_IN" android:theme="@android:style/Theme.Translucent.NoTitleBar"/>
+        <service android:name="com.google.firebase.components.ComponentDiscoveryService">
+            <meta-data android:name="com.google.firebase.components:com.google.firebase.auth.FirebaseAuthRegistrar" android:value="com.google.firebase.components.ComponentRegistrar"/>
+            <meta-data android:name="com.google.firebase.components:com.google.firebase.analytics.connector.internal.AnalyticsConnectorRegistrar" android:value="com.google.firebase.components.ComponentRegistrar"/>
+            <meta-data android:name="com.google.firebase.components:com.google.firebase.iid.Registrar" android:value="com.google.firebase.components.ComponentRegistrar"/>
+        </service>
+        <service android:exported="true" android:name="com.google.firebase.messaging.FirebaseMessagingService">
+            <intent-filter android:priority="-500">
+                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+            </intent-filter>
+        </service>
+        <receiver android:enabled="true" android:exported="false" android:name="com.google.android.gms.measurement.AppMeasurementReceiver"/>
+        <receiver android:enabled="true" android:exported="true" android:name="com.google.android.gms.measurement.AppMeasurementInstallReferrerReceiver" android:permission="android.permission.INSTALL_PACKAGES">
+            <intent-filter>
+                <action android:name="com.android.vending.INSTALL_REFERRER"/>
+            </intent-filter>
+        </receiver>
+        <service android:enabled="true" android:exported="false" android:name="com.google.android.gms.measurement.AppMeasurementService"/>
+        <service android:enabled="true" android:exported="false" android:name="com.google.android.gms.measurement.AppMeasurementJobService" android:permission="android.permission.BIND_JOB_SERVICE"/>
+        <receiver android:exported="true" android:name="com.google.firebase.iid.FirebaseInstanceIdReceiver" android:permission="com.google.android.c2dm.permission.SEND">
+            <intent-filter>
+                <action android:name="com.google.android.c2dm.intent.RECEIVE"/>
+                <category android:name="chat.ola.vn"/>
+            </intent-filter>
+        </receiver>
+        <service android:exported="true" android:name="com.google.firebase.iid.FirebaseInstanceIdService">
+            <intent-filter android:priority="-500">
+                <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
+            </intent-filter>
+        </service>
+        <activity android:exported="false" android:name="com.google.android.gms.common.api.GoogleApiActivity" android:theme="@android:style/Theme.Translucent.NoTitleBar"/>
+        <provider android:authorities="chat.ola.vn.firebaseinitprovider" android:exported="false" android:initOrder="100" android:name="com.google.firebase.provider.FirebaseInitProvider"/>
+        <activity android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize" android:exported="false" android:name="com.google.android.gms.ads.AdActivity" android:theme="@android:style/Theme.Translucent"/>
+        <activity android:name="com.facebook.CustomTabMainActivity"/>
+        <provider android:authorities="chat.ola.vn.FacebookInitProvider" android:exported="false" android:name="com.facebook.internal.FacebookInitProvider"/>
+    </application>
+</manifest>

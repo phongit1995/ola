@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:ads="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:id="@+id/conversationViewLayout"
+    android:background="@color/white"
+    android:padding="0dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+    <FrameLayout
+        android:gravity="left"
+        android:id="@+id/adMobNativeView"
+        android:paddingLeft="@dimen/metric.16dp"
+        android:paddingTop="0dp"
+        android:paddingRight="@dimen/metric.16dp"
+        android:paddingBottom="0dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+    <View
+        android:id="@+id/bottomDividerView"
+        android:background="@color/colorTextBlackDivider"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginLeft="@dimen/metric.16dp"
+        android:layout_marginRight="@dimen/metric.16dp"/>
+</LinearLayout>

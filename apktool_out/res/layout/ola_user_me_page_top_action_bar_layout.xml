@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:id="@id/olaTopActionBarViewLayout" android:paddingLeft="@dimen/metric.8dp" android:paddingTop="@dimen/metric.4dp" android:paddingRight="@dimen/metric.16dp" android:paddingBottom="@dimen/metric.10dp" android:layout_width="match_parent" style="@style/defaultStyle.actionBar.background"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <ImageView android:id="@id/olaActionBarBackImageView" android:layout_width="wrap_content" android:layout_height="match_parent" android:layout_marginRight="@dimen/metric.8dp" android:src="@drawable/ic_action_back" android:scaleType="centerInside" android:adjustViewBounds="true" />
+    <LinearLayout android:focusableInTouchMode="true" android:layout_width="0.0dp" android:layout_height="wrap_content" android:layout_weight="1.0" style="@style/defaultStyle.edittext.small.border.light">
+        <ImageView android:layout_gravity="center" android:layout_width="@dimen/metric.16dp" android:layout_height="@dimen/metric.16dp" android:src="@drawable/ic_action_search_small" android:adjustViewBounds="true" />
+        <chat.ola.vn.view.OlaQuickTypingSuggestedText android:textSize="@dimen/text.size.body1" android:textColor="@color/white" android:textColorHint="@color/colorTextWhiteHintOrDisable" android:layout_gravity="left|center" android:id="@id/searchEditText" android:padding="0.0dp" android:layout_width="0.0dp" android:layout_height="match_parent" android:layout_marginLeft="@dimen/metric.4dp" android:hint="@string/string_enter_nick_name_or_clan" android:maxLines="1" android:selectAllOnFocus="true" android:layout_weight="1.0" android:inputType="textNoSuggestions" android:imeOptions="actionSearch" style="@style/defaultStyle.edittext.nobackground" />
+    </LinearLayout>
+</LinearLayout>

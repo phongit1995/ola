@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="vertical" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout android:padding="@dimen/metric.4dp" android:layout_width="match_parent" android:layout_height="wrap_content" style="?dialog.header">
+        <chat.ola.vn.view.OlaSquareHeightCachedImageView android:id="@id/imgDialogIcon" android:layout_width="@dimen/general.dialog.icon.thumb.size" android:layout_height="@dimen/general.dialog.icon.thumb.size" android:src="@drawable/ola_logo_trans" android:scaleType="centerInside" android:adjustViewBounds="true" />
+        <chat.ola.vn.view.AutoScrollTextView android:id="@id/txtItemTitle" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginLeft="@dimen/metric.4dp" style="?dialog.header.title.single" />
+    </LinearLayout>
+    <FrameLayout android:id="@id/Anchor" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginLeft="@dimen/metric.8dp" android:layout_marginTop="@dimen/metric.8dp" android:layout_marginRight="@dimen/metric.8dp">
+        <EditText android:id="@id/txtMeItemContent" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="@string/button_group" android:maxLines="1" android:selectAllOnFocus="true" android:inputType="textCapWords|textNoSuggestions" android:dropDownAnchor="@id/Anchor" android:imeOptions="actionDone" style="?common.editText" />
+    </FrameLayout>
+    <LinearLayout android:id="@id/linearFooter" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_margin="@dimen/metric.8dp" android:layout_marginTop="25.0dp">
+        <Button android:id="@id/btnButton1" android:layout_width="0.0dp" android:layout_height="match_parent" android:layout_marginRight="@dimen/metric.4dp" android:layout_weight="1.0" style="@style/defaultStyle.button.green" />
+        <Button android:id="@id/btnButton2" android:layout_width="0.0dp" android:layout_height="match_parent" android:layout_marginLeft="@dimen/metric.4dp" android:text="@string/string_cancel" android:layout_weight="1.0" style="?commont.button" />
+    </LinearLayout>
+</LinearLayout>

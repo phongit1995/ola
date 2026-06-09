@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout android:layout_gravity="center_horizontal" android:orientation="vertical" android:id="@id/linearYoutubeSpan" android:background="@color/white" android:layout_width="match_parent" android:layout_height="wrap_content" android:baselineAligned="false"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <chat.ola.vn.view.OlaRatioImageView android:id="@id/imgMeYoutubeThumbnail1" android:layout_width="match_parent" android:layout_height="wrap_content" android:scaleType="centerCrop" android:cropToPadding="true" />
+    <LinearLayout android:layout_gravity="bottom" android:orientation="horizontal" android:id="@id/meYouTubeInfo" android:background="@color/translucent_black_60_percent" android:padding="@dimen/metric.4dp" android:layout_width="match_parent" android:layout_height="wrap_content">
+        <ImageView android:layout_gravity="left|center" android:id="@id/imgMeYoutubeThumbnailPlayIcon" android:layout_width="wrap_content" android:layout_height="wrap_content" android:src="@drawable/ic_play_media" android:scaleType="centerInside" />
+        <LinearLayout android:layout_gravity="left|center" android:orientation="vertical" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginLeft="@dimen/metric.4dp">
+            <TextView android:textSize="@dimen/text.size.caption" android:textStyle="bold" android:textColor="@color/white" android:ellipsize="end" android:id="@id/meYouTubeTitle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:maxLines="1" />
+            <TextView android:textSize="@dimen/text.size.caption" android:textColor="@color/colorTextWhiteHintOrDisable" android:ellipsize="end" android:id="@id/meYouTubeDuration" android:layout_width="wrap_content" android:layout_height="wrap_content" android:maxLines="1" />
+        </LinearLayout>
+    </LinearLayout>
+    <ProgressBar android:layout_gravity="center" android:id="@id/autoPlayVideoViewLoading" android:visibility="gone" android:layout_width="@dimen/mall.progress.loading.size" android:layout_height="@dimen/mall.progress.loading.size" style="@style/defaultStyle.progresswatting" />
+</FrameLayout>

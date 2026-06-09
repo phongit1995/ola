@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:gravity="center" android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="wrap_content"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <chat.ola.vn.view.OlaCachedImageView android:id="@id/imgMeAvatarThumbnail" android:layout_width="@dimen/me.info.avatar.thumbnail.me.size" android:layout_height="@dimen/me.info.avatar.thumbnail.me.size" android:src="@drawable/ic_contact_photo" />
+    <LinearLayout android:orientation="vertical" android:paddingLeft="@dimen/metric.2dp" android:layout_width="0.0dp" android:layout_height="match_parent" android:layout_weight="1.0">
+        <TextView android:id="@id/txtItemTitle" android:focusable="false" android:layout_width="match_parent" android:layout_height="wrap_content" android:maxLines="1" style="?contact.item.title" />
+        <TextView android:id="@id/txtItemSubTitle" android:focusable="false" android:layout_width="match_parent" android:layout_height="wrap_content" android:maxLines="1" style="?contact.item.subTitle" />
+    </LinearLayout>
+    <CheckBox android:id="@id/ckbItemSelect" android:focusable="false" android:focusableInTouchMode="false" android:clickable="false" android:layout_width="wrap_content" android:layout_height="wrap_content" android:button="?commont.checkbox.button" />
+</LinearLayout>

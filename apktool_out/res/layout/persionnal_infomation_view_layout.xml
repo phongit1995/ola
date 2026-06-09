@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout android:orientation="vertical" android:background="@color/white" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <ScrollView android:layout_gravity="top" android:id="@id/scrollView1" android:paddingTop="@dimen/metric.topbar.noshadow.42dp" android:layout_width="match_parent" android:layout_height="match_parent">
+        <LinearLayout android:orientation="vertical" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="@dimen/metric.8dp">
+            <LinearLayout android:orientation="vertical" android:padding="@dimen/metric.16dp" android:layout_width="match_parent" android:layout_height="wrap_content">
+                <LinearLayout android:orientation="vertical" android:layout_width="match_parent" android:layout_height="wrap_content">
+                    <TextView android:gravity="left|center" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/string_first_and_last_name" android:maxLines="1" style="@style/defaultStyle.text.caption" />
+                    <LinearLayout android:gravity="center_vertical" android:layout_gravity="center_vertical" android:layout_width="match_parent" android:layout_height="wrap_content">
+                        <EditText android:textColorHint="@color/red" android:gravity="left|center" android:id="@id/fullnameEditText" android:background="@color/transparent" android:layout_width="0.0dp" android:layout_height="wrap_content" android:layout_marginTop="@dimen/metric.4dp" android:hint="@string/hint_enter_fullname" android:maxLines="1" android:layout_weight="1.0" style="@style/defaultStyle.text.body1" />
+                        <ImageView android:id="@id/fullnameEditImageView" android:background="@drawable/bg_round_rect_black_translucent" android:padding="@dimen/metric.2dp" android:layout_width="@dimen/metric.20dp" android:layout_height="@dimen/metric.20dp" android:src="@drawable/ic_action_edit" />
+                    </LinearLayout>
+                </LinearLayout>
+                <View android:background="@color/colorTextBlackDivider" android:layout_width="match_parent" android:layout_height="1.0px" android:layout_marginTop="@dimen/metric.16dp" />
+                <LinearLayout android:orientation="vertical" android:id="@id/phoneNumberViewLayout" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="@dimen/metric.16dp">
+                    <TextView android:gravity="left|center" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/string_phone_number" android:maxLines="1" style="@style/defaultStyle.text.caption" />
+                    <LinearLayout android:gravity="center_vertical" android:layout_gravity="center_vertical" android:layout_width="match_parent" android:layout_height="wrap_content">
+                        <EditText android:textColorHint="@color/red" android:gravity="left|center" android:id="@id/txtPhoneNumber" android:background="@color/transparent" android:layout_width="0.0dp" android:layout_height="wrap_content" android:layout_marginTop="@dimen/metric.4dp" android:hint="@string/hint_enter_phone_number" android:maxLines="1" android:layout_weight="1.0" android:inputType="phone" style="@style/defaultStyle.text.body1" />
+                        <ImageView android:layout_gravity="right|center" android:id="@id/phoneNumberEditImageView" android:background="@drawable/bg_round_rect_black_translucent" android:padding="@dimen/metric.2dp" android:layout_width="@dimen/metric.20dp" android:layout_height="@dimen/metric.20dp" android:src="@drawable/ic_action_edit" />
+                    </LinearLayout>
+                    <TextView android:gravity="left|center" android:id="@id/phoneStateTextView" android:visibility="gone" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="@dimen/metric.4dp" android:text="@string/string_phone_number" android:maxLines="1" style="@style/defaultStyle.text.caption" />
+                </LinearLayout>
+                <View android:background="@color/colorTextBlackDivider" android:layout_width="match_parent" android:layout_height="1.0dp" android:layout_marginTop="@dimen/metric.16dp" />
+                <LinearLayout android:orientation="vertical" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="@dimen/metric.16dp">
+                    <TextView android:gravity="left|center" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/string_birthday" android:maxLines="1" style="@style/defaultStyle.text.caption" />
+                    <LinearLayout android:gravity="center_vertical" android:layout_gravity="center_vertical" android:layout_width="match_parent" android:layout_height="wrap_content">
+                        <TextView android:textColorHint="@color/red" android:gravity="left|center" android:id="@id/txtMeUserBirthday" android:background="@color/transparent" android:layout_width="0.0dp" android:layout_height="wrap_content" android:layout_marginTop="@dimen/metric.4dp" android:hint="@string/hint_enter_birthday" android:maxLines="1" android:layout_weight="1.0" style="@style/defaultStyle.text.body1" />
+                        <ImageView android:id="@id/birthdayEditImageView" android:background="@drawable/bg_round_rect_black_translucent" android:padding="@dimen/metric.2dp" android:layout_width="@dimen/metric.20dp" android:layout_height="@dimen/metric.20dp" android:src="@drawable/ic_action_edit" />
+                    </LinearLayout>
+                </LinearLayout>
+                <View android:background="@color/colorTextBlackDivider" android:layout_width="match_parent" android:layout_height="1.0dp" android:layout_marginTop="@dimen/metric.16dp" />
+                <LinearLayout android:orientation="vertical" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="@dimen/metric.16dp">
+                    <TextView android:gravity="left|center" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/string_sex" android:maxLines="1" style="@style/defaultStyle.text.caption" />
+                    <LinearLayout android:gravity="center_vertical" android:layout_gravity="center_vertical" android:layout_width="match_parent" android:layout_height="wrap_content">
+                        <TextView android:gravity="left|center" android:id="@id/txtSex" android:layout_width="0.0dp" android:layout_height="wrap_content" android:layout_marginTop="@dimen/metric.4dp" android:maxLines="1" android:layout_weight="1.0" style="@style/defaultStyle.text.body1" />
+                        <ImageView android:id="@id/genderEditImageView" android:background="@drawable/bg_round_rect_black_translucent" android:padding="@dimen/metric.2dp" android:layout_width="@dimen/metric.20dp" android:layout_height="@dimen/metric.20dp" android:src="@drawable/ic_action_edit" />
+                    </LinearLayout>
+                </LinearLayout>
+                <View android:background="@color/colorTextBlackDivider" android:layout_width="match_parent" android:layout_height="1.0dp" android:layout_marginTop="@dimen/metric.16dp" />
+                <LinearLayout android:orientation="vertical" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="@dimen/metric.16dp">
+                    <TextView android:gravity="left|center" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/string_relationship" android:maxLines="1" style="@style/defaultStyle.text.caption" />
+                    <TextView android:gravity="left|center" android:id="@id/txtMarry" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="@dimen/metric.4dp" android:maxLines="1" style="@style/defaultStyle.text.body1" />
+                </LinearLayout>
+                <View android:background="@color/colorTextBlackDivider" android:layout_width="match_parent" android:layout_height="1.0dp" android:layout_marginTop="@dimen/metric.16dp" />
+                <LinearLayout android:orientation="vertical" android:id="@id/passwordViewLayout" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="@dimen/metric.16dp">
+                    <TextView android:gravity="left|center" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/string_password" android:maxLines="1" style="@style/defaultStyle.text.caption" />
+                    <TextView android:gravity="left|center" android:id="@id/passwordStateTextView" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="@dimen/metric.4dp" android:text="@string/string_tap_to_change_password" android:maxLines="1" style="@style/defaultStyle.text.body1" />
+                </LinearLayout>
+                <View android:background="@color/colorTextBlackDivider" android:layout_width="match_parent" android:layout_height="1.0dp" android:layout_marginTop="@dimen/metric.16dp" />
+                <LinearLayout android:orientation="vertical" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="@dimen/metric.16dp">
+                    <TextView android:gravity="left|center" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/string_join_ola" android:maxLines="1" style="@style/defaultStyle.text.caption" />
+                    <TextView android:gravity="left|center" android:id="@id/txtJoinOlaDate" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="@dimen/metric.4dp" android:maxLines="1" style="@style/defaultStyle.text.body1" />
+                </LinearLayout>
+            </LinearLayout>
+            <Button android:id="@id/btnLinkFacebookAccount" android:visibility="visible" android:layout_width="match_parent" android:layout_height="@dimen/metric.48dp" android:layout_marginLeft="@dimen/metric.16dp" android:layout_marginTop="@dimen/metric.16dp" android:layout_marginRight="@dimen/metric.16dp" android:text="@string/string_link_facebook_account" style="@style/defaultStyle.button" />
+            <Button android:textColor="@color/white" android:id="@id/btnSupportService" android:layout_width="match_parent" android:layout_height="@dimen/metric.48dp" android:layout_marginLeft="@dimen/metric.16dp" android:layout_marginTop="@dimen/metric.16dp" android:layout_marginRight="@dimen/metric.16dp" android:text="@string/string_customer_support" style="@style/defaultStyle.button.green" />
+            <View android:background="@color/transparent" android:layout_width="match_parent" android:layout_height="@dimen/metric.48dp" />
+        </LinearLayout>
+    </ScrollView>
+    <include layout="@layout/ola_top_action_bar_center_title_layout" />
+</FrameLayout>

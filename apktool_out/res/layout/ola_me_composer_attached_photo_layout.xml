@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout android:background="@drawable/bg_shadown_border" android:layout_width="wrap_content" android:layout_height="wrap_content"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <chat.ola.vn.view.OlaCachedImageView android:id="@id/photoImageView" android:layout_width="@dimen/metric.164dp" android:layout_height="@dimen/metric.164dp" android:scaleType="centerCrop" android:cropToPadding="true" />
+    <ImageView android:layout_gravity="center" android:id="@id/videoPlayImageView" android:visibility="gone" android:layout_width="@dimen/metric.48dp" android:layout_height="@dimen/metric.48dp" android:src="@drawable/ic_play_media" android:scaleType="centerInside" />
+    <ImageView android:layout_gravity="right|bottom" android:id="@id/deletePhotoImageView" android:background="@drawable/bg_round_rect_black_translucent" android:padding="@dimen/metric.2dp" android:layout_width="@dimen/metric.24dp" android:layout_height="@dimen/metric.24dp" android:layout_margin="@dimen/metric.2dp" android:src="@drawable/ic_action_quit" />
+    <ProgressBar android:layout_gravity="center" android:id="@id/photoLoadingProgressBar" android:visibility="gone" android:layout_width="@dimen/metric.36dp" android:layout_height="@dimen/metric.36dp" />
+</FrameLayout>

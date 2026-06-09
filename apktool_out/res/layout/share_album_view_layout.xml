@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout android:gravity="bottom" android:orientation="horizontal" android:id="@id/actionBar" android:clickable="true" android:layout_width="match_parent" style="@style/defaultStyle.actionBar.background">
+        <LinearLayout android:id="@id/btnActionIconSpan" android:layout_width="wrap_content" android:layout_height="match_parent" android:layout_marginLeft="@dimen/metric.4dp">
+            <ImageView android:id="@id/imgActionBackIndicate" android:layout_width="wrap_content" android:layout_height="match_parent" android:layout_marginTop="@dimen/metric.16dp" android:layout_marginBottom="@dimen/metric.16dp" android:src="@drawable/ic_action_back" android:scaleType="centerInside" android:adjustViewBounds="true" />
+            <ImageView android:id="@id/imgActionIcon" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="@dimen/metric.4dp" android:layout_marginTop="@dimen/metric.8dp" android:layout_marginBottom="@dimen/metric.8dp" android:src="@drawable/ic_media_photo" android:scaleType="centerInside" android:adjustViewBounds="true" />
+        </LinearLayout>
+        <LinearLayout android:gravity="left|center" android:layout_width="0.0dp" android:layout_height="match_parent" android:layout_marginLeft="@dimen/metric.8dp" android:layout_weight="1.0">
+            <ImageView android:id="@id/btnTabAll" android:layout_width="wrap_content" android:layout_height="match_parent" android:src="@drawable/ic_action_tab_share" android:scaleType="centerInside" style="?actionBar.tab.button" />
+            <View android:background="#32b2b2b2" android:layout_width="1.0px" android:layout_height="24.0dp" />
+            <ImageView android:id="@id/btnTabAlbum" android:layout_width="wrap_content" android:layout_height="match_parent" android:src="@drawable/ic_action_tab_album" android:scaleType="centerInside" style="?actionBar.tab.button" />
+        </LinearLayout>
+        <LinearLayout android:id="@id/shareAlbumActionGroup" android:layout_width="wrap_content" android:layout_height="match_parent">
+            <ImageView android:id="@id/buttonClose" android:layout_width="@dimen/metric.48dp" android:layout_height="match_parent" android:src="@drawable/ic_action_quit" style="?actionBar.button" />
+            <ImageView android:id="@id/buttonMore" android:layout_width="@dimen/metric.36dp" android:layout_height="match_parent" android:src="@drawable/ic_more_white" style="?actionBar.button" />
+        </LinearLayout>
+    </LinearLayout>
+    <ListView android:id="@id/mediaGridView" android:scrollbars="none" android:fadingEdge="none" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="@dimen/general.actionbar.shadow.height" android:drawSelectorOnTop="false" android:cacheColorHint="@color/transparent" android:divider="@null" android:layout_below="@id/actionBar" />
+    <ProgressBar android:id="@id/progressBar" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_centerHorizontal="true" android:layout_centerVertical="true" style="@style/defaultStyle.progresswatting" />
+</RelativeLayout>

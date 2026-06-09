@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="false" android:state_selected="false" android:state_pressed="false">
+        <shape>
+            <solid android:color="@color/transparent" />
+        </shape>
+    </item>
+    <item android:state_focused="false" android:state_selected="true" android:state_pressed="false">
+        <shape>
+            <solid android:color="@color/translucent_green_color_20_percent" />
+            <stroke android:width="4.0dp" android:color="@color/colorOlaAccent" />
+        </shape>
+    </item>
+    <item android:state_focused="true" android:state_selected="false" android:state_pressed="false">
+        <shape>
+            <solid android:color="@color/transparent" />
+        </shape>
+    </item>
+    <item android:state_focused="true" android:state_selected="true" android:state_pressed="false">
+        <shape>
+            <solid android:color="@color/translucent_green_color_20_percent" />
+            <stroke android:width="4.0dp" android:color="@color/colorOlaAccent" />
+        </shape>
+    </item>
+    <item android:state_selected="true" android:state_pressed="true">
+        <shape>
+            <solid android:color="@color/translucent_green_color_20_percent" />
+            <stroke android:width="4.0dp" android:color="@color/colorOlaAccent" />
+        </shape>
+    </item>
+    <item android:state_pressed="true">
+        <shape>
+            <solid android:color="@color/translucent_top_tab_select_color_50_percent" />
+        </shape>
+    </item>
+</selector>

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:gravity="center" android:background="@color/translucent_white_80_percent" android:padding="@dimen/metric.8dp" android:layout_width="match_parent" android:layout_height="wrap_content"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <Button android:gravity="center" android:id="@id/btnChatGroupInvite" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/string_invite_more" style="@style/defaultStyle.button.green" />
+</LinearLayout>

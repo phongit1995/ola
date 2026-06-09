@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="abc_action_bar_home_description">Navegar para a página inicial</string>
+    <string name="abc_action_bar_up_description">Navegar para cima</string>
+    <string name="abc_action_menu_overflow_description">Mais opções</string>
+    <string name="abc_action_mode_done">Concluído</string>
+    <string name="abc_activity_chooser_view_see_all">Ver tudo</string>
+    <string name="abc_activitychooserview_choose_application">Selecione um app</string>
+    <string name="abc_capital_off">DESATIVAR</string>
+    <string name="abc_capital_on">ATIVAR</string>
+    <string name="abc_search_hint">Pesquisar...</string>
+    <string name="abc_searchview_description_clear">Limpar consulta</string>
+    <string name="abc_searchview_description_query">Consulta de pesquisa</string>
+    <string name="abc_searchview_description_search">Pesquisar</string>
+    <string name="abc_searchview_description_submit">Enviar consulta</string>
+    <string name="abc_searchview_description_voice">Pesquisa por voz</string>
+    <string name="abc_shareactionprovider_share_with">Compartilhar com</string>
+    <string name="abc_shareactionprovider_share_with_application">Compartilhar com %s</string>
+    <string name="abc_toolbar_collapse_description">Recolher</string>
+    <string name="com_accountkit_account_verified">Conta verificada!</string>
+    <string name="com_accountkit_button_begin">Iniciar</string>
+    <string name="com_accountkit_button_cancel">Cancelar</string>
+    <string name="com_accountkit_button_confirm">Confirmar</string>
+    <string name="com_accountkit_button_continue">Continuar</string>
+    <string name="com_accountkit_button_edit">EDITAR</string>
+    <string name="com_accountkit_button_log_in">Entrar</string>
+    <string name="com_accountkit_button_next">Avançar</string>
+    <string name="com_accountkit_button_resend_code_in">Enviar SMS novamente em %1$d</string>
+    <string name="com_accountkit_button_resend_sms">Enviar SMS novamente</string>
+    <string name="com_accountkit_button_send">Enviar</string>
+    <string name="com_accountkit_button_send_code_in_call">Receber uma ligação</string>
+    <string name="com_accountkit_button_send_code_in_call_details">Receber o código por uma ligação de voz</string>
+    <string name="com_accountkit_button_send_code_in_call_from_facebook_details">Receba o código por uma ligação de voz do Facebook</string>
+    <string name="com_accountkit_button_send_code_in_fb">Receber um código no Facebook</string>
+    <string name="com_accountkit_button_send_code_in_fb_details">O código será recebido em uma notificação do Facebook</string>
+    <string name="com_accountkit_button_start">Iniciar</string>
+    <string name="com_accountkit_button_start_over">Tentar novamente</string>
+    <string name="com_accountkit_button_submit">Enviar</string>
+    <string name="com_accountkit_check_email">Abra seu email</string>
+    <string name="com_accountkit_code_sent_to">Verifique seu número de celular %1$s</string>
+    <string name="com_accountkit_confirmation_code_agreement">Toque em %1$s para aceitar os &lt;a href=%2$s>Termos&lt;/a>, a &lt;a href=%3$s>Política de Dados&lt;/a> e o &lt;a href=%4$s>uso de cookies&lt;/a> do Facebook.</string>
+    <string name="com_accountkit_confirmation_code_agreement_app_privacy_policy">Toque em %1$s para aceitar os &lt;a href=%2$s>Termos&lt;/a>, a &lt;a href=%3$s>Política de Dados&lt;/a> e o &lt;a href=%4$s>uso de cookies&lt;/a> do Facebook e a &lt;a href=%5$s>Política de Privacidade&lt;/a> do aplicativo %6$s.</string>
+    <string name="com_accountkit_confirmation_code_agreement_app_privacy_policy_and_terms">Toque em %1$s para aceitar os &lt;a href=%2$s>Termos&lt;/a>, a &lt;a href=%3$s>Política de Dados&lt;/a> e o &lt;a href=%4$s>uso de cookies&lt;/a> do Facebook e a &lt;a href=%5$s>Política de Privacidade&lt;/a> e os &lt;a href=%6$s>Termos de Serviço&lt;/a> do aplicativo %7$s.</string>
+    <string name="com_accountkit_confirmation_code_agreement_app_privacy_policy_and_terms_instant_verification">Toque em %1$s para aceitar os &lt;a href=%2$s>Termos&lt;/a>, a &lt;a href=%3$s>Política de Dados&lt;/a> e o &lt;a href=%4$s>uso de cookies&lt;/a> do Facebook, bem como a &lt;a href=%5$s>Política de Privacidade&lt;/a> e os &lt;a href=%6$s>Termos de Serviço&lt;/a> do aplicativo %7$s. &lt;a href=%8$s>Saiba mais&lt;/a> sobre como sua conta foi verificada.</string>
+    <string name="com_accountkit_confirmation_code_agreement_app_privacy_policy_instant_verification">Toque em %1$s para aceitar os &lt;a href=%2$s>Termos&lt;/a>, a &lt;a href=%3$s>Política de Dados&lt;/a> e o &lt;a href=%4$s>uso de cookies&lt;/a> do Facebook e a &lt;a href=%5$s>Política de Privacidade&lt;/a> do aplicativo %6$s. &lt;a href=%7$s>Saiba mais&lt;/a> sobre como sua conta foi verificada.</string>
+    <string name="com_accountkit_confirmation_code_agreement_instant_verification">Toque em %1$s para aceitar os &lt;a href=%2$s>Termos&lt;/a>, a &lt;a href=%3$s>Política de Dados&lt;/a> e o &lt;a href=%4$s>uso de cookies&lt;/a> do Facebook. &lt;a href=%5$s>Saiba mais&lt;/a> sobre como sua conta foi verificada.</string>
+    <string name="com_accountkit_confirmation_code_text">Eu não recebi um código</string>
+    <string name="com_accountkit_confirmation_code_title">Insira seu código</string>
+    <string name="com_accountkit_email_invalid">Este email está incorreto. Tente novamente.</string>
+    <string name="com_accountkit_email_loading_title">Verificando seu endereço de email...</string>
+    <string name="com_accountkit_email_login_retry_title">Confirme seu email</string>
+    <string name="com_accountkit_email_login_text">Toque em %1$s para receber uma confirmação por email do Account Kit do Facebook para ajudar você a usar o aplicativo %2$s. Você não precisa de uma conta do Facebook para usá-lo. &lt;a href=%3$s>Saiba como o Facebook usa suas informações&lt;/a>.</string>
+    <string name="com_accountkit_email_login_title">Insira seu endereço de email</string>
+    <string name="com_accountkit_email_not_received">Reenviar email</string>
+    <string name="com_accountkit_email_verify_title">Abra o email e confirme seu endereço de email</string>
+    <string name="com_accountkit_enter_code_sent_to">Insira o código enviado para %1$s</string>
+    <string name="com_accountkit_error_title">Ocorreu um problema no sistema. Tente novamente.</string>
+    <string name="com_accountkit_facebook_code_entry_title">Insira seu código do Facebook</string>
+    <string name="com_accountkit_logging_in">Entrando…</string>
+    <string name="com_accountkit_other_ways_to_get_code">Outras formas de receber o código:</string>
+    <string name="com_accountkit_phone_error_title">Insira um número de celular válido.</string>
+    <string name="com_accountkit_phone_loading_title">Verificando seu número...</string>
+    <string name="com_accountkit_phone_login_retry_title">Confirme seu número de celular</string>
+    <string name="com_accountkit_phone_login_text">Toque em %1$s para verificar sua conta com Account Kit com tecnologia do Facebook. Você não precisa de uma conta do Facebook para usá-lo. Um SMS pode ser enviado para verificar seu número. Podem ser cobradas tarifas de dados e de mensagens. &lt;a href=%2$s>Saiba como o Facebook usa suas informações&lt;/a>.</string>
+    <string name="com_accountkit_phone_login_title">Insira seu número de celular</string>
+    <string name="com_accountkit_phone_sending_code_on_fb_title">Enviando o código no Facebook...</string>
+    <string name="com_accountkit_phone_update_title">Insira o número do seu celular</string>
+    <string name="com_accountkit_resend_check">Verifique sua caixa de entrada de SMS</string>
+    <string name="com_accountkit_resend_email_text">Enviar novo email</string>
+    <string name="com_accountkit_resend_title">Se você não recebeu um código:</string>
+    <string name="com_accountkit_return_title">Retornando para o aplicativo %1$s...</string>
+    <string name="com_accountkit_sent_title">Enviado!</string>
+    <string name="com_accountkit_success_title">Verificado!</string>
+    <string name="com_accountkit_toolbar_title">Entrar no aplicativo %1$s</string>
+    <string name="com_accountkit_verify_confirmation_code_title">Não foi possível verificar seu código. Tente novamente:</string>
+    <string name="com_accountkit_verify_title">Verificando seu código...</string>
+    <string name="com_accountkit_voice_call_code_entry_title">Insira o código recebido na ligação de voz</string>
+    <string name="com_facebook_device_auth_instructions">Acesse &lt;b>facebook.com/device&lt;/b> e insira o código mostrado acima.</string>
+    <string name="com_facebook_image_download_unknown_error">Erro inesperado ao baixar uma imagem.</string>
+    <string name="com_facebook_internet_permission_error_message">O login do WebView exige permissão da INTERNET</string>
+    <string name="com_facebook_internet_permission_error_title">Erro AndroidManifest</string>
+    <string name="com_facebook_like_button_liked">Curtiu</string>
+    <string name="com_facebook_like_button_not_liked">Curtir</string>
+    <string name="com_facebook_loading">Carregando...</string>
+    <string name="com_facebook_loginview_cancel_action">Cancelar</string>
+    <string name="com_facebook_loginview_log_in_button">Entrar</string>
+    <string name="com_facebook_loginview_log_in_button_continue">Continuar com o Facebook</string>
+    <string name="com_facebook_loginview_log_in_button_long">Entrar com o Facebook</string>
+    <string name="com_facebook_loginview_log_out_action">Sair</string>
+    <string name="com_facebook_loginview_log_out_button">Sair</string>
+    <string name="com_facebook_loginview_logged_in_as">Conectado como: %1$s</string>
+    <string name="com_facebook_loginview_logged_in_using_facebook">Conectado usando o Facebook</string>
+    <string name="com_facebook_send_button_text">Enviar</string>
+    <string name="com_facebook_share_button_text">Compartilhar</string>
+    <string name="com_facebook_smart_device_instructions">Para conectar sua conta, abra o aplicativo do Facebook no seu dispositivo móvel e verifique se há notificações.</string>
+    <string name="com_facebook_smart_device_instructions_or">- OU -</string>
+    <string name="com_facebook_smart_login_confirmation_cancel">Não é você?</string>
+    <string name="com_facebook_smart_login_confirmation_continue_as">Continuar como %1$s</string>
+    <string name="com_facebook_smart_login_confirmation_title">Confirmar login</string>
+    <string name="com_facebook_tooltip_default">Você está no controle — escolha quais informações você quer compartilhar com os aplicativos.</string>
+    <string name="search_menu_title">Pesquisar</string>
+    <string name="status_bar_notification_info_overflow">999+</string>
+</resources>

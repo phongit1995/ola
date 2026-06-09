@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.mg.ola.common.widget.SoftKeyLinearLayout android:orientation="vertical" android:id="@id/wrapper" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:layout_width="match_parent" style="@style/defaultStyle.actionBar.background">
+        <ImageView android:id="@id/actionButtonBack" android:layout_width="@dimen/metric.36dp" android:layout_height="match_parent" android:src="@drawable/ic_action_back" style="?actionBar.button" />
+        <FrameLayout android:layout_width="0.0dp" android:layout_height="match_parent" android:layout_weight="1.0">
+            <EditText android:gravity="left|bottom" android:id="@id/txtFilterInput" android:background="@drawable/textfield_action_input" android:layout_width="match_parent" android:layout_height="match_parent" android:hint="@string/general_hint_nick" android:maxLines="1" android:selectAllOnFocus="true" android:imeOptions="actionSend" style="?common.editText" />
+            <ImageView android:layout_gravity="right|center" android:id="@id/btnInputClear" android:padding="@dimen/metric.4dp" android:layout_width="@dimen/metric.36dp" android:layout_height="match_parent" android:src="@drawable/ic_input_clear" android:scaleType="centerInside" />
+        </FrameLayout>
+        <ImageView android:id="@id/actionButtonOption" android:layout_width="@dimen/metric.36dp" android:layout_height="match_parent" android:src="@drawable/ic_more_white" style="?actionBar.button" />
+    </LinearLayout>
+    <com.mg.ola.common.widget.IndexableListView android:id="@id/lvContact" android:layout_width="match_parent" android:layout_height="match_parent" android:fastScrollEnabled="true" style="?commont.list" />
+</com.mg.ola.common.widget.SoftKeyLinearLayout>

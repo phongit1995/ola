@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:gravity="center"
+    android:orientation="horizontal"
+    android:background="@color/translucent_white_80_percent"
+    android:padding="@dimen/metric.16dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+    <ImageView
+        android:layout_width="@dimen/metric.36dp"
+        android:layout_height="@dimen/metric.36dp"
+        android:src="@drawable/com_facebook_button_icon_blue"
+        android:scaleType="centerCrop"/>
+    <TextView
+        android:id="@+id/btnInviteFriend"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/metric.16dp"
+        android:text="@string/string_invite_friend"
+        style="@style/defaultStyle.text.headline"/>
+</LinearLayout>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="horizontal" android:background="#303030" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <chat.ola.vn.view.OlaCachedImageView android:id="@id/imgPlayerCover" android:padding="@dimen/metric.1dp" android:layout_width="@dimen/metric.72dp" android:layout_height="match_parent" android:src="@drawable/fallback_cover" android:scaleType="fitCenter" android:adjustViewBounds="true" android:cropToPadding="true" />
+    <LinearLayout android:orientation="vertical" android:layout_width="0.0dp" android:layout_height="match_parent" android:layout_margin="@dimen/metric.4dp" android:layout_weight="1.0">
+        <TextView android:textSize="@dimen/text.size.caption" android:textStyle="bold" android:textColor="@color/white" android:id="@id/txtPlayerTitle" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+        <TextView android:textSize="@dimen/text.size.caption" android:textColor="#72a628" android:id="@id/txtPlayerOwner" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+        <ProgressBar android:id="@id/playerProgress" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="@dimen/metric.4dp" style="?android:progressBarStyleHorizontal" />
+    </LinearLayout>
+    <LinearLayout android:gravity="center" android:orientation="horizontal" android:layout_width="wrap_content" android:layout_height="match_parent" android:layout_marginRight="@dimen/metric.4dp">
+        <ImageView android:id="@id/btnPlayerPrev" android:background="@drawable/btn_transparent_image_selector" android:layout_width="@dimen/metric.36dp" android:layout_height="match_parent" android:src="@drawable/ic_media_prev" android:scaleType="centerInside" android:cropToPadding="true" />
+        <ImageView android:id="@id/btnPlayerPlay" android:background="@drawable/btn_transparent_image_selector" android:layout_width="@dimen/metric.36dp" android:layout_height="match_parent" android:src="@drawable/ic_media_play" android:scaleType="centerInside" android:cropToPadding="true" />
+        <ImageView android:id="@id/btnPlayerNext" android:background="@drawable/btn_transparent_image_selector" android:layout_width="@dimen/metric.36dp" android:layout_height="match_parent" android:src="@drawable/ic_media_next" android:scaleType="centerInside" android:cropToPadding="true" />
+        <ImageView android:id="@id/btnStopPlayer" android:background="@drawable/btn_transparent_image_selector" android:layout_width="@dimen/metric.36dp" android:layout_height="match_parent" android:src="@drawable/ic_menu_close_clear_cancel" android:scaleType="centerInside" android:cropToPadding="true" />
+    </LinearLayout>
+</LinearLayout>

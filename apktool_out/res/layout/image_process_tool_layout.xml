@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <TextView android:gravity="center" android:id="@id/btnAccept" android:layout_width="wrap_content" android:layout_height="wrap_content" android:minWidth="@dimen/metric.48dp" android:text="@string/string_save" android:layout_alignParentLeft="true" android:layout_alignParentTop="true" style="?commont.button" />
+    <TextView android:gravity="center" android:id="@id/btnCancel" android:layout_width="wrap_content" android:layout_height="wrap_content" android:minWidth="@dimen/metric.48dp" android:text="@string/string_cancel" android:layout_alignParentTop="true" android:layout_alignParentRight="true" style="?commont.button" />
+    <Gallery android:id="@id/gallery" android:background="#5affffff" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="@dimen/metric.96dp" android:layout_alignParentBottom="true" />
+</RelativeLayout>

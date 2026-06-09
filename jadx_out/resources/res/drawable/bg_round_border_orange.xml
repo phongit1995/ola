@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape>
+            <solid android:color="@color/transparent"/>
+            <stroke
+                android:width="@dimen/metric.2dp"
+                android:color="@color/orange_color_comment_tag"/>
+            <corners
+                android:topLeftRadius="@dimen/metric.4dp"
+                android:topRightRadius="@dimen/metric.4dp"
+                android:bottomLeftRadius="@dimen/metric.4dp"
+                android:bottomRightRadius="@dimen/metric.4dp"/>
+        </shape>
+    </item>
+</layer-list>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout android:id="@id/advSoftwareFrameLayout" android:paddingLeft="0.0dp" android:paddingTop="2.0dp" android:paddingRight="0.0dp" android:paddingBottom="2.0dp" android:layout_width="match_parent" android:layout_height="wrap_content"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout android:layout_gravity="center" android:orientation="vertical" android:background="@drawable/btn_default_button" android:paddingLeft="0.0dp" android:paddingTop="@dimen/metric.16dp" android:paddingRight="0.0dp" android:paddingBottom="@dimen/metric.16dp" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginLeft="@dimen/metric.4dp" android:layout_marginTop="@dimen/metric.16dp" android:layout_marginRight="@dimen/metric.4dp" android:layout_marginBottom="@dimen/metric.16dp">
+        <TextView android:textSize="@dimen/text.size.caption" android:textStyle="normal" android:textColor="@color/text_color_2" android:gravity="center_vertical" android:layout_gravity="center_vertical" android:paddingLeft="@dimen/metric.16dp" android:paddingTop="@dimen/metric.16dp" android:paddingRight="@dimen/metric.16dp" android:paddingBottom="@dimen/metric.16dp" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/string_related_articles" android:maxLines="1" style="@style/defaultStyle.text.subhead" />
+        <LinearLayout android:layout_gravity="center" android:orientation="vertical" android:paddingLeft="1.0dp" android:paddingTop="@dimen/metric.16dp" android:paddingRight="1.0dp" android:layout_width="match_parent" android:layout_height="wrap_content">
+            <include android:id="@id/relatedArticle1" layout="@layout/rss_article_default_layout" />
+            <include android:id="@id/relatedArticle2" layout="@layout/rss_article_default_layout" />
+            <include android:id="@id/relatedArticle3" layout="@layout/rss_article_default_layout" />
+            <TextView android:textSize="@dimen/text.size.caption" android:textStyle="normal" android:textColor="@color/text_color_1" android:gravity="center" android:id="@id/viewAllTextView" android:padding="@dimen/metric.4dp" android:visibility="visible" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="@dimen/metric.4dp" android:layout_marginBottom="@dimen/metric.4dp" android:text="@string/string_view_all" />
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>

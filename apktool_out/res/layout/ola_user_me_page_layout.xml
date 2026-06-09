@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout android:orientation="vertical" android:id="@id/globalViewLayout" android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <FrameLayout android:paddingTop="@dimen/metric.topbar.noshadow.42dp" android:layout_width="match_parent" android:layout_height="match_parent">
+        <android.support.v4.widget.SwipeRefreshLayout android:id="@id/pullToRefreshLayout" android:layout_width="match_parent" android:layout_height="match_parent">
+            <ListView android:id="@id/pageListView" android:layout_width="match_parent" android:layout_height="match_parent" style="@style/defaultStyle.list.rowSpacing" />
+        </android.support.v4.widget.SwipeRefreshLayout>
+        <ProgressBar android:layout_gravity="center" android:id="@id/wattingProgressBar" android:layout_width="@dimen/metric.48dp" android:layout_height="@dimen/metric.48dp" style="@style/defaultStyle.progresswatting" />
+    </FrameLayout>
+    <include layout="@layout/ola_user_me_page_top_action_bar_layout" />
+    <ImageButton android:layout_gravity="right|bottom" android:id="@id/addConversationImageButton" android:background="@drawable/floating_action_bar_shape" android:padding="@dimen/metric.16dp" android:layout_width="@dimen/metric.56dp" android:layout_height="@dimen/metric.56dp" android:layout_marginRight="@dimen/metric.16dp" android:layout_marginBottom="@dimen/metric.16dp" android:src="@drawable/ic_action_compose_message" android:scaleType="centerInside" android:tint="@android:color/white" />
+</FrameLayout>

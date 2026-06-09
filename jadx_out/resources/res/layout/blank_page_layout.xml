@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <LinearLayout
+        android:gravity="center"
+        android:orientation="vertical"
+        android:background="@drawable/bg_conversation_blank_box"
+        android:layout_width="@dimen/general.dialog.width.max"
+        android:layout_height="wrap_content">
+        <TextView
+            android:textSize="@dimen/text.size.title"
+            android:textStyle="bold"
+            android:textColor="#8ac044"
+            android:gravity="center"
+            android:id="@+id/txtTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ola Me"/>
+        <TextView
+            android:textSize="@dimen/text.size.body1"
+            android:textColor="#ffb500"
+            android:gravity="center"
+            android:id="@+id/txtSubTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/ola_me_slogan"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <Button
+                android:gravity="center"
+                android:id="@+id/btnActive"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/metric.4dp"
+                android:layout_marginTop="@dimen/metric.16dp"
+                android:text="@string/string_view_me"
+                android:layout_weight="1"
+                style="?attr/commont.button"/>
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

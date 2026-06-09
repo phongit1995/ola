@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/dialog_full_holo_light"
+    android:insetLeft="5dp"
+    android:insetRight="5dp"
+    android:insetTop="@dimen/general.dialog.vertical.margin"
+    android:insetBottom="@dimen/general.dialog.vertical.margin"/>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <ListView
+        android:id="@+id/lvBuddyList"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        style="@style/defaultStyle.list.noDivider"/>
+    <ImageButton
+        android:id="@+id/addContactImageButton"
+        android:background="@drawable/floating_action_bar_shape"
+        android:padding="@dimen/metric.16dp"
+        android:layout_width="@dimen/metric.56dp"
+        android:layout_height="@dimen/metric.56dp"
+        android:layout_marginRight="@dimen/metric.16dp"
+        android:layout_marginBottom="@dimen/metric.16dp"
+        android:src="@drawable/ic_add_friend"
+        android:scaleType="centerInside"
+        android:tint="@android:color/white"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"/>
+</RelativeLayout>

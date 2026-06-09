@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:gravity="center" android:orientation="vertical" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="150.0dp" android:animateLayoutChanges="true"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout android:gravity="center_vertical" android:layout_width="match_parent" android:layout_height="wrap_content" style="?dialog.header">
+        <chat.ola.vn.view.AutoScrollTextView android:id="@id/txtItemTitle" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/string_change_status" style="?dialog.header.title" />
+    </LinearLayout>
+    <LinearLayout android:orientation="horizontal" android:background="#c5ea9c" android:padding="@dimen/metric.8dp" android:layout_width="match_parent" android:layout_height="0.0dp" android:layout_weight="1.0">
+        <EditText android:id="@id/txtChatItemStatus" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="@dimen/metric.72dp" android:maxLines="4" android:singleLine="false" android:maxLength="300" android:inputType="textCapSentences|textMultiLine|textNoSuggestions" style="?chatView.item.text.status" />
+    </LinearLayout>
+    <chat.ola.vn.view.OlaGalleryView android:id="@id/mediaContentView" android:background="@color/app_background_color" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="@dimen/metric.96dp" android:fillViewport="true" android:fadeScrollbars="false" />
+    <LinearLayout android:padding="@dimen/metric.8dp" android:layout_width="match_parent" android:layout_height="wrap_content">
+        <Button android:id="@id/btnUpdate" android:layout_width="0.0dp" android:layout_height="match_parent" android:layout_marginRight="@dimen/metric.16dp" android:text="@string/string_update" android:layout_weight="1.0" style="@style/defaultStyle.button.green" />
+        <Button android:id="@id/btnExit" android:layout_width="0.0dp" android:layout_height="match_parent" android:text="@string/string_close" android:layout_weight="1.0" style="?commont.button" />
+    </LinearLayout>
+</LinearLayout>

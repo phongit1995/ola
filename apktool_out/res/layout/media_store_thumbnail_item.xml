@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout android:background="@color/image_background_color" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="@dimen/mediastore.thumbnail.size"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <chat.ola.vn.view.OlaCachedImageView android:id="@id/imgThumbnail" android:background="#e5e5e5" android:padding="1.0dp" android:layout_width="match_parent" android:layout_height="match_parent" android:scaleType="centerCrop" android:cropToPadding="true" />
+    <CheckBox android:layout_gravity="right|top" android:id="@id/checkBox" android:focusable="false" android:focusableInTouchMode="false" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="-2.0dp" android:layout_marginRight="-2.0dp" android:button="@drawable/btn_image_editor_checkbox_selector" />
+</FrameLayout>

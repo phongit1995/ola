@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:gravity="center" android:orientation="horizontal" android:background="@drawable/bg_contact_group" android:layout_width="match_parent" android:layout_height="32.0dp"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <TextView android:id="@id/txtGroupTitle" android:paddingTop="2.0dp" android:paddingBottom="2.0dp" android:layout_width="0.0dp" android:layout_height="wrap_content" android:layout_marginLeft="@dimen/metric.48dp" android:layout_weight="1.0" style="?contact.group.title" />
+    <ImageView android:id="@id/btnGroupButton" android:paddingLeft="@dimen/metric.4dp" android:paddingRight="@dimen/metric.4dp" android:focusable="false" android:layout_width="wrap_content" android:layout_height="match_parent" android:layout_marginRight="@dimen/metric.4dp" android:src="?contact.group.button.more" android:scaleType="center" android:adjustViewBounds="true" />
+</LinearLayout>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:orientation="vertical" android:id="@id/conversationViewLayout" android:background="@color/translucent_white_80_percent" android:padding="0.0dp" android:layout_width="match_parent" android:layout_height="wrap_content"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:id="@id/conversationContentViewLayout" android:padding="@dimen/metric.16dp" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="@dimen/metric.72dp">
+        <FrameLayout android:layout_gravity="center_vertical" android:id="@id/imgMeAvatarThumbnail" android:layout_width="@dimen/metric.40dp" android:layout_height="@dimen/metric.40dp">
+            <chat.ola.vn.view.OlaCachedImageView android:id="@id/imgItemIcon" android:padding="0.0dp" android:focusable="false" android:layout_width="@dimen/metric.40dp" android:layout_height="@dimen/metric.40dp" android:src="@drawable/ic_contact_photo" android:scaleType="centerCrop" android:adjustViewBounds="true" />
+            <ImageView android:layout_gravity="right|bottom" android:id="@id/imgDeviceType" android:background="@drawable/bg_contact_item_device" android:visibility="invisible" android:layout_width="@dimen/metric.12dp" android:layout_height="@dimen/metric.12dp" android:src="@drawable/ic_device_type_android" android:scaleType="centerInside" />
+        </FrameLayout>
+        <LinearLayout android:gravity="center_vertical" android:orientation="vertical" android:id="@id/linearLayout1" android:layout_width="0.0dp" android:layout_height="wrap_content" android:layout_marginLeft="@dimen/metric.16dp" android:layout_weight="1.0">
+            <LinearLayout android:layout_gravity="top" android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="wrap_content">
+                <TextView android:layout_gravity="top" android:id="@id/txtItemTitle" android:focusable="false" android:layout_width="0.0dp" android:layout_height="wrap_content" android:maxLines="1" android:layout_weight="1.0" style="@style/defaultStyle.text.subhead" />
+                <TextView android:layout_gravity="top" android:id="@id/timeAgoTextView" android:focusable="false" android:layout_width="wrap_content" android:layout_height="wrap_content" android:maxLines="1" style="@style/defaultStyle.text.caption" />
+            </LinearLayout>
+            <LinearLayout android:layout_gravity="bottom" android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="wrap_content">
+                <TextView android:id="@id/txtItemSubTitle" android:focusable="false" android:layout_width="0.0dp" android:layout_height="wrap_content" android:maxLines="1" android:layout_weight="1.0" style="@style/defaultStyle.text.body1" />
+                <chat.ola.vn.view.OlaCachedImageView android:layout_gravity="right|center" android:id="@id/messageStateImageView" android:visibility="gone" android:layout_width="@dimen/metric.12dp" android:layout_height="@dimen/metric.12dp" android:src="@drawable/ic_contact_photo" style="@style/defaultStyle.text.caption" />
+            </LinearLayout>
+        </LinearLayout>
+        <TextView android:gravity="center" android:layout_gravity="center" android:id="@id/txtUnreadMessgage" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="@dimen/metric.8dp" style="?commont.text.unread" />
+    </LinearLayout>
+    <View android:id="@id/bottomDividerView" android:background="@color/colorTextBlackDivider" android:layout_width="match_parent" android:layout_height="1.0dp" android:layout_marginLeft="@dimen/metric.16dp" android:layout_marginRight="@dimen/metric.16dp" />
+</LinearLayout>

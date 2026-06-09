@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape>
+            <solid android:color="@color/transparent"/>
+            <padding
+                android:left="@dimen/metric.8dp"
+                android:top="@dimen/metric.8dp"
+                android:right="@dimen/metric.8dp"
+                android:bottom="@dimen/metric.8dp"/>
+        </shape>
+    </item>
+    <item>
+        <inset
+            android:drawable="@drawable/home_pane_bg"
+            android:insetLeft="@dimen/metric.4dp"
+            android:insetRight="@dimen/metric.4dp"
+            android:insetTop="@dimen/metric.4dp"
+            android:insetBottom="@dimen/metric.4dp"/>
+    </item>
+</layer-list>

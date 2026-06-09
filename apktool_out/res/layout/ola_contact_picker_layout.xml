@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <FrameLayout android:paddingTop="@dimen/metric.topbar.noshadow.42dp" android:layout_width="match_parent" android:layout_height="match_parent">
+        <LinearLayout android:orientation="vertical" android:layout_width="match_parent" android:layout_height="match_parent">
+            <LinearLayout android:orientation="vertical" android:background="@drawable/bg_white_with_bottom_border" android:padding="@dimen/metric.8dp" android:layout_width="match_parent" android:layout_height="wrap_content" style="@style/defaultStyle.layout.changeWithAnimation">
+                <it.sephiroth.android.library.widget.HListView android:layout_gravity="top" android:id="@id/selectedContactListView" android:background="@drawable/bg_white_with_bottom_border" android:paddingBottom="@dimen/metric.8dp" android:visibility="gone" android:layout_width="match_parent" android:layout_height="@dimen/metric.56dp" />
+                <chat.ola.vn.view.OlaQuickTypingSuggestedText android:id="@id/contactInputEditText" android:layout_width="match_parent" android:layout_height="@dimen/metric.48dp" android:hint="@string/hint_enter_username_or_fullname" android:maxLines="1" android:inputType="textEmailAddress" android:imeOptions="actionSearch" style="@style/defaultStyle.edittext.nobackground">
+                    <requestFocus />
+                </chat.ola.vn.view.OlaQuickTypingSuggestedText>
+            </LinearLayout>
+            <ListView android:id="@id/contactListView" android:layout_width="match_parent" android:layout_height="0.0dp" android:layout_weight="1.0" style="@style/defaultStyle.list.noDivider" />
+        </LinearLayout>
+        <FrameLayout android:id="@id/contactProgressBar" android:background="@color/translucent_black_38_percent" android:visibility="gone" android:clickable="true" android:layout_width="match_parent" android:layout_height="match_parent">
+            <ProgressBar android:layout_gravity="center" android:layout_width="@dimen/metric.48dp" android:layout_height="@dimen/metric.48dp" />
+        </FrameLayout>
+    </FrameLayout>
+    <include layout="@layout/ola_top_action_bar_center_title_layout" />
+</FrameLayout>

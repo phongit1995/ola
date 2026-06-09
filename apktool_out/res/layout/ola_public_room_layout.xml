@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout android:layout_width="match_parent" android:layout_height="match_parent"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <android.support.v4.widget.DrawerLayout android:id="@id/roomDrawerLayout" android:layout_width="match_parent" android:layout_height="match_parent">
+        <FrameLayout android:layout_width="match_parent" android:layout_height="match_parent">
+            <FrameLayout android:paddingTop="@dimen/metric.topbar.noshadow.42dp" android:layout_width="match_parent" android:layout_height="match_parent">
+                <android.support.v4.widget.SwipeRefreshLayout android:id="@id/roomPullToRefreshLayout" android:layout_width="match_parent" android:layout_height="match_parent">
+                    <ListView android:id="@id/roomListView" android:layout_width="match_parent" android:layout_height="match_parent" style="@style/defaultStyle.list.noDivider" />
+                </android.support.v4.widget.SwipeRefreshLayout>
+            </FrameLayout>
+            <LinearLayout android:gravity="right|bottom" android:layout_gravity="right|bottom" android:orientation="horizontal" android:id="@id/roomChatMessageViewLayout" android:padding="@dimen/metric.16dp" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="@dimen/metric.56dp">
+                <TextView android:ellipsize="end" android:gravity="left" android:layout_gravity="right|center" android:id="@id/roomChatMessageBubbleTextView" android:background="@drawable/chat_incoming" android:visibility="gone" android:layout_width="wrap_content" android:layout_height="wrap_content" android:maxWidth="@dimen/metric.200dp" android:maxHeight="@dimen/metric.72dp" android:maxLines="5" style="@style/defaultStyle.text.subhead" />
+                <FrameLayout android:layout_gravity="right|bottom" android:layout_width="wrap_content" android:layout_height="wrap_content">
+                    <ImageButton android:id="@id/roomChatMessageImageButton" android:background="@drawable/floating_action_bar_shape" android:padding="@dimen/metric.16dp" android:layout_width="@dimen/metric.56dp" android:layout_height="@dimen/metric.56dp" android:src="@drawable/ic_notify_new_chat_group_message" android:scaleType="centerInside" android:tint="@android:color/white" />
+                    <TextView android:layout_gravity="right|top" android:id="@id/roomUnreadMessageTextView" android:visibility="gone" android:layout_width="wrap_content" android:layout_height="wrap_content" style="?commont.text.unread" />
+                </FrameLayout>
+            </LinearLayout>
+            <include layout="@layout/ola_top_action_bar_center_title_layout" />
+        </FrameLayout>
+        <RelativeLayout android:layout_gravity="left" android:background="@color/white" android:layout_width="@dimen/metric.240dp" android:layout_height="match_parent">
+            <ListView android:id="@id/roomDrawerListView" android:background="@color/white" android:layout_width="match_parent" android:layout_height="match_parent" style="@style/defaultStyle.list.noDivider" />
+        </RelativeLayout>
+    </android.support.v4.widget.DrawerLayout>
+    <FrameLayout android:id="@id/roomProgressBar" android:background="@color/translucent_black_38_percent" android:visibility="gone" android:clickable="true" android:layout_width="match_parent" android:layout_height="match_parent">
+        <ProgressBar android:layout_gravity="center" android:layout_width="@dimen/metric.48dp" android:layout_height="@dimen/metric.48dp" />
+    </FrameLayout>
+</FrameLayout>

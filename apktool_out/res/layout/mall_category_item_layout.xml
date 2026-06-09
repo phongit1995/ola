@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout android:paddingLeft="@dimen/metric.8dp" android:paddingRight="@dimen/metric.8dp" android:layout_width="match_parent" android:layout_height="wrap_content"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout android:gravity="center_vertical" android:layout_width="match_parent" android:layout_height="@dimen/metric.72dp">
+        <chat.ola.vn.view.OlaRatioImageView android:id="@id/imgVideoThumbnail" android:visibility="gone" android:layout_width="wrap_content" android:layout_height="match_parent" android:layout_marginLeft="@dimen/metric.4dp" android:scaleType="centerCrop" />
+        <TextView android:textSize="@dimen/text.size.title" android:id="@id/txtVideoTitle" android:layout_width="0.0dp" android:layout_height="wrap_content" android:layout_marginLeft="@dimen/metric.8dp" android:layout_marginRight="@dimen/metric.8dp" android:drawableRight="@drawable/ic_arrow_right" android:layout_weight="1.0" style="?contact.group.title" />
+    </LinearLayout>
+</FrameLayout>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout android:id="@id/photoImageViewLayout" android:padding="@dimen/metric.2dp" android:layout_width="match_parent" android:layout_height="wrap_content"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <chat.ola.vn.view.OlaSquareCachedImageView android:id="@id/photoImageView" android:layout_width="match_parent" android:layout_height="wrap_content" android:scaleType="centerCrop" android:cropToPadding="true" />
+    <LinearLayout android:gravity="center_vertical" android:layout_gravity="bottom" android:orientation="horizontal" android:id="@id/videoLayout" android:background="@color/translucent_black_50_percent" android:padding="@dimen/metric.4dp" android:visibility="gone" android:layout_width="match_parent" android:layout_height="wrap_content">
+        <ImageView android:layout_gravity="center_vertical" android:visibility="visible" android:layout_width="wrap_content" android:layout_height="@dimen/metric.24dp" android:src="@drawable/ic_video" android:adjustViewBounds="true" />
+        <TextView android:textColor="@color/white" android:gravity="right|center" android:layout_gravity="center_vertical" android:id="@id/videoDurationTextView" android:visibility="visible" android:layout_width="0.0dp" android:layout_height="@dimen/metric.24dp" android:layout_weight="1.0" style="@style/defaultStyle.text.subhead" />
+    </LinearLayout>
+    <ImageView android:layout_gravity="right|top" android:id="@id/photoCheckedImageView" android:padding="@dimen/metric.4dp" android:layout_width="wrap_content" android:layout_height="wrap_content" android:src="@drawable/ic_edit_select_uncheck" android:scaleType="centerInside" android:adjustViewBounds="true" />
+</FrameLayout>

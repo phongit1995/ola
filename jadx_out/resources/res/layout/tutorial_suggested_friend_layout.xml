@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:background="@color/white"
+    android:padding="@dimen/metric.16dp"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <ListView
+        android:id="@+id/suggestedFriendListView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        style="@style/defaultStyle.list.noDivider"/>
+    <View
+        android:background="@color/colorTextBlackDivider"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"/>
+    <Button
+        android:id="@+id/addFriendButton"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/metric.36dp"
+        android:layout_marginTop="@dimen/metric.8dp"
+        android:text="@string/string_add_all"
+        style="@style/defaultStyle.button.green"/>
+</LinearLayout>

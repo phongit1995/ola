@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:background="@color/white"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <GridView
+        android:id="@+id/albumGridView"
+        android:paddingLeft="@dimen/metric.8dp"
+        android:paddingTop="@dimen/metric.56dp"
+        android:paddingRight="@dimen/metric.8dp"
+        android:paddingBottom="@dimen/metric.16dp"
+        android:clipToPadding="false"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:horizontalSpacing="@dimen/metric.4dp"
+        android:verticalSpacing="@dimen/metric.8dp"
+        android:numColumns="3"
+        style="@style/defaultStyle.list.noDivider"/>
+    <FrameLayout
+        android:id="@+id/wattingProgressBar"
+        android:background="@color/translucent_black_38_percent"
+        android:visibility="gone"
+        android:clickable="true"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <ProgressBar
+            android:layout_gravity="center"
+            android:layout_width="@dimen/metric.48dp"
+            android:layout_height="@dimen/metric.48dp"/>
+    </FrameLayout>
+    <include layout="@layout/ola_top_action_bar_layout"/>
+</FrameLayout>
