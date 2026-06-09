@@ -65,12 +65,12 @@ app.get('/json/id/pubinfo', (req, res) =>
 // Hồ sơ người dùng
 app.get('/json/id/profile', (req, res) => {
   const nick = req.query.un || 'tester';
+  const isSelf = (nick === req.query.owsn);  // owsn = login nick
   res.json({
-    errorCode: 0,
     nick,
     name: 'Fake ' + nick,
     gender: 1,
-    birthday: '1995-01-01',
+    birthday: 788918400000,       // 1995-01-01 as millis
     registerMs: now() - 1e10,
     lastActiveAgo: 60,
     socialLinkType: 0,
@@ -81,9 +81,9 @@ app.get('/json/id/profile', (req, res) => {
     cared: false,
     isFan: false,
     blocked: false,
-    vip: 0,
-    phone: { number: '', verified: false, protect: true },
-    like: { 1: 0, 3: 0, liked: false },
+    vip: 1,                                   // VIP → tránh warning "Mua VIP" ở phòng chat
+    phone: { number: '0901234567', verified: true, protect: true },  // verified → tránh warning "Cần xác thực"
+    like: { '1': 0, '3': 0, liked: 0 },
     friends: [],
     fans: [],
     medias: [],

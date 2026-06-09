@@ -1083,11 +1083,7 @@
 
     const/4 v6, 0x0
 
-    new-instance v7, Lchat/ola/vn/entity/ag;
-
-    invoke-direct {v7}, Lchat/ola/vn/entity/ag;-><init>()V
-
-    sput-object v7, Lchat/ola/vn/h;->O:Lchat/ola/vn/entity/ag;
+    sput-object v6, Lchat/ola/vn/h;->O:Lchat/ola/vn/entity/ag;
 
     iget-object v7, v0, Lchat/ola/vn/network/e;->a:Lchat/ola/vn/network/OlaNetworkService;
 

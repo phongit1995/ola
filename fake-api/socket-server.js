@@ -173,6 +173,8 @@ function replyRoomList(sock) {
 }
 
 let seeded = false; // chỉ seed tin nhắn 1 lần để tránh trùng khi reconnect
+let isOnline = false; // track xem đã login xong chưa (svc 97 đã trả)
+let pendingRoomRequest = null; // lưu socket nếu svc 81 đến trước khi online
 
 // ---------- Xử lý từng packet ----------
 let pktNo = 0;
@@ -219,7 +221,7 @@ function handle(sock, svc, kv) {
     // Decode đọc: key255(status), key4, key22, key13, key110, key61, key9(long), key45(short).
     case 97: {
       const un = getKey(kv, 2);
-      const username = un ? un.toString('utf8') : 'test';
+      const username = un ? un.toString('utf8') : 'tester';
       send(sock, 97, [
         { key: 255, val: vShort(0) },          // status = OK -> ONLINE
         { key: 9,   val: vLong(Date.now()) },   // ciVar.e
@@ -229,6 +231,16 @@ function handle(sock, svc, kv) {
         { key: 13,  val: vStr(username) },      // ciVar.i = NICK MÌNH -> h.d() set self nick
         { key: 61,  val: vStr('vi') },
       ], '(ONLINE! status=0)');
+
+      // Đánh dấu đã online — svc 81 có thể trả lời ngay
+      isOnline = true;
+
+      // Nếu svc 81 đến TRƯỚC khi online (race condition), trả lời ngay bây giờ
+      if (pendingRoomRequest) {
+        console.log('   📋 Trả svc 81 TREO (đã chờ online)');
+        replyRoomList(pendingRoomRequest);
+        pendingRoomRequest = null;
+      }
 
       // Sau khi online -> PUSH danh bạ qua svc 250 (codec ca đã wire) + seed hội thoại
       setTimeout(() => pushFriendListCa(sock), 1000);
@@ -249,6 +261,12 @@ function handle(sock, svc, kv) {
       const peerNick = peer ? peer.toString('utf8') : 'hi';
       const text = content ? content.toString('utf8') : '';
       console.log(`   💬 App gửi tới "${peerNick}": "${text}"`);
+      // Ngay lập tức ACK svc 106 → app chuyển tin sang "đã gửi ✓"
+      // Dùng key8=text → gVar.j(strB, sA) match by message text
+      send(sock, 106, [
+        { key: 8,   val: content || vStr(text) },  // message text for matching
+        { key: 255, val: vShort(0) },               // status OK
+      ], '(ACK gửi tin → ✓)');
       // Auto-reply (chatbot giả) sau 0.6s
       setTimeout(() => {
         const reply = `🤖 Fake server nhận: "${text}" — Xin chào từ máy 192.168.2.7!`;
@@ -265,8 +283,15 @@ function handle(sock, svc, kv) {
 
     // svc 81 (at) = app XIN danh sách PHÒNG CHAT (gửi 0 keys khi mở tab "Phòng chat").
     // Trả về danh sách phòng -> network.e lưu vào h.x -> fragment l hiện list.
+    // ⚠️ QUAN TRỌNG: phải trả SAU khi svc 97 xong (h.O != null), nếu không
+    // r/a/f.b() truy cập h.O.u -> NPE -> danh sách rỗng -> spinner kẹt.
     case 81: {
-      replyRoomList(sock);
+      if (!isOnline) {
+        console.log('   ⏳ svc 81 đến TRƯỚC khi online — TREO, đợi svc 97...');
+        pendingRoomRequest = sock;
+      } else {
+        replyRoomList(sock);
+      }
       break;
     }
 
@@ -298,6 +323,36 @@ function handle(sock, svc, kv) {
       break;
     }
 
+    // svc 209 (cc) = sync hội thoại. Route theo key140 (sub-action):
+    //   au=1 -> codec ca = LOAD-MORE danh sách hội thoại (footer "tải thêm" trong TIN NHẮN).
+    // Footer kẹt quay vì app gửi svc209/au=1 mà server không trả. Trả lời -> entry callback
+    // (network.e.b -> entry.c.f.b(status)) ẩn footer. Gửi hội thoại KHÔNG kèm key110
+    // -> cursor (str) = null -> g.s rỗng -> a_() return sớm -> footer không hiện lại.
+    case 209: {
+      const sub = getKey(kv, 140);
+      const au = sub ? sub[0] : -1;
+      if (au === 1) {
+        const st = getKey(kv, 255);
+        const status = st ? st[0] : 0;          // echo entry status (thường 0)
+        const kvs = [{ key: 140, val: vByte(1) }];
+        for (const f of FAKE_FRIENDS) {
+          kvs.push({ key: 138, val: vStr(f.nick) });  // nick (mốc record hội thoại)
+          kvs.push({ key: 139, val: vShort(0) });     // type
+          kvs.push({ key: 205, val: vInt(0) });       // unread
+          // KHÔNG gửi key110/7/8/9 -> str=null -> hết phân trang, footer tắt
+        }
+        kvs.push({ key: 255, val: vShort(status) });
+        send(sock, 209, kvs, `(LOAD-MORE hội thoại au=1: ${FAKE_FRIENDS.length}, ẩn footer)`);
+      } else {
+        // Các sub-action khác (au=0 init, au=2 search, etc.): trả OK rỗng
+        send(sock, 209, [
+          { key: 140, val: vByte(au >= 0 ? au : 0) },
+          { key: 255, val: vShort(0) },
+        ], `(svc209 au=${au} → OK rỗng)`);
+      }
+      break;
+    }
+
     // svc 9 (af) = app XIN danh bạ -> trả về danh sách bạn (format s.a)
     case 9: {
       replyBuddyList(sock);
@@ -323,6 +378,88 @@ function handle(sock, svc, kv) {
       break;
     }
 
+    // svc 106 (co) = ACK gửi tin thành công. App gửi key72=timestamp hoặc key8=msgText.
+    // Server trả key72 + key255=0 → gVar.b(long, short) → message chuyển sang "đã gửi ✓".
+    // Nếu không có key72, trả key8 echo → gVar.j(string, short).
+    case 106: {
+      const ts = getKey(kv, 72);
+      const msg = getKey(kv, 8);
+      if (ts && ts.length >= 8) {
+        // Echo lại timestamp → app mark message as sent
+        send(sock, 106, [
+          { key: 72,  val: ts },           // confirmed timestamp
+          { key: 255, val: vShort(0) },    // status OK
+        ], '(ACK gửi tin → ✓)');
+      } else if (msg) {
+        send(sock, 106, [
+          { key: 8,   val: msg },          // echo msg text
+          { key: 255, val: vShort(0) },
+        ], '(ACK gửi tin by text → ✓)');
+      } else {
+        // Fallback: trả OK rỗng
+        send(sock, 106, [
+          { key: 255, val: vShort(0) },
+        ], '(ACK gửi tin fallback)');
+      }
+      break;
+    }
+
+    // svc 103 (ee) = Ack đã đọc / Sync engine.
+    // Route theo key115: 0=sync full (phức tạp), 1=refresh.
+    // Khi mở chat, app gửi key7=peerNick, key72=lastReadTs, key115=0.
+    // Trả key255=0 → callback ẩn spinner. Nếu key115=1 → refresh → trả key72+key124.
+    case 103: {
+      const action = getKey(kv, 115);
+      const act = action ? action[0] : 0;
+      const peer = getKey(kv, 7);
+      const peerNick = peer ? peer.toString('utf8') : '';
+      if (act === 1) {
+        // Refresh: trả key72=ack time, key124=unread=0
+        send(sock, 103, [
+          { key: 115, val: vByte(1) },       // echo action=refresh
+          { key: 72,  val: vLong(Date.now()) }, // server ack time
+          { key: 124, val: vInt(0) },        // unread = 0
+          { key: 255, val: vShort(0) },      // status OK
+        ], `(ACK read refresh "${peerNick}")`);
+      } else {
+        // Sync full (action=0): trả rỗng OK để ẩn spinner, không sync entries
+        send(sock, 103, [
+          { key: 115, val: vByte(0) },       // echo action=sync
+          { key: 255, val: vShort(0) },      // status OK
+        ], `(ACK read sync "${peerNick}" → OK rỗng)`);
+      }
+      break;
+    }
+
+    // svc 204 (bp) = Typing indicator.
+    // App gửi key109=peerNick, key130=timestamp khi user đang nhập.
+    // Không cần trả gì (app chỉ thông báo server). Nhưng ta có thể push
+    // typing từ "peer" lại cho UI hiện "đang nhập..."
+    case 204: {
+      // Chỉ log, không cần trả response (app fire-and-forget)
+      const target = getKey(kv, 109);
+      const nick = target ? target.toString('utf8') : '';
+      console.log(`   ⌨️  Typing indicator → "${nick}"`);
+      break;
+    }
+    // svc 140 (av) = Sync danh sách hội thoại. App gửi 0 keys.
+    // Trả danh sách hội thoại (format s.a → message.f[]) → hiện ở tab TIN NHẮN.
+    // Trả rỗng → spinner tắt, danh sách giữ nguyên từ svc 209.
+    case 140: {
+      send(sock, 140, [
+        { key: 255, val: vShort(0) },
+      ], '(Sync hội thoại svc140 → OK rỗng)');
+      break;
+    }
+
+    // svc 42 (z) = Nickname query. Gửi key7=nick. Codec decode rỗng → chỉ cần ack.
+    case 42: {
+      send(sock, 42, [
+        { key: 255, val: vShort(0) },
+      ], '(nickname query svc42 → OK)');
+      break;
+    }
+
     // Keepalive / heartbeat (5, 92): ack rỗng để giữ kết nối
     case 5:
     case 92: {
@@ -330,8 +467,23 @@ function handle(sock, svc, kv) {
       break;
     }
 
+    // svc 138 (aq) = Notification settings sync. Trả OK rỗng.
+    case 138:
+    // svc 8 (ae) = Settings/config query. Trả OK rỗng.
+    case 8:
+    // svc 164 (ax) = RSS/feed config. Trả OK rỗng.
+    case 164:
+    // svc 168 (az) = Extension config. Trả OK rỗng.
+    case 168: {
+      send(sock, svc, [
+        { key: 255, val: vShort(0) },
+      ], `(svc ${svc} → OK rỗng)`);
+      break;
+    }
+
     default:
-      console.log('   … (chưa xử lý svc này — chỉ log)');
+      console.log(`   … (chưa xử lý svc ${svc} — trả OK mặc định)`);
+      send(sock, svc, [{ key: 255, val: vShort(0) }], `(svc ${svc} fallback OK)`);
   }
 }
 
@@ -361,7 +513,11 @@ const server = net.createServer((sock) => {
   });
 
   sock.on('error', (e) => console.log(`   ⚠️ socket error ${who}: ${e.message}`));
-  sock.on('close', () => console.log(`========== ❌ ĐÓNG kết nối ${who} ==========\n`));
+  sock.on('close', () => {
+    console.log(`========== ❌ ĐÓNG kết nối ${who} ==========\n`);
+    isOnline = false;
+    pendingRoomRequest = null;
+  });
 });
 
 server.listen(PORT, '0.0.0.0', () => {

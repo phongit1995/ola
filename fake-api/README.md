@@ -2,10 +2,10 @@
 
 Bộ này gồm 3 phần:
 1. **Fake REST server** (`server.js`) — giả lập `api.ola.vn` (HTTP) bằng Express.
-2. **Fake SOCKET server** (`socket-server.js`) — giả lập server chat (TCP 1239), giao thức nhị phân kiểu YMSG. **Cho phép ĐĂNG NHẬP vào app.**
+2. **Fake SOCKET server** (`socket-server.js`) — giả lập server chat (TCP 1239), giao thức nhị phân kiểu YMSG. **Cho phép ĐĂNG NHẬP + CHAT + PHÒNG CHAT.**
 3. **APK đã patch + ký** — `../older-ola/Ola_2.1.11_fake_signed.apk` — đã đổi cả base URL REST **và** IP/host socket trỏ về máy bạn.
 
-> ✅ Đã test thành công: app đăng nhập (user bất kỳ, vd "test") và vào được màn hình bên trong (Kho VIP…). Bằng chứng: `screenshots/01-login-success.png`.
+> ✅ Đã test thành công trên thiết bị thật: đăng nhập → danh sách tin nhắn → chat 2 chiều (auto-reply) → phòng chat.
 
 ## Chạy CẢ HAI server
 
@@ -13,38 +13,88 @@ Bộ này gồm 3 phần:
 cd /Volumes/D/ola/fake-api
 npm install            # lần đầu
 node server.js &       # REST (cổng 8080)
-node socket-server.js  # SOCKET (cổng 1239) — quan trọng cho login
+node socket-server.js  # SOCKET (cổng 1239) — quan trọng cho login + chat
 ```
 
 Đăng nhập trong app: nhập **nick bất kỳ + mật khẩu bất kỳ** → server chấp nhận hết.
 
-### Luồng login đã giải mã (socket)
-1. App gửi **svc 96** (hello: locale, device-info, màn hình, device-id) → server trả **key 11** (short).
-2. App gửi **svc 206** (login: key2=user, key43=mật khẩu mã hoá) → server trả **key2/135/112/9/255=0** = thành công.
-3. App lưu working session (key 135) → gửi tiếp svc 97/204/116… (đã đăng nhập).
+---
 
-### Đã fake được DATA cho màn chat ✅
-- **svc 97 (ba)**: server trả status=0 → app chuyển **STATE_AUTHENTICATING → STATE_ONLINE** (hết churn reconnect). Đây là chìa khoá để ổn định.
-- **svc 14 (Cdo)** = tin nhắn 1-1. App gửi key7=peer, key8=nội dung. Server **auto-reply**: push lại svc 14 (key7=peer, key8=text trả lời) → hiện **bong bóng tin đến** trong màn chat. Bằng chứng: `screenshots/03-chat-2-chieu.png` (gửi "Alo robot oi" → nhận trả lời từ fake server).
-- **Osimi** = web-bot, load HTML từ REST server (`/html/osimi`) → đã hiện trang.
+## Socket Server — Chi tiết (`socket-server.js`)
 
-### Đã fake DATA cho danh sách tin nhắn ✅
-- Khi online, server **PUSH svc 14** từ vài nick (linhchi92, tuananh, maiphuong) → mỗi tin tạo 1 hội thoại trong tab **TIN NHẮN** (có preview + badge chưa đọc). Bằng chứng: `screenshots/02-danh-sach-tin-nhan.png`.
-- Cấu hình danh sách: sửa mảng `FAKE_CONVOS` trong `socket-server.js`.
+### Giao thức wire format
+- **Client GỬI** (dr.java): `[len(4 BE) = body+6][magic: 06 05 0A 13 04][svc(1)][body]`
+- **Client NHẬN** (ce.java): `[numKeys(2 BE)][bodyLen(4 BE)][svc(1)][body]`
+- Body = lặp `{ key(1), vlen(4 BE), value(vlen) }`
 
-### DANH BẠ (friend list) — CHƯA hiện được ⚠️ (đã đào sâu, gặp tường kỹ thuật)
-Đã thử **4 svc**, server đều gửi đúng nhưng không svc nào render ra tab DANH BẠ:
-- **svc 15 (c)**: callback `a(String,List)` ở `network/e.java:1463` **rỗng (no-op)**.
-- **svc 67 (ad)**: callback định tuyến theo status `s` (key255) qua `entry.c.f.b(s)` — push đơn phương s=0 bị bỏ qua.
-- **svc 9 (af)**: callback `a(List<message.f>,int)` → `h.t.d(list)` → fill list `this.i` (không phải nguồn DANH BẠ).
-- **svc 193 (ac)**: callback `c(list)` → `h.t.i(list)` → fill `this.f` NHƯNG **chỉ giữ bạn đã có trong list master `this.e`** (`message/g.java:1297-1307`).
+### Luồng login
+1. App gửi **svc 96** (hello) → server trả **key11** (short).
+2. App gửi **svc 206** (login) → server trả **key2/135/112/9/255=0** = thành công.
+3. App gửi **svc 97** → server trả status=0 → **STATE_ONLINE**.
+4. Server **PUSH svc 14** từ các nick fake → tạo danh sách hội thoại.
 
-**Nguyên nhân gốc:** `chat.ola.vn.h.t` (`message.g`, 1567 dòng) là manager có **~8 list nội bộ** (i, f, k, e, g…) phụ thuộc chéo. Bạn chỉ hiện ở DANH BẠ khi đã nằm trong list master `this.e`, mà `this.e` được nạp qua luồng **định tuyến theo status (entry handler)** — push đơn phương từ server không khớp status nên bị loại. Tab DANH BẠ cũng **không gửi socket request** khi mở (đọc từ cache/DB local), nên không có request để "trả lời echo status".
+### Bảng SVC đã handler
 
-**KẾT LUẬN CUỐI (đã trace trọn chuỗi):** Tab DANH BẠ đọc `h.t.p()/q()` = list `this.k`. `this.k` chỉ được fill bởi `message.g.a(List,String)` [g.java:609] hoặc `e(List)` [g.java:978]. Hai method này chỉ được gọi từ callback `b(List,String,short)` [e.java:2662] → mà callback đó chỉ được codec **`w/ca.java`** gọi. **`ca` là DEAD CODE**: không `new ca(` ở đâu, KHÔNG có trong bảng dispatch `ch.java`, và không có luồng load-DB nào gọi `h.t.a/e(list)`.
-> ⇒ Luồng nạp danh sách bạn đã bị **gỡ/vô hiệu hóa trong bản build 2.1.11**. KHÔNG có svc/status nào để bắt → **không thể fake DANH BẠ qua socket**. Tab trống là hành vi đúng của bản này (app chuyển sang mô hình chat người lạ + hội thoại). Cách duy nhất còn lại: chỉnh sửa code app (smali) hoặc seed thẳng SQLite DB.
+| SVC | Codec | Chức năng | Trạng thái |
+|:---:|:-----:|-----------|:----------:|
+| 96 | ba | Hello/Handshake | ✅ |
+| 206 | ct | Login (nick + pass) | ✅ |
+| 97 | ba | Auth confirm → STATE_ONLINE | ✅ |
+| 14 | Cdo | Chat 1-1 (gửi/nhận tin) + auto-reply | ✅ |
+| 106 | co | ACK gửi tin (xác nhận đã gửi) | ✅ |
+| 103 | ee | ACK đã đọc / Sync engine | ✅ |
+| 204 | bp | Typing indicator (log only) | ✅ |
+| 209 | cc | Sync hội thoại (load-more + sub-actions) | ✅ |
+| 140 | av | Sync danh sách hội thoại | ✅ |
+| 81 | at | Danh sách phòng chat | ✅ |
+| 85 | bf | JOIN phòng (thành viên) | ✅ |
+| 9 | af | Danh bạ (buddy list) | ✅ |
+| 193 | ac | Upload danh bạ điện thoại | ✅ |
+| 42 | z | Nickname query | ✅ |
+| 138 | aq | Notification sync | ✅ |
+| 8 | ae | Settings/config | ✅ |
+| 164 | ax | RSS/feed config | ✅ |
+| 168 | az | Extension config | ✅ |
+| 5/92 | — | Keepalive/heartbeat | ✅ |
+| *khác* | — | Fallback → trả OK rỗng | ✅ |
 
-### Phòng chat — CHƯA (tab rỗng, không gửi socket request khi mở).
+### Chat 1-1 (svc 14)
+- App gửi `key7=peer`, `key8=nội dung`, `key110=msgId`.
+- Server **ngay lập tức** push `svc 106` ACK (key8=text echo, status=0).
+- Sau 600ms, server push `svc 14` auto-reply: `🤖 Fake server nhận: "…" — Xin chào từ máy 192.168.2.7!`
+- Bằng chứng: `screenshots/07-chat-auto-reply.png`
+
+### Danh sách hội thoại
+- Khi online, server PUSH `svc 14` từ 5 nick fake (`linhchi92`, `tuananh`, `maiphuong`, `quanghuy`, `thuhuong`) → mỗi tin tạo 1 hội thoại trong tab **TIN NHẮN**.
+- `svc 209` (au=1): trả danh sách hội thoại KHÔNG kèm cursor → hết phân trang.
+- `svc 140`: trả OK rỗng → ẩn spinner sync.
+- Bằng chứng: `screenshots/08-danh-sach-hoi-thoai-v2.png`
+
+### Phòng chat (svc 81 + 85)
+- `svc 81`: trả 6 phòng fake (Việt Nam Chat, Nhạc Trẻ, Game Online…).
+- `svc 85`: JOIN phòng → trả tên phòng + danh sách thành viên.
+- Bằng chứng: `screenshots/05-phong-chat.png`, `screenshots/06-trong-phong.png`
+
+### DANH BẠ — dead code ⚠️
+Tab DANH BẠ đọc list `this.k` (trong `message.g`) chỉ fill bởi codec `w/ca.java` — là **dead code** trong bản 2.1.11 (không có trong bảng dispatch `ch.java`). **Không thể fake qua socket.** Server vẫn trả `svc 9` (buddy list) và `svc 193` (contact sync) nhưng chúng không render ra tab DANH BẠ.
+
+### Tuỳ chỉnh
+- **Đổi danh sách bạn**: sửa mảng `FAKE_FRIENDS` trong `socket-server.js`.
+- **Đổi phòng chat**: sửa mảng `FAKE_ROOMS`.
+- **Đổi cổng socket**: `SPORT=1240 node socket-server.js`.
+
+### Screenshots
+
+| File | Nội dung |
+|------|----------|
+| `01-login-success.png` | Đăng nhập thành công |
+| `02-danh-sach-tin-nhan.png` | Danh sách tin nhắn (5 hội thoại) |
+| `03-chat-2-chieu.png` | Chat 2 chiều (gửi + nhận) |
+| `04-man-chinh.png` | Màn hình chính sau login |
+| `05-phong-chat.png` | Tab Phòng Chat (6 phòng) |
+| `06-trong-phong.png` | Trong phòng (thành viên) |
+| `07-chat-auto-reply.png` | Chat auto-reply mới (có svc 106 ACK) |
+| `08-danh-sach-hoi-thoai-v2.png` | Danh sách hội thoại v2 (5 bạn + status) |
 
 ---
 ## (Cũ) Phần REST
