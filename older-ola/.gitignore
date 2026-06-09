@@ -1,0 +1,10 @@
+# Dependencies
+node_modules/
+
+# APK & ký (binary lớn / nhạy cảm)
+*.apk
+*.idsig
+*.keystore
+
+# OS
+.DS_Store

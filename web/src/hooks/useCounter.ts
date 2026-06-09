@@ -1,0 +1,12 @@
+import { useCallback, useState } from 'react';
+
+/** Hook đếm mẫu — minh hoạ vị trí đặt custom hooks. */
+export function useCounter(initial = 0) {
+  const [count, setCount] = useState(initial);
+
+  const increment = useCallback(() => setCount((c) => c + 1), []);
+  const decrement = useCallback(() => setCount((c) => c - 1), []);
+  const reset = useCallback(() => setCount(initial), [initial]);
+
+  return { count, increment, decrement, reset };
+}

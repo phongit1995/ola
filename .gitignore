@@ -1,10 +1,7 @@
-# Dependencies
-node_modules/
-
-# APK & ký (binary lớn / nhạy cảm)
-*.apk
-*.idsig
-*.keystore
-
 # OS
 .DS_Store
+
+# Logs
+*.log
+
+# Mỗi subfolder (older-ola/, web/) có .gitignore riêng cho node_modules, dist, apk...
