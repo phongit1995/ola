@@ -36,6 +36,7 @@ Phân tích ngược APK **Ola 2.1.11** (`chat.ola.vn`) + dựng fake server (RE
 ✅ Đăng nhập vào app qua fake server (nick/mật khẩu bất kỳ)
 ✅ Chat 1-1 hai chiều (auto-reply) + danh sách tin nhắn
 ✅ Phòng chat (PHÒNG CHAT): fake danh sách phòng qua **socket svc 81** + patch 1 dòng `h.O = new ag()` lúc login trong `network/e.smali` → 6 phòng hiển thị đầy đủ
+✅ Vào trong phòng (JOIN): **socket svc 85** → hiện tên phòng + danh sách thành viên (nick/tên/status); tap thành viên → chat 1-1
 ❌ Danh bạ (DANH BẠ): luồng nạp là dead-code trong bản 2.1.11 — không fake được qua socket
 
 ## Cách tạo lại các thư mục decompile (nếu cần)

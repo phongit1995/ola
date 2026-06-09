@@ -270,6 +270,34 @@ function handle(sock, svc, kv) {
       break;
     }
 
+    // svc 85 (bf) = JOIN phòng (app gửi key100=room id khi click 1 phòng).
+    // Trả: key255=status, key100=room id, key101=tên, key104=thumb,
+    // + danh sách THÀNH VIÊN (key7=nick lặp; mỗi người key22=tên, key45=online, key13=status).
+    // -> network.e: x.a(room, members) + x.a(1) (mode=1, VÀO PHÒNG) -> hiện danh sách + nội dung.
+    case 85: {
+      const ridBuf = getKey(kv, 100);
+      let roomId = 0;
+      try { roomId = Number(ridBuf.readBigUInt64BE(0)); } catch (e) {}
+      const room = FAKE_ROOMS.find((r) => r.id === roomId) || { id: roomId, name: 'Phòng ' + roomId };
+      const kvs = [
+        { key: 255, val: vShort(0) },        // status OK
+        { key: 100, val: vLong(room.id) },   // room id
+        { key: 101, val: vStr(room.name) },  // tên phòng
+        { key: 104, val: vStr('') },         // thumbnail
+      ];
+      for (const m of FAKE_FRIENDS) {        // thành viên trong phòng
+        kvs.push({ key: 7,  val: vStr(m.nick) });   // nick (mốc 1 record)
+        kvs.push({ key: 22, val: vStr(m.name) });   // tên hiển thị
+        kvs.push({ key: 45, val: vShort(1) });      // online
+        if (m.status) kvs.push({ key: 13, val: vStr(m.status) }); // status
+      }
+      send(sock, 85, kvs, `(JOIN phòng "${room.name}": ${FAKE_FRIENDS.length} thành viên)`);
+      // Lưu ý: phòng chat công khai của Ola hiển thị DANH SÁCH THÀNH VIÊN (mỗi người =
+      // 1 message.f type 2, kèm nick/tên/status). Đây chính là nội dung in-room (x.k).
+      // KHÔNG push svc 14 ở đây vì svc 14 đi vào hội thoại 1-1 (h.t), không phải phòng.
+      break;
+    }
+
     // svc 9 (af) = app XIN danh bạ -> trả về danh sách bạn (format s.a)
     case 9: {
       replyBuddyList(sock);

@@ -266,6 +266,21 @@ Tab "Phòng chat" lấy danh sách phòng qua socket:
 → **Bản vá đã dùng (1 dòng, sạch — KHÔNG đụng `f.smali`):** trong `network/e.smali` login-success vốn có sẵn `h.O = null`; đổi thành `h.O = new entity/ag()` (hồ sơ rỗng mặc định `u=0,q=-1,x=false`). Đúng chỗ app quản lý `h.O`, set tự nhiên mỗi lần login. Sau rebuild: **6 phòng hiển thị đầy đủ** (`fake-api/screenshots/05-phong-chat.png`).
 
 > 💡 Reply **svc 97** cũng thêm **key 13 = nick mình** (`ciVar.i` → `h.d()` set self nick).
-> 📌 **Vào trong 1 phòng** (click phòng) là luồng KHÁC: `m/l.b(s)` gửi socket **JOIN** `a(roomId, true, lat, lon, 0)` rồi chờ nội dung phòng — CHƯA fake.
+
+### Vào trong 1 phòng — JOIN (đã fake THÀNH CÔNG ✅)
+Click 1 phòng trong list → `m/l.b(s)` → `OlaApplication.b.a(roomId, true, lat, lon, 0)`:
+
+| | Chi tiết |
+|---|---|
+| **Request** | **svc 85** (`bf`): `key100`=room id (long 8B), `key114`=cờ join, `key79`=vị trí |
+| **Response** | **svc 85**: `key255`=status, `key100`=room id, `key101`=tên phòng, `key104`=thumb, + **danh sách THÀNH VIÊN** |
+| **Mỗi thành viên** | `key7`=nick (mốc record), `key22`=tên, `key45`=online(short), `key13`=status; (tùy chọn `key86`=avatar, `key79`="lat lon") |
+| **Bỏ qua** | thành viên trùng nick mình (`ciVar.f`) bị skip |
+| **Callback** | `bf` → `g.a(roomId, name, thumb, members, sub, status)` → `network.e`: tạo `s(id,name)` + `h.x.a(room, members)` (đổ members vào `this.k`) + **`h.x.a(1)` (mode=1 = TRONG PHÒNG)** → fragment `m/l` vẽ |
+
+**Hiển thị in-room:** adapter `b/z` đọc `x.k` (= danh sách thành viên, mỗi người 1 `message.f` type 2). Màn phòng = **danh sách người trong phòng + nick·tên + status** (xem `fake-api/screenshots/06-trong-phong.png`). Tap 1 thành viên → mở chat 1-1 với họ.
+
+> ℹ️ Phòng chat công khai Ola **không có khung chat bong bóng nhóm** ở view này — "tin" của mỗi người hiển thị qua **status** của họ. Tin nhắn 1-1 (svc 14) đi vào `h.t` (hội thoại riêng), KHÔNG vào `x.k`; callback `a(long, message.f)` trong `network.e` là **no-op**.
+> Dữ liệu: thành viên dùng `FAKE_FRIENDS`, handler `case 85` trong `socket-server.js`.
 
 Dữ liệu phòng giả khai báo ở `socket-server.js` (mảng `FAKE_ROOMS`, handler `case 81`).
