@@ -33,6 +33,28 @@ Tài liệu này liệt kê **chính xác các file smali + dòng cần sửa** 
 
 > **Cổng socket:** app tự thử cổng **1239** (chính) rồi **80** (fallback) — không cần sửa smali, chỉ cần fake socket server lắng nghe cổng 1239.
 
+### d) Patch set `h.O` cho PHÒNG CHAT (bắt buộc nếu muốn tab Phòng chat hiện)
+**File:** `apktool_out/smali/chat/ola/vn/network/e.smali`, method `a(Lchat/ola/vn/w/ci;S)V` (login-success)
+
+Hàm dựng danh sách phòng `r/a/f.b()` truy cập `h.O` (hồ sơ bản thân, `entity.ag`) **không null-check** → `h.O=null` thì NPE → list rỗng. App đáng lẽ tự fetch `id/profile` để set `h.O` ngay sau login, nhưng request đó (`z=true`) bị URL builder bỏ khi `owsc` rỗng → `h.O` mãi null.
+
+Cách sạch nhất: ngay trong login-success app vốn có sẵn `h.O = null` — **đổi thành `h.O = new ag()`**:
+```smali
+    # ... sau 2 lệnh join "ola" / "#hai" ...
+    const/4 v6, 0x0                                  # giữ v6 = null cho b(null, s) ngay dưới
+
+    new-instance v7, Lchat/ola/vn/entity/ag;         # <-- THÊM
+    invoke-direct {v7}, Lchat/ola/vn/entity/ag;-><init>()V   # <-- THÊM
+
+    sput-object v7, Lchat/ola/vn/h;->O:Lchat/ola/vn/entity/ag;   # SỬA: v6(null) -> v7(new ag)
+
+    iget-object v7, v0, Lchat/ola/vn/network/e;->a:Lchat/ola/vn/network/OlaNetworkService;
+    invoke-virtual {v7, v6, v2}, Lchat/ola/vn/network/OlaNetworkService;->b(Ljava/lang/String;S)V
+```
+> ⚠️ Phải dùng **register khác v6** (vd v7) cho `new ag`, vì v6 (=null) còn được dùng làm tham số String cho `b(v6, s)` ngay dưới. `entity.ag` có constructor rỗng `<init>()V`. Cách này KHÔNG cần đụng `r/a/f.smali`.
+
+> 💡 Kèm theo: reply **svc 97** thêm **key 13 = nick mình** (để `h.d()` set self nick).
+
 ---
 
 ## 2. Lệnh sed đổi nhanh sang IP/cổng khác

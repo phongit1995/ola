@@ -82,6 +82,17 @@ const FAKE_CONVOS = [
   { nick: 'maiphuong', msg: 'Gửi bạn tài liệu nhé 📄' },
 ];
 
+// Danh sách PHÒNG CHAT công khai (tab "Phòng chat", svc 81 / codec at).
+// entity.s: id(long), name, desc(key30), thumb(key104), type(key103), gps(key109).
+const FAKE_ROOMS = [
+  { id: 1001, name: 'Hà Nội Friends',   desc: 'Giao lưu kết bạn Hà Nội 🏙️',  type: 0 },
+  { id: 1002, name: 'Sài Gòn Đêm',      desc: 'Tâm sự đêm khuya 🌙',          type: 0 },
+  { id: 1003, name: 'Yêu Âm Nhạc',      desc: 'Chia sẻ nhạc hay mỗi ngày 🎵', type: 0 },
+  { id: 1004, name: 'Game Thủ Việt',    desc: 'Hội anh em game thủ 🎮',       type: 0 },
+  { id: 1005, name: 'Phòng Tâm Sự',     desc: 'Lắng nghe & sẻ chia 💬',       type: 0 },
+  { id: 1006, name: 'Tiếng Anh Mỗi Ngày', desc: 'Luyện nói tiếng Anh 🗣️',    type: 0 },
+];
+
 // TRẢ LỜI svc 9 (af): danh bạ theo format s.a(sVar,...) = lặp
 // key7(nick)+key22(tên)+key12(type)+key45(online)+key38+key13(status).
 // Callback a(List<message.f>,int) -> h.t.d(list) -> đổ vào DANH BẠ.
@@ -141,6 +152,26 @@ function pushFriendListCa(sock) {
   send(sock, 250, kvs, `(PUSH danh bạ svc250/ca: ${FAKE_FRIENDS.length} bạn)`);
 }
 
+// TRẢ LỜI svc 81 (codec at): danh sách PHÒNG CHAT.
+// Decode (w/at.java): đếm key100 = số phòng; mỗi phòng:
+//   room id  = giá trị LONG tại entry key100
+//   room name= giá trị STRING tại entry key101 (đi song song)
+//   giữa 2 key100 liên tiếp đọc: key109(gps), key104(thumb), key103(type), key30(desc)
+//   key255 = status (short, 0 = OK).
+function replyRoomList(sock) {
+  const kvs = [];
+  for (const r of FAKE_ROOMS) {
+    kvs.push({ key: 100, val: vLong(r.id) });     // room id (long)
+    kvs.push({ key: 101, val: vStr(r.name) });    // room name
+    kvs.push({ key: 30,  val: vStr(r.desc) });    // mô tả/subtitle
+    kvs.push({ key: 104, val: vStr('') });        // thumbnail (rỗng -> không tải ảnh)
+    kvs.push({ key: 103, val: vShort(r.type) });  // type
+    kvs.push({ key: 109, val: vStr('') });         // gps tag (rỗng -> g=false)
+  }
+  kvs.push({ key: 255, val: vShort(0) });          // status OK
+  send(sock, 81, kvs, `(TRẢ danh sách phòng svc81: ${FAKE_ROOMS.length} phòng)`);
+}
+
 let seeded = false; // chỉ seed tin nhắn 1 lần để tránh trùng khi reconnect
 
 // ---------- Xử lý từng packet ----------
@@ -193,8 +224,9 @@ function handle(sock, svc, kv) {
         { key: 255, val: vShort(0) },          // status = OK -> ONLINE
         { key: 9,   val: vLong(Date.now()) },   // ciVar.e
         { key: 45,  val: vShort(0) },           // online status
-        { key: 4,   val: vStr(username) },
-        { key: 22,  val: vStr(username) },
+        { key: 4,   val: vStr(username) },      // ciVar.j
+        { key: 22,  val: vStr(username) },      // ciVar.h
+        { key: 13,  val: vStr(username) },      // ciVar.i = NICK MÌNH -> h.d() set self nick
         { key: 61,  val: vStr('vi') },
       ], '(ONLINE! status=0)');
 
@@ -228,6 +260,13 @@ function handle(sock, svc, kv) {
           { key: 45,  val: vShort(0) },
         ], '(PUSH tin trả lời)');
       }, 600);
+      break;
+    }
+
+    // svc 81 (at) = app XIN danh sách PHÒNG CHAT (gửi 0 keys khi mở tab "Phòng chat").
+    // Trả về danh sách phòng -> network.e lưu vào h.x -> fragment l hiện list.
+    case 81: {
+      replyRoomList(sock);
       break;
     }
 

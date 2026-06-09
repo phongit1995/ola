@@ -246,3 +246,26 @@ Fake server **không cần** seed/mật khẩu đúng: chỉ cần trả svc 206
 
 ### Danh bạ (DANH BẠ) — KHÔNG fake được qua socket
 Tab DANH BẠ đọc list `this.k` (`message.g`), chỉ nạp qua codec **`w/ca.java`** — nhưng `ca` là **DEAD CODE** (không trong bảng dispatch `ch.java`, không nơi nào khởi tạo). Đã thử wire `ca` vào svc trống (0xfa) trong smali + push, vẫn không render (còn gate state/refresh). Kết luận: luồng danh bạ đã bị gỡ trong bản 2.1.11. Chi tiết: [../../fake-api/README.md](../../fake-api/README.md).
+
+### Phòng chat (PHÒNG CHAT) — đã fake THÀNH CÔNG ✅
+Tab "Phòng chat" lấy danh sách phòng qua socket:
+
+| | Chi tiết |
+|---|---|
+| **Request** | App gửi **svc 81** (0 keys) khi mở tab / refresh |
+| **Response** | Server trả **svc 81**, codec `w/at.java` decode |
+| **Wire / mỗi phòng** | `key100`=room id (**long 8B**), `key101`=tên phòng (string), `key30`=mô tả, `key104`=thumbnail, `key103`=type (byte), `key109`=tag gps (""=không) |
+| **Kết thúc** | `key255`=status (0 = OK) |
+| **Đọc room** | id = giá trị long tại entry key100; tên = string tại entry key101 (đi song song); các field 109/104/103/30 nằm GIỮA 2 key100 liên tiếp |
+| **Callback** | `at` → `gVar.a(List<entity.s>, short)` → `network.e` lưu `h.x.a(list)` → fragment `m/l` vẽ list |
+
+**⚠️ Bug app + bản vá bắt buộc:** sau khi nhận list, `r/a/f.b()` (dựng list hiển thị) truy cập `h.O` (**hồ sơ bản thân**, kiểu `entity.ag`) **không null-check** → `h.O=null` thì **NPE** → list rỗng dù data đúng.
+
+`h.O` chỉ set qua REST **`id/profile`** (codec `w` → `network.e.a(ag,short)`). App **đã tự gọi** fetch này sau login (`network.e` login-success: `this.a.b((String)null,(short)0)`), NHƯNG `id/profile` là request `z=true`: trong `util/http/a.java` URL builder có `if (z) return null` khi base/`owsc` rỗng → lúc login bị **bỏ** → `h.O` không bao giờ set. (Đã rà soát: login + vào chat + xem hồ sơ đều KHÔNG gọi được id/profile.)
+
+→ **Bản vá đã dùng (1 dòng, sạch — KHÔNG đụng `f.smali`):** trong `network/e.smali` login-success vốn có sẵn `h.O = null`; đổi thành `h.O = new entity/ag()` (hồ sơ rỗng mặc định `u=0,q=-1,x=false`). Đúng chỗ app quản lý `h.O`, set tự nhiên mỗi lần login. Sau rebuild: **6 phòng hiển thị đầy đủ** (`fake-api/screenshots/05-phong-chat.png`).
+
+> 💡 Reply **svc 97** cũng thêm **key 13 = nick mình** (`ciVar.i` → `h.d()` set self nick).
+> 📌 **Vào trong 1 phòng** (click phòng) là luồng KHÁC: `m/l.b(s)` gửi socket **JOIN** `a(roomId, true, lat, lon, 0)` rồi chờ nội dung phòng — CHƯA fake.
+
+Dữ liệu phòng giả khai báo ở `socket-server.js` (mảng `FAKE_ROOMS`, handler `case 81`).
