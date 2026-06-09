@@ -17,7 +17,7 @@ Phân tích ngược APK **Ola 2.1.11** (`chat.ola.vn`) + dựng fake server (RE
 
 ## Tài liệu ([docs/](docs/))
 - [man-hinh-screens.md](docs/man-hinh-screens.md) — 77 màn hình (Activity) của app
-- [screens/](docs/screens/) — **tài liệu chi tiết từng màn hình** (bố cục, màu, style, CSS) + ảnh chụp + asset: [đăng nhập](docs/screens/dang-nhap/README.md), [đăng ký](docs/screens/dang-ky/README.md)
+- [screens/](docs/screens/) — **tài liệu chi tiết từng màn hình** (bố cục, màu, style, CSS) + ảnh chụp + asset: [đăng nhập](docs/screens/dang-nhap/README.md), [đăng ký](docs/screens/dang-ky/README.md), [trang chủ](docs/screens/trang-chu/README.md)
 - [ui-style-design.md](docs/ui-style-design.md) — UI style: màu, font, theme (+ [ola-color-palette.html](docs/ola-color-palette.html) xem màu trực quan)
 - [api/socket-protocol.md](docs/api/socket-protocol.md) — giao thức socket chat (kiểu YMSG) + **luồng login đã kiểm chứng thực tế**
 - [api/http-rest-api.md](docs/api/http-rest-api.md) — REST API (`api.ola.vn`) + JS bridge

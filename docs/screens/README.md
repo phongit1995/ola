@@ -16,8 +16,11 @@ screens/
 ├── dang-nhap/             ← màn Đăng nhập
 │   ├── README.md                tài liệu chi tiết
 │   └── images/                  ảnh chụp riêng (01-login-prefilled, 02-login-empty)
-└── dang-ky/               ← màn Đăng ký
-    └── README.md                tài liệu chi tiết
+├── dang-ky/               ← màn Đăng ký
+│   └── README.md                tài liệu chi tiết
+└── trang-chu/             ← màn Trang chủ (bottom tab)
+    ├── README.md                tài liệu chi tiết (bottom bar 5 tab)
+    └── images/                  ảnh chụp 5 tab + 10 icon bottom bar
 ```
 
 > Mỗi màn = **1 folder riêng** chứa `README.md` + folder `images/` (ảnh chụp của riêng màn đó). Ảnh **dùng chung** (logo, icon…) đặt ở [images/](images/) cấp screens.
@@ -28,6 +31,7 @@ screens/
 |---|----------|----------|----------|----------------|
 | 1 | Đăng nhập | [dang-nhap/](dang-nhap/README.md) | `OlaLoginActivity` | ✅ chụp thật |
 | 2 | Đăng ký | [dang-ky/](dang-ky/README.md) | `OlaSignUpActivity` (qua Facebook AccountKit) | ⚠️ dựng từ layout (cần FB AccountKit) |
+| 3 | Trang chủ (bottom tab) | [trang-chu/](trang-chu/README.md) | `OlaBottomTabActivity` | ✅ chụp thật cả 5 tab |
 
 ## Quy ước trong tài liệu
 
