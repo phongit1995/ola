@@ -8,3 +8,8 @@ node_modules/
 
 # OS
 .DS_Store
+
+# Screenshot test tạm (giữ ảnh tư liệu đánh số 01-..NN- và test_room_no_smali_patch.png)
+fake-api/screenshots/room_*.png
+fake-api/screenshots/clean_test.png
+fake-api/screenshots/test_room_list*.png
