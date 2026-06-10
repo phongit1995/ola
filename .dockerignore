@@ -1,0 +1,12 @@
+**/node_modules
+**/dist
+**/dist-ssr
+**/*.log
+.git
+.gitignore
+.DS_Store
+**/.vscode
+**/.idea
+older-ola
+web/README.md
+web/CLAUDE.md
