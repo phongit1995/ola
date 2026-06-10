@@ -131,5 +131,29 @@
     "filterFemale": "Show female",
     "filterMale": "Show male",
     "filterFlexible": "Show gender flexible"
+  },
+  "me": {
+    "tabFeed": "Newsfeed",
+    "tabMentions": "Mentions",
+    "tabMedia": "Photos",
+    "tabFollower": "Followers",
+    "postMenu": "Post options",
+    "comment": "Comment",
+    "dislike": "Dislike",
+    "like": "Like",
+    "liked": "Liked",
+    "commentCount": "{{count}} comments",
+    "likeCount": "{{count}} likes",
+    "composerTitle": "Post Me",
+    "composerHint": "What's on your mind?",
+    "post": "Post",
+    "privacyTo": "To:",
+    "privacy_public": "Public",
+    "privacy_friend": "Friends",
+    "privacy_private": "Private",
+    "justNow": "just now",
+    "newPosts": "↑ You have new posts",
+    "followerEmpty": "No visitors yet",
+    "empty": "Me page has no content"
   }
 }

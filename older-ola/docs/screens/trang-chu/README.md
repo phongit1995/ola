@@ -132,7 +132,7 @@ Action bar trên cùng: **nền xanh `#7CB342`, cao 48dp, chữ trắng**, có b
 |-----|-----------|----------------|
 | **Chat** | 2 tab con **"TIN NHẮN \| DANH BẠ"** (tab đang chọn gạch chân trắng) + menu ⋮ | Danh sách hội thoại (avatar tròn chữ cái + nick + tin cuối + thời gian "vừa tức thì") · **FAB xanh** (✎) góc phải-dưới để soạn tin |
 | **Phòng chat** | Tiêu đề "Phòng chat" (giữa) | Danh sách phòng chat công khai — xem [tài liệu màn Phòng chat](../phong-chat/README.md) |
-| **Me** | 4 icon con: 🙂 bảng tin · @ nhắc đến · 🖼 ảnh · 👥 bạn bè | Bảng tin "Ola Me"; card khuyến nghị **"Ola Me — Loan tin tức thì — [Xem Me]"** · **FAB xanh** (✏️) đăng bài |
+| **Me** | 4 icon con: 🙂 bảng tin · @ nhắc đến · 🖼 ảnh · 👥 quan tâm | Bảng tin "Ola Me" (newsfeed) · **FAB xanh** (✎) đăng bài — xem [tài liệu màn Me](../me/README.md) |
 | **RSS** | Ô **tìm kiếm "Tìm kiếm"** (🔍) + nút 🏠 + menu ⋮ | Danh sách tin RSS |
 | **Ứng dụng** | Tiêu đề "Ứng dụng" | List tiện ích: Thông báo · Kho Game · Cá nhân · Kho VIP · KEN · Đăng Q.Cáo · Hình Ảnh · Ola Mall · Lân cận · Cài đặt |
 

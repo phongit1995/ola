@@ -327,8 +327,31 @@ Item `contact_item_layout.xml` (gần giống dòng hội thoại, thêm giới 
 
 ## 8. Modal & Menu
 
-### 8.1. Menu ⋮ trong khung chat (list popup `m`)
-Bấm nút ⋮ (hoặc avatar đối phương) trong `OlaChatViewActivity` → popup danh sách (code dòng 2210–2243):
+### 8.1. Menu ⋮ trên action bar (đổi theo tab đang xem)
+
+Nút ⋮ `conversationTabRightButton` (drawable `ic_more_white`) trên action bar gọi `m.e.h_()`, **uỷ quyền cho fragment trang đang hiển thị** → mở list popup `chat.ola.vn.i.m`. Vì vậy **nội dung menu KHÁC nhau** giữa TIN NHẮN và DANH BẠ:
+
+**Khi đang ở tab TIN NHẮN** (fragment `m.o`, `o.h_()` dòng 616):
+
+| Mục | String (VI) | Hành động |
+|-----|-------------|-----------|
+| Xóa tất cả | `string_delete_all` = "Xóa tất cả" | → dialog xác nhận `message_delete_all_conversations_confirm` = "Bạn có muốn xóa tất cả tin nhắn chat" (nút **Xoá** / **Không**) |
+| Hiện/Xóa người lạ | `string_show_strangers` = "Hiện người lạ" **hoặc** `string_delete_all_stranger` = "Xóa tất cả người lạ" (đổi theo cờ ẩn người lạ `c.x.v`) | "Xóa tất cả người lạ" → dialog `string_delete_all_stranger_convsations_confirm` = "Bạn có muốn xóa tất cả trò chuyện với người lạ?"; "Hiện/Ẩn người lạ" → bật/tắt lọc người lạ ngay |
+| Danh sách chặn | `string_block_list` = "Danh sách chặn" | → `OlaChatBlockedListActivity` |
+
+**Khi đang ở tab DANH BẠ** (fragment `m.n`, `n.h_()` dòng 505) — đây là menu **tài khoản**:
+
+| Mục | String (VI) | Hành động |
+|-----|-------------|-----------|
+| Đổi hình đại diện | `string_change_ovatar` = "Đổi hình đại diện" | → `OlaCropImageActivity` (chọn/cắt avatar) |
+| Đăng xuất | `string_logout` = "Đăng xuất" | đăng xuất thiết bị này |
+| Đăng xuất mọi nơi | `string_logout_all` = "Đăng xuất mọi nơi" | đăng xuất tất cả thiết bị |
+| Đăng ký / Mua VIP | `string_buy_vip` = "Đăng ký VIP" / `string_buy_vip_day` = "Mua ngày VIP" | hiện tuỳ trạng thái VIP (`h.H`/`h.K`) → `BuyVipActivity` |
+
+> Popup dùng list đơn giản (`chat.ola.vn.i.m`) — danh sách mục văn bản, bấm 1 mục để chạy hành động (không phải dialog 2 nút).
+
+### 8.2. Menu ⋮ trong cuộc chat đang mở (`OlaChatViewActivity`)
+Bấm nút ⋮ (hoặc avatar đối phương) **bên trong 1 cuộc chat** → popup danh sách (code dòng 2210–2243):
 
 | Mục | String | Hành động |
 |-----|--------|-----------|
@@ -338,12 +361,12 @@ Bấm nút ⋮ (hoặc avatar đối phương) trong `OlaChatViewActivity` → p
 | Chặn | `string_block` | → **dialog xác nhận chặn** (ẩn nếu đã là bạn) |
 | Chat nhóm | `string_chat_group` | tạo/mời vào nhóm chat |
 
-### 8.2. Dialog xác nhận **Chặn** (`i.i.d(...)`)
+### 8.3. Dialog xác nhận **Chặn** (`i.i.d(...)`)
 - Tiêu đề: `message_block_chat_title` = **"Chặn tin nhắn"**
 - Nội dung: `message_block_chat_confirm_format` = **"Bạn có muốn chặn tin nhắn từ @\<nick> không?"**
 - Nút: **Chặn** (`string_block`) / **Huỷ** (`string_cancel`). Khung dialog dùng kiểu chung — xem [modal-dialog/](../modal-dialog/README.md).
 
-### 8.3. Dialog **Xoá hội thoại** (`delete_conversation_confirm_dialog_layout.xml`)
+### 8.4. Dialog **Xoá hội thoại** (`delete_conversation_confirm_dialog_layout.xml`)
 Vuốt 1 dòng hội thoại (hoặc giữ) → dialog:
 ```
 ┌─────────────────────────────────────┐
@@ -404,9 +427,10 @@ Thanh nhập có nút mở **bảng đính kèm** trượt lên, gồm 6 tab:
 | Header DANH BẠ (tìm kiếm / Invite / Chat group) | ✅ mục 3 |
 | Strings (vi/en) | ✅ mục 6 |
 | Token UI tóm tắt | ✅ mục 7 |
-| Menu ⋮ khung chat | ✅ mục 8.1 |
-| Dialog Chặn | ✅ mục 8.2 |
-| Dialog Xoá hội thoại | ✅ mục 8.3 |
+| Menu ⋮ action bar (TIN NHẮN / DANH BẠ) | ✅ mục 8.1 |
+| Menu ⋮ trong cuộc chat đang mở | ✅ mục 8.2 |
+| Dialog Chặn | ✅ mục 8.3 |
+| Dialog Xoá hội thoại | ✅ mục 8.4 |
 | Bảng đính kèm 6 tab | ✅ mục 9 |
 | Soạn tin / chat nhóm / chặn / tìm bạn | ✅ mục 10 |
 | Bảng icon UI (drawable thật) | ✅ mục 12 |
