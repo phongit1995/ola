@@ -36,6 +36,9 @@ screens/
 ├── rss/                   ← màn RSS (tab 4: trình đọc tin tức)
 │   ├── README.md                flow + list bài + WebView + bookmark/lịch sử + CSS
 │   └── images/                  icon RSS
+├── cai-dat/               ← màn Cài đặt (Settings — app trong tab Ứng dụng)
+│   ├── README.md                5 nhóm + mọi mục + đăng xuất + CSS + icon
+│   └── images/                  icon
 ├── ung-dung/              ← màn Ứng dụng (tab 5: list tiện ích)
 │   ├── README.md                10 tiện ích + style item + CSS
 │   └── images/                  ảnh chụp + 10 icon tiện ích
@@ -57,6 +60,7 @@ screens/
 | 3c | Me (tab 3 — newsfeed) | [me/](me/README.md) | `OlaBottomTabActivity` (frag `me.c`) + `OlaMeComposerActivity` / `OlaUserMePageActivity` | 📐 từ code/XML (chưa chụp) |
 | 3d | Trang cá nhân (User Info) | [trang-ca-nhan/](trang-ca-nhan/README.md) | `OlaUserMePageActivity` | 📐 từ code/XML (chưa chụp) |
 | 3e | RSS (tab 4 — tin tức) | [rss/](rss/README.md) | `OlaBottomTabActivity` (frag `m.j`) + WebView | 📐 từ code/XML (chưa chụp) |
+| 5 | Cài đặt (Settings) | [cai-dat/](cai-dat/README.md) | `OlaAppSettingActivity` | 📐 từ code/XML (chưa chụp) |
 | 4 | Ứng dụng (tab 5) | [ung-dung/](ung-dung/README.md) | `OlaBottomTabActivity` + fragment `m/d` | ✅ chụp thật + 10 icon |
 | — | Modal / Dialog (kiểu chung) | [modal-dialog/](modal-dialog/README.md) | dùng chung (confirm, nhập, progress, chọn) | 📐 trích từ layout/style |
 

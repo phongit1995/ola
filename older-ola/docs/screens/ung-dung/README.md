@@ -34,7 +34,7 @@ Tab thứ **5** của bottom bar ([trang chủ](../trang-chu/README.md)) — dan
 | 7 | ![photos](images/ic_tab_media_store.png) | Hình Ảnh | `mediastore` = Photos | — | Kho ảnh |
 | 8 | ![mall](images/ola_mall_icon.png) | Ola Mall | `ola_mall` = Ola Mall | *subtitle* | Mall (clip) — phụ đề "Diverse video clips collected by editors" |
 | 9 | ![nearby](images/ic_check_in.png) | Lân cận | `nearby_places` = Nearby places | — | Địa điểm gần (cần **GPS**) |
-| 10 | ![setting](images/ic_tab_setting.png) | Cài đặt | `setting` = Settings | — | Cài đặt app |
+| 10 | ![setting](images/ic_tab_setting.png) | Cài đặt | `setting` = Settings | — | Cài đặt app — xem [tài liệu màn Cài đặt](../cai-dat/README.md) |
 
 > Item 2 (`o.e`) và 6 (`o.a`) là entry đặc biệt có **badge nhãn** (`general_tab_game_store`→"Free", `post_adme`→"New"). Item 8 (Ola Mall) hiện **subtitle** thay vì badge. Item 9 (Lân cận) khi bấm sẽ xin quyền **vị trí**; nếu GPS tắt → dialog xác nhận bật GPS (xem [modal-dialog](../modal-dialog/README.md)).
 
