@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { ROUTES } from '@constants';
 import { useAuthStore } from '@/store/authStore';
-import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { LanguageSwitcher } from '@components/LanguageSwitcher';
 import { BottomTabBar, type TabKey } from './BottomTabBar';
 import { ChatTab } from './tabs/ChatTab';
 import { AppsTab } from './tabs/AppsTab';
@@ -20,7 +21,7 @@ export function HomePage() {
 
   function handleLogout() {
     logout();
-    navigate('/login');
+    navigate(ROUTES.login);
   }
 
   return (

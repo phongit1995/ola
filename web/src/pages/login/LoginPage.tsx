@@ -2,10 +2,11 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import { ROUTES } from '@constants';
 import olaLogo from '@/assets/images/ola-logo.png';
-import { ClearableInput } from '@/components/form/ClearableInput';
-import { SubmitButton } from '@/components/form/SubmitButton';
-import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { ClearableInput } from '@components/form/ClearableInput';
+import { SubmitButton } from '@components/form/SubmitButton';
+import { LanguageSwitcher } from '@components/LanguageSwitcher';
 import { useAuthStore } from '@/store/authStore';
 
 const APP_VERSION = '15240093';
@@ -33,7 +34,7 @@ export function LoginPage() {
     setTimeout(() => {
       setLoading(false);
       loginUser(data.username || 'guest');
-      navigate('/home');
+      navigate(ROUTES.home);
     }, 1200);
   }
 
@@ -74,7 +75,7 @@ export function LoginPage() {
 
       <button
         type="button"
-        onClick={() => navigate('/forgot-password')}
+        onClick={() => navigate(ROUTES.forgotPassword)}
         className="w-full max-w-md py-3 text-right text-sm text-white"
       >
         {t('login.forgot')}
@@ -82,7 +83,7 @@ export function LoginPage() {
 
       <button
         type="button"
-        onClick={() => navigate('/register')}
+        onClick={() => navigate(ROUTES.register)}
         className="mt-1 h-12 w-full max-w-md text-center text-xl text-white/70"
       >
         {t('login.createAccount')}

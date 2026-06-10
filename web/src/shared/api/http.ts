@@ -1,10 +1,9 @@
 import axios from 'axios';
-
-const baseURL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080';
+import { env } from '@config';
 
 export const http = axios.create({
-  baseURL,
-  timeout: 10000,
+  baseURL: env.apiUrl,
+  timeout: env.apiTimeout,
   headers: {
     'Content-Type': 'application/json',
   },

@@ -32,17 +32,37 @@ web/
 ├── eslint.config.js / .prettierrc.json
 └── src/
     ├── main.tsx            # entry
-    ├── App.tsx
+    ├── App.tsx             # render <AppRouter />
     ├── index.css           # @import "tailwindcss" + @theme (token Ola)
     ├── assets/             # ảnh, svg import tĩnh
-    ├── components/ui/      # component tái sử dụng (Button…)
+    ├── routes/             # AppRouter.tsx — khai báo route tập trung
     ├── pages/              # màn hình theo route (HomePage…)
-    ├── hooks/              # custom hooks (useCounter…)
-    ├── lib/                # tiện ích (cn…)
-    └── types/              # type dùng chung
+    ├── store/              # zustand store
+    ├── i18n/               # i18next + locales
+    └── shared/             # code hạ tầng dùng chung
+        ├── api/            # axios instance + *Api.ts
+        ├── config/         # env.ts (VITE_*)
+        ├── constants/      # routes.ts (ROUTES)…
+        ├── components/     # UI dùng chung (ui/, form/…)
+        ├── lib/            # tiện ích (cn…)
+        ├── hooks/          # custom hooks (useCounter…)
+        └── types/          # type dùng chung
 ```
 
 ## Quy ước
 
-- **Import alias:** `@/` trỏ tới `src/` — `import { Button } from '@/components/ui/Button'`.
+- **Import alias:** ngoài `@/` → `src/`, mỗi module trong `shared/` có alias ngắn riêng — khai báo đồng bộ ở `tsconfig.app.json` và `vite.config.ts`:
+
+  | Alias | Trỏ tới |
+  |-------|---------|
+  | `@/*` | `src/*` |
+  | `@api` | `src/shared/api` |
+  | `@config` | `src/shared/config` |
+  | `@constants` | `src/shared/constants` |
+  | `@components` `@components/*` | `src/shared/components` |
+  | `@lib` | `src/shared/lib` |
+  | `@hooks` | `src/shared/hooks` |
+  | `@app-types` | `src/shared/types` |
+
+  Ví dụ: `import { ROUTES } from '@constants'`, `import { TextField } from '@components/form/TextField'`.
 - **Tailwind v4:** cấu hình bằng CSS (`@theme` trong `src/index.css`), không cần `tailwind.config.js`. Token màu Ola: `bg-ola-primary`, `text-ola-accent`…

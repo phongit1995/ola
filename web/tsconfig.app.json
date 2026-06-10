@@ -24,7 +24,15 @@
 
     /* Path alias */
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@api": ["./src/shared/api"],
+      "@config": ["./src/shared/config"],
+      "@constants": ["./src/shared/constants"],
+      "@lib": ["./src/shared/lib"],
+      "@hooks": ["./src/shared/hooks"],
+      "@app-types": ["./src/shared/types"],
+      "@components": ["./src/shared/components"],
+      "@components/*": ["./src/shared/components/*"]
     }
   },
   "include": ["src"]

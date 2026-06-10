@@ -2,10 +2,11 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { Trans, useTranslation } from 'react-i18next';
+import { ROUTES } from '@constants';
 import olaLogo from '@/assets/images/ola-logo.png';
-import { TextField } from '@/components/form/TextField';
-import { SubmitButton } from '@/components/form/SubmitButton';
-import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { TextField } from '@components/form/TextField';
+import { SubmitButton } from '@components/form/SubmitButton';
+import { LanguageSwitcher } from '@components/LanguageSwitcher';
 import { useAuthStore } from '@/store/authStore';
 
 const USERNAME_RE = /^[a-z0-9._]{6,24}$/;
@@ -44,7 +45,7 @@ export function RegisterPage() {
     setTimeout(() => {
       setLoading(false);
       loginUser(data.username);
-      navigate('/home');
+      navigate(ROUTES.home);
     }, 1200);
   }
 
@@ -56,7 +57,7 @@ export function RegisterPage() {
       <header className="flex h-12 w-full items-center text-white">
         <button
           type="button"
-          onClick={() => navigate('/login')}
+          onClick={() => navigate(ROUTES.login)}
           className="-ml-2 px-2 text-base"
         >
           {t('common.cancel')}
@@ -126,7 +127,7 @@ export function RegisterPage() {
               components={{
                 terms: (
                   <Link
-                    to="/dieu-khoan"
+                    to={ROUTES.terms}
                     className="font-medium text-white underline underline-offset-2"
                   />
                 ),
@@ -145,7 +146,7 @@ export function RegisterPage() {
 
       <button
         type="button"
-        onClick={() => navigate('/login')}
+        onClick={() => navigate(ROUTES.login)}
         className="h-12 w-full max-w-md text-center text-xl text-white/70"
       >
         {t('register.hasAccount')}
