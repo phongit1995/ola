@@ -5,6 +5,7 @@ import { useAuthStore } from '@/store/authStore';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { BottomTabBar, type TabKey } from './BottomTabBar';
 import { ChatTab } from './tabs/ChatTab';
+import { AppsTab } from './tabs/AppsTab';
 
 export function HomePage() {
   const navigate = useNavigate();
@@ -15,7 +16,6 @@ export function HomePage() {
   const [tab, setTab] = useState<TabKey>('chat');
   const [chatSub, setChatSub] = useState<'messages' | 'contacts'>('messages');
 
-  const apps = t('home.apps', { returnObjects: true });
   const displayName = username ?? t('home.guest');
 
   function handleLogout() {
@@ -110,15 +110,7 @@ export function HomePage() {
             </button>
           </div>
         )}
-        {tab === 'apps' && (
-          <ul className="divide-y divide-[#e6e6e6]">
-            {apps.map((name) => (
-              <li key={name} className="px-4 py-3.5 text-base text-gray-800">
-                {name}
-              </li>
-            ))}
-          </ul>
-        )}
+        {tab === 'apps' && <AppsTab />}
       </main>
 
       <BottomTabBar active={tab} onChange={setTab} badges={{ chat: 3 }} />
