@@ -8,7 +8,7 @@ Web app: **React 19 + Vite + TypeScript + Tailwind CSS v4**.
 
 ```bash
 pnpm install
-pnpm dev           # http://localhost:5173
+pnpm dev           # http://localhost:3005
 ```
 
 ## Scripts
