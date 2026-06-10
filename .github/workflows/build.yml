@@ -5,6 +5,12 @@ on:
     branches: [main]
   workflow_dispatch:
     inputs:
+      environment:
+        description: 'Loại image build'
+        required: false
+        default: 'dev'
+        type: choice
+        options: [dev, production]
       tag:
         description: 'Image tag (latest, v1.2.3, ...)'
         required: false
@@ -23,12 +29,12 @@ on:
         type: string
 
 concurrency:
-  group: build-${{ github.ref }}
+  group: build-${{ github.ref }}-${{ inputs.environment || 'dev' }}
   cancel-in-progress: false
 
 env:
   IMAGE_TAG: ${{ inputs.tag || 'latest' }}
-  TARGET: ${{ inputs.target || 'both' }}
+  SUFFIX: ${{ (github.event_name == 'push' || inputs.environment == 'dev') && '-dev' || '' }}
 
 jobs:
   build-web:
@@ -41,7 +47,7 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build & push ola-web
+      - name: Build & push ola-web${{ env.SUFFIX }}
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -49,8 +55,8 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/ola-web:${{ env.IMAGE_TAG }}
-            ${{ secrets.DOCKERHUB_USERNAME }}/ola-web:sha-${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/ola-web${{ env.SUFFIX }}:${{ env.IMAGE_TAG }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/ola-web${{ env.SUFFIX }}:sha-${{ github.sha }}
           build-args: |
             VITE_API_URL=${{ inputs.vite_api_url || vars.VITE_API_URL || 'http://localhost:8080' }}
           cache-from: type=gha
@@ -69,7 +75,7 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build & push ola-chat-server-${{ matrix.service }}
+      - name: Build & push ola-chat-server-${{ matrix.service }}${{ env.SUFFIX }}
         uses: docker/build-push-action@v6
         with:
           context: ./server
@@ -77,7 +83,7 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/ola-chat-server-${{ matrix.service }}:${{ env.IMAGE_TAG }}
-            ${{ secrets.DOCKERHUB_USERNAME }}/ola-chat-server-${{ matrix.service }}:sha-${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/ola-chat-server-${{ matrix.service }}${{ env.SUFFIX }}:${{ env.IMAGE_TAG }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/ola-chat-server-${{ matrix.service }}${{ env.SUFFIX }}:sha-${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
