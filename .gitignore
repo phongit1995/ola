@@ -9,3 +9,6 @@
 /ola-apk-images.zip
 
 # Mỗi subfolder (older-ola/, web/) có .gitignore riêng cho node_modules, dist, apk...
+
+# Deploy secrets (không commit)
+infra/web/deploy.env

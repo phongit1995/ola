@@ -315,5 +315,132 @@ Thanh nhập có nút mở **bảng đính kèm** trượt lên, gồm 6 tab:
 | Dialog Xoá hội thoại | ✅ mục 8.3 |
 | Bảng đính kèm 6 tab | ✅ mục 9 |
 | Soạn tin / chat nhóm / chặn / tìm bạn | ✅ mục 10 |
-| Ảnh chụp đính kèm/sticker/voice/group | ❌ chưa chụp (fake server chưa hỗ trợ các luồng này) |
-| CSS cho attachment panel & input bar | ❌ chưa viết (cần nếu dựng lại khung chat đầy đủ) |
+| Bảng icon UI (drawable thật) | ✅ mục 12 |
+| CSS thanh nhập + bảng đính kèm | ✅ mục 13 |
+| Ảnh chụp màn soạn tin mới | ✅ `images/05-soan-tin.png` |
+| Ảnh chụp panel đính kèm mở (sticker/voice) | ❌ fake server chưa hỗ trợ luồng này |
+
+---
+
+## 12. Icon & drawable thật (trích từ APK)
+
+> Đã copy sẵn vào [images/icons/](images/icons/) (mật độ xxhdpi). Tên = đúng tên resource trong `apktool_out/res/drawable-*/`.
+
+### Khung Chat (TIN NHẮN / DANH BẠ)
+| UI | Icon | Drawable |
+|----|------|----------|
+| FAB soạn tin | ![compose](images/icons/ic_action_compose_message.png) | `ic_action_compose_message` (tint trắng) |
+| Menu ⋮ | ![more](images/icons/ic_more_white.png) | `ic_more_white` |
+| Avatar mặc định | ![avatar](images/icons/ic_contact_photo.png) | `ic_contact_photo` |
+| Thiết bị Android | ![android](images/icons/ic_device_type_android.png) | `ic_device_type_android` |
+| Thiết bị iOS | ![apple](images/icons/ic_device_type_apple.png) | `ic_device_type_apple` (+ `_pc`, `_phone`, `_winphone`) |
+| Giới tính nam | ![male](images/icons/ic_indicate_male.png) | `ic_indicate_male` |
+| Giới tính nữ | ![female](images/icons/ic_indicate_female.png) | `ic_indicate_female` |
+| Badge chưa đọc | — | `bg_uread_notify` (nền hồng `#FF4081`) |
+
+### Khung hội thoại (OlaChatViewActivity)
+| UI | Icon | Drawable |
+|----|------|----------|
+| Nút 👍 / gửi nhanh | ![like](images/icons/smiley_35.png) | `smiley_35` (`likeButton`) |
+| Nút Gửi (khi gõ) | — | text "Gửi" màu `#7CB342` (`sendTextView`) |
+| Thêm thành viên (chat nhóm) | ![add](images/icons/ic_add_friend.png) | `ic_add_friend` |
+| Bong bóng đến | ![in](images/icons/chat_incoming.9.png) | `chat_incoming.9.png` (9-patch, trái) |
+| Bong bóng đi | ![out](images/icons/chat_outgoing.9.png) | `chat_outgoing.9.png` (9-patch, phải) |
+| Bong bóng gửi lỗi | — | `chat_outgoing_fail.9.png` |
+
+### Tab bảng đính kèm (mỗi tab có bản thường + `_selected`)
+| Tab | Bình thường | Đang chọn | Drawable |
+|-----|-------------|-----------|----------|
+| Văn bản (bàn phím) | ![text](images/icons/ic_chat_text.png) | ![text-sel](images/icons/ic_chat_text_selected.png) | `ic_chat_text` / `ic_chat_text_selected` |
+| Biểu cảm / Sticker | ![smiley](images/icons/ic_smiley.png) | ![smiley-sel](images/icons/ic_smiley_selected.png) | `ic_smiley` / `ic_smiley_selected` |
+| Máy ảnh | ![cam](images/icons/ic_camera.png) | ![cam-sel](images/icons/ic_camera_selected.png) | `ic_camera` / `ic_camera_selected` |
+| Ghi âm | ![voice](images/icons/ic_voice.png) | ![voice-sel](images/icons/ic_voice_selected.png) | `ic_voice` / `ic_voice_selected` (+ `ic_voice_volumn_0..3` mức âm) |
+| Khác (ảnh, vị trí, YouTube…) | ![more](images/icons/ic_more.png) | ![more-sel](images/icons/ic_more_selected.png) | `ic_more` / `ic_more_selected` |
+
+### Dialog
+| UI | Icon | Drawable |
+|----|------|----------|
+| Icon thông tin (header dialog) | ![info](images/icons/ic_dialog_indicate_info.png) | `ic_dialog_indicate_info` |
+| Nút Xoá (đỏ) | — | `btn_red_button_selector` (≈ `#E34545`) |
+
+---
+
+## 13. CSS — Thanh nhập & Bảng đính kèm (khung chat)
+
+Trích từ `ola_chat_message_input_layout.xml` (thanh nhập) + `chatAttachmentFrameLayout` (panel) + tab strip.
+
+```css
+/* ===== Thanh nhập (chatTextInputLayout) ===== */
+.ola-chat-input {
+  display: flex; align-items: flex-end;       /* gravity bottom */
+  min-height: 36px; padding: 2px 8px;          /* T/B 2dp, L/R 8dp */
+  background: #FFFFFF;
+  border-top: 1px solid rgba(0,0,0,.12);
+}
+.ola-chat-input__field {
+  flex: 1;                                     /* layout_weight 1 */
+  border: none; background: none;              /* edittext.nobackground */
+  font-size: 16px; line-height: 36px;
+  max-height: 36px; resize: none;
+  color: rgba(0,0,0,.87);
+}
+.ola-chat-input__field::placeholder { color: rgba(0,0,0,.38); }  /* "Viết tin nhắn cho <nick>" */
+.ola-chat-input__action {                      /* FrameLayout phải, 36×36 */
+  width: 36px; height: 36px; margin-left: 4px;
+  display: flex; align-items: center; justify-content: center;
+  background: none; border: none;
+}
+.ola-chat-input__like { width: 28px; height: 28px; }            /* smiley_35 — khi ô TRỐNG */
+.ola-chat-input__send {                                          /* "Gửi" — khi ĐANG GÕ */
+  display: none; color: #7CB342; font-size: 16px; min-width: 32px;
+}
+.ola-chat-input.is-typing .ola-chat-input__like { display: none; }
+.ola-chat-input.is-typing .ola-chat-input__send { display: inline-block; }
+
+/* ===== Tab strip đính kèm ===== */
+.ola-attach-tabs {
+  display: flex; background: #FFFFFF;
+  border-top: 1px solid rgba(0,0,0,.12);
+}
+.ola-attach-tabs__tab {
+  flex: 1; height: 44px;
+  display: flex; align-items: center; justify-content: center;
+  background: none; border: none; opacity: .6;       /* icon thường */
+}
+.ola-attach-tabs__tab.is-active { opacity: 1; }       /* dùng icon _selected (xanh) */
+.ola-attach-tabs__tab img { width: 24px; height: 24px; }
+
+/* ===== Panel đính kèm (chatAttachmentFrameLayout) ===== */
+.ola-attach-panel {
+  background: #FFFFFF;
+  height: 240px;                                /* trượt lên thay bàn phím */
+  overflow-y: auto;
+}
+.ola-attach-panel__grid {                       /* emoji / sticker / "Khác" */
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px; padding: 12px;
+}
+```
+
+```html
+<!-- Thanh nhập -->
+<div class="ola-chat-input">
+  <input class="ola-chat-input__field" placeholder="Viết tin nhắn cho thuhuong">
+  <button class="ola-chat-input__action">
+    <img class="ola-chat-input__like" src="images/icons/smiley_35.png">
+    <span class="ola-chat-input__send">Gửi</span>
+  </button>
+</div>
+
+<!-- Tab strip đính kèm -->
+<div class="ola-attach-tabs">
+  <button class="ola-attach-tabs__tab"><img src="images/icons/ic_chat_text.png"></button>
+  <button class="ola-attach-tabs__tab is-active"><img src="images/icons/ic_smiley_selected.png"></button>
+  <button class="ola-attach-tabs__tab"><img src="images/icons/ic_camera.png"></button>
+  <button class="ola-attach-tabs__tab"><img src="images/icons/ic_voice.png"></button>
+  <button class="ola-attach-tabs__tab"><img src="images/icons/ic_more.png"></button>
+</div>
+```
+
+> Quy tắc hiển thị: ô nhập **trống** → hiện nút **👍 `smiley_35`**; **đang gõ** → đổi thành nút **"Gửi"** (`#7CB342`). Bấm 1 tab đính kèm → panel trượt lên thay bàn phím, icon tab đổi sang bản `_selected` (xanh).

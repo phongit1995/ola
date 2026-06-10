@@ -1,0 +1,44 @@
+name: web-deploy
+
+# Deploy thủ công: SSH vào server, pull image từ Docker Hub và chạy lại container.
+# LƯU Ý: runner phải REACH được server qua SSH. Vì phong.local là LAN nên cần một
+# trong hai: (a) self-hosted runner trong cùng mạng, hoặc (b) SSH host public
+# (Cloudflare Access / IP public). Xem README để biết chi tiết.
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag image để deploy'
+        required: true
+        default: 'latest'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH deploy
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          port: ${{ secrets.SSH_PORT }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          script: |
+            set -e
+            IMAGE="${{ secrets.DOCKERHUB_USERNAME }}/ola-web"
+            TAG="${{ inputs.tag }}"
+            CONTAINER="ola-web"
+            HOST_PORT="5081"
+            docker pull "$IMAGE:$TAG"
+            docker rm -f "$CONTAINER" 2>/dev/null || true
+            docker run -d --name "$CONTAINER" \
+              --network dockflare-internal \
+              -p ${HOST_PORT}:80 \
+              --restart unless-stopped \
+              --label dockflare.enable=true \
+              --label dockflare.hostname=web.ola-server.click \
+              --label dockflare.service=http://phong.local:${HOST_PORT} \
+              "$IMAGE:$TAG"
+            docker image prune -f || true
+            docker ps --filter "name=^/${CONTAINER}$" --format "{{.Image}} | {{.Status}} | {{.Ports}}"
