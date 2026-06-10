@@ -59,5 +59,18 @@
     ],
     "appGameSubtitle": "The BEST games for you",
     "appMallSubtitle": "Diverse video clips collected by editors"
+  },
+  "dialog": {
+    "accept": "Accept",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "no": "No",
+    "logoutButton": "Log Out",
+    "logoutTitle": "Log Out",
+    "logoutMessage": "Do you want to sign out Ola?",
+    "deleteConvTitle": "Delete conversation",
+    "deleteConvMessage": "Do you want to delete the conversation with {{name}}?",
+    "deleteArchived": "Delete archived message",
+    "deleteAria": "Delete conversation with {{name}}"
   }
 }

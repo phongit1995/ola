@@ -71,6 +71,19 @@ RelativeLayout
 - **Empty state**: khi chưa có hội thoại → hiện hướng dẫn "Để bắt đầu chat, chạm vào biểu tượng ✎ góc dưới phải".
 - Icon **loại thiết bị** (Android/iOS) ở góc avatar.
 
+### Trạng thái CHƯA ĐỌC vs ĐÃ ĐỌC (code `message/n.java`)
+
+Khi hội thoại có tin **chưa đọc** (`unread > 0`), dòng đổi style:
+
+| Thành phần | Đã đọc | **Chưa đọc** | Nguồn |
+|------------|--------|--------------|-------|
+| Nick (`txtItemTitle`) | thường | **in đậm** | `Typeface.create(.., BOLD)` |
+| Thời gian (`timeAgoTextView`) | thường, `rgba(0,0,0,.54)` (`f.z`) | **in đậm**, `rgba(0,0,0,.87)` (`f.y`) | đậm + đổi màu |
+| Nền dòng (`conversationViewLayout`) | `rgba(255,255,255,.8)` (`f.d`) | **`#F1F8E9`** xanh lá nhạt (`f.I` = `colorOlaPrimaryLight`) | highlight |
+| Badge (`txtUnreadMessgage`) | ẩn | **hiện số** (nền hồng `#FF4081`) | — |
+
+> Tóm lại tin chưa đọc = **nền xanh nhạt `#F1F8E9` + nick & giờ in đậm + badge số hồng**. Bấm vào đọc xong → trở lại nền trắng mờ, chữ thường, badge biến mất.
+
 ---
 
 ## 3. Trang DANH BẠ — danh bạ bạn bè
@@ -170,6 +183,15 @@ Item `contact_item_layout.xml` (gần giống dòng hội thoại, thêm giới 
   color: #fff; font-size: 12px; font-weight: bold;
   display: flex; align-items: center; justify-content: center;
 }
+
+/* ===== Dòng CHƯA ĐỌC (highlight) ===== */
+.ola-convo-item.is-unread { background: #F1F8E9; }            /* colorOlaPrimaryLight */
+.ola-convo-item.is-unread .ola-convo-item__name { font-weight: bold; }
+.ola-convo-item.is-unread .ola-convo-item__time {
+  font-weight: bold; color: rgba(0,0,0,.87);                 /* f.y, đậm hơn .54 */
+}
+/* Đã đọc: ẩn badge, nền trắng mờ, chữ thường (mặc định) */
+.ola-convo-item:not(.is-unread) .ola-convo-item__badge { display: none; }
 
 /* ===== FAB soạn tin ===== */
 .ola-chat-fab {

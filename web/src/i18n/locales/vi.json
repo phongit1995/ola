@@ -59,5 +59,18 @@
     ],
     "appGameSubtitle": "Trò chơi HAY NHẤT dành cho bạn",
     "appMallSubtitle": "Kho Video vô cùng phong phú và đa dạng"
+  },
+  "dialog": {
+    "accept": "Đồng ý",
+    "cancel": "Huỷ",
+    "delete": "Xóa",
+    "no": "Không",
+    "logoutButton": "Đăng xuất",
+    "logoutTitle": "Đăng xuất",
+    "logoutMessage": "Bạn có muốn đăng xuất khỏi Ola?",
+    "deleteConvTitle": "Xóa hội thoại",
+    "deleteConvMessage": "Bạn có muốn xóa hội thoại với {{name}}?",
+    "deleteArchived": "Xóa tin nhắn đã lưu",
+    "deleteAria": "Xóa hội thoại với {{name}}"
   }
 }

@@ -24,6 +24,9 @@ screens/
 ├── chat/                  ← màn Chat (tab 1: TIN NHẮN + DANH BẠ)
 │   ├── README.md                list hội thoại + danh bạ + khung chat + CSS
 │   └── images/                  ảnh chụp TIN NHẮN, DANH BẠ, bong bóng chat
+├── phong-chat/            ← màn Phòng chat (tab 2: public chat room)
+│   ├── README.md                list phòng + số người + filter + loa loa + CSS
+│   └── images/                  ảnh chụp + icon phòng chat
 ├── ung-dung/              ← màn Ứng dụng (tab 5: list tiện ích)
 │   ├── README.md                10 tiện ích + style item + CSS
 │   └── images/                  ảnh chụp + 10 icon tiện ích
@@ -41,6 +44,7 @@ screens/
 | 2 | Đăng ký | [dang-ky/](dang-ky/README.md) | `OlaSignUpActivity` (qua Facebook AccountKit) | ⚠️ dựng từ layout (cần FB AccountKit) |
 | 3 | Trang chủ (bottom tab) | [trang-chu/](trang-chu/README.md) | `OlaBottomTabActivity` | ✅ chụp thật cả 5 tab |
 | 3a | Chat (TIN NHẮN + DANH BẠ) | [chat/](chat/README.md) | `OlaBottomTabActivity` (frag `e`) + `OlaChatViewActivity` | ✅ chụp thật |
+| 3b | Phòng chat (tab 2) | [phong-chat/](phong-chat/README.md) | `OlaBottomTabActivity` (frag `l`) + `OlaChatViewActivity` | ✅ chụp (list trống) |
 | 4 | Ứng dụng (tab 5) | [ung-dung/](ung-dung/README.md) | `OlaBottomTabActivity` + fragment `m/d` | ✅ chụp thật + 10 icon |
 | — | Modal / Dialog (kiểu chung) | [modal-dialog/](modal-dialog/README.md) | dùng chung (confirm, nhập, progress, chọn) | 📐 trích từ layout/style |
 

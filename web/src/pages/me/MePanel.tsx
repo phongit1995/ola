@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ROUTES } from '@constants';
 import { LanguageSwitcher } from '@components/LanguageSwitcher';
+import { ConfirmDialog } from '@components';
 import { useAuthStore } from '@/store/authStore';
 import { HomeHeader } from '@components/HomeHeader';
 
@@ -10,10 +12,12 @@ export function MePanel() {
   const { t } = useTranslation();
   const username = useAuthStore((s) => s.username);
   const logout = useAuthStore((s) => s.logout);
+  const [logoutOpen, setLogoutOpen] = useState(false);
 
   const displayName = username ?? t('home.guest');
 
-  function handleLogout() {
+  function confirmLogout() {
+    setLogoutOpen(false);
     logout();
     navigate(ROUTES.login);
   }
@@ -34,13 +38,24 @@ export function MePanel() {
           <LanguageSwitcher tone="dark" />
           <button
             type="button"
-            onClick={handleLogout}
+            onClick={() => setLogoutOpen(true)}
             className="rounded-sm border border-ola-primary-dark bg-ola-button px-6 py-2 text-white"
           >
             {t('home.logout')}
           </button>
         </div>
       </main>
+      <ConfirmDialog
+        open={logoutOpen}
+        showIcon={false}
+        danger
+        title={t('dialog.logoutTitle')}
+        message={t('dialog.logoutMessage')}
+        confirmLabel={t('dialog.logoutButton')}
+        cancelLabel={t('dialog.no')}
+        onConfirm={confirmLogout}
+        onCancel={() => setLogoutOpen(false)}
+      />
     </>
   );
 }
