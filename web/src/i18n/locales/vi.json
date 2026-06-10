@@ -71,7 +71,9 @@
     "deleteConvTitle": "Xóa hội thoại",
     "deleteConvMessage": "Bạn có muốn xóa hội thoại với {{name}}?",
     "deleteArchived": "Xóa tin nhắn đã lưu",
-    "deleteAria": "Xóa hội thoại với {{name}}"
+    "deleteAria": "Xóa hội thoại với {{name}}",
+    "yes": "Có",
+    "close": "Đóng"
   },
   "chat": {
     "messageInputPlaceholder": "Viết tin nhắn cho {{name}}",
@@ -140,7 +142,11 @@
     "filterMedia": "Hiện tin nhắn có hình ảnh",
     "filterFemale": "Hiển thị nữ",
     "filterMale": "Hiển thị nam",
-    "filterFlexible": "Hiển thị linh hoạt về giới tính"
+    "filterFlexible": "Hiển thị linh hoạt về giới tính",
+    "chatInputHint": "Viết tin nhắn gởi đến \"phòng {{name}}\"",
+    "membersTitle": "Thành viên đang Loa Loa",
+    "memberCount": "{{count}} thành viên",
+    "addMember": "Mời thành viên"
   },
   "me": {
     "tabFeed": "Bảng tin",
@@ -164,6 +170,32 @@
     "justNow": "vừa xong",
     "newPosts": "↑ Me mới",
     "followerEmpty": "Chưa có khách ghé thăm",
-    "empty": "Trang Me chưa có nội dung"
+    "empty": "Trang Me chưa có nội dung",
+    "viewProfile": "Xem trang cá nhân"
+  },
+  "profile": {
+    "makeFriend": "Kết bạn",
+    "alreadyFriend": "Đã Kết Bạn",
+    "follow": "Quan tâm",
+    "following": "Đang quan tâm",
+    "updateInfo": "Cập Nhật Thông Tin",
+    "postMe": "Viết Me",
+    "more": "Khác",
+    "block": "Chặn",
+    "unblock": "Bỏ chặn",
+    "copyNick": "Copy nick",
+    "report": "Báo nick xấu",
+    "privacyHelp": "Hướng dẫn",
+    "peopleCare": "người quan tâm",
+    "kissCount": "{{count}} nụ hôn",
+    "notKissed": "Chưa ai hôn",
+    "vipAccount": "Tài khoản VIP",
+    "genderMale": "Nam",
+    "genderFemale": "Nữ",
+    "viewNote": "Xem bài viết",
+    "mediaStore": "Kho Media",
+    "viewAllPhotos": "Xem Tất Cả Ảnh",
+    "viewAll": "Xem Tất Cả",
+    "mePosts": "ME Đã Đăng"
   }
 }

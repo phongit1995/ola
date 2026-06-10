@@ -11,18 +11,30 @@ interface MePostCardProps {
   post: MePost;
   onToggleLike: (id: string) => void;
   onToggleDislike: (id: string) => void;
+  onOpenProfile?: (author: string, color: string) => void;
 }
 
-export function MePostCard({ post, onToggleLike, onToggleDislike }: MePostCardProps) {
+export function MePostCard({
+  post,
+  onToggleLike,
+  onToggleDislike,
+  onOpenProfile,
+}: MePostCardProps) {
   const { t } = useTranslation();
   return (
     <article className="mb-2 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.18)]">
       <div className="flex items-start gap-4 px-4 pt-4">
-        <Avatar name={post.author} color={post.color} />
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-base text-black/87">{post.author}</p>
-          <p className="mt-0.5 text-xs text-black/54">{post.time}</p>
-        </div>
+        <button
+          type="button"
+          onClick={() => onOpenProfile?.(post.author, post.color)}
+          className="flex min-w-0 flex-1 items-start gap-4 text-left"
+        >
+          <Avatar name={post.author} color={post.color} />
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-base text-black/87">{post.author}</span>
+            <span className="mt-0.5 block text-xs text-black/54">{post.time}</span>
+          </span>
+        </button>
         <button type="button" aria-label={t('me.postMenu')} className="p-2">
           <img src={moreIcon} alt="" className="h-4 w-4 object-contain" />
         </button>

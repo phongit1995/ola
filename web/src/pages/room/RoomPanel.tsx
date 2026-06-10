@@ -2,13 +2,16 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ConfirmDialog } from '@components';
 import { HomeHeader } from '@components/HomeHeader';
-import { ChatConversationView } from '../chat/components/ChatConversationView';
+import { RoomChatView } from './components/RoomChatView';
 import { RoomList } from './components/RoomList';
 import { RoomFilterDialog } from './components/RoomFilterDialog';
 import { RoomReturnFab } from './components/RoomReturnFab';
 import { DEFAULT_ROOM_FILTERS, ROOMS } from './data';
 import type { Room, RoomFilters } from './types';
+import { CONTACTS } from '../chat/data';
 import filterIcon from '@/assets/icons/room/ic_filter_unselected.png';
+
+const ROOM_CAPACITY = 200;
 
 export function RoomPanel() {
   const { t } = useTranslation();
@@ -18,9 +21,14 @@ export function RoomPanel() {
   const [joinedRoom, setJoinedRoom] = useState<Room | null>(null);
   const [activeRoom, setActiveRoom] = useState<Room | null>(null);
   const [pendingQuit, setPendingQuit] = useState<Room | null>(null);
+  const [fullRoom, setFullRoom] = useState<Room | null>(null);
   const [unread, setUnread] = useState(0);
 
   function enterRoom(room: Room) {
+    if (room.members >= ROOM_CAPACITY) {
+      setFullRoom(room);
+      return;
+    }
     setJoinedRoom(room);
     setUnread(0);
     setActiveRoom(room);
@@ -120,10 +128,11 @@ export function RoomPanel() {
       </main>
 
       {activeRoom != null && (
-        <ChatConversationView
+        <RoomChatView
           name={activeRoom.title}
           color={activeRoom.color}
           seedMessage={activeRoom.subtitle}
+          members={CONTACTS}
           onClose={closeActiveRoom}
         />
       )}
@@ -143,10 +152,19 @@ export function RoomPanel() {
         danger
         title={t('room.quitTitle')}
         message={t('room.quitMessage', { name: pendingQuit?.title ?? '' })}
-        confirmLabel={t('room.quit')}
-        cancelLabel={t('dialog.cancel')}
+        confirmLabel={t('dialog.yes')}
+        cancelLabel={t('dialog.no')}
         onConfirm={confirmQuit}
         onCancel={() => setPendingQuit(null)}
+      />
+      <ConfirmDialog
+        open={fullRoom != null}
+        title={fullRoom?.title ?? ''}
+        message={t('room.roomFull')}
+        confirmLabel={t('room.buyVip')}
+        cancelLabel={t('dialog.close')}
+        onConfirm={() => setFullRoom(null)}
+        onCancel={() => setFullRoom(null)}
       />
     </>
   );

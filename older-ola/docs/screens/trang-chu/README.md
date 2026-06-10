@@ -133,7 +133,7 @@ Action bar trên cùng: **nền xanh `#7CB342`, cao 48dp, chữ trắng**, có b
 | **Chat** | 2 tab con **"TIN NHẮN \| DANH BẠ"** (tab đang chọn gạch chân trắng) + menu ⋮ | Danh sách hội thoại (avatar tròn chữ cái + nick + tin cuối + thời gian "vừa tức thì") · **FAB xanh** (✎) góc phải-dưới để soạn tin |
 | **Phòng chat** | Tiêu đề "Phòng chat" (giữa) | Danh sách phòng chat công khai — xem [tài liệu màn Phòng chat](../phong-chat/README.md) |
 | **Me** | 4 icon con: 🙂 bảng tin · @ nhắc đến · 🖼 ảnh · 👥 quan tâm | Bảng tin "Ola Me" (newsfeed) · **FAB xanh** (✎) đăng bài — xem [tài liệu màn Me](../me/README.md) |
-| **RSS** | Ô **tìm kiếm "Tìm kiếm"** (🔍) + nút 🏠 + menu ⋮ | Danh sách tin RSS |
+| **RSS** | Ô **tìm kiếm "Tìm kiếm"** (🔍) + nút 🏠 + menu ⋮ | Danh sách tin RSS — xem [tài liệu màn RSS](../rss/README.md) |
 | **Ứng dụng** | Tiêu đề "Ứng dụng" | List tiện ích: Thông báo · Kho Game · Cá nhân · Kho VIP · KEN · Đăng Q.Cáo · Hình Ảnh · Ola Mall · Lân cận · Cài đặt |
 
 > Tiêu đề action bar dùng style `defaultStyle.text.subhead` (16sp, chữ trắng). Tab con "TIN NHẮN/DANH BẠ" của tab Chat: xem chi tiết list hội thoại + danh bạ + khung chat ở [tài liệu màn Chat](../chat/README.md).

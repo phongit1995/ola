@@ -28,8 +28,14 @@ screens/
 │   ├── README.md                list phòng + số người + filter + loa loa + CSS
 │   └── images/                  ảnh chụp + icon phòng chat
 ├── me/                    ← màn Me (tab 3: bảng tin / newsfeed)
-│   ├── README.md                flow + feed + bài đăng + đăng bài + trang cá nhân + CSS
+│   ├── README.md                flow + feed + bài đăng + đăng bài + 2 drawer + CSS
 │   └── images/                  icon (chưa chụp màn)
+├── trang-ca-nhan/         ← Trang cá nhân / Thông tin người dùng (OlaUserMePageActivity)
+│   ├── README.md                header hồ sơ + 5 nút quan hệ + menu Khác + tính năng + icon
+│   └── images/                  icon hồ sơ
+├── rss/                   ← màn RSS (tab 4: trình đọc tin tức)
+│   ├── README.md                flow + list bài + WebView + bookmark/lịch sử + CSS
+│   └── images/                  icon RSS
 ├── ung-dung/              ← màn Ứng dụng (tab 5: list tiện ích)
 │   ├── README.md                10 tiện ích + style item + CSS
 │   └── images/                  ảnh chụp + 10 icon tiện ích
@@ -49,6 +55,8 @@ screens/
 | 3a | Chat (TIN NHẮN + DANH BẠ) | [chat/](chat/README.md) | `OlaBottomTabActivity` (frag `e`) + `OlaChatViewActivity` | ✅ chụp thật |
 | 3b | Phòng chat (tab 2) | [phong-chat/](phong-chat/README.md) | `OlaBottomTabActivity` (frag `l`) + `OlaChatViewActivity` | ✅ chụp (list trống) |
 | 3c | Me (tab 3 — newsfeed) | [me/](me/README.md) | `OlaBottomTabActivity` (frag `me.c`) + `OlaMeComposerActivity` / `OlaUserMePageActivity` | 📐 từ code/XML (chưa chụp) |
+| 3d | Trang cá nhân (User Info) | [trang-ca-nhan/](trang-ca-nhan/README.md) | `OlaUserMePageActivity` | 📐 từ code/XML (chưa chụp) |
+| 3e | RSS (tab 4 — tin tức) | [rss/](rss/README.md) | `OlaBottomTabActivity` (frag `m.j`) + WebView | 📐 từ code/XML (chưa chụp) |
 | 4 | Ứng dụng (tab 5) | [ung-dung/](ung-dung/README.md) | `OlaBottomTabActivity` + fragment `m/d` | ✅ chụp thật + 10 icon |
 | — | Modal / Dialog (kiểu chung) | [modal-dialog/](modal-dialog/README.md) | dùng chung (confirm, nhập, progress, chọn) | 📐 trích từ layout/style |
 

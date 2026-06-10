@@ -71,7 +71,9 @@
     "deleteConvTitle": "Delete conversation",
     "deleteConvMessage": "Do you want to delete the conversation with {{name}}?",
     "deleteArchived": "Delete archived message",
-    "deleteAria": "Delete conversation with {{name}}"
+    "deleteAria": "Delete conversation with {{name}}",
+    "yes": "Yes",
+    "close": "Close"
   },
   "chat": {
     "messageInputPlaceholder": "Message {{name}}",
@@ -140,7 +142,11 @@
     "filterMedia": "Show messages with images",
     "filterFemale": "Show female",
     "filterMale": "Show male",
-    "filterFlexible": "Show gender flexible"
+    "filterFlexible": "Show gender flexible",
+    "chatInputHint": "Write a message in \"{{name}}\" room",
+    "membersTitle": "Broadcasting members",
+    "memberCount": "{{count}} members",
+    "addMember": "Invite member"
   },
   "me": {
     "tabFeed": "Newsfeed",
@@ -164,6 +170,32 @@
     "justNow": "just now",
     "newPosts": "↑ You have new posts",
     "followerEmpty": "No visitors yet",
-    "empty": "Me page has no content"
+    "empty": "Me page has no content",
+    "viewProfile": "View profile"
+  },
+  "profile": {
+    "makeFriend": "Add friend",
+    "alreadyFriend": "Friend",
+    "follow": "Follow",
+    "following": "Following",
+    "updateInfo": "Update info",
+    "postMe": "Post Me",
+    "more": "More",
+    "block": "Block",
+    "unblock": "Unblock",
+    "copyNick": "Copy nick",
+    "report": "Report bad nick",
+    "privacyHelp": "Help",
+    "peopleCare": "people care",
+    "kissCount": "{{count}} kisses",
+    "notKissed": "Not kissed yet",
+    "vipAccount": "VIP account",
+    "genderMale": "Male",
+    "genderFemale": "Female",
+    "viewNote": "View posts",
+    "mediaStore": "Photos",
+    "viewAllPhotos": "View all photos",
+    "viewAll": "View all",
+    "mePosts": "Me Posts"
   }
 }

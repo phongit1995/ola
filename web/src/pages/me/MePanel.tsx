@@ -11,8 +11,11 @@ import { Avatar } from '../chat/components/Avatar';
 import { MeTabBar } from './components/MeTabBar';
 import { MePostCard } from './components/MePostCard';
 import { MeComposerDialog } from './components/MeComposerDialog';
+import { ProfilePage } from '../profile/ProfilePage';
+import { buildProfile } from '../profile/data';
 import { ME_POSTS } from './data';
 import type { MePost, MeTab } from './types';
+import type { UserProfile } from '../profile/types';
 
 let composedPostSeed = 0;
 
@@ -29,6 +32,12 @@ export function MePanel() {
   const [accountOpen, setAccountOpen] = useState(false);
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [showNewBar, setShowNewBar] = useState(false);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+
+  function openProfile(nick: string, color: string, isSelf = false) {
+    setAccountOpen(false);
+    setProfile(buildProfile(nick, color, isSelf));
+  }
 
   useEffect(() => {
     const timer = window.setTimeout(() => setShowNewBar(true), 4000);
@@ -128,6 +137,7 @@ export function MePanel() {
                 post={post}
                 onToggleLike={toggleLike}
                 onToggleDislike={toggleDislike}
+                onOpenProfile={(author, color) => openProfile(author, color)}
               />
             ))}
           </div>
@@ -156,6 +166,12 @@ export function MePanel() {
         footer={
           <>
             <DialogButton
+              variant="green"
+              onClick={() => openProfile(displayName, '#7cb342', true)}
+            >
+              {t('me.viewProfile')}
+            </DialogButton>
+            <DialogButton
               variant="danger"
               onClick={() => {
                 setAccountOpen(false);
@@ -163,9 +179,6 @@ export function MePanel() {
               }}
             >
               {t('home.logout')}
-            </DialogButton>
-            <DialogButton variant="default" onClick={() => setAccountOpen(false)}>
-              {t('dialog.cancel')}
             </DialogButton>
           </>
         }
@@ -188,6 +201,14 @@ export function MePanel() {
         onConfirm={confirmLogout}
         onCancel={() => setLogoutOpen(false)}
       />
+
+      {profile != null && (
+        <ProfilePage
+          profile={profile}
+          onClose={() => setProfile(null)}
+          onOpenFriend={(friend) => setProfile(buildProfile(friend.name, friend.color))}
+        />
+      )}
     </>
   );
 }

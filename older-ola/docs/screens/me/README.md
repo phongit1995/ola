@@ -84,9 +84,73 @@ DrawerLayout  @id/meDrawerLayout
 └─ OlaListView  @id/right_drawer  240dp, nền trắng   ← lịch sử tìm kiếm
 ```
 
-> **Mở drawer = cử chỉ vuốt cạnh, KHÔNG có nút.** Action bar chỉ có 4 icon tab, không có nút hamburger; trong code (`me.c`) không gọi `openDrawer` mà chỉ `closeDrawer`. Vì vậy:
-> - **Vuốt từ mép TRÁI → phải** → mở **drawer trái** (`Gravity.LEFT`/`closeDrawer(3)`): header người dùng (bìa + avatar 40dp + tên) + danh sách **Nhật ký** (`OlaDiaryActivity`) / **trang cá nhân** (`OlaUserMePageActivity`) / **Clan**.
-> - **Vuốt từ mép PHẢI → trái** → mở **drawer phải** (`Gravity.RIGHT`/`closeDrawer(5)`): **lịch sử & kết quả tìm kiếm**.
+### 2.1. Hai drawer (menu trái & phải)
+
+> **Mở drawer = cử chỉ vuốt cạnh, KHÔNG có nút.** Action bar chỉ có 4 icon tab, không có nút hamburger; trong `me.c` không hề gọi `openDrawer`, chỉ `closeDrawer(3)`/`closeDrawer(5)`. Vì vậy người dùng **vuốt từ mép trái sang phải** để mở menu trái, **vuốt từ mép phải sang trái** để mở menu tìm kiếm.
+
+#### a) Drawer TRÁI — menu trang Me (`Gravity.LEFT`, `left_drawer` = `this.u`)
+
+Là `OlaListView` 240dp nền trắng. Gồm **header người dùng** + **danh sách trang Me** (adapter `chat.ola.vn.b.an`):
+
+```
+left_drawer (240dp)
+├─ [Header] system_me_menu_user_info_header   (addHeaderView, me/c.java:552)
+│   ├─ OlaRatioImageView  imgMenuConver        ← ảnh bìa của mình
+│   ├─ OlaCachedImageView imgMeOwnerAvatar  40dp
+│   └─ TextView  txtMeOwnerAlias  (chữ trắng, overlay gradient đen)
+│        = tên hiển thị, mặc định string_personal = "Cá nhân"
+└─ [List] adapter an  (entity.af, nguồn h.u.b())  — item = slider_menu_item.xml:
+    ├─ ImageView  imgMenuIcon   (af.c(); mặc định ic_indicate_like)
+    └─ TextView   imgMenuTitle  (af.a() — tên trang)
+```
+
+**Vì sao thấy NHIỀU mục?** Ngoài các Clan/trang bạn theo dõi, hệ thống **tự chèn một loạt trang Me cố định** vào danh sách (`network/e.java:2950–3005`). Thứ tự & nội dung đầy đủ:
+
+| # | Tên hiển thị (VI) | Mã `af.b()` | String | Icon (`af.c()`) | Điều kiện |
+|---|-------------------|-------------|--------|------------------|-----------|
+| 0 | **Nhật ký** | `my diary` | `system_me_diary` | `ic_indicate_note` | luôn (thêm đầu list) |
+| 1 | **Box - Kết Hôn** | `mariage diary` | `system_me_box` | `ic_indicate_box` | luôn (thêm thứ 2) |
+| … | *(các Clan / trang bạn theo dõi)* | `#<clan>` / nick | — | icon riêng / mặc định | theo dữ liệu user |
+| | **Me yêu thích** | `lk` | `system_me_likes` | `ic_section_like` | khi bật (z2) |
+| | **Đập trứng** 🥚 | `#daptrung` | `system_me_eggy` | `ic_indicate_broken_egg` | khi bật (z) |
+| | **#Android** | `#apk` | (literal "#Android") | `ic_indicate_android` | luôn |
+| | **#Ola** | `#Ola` | (literal "#Ola") | `ic_indicate_me` | luôn |
+| | **Hài hước** | `#hai` | `system_me_funny` | `ic_indicate_funny` | luôn |
+
+> Ngoài ra trong cùng nhóm icon còn có `me` → "Mọi người" (`ic_indicate_public`) và `rs` → RSS (`ic_indicate_rss`) khi xuất hiện.
+
+**Bấm 1 mục** (`me.c` `onItemClick` → `a(String, long)` dòng 205) — rẽ nhánh theo mã:
+
+| Mã `af.b()` | Mở |
+|-------------|----|
+| `my diary` | `OlaDiaryActivity` (Nhật ký của tôi) |
+| `mariage diary` | nhật ký hôn nhân (`a(j)`) |
+| `#<clan>` (kể cả `#daptrung`, `#apk`, `#Ola`, `#hai`) — `e(strJ)==true` | nạp trang Me kiểu Clan → `OlaClanMePageActivity` |
+| nick / còn lại | `OlaUserMePageActivity` (trang cá nhân) |
+
+> Tức drawer trái = **Nhật ký + Box Kết Hôn + (Clan/trang theo dõi) + Me yêu thích + Đập trứng + #Android + #Ola + Hài hước** — nên danh sách dài chứ không chỉ vài mục.
+
+> **"Đập trứng" (`#daptrung`) nằm ở đây.** Hệ thống tự thêm một `entity.af` = `af("Đập trứng" /*system_me_eggy*/, "#daptrung")` ([network/e.java:2986](../../../jadx_out/sources/chat/ola/vn/network/e.java#L2986)); item này được gán icon **trứng nứt** `ic_indicate_broken_egg` ([r/a/e.java:517](../../../jadx_out/sources/chat/ola/vn/r/a/e.java#L517)). Bấm vào → mở **`OlaClanMePageActivity`** (trang Me kiểu Clan, feed bài đăng) — **KHÔNG phải lưới trứng để đập**. Client **không có** màn game đập trứng riêng (không layout/Activity `egg`); trò đập trứng do **server/web** điều khiển qua feed của trang `#daptrung`.
+
+#### b) Drawer PHẢI — tìm kiếm Me (`Gravity.RIGHT`, `right_drawer` = `this.w`)
+
+`OlaListView` 240dp. Header `me_history_search_layout.xml` + danh sách lịch sử/kết quả (adapter `chat.ola.vn.me.b`, `this.x`):
+
+```
+right_drawer (240dp)
+├─ [Header] me_history_search_layout
+│   ├─ Ô tìm kiếm  (nền bg_search_box, cao 40dp, padding 16/12dp)
+│   │   ├─ ImageView  ic_action_search_small_gray  16dp
+│   │   └─ OlaQuickTypingSuggestedText  searchSuggestedText
+│   │        hint string_search = "Tìm kiếm", imeOptions=actionSearch
+│   ├─ View 1px (kẻ ngăn)
+│   └─ LinearLayout (nền trắng, padding 16/8dp)
+│       ├─ TextView  string_recent_me = "ME ĐÃ XEM"  (caption, weight 1)
+│       └─ TextView  clearHistoryTextView  string_clear = "Xóa"  (caption)  ← xoá lịch sử
+└─ [List] adapter me.b  — lịch sử Me đã xem / kết quả tìm kiếm
+```
+
+**Tương tác**: gõ vào ô tìm → tìm nick / #clan (gợi ý `string_enter_nick_name_or_clan` = "Nhập nick hoặc #clan"); bấm **Xóa** (`clearHistoryTextView`, `me.c` dòng 1027) → xoá toàn bộ "ME ĐÃ XEM"; bấm 1 mục lịch sử/kết quả → mở trang Me tương ứng (cùng logic `a(String,long)` như drawer trái).
 
 ## 3. Action bar — 4 icon (`stickyHeader`)
 
@@ -173,6 +237,8 @@ LinearLayout vertical (paddingBottom 12dp)
 
 ## 5. Trang cá nhân (`OlaUserMePageActivity` / `ola_user_me_page_header_layout.xml`)
 
+> 📄 **Tài liệu chi tiết riêng:** [trang-ca-nhan/README.md](../trang-ca-nhan/README.md) — đầy đủ 5 nút quan hệ, menu "Khác", mọi vùng bấm, icon & token. Dưới đây là bản tóm tắt.
+
 Header (cuộn cùng feed của người đó), từ trên xuống:
 
 | Phần | View id | Ghi chú |
@@ -233,6 +299,11 @@ Mở từ FAB ✎. Bố cục (SoftKeyLinearLayout — co theo bàn phím):
 | `string_view_all_photos` | View all photos | Xem Tất Cả Ảnh |
 | `string_post_status_to_me_page` | Post to Me page | Đăng trạng thái lên trang Me |
 | `general_tab_diary_edit` | Write Diary | Viết nhật ký |
+| `string_personal` | Personal | Cá nhân |
+| `string_search` | Search | Tìm kiếm |
+| `string_recent_me` | Recent Me | ME ĐÃ XEM |
+| `string_clear` | Clear | Xóa |
+| `string_enter_nick_name_or_clan` | Enter nick name or clan | Nhập nick hoặc #clan |
 
 ## 8. CSS tương đương — 1 bài đăng (card feed)
 

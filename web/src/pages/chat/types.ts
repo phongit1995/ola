@@ -19,4 +19,6 @@ export interface ChatMessage {
   id: string;
   text: string;
   direction: 'in' | 'out';
+  senderName?: string;
+  senderColor?: string;
 }

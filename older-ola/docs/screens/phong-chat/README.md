@@ -119,11 +119,90 @@ Mở từ icon ⚙/lọc trên action bar. Panel checkbox (padding 16dp):
 
 > Cờ lọc lưu dạng bitmask short (1/2/4/8…, 255 = tất cả) ở `chat.ola.vn.h.x`.
 
-## 6. Vào / Rời phòng & Broadcast ("Loa loa")
+## 6. Bấm vào 1 phòng → chuyện gì xảy ra
 
-- **Vào phòng** (`l.onItemClick`, dòng 635): item type 3 (link) → mở trình duyệt; còn lại → `OlaChatViewActivity.a(...)` mở khung chat của phòng. Khung chat phòng dùng adapter riêng `z` (`message.f`) cho tin broadcast.
-- **Rời phòng** (`l.g_()` dòng 532 / `l.v()` dòng 332): hiện dialog xác nhận `string_do_you_want_to_quit_room` = `Bạn muốn rời phòng "%1$s"?`, nút `string_quit_room` = "Rời phòng".
-- **Loa loa / Broadcast**: `string_chat_in_room` = "Loa loa" (phát tin cho cả phòng), `string_quit_chat_room` = "Tắt loa loa".
+### 6.1. Luồng xử lý theo loại phòng (`l.onItemClick` dòng 635 → `l.a(entity.s)` dòng 96)
+
+```
+Bấm 1 dòng phòng
+   │  l.onItemClick (đóng drawer trái trước: closeDrawer(3))
+   ▼
+l.a(entity.s)  — rẽ nhánh theo s.h()
+   ├─ type 1 / mặc định ─► l.b(s) (dòng 181):
+   │        ├─ phòng thường  (s.e()==false) → hiện progress → OlaApplication.b.a(roomId, …)  → JOIN
+   │        └─ "Xung quanh bạn" (s.e()==true)→ xin quyền GPS → lấy toạ độ → a(-1, lat, lng, 0) → JOIN
+   ├─ type 3 (link/promo) ─► mở trình duyệt: util.b.n(getActivity(), url)  + log "wap"  (KHÔNG vào chat)
+   ├─ type 5 (chọn phòng nhanh) ─► hiện progress → OlaApplication.b.b((short)0)  (server tự ghép phòng)
+   └─ type 6 (banner VIP/xác thực) ─► không vào, xử lý ở banner (mua VIP / xác thực SĐT)
+   │
+   ▼  (server trả lời)
+   ├─ OK  ─► OlaChatViewActivity mở ra (khung chat phòng — broadcast type=4)
+   └─ lỗi code 14 = PHÒNG ĐẦY (l.a(...) dòng 422):
+          dialog `message_room_full_format` = "Phòng chat đã đầy. Để vào ngay, bạn cần có VIP"
+          [Đăng ký VIP] → BuyVipActivity / OlaSmsSendingActivity   ·   [Đóng]
+```
+
+> Lưu ý: **bấm phòng không mở chat ngay tại client** — nó gửi lệnh join lên server (kèm progress overlay), server chấp nhận rồi mới bật `OlaChatViewActivity`. Phòng "Xung quanh bạn" cần **quyền GPS** (xin permission code 101 nếu chưa có).
+
+### 6.2. Khung chat phòng (`OlaChatViewActivity`, layout `ola_chat_view_and_drawer_layout.xml`)
+
+Mở qua `OlaChatViewActivity.a(context, OlaApplication.b, message.f)` (dòng 674) — set biến tĩnh `e=roomId`, `f=roomType` (**4 = phòng broadcast**). Khung chat phòng **khác chat 1-1** ở:
+
+| Điểm | Chat 1-1 | **Phòng chat (broadcast)** |
+|------|----------|----------------------------|
+| Tiêu đề action bar | nick người kia | **tên phòng** |
+| Hint ô nhập | "Viết tin nhắn cho \<nick>" | `string_write_a_message_room` = **"Viết tin nhắn gởi đến \"phòng %1$s\""** |
+| Mỗi tin nhắn đến | chỉ bong bóng | **+ tên người gửi + avatar 32dp** (vì nhiều người) |
+| Drawer phải | — | **danh sách thành viên** (`rightSliderListView`), tiêu đề `string_broadcasting_members` = **"Thành viên đang Loa Loa"** |
+| FAB drawer phải | — | `rightMenuAddMemberButton` (ic_add_friend, 56dp) — **mời thành viên** |
+
+Bố cục `ola_chat_view_and_drawer_layout.xml`:
+```
+FrameLayout chatViewGlobalLayout
+└─ DrawerLayout chatDrawerLayout
+    ├─ <include> ola_chat_view_and_action_bar_layout   ← action bar + list tin + thanh nhập
+    ├─ left_drawer  240dp   leftSliderListView + leftMenuTitleTextView (42dp)   ← menu trái
+    └─ right_drawer 240dp                                                       ← THÀNH VIÊN
+        ├─ rightMenuTitleTextView  (42dp, "Thành viên đang Loa Loa")
+        ├─ rightSliderListView     (danh sách thành viên, list.noDivider)
+        └─ rightMenuAddMemberButton  FAB ic_add_friend 56dp ↘  ← mời vào phòng
+   (+ chatAttachmentFrameLayout dưới cùng, 100dp, ẩn — bảng đính kèm)
+```
+
+> Item thành viên dùng `contact_item_layout.xml` (avatar + giới tính + nick + VIP + trạng thái) — giống dòng DANH BẠ. Adapter `chat.ola.vn.b.n`.
+
+> **Thứ tự vào phòng: KHÔNG có màn "danh sách user online" chắn trước.** Bấm phòng → join server → **vào thẳng khung chat** (khi khởi tạo, `W()` gọi `closeDrawer(3)+closeDrawer(5)` đóng cả 2 drawer). Danh sách thành viên là **drawer phải**, mở **chỉ bằng vuốt mép phải** — trong cả `OlaChatViewActivity` **không có lệnh `openDrawer` nào**; nút ⋮ phòng (`v()`) chỉ là menu 1 mục `string_quit_chat_room` = "Tắt loa loa", không mở drawer.
+
+### 6.3. Dòng tin nhắn ĐẾN trong phòng (`incoming_chat_message_layout.xml`)
+
+Vì phòng có nhiều người, tin **đến** hiển thị **tên + avatar người gửi** (chat 1-1 không cần):
+
+```
+LinearLayout chatMessageBubbleView (padding 8dp)
+├─ TextView chatMessageTimeTextView   (thời gian, canh giữa, caption, màu hint .26)
+├─ TextView messageSenderTextview     (TÊN NGƯỜI GỬI, marginLeft 48dp, body1, màu .54)   ← riêng phòng/nhóm
+├─ LinearLayout (ngang)
+│   ├─ OlaCachedImageView senderAvatarImageView  32×32dp (ic_contact_photo)   ← avatar người gửi
+│   ├─ <include> chat_message_content_layout                                   ← bong bóng nội dung
+│   └─ ImageButton bookmarkImageButton  (ic_star_gray, 24dp, ẩn)               ← lưu (bookmark)
+└─ OlaCachedImageView readPeopleImageView  16dp (ic_message_sent, ẩn)          ← trạng thái đã đọc
+```
+
+> Tin **đi** (của mình) dùng `outgoing_chat_message_layout.xml` — **không có** `messageSenderTextview`/avatar, canh phải. Adapter tin phòng là `chat.ola.vn.b.z` (`j<message.f>`), khác adapter chat 1-1 (`r`).
+
+### 6.4. Rời phòng (`l.g_()` dòng 532 → `l.v()` dòng 332)
+
+Bấm Back khi đang trong 1 phòng (`h.x.e()==1`) → dialog xác nhận:
+- Tiêu đề `string_quit_room` = **"Rời phòng"**
+- Nội dung `string_do_you_want_to_quit_room` = **"Bạn muốn rời phòng \"%1$s\"?"**
+- Nút **Có** (`string_yes`) → `l.v()` gọi `OlaApplication.b.c(roomId)` rời phòng, xoá phòng hiện tại, làm mới list · **Không** (`string_no`)
+
+### 6.5. Loa loa / Broadcast
+
+- `string_chat_in_room` = "Loa loa" — phát tin cho cả phòng; `string_quit_chat_room` = "Tắt loa loa".
+- `string_broadcast_to_clan` = **"Loan tin toàn clan"** (boost cả clan).
+- Phòng không hỗ trợ broadcast → `string_room_not_support_broadcast_message` = "Phòng \"%1$s\" không hỗ trợ chat loa loa".
+- Ngưng broadcast clan → `message_quit_chat_room_confirm` = "Bạn có muốn ngưng chat toàn cộng đồng %1$s?".
 
 ## 7. Khác biệt so với Chat 1-1
 
@@ -158,6 +237,14 @@ Mở từ icon ⚙/lọc trên action bar. Panel checkbox (padding 16dp):
 | `string_quit_chat_room` | Broadcast off | Tắt loa loa |
 | `string_select_filter_mode` | Select filter | Chọn bộ lọc |
 | `message_warning_need_verify_phone_to_join_room` | Verified phone number before joining public room | Yêu cầu xác thực SĐT trước khi vào phòng chat |
+| `string_write_a_message_room` | Write a message in %1$s | Viết tin nhắn gởi đến "phòng %1$s" |
+| `string_broadcasting_members` | Broadcasting members | Thành viên đang Loa Loa |
+| `string_member_list` | Member list | Danh sách thành viên |
+| `string_public_room_member` | Room members | Thành viên phòng chat |
+| `message_room_member_count` | %1$s members | %1$s thành viên |
+| `string_broadcast_to_clan` | Boost whole Clan | Loan tin toàn clan |
+| `string_room_not_support_broadcast_message` | "%1$s" room does not support broadcast message | Phòng "%1$s" không hỗ trợ chat loa loa |
+| `message_quit_chat_room_confirm` | Do you want to quit broadcast chat room %1$s? | Bạn có muốn ngưng chat toàn cộng đồng %1$s? |
 
 ## 9. CSS tương đương
 
@@ -241,6 +328,9 @@ Mở từ icon ⚙/lọc trên action bar. Panel checkbox (padding 16dp):
 | ![public](images/icons/ic_indicate_privacy_public.png) | `ic_indicate_privacy_public` | chỉ báo phòng công khai |
 | ![notify](images/icons/ic_notify_new_chat_group_message.png) | `ic_notify_new_chat_group_message` | icon FAB quay lại phòng |
 | ![filter](images/icons/ic_filter_unselected.png) ![filter sel](images/icons/ic_filter_selected.png) | `ic_filter_(un)selected` | nút bật/tắt bộ lọc |
+| ![addmem](images/icons/ic_add_friend.png) | `ic_add_friend` | FAB **mời thành viên** (drawer phải khung chat phòng) |
+| ![star](images/icons/ic_star_gray.png) | `ic_star_gray` | nút **lưu/bookmark** 1 tin nhắn trong phòng |
+| ![sent](images/icons/ic_message_sent.png) | `ic_message_sent` | chỉ báo **đã đọc/đã gửi** tin |
 
 > "Xung quanh bạn" (type 1) dùng icon `ic_tab_friend_location` (chia sẻ với màn theo vị trí).
 
