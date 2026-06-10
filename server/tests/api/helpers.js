@@ -1,6 +1,6 @@
 'use strict'
 
-const BASE    = process.env.API_BASE || 'http://localhost:8080/api'
+const BASE    = process.env.API_BASE || 'http://localhost:8080/api/v1'
 const WS_BASE = process.env.WS_BASE  || 'http://localhost:8080'
 
 let _passed = 0
@@ -77,9 +77,9 @@ async function registerUser(username, email, password, fullName) {
     throw new Error(`register ${username} failed: ${r.status} ${JSON.stringify(r.body)}`)
   }
   // login to get token
-  const lr = await req('POST', '/auth/login', { email, password })
+  const lr = await req('POST', '/auth/login', { username, password })
   if (lr.status !== 200 && lr.status !== 201) {
-    throw new Error(`login ${email} failed: ${lr.status} ${JSON.stringify(lr.body)}`)
+    throw new Error(`login ${username} failed: ${lr.status} ${JSON.stringify(lr.body)}`)
   }
   const d = data(lr)
   const meR = await req('GET', '/user/me', undefined, d.token)

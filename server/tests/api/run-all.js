@@ -6,9 +6,20 @@ const fs = require('fs')
 
 const TESTS_DIR = path.join(__dirname, 'tests')
 
-const files = fs.readdirSync(TESTS_DIR)
-  .filter(f => f.endsWith('.test.js'))
-  .sort()
+function collectTests(dir, base = '') {
+  const out = []
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const rel = base ? `${base}/${entry.name}` : entry.name
+    if (entry.isDirectory()) {
+      out.push(...collectTests(path.join(dir, entry.name), rel))
+    } else if (entry.name.endsWith('.test.js')) {
+      out.push(rel)
+    }
+  }
+  return out
+}
+
+const files = collectTests(TESTS_DIR).sort()
 
 let totalPassed = 0
 let totalFailed = 0

@@ -17,7 +17,8 @@
     "test:stress": "node tests/10-stress.test.js",
     "test:calls": "node tests/13-calls.test.js",
     "test:calls:kafka": "node tests/14-calls-kafka.test.js",
-    "test:relationships": "node tests/16-relationships.test.js"
+    "test:relationships": "node tests/16-relationships.test.js",
+    "test:admin:auth": "node tests/admin/auth.test.js"
   },
   "dependencies": {
     "socket.io-client": "^4.8.1"

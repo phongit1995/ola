@@ -70,6 +70,18 @@ func (m *AuthMiddleware) RequireAuth() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
+
+		if isAdmin, _ := dataMap["isAdmin"].(bool); isAdmin {
+			utils.RespondError(c, http.StatusUnauthorized, "invalid token")
+			c.Abort()
+			return
+		}
+		if tokenType, _ := dataMap["type"].(string); tokenType == "admin" {
+			utils.RespondError(c, http.StatusUnauthorized, "invalid token")
+			c.Abort()
+			return
+		}
+
 		userIDStr, ok := dataMap["id"].(string)
 		if !ok {
 			utils.RespondError(c, http.StatusUnauthorized, "id missing from token")
