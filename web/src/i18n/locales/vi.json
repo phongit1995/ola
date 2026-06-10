@@ -108,7 +108,17 @@
     "attachYoutube": "YouTube",
     "attachSnap": "Ảnh tự huỷ",
     "attachKen": "Chuyển KEN",
-    "attachVip": "Trao đổi VIP"
+    "attachVip": "Trao đổi VIP",
+    "menuDeleteAll": "Xóa tất cả",
+    "menuDeleteAllConfirm": "Bạn có muốn xóa tất cả tin nhắn chat?",
+    "menuShowStrangers": "Hiện người lạ",
+    "menuDeleteStrangers": "Xóa tất cả người lạ",
+    "menuBlockList": "Danh sách chặn",
+    "blockListEmpty": "Chưa có liên hệ bị chặn",
+    "menuChangeAvatar": "Đổi hình đại diện",
+    "menuLogout": "Đăng xuất",
+    "menuLogoutAll": "Đăng xuất mọi nơi",
+    "menuBuyVip": "Đăng ký VIP"
   },
   "room": {
     "refresh": "Làm mới",

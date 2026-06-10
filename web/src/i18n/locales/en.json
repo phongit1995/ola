@@ -108,7 +108,17 @@
     "attachYoutube": "YouTube",
     "attachSnap": "Snap pic",
     "attachKen": "Send KEN",
-    "attachVip": "Trade VIP"
+    "attachVip": "Trade VIP",
+    "menuDeleteAll": "Delete all",
+    "menuDeleteAllConfirm": "Do you want to delete all chat messages?",
+    "menuShowStrangers": "Show strangers",
+    "menuDeleteStrangers": "Delete all strangers",
+    "menuBlockList": "Block list",
+    "blockListEmpty": "No blocked contacts",
+    "menuChangeAvatar": "Change avatar",
+    "menuLogout": "Log out",
+    "menuLogoutAll": "Log out everywhere",
+    "menuBuyVip": "Subscribe VIP"
   },
   "room": {
     "refresh": "Refresh",

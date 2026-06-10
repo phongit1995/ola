@@ -84,6 +84,10 @@ DrawerLayout  @id/meDrawerLayout
 └─ OlaListView  @id/right_drawer  240dp, nền trắng   ← lịch sử tìm kiếm
 ```
 
+> **Mở drawer = cử chỉ vuốt cạnh, KHÔNG có nút.** Action bar chỉ có 4 icon tab, không có nút hamburger; trong code (`me.c`) không gọi `openDrawer` mà chỉ `closeDrawer`. Vì vậy:
+> - **Vuốt từ mép TRÁI → phải** → mở **drawer trái** (`Gravity.LEFT`/`closeDrawer(3)`): header người dùng (bìa + avatar 40dp + tên) + danh sách **Nhật ký** (`OlaDiaryActivity`) / **trang cá nhân** (`OlaUserMePageActivity`) / **Clan**.
+> - **Vuốt từ mép PHẢI → trái** → mở **drawer phải** (`Gravity.RIGHT`/`closeDrawer(5)`): **lịch sử & kết quả tìm kiếm**.
+
 ## 3. Action bar — 4 icon (`stickyHeader`)
 
 Mỗi icon là `ImageView` style `actionBar.tab.button`, nền `btn_transparent_image_selector`, padding 8dp, minWidth 48dp. Bấm gọi `c.f(<tab>)` → đổi icon sang bản `_selected` (logic ở `c.i(String)`).

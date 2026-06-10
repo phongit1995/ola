@@ -1,8 +1,16 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ListOptionDialog, type ListOption } from '@components';
+import {
+  ConfirmDialog,
+  Dialog,
+  ListOptionDialog,
+  type ListOption,
+} from '@components';
+import { ROUTES } from '@constants';
 import { HomeHeader } from '@components/HomeHeader';
 import moreIcon from '@/assets/icons/chat/ic_more_white.png';
+import { useAuthStore } from '@/store/authStore';
 import { ConversationList } from './components/ConversationList';
 import { ContactList } from './components/ContactList';
 import { ComposeButton } from './components/ComposeButton';
@@ -23,11 +31,18 @@ const FALLBACK_COLOR = '#7cb342';
 
 export function ChatPanel() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const logout = useAuthStore((s) => s.logout);
+
   const [sub, setSub] = useState<ChatSub>('messages');
   const [conversations, setConversations] = useState<Conversation[]>(CONVERSATIONS);
   const [activeChat, setActiveChat] = useState<ActiveChat | null>(null);
   const [composeOpen, setComposeOpen] = useState(false);
   const [headerMenuOpen, setHeaderMenuOpen] = useState(false);
+  const [showStrangers, setShowStrangers] = useState(true);
+  const [deleteAllOpen, setDeleteAllOpen] = useState(false);
+  const [blockedListOpen, setBlockedListOpen] = useState(false);
+  const [logoutOpen, setLogoutOpen] = useState(false);
 
   function openConversation(conversation: Conversation) {
     setConversations((current) =>
@@ -51,9 +66,35 @@ export function ChatPanel() {
     setConversations((current) => current.filter((item) => item.name !== name));
   }
 
-  const headerMenuOptions: ListOption[] = [
-    { key: 'compose', label: t('chat.composeTitle'), onSelect: () => setComposeOpen(true) },
+  function confirmDeleteAll() {
+    setConversations([]);
+    setDeleteAllOpen(false);
+  }
+
+  function confirmLogout() {
+    setLogoutOpen(false);
+    logout();
+    navigate(ROUTES.login);
+  }
+
+  const messagesMenu: ListOption[] = [
+    { key: 'delete-all', label: t('chat.menuDeleteAll'), danger: true, onSelect: () => setDeleteAllOpen(true) },
+    {
+      key: 'strangers',
+      label: showStrangers ? t('chat.menuDeleteStrangers') : t('chat.menuShowStrangers'),
+      onSelect: () => setShowStrangers((value) => !value),
+    },
+    { key: 'block-list', label: t('chat.menuBlockList'), onSelect: () => setBlockedListOpen(true) },
   ];
+
+  const contactsMenu: ListOption[] = [
+    { key: 'change-avatar', label: t('chat.menuChangeAvatar'), onSelect: () => {} },
+    { key: 'logout', label: t('chat.menuLogout'), onSelect: () => setLogoutOpen(true) },
+    { key: 'logout-all', label: t('chat.menuLogoutAll'), onSelect: () => setLogoutOpen(true) },
+    { key: 'buy-vip', label: t('chat.menuBuyVip'), onSelect: () => {} },
+  ];
+
+  const headerMenuOptions = sub === 'messages' ? messagesMenu : contactsMenu;
 
   function renderTab(value: ChatSub, label: string) {
     const isActive = sub === value;
@@ -123,10 +164,38 @@ export function ChatPanel() {
       />
       <ListOptionDialog
         open={headerMenuOpen}
-        title={t('home.tabChat')}
+        title={sub === 'messages' ? t('home.subMessages') : t('home.subContacts')}
         options={headerMenuOptions}
         onClose={() => setHeaderMenuOpen(false)}
       />
+      <ConfirmDialog
+        open={deleteAllOpen}
+        danger
+        title={t('chat.menuDeleteAll')}
+        message={t('chat.menuDeleteAllConfirm')}
+        confirmLabel={t('dialog.delete')}
+        cancelLabel={t('dialog.no')}
+        onConfirm={confirmDeleteAll}
+        onCancel={() => setDeleteAllOpen(false)}
+      />
+      <ConfirmDialog
+        open={logoutOpen}
+        showIcon={false}
+        danger
+        title={t('dialog.logoutTitle')}
+        message={t('dialog.logoutMessage')}
+        confirmLabel={t('dialog.logoutButton')}
+        cancelLabel={t('dialog.no')}
+        onConfirm={confirmLogout}
+        onCancel={() => setLogoutOpen(false)}
+      />
+      <Dialog
+        open={blockedListOpen}
+        onClose={() => setBlockedListOpen(false)}
+        title={t('chat.menuBlockList')}
+      >
+        <p className="py-2 text-center text-black/54">{t('chat.blockListEmpty')}</p>
+      </Dialog>
     </>
   );
 }
