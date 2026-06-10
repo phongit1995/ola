@@ -43,7 +43,7 @@ node socket-server.js  # SOCKET (cổng 1239) — quan trọng cho login + chat
 | 14 | Cdo | Chat 1-1 (gửi/nhận tin) + auto-reply | ✅ |
 | 106 | co | ACK gửi tin (xác nhận đã gửi) | ✅ |
 | 103 | ee | ACK đã đọc / Sync engine | ✅ |
-| 204 | bp | Typing indicator (log only) | ✅ |
+| 204 | bp | Typing **+ HTTP-over-socket proxy** (id/profile → set h.O, bỏ patch smali) | ✅ |
 | 209 | cc | Sync hội thoại (load-more + sub-actions) | ✅ |
 | 140 | av | Sync danh sách hội thoại | ✅ |
 | 81 | at | Danh sách phòng chat | ✅ |

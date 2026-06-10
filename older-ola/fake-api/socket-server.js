@@ -68,6 +68,37 @@ function parseBody(body) {
 }
 const getKey = (kv, k) => { const f = kv.find((x) => x.key === k); return f ? f.val : null; };
 
+// ---------- PROXY HTTP-over-socket (svc 204) ----------
+// App tunnel request REST qua socket. Ta tự "fetch" nội bộ: route theo path
+// và trả body JSON (Buffer) y như REST server. Trả null = chưa fake (bỏ qua).
+const shortUrl = (u) => { try { const x = new URL(u); return x.pathname; } catch (e) { return u.slice(0, 48); } };
+
+// Hồ sơ BẢN THÂN (entity.ag). w.a(byte[]) cần tối thiểu field "nick".
+// vip=1 + phone.verified=true → tab Phòng chat không cảnh báo "Mua VIP / xác thực".
+function buildProfileJSON(nick) {
+  return JSON.stringify({
+    nick, name: 'Fake ' + nick, gender: 1, birthday: 788918400000,
+    registerMs: Date.now() - 1e10, lastActiveAgo: 60, socialLinkType: 0,
+    noFans: 12, noFriends: 34, noMedias: 5,
+    statusMessage: 'Hồ sơ giả (nạp qua svc204 proxy — KHÔNG cần patch smali)',
+    cared: false, isFan: false, blocked: false, vip: 1,
+    phone: { number: '0901234567', verified: true, protect: true },
+    like: { '1': 0, '3': 0, liked: 0 }, friends: [], fans: [], medias: [],
+  });
+}
+
+function proxyFetch(url) {
+  let path = url, q;
+  try { const x = new URL(url); path = x.pathname; q = x.searchParams; } catch (e) {}
+  // /json/id/profile?un=<nick>&owsn=<self> → hồ sơ; un=self → set h.O.
+  if (path.endsWith('/id/profile')) {
+    const nick = (q && (q.get('un') || q.get('owsn'))) || 'tester';
+    return vStr(buildProfileJSON(nick));
+  }
+  // các URL khác (aurora/venue, scrape, …) chưa cần → bỏ qua (app tự chịu null)
+  return null;
+}
+
 // ---------- Dữ liệu giả ----------
 const FAKE_FRIENDS = [
   { nick: 'linhchi92',  name: 'Linh Chi',     phone: '0901111111', status: 'Hôm nay trời đẹp ☀️' },
@@ -175,6 +206,8 @@ function replyRoomList(sock) {
 let seeded = false; // chỉ seed tin nhắn 1 lần để tránh trùng khi reconnect
 let isOnline = false; // track xem đã login xong chưa (svc 97 đã trả)
 let pendingRoomRequest = null; // lưu socket nếu svc 81 đến trước khi online
+let onlineSince = 0; // mốc thời gian online (svc 97) → bỏ qua auto-rejoin phòng cũ
+const AUTO_REJOIN_MS = 3000; // svc 85 trong 3s đầu sau online = auto-rejoin (bỏ qua)
 
 // ---------- Xử lý từng packet ----------
 let pktNo = 0;
@@ -234,12 +267,15 @@ function handle(sock, svc, kv) {
 
       // Đánh dấu đã online — svc 81 có thể trả lời ngay
       isOnline = true;
+      onlineSince = Date.now();
 
-      // Nếu svc 81 đến TRƯỚC khi online (race condition), trả lời ngay bây giờ
+      // Nếu svc 81 đến TRƯỚC khi online (race condition), trả lời sau 2s
+      // để REST profile kịp set h.O
       if (pendingRoomRequest) {
-        console.log('   📋 Trả svc 81 TREO (đã chờ online)');
-        replyRoomList(pendingRoomRequest);
+        console.log('   📋 svc 81 TREO → delay 2s rồi trả...');
+        const pendingSock = pendingRoomRequest;
         pendingRoomRequest = null;
+        setTimeout(() => replyRoomList(pendingSock), 2000);
       }
 
       // Sau khi online -> PUSH danh bạ qua svc 250 (codec ca đã wire) + seed hội thoại
@@ -282,28 +318,49 @@ function handle(sock, svc, kv) {
     }
 
     // svc 81 (at) = app XIN danh sách PHÒNG CHAT (gửi 0 keys khi mở tab "Phòng chat").
-    // Trả về danh sách phòng -> network.e lưu vào h.x -> fragment l hiện list.
-    // ⚠️ QUAN TRỌNG: phải trả SAU khi svc 97 xong (h.O != null), nếu không
-    // r/a/f.b() truy cập h.O.u -> NPE -> danh sách rỗng -> spinner kẹt.
+    // Trả về danh sách phòng → network.e lưu vào h.x → fragment l hiện list.
+    // ⚠️ TIMING QUAN TRỌNG: f/a/f.b() (dựng list) đọc h.O (hồ sơ bản thân)
+    // KHÔNG null-check → h.O==null thì NPE → list rỗng. h.O được set qua
+    // PROXY svc 204 (app tự gửi URL /json/id/profile sau login — xem case 204).
+    // → Delay 2s sau online để response svc 204 (id/profile) kịp set h.O xong.
+    // (Nhờ vậy KHÔNG cần patch smali h.O=new ag() như bản trước.)
     case 81: {
       if (!isOnline) {
         console.log('   ⏳ svc 81 đến TRƯỚC khi online — TREO, đợi svc 97...');
         pendingRoomRequest = sock;
       } else {
-        replyRoomList(sock);
+        console.log('   ⏳ svc 81: delay 2s để REST profile (/json/id/pubinfo) kịp set h.O...');
+        setTimeout(() => replyRoomList(sock), 2000);
       }
       break;
     }
 
-    // svc 85 (bf) = JOIN phòng (app gửi key100=room id khi click 1 phòng).
+    // svc 85 (bf) = JOIN phòng (app gửi key100=room nick/id).
     // Trả: key255=status, key100=room id, key101=tên, key104=thumb,
     // + danh sách THÀNH VIÊN (key7=nick lặp; mỗi người key22=tên, key45=online, key13=status).
-    // -> network.e: x.a(room, members) + x.a(1) (mode=1, VÀO PHÒNG) -> hiện danh sách + nội dung.
+    // → network.e: x.a(room, members) + x.a(1) (mode=1, VÀO PHÒNG) → hiện danh sách + nội dung.
+    // ⚠️ Sau login app TỰ auto-rejoin phòng cũ (lastRoomId) bằng 1 svc 85 ngay.
+    // (Lưu ý: join "ola"/"#hai" đi qua svc 104, KHÔNG phải 85.) Nếu honor cái
+    // auto-rejoin này, app sẽ nhảy thẳng VÀO phòng ngay sau login thay vì ở list.
+    // → Dùng TIME-GATE: svc 85 trong AUTO_REJOIN_MS đầu sau online = auto-rejoin
+    //   → bỏ qua (trả lỗi nhẹ) để giữ màn DANH SÁCH; sau đó honor mọi click thật.
     case 85: {
       const ridBuf = getKey(kv, 100);
       let roomId = 0;
       try { roomId = Number(ridBuf.readBigUInt64BE(0)); } catch (e) {}
-      const room = FAKE_ROOMS.find((r) => r.id === roomId) || { id: roomId, name: 'Phòng ' + roomId };
+      const room = FAKE_ROOMS.find((r) => r.id === roomId);
+      const isAutoRejoin = onlineSince && (Date.now() - onlineSince) < AUTO_REJOIN_MS;
+
+      if (!room || isAutoRejoin) {
+        const reason = !room ? 'phòng không tồn tại' : 'auto-rejoin sau login (bỏ qua, giữ list)';
+        console.log(`   ⛔ JOIN ${reason} (parsed id: ${roomId})`);
+        send(sock, 85, [
+          { key: 255, val: vShort(1) },          // status = ERROR → app giữ màn list
+          { key: 100, val: vLong(roomId || 0) },
+        ], `(JOIN bỏ qua — ${reason})`);
+        break;
+      }
+
       const kvs = [
         { key: 255, val: vShort(0) },        // status OK
         { key: 100, val: vLong(room.id) },   // room id
@@ -317,9 +374,6 @@ function handle(sock, svc, kv) {
         if (m.status) kvs.push({ key: 13, val: vStr(m.status) }); // status
       }
       send(sock, 85, kvs, `(JOIN phòng "${room.name}": ${FAKE_FRIENDS.length} thành viên)`);
-      // Lưu ý: phòng chat công khai của Ola hiển thị DANH SÁCH THÀNH VIÊN (mỗi người =
-      // 1 message.f type 2, kèm nick/tên/status). Đây chính là nội dung in-room (x.k).
-      // KHÔNG push svc 14 ở đây vì svc 14 đi vào hội thoại 1-1 (h.t), không phải phòng.
       break;
     }
 
@@ -431,15 +485,35 @@ function handle(sock, svc, kv) {
       break;
     }
 
-    // svc 204 (bp) = Typing indicator.
-    // App gửi key109=peerNick, key130=timestamp khi user đang nhập.
-    // Không cần trả gì (app chỉ thông báo server). Nhưng ta có thể push
-    // typing từ "peer" lại cho UI hiện "đang nhập..."
+    // svc 204 (bp) = HAI VAI TRÒ:
+    //  (A) Typing indicator: key109=peerNick (chuỗi ngắn), key130=timestamp.
+    //  (B) ⭐ HTTP-over-socket PROXY: app tunnel request "REST" qua socket.
+    //      key109 = URL đầy đủ (vd ".../json/id/profile?...un=<nick>..."),
+    //      key130 = task id (long, = entity.m.a). Server THẬT fetch URL rồi
+    //      trả body về. Đây là cách app nạp HỒ SƠ BẢN THÂN → set h.O
+    //      (KHÔNG cần patch smali). Xem ci.java:600 (gửi 204), bp.java:20
+    //      (decode response: key130=id, key23=body, không key0 → bA<0),
+    //      network/e.java:428 → k.a.a(id).a(body) → w.a(bytes) → a(ag) → h.O.
+    //  Cách trả: svc 204 với key130=ECHO id, key23=body JSON (raw), KHÔNG key0.
     case 204: {
-      // Chỉ log, không cần trả response (app fire-and-forget)
-      const target = getKey(kv, 109);
-      const nick = target ? target.toString('utf8') : '';
-      console.log(`   ⌨️  Typing indicator → "${nick}"`);
+      const urlBuf = getKey(kv, 109);
+      const idBuf  = getKey(kv, 130);          // task id (long 8B) — echo nguyên bytes
+      const url    = urlBuf ? urlBuf.toString('utf8') : '';
+
+      // (B) PROXY: chỉ xử lý URL http(s); chuỗi ngắn không phải URL = typing.
+      if (/^https?:\/\//i.test(url)) {
+        const body = proxyFetch(url);           // -> Buffer|null body để app parse
+        if (body && idBuf) {
+          send(sock, 204, [
+            { key: 130, val: idBuf },           // ECHO task id để client match task
+            { key: 23,  val: body },            // body (bytes) -> w.a(byte[]) parse
+          ], `(PROXY 204 → ${body.length}B cho ${shortUrl(url)})`);
+        } else {
+          console.log(`   🌐 PROXY 204 bỏ qua (chưa fake): ${shortUrl(url)}`);
+        }
+      } else {
+        console.log(`   ⌨️  Typing indicator → "${url}"`);
+      }
       break;
     }
     // svc 140 (av) = Sync danh sách hội thoại. App gửi 0 keys.
@@ -517,6 +591,7 @@ const server = net.createServer((sock) => {
     console.log(`========== ❌ ĐÓNG kết nối ${who} ==========\n`);
     isOnline = false;
     pendingRoomRequest = null;
+    onlineSince = 0;
   });
 });
 

@@ -35,31 +35,20 @@ Phân tích ngược APK **Ola 2.1.11** (`chat.ola.vn`) + dựng fake server (RE
 ✅ Patch redirect (REST + socket IP) → build → ký lại APK
 ✅ Đăng nhập vào app qua fake server (nick/mật khẩu bất kỳ)
 ✅ Chat 1-1 hai chiều (auto-reply) + danh sách tin nhắn + ACK (svc 106)
-✅ Phòng chat (PHÒNG CHAT): fake danh sách phòng qua **socket svc 81** + patch smali
+✅ Phòng chat (PHÒNG CHAT): fake danh sách phòng qua **socket svc 81**
 ✅ Vào trong phòng (JOIN): **socket svc 85** → hiện tên phòng + danh sách thành viên
+✅ **Hồ sơ bản thân `h.O` set qua SOCKET (svc 204 proxy) — KHÔNG còn cần patch smali** (xem dưới)
 ❌ Danh bạ (DANH BẠ): luồng nạp là dead-code trong bản 2.1.11 — không fake được qua socket
 
-### Tại sao Phòng Chat cần patch smali?
+### Phòng Chat & hồ sơ `h.O` — KHÔNG cần patch smali
 
-**Vấn đề:** Khi login thành công, callback `a(ci ciVar, short s)` trong [`network/e.java:715`](file:///Volumes/D/ola/older-ola/jadx_out/sources/chat/ola/vn/network/e.java#L715) gán:
-```java
-chat.ola.vn.h.O = null;  // xóa user profile (class entity.ag)
-```
+Tab Phòng Chat dựng list bằng cách đọc `h.O` (hồ sơ bản thân, `entity.ag`) **không null-check** → `h.O==null` thì **NPE → tab trống**. `h.O` chỉ set qua `id/profile` (task `w` → `a(ag,short)` `e.java:548`).
 
-Biến `h.O` (kiểu [`entity.ag`](file:///Volumes/D/ola/older-ola/jadx_out/sources/chat/ola/vn/entity/ag.java)) chứa thông tin user profile (VIP status `.u`, gender `.w`, phone verified `.x`, v.v.). Bình thường server thật sẽ push **svc response** chứa profile → `a(ag agVar, short s)` ([`e.java:548`](file:///Volumes/D/ola/older-ola/jadx_out/sources/chat/ola/vn/network/e.java#L548)) sẽ gán `h.O = agVar`. Fake server **không push profile** nên `h.O` vẫn **null** mãi.
+**Mấu chốt:** khi socket nối, request `id/profile` **đi qua SOCKET (svc 204 proxy), không phải HTTP** — `key109=URL`, `key130=task id`; server trả body về qua svc 204 → client parse → set `h.O`. Fake server cũ coi svc 204 là "typing" rồi vứt đi nên `h.O` mãi null (mới tưởng phải patch).
 
-**Hậu quả:** Tab Phòng Chat adapter ([`b/y.java:103-115`](file:///Volumes/D/ola/older-ola/jadx_out/sources/chat/ola/vn/b/y.java#L103-L115)) truy cập trực tiếp `h.O.u`, `h.O.q`, `h.O.x` **mà không check null** → **NullPointerException** → crash hoặc tab trống. Tương tự ở [`network/e.java:856`](file:///Volumes/D/ola/older-ola/jadx_out/sources/chat/ola/vn/network/e.java#L856): `h.O.u = h.H`.
+→ **Giải pháp (server-only):** fake socket xử lý **svc 204**: `key109` là URL `id/profile` → trả `key130`=ECHO id + `key23`=profile JSON. Xem `case 204` + `proxyFetch()` trong [`fake-api/socket-server.js`](fake-api/socket-server.js); chi tiết cơ chế ở [socket-protocol.md](docs/api/socket-protocol.md).
 
-**Giải pháp — patch smali:** Thay `h.O = null` bằng `h.O = new ag()` (entity rỗng) trong [`network/e.smali:1086-1090`](file:///Volumes/D/ola/older-ola/apktool_out/smali/chat/ola/vn/network/e.smali#L1086-L1090):
-```smali
-# GỐC:  const/4 v6, 0x0  →  sput-object v6, Lchat/ola/vn/h;->O  (= null)
-# PATCH:
-new-instance v7, Lchat/ola/vn/entity/ag;
-invoke-direct {v7}, Lchat/ola/vn/entity/ag;-><init>()V
-sput-object v7, Lchat/ola/vn/h;->O:Lchat/ola/vn/entity/ag;
-```
-
-Kết quả: `h.O` không bao giờ null → các adapter đọc được (u=0 → hiện "Mua VIP", w=-1, x=false) → **phòng chat hiển thị đầy đủ** mà không crash.
+> ✅ Verify: APK **gốc (KHÔNG patch)** + handler svc 204 → 6 phòng hiện đủ + JOIN OK (`fake-api/screenshots/emu_np_rooms.png`, `emu_np_inroom.png`).
 
 ## Cách tạo lại các thư mục decompile (nếu cần)
 ```bash

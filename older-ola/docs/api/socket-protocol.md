@@ -108,7 +108,7 @@ IP server: `f.d.e_/f_ = {210.211.116.129, .131, .134, .130}`, chọn ngẫu nhi�
 | **2** | dv | Gửi tin (kèm thông tin phiên) | 2,4,5,22,43,58,88,109,142,255 | `ci.java:731,746` |
 | **57** | e | **Gửi tin nhắn nhóm/feed** | 9,20,45,109,110,112,114,255 | `ci.java:123` |
 | **103** | ee | **Ack / đánh dấu đã đọc** | 7,72,115,255 | `ci.java:469,591` |
-| **204** | bp | Báo đang nhập (typing) | 109,130 | `ci.java:605` |
+| **204** | bp | Typing **HOẶC** HTTP-over-socket proxy (key109=URL, key130=task id) | 109,130 | `ci.java:600,605` |
 | **190** | t | Gửi báo nhận | 109,114 | `ci.java:74` |
 | **85** | bf | **Tin nhắn trong phòng chat** | 38,45,79,88,100,114,115,255 | `ci.java:482` |
 
@@ -184,7 +184,7 @@ IP server: `f.d.e_/f_ = {210.211.116.129, .131, .134, .130}`, chọn ngẫu nhi�
 | **81** | at | **Kết quả vào phòng** | 30,100,101,103,104,109,255 | `w/at.java` |
 | **189** | ec | **Danh sách thành viên nhóm** (→ entity.g[]) | 7,8,9,13,24,28,45,109,110,114,130,220,255 | `w/ec.java` |
 | **163** | dk | Cập nhật nhóm chat | 7,9,24,45,109,110,129 | `w/dk.java` |
-| **204** | bp | **Push typing/presence** | 0,8,23,109,110,130 | `w/bp.java` |
+| **204** | bp | **Proxy response** (body REST qua socket) **/** typing | key130=task id, key23=body, key110, (key0<0=proxy) | `w/bp.java:20` → `e.java:428` |
 | **92** | ed | **Kết quả keepalive / số dư VIP** | nhiều (8,9,22,24,38,45,67,72,108,113,114,125,220,221,255) | `w/ed.java` |
 | **147** | ay | **Thông tin VIP push** (→ List ah) | 7,9,109–112,114,130,255 | `g.a(...,List<ah>,short)` |
 | **166** | de | **Kết quả mua VIP** | 7,45,59,110,111,114,130,255 | `w/de.java` |
@@ -259,11 +259,17 @@ Tab "Phòng chat" lấy danh sách phòng qua socket:
 | **Đọc room** | id = giá trị long tại entry key100; tên = string tại entry key101 (đi song song); các field 109/104/103/30 nằm GIỮA 2 key100 liên tiếp |
 | **Callback** | `at` → `gVar.a(List<entity.s>, short)` → `network.e` lưu `h.x.a(list)` → fragment `m/l` vẽ list |
 
-**⚠️ Bug app + bản vá bắt buộc:** sau khi nhận list, `r/a/f.b()` (dựng list hiển thị) truy cập `h.O` (**hồ sơ bản thân**, kiểu `entity.ag`) **không null-check** → `h.O=null` thì **NPE** → list rỗng dù data đúng.
+**⚠️ Bug app:** sau khi nhận list, `r/a/f.b()` (dựng list hiển thị) truy cập `h.O` (**hồ sơ bản thân**, kiểu `entity.ag`) **không null-check** → `h.O=null` thì **NPE** → list rỗng dù data đúng. `h.O` bị gán null lúc login (`e.java:715`).
 
-`h.O` chỉ set qua REST **`id/profile`** (codec `w` → `network.e.a(ag,short)`). App **đã tự gọi** fetch này sau login (`network.e` login-success: `this.a.b((String)null,(short)0)`), NHƯNG `id/profile` là request `z=true`: trong `util/http/a.java` URL builder có `if (z) return null` khi base/`owsc` rỗng → lúc login bị **bỏ** → `h.O` không bao giờ set. (Đã rà soát: login + vào chat + xem hồ sơ đều KHÔNG gọi được id/profile.)
+`h.O` **chỉ** set qua **`id/profile`** — task `network/a/a/w.java` parse JSON → `network.e.a(ag,short)` (`e.java:548`). Không codec socket nào gọi `a(ag,short)`.
 
-→ **Bản vá đã dùng (1 dòng, sạch — KHÔNG đụng `f.smali`):** trong `network/e.smali` login-success vốn có sẵn `h.O = null`; đổi thành `h.O = new entity/ag()` (hồ sơ rỗng mặc định `u=0,q=-1,x=false`). Đúng chỗ app quản lý `h.O`, set tự nhiên mỗi lần login. Sau rebuild: **6 phòng hiển thị đầy đủ** (`fake-api/screenshots/05-phong-chat.png`).
+**⭐ Đính chính quan trọng (verify thực tế):** request `id/profile` **đi qua SOCKET, không phải HTTP**. Khi socket nối, mọi REST task được `OlaNetworkService.a(m)` (`:249`) tunnel qua **svc 204** (HTTP-over-socket proxy): `ci.a(url,id,z)` (`ci.java:600`) gửi `key109=URL`, `key130=task id`. Server thật fetch URL → trả body về qua svc 204; client decode `bp.java:20` (`key130=id`, `key23=body`, **không** `key0` → `bA<0`) → `e.java:428` `k.a.a(id).a(body)` → `w.a(bytes)` parse → set `h.O`. (Vì vậy bắt log REST 8080 KHÔNG thấy `id/profile` — nó nằm trong svc 204 trên cổng 1239.)
+
+→ **Giải pháp đúng (server-only, KHÔNG patch APK):** fake socket xử lý **svc 204**: `key109` là URL `id/profile` → trả svc 204 `key130`=ECHO id + `key23`=profile JSON raw (tối thiểu field `nick`; `vip:1`+`phone.verified:true` để tránh cảnh báo). Xem `case 204` + `proxyFetch()` trong `socket-server.js`.
+
+> ✅ **Verify:** APK **gốc (h.O=null, KHÔNG patch smali)** + handler svc 204 → login → **6 phòng hiện đủ** + JOIN OK (emulator 10.0.2.2, `fake-api/screenshots/emu_np_rooms.png`, `emu_np_inroom.png`). Bản vá smali `h.O=new ag()` ở các commit trước **không cần nữa**.
+
+> 📌 svc 204 còn được app dùng cho URL khác (vd `/json/aurora/venue/find/opt`) — `proxyFetch()` trả `null` cho cái chưa fake (app tự chịu). Khi `key109` là chuỗi ngắn (không phải URL) thì đó mới là **typing indicator** thật.
 
 > 💡 Reply **svc 97** cũng thêm **key 13 = nick mình** (`ciVar.i` → `h.d()` set self nick).
 
