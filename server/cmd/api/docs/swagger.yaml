@@ -1,0 +1,2508 @@
+basePath: /api
+definitions:
+  chat-server_internal_utils.APIError:
+    properties:
+      error:
+        example: validation error
+        type: string
+      path:
+        example: /api/v1/auth/login
+        type: string
+      status:
+        example: 400
+        type: integer
+      success:
+        example: false
+        type: boolean
+      timestamp:
+        example: "2025-11-29T10:00:00Z"
+        type: string
+      traceId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+    type: object
+  chat-server_internal_utils.BaseResponse-internal_modules_auth_RefreshTokenResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_auth.RefreshTokenResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_auth.AuthResponse:
+    properties:
+      refreshToken:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+      token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+      user:
+        $ref: '#/definitions/internal_modules_auth.UserResponse'
+    type: object
+  internal_modules_auth.AuthSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_auth.AuthResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_auth.ChangePasswordRequest:
+    properties:
+      currentPassword:
+        example: oldpassword123
+        type: string
+      newPassword:
+        example: newpassword123
+        minLength: 6
+        type: string
+    required:
+    - currentPassword
+    - newPassword
+    type: object
+  internal_modules_auth.ChangePasswordResponse:
+    properties:
+      message:
+        example: Password changed successfully
+        type: string
+    type: object
+  internal_modules_auth.ChangePasswordSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_auth.ChangePasswordResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_auth.LoginRequest:
+    properties:
+      email:
+        example: john@example.com
+        type: string
+      password:
+        example: password123
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  internal_modules_auth.RefreshTokenRequest:
+    properties:
+      refreshToken:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+    required:
+    - refreshToken
+    type: object
+  internal_modules_auth.RefreshTokenResponse:
+    properties:
+      refreshToken:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+      token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+    type: object
+  internal_modules_auth.RegisterRequest:
+    properties:
+      avatar:
+        example: https://example.com/avatar.jpg
+        type: string
+      email:
+        example: john@example.com
+        type: string
+      full_name:
+        example: John Doe
+        maxLength: 100
+        type: string
+      password:
+        example: password123
+        minLength: 6
+        type: string
+      username:
+        example: john_doe
+        maxLength: 50
+        minLength: 3
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
+  internal_modules_auth.RegisterSuccessResponse:
+    type: object
+  internal_modules_auth.UserResponse:
+    type: object
+  internal_modules_call.CallTokenResponse:
+    properties:
+      callId:
+        type: string
+      callType:
+        type: string
+      callerId:
+        type: string
+      conversationId:
+        type: string
+      roomName:
+        type: string
+      startedAt:
+        type: string
+      status:
+        type: string
+      token:
+        type: string
+      wsUrl:
+        type: string
+    type: object
+  internal_modules_call.CallTokenSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_call.CallTokenResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_call.SimpleSuccessResponse:
+    properties:
+      message:
+        example: OK
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  internal_modules_call.StartCallRequest:
+    properties:
+      callType:
+        enum:
+        - audio
+        - video
+        type: string
+      conversationId:
+        type: string
+    required:
+    - callType
+    - conversationId
+    type: object
+  internal_modules_conversation.ConversationResponse:
+    properties:
+      avatar:
+        example: https://example.com/avatar.jpg
+        type: string
+      createdAt:
+        example: "2024-01-15T10:30:00Z"
+        type: string
+      id:
+        example: ea6e8f76-a92e-6957-d1c8-eeg27c26cgfd
+        type: string
+      isLastMessageFromMe:
+        example: false
+        type: boolean
+      isMuted:
+        example: false
+        type: boolean
+      isNew:
+        example: true
+        type: boolean
+      lastMessageAt:
+        example: "2024-01-15T15:45:00Z"
+        type: string
+      lastMessageSenderId:
+        example: ca4c6d54-870c-4735-b9a6-cce05a04aedb
+        type: string
+      lastMessageSenderName:
+        example: John Doe
+        type: string
+      lastMessageText:
+        example: Hello, how are you?
+        type: string
+      name:
+        example: John Doe
+        type: string
+      otherUser:
+        $ref: '#/definitions/internal_modules_conversation.OtherUserBrief'
+      participantCount:
+        example: 2
+        type: integer
+      seen:
+        example: true
+        type: boolean
+      type:
+        example: direct
+        type: string
+      unreadCount:
+        example: 5
+        type: integer
+      updatedAt:
+        example: "2024-01-15T15:45:00Z"
+        type: string
+    type: object
+  internal_modules_conversation.ConversationSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_conversation.ConversationResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_conversation.ConversationsListResponse:
+    properties:
+      conversations:
+        items:
+          $ref: '#/definitions/internal_modules_conversation.ConversationResponse'
+        type: array
+      total:
+        example: 10
+        type: integer
+    type: object
+  internal_modules_conversation.ConversationsListSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_conversation.ConversationsListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_conversation.CreateDirectConversationRequest:
+    properties:
+      recipientId:
+        example: ca4c6d54-870c-4735-b9a6-cce05a04aedb
+        type: string
+    required:
+    - recipientId
+    type: object
+  internal_modules_conversation.CreateGroupConversationRequest:
+    properties:
+      name:
+        example: Project Team
+        maxLength: 100
+        minLength: 1
+        type: string
+      participantIds:
+        example:
+        - ca4c6d54-870c-4735-b9a6-cce05a04aedb
+        - da5d7e65-981d-5846-c0b7-ddf16b15bfec
+        items:
+          type: string
+        minItems: 1
+        type: array
+    required:
+    - name
+    - participantIds
+    type: object
+  internal_modules_conversation.HideConversationResponse:
+    properties:
+      message:
+        example: Conversation hidden successfully
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  internal_modules_conversation.OtherUserBrief:
+    properties:
+      avatar:
+        example: https://example.com/avatar.jpg
+        type: string
+      bio:
+        example: Software developer
+        type: string
+      fullName:
+        example: John Doe
+        type: string
+      id:
+        example: ca4c6d54-870c-4735-b9a6-cce05a04aedb
+        type: string
+      isOnline:
+        example: true
+        type: boolean
+      lastActiveAt:
+        example: "2024-01-15T15:45:00Z"
+        type: string
+      username:
+        example: johndoe
+        type: string
+    type: object
+  internal_modules_conversation.SimpleSuccessResponse:
+    properties:
+      message:
+        example: Operation completed successfully
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  internal_modules_conversation.TypingIndicatorRequest:
+    properties:
+      conversationId:
+        example: ea6e8f76-a92e-6957-d1c8-eeg27c26cgfd
+        type: string
+    required:
+    - conversationId
+    type: object
+  internal_modules_conversation.TypingIndicatorResponse:
+    properties:
+      message:
+        example: Typing indicator sent
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  internal_modules_conversation.UnhideConversationResponse:
+    properties:
+      message:
+        example: Conversation unhidden successfully
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  internal_modules_health.HealthResponse:
+    properties:
+      services:
+        additionalProperties:
+          type: string
+        type: object
+      status:
+        example: healthy
+        type: string
+      version:
+        example: 1.0.0
+        type: string
+    type: object
+  internal_modules_health.HealthSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_health.HealthResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_message.MessageResponse:
+    properties:
+      clientMsgId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      content:
+        example: Hello, how are you?
+        type: string
+      conversationId:
+        example: ea6e8f76-a92e-6957-d1c8-eeg27c26cgfd
+        type: string
+      createdAt:
+        example: "2024-01-15T10:30:00Z"
+        type: string
+      editedAt:
+        example: "2024-01-15T10:35:00Z"
+        type: string
+      id:
+        example: fa7f9g87-ba3f-7a68-e2d9-ffh38d37dhge
+        type: string
+      metadata:
+        example: '{"fileName":"image.png"}'
+        type: string
+      reactions:
+        additionalProperties:
+          items:
+            type: string
+          type: array
+        type: object
+      replyToId:
+        example: ga8g0h98-cb4g-8b79-f3e0-ggi49e48eihf
+        type: string
+      senderAvatar:
+        example: https://example.com/avatar.jpg
+        type: string
+      senderId:
+        example: ca4c6d54-870c-4735-b9a6-cce05a04aedb
+        type: string
+      senderName:
+        example: John Doe
+        type: string
+      status:
+        example: sent
+        type: string
+      type:
+        example: text
+        type: string
+      updatedAt:
+        example: "2024-01-15T10:30:00Z"
+        type: string
+    type: object
+  internal_modules_message.MessageSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_message.MessageResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_message.MessagesListResponse:
+    properties:
+      messages:
+        items:
+          $ref: '#/definitions/internal_modules_message.MessageResponse'
+        type: array
+      total:
+        example: 50
+        type: integer
+    type: object
+  internal_modules_message.MessagesListSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_message.MessagesListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_message.SendDirectMessageRequest:
+    properties:
+      clientMsgId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        maxLength: 64
+        type: string
+      content:
+        example: Hello, how are you?
+        maxLength: 4000
+        type: string
+      metadata:
+        example: '{"fileName":"image.png"}'
+        type: string
+      recipientId:
+        example: ca4c6d54-870c-4735-b9a6-cce05a04aedb
+        type: string
+      type:
+        enum:
+        - text
+        - image
+        - file
+        - video
+        - audio
+        example: text
+        type: string
+    required:
+    - recipientId
+    - type
+    type: object
+  internal_modules_message.SendMessageRequest:
+    properties:
+      clientMsgId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        maxLength: 64
+        type: string
+      content:
+        example: Hello, how are you?
+        maxLength: 4000
+        type: string
+      conversationId:
+        example: ea6e8f76-a92e-6957-d1c8-eeg27c26cgfd
+        type: string
+      metadata:
+        example: '{"fileName":"image.png"}'
+        type: string
+      replyToId:
+        example: fa7f9g87-ba3f-7a68-e2d9-ffh38d37dhge
+        type: string
+      type:
+        enum:
+        - text
+        - image
+        - file
+        - video
+        - audio
+        example: text
+        type: string
+    required:
+    - conversationId
+    - type
+    type: object
+  internal_modules_message.SimpleSuccessResponse:
+    properties:
+      message:
+        example: Operation completed successfully
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  internal_modules_message.ToggleReactionRequest:
+    properties:
+      type:
+        enum:
+        - LIKE
+        - LOVE
+        - HAHA
+        - WOW
+        - SAD
+        - ANGRY
+        example: LIKE
+        type: string
+    required:
+    - type
+    type: object
+  internal_modules_message.UpdateMessageRequest:
+    properties:
+      content:
+        example: Updated message content
+        maxLength: 4000
+        minLength: 1
+        type: string
+    required:
+    - content
+    type: object
+  internal_modules_relationships.BlockUserRequest:
+    properties:
+      userId:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+    required:
+    - userId
+    type: object
+  internal_modules_relationships.FriendListResponse:
+    properties:
+      friends:
+        items:
+          $ref: '#/definitions/internal_modules_relationships.FriendResponse'
+        type: array
+      limit:
+        example: 20
+        type: integer
+      offset:
+        example: 0
+        type: integer
+      total:
+        example: 5
+        type: integer
+    type: object
+  internal_modules_relationships.FriendListSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_relationships.FriendListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_relationships.FriendResponse:
+    properties:
+      avatar:
+        example: https://example.com/avatar.jpg
+        type: string
+      email:
+        example: john@example.com
+        type: string
+      friendAt:
+        example: "2024-01-15T10:30:00Z"
+        type: string
+      fullName:
+        example: John Doe
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      isOnline:
+        example: true
+        type: boolean
+      lastActiveAt:
+        example: "2024-01-15T10:30:00Z"
+        type: string
+      username:
+        example: john_doe
+        type: string
+    type: object
+  internal_modules_relationships.RelationshipListResponse:
+    properties:
+      limit:
+        example: 20
+        type: integer
+      offset:
+        example: 0
+        type: integer
+      relationships:
+        items:
+          $ref: '#/definitions/internal_modules_relationships.RelationshipResponse'
+        type: array
+      total:
+        example: 10
+        type: integer
+    type: object
+  internal_modules_relationships.RelationshipListSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_relationships.RelationshipListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_relationships.RelationshipResponse:
+    properties:
+      actionedAt:
+        example: "2024-01-15T10:30:00Z"
+        type: string
+      addressee:
+        $ref: '#/definitions/internal_modules_relationships.UserInfo'
+      addresseeId:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+      createdAt:
+        example: "2024-01-15T10:30:00Z"
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440002
+        type: string
+      requester:
+        $ref: '#/definitions/internal_modules_relationships.UserInfo'
+      requesterId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      status:
+        example: pending
+        type: string
+    type: object
+  internal_modules_relationships.RelationshipSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_relationships.RelationshipResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_relationships.RespondToRequestRequest:
+    properties:
+      action:
+        enum:
+        - accept
+        - reject
+        example: accept
+        type: string
+    required:
+    - action
+    type: object
+  internal_modules_relationships.SendFriendRequestRequest:
+    properties:
+      userId:
+        example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+    required:
+    - userId
+    type: object
+  internal_modules_relationships.UserInfo:
+    properties:
+      avatar:
+        example: https://example.com/avatar.jpg
+        type: string
+      email:
+        example: john@example.com
+        type: string
+      fullName:
+        example: John Doe
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      username:
+        example: john_doe
+        type: string
+    type: object
+  internal_modules_user.PresenceBatchRequest:
+    properties:
+      userIds:
+        example:
+        - 550e8400-e29b-41d4-a716-446655440000
+        items:
+          type: string
+        maxItems: 200
+        minItems: 1
+        type: array
+    required:
+    - userIds
+    type: object
+  internal_modules_user.PresenceBatchResponse:
+    properties:
+      users:
+        items:
+          $ref: '#/definitions/internal_modules_user.UserPresence'
+        type: array
+    type: object
+  internal_modules_user.PresenceBatchSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_user.PresenceBatchResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_user.RelationshipInfo:
+    properties:
+      requestId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      since:
+        example: "2024-01-15T10:30:00Z"
+        type: string
+      status:
+        example: friend
+        type: string
+    type: object
+  internal_modules_user.SearchUsersResponse:
+    properties:
+      total:
+        example: 5
+        type: integer
+      users:
+        items:
+          $ref: '#/definitions/internal_modules_user.UserSearchResult'
+        type: array
+    type: object
+  internal_modules_user.SearchUsersSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_user.SearchUsersResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_user.UpdateProfileRequest:
+    properties:
+      avatar:
+        example: https://example.com/avatar.jpg
+        maxLength: 500
+        type: string
+      bio:
+        example: Software developer
+        maxLength: 500
+        type: string
+      customInfo:
+        type: object
+      dateOfBirth:
+        example: "1990-01-01"
+        type: string
+      fullName:
+        example: John Doe
+        maxLength: 100
+        type: string
+      phone:
+        example: "+84987654321"
+        maxLength: 20
+        type: string
+    type: object
+  internal_modules_user.UploadAvatarResponse:
+    properties:
+      format:
+        example: webp
+        type: string
+      height:
+        example: 0
+        type: integer
+      publicId:
+        example: uploads/abc123.webp
+        type: string
+      secureUrl:
+        example: http://localhost:9000/chat-uploads/uploads/abc123.webp
+        type: string
+      url:
+        example: http://localhost:9000/chat-uploads/uploads/abc123.webp
+        type: string
+      width:
+        example: 0
+        type: integer
+    type: object
+  internal_modules_user.UploadAvatarSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_user.UploadAvatarResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_user.UserPresence:
+    properties:
+      isOnline:
+        example: true
+        type: boolean
+      lastActiveAt:
+        example: "2024-01-15T10:30:00Z"
+        type: string
+      userId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+    type: object
+  internal_modules_user.UserProfileSuccessResponse:
+    type: object
+  internal_modules_user.UserPublicProfileResponse:
+    properties:
+      avatar:
+        example: https://example.com/avatar.jpg
+        type: string
+      bio:
+        example: Software developer
+        type: string
+      createdAt:
+        example: "2024-01-01T00:00:00Z"
+        type: string
+      fullName:
+        example: John Doe
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      isOnline:
+        example: true
+        type: boolean
+      lastActiveAt:
+        example: "2024-01-15T10:30:00Z"
+        type: string
+      relationship:
+        $ref: '#/definitions/internal_modules_user.RelationshipInfo'
+      username:
+        example: john_doe
+        type: string
+    type: object
+  internal_modules_user.UserPublicProfileSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_user.UserPublicProfileResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_user.UserSearchResult:
+    properties:
+      avatar:
+        example: https://example.com/avatar.jpg
+        type: string
+      bio:
+        example: Software developer
+        type: string
+      fullName:
+        example: John Doe
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      isOnline:
+        example: true
+        type: boolean
+      username:
+        example: john_doe
+        type: string
+    type: object
+info:
+  contact:
+    email: support@chatserver.com
+    name: API Support
+  description: A chat server API with authentication and real-time messaging
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Chat Server API
+  version: "1.0"
+paths:
+  /auth/change-password:
+    post:
+      consumes:
+      - application/json
+      description: Change the authenticated user's password
+      parameters:
+      - description: Change Password Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_auth.ChangePasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_auth.ChangePasswordSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Change password
+      tags:
+      - auth
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user and get access token
+      parameters:
+      - description: Login Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_auth.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_auth.AuthSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+      summary: Login user
+      tags:
+      - auth
+  /auth/logout:
+    post:
+      description: Blacklist the caller's JWT so it cannot be used again before its
+        natural expiry
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Logout (invalidate token)
+      tags:
+      - auth
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Exchange a valid refresh token for a new access token (rotates
+        the refresh token)
+      parameters:
+      - description: Refresh Token Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_auth.RefreshTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.BaseResponse-internal_modules_auth_RefreshTokenResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+      summary: Refresh access token
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user account
+      parameters:
+      - description: Register Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_auth.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/internal_modules_auth.RegisterSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+      summary: Register a new user
+      tags:
+      - auth
+  /calls/{id}/answer:
+    post:
+      parameters:
+      - description: Call ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_call.CallTokenSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Answer a call
+      tags:
+      - calls
+  /calls/{id}/decline:
+    post:
+      parameters:
+      - description: Call ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_call.SimpleSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Decline a call
+      tags:
+      - calls
+  /calls/{id}/end:
+    post:
+      parameters:
+      - description: Call ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_call.SimpleSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: End a call
+      tags:
+      - calls
+  /calls/start:
+    post:
+      consumes:
+      - application/json
+      description: Create a LiveKit room and notify other participants
+      parameters:
+      - description: Start call
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_call.StartCallRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/internal_modules_call.CallTokenSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Start a call
+      tags:
+      - calls
+  /conversations:
+    get:
+      description: Get all conversations for the authenticated user
+      parameters:
+      - default: 50
+        description: Limit number of conversations
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_conversation.ConversationsListSuccessResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get user conversations
+      tags:
+      - conversations
+  /conversations/{id}:
+    get:
+      description: Get full detail of a conversation including other-user info and
+        presence (direct only)
+      parameters:
+      - description: Conversation ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_conversation.ConversationSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get conversation detail
+      tags:
+      - conversations
+  /conversations/{id}/hide:
+    post:
+      description: Hide a conversation from the user's inbox. It will reappear when
+        a new message arrives.
+      parameters:
+      - description: Conversation ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_conversation.HideConversationResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Hide conversation
+      tags:
+      - conversations
+  /conversations/{id}/mute:
+    post:
+      description: Mute notifications for a conversation
+      parameters:
+      - description: Conversation ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_conversation.SimpleSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Mute conversation
+      tags:
+      - conversations
+  /conversations/{id}/read:
+    put:
+      description: Mark all messages in a conversation as read for the authenticated
+        user
+      parameters:
+      - description: Conversation ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_conversation.SimpleSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Mark conversation as read
+      tags:
+      - conversations
+  /conversations/{id}/unhide:
+    post:
+      description: Manually unhide a previously hidden conversation
+      parameters:
+      - description: Conversation ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_conversation.UnhideConversationResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Unhide conversation
+      tags:
+      - conversations
+  /conversations/{id}/unmute:
+    post:
+      description: Re-enable notifications for a conversation
+      parameters:
+      - description: Conversation ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_conversation.SimpleSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Unmute conversation
+      tags:
+      - conversations
+  /conversations/direct:
+    post:
+      consumes:
+      - application/json
+      description: Create or get existing direct conversation between two users
+      parameters:
+      - description: Create Direct Conversation
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_conversation.CreateDirectConversationRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/internal_modules_conversation.ConversationSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Create direct conversation
+      tags:
+      - conversations
+  /conversations/direct/check:
+    get:
+      description: Check if direct conversation exists without creating it
+      parameters:
+      - description: Recipient User ID
+        in: query
+        name: recipientId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_conversation.ConversationSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Check direct conversation
+      tags:
+      - conversations
+  /conversations/group:
+    post:
+      consumes:
+      - application/json
+      description: Create a new group conversation with multiple participants
+      parameters:
+      - description: Create Group Conversation
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_conversation.CreateGroupConversationRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/internal_modules_conversation.ConversationSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Create group conversation
+      tags:
+      - conversations
+  /conversations/typing:
+    post:
+      consumes:
+      - application/json
+      description: Send typing indicator to conversation members (rate limited to
+        5s)
+      parameters:
+      - description: Typing Indicator
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_conversation.TypingIndicatorRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_conversation.TypingIndicatorResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Send typing indicator
+      tags:
+      - conversations
+  /health:
+    get:
+      description: Check the health status of the API and database
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_health.HealthSuccessResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+      summary: Health check
+      tags:
+      - health
+  /messages:
+    post:
+      consumes:
+      - application/json
+      description: Send a message in a conversation
+      parameters:
+      - description: Send Message
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_message.SendMessageRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/internal_modules_message.MessageSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Send message
+      tags:
+      - messages
+  /messages/{conversationId}:
+    get:
+      description: Get messages from a conversation with pagination
+      parameters:
+      - description: Conversation ID
+        in: path
+        name: conversationId
+        required: true
+        type: string
+      - default: 50
+        description: Limit number of messages
+        in: query
+        name: limit
+        type: integer
+      - description: Get messages before this message ID (timeuuid)
+        in: query
+        name: before
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_message.MessagesListSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get messages
+      tags:
+      - messages
+  /messages/{conversationId}/{messageId}:
+    delete:
+      description: Delete a message (soft delete)
+      parameters:
+      - description: Conversation ID
+        in: path
+        name: conversationId
+        required: true
+        type: string
+      - description: Message ID (timeuuid)
+        in: path
+        name: messageId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_message.SimpleSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Delete message
+      tags:
+      - messages
+    patch:
+      consumes:
+      - application/json
+      description: Update message content (edit message)
+      parameters:
+      - description: Conversation ID
+        in: path
+        name: conversationId
+        required: true
+        type: string
+      - description: Message ID (timeuuid)
+        in: path
+        name: messageId
+        required: true
+        type: string
+      - description: Update Message
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_message.UpdateMessageRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_message.MessageSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Update message
+      tags:
+      - messages
+  /messages/{conversationId}/{messageId}/reactions:
+    post:
+      consumes:
+      - application/json
+      description: Toggle a reaction (LIKE/LOVE/HAHA/WOW/SAD/ANGRY) on a message.
+        Idempotent per (user, message, type).
+      parameters:
+      - description: Conversation ID
+        in: path
+        name: conversationId
+        required: true
+        type: string
+      - description: Message ID (timeuuid)
+        in: path
+        name: messageId
+        required: true
+        type: string
+      - description: Reaction type
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_message.ToggleReactionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_message.MessageSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "429":
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Toggle reaction
+      tags:
+      - messages
+  /messages/direct:
+    post:
+      consumes:
+      - application/json
+      description: Send a message directly to a user (creates conversation if not
+        exists)
+      parameters:
+      - description: Send Direct Message
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_message.SendDirectMessageRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/internal_modules_message.MessageSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Send direct message
+      tags:
+      - messages
+  /messages/images:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload an image and create a message of type=image in one call
+        (≤2MB jpeg/png/gif/webp)
+      parameters:
+      - description: Image file
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: Conversation ID
+        in: formData
+        name: conversationId
+        required: true
+        type: string
+      - description: Idempotency key
+        in: formData
+        name: clientMsgId
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/internal_modules_message.MessageSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "413":
+          description: Request Entity Too Large
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "429":
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Send image message
+      tags:
+      - messages
+  /relationships/{id}/cancel:
+    delete:
+      description: Cancel a sent friend request
+      parameters:
+      - description: Relationship ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Cancel friend request
+      tags:
+      - relationships
+  /relationships/{id}/respond:
+    put:
+      consumes:
+      - application/json
+      description: Accept or reject a friend request
+      parameters:
+      - description: Relationship ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Response Action
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_relationships.RespondToRequestRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_relationships.RelationshipSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Respond to friend request
+      tags:
+      - relationships
+  /relationships/{id}/unblock:
+    delete:
+      description: Unblock a previously blocked user
+      parameters:
+      - description: Relationship ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Unblock a user
+      tags:
+      - relationships
+  /relationships/{id}/unfriend:
+    delete:
+      description: Remove a friendship with another user
+      parameters:
+      - description: Relationship ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Unfriend a user
+      tags:
+      - relationships
+  /relationships/block:
+    post:
+      consumes:
+      - application/json
+      description: Block another user
+      parameters:
+      - description: Block User Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_relationships.BlockUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/internal_modules_relationships.RelationshipSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Block a user
+      tags:
+      - relationships
+  /relationships/blocked:
+    get:
+      description: Get users blocked by the user (paginated)
+      parameters:
+      - default: 20
+        description: Limit results (max 100)
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset for pagination
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_relationships.RelationshipListSuccessResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get blocked users
+      tags:
+      - relationships
+  /relationships/friends:
+    get:
+      description: Get friends of the user (paginated)
+      parameters:
+      - default: 50
+        description: Limit results (max 100)
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset for pagination
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_relationships.FriendListSuccessResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get friends list
+      tags:
+      - relationships
+  /relationships/pending:
+    get:
+      description: Get pending friend requests received by the user (paginated)
+      parameters:
+      - default: 20
+        description: Limit results (max 100)
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset for pagination
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_relationships.RelationshipListSuccessResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get pending friend requests
+      tags:
+      - relationships
+  /relationships/request:
+    post:
+      consumes:
+      - application/json
+      description: Send a friend request to another user
+      parameters:
+      - description: Send Friend Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_relationships.SendFriendRequestRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/internal_modules_relationships.RelationshipSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Send friend request
+      tags:
+      - relationships
+  /relationships/sent:
+    get:
+      description: Get friend requests sent by the user (paginated)
+      parameters:
+      - default: 20
+        description: Limit results (max 100)
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset for pagination
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_relationships.RelationshipListSuccessResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get sent friend requests
+      tags:
+      - relationships
+  /user/{id}:
+    get:
+      description: Get public profile information of a user by ID, including online
+        status and last active time
+      parameters:
+      - description: User ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_user.UserPublicProfileSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get user public info
+      tags:
+      - user
+  /user/me:
+    get:
+      description: Get authenticated user's profile information
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_user.UserProfileSuccessResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get user profile
+      tags:
+      - user
+    put:
+      consumes:
+      - application/json
+      description: Update authenticated user's profile information
+      parameters:
+      - description: Update Profile Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_user.UpdateProfileRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_user.UserProfileSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Update user profile
+      tags:
+      - user
+  /user/presence:
+    post:
+      consumes:
+      - application/json
+      description: Returns online status and last active time for the given user IDs
+        (reads from Redis cache, no DB hit)
+      parameters:
+      - description: User IDs
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_user.PresenceBatchRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_user.PresenceBatchSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get presence status for multiple users
+      tags:
+      - user
+  /user/search:
+    get:
+      description: Search users by username or full name
+      parameters:
+      - description: Search query
+        in: query
+        name: q
+        required: true
+        type: string
+      - default: 20
+        description: Limit results
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_user.SearchUsersSuccessResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Search users
+      tags:
+      - user
+  /user/upload:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload image to MinIO and get URL (does not update user profile)
+      parameters:
+      - description: Image file (jpg, png, gif, webp)
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_user.UploadAvatarSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "413":
+          description: File too large
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Upload image
+      tags:
+      - upload
+schemes:
+- http
+- https
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

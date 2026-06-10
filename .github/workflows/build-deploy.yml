@@ -1,0 +1,166 @@
+name: Build & Deploy (web + api)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Image tag (latest, v1.2.3, ...)'
+        required: false
+        default: 'latest'
+        type: string
+      deploy:
+        description: 'Deploy sau khi build'
+        required: false
+        default: false
+        type: boolean
+      run_migrations:
+        description: 'Chạy DB migrations trước khi restart server'
+        required: false
+        default: true
+        type: boolean
+      vite_api_url:
+        description: 'VITE_API_URL bake vào web bundle'
+        required: false
+        default: 'http://localhost:8080'
+        type: string
+
+concurrency:
+  group: build-deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  IMAGE_TAG: ${{ inputs.tag || 'latest' }}
+
+jobs:
+  build-web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build & push ola-web
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: infra/web/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/ola-web:${{ env.IMAGE_TAG }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/ola-web:sha-${{ github.sha }}
+          build-args: |
+            VITE_API_URL=${{ inputs.vite_api_url || vars.VITE_API_URL || 'http://localhost:8080' }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  build-server:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [api, chat, migrate]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build & push ola-chat-server-${{ matrix.service }}
+        uses: docker/build-push-action@v6
+        with:
+          context: ./server
+          file: ./infra/docker/${{ matrix.service }}.Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/ola-chat-server-${{ matrix.service }}:${{ env.IMAGE_TAG }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/ola-chat-server-${{ matrix.service }}:sha-${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy-server:
+    needs: build-server
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy }}
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ env.IMAGE_TAG }}
+      RUN_MIGRATIONS: ${{ inputs.run_migrations == false && 'false' || 'true' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install sshpass
+        run: sudo apt-get update && sudo apt-get install -y sshpass
+      - name: Prepare SSH
+        env:
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_PORT: ${{ secrets.SERVER_PORT }}
+          SERVER_PASSWORD: ${{ secrets.SERVER_PASSWORD }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s' "$SERVER_PASSWORD" > ~/.ssh/pw
+          chmod 600 ~/.ssh/pw
+          ssh-keyscan -H -p "${SERVER_PORT:-22}" "$SERVER_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+      - name: Upload deploy script
+        env:
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_PORT: ${{ secrets.SERVER_PORT }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          SERVER_DEPLOY_PATH: ${{ secrets.SERVER_DEPLOY_PATH }}
+        run: |
+          sshpass -f ~/.ssh/pw scp -P "$SERVER_PORT" \
+            server/scripts/deploy.sh \
+            "$SERVER_USER@$SERVER_HOST:$SERVER_DEPLOY_PATH/deploy.sh"
+          sshpass -f ~/.ssh/pw ssh -p "$SERVER_PORT" "$SERVER_USER@$SERVER_HOST" \
+            "chmod +x $SERVER_DEPLOY_PATH/deploy.sh"
+      - name: Run deploy
+        env:
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_PORT: ${{ secrets.SERVER_PORT }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          SERVER_DEPLOY_PATH: ${{ secrets.SERVER_DEPLOY_PATH }}
+        run: |
+          sshpass -f ~/.ssh/pw ssh -p "$SERVER_PORT" "$SERVER_USER@$SERVER_HOST" \
+            "cd $SERVER_DEPLOY_PATH && \
+             VERSION='$VERSION' \
+             SERVICES='api,chat,migrate' \
+             RUN_MIGRATIONS='$RUN_MIGRATIONS' \
+             HEALTH_URL='http://localhost:5241/api/health' \
+             ./deploy.sh"
+      - name: Cleanup
+        if: always()
+        run: rm -f ~/.ssh/pw
+
+  deploy-web:
+    needs: build-web
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH deploy ola-web
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          port: ${{ secrets.SSH_PORT }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          script: |
+            set -e
+            IMAGE="${{ secrets.DOCKERHUB_USERNAME }}/ola-web"
+            TAG="${{ inputs.tag || 'latest' }}"
+            CONTAINER="ola-web"
+            HOST_PORT="5081"
+            docker pull "$IMAGE:$TAG"
+            docker rm -f "$CONTAINER" 2>/dev/null || true
+            docker run -d --name "$CONTAINER" \
+              --network dockflare-internal \
+              -p ${HOST_PORT}:80 \
+              --restart unless-stopped \
+              --label dockflare.enable=true \
+              --label dockflare.hostname=web.ola-server.click \
+              --label dockflare.service=http://phong.local:${HOST_PORT} \
+              "$IMAGE:$TAG"
+            docker image prune -f || true
+            docker ps --filter "name=^/${CONTAINER}$" --format "{{.Image}} | {{.Status}} | {{.Ports}}"

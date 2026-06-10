@@ -12,3 +12,11 @@
 
 # Deploy secrets (không commit)
 infra/web/deploy.env
+
+# Server env (secrets) — giữ lại .env.example
+/.env
+/.env.local
+/.env.chat
+/.env.monitoring
+/.env.production
+/env.production
