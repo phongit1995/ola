@@ -8,6 +8,7 @@ import (
 	"ola-chat-server/internal/transport/websocket"
 	"ola-chat-server/internal/logger"
 	"ola-chat-server/internal/middleware"
+	"ola-chat-server/internal/modules/admin"
 	"ola-chat-server/internal/modules/auth"
 	"ola-chat-server/internal/modules/call"
 	"ola-chat-server/internal/modules/conversation"
@@ -49,6 +50,7 @@ func NewContainer() (*dig.Container, error) {
 		domConversation.Provider,
 		websocket.Provider,
 		auth.Provider,
+		admin.Provider,
 		health.Provider,
 		user.Provider,
 		relationships.Provider,

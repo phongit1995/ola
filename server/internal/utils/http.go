@@ -149,6 +149,7 @@ var (
 
 	errorsNotFound = map[string]bool{
 		"user not found":              true,
+		"admin not found":             true,
 		"resource not found":          true,
 		"friend request not found":    true,
 		"friendship not found":        true,
@@ -166,6 +167,8 @@ var (
 	errorsForbidden = map[string]bool{
 		"message is too old to delete": true,
 		"you can only delete your own messages": true,
+		"admin access required":                 true,
+		"admin account is disabled":             true,
 	}
 )
 

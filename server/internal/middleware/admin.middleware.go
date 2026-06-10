@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"ola-chat-server/internal/constants"
-	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/utils"
 	"fmt"
 	"net/http"
@@ -10,24 +9,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"go.uber.org/zap"
 )
 
-type AuthMiddleware struct {
-	jwtService *services.JWTService
-	cache      *services.CacheService
-	logger     *zap.SugaredLogger
-}
-
-func NewAuthMiddleware(jwtService *services.JWTService, cache *services.CacheService, logger *zap.SugaredLogger) *AuthMiddleware {
-	return &AuthMiddleware{
-		jwtService: jwtService,
-		cache:      cache,
-		logger:     logger.Named("[auth_middleware]"),
-	}
-}
-
-func (m *AuthMiddleware) RequireAuth() gin.HandlerFunc {
+func (m *AuthMiddleware) RequireAdmin() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
@@ -70,30 +54,49 @@ func (m *AuthMiddleware) RequireAuth() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		userIDStr, ok := dataMap["id"].(string)
+
+		isAdmin, _ := dataMap["isAdmin"].(bool)
+		tokenType, _ := dataMap["type"].(string)
+		if !isAdmin && tokenType != "admin" {
+			utils.RespondError(c, http.StatusForbidden, "admin access required")
+			c.Abort()
+			return
+		}
+
+		adminIDStr, ok := dataMap["id"].(string)
 		if !ok {
 			utils.RespondError(c, http.StatusUnauthorized, "id missing from token")
 			c.Abort()
 			return
 		}
-		userID, err := uuid.Parse(userIDStr)
+		adminID, err := uuid.Parse(adminIDStr)
 		if err != nil {
 			utils.RespondError(c, http.StatusUnauthorized, "invalid id in token")
 			c.Abort()
 			return
 		}
 
-		c.Set("user_id", userID)
+		role, _ := dataMap["role"].(string)
+		c.Set("admin_id", adminID)
+		c.Set("admin_role", role)
 		c.Next()
 	}
 }
 
-func GetUserID(c *gin.Context) (uuid.UUID, bool) {
-	userID, exists := c.Get("user_id")
+func GetAdminID(c *gin.Context) (uuid.UUID, bool) {
+	adminID, exists := c.Get("admin_id")
 	if !exists {
 		return uuid.Nil, false
 	}
-
-	id, ok := userID.(uuid.UUID)
+	id, ok := adminID.(uuid.UUID)
 	return id, ok
+}
+
+func GetAdminRole(c *gin.Context) (string, bool) {
+	role, exists := c.Get("admin_role")
+	if !exists {
+		return "", false
+	}
+	r, ok := role.(string)
+	return r, ok
 }

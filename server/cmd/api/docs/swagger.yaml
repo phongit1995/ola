@@ -1,5 +1,61 @@
 basePath: /api/v1
 definitions:
+  internal_modules_admin_auth.AdminDTO:
+    properties:
+      avatar:
+        type: string
+      email:
+        example: admin@example.com
+        type: string
+      fullName:
+        example: Super Admin
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      role:
+        example: SUPER_ADMIN
+        type: string
+      username:
+        example: admin
+        type: string
+    type: object
+  internal_modules_admin_auth.LoginRequest:
+    properties:
+      password:
+        example: admin@123
+        type: string
+      username:
+        example: admin
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  internal_modules_admin_auth.LoginResponse:
+    properties:
+      admin:
+        $ref: '#/definitions/internal_modules_admin_auth.AdminDTO'
+      refreshToken:
+        type: string
+      token:
+        type: string
+    type: object
+  internal_modules_admin_auth.RefreshTokenRequest:
+    properties:
+      refreshToken:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+    required:
+    - refreshToken
+    type: object
+  internal_modules_admin_auth.RefreshTokenResponse:
+    properties:
+      refreshToken:
+        type: string
+      token:
+        type: string
+    type: object
   internal_modules_auth.AuthResponse:
     properties:
       refreshToken:
@@ -1004,6 +1060,57 @@ definitions:
         example: 550e8400-e29b-41d4-a716-446655440000
         type: string
     type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_auth_AdminDTO:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_auth.AdminDTO'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_auth_LoginResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_auth.LoginResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_auth_RefreshTokenResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_auth.RefreshTokenResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
   ola-chat-server_internal_utils.BaseResponse-internal_modules_auth_RefreshTokenResponse:
     properties:
       data:
@@ -1033,6 +1140,93 @@ info:
   title: Chat Server API
   version: "1.0"
 paths:
+  /admin/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate an admin account and return access + refresh tokens
+      parameters:
+      - description: Admin Login Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_admin_auth.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_auth_LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      summary: Admin login
+      tags:
+      - admin-auth
+  /admin/auth/me:
+    get:
+      description: Return the authenticated admin's profile
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_auth_AdminDTO'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Current admin profile
+      tags:
+      - admin-auth
+  /admin/auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Exchange a valid admin refresh token for a new token pair
+      parameters:
+      - description: Refresh Token Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_admin_auth.RefreshTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_auth_RefreshTokenResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      summary: Refresh admin token
+      tags:
+      - admin-auth
   /auth/change-password:
     post:
       consumes:

@@ -3,6 +3,7 @@ package main
 import (
 	"ola-chat-server/internal/config"
 	"ola-chat-server/internal/transport/websocket"
+	"ola-chat-server/internal/modules/admin"
 	"ola-chat-server/internal/modules/auth"
 	"ola-chat-server/internal/modules/call"
 	"ola-chat-server/internal/modules/conversation"
@@ -26,6 +27,7 @@ type Server struct {
 
 func CreateServer(
 	authRouter *auth.Router,
+	adminRouter *admin.Router,
 	healthRouter *health.Router,
 	userRouter *user.Router,
 	relationshipsRouter *relationships.Router,
@@ -63,6 +65,7 @@ func CreateServer(
 	{
 		healthRouter.Setup(api)
 		authRouter.Setup(api)
+		adminRouter.Setup(api)
 		userRouter.Setup(api)
 		relationshipsRouter.Setup(api)
 		conversationRouter.Setup(api)

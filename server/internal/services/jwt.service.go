@@ -24,7 +24,7 @@ func NewJWTService(cfg *config.Config) *JWTService {
 
 func (s *JWTService) GenerateToken(userID uuid.UUID) (string, error) {
 	return s.GenerateTokenWithClaims(map[string]interface{}{
-		"user_id": userID.String(),
+		"id": userID.String(),
 	})
 }
 
@@ -78,11 +78,15 @@ func (s *JWTService) GetDataFromToken(tokenString string) (interface{}, error) {
 }
 
 func (s *JWTService) GenerateRefreshToken(userID uuid.UUID) (string, error) {
+	return s.GenerateRefreshTokenWithClaims(map[string]interface{}{
+		"id": userID.String(),
+	})
+}
+
+func (s *JWTService) GenerateRefreshTokenWithClaims(data interface{}) (string, error) {
 	now := time.Now()
 	claims := TokenClaims{
-		Data: map[string]interface{}{
-			"user_id": userID.String(),
-		},
+		Data: data,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ID:        uuid.NewString(),
 			ExpiresAt: jwt.NewNumericDate(now.Add(7 * 24 * time.Hour)),
@@ -106,9 +110,9 @@ func (s *JWTService) GetUserIDFromToken(tokenString string) (uuid.UUID, error) {
 		return uuid.Nil, errors.New("invalid data format in token")
 	}
 
-	userIDStr, ok := dataMap["user_id"].(string)
+	userIDStr, ok := dataMap["id"].(string)
 	if !ok {
-		return uuid.Nil, errors.New("user_id not found in token")
+		return uuid.Nil, errors.New("id not found in token")
 	}
 
 	userID, err := uuid.Parse(userIDStr)
