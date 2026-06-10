@@ -23,9 +23,9 @@ on:
         type: choice
         options: [both, web, server]
       vite_api_url:
-        description: 'VITE_API_URL bake vào web bundle'
+        description: 'VITE_API_URL bake vào web bundle (để trống = tự theo environment)'
         required: false
-        default: 'http://localhost:8080'
+        default: ''
         type: string
 
 concurrency:
@@ -35,6 +35,7 @@ concurrency:
 env:
   IMAGE_TAG: ${{ inputs.tag || 'latest' }}
   SUFFIX: ${{ (github.event_name == 'push' || inputs.environment == 'dev') && '-dev' || '' }}
+  WEB_API_URL: ${{ (github.event_name == 'push' || inputs.environment == 'dev') && 'https://chat-dev.ola-server.click/api/v1' || 'https://chat.ola-server.click/api/v1' }}
 
 jobs:
   build-web:
@@ -58,7 +59,7 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/ola-web${{ env.SUFFIX }}:${{ env.IMAGE_TAG }}
             ${{ secrets.DOCKERHUB_USERNAME }}/ola-web${{ env.SUFFIX }}:sha-${{ github.sha }}
           build-args: |
-            VITE_API_URL=${{ inputs.vite_api_url || vars.VITE_API_URL || 'http://localhost:8080' }}
+            VITE_API_URL=${{ inputs.vite_api_url || env.WEB_API_URL }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
