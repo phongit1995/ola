@@ -110,6 +110,7 @@ jobs:
             TAG="${{ inputs.tag || 'latest' }}"
             CONTAINER="ola-web${{ inputs.environment == 'dev' && '-dev' || '' }}"
             HOST_PORT="${{ inputs.environment == 'dev' && '5082' || '5081' }}"
+            DOCKFLARE_ENABLE="${{ inputs.environment == 'dev' && 'false' || 'true' }}"
             WEB_HOSTNAME="${{ inputs.environment == 'dev' && 'web-dev.ola-server.click' || 'web.ola-server.click' }}"
             docker pull "$IMAGE:$TAG"
             docker rm -f "$CONTAINER" 2>/dev/null || true
@@ -117,7 +118,7 @@ jobs:
               --network dockflare-internal \
               -p ${HOST_PORT}:80 \
               --restart unless-stopped \
-              --label dockflare.enable=true \
+              --label dockflare.enable=$DOCKFLARE_ENABLE \
               --label dockflare.hostname=$WEB_HOSTNAME \
               --label dockflare.service=http://phong.local:${HOST_PORT} \
               "$IMAGE:$TAG"

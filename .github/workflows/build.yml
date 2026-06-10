@@ -1,8 +1,6 @@
 name: Build
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
     inputs:
       environment:
@@ -34,12 +32,12 @@ concurrency:
 
 env:
   IMAGE_TAG: ${{ inputs.tag || 'latest' }}
-  SUFFIX: ${{ (github.event_name == 'push' || inputs.environment == 'dev') && '-dev' || '' }}
-  WEB_API_URL: ${{ (github.event_name == 'push' || inputs.environment == 'dev') && 'https://chat-dev.ola-server.click/api/v1' || 'https://chat.ola-server.click/api/v1' }}
+  SUFFIX: ${{ inputs.environment == 'dev' && '-dev' || '' }}
+  WEB_API_URL: ${{ inputs.environment == 'dev' && 'https://chat-dev.ola-server.click/api/v1' || 'https://chat.ola-server.click/api/v1' }}
 
 jobs:
   build-web:
-    if: ${{ github.event_name == 'push' || inputs.target == 'web' || inputs.target == 'both' }}
+    if: ${{ inputs.target == 'web' || inputs.target == 'both' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -64,7 +62,7 @@ jobs:
           cache-to: type=gha,mode=max
 
   build-server:
-    if: ${{ github.event_name == 'push' || inputs.target == 'server' || inputs.target == 'both' }}
+    if: ${{ inputs.target == 'server' || inputs.target == 'both' }}
     runs-on: ubuntu-latest
     strategy:
       matrix:

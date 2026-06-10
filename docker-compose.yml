@@ -303,7 +303,7 @@ services:
     environment:
       LIVEKIT_API_SECRET: ${LIVEKIT_API_SECRET}
     labels:
-      - dockflare.enable=${DOCKFLARE_ENABLE:-true}
+      - dockflare.enable=${LIVEKIT_DOCKFLARE_ENABLE:-true}
       - dockflare.hostname=${LIVEKIT_DOMAIN:-livekit.ola-server.click}
       - dockflare.service=http://${LIVEKIT_EXTERNAL_HOST:-103.161.171.169}:${LIVEKIT_PORT:-7880}
     ports:
