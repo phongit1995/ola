@@ -77,7 +77,7 @@ func SeedUsers(db *sql.DB, count int) error {
 		query := `
 			INSERT INTO users (username, email, password, full_name, avatar, created_at, updated_at)
 			VALUES ($1, $2, $3, $4, $5, $6, $7)
-			ON CONFLICT (email) DO NOTHING
+			ON CONFLICT (username) DO NOTHING
 		`
 
 		result, err := tx.Exec(

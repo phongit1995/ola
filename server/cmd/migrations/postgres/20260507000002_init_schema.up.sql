@@ -4,7 +4,7 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 CREATE TABLE IF NOT EXISTS users (
     id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     username          VARCHAR(255) UNIQUE NOT NULL,
-    email             VARCHAR(255) UNIQUE NOT NULL,
+    email             VARCHAR(255),
     password          VARCHAR(255) NOT NULL,
     avatar            VARCHAR(500),
     phone             VARCHAR(20),
@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE INDEX IF NOT EXISTS idx_users_deleted_at ON users(deleted_at);
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email) WHERE deleted_at IS NULL;
 CREATE INDEX IF NOT EXISTS idx_users_username ON users(username) WHERE deleted_at IS NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username_lower ON users(LOWER(username)) WHERE deleted_at IS NULL;
 CREATE INDEX IF NOT EXISTS idx_users_token_expires_at ON users(token_expires_at) WHERE token_expires_at IS NOT NULL;
 
 CREATE TABLE IF NOT EXISTS relationships (

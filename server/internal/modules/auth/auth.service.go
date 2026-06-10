@@ -100,23 +100,11 @@ func (s *Service) RefreshToken(refreshTokenStr, clientIP string) (*RefreshTokenR
 }
 
 func (s *Service) Register(req *RegisterRequest) (*RegisterResponse, error) {
-	s.logger.Debugw("Checking email availability",
-		"email", req.Email,
-	)
-
-	_, err := s.repo.FindByEmail(req.Email)
-	if err == nil {
-		s.logger.Warnw("Email already exists",
-			"email", req.Email,
-		)
-		return nil, errors.New("email already exists")
-	}
-
 	s.logger.Debugw("Checking username availability",
 		"username", req.Username,
 	)
 
-	_, err = s.repo.FindByUsername(req.Username)
+	_, err := s.repo.FindByUsername(req.Username)
 	if err == nil {
 		s.logger.Warnw("Username already exists",
 			"username", req.Username,
@@ -136,14 +124,10 @@ func (s *Service) Register(req *RegisterRequest) (*RegisterResponse, error) {
 
 	user := &models.User{
 		Username: req.Username,
-		Email:    req.Email,
 		Password: string(hashedPassword),
-		FullName: req.FullName,
-		Avatar:   req.Avatar,
 	}
 
 	s.logger.Debugw("Creating user in database",
-		"email", req.Email,
 		"username", req.Username,
 	)
 
@@ -177,20 +161,20 @@ func (s *Service) Register(req *RegisterRequest) (*RegisterResponse, error) {
 }
 
 func (s *Service) Login(req *LoginRequest, clientIP string) (*AuthResponse, error) {
-	s.logger.Debugw("Finding user by email",
-		"email", req.Email,
+	s.logger.Debugw("Finding user by username",
+		"username", req.Username,
 	)
 
-	user, err := s.repo.FindByEmail(req.Email)
+	user, err := s.repo.FindByUsername(req.Username)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			s.logger.Warnw("User not found",
-				"email", req.Email,
+				"username", req.Username,
 			)
-			return nil, errors.New("invalid email or password")
+			return nil, errors.New("invalid username or password")
 		}
 		s.logger.Errorw("Database error while finding user",
-			"email", req.Email,
+			"username", req.Username,
 			"error", err.Error(),
 		)
 		return nil, err
@@ -203,9 +187,9 @@ func (s *Service) Login(req *LoginRequest, clientIP string) (*AuthResponse, erro
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
 		s.logger.Warnw("Invalid password",
 			"user_id", user.ID,
-			"email", req.Email,
+			"username", req.Username,
 		)
-		return nil, errors.New("invalid email or password")
+		return nil, errors.New("invalid username or password")
 	}
 
 	s.logger.Debugw("Generating JWT tokens",

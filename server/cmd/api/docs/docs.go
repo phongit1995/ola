@@ -62,13 +62,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     }
                 }
@@ -108,13 +108,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     }
                 }
@@ -148,7 +148,7 @@ const docTemplate = `{
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     }
                 }
@@ -182,19 +182,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.BaseResponse-internal_modules_auth_RefreshTokenResponse"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_auth_RefreshTokenResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     }
                 }
@@ -234,13 +234,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "409": {
                         "description": "Conflict",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     }
                 }
@@ -285,25 +285,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     }
                 }
@@ -442,7 +442,7 @@ const docTemplate = `{
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     }
                 }
@@ -487,19 +487,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     }
                 }
@@ -539,13 +539,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     }
                 }
@@ -590,13 +590,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     }
                 }
@@ -641,19 +641,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     }
                 }
@@ -693,19 +693,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     }
                 }
@@ -745,19 +745,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     }
                 }
@@ -797,19 +797,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     }
                 }
@@ -849,19 +849,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     }
                 }
@@ -901,19 +901,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     }
                 }
@@ -953,13 +953,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     }
                 }
@@ -985,7 +985,7 @@ const docTemplate = `{
                     "503": {
                         "description": "Service Unavailable",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     }
                 }
@@ -1030,25 +1030,118 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/messages/audio": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Upload voice recording and create a message of type=audio (≤10MB, ≤300s)",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "messages"
+                ],
+                "summary": "Send audio message",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "Audio file (webm/m4a/mp3/wav/ogg)",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Conversation ID",
+                        "name": "conversationId",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "number",
+                        "description": "Duration in seconds",
+                        "name": "duration",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "JSON array of amplitudes",
+                        "name": "waveform",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Idempotency key",
+                        "name": "clientMsgId",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_message.MessageSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "413": {
+                        "description": "Request Entity Too Large",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "429": {
+                        "description": "Too Many Requests",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     }
                 }
@@ -1093,19 +1186,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     }
                 }
@@ -1161,31 +1254,31 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "413": {
                         "description": "Request Entity Too Large",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "429": {
                         "description": "Too Many Requests",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     }
                 }
@@ -1238,25 +1331,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     }
                 }
@@ -1303,25 +1396,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     }
                 }
@@ -1378,25 +1471,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     }
                 }
@@ -1455,25 +1548,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "429": {
                         "description": "Too Many Requests",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     }
                 }
@@ -1518,13 +1611,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     }
                 }
@@ -1571,7 +1664,7 @@ const docTemplate = `{
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     }
                 }
@@ -1618,7 +1711,7 @@ const docTemplate = `{
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     }
                 }
@@ -1665,7 +1758,7 @@ const docTemplate = `{
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     }
                 }
@@ -1710,19 +1803,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "409": {
                         "description": "Conflict",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     }
                 }
@@ -1769,7 +1862,7 @@ const docTemplate = `{
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     }
                 }
@@ -1812,13 +1905,13 @@ const docTemplate = `{
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     }
                 }
@@ -1870,19 +1963,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     }
                 }
@@ -1925,13 +2018,13 @@ const docTemplate = `{
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     }
                 }
@@ -1974,13 +2067,13 @@ const docTemplate = `{
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     }
                 }
@@ -2011,13 +2104,13 @@ const docTemplate = `{
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     }
                 }
@@ -2060,19 +2153,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     }
                 }
@@ -2117,13 +2210,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     }
                 }
@@ -2170,7 +2263,7 @@ const docTemplate = `{
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     }
                 }
@@ -2213,25 +2306,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "413": {
                         "description": "File too large",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     }
                 }
@@ -2271,19 +2364,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/chat-server_internal_utils.APIError"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     }
                 }
@@ -2291,61 +2384,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "chat-server_internal_utils.APIError": {
-            "type": "object",
-            "properties": {
-                "error": {
-                    "type": "string",
-                    "example": "validation error"
-                },
-                "path": {
-                    "type": "string",
-                    "example": "/api/v1/auth/login"
-                },
-                "status": {
-                    "type": "integer",
-                    "example": 400
-                },
-                "success": {
-                    "type": "boolean",
-                    "example": false
-                },
-                "timestamp": {
-                    "type": "string",
-                    "example": "2025-11-29T10:00:00Z"
-                },
-                "traceId": {
-                    "type": "string",
-                    "example": "550e8400-e29b-41d4-a716-446655440000"
-                }
-            }
-        },
-        "chat-server_internal_utils.BaseResponse-internal_modules_auth_RefreshTokenResponse": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "$ref": "#/definitions/internal_modules_auth.RefreshTokenResponse"
-                },
-                "error": {
-                    "type": "string"
-                },
-                "path": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "integer"
-                },
-                "success": {
-                    "type": "boolean"
-                },
-                "timestamp": {
-                    "type": "string"
-                },
-                "traceId": {
-                    "type": "string"
-                }
-            }
-        },
         "internal_modules_auth.AuthResponse": {
             "type": "object",
             "properties": {
@@ -2444,17 +2482,17 @@ const docTemplate = `{
         "internal_modules_auth.LoginRequest": {
             "type": "object",
             "required": [
-                "email",
-                "password"
+                "password",
+                "username"
             ],
             "properties": {
-                "email": {
-                    "type": "string",
-                    "example": "john@example.com"
-                },
                 "password": {
                     "type": "string",
                     "example": "password123"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "john_doe"
                 }
             }
         },
@@ -2486,24 +2524,10 @@ const docTemplate = `{
         "internal_modules_auth.RegisterRequest": {
             "type": "object",
             "required": [
-                "email",
                 "password",
                 "username"
             ],
             "properties": {
-                "avatar": {
-                    "type": "string",
-                    "example": "https://example.com/avatar.jpg"
-                },
-                "email": {
-                    "type": "string",
-                    "example": "john@example.com"
-                },
-                "full_name": {
-                    "type": "string",
-                    "maxLength": 100,
-                    "example": "John Doe"
-                },
                 "password": {
                     "type": "string",
                     "minLength": 6,
@@ -3772,6 +3796,61 @@ const docTemplate = `{
                     "example": "john_doe"
                 }
             }
+        },
+        "ola-chat-server_internal_utils.APIError": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "validation error"
+                },
+                "path": {
+                    "type": "string",
+                    "example": "/api/v1/auth/login"
+                },
+                "status": {
+                    "type": "integer",
+                    "example": 400
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "timestamp": {
+                    "type": "string",
+                    "example": "2025-11-29T10:00:00Z"
+                },
+                "traceId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_auth_RefreshTokenResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_auth.RefreshTokenResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
         }
     },
     "securityDefinitions": {
@@ -3788,7 +3867,7 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
 	Host:             "",
-	BasePath:         "/api",
+	BasePath:         "/api/v1",
 	Schemes:          []string{"http", "https"},
 	Title:            "Chat Server API",
 	Description:      "A chat server API with authentication and real-time messaging",

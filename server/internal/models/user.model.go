@@ -31,7 +31,7 @@ func (j *JSONB) Scan(value interface{}) error {
 type User struct {
 	BaseModel
 	Username     string     `gorm:"unique;not null"`
-	Email        string     `gorm:"unique;not null"`
+	Email        string     `gorm:"type:varchar(255)"`
 	Password     string     `gorm:"not null"`
 	Avatar       string     `gorm:"type:varchar(500)"`
 	Phone        string     `gorm:"type:varchar(20)"`

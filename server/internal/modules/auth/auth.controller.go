@@ -44,7 +44,6 @@ func (ctrl *Controller) Register(c *gin.Context) (interface{}, error) {
 	}
 
 	ctrl.logger.Infow("User registration attempt",
-		"email", req.Email,
 		"username", req.Username,
 		"ip", c.ClientIP(),
 	)
@@ -52,7 +51,6 @@ func (ctrl *Controller) Register(c *gin.Context) (interface{}, error) {
 	resp, err := ctrl.service.Register(&req)
 	if err != nil {
 		ctrl.logger.Warnw("Registration failed",
-			"email", req.Email,
 			"username", req.Username,
 			"error", err.Error(),
 		)
@@ -62,7 +60,6 @@ func (ctrl *Controller) Register(c *gin.Context) (interface{}, error) {
 
 	ctrl.logger.Infow("User registered successfully",
 		"user_id", resp.User.ID,
-		"email", resp.User.Email,
 		"username", resp.User.Username,
 	)
 
@@ -122,14 +119,14 @@ func (ctrl *Controller) Login(c *gin.Context) (interface{}, error) {
 	}
 
 	ctrl.logger.Infow("User login attempt",
-		"email", req.Email,
+		"username", req.Username,
 		"ip", c.ClientIP(),
 	)
 
 	resp, err := ctrl.service.Login(&req, c.ClientIP())
 	if err != nil {
 		ctrl.logger.Warnw("Login failed",
-			"email", req.Email,
+			"username", req.Username,
 			"error", err.Error(),
 			"ip", c.ClientIP(),
 		)
@@ -139,7 +136,7 @@ func (ctrl *Controller) Login(c *gin.Context) (interface{}, error) {
 
 	ctrl.logger.Infow("User logged in successfully",
 		"user_id", resp.User.ID,
-		"email", resp.User.Email,
+		"username", resp.User.Username,
 		"ip", c.ClientIP(),
 	)
 

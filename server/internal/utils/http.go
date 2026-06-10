@@ -138,6 +138,7 @@ func extractMiddlewareAndHandler(args []any) ([]gin.HandlerFunc, AppHandler) {
 
 var (
 	errorsUnauthorized = map[string]bool{
+		"invalid username or password":        true,
 		"invalid email or password":           true,
 		"invalid or expired token":            true,
 		"invalid or expired refresh token":    true,

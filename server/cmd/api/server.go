@@ -58,7 +58,7 @@ func CreateServer(
 		wsServer.ServeHTTP(c.Writer, c.Request)
 	})
 
-	apiGroup := r.Group("/api")
+	apiGroup := r.Group("/api/v1")
 	api := utils.NewAppGroup(apiGroup)
 	{
 		healthRouter.Setup(api)

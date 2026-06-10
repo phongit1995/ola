@@ -79,7 +79,7 @@ cd "$(dirname "$0")/.."
 
 echo "🏥 Running health checks..."
 
-API_HEALTH=$(curl -sf http://localhost:5444/api/health 2>/dev/null || echo "failed")
+API_HEALTH=$(curl -sf http://localhost:5444/api/v1/health 2>/dev/null || echo "failed")
 if [ "$API_HEALTH" = "failed" ]; then
   echo "❌ API service health check failed"
   exit 1

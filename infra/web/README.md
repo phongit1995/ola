@@ -4,13 +4,13 @@ Build context là **root repo** (vì `nginx.conf` nằm trong `infra/`, nguồn 
 
 ```bash
 # Build (chạy ở root repo). VITE_API_URL được bake vào bundle lúc build.
-docker build -f infra/web/Dockerfile -t ola-web --build-arg VITE_API_URL=https://api.cua-ban.com .
+docker build -f infra/web/Dockerfile -t ola-web --build-arg VITE_API_URL=https://api.cua-ban.com/api/v1 .
 
 # Run
 docker run -d -p 8080:80 ola-web   # → http://localhost:8080
 ```
 
-Lưu ý: `VITE_API_URL` là **build-time** — đổi backend phải build lại image. Mặc định `http://localhost:8080` nếu không truyền `--build-arg`.
+Lưu ý: `VITE_API_URL` là **build-time** — đổi backend phải build lại image. Mặc định `http://localhost:8080/api/v1` nếu không truyền `--build-arg`. URL phải gồm cả prefix `/api/v1` vì web gọi path tương đối (vd `/auth/login`).
 
 ## CI/CD
 

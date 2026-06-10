@@ -4,14 +4,11 @@ import "ola-chat-server/internal/utils"
 
 type RegisterRequest struct {
 	Username string `json:"username" binding:"required,min=3,max=50" example:"john_doe"`
-	Email    string `json:"email" binding:"required,email" example:"john@example.com"`
 	Password string `json:"password" binding:"required,min=6" example:"password123"`
-	FullName string `json:"full_name" binding:"omitempty,max=100" example:"John Doe"`
-	Avatar   string `json:"avatar" binding:"omitempty,url" example:"https://example.com/avatar.jpg"`
 }
 
 type LoginRequest struct {
-	Email    string `json:"email" binding:"required,email" example:"john@example.com"`
+	Username string `json:"username" binding:"required" example:"john_doe"`
 	Password string `json:"password" binding:"required" example:"password123"`
 }
 

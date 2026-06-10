@@ -1,43 +1,5 @@
-basePath: /api
+basePath: /api/v1
 definitions:
-  chat-server_internal_utils.APIError:
-    properties:
-      error:
-        example: validation error
-        type: string
-      path:
-        example: /api/v1/auth/login
-        type: string
-      status:
-        example: 400
-        type: integer
-      success:
-        example: false
-        type: boolean
-      timestamp:
-        example: "2025-11-29T10:00:00Z"
-        type: string
-      traceId:
-        example: 550e8400-e29b-41d4-a716-446655440000
-        type: string
-    type: object
-  chat-server_internal_utils.BaseResponse-internal_modules_auth_RefreshTokenResponse:
-    properties:
-      data:
-        $ref: '#/definitions/internal_modules_auth.RefreshTokenResponse'
-      error:
-        type: string
-      path:
-        type: string
-      status:
-        type: integer
-      success:
-        type: boolean
-      timestamp:
-        type: string
-      traceId:
-        type: string
-    type: object
   internal_modules_auth.AuthResponse:
     properties:
       refreshToken:
@@ -104,15 +66,15 @@ definitions:
     type: object
   internal_modules_auth.LoginRequest:
     properties:
-      email:
-        example: john@example.com
-        type: string
       password:
         example: password123
         type: string
+      username:
+        example: john_doe
+        type: string
     required:
-    - email
     - password
+    - username
     type: object
   internal_modules_auth.RefreshTokenRequest:
     properties:
@@ -133,16 +95,6 @@ definitions:
     type: object
   internal_modules_auth.RegisterRequest:
     properties:
-      avatar:
-        example: https://example.com/avatar.jpg
-        type: string
-      email:
-        example: john@example.com
-        type: string
-      full_name:
-        example: John Doe
-        maxLength: 100
-        type: string
       password:
         example: password123
         minLength: 6
@@ -153,7 +105,6 @@ definitions:
         minLength: 3
         type: string
     required:
-    - email
     - password
     - username
     type: object
@@ -1032,6 +983,44 @@ definitions:
         example: john_doe
         type: string
     type: object
+  ola-chat-server_internal_utils.APIError:
+    properties:
+      error:
+        example: validation error
+        type: string
+      path:
+        example: /api/v1/auth/login
+        type: string
+      status:
+        example: 400
+        type: integer
+      success:
+        example: false
+        type: boolean
+      timestamp:
+        example: "2025-11-29T10:00:00Z"
+        type: string
+      traceId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_auth_RefreshTokenResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_auth.RefreshTokenResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
 info:
   contact:
     email: support@chatserver.com
@@ -1066,11 +1055,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
       security:
       - BearerAuth: []
       summary: Change password
@@ -1098,11 +1087,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
       summary: Login user
       tags:
       - auth
@@ -1122,7 +1111,7 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
       security:
       - BearerAuth: []
       summary: Logout (invalidate token)
@@ -1147,15 +1136,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.BaseResponse-internal_modules_auth_RefreshTokenResponse'
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_auth_RefreshTokenResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
       summary: Refresh access token
       tags:
       - auth
@@ -1181,11 +1170,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "409":
           description: Conflict
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
       summary: Register a new user
       tags:
       - auth
@@ -1271,19 +1260,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
       security:
       - BearerAuth: []
       summary: Start a call
@@ -1308,7 +1297,7 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
       security:
       - BearerAuth: []
       summary: Get user conversations
@@ -1334,15 +1323,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
       security:
       - BearerAuth: []
       summary: Get conversation detail
@@ -1368,15 +1357,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
       security:
       - BearerAuth: []
       summary: Hide conversation
@@ -1401,15 +1390,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
       security:
       - BearerAuth: []
       summary: Mute conversation
@@ -1435,15 +1424,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
       security:
       - BearerAuth: []
       summary: Mark conversation as read
@@ -1468,15 +1457,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
       security:
       - BearerAuth: []
       summary: Unhide conversation
@@ -1501,11 +1490,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
       security:
       - BearerAuth: []
       summary: Unmute conversation
@@ -1533,15 +1522,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
       security:
       - BearerAuth: []
       summary: Create direct conversation
@@ -1566,11 +1555,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
       security:
       - BearerAuth: []
       summary: Check direct conversation
@@ -1598,11 +1587,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
       security:
       - BearerAuth: []
       summary: Create group conversation
@@ -1631,15 +1620,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
       security:
       - BearerAuth: []
       summary: Send typing indicator
@@ -1658,7 +1647,7 @@ paths:
         "503":
           description: Service Unavailable
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
       summary: Health check
       tags:
       - health
@@ -1684,19 +1673,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
       security:
       - BearerAuth: []
       summary: Send message
@@ -1730,19 +1719,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
       security:
       - BearerAuth: []
       summary: Get messages
@@ -1772,19 +1761,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
       security:
       - BearerAuth: []
       summary: Delete message
@@ -1821,19 +1810,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
       security:
       - BearerAuth: []
       summary: Update message
@@ -1872,22 +1861,84 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "429":
           description: Too Many Requests
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
       security:
       - BearerAuth: []
       summary: Toggle reaction
+      tags:
+      - messages
+  /messages/audio:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload voice recording and create a message of type=audio (≤10MB,
+        ≤300s)
+      parameters:
+      - description: Audio file (webm/m4a/mp3/wav/ogg)
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: Conversation ID
+        in: formData
+        name: conversationId
+        required: true
+        type: string
+      - description: Duration in seconds
+        in: formData
+        name: duration
+        required: true
+        type: number
+      - description: JSON array of amplitudes
+        in: formData
+        name: waveform
+        type: string
+      - description: Idempotency key
+        in: formData
+        name: clientMsgId
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/internal_modules_message.MessageSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "413":
+          description: Request Entity Too Large
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "429":
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Send audio message
       tags:
       - messages
   /messages/direct:
@@ -1913,15 +1964,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
       security:
       - BearerAuth: []
       summary: Send direct message
@@ -1958,23 +2009,23 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "413":
           description: Request Entity Too Large
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "429":
           description: Too Many Requests
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
       security:
       - BearerAuth: []
       summary: Send image message
@@ -2001,11 +2052,11 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
       security:
       - BearerAuth: []
       summary: Cancel friend request
@@ -2038,15 +2089,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
       security:
       - BearerAuth: []
       summary: Respond to friend request
@@ -2073,11 +2124,11 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
       security:
       - BearerAuth: []
       summary: Unblock a user
@@ -2104,11 +2155,11 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
       security:
       - BearerAuth: []
       summary: Unfriend a user
@@ -2136,11 +2187,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
       security:
       - BearerAuth: []
       summary: Block a user
@@ -2170,7 +2221,7 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
       security:
       - BearerAuth: []
       summary: Get blocked users
@@ -2200,7 +2251,7 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
       security:
       - BearerAuth: []
       summary: Get friends list
@@ -2230,7 +2281,7 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
       security:
       - BearerAuth: []
       summary: Get pending friend requests
@@ -2258,15 +2309,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "409":
           description: Conflict
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
       security:
       - BearerAuth: []
       summary: Send friend request
@@ -2296,7 +2347,7 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
       security:
       - BearerAuth: []
       summary: Get sent friend requests
@@ -2322,15 +2373,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
       security:
       - BearerAuth: []
       summary: Get user public info
@@ -2349,11 +2400,11 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
       security:
       - BearerAuth: []
       summary: Get user profile
@@ -2380,15 +2431,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
       security:
       - BearerAuth: []
       summary: Update user profile
@@ -2417,11 +2468,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
       security:
       - BearerAuth: []
       summary: Get presence status for multiple users
@@ -2451,7 +2502,7 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
       security:
       - BearerAuth: []
       summary: Search users
@@ -2478,19 +2529,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "413":
           description: File too large
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/chat-server_internal_utils.APIError'
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
       security:
       - BearerAuth: []
       summary: Upload image
