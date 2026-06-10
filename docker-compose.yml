@@ -1,8 +1,8 @@
 
 services:
   migrate:
-    image: ${DOCKERHUB_USERNAME}/ola-chat-server-migrate:${MIGRATE_VERSION:-latest}
-    container_name: ola-chat-server-migrate
+    image: ${DOCKERHUB_USERNAME}/ola-chat-server-migrate${IMAGE_SUFFIX:-}:${MIGRATE_VERSION:-latest}
+    container_name: ola-chat-server-migrate${CONTAINER_SUFFIX:-}
     environment:
       - DB_HOST=${DB_HOST:-postgres}
       - DB_PORT=${DB_PORT:-5432}
@@ -26,8 +26,8 @@ services:
     restart: "no"
 
   api:
-    image: ${DOCKERHUB_USERNAME}/ola-chat-server-api:${API_VERSION:-latest}
-    container_name: ola-chat-server-api
+    image: ${DOCKERHUB_USERNAME}/ola-chat-server-api${IMAGE_SUFFIX:-}:${API_VERSION:-latest}
+    container_name: ola-chat-server-api${CONTAINER_SUFFIX:-}
     labels:
       - "logging=enabled"
     restart: unless-stopped
@@ -81,8 +81,8 @@ services:
       - chat-network
 
   chat:
-    image: ${DOCKERHUB_USERNAME}/ola-chat-server-chat:${CHAT_VERSION:-latest}
-    container_name: ola-chat-server-chat
+    image: ${DOCKERHUB_USERNAME}/ola-chat-server-chat${IMAGE_SUFFIX:-}:${CHAT_VERSION:-latest}
+    container_name: ola-chat-server-chat${CONTAINER_SUFFIX:-}
     labels:
       - "logging=enabled"
     restart: unless-stopped
@@ -115,8 +115,12 @@ services:
 
   nginx:
     image: nginx:alpine
-    container_name: ola-chat-server-nginx
+    container_name: ola-chat-server-nginx${CONTAINER_SUFFIX:-}
     restart: unless-stopped
+    labels:
+      - dockflare.enable=${DOCKFLARE_ENABLE:-false}
+      - dockflare.hostname=${CHAT_DOMAIN:-}
+      - dockflare.service=http://${DEPLOY_HOST:-phong.local}:${NGINX_PORT:-5241}
     ports:
       - "${NGINX_PORT:-5241}:80"
     volumes:
@@ -129,7 +133,7 @@ services:
 
   minio:
     image: minio/minio:latest
-    container_name: ola-chat-server-minio
+    container_name: ola-chat-server-minio${CONTAINER_SUFFIX:-}
     restart: unless-stopped
     command: server /data --console-address ":9001"
     ports:
@@ -150,7 +154,7 @@ services:
 
   postgres:
     image: postgres:15-alpine
-    container_name: ola-chat-server-postgres
+    container_name: ola-chat-server-postgres${CONTAINER_SUFFIX:-}
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${DB_NAME:-ola_chat_server}
@@ -170,11 +174,11 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: ola-chat-server-redis
+    container_name: ola-chat-server-redis${CONTAINER_SUFFIX:-}
     restart: unless-stopped
     command: redis-server --requirepass ${REDIS_PASSWORD:-redis123}
     ports:
-      - "${REDIS_PORT:-6379}:6379"
+      - "${REDIS_HOST_PORT:-6379}:6379"
     volumes:
       - redis_data:/data
     networks:
@@ -187,7 +191,7 @@ services:
 
   scylladb:
     image: scylladb/scylla:5.4.3
-    container_name: ola-chat-server-scylladb
+    container_name: ola-chat-server-scylladb${CONTAINER_SUFFIX:-}
     restart: unless-stopped
     command: --smp 2 --memory 2G --overprovisioned 1 --api-address 0.0.0.0
     ports:
@@ -207,7 +211,7 @@ services:
 
   loki:
     image: grafana/loki:2.9.3
-    container_name: loki
+    container_name: loki${CONTAINER_SUFFIX:-}
     user: "0:0"
     command: -config.file=/etc/loki/loki-config.yml
     volumes:
@@ -225,9 +229,9 @@ services:
 
   grafana:
     image: grafana/grafana:10.2.3
-    container_name: grafana
+    container_name: grafana${CONTAINER_SUFFIX:-}
     ports:
-      - "3001:3000"
+      - "${GRAFANA_PORT:-3001}:3000"
     environment:
       - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin123}
@@ -245,7 +249,7 @@ services:
 
   alloy:
     image: grafana/alloy:latest
-    container_name: alloy
+    container_name: alloy${CONTAINER_SUFFIX:-}
     command:
       - run
       - /etc/alloy/config.alloy
@@ -264,7 +268,7 @@ services:
 
   kafka:
     image: confluentinc/cp-kafka:7.5.0
-    container_name: ola-chat-server-kafka
+    container_name: ola-chat-server-kafka${CONTAINER_SUFFIX:-}
     restart: unless-stopped
     ports:
       - "${KAFKA_PORT:-9092}:9092"
@@ -293,15 +297,15 @@ services:
 
   livekit:
     image: livekit/livekit-server:latest
-    container_name: ola-chat-server-livekit
+    container_name: ola-chat-server-livekit${CONTAINER_SUFFIX:-}
     restart: unless-stopped
     command: --config /etc/livekit.yaml
     environment:
       LIVEKIT_API_SECRET: ${LIVEKIT_API_SECRET}
     labels:
-      - dockflare.enable=true
-      - dockflare.hostname=livekit.ola-server.click
-      - dockflare.service=http://${LIVEKIT_EXTERNAL_HOST:-103.161.171.169}:7880
+      - dockflare.enable=${DOCKFLARE_ENABLE:-true}
+      - dockflare.hostname=${LIVEKIT_DOMAIN:-livekit.ola-server.click}
+      - dockflare.service=http://${LIVEKIT_EXTERNAL_HOST:-103.161.171.169}:${LIVEKIT_PORT:-7880}
     ports:
       - "${LIVEKIT_PORT:-7880}:7880"
       - "${LIVEKIT_TCP_PORT:-7881}:7881"
