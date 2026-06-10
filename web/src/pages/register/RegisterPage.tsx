@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
+import { Trans, useTranslation } from 'react-i18next';
 import olaLogo from '@/assets/images/ola-logo.png';
 import { TextField } from '@/components/form/TextField';
 import { SubmitButton } from '@/components/form/SubmitButton';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { useAuthStore } from '@/store/authStore';
 
 const USERNAME_RE = /^[a-z0-9._]{6,24}$/;
@@ -17,6 +19,7 @@ interface RegisterForm {
 
 export function RegisterPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const loginUser = useAuthStore((s) => s.login);
   const [loading, setLoading] = useState(false);
 
@@ -56,25 +59,25 @@ export function RegisterPage() {
           onClick={() => navigate('/login')}
           className="-ml-2 px-2 text-base"
         >
-          Huỷ
+          {t('common.cancel')}
         </button>
         <span className="flex-1 text-center text-base font-medium">
-          Tạo tài khoản Ola
+          {t('register.title')}
         </span>
-        <span className="w-12" />
+        <LanguageSwitcher />
       </header>
 
       <img src={olaLogo} alt="Ola" className="my-3 mt-6 h-14 w-14 object-contain" />
 
       <TextField
-        label="TÊN ĐĂNG NHẬP"
-        placeholder="6–24 ký tự, chữ thường và số (a–z, 0–9, . _)"
+        label={t('register.usernameLabel')}
+        placeholder={t('register.usernamePlaceholder')}
         error={errors.username?.message}
         field={register('username', {
-          required: 'Vui lòng nhập tên đăng nhập.',
+          required: t('register.errUsernameRequired'),
           pattern: {
             value: USERNAME_RE,
-            message: '6–24 ký tự, chỉ chữ thường, số, dấu . và _.',
+            message: t('register.errUsernamePattern'),
           },
         })}
         showClear={!!username}
@@ -82,27 +85,27 @@ export function RegisterPage() {
       />
 
       <TextField
-        label="MẬT KHẨU"
-        placeholder="Ít nhất 6 ký tự"
+        label={t('register.passwordLabel')}
+        placeholder={t('register.passwordPlaceholder')}
         type="password"
         error={errors.password?.message}
         field={register('password', {
-          required: 'Vui lòng nhập mật khẩu.',
-          minLength: { value: 6, message: 'Mật khẩu ít nhất 6 ký tự.' },
+          required: t('register.errPasswordRequired'),
+          minLength: { value: 6, message: t('register.errPasswordMin') },
         })}
         showClear={!!password}
         onClear={() => setValue('password', '', { shouldValidate: true })}
       />
 
       <TextField
-        label="NHẬP LẠI MẬT KHẨU"
-        placeholder="Nhập lại mật khẩu"
+        label={t('register.confirmLabel')}
+        placeholder={t('register.confirmPlaceholder')}
         type="password"
         error={errors.confirm?.message}
         field={register('confirm', {
-          required: 'Vui lòng nhập lại mật khẩu.',
+          required: t('register.errConfirmRequired'),
           validate: (v) =>
-            v === getValues('password') || 'Mật khẩu nhập lại không khớp.',
+            v === getValues('password') || t('register.errConfirmMismatch'),
         })}
         showClear={!!confirm}
         onClear={() => setValue('confirm', '', { shouldValidate: true })}
@@ -113,19 +116,22 @@ export function RegisterPage() {
           <input
             type="checkbox"
             {...register('agree', {
-              required: 'Bạn cần đồng ý với Điều khoản sử dụng để tiếp tục.',
+              required: t('register.errAgreeRequired'),
             })}
             className="mt-0.5 h-4 w-4 shrink-0 accent-ola-primary-dark"
           />
           <span>
-            Tôi đồng ý với{' '}
-            <Link
-              to="/dieu-khoan"
-              className="font-medium text-white underline underline-offset-2"
-            >
-              Điều khoản sử dụng
-            </Link>{' '}
-            của Ola
+            <Trans
+              i18nKey="register.agree"
+              components={{
+                terms: (
+                  <Link
+                    to="/dieu-khoan"
+                    className="font-medium text-white underline underline-offset-2"
+                  />
+                ),
+              }}
+            />
           </span>
         </label>
         {errors.agree && (
@@ -135,14 +141,14 @@ export function RegisterPage() {
         )}
       </div>
 
-      <SubmitButton className="mt-3">Hoàn tất</SubmitButton>
+      <SubmitButton className="mt-3">{t('register.submit')}</SubmitButton>
 
       <button
         type="button"
         onClick={() => navigate('/login')}
         className="h-12 w-full max-w-md text-center text-xl text-white/70"
       >
-        Đã có tài khoản?
+        {t('register.hasAccount')}
       </button>
 
       {loading && (

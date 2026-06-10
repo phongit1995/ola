@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 interface Conversation {
   name: string;
   last: string;
@@ -14,6 +16,7 @@ const CONVERSATIONS: Conversation[] = [
 ];
 
 export function ChatTab() {
+  const { t } = useTranslation();
   return (
     <div className="relative h-full bg-[#f3f3f3]">
       <ul className="divide-y divide-[#e6e6e6]">
@@ -36,7 +39,7 @@ export function ChatTab() {
 
       <button
         type="button"
-        aria-label="Soạn tin nhắn"
+        aria-label={t('home.composeAria')}
         className="absolute right-4 bottom-4 flex h-14 w-14 items-center justify-center rounded-full bg-ola-primary text-white shadow-lg transition hover:brightness-105"
       >
         <svg

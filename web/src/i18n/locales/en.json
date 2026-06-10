@@ -1,0 +1,61 @@
+{
+  "common": {
+    "clear": "Clear",
+    "cancel": "Cancel"
+  },
+  "login": {
+    "username": "Username",
+    "password": "Password",
+    "submit": "Log in",
+    "forgot": "Forgot password?",
+    "createAccount": "Create an Ola account",
+    "version": "Version"
+  },
+  "register": {
+    "title": "Create an Ola account",
+    "usernameLabel": "USERNAME",
+    "usernamePlaceholder": "6–24 chars, lowercase & numbers (a–z, 0–9, . _)",
+    "passwordLabel": "PASSWORD",
+    "passwordPlaceholder": "At least 6 characters",
+    "confirmLabel": "CONFIRM PASSWORD",
+    "confirmPlaceholder": "Re-enter password",
+    "agree": "I agree to the <terms>Terms of Use</terms> of Ola",
+    "submit": "Finish",
+    "hasAccount": "Already have an account?",
+    "errUsernameRequired": "Please enter a username.",
+    "errUsernamePattern": "6–24 chars, only lowercase, numbers, . and _.",
+    "errPasswordRequired": "Please enter a password.",
+    "errPasswordMin": "Password must be at least 6 characters.",
+    "errConfirmRequired": "Please re-enter your password.",
+    "errConfirmMismatch": "Passwords do not match.",
+    "errAgreeRequired": "You must agree to the Terms of Use to continue."
+  },
+  "home": {
+    "tabChat": "Chat",
+    "tabRoom": "Chat room",
+    "tabMe": "Me",
+    "tabRss": "RSS",
+    "tabApps": "Apps",
+    "subMessages": "MESSAGES",
+    "subContacts": "CONTACTS",
+    "search": "Search",
+    "contactsEmpty": "No contacts",
+    "roomEmpty": "No chat rooms yet",
+    "rssEmpty": "No RSS feed yet",
+    "logout": "Log out",
+    "guest": "guest",
+    "composeAria": "Compose message",
+    "apps": [
+      "Notifications",
+      "Game Store",
+      "Profile",
+      "VIP Store",
+      "KEN",
+      "Advertise",
+      "Photos",
+      "Ola Mall",
+      "Nearby",
+      "Settings"
+    ]
+  }
+}

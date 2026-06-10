@@ -1,29 +1,22 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/store/authStore';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { BottomTabBar, type TabKey } from './BottomTabBar';
 import { ChatTab } from './tabs/ChatTab';
 
-const APPS = [
-  'Thông báo',
-  'Kho Game',
-  'Cá nhân',
-  'Kho VIP',
-  'KEN',
-  'Đăng Q.Cáo',
-  'Hình Ảnh',
-  'Ola Mall',
-  'Lân cận',
-  'Cài đặt',
-];
-
 export function HomePage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const username = useAuthStore((s) => s.username);
   const logout = useAuthStore((s) => s.logout);
 
   const [tab, setTab] = useState<TabKey>('chat');
   const [chatSub, setChatSub] = useState<'messages' | 'contacts'>('messages');
+
+  const apps = t('home.apps', { returnObjects: true });
+  const displayName = username ?? t('home.guest');
 
   function handleLogout() {
     logout();
@@ -44,7 +37,7 @@ export function HomePage() {
                   : 'text-white/70'
               }`}
             >
-              TIN NHẮN
+              {t('home.subMessages')}
             </button>
             <button
               type="button"
@@ -55,7 +48,7 @@ export function HomePage() {
                   : 'text-white/70'
               }`}
             >
-              DANH BẠ
+              {t('home.subContacts')}
             </button>
             <button type="button" aria-label="Menu" className="px-3 text-xl">
               ⋮
@@ -66,7 +59,7 @@ export function HomePage() {
         {tab === 'rss' && (
           <div className="flex w-full items-center gap-2">
             <input
-              placeholder="Tìm kiếm"
+              placeholder={t('home.search')}
               className="flex-1 rounded bg-white/20 px-3 py-1.5 text-sm text-white outline-none placeholder:text-white/70"
             />
             <button type="button" aria-label="Menu" className="px-2 text-xl">
@@ -77,15 +70,17 @@ export function HomePage() {
 
         {tab === 'room' && (
           <span className="flex-1 text-center text-base font-medium">
-            Phòng chat
+            {t('home.tabRoom')}
           </span>
         )}
         {tab === 'me' && (
-          <span className="flex-1 text-center text-base font-medium">Me</span>
+          <span className="flex-1 text-center text-base font-medium">
+            {t('home.tabMe')}
+          </span>
         )}
         {tab === 'apps' && (
           <span className="flex-1 text-center text-base font-medium">
-            Ứng dụng
+            {t('home.tabApps')}
           </span>
         )}
       </header>
@@ -95,30 +90,29 @@ export function HomePage() {
           (chatSub === 'messages' ? (
             <ChatTab />
           ) : (
-            <Placeholder text="Danh bạ trống" />
+            <Placeholder text={t('home.contactsEmpty')} />
           ))}
-        {tab === 'room' && <Placeholder text="Chưa có phòng chat" />}
-        {tab === 'rss' && <Placeholder text="Chưa có tin RSS" />}
+        {tab === 'room' && <Placeholder text={t('home.roomEmpty')} />}
+        {tab === 'rss' && <Placeholder text={t('home.rssEmpty')} />}
         {tab === 'me' && (
           <div className="flex flex-col items-center gap-4 p-8">
             <span className="flex h-20 w-20 items-center justify-center rounded-2xl bg-ola-primary text-3xl font-medium text-white">
-              {(username ?? 'K').charAt(0).toUpperCase()}
+              {displayName.charAt(0).toUpperCase()}
             </span>
-            <p className="text-lg font-semibold text-gray-900">
-              {username ?? 'khách'}
-            </p>
+            <p className="text-lg font-semibold text-gray-900">{displayName}</p>
+            <LanguageSwitcher tone="dark" />
             <button
               type="button"
               onClick={handleLogout}
               className="rounded-sm border border-ola-primary-dark bg-ola-button px-6 py-2 text-white"
             >
-              Đăng xuất
+              {t('home.logout')}
             </button>
           </div>
         )}
         {tab === 'apps' && (
           <ul className="divide-y divide-[#e6e6e6]">
-            {APPS.map((name) => (
+            {apps.map((name) => (
               <li key={name} className="px-4 py-3.5 text-base text-gray-800">
                 {name}
               </li>
