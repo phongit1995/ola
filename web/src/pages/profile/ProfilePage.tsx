@@ -5,6 +5,7 @@ import type { MePost } from '../me/types';
 import { ProfileCard } from './components/ProfileCard';
 import { ProfileMediaStore } from './components/ProfileMediaStore';
 import { ProfileFollowing } from './components/ProfileFollowing';
+import { EditProfilePage } from './EditProfilePage';
 import type { ProfileFriend, UserProfile } from './types';
 
 interface ProfilePageProps {
@@ -16,6 +17,7 @@ interface ProfilePageProps {
 export function ProfilePage({ profile, onClose, onOpenFriend }: ProfilePageProps) {
   const { t } = useTranslation();
   const [posts, setPosts] = useState<MePost[]>(profile.posts);
+  const [editOpen, setEditOpen] = useState(false);
 
   function toggleLike(id: string) {
     setPosts((current) =>
@@ -52,7 +54,11 @@ export function ProfilePage({ profile, onClose, onOpenFriend }: ProfilePageProps
       </header>
 
       <div className="flex-1 overflow-y-auto">
-        <ProfileCard profile={profile} onPostMe={() => {}} />
+        <ProfileCard
+          profile={profile}
+          onPostMe={() => {}}
+          onUpdateInfo={() => setEditOpen(true)}
+        />
         <ProfileMediaStore media={profile.media} />
         <ProfileFollowing following={profile.following} onSelect={onOpenFriend} />
 
@@ -68,6 +74,10 @@ export function ProfilePage({ profile, onClose, onOpenFriend }: ProfilePageProps
           />
         ))}
       </div>
+
+      {editOpen && (
+        <EditProfilePage profile={profile} onClose={() => setEditOpen(false)} />
+      )}
     </div>
   );
 }

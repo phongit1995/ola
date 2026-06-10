@@ -14,6 +14,7 @@ import { RelationButtons } from './RelationButtons';
 interface ProfileCardProps {
   profile: UserProfile;
   onPostMe: () => void;
+  onUpdateInfo: () => void;
 }
 
 function InfoRow({ icon, text, note }: { icon: string; text: string; note?: boolean }) {
@@ -29,7 +30,7 @@ function InfoRow({ icon, text, note }: { icon: string; text: string; note?: bool
   );
 }
 
-export function ProfileCard({ profile, onPostMe }: ProfileCardProps) {
+export function ProfileCard({ profile, onPostMe, onUpdateInfo }: ProfileCardProps) {
   const { t } = useTranslation();
   const [blocked, setBlocked] = useState(false);
   const [kisses, setKisses] = useState(profile.kisses);
@@ -64,6 +65,7 @@ export function ProfileCard({ profile, onPostMe }: ProfileCardProps) {
         isSelf={profile.isSelf}
         onBlock={() => setBlocked(true)}
         onPostMe={onPostMe}
+        onUpdateInfo={onUpdateInfo}
       />
 
       {blocked && (

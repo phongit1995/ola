@@ -197,5 +197,23 @@
     "viewAllPhotos": "Xem Tất Cả Ảnh",
     "viewAll": "Xem Tất Cả",
     "mePosts": "ME Đã Đăng"
+  },
+  "profileEdit": {
+    "title": "Thông tin cá nhân",
+    "fullnameLabel": "Họ và tên của bạn",
+    "fullnameHint": "Nhập tên đầy đủ của bạn",
+    "phoneLabel": "Số điện thoại",
+    "phoneHint": "Nhập số điện thoại của bạn",
+    "birthdayLabel": "Sinh nhật",
+    "birthdayHint": "Nhập ngày sinh của bạn",
+    "genderLabel": "Giới tính",
+    "genderFlexible": "Linh hoạt",
+    "relationshipLabel": "Quan hệ",
+    "passwordLabel": "Mật khẩu",
+    "passwordHint": "Chạm vào để đổi mật khẩu",
+    "joinLabel": "Tham gia Ola",
+    "linkFacebook": "Liên kết tài khoản Facebook",
+    "support": "Hỗ trợ khách hàng",
+    "supportHotline": "Tổng đài: 1900588883"
   }
 }

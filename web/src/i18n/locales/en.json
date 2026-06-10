@@ -197,5 +197,23 @@
     "viewAllPhotos": "View all photos",
     "viewAll": "View all",
     "mePosts": "Me Posts"
+  },
+  "profileEdit": {
+    "title": "Profile",
+    "fullnameLabel": "Your first and last name",
+    "fullnameHint": "Enter your full name",
+    "phoneLabel": "Phone number",
+    "phoneHint": "Enter your phone number",
+    "birthdayLabel": "Birthday",
+    "birthdayHint": "Enter your birthday",
+    "genderLabel": "Gender",
+    "genderFlexible": "Flexible",
+    "relationshipLabel": "Relationship",
+    "passwordLabel": "Password",
+    "passwordHint": "Tap to change password",
+    "joinLabel": "Joined Ola",
+    "linkFacebook": "Link to Facebook account",
+    "support": "Customer support",
+    "supportHotline": "Hotline: 1900588883"
   }
 }

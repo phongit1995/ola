@@ -12,6 +12,7 @@ interface RelationButtonsProps {
   isSelf: boolean;
   onBlock: () => void;
   onPostMe: () => void;
+  onUpdateInfo: () => void;
 }
 
 function RelationButton({
@@ -39,7 +40,13 @@ function RelationButton({
   );
 }
 
-export function RelationButtons({ nick, isSelf, onBlock, onPostMe }: RelationButtonsProps) {
+export function RelationButtons({
+  nick,
+  isSelf,
+  onBlock,
+  onPostMe,
+  onUpdateInfo,
+}: RelationButtonsProps) {
   const { t } = useTranslation();
   const [friended, setFriended] = useState(false);
   const [following, setFollowing] = useState(false);
@@ -62,7 +69,7 @@ export function RelationButtons({ nick, isSelf, onBlock, onPostMe }: RelationBut
     <>
       <div className="flex px-2 py-2">
         {isSelf ? (
-          <RelationButton icon={editIcon} label={t('profile.updateInfo')} onClick={() => {}} />
+          <RelationButton icon={editIcon} label={t('profile.updateInfo')} onClick={onUpdateInfo} />
         ) : (
           <>
             <RelationButton

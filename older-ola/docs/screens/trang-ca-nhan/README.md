@@ -65,7 +65,7 @@ vLinearUserInfo (vertical)
 |---|----|------|-----------|---------------|
 | 1 | `addFriendViewLayout` | ![addf](images/icons/ic_add_friend_black_disable.png) `ic_add_friend_black_disable` | **Kết bạn** (`string_make_friend`) | gửi lời mời kết bạn `OlaApplication.b.d(nick)`; nếu đã là bạn → nhãn đổi **"Đã Kết Bạn"** (`string_already_friend`) |
 | 2 | `followViewLayout` | ![follow](images/icons/ic_follow_black_disable.png) `ic_follow_black_disable` | **Quan tâm** (`string_follow`) | `Z()` theo dõi; đang theo dõi → **"Đang quan tâm"** (`string_following`) |
-| 3 | `editProfileViewLayout` | ![edit](images/icons/ic_edit_profile_gray.png) `ic_edit_profile_gray` | **Cập Nhật Thông Tin** (`string_update_info`) | **chỉ hồ sơ MÌNH** (ẩn với người khác) → `OlaUserProfileActivity`; có badge "!" nếu cần cập nhật |
+| 3 | `editProfileViewLayout` | ![edit](images/icons/ic_edit_profile_gray.png) `ic_edit_profile_gray` | **Cập Nhật Thông Tin** (`string_update_info`) | **chỉ hồ sơ MÌNH** (ẩn với người khác) → `OlaUserProfileActivity` ([tài liệu màn sửa hồ sơ](../thong-tin-ca-nhan/README.md)); có badge "!" nếu cần cập nhật |
 | 4 | `postMeViewLayout` | ![postme](images/icons/ic_post_me_gray.png) `ic_post_me_gray` | **Viết Me** (`string_post_me`) | mình → `OlaMeComposerActivity`; người khác → soạn Me nhắc "@nick" |
 | 5 | `moreViewLayout` | ![more](images/icons/ic_more_horizon_black_disable.png) `ic_more_horizon_black_disable` | **Khác** (`string_more`) | mở menu (xem §3) |
 
