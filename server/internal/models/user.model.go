@@ -39,6 +39,7 @@ type User struct {
 	Bio          string     `gorm:"type:text"`
 	DateOfBirth  *time.Time `gorm:"type:date"`
 	CustomInfo   JSONB      `gorm:"type:jsonb"`
+	IsActive     bool       `gorm:"not null;default:true"`
 	RefreshToken string     `gorm:"type:text"`
 	LastLoginIP  string     `gorm:"type:varchar(45)"`
 	LastLoginAt  *time.Time

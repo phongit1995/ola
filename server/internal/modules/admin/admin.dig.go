@@ -2,12 +2,16 @@ package admin
 
 import (
 	adminauth "ola-chat-server/internal/modules/admin/auth"
+	adminuser "ola-chat-server/internal/modules/admin/user"
 
 	"go.uber.org/dig"
 )
 
 func Provider(c *dig.Container) error {
 	if err := adminauth.Provider(c); err != nil {
+		return err
+	}
+	if err := adminuser.Provider(c); err != nil {
 		return err
 	}
 

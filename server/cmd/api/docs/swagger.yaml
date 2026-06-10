@@ -56,6 +56,73 @@ definitions:
       token:
         type: string
     type: object
+  internal_modules_admin_user.ListUsersResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_admin_user.UserListItem'
+        type: array
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  internal_modules_admin_user.UpdateStatusRequest:
+    properties:
+      isActive:
+        example: false
+        type: boolean
+    required:
+    - isActive
+    type: object
+  internal_modules_admin_user.UserDetail:
+    properties:
+      avatar:
+        type: string
+      bio:
+        type: string
+      createdAt:
+        type: string
+      email:
+        type: string
+      fullName:
+        type: string
+      id:
+        type: string
+      isActive:
+        type: boolean
+      lastLoginAt:
+        type: string
+      lastLoginIp:
+        type: string
+      phone:
+        type: string
+      updatedAt:
+        type: string
+      username:
+        type: string
+    type: object
+  internal_modules_admin_user.UserListItem:
+    properties:
+      avatar:
+        type: string
+      createdAt:
+        type: string
+      email:
+        type: string
+      fullName:
+        type: string
+      id:
+        type: string
+      isActive:
+        type: boolean
+      lastLoginAt:
+        type: string
+      username:
+        type: string
+    type: object
   internal_modules_auth.AuthResponse:
     properties:
       refreshToken:
@@ -1111,6 +1178,40 @@ definitions:
       traceId:
         type: string
     type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_user_ListUsersResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_user.ListUsersResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_user_UserDetail:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_user.UserDetail'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
   ola-chat-server_internal_utils.BaseResponse-internal_modules_auth_RefreshTokenResponse:
     properties:
       data:
@@ -1227,6 +1328,154 @@ paths:
       summary: Refresh admin token
       tags:
       - admin-auth
+  /admin/users:
+    get:
+      description: List users with pagination and optional search (admin only)
+      parameters:
+      - description: Search by username/full name/email
+        in: query
+        name: q
+        type: string
+      - description: Page size (default 20, max 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Offset (default 0)
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_user_ListUsersResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: List users
+      tags:
+      - admin-user
+  /admin/users/{id}:
+    delete:
+      description: Soft-delete a user account (admin only)
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Delete user
+      tags:
+      - admin-user
+    get:
+      description: Get a single user by id (admin only)
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_user_UserDetail'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get user detail
+      tags:
+      - admin-user
+  /admin/users/{id}/status:
+    patch:
+      consumes:
+      - application/json
+      description: Enable or disable a user account (admin only)
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Status Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_admin_user.UpdateStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_user_UserDetail'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Ban/unban user
+      tags:
+      - admin-user
   /auth/change-password:
     post:
       consumes:

@@ -169,6 +169,7 @@ var (
 		"you can only delete your own messages": true,
 		"admin access required":                 true,
 		"admin account is disabled":             true,
+		"account is disabled":                   true,
 	}
 )
 

@@ -192,6 +192,11 @@ func (s *Service) Login(req *LoginRequest, clientIP string) (*AuthResponse, erro
 		return nil, errors.New("invalid username or password")
 	}
 
+	if !user.IsActive {
+		s.logger.Warnw("Login blocked: account disabled", "user_id", user.ID)
+		return nil, errors.New("account is disabled")
+	}
+
 	s.logger.Debugw("Generating JWT tokens",
 		"user_id", user.ID,
 	)
