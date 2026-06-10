@@ -1,6 +1,5 @@
 import { useCallback, useState } from 'react';
 
-/** Hook đếm mẫu — minh hoạ vị trí đặt custom hooks. */
 export function useCounter(initial = 0) {
   const [count, setCount] = useState(initial);
 

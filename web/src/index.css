@@ -1,16 +1,14 @@
 @import 'tailwindcss';
 
-/* Theme tokens (Tailwind v4 CSS-based config).
-   Palette Ola: xanh lá #7CB342, nhấn hồng #FF4081. */
 @theme {
-  --color-ola-primary: #7cb342; /* colorOlaPrimary — xanh chủ đạo */
-  --color-ola-primary-dark: #558b2f; /* colorOlaPrimaryDark — viền nút, status bar */
-  --color-ola-primary-darker: #33691e; /* colorOlaPrimaryDarkMore */
-  --color-ola-primary-light: #f1f8e9; /* colorOlaPrimaryLight — nền vùng chọn */
-  --color-ola-button: #9ccc65; /* buttonGreen — nền nút xanh */
-  --color-ola-accent: #ff4081; /* colorOlaAccent — hồng nhấn */
+  --color-ola-primary: #7cb342;
+  --color-ola-primary-dark: #558b2f;
+  --color-ola-primary-darker: #33691e;
+  --color-ola-primary-light: #f1f8e9;
+  --color-ola-button: #9ccc65;
+  --color-ola-accent: #ff4081;
   --color-ola-accent-dark: #f50057;
-  --color-ola-error: #e34545; /* red — lỗi/cảnh báo */
+  --color-ola-error: #e34545;
   --font-sans:
     Roboto, 'Helvetica Neue', ui-sans-serif, system-ui, -apple-system,
     'Segoe UI', Arial, sans-serif;

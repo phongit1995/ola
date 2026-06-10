@@ -1,8 +1,8 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import { LoginPage } from '@/pages/LoginPage';
-import { RegisterPage } from '@/pages/RegisterPage';
-import { TermsPage } from '@/pages/TermsPage';
-import { HomePage } from '@/pages/HomePage';
+import { LoginPage } from '@/pages/login/LoginPage';
+import { RegisterPage } from '@/pages/register/RegisterPage';
+import { TermsPage } from '@/pages/terms/TermsPage';
+import { HomePage } from '@/pages/home/HomePage';
 
 function App() {
   return (
@@ -13,7 +13,6 @@ function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/dieu-khoan" element={<TermsPage />} />
         <Route path="/home" element={<HomePage />} />
-        {/* Chưa làm — tạm trỏ về login */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>

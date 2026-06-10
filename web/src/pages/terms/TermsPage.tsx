@@ -1,6 +1,5 @@
 import { useNavigate } from 'react-router-dom';
 
-/** Một mục điều khoản (tiêu đề + nội dung). */
 interface Section {
   title: string;
   body: React.ReactNode;
@@ -194,33 +193,33 @@ const SECTIONS: Section[] = [
   },
 ];
 
-/**
- * Trang Điều khoản sử dụng Ola — dựng tương tự olaken.me/dieu-khoan.html
- * (header xanh gradient + các card trắng).
- */
 export function TermsPage() {
   const navigate = useNavigate();
 
   return (
     <div className="min-h-full bg-[#f0f7f0] font-sans text-gray-800">
-      {/* Header xanh gradient */}
-      <header className="relative bg-gradient-to-br from-ola-primary-dark to-ola-primary px-5 pt-7 pb-6 text-center">
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="absolute top-4 left-4 text-sm text-white/90"
-        >
-          ‹ Quay lại
-        </button>
-        <img
-          src="/favicon.png"
-          alt="Ola"
-          className="mx-auto mb-3 h-16 w-16 rounded-2xl shadow-lg"
-        />
-        <h1 className="text-xl font-bold tracking-wide text-white">
-          ĐIỀU KHOẢN SỬ DỤNG
-        </h1>
-        <p className="mt-1.5 text-[13px] text-white/85">Mạng xã hội Ola</p>
+      <header className="bg-gradient-to-br from-ola-primary-dark to-ola-primary pt-4 pb-6">
+        <div className="mx-auto max-w-2xl px-4">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="text-sm text-white/90"
+          >
+            ‹ Quay lại
+          </button>
+
+          <div className="mt-3 text-center">
+            <img
+              src="/favicon.png"
+              alt="Ola"
+              className="mx-auto mb-3 h-16 w-16 rounded-2xl shadow-lg"
+            />
+            <h1 className="text-xl font-bold tracking-wide text-white">
+              ĐIỀU KHOẢN SỬ DỤNG
+            </h1>
+            <p className="mt-1.5 text-[13px] text-white/85">Mạng xã hội Ola</p>
+          </div>
+        </div>
       </header>
 
       <main className="mx-auto max-w-2xl px-4 pt-6 pb-14">
