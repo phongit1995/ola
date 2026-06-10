@@ -136,7 +136,7 @@ Action bar trên cùng: **nền xanh `#7CB342`, cao 48dp, chữ trắng**, có b
 | **RSS** | Ô **tìm kiếm "Tìm kiếm"** (🔍) + nút 🏠 + menu ⋮ | Danh sách tin RSS |
 | **Ứng dụng** | Tiêu đề "Ứng dụng" | List tiện ích: Thông báo · Kho Game · Cá nhân · Kho VIP · KEN · Đăng Q.Cáo · Hình Ảnh · Ola Mall · Lân cận · Cài đặt |
 
-> Tiêu đề action bar dùng style `defaultStyle.text.subhead` (16sp, chữ trắng). Tab con "TIN NHẮN/DANH BẠ" của tab Chat: xem chi tiết list hội thoại ở tài liệu màn Chat (sẽ bổ sung).
+> Tiêu đề action bar dùng style `defaultStyle.text.subhead` (16sp, chữ trắng). Tab con "TIN NHẮN/DANH BẠ" của tab Chat: xem chi tiết list hội thoại + danh bạ + khung chat ở [tài liệu màn Chat](../chat/README.md).
 
 ## 4. Strings
 

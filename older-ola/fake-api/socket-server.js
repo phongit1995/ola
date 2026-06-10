@@ -75,12 +75,19 @@ const shortUrl = (u) => { try { const x = new URL(u); return x.pathname; } catch
 
 // Hồ sơ BẢN THÂN (entity.ag). w.a(byte[]) cần tối thiểu field "nick".
 // vip=1 + phone.verified=true → tab Phòng chat không cảnh báo "Mua VIP / xác thực".
+// Account hệ thống "daptrung" (mở khi bấm section "Đập trứng" trên trang Me) →
+// đặt tên/đại diện riêng cho dễ nhận biết.
 function buildProfileJSON(nick) {
+  const isEgg = nick === 'daptrung';
   return JSON.stringify({
-    nick, name: 'Fake ' + nick, gender: 1, birthday: 788918400000,
+    nick,
+    name: isEgg ? 'Đập Trứng 🥚' : 'Fake ' + nick,
+    gender: 1, birthday: 788918400000,
     registerMs: Date.now() - 1e10, lastActiveAgo: 60, socialLinkType: 0,
     noFans: 12, noFriends: 34, noMedias: 5,
-    statusMessage: 'Hồ sơ giả (nạp qua svc204 proxy — KHÔNG cần patch smali)',
+    statusMessage: isEgg
+      ? 'Đập trứng trúng KEN/VIP mỗi ngày! (trang giả — feed do server đẩy)'
+      : 'Hồ sơ giả (nạp qua svc204 proxy — KHÔNG cần patch smali)',
     cared: false, isFan: false, blocked: false, vip: 1,
     phone: { number: '0901234567', verified: true, protect: true },
     like: { '1': 0, '3': 0, liked: 0 }, friends: [], fans: [], medias: [],
@@ -203,6 +210,98 @@ function replyRoomList(sock) {
   send(sock, 81, kvs, `(TRẢ danh sách phòng svc81: ${FAKE_ROOMS.length} phòng)`);
 }
 
+// TRẢ danh sách SECTION trang Me (svc 138 → codec w/aw, ch.java:138).
+// aw.java đọc key 83 = chuỗi "tag|title|tag|title|…", split theo "|", mỗi cặp
+// (tag,title) → entity.af(title, tag); bỏ qua tag "#sh".
+// Sau đó network/e.java.c(List<af>) TỰ chèn thêm: Nhật ký, Hộp hôn nhân, Likes,
+// "Đập trứng" (#daptrung — chỉ khi list CHƯA có), #Android, #Ola, Funny → lưu
+// h.b/h.u → đẩy ra drawer TRÁI trang Me. ⇒ dòng "Đập trứng" (icon trứng nứt)
+// xuất hiện; bấm vào → OlaUserMePageActivity.a("#daptrung") → OlaClanMePageActivity
+// (contactId="daptrung"). KHÔNG gửi #daptrung ở đây để app tự chèn (cờ z=true).
+const ME_SECTIONS = [
+  { tag: 'me', title: 'Mọi người' },
+  { tag: 'rs', title: 'RSS' },
+];
+function replyMeSections(sock) {
+  const spec = ME_SECTIONS.map((s) => `${s.tag}|${s.title}`).join('|');
+  send(sock, 138, [
+    { key: 83,  val: vStr(spec) },
+    { key: 255, val: vShort(0) },
+  ], `(section trang Me svc138/aw: "${spec}" → app tự chèn "Đập trứng")`);
+}
+
+// ---------- FEED "Đập trứng" (account daptrung) ----------
+// Khi mở trang account "daptrung" (bấm section "Đập trứng" trên trang Me),
+// app gửi svc 103 (codec ee) request feed: key7="daptrung", key255=entryType(=4),
+// và đặt ci.p = 4 (ci.java:587-596). Response feed "đầy đủ" intended là ee.c()
+// (2010 lệnh, không decompile được) — NHƯNG codec ed (svc 92, ch.java:59) là bộ
+// decode feed TỰ CHỨA, đọc hiểu trọn vẹn. Nên ta trả svc 92 (ed) thay vì 103.
+//
+// WIRE FORMAT svc 92 (đọc ed.java + parser s.java — entry theo THỨ TỰ, duyệt
+// bằng index/range, KEY ĐƯỢC PHÉP LẶP):
+//   key255 = byte entryType  → PHẢI == ci.p (=4) nếu không ed.a() return sớm.
+//   iC = count(key8) phải > 0.
+//   Mỗi POST (entity.g), đúng thứ tự:
+//     key67  string  = nick tác giả (mốc bắt đầu post; .toLowerCase())
+//     key22  string  = tên hiển thị
+//     key45  byte    = favorite flag
+//     key72  long    = postId (mốc bắt đầu block nội dung)
+//     key221 byte    = (short phụ) → g.b(short)
+//     key220 byte    = nếu >0 tạo media w; để 0 = không ảnh
+//     key125 int     = số comment
+//     key9   long    = timestamp (ms) hiển thị
+//     key8   string  = nội dung text  (g.b(String))
+//     key24  string  = url ảnh ("" = không ảnh)
+//     key38  string  = mô tả ("")
+//   key8/9/24/38 phải nằm SAU key72 và TRƯỚC key67 của post kế (range block).
+const EGG_ACCOUNT = 'daptrung';
+const EGG_AUTHOR = 'Đập Trứng 🥚';
+const DIARY_ENTRY_TYPE = 4; // entry.c.c.a() = (short) 4 → ci.p khi mở trang Me
+
+// Khi vừa biết target = daptrung mà trước đó đã có svc103 feed-request đang chờ
+// (pendingType4 = entryType, ci.p vẫn = entryType đó) → trả feed luôn. Nếu chưa
+// có svc103 nào (ci.p chưa chắc = type) thì KHÔNG gửi (tránh ed.a() drop do lệch
+// ci.p); đợi svc103 tới sẽ trả ở case 103.
+function maybeSendEggFeedOnTarget(sock) {
+  if (currentMeTarget === EGG_ACCOUNT && pendingType4 >= 0) {
+    const type = pendingType4;
+    pendingType4 = -1;
+    console.log(`   🥚 Target=daptrung + có svc103 chờ (type=${type}) → trả FEED (svc 92)`);
+    replyEggFeed(sock, type);
+  }
+}
+const EGG_POSTS = [
+  { text: '🥚 Chào mừng tới Đập Trứng! Mỗi ngày đập 3 quả, săn KEN và VIP miễn phí.', comments: 0 },
+  { text: '🎉 Bạn vừa ĐẬP TRÚNG 5.000 KEN từ quả trứng vàng may mắn! ✨', comments: 12 },
+  { text: '🎁 Trứng bạc: +1 ngày VIP đã được cộng vào tài khoản của bạn 👑', comments: 5 },
+  { text: '🥚 Hôm nay bạn đã đập 2/3 quả. Quay lại sau để đập tiếp nhé!', comments: 3 },
+  { text: '🏆 Bảng vàng hôm nay: linhchi92 đập trúng JACKPOT 1.000.000 KEN!', comments: 47 },
+];
+// svc=92 (codec ed) → callback 3-arg a(g,List,short) [dùng cho in-place me].
+// svc=103 (codec ee.c) → callback 4-arg a(String,short,List,short) [trang clan
+// OlaClanMePageActivity render "ME Đã Đăng" khi s2==80]. ee.c đọc CÙNG bộ key
+// như ed (67/22/45/72/221/220/125/9/8/24/38) nên dùng chung layout.
+function replyEggFeed(sock, entryType, svc = 92) {
+  const now = Date.now();
+  const kvs = [{ key: 255, val: vByte(entryType) }];
+  EGG_POSTS.forEach((p, i) => {
+    kvs.push({ key: 67,  val: vStr(EGG_ACCOUNT) });
+    kvs.push({ key: 22,  val: vStr(EGG_AUTHOR) });
+    kvs.push({ key: 45,  val: vByte(0) });
+    kvs.push({ key: 72,  val: vLong(900000 + i) });
+    kvs.push({ key: 221, val: vByte(0) });
+    kvs.push({ key: 220, val: vByte(0) });
+    kvs.push({ key: 125, val: vInt(p.comments) });
+    kvs.push({ key: 9,   val: vLong(now - i * 3600000) });
+    kvs.push({ key: 8,   val: vStr(p.text) });
+    kvs.push({ key: 24,  val: vStr('') });
+    kvs.push({ key: 38,  val: vStr('') });
+  });
+  send(sock, svc, kvs, `(FEED Đập trứng svc${svc}: ${EGG_POSTS.length} post, type=${entryType})`);
+}
+
+let currentMeTarget = null; // account đang mở trên trang Me (đặt qua svc 50/80)
+let pendingType4 = -1; // entryType của svc103 feed-request đang chờ biết target (ci.p)
 let seeded = false; // chỉ seed tin nhắn 1 lần để tránh trùng khi reconnect
 let isOnline = false; // track xem đã login xong chưa (svc 97 đã trả)
 let pendingRoomRequest = null; // lưu socket nếu svc 81 đến trước khi online
@@ -280,6 +379,8 @@ function handle(sock, svc, kv) {
 
       // Sau khi online -> PUSH danh bạ qua svc 250 (codec ca đã wire) + seed hội thoại
       setTimeout(() => pushFriendListCa(sock), 1000);
+      // PUSH section trang Me (svc 138) → drawer Me có dòng "Đập trứng" sẵn sàng
+      setTimeout(() => replyMeSections(sock), 1200);
       if (!seeded) {
         seeded = true;
         FAKE_CONVOS.forEach((c, idx) =>
@@ -467,6 +568,31 @@ function handle(sock, svc, kv) {
       const act = action ? action[0] : 0;
       const peer = getKey(kv, 7);
       const peerNick = peer ? peer.toString('utf8') : '';
+      // Khi mở trang Me 1 account, app gửi svc 50 (key7=account) ĐẶT target rồi
+      // svc 103 CHỈ có key255=entryType (không key7). Nếu target = "daptrung" và
+      // đây là request feed (có key255, không key7 peer) → trả posts qua svc 92 (ed).
+      const et = getKey(kv, 255);
+      const entryType = et && et.length ? et[0] : -1;
+      // Feed request trang Me (chỉ key255=entryType, không key7). ci.p vừa được
+      // client set = entryType → trả svc92 NGAY nếu đã biết target=daptrung; nếu
+      // chưa biết, nhớ entryType (cờ pending) để khi svc50/80 báo target sẽ trả.
+      // POSTS feed của trang clan: svc103 key7="#daptrung", key255="P"(=80).
+      // OlaClanMePageActivity nhận posts qua callback a(str,short,List<g>,80).
+      // Trả svc92 (ed) echo type 80 → ci.p=80 khớp → render "ME Đã Đăng".
+      if (peerNick === '#' + EGG_ACCOUNT) {
+        const pt = entryType >= 0 ? entryType : 80;
+        console.log(`   🥚 POSTS request "#daptrung" (svc103 type=${pt}) → trả svc103 (ee.c → 4-arg)`);
+        replyEggFeed(sock, pt, 103);
+        break;
+      }
+      if (entryType >= 0 && !peer) {
+        if (currentMeTarget === EGG_ACCOUNT) {
+          console.log(`   🥚 Feed request "daptrung" (svc103 type=${entryType}) → trả svc92 (ed)`);
+          replyEggFeed(sock, entryType);
+          break;
+        }
+        pendingType4 = entryType;
+      }
       if (act === 1) {
         // Refresh: trả key72=ack time, key124=unread=0
         send(sock, 103, [
@@ -526,6 +652,74 @@ function handle(sock, svc, kv) {
       break;
     }
 
+    // svc 80 = bookmark/history. Khi mở trang Me 1 account, app gửi key110="mehistory"
+    // + key23 (binary) chứa "#daptrung" → cũng là tín hiệu target = daptrung.
+    case 80: {
+      const k23 = getKey(kv, 23);
+      const k110 = getKey(kv, 110);
+      const ctx = k110 ? k110.toString('utf8') : '';
+      if (k23 && k23.includes(Buffer.from(EGG_ACCOUNT))) {
+        currentMeTarget = EGG_ACCOUNT;
+        console.log(`   📌 (svc80 ${ctx}) Me target = "daptrung"`);
+        maybeSendEggFeedOnTarget(sock);
+      }
+      send(sock, 80, [{ key: 255, val: vShort(0) }], `(svc80 ${ctx} OK)`);
+      break;
+    }
+
+    // svc 50 = chọn account mở trên trang Me (key7=account). Ghi nhớ target để
+    // svc 103 tiếp theo biết đang xem feed của ai (vd "daptrung").
+    case 50: {
+      const t = getKey(kv, 7);
+      const etReq = getKey(kv, 255);
+      const profType = etReq && etReq.length ? etReq[0] : 68; // "D"=0x44=68
+      if (t) {
+        const nick = t.toString('utf8');
+        currentMeTarget = nick;
+        const isEgg = nick === EGG_ACCOUNT;
+        // codec ai (svc50) decode: key255=byte type(68) → gVar.a(entity.b, 68);
+        // key7=account(bVar.a, phải != rỗng), key109=tên(b), 110=mô tả(c), 111(d),
+        // key66=short(j), 124/125/126=int(f/g/h), 130=long(i). OlaClanMePageActivity
+        // .a(entity.b,68) → this.e=profile → K() → hết kẹt → nạp posts.
+        send(sock, 50, [
+          { key: 255, val: vByte(profType) },
+          { key: 7,   val: vStr(nick) },
+          { key: 109, val: vStr(isEgg ? EGG_AUTHOR : nick) },
+          { key: 110, val: vStr(isEgg ? 'Đập trứng mỗi ngày — trúng KEN & VIP miễn phí!' : '') },
+          { key: 111, val: vStr('') },
+          { key: 66,  val: vShort(0) },
+          { key: 124, val: vInt(999) },
+          { key: 125, val: vInt(EGG_POSTS.length) },
+          { key: 126, val: vInt(0) },
+          { key: 130, val: vLong(Date.now()) },
+        ], `(svc50 PROFILE "${nick}" type=${profType})`);
+        console.log(`   📌 Me target="${nick}" → trả profile (entity.b, type ${profType})`);
+        maybeSendEggFeedOnTarget(sock);
+      } else {
+        send(sock, 50, [{ key: 255, val: vShort(0) }], '(svc50 OK rỗng)');
+      }
+      break;
+    }
+
+    // svc 116 (codec cj) = cũng là feed-request trang Me (entry type khác, vd 5).
+    // ci.p = entryType vừa gửi. Trả svc92 (ed) echo CHÍNH entryType đó → ed chấp
+    // nhận (key255==ci.p) và route a(g,list,type) tới handler màn đang mở qua
+    // entry.c.f.b(type). Xử lý y hệt svc103.
+    case 116: {
+      const et116 = getKey(kv, 255);
+      const type116 = et116 && et116.length ? et116[0] : -1;
+      if (type116 >= 0 && !getKey(kv, 7)) {
+        if (currentMeTarget === EGG_ACCOUNT) {
+          console.log(`   🥚 Feed request "daptrung" (svc116 type=${type116}) → trả svc92 (ed)`);
+          replyEggFeed(sock, type116);
+          break;
+        }
+        pendingType4 = type116;
+      }
+      send(sock, 116, [{ key: 255, val: vShort(0) }], `(svc116 type=${type116} OK)`);
+      break;
+    }
+
     // svc 42 (z) = Nickname query. Gửi key7=nick. Codec decode rỗng → chỉ cần ack.
     case 42: {
       send(sock, 42, [
@@ -541,8 +735,14 @@ function handle(sock, svc, kv) {
       break;
     }
 
-    // svc 138 (aq) = Notification settings sync. Trả OK rỗng.
-    case 138:
+    // svc 138 (codec w/aw, ch.java:138) = danh sách SECTION trang Me
+    // (KHÔNG phải "notification sync" như README cũ ghi). Trả key83 → drawer Me
+    // có dòng "Đập trứng". Xem replyMeSections().
+    case 138: {
+      replyMeSections(sock);
+      break;
+    }
+
     // svc 8 (ae) = Settings/config query. Trả OK rỗng.
     case 8:
     // svc 164 (ax) = RSS/feed config. Trả OK rỗng.
@@ -592,6 +792,8 @@ const server = net.createServer((sock) => {
     isOnline = false;
     pendingRoomRequest = null;
     onlineSince = 0;
+    currentMeTarget = null;
+    pendingType4 = -1;
   });
 });
 

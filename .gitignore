@@ -4,4 +4,8 @@
 # Logs
 *.log
 
+# Ảnh xuất từ APK Ola (3309 ảnh, zip ~7.6M) — không commit
+/ola-apk-images/
+/ola-apk-images.zip
+
 # Mỗi subfolder (older-ola/, web/) có .gitignore riêng cho node_modules, dist, apk...
