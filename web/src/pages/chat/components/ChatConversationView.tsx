@@ -1,8 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ConfirmDialog, ListOptionDialog, type ListOption } from '@components';
+import moreIcon from '@/assets/icons/chat/ic_more_white.png';
+import likeIcon from '@/assets/icons/chat/smiley_35.png';
+import smileyIcon from '@/assets/icons/chat/ic_smiley.png';
+import smileyIconActive from '@/assets/icons/chat/ic_smiley_selected.png';
 import type { ChatMessage } from '../types';
 import { Avatar } from './Avatar';
+import { AttachmentBar, type AttachTab } from './AttachmentBar';
 
 interface ChatConversationViewProps {
   name: string;
@@ -40,6 +45,8 @@ export function ChatConversationView({
   const [draft, setDraft] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
   const [blockOpen, setBlockOpen] = useState(false);
+  const [attachOpen, setAttachOpen] = useState(false);
+  const [attachTab, setAttachTab] = useState<AttachTab>('smiley');
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -93,9 +100,9 @@ export function ChatConversationView({
           type="button"
           aria-label="Menu"
           onClick={() => setMenuOpen(true)}
-          className="flex h-9 w-9 items-center justify-center rounded-full text-xl hover:bg-white/15"
+          className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-white/15"
         >
-          ⋮
+          <img src={moreIcon} alt="" className="h-5 w-5 object-contain" />
         </button>
       </header>
 
@@ -121,9 +128,25 @@ export function ChatConversationView({
         }}
         className="flex items-end gap-1 border-t border-black/12 bg-white px-2 py-1.5"
       >
+        <button
+          type="button"
+          aria-label={t('chat.attachTabSmiley')}
+          onClick={() => {
+            setAttachTab('smiley');
+            setAttachOpen((open) => !open);
+          }}
+          className="flex h-9 w-9 shrink-0 items-center justify-center"
+        >
+          <img
+            src={attachOpen ? smileyIconActive : smileyIcon}
+            alt=""
+            className="h-6 w-6 object-contain"
+          />
+        </button>
         <input
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
+          onFocus={() => setAttachOpen(false)}
           placeholder={t('chat.messageInputPlaceholder', { name })}
           className="min-h-9 flex-1 bg-transparent px-2 text-base text-black/87 outline-none placeholder:text-black/38"
         />
@@ -139,12 +162,21 @@ export function ChatConversationView({
             type="button"
             aria-label={t('chat.like')}
             onClick={() => sendText('👍')}
-            className="flex h-9 w-9 items-center justify-center text-2xl"
+            className="flex h-9 w-9 items-center justify-center"
           >
-            👍
+            <img src={likeIcon} alt="" className="h-7 w-7 object-contain" />
           </button>
         )}
       </form>
+
+      {attachOpen && (
+        <AttachmentBar
+          activeTab={attachTab}
+          onTabChange={setAttachTab}
+          onPickEmoji={(emoji) => setDraft((current) => current + emoji)}
+          onClose={() => setAttachOpen(false)}
+        />
+      )}
 
       <ListOptionDialog
         open={menuOpen}

@@ -11,6 +11,8 @@
  * Cổng:  PORT (mặc định 8080)
  */
 const express = require('express');
+const path = require('path');
+const fs = require('fs');
 const app = express();
 const PORT = process.env.PORT || 8080;
 
@@ -84,8 +86,8 @@ app.get('/json/id/profile', (req, res) => {
     vip: 1,                                   // VIP → tránh warning "Mua VIP" ở phòng chat
     phone: { number: '0901234567', verified: true, protect: true },  // verified → tránh warning "Cần xác thực"
     like: { '1': 0, '3': 0, liked: 0 },
-    friends: [],
-    fans: [],
+    friends: ['linhchi92', 'tuananh', 'maiphuong', 'quanghuy', 'thuhuong'],
+    fans: ['linhchi92', 'tuananh'],
     medias: [],
   });
 });
@@ -151,6 +153,26 @@ app.get('/html/*', (req, res) =>
     <h2 style="color:#558b2f">Fake Ola server</h2>
     <p>Trang HTML giả cho: <code>${req.path}</code></p></body>`)
 );
+
+// =====================================================================
+//  PHOTO PLACEHOLDER (avatar/cover ảnh giả)
+//  URL: /photo/<nick>-avatar-<size>.jpg  hoặc /photo/<nick>-cover-<size>.jpg
+//  Cũng hỗ trợ /clan/photo/<nick>-<type>-<size>.jpg
+// =====================================================================
+app.get(['/photo/*', '/clan/photo/*'], (req, res) => {
+  const isCover = req.path.includes('-cover-');
+  const file = isCover ? 'placeholder-cover.png' : 'placeholder-avatar.png';
+  const filePath = path.join(__dirname, file);
+  console.log(`   📷 Photo placeholder: ${req.path} (${isCover ? 'cover' : 'avatar'})`);
+  if (fs.existsSync(filePath)) {
+    res.set('Content-Type', 'image/png').send(fs.readFileSync(filePath));
+  } else {
+    // Fallback: 1x1 green pixel PNG
+    const px = Buffer.from('89504e470d0a1a0a0000000d49484452000000010000000108020000009001' +
+      '2e00000000c4944415478016260c8c0c000000030001890f5e710000000049454e44ae426082', 'hex');
+    res.set('Content-Type', 'image/png').send(px);
+  }
+});
 
 // =====================================================================
 //  CATCH-ALL: bất kỳ json/* nào chưa khai báo -> trả về OK rỗng

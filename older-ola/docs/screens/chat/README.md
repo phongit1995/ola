@@ -100,10 +100,81 @@ Item `contact_item_layout.xml` (gần giống dòng hội thoại, thêm giới 
 | Online | `timeOfflineTextView` | `caption` 12sp | "online" / thời gian offline (ẩn mặc định) |
 | Divider | `listViewBottomDividerView` | `#1F000000` 1dp | |
 
+### Header DANH BẠ (3 dòng cố định trên đầu list — thấy rõ trong ảnh `02-danh-ba.png`)
+
+| Dòng | Icon | Tiêu đề (EN→VI) | Phụ đề | Hành động |
+|------|------|------------------|--------|-----------|
+| **Ô tìm kiếm** | 🔍 (search) | placeholder `Nhập tên nick hoặc số điện thoại cần chat` | — | gõ → mở `contact_finder_fragment_layout` |
+| **Invite more friends** | logo Facebook (xanh) | `Invite more friends` → "Mời thêm bạn" | `More friends, more fun` | mời bạn FB (`contact_invite_fb_friend_layout`) |
+| **Chat group** | icon nhóm Ola | `Chat group` → "Chat nhóm" | `Chat to friends as group` | tạo nhóm chat (`contact_chatgroup_layout`) + mũi tên ❯ |
+
+> Ô tìm kiếm: nền trắng bo nhẹ, margin 8dp, cao ~40dp, icon 🔍 trái, chữ gợi ý `rgba(0,0,0,.38)`. Dòng Invite/Chat group dùng đúng khung item 72dp như contact (icon 40dp + tiêu đề subhead + phụ đề caption); "Chat group" có thêm mũi tên ❯ phải.
+
 ### Tính năng DANH BẠ
 - Header: **ô tìm kiếm** "Nhập tên nick hoặc số điện thoại", **Invite more friends** ("More friends, more fun"), **Chat group** ("Chat to friends as group").
 - Hiển thị **giới tính** (icon nam/nữ), **huy hiệu VIP**, **trạng thái online**.
 - Bấm 1 contact → mở khung chat 1-1 với người đó.
+
+### CSS riêng — dòng danh bạ (`contact_item_layout.xml`)
+
+```css
+.ola-contact-item {
+  display: flex; align-items: center;
+  min-height: 72px; padding: 16px;
+  background: rgba(255,255,255,.80);              /* translucent_white_80_percent */
+  border-bottom: 1px solid rgba(0,0,0,.12);
+  font-family: Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+.ola-contact-item__gender {                        /* imgGenderIcon — nam/nữ */
+  width: 16px; height: 16px; margin-right: 8px;
+  align-self: flex-start;                          /* gravity left|top */
+}
+.ola-contact-item__avatar {                        /* imgItemIcon 40dp */
+  position: relative; width: 40px; height: 40px;
+  border-radius: 50%; object-fit: cover; flex-shrink: 0;
+}
+.ola-contact-item__device {                        /* imgDeviceType — góc phải-dưới avatar */
+  position: absolute; right: 0; bottom: 0;
+  width: 12px; height: 12px; border-radius: 50%;
+  background: #fff;
+}
+.ola-contact-item__body { flex: 1; margin-left: 16px; min-width: 0; }
+.ola-contact-item__title-row { display: flex; align-items: center; }
+.ola-contact-item__vip {                           /* vipImageHolder — ẩn nếu không VIP */
+  width: 24px; height: 24px; margin-right: 4px;
+}
+.ola-contact-item__name {
+  font-size: 16px; color: rgba(0,0,0,.87);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ola-contact-item__status {                        /* txtItemSubTitle — caption 12sp */
+  margin-top: 2px; font-size: 12px; color: rgba(0,0,0,.54);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ola-contact-item__online {                        /* timeOfflineTextView — ẩn mặc định */
+  margin-left: 8px; font-size: 12px; color: rgba(0,0,0,.54);
+}
+```
+
+```html
+<li class="ola-contact-item">
+  <img class="ola-contact-item__gender" src="images/icons/ic_indicate_female.png">
+  <div class="ola-contact-item__avatar">
+    <img src="images/icons/ic_contact_photo.png" style="width:100%;height:100%;border-radius:50%">
+    <img class="ola-contact-item__device" src="images/icons/ic_device_type_android.png">
+  </div>
+  <div class="ola-contact-item__body">
+    <div class="ola-contact-item__title-row">
+      <img class="ola-contact-item__vip" src="...vip.png">
+      <span class="ola-contact-item__name">linhchi92</span>
+    </div>
+    <div class="ola-contact-item__status">Hôm nay vui ghê 🌸</div>
+  </div>
+  <span class="ola-contact-item__online">online</span>
+</li>
+```
+
+> Khác dòng hội thoại: thêm **icon giới tính** đầu dòng (canh trên-trái), **huy hiệu VIP** trước nick, **trạng thái online** cuối dòng; phụ đề là **status message** (caption 12sp) thay vì tin nhắn cuối.
 
 ---
 
@@ -326,10 +397,11 @@ Thanh nhập có nút mở **bảng đính kèm** trượt lên, gồm 6 tab:
 |----------|-----------|
 | Bố cục 2 tab con + action bar | ✅ mục 1 |
 | List hội thoại (item + style) | ✅ mục 2 |
-| Danh bạ (item + style) | ✅ mục 3 |
+| Danh bạ (item + style + header) | ✅ mục 3 |
 | Khung chat + 11 loại bong bóng | ✅ mục 4 |
 | CSS (tab, dòng, FAB, bong bóng) | ✅ mục 5 |
-| CSS chi tiết dòng danh bạ riêng | ⚠️ dùng chung mục 5 (chỉ khác icon giới tính/VIP) |
+| CSS chi tiết dòng danh bạ riêng | ✅ mục 3 (gender + VIP + online + device) |
+| Header DANH BẠ (tìm kiếm / Invite / Chat group) | ✅ mục 3 |
 | Strings (vi/en) | ✅ mục 6 |
 | Token UI tóm tắt | ✅ mục 7 |
 | Menu ⋮ khung chat | ✅ mục 8.1 |

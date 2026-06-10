@@ -90,7 +90,10 @@ function buildProfileJSON(nick) {
       : 'Hồ sơ giả (nạp qua svc204 proxy — KHÔNG cần patch smali)',
     cared: false, isFan: false, blocked: false, vip: 1,
     phone: { number: '0901234567', verified: true, protect: true },
-    like: { '1': 0, '3': 0, liked: 0 }, friends: [], fans: [], medias: [],
+    like: { '1': 0, '3': 0, liked: 0 },
+    friends: ['linhchi92', 'tuananh', 'maiphuong', 'quanghuy', 'thuhuong'],
+    fans: ['linhchi92', 'tuananh'],
+    medias: [],
   });
 }
 

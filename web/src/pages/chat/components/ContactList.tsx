@@ -1,5 +1,8 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import maleIcon from '@/assets/icons/chat/ic_indicate_male.png';
+import femaleIcon from '@/assets/icons/chat/ic_indicate_female.png';
+import groupIcon from '@/assets/icons/room/ic_notify_new_chat_group_message.png';
 import type { Contact } from '../types';
 import { Avatar } from './Avatar';
 
@@ -9,23 +12,26 @@ interface ContactListProps {
 }
 
 function GenderIcon({ gender }: { gender: Contact['gender'] }) {
-  const color = gender === 'male' ? '#4a90d9' : '#e573a8';
   return (
-    <span
-      className="h-2.5 w-2.5 shrink-0 rounded-full"
-      style={{ backgroundColor: color }}
-      aria-hidden="true"
+    <img
+      src={gender === 'male' ? maleIcon : femaleIcon}
+      alt=""
+      className="h-3.5 w-3.5 shrink-0 object-contain"
     />
   );
 }
 
 function ActionRow({
+  badge,
   title,
   subtitle,
+  showChevron = false,
   onClick,
 }: {
+  badge: ReactNode;
   title: string;
   subtitle: string;
+  showChevron?: boolean;
   onClick?: () => void;
 }) {
   return (
@@ -34,15 +40,12 @@ function ActionRow({
       onClick={onClick}
       className="flex w-full items-center gap-3 border-b border-black/12 bg-white px-4 py-3 text-left"
     >
-      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-ola-primary-light text-ola-primary-dark">
-        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" aria-hidden="true">
-          <path d="M16 11c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 3-1.34 3-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
-        </svg>
-      </span>
-      <span className="min-w-0">
+      {badge}
+      <span className="min-w-0 flex-1">
         <span className="block text-base text-black/87">{title}</span>
         <span className="block text-xs text-black/54">{subtitle}</span>
       </span>
+      {showChevron && <span className="shrink-0 text-xl text-black/26">›</span>}
     </button>
   );
 }
@@ -60,16 +63,20 @@ export function ContactList({ contacts, onSelect }: ContactListProps) {
   return (
     <div className="h-full overflow-y-auto bg-[#f3f3f3]">
       <div className="bg-white p-3">
-        <input
-          type="search"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder={t('chat.searchContacts')}
-          className="w-full rounded-md border border-black/12 bg-[#f3f3f3] px-3 py-2 text-sm text-black/87 outline-none focus:border-ola-primary"
-        />
+        <div className="flex items-center gap-2 rounded-md border border-black/12 bg-[#f3f3f3] px-3 py-2">
+          <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-black/38" fill="currentColor" aria-hidden="true">
+            <path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 5 1.5-1.5-5-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14z" />
+          </svg>
+          <input
+            type="search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder={t('chat.searchContacts')}
+            className="w-full bg-transparent text-sm text-black/87 outline-none placeholder:text-black/38"
+          />
+        </div>
       </div>
-      <ActionRow title={t('chat.inviteFriends')} subtitle={t('chat.inviteFriendsSub')} />
-      <ActionRow title={t('chat.chatGroup')} subtitle={t('chat.chatGroupSub')} />
+
       <ul>
         {filtered.map((c) => (
           <li key={c.name}>
@@ -98,6 +105,26 @@ export function ContactList({ contacts, onSelect }: ContactListProps) {
           </li>
         ))}
       </ul>
+
+      <ActionRow
+        badge={
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded bg-[#1877f2] text-xl font-bold text-white">
+            f
+          </span>
+        }
+        title={t('chat.inviteFriends')}
+        subtitle={t('chat.inviteFriendsSub')}
+      />
+      <ActionRow
+        badge={
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded bg-ola-primary">
+            <img src={groupIcon} alt="" className="h-6 w-6 object-contain" />
+          </span>
+        }
+        title={t('chat.chatGroup')}
+        subtitle={t('chat.chatGroupSub')}
+        showChevron
+      />
     </div>
   );
 }

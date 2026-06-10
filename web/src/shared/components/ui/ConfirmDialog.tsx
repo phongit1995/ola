@@ -1,14 +1,9 @@
 import type { ReactNode } from 'react';
+import infoIcon from '@/assets/icons/chat/ic_dialog_indicate_info.png';
 import { Dialog, DialogButton } from './Dialog';
 
 function InfoIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-8 w-8" aria-hidden="true">
-      <circle cx="12" cy="12" r="10" fill="#4a90d9" />
-      <rect x="11" y="10" width="2" height="7" rx="1" fill="#fff" />
-      <circle cx="12" cy="7" r="1.3" fill="#fff" />
-    </svg>
-  );
+  return <img src={infoIcon} alt="" className="h-8 w-8 object-contain" />;
 }
 
 interface ConfirmDialogProps {
