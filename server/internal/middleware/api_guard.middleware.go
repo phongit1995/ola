@@ -1,15 +1,12 @@
 package middleware
 
 import (
-	"bytes"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
-	"io"
 	"net/http"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"ola-chat-server/internal/config"
@@ -25,55 +22,11 @@ const (
 	headerSignature   = "X-Signature"
 	headerAdminBypass = "admin"
 
-	signingMaxSkew  = 60 * time.Second
-	signingNonceTTL = 90 * time.Second
+	signingMaxSkew = 10 * time.Second
 
 	errSignatureInvalid = "REQUEST_SIGNATURE_INVALID"
 	statusSignature     = http.StatusLocked // 423 — single code for any signing failure
 )
-
-type nonceStore struct {
-	mu    sync.Mutex
-	items map[string]time.Time
-	ttl   time.Duration
-}
-
-func newNonceStore(ttl time.Duration) *nonceStore {
-	s := &nonceStore{items: make(map[string]time.Time), ttl: ttl}
-	go s.cleanupLoop()
-	return s
-}
-
-func (s *nonceStore) Use(key string) bool {
-	now := time.Now()
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if exp, ok := s.items[key]; ok && exp.After(now) {
-		return false
-	}
-	s.items[key] = now.Add(s.ttl)
-	return true
-}
-
-func (s *nonceStore) cleanupLoop() {
-	ticker := time.NewTicker(30 * time.Second)
-	defer ticker.Stop()
-	for range ticker.C {
-		now := time.Now()
-		s.mu.Lock()
-		for k, exp := range s.items {
-			if exp.Before(now) {
-				delete(s.items, k)
-			}
-		}
-		s.mu.Unlock()
-	}
-}
-
-func sha256Hex(b []byte) string {
-	sum := sha256.Sum256(b)
-	return hex.EncodeToString(sum[:])
-}
 
 func hmacSha256Hex(secret, value string) string {
 	mac := hmac.New(sha256.New, []byte(secret))
@@ -95,7 +48,6 @@ func safeEqualHex(a, b string) bool {
 
 type ApiGuardMiddleware struct {
 	cfg     *config.Config
-	nonce   *nonceStore
 	enabled bool
 	logger  *zap.SugaredLogger
 }
@@ -103,7 +55,6 @@ type ApiGuardMiddleware struct {
 func NewApiGuardMiddleware(cfg *config.Config, logger *zap.SugaredLogger) *ApiGuardMiddleware {
 	return &ApiGuardMiddleware{
 		cfg:     cfg,
-		nonce:   newNonceStore(signingNonceTTL),
 		enabled: cfg.APIGuardSecret != "",
 		logger:  logger.Named("[api_guard]"),
 	}
@@ -157,30 +108,15 @@ func (m *ApiGuardMiddleware) valid(c *gin.Context, path string) bool {
 		return false
 	}
 
-	body, err := c.GetRawData()
-	if err != nil {
-		m.logger.Debugw("failed to read body", "path", path, "error", err)
-		return false
-	}
-	c.Request.Body = io.NopCloser(bytes.NewReader(body))
-
 	canonical := strings.Join([]string{
 		timestamp,
 		nonce,
 		strings.ToUpper(c.Request.Method),
 		path,
-		sha256Hex(body),
 	}, "\n")
 
 	if !safeEqualHex(hmacSha256Hex(secret, canonical), signature) {
 		m.logger.Debugw("signature mismatch", "path", path)
-		return false
-	}
-
-	// Consume the nonce only after the signature is proven valid, so bad
-	// requests cannot burn a client's nonces.
-	if !m.nonce.Use(nonce) {
-		m.logger.Debugw("replay nonce", "path", path, "nonce", nonce)
 		return false
 	}
 
