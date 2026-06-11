@@ -37,6 +37,7 @@ func NewContainer() (*dig.Container, error) {
 		services.NewJWTService,
 		services.NewMinIOService,
 		middleware.NewAuthMiddleware,
+		middleware.NewApiGuardMiddleware,
 		CreateServer,
 	}
 

@@ -44,6 +44,8 @@ type Config struct {
 	JWTSecret string `env:"JWT_SECRET"`
 	JWTExpiry string `env:"JWT_EXPIRY" envDefault:"24h"`
 
+	APIGuardSecret string `env:"API_GUARD_SECRET"`
+
 	CORSAllowedOrigins []string `env:"CORS_ALLOWED_ORIGINS" envSeparator:","`
 
 	WSReadBufferSize  int `env:"WS_READ_BUFFER_SIZE" envDefault:"1024" validate:"min=1024"`

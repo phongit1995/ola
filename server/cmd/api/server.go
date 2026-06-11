@@ -2,6 +2,7 @@ package main
 
 import (
 	"ola-chat-server/internal/config"
+	"ola-chat-server/internal/middleware"
 	"ola-chat-server/internal/transport/websocket"
 	"ola-chat-server/internal/modules/admin"
 	"ola-chat-server/internal/modules/auth"
@@ -38,6 +39,7 @@ func CreateServer(
 	roomRouter *room.Router,
 	roomService *room.Service,
 	wsServer *websocket.Server,
+	apiGuard *middleware.ApiGuardMiddleware,
 	cfg *config.Config,
 ) *Server {
 	wsServer.SetRoomHandler(roomService)
@@ -67,6 +69,7 @@ func CreateServer(
 
 	apiGroup := r.Group("/api/v1")
 	api := utils.NewAppGroup(apiGroup)
+	api.Use(apiGuard.Verify())
 	{
 		healthRouter.Setup(api)
 		authRouter.Setup(api)

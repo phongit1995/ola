@@ -40,6 +40,17 @@
     "errConfirmMismatch": "Passwords do not match.",
     "errAgreeRequired": "You must agree to the Terms of Use to continue."
   },
+  "forgot": {
+    "title": "Forgot password",
+    "desc": "Enter your username and we'll help you recover your account.",
+    "usernameLabel": "USERNAME",
+    "usernamePlaceholder": "Enter your username",
+    "submit": "Continue",
+    "backToLogin": "Back to login",
+    "errUsernameRequired": "Please enter your username.",
+    "doneTitle": "Request received",
+    "doneDesc": "If this account exists, we'll send recovery instructions shortly."
+  },
   "home": {
     "tabChat": "Chat",
     "tabRoom": "Chat room",
