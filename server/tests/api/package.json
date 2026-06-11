@@ -2,6 +2,7 @@
   "name": "chat-api-tests",
   "version": "1.0.0",
   "private": true,
+  "packageManager": "pnpm@11.1.2",
   "description": "Integration tests for chat-server HTTP + WebSocket API",
   "scripts": {
     "test": "node run-all.js",
