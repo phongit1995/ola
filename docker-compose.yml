@@ -148,6 +148,10 @@ services:
     container_name: ola-chat-server-minio${CONTAINER_SUFFIX:-}
     restart: unless-stopped
     command: server /data --console-address ":9001"
+    labels:
+      - dockflare.enable=${MINIO_DOCKFLARE_ENABLE:-false}
+      - dockflare.hostname=${MINIO_DOMAIN:-storage.ola-server.click}
+      - dockflare.service=http://${DEPLOY_HOST:-phong.local}:${MINIO_PORT:-9000}
     ports:
       - "${MINIO_PORT:-9000}:9000"
       - "${MINIO_CONSOLE_PORT:-9001}:9001"
