@@ -150,6 +150,7 @@ var (
 	errorsNotFound = map[string]bool{
 		"user not found":              true,
 		"admin not found":             true,
+		"room not found":              true,
 		"resource not found":          true,
 		"friend request not found":    true,
 		"friendship not found":        true,
@@ -170,6 +171,9 @@ var (
 		"admin access required":                 true,
 		"admin account is disabled":             true,
 		"account is disabled":                   true,
+		"not a room member":                     true,
+		"room is full":                          true,
+		"room is disabled":                      true,
 	}
 )
 

@@ -887,6 +887,140 @@ definitions:
         example: john_doe
         type: string
     type: object
+  internal_modules_room.CreateRoomRequest:
+    properties:
+      description:
+        example: Nơi chém gió
+        maxLength: 2000
+        type: string
+      imageUrl:
+        example: https://example.com/room.jpg
+        type: string
+      maxMembers:
+        example: 100
+        minimum: 0
+        type: integer
+      name:
+        example: Phòng Tán Gẫu
+        maxLength: 150
+        minLength: 1
+        type: string
+    required:
+    - name
+    type: object
+  internal_modules_room.RoomListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_room.RoomResponse'
+        type: array
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  internal_modules_room.RoomMemberResponse:
+    properties:
+      avatar:
+        type: string
+      fullName:
+        type: string
+      joinedAt:
+        type: string
+      userId:
+        type: string
+      username:
+        type: string
+    type: object
+  internal_modules_room.RoomMembersResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_room.RoomMemberResponse'
+        type: array
+      total:
+        type: integer
+    type: object
+  internal_modules_room.RoomMessageResponse:
+    properties:
+      content:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: string
+      roomId:
+        type: string
+      senderAvatar:
+        type: string
+      senderId:
+        type: string
+      senderName:
+        type: string
+    type: object
+  internal_modules_room.RoomMessagesListResponse:
+    properties:
+      hasMore:
+        type: boolean
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_room.RoomMessageResponse'
+        type: array
+      nextBefore:
+        type: string
+    type: object
+  internal_modules_room.RoomResponse:
+    properties:
+      createdAt:
+        type: string
+      createdBy:
+        type: string
+      description:
+        type: string
+      enabled:
+        type: boolean
+      id:
+        type: string
+      imageUrl:
+        type: string
+      isMember:
+        type: boolean
+      maxMembers:
+        type: integer
+      memberCount:
+        type: integer
+      name:
+        type: string
+    type: object
+  internal_modules_room.SendRoomMessageRequest:
+    properties:
+      content:
+        example: Xin chào cả phòng!
+        maxLength: 5000
+        minLength: 1
+        type: string
+    required:
+    - content
+    type: object
+  internal_modules_room.UpdateRoomRequest:
+    properties:
+      description:
+        maxLength: 2000
+        type: string
+      enabled:
+        type: boolean
+      imageUrl:
+        type: string
+      maxMembers:
+        minimum: 0
+        type: integer
+      name:
+        maxLength: 150
+        minLength: 1
+        type: string
+    type: object
   internal_modules_user.PresenceBatchRequest:
     properties:
       userIds:
@@ -1229,6 +1363,91 @@ definitions:
       traceId:
         type: string
     type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_room_RoomListResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_room.RoomListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_room_RoomMembersResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_room.RoomMembersResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_room_RoomMessageResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_room.RoomMessageResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_room_RoomMessagesListResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_room.RoomMessagesListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_room_RoomResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_room.RoomResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
 info:
   contact:
     email: support@chatserver.com
@@ -1328,6 +1547,104 @@ paths:
       summary: Refresh admin token
       tags:
       - admin-auth
+  /admin/rooms:
+    get:
+      parameters:
+      - description: Search by name
+        in: query
+        name: q
+        type: string
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_RoomListResponse'
+      security:
+      - BearerAuth: []
+      summary: List rooms (admin, includes disabled)
+      tags:
+      - admin-room
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Create Room
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_room.CreateRoomRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_RoomResponse'
+      security:
+      - BearerAuth: []
+      summary: Create room (admin)
+      tags:
+      - admin-room
+  /admin/rooms/{id}:
+    delete:
+      parameters:
+      - description: Room ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete room (admin)
+      tags:
+      - admin-room
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Room ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update Room
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_room.UpdateRoomRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_RoomResponse'
+      security:
+      - BearerAuth: []
+      summary: Update room (admin)
+      tags:
+      - admin-room
   /admin/users:
     get:
       description: List users with pagination and optional search (admin only)
@@ -2796,6 +3113,178 @@ paths:
       summary: Get sent friend requests
       tags:
       - relationships
+  /rooms:
+    get:
+      parameters:
+      - description: Search by name
+        in: query
+        name: q
+        type: string
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_RoomListResponse'
+      security:
+      - BearerAuth: []
+      summary: Browse public rooms
+      tags:
+      - room
+  /rooms/{id}:
+    get:
+      parameters:
+      - description: Room ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_RoomResponse'
+      security:
+      - BearerAuth: []
+      summary: Get room detail
+      tags:
+      - room
+  /rooms/{id}/join:
+    post:
+      parameters:
+      - description: Room ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_RoomResponse'
+      security:
+      - BearerAuth: []
+      summary: Join a room
+      tags:
+      - room
+  /rooms/{id}/leave:
+    post:
+      parameters:
+      - description: Room ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Leave a room
+      tags:
+      - room
+  /rooms/{id}/members:
+    get:
+      parameters:
+      - description: Room ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_RoomMembersResponse'
+      security:
+      - BearerAuth: []
+      summary: List room members
+      tags:
+      - room
+  /rooms/{id}/messages:
+    get:
+      parameters:
+      - description: Room ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Page size (default 50, max 200)
+        in: query
+        name: limit
+        type: integer
+      - description: 'Cursor: message id (timeuuid)'
+        in: query
+        name: before
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_RoomMessagesListResponse'
+      security:
+      - BearerAuth: []
+      summary: Get room message history
+      tags:
+      - room
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Room ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Message
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_room.SendRoomMessageRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_RoomMessageResponse'
+      security:
+      - BearerAuth: []
+      summary: Send a message to a room
+      tags:
+      - room
   /user/{id}:
     get:
       description: Get public profile information of a user by ID, including online

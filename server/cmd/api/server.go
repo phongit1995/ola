@@ -10,6 +10,7 @@ import (
 	"ola-chat-server/internal/modules/health"
 	"ola-chat-server/internal/modules/message"
 	"ola-chat-server/internal/modules/relationships"
+	"ola-chat-server/internal/modules/room"
 	"ola-chat-server/internal/modules/user"
 	"ola-chat-server/internal/utils"
 
@@ -34,6 +35,7 @@ func CreateServer(
 	conversationRouter *conversation.Router,
 	messageRouter *message.Router,
 	callRouter *call.Router,
+	roomRouter *room.Router,
 	wsServer *websocket.Server,
 	cfg *config.Config,
 ) *Server {
@@ -71,6 +73,7 @@ func CreateServer(
 		conversationRouter.Setup(api)
 		messageRouter.Setup(api)
 		callRouter.Setup(api)
+		roomRouter.Setup(api)
 	}
 
 	r.NoRoute(func(c *gin.Context) {

@@ -6,6 +6,7 @@ import (
 	callEvents "ola-chat-server/internal/domain/call"
 	conversationEvents "ola-chat-server/internal/domain/conversation"
 	messageEvents "ola-chat-server/internal/domain/message"
+	roomEvents "ola-chat-server/internal/domain/room"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -87,6 +88,14 @@ func (p *Producer) PublishCallDeclined(ctx context.Context, event *callEvents.De
 
 func (p *Producer) PublishCallEnded(ctx context.Context, event *callEvents.EndedEvent) error {
 	return p.publishKeyed(ctx, constants.KafkaTopicCallEnded, event.CallID, event)
+}
+
+func (p *Producer) PublishRoomMessageCreated(ctx context.Context, event *roomEvents.RoomMessageCreatedEvent) error {
+	key := ""
+	if event.Room != nil {
+		key = event.Room.ID
+	}
+	return p.publishKeyed(ctx, constants.KafkaTopicRoomMessageCreated, key, event)
 }
 
 func (p *Producer) PublishToDLQ(ctx context.Context, originalTopic string, key string, payload []byte, reason string) error {

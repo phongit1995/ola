@@ -5,6 +5,7 @@ import (
 	callEvents "ola-chat-server/internal/domain/call"
 	conversationEvents "ola-chat-server/internal/domain/conversation"
 	messageEvents "ola-chat-server/internal/domain/message"
+	roomEvents "ola-chat-server/internal/domain/room"
 	"context"
 )
 
@@ -12,17 +13,20 @@ type KafkaEventAdapter struct {
 	messageHandler      *messageEvents.EventHandler
 	conversationHandler *conversationEvents.EventHandler
 	callHandler         *callEvents.EventHandler
+	roomHandler         *roomEvents.EventHandler
 }
 
 func NewKafkaEventAdapter(
 	messageHandler *messageEvents.EventHandler,
 	conversationHandler *conversationEvents.EventHandler,
 	callHandler *callEvents.EventHandler,
+	roomHandler *roomEvents.EventHandler,
 ) *KafkaEventAdapter {
 	return &KafkaEventAdapter{
 		messageHandler:      messageHandler,
 		conversationHandler: conversationHandler,
 		callHandler:         callHandler,
+		roomHandler:         roomHandler,
 	}
 }
 
@@ -74,6 +78,10 @@ func (a *KafkaEventAdapter) HandleCallEnded(ctx context.Context, message []byte)
 	return a.callHandler.OnEnded(ctx, message)
 }
 
+func (a *KafkaEventAdapter) HandleRoomMessageCreated(ctx context.Context, message []byte) error {
+	return a.roomHandler.OnMessageCreated(ctx, message)
+}
+
 func RegisterEventHandlers(consumer *Consumer, adapter *KafkaEventAdapter) {
 	consumer.RegisterHandler(constants.KafkaTopicMessageCreated, adapter.HandleMessageCreated)
 	consumer.RegisterHandler(constants.KafkaTopicMessageDeleted, adapter.HandleMessageDeleted)
@@ -87,4 +95,5 @@ func RegisterEventHandlers(consumer *Consumer, adapter *KafkaEventAdapter) {
 	consumer.RegisterHandler(constants.KafkaTopicCallAccepted, adapter.HandleCallAccepted)
 	consumer.RegisterHandler(constants.KafkaTopicCallDeclined, adapter.HandleCallDeclined)
 	consumer.RegisterHandler(constants.KafkaTopicCallEnded, adapter.HandleCallEnded)
+	consumer.RegisterHandler(constants.KafkaTopicRoomMessageCreated, adapter.HandleRoomMessageCreated)
 }
