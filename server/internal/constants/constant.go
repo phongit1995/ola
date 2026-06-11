@@ -13,6 +13,8 @@ const (
 	KafkaTopicCallAccepted        = "CHAT.CALL.ACCEPTED"
 	KafkaTopicCallDeclined        = "CHAT.CALL.DECLINED"
 	KafkaTopicCallEnded           = "CHAT.CALL.ENDED"
+	KafkaTopicRoomMessageCreated  = "CHAT.ROOM.MESSAGE.CREATED"
+	KafkaTopicRoomMessageDeleted  = "CHAT.ROOM.MESSAGE.DELETED"
 )
 
 func AllKafkaTopics() []string {
@@ -29,6 +31,8 @@ func AllKafkaTopics() []string {
 		KafkaTopicCallAccepted,
 		KafkaTopicCallDeclined,
 		KafkaTopicCallEnded,
+		KafkaTopicRoomMessageCreated,
+		KafkaTopicRoomMessageDeleted,
 	}
 }
 
@@ -95,6 +99,7 @@ const (
 	WebSocketEventRoomMessageDeleted  = "ROOM_MESSAGE_DELETED"
 	WebSocketEventRoomMemberJoined    = "ROOM_MEMBER_JOINED"
 	WebSocketEventRoomMemberLeft      = "ROOM_MEMBER_LEFT"
+	WebSocketEventSessionReplaced     = "SESSION_REPLACED"
 )
 
 var CallRingTimeoutSeconds = 30

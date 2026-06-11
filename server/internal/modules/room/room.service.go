@@ -1,9 +1,10 @@
 package room
 
 import (
-	"ola-chat-server/internal/constants"
+	roomEvents "ola-chat-server/internal/domain/room"
 	"ola-chat-server/internal/models"
 	userModule "ola-chat-server/internal/modules/user"
+	"ola-chat-server/internal/transport/kafka"
 	"ola-chat-server/internal/transport/websocket"
 	"context"
 	"encoding/json"
@@ -20,15 +21,17 @@ type Service struct {
 	redisMsg  *RedisMessageRepository
 	userCache *userModule.CacheService
 	wsServer  *websocket.Server
+	producer  *kafka.Producer
 	logger    *zap.SugaredLogger
 }
 
-func NewService(repo *Repository, redisMsg *RedisMessageRepository, userCache *userModule.CacheService, wsServer *websocket.Server, logger *zap.SugaredLogger) *Service {
+func NewService(repo *Repository, redisMsg *RedisMessageRepository, userCache *userModule.CacheService, wsServer *websocket.Server, producer *kafka.Producer, logger *zap.SugaredLogger) *Service {
 	return &Service{
 		repo:      repo,
 		redisMsg:  redisMsg,
 		userCache: userCache,
 		wsServer:  wsServer,
+		producer:  producer,
 		logger:    logger.Named("[room_service]"),
 	}
 }
@@ -49,7 +52,7 @@ func (s *Service) Create(adminID uuid.UUID, req *CreateRoomRequest) (*RoomRespon
 	return toRoomResponse(room, 0), nil
 }
 
-func (s *Service) Update(id uuid.UUID, req *UpdateRoomRequest) (*RoomResponse, error) {
+func (s *Service) Update(ctx context.Context, id uuid.UUID, req *UpdateRoomRequest) (*RoomResponse, error) {
 	room, err := s.getRoom(id)
 	if err != nil {
 		return nil, err
@@ -72,7 +75,7 @@ func (s *Service) Update(id uuid.UUID, req *UpdateRoomRequest) (*RoomResponse, e
 	if err := s.repo.Save(room); err != nil {
 		return nil, err
 	}
-	count, _ := s.wsServer.GetRoomPresence().MemberCount(room.ID.String())
+	count, _ := s.wsServer.GetRoomPresence().MemberCount(ctx, room.ID.String())
 	return toRoomResponse(room, count), nil
 }
 
@@ -83,36 +86,36 @@ func (s *Service) Delete(id uuid.UUID) error {
 	return s.repo.SoftDelete(id)
 }
 
-func (s *Service) ListAdmin(query string, limit, offset int) (*RoomListResponse, error) {
+func (s *Service) ListAdmin(ctx context.Context, query string, limit, offset int) (*RoomListResponse, error) {
 	rooms, total, err := s.repo.ListAll(query, limit, offset)
 	if err != nil {
 		return nil, err
 	}
-	return s.buildList(rooms, total, limit, offset), nil
+	return s.buildList(ctx, rooms, total, limit, offset), nil
 }
 
-func (s *Service) ListPublic(query string, limit, offset int) (*RoomListResponse, error) {
+func (s *Service) ListPublic(ctx context.Context, query string, limit, offset int) (*RoomListResponse, error) {
 	rooms, total, err := s.repo.ListPublic(query, limit, offset)
 	if err != nil {
 		return nil, err
 	}
-	return s.buildList(rooms, total, limit, offset), nil
+	return s.buildList(ctx, rooms, total, limit, offset), nil
 }
 
-func (s *Service) GetByID(id uuid.UUID) (*RoomResponse, error) {
+func (s *Service) GetByID(ctx context.Context, id uuid.UUID) (*RoomResponse, error) {
 	room, err := s.getRoom(id)
 	if err != nil {
 		return nil, err
 	}
-	count, _ := s.wsServer.GetRoomPresence().MemberCount(id.String())
+	count, _ := s.wsServer.GetRoomPresence().MemberCount(ctx, id.String())
 	return toRoomResponse(room, count), nil
 }
 
-func (s *Service) ListMembers(roomID uuid.UUID) (*RoomMembersResponse, error) {
+func (s *Service) ListMembers(ctx context.Context, roomID uuid.UUID) (*RoomMembersResponse, error) {
 	if _, err := s.getRoom(roomID); err != nil {
 		return nil, err
 	}
-	ids, err := s.wsServer.GetRoomPresence().OnlineMembers(roomID.String())
+	ids, err := s.wsServer.GetRoomPresence().OnlineMembers(ctx, roomID.String())
 	if err != nil {
 		return nil, err
 	}
@@ -150,7 +153,7 @@ func (s *Service) SendMessage(ctx context.Context, userID, roomID uuid.UUID, req
 		return nil, errors.New("room is disabled")
 	}
 
-	isMember, err := s.wsServer.GetRoomPresence().IsMember(roomID.String(), userID.String())
+	isMember, err := s.wsServer.GetRoomPresence().IsMember(ctx, roomID.String(), userID.String())
 	if err != nil {
 		return nil, err
 	}
@@ -180,11 +183,21 @@ func (s *Service) SendMessage(ctx context.Context, userID, roomID uuid.UUID, req
 		return nil, err
 	}
 
-	envelope := map[string]any{
-		"room":    RoomBrief{ID: room.ID.String(), Name: room.Name, ImageURL: room.ImageURL},
-		"message": msg,
+	event := &roomEvents.RoomMessageCreatedEvent{
+		Room: &roomEvents.RoomBrief{ID: room.ID.String(), Name: room.Name, ImageURL: room.ImageURL},
+		Message: &roomEvents.RoomMessageData{
+			ID:           msg.ID,
+			RoomID:       msg.RoomID,
+			SenderID:     msg.SenderID,
+			SenderName:   msg.SenderName,
+			SenderAvatar: msg.SenderAvatar,
+			Content:      msg.Content,
+			CreatedAt:    msg.CreatedAt,
+		},
 	}
-	s.wsServer.EmitToRoom(roomID.String(), constants.WebSocketEventNewRoomMessage, envelope)
+	if err := s.producer.PublishRoomMessageCreated(ctx, event); err != nil {
+		s.logger.Errorw("Failed to publish room message created", "room_id", roomID, "message_id", msgID, "error", err)
+	}
 	return &msg, nil
 }
 
@@ -213,14 +226,16 @@ func (s *Service) DeleteMessage(ctx context.Context, userID, roomID uuid.UUID, m
 		return err
 	}
 
-	s.wsServer.EmitToRoom(roomID.String(), constants.WebSocketEventRoomMessageDeleted, map[string]any{
-		"roomId":    roomID.String(),
-		"messageId": messageID,
-	})
+	if err := s.producer.PublishRoomMessageDeleted(ctx, &roomEvents.RoomMessageDeletedEvent{
+		RoomID:    roomID.String(),
+		MessageID: messageID,
+	}); err != nil {
+		s.logger.Errorw("Failed to publish room message deleted", "room_id", roomID, "message_id", messageID, "error", err)
+	}
 	return nil
 }
 
-func (s *Service) GetMessages(roomID uuid.UUID, limit int, beforeID string) (*RoomMessagesListResponse, error) {
+func (s *Service) GetMessages(ctx context.Context, roomID uuid.UUID, limit int, beforeID string) (*RoomMessagesListResponse, error) {
 	room, err := s.getRoom(roomID)
 	if err != nil {
 		return nil, err
@@ -229,7 +244,7 @@ func (s *Service) GetMessages(roomID uuid.UUID, limit int, beforeID string) (*Ro
 		return nil, errors.New("room is disabled")
 	}
 
-	raws, err := s.redisMsg.List(context.Background(), roomID.String(), limit, beforeID)
+	raws, err := s.redisMsg.List(ctx, roomID.String(), limit, beforeID)
 	if err != nil {
 		return nil, err
 	}
@@ -285,12 +300,12 @@ func (s *Service) getRoom(id uuid.UUID) (*models.Room, error) {
 	return room, nil
 }
 
-func (s *Service) buildList(rooms []*models.Room, total int64, limit, offset int) *RoomListResponse {
+func (s *Service) buildList(ctx context.Context, rooms []*models.Room, total int64, limit, offset int) *RoomListResponse {
 	ids := make([]string, 0, len(rooms))
 	for _, room := range rooms {
 		ids = append(ids, room.ID.String())
 	}
-	counts := s.wsServer.GetRoomPresence().MemberCounts(ids)
+	counts := s.wsServer.GetRoomPresence().MemberCounts(ctx, ids)
 
 	items := make([]RoomResponse, 0, len(rooms))
 	for _, room := range rooms {

@@ -39,6 +39,10 @@ func RunSeed(cfg *Config) error {
 		return fmt.Errorf("failed to seed users: %w", err)
 	}
 
+	if err := seed.SeedRooms(db); err != nil {
+		return fmt.Errorf("failed to seed rooms: %w", err)
+	}
+
 	log.Println()
 	log.Println("📋 Test Credentials:")
 	log.Println("   Username: test1 to test100")

@@ -2,6 +2,7 @@ package websocket
 
 import (
 	"ola-chat-server/internal/constants"
+	"context"
 
 	socket "github.com/zishang520/socket.io/servers/socket/v3"
 )
@@ -35,7 +36,14 @@ func (h *EventHandler) RegisterEvents() {
 }
 
 func (h *EventHandler) handleConnection(client *socket.Socket, userID string) {
-	client.Join(socket.Room("user:" + userID))
+	userRoom := socket.Room("user:" + userID)
+	client.Join(userRoom)
+
+	selfID := socket.Room(client.Id())
+	h.server.io.To(userRoom).Except(selfID).Emit(constants.WebSocketEventSessionReplaced, map[string]any{
+		"reason": "logged_in_elsewhere",
+	})
+	h.server.io.To(userRoom).Except(selfID).DisconnectSockets(true)
 
 	isFirstConnection, err := h.presenceService.AddConnection(userID)
 	if err != nil {
@@ -64,7 +72,7 @@ func (h *EventHandler) registerClientEvents(client *socket.Socket, userID string
 		if h.server.roomPresence != nil {
 			data := client.Data().(*SocketData)
 			for roomID := range data.JoinedRooms {
-				h.server.roomPresence.Refresh(roomID, userID)
+				h.server.roomPresence.Refresh(context.Background(), roomID, userID)
 			}
 		}
 	})
@@ -93,21 +101,27 @@ func (h *EventHandler) registerRoomEvents(client *socket.Socket, userID string) 
 			return
 		}
 
+		ctx := context.Background()
 		data := client.Data().(*SocketData)
 		client.Join(roomChannel(roomID))
+		firstPresence := false
 		if !data.JoinedRooms[roomID] {
 			data.JoinedRooms[roomID] = true
-			if _, err := h.server.roomPresence.Join(roomID, userID); err != nil {
+			added, err := h.server.roomPresence.Join(ctx, roomID, userID)
+			if err != nil {
 				h.server.logger.Warnw("Failed to add room presence", "room_id", roomID, "user_id", userID, "error", err)
 			}
+			firstPresence = added
 		}
 
-		count, _ := h.server.roomPresence.MemberCount(roomID)
-		h.server.EmitToRoom(roomID, constants.WebSocketEventRoomMemberJoined, map[string]any{
-			"roomId":      roomID,
-			"userId":      userID,
-			"memberCount": count,
-		})
+		count, _ := h.server.roomPresence.MemberCount(ctx, roomID)
+		if firstPresence {
+			h.server.EmitToRoom(roomID, constants.WebSocketEventRoomMemberJoined, map[string]any{
+				"roomId":      roomID,
+				"userId":      userID,
+				"memberCount": count,
+			})
+		}
 		replyAck(ack, map[string]any{"roomId": roomID, "memberCount": count}, "")
 	})
 
@@ -118,27 +132,33 @@ func (h *EventHandler) registerRoomEvents(client *socket.Socket, userID string) 
 			replyAck(ack, nil, "roomId is required")
 			return
 		}
-		h.leaveRoom(client, userID, roomID)
-		count, _ := h.server.roomPresence.MemberCount(roomID)
+		count := h.leaveRoom(context.Background(), client, userID, roomID)
+		replyAck(ack, map[string]any{"roomId": roomID, "memberCount": count}, "")
+	})
+
+}
+
+func (h *EventHandler) leaveRoom(ctx context.Context, client *socket.Socket, userID, roomID string) int {
+	data := client.Data().(*SocketData)
+	client.Leave(roomChannel(roomID))
+	if !data.JoinedRooms[roomID] {
+		count, _ := h.server.roomPresence.MemberCount(ctx, roomID)
+		return count
+	}
+	delete(data.JoinedRooms, roomID)
+	removed, err := h.server.roomPresence.Leave(ctx, roomID, userID)
+	if err != nil {
+		h.server.logger.Warnw("Failed to remove room presence", "room_id", roomID, "user_id", userID, "error", err)
+	}
+	count, _ := h.server.roomPresence.MemberCount(ctx, roomID)
+	if removed {
 		h.server.EmitToRoom(roomID, constants.WebSocketEventRoomMemberLeft, map[string]any{
 			"roomId":      roomID,
 			"userId":      userID,
 			"memberCount": count,
 		})
-		replyAck(ack, map[string]any{"roomId": roomID}, "")
-	})
-
-}
-
-func (h *EventHandler) leaveRoom(client *socket.Socket, userID, roomID string) {
-	data := client.Data().(*SocketData)
-	client.Leave(roomChannel(roomID))
-	if data.JoinedRooms[roomID] {
-		delete(data.JoinedRooms, roomID)
-		if _, err := h.server.roomPresence.Leave(roomID, userID); err != nil {
-			h.server.logger.Warnw("Failed to remove room presence", "room_id", roomID, "user_id", userID, "error", err)
-		}
 	}
+	return count
 }
 
 func argMap(args []any) map[string]any {
@@ -186,17 +206,10 @@ func replyAck(ack socket.Ack, data any, errMsg string) {
 
 func (h *EventHandler) handleDisconnect(client *socket.Socket, userID string) {
 	if h.server.roomPresence != nil {
+		ctx := context.Background()
 		data := client.Data().(*SocketData)
 		for roomID := range data.JoinedRooms {
-			if _, err := h.server.roomPresence.Leave(roomID, userID); err != nil {
-				h.server.logger.Warnw("Failed to leave room on disconnect", "room_id", roomID, "user_id", userID, "error", err)
-			}
-			count, _ := h.server.roomPresence.MemberCount(roomID)
-			h.server.EmitToRoom(roomID, constants.WebSocketEventRoomMemberLeft, map[string]any{
-				"roomId":      roomID,
-				"userId":      userID,
-				"memberCount": count,
-			})
+			h.leaveRoom(ctx, client, userID, roomID)
 		}
 	}
 

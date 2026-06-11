@@ -61,7 +61,7 @@ func (ctrl *Controller) CreateRoom(c *gin.Context) (interface{}, error) {
 func (ctrl *Controller) ListRoomsAdmin(c *gin.Context) (interface{}, error) {
 	limit := utils.ParseLimit(c, 20, 100)
 	offset := utils.ParseOffset(c)
-	resp, err := ctrl.service.ListAdmin(c.Query("q"), limit, offset)
+	resp, err := ctrl.service.ListAdmin(c.Request.Context(), c.Query("q"), limit, offset)
 	if err != nil {
 		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
 	}
@@ -87,7 +87,7 @@ func (ctrl *Controller) UpdateRoom(c *gin.Context) (interface{}, error) {
 	if err := c.ShouldBindJSON(&req); err != nil {
 		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	resp, err := ctrl.service.Update(id, &req)
+	resp, err := ctrl.service.Update(c.Request.Context(), id, &req)
 	if err != nil {
 		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
 	}
@@ -126,7 +126,7 @@ func (ctrl *Controller) DeleteRoom(c *gin.Context) (interface{}, error) {
 func (ctrl *Controller) BrowseRooms(c *gin.Context) (interface{}, error) {
 	limit := utils.ParseLimit(c, 20, 100)
 	offset := utils.ParseOffset(c)
-	resp, err := ctrl.service.ListPublic(c.Query("q"), limit, offset)
+	resp, err := ctrl.service.ListPublic(c.Request.Context(), c.Query("q"), limit, offset)
 	if err != nil {
 		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
 	}
@@ -146,7 +146,7 @@ func (ctrl *Controller) GetRoom(c *gin.Context) (interface{}, error) {
 	if err != nil {
 		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid room id")
 	}
-	resp, err := ctrl.service.GetByID(id)
+	resp, err := ctrl.service.GetByID(c.Request.Context(), id)
 	if err != nil {
 		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
 	}
@@ -166,7 +166,7 @@ func (ctrl *Controller) RoomMembers(c *gin.Context) (interface{}, error) {
 	if err != nil {
 		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid room id")
 	}
-	resp, err := ctrl.service.ListMembers(id)
+	resp, err := ctrl.service.ListMembers(c.Request.Context(), id)
 	if err != nil {
 		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
 	}
@@ -247,7 +247,7 @@ func (ctrl *Controller) RoomMessages(c *gin.Context) (interface{}, error) {
 		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid room id")
 	}
 	limit := utils.ParseLimit(c, 50, 200)
-	resp, err := ctrl.service.GetMessages(id, limit, c.Query("before"))
+	resp, err := ctrl.service.GetMessages(c.Request.Context(), id, limit, c.Query("before"))
 	if err != nil {
 		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
 	}

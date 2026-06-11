@@ -3,6 +3,7 @@ package websocket
 import (
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/services"
+	"context"
 	"fmt"
 	"time"
 
@@ -14,33 +15,6 @@ type RoomPresenceService struct {
 	cache  *services.CacheService
 	logger *zap.SugaredLogger
 }
-
-var roomJoinScript = redis.NewScript(`
-	local counterKey = KEYS[1]
-	local setKey = KEYS[2]
-	local userID = ARGV[1]
-	local ttl = ARGV[2]
-	local count = redis.call('INCR', counterKey)
-	redis.call('EXPIRE', counterKey, ttl)
-	if count == 1 then
-		redis.call('SADD', setKey, userID)
-	end
-	redis.call('EXPIRE', setKey, ttl)
-	return count
-`)
-
-var roomLeaveScript = redis.NewScript(`
-	local counterKey = KEYS[1]
-	local setKey = KEYS[2]
-	local userID = ARGV[1]
-	local count = redis.call('DECR', counterKey)
-	if count <= 0 then
-		redis.call('DEL', counterKey)
-		redis.call('SREM', setKey, userID)
-		return 0
-	end
-	return count
-`)
 
 func NewRoomPresenceService(cache *services.CacheService, logger *zap.SugaredLogger) *RoomPresenceService {
 	return &RoomPresenceService{
@@ -57,35 +31,39 @@ func (s *RoomPresenceService) connKey(roomID, userID string) string {
 	return fmt.Sprintf(constants.CacheKeyRoomUserConn, roomID, userID)
 }
 
-func (s *RoomPresenceService) Join(roomID, userID string) (int, error) {
+func (s *RoomPresenceService) Join(ctx context.Context, roomID, userID string) (bool, error) {
 	client := s.cache.GetClient()
-	ctx := s.cache.GetContext()
-	return roomJoinScript.Run(ctx, client,
-		[]string{s.connKey(roomID, userID), s.setKey(roomID)},
-		userID, constants.RoomPresenceTTLSeconds,
-	).Int()
+	ttl := time.Duration(constants.RoomPresenceTTLSeconds) * time.Second
+	pipe := client.Pipeline()
+	added := pipe.SAdd(ctx, s.setKey(roomID), userID)
+	pipe.Expire(ctx, s.setKey(roomID), ttl)
+	pipe.Set(ctx, s.connKey(roomID, userID), 1, ttl)
+	if _, err := pipe.Exec(ctx); err != nil {
+		return false, err
+	}
+	return added.Val() == 1, nil
 }
 
-func (s *RoomPresenceService) Leave(roomID, userID string) (int, error) {
+func (s *RoomPresenceService) Leave(ctx context.Context, roomID, userID string) (bool, error) {
 	client := s.cache.GetClient()
-	ctx := s.cache.GetContext()
-	return roomLeaveScript.Run(ctx, client,
-		[]string{s.connKey(roomID, userID), s.setKey(roomID)},
-		userID,
-	).Int()
+	pipe := client.Pipeline()
+	removed := pipe.SRem(ctx, s.setKey(roomID), userID)
+	pipe.Del(ctx, s.connKey(roomID, userID))
+	if _, err := pipe.Exec(ctx); err != nil {
+		return false, err
+	}
+	return removed.Val() == 1, nil
 }
 
-func (s *RoomPresenceService) Refresh(roomID, userID string) {
+func (s *RoomPresenceService) Refresh(ctx context.Context, roomID, userID string) {
 	client := s.cache.GetClient()
-	ctx := s.cache.GetContext()
 	ttl := time.Duration(constants.RoomPresenceTTLSeconds) * time.Second
 	client.Expire(ctx, s.connKey(roomID, userID), ttl)
 	client.Expire(ctx, s.setKey(roomID), ttl)
 }
 
-func (s *RoomPresenceService) OnlineMembers(roomID string) ([]string, error) {
+func (s *RoomPresenceService) OnlineMembers(ctx context.Context, roomID string) ([]string, error) {
 	client := s.cache.GetClient()
-	ctx := s.cache.GetContext()
 	setKey := s.setKey(roomID)
 
 	ids, err := client.SMembers(ctx, setKey).Result()
@@ -124,33 +102,81 @@ func (s *RoomPresenceService) OnlineMembers(roomID string) ([]string, error) {
 	return online, nil
 }
 
-func (s *RoomPresenceService) IsMember(roomID, userID string) (bool, error) {
-	client := s.cache.GetClient()
-	ctx := s.cache.GetContext()
-	n, err := client.Exists(ctx, s.connKey(roomID, userID)).Result()
+func (s *RoomPresenceService) IsMember(ctx context.Context, roomID, userID string) (bool, error) {
+	n, err := s.cache.GetClient().Exists(ctx, s.connKey(roomID, userID)).Result()
 	if err != nil {
 		return false, err
 	}
 	return n > 0, nil
 }
 
-func (s *RoomPresenceService) MemberCount(roomID string) (int, error) {
-	members, err := s.OnlineMembers(roomID)
+func (s *RoomPresenceService) MemberCount(ctx context.Context, roomID string) (int, error) {
+	members, err := s.OnlineMembers(ctx, roomID)
 	if err != nil {
 		return 0, err
 	}
 	return len(members), nil
 }
 
-func (s *RoomPresenceService) MemberCounts(roomIDs []string) map[string]int {
+func (s *RoomPresenceService) MemberCounts(ctx context.Context, roomIDs []string) map[string]int {
 	result := make(map[string]int, len(roomIDs))
-	for _, id := range roomIDs {
-		count, err := s.MemberCount(id)
-		if err != nil {
-			s.logger.Warnw("Failed to count room members", "room_id", id, "error", err)
-			count = 0
-		}
-		result[id] = count
+	if len(roomIDs) == 0 {
+		return result
 	}
+	for _, id := range roomIDs {
+		result[id] = 0
+	}
+	client := s.cache.GetClient()
+
+	membersPipe := client.Pipeline()
+	membersCmds := make([]*redis.StringSliceCmd, len(roomIDs))
+	for i, roomID := range roomIDs {
+		membersCmds[i] = membersPipe.SMembers(ctx, s.setKey(roomID))
+	}
+	if _, err := membersPipe.Exec(ctx); err != nil {
+		s.logger.Warnw("Failed to fetch room member sets", "error", err)
+		return result
+	}
+
+	type member struct {
+		roomIdx int
+		userID  string
+	}
+	existsPipe := client.Pipeline()
+	var members []member
+	var existsCmds []*redis.IntCmd
+	for i, roomID := range roomIDs {
+		for _, uid := range membersCmds[i].Val() {
+			members = append(members, member{roomIdx: i, userID: uid})
+			existsCmds = append(existsCmds, existsPipe.Exists(ctx, s.connKey(roomID, uid)))
+		}
+	}
+	if len(members) == 0 {
+		return result
+	}
+	if _, err := existsPipe.Exec(ctx); err != nil {
+		s.logger.Warnw("Failed to check room member liveness", "error", err)
+		return result
+	}
+
+	stale := make(map[int][]interface{})
+	for i, m := range members {
+		if existsCmds[i].Val() > 0 {
+			result[roomIDs[m.roomIdx]]++
+		} else {
+			stale[m.roomIdx] = append(stale[m.roomIdx], m.userID)
+		}
+	}
+
+	if len(stale) > 0 {
+		prunePipe := client.Pipeline()
+		for roomIdx, ids := range stale {
+			prunePipe.SRem(ctx, s.setKey(roomIDs[roomIdx]), ids...)
+		}
+		if _, err := prunePipe.Exec(ctx); err != nil {
+			s.logger.Warnw("Failed to prune stale room members", "error", err)
+		}
+	}
+
 	return result
 }
