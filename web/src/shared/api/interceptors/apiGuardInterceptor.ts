@@ -23,7 +23,9 @@ async function hmacSha256Hex(secret: string, value: string): Promise<string> {
 function resolveRequestPath(config: InternalAxiosRequestConfig): string {
   const base = config.baseURL ?? env.apiUrl;
   const normalizedBase = base.endsWith('/') ? base : `${base}/`;
-  return new URL(config.url ?? '', normalizedBase).pathname;
+  const url = config.url ?? '';
+  const relativeUrl = url.startsWith('/') ? url.slice(1) : url;
+  return new URL(relativeUrl, normalizedBase).pathname;
 }
 
 export function registerApiGuardInterceptor(http: AxiosInstance): void {
