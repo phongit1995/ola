@@ -34,6 +34,7 @@ env:
   IMAGE_TAG: ${{ inputs.tag || 'latest' }}
   SUFFIX: ${{ inputs.environment == 'dev' && '-dev' || '' }}
   WEB_API_URL: ${{ inputs.environment == 'dev' && 'https://api-dev.ola-server.click/api/v1' || 'https://chat.ola-server.click/api/v1' }}
+  WEB_SOCKET_URL: ${{ inputs.environment == 'dev' && 'https://api-dev.ola-server.click' || 'https://chat.ola-server.click' }}
 
 jobs:
   build-web:
@@ -46,6 +47,16 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Resolve web API guard secret
+        id: guard
+        run: |
+          if [ "${{ inputs.environment }}" = "dev" ]; then
+            VAL="$(grep -E '^API_GUARD_SECRET=' env.development | head -1 | cut -d= -f2-)"
+          else
+            VAL='${{ secrets.VITE_API_GUARD_SECRET }}'
+          fi
+          echo "::add-mask::$VAL"
+          echo "value=$VAL" >> "$GITHUB_OUTPUT"
       - name: Build & push ola-web${{ env.SUFFIX }}
         uses: docker/build-push-action@v6
         with:
@@ -58,6 +69,8 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/ola-web${{ env.SUFFIX }}:sha-${{ github.sha }}
           build-args: |
             VITE_API_URL=${{ inputs.vite_api_url || env.WEB_API_URL }}
+            VITE_SOCKET_URL=${{ env.WEB_SOCKET_URL }}
+            VITE_API_GUARD_SECRET=${{ steps.guard.outputs.value }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
