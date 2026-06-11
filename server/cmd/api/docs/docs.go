@@ -3524,8 +3524,8 @@ const docTemplate = `{
                 },
                 "username": {
                     "type": "string",
-                    "maxLength": 50,
-                    "minLength": 3,
+                    "maxLength": 20,
+                    "minLength": 6,
                     "example": "john_doe"
                 }
             }

@@ -1,0 +1,14 @@
+import type { AxiosInstance } from 'axios';
+import { registerAuthTokenInterceptor } from './authTokenInterceptor';
+import { registerLanguageInterceptor } from './languageInterceptor';
+import { registerRefreshTokenInterceptor } from './refreshTokenInterceptor';
+import { registerLoggingInterceptor } from './loggingInterceptor';
+
+export { setOnUnauthorized } from './refreshTokenInterceptor';
+
+export function registerInterceptors(http: AxiosInstance): void {
+  registerAuthTokenInterceptor(http);
+  registerLanguageInterceptor(http);
+  registerRefreshTokenInterceptor(http);
+  registerLoggingInterceptor(http);
+}

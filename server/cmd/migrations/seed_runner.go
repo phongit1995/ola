@@ -41,7 +41,7 @@ func RunSeed(cfg *Config) error {
 
 	log.Println()
 	log.Println("📋 Test Credentials:")
-	log.Println("   Email: test1@gmail.com to test100@gmail.com")
+	log.Println("   Username: test1 to test100")
 	log.Println("   Password: 123456")
 	log.Println()
 

@@ -12,6 +12,7 @@ export default defineConfig({
       '@constants': path.resolve(__dirname, './src/shared/constants'),
       '@lib': path.resolve(__dirname, './src/shared/lib'),
       '@hooks': path.resolve(__dirname, './src/shared/hooks'),
+      '@services': path.resolve(__dirname, './src/shared/services'),
       '@app-types': path.resolve(__dirname, './src/shared/types'),
       '@components': path.resolve(__dirname, './src/shared/components'),
       '@': path.resolve(__dirname, './src'),

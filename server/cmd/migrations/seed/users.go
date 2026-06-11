@@ -69,21 +69,19 @@ func SeedUsers(db *sql.DB, count int) error {
 	skipCount := 0
 
 	for i := 1; i <= count; i++ {
-		email := fmt.Sprintf("test%d@gmail.com", i)
 		username := fmt.Sprintf("test%d", i)
 		fullName := generateRandomName()
 		avatar := generateAvatar(fullName)
 
 		query := `
-			INSERT INTO users (username, email, password, full_name, avatar, created_at, updated_at)
-			VALUES ($1, $2, $3, $4, $5, $6, $7)
+			INSERT INTO users (username, password, full_name, avatar, created_at, updated_at)
+			VALUES ($1, $2, $3, $4, $5, $6)
 			ON CONFLICT (username) DO NOTHING
 		`
 
 		result, err := tx.Exec(
 			query,
 			username,
-			email,
 			string(hashedPassword),
 			fullName,
 			avatar,

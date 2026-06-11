@@ -30,6 +30,7 @@
       "@constants": ["./src/shared/constants"],
       "@lib": ["./src/shared/lib"],
       "@hooks": ["./src/shared/hooks"],
+      "@services": ["./src/shared/services"],
       "@app-types": ["./src/shared/types"],
       "@components": ["./src/shared/components"],
       "@components/*": ["./src/shared/components/*"]
