@@ -33,7 +33,7 @@ concurrency:
 env:
   IMAGE_TAG: ${{ inputs.tag || 'latest' }}
   SUFFIX: ${{ inputs.environment == 'dev' && '-dev' || '' }}
-  WEB_API_URL: ${{ inputs.environment == 'dev' && 'https://chat-dev.ola-server.click/api/v1' || 'https://chat.ola-server.click/api/v1' }}
+  WEB_API_URL: ${{ inputs.environment == 'dev' && 'https://api-dev.ola-server.click/api/v1' || 'https://chat.ola-server.click/api/v1' }}
 
 jobs:
   build-web:
