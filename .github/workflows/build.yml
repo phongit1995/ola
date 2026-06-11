@@ -47,16 +47,17 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Resolve web API guard secret
-        id: guard
+      - name: Prepare web/.env (Vite bake VITE_*)
         run: |
           if [ "${{ inputs.environment }}" = "dev" ]; then
-            VAL="$(grep -E '^API_GUARD_SECRET=' env.development | head -1 | cut -d= -f2-)"
+            grep -E '^VITE_' env.development > web/.env
           else
-            VAL='${{ secrets.VITE_API_GUARD_SECRET }}'
+            {
+              echo "VITE_API_URL=${{ inputs.vite_api_url || env.WEB_API_URL }}"
+              echo "VITE_SOCKET_URL=${{ env.WEB_SOCKET_URL }}"
+              echo "VITE_API_GUARD_SECRET=${{ secrets.VITE_API_GUARD_SECRET }}"
+            } > web/.env
           fi
-          echo "::add-mask::$VAL"
-          echo "value=$VAL" >> "$GITHUB_OUTPUT"
       - name: Build & push ola-web${{ env.SUFFIX }}
         uses: docker/build-push-action@v6
         with:
@@ -67,10 +68,6 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/ola-web${{ env.SUFFIX }}:${{ env.IMAGE_TAG }}
             ${{ secrets.DOCKERHUB_USERNAME }}/ola-web${{ env.SUFFIX }}:sha-${{ github.sha }}
-          build-args: |
-            VITE_API_URL=${{ inputs.vite_api_url || env.WEB_API_URL }}
-            VITE_SOCKET_URL=${{ env.WEB_SOCKET_URL }}
-            VITE_API_GUARD_SECRET=${{ steps.guard.outputs.value }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 

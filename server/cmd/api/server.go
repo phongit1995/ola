@@ -3,7 +3,6 @@ package main
 import (
 	"ola-chat-server/internal/config"
 	"ola-chat-server/internal/middleware"
-	"ola-chat-server/internal/transport/websocket"
 	"ola-chat-server/internal/modules/admin"
 	"ola-chat-server/internal/modules/auth"
 	"ola-chat-server/internal/modules/call"
@@ -14,6 +13,7 @@ import (
 	"ola-chat-server/internal/modules/relationships"
 	"ola-chat-server/internal/modules/room"
 	"ola-chat-server/internal/modules/user"
+	"ola-chat-server/internal/transport/websocket"
 	"ola-chat-server/internal/utils"
 
 	"github.com/gin-contrib/cors"
@@ -51,9 +51,9 @@ func CreateServer(
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     cfg.CORSAllowedOrigins,
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
+		AllowHeaders:     []string{"*", "Authorization"},
+		ExposeHeaders:    []string{"*"},
+		AllowCredentials: false,
 		MaxAge:           12 * 3600,
 	}))
 
