@@ -14,22 +14,21 @@ function connectWS(token) {
   })
 }
 
-// Join confirmation is driven by the ROOM_MEMBER_JOINED broadcast (reliable),
-// not the emit ack (which is flaky over the websocket transport in this lib).
-function joinRoom(socket, roomId, selfId) {
+// Two-step join: REST issues a single-use ticket (capacity gate), then the
+// socket room:join consumes it. Join is confirmed by the ROOM_MEMBER_JOINED broadcast.
+async function joinRoom(socket, roomId, selfId, token) {
+  const jr = await req('POST', `/rooms/${roomId}/join`, undefined, token)
+  const ticket = data(jr)?.ticket
   return new Promise((resolve) => {
     const onMsg = (m) => {
       if (m?.type === 'ROOM_MEMBER_JOINED' && m?.data?.roomId === roomId && m?.data?.userId === selfId) {
         cleanup(); resolve(true)
       }
     }
-    // The room:join emit can be dropped during the polling→websocket upgrade,
-    // so re-emit periodically until the join is confirmed by the broadcast.
-    const retry = setInterval(() => socket.emit('room:join', { roomId }), 1200)
-    const timer = setTimeout(() => { cleanup(); resolve(false) }, 10000)
-    const cleanup = () => { clearTimeout(timer); clearInterval(retry); socket.off('message', onMsg) }
+    const timer = setTimeout(() => { cleanup(); resolve(false) }, 8000)
+    const cleanup = () => { clearTimeout(timer); socket.off('message', onMsg) }
     socket.on('message', onMsg)
-    socket.emit('room:join', { roomId })
+    socket.emit('ROOM:JOIN', { roomId, ticket })
   })
 }
 
@@ -61,7 +60,7 @@ async function main() {
     wsA.on('message', (m) => { if (m?.type === 'NEW_ROOM_MESSAGE' && m?.data?.message?.content === CONTENT) received.a = true })
     wsB.on('message', (m) => { if (m?.type === 'NEW_ROOM_MESSAGE' && m?.data?.message?.content === CONTENT) received.b = true })
 
-    const [jA, jB] = await Promise.all([joinRoom(wsA, roomId, u1.id), joinRoom(wsB, roomId, u2.id)])
+    const [jA, jB] = await Promise.all([joinRoom(wsA, roomId, u1.id, u1.token), joinRoom(wsB, roomId, u2.id, u2.token)])
     ok('both joined room via socket', jA && jB)
 
     const sr = await req('POST', `/rooms/${roomId}/messages`, { content: CONTENT }, u1.token)

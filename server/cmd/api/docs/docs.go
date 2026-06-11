@@ -2682,6 +2682,40 @@ const docTemplate = `{
                 }
             }
         },
+        "/rooms/{id}/join": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Checks capacity; if not full, returns a single-use ticket (TTL 5s) to send with the socket room:join event",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "room"
+                ],
+                "summary": "Request to join a room (returns a short-lived ticket)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Room ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_JoinRoomResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/rooms/{id}/members": {
             "get": {
                 "security": [
@@ -4460,6 +4494,17 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_modules_room.JoinRoomResponse": {
+            "type": "object",
+            "properties": {
+                "expiresIn": {
+                    "type": "integer"
+                },
+                "ticket": {
+                    "type": "string"
+                }
+            }
+        },
         "internal_modules_room.RoomListResponse": {
             "type": "object",
             "properties": {
@@ -5104,6 +5149,32 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "$ref": "#/definitions/internal_modules_auth.RefreshTokenResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_room_JoinRoomResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_room.JoinRoomResponse"
                 },
                 "error": {
                     "type": "string"

@@ -1,6 +1,7 @@
 package room
 
 import (
+	"ola-chat-server/internal/constants"
 	roomEvents "ola-chat-server/internal/domain/room"
 	"ola-chat-server/internal/models"
 	userModule "ola-chat-server/internal/modules/user"
@@ -142,6 +143,39 @@ func (s *Service) ListMembers(ctx context.Context, roomID uuid.UUID) (*RoomMembe
 		})
 	}
 	return &RoomMembersResponse{Items: items, Total: len(items)}, nil
+}
+
+func (s *Service) RequestJoin(ctx context.Context, userID, roomID uuid.UUID) (*JoinRoomResponse, error) {
+	room, err := s.getRoom(roomID)
+	if err != nil {
+		return nil, err
+	}
+	if !room.Enabled {
+		return nil, errors.New("room is disabled")
+	}
+
+	presence := s.wsServer.GetRoomPresence()
+	if room.MaxMembers > 0 {
+		isMember, err := presence.IsMember(ctx, roomID.String(), userID.String())
+		if err != nil {
+			return nil, err
+		}
+		if !isMember {
+			count, err := presence.MemberCount(ctx, roomID.String())
+			if err != nil {
+				return nil, err
+			}
+			if count >= room.MaxMembers {
+				return nil, errors.New("room is full")
+			}
+		}
+	}
+
+	ticket, err := presence.IssueJoinTicket(ctx, roomID.String(), userID.String(), room.MaxMembers)
+	if err != nil {
+		return nil, err
+	}
+	return &JoinRoomResponse{Ticket: ticket, ExpiresIn: constants.RoomJoinTicketTTLSeconds}, nil
 }
 
 func (s *Service) SendMessage(ctx context.Context, userID, roomID uuid.UUID, req *SendRoomMessageRequest) (*RoomMessageResponse, error) {

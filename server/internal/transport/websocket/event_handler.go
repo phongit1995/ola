@@ -85,37 +85,50 @@ func (h *EventHandler) registerClientEvents(client *socket.Socket, userID string
 func (h *EventHandler) registerRoomEvents(client *socket.Socket, userID string) {
 	client.On(constants.SocketEventRoomJoin, func(args ...any) {
 		ack, rest := extractAck(args)
-		roomID := stringField(argMap(rest), "roomId")
+		m := argMap(rest)
+		roomID := stringField(m, "roomId")
+		ticket := stringField(m, "ticket")
 		if roomID == "" {
 			replyAck(ack, nil, "roomId is required")
 			return
 		}
 
-		enabled, err := h.server.roomSvc.RoomEnabled(roomID)
-		if err != nil {
-			replyAck(ack, nil, "room not found")
-			return
-		}
-		if !enabled {
-			replyAck(ack, nil, "room is disabled")
-			return
-		}
-
 		ctx := context.Background()
 		data := client.Data().(*SocketData)
-		client.Join(roomChannel(roomID))
-		firstPresence := false
-		if !data.JoinedRooms[roomID] {
-			data.JoinedRooms[roomID] = true
-			added, err := h.server.roomPresence.Join(ctx, roomID, userID)
-			if err != nil {
-				h.server.logger.Warnw("Failed to add room presence", "room_id", roomID, "user_id", userID, "error", err)
-			}
-			firstPresence = added
+
+		if data.JoinedRooms[roomID] {
+			count, _ := h.server.roomPresence.MemberCount(ctx, roomID)
+			replyAck(ack, map[string]any{"roomId": roomID, "memberCount": count}, "")
+			return
 		}
 
+		maxMembers, valid, err := h.server.roomPresence.ConsumeJoinTicket(ctx, ticket, roomID, userID)
+		if err != nil {
+			h.server.logger.Warnw("Failed to validate join ticket", "room_id", roomID, "user_id", userID, "error", err)
+			replyAck(ack, nil, "failed to validate join ticket")
+			return
+		}
+		if !valid {
+			replyAck(ack, nil, "invalid or expired join ticket")
+			return
+		}
+
+		added, full, err := h.server.roomPresence.Join(ctx, roomID, userID, maxMembers)
+		if err != nil {
+			h.server.logger.Warnw("Failed to add room presence", "room_id", roomID, "user_id", userID, "error", err)
+			replyAck(ack, nil, "failed to join room")
+			return
+		}
+		if full {
+			replyAck(ack, nil, "room is full")
+			return
+		}
+
+		data.JoinedRooms[roomID] = true
+		client.Join(roomChannel(roomID))
+
 		count, _ := h.server.roomPresence.MemberCount(ctx, roomID)
-		if firstPresence {
+		if added {
 			h.server.EmitToRoom(roomID, constants.WebSocketEventRoomMemberJoined, map[string]any{
 				"roomId":      roomID,
 				"userId":      userID,

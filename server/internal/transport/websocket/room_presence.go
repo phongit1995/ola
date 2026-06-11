@@ -4,12 +4,37 @@ import (
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/services"
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 )
+
+type joinTicket struct {
+	RoomID     string `json:"roomId"`
+	UserID     string `json:"userId"`
+	MaxMembers int    `json:"maxMembers"`
+}
+
+var roomJoinScript = redis.NewScript(`
+	local setKey = KEYS[1]
+	local connKey = KEYS[2]
+	local userID = ARGV[1]
+	local ttl = tonumber(ARGV[2])
+	local maxMembers = tonumber(ARGV[3])
+	if redis.call('SISMEMBER', setKey, userID) == 0 and maxMembers > 0 then
+		if redis.call('SCARD', setKey) >= maxMembers then
+			return -1
+		end
+	end
+	local added = redis.call('SADD', setKey, userID)
+	redis.call('SET', connKey, 1, 'EX', ttl)
+	redis.call('EXPIRE', setKey, ttl)
+	return added
+`)
 
 type RoomPresenceService struct {
 	cache  *services.CacheService
@@ -31,17 +56,56 @@ func (s *RoomPresenceService) connKey(roomID, userID string) string {
 	return fmt.Sprintf(constants.CacheKeyRoomUserConn, roomID, userID)
 }
 
-func (s *RoomPresenceService) Join(ctx context.Context, roomID, userID string) (bool, error) {
-	client := s.cache.GetClient()
-	ttl := time.Duration(constants.RoomPresenceTTLSeconds) * time.Second
-	pipe := client.Pipeline()
-	added := pipe.SAdd(ctx, s.setKey(roomID), userID)
-	pipe.Expire(ctx, s.setKey(roomID), ttl)
-	pipe.Set(ctx, s.connKey(roomID, userID), 1, ttl)
-	if _, err := pipe.Exec(ctx); err != nil {
-		return false, err
+func (s *RoomPresenceService) Join(ctx context.Context, roomID, userID string, maxMembers int) (added bool, full bool, err error) {
+	res, err := roomJoinScript.Run(ctx, s.cache.GetClient(),
+		[]string{s.setKey(roomID), s.connKey(roomID, userID)},
+		userID, constants.RoomPresenceTTLSeconds, maxMembers,
+	).Int()
+	if err != nil {
+		return false, false, err
 	}
-	return added.Val() == 1, nil
+	if res == -1 {
+		return false, true, nil
+	}
+	return res == 1, false, nil
+}
+
+func (s *RoomPresenceService) ticketKey(ticket string) string {
+	return fmt.Sprintf(constants.CacheKeyRoomJoinTicket, ticket)
+}
+
+func (s *RoomPresenceService) IssueJoinTicket(ctx context.Context, roomID, userID string, maxMembers int) (string, error) {
+	ticket := uuid.NewString()
+	payload, err := json.Marshal(joinTicket{RoomID: roomID, UserID: userID, MaxMembers: maxMembers})
+	if err != nil {
+		return "", err
+	}
+	ttl := time.Duration(constants.RoomJoinTicketTTLSeconds) * time.Second
+	if err := s.cache.GetClient().Set(ctx, s.ticketKey(ticket), payload, ttl).Err(); err != nil {
+		return "", err
+	}
+	return ticket, nil
+}
+
+func (s *RoomPresenceService) ConsumeJoinTicket(ctx context.Context, ticket, roomID, userID string) (maxMembers int, ok bool, err error) {
+	if ticket == "" {
+		return 0, false, nil
+	}
+	data, err := s.cache.GetClient().GetDel(ctx, s.ticketKey(ticket)).Bytes()
+	if err == redis.Nil {
+		return 0, false, nil
+	}
+	if err != nil {
+		return 0, false, err
+	}
+	var t joinTicket
+	if err := json.Unmarshal(data, &t); err != nil {
+		return 0, false, nil
+	}
+	if t.RoomID != roomID || t.UserID != userID {
+		return 0, false, nil
+	}
+	return t.MaxMembers, true, nil
 }
 
 func (s *RoomPresenceService) Leave(ctx context.Context, roomID, userID string) (bool, error) {

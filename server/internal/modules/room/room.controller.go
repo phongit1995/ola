@@ -173,6 +173,31 @@ func (ctrl *Controller) RoomMembers(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
+// JoinRoom godoc
+// @Summary      Request to join a room (returns a short-lived ticket)
+// @Description  Checks capacity; if not full, returns a single-use ticket (TTL 5s) to send with the socket room:join event
+// @Tags         room
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "Room ID"
+// @Success      200  {object}  utils.BaseResponse[JoinRoomResponse]
+// @Router       /rooms/{id}/join [post]
+func (ctrl *Controller) JoinRoom(c *gin.Context) (interface{}, error) {
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		return nil, utils.NewHTTPError(http.StatusUnauthorized, "unauthorized")
+	}
+	id, err := parseID(c)
+	if err != nil {
+		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid room id")
+	}
+	resp, err := ctrl.service.RequestJoin(c.Request.Context(), userID, id)
+	if err != nil {
+		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+	}
+	return resp, nil
+}
+
 // SendRoomMessage godoc
 // @Summary      Send a message to a room (must have joined via socket)
 // @Tags         room

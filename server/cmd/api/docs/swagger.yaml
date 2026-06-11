@@ -908,6 +908,13 @@ definitions:
     required:
     - name
     type: object
+  internal_modules_room.JoinRoomResponse:
+    properties:
+      expiresIn:
+        type: integer
+      ticket:
+        type: string
+    type: object
   internal_modules_room.RoomListResponse:
     properties:
       items:
@@ -1346,6 +1353,23 @@ definitions:
     properties:
       data:
         $ref: '#/definitions/internal_modules_auth.RefreshTokenResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_room_JoinRoomResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_room.JoinRoomResponse'
       error:
         type: string
       path:
@@ -3154,6 +3178,28 @@ paths:
       security:
       - BearerAuth: []
       summary: Get room detail
+      tags:
+      - room
+  /rooms/{id}/join:
+    post:
+      description: Checks capacity; if not full, returns a single-use ticket (TTL
+        5s) to send with the socket room:join event
+      parameters:
+      - description: Room ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_JoinRoomResponse'
+      security:
+      - BearerAuth: []
+      summary: Request to join a room (returns a short-lived ticket)
       tags:
       - room
   /rooms/{id}/members:

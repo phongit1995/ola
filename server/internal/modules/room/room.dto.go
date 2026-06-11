@@ -52,6 +52,11 @@ type RoomMembersResponse struct {
 	Total int                  `json:"total"`
 }
 
+type JoinRoomResponse struct {
+	Ticket    string `json:"ticket"`
+	ExpiresIn int    `json:"expiresIn"`
+}
+
 type SendRoomMessageRequest struct {
 	Content string `json:"content" binding:"required,min=1,max=5000" example:"Xin chào cả phòng!"`
 }

@@ -67,15 +67,17 @@ const (
 	CacheKeyRoomUserConn        = "ROOM:%s:USER:%s:CONN"
 	CacheKeyRoomMsgIndex        = "ROOM:%s:MSG_INDEX"
 	CacheKeyRoomMsgData         = "ROOM:%s:MSG"
+	CacheKeyRoomJoinTicket      = "ROOM:JOIN_TICKET:%s"
 )
 
 const (
-	RoomPresenceTTLSeconds = 300
+	RoomPresenceTTLSeconds   = 300
+	RoomJoinTicketTTLSeconds = 5
 )
 
 const (
-	SocketEventRoomJoin  = "room:join"
-	SocketEventRoomLeave = "room:leave"
+	SocketEventRoomJoin  = "ROOM:JOIN"
+	SocketEventRoomLeave = "ROOM:LEAVE"
 )
 
 const (
