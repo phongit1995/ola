@@ -2618,7 +2618,7 @@ const docTemplate = `{
                 "tags": [
                     "room"
                 ],
-                "summary": "Browse public rooms",
+                "summary": "Browse public rooms (memberCount = online members)",
                 "parameters": [
                     {
                         "type": "string",
@@ -2682,75 +2682,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/rooms/{id}/join": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "room"
-                ],
-                "summary": "Join a room",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Room ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_RoomResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/rooms/{id}/leave": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "room"
-                ],
-                "summary": "Leave a room",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Room ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/rooms/{id}/members": {
             "get": {
                 "security": [
@@ -2764,7 +2695,7 @@ const docTemplate = `{
                 "tags": [
                     "room"
                 ],
-                "summary": "List room members",
+                "summary": "List online members of a room",
                 "parameters": [
                     {
                         "type": "string",
@@ -2772,18 +2703,6 @@ const docTemplate = `{
                         "name": "id",
                         "in": "path",
                         "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Page size",
-                        "name": "limit",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Offset",
-                        "name": "offset",
-                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -2855,7 +2774,7 @@ const docTemplate = `{
                 "tags": [
                     "room"
                 ],
-                "summary": "Send a message to a room",
+                "summary": "Send a message to a room (must have joined via socket)",
                 "parameters": [
                     {
                         "type": "string",
@@ -2879,6 +2798,49 @@ const docTemplate = `{
                         "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_RoomMessageResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/rooms/{id}/messages/{messageId}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "room"
+                ],
+                "summary": "Delete own room message (hard delete, sender only)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Room ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Message ID",
+                        "name": "messageId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -4527,9 +4489,6 @@ const docTemplate = `{
                 "fullName": {
                     "type": "string"
                 },
-                "joinedAt": {
-                    "type": "string"
-                },
                 "userId": {
                     "type": "string"
                 },
@@ -4615,9 +4574,6 @@ const docTemplate = `{
                 },
                 "imageUrl": {
                     "type": "string"
-                },
-                "isMember": {
-                    "type": "boolean"
                 },
                 "maxMembers": {
                     "type": "integer"

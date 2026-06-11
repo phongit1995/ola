@@ -27,10 +27,9 @@ func (r *Router) Setup(api *utils.AppGroup) {
 	{
 		rooms.GET("", r.controller.BrowseRooms)
 		rooms.GET("/:id", r.controller.GetRoom)
-		rooms.POST("/:id/join", r.controller.JoinRoom)
-		rooms.POST("/:id/leave", r.controller.LeaveRoom)
 		rooms.GET("/:id/members", r.controller.RoomMembers)
-		rooms.POST("/:id/messages", r.controller.SendRoomMessage)
 		rooms.GET("/:id/messages", r.controller.RoomMessages)
+		rooms.POST("/:id/messages", r.controller.SendRoomMessage)
+		rooms.DELETE("/:id/messages/:messageId", r.controller.DeleteRoomMessage)
 	}
 }

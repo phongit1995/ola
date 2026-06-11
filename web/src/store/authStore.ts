@@ -1,15 +1,23 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import type { AuthUser } from '@app-types';
 
 interface AuthState {
-  username: string | null;
-  isAuthenticated: boolean;
-  login: (username: string) => void;
-  logout: () => void;
+  user: AuthUser | null;
+  setUser: (user: AuthUser) => void;
+  clearUser: () => void;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
-  username: null,
-  isAuthenticated: false,
-  login: (username) => set({ username, isAuthenticated: true }),
-  logout: () => set({ username: null, isAuthenticated: false }),
-}));
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set) => ({
+      user: null,
+      setUser: (user) => set({ user }),
+      clearUser: () => set({ user: null }),
+    }),
+    {
+      name: 'ola.auth',
+      partialize: (state) => ({ user: state.user }),
+    }
+  )
+);

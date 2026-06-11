@@ -66,6 +66,8 @@ type Config struct {
 	CallRingTimeoutSeconds  int    `env:"CALL_RING_TIMEOUT_SECONDS" envDefault:"30" validate:"min=2,max=300"`
 
 	MessageDeleteWindowSeconds int `env:"MESSAGE_DELETE_WINDOW_SECONDS" envDefault:"7200" validate:"min=0"`
+
+	RoomMessageRetentionDays int `env:"ROOM_MESSAGE_RETENTION_DAYS" envDefault:"90" validate:"min=1"`
 }
 
 func LoadConfig() (*Config, error) {

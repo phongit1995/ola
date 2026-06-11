@@ -1,0 +1,141 @@
+package room
+
+import (
+	"ola-chat-server/internal/config"
+	"ola-chat-server/internal/constants"
+	"ola-chat-server/internal/services"
+	"context"
+	"encoding/json"
+	"fmt"
+	"strconv"
+	"time"
+
+	"github.com/redis/go-redis/v9"
+	"go.uber.org/zap"
+)
+
+type RedisMessageRepository struct {
+	cache         *services.CacheService
+	retentionDays int
+	logger        *zap.SugaredLogger
+}
+
+func NewRedisMessageRepository(cache *services.CacheService, cfg *config.Config, logger *zap.SugaredLogger) *RedisMessageRepository {
+	days := cfg.RoomMessageRetentionDays
+	if days <= 0 {
+		days = 90
+	}
+	return &RedisMessageRepository{
+		cache:         cache,
+		retentionDays: days,
+		logger:        logger.Named("[room_msg_redis]"),
+	}
+}
+
+func (r *RedisMessageRepository) indexKey(roomID string) string {
+	return fmt.Sprintf(constants.CacheKeyRoomMsgIndex, roomID)
+}
+
+func (r *RedisMessageRepository) dataKey(roomID string) string {
+	return fmt.Sprintf(constants.CacheKeyRoomMsgData, roomID)
+}
+
+func (r *RedisMessageRepository) ttl() time.Duration {
+	return time.Duration(r.retentionDays+1) * 24 * time.Hour
+}
+
+func (r *RedisMessageRepository) Append(ctx context.Context, roomID, msgID string, createdAt time.Time, data []byte) error {
+	client := r.cache.GetClient()
+	indexKey := r.indexKey(roomID)
+	dataKey := r.dataKey(roomID)
+	score := float64(createdAt.UnixMicro())
+
+	pipe := client.Pipeline()
+	pipe.HSet(ctx, dataKey, msgID, data)
+	pipe.ZAdd(ctx, indexKey, redis.Z{Score: score, Member: msgID})
+	pipe.Expire(ctx, indexKey, r.ttl())
+	pipe.Expire(ctx, dataKey, r.ttl())
+	if _, err := pipe.Exec(ctx); err != nil {
+		return err
+	}
+
+	r.pruneOld(ctx, roomID)
+	return nil
+}
+
+func (r *RedisMessageRepository) pruneOld(ctx context.Context, roomID string) {
+	client := r.cache.GetClient()
+	indexKey := r.indexKey(roomID)
+	dataKey := r.dataKey(roomID)
+	cutoff := time.Now().Add(-time.Duration(r.retentionDays) * 24 * time.Hour).UnixMicro()
+	maxExclusive := "(" + strconv.FormatInt(cutoff, 10)
+
+	oldIDs, err := client.ZRangeByScore(ctx, indexKey, &redis.ZRangeBy{Min: "-inf", Max: maxExclusive}).Result()
+	if err != nil || len(oldIDs) == 0 {
+		return
+	}
+	pipe := client.Pipeline()
+	pipe.HDel(ctx, dataKey, oldIDs...)
+	pipe.ZRemRangeByScore(ctx, indexKey, "-inf", maxExclusive)
+	if _, err := pipe.Exec(ctx); err != nil {
+		r.logger.Warnw("Failed to prune old room messages", "room_id", roomID, "error", err)
+	}
+}
+
+func (r *RedisMessageRepository) List(ctx context.Context, roomID string, limit int, beforeID string) ([]json.RawMessage, error) {
+	client := r.cache.GetClient()
+	indexKey := r.indexKey(roomID)
+	dataKey := r.dataKey(roomID)
+
+	max := "+inf"
+	if beforeID != "" {
+		score, err := client.ZScore(ctx, indexKey, beforeID).Result()
+		if err == nil {
+			max = "(" + strconv.FormatFloat(score, 'f', -1, 64)
+		}
+	}
+
+	ids, err := client.ZRevRangeByScore(ctx, indexKey, &redis.ZRangeBy{
+		Min:    "-inf",
+		Max:    max,
+		Offset: 0,
+		Count:  int64(limit),
+	}).Result()
+	if err != nil {
+		return nil, err
+	}
+	if len(ids) == 0 {
+		return []json.RawMessage{}, nil
+	}
+
+	vals, err := client.HMGet(ctx, dataKey, ids...).Result()
+	if err != nil {
+		return nil, err
+	}
+
+	out := make([]json.RawMessage, 0, len(vals))
+	for _, v := range vals {
+		if s, ok := v.(string); ok {
+			out = append(out, json.RawMessage(s))
+		}
+	}
+	return out, nil
+}
+
+func (r *RedisMessageRepository) Get(ctx context.Context, roomID, msgID string) ([]byte, error) {
+	client := r.cache.GetClient()
+	data, err := client.HGet(ctx, r.dataKey(roomID), msgID).Bytes()
+	if err == redis.Nil {
+		return nil, nil
+	}
+	return data, err
+}
+
+func (r *RedisMessageRepository) Delete(ctx context.Context, roomID, msgID string) error {
+	client := r.cache.GetClient()
+	pipe := client.Pipeline()
+	pipe.HDel(ctx, r.dataKey(roomID), msgID)
+	pipe.ZRem(ctx, r.indexKey(roomID), msgID)
+	_, err := pipe.Exec(ctx)
+	return err
+}

@@ -2,7 +2,9 @@ package websocket
 
 import (
 	"ola-chat-server/internal/config"
+	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/services"
+	"ola-chat-server/internal/utils"
 	"context"
 	"fmt"
 	"net/http"
@@ -14,17 +16,24 @@ import (
 	"go.uber.org/zap"
 )
 
+type RoomSocketService interface {
+	RoomEnabled(roomID string) (bool, error)
+}
+
 type Server struct {
 	io              *socket.Server
 	jwtService      *services.JWTService
 	redisAdapter    *RedisAdapter
 	presenceService *PresenceService
+	roomPresence    *RoomPresenceService
+	roomSvc         RoomSocketService
 	logger          *zap.SugaredLogger
 	redisClient     *redis.Client
 }
 
 type SocketData struct {
-	UserID string
+	UserID      string
+	JoinedRooms map[string]bool
 }
 
 func NewServer(
@@ -32,6 +41,7 @@ func NewServer(
 	jwtService *services.JWTService,
 	redisAdapter *RedisAdapter,
 	presenceService *PresenceService,
+	roomPresence *RoomPresenceService,
 	convMembers ConversationMembersGetter,
 	logger *zap.SugaredLogger,
 ) (*Server, error) {
@@ -52,6 +62,7 @@ func NewServer(
 		jwtService:      jwtService,
 		redisAdapter:    redisAdapter,
 		presenceService: presenceService,
+		roomPresence:    roomPresence,
 		logger:          logger.Named("[websocket]"),
 		redisClient:     rdb,
 	}
@@ -89,7 +100,7 @@ func NewServer(
 			return
 		}
 
-		data := &SocketData{UserID: userID.String()}
+		data := &SocketData{UserID: userID.String(), JoinedRooms: make(map[string]bool)}
 		s.SetData(data)
 
 		server.logger.Infow("WebSocket authenticated", "user_id", userID)
@@ -141,4 +152,22 @@ func (s *Server) EmitToUsers(userIDs []string, event string, data any) {
 
 func (s *Server) GetPresenceService() *PresenceService {
 	return s.presenceService
+}
+
+func (s *Server) GetRoomPresence() *RoomPresenceService {
+	return s.roomPresence
+}
+
+func (s *Server) SetRoomHandler(svc RoomSocketService) {
+	s.roomSvc = svc
+}
+
+func roomChannel(roomID string) socket.Room {
+	return socket.Room("room:" + roomID)
+}
+
+func (s *Server) EmitToRoom(roomID string, eventType string, data any) {
+	wrapped := utils.WrapWebSocketMessage(eventType, data)
+	s.io.To(roomChannel(roomID)).Emit(constants.WebSocketMessageEvent, wrapped)
+	s.logger.Debugw("📤 Emitted to room", "room_id", roomID, "event", eventType)
 }

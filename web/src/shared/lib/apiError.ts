@@ -1,4 +1,5 @@
 import axios from 'axios';
+import type { TFunction } from 'i18next';
 import type { ApiErrorBody } from '@app-types';
 
 interface ApiErrorMeta {
@@ -37,4 +38,11 @@ export function toApiError(error: unknown): ApiError {
 
   const message = error instanceof Error ? error.message : 'Unknown error';
   return new ApiError(0, message);
+}
+
+export function resolveAuthError(error: unknown, t: TFunction): string {
+  if (error instanceof ApiError) {
+    return error.status === 0 ? t('auth.errNetwork') : error.message;
+  }
+  return t('auth.errGeneric');
 }

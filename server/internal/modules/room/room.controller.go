@@ -114,7 +114,7 @@ func (ctrl *Controller) DeleteRoom(c *gin.Context) (interface{}, error) {
 }
 
 // BrowseRooms godoc
-// @Summary      Browse public rooms
+// @Summary      Browse public rooms (memberCount = online members)
 // @Tags         room
 // @Produce      json
 // @Security     BearerAuth
@@ -124,10 +124,9 @@ func (ctrl *Controller) DeleteRoom(c *gin.Context) (interface{}, error) {
 // @Success      200  {object}  utils.BaseResponse[RoomListResponse]
 // @Router       /rooms [get]
 func (ctrl *Controller) BrowseRooms(c *gin.Context) (interface{}, error) {
-	userID, _ := middleware.GetUserID(c)
 	limit := utils.ParseLimit(c, 20, 100)
 	offset := utils.ParseOffset(c)
-	resp, err := ctrl.service.ListPublic(userID, c.Query("q"), limit, offset)
+	resp, err := ctrl.service.ListPublic(c.Query("q"), limit, offset)
 	if err != nil {
 		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
 	}
@@ -143,73 +142,23 @@ func (ctrl *Controller) BrowseRooms(c *gin.Context) (interface{}, error) {
 // @Success      200  {object}  utils.BaseResponse[RoomResponse]
 // @Router       /rooms/{id} [get]
 func (ctrl *Controller) GetRoom(c *gin.Context) (interface{}, error) {
-	userID, _ := middleware.GetUserID(c)
 	id, err := parseID(c)
 	if err != nil {
 		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid room id")
 	}
-	resp, err := ctrl.service.GetByID(userID, id)
+	resp, err := ctrl.service.GetByID(id)
 	if err != nil {
 		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
 	}
 	return resp, nil
 }
 
-// JoinRoom godoc
-// @Summary      Join a room
-// @Tags         room
-// @Produce      json
-// @Security     BearerAuth
-// @Param        id path string true "Room ID"
-// @Success      200  {object}  utils.BaseResponse[RoomResponse]
-// @Router       /rooms/{id}/join [post]
-func (ctrl *Controller) JoinRoom(c *gin.Context) (interface{}, error) {
-	userID, ok := middleware.GetUserID(c)
-	if !ok {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "unauthorized")
-	}
-	id, err := parseID(c)
-	if err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid room id")
-	}
-	resp, err := ctrl.service.Join(userID, id)
-	if err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
-	}
-	return utils.NewHandlerResult(resp, http.StatusOK), nil
-}
-
-// LeaveRoom godoc
-// @Summary      Leave a room
-// @Tags         room
-// @Produce      json
-// @Security     BearerAuth
-// @Param        id path string true "Room ID"
-// @Success      200  {object}  map[string]string
-// @Router       /rooms/{id}/leave [post]
-func (ctrl *Controller) LeaveRoom(c *gin.Context) (interface{}, error) {
-	userID, ok := middleware.GetUserID(c)
-	if !ok {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "unauthorized")
-	}
-	id, err := parseID(c)
-	if err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid room id")
-	}
-	if err := ctrl.service.Leave(userID, id); err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
-	}
-	return utils.NewHandlerResult(map[string]string{"message": "left room"}, http.StatusOK), nil
-}
-
 // RoomMembers godoc
-// @Summary      List room members
+// @Summary      List online members of a room
 // @Tags         room
 // @Produce      json
 // @Security     BearerAuth
 // @Param        id path string true "Room ID"
-// @Param        limit query int false "Page size"
-// @Param        offset query int false "Offset"
 // @Success      200  {object}  utils.BaseResponse[RoomMembersResponse]
 // @Router       /rooms/{id}/members [get]
 func (ctrl *Controller) RoomMembers(c *gin.Context) (interface{}, error) {
@@ -217,9 +166,7 @@ func (ctrl *Controller) RoomMembers(c *gin.Context) (interface{}, error) {
 	if err != nil {
 		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid room id")
 	}
-	limit := utils.ParseLimit(c, 50, 200)
-	offset := utils.ParseOffset(c)
-	resp, err := ctrl.service.ListMembers(id, limit, offset)
+	resp, err := ctrl.service.ListMembers(id)
 	if err != nil {
 		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
 	}
@@ -227,7 +174,7 @@ func (ctrl *Controller) RoomMembers(c *gin.Context) (interface{}, error) {
 }
 
 // SendRoomMessage godoc
-// @Summary      Send a message to a room
+// @Summary      Send a message to a room (must have joined via socket)
 // @Tags         room
 // @Accept       json
 // @Produce      json
@@ -256,6 +203,34 @@ func (ctrl *Controller) SendRoomMessage(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
+// DeleteRoomMessage godoc
+// @Summary      Delete own room message (hard delete, sender only)
+// @Tags         room
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "Room ID"
+// @Param        messageId path string true "Message ID"
+// @Success      200  {object}  map[string]string
+// @Router       /rooms/{id}/messages/{messageId} [delete]
+func (ctrl *Controller) DeleteRoomMessage(c *gin.Context) (interface{}, error) {
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		return nil, utils.NewHTTPError(http.StatusUnauthorized, "unauthorized")
+	}
+	id, err := parseID(c)
+	if err != nil {
+		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid room id")
+	}
+	messageID := c.Param("messageId")
+	if messageID == "" {
+		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid message id")
+	}
+	if err := ctrl.service.DeleteMessage(c.Request.Context(), userID, id, messageID); err != nil {
+		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+	}
+	return map[string]string{"message": "message deleted"}, nil
+}
+
 // RoomMessages godoc
 // @Summary      Get room message history
 // @Tags         room
@@ -267,16 +242,12 @@ func (ctrl *Controller) SendRoomMessage(c *gin.Context) (interface{}, error) {
 // @Success      200  {object}  utils.BaseResponse[RoomMessagesListResponse]
 // @Router       /rooms/{id}/messages [get]
 func (ctrl *Controller) RoomMessages(c *gin.Context) (interface{}, error) {
-	userID, ok := middleware.GetUserID(c)
-	if !ok {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "unauthorized")
-	}
 	id, err := parseID(c)
 	if err != nil {
 		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid room id")
 	}
 	limit := utils.ParseLimit(c, 50, 200)
-	resp, err := ctrl.service.GetMessages(userID, id, limit, c.Query("before"))
+	resp, err := ctrl.service.GetMessages(id, limit, c.Query("before"))
 	if err != nil {
 		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
 	}

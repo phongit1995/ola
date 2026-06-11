@@ -6,6 +6,7 @@ import { ConfirmDialog, Dialog, DialogButton } from '@components';
 import { LanguageSwitcher } from '@components/LanguageSwitcher';
 import { HomeHeader } from '@components/HomeHeader';
 import editIcon from '@/assets/icons/me/ic_action_edit.png';
+import { AuthService } from '@services';
 import { useAuthStore } from '@/store/authStore';
 import { Avatar } from '../chat/components/Avatar';
 import { MeTabBar } from './components/MeTabBar';
@@ -22,8 +23,8 @@ let composedPostSeed = 0;
 export function MePanel() {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const username = useAuthStore((s) => s.username);
-  const logout = useAuthStore((s) => s.logout);
+  const username = useAuthStore((s) => s.user?.username ?? null);
+  const clearUser = useAuthStore((s) => s.clearUser);
   const displayName = username ?? t('home.guest');
 
   const [tab, setTab] = useState<MeTab>('feed');
@@ -90,10 +91,14 @@ export function MePanel() {
     ]);
   }
 
-  function confirmLogout() {
+  async function confirmLogout() {
     setLogoutOpen(false);
-    logout();
-    navigate(ROUTES.login);
+    try {
+      await AuthService.logout();
+    } finally {
+      clearUser();
+      navigate(ROUTES.login);
+    }
   }
 
   return (

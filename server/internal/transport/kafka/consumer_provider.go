@@ -4,7 +4,6 @@ import (
 	callEvents "ola-chat-server/internal/domain/call"
 	conversationEvents "ola-chat-server/internal/domain/conversation"
 	messageEvents "ola-chat-server/internal/domain/message"
-	roomEvents "ola-chat-server/internal/domain/room"
 
 	"go.uber.org/dig"
 )
@@ -26,7 +25,6 @@ func ProvideConsumer(c *dig.Container) error {
 		messageEvents.Provider,
 		conversationEvents.Provider,
 		callEvents.Provider,
-		roomEvents.Provider,
 	}
 
 	for _, module := range modules {

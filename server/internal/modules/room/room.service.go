@@ -1,35 +1,35 @@
 package room
 
 import (
-	roomEvents "ola-chat-server/internal/domain/room"
+	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 	userModule "ola-chat-server/internal/modules/user"
-	"ola-chat-server/internal/transport/kafka"
+	"ola-chat-server/internal/transport/websocket"
 	"context"
+	"encoding/json"
 	"errors"
 	"time"
 
-	"github.com/gocql/gocql"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
 type Service struct {
-	repo          *Repository
-	msgRepo       *MessageRepository
-	userCache     *userModule.CacheService
-	kafkaProducer *kafka.Producer
-	logger        *zap.SugaredLogger
+	repo      *Repository
+	redisMsg  *RedisMessageRepository
+	userCache *userModule.CacheService
+	wsServer  *websocket.Server
+	logger    *zap.SugaredLogger
 }
 
-func NewService(repo *Repository, msgRepo *MessageRepository, userCache *userModule.CacheService, kafkaProducer *kafka.Producer, logger *zap.SugaredLogger) *Service {
+func NewService(repo *Repository, redisMsg *RedisMessageRepository, userCache *userModule.CacheService, wsServer *websocket.Server, logger *zap.SugaredLogger) *Service {
 	return &Service{
-		repo:          repo,
-		msgRepo:       msgRepo,
-		userCache:     userCache,
-		kafkaProducer: kafkaProducer,
-		logger:        logger.Named("[room_service]"),
+		repo:      repo,
+		redisMsg:  redisMsg,
+		userCache: userCache,
+		wsServer:  wsServer,
+		logger:    logger.Named("[room_service]"),
 	}
 }
 
@@ -46,7 +46,7 @@ func (s *Service) Create(adminID uuid.UUID, req *CreateRoomRequest) (*RoomRespon
 		return nil, err
 	}
 	s.logger.Infow("Room created", "room_id", room.ID, "admin_id", adminID)
-	return toRoomResponse(room, false), nil
+	return toRoomResponse(room, 0), nil
 }
 
 func (s *Service) Update(id uuid.UUID, req *UpdateRoomRequest) (*RoomResponse, error) {
@@ -72,7 +72,8 @@ func (s *Service) Update(id uuid.UUID, req *UpdateRoomRequest) (*RoomResponse, e
 	if err := s.repo.Save(room); err != nil {
 		return nil, err
 	}
-	return toRoomResponse(room, false), nil
+	count, _ := s.wsServer.GetRoomPresence().MemberCount(room.ID.String())
+	return toRoomResponse(room, count), nil
 }
 
 func (s *Service) Delete(id uuid.UUID) error {
@@ -87,82 +88,57 @@ func (s *Service) ListAdmin(query string, limit, offset int) (*RoomListResponse,
 	if err != nil {
 		return nil, err
 	}
-	return s.buildList(rooms, total, limit, offset, uuid.Nil), nil
+	return s.buildList(rooms, total, limit, offset), nil
 }
 
-func (s *Service) ListPublic(userID uuid.UUID, query string, limit, offset int) (*RoomListResponse, error) {
+func (s *Service) ListPublic(query string, limit, offset int) (*RoomListResponse, error) {
 	rooms, total, err := s.repo.ListPublic(query, limit, offset)
 	if err != nil {
 		return nil, err
 	}
-	return s.buildList(rooms, total, limit, offset, userID), nil
+	return s.buildList(rooms, total, limit, offset), nil
 }
 
-func (s *Service) GetByID(userID, id uuid.UUID) (*RoomResponse, error) {
+func (s *Service) GetByID(id uuid.UUID) (*RoomResponse, error) {
 	room, err := s.getRoom(id)
 	if err != nil {
 		return nil, err
 	}
-	isMember, _ := s.repo.IsMember(id, userID)
-	return toRoomResponse(room, isMember), nil
+	count, _ := s.wsServer.GetRoomPresence().MemberCount(id.String())
+	return toRoomResponse(room, count), nil
 }
 
-func (s *Service) Join(userID, roomID uuid.UUID) (*RoomResponse, error) {
-	room, err := s.getRoom(roomID)
-	if err != nil {
-		return nil, err
-	}
-	if !room.Enabled {
-		return nil, errors.New("room is disabled")
-	}
-
-	already, err := s.repo.IsMember(roomID, userID)
-	if err != nil {
-		return nil, err
-	}
-	if !already {
-		if room.MaxMembers > 0 && room.MemberCount >= room.MaxMembers {
-			return nil, errors.New("room is full")
-		}
-		if _, err := s.repo.AddMember(roomID, userID); err != nil {
-			return nil, err
-		}
-		room.MemberCount++
-		s.logger.Infow("User joined room", "room_id", roomID, "user_id", userID)
-	}
-	return toRoomResponse(room, true), nil
-}
-
-func (s *Service) Leave(userID, roomID uuid.UUID) error {
-	if _, err := s.getRoom(roomID); err != nil {
-		return err
-	}
-	if _, err := s.repo.RemoveMember(roomID, userID); err != nil {
-		return err
-	}
-	s.logger.Infow("User left room", "room_id", roomID, "user_id", userID)
-	return nil
-}
-
-func (s *Service) ListMembers(roomID uuid.UUID, limit, offset int) (*RoomMembersResponse, error) {
+func (s *Service) ListMembers(roomID uuid.UUID) (*RoomMembersResponse, error) {
 	if _, err := s.getRoom(roomID); err != nil {
 		return nil, err
 	}
-	rows, total, err := s.repo.ListMembers(roomID, limit, offset)
+	ids, err := s.wsServer.GetRoomPresence().OnlineMembers(roomID.String())
 	if err != nil {
 		return nil, err
 	}
-	items := make([]RoomMemberResponse, 0, len(rows))
-	for _, m := range rows {
+
+	uuids := make([]uuid.UUID, 0, len(ids))
+	for _, id := range ids {
+		if uid, err := uuid.Parse(id); err == nil {
+			uuids = append(uuids, uid)
+		}
+	}
+
+	usersMap := s.userCache.GetUsersBatch(uuids, true)
+	items := make([]RoomMemberResponse, 0, len(uuids))
+	for _, uid := range uuids {
+		u, ok := usersMap[uid]
+		if !ok || u == nil {
+			continue
+		}
 		items = append(items, RoomMemberResponse{
-			UserID:   m.UserID.String(),
-			Username: m.Username,
-			FullName: m.FullName,
-			Avatar:   m.Avatar,
-			JoinedAt: m.JoinedAt.UTC().Format(time.RFC3339),
+			UserID:   uid.String(),
+			Username: u.Username,
+			FullName: u.FullName,
+			Avatar:   u.Avatar,
 		})
 	}
-	return &RoomMembersResponse{Items: items, Total: total}, nil
+	return &RoomMembersResponse{Items: items, Total: len(items)}, nil
 }
 
 func (s *Service) SendMessage(ctx context.Context, userID, roomID uuid.UUID, req *SendRoomMessageRequest) (*RoomMessageResponse, error) {
@@ -174,7 +150,7 @@ func (s *Service) SendMessage(ctx context.Context, userID, roomID uuid.UUID, req
 		return nil, errors.New("room is disabled")
 	}
 
-	isMember, err := s.repo.IsMember(roomID, userID)
+	isMember, err := s.wsServer.GetRoomPresence().IsMember(roomID.String(), userID.String())
 	if err != nil {
 		return nil, err
 	}
@@ -183,15 +159,11 @@ func (s *Service) SendMessage(ctx context.Context, userID, roomID uuid.UUID, req
 	}
 
 	senderName, senderAvatar := s.senderInfo(userID)
-	messageID := gocql.TimeUUID()
+	msgID := uuid.New().String()
 	createdAt := time.Now().UTC()
 
-	if err := s.msgRepo.CreateMessage(roomID, messageID, userID, senderName, senderAvatar, req.Content, createdAt); err != nil {
-		return nil, err
-	}
-
-	resp := &RoomMessageResponse{
-		ID:           messageID.String(),
+	msg := RoomMessageResponse{
+		ID:           msgID,
 		RoomID:       roomID.String(),
 		SenderID:     userID.String(),
 		SenderName:   senderName,
@@ -200,87 +172,98 @@ func (s *Service) SendMessage(ctx context.Context, userID, roomID uuid.UUID, req
 		CreatedAt:    createdAt.Format(time.RFC3339),
 	}
 
-	s.publishMessage(ctx, room, resp)
-	return resp, nil
+	data, err := json.Marshal(msg)
+	if err != nil {
+		return nil, err
+	}
+	if err := s.redisMsg.Append(ctx, roomID.String(), msgID, createdAt, data); err != nil {
+		return nil, err
+	}
+
+	envelope := map[string]any{
+		"room":    RoomBrief{ID: room.ID.String(), Name: room.Name, ImageURL: room.ImageURL},
+		"message": msg,
+	}
+	s.wsServer.EmitToRoom(roomID.String(), constants.WebSocketEventNewRoomMessage, envelope)
+	return &msg, nil
 }
 
-func (s *Service) GetMessages(userID, roomID uuid.UUID, limit int, beforeStr string) (*RoomMessagesListResponse, error) {
+func (s *Service) DeleteMessage(ctx context.Context, userID, roomID uuid.UUID, messageID string) error {
 	if _, err := s.getRoom(roomID); err != nil {
-		return nil, err
+		return err
 	}
-	isMember, err := s.repo.IsMember(roomID, userID)
+
+	data, err := s.redisMsg.Get(ctx, roomID.String(), messageID)
+	if err != nil {
+		return err
+	}
+	if data == nil {
+		return errors.New("message not found")
+	}
+
+	var existing RoomMessageResponse
+	if err := json.Unmarshal(data, &existing); err != nil {
+		return err
+	}
+	if existing.SenderID != userID.String() {
+		return errors.New("you can only delete your own messages")
+	}
+
+	if err := s.redisMsg.Delete(ctx, roomID.String(), messageID); err != nil {
+		return err
+	}
+
+	s.wsServer.EmitToRoom(roomID.String(), constants.WebSocketEventRoomMessageDeleted, map[string]any{
+		"roomId":    roomID.String(),
+		"messageId": messageID,
+	})
+	return nil
+}
+
+func (s *Service) GetMessages(roomID uuid.UUID, limit int, beforeID string) (*RoomMessagesListResponse, error) {
+	room, err := s.getRoom(roomID)
 	if err != nil {
 		return nil, err
 	}
-	if !isMember {
-		return nil, errors.New("not a room member")
+	if !room.Enabled {
+		return nil, errors.New("room is disabled")
 	}
 
-	var before *gocql.UUID
-	if beforeStr != "" {
-		parsed, err := gocql.ParseUUID(beforeStr)
-		if err != nil {
-			return nil, errors.New("invalid before cursor")
+	raws, err := s.redisMsg.List(context.Background(), roomID.String(), limit, beforeID)
+	if err != nil {
+		return nil, err
+	}
+
+	items := make([]RoomMessageResponse, 0, len(raws))
+	for _, raw := range raws {
+		var m RoomMessageResponse
+		if err := json.Unmarshal(raw, &m); err != nil {
+			continue
 		}
-		before = &parsed
+		items = append(items, m)
 	}
 
-	rows, err := s.msgRepo.GetMessages(roomID, limit, before)
-	if err != nil {
-		return nil, err
-	}
-
-	items := make([]RoomMessageResponse, 0, len(rows))
-	for _, m := range rows {
-		items = append(items, RoomMessageResponse{
-			ID:           m.MessageID.String(),
-			RoomID:       roomID.String(),
-			SenderID:     m.SenderID.String(),
-			SenderName:   m.SenderName,
-			SenderAvatar: m.SenderAvatar,
-			Content:      m.Content,
-			CreatedAt:    m.CreatedAt.UTC().Format(time.RFC3339),
-		})
-	}
-
-	resp := &RoomMessagesListResponse{Items: items, HasMore: len(rows) == limit}
+	resp := &RoomMessagesListResponse{Items: items, HasMore: len(raws) == limit}
 	if len(items) > 0 {
 		resp.NextBefore = items[len(items)-1].ID
 	}
 	return resp, nil
 }
 
-func (s *Service) publishMessage(ctx context.Context, room *models.Room, msg *RoomMessageResponse) {
-	memberIDs, err := s.repo.MemberIDs(room.ID)
+func (s *Service) RoomEnabled(roomID string) (bool, error) {
+	id, err := uuid.Parse(roomID)
 	if err != nil {
-		s.logger.Errorw("Failed to load room members for emit", "room_id", room.ID, "error", err)
-		return
+		return false, errors.New("invalid room id")
 	}
-	ids := make([]string, 0, len(memberIDs))
-	for _, id := range memberIDs {
-		ids = append(ids, id.String())
+	room, err := s.getRoom(id)
+	if err != nil {
+		return false, err
 	}
-
-	event := &roomEvents.RoomMessageCreatedEvent{
-		Room: &roomEvents.RoomData{ID: room.ID.String(), Name: room.Name, ImageURL: room.ImageURL},
-		Message: &roomEvents.RoomMessageData{
-			ID:           msg.ID,
-			RoomID:       msg.RoomID,
-			SenderID:     msg.SenderID,
-			SenderName:   msg.SenderName,
-			SenderAvatar: msg.SenderAvatar,
-			Content:      msg.Content,
-			CreatedAt:    msg.CreatedAt,
-		},
-		MemberIDs: ids,
-	}
-	if err := s.kafkaProducer.PublishRoomMessageCreated(ctx, event); err != nil {
-		s.logger.Errorw("Failed to publish room message", "room_id", room.ID, "error", err)
-	}
+	return room.Enabled, nil
 }
 
 func (s *Service) senderInfo(userID uuid.UUID) (string, string) {
-	u, err := s.userCache.GetUser(userID)
+	u, err := s.userCache.GetUserCache(userID, true)
 	if err != nil || u == nil {
 		return "", ""
 	}
@@ -302,33 +285,30 @@ func (s *Service) getRoom(id uuid.UUID) (*models.Room, error) {
 	return room, nil
 }
 
-func (s *Service) buildList(rooms []*models.Room, total int64, limit, offset int, userID uuid.UUID) *RoomListResponse {
-	memberSet := map[uuid.UUID]bool{}
-	if userID != uuid.Nil {
-		for _, room := range rooms {
-			if ok, _ := s.repo.IsMember(room.ID, userID); ok {
-				memberSet[room.ID] = true
-			}
-		}
+func (s *Service) buildList(rooms []*models.Room, total int64, limit, offset int) *RoomListResponse {
+	ids := make([]string, 0, len(rooms))
+	for _, room := range rooms {
+		ids = append(ids, room.ID.String())
 	}
+	counts := s.wsServer.GetRoomPresence().MemberCounts(ids)
+
 	items := make([]RoomResponse, 0, len(rooms))
 	for _, room := range rooms {
-		items = append(items, *toRoomResponse(room, memberSet[room.ID]))
+		items = append(items, *toRoomResponse(room, counts[room.ID.String()]))
 	}
 	return &RoomListResponse{Items: items, Total: total, Limit: limit, Offset: offset}
 }
 
-func toRoomResponse(room *models.Room, isMember bool) *RoomResponse {
+func toRoomResponse(room *models.Room, memberCount int) *RoomResponse {
 	return &RoomResponse{
 		ID:          room.ID.String(),
 		Name:        room.Name,
 		Description: room.Description,
 		ImageURL:    room.ImageURL,
 		MaxMembers:  room.MaxMembers,
-		MemberCount: room.MemberCount,
+		MemberCount: memberCount,
 		Enabled:     room.Enabled,
 		CreatedBy:   room.CreatedBy.String(),
 		CreatedAt:   room.CreatedAt.UTC().Format(time.RFC3339),
-		IsMember:    isMember,
 	}
 }

@@ -927,8 +927,6 @@ definitions:
         type: string
       fullName:
         type: string
-      joinedAt:
-        type: string
       userId:
         type: string
       username:
@@ -985,8 +983,6 @@ definitions:
         type: string
       imageUrl:
         type: string
-      isMember:
-        type: boolean
       maxMembers:
         type: integer
       memberCount:
@@ -3137,7 +3133,7 @@ paths:
             $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_RoomListResponse'
       security:
       - BearerAuth: []
-      summary: Browse public rooms
+      summary: Browse public rooms (memberCount = online members)
       tags:
       - room
   /rooms/{id}:
@@ -3160,48 +3156,6 @@ paths:
       summary: Get room detail
       tags:
       - room
-  /rooms/{id}/join:
-    post:
-      parameters:
-      - description: Room ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_RoomResponse'
-      security:
-      - BearerAuth: []
-      summary: Join a room
-      tags:
-      - room
-  /rooms/{id}/leave:
-    post:
-      parameters:
-      - description: Room ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      security:
-      - BearerAuth: []
-      summary: Leave a room
-      tags:
-      - room
   /rooms/{id}/members:
     get:
       parameters:
@@ -3210,14 +3164,6 @@ paths:
         name: id
         required: true
         type: string
-      - description: Page size
-        in: query
-        name: limit
-        type: integer
-      - description: Offset
-        in: query
-        name: offset
-        type: integer
       produces:
       - application/json
       responses:
@@ -3227,7 +3173,7 @@ paths:
             $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_RoomMembersResponse'
       security:
       - BearerAuth: []
-      summary: List room members
+      summary: List online members of a room
       tags:
       - room
   /rooms/{id}/messages:
@@ -3282,7 +3228,34 @@ paths:
             $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_RoomMessageResponse'
       security:
       - BearerAuth: []
-      summary: Send a message to a room
+      summary: Send a message to a room (must have joined via socket)
+      tags:
+      - room
+  /rooms/{id}/messages/{messageId}:
+    delete:
+      parameters:
+      - description: Room ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Message ID
+        in: path
+        name: messageId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete own room message (hard delete, sender only)
       tags:
       - room
   /user/{id}:

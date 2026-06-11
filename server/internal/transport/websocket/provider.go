@@ -6,6 +6,7 @@ func Provider(c *dig.Container) error {
 	providers := []interface{}{
 		NewRedisAdapter,
 		NewPresenceService,
+		NewRoomPresenceService,
 		NewServer,
 	}
 

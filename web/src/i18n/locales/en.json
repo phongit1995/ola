@@ -3,29 +3,39 @@
     "clear": "Clear",
     "cancel": "Cancel"
   },
+  "auth": {
+    "errGeneric": "Something went wrong, please try again.",
+    "errNetwork": "Unable to connect to the server. Please check your network."
+  },
   "login": {
     "username": "Username",
     "password": "Password",
     "submit": "Log in",
     "forgot": "Forgot password?",
     "createAccount": "Create an Ola account",
-    "version": "Version"
+    "version": "Version",
+    "errUsernameRequired": "Please enter your username.",
+    "errUsernameLength": "Username must be 5–20 characters.",
+    "errPasswordRequired": "Please enter your password.",
+    "errPasswordLength": "Password must be 6–20 characters."
   },
   "register": {
     "title": "Create an Ola account",
     "usernameLabel": "USERNAME",
-    "usernamePlaceholder": "6–24 chars, lowercase & numbers (a–z, 0–9, . _)",
+    "usernamePlaceholder": "6–20 chars, lowercase & numbers (a–z, 0–9, . _)",
     "passwordLabel": "PASSWORD",
-    "passwordPlaceholder": "At least 6 characters",
+    "passwordPlaceholder": "6–20 characters",
     "confirmLabel": "CONFIRM PASSWORD",
     "confirmPlaceholder": "Re-enter password",
     "agree": "I agree to the <terms>Terms of Use</terms> of Ola",
     "submit": "Finish",
     "hasAccount": "Already have an account?",
     "errUsernameRequired": "Please enter a username.",
-    "errUsernamePattern": "6–24 chars, only lowercase, numbers, . and _.",
+    "errUsernameMin": "Username must be at least 6 characters.",
+    "errUsernameMax": "Username must be at most 20 characters.",
     "errPasswordRequired": "Please enter a password.",
     "errPasswordMin": "Password must be at least 6 characters.",
+    "errPasswordMax": "Password must be at most 20 characters.",
     "errConfirmRequired": "Please re-enter your password.",
     "errConfirmMismatch": "Passwords do not match.",
     "errAgreeRequired": "You must agree to the Terms of Use to continue."

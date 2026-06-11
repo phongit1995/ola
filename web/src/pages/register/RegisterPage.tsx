@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ChangeEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { Trans, useTranslation } from 'react-i18next';
@@ -7,9 +7,12 @@ import olaLogo from '@/assets/images/ola-logo.png';
 import { TextField } from '@components/form/TextField';
 import { SubmitButton } from '@components/form/SubmitButton';
 import { LanguageSwitcher } from '@components/LanguageSwitcher';
-import { useAuthStore } from '@/store/authStore';
+import { AuthService } from '@services';
+import { resolveAuthError, USERNAME_MAX, sanitizeUsername } from '@lib';
 
-const USERNAME_RE = /^[a-z0-9._]{6,24}$/;
+const USERNAME_MIN = 6;
+const PASSWORD_MIN = 6;
+const PASSWORD_MAX = 20;
 
 interface RegisterForm {
   username: string;
@@ -21,8 +24,8 @@ interface RegisterForm {
 export function RegisterPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const loginUser = useAuthStore((s) => s.login);
   const [loading, setLoading] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const {
     register,
@@ -40,13 +43,21 @@ export function RegisterPage() {
   const password = watch('password');
   const confirm = watch('confirm');
 
-  function onSubmit(data: RegisterForm) {
+  function handleUsernameChange(event: ChangeEvent<HTMLInputElement>) {
+    setValue('username', sanitizeUsername(event.target.value), { shouldValidate: true });
+  }
+
+  async function onSubmit(data: RegisterForm) {
     setLoading(true);
-    setTimeout(() => {
+    setSubmitError(null);
+    try {
+      await AuthService.register({ username: data.username, password: data.password });
+      navigate(ROUTES.login);
+    } catch (err) {
+      setSubmitError(resolveAuthError(err, t));
+    } finally {
       setLoading(false);
-      loginUser(data.username);
-      navigate(ROUTES.home);
-    }, 1200);
+    }
   }
 
   return (
@@ -75,11 +86,10 @@ export function RegisterPage() {
         placeholder={t('register.usernamePlaceholder')}
         error={errors.username?.message}
         field={register('username', {
+          onChange: handleUsernameChange,
           required: t('register.errUsernameRequired'),
-          pattern: {
-            value: USERNAME_RE,
-            message: t('register.errUsernamePattern'),
-          },
+          minLength: { value: USERNAME_MIN, message: t('register.errUsernameMin') },
+          maxLength: { value: USERNAME_MAX, message: t('register.errUsernameMax') },
         })}
         showClear={!!username}
         onClear={() => setValue('username', '', { shouldValidate: true })}
@@ -92,7 +102,8 @@ export function RegisterPage() {
         error={errors.password?.message}
         field={register('password', {
           required: t('register.errPasswordRequired'),
-          minLength: { value: 6, message: t('register.errPasswordMin') },
+          minLength: { value: PASSWORD_MIN, message: t('register.errPasswordMin') },
+          maxLength: { value: PASSWORD_MAX, message: t('register.errPasswordMax') },
         })}
         showClear={!!password}
         onClear={() => setValue('password', '', { shouldValidate: true })}
@@ -141,6 +152,12 @@ export function RegisterPage() {
           </p>
         )}
       </div>
+
+      {submitError && (
+        <p className="mt-3 w-full max-w-md text-sm font-medium text-white italic">
+          {submitError}
+        </p>
+      )}
 
       <SubmitButton className="mt-3">{t('register.submit')}</SubmitButton>
 

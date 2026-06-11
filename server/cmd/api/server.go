@@ -36,9 +36,12 @@ func CreateServer(
 	messageRouter *message.Router,
 	callRouter *call.Router,
 	roomRouter *room.Router,
+	roomService *room.Service,
 	wsServer *websocket.Server,
 	cfg *config.Config,
 ) *Server {
+	wsServer.SetRoomHandler(roomService)
+
 	r := gin.Default()
 
 	r.Use(cors.New(cors.Config{

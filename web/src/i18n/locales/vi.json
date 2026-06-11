@@ -3,29 +3,39 @@
     "clear": "Xoá",
     "cancel": "Huỷ"
   },
+  "auth": {
+    "errGeneric": "Đã có lỗi xảy ra, vui lòng thử lại.",
+    "errNetwork": "Không kết nối được tới máy chủ. Vui lòng kiểm tra mạng."
+  },
   "login": {
     "username": "Tên đăng nhập",
     "password": "Mật khẩu",
     "submit": "Đăng nhập",
     "forgot": "Bạn quên mật khẩu?",
     "createAccount": "Tạo tài khoản Ola",
-    "version": "Phiên bản"
+    "version": "Phiên bản",
+    "errUsernameRequired": "Vui lòng nhập tên đăng nhập.",
+    "errUsernameLength": "Tên đăng nhập phải từ 5–20 ký tự.",
+    "errPasswordRequired": "Vui lòng nhập mật khẩu.",
+    "errPasswordLength": "Mật khẩu phải từ 6–20 ký tự."
   },
   "register": {
     "title": "Tạo tài khoản Ola",
     "usernameLabel": "TÊN ĐĂNG NHẬP",
-    "usernamePlaceholder": "6–24 ký tự, chữ thường và số (a–z, 0–9, . _)",
+    "usernamePlaceholder": "6–20 ký tự, chữ thường và số (a–z, 0–9, . _)",
     "passwordLabel": "MẬT KHẨU",
-    "passwordPlaceholder": "Ít nhất 6 ký tự",
+    "passwordPlaceholder": "6–20 ký tự",
     "confirmLabel": "NHẬP LẠI MẬT KHẨU",
     "confirmPlaceholder": "Nhập lại mật khẩu",
     "agree": "Tôi đồng ý với <terms>Điều khoản sử dụng</terms> của Ola",
     "submit": "Hoàn tất",
     "hasAccount": "Đã có tài khoản?",
     "errUsernameRequired": "Vui lòng nhập tên đăng nhập.",
-    "errUsernamePattern": "6–24 ký tự, chỉ chữ thường, số, dấu . và _.",
+    "errUsernameMin": "Tên đăng nhập phải có ít nhất 6 ký tự.",
+    "errUsernameMax": "Tên đăng nhập tối đa 20 ký tự.",
     "errPasswordRequired": "Vui lòng nhập mật khẩu.",
-    "errPasswordMin": "Mật khẩu ít nhất 6 ký tự.",
+    "errPasswordMin": "Mật khẩu phải có ít nhất 6 ký tự.",
+    "errPasswordMax": "Mật khẩu tối đa 20 ký tự.",
     "errConfirmRequired": "Vui lòng nhập lại mật khẩu.",
     "errConfirmMismatch": "Mật khẩu nhập lại không khớp.",
     "errAgreeRequired": "Bạn cần đồng ý với Điều khoản sử dụng để tiếp tục."

@@ -25,7 +25,12 @@ type RoomResponse struct {
 	Enabled     bool   `json:"enabled"`
 	CreatedBy   string `json:"createdBy"`
 	CreatedAt   string `json:"createdAt"`
-	IsMember    bool   `json:"isMember"`
+}
+
+type RoomBrief struct {
+	ID       string `json:"id"`
+	Name     string `json:"name"`
+	ImageURL string `json:"imageUrl,omitempty"`
 }
 
 type RoomListResponse struct {
@@ -40,12 +45,11 @@ type RoomMemberResponse struct {
 	Username string `json:"username"`
 	FullName string `json:"fullName,omitempty"`
 	Avatar   string `json:"avatar,omitempty"`
-	JoinedAt string `json:"joinedAt"`
 }
 
 type RoomMembersResponse struct {
 	Items []RoomMemberResponse `json:"items"`
-	Total int64                `json:"total"`
+	Total int                  `json:"total"`
 }
 
 type SendRoomMessageRequest struct {

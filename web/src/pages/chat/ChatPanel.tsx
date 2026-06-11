@@ -10,6 +10,7 @@ import {
 import { ROUTES } from '@constants';
 import { HomeHeader } from '@components/HomeHeader';
 import moreIcon from '@/assets/icons/chat/ic_more_white.png';
+import { AuthService } from '@services';
 import { useAuthStore } from '@/store/authStore';
 import { ConversationList } from './components/ConversationList';
 import { ContactList } from './components/ContactList';
@@ -32,7 +33,7 @@ const FALLBACK_COLOR = '#7cb342';
 export function ChatPanel() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const logout = useAuthStore((s) => s.logout);
+  const clearUser = useAuthStore((s) => s.clearUser);
 
   const [sub, setSub] = useState<ChatSub>('messages');
   const [conversations, setConversations] = useState<Conversation[]>(CONVERSATIONS);
@@ -71,10 +72,14 @@ export function ChatPanel() {
     setDeleteAllOpen(false);
   }
 
-  function confirmLogout() {
+  async function confirmLogout() {
     setLogoutOpen(false);
-    logout();
-    navigate(ROUTES.login);
+    try {
+      await AuthService.logout();
+    } finally {
+      clearUser();
+      navigate(ROUTES.login);
+    }
   }
 
   const messagesMenu: ListOption[] = [

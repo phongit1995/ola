@@ -151,6 +151,7 @@ var (
 		"user not found":              true,
 		"admin not found":             true,
 		"room not found":              true,
+		"message not found":           true,
 		"resource not found":          true,
 		"friend request not found":    true,
 		"friendship not found":        true,

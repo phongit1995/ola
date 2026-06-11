@@ -29,6 +29,7 @@ export function ClearableInput({
         <button
           type="button"
           aria-label="Xoá"
+          tabIndex={-1}
           onClick={onClear}
           className="mr-1.5 flex h-9 w-9 items-center justify-center text-xl text-black/54"
         >
