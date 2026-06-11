@@ -9,6 +9,7 @@ export const API_PATH = {
   rooms: {
     browse: '/rooms',
     detail: (id: string) => `/rooms/${id}`,
+    join: (id: string) => `/rooms/${id}/join`,
     members: (id: string) => `/rooms/${id}/members`,
     messages: (id: string) => `/rooms/${id}/messages`,
     message: (id: string, messageId: string) => `/rooms/${id}/messages/${messageId}`,

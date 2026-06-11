@@ -4,6 +4,7 @@ export interface Room {
   subtitle: string;
   members: number;
   color: string;
+  imageUrl?: string;
 }
 
 export interface RoomFilters {

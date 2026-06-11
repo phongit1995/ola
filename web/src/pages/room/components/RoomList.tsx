@@ -127,12 +127,20 @@ export function RoomList({
               onClick={() => onEnter(room)}
               className="flex min-w-0 flex-1 items-center gap-2 text-left"
             >
-              <span
-                className="flex h-16 w-16 shrink-0 items-center justify-center rounded text-2xl font-medium text-white shadow"
-                style={{ backgroundColor: room.color }}
-              >
-                {room.title.charAt(0).toUpperCase()}
-              </span>
+              {room.imageUrl ? (
+                <img
+                  src={room.imageUrl}
+                  alt=""
+                  className="h-16 w-16 shrink-0 rounded object-cover shadow"
+                />
+              ) : (
+                <span
+                  className="flex h-16 w-16 shrink-0 items-center justify-center rounded text-2xl font-medium text-white shadow"
+                  style={{ backgroundColor: room.color }}
+                >
+                  {room.title.charAt(0).toUpperCase()}
+                </span>
+              )}
               <span className="min-w-0 flex-1 pl-2">
                 <span className="block truncate text-base text-black/87">{room.title}</span>
                 <span className="mt-1 block truncate text-sm text-black/54">{room.subtitle}</span>

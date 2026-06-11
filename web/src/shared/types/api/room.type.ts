@@ -82,16 +82,34 @@ export interface SendRoomMessageRequest {
 }
 
 export const ROOM_SOCKET_EVENTS = {
-  join: 'room:join',
-  leave: 'room:leave',
+  message: 'message',
+  join: 'ROOM:JOIN',
+  leave: 'ROOM:LEAVE',
   newMessage: 'NEW_ROOM_MESSAGE',
   messageDeleted: 'ROOM_MESSAGE_DELETED',
   memberJoined: 'ROOM_MEMBER_JOINED',
   memberLeft: 'ROOM_MEMBER_LEFT',
 } as const;
 
+export interface RoomJoinTicket {
+  ticket: string;
+  expiresIn: number;
+}
+
+export interface RoomJoinAck {
+  ok: boolean;
+  error?: string;
+  data?: { roomId: string; memberCount: number };
+}
+
+export interface RoomSocketEnvelope<T = unknown> {
+  type: string;
+  data: T;
+}
+
 export interface RoomJoinPayload {
   roomId: string;
+  ticket: string;
 }
 
 export interface RoomPresenceAck {

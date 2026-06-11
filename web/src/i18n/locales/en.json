@@ -167,7 +167,13 @@
     "chatInputHint": "Write a message in \"{{name}}\" room",
     "membersTitle": "Broadcasting members",
     "memberCount": "{{count}} members",
-    "addMember": "Invite member"
+    "addMember": "Invite member",
+    "tabMessages": "Messages",
+    "tabMembers": "Members",
+    "connecting": "Connecting to room…",
+    "joining": "Joining room…",
+    "joinError": "Unable to join room",
+    "noMembers": "No members online yet"
   },
   "me": {
     "tabFeed": "Newsfeed",

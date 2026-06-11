@@ -4,6 +4,7 @@ import type {
   IApiResponse,
   MessageResult,
   Room,
+  RoomJoinTicket,
   RoomListResult,
   RoomMembersResult,
   RoomMessage,
@@ -23,6 +24,11 @@ export class RoomService {
 
   static async getById(id: string): Promise<Room> {
     const { data } = await api.get<IApiResponse<Room>>(API_PATH.rooms.detail(id));
+    return data.data;
+  }
+
+  static async join(id: string): Promise<RoomJoinTicket> {
+    const { data } = await api.post<IApiResponse<RoomJoinTicket>>(API_PATH.rooms.join(id));
     return data.data;
   }
 

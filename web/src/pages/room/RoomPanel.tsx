@@ -3,13 +3,13 @@ import { useTranslation } from 'react-i18next';
 import { ConfirmDialog } from '@components';
 import { HomeHeader } from '@components/HomeHeader';
 import { RoomChatView } from './components/RoomChatView';
+import { RoomJoiningOverlay } from './components/RoomJoiningOverlay';
 import { RoomList } from './components/RoomList';
 import { RoomFilterDialog } from './components/RoomFilterDialog';
-import { RoomReturnFab } from './components/RoomReturnFab';
 import { DEFAULT_ROOM_FILTERS } from './data';
 import type { Room, RoomFilters } from './types';
-import { CONTACTS } from '../chat/data';
 import { useRoomStore } from '@/store/roomStore';
+import { useRoomChatStore, type ActiveRoom } from '@/store/roomChatStore';
 import filterIcon from '@/assets/icons/room/ic_filter_unselected.png';
 
 const ROOM_CAPACITY = 200;
@@ -20,13 +20,14 @@ export function RoomPanel() {
   const apiRooms = useRoomStore((state) => state.rooms);
   const loadingRooms = useRoomStore((state) => state.loading);
   const fetchRooms = useRoomStore((state) => state.fetchRooms);
+  const activeRoom = useRoomChatStore((state) => state.activeRoom);
+  const joinStatus = useRoomChatStore((state) => state.status);
+  const openRoom = useRoomChatStore((state) => state.open);
+  const closeRoom = useRoomChatStore((state) => state.close);
   const [filters, setFilters] = useState<RoomFilters>(DEFAULT_ROOM_FILTERS);
   const [filterOpen, setFilterOpen] = useState(false);
-  const [joinedRoom, setJoinedRoom] = useState<Room | null>(null);
-  const [activeRoom, setActiveRoom] = useState<Room | null>(null);
-  const [pendingQuit, setPendingQuit] = useState<Room | null>(null);
+  const [pendingQuit, setPendingQuit] = useState<ActiveRoom | null>(null);
   const [fullRoom, setFullRoom] = useState<Room | null>(null);
-  const [unread, setUnread] = useState(0);
 
   useEffect(() => {
     fetchRooms();
@@ -40,6 +41,7 @@ export function RoomPanel() {
         subtitle: room.description ?? '',
         members: room.memberCount,
         color: ROOM_COLORS[index % ROOM_COLORS.length],
+        imageUrl: room.imageUrl,
       })),
     [apiRooms]
   );
@@ -49,27 +51,17 @@ export function RoomPanel() {
       setFullRoom(room);
       return;
     }
-    setJoinedRoom(room);
-    setUnread(0);
-    setActiveRoom(room);
+    openRoom({ id: room.id, name: room.title });
   }
 
-  function closeActiveRoom() {
-    setActiveRoom(null);
-    setUnread(Math.floor(Math.random() * 5) + 1);
-  }
-
-  function reopenJoinedRoom() {
-    if (joinedRoom == null) return;
-    setUnread(0);
-    setActiveRoom(joinedRoom);
+  function exitRoom() {
+    closeRoom();
+    fetchRooms();
   }
 
   function confirmQuit() {
-    if (pendingQuit != null) {
-      if (activeRoom?.id === pendingQuit.id) setActiveRoom(null);
-      if (joinedRoom?.id === pendingQuit.id) setJoinedRoom(null);
-      setUnread(0);
+    if (pendingQuit != null && activeRoom?.id === pendingQuit.id) {
+      exitRoom();
     }
     setPendingQuit(null);
   }
@@ -80,7 +72,7 @@ export function RoomPanel() {
 
   function quickJoin() {
     const available = [...rooms]
-      .filter((room) => room.members < 200)
+      .filter((room) => room.members < ROOM_CAPACITY)
       .sort((a, b) => a.members - b.members)[0];
     if (available != null) enterRoom(available);
   }
@@ -130,30 +122,20 @@ export function RoomPanel() {
         )}
         <RoomList
           rooms={rooms}
-          joinedRoomId={joinedRoom?.id ?? null}
+          joinedRoomId={activeRoom?.id ?? null}
           onEnter={enterRoom}
-          onQuit={setPendingQuit}
+          onQuit={(room) => setPendingQuit({ id: room.id, name: room.title })}
           onAroundYou={aroundYou}
           onQuickJoin={quickJoin}
           onBuyVip={() => {}}
         />
-        {joinedRoom != null && activeRoom == null && (
-          <RoomReturnFab
-            label={joinedRoom.title}
-            unread={unread}
-            onClick={reopenJoinedRoom}
-          />
-        )}
       </main>
 
-      {activeRoom != null && (
-        <RoomChatView
-          name={activeRoom.title}
-          color={activeRoom.color}
-          seedMessage={activeRoom.subtitle}
-          members={CONTACTS}
-          onClose={closeActiveRoom}
-        />
+      {activeRoom != null && joinStatus === 'joined' && (
+        <RoomChatView onClose={() => setPendingQuit(activeRoom)} />
+      )}
+      {activeRoom != null && joinStatus !== 'joined' && (
+        <RoomJoiningOverlay name={activeRoom.name} status={joinStatus} onClose={exitRoom} />
       )}
 
       <RoomFilterDialog
@@ -170,7 +152,7 @@ export function RoomPanel() {
         open={pendingQuit != null}
         danger
         title={t('room.quitTitle')}
-        message={t('room.quitMessage', { name: pendingQuit?.title ?? '' })}
+        message={t('room.quitMessage', { name: pendingQuit?.name ?? '' })}
         confirmLabel={t('dialog.yes')}
         cancelLabel={t('dialog.no')}
         onConfirm={confirmQuit}

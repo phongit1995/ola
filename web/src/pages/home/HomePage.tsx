@@ -1,4 +1,5 @@
-import { useState, type ComponentType } from 'react';
+import { useEffect, useState, type ComponentType } from 'react';
+import { SocketService } from '@services';
 import { BottomTabBar, type TabKey } from '@components/BottomTabBar';
 import { ChatPanel } from '../chat/ChatPanel';
 import { RoomPanel } from '../room/RoomPanel';
@@ -17,6 +18,11 @@ const PANELS: Record<TabKey, ComponentType> = {
 export function HomePage() {
   const [tab, setTab] = useState<TabKey>('chat');
   const ActivePanel = PANELS[tab];
+
+  useEffect(() => {
+    SocketService.connect();
+    return () => SocketService.disconnect();
+  }, []);
 
   return (
     <div className="flex h-screen flex-col bg-white font-sans">

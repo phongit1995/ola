@@ -13,6 +13,7 @@ import (
 	redisClient "github.com/zishang520/socket.io/adapters/redis/v3"
 	"github.com/zishang520/socket.io/adapters/redis/v3/adapter"
 	socket "github.com/zishang520/socket.io/servers/socket/v3"
+	"github.com/zishang520/socket.io/v3/pkg/types"
 	"go.uber.org/zap"
 )
 
@@ -50,6 +51,10 @@ func NewServer(
 	wrappedRedisClient := redisClient.NewRedisClient(context.Background(), rdb)
 
 	opts := socket.DefaultServerOptions()
+	opts.SetCors(&types.Cors{
+		Origin:      cfg.CORSAllowedOrigins,
+		Credentials: true,
+	})
 	opts.SetAdapter(&adapter.RedisAdapterBuilder{
 		Redis: wrappedRedisClient,
 		Opts:  adapter.DefaultRedisAdapterOptions(),

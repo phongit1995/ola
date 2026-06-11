@@ -167,7 +167,13 @@
     "chatInputHint": "Viết tin nhắn gởi đến \"phòng {{name}}\"",
     "membersTitle": "Thành viên đang Loa Loa",
     "memberCount": "{{count}} thành viên",
-    "addMember": "Mời thành viên"
+    "addMember": "Mời thành viên",
+    "tabMessages": "Tin nhắn",
+    "tabMembers": "Thành viên",
+    "connecting": "Đang kết nối phòng…",
+    "joining": "Đang vào phòng…",
+    "joinError": "Không vào được phòng",
+    "noMembers": "Chưa có thành viên nào online"
   },
   "me": {
     "tabFeed": "Bảng tin",
