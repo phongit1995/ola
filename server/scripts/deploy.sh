@@ -80,6 +80,20 @@ RESTART_SVCS=()
 [ -n "${TARGETS[chat]:-}" ] && RESTART_SVCS+=(chat)
 [ -n "${TARGETS[web]:-}" ]  && RESTART_SVCS+=(web)
 
+CONTAINER_SUFFIX="$(grep -E '^CONTAINER_SUFFIX=' "$ENV_FILE" 2>/dev/null | head -1 | cut -d= -f2- | tr -d '\r' | xargs || true)"
+declare -A SVC_CONTAINER=( [api]="ola-chat-server-api" [chat]="ola-chat-server-chat" [web]="ola-web" )
+for s in "${RESTART_SVCS[@]}"; do
+  base="${SVC_CONTAINER[$s]:-}"
+  [ -z "$base" ] && continue
+  cname="${base}${CONTAINER_SUFFIX}"
+  docker container inspect "$cname" >/dev/null 2>&1 || continue
+  proj="$(docker inspect "$cname" --format '{{ index .Config.Labels "com.docker.compose.project" }}' 2>/dev/null || true)"
+  if [ -z "$proj" ]; then
+    log "Removing stale non-compose container: $cname"
+    docker rm -f "$cname" >/dev/null 2>&1 || true
+  fi
+done
+
 if [ ${#RESTART_SVCS[@]} -gt 0 ]; then
   log "Recreating services: ${RESTART_SVCS[*]}"
   docker compose --env-file "$ENV_FILE" up -d --no-deps --remove-orphans "${RESTART_SVCS[@]}"
