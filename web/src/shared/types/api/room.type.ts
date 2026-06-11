@@ -1,0 +1,116 @@
+export interface Room {
+  id: string;
+  name: string;
+  description?: string;
+  imageUrl?: string;
+  maxMembers: number;
+  memberCount: number;
+  enabled: boolean;
+  createdBy: string;
+  createdAt: string;
+}
+
+export interface RoomBrief {
+  id: string;
+  name: string;
+  imageUrl?: string;
+}
+
+export interface RoomMember {
+  userId: string;
+  username: string;
+  fullName?: string;
+  avatar?: string;
+}
+
+export interface RoomMessage {
+  id: string;
+  roomId: string;
+  senderId: string;
+  senderName?: string;
+  senderAvatar?: string;
+  content: string;
+  createdAt: string;
+}
+
+export interface RoomListResult {
+  items: Room[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface RoomMembersResult {
+  items: RoomMember[];
+  total: number;
+}
+
+export interface RoomMessagesResult {
+  items: RoomMessage[];
+  hasMore: boolean;
+  nextBefore?: string;
+}
+
+export interface BrowseRoomsParams {
+  q?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface RoomMessagesParams {
+  limit?: number;
+  before?: string;
+}
+
+export interface CreateRoomRequest {
+  name: string;
+  description?: string;
+  imageUrl?: string;
+  maxMembers?: number;
+}
+
+export interface UpdateRoomRequest {
+  name?: string;
+  description?: string;
+  imageUrl?: string;
+  maxMembers?: number;
+  enabled?: boolean;
+}
+
+export interface SendRoomMessageRequest {
+  content: string;
+}
+
+export const ROOM_SOCKET_EVENTS = {
+  join: 'room:join',
+  leave: 'room:leave',
+  newMessage: 'NEW_ROOM_MESSAGE',
+  messageDeleted: 'ROOM_MESSAGE_DELETED',
+  memberJoined: 'ROOM_MEMBER_JOINED',
+  memberLeft: 'ROOM_MEMBER_LEFT',
+} as const;
+
+export interface RoomJoinPayload {
+  roomId: string;
+}
+
+export interface RoomPresenceAck {
+  roomId: string;
+  memberCount: number;
+}
+
+export interface NewRoomMessageEvent {
+  room: RoomBrief;
+  message: RoomMessage;
+}
+
+export interface RoomMessageDeletedEvent {
+  roomId: string;
+  messageId: string;
+}
+
+export interface RoomMemberPresenceEvent {
+  roomId: string;
+  userId: string;
+  memberCount: number;
+}
