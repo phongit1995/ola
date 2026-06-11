@@ -517,6 +517,183 @@ definitions:
       traceId:
         type: string
     type: object
+  internal_modules_me.AuthorResponse:
+    properties:
+      avatar:
+        type: string
+      fullName:
+        type: string
+      id:
+        type: string
+      username:
+        type: string
+    type: object
+  internal_modules_me.CommentListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_me.CommentResponse'
+        type: array
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  internal_modules_me.CommentResponse:
+    properties:
+      author:
+        $ref: '#/definitions/internal_modules_me.AuthorResponse'
+      content:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: string
+      postId:
+        type: string
+    type: object
+  internal_modules_me.CreateCommentRequest:
+    properties:
+      content:
+        example: Bài viết hay quá!
+        maxLength: 2000
+        minLength: 1
+        type: string
+    required:
+    - content
+    type: object
+  internal_modules_me.CreatePostRequest:
+    properties:
+      content:
+        example: Hôm nay trời đẹp quá!
+        maxLength: 5000
+        type: string
+      images:
+        items:
+          $ref: '#/definitions/internal_modules_me.PostImageInput'
+        maxItems: 5
+        type: array
+      visibility:
+        enum:
+        - public
+        - private
+        example: public
+        type: string
+    type: object
+  internal_modules_me.PostImageInput:
+    properties:
+      height:
+        minimum: 0
+        type: integer
+      mimeType:
+        type: string
+      url:
+        example: http://localhost:9000/chat-uploads/posts/abc.jpg
+        type: string
+      width:
+        minimum: 0
+        type: integer
+    required:
+    - url
+    type: object
+  internal_modules_me.PostImageResponse:
+    properties:
+      height:
+        type: integer
+      mimeType:
+        type: string
+      url:
+        type: string
+      width:
+        type: integer
+    type: object
+  internal_modules_me.PostListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_me.PostResponse'
+        type: array
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  internal_modules_me.PostResponse:
+    properties:
+      author:
+        $ref: '#/definitions/internal_modules_me.AuthorResponse'
+      commentCount:
+        type: integer
+      content:
+        type: string
+      createdAt:
+        type: string
+      dislikeCount:
+        type: integer
+      id:
+        type: string
+      images:
+        items:
+          $ref: '#/definitions/internal_modules_me.PostImageResponse'
+        type: array
+      likeCount:
+        type: integer
+      myReaction:
+        type: string
+      updatedAt:
+        type: string
+      visibility:
+        type: string
+    type: object
+  internal_modules_me.ReactRequest:
+    properties:
+      type:
+        enum:
+        - like
+        - dislike
+        example: like
+        type: string
+    required:
+    - type
+    type: object
+  internal_modules_me.UpdatePostRequest:
+    properties:
+      content:
+        maxLength: 5000
+        type: string
+      images:
+        items:
+          $ref: '#/definitions/internal_modules_me.PostImageInput'
+        maxItems: 5
+        type: array
+      visibility:
+        enum:
+        - public
+        - private
+        type: string
+    type: object
+  internal_modules_me.UploadImagesResponse:
+    properties:
+      images:
+        items:
+          $ref: '#/definitions/internal_modules_me.UploadedImage'
+        type: array
+    type: object
+  internal_modules_me.UploadedImage:
+    properties:
+      height:
+        type: integer
+      mimeType:
+        type: string
+      url:
+        type: string
+      width:
+        type: integer
+    type: object
   internal_modules_message.MessageResponse:
     properties:
       clientMsgId:
@@ -1353,6 +1530,91 @@ definitions:
     properties:
       data:
         $ref: '#/definitions/internal_modules_auth.RefreshTokenResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_me_CommentListResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_me.CommentListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_me_CommentResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_me.CommentResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_me_PostListResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_me.PostListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_me_PostResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_me.PostResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_me_UploadImagesResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_me.UploadImagesResponse'
       error:
         type: string
       path:
@@ -2431,6 +2693,321 @@ paths:
       summary: Health check
       tags:
       - health
+  /me:
+    get:
+      parameters:
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_PostListResponse'
+      security:
+      - BearerAuth: []
+      summary: 'Feed: public posts + own posts + friends'' private posts'
+      tags:
+      - me
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Create Post
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_me.CreatePostRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_PostResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a post
+      tags:
+      - me
+  /me/{id}:
+    delete:
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete own post (soft delete)
+      tags:
+      - me
+    get:
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_PostResponse'
+      security:
+      - BearerAuth: []
+      summary: Get post detail
+      tags:
+      - me
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update Post
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_me.UpdatePostRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_PostResponse'
+      security:
+      - BearerAuth: []
+      summary: Update own post
+      tags:
+      - me
+  /me/{id}/comments:
+    get:
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_CommentListResponse'
+      security:
+      - BearerAuth: []
+      summary: List comments of a post
+      tags:
+      - me
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Comment
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_me.CreateCommentRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_CommentResponse'
+      security:
+      - BearerAuth: []
+      summary: Add a comment to a post
+      tags:
+      - me
+  /me/{id}/comments/{commentId}:
+    delete:
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Comment ID
+        in: path
+        name: commentId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete a comment (comment author or post author)
+      tags:
+      - me
+  /me/{id}/react:
+    delete:
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_PostResponse'
+      security:
+      - BearerAuth: []
+      summary: Remove your reaction from a post
+      tags:
+      - me
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Reaction
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_me.ReactRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_PostResponse'
+      security:
+      - BearerAuth: []
+      summary: Like or dislike a post (same reaction again removes it)
+      tags:
+      - me
+  /me/images:
+    post:
+      consumes:
+      - multipart/form-data
+      parameters:
+      - description: Image files (jpg, png, gif, webp), max 5
+        in: formData
+        name: images
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_UploadImagesResponse'
+      security:
+      - BearerAuth: []
+      summary: Upload post images (max 5)
+      tags:
+      - me
+  /me/mine:
+    get:
+      parameters:
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_PostListResponse'
+      security:
+      - BearerAuth: []
+      summary: List my own posts (public + private)
+      tags:
+      - me
+  /me/users/{userId}:
+    get:
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: string
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_PostListResponse'
+      security:
+      - BearerAuth: []
+      summary: List a user's posts (visibility-aware)
+      tags:
+      - me
   /messages:
     post:
       consumes:
