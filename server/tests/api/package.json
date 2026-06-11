@@ -19,6 +19,7 @@
     "test:calls": "node tests/13-calls.test.js",
     "test:calls:kafka": "node tests/14-calls-kafka.test.js",
     "test:relationships": "node tests/16-relationships.test.js",
+    "test:me": "node tests/22-me.test.js",
     "test:admin:auth": "node tests/admin/auth.test.js"
   },
   "dependencies": {

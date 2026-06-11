@@ -157,6 +157,8 @@ var (
 		"friendship not found":        true,
 		"block relationship not found": true,
 		"relationship not found":      true,
+		"post not found":              true,
+		"comment not found":           true,
 	}
 
 	errorsConflict = map[string]bool{
@@ -175,6 +177,8 @@ var (
 		"not a room member":                     true,
 		"room is full":                          true,
 		"room is disabled":                      true,
+		"not your post":                         true,
+		"not your comment":                      true,
 	}
 )
 

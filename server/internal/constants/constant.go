@@ -194,6 +194,8 @@ const (
 	MaxAudioUploadSize             = 10 * 1024 * 1024
 	MaxAudioDurationSeconds        = 300
 	UploadFolderMessages           = "messages"
+	UploadFolderPosts              = "posts"
+	MaxPostImages                  = 5
 	CacheKeyRateLimitUpload        = "RATE_LIMIT:%s:UPLOAD"
 	RateLimitUploadMaxRequests     = 30
 	RateLimitUploadWindowSeconds   = 60
