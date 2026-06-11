@@ -55,7 +55,7 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           password: ${{ secrets.SSH_PASSWORD }}
           source: "staging/*"
-          target: ${{ secrets.SERVER_DEPLOY_PATH }}
+          target: ${{ inputs.environment == 'dev' && secrets.SERVER_DEPLOY_PATH_DEV || secrets.SERVER_DEPLOY_PATH }}
           strip_components: 1
 
       - name: Run deploy
@@ -68,7 +68,7 @@ jobs:
           command_timeout: 20m
           script: |
             set -e
-            cd "${{ secrets.SERVER_DEPLOY_PATH }}"
+            cd "${{ inputs.environment == 'dev' && secrets.SERVER_DEPLOY_PATH_DEV || secrets.SERVER_DEPLOY_PATH }}"
             chmod +x deploy.sh
             VERSION='${{ inputs.tag || 'latest' }}' \
             SERVICES='${{ inputs.target == 'web' && 'web' || (inputs.target == 'server' && 'api,chat,migrate' || 'api,chat,web,migrate') }}' \
