@@ -97,6 +97,18 @@ if [ -n "${TARGETS[api]:-}" ]; then
   log "API healthy"
 fi
 
+if [ -n "${TARGETS[web]:-}" ] && [ -n "${WEB_HEALTH_URL:-}" ]; then
+  log "Web health check: $WEB_HEALTH_URL"
+  elapsed=0
+  until curl -fsS --max-time 5 "$WEB_HEALTH_URL" >/dev/null 2>&1; do
+    [ $elapsed -ge "$HEALTH_TIMEOUT" ] && die "Web health check failed after ${HEALTH_TIMEOUT}s"
+    sleep 5
+    elapsed=$((elapsed + 5))
+    log "  waiting... ${elapsed}/${HEALTH_TIMEOUT}s"
+  done
+  log "Web healthy"
+fi
+
 docker image prune -f --filter "dangling=true" >/dev/null 2>&1 || true
 
 trap - EXIT

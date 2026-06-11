@@ -112,6 +112,18 @@ services:
     networks:
       - chat-network
 
+  web:
+    image: ${DOCKERHUB_USERNAME}/ola-web${IMAGE_SUFFIX:-}:${WEB_VERSION:-latest}
+    container_name: ola-web${CONTAINER_SUFFIX:-}
+    restart: unless-stopped
+    labels:
+      - dockflare.enable=${WEB_DOCKFLARE_ENABLE:-true}
+      - dockflare.hostname=${WEB_DOMAIN:-web.ola-server.click}
+      - dockflare.service=http://${DEPLOY_HOST:-phong.local}:${WEB_PORT:-5081}
+    ports:
+      - "${WEB_PORT:-5081}:80"
+    networks:
+      - chat-network
 
   nginx:
     image: nginx:alpine

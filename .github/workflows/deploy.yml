@@ -27,100 +27,53 @@ on:
         type: boolean
 
 concurrency:
-  group: deploy-${{ inputs.environment }}-${{ inputs.target }}
+  group: deploy-${{ inputs.environment }}
   cancel-in-progress: false
 
-env:
-  IMAGE_TAG: ${{ inputs.tag || 'latest' }}
-
 jobs:
-  deploy-server:
-    if: ${{ inputs.target == 'server' || inputs.target == 'both' }}
+  deploy:
     runs-on: ubuntu-latest
-    env:
-      VERSION: ${{ inputs.tag || 'latest' }}
-      RUN_MIGRATIONS: ${{ inputs.run_migrations == false && 'false' || 'true' }}
     steps:
       - uses: actions/checkout@v4
-      - name: Install sshpass
-        run: sudo apt-get update && sudo apt-get install -y sshpass
-      - name: Prepare SSH
+
+      - name: Stage deploy files
         env:
-          SERVER_HOST: ${{ secrets.SERVER_HOST }}
-          SERVER_PORT: ${{ secrets.SERVER_PORT }}
-          SERVER_PASSWORD: ${{ secrets.SERVER_PASSWORD }}
-        run: |
-          mkdir -p ~/.ssh
-          printf '%s' "$SERVER_PASSWORD" > ~/.ssh/pw
-          chmod 600 ~/.ssh/pw
-          ssh-keyscan -H -p "${SERVER_PORT:-22}" "$SERVER_HOST" >> ~/.ssh/known_hosts 2>/dev/null
-      - name: Upload deploy script
-        env:
-          SERVER_HOST: ${{ secrets.SERVER_HOST }}
-          SERVER_PORT: ${{ secrets.SERVER_PORT }}
-          SERVER_USER: ${{ secrets.SERVER_USER }}
-          SERVER_DEPLOY_PATH: ${{ secrets.SERVER_DEPLOY_PATH }}
           DEPLOY_ENV: ${{ inputs.environment || 'production' }}
         run: |
-          sshpass -f ~/.ssh/pw scp -P "$SERVER_PORT" \
-            server/scripts/deploy.sh docker-compose.yml \
-            "$SERVER_USER@$SERVER_HOST:$SERVER_DEPLOY_PATH/"
+          mkdir -p staging
+          cp docker-compose.yml staging/
+          cp server/scripts/deploy.sh staging/
           if [ "$DEPLOY_ENV" = "dev" ]; then
-            sshpass -f ~/.ssh/pw scp -P "$SERVER_PORT" \
-              env.development \
-              "$SERVER_USER@$SERVER_HOST:$SERVER_DEPLOY_PATH/env.development"
+            cp env.development staging/env.development
           fi
-          sshpass -f ~/.ssh/pw ssh -p "$SERVER_PORT" "$SERVER_USER@$SERVER_HOST" \
-            "chmod +x $SERVER_DEPLOY_PATH/deploy.sh"
-      - name: Run deploy
-        env:
-          SERVER_HOST: ${{ secrets.SERVER_HOST }}
-          SERVER_PORT: ${{ secrets.SERVER_PORT }}
-          SERVER_USER: ${{ secrets.SERVER_USER }}
-          SERVER_DEPLOY_PATH: ${{ secrets.SERVER_DEPLOY_PATH }}
-          ENV_FILE: ${{ inputs.environment == 'dev' && 'env.development' || '.env' }}
-          HEALTH_URL: ${{ inputs.environment == 'dev' && 'http://localhost:5242/api/v1/health' || 'http://localhost:5241/api/v1/health' }}
-        run: |
-          sshpass -f ~/.ssh/pw ssh -p "$SERVER_PORT" "$SERVER_USER@$SERVER_HOST" \
-            "cd $SERVER_DEPLOY_PATH && \
-             VERSION='$VERSION' \
-             SERVICES='api,chat,migrate' \
-             RUN_MIGRATIONS='$RUN_MIGRATIONS' \
-             ENV_FILE='$ENV_FILE' \
-             HEALTH_URL='$HEALTH_URL' \
-             ./deploy.sh"
-      - name: Cleanup
-        if: always()
-        run: rm -f ~/.ssh/pw
 
-  deploy-web:
-    if: ${{ inputs.target == 'web' || inputs.target == 'both' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: SSH deploy ola-web
+      - name: Upload deploy files
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          port: ${{ secrets.SSH_PORT }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          source: "staging/*"
+          target: ${{ secrets.SERVER_DEPLOY_PATH }}
+          strip_components: 1
+
+      - name: Run deploy
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.SSH_HOST }}
           port: ${{ secrets.SSH_PORT }}
           username: ${{ secrets.SSH_USERNAME }}
           password: ${{ secrets.SSH_PASSWORD }}
+          command_timeout: 20m
           script: |
             set -e
-            IMAGE="${{ secrets.DOCKERHUB_USERNAME }}/ola-web${{ inputs.environment == 'dev' && '-dev' || '' }}"
-            TAG="${{ inputs.tag || 'latest' }}"
-            CONTAINER="ola-web${{ inputs.environment == 'dev' && '-dev' || '' }}"
-            HOST_PORT="${{ inputs.environment == 'dev' && '5082' || '5081' }}"
-            DOCKFLARE_ENABLE="${{ inputs.environment == 'dev' && 'false' || 'true' }}"
-            WEB_HOSTNAME="${{ inputs.environment == 'dev' && 'web-dev.ola-server.click' || 'web.ola-server.click' }}"
-            docker pull "$IMAGE:$TAG"
-            docker rm -f "$CONTAINER" 2>/dev/null || true
-            docker run -d --name "$CONTAINER" \
-              --network dockflare-internal \
-              -p ${HOST_PORT}:80 \
-              --restart unless-stopped \
-              --label dockflare.enable=$DOCKFLARE_ENABLE \
-              --label dockflare.hostname=$WEB_HOSTNAME \
-              --label dockflare.service=http://phong.local:${HOST_PORT} \
-              "$IMAGE:$TAG"
-            docker image prune -f || true
-            docker ps --filter "name=^/${CONTAINER}$" --format "{{.Image}} | {{.Status}} | {{.Ports}}"
+            cd "${{ secrets.SERVER_DEPLOY_PATH }}"
+            chmod +x deploy.sh
+            VERSION='${{ inputs.tag || 'latest' }}' \
+            SERVICES='${{ inputs.target == 'web' && 'web' || (inputs.target == 'server' && 'api,chat,migrate' || 'api,chat,web,migrate') }}' \
+            RUN_MIGRATIONS='${{ inputs.run_migrations == false && 'false' || 'true' }}' \
+            ENV_FILE='${{ inputs.environment == 'dev' && 'env.development' || '.env' }}' \
+            HEALTH_URL='${{ inputs.environment == 'dev' && 'http://localhost:5242/api/v1/health' || 'http://localhost:5241/api/v1/health' }}' \
+            WEB_HEALTH_URL='${{ inputs.environment == 'dev' && 'http://localhost:5082' || 'http://localhost:5081' }}' \
+            ./deploy.sh
