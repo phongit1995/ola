@@ -9,7 +9,7 @@ export class SocketService {
     if (this.socket) return this.socket;
     this.socket = io(env.socketUrl, {
       auth: { token: authTokens.getAccessToken() ?? '' },
-      transports: ['websocket'],
+      transports: ['polling', 'websocket'],
       autoConnect: true,
     });
     return this.socket;
