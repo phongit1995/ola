@@ -17,4 +17,14 @@ export const API_PATH = {
     base: '/admin/rooms',
     detail: (id: string) => `/admin/rooms/${id}`,
   },
+  me: {
+    base: '/me',
+    mine: '/me/mine',
+    users: (userId: string) => `/me/users/${userId}`,
+    detail: (id: string) => `/me/${id}`,
+    images: '/me/images',
+    react: (id: string) => `/me/${id}/react`,
+    comments: (id: string) => `/me/${id}/comments`,
+    comment: (id: string, commentId: string) => `/me/${id}/comments/${commentId}`,
+  },
 } as const;

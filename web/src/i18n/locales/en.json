@@ -184,6 +184,8 @@
     "composerTitle": "Post Me",
     "composerHint": "What's on your mind?",
     "post": "Post",
+    "addPhoto": "Add photo",
+    "removePhoto": "Remove photo",
     "privacyTo": "To:",
     "privacy_public": "Public",
     "privacy_friend": "Friends",

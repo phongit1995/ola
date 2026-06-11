@@ -69,7 +69,7 @@ export function MePanel() {
     );
   }
 
-  function addPost(content: string) {
+  function addPost(content: string, photos: string[]) {
     composedPostSeed += 1;
     setComposerOpen(false);
     setPosts((current) => [
@@ -80,6 +80,7 @@ export function MePanel() {
         time: t('me.justNow'),
         content,
         image: null,
+        photos,
         comments: 0,
         likes: 0,
         likers: [],

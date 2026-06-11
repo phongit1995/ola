@@ -44,11 +44,26 @@ export function MePostCard({
         <p className="text-sm leading-relaxed text-black/87">{post.content}</p>
       </div>
 
-      {post.image != null && (
+      {post.photos != null && post.photos.length > 0 ? (
+        <div
+          className={`mx-4 mt-3 grid gap-1 ${
+            post.photos.length === 1 ? 'grid-cols-1' : 'grid-cols-2'
+          }`}
+        >
+          {post.photos.map((url, index) => (
+            <img
+              key={index}
+              src={url}
+              alt=""
+              className="h-40 w-full rounded object-cover"
+            />
+          ))}
+        </div>
+      ) : post.image != null ? (
         <div className="mx-4 mt-3 flex h-44 items-center justify-center rounded bg-ola-primary-light text-6xl">
           {post.image}
         </div>
-      )}
+      ) : null}
 
       <div className="mx-4 mt-4 flex items-end gap-1 text-xs text-black/54">
         <span className="flex-1">

@@ -5,6 +5,7 @@ export interface MePost {
   time: string;
   content: string;
   image: string | null;
+  photos?: string[];
   comments: number;
   likes: number;
   likers: string[];
