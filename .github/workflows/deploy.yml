@@ -25,6 +25,11 @@ on:
         required: false
         default: true
         type: boolean
+      run_seed:
+        description: 'Seed database với test data (100 users + 10 rooms)'
+        required: false
+        default: false
+        type: boolean
 
 concurrency:
   group: deploy-${{ inputs.environment }}
@@ -77,3 +82,10 @@ jobs:
             HEALTH_URL='${{ inputs.environment == 'dev' && 'http://localhost:5242/api/v1/health' || 'http://localhost:5241/api/v1/health' }}' \
             WEB_HEALTH_URL='${{ inputs.environment == 'dev' && 'http://localhost:5082' || 'http://localhost:5081' }}' \
             ./deploy.sh
+
+            if [ '${{ inputs.run_seed }}' = 'true' ]; then
+              echo "🌱 Running database seed..."
+              ENV_FILE='${{ inputs.environment == 'dev' && 'env.development' || '.env' }}'
+              docker compose --env-file "$ENV_FILE" run --rm migrate seed
+              echo "✅ Seed completed"
+            fi
