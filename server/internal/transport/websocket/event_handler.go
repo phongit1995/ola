@@ -77,7 +77,7 @@ func (h *EventHandler) registerClientEvents(client *socket.Socket, userID string
 		}
 	})
 
-	if h.server.roomSvc != nil {
+	if h.server.roomPresence != nil {
 		h.registerRoomEvents(client, userID)
 	}
 }
