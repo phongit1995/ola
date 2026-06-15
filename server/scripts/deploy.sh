@@ -35,7 +35,7 @@ update_var() {
 
 declare -A TARGETS=()
 if [ "$SERVICES" = "all" ]; then
-  TARGETS[api]=1; TARGETS[chat]=1; TARGETS[web]=1; TARGETS[migrate]=1
+  TARGETS[api]=1; TARGETS[chat]=1; TARGETS[web]=1; TARGETS[admin]=1; TARGETS[migrate]=1
 else
   IFS=',' read -ra arr <<< "$SERVICES"
   for s in "${arr[@]}"; do TARGETS["$(echo "$s" | xargs)"]=1; done
@@ -45,6 +45,7 @@ log "Setting version=$VERSION for: ${!TARGETS[*]}"
 [ -n "${TARGETS[api]:-}" ]     && update_var API_VERSION     "$VERSION" "$ENV_FILE"
 [ -n "${TARGETS[chat]:-}" ]    && update_var CHAT_VERSION    "$VERSION" "$ENV_FILE"
 [ -n "${TARGETS[web]:-}" ]     && update_var WEB_VERSION     "$VERSION" "$ENV_FILE"
+[ -n "${TARGETS[admin]:-}" ]   && update_var ADMIN_VERSION   "$VERSION" "$ENV_FILE"
 [ -n "${TARGETS[migrate]:-}" ] && update_var MIGRATE_VERSION "$VERSION" "$ENV_FILE"
 
 log "Pulling images..."
@@ -57,9 +58,10 @@ rollback() {
   cp "$BACKUP_ENV" "$ENV_FILE"
   log "Restarting previous version..."
   local svcs=()
-  [ -n "${TARGETS[api]:-}" ]  && svcs+=(api)
-  [ -n "${TARGETS[chat]:-}" ] && svcs+=(chat)
-  [ -n "${TARGETS[web]:-}" ]  && svcs+=(web)
+  [ -n "${TARGETS[api]:-}" ]   && svcs+=(api)
+  [ -n "${TARGETS[chat]:-}" ]  && svcs+=(chat)
+  [ -n "${TARGETS[web]:-}" ]   && svcs+=(web)
+  [ -n "${TARGETS[admin]:-}" ] && svcs+=(admin)
   if [ ${#svcs[@]} -gt 0 ]; then
     docker compose --env-file "$ENV_FILE" up -d --no-deps "${svcs[@]}" || true
   fi
@@ -67,12 +69,13 @@ rollback() {
 trap 'rc=$?; [ $rc -ne 0 ] && rollback; exit $rc' EXIT
 
 RESTART_SVCS=()
-[ -n "${TARGETS[api]:-}" ]  && RESTART_SVCS+=(api)
-[ -n "${TARGETS[chat]:-}" ] && RESTART_SVCS+=(chat)
-[ -n "${TARGETS[web]:-}" ]  && RESTART_SVCS+=(web)
+[ -n "${TARGETS[api]:-}" ]   && RESTART_SVCS+=(api)
+[ -n "${TARGETS[chat]:-}" ]  && RESTART_SVCS+=(chat)
+[ -n "${TARGETS[web]:-}" ]   && RESTART_SVCS+=(web)
+[ -n "${TARGETS[admin]:-}" ] && RESTART_SVCS+=(admin)
 
 CONTAINER_SUFFIX="$(grep -E '^CONTAINER_SUFFIX=' "$ENV_FILE" 2>/dev/null | head -1 | cut -d= -f2- | tr -d '\r' | xargs || true)"
-declare -A SVC_CONTAINER=( [api]="ola-chat-server-api" [chat]="ola-chat-server-chat" [web]="ola-web" )
+declare -A SVC_CONTAINER=( [api]="ola-chat-server-api" [chat]="ola-chat-server-chat" [web]="ola-web" [admin]="ola-admin" )
 for s in "${RESTART_SVCS[@]}"; do
   base="${SVC_CONTAINER[$s]:-}"
   [ -z "$base" ] && continue
@@ -112,6 +115,18 @@ if [ -n "${TARGETS[web]:-}" ] && [ -n "${WEB_HEALTH_URL:-}" ]; then
     log "  waiting... ${elapsed}/${HEALTH_TIMEOUT}s"
   done
   log "Web healthy"
+fi
+
+if [ -n "${TARGETS[admin]:-}" ] && [ -n "${ADMIN_HEALTH_URL:-}" ]; then
+  log "Admin health check: $ADMIN_HEALTH_URL"
+  elapsed=0
+  until curl -fsS --max-time 5 "$ADMIN_HEALTH_URL" >/dev/null 2>&1; do
+    [ $elapsed -ge "$HEALTH_TIMEOUT" ] && die "Admin health check failed after ${HEALTH_TIMEOUT}s"
+    sleep 5
+    elapsed=$((elapsed + 5))
+    log "  waiting... ${elapsed}/${HEALTH_TIMEOUT}s"
+  done
+  log "Admin healthy"
 fi
 
 docker image prune -f --filter "dangling=true" >/dev/null 2>&1 || true

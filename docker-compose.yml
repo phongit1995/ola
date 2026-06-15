@@ -127,6 +127,19 @@ services:
     networks:
       - chat-network
 
+  admin:
+    image: ${DOCKERHUB_USERNAME}/ola-admin${IMAGE_SUFFIX:-}:${ADMIN_VERSION:-latest}
+    container_name: ola-admin${CONTAINER_SUFFIX:-}
+    restart: unless-stopped
+    labels:
+      - dockflare.enable=${ADMIN_DOCKFLARE_ENABLE:-true}
+      - dockflare.hostname=${ADMIN_DOMAIN:-admin.ola-server.click}
+      - dockflare.service=http://${DEPLOY_HOST:-phong.local}:${ADMIN_PORT:-5083}
+    ports:
+      - "${ADMIN_PORT:-5083}:80"
+    networks:
+      - chat-network
+
   nginx:
     image: nginx:alpine
     container_name: ola-chat-server-nginx${CONTAINER_SUFFIX:-}
