@@ -56,6 +56,7 @@ jobs:
               echo "VITE_API_URL=${{ inputs.vite_api_url || env.WEB_API_URL }}"
               echo "VITE_SOCKET_URL=${{ env.WEB_SOCKET_URL }}"
               echo "VITE_API_GUARD_SECRET=${{ secrets.VITE_API_GUARD_SECRET }}"
+              echo "VITE_GEOAPIFY_KEY=${{ secrets.VITE_GEOAPIFY_KEY }}"
             } > web/.env
           fi
       - name: Build & push ola-web${{ env.SUFFIX }}
