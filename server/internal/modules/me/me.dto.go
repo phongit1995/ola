@@ -72,6 +72,7 @@ type PostResponse struct {
 	CommentCount int                 `json:"commentCount"`
 	MyReaction   *string             `json:"myReaction"`
 	Author       *AuthorResponse     `json:"author,omitempty"`
+	TopLikers    []AuthorResponse    `json:"topLikers,omitempty"`
 	CreatedAt    string              `json:"createdAt"`
 	UpdatedAt    string              `json:"updatedAt"`
 }

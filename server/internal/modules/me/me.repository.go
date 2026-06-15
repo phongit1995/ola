@@ -113,6 +113,40 @@ func (r *Repository) ListLikers(postID uuid.UUID, limit, offset int) ([]*models.
 	return users, total, nil
 }
 
+type topLikerRow struct {
+	PostID   uuid.UUID `gorm:"column:post_id"`
+	ID       uuid.UUID `gorm:"column:id"`
+	Username string    `gorm:"column:username"`
+	FullName string    `gorm:"column:full_name"`
+	Avatar   string    `gorm:"column:avatar"`
+}
+
+func (r *Repository) TopLikersByPosts(postIDs []uuid.UUID, perPost int) (map[uuid.UUID][]*models.User, error) {
+	result := make(map[uuid.UUID][]*models.User)
+	if len(postIDs) == 0 {
+		return result, nil
+	}
+
+	sub := r.db.
+		Table("me_reactions AS r").
+		Select("r.post_id AS post_id, u.id AS id, u.username AS username, u.full_name AS full_name, u.avatar AS avatar, ROW_NUMBER() OVER (PARTITION BY r.post_id ORDER BY r.created_at DESC) AS rn").
+		Joins("JOIN users u ON u.id = r.user_id").
+		Where("r.post_id IN ? AND r.type = ?", postIDs, models.PostReactionLike)
+
+	var rows []topLikerRow
+	if err := r.db.Table("(?) AS t", sub).Where("t.rn <= ?", perPost).Order("t.post_id, t.rn").Scan(&rows).Error; err != nil {
+		return nil, err
+	}
+
+	for i := range rows {
+		row := rows[i]
+		u := &models.User{Username: row.Username, FullName: row.FullName, Avatar: row.Avatar}
+		u.ID = row.ID
+		result[row.PostID] = append(result[row.PostID], u)
+	}
+	return result, nil
+}
+
 func (r *Repository) FindUserIDsByUsernames(names []string) (map[string]uuid.UUID, error) {
 	result := make(map[string]uuid.UUID)
 	if len(names) == 0 {

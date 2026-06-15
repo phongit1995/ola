@@ -372,6 +372,11 @@ func (s *Service) buildList(viewerID uuid.UUID, posts []*models.Post, total int6
 		return nil, err
 	}
 
+	topLikers, err := s.repo.TopLikersByPosts(ids, 3)
+	if err != nil {
+		return nil, err
+	}
+
 	items := make([]PostResponse, 0, len(posts))
 	for _, p := range posts {
 		var mr *models.PostReactionType
@@ -379,7 +384,15 @@ func (s *Service) buildList(viewerID uuid.UUID, posts []*models.Post, total int6
 			rt := t
 			mr = &rt
 		}
-		items = append(items, toPostResponse(p, mr))
+		resp := toPostResponse(p, mr)
+		if likers, ok := topLikers[p.ID]; ok {
+			tl := make([]AuthorResponse, 0, len(likers))
+			for _, u := range likers {
+				tl = append(tl, *toAuthorResponse(u))
+			}
+			resp.TopLikers = tl
+		}
+		items = append(items, resp)
 	}
 	return &PostListResponse{Items: items, Total: total, Limit: limit, Offset: offset}, nil
 }
