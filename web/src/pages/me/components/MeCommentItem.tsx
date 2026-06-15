@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { ConfirmDialog } from '@components';
 import { Avatar } from '../../chat/components/Avatar';
 import { colorFromName } from '../mappers';
 import { renderRichText } from '../richText';
@@ -20,11 +22,13 @@ export function MeCommentItem({
   onOpenProfile,
 }: MeCommentItemProps) {
   const { t } = useTranslation();
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const name = comment.author?.username ?? '';
   const color = colorFromName(name);
 
   return (
-    <div className="mx-2 mb-2 flex items-start gap-3 rounded-lg bg-white px-4 py-3 shadow-[0_1px_2px_rgba(0,0,0,0.12)]">
+    <>
+      <div className="mx-2 mb-2 flex items-start gap-3 rounded-lg bg-white px-4 py-3 shadow-[0_1px_2px_rgba(0,0,0,0.12)]">
       <button type="button" onClick={() => onOpenProfile?.(name, color)} className="shrink-0">
         <Avatar name={name} color={color} size={40} />
       </button>
@@ -47,14 +51,26 @@ export function MeCommentItem({
         <button
           type="button"
           aria-label={t('me.deleteComment')}
-          onClick={() => {
-            if (window.confirm(t('me.deleteCommentConfirm'))) onDelete(comment.id);
-          }}
+          onClick={() => setConfirmOpen(true)}
           className="shrink-0 px-1 text-xs text-black/40 hover:text-ola-error"
         >
           {t('common.clear')}
         </button>
       )}
-    </div>
+      </div>
+      <ConfirmDialog
+        open={confirmOpen}
+        danger
+        title={t('me.deleteComment')}
+        message={t('me.deleteCommentConfirm')}
+        confirmLabel={t('dialog.yes')}
+        cancelLabel={t('dialog.no')}
+        onConfirm={() => {
+          onDelete(comment.id);
+          setConfirmOpen(false);
+        }}
+        onCancel={() => setConfirmOpen(false)}
+      />
+    </>
   );
 }

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import type { UseFormRegisterReturn } from 'react-hook-form';
 
 interface ClearableInputProps {
@@ -17,6 +18,7 @@ export function ClearableInput({
   onClear,
   inputClassName = 'text-sm',
 }: ClearableInputProps) {
+  const { t } = useTranslation();
   return (
     <div className="flex items-center">
       <input
@@ -28,7 +30,7 @@ export function ClearableInput({
       {showClear && (
         <button
           type="button"
-          aria-label="Xoá"
+          aria-label={t('common.clear')}
           tabIndex={-1}
           onClick={onClear}
           className="mr-1.5 flex h-9 w-9 items-center justify-center text-xl text-black/54"
