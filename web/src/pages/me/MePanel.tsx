@@ -1,38 +1,27 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ROUTES } from '@constants';
-import { ConfirmDialog, Dialog, DialogButton } from '@components';
-import { LanguageSwitcher } from '@components/LanguageSwitcher';
 import { HomeHeader } from '@components/HomeHeader';
 import editIcon from '@/assets/icons/me/ic_action_edit.png';
-import { AuthService } from '@services';
 import { useAuthStore } from '@/store/authStore';
 import { Avatar } from '../chat/components/Avatar';
 import { MeTabBar } from './components/MeTabBar';
-import { MePostCard } from './components/MePostCard';
+import { MeFeedList } from './components/MeFeedList';
 import { MeComposerDialog } from './components/MeComposerDialog';
+import { MeAccountDialog } from './components/MeAccountDialog';
 import { ProfilePage } from '../profile/ProfilePage';
 import { buildProfile } from '../profile/data';
-import { ME_POSTS } from './data';
-import type { MePost, MeTab } from './types';
+import { useMeFeed } from './useMeFeed';
 import type { UserProfile } from '../profile/types';
 
-let composedPostSeed = 0;
-
 export function MePanel() {
-  const navigate = useNavigate();
   const { t } = useTranslation();
   const username = useAuthStore((s) => s.user?.username ?? null);
-  const clearUser = useAuthStore((s) => s.clearUser);
   const displayName = username ?? t('home.guest');
 
-  const [tab, setTab] = useState<MeTab>('feed');
-  const [posts, setPosts] = useState<MePost[]>(ME_POSTS);
+  const { tab, setTab, posts, loading, isFollower, toggleReaction, addPost } = useMeFeed();
+
   const [composerOpen, setComposerOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
-  const [logoutOpen, setLogoutOpen] = useState(false);
-  const [showNewBar, setShowNewBar] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
 
   function openProfile(nick: string, color: string, isSelf = false) {
@@ -40,73 +29,7 @@ export function MePanel() {
     setProfile(buildProfile(nick, color, isSelf));
   }
 
-  useEffect(() => {
-    const timer = window.setTimeout(() => setShowNewBar(true), 4000);
-    return () => window.clearTimeout(timer);
-  }, []);
-
-  const visiblePosts = useMemo(() => {
-    if (tab === 'mentions') return posts.filter((post) => post.mention);
-    if (tab === 'media') return posts.filter((post) => post.image != null);
-    return posts;
-  }, [posts, tab]);
-
-  function toggleLike(id: string) {
-    setPosts((current) =>
-      current.map((post) =>
-        post.id === id
-          ? { ...post, liked: !post.liked, likes: post.likes + (post.liked ? -1 : 1) }
-          : post
-      )
-    );
-  }
-
-  function toggleDislike(id: string) {
-    setPosts((current) =>
-      current.map((post) =>
-        post.id === id ? { ...post, disliked: !post.disliked } : post
-      )
-    );
-  }
-
-  function addPost(post: {
-    content: string;
-    photos: string[];
-    checkIn: string | null;
-    sticker: string | null;
-  }) {
-    composedPostSeed += 1;
-    setComposerOpen(false);
-    setPosts((current) => [
-      {
-        id: `composed-${composedPostSeed}`,
-        author: displayName,
-        color: '#7cb342',
-        time: t('me.justNow'),
-        content: post.content,
-        image: post.sticker,
-        photos: post.photos,
-        checkIn: post.checkIn,
-        comments: 0,
-        likes: 0,
-        likers: [],
-        liked: false,
-        disliked: false,
-        mention: false,
-      },
-      ...current,
-    ]);
-  }
-
-  async function confirmLogout() {
-    setLogoutOpen(false);
-    try {
-      await AuthService.logout();
-    } finally {
-      clearUser();
-      navigate(ROUTES.login);
-    }
-  }
+  const emptyText = isFollower ? t('me.followerEmpty') : t('me.empty');
 
   return (
     <>
@@ -122,38 +45,15 @@ export function MePanel() {
         </button>
       </HomeHeader>
 
-      {showNewBar && (
-        <button
-          type="button"
-          onClick={() => setShowNewBar(false)}
-          className="w-full bg-ola-primary-light py-1.5 text-center text-sm font-medium text-ola-primary-dark"
-        >
-          {t('me.newPosts')}
-        </button>
-      )}
-
       <main className="relative flex-1 overflow-y-auto bg-[#f3f3f3]">
-        {tab === 'follower' ? (
-          <div className="flex h-full items-center justify-center px-8 text-center text-sm text-black/54">
-            {t('me.followerEmpty')}
-          </div>
-        ) : visiblePosts.length === 0 ? (
-          <div className="flex h-full items-center justify-center px-8 text-center text-sm text-black/54">
-            {t('me.empty')}
-          </div>
-        ) : (
-          <div className="py-2">
-            {visiblePosts.map((post) => (
-              <MePostCard
-                key={post.id}
-                post={post}
-                onToggleLike={toggleLike}
-                onToggleDislike={toggleDislike}
-                onOpenProfile={(author, color) => openProfile(author, color)}
-              />
-            ))}
-          </div>
-        )}
+        <MeFeedList
+          posts={posts}
+          loading={loading}
+          emptyText={emptyText}
+          onToggleLike={(id) => toggleReaction(id, 'like')}
+          onToggleDislike={(id) => toggleReaction(id, 'dislike')}
+          onOpenProfile={(author, color) => openProfile(author, color)}
+        />
 
         <button
           type="button"
@@ -168,50 +68,17 @@ export function MePanel() {
       <MeComposerDialog
         open={composerOpen}
         onClose={() => setComposerOpen(false)}
-        onPost={addPost}
+        onPost={(draft) => {
+          setComposerOpen(false);
+          addPost(draft);
+        }}
       />
 
-      <Dialog
+      <MeAccountDialog
         open={accountOpen}
+        displayName={displayName}
         onClose={() => setAccountOpen(false)}
-        title={displayName}
-        footer={
-          <>
-            <DialogButton
-              variant="green"
-              onClick={() => openProfile(displayName, '#7cb342', true)}
-            >
-              {t('me.viewProfile')}
-            </DialogButton>
-            <DialogButton
-              variant="danger"
-              onClick={() => {
-                setAccountOpen(false);
-                setLogoutOpen(true);
-              }}
-            >
-              {t('home.logout')}
-            </DialogButton>
-          </>
-        }
-      >
-        <div className="flex flex-col items-center gap-3 py-2">
-          <Avatar name={displayName} color="#7cb342" size={64} />
-          <p className="text-base font-medium text-black/87">{displayName}</p>
-          <LanguageSwitcher tone="dark" />
-        </div>
-      </Dialog>
-
-      <ConfirmDialog
-        open={logoutOpen}
-        showIcon={false}
-        danger
-        title={t('dialog.logoutTitle')}
-        message={t('dialog.logoutMessage')}
-        confirmLabel={t('dialog.logoutButton')}
-        cancelLabel={t('dialog.no')}
-        onConfirm={confirmLogout}
-        onCancel={() => setLogoutOpen(false)}
+        onViewProfile={() => openProfile(displayName, '#7cb342', true)}
       />
 
       {profile != null && (

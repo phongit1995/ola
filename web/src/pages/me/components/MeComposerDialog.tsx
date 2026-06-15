@@ -3,15 +3,24 @@ import { useTranslation } from 'react-i18next';
 import { Dialog, DialogButton } from '@components';
 import { CONTACTS } from '../../chat/data';
 import { Avatar } from '../../chat/components/Avatar';
+import {
+  ATTACH_BUTTONS,
+  PRIVACY_OPTIONS,
+  STICKERS,
+  VENUES,
+  type AttachButtonKey,
+} from '../constants';
+import type { PostVisibility } from '@app-types';
 
-type Privacy = 'public' | 'friend' | 'private' | 'clan';
 type AttachPanel = 'tag' | 'checkin' | 'sticker' | null;
+type PickedPhoto = { url: string; file: File };
 
-interface ComposedPost {
+export interface ComposedPost {
   content: string;
-  photos: string[];
+  files: File[];
   checkIn: string | null;
   sticker: string | null;
+  visibility: PostVisibility;
 }
 
 interface MeComposerDialogProps {
@@ -20,28 +29,11 @@ interface MeComposerDialogProps {
   onPost: (post: ComposedPost) => void;
 }
 
-const PRIVACY_OPTIONS: Privacy[] = ['public', 'friend', 'private', 'clan'];
-const ATTACH_BUTTONS = [
-  { key: 'local', glyph: '📷', labelKey: 'me.attachLocal' },
-  { key: 'cloud', glyph: '☁️', labelKey: 'me.attachCloud' },
-  { key: 'tag', glyph: '🏷️', labelKey: 'me.attachTag' },
-  { key: 'checkin', glyph: '📍', labelKey: 'me.attachCheckIn' },
-  { key: 'sticker', glyph: '😊', labelKey: 'me.attachSticker' },
-] as const;
-const STICKERS = ['😀', '😍', '😎', '😢', '😡', '👍', '❤️', '🔥', '🎉', '🌹', '☀️', '⚽'];
-const VENUES = [
-  'The Coffee House',
-  'Vincom Center',
-  'Hồ Gươm',
-  'Sân vận động Mỹ Đình',
-  'Phố đi bộ Nguyễn Huệ',
-];
-
 export function MeComposerDialog({ open, onClose, onPost }: MeComposerDialogProps) {
   const { t } = useTranslation();
   const [content, setContent] = useState('');
-  const [privacy, setPrivacy] = useState<Privacy>('public');
-  const [photos, setPhotos] = useState<string[]>([]);
+  const [privacy, setPrivacy] = useState<PostVisibility>('public');
+  const [photos, setPhotos] = useState<PickedPhoto[]>([]);
   const [checkIn, setCheckIn] = useState<string | null>(null);
   const [sticker, setSticker] = useState<string | null>(null);
   const [postToMe, setPostToMe] = useState(false);
@@ -60,7 +52,7 @@ export function MeComposerDialog({ open, onClose, onPost }: MeComposerDialogProp
   }
 
   function handleClose() {
-    photos.forEach((url) => URL.revokeObjectURL(url));
+    photos.forEach((photo) => URL.revokeObjectURL(photo.url));
     reset();
     onClose();
   }
@@ -71,13 +63,13 @@ export function MeComposerDialog({ open, onClose, onPost }: MeComposerDialogProp
     if (files.length === 0) return;
     setPhotos((current) => [
       ...current,
-      ...files.map((file) => URL.createObjectURL(file)),
+      ...files.map((file) => ({ url: URL.createObjectURL(file), file })),
     ]);
   }
 
   function removePhoto(url: string) {
     URL.revokeObjectURL(url);
-    setPhotos((current) => current.filter((item) => item !== url));
+    setPhotos((current) => current.filter((item) => item.url !== url));
   }
 
   function insertMention(nick: string) {
@@ -94,7 +86,7 @@ export function MeComposerDialog({ open, onClose, onPost }: MeComposerDialogProp
     setPanel((current) => (current === next ? null : next));
   }
 
-  function handleAttach(key: (typeof ATTACH_BUTTONS)[number]['key']) {
+  function handleAttach(key: AttachButtonKey) {
     if (key === 'local' || key === 'cloud') {
       fileInputRef.current?.click();
       return;
@@ -105,7 +97,7 @@ export function MeComposerDialog({ open, onClose, onPost }: MeComposerDialogProp
   function submit() {
     const text = content.trim();
     if (text === '' && photos.length === 0 && sticker == null && checkIn == null) return;
-    onPost({ content: text, photos, checkIn, sticker });
+    onPost({ content: text, files: photos.map((photo) => photo.file), checkIn, sticker, visibility: privacy });
     reset();
   }
 
@@ -130,7 +122,7 @@ export function MeComposerDialog({ open, onClose, onPost }: MeComposerDialogProp
           {t('me.privacyTo')}
           <select
             value={privacy}
-            onChange={(event) => setPrivacy(event.target.value as Privacy)}
+            onChange={(event) => setPrivacy(event.target.value as PostVisibility)}
             className="rounded border border-black/12 px-2 py-1 text-black/87 outline-none"
           >
             {PRIVACY_OPTIONS.map((option) => (
@@ -190,16 +182,16 @@ export function MeComposerDialog({ open, onClose, onPost }: MeComposerDialogProp
 
       {photos.length > 0 && (
         <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
-          {photos.map((url) => (
+          {photos.map((photo) => (
             <div
-              key={url}
+              key={photo.url}
               className="relative h-20 w-20 shrink-0 overflow-hidden rounded-md border border-black/12"
             >
-              <img src={url} alt="" className="h-full w-full object-cover" />
+              <img src={photo.url} alt="" className="h-full w-full object-cover" />
               <button
                 type="button"
                 aria-label={t('me.removePhoto')}
-                onClick={() => removePhoto(url)}
+                onClick={() => removePhoto(photo.url)}
                 className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-sm leading-none text-white"
               >
                 ×

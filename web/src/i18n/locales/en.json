@@ -1,7 +1,8 @@
 {
   "common": {
     "clear": "Clear",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "loading": "Loading…"
   },
   "auth": {
     "errGeneric": "Something went wrong, please try again.",

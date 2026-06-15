@@ -1,6 +1,15 @@
-export type PostVisibility = 'public' | 'private';
+export type PostVisibility = 'public' | 'friend' | 'private';
 
 export type PostReaction = 'like' | 'dislike';
+
+export type MeFeedFilter = 'mentions' | 'media';
+
+export interface PostCheckIn {
+  name: string;
+  address?: string;
+  lat?: number;
+  lng?: number;
+}
 
 export interface PostImage {
   url: string;
@@ -20,6 +29,9 @@ export interface Post {
   id: string;
   content?: string;
   images: PostImage[];
+  mentions?: string[];
+  checkIn?: PostCheckIn | null;
+  sticker?: string;
   visibility: PostVisibility;
   likeCount: number;
   dislikeCount: number;
@@ -52,6 +64,13 @@ export interface PostCommentListResult {
   offset: number;
 }
 
+export interface PostLikerListResult {
+  items: PostAuthor[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
 export interface UploadedImage {
   url: string;
   width: number;
@@ -66,12 +85,16 @@ export interface UploadImagesResult {
 export interface CreatePostRequest {
   content?: string;
   images?: PostImage[];
+  checkIn?: PostCheckIn;
+  sticker?: string;
   visibility?: PostVisibility;
 }
 
 export interface UpdatePostRequest {
   content?: string;
   images?: PostImage[];
+  checkIn?: PostCheckIn;
+  sticker?: string;
   visibility?: PostVisibility;
 }
 
@@ -86,4 +109,5 @@ export interface CreateCommentRequest {
 export interface FeedParams {
   limit?: number;
   offset?: number;
+  filter?: MeFeedFilter;
 }

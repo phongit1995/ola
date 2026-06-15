@@ -6,6 +6,7 @@ import type {
   Post,
   PostComment,
   PostCommentListResult,
+  PostLikerListResult,
   PostListResult,
   CreatePostRequest,
   UpdatePostRequest,
@@ -71,6 +72,13 @@ export class MeService {
 
   static async removeReaction(id: string): Promise<Post> {
     const { data } = await api.delete<IApiResponse<Post>>(API_PATH.me.react(id));
+    return data.data;
+  }
+
+  static async likers(id: string, params: FeedParams = {}): Promise<PostLikerListResult> {
+    const { data } = await api.get<IApiResponse<PostLikerListResult>>(API_PATH.me.likers(id), {
+      params,
+    });
     return data.data;
   }
 

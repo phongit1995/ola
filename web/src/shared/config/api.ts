@@ -25,6 +25,7 @@ export const API_PATH = {
     detail: (id: string) => `/me/${id}`,
     images: '/me/images',
     react: (id: string) => `/me/${id}/react`,
+    likers: (id: string) => `/me/${id}/likers`,
     comments: (id: string) => `/me/${id}/comments`,
     comment: (id: string, commentId: string) => `/me/${id}/comments/${commentId}`,
   },

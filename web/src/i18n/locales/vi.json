@@ -1,7 +1,8 @@
 {
   "common": {
     "clear": "Xoá",
-    "cancel": "Huỷ"
+    "cancel": "Huỷ",
+    "loading": "Đang tải…"
   },
   "auth": {
     "errGeneric": "Đã có lỗi xảy ra, vui lòng thử lại.",
