@@ -5,6 +5,8 @@ import { RegisterPage } from '@/pages/register/RegisterPage';
 import { ForgotPasswordPage } from '@/pages/forgot-password/ForgotPasswordPage';
 import { TermsPage } from '@/pages/terms/TermsPage';
 import { HomePage } from '@/pages/home/HomePage';
+import { ProfileMePage } from '@/pages/profile/ProfileMePage';
+import { EditProfileMePage } from '@/pages/profile/EditProfileMePage';
 import { GuestRoute, ProtectedRoute } from './guards';
 
 export function AppRouter() {
@@ -41,6 +43,22 @@ export function AppRouter() {
             <GuestRoute>
               <ForgotPasswordPage />
             </GuestRoute>
+          }
+        />
+        <Route
+          path={ROUTES.profile}
+          element={
+            <ProtectedRoute>
+              <ProfileMePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={ROUTES.profileEdit}
+          element={
+            <ProtectedRoute>
+              <EditProfileMePage />
+            </ProtectedRoute>
           }
         />
         <Route path={ROUTES.terms} element={<TermsPage />} />

@@ -19,6 +19,22 @@ export interface AuthUser {
   createdAt?: string;
 }
 
+export interface UpdateProfileRequest {
+  avatar?: string;
+  phone?: string;
+  fullName?: string;
+  gender?: Gender;
+  bio?: string;
+  dateOfBirth?: string;
+}
+
+export interface UploadAvatarResult {
+  url: string;
+  secureUrl: string;
+  publicId: string;
+  format: string;
+}
+
 export interface LoginRequest {
   username: string;
   password: string;

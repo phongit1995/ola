@@ -20,6 +20,7 @@ export const API_PATH = {
   },
   user: {
     me: '/user/me',
+    upload: '/user/upload',
   },
   me: {
     base: '/me',

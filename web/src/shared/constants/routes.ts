@@ -4,6 +4,8 @@ export const ROUTES = {
   forgotPassword: '/forgot-password',
   terms: '/dieu-khoan',
   home: '/',
+  profile: '/profile',
+  profileEdit: '/profile/edit',
 } as const;
 
 export type RoutePath = (typeof ROUTES)[keyof typeof ROUTES];

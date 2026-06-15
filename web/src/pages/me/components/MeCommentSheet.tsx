@@ -1,13 +1,11 @@
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import smileyIcon from '@/assets/icons/chat/ic_smiley.png';
 import { useAuthStore } from '@/store/authStore';
-import { Avatar } from '../../chat/components/Avatar';
 import { MePostCard } from './MePostCard';
 import { MeCommentItem } from './MeCommentItem';
-import { ComposerSmileyPanel } from './ComposerSmileyPanel';
+import { MeCommentComposer } from './MeCommentComposer';
 import { useMeComments } from '../useMeComments';
-import { createTimeFormatter, colorFromName } from '../mappers';
+import { createTimeFormatter } from '../mappers';
 import type { MePost } from '../types';
 
 interface MeCommentSheetProps {
@@ -32,9 +30,6 @@ export function MeCommentSheet({
   const { t, i18n } = useTranslation();
   const me = useAuthStore((state) => state.user);
   const [shown, setShown] = useState(false);
-  const [draft, setDraft] = useState('');
-  const [smileyOpen, setSmileyOpen] = useState(false);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const { comments, total, loading, error, submitting, add, remove } = useMeComments(post.id, {
     onDelta: (delta) => onCommentDelta(post.id, delta),
@@ -51,33 +46,6 @@ export function MeCommentSheet({
     setShown(false);
     window.setTimeout(onClose, CLOSE_ANIMATION_MS);
   }
-
-  function insertSmiley(code: string) {
-    const token = `${code} `;
-    const el = inputRef.current;
-    setDraft((current) => {
-      if (el == null) return current + token;
-      const at = el.selectionStart ?? current.length;
-      return current.slice(0, at) + token + current.slice(at);
-    });
-  }
-
-  async function submit() {
-    const ok = await add(draft);
-    if (ok) {
-      setDraft('');
-      setSmileyOpen(false);
-    }
-  }
-
-  function onInputKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
-    if (event.key === 'Enter' && !event.shiftKey) {
-      event.preventDefault();
-      submit();
-    }
-  }
-
-  const myName = me?.username ?? t('home.guest');
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-[#eceff1]">
@@ -138,40 +106,7 @@ export function MeCommentSheet({
           </div>
         </div>
 
-        {smileyOpen && (
-          <div className="border-t border-black/12 bg-white px-2">
-            <ComposerSmileyPanel onPick={insertSmiley} />
-          </div>
-        )}
-
-        <div className="flex shrink-0 items-end gap-2 border-t border-black/12 bg-white px-3 py-2">
-          <Avatar name={myName} color={colorFromName(myName)} size={36} />
-          <textarea
-            ref={inputRef}
-            value={draft}
-            onChange={(event) => setDraft(event.target.value)}
-            onKeyDown={onInputKeyDown}
-            placeholder={t('me.commentInputHint')}
-            rows={1}
-            className="max-h-28 min-h-9 flex-1 resize-none rounded-2xl border border-black/12 px-3 py-2 text-sm text-black/87 outline-none focus:border-ola-primary"
-          />
-          <button
-            type="button"
-            aria-label={t('chat.attachTabSmiley')}
-            onClick={() => setSmileyOpen((open) => !open)}
-            className="flex h-9 w-9 shrink-0 items-center justify-center"
-          >
-            <img src={smileyIcon} alt="" className="h-6 w-6 object-contain" />
-          </button>
-          <button
-            type="button"
-            onClick={submit}
-            disabled={submitting || draft.trim() === ''}
-            className="h-9 shrink-0 rounded-full bg-ola-primary px-4 text-sm font-medium text-white disabled:opacity-40"
-          >
-            {t('me.commentSend')}
-          </button>
-        </div>
+        <MeCommentComposer submitting={submitting} onSubmit={add} />
       </div>
     </div>
   );

@@ -10,6 +10,18 @@ export function colorFromName(name: string): string {
   return AVATAR_PALETTE[hash % AVATAR_PALETTE.length];
 }
 
+export function createDateFormatter(locale: string): (iso: string) => string {
+  const formatter = new Intl.DateTimeFormat(locale, {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
+  return (iso: string) => {
+    const date = new Date(iso);
+    return Number.isNaN(date.getTime()) ? iso : formatter.format(date);
+  };
+}
+
 export function createTimeFormatter(locale: string): (iso: string) => string {
   const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
   return (iso: string) => {

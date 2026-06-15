@@ -5,6 +5,7 @@ import { CONTACTS } from '../../chat/data';
 import { Avatar } from '../../chat/components/Avatar';
 import { ATTACH_BUTTONS, PRIVACY_OPTIONS, type AttachButtonKey } from '../constants';
 import { KUL_STICKERS, kulCode, stickerImage } from '../stickers';
+import { insertAtCursor } from '../textInsert';
 import checkInIcon from '@/assets/icons/me/ic_check_in.png';
 import { ComposerCheckInPanel, type ComposedCheckIn } from './ComposerCheckInPanel';
 import { ComposerSmileyPanel } from './ComposerSmileyPanel';
@@ -81,23 +82,11 @@ export function MeComposerDialog({ open, onClose, onPost }: MeComposerDialogProp
   }
 
   function insertMention(nick: string) {
-    const mention = ` @${nick}`;
-    const el = textareaRef.current;
-    setContent((current) => {
-      if (el == null) return current + mention;
-      const at = el.selectionStart ?? current.length;
-      return current.slice(0, at) + mention + current.slice(at);
-    });
+    setContent((current) => insertAtCursor(current, ` @${nick}`, textareaRef.current));
   }
 
   function insertSmiley(code: string) {
-    const token = `${code} `;
-    const el = textareaRef.current;
-    setContent((current) => {
-      if (el == null) return current + token;
-      const at = el.selectionStart ?? current.length;
-      return current.slice(0, at) + token + current.slice(at);
-    });
+    setContent((current) => insertAtCursor(current, `${code} `, textareaRef.current));
   }
 
   function handleAttach(key: AttachButtonKey) {

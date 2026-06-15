@@ -1,4 +1,6 @@
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
+import { ROUTES, type RoutePath } from '@constants';
 import { HomeHeader } from '@components/HomeHeader';
 import iconNotify from '@/assets/icons/apps/notify.png';
 import iconGame from '@/assets/icons/apps/game.png';
@@ -14,12 +16,13 @@ import iconSetting from '@/assets/icons/apps/setting.png';
 interface AppItem {
   icon: string;
   subtitleKey?: 'home.appGameSubtitle' | 'home.appMallSubtitle';
+  route?: RoutePath;
 }
 
 const APP_ITEMS: AppItem[] = [
   { icon: iconNotify },
   { icon: iconGame, subtitleKey: 'home.appGameSubtitle' },
-  { icon: iconPersonal },
+  { icon: iconPersonal, route: ROUTES.profileEdit },
   { icon: iconVip },
   { icon: iconKen },
   { icon: iconAdme },
@@ -31,6 +34,7 @@ const APP_ITEMS: AppItem[] = [
 
 export function AppsPanel() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const titles = t('home.apps', { returnObjects: true });
 
   return (
@@ -48,6 +52,7 @@ export function AppsPanel() {
               <li key={title} className="border-b border-black/12 last:border-b-0">
                 <button
                   type="button"
+                  onClick={item.route ? () => navigate(item.route as RoutePath) : undefined}
                   className="flex min-h-[72px] w-full items-center gap-4 bg-white/80 px-4 text-left active:bg-black/5"
                 >
                   <img
