@@ -15,12 +15,6 @@ on:
         default: 'dev'
         type: choice
         options: [dev, production]
-      target:
-        description: 'Thành phần cần build/deploy'
-        required: false
-        default: 'both'
-        type: choice
-        options: [both, web, server, admin]
       tag:
         description: 'Image tag (latest, v1.2.3, ...)'
         required: false
@@ -39,7 +33,7 @@ env:
 
 jobs:
   build-web:
-    if: ${{ (inputs.action == 'build' || inputs.action == 'both') && (inputs.target == 'web' || inputs.target == 'both') }}
+    if: ${{ inputs.action == 'build' || inputs.action == 'both' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -74,7 +68,7 @@ jobs:
           cache-to: type=gha,mode=max
 
   build-admin:
-    if: ${{ (inputs.action == 'build' || inputs.action == 'both') && inputs.target == 'admin' }}
+    if: ${{ inputs.action == 'build' || inputs.action == 'both' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -107,7 +101,7 @@ jobs:
           cache-to: type=gha,mode=max
 
   build-server:
-    if: ${{ (inputs.action == 'build' || inputs.action == 'both') && (inputs.target == 'server' || inputs.target == 'both') }}
+    if: ${{ inputs.action == 'build' || inputs.action == 'both' }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -175,7 +169,7 @@ jobs:
             cd "${{ inputs.environment == 'dev' && secrets.SERVER_DEPLOY_PATH_DEV || secrets.SERVER_DEPLOY_PATH }}"
             chmod +x deploy.sh
             VERSION='${{ inputs.tag || 'latest' }}' \
-            SERVICES='${{ inputs.target == 'admin' && 'admin' || (inputs.target == 'web' && 'web' || (inputs.target == 'server' && 'api,chat,migrate' || 'api,chat,web,migrate')) }}' \
+            SERVICES='all' \
             ENV_FILE='${{ inputs.environment == 'dev' && 'env.development' || '.env' }}' \
             HEALTH_URL='${{ inputs.environment == 'dev' && 'http://localhost:5242/api/v1/health' || 'http://localhost:5241/api/v1/health' }}' \
             WEB_HEALTH_URL='${{ inputs.environment == 'dev' && 'http://localhost:5082' || 'http://localhost:5081' }}' \
