@@ -6,6 +6,9 @@ node_modules/
 *.idsig
 *.keystore
 
+# Ảnh extract từ APK (tư liệu, không commit)
+apk-images/
+
 # OS
 .DS_Store
 

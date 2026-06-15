@@ -11,6 +11,8 @@ import type { MeTab } from './types';
 
 export const MENTION_TOKEN_PATTERN = /(@[A-Za-z0-9_]+|#[A-Za-z0-9_.]+)/g;
 
+export const POST_TOKEN_PATTERN = /(@[A-Za-z0-9_]+|#[A-Za-z0-9_.]+|:ola\d{1,2}:)/g;
+
 export const TAB_FILTER: Record<MeTab, MeFeedFilter | undefined> = {
   feed: undefined,
   tagged: 'tagged',
@@ -48,7 +50,7 @@ export const PRIVACY_OPTIONS: PostVisibility[] = ['public', 'friend', 'private']
 
 export const ATTACH_BUTTONS = [
   { key: 'local', glyph: '📷', labelKey: 'me.attachLocal' },
-  { key: 'cloud', glyph: '☁️', labelKey: 'me.attachCloud' },
+  { key: 'smiley', glyph: '😀', labelKey: 'me.attachSmiley' },
   { key: 'tag', glyph: '🏷️', labelKey: 'me.attachTag' },
   { key: 'checkin', glyph: '📍', labelKey: 'me.attachCheckIn' },
   { key: 'sticker', glyph: '😊', labelKey: 'me.attachSticker' },

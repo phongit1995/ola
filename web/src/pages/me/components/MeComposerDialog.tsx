@@ -7,10 +7,10 @@ import { ATTACH_BUTTONS, PRIVACY_OPTIONS, type AttachButtonKey } from '../consta
 import { KUL_STICKERS, kulCode, stickerImage } from '../stickers';
 import checkInIcon from '@/assets/icons/me/ic_check_in.png';
 import { ComposerCheckInPanel, type ComposedCheckIn } from './ComposerCheckInPanel';
-import { ComposerCloudPanel } from './ComposerCloudPanel';
+import { ComposerSmileyPanel } from './ComposerSmileyPanel';
 import type { PostVisibility } from '@app-types';
 
-type AttachPanel = 'tag' | 'checkin' | 'sticker' | 'cloud' | null;
+type AttachPanel = 'tag' | 'checkin' | 'sticker' | 'smiley' | null;
 type PickedPhoto = { url: string; file?: File };
 
 const MAX_IMAGES = 5;
@@ -75,11 +75,6 @@ export function MeComposerDialog({ open, onClose, onPost }: MeComposerDialogProp
     });
   }
 
-  function addCloudPhoto(url: string) {
-    setPhotos((current) => (current.length >= MAX_IMAGES ? current : [...current, { url }]));
-    setPanel(null);
-  }
-
   function removePhoto(url: string) {
     URL.revokeObjectURL(url);
     setPhotos((current) => current.filter((item) => item.url !== url));
@@ -92,6 +87,16 @@ export function MeComposerDialog({ open, onClose, onPost }: MeComposerDialogProp
       if (el == null) return current + mention;
       const at = el.selectionStart ?? current.length;
       return current.slice(0, at) + mention + current.slice(at);
+    });
+  }
+
+  function insertSmiley(code: string) {
+    const token = `${code} `;
+    const el = textareaRef.current;
+    setContent((current) => {
+      if (el == null) return current + token;
+      const at = el.selectionStart ?? current.length;
+      return current.slice(0, at) + token + current.slice(at);
     });
   }
 
@@ -287,9 +292,7 @@ export function MeComposerDialog({ open, onClose, onPost }: MeComposerDialogProp
         </div>
       )}
 
-      {panel === 'cloud' && (
-        <ComposerCloudPanel canAdd={photos.length < MAX_IMAGES} onAdd={addCloudPhoto} />
-      )}
+      {panel === 'smiley' && <ComposerSmileyPanel onPick={insertSmiley} />}
 
       <input
         ref={fileInputRef}
