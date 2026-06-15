@@ -14,7 +14,7 @@ export function ComposerSmileyPanel({ onPick }: ComposerSmileyPanelProps) {
           onClick={() => onPick(item.code)}
           className="flex h-9 items-center justify-center rounded hover:bg-gray-100"
         >
-          <img src={item.src} alt={item.code} className="h-7 w-7 object-contain" />
+          <img src={item.src} alt={item.code} className="h-6 w-auto object-contain" />
         </button>
       ))}
     </div>

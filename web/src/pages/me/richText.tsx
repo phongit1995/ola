@@ -30,7 +30,7 @@ export function renderRichText(content: string, onMention: (nick: string) => voi
           key={index}
           src={smiley}
           alt={part}
-          className="inline-block h-5 w-5 align-text-bottom"
+          className="inline-block h-6 w-auto align-text-bottom"
         />
       );
     }
