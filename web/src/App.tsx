@@ -9,6 +9,10 @@ function App() {
     return () => setOnUnauthorized(null);
   }, []);
 
+  useEffect(() => {
+    useAuthStore.getState().refreshUser();
+  }, []);
+
   return <AppRouter />;
 }
 

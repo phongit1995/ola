@@ -16,6 +16,7 @@ export interface AuthUser {
   vipEndTime?: string | null;
   followerCount?: number;
   followingCount?: number;
+  createdAt?: string;
 }
 
 export interface LoginRequest {
