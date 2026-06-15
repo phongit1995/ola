@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import likeIcon from '@/assets/icons/chat/smiley_35.png';
 import smileyIcon from '@/assets/icons/chat/ic_smiley.png';
@@ -8,6 +8,12 @@ import { Avatar } from '../../chat/components/Avatar';
 import { AttachmentBar, type AttachTab } from '../../chat/components/AttachmentBar';
 import { colorForName } from '../avatarColor';
 import type { RoomChatStatus } from '@/store/roomChatStore';
+
+function formatClock(iso: string) {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
 
 interface RoomMessagesTabProps {
   roomName: string;
@@ -61,28 +67,39 @@ export function RoomMessagesTab({
       )}
 
       <div ref={scrollRef} className="flex flex-1 flex-col gap-3 overflow-y-auto p-3">
-        {messages.map((message) => {
-          if (message.senderId === currentUserId) {
-            return (
-              <div
-                key={message.id}
-                className="max-w-[80%] self-end rounded-lg bg-[#dcedc8] px-3 py-2 text-base text-black/87"
-              >
-                {message.content}
-              </div>
-            );
-          }
+        {messages.map((message, index) => {
+          const clock = formatClock(message.createdAt);
+          const previous = messages[index - 1];
+          const showTime = clock !== '' && (!previous || formatClock(previous.createdAt) !== clock);
+          const isOwn = message.senderId === currentUserId;
           const senderName = message.senderName ?? message.senderId;
           return (
-            <div key={message.id} className="flex max-w-[85%] items-start gap-2 self-start">
-              <Avatar name={senderName} color={colorForName(senderName)} size={32} />
-              <div className="min-w-0">
-                <span className="mb-0.5 block text-xs text-black/54">{senderName}</span>
-                <div className="rounded-lg bg-white px-3 py-2 text-base text-black/87 shadow-sm">
+            <Fragment key={message.id}>
+              {showTime && <span className="self-center text-xs text-black/26">{clock}</span>}
+              {isOwn ? (
+                <div className="max-w-[80%] self-end rounded-2xl rounded-br-md bg-[#dcedc8] px-3.5 py-2 text-base text-black/87">
                   {message.content}
                 </div>
-              </div>
-            </div>
+              ) : (
+                <div className="flex max-w-[85%] items-end gap-2 self-start">
+                  {message.senderAvatar ? (
+                    <img
+                      src={message.senderAvatar}
+                      alt=""
+                      className="h-8 w-8 shrink-0 rounded-full object-cover"
+                    />
+                  ) : (
+                    <Avatar name={senderName} color={colorForName(senderName)} size={32} />
+                  )}
+                  <div className="min-w-0">
+                    <span className="mb-0.5 block text-xs text-black/54">{senderName}</span>
+                    <div className="rounded-2xl rounded-bl-md bg-white px-3.5 py-2 text-base text-black/87 shadow-sm">
+                      {message.content}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </Fragment>
           );
         })}
       </div>
