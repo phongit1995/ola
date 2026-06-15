@@ -1,6 +1,9 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { LoginPage } from '@/pages/LoginPage'
-import { HomePlaceholder } from '@/pages/HomePlaceholder'
+import { DashboardPage } from '@/pages/DashboardPage'
+import { UsersPage } from '@/pages/UsersPage'
+import { RoomsPage } from '@/pages/RoomsPage'
+import { AdminLayout } from '@/layout/AdminLayout'
 import { RedirectIfAuthed, RequireAuth } from './RequireAuth'
 
 export const router = createBrowserRouter([
@@ -16,9 +19,14 @@ export const router = createBrowserRouter([
     path: '/',
     element: (
       <RequireAuth>
-        <HomePlaceholder />
+        <AdminLayout />
       </RequireAuth>
     ),
+    children: [
+      { index: true, element: <DashboardPage /> },
+      { path: 'users', element: <UsersPage /> },
+      { path: 'rooms', element: <RoomsPage /> },
+    ],
   },
   {
     path: '*',
