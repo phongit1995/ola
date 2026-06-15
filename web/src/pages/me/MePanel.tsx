@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { HomeHeader } from '@components/HomeHeader';
+import { MeService } from '@services';
 import editIcon from '@/assets/icons/me/ic_action_edit.png';
 import { useAuthStore } from '@/store/authStore';
 import { Avatar } from '../chat/components/Avatar';
@@ -8,6 +9,7 @@ import { MeTabBar } from './components/MeTabBar';
 import { MeFeedList } from './components/MeFeedList';
 import { MeComposerDialog } from './components/MeComposerDialog';
 import { MeCommentSheet } from './components/MeCommentSheet';
+import { MeCommentComposer } from './components/MeCommentComposer';
 import { MeAccountDialog } from './components/MeAccountDialog';
 import { ProfilePage } from '../profile/ProfilePage';
 import { buildProfile } from '../profile/data';
@@ -26,8 +28,39 @@ export function MePanel() {
   const [accountOpen, setAccountOpen] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [commentPostId, setCommentPostId] = useState<string | null>(null);
+  const [commentFocusInput, setCommentFocusInput] = useState(false);
+  const [quickCommentPostId, setQuickCommentPostId] = useState<string | null>(null);
+  const [quickSubmitting, setQuickSubmitting] = useState(false);
 
   const commentPost = commentPostId == null ? null : posts.find((p) => p.id === commentPostId);
+  const quickPost =
+    quickCommentPostId == null ? null : posts.find((p) => p.id === quickCommentPostId);
+
+  function openComments(id: string, focusInput = false) {
+    setCommentPostId(id);
+    setCommentFocusInput(focusInput);
+  }
+
+  async function submitComment(postId: string, text: string): Promise<boolean> {
+    const content = text.trim();
+    if (content === '') return false;
+    try {
+      await MeService.addComment(postId, { content });
+      adjustCommentCount(postId, 1);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async function submitQuickComment(text: string): Promise<boolean> {
+    if (quickCommentPostId == null) return false;
+    setQuickSubmitting(true);
+    const ok = await submitComment(quickCommentPostId, text);
+    setQuickSubmitting(false);
+    if (ok) setQuickCommentPostId(null);
+    return ok;
+  }
 
   function openProfile(nick: string, color: string, isSelf = false) {
     setAccountOpen(false);
@@ -60,9 +93,32 @@ export function MePanel() {
             onToggleLike={(id) => toggleReaction(id, 'like')}
             onToggleDislike={(id) => toggleReaction(id, 'dislike')}
             onOpenProfile={(author, color) => openProfile(author, color)}
-            onOpenComments={setCommentPostId}
+            onOpenComments={openComments}
+            onQuickComment={setQuickCommentPostId}
           />
         </main>
+
+        {quickCommentPostId != null && (
+          <>
+            <button
+              type="button"
+              aria-label={t('chat.back')}
+              onClick={() => setQuickCommentPostId(null)}
+              className="absolute inset-0 z-10 bg-black/20"
+            />
+            <div className="absolute inset-x-0 bottom-0 z-20">
+              {quickPost != null && (
+                <div className="flex items-center gap-2 border-t border-black/12 bg-white/95 px-3 py-1.5 text-xs text-black/54">
+                  <span className="shrink-0">{t('me.commentingOn')}</span>
+                  <span className="min-w-0 flex-1 truncate text-black/87">
+                    {quickPost.content !== '' ? quickPost.content : quickPost.author}
+                  </span>
+                </div>
+              )}
+              <MeCommentComposer submitting={quickSubmitting} onSubmit={submitQuickComment} autoFocus />
+            </div>
+          </>
+        )}
 
         <button
           type="button"
@@ -90,6 +146,7 @@ export function MePanel() {
       {commentPost != null && (
         <MeCommentSheet
           post={commentPost}
+          autoFocusInput={commentFocusInput}
           onClose={() => setCommentPostId(null)}
           onToggleLike={(id) => toggleReaction(id, 'like')}
           onToggleDislike={(id) => toggleReaction(id, 'dislike')}

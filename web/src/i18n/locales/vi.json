@@ -201,6 +201,7 @@
     "maxImages": "Tối đa 5 ảnh",
     "commentsTitle": "Bình luận",
     "commentInputHint": "Viết bình luận",
+    "commentingOn": "Bình luận về:",
     "commentSend": "Gửi",
     "commentEmpty": "Chưa có bình luận nào",
     "commentLoadError": "Không thể tải nội dung bình luận",
@@ -281,5 +282,21 @@
     "linkFacebook": "Liên kết tài khoản Facebook",
     "support": "Hỗ trợ khách hàng",
     "supportHotline": "Tổng đài: 1900588883"
+  },
+  "vip": {
+    "title": "Kho VIP",
+    "usingIcon": "VIP đang dùng",
+    "whoCanSee": "Ai có thể xem",
+    "public": "Cộng đồng",
+    "buyVip": "Mua VIP",
+    "extendVip": "Gia hạn VIP",
+    "collection": "Kho icon VIP",
+    "duration": "Thời hạn VIP",
+    "noVip": "Chưa có VIP",
+    "daysLeft": "{{count}} ngày",
+    "stateInUse": "Đang dùng",
+    "stateLocked": "Đã khoá",
+    "stateAvailable": "Có thể dùng",
+    "comingSoon": "Tính năng đang phát triển"
   }
 }

@@ -19,7 +19,8 @@ interface MePostCardProps {
   onToggleLike: (id: string) => void;
   onToggleDislike: (id: string) => void;
   onOpenProfile?: (author: string, color: string) => void;
-  onOpenComments?: (id: string) => void;
+  onOpenComments?: (id: string, focusInput?: boolean) => void;
+  onQuickComment?: (id: string) => void;
 }
 
 export function MePostCard({
@@ -28,9 +29,19 @@ export function MePostCard({
   onToggleDislike,
   onOpenProfile,
   onOpenComments,
+  onQuickComment,
 }: MePostCardProps) {
   const { t } = useTranslation();
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
+  const hasComments = post.comments > 0;
+
+  function onCommentIconClick() {
+    if (onQuickComment) {
+      onQuickComment(post.id);
+    } else {
+      onOpenComments?.(post.id, true);
+    }
+  }
 
   return (
     <article className="mb-2 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.18)]">
@@ -82,9 +93,16 @@ export function MePostCard({
       )}
 
       <div className="mx-4 mt-4 flex items-end gap-1 text-xs text-black/54">
-        <span className="flex-1">
+        <button
+          type="button"
+          disabled={!hasComments}
+          onClick={() => onOpenComments?.(post.id)}
+          className={`flex-1 text-left ${
+            hasComments ? 'cursor-pointer hover:text-black/87 hover:underline' : 'cursor-default'
+          }`}
+        >
           {t('me.commentCount', { count: post.comments })}
-        </span>
+        </button>
         <span className="flex items-center -space-x-1">
           {post.likers.map((color, index) => (
             <span
@@ -102,7 +120,7 @@ export function MePostCard({
       <div className="flex px-4 pt-3 pb-3">
         <button
           type="button"
-          onClick={() => onOpenComments?.(post.id)}
+          onClick={onCommentIconClick}
           className="flex h-7 flex-1 items-center justify-center gap-1 text-sm text-black/26"
         >
           <img src={replyIcon} alt="" className="h-full object-contain" />

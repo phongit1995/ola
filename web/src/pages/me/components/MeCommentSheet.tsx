@@ -10,6 +10,7 @@ import type { MePost } from '../types';
 
 interface MeCommentSheetProps {
   post: MePost;
+  autoFocusInput?: boolean;
   onClose: () => void;
   onToggleLike: (id: string) => void;
   onToggleDislike: (id: string) => void;
@@ -21,6 +22,7 @@ const CLOSE_ANIMATION_MS = 200;
 
 export function MeCommentSheet({
   post,
+  autoFocusInput = false,
   onClose,
   onToggleLike,
   onToggleDislike,
@@ -106,7 +108,7 @@ export function MeCommentSheet({
           </div>
         </div>
 
-        <MeCommentComposer submitting={submitting} onSubmit={add} />
+        <MeCommentComposer submitting={submitting} onSubmit={add} autoFocus={autoFocusInput} />
       </div>
     </div>
   );

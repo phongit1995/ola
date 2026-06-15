@@ -1,4 +1,4 @@
-import { useRef, useState, type KeyboardEvent } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import smileyIcon from '@/assets/icons/chat/ic_smiley.png';
 import { useAuthStore } from '@/store/authStore';
@@ -10,14 +10,19 @@ import { insertAtCursor } from '../textInsert';
 interface MeCommentComposerProps {
   submitting: boolean;
   onSubmit: (text: string) => Promise<boolean>;
+  autoFocus?: boolean;
 }
 
-export function MeCommentComposer({ submitting, onSubmit }: MeCommentComposerProps) {
+export function MeCommentComposer({ submitting, onSubmit, autoFocus = false }: MeCommentComposerProps) {
   const { t } = useTranslation();
   const me = useAuthStore((state) => state.user);
   const [draft, setDraft] = useState('');
   const [smileyOpen, setSmileyOpen] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (autoFocus) inputRef.current?.focus();
+  }, [autoFocus]);
 
   function insertSmiley(code: string) {
     setDraft((current) => insertAtCursor(current, `${code} `, inputRef.current));

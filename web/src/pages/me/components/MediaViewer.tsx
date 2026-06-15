@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 
 interface MediaViewerProps {
   photos: string[];
@@ -63,11 +64,32 @@ export function MediaViewer({ photos, index, onClose }: MediaViewerProps) {
   const url = photos[current];
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/90"
-      onClick={onClose}
-    >
-      <div className="absolute top-0 right-0 left-0 flex items-center gap-2 p-4 text-white">
+    <div className="fixed inset-0 z-50 bg-black/95">
+      <TransformWrapper
+        key={current}
+        doubleClick={{ mode: 'toggle', step: 2 }}
+        wheel={{ step: 0.15 }}
+        pinch={{ step: 5 }}
+        minScale={1}
+        maxScale={6}
+        centerZoomedOut
+      >
+        <TransformComponent
+          wrapperStyle={{ width: '100%', height: '100%' }}
+          contentStyle={{ width: '100%', height: '100%' }}
+        >
+          <div className="flex h-screen w-screen items-center justify-center">
+            <img
+              src={url}
+              alt=""
+              draggable={false}
+              className="max-h-screen max-w-[100vw] object-contain select-none"
+            />
+          </div>
+        </TransformComponent>
+      </TransformWrapper>
+
+      <div className="absolute top-0 right-0 left-0 z-10 flex items-center gap-2 p-4 text-white">
         <span className="flex-1 text-sm">
           {hasMany ? `${current + 1} / ${photos.length}` : ''}
         </span>
@@ -97,13 +119,6 @@ export function MediaViewer({ photos, index, onClose }: MediaViewerProps) {
         </button>
       </div>
 
-      <img
-        src={url}
-        alt=""
-        onClick={(e) => e.stopPropagation()}
-        className="max-h-[85vh] max-w-[92vw] object-contain"
-      />
-
       {hasMany && (
         <>
           <button
@@ -113,7 +128,7 @@ export function MediaViewer({ photos, index, onClose }: MediaViewerProps) {
               e.stopPropagation();
               prev();
             }}
-            className="absolute left-2 rounded-full bg-white/10 p-2 text-white hover:bg-white/20"
+            className="absolute top-1/2 left-2 z-10 -translate-y-1/2 rounded-full bg-white/10 p-2 text-white hover:bg-white/20"
           >
             <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M15 6l-6 6 6 6" strokeLinecap="round" strokeLinejoin="round" />
@@ -126,7 +141,7 @@ export function MediaViewer({ photos, index, onClose }: MediaViewerProps) {
               e.stopPropagation();
               next();
             }}
-            className="absolute right-2 rounded-full bg-white/10 p-2 text-white hover:bg-white/20"
+            className="absolute top-1/2 right-2 z-10 -translate-y-1/2 rounded-full bg-white/10 p-2 text-white hover:bg-white/20"
           >
             <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M9 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />

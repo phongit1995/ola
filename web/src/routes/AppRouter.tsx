@@ -7,6 +7,7 @@ import { TermsPage } from '@/pages/terms/TermsPage';
 import { HomePage } from '@/pages/home/HomePage';
 import { ProfileMePage } from '@/pages/profile/ProfileMePage';
 import { EditProfileMePage } from '@/pages/profile/EditProfileMePage';
+import { VipStorePage } from '@/pages/vip/VipStorePage';
 import { GuestRoute, ProtectedRoute } from './guards';
 
 export function AppRouter() {
@@ -58,6 +59,14 @@ export function AppRouter() {
           element={
             <ProtectedRoute>
               <EditProfileMePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={ROUTES.vip}
+          element={
+            <ProtectedRoute>
+              <VipStorePage />
             </ProtectedRoute>
           }
         />

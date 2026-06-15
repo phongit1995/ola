@@ -23,7 +23,7 @@ const APP_ITEMS: AppItem[] = [
   { icon: iconNotify },
   { icon: iconGame, subtitleKey: 'home.appGameSubtitle' },
   { icon: iconPersonal, route: ROUTES.profileEdit },
-  { icon: iconVip },
+  { icon: iconVip, route: ROUTES.vip },
   { icon: iconKen },
   { icon: iconAdme },
   { icon: iconMedia },

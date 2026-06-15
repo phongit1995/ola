@@ -200,6 +200,7 @@
     "removeCheckIn": "Remove check-in",
     "commentsTitle": "Comments",
     "commentInputHint": "Write a comment",
+    "commentingOn": "Commenting on:",
     "commentSend": "Send",
     "commentEmpty": "No comments yet",
     "commentLoadError": "Couldn't load comments",
@@ -281,5 +282,21 @@
     "linkFacebook": "Link to Facebook account",
     "support": "Customer support",
     "supportHotline": "Hotline: 1900588883"
+  },
+  "vip": {
+    "title": "VIP Store",
+    "usingIcon": "Using VIP icon",
+    "whoCanSee": "Who can see",
+    "public": "Public",
+    "buyVip": "Buy VIP",
+    "extendVip": "Extend VIP",
+    "collection": "VIP icon collection",
+    "duration": "VIP duration",
+    "noVip": "No VIP",
+    "daysLeft": "{{count}} day(s)",
+    "stateInUse": "In use",
+    "stateLocked": "Locked",
+    "stateAvailable": "Available",
+    "comingSoon": "Feature coming soon"
   }
 }

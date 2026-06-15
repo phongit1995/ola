@@ -67,14 +67,16 @@ LinearLayout (cao 72dp)
 └─ listViewBottomDividerView  1px (margin ngang 16dp)
 ```
 
-**Bấm icon** (`vipIconImageView` → `c(ah)`): mở **menu ngữ cảnh** theo trạng thái icon:
+**Bấm icon** (`vipIconImageView` → `c(ah)` → dựng menu trong `a(ah, view)`): mở **menu ngữ cảnh** thay đổi theo trạng thái icon:
 
-| Mục | String | Hành động |
-|-----|--------|-----------|
-| Unlock | `string_unlock` = "Unlock" | mở khoá: `OlaApplication.b.b([id])` |
-| Lock | `string_lock` = "Lock" | khoá icon |
-| VIP transaction | `string_transfer_vip` = "VIP transaction" | → `OlaTraddingVipActivity` (chuyển/tặng VIP) |
-| Delete VIP | `string_delete_vip` = "Delete VIP" | xoá icon (xác nhận `message_delete_vipicon_confirm`) |
+| Mục | String | Điều kiện hiện / Hành động |
+|-----|--------|---------------------------|
+| **Use VIP** | `string_use_vip` = "Use VIP" | chỉ hiện khi icon **chưa dùng** (`!ah.g()`); kích hoạt **tốn 1 ngày VIP** (`message_active_vipicon_confirm` = "Cost 1 VIP day to activate VIP …") |
+| **Unlock / Lock** | `string_unlock` / `string_lock` | **1 mục toggle** theo `ah.f()`: đang khoá → "Unlock", ngược lại → "Lock" |
+| **VIP transaction** | `string_transfer_vip` = "VIP transaction" | → `OlaTraddingVipActivity` (chuyển/tặng VIP) |
+| **Delete VIP** | `string_delete_vip` = "Delete VIP" | xoá icon (xác nhận `message_delete_vipicon_confirm`) |
+
+> Menu dựng động: `Use VIP` (nếu chưa dùng) → `Unlock`/`Lock` (toggle) → `VIP transaction` → `Delete VIP`.
 
 ## 4. Action bar (`ola_top_action_bar_layout.xml`)
 
@@ -111,6 +113,8 @@ LinearLayout (cao 72dp)
 | `string_buy_vip` | Buy VIP |
 | `string_extend_vip` | Extend VIP |
 | `string_vip_duration` | VIP duration |
+| `string_use_vip` | Use VIP |
+| `message_active_vipicon_confirm` | Cost 1 VIP day to activate VIP %1$s. Do you want to continue |
 | `string_unlock` / `string_lock` | Unlock / Lock |
 | `string_transfer_vip` | VIP transaction |
 | `string_delete_vip` | Delete VIP |
