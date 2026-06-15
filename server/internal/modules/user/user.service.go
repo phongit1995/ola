@@ -54,19 +54,6 @@ func (s *Service) GetProfile(userID uuid.UUID) (*UserProfileResponse, error) {
 		"user_id", userID,
 	)
 
-	cachedUser, err := s.cache.GetUser(userID)
-	if err == nil {
-		s.logger.Debugw("User profile fetched from cache",
-			"user_id", userID,
-			"username", cachedUser.Username,
-		)
-		return s.buildProfileResponse(cachedUser), nil
-	}
-
-	s.logger.Debugw("Cache miss, fetching from database",
-		"user_id", userID,
-	)
-
 	user, err := s.repo.FindByID(userID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -83,7 +70,7 @@ func (s *Service) GetProfile(userID uuid.UUID) (*UserProfileResponse, error) {
 	}
 
 	if err := s.cache.SetUser(user.ID, user); err != nil {
-		s.logger.Warnw("Failed to cache user profile",
+		s.logger.Warnw("Failed to refresh user profile cache",
 			"user_id", userID,
 			"error", err.Error(),
 		)

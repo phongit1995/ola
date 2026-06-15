@@ -363,10 +363,7 @@ func senderFields(u *models.User) (name, avatar, gender string, vip, vipEnd *str
 	if u == nil {
 		return "", "", "", nil, nil
 	}
-	name = u.FullName
-	if name == "" {
-		name = u.Username
-	}
+	name = u.Username
 	gender = u.Gender
 	vip = u.VipUsed
 	if u.VipEndTime != nil {
