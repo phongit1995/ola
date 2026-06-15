@@ -7,6 +7,7 @@ import { Avatar } from '../chat/components/Avatar';
 import { MeTabBar } from './components/MeTabBar';
 import { MeFeedList } from './components/MeFeedList';
 import { MeComposerDialog } from './components/MeComposerDialog';
+import { MeCommentSheet } from './components/MeCommentSheet';
 import { MeAccountDialog } from './components/MeAccountDialog';
 import { ProfilePage } from '../profile/ProfilePage';
 import { buildProfile } from '../profile/data';
@@ -18,11 +19,15 @@ export function MePanel() {
   const username = useAuthStore((s) => s.user?.username ?? null);
   const displayName = username ?? t('home.guest');
 
-  const { tab, setTab, posts, loading, error, toggleReaction, addPost } = useMeFeed();
+  const { tab, setTab, posts, loading, error, toggleReaction, addPost, adjustCommentCount } =
+    useMeFeed();
 
   const [composerOpen, setComposerOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [commentPostId, setCommentPostId] = useState<string | null>(null);
+
+  const commentPost = commentPostId == null ? null : posts.find((p) => p.id === commentPostId);
 
   function openProfile(nick: string, color: string, isSelf = false) {
     setAccountOpen(false);
@@ -55,6 +60,7 @@ export function MePanel() {
             onToggleLike={(id) => toggleReaction(id, 'like')}
             onToggleDislike={(id) => toggleReaction(id, 'dislike')}
             onOpenProfile={(author, color) => openProfile(author, color)}
+            onOpenComments={setCommentPostId}
           />
         </main>
 
@@ -80,6 +86,17 @@ export function MePanel() {
         onClose={() => setAccountOpen(false)}
         onViewProfile={() => openProfile(displayName, '#7cb342', true)}
       />
+
+      {commentPost != null && (
+        <MeCommentSheet
+          post={commentPost}
+          onClose={() => setCommentPostId(null)}
+          onToggleLike={(id) => toggleReaction(id, 'like')}
+          onToggleDislike={(id) => toggleReaction(id, 'dislike')}
+          onOpenProfile={(author, color) => openProfile(author, color)}
+          onCommentDelta={adjustCommentCount}
+        />
+      )}
 
       {profile != null && (
         <ProfilePage

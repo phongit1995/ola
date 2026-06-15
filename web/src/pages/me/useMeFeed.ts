@@ -16,6 +16,7 @@ export function useMeFeed() {
   const loadFeed = useMeFeedStore((state) => state.loadFeed);
   const toggleReaction = useMeFeedStore((state) => state.toggleReaction);
   const createPost = useMeFeedStore((state) => state.createPost);
+  const adjustCommentCount = useMeFeedStore((state) => state.adjustCommentCount);
 
   const formatTime = useMemo(() => createTimeFormatter(i18n.language), [i18n.language]);
 
@@ -64,5 +65,6 @@ export function useMeFeed() {
     error,
     toggleReaction,
     addPost,
+    adjustCommentCount,
   };
 }

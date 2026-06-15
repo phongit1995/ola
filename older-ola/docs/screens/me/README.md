@@ -7,7 +7,7 @@
 - **Adapter feed:** `chat.ola.vn.me.u` (extends `q`)
 - **Đăng bài:** `OlaMeComposerActivity` + `ola_me_composer_layout.xml`
 - **Trang cá nhân:** `OlaUserMePageActivity` (người) / `OlaClanMePageActivity` (clan) + `ola_user_me_page_header_layout.xml`
-- **Phụ trợ:** `OlaMeCommentActivity` (bình luận), `OlaMeLikerListActivity` (ai đã thích), `OlaVisitorListActivity` (khách ghé thăm), `OlaDiaryActivity` (nhật ký)
+- **Phụ trợ:** `OlaMeCommentActivity` (bình luận — 📄 [comment/README.md](comment/README.md)), `OlaMeLikerListActivity` (ai đã thích), `OlaVisitorListActivity` (khách ghé thăm), `OlaDiaryActivity` (nhật ký)
 
 > **Me là gì:** đây là **mạng xã hội dòng thời gian** bên trong Ola — giống newsfeed Facebook. Người dùng đăng trạng thái (text/ảnh/sticker/check-in), người khác **Thích / Ghét / Bình luận**, theo dõi nhau ("Quan tâm"). Khác với "Phòng chat" (chat thời gian thực) và "Chat" (1-1): Me là **nội dung tồn tại lâu, có tương tác công khai**.
 
@@ -50,6 +50,7 @@
                                           │ bấm "Bình luận"
                                           ▼
                                OlaMeCommentActivity (luồng bình luận)
+                               📄 comment/README.md
 
    [Drawer trái 240dp]  ← vuốt mép trái: danh sách Clan / Nhật ký / trang yêu thích
    [Drawer phải 240dp]  → lịch sử & kết quả tìm kiếm

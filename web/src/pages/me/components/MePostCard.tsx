@@ -19,6 +19,7 @@ interface MePostCardProps {
   onToggleLike: (id: string) => void;
   onToggleDislike: (id: string) => void;
   onOpenProfile?: (author: string, color: string) => void;
+  onOpenComments?: (id: string) => void;
 }
 
 export function MePostCard({
@@ -26,6 +27,7 @@ export function MePostCard({
   onToggleLike,
   onToggleDislike,
   onOpenProfile,
+  onOpenComments,
 }: MePostCardProps) {
   const { t } = useTranslation();
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
@@ -100,6 +102,7 @@ export function MePostCard({
       <div className="flex px-4 pt-3 pb-3">
         <button
           type="button"
+          onClick={() => onOpenComments?.(post.id)}
           className="flex h-7 flex-1 items-center justify-center gap-1 text-sm text-black/26"
         >
           <img src={replyIcon} alt="" className="h-full object-contain" />

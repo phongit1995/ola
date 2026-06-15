@@ -10,6 +10,7 @@ interface MeFeedListProps {
   onToggleLike: (id: string) => void;
   onToggleDislike: (id: string) => void;
   onOpenProfile: (author: string, color: string) => void;
+  onOpenComments: (id: string) => void;
 }
 
 export function MeFeedList({
@@ -20,6 +21,7 @@ export function MeFeedList({
   onToggleLike,
   onToggleDislike,
   onOpenProfile,
+  onOpenComments,
 }: MeFeedListProps) {
   const { t } = useTranslation();
 
@@ -56,6 +58,7 @@ export function MeFeedList({
           onToggleLike={onToggleLike}
           onToggleDislike={onToggleDislike}
           onOpenProfile={onOpenProfile}
+          onOpenComments={onOpenComments}
         />
       ))}
     </div>

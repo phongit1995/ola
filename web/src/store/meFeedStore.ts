@@ -10,6 +10,7 @@ interface MeFeedState {
   loadFeed: (filter?: MeFeedFilter) => Promise<void>;
   toggleReaction: (id: string, type: PostReaction) => Promise<void>;
   createPost: (payload: CreatePostRequest, files: File[], imageUrls: string[]) => Promise<Post | null>;
+  adjustCommentCount: (id: string, delta: number) => void;
 }
 
 function replacePost(posts: Post[], updated: Post): Post[] {
@@ -85,5 +86,14 @@ export const useMeFeedStore = create<MeFeedState>((set, get) => ({
       console.error('create post failed', error);
       return null;
     }
+  },
+  adjustCommentCount: (id, delta) => {
+    set((state) => ({
+      posts: state.posts.map((post) =>
+        post.id === id
+          ? { ...post, commentCount: Math.max(0, post.commentCount + delta) }
+          : post
+      ),
+    }));
   },
 }));
