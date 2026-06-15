@@ -38,7 +38,9 @@ export function HomePage() {
 
   return (
     <div className="flex h-screen flex-col bg-white font-sans">
-      <ActivePanel />
+      <div className="relative flex min-h-0 flex-1 flex-col">
+        <ActivePanel />
+      </div>
 
       <BottomTabBar active={tab} onChange={changeTab} badges={{ chat: 3 }} />
     </div>

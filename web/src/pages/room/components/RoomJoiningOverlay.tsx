@@ -13,7 +13,7 @@ export function RoomJoiningOverlay({ name, status, onClose }: RoomJoiningOverlay
   const isError = status === 'error';
 
   return (
-    <div className="fixed inset-0 z-40 flex flex-col bg-[#eceff1]">
+    <div className="absolute inset-0 z-40 flex flex-col bg-[#eceff1]">
       <RoomHeader name={name} onBack={onClose} />
 
       <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">

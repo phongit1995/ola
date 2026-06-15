@@ -39,7 +39,7 @@ export function RoomChatView({ onClose }: RoomChatViewProps) {
   ];
 
   return (
-    <div className="fixed inset-0 z-40 flex flex-col bg-[#eceff1]">
+    <div className="absolute inset-0 z-40 flex flex-col bg-[#eceff1]">
       <RoomHeader name={name} onBack={onClose} />
       <RoomTabBar tabs={tabs} activeTab={activeTab} onSelect={setActiveTab} />
       <RoomMessagesTab

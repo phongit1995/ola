@@ -47,6 +47,7 @@ export function RoomMessagesTab({
     const trimmed = text.trim();
     if (trimmed === '' || status !== 'joined') return;
     setDraft('');
+    setSmileyOpen(false);
     try {
       await onSend(trimmed);
     } catch {
@@ -56,10 +57,11 @@ export function RoomMessagesTab({
 
   function insertSmiley(code: string) {
     setDraft((current) => insertAtCursor(current, `${code} `, inputRef.current));
+    inputRef.current?.focus();
   }
 
   function onKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
-    if (event.key === 'Enter' && !event.shiftKey) {
+    if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
       event.preventDefault();
       sendText(draft);
     }
