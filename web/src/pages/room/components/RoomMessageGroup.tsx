@@ -34,16 +34,21 @@ export function RoomMessageGroup({ group, onOpenProfile }: RoomMessageGroupProps
   if (group.isOwn) {
     const last = group.messages[group.messages.length - 1];
     return (
-      <div className="flex flex-col items-end gap-0.5 self-end" style={{ maxWidth: '80%' }}>
-        {group.messages.map((message) => (
-          <div
-            key={message.id}
-            className={`w-fit max-w-full break-words bg-[#dcedc8] px-3.5 py-2 text-base text-black/87 ${OWN_CORNERS[message.position]}`}
-          >
-            {renderRichText(message.content, onMention)}
-          </div>
-        ))}
-        <span className="px-1 text-[11px] text-black/38">{clock(last.createdAt)}</span>
+      <div className="flex flex-col items-end gap-1 self-end" style={{ maxWidth: '80%' }}>
+        <span className="max-w-full truncate px-1 text-sm font-medium text-black/87">
+          {group.senderName}
+        </span>
+        <div className="flex w-fit flex-col items-end gap-0.5">
+          {group.messages.map((message) => (
+            <div
+              key={message.id}
+              className={`w-fit max-w-full break-words bg-[#dcedc8] px-3.5 py-2 text-base text-black/87 ${OWN_CORNERS[message.position]}`}
+            >
+              {renderRichText(message.content, onMention)}
+            </div>
+          ))}
+          <span className="self-end px-1 text-[11px] text-black/38">{clock(last.createdAt)}</span>
+        </div>
       </div>
     );
   }
@@ -52,8 +57,8 @@ export function RoomMessageGroup({ group, onOpenProfile }: RoomMessageGroupProps
   const senderColor = colorForName(group.senderName);
   const openSender = () => onOpenProfile?.(group.senderName, senderColor);
   return (
-    <div className="flex flex-col gap-1 self-start" style={{ maxWidth: '85%' }}>
-      <div className="flex items-center gap-2">
+    <div className="flex min-w-0 flex-col gap-1 self-start" style={{ maxWidth: '85%' }}>
+      <div className="flex min-w-0 items-center gap-2">
         <button type="button" onClick={openSender} className="shrink-0">
           {group.senderAvatar != null && group.senderAvatar !== '' ? (
             <img src={group.senderAvatar} alt="" className="h-8 w-8 rounded-full object-cover" />

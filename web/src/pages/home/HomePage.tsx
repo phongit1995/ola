@@ -37,7 +37,7 @@ export function HomePage() {
   }, []);
 
   return (
-    <div className="flex h-screen flex-col bg-white font-sans">
+    <div className="flex h-dvh flex-col bg-white font-sans">
       <div className="relative flex min-h-0 flex-1 flex-col">
         <ActivePanel />
       </div>
