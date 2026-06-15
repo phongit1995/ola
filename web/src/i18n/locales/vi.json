@@ -175,7 +175,8 @@
     "connecting": "Đang kết nối phòng…",
     "joining": "Đang vào phòng…",
     "joinError": "Không vào được phòng",
-    "noMembers": "Chưa có thành viên nào online"
+    "noMembers": "Chưa có thành viên nào online",
+    "sendError": "Không gửi được tin nhắn"
   },
   "me": {
     "tabFeed": "Bảng tin",
@@ -230,7 +231,9 @@
     "newPosts": "↑ Me mới",
     "followerEmpty": "Chưa có khách ghé thăm",
     "empty": "Trang Me chưa có nội dung",
-    "viewProfile": "Xem trang cá nhân"
+    "viewProfile": "Xem trang cá nhân",
+    "commentSendError": "Không gửi được bình luận",
+    "commentDeleteError": "Không xoá được bình luận"
   },
   "profile": {
     "makeFriend": "Kết bạn",

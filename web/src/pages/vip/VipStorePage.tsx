@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@constants';
+import { toast } from '@lib';
 import { useAuthStore } from '@/store/authStore';
 
 type VipState = 'inUse' | 'locked' | 'available';
@@ -82,7 +83,7 @@ export function VipStorePage() {
   const durationText = hasVip ? t('vip.daysLeft', { count: remainingDays }) : t('vip.noVip');
 
   function comingSoon() {
-    window.alert(t('vip.comingSoon'));
+    toast.info(t('vip.comingSoon'));
   }
 
   return (

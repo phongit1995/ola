@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { HomeHeader } from '@components/HomeHeader';
+import { toast } from '@lib';
 import { MeService } from '@services';
 import editIcon from '@/assets/icons/me/ic_action_edit.png';
 import { useAuthStore } from '@/store/authStore';
@@ -49,6 +50,7 @@ export function MePanel() {
       adjustCommentCount(postId, 1);
       return true;
     } catch {
+      toast.error(t('me.commentSendError'));
       return false;
     }
   }

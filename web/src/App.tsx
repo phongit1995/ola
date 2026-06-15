@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { setOnUnauthorized } from '@api';
+import { ToastViewport } from '@components';
 import { AppRouter } from '@/routes';
 import { useAuthStore } from '@/store/authStore';
 
@@ -13,7 +14,12 @@ function App() {
     useAuthStore.getState().refreshUser();
   }, []);
 
-  return <AppRouter />;
+  return (
+    <>
+      <AppRouter />
+      <ToastViewport />
+    </>
+  );
 }
 
 export default App;

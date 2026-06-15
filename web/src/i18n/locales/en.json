@@ -175,7 +175,8 @@
     "connecting": "Connecting to room…",
     "joining": "Joining room…",
     "joinError": "Unable to join room",
-    "noMembers": "No members online yet"
+    "noMembers": "No members online yet",
+    "sendError": "Couldn't send message"
   },
   "me": {
     "tabFeed": "Newsfeed",
@@ -230,7 +231,9 @@
     "newPosts": "↑ You have new posts",
     "followerEmpty": "No visitors yet",
     "empty": "Me page has no content",
-    "viewProfile": "View profile"
+    "viewProfile": "View profile",
+    "commentSendError": "Couldn't send comment",
+    "commentDeleteError": "Couldn't delete comment"
   },
   "profile": {
     "makeFriend": "Add friend",

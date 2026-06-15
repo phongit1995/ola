@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { MeService } from '@services';
 import type { PostComment } from '@app-types';
+import { toast } from '@lib';
+import i18n from '@/i18n';
 
 interface UseMeCommentsOptions {
   onDelta?: (delta: number) => void;
@@ -47,6 +49,7 @@ export function useMeComments(postId: string, options: UseMeCommentsOptions = {}
         return true;
       } catch (err) {
         console.error('add comment failed', err);
+        toast.error(i18n.t('me.commentSendError'));
         return false;
       } finally {
         setSubmitting(false);
@@ -67,6 +70,7 @@ export function useMeComments(postId: string, options: UseMeCommentsOptions = {}
         console.error('delete comment failed', err);
         setComments(snapshot);
         setTotal((value) => value + 1);
+        toast.error(i18n.t('me.commentDeleteError'));
       }
     },
     [postId, comments, onDelta]

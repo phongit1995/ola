@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { RoomMessage } from '@app-types';
+import { toast } from '@lib';
 import { useAuthStore } from '@/store/authStore';
 import { Avatar } from '../../chat/components/Avatar';
 import { ComposerSmileyPanel } from '../../me/components/ComposerSmileyPanel';
@@ -50,6 +51,7 @@ export function RoomMessagesTab({
       await onSend(trimmed);
     } catch {
       setDraft(trimmed);
+      toast.error(t('room.sendError'));
     }
   }
 
