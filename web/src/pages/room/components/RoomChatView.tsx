@@ -43,7 +43,6 @@ export function RoomChatView({ onClose }: RoomChatViewProps) {
       <RoomHeader name={name} onBack={onClose} />
       <RoomTabBar tabs={tabs} activeTab={activeTab} onSelect={setActiveTab} />
       <RoomMessagesTab
-        roomName={name}
         currentUserId={currentUserId}
         messages={messages}
         status={status}

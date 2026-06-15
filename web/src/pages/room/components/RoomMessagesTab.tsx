@@ -12,7 +12,6 @@ import { RoomMessageGroup } from './RoomMessageGroup';
 import type { RoomChatStatus } from '@/store/roomChatStore';
 
 interface RoomMessagesTabProps {
-  roomName: string;
   currentUserId: string;
   messages: RoomMessage[];
   status: RoomChatStatus;
@@ -22,7 +21,6 @@ interface RoomMessagesTabProps {
 }
 
 export function RoomMessagesTab({
-  roomName,
   currentUserId,
   messages,
   status,
@@ -107,7 +105,7 @@ export function RoomMessagesTab({
           onKeyDown={onKeyDown}
           onFocus={() => setSmileyOpen(false)}
           disabled={!canSend}
-          placeholder={t('room.chatInputHint', { name: roomName })}
+          placeholder={t('room.chatInputHint')}
           rows={1}
           className="max-h-28 min-h-9 flex-1 resize-none rounded-2xl border border-black/12 px-3 py-2 text-sm text-black/87 outline-none focus:border-ola-primary disabled:opacity-50"
         />

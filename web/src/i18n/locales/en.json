@@ -166,7 +166,7 @@
     "filterFemale": "Show female",
     "filterMale": "Show male",
     "filterFlexible": "Show gender flexible",
-    "chatInputHint": "Write a message in \"{{name}}\" room",
+    "chatInputHint": "Write a message…",
     "membersTitle": "Broadcasting members",
     "memberCount": "{{count}} members",
     "addMember": "Invite member",
