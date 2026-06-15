@@ -219,7 +219,20 @@ LinearLayout vertical (paddingBottom 12dp)
     └─ txtMeItemLikeWrapper     ic_like_gray      + "Thích" (icon txtMeItemLikeIcon)
 ```
 
-> Thứ tự nút trái→phải: **Bình luận · Ghét · Thích**. Chữ nút màu `colorTextBlackHintOrDisable` (xám nhạt). Khi đã thích → icon đổi `ic_like_gray` → `ic_like_selected` (xanh), chữ "Thích" → "Đã thích".
+> Thứ tự nút trái→phải: **Bình luận · Ghét · Thích**. Chữ nút mặc định màu `colorTextBlackHintOrDisable` (xám .26).
+
+#### Đổi màu icon + chữ theo trạng thái
+
+Code render bài (`entry/b/*.java`) set **động** cả icon lẫn màu chữ, dùng hằng màu trong [`chat/ola/vn/f.java`](../../../jadx_out/sources/chat/ola/vn/f.java):
+
+| Nút | Trạng thái | Icon | Màu chữ (`f.*`) | HEX / token |
+|-----|-----------|------|-----------------|-------------|
+| **Thích** | chưa thích | `ic_like_gray` | `f.A` | `#42000000` = `colorTextBlackHintOrDisable` (xám .26) |
+| **Thích** | đã thích | `ic_like_selected` | `f.H` | `#7CB342` = `colorOlaPrimary` (**xanh lá**), chữ "Thích" → "Đã thích" |
+| **Ghét** | chưa ghét | `ic_dislike_gray` | `f.A` | `#42000000` (xám .26) |
+| **Ghét** | đã ghét | `ic_dislike_black` | `f.y` | `#DE000000` = `colorTextBlackPrimary` (**đen .87**) |
+
+> **Biến thể trên nền tối / nền ảnh** (bài có ảnh phủ kín): icon đổi sang bản trắng `ic_like_white` / `ic_dislike_white` (Ghét còn có `ic_dislike_green` cho trạng thái đã ghét), màu chữ dùng `f.C` = `#FFFFFF` (`colorTextWhitePrimary`) / `f.D` = `#B3FFFFFF` (`colorTextWhiteSecondary`) — thay cho bản xám trên nền thẻ trắng.
 
 ### 4.3. Các loại bài đăng (layout `me_entry_*`)
 
@@ -269,9 +282,21 @@ Mở từ FAB ✎. Bố cục (SoftKeyLinearLayout — co theo bàn phím):
 | **Sticker** | `stickerImageView` | 72×72dp (ẩn) |
 | **Ô nhập** | `meContentEditText` (OlaTypingSuggestedText) | minHeight 48dp, đa dòng, hint `general_hint_me` = **"Hôm nay có gì hot …"** |
 | **Gợi ý địa điểm** | `suggestedVenueViewLayout` | check-in |
-| **Ảnh đính kèm** | `attachedPhotoListView` (HListView) | cao 164dp (ẩn tới khi chọn ảnh) |
-| **Thanh đính kèm** | `chatAttachmentLayout` | ảnh / máy ảnh / vị trí / sticker (dùng chung với chat) |
+| **Ảnh đính kèm** | `attachedPhotoListView` (HListView — **danh sách NGANG**) | cao 164dp, ẩn tới khi chọn ảnh. **Hỗ trợ NHIỀU ảnh**: mỗi lần chọn thêm → adapter cộng dồn, dải ảnh dài thêm và tự cuộn tới ảnh cuối (`q.c(r.getCount()-1)`); nhận cả mảng nhiều URI qua `EXTRA_STREAM`. Client **không có** giới hạn cứng số ảnh (nếu có do server). |
+| **Thanh đính kèm** | `chatAttachmentLayout` | 5 nút (xem bảng dưới) — layout dùng chung với chat |
 | **Action bar** | `ola_top_action_bar_center_title_layout` | tiêu đề `general_tab_me_edit` = "Viết mới" + nút Đăng |
+
+**Thanh đính kèm — 5 nút** (theo `OlaMeComposerActivity.onClick`):
+
+| Nút (id) | Icon | Mở |
+|----------|------|----|
+| `cameraImageButton` | `ic_local` | **Ảnh trong máy** (thư viện) → `OlaLocalPhotoChooserActivity` — *không phải chụp ảnh* |
+| `localPhotoImageButton` | `ic_cloud` | **Ảnh trên cloud** → `OlaCloudPhotoChooserActivity` |
+| `voiceImageButton` | `ic_tag_people` | **Gắn thẻ người** (tag) → `OlaContactPickerActivity` |
+| `moreImageButton` | `ic_checkin_gray` | **Check-in vị trí** → `OlaCheckInActivity` |
+| `chatTextSmileyImageButton` | (smiley) | **Sticker / emoji** |
+
+> Cả ảnh máy lẫn ảnh cloud đều đổ vào cùng `attachedPhotoListView` → có thể trộn nhiều ảnh từ nhiều nguồn trong 1 bài.
 
 > Quyền riêng tư: `string_me_privacy_public` = **Cộng đồng**, `_friend` = **Bạn bè**, `_private` = **Riêng tư**.
 > Thoát giữa chừng → hỏi lưu nháp (`message_edit_me_back_confirm`); nháp quản lý bởi class `chat.ola.vn.me.a`.
@@ -282,7 +307,7 @@ Mở từ FAB ✎. Bố cục (SoftKeyLinearLayout — co theo bàn phím):
 |-----|----|----|
 | `general_tab_me` | Me | Me |
 | `general_tab_me_edit` | Post Me | Viết mới |
-| `general_hint_me` | What's on your mind? | Hôm nay có gì hot … |
+| `general_hint_me` | What hot today... | Hôm nay có gì hot … |
 | `string_like` | Like | Thích |
 | `string_dislike` | Dislike | Ghét |
 | `string_comment` | Comment | Bình luận |
@@ -290,7 +315,7 @@ Mở từ FAB ✎. Bố cục (SoftKeyLinearLayout — co theo bàn phím):
 | `string_following` | Following | Đang quan tâm |
 | `string_people_care` | people care | người quan tâm |
 | `string_kiss` | Kiss | Nụ hôn |
-| `message_new_me_inform` | You have new posts | ↑ Me mới |
+| `message_new_me_inform` | ↑ New Me | ↑ Me mới |
 | `me_no_content_page` | Me page has no content | Trang Me chưa có nội dung |
 | `string_me_privacy_public` | Public | Cộng đồng |
 | `string_me_privacy_friend` | Friends | Bạn bè |
@@ -395,8 +420,9 @@ Mở từ FAB ✎. Bố cục (SoftKeyLinearLayout — co theo bàn phím):
 | Tab Quan tâm | ![follow](images/icons/ic_action_tab_follower.png) ![follow sel](images/icons/ic_action_tab_follower_selected.png) | `ic_action_tab_follower(_selected)` |
 | FAB đăng bài | ![edit](images/icons/ic_action_edit.png) | `ic_action_edit` (tint trắng) |
 | Bình luận | ![reply](images/icons/ic_action_reply_gray.png) | `ic_action_reply_gray` |
-| Ghét | ![dislike](images/icons/ic_dislike_gray.png) | `ic_dislike_gray` (+ `_green/_white/_black`) |
-| Thích | ![like](images/icons/ic_like_gray.png) → ![like sel](images/icons/ic_like_selected.png) | `ic_like_gray` → `ic_like_selected` |
+| Ghét (mặc định) | ![dislike](images/icons/ic_dislike_gray.png) | `ic_dislike_gray` (nền thẻ trắng) |
+| Ghét — biến thể nền | ![dis black](images/icons/ic_dislike_black.png) ![dis green](images/icons/ic_dislike_green.png) ![dis white](images/icons/ic_dislike_white.png) | `ic_dislike_black` · `ic_dislike_green` (đã ghét) · `ic_dislike_white` (nền tối) |
+| Thích | ![like](images/icons/ic_like_gray.png) → ![like sel](images/icons/ic_like_selected.png) → ![like white](images/icons/ic_like_white.png) | `ic_like_gray` → `ic_like_selected` (đã thích, xanh) · `ic_like_white` (nền tối) |
 | Menu bài ⋮ | ![more](images/icons/ic_more.png) | `ic_more` |
 
 ## 10. Tóm tắt token UI

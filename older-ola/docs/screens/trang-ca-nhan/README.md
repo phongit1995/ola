@@ -264,7 +264,7 @@ Tất cả lệnh gọi `OlaApplication.b.<method>` (= `OlaNetworkService`) tron
 
 /* ===== ID + xác thực ===== */
 .ola-profile__id { display: flex; align-items: center; justify-content: center; gap: 4px; padding: 8px; }
-.ola-profile__nick { font-size: 18px; color: rgba(0,0,0,.54); }
+.ola-profile__nick { font-size: 24px; color: rgba(0,0,0,.54); }   /* headline — contactIdTextView đặt textSize=headline trực tiếp (đè style caption) */
 .ola-profile__verified { width: 24px; height: 24px; }
 
 /* ===== 5 nút quan hệ ===== */
@@ -276,7 +276,7 @@ Tất cả lệnh gọi `OlaApplication.b.<method>` (= `OlaNetworkService`) tron
 }
 .ola-profile__btn img { height: 20px; }
 .ola-profile__btn--unblock {                        /* btnUnBlockMe */
-  width: 100%; padding: 16px 0; background: #E34545; color: #fff;
+  width: 100%; padding: 16px 0; background: #dd4b39; color: #fff;   /* btn_red_button hardcode #dd4b39, không phải token red #E34545 */
   border: none; font-size: 12px;
 }
 

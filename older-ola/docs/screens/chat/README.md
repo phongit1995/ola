@@ -54,7 +54,7 @@ RelativeLayout
 
 | Thành phần | id | Style / màu | Cỡ | Ghi chú |
 |------------|----|-----|-----|---------|
-| Dòng | `conversationViewLayout` | nền `#CCFFFFFF` (trắng mờ 80%) | min-height **72dp**, padding **16dp** | bấm cả dòng |
+| Dòng | `conversationViewLayout` | nền `#CCFFFFFF` (trắng mờ 80%) | min-height **72dp**; padding **16dp** ở view con `conversationContentViewLayout` (bản thân `conversationViewLayout` padding 0) | bấm cả dòng |
 | Avatar | `imgItemIcon` | `ic_contact_photo`, `centerCrop` | **40×40dp** | `OlaCachedImageView`, bo tròn |
 | Icon thiết bị | `imgDeviceType` | `ic_device_type_android/ios` | 12dp, góc phải-dưới avatar | ẩn mặc định |
 | Tên/nick | `txtItemTitle` | `subhead` **16sp**, `rgba(0,0,0,.87)` | 1 dòng, weight 1 | |

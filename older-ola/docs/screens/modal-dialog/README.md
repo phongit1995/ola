@@ -242,7 +242,7 @@ Footer:  [Play now (XANH, full-width)]
 | `string_upload_media` | Upload media | Tải lên |
 | `string_change_status` | Change status | Thay đổi trạng thái |
 | `message_logout_confirm` | Do you want to sign out Ola? | Bạn có muốn đăng xuất? |
-| `message_like_app` | Like Ola | Thích Ola |
+| `message_like_app` | Love Ola | Thích Ola |
 | `message_clear_conversation_content_history` | Delete archived message | Xóa tin nhắn đã lưu |
 | `button_group` | Group name | Tên nhóm |
 | `general_hint_capcha` | Enter captcha | Nhập mã captcha |

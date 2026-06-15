@@ -26,7 +26,7 @@ Tab thứ **5** của bottom bar ([trang chủ](../trang-chu/README.md)) — dan
 | # | Icon | Tên (VI hiển thị) | String EN (`general_tab_*`) | Badge | Mở tới |
 |---|------|-------------------|------------------------------|-------|--------|
 | 1 | ![notify](images/ic_tab_notify.png) | Thông báo | `notify` = Notifications | số chưa đọc | Trung tâm thông báo |
-| 2 | ![game](images/app_icon_game_store.png) | Kho Game | `game_store` = Game Store | "Free" (xanh) | Cửa hàng game |
+| 2 | ![game](images/app_icon_game_store.png) | Kho Game | `game_store` = Game Box | "Free" (xanh) | Cửa hàng game |
 | 3 | ![profile](images/ic_tab_persional.png) | Cá nhân | `personal` = Profile | — | Hồ sơ bản thân (Me) |
 | 4 | ![vip](images/ic_tab_vip_store.png) | Kho VIP | `vipstore` = VIP icon collection | — | Cửa hàng icon VIP |
 | 5 | ![ken](images/ic_tab_ken_store.png) | KEN | `kenstore` = KEN | — | Cửa hàng KEN (tiền ảo) |
@@ -78,7 +78,7 @@ Tab thứ **5** của bottom bar ([trang chủ](../trang-chu/README.md)) — dan
 |----------|--------------------------|----------------------|
 | `general_tab_app` | Applications | Ứng dụng |
 | `general_tab_notify` | Notifications | Thông báo |
-| `general_tab_game_store` | Game Store | Kho Game |
+| `general_tab_game_store` | Game Box | Kho Game |
 | `general_tab_personal` | Profile | Cá nhân |
 | `general_tab_vipstore` | VIP icon collection | Kho VIP |
 | `general_tab_kenstore` | KEN | KEN |

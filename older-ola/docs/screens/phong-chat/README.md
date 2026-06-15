@@ -237,7 +237,7 @@ Bấm Back khi đang trong 1 phòng (`h.x.e()==1`) → dialog xác nhận:
 | `string_quit_chat_room` | Broadcast off | Tắt loa loa |
 | `string_select_filter_mode` | Select filter | Chọn bộ lọc |
 | `message_warning_need_verify_phone_to_join_room` | Verified phone number before joining public room | Yêu cầu xác thực SĐT trước khi vào phòng chat |
-| `string_write_a_message_room` | Write a message in %1$s | Viết tin nhắn gởi đến "phòng %1$s" |
+| `string_write_a_message_room` | Write a message to "%1$s room" | Viết tin nhắn gửi đến "phòng %1$s" |
 | `string_broadcasting_members` | Broadcasting members | Thành viên đang Loa Loa |
 | `string_member_list` | Member list | Danh sách thành viên |
 | `string_public_room_member` | Room members | Thành viên phòng chat |

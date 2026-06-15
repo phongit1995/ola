@@ -51,7 +51,7 @@ ScrollView (nền xanh #7CB342, fillViewport)
 | Logo | `olaLogoImageView` | — | — | 56×56dp, margin T/B 16dp | `ola_logo_trans` (mặt cười trắng) |
 | Avatar account đã lưu | `accountGallery` | — | nick: trắng | cao tối thiểu 96dp, spacing 16dp | ẩn nếu chưa có account |
 | Thẻ nhập (card) | `inputSpan` | nền trắng | — | bo góc + bóng (9-patch `bg_shadow_4_edges`), margin dưới 8dp | bọc 2 ô nhập |
-| Ô tên đăng nhập | `txtUserName` | chữ `rgba(0,0,0,.87)`, nền trong suốt | 14sp | 1 dòng | hint "Tên đăng nhập", `inputType=textEmailAddress`, Enter→ô kế |
+| Ô tên đăng nhập | `txtUserName` | chữ `rgba(0,0,0,.87)`, nền trong suốt | 16sp | 1 dòng | hint "Tên đăng nhập", `inputType=textEmailAddress`, Enter→ô kế |
 | Nút xoá tên | `btnClearUserName` | icon xám | — | 36×36dp, padding 6dp | `ic_input_clear` (dấu ×) |
 | Divider | — | `rgba(0,0,0,.12)` | — | cao 1px, margin ngang 4dp | kẻ giữa 2 ô |
 | Ô mật khẩu | `txtPassword` | chữ `rgba(0,0,0,.87)`, nền trong suốt | 16sp | 1 dòng | hint "Mật khẩu", `inputType=textPassword`, Enter→đăng nhập |
@@ -109,7 +109,7 @@ ScrollView (nền xanh #7CB342, fillViewport)
   padding: 16px;
 }
 .ola-login__field input::placeholder { color: rgba(0,0,0,.38); }
-.ola-login__field--user input { font-size: 14px; }   /* body1 */
+.ola-login__field--user input { font-size: 16px; }   /* subhead (style defaultStyle.edittext.username override = 16sp) */
 .ola-login__field--pass input { font-size: 16px; }   /* subhead */
 .ola-login__divider {
   height: 1px;
