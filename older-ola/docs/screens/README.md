@@ -45,6 +45,9 @@ screens/
 ├── ung-dung/              ← màn Ứng dụng (tab 5: list tiện ích)
 │   ├── README.md                10 tiện ích + style item + CSS
 │   └── images/                  ảnh chụp + 10 icon tiện ích
+├── kho-vip/               ← màn Kho VIP (OlaVipStoreActivity)
+│   ├── README.md                scaffold + header (VIP đang dùng/quyền/buy/extend) + item + CSS
+│   └── images/                  icon (tab vip, mũi tên, back, quit)
 └── modal-dialog/          ← Modal/Dialog kiểu chung (confirm, nhập, progress…)
     └── README.md                khung 3 phần + màu/size/nút/icon + CSS
 ```
@@ -66,6 +69,7 @@ screens/
 | 5 | Cài đặt (Settings) | [cai-dat/](cai-dat/README.md) | `OlaAppSettingActivity` | 📐 từ code/XML (chưa chụp) |
 | 3f | Hồ sơ bản thân (sửa thông tin) | [thong-tin-ca-nhan/](thong-tin-ca-nhan/README.md) | `OlaUserProfileActivity` | 📐 từ code/XML (chưa chụp) |
 | 4 | Ứng dụng (tab 5) | [ung-dung/](ung-dung/README.md) | `OlaBottomTabActivity` + fragment `m/d` | ✅ chụp thật + 10 icon |
+| 4a | Kho VIP | [kho-vip/](kho-vip/README.md) | `OlaVipStoreActivity` | 📐 từ code/XML (chưa chụp) |
 | — | Modal / Dialog (kiểu chung) | [modal-dialog/](modal-dialog/README.md) | dùng chung (confirm, nhập, progress, chọn) | 📐 trích từ layout/style |
 
 ## Quy ước trong tài liệu

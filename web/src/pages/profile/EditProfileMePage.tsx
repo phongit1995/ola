@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@constants';
 import { UserService } from '@services';
+import { ApiError } from '@lib';
 import type { Gender, UpdateProfileRequest } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
 import maleIcon from '@/assets/icons/chat/ic_indicate_male.png';
@@ -12,6 +13,8 @@ import { colorFromName } from '../me/mappers';
 
 const INPUT_CLASS =
   'w-full bg-transparent text-sm text-black/87 outline-none placeholder:text-[#e34545]';
+
+const PHONE_PATTERN = /^[0-9+\-() ]{6,20}$/;
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -105,10 +108,17 @@ export function EditProfileMePage() {
   const [dateOfBirth, setDateOfBirth] = useState(user?.dateOfBirth ?? '');
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   if (!user) return null;
 
   const nick = user.fullName || user.username;
+
+  function validate(): string | null {
+    if (!fullName.trim()) return t('profileEdit.fullnameRequired');
+    if (phone.trim() && !PHONE_PATTERN.test(phone.trim())) return t('profileEdit.phoneInvalid');
+    return null;
+  }
 
   async function uploadAvatar(file: File) {
     if (uploading) return;
@@ -125,13 +135,26 @@ export function EditProfileMePage() {
 
   async function save() {
     if (saving) return;
+    const validationError = validate();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+    setError(null);
     setSaving(true);
-    const payload: UpdateProfileRequest = { avatar, fullName, phone, gender, dateOfBirth };
+    const payload: UpdateProfileRequest = {
+      avatar,
+      fullName: fullName.trim(),
+      phone: phone.trim(),
+      gender,
+      dateOfBirth,
+    };
     try {
       await UserService.updateMe(payload);
       await refreshUser();
       navigate(ROUTES.home);
-    } catch {
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : t('profileEdit.saveError'));
       setSaving(false);
     }
   }
@@ -153,6 +176,10 @@ export function EditProfileMePage() {
       </header>
 
       <div className="flex-1 overflow-y-auto p-4">
+        {error ? (
+          <div className="mb-4 rounded bg-[#e34545]/10 px-3 py-2 text-sm text-[#e34545]">{error}</div>
+        ) : null}
+
         <AvatarPicker avatar={avatar} nick={nick} uploading={uploading} onPick={uploadAvatar} />
 
         <Field label={t('profileEdit.fullnameLabel')}>

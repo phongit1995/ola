@@ -1,4 +1,6 @@
 import { useTranslation } from 'react-i18next';
+import maleIcon from '@/assets/icons/chat/ic_indicate_male.png';
+import femaleIcon from '@/assets/icons/chat/ic_indicate_female.png';
 import type { RoomMember } from '@app-types';
 import { Avatar } from '../../chat/components/Avatar';
 import { colorForName } from '../avatarColor';
@@ -6,6 +8,17 @@ import { colorForName } from '../avatarColor';
 interface RoomMembersTabProps {
   members: RoomMember[];
   active: boolean;
+}
+
+function GenderIcon({ gender }: { gender: RoomMember['gender'] }) {
+  if (gender == null) return null;
+  return (
+    <img
+      src={gender === 'female' ? femaleIcon : maleIcon}
+      alt=""
+      className="h-4 w-4 shrink-0 object-contain"
+    />
+  );
 }
 
 export function RoomMembersTab({ members, active }: RoomMembersTabProps) {
@@ -18,7 +31,7 @@ export function RoomMembersTab({ members, active }: RoomMembersTabProps) {
       ) : (
         <ul>
           {members.map((member) => {
-            const name = member.fullName ?? member.username;
+            const name = member.username;
             return (
               <li
                 key={member.userId}
@@ -34,7 +47,10 @@ export function RoomMembersTab({ members, active }: RoomMembersTabProps) {
                   <Avatar name={name} color={colorForName(name)} />
                 )}
                 <div className="flex min-w-0 flex-1 flex-col">
-                  <span className="truncate text-base text-black/87">{name}</span>
+                  <span className="flex items-center gap-1 text-base text-black/87">
+                    <span className="truncate">{name}</span>
+                    <GenderIcon gender={member.gender} />
+                  </span>
                   {member.bio ? (
                     <span className="truncate text-xs text-black/54">{member.bio}</span>
                   ) : null}
