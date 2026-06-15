@@ -1,0 +1,149 @@
+name: Build & Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Hành động'
+        required: false
+        default: 'both'
+        type: choice
+        options: [both, build, deploy]
+      environment:
+        description: 'Môi trường'
+        required: false
+        default: 'dev'
+        type: choice
+        options: [dev, production]
+      target:
+        description: 'Thành phần cần build/deploy'
+        required: false
+        default: 'both'
+        type: choice
+        options: [both, web, server]
+      tag:
+        description: 'Image tag (latest, v1.2.3, ...)'
+        required: false
+        default: 'latest'
+        type: string
+
+concurrency:
+  group: build-deploy-${{ inputs.environment }}
+  cancel-in-progress: false
+
+env:
+  IMAGE_TAG: ${{ inputs.tag || 'latest' }}
+  SUFFIX: ${{ inputs.environment == 'dev' && '-dev' || '' }}
+  WEB_API_URL: ${{ inputs.environment == 'dev' && 'https://api-dev.olachat.net/api/v1' || 'https://chat.ola-server.click/api/v1' }}
+  WEB_SOCKET_URL: ${{ inputs.environment == 'dev' && 'https://api-dev.olachat.net' || 'https://chat.ola-server.click' }}
+
+jobs:
+  build-web:
+    if: ${{ (inputs.action == 'build' || inputs.action == 'both') && (inputs.target == 'web' || inputs.target == 'both') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Prepare web/.env (Vite bake VITE_*)
+        run: |
+          if [ "${{ inputs.environment }}" = "dev" ]; then
+            grep -E '^VITE_' env.development > web/.env
+          else
+            {
+              echo "VITE_API_URL=${{ env.WEB_API_URL }}"
+              echo "VITE_SOCKET_URL=${{ env.WEB_SOCKET_URL }}"
+              echo "VITE_API_GUARD_SECRET=${{ secrets.VITE_API_GUARD_SECRET }}"
+              echo "VITE_GEOAPIFY_KEY=${{ secrets.VITE_GEOAPIFY_KEY }}"
+            } > web/.env
+          fi
+      - name: Build & push ola-web${{ env.SUFFIX }}
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: infra/web/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/ola-web${{ env.SUFFIX }}:${{ env.IMAGE_TAG }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/ola-web${{ env.SUFFIX }}:sha-${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  build-server:
+    if: ${{ (inputs.action == 'build' || inputs.action == 'both') && (inputs.target == 'server' || inputs.target == 'both') }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [api, chat, migrate]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build & push ola-chat-server-${{ matrix.service }}${{ env.SUFFIX }}
+        uses: docker/build-push-action@v6
+        with:
+          context: ./server
+          file: ./infra/docker/${{ matrix.service }}.Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/ola-chat-server-${{ matrix.service }}${{ env.SUFFIX }}:${{ env.IMAGE_TAG }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/ola-chat-server-${{ matrix.service }}${{ env.SUFFIX }}:sha-${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    needs: [build-web, build-server]
+    # Chạy khi action là deploy/both, và không có job build nào bị fail (skipped vẫn OK).
+    if: ${{ !cancelled() && (inputs.action == 'deploy' || inputs.action == 'both') && needs.build-web.result != 'failure' && needs.build-server.result != 'failure' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Stage deploy files
+        env:
+          DEPLOY_ENV: ${{ inputs.environment || 'production' }}
+        run: |
+          mkdir -p staging
+          cp docker-compose.yml staging/
+          cp server/scripts/deploy.sh staging/
+          if [ "$DEPLOY_ENV" = "dev" ]; then
+            cp env.development staging/env.development
+          fi
+
+      - name: Upload deploy files
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          port: ${{ secrets.SSH_PORT }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          source: "staging/*"
+          target: ${{ inputs.environment == 'dev' && secrets.SERVER_DEPLOY_PATH_DEV || secrets.SERVER_DEPLOY_PATH }}
+          strip_components: 1
+
+      - name: Run deploy
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          port: ${{ secrets.SSH_PORT }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          command_timeout: 20m
+          script: |
+            set -e
+            cd "${{ inputs.environment == 'dev' && secrets.SERVER_DEPLOY_PATH_DEV || secrets.SERVER_DEPLOY_PATH }}"
+            chmod +x deploy.sh
+            VERSION='${{ inputs.tag || 'latest' }}' \
+            SERVICES='${{ inputs.target == 'web' && 'web' || (inputs.target == 'server' && 'api,chat,migrate' || 'api,chat,web,migrate') }}' \
+            ENV_FILE='${{ inputs.environment == 'dev' && 'env.development' || '.env' }}' \
+            HEALTH_URL='${{ inputs.environment == 'dev' && 'http://localhost:5242/api/v1/health' || 'http://localhost:5241/api/v1/health' }}' \
+            WEB_HEALTH_URL='${{ inputs.environment == 'dev' && 'http://localhost:5082' || 'http://localhost:5081' }}' \
+            ./deploy.sh

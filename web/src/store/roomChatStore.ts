@@ -163,6 +163,12 @@ export const useRoomChatStore = create<RoomChatState>((set, get) => ({
     if (!room) return;
     const trimmed = content.trim();
     if (trimmed === '') return;
-    await RoomService.sendMessage(room.id, { content: trimmed });
+    const message = await RoomService.sendMessage(room.id, { content: trimmed });
+    if (get().activeRoom?.id !== room.id) return;
+    set((state) =>
+      state.messages.some((item) => item.id === message.id)
+        ? state
+        : { messages: [...state.messages, message] }
+    );
   },
 }));

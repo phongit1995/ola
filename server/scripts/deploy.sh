@@ -3,7 +3,6 @@ set -euo pipefail
 
 VERSION="${VERSION:-latest}"
 SERVICES="${SERVICES:-all}"
-RUN_MIGRATIONS="${RUN_MIGRATIONS:-true}"
 HEALTH_URL="${HEALTH_URL:-http://localhost:5241/api/health}"
 COMPOSE_FILE="${COMPOSE_FILE:-docker-compose.yml}"
 ENV_FILE="${ENV_FILE:-.env}"
@@ -66,14 +65,6 @@ rollback() {
   fi
 }
 trap 'rc=$?; [ $rc -ne 0 ] && rollback; exit $rc' EXIT
-
-if [ -n "${TARGETS[migrate]:-}" ] && [ "$RUN_MIGRATIONS" = "true" ]; then
-  log "Running migrations..."
-  docker compose --env-file "$ENV_FILE" run --rm migrate
-  log "Migrations OK"
-else
-  log "Skipping migrations"
-fi
 
 RESTART_SVCS=()
 [ -n "${TARGETS[api]:-}" ]  && RESTART_SVCS+=(api)
