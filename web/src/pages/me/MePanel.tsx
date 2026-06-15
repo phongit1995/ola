@@ -18,7 +18,7 @@ export function MePanel() {
   const username = useAuthStore((s) => s.user?.username ?? null);
   const displayName = username ?? t('home.guest');
 
-  const { tab, setTab, posts, loading, error, isFollower, toggleReaction, addPost } = useMeFeed();
+  const { tab, setTab, posts, loading, error, toggleReaction, addPost } = useMeFeed();
 
   const [composerOpen, setComposerOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
@@ -29,7 +29,7 @@ export function MePanel() {
     setProfile(buildProfile(nick, color, isSelf));
   }
 
-  const emptyText = isFollower ? t('me.followerEmpty') : t('me.empty');
+  const emptyText = t('me.empty');
 
   return (
     <>

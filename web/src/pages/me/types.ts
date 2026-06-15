@@ -24,4 +24,4 @@ export interface MePost {
   mention: boolean;
 }
 
-export type MeTab = 'feed' | 'mentions' | 'media' | 'follower';
+export type MeTab = 'feed' | 'tagged' | 'media' | 'mentions';

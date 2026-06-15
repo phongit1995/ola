@@ -77,6 +77,11 @@ func (r *Repository) FeedMedia(viewerID uuid.UUID, friendIDs []uuid.UUID, limit,
 	return r.paginate(db, limit, offset)
 }
 
+func (r *Repository) FeedTagged(viewerID uuid.UUID, friendIDs []uuid.UUID, limit, offset int) ([]*models.Post, int64, error) {
+	db := r.feedScope(viewerID, friendIDs).Where("COALESCE(jsonb_array_length(mentions), 0) > 0")
+	return r.paginate(db, limit, offset)
+}
+
 func (r *Repository) ListByAuthor(authorID uuid.UUID, visibilities []models.PostVisibility, limit, offset int) ([]*models.Post, int64, error) {
 	db := r.db.Model(&models.Post{}).Where("author_id = ? AND visibility IN ?", authorID, visibilities)
 	return r.paginate(db, limit, offset)

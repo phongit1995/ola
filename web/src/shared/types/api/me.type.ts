@@ -2,7 +2,7 @@ export type PostVisibility = 'public' | 'friend' | 'private';
 
 export type PostReaction = 'like' | 'dislike';
 
-export type MeFeedFilter = 'mentions' | 'media';
+export type MeFeedFilter = 'tagged' | 'mentions' | 'media';
 
 export interface PostCheckIn {
   name: string;

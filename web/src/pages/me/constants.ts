@@ -13,16 +13,16 @@ export const MENTION_TOKEN_PATTERN = /(@[A-Za-z0-9_]+|#[A-Za-z0-9_.]+)/g;
 
 export const TAB_FILTER: Record<MeTab, MeFeedFilter | undefined> = {
   feed: undefined,
-  mentions: 'mentions',
+  tagged: 'tagged',
   media: 'media',
-  follower: undefined,
+  mentions: 'mentions',
 };
 
 export const ME_TABS = [
   { key: 'feed', icon: tabOla, iconActive: tabOlaActive, labelKey: 'me.tabFeed' },
-  { key: 'mentions', icon: tabTag, iconActive: tabTagActive, labelKey: 'me.tabMentions' },
+  { key: 'tagged', icon: tabTag, iconActive: tabTagActive, labelKey: 'me.tabTagged' },
   { key: 'media', icon: tabMedia, iconActive: tabMediaActive, labelKey: 'me.tabMedia' },
-  { key: 'follower', icon: tabFollower, iconActive: tabFollowerActive, labelKey: 'me.tabFollower' },
+  { key: 'mentions', icon: tabFollower, iconActive: tabFollowerActive, labelKey: 'me.tabMentions' },
 ] as const satisfies ReadonlyArray<{
   key: MeTab;
   icon: string;

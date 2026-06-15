@@ -18,16 +18,14 @@ export function useMeFeed() {
   const createPost = useMeFeedStore((state) => state.createPost);
 
   const formatTime = useMemo(() => createTimeFormatter(i18n.language), [i18n.language]);
-  const isFollower = tab === 'follower';
 
   useEffect(() => {
-    if (isFollower) return;
     loadFeed(TAB_FILTER[tab]);
-  }, [tab, isFollower, loadFeed]);
+  }, [tab, loadFeed]);
 
   const posts = useMemo(
-    () => (isFollower ? [] : rawPosts.map((post) => toMePost(post, formatTime))),
-    [isFollower, rawPosts, formatTime]
+    () => rawPosts.map((post) => toMePost(post, formatTime)),
+    [rawPosts, formatTime]
   );
 
   const addPost = useCallback(
@@ -62,9 +60,8 @@ export function useMeFeed() {
     tab,
     setTab,
     posts,
-    loading: !isFollower && loading,
-    error: !isFollower && error,
-    isFollower,
+    loading,
+    error,
     toggleReaction,
     addPost,
   };

@@ -162,6 +162,14 @@ func (s *Service) MediaFeed(viewerID uuid.UUID, limit, offset int) (*PostListRes
 	return s.buildList(viewerID, posts, total, limit, offset)
 }
 
+func (s *Service) TaggedFeed(viewerID uuid.UUID, limit, offset int) (*PostListResponse, error) {
+	posts, total, err := s.repo.FeedTagged(viewerID, s.friendIDs(viewerID), limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	return s.buildList(viewerID, posts, total, limit, offset)
+}
+
 func (s *Service) ListMine(userID uuid.UUID, limit, offset int) (*PostListResponse, error) {
 	all := []models.PostVisibility{models.PostVisibilityPublic, models.PostVisibilityFriend, models.PostVisibilityPrivate}
 	posts, total, err := s.repo.ListByAuthor(userID, all, limit, offset)

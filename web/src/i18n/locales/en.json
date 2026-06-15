@@ -179,6 +179,7 @@
   },
   "me": {
     "tabFeed": "Newsfeed",
+    "tabTagged": "Tagged",
     "tabMentions": "Mentions",
     "tabMedia": "Photos",
     "tabFollower": "Followers",
