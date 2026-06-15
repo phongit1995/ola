@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import addFriendIcon from '@/assets/icons/chat/ic_add_friend.png';
 import groupMessageIcon from '@/assets/icons/room/ic_notify_new_chat_group_message.png';
@@ -7,6 +8,9 @@ import { RoomHeader } from './RoomHeader';
 import { RoomTabBar, type RoomTabItem } from './RoomTabBar';
 import { RoomMessagesTab } from './RoomMessagesTab';
 import { RoomMembersTab } from './RoomMembersTab';
+import { ProfilePage } from '../../profile/ProfilePage';
+import { buildProfile } from '../../profile/data';
+import type { UserProfile } from '../../profile/types';
 
 interface RoomChatViewProps {
   onClose: () => void;
@@ -23,6 +27,11 @@ export function RoomChatView({ onClose }: RoomChatViewProps) {
   const setActiveTab = useRoomChatStore((state) => state.setActiveTab);
   const sendMessage = useRoomChatStore((state) => state.sendMessage);
   const currentUserId = useAuthStore((state) => state.user?.id) ?? '';
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+
+  function openProfile(nick: string, color: string) {
+    setProfile(buildProfile(nick, color));
+  }
 
   const tabs: RoomTabItem[] = [
     { key: 'members', icon: addFriendIcon, label: `${t('room.tabMembers')} (${memberCount})` },
@@ -40,8 +49,21 @@ export function RoomChatView({ onClose }: RoomChatViewProps) {
         status={status}
         active={activeTab === 'messages'}
         onSend={sendMessage}
+        onOpenProfile={openProfile}
       />
-      <RoomMembersTab members={members} active={activeTab === 'members'} />
+      <RoomMembersTab
+        members={members}
+        active={activeTab === 'members'}
+        onOpenProfile={openProfile}
+      />
+
+      {profile != null && (
+        <ProfilePage
+          profile={profile}
+          onClose={() => setProfile(null)}
+          onOpenFriend={(friend) => setProfile(buildProfile(friend.name, friend.color))}
+        />
+      )}
     </div>
   );
 }

@@ -1,19 +1,15 @@
-import { Fragment, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import likeIcon from '@/assets/icons/chat/smiley_35.png';
-import smileyIcon from '@/assets/icons/chat/ic_smiley.png';
-import smileyIconActive from '@/assets/icons/chat/ic_smiley_selected.png';
 import type { RoomMessage } from '@app-types';
+import { useAuthStore } from '@/store/authStore';
 import { Avatar } from '../../chat/components/Avatar';
-import { AttachmentBar, type AttachTab } from '../../chat/components/AttachmentBar';
+import { ComposerSmileyPanel } from '../../me/components/ComposerSmileyPanel';
+import { insertAtCursor } from '../../me/textInsert';
+import { buildRoomFeed } from '../messageGroups';
 import { colorForName } from '../avatarColor';
+import { RoomDateSeparator } from './RoomDateSeparator';
+import { RoomMessageGroup } from './RoomMessageGroup';
 import type { RoomChatStatus } from '@/store/roomChatStore';
-
-function formatClock(iso: string) {
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return '';
-  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-}
 
 interface RoomMessagesTabProps {
   roomName: string;
@@ -22,6 +18,7 @@ interface RoomMessagesTabProps {
   status: RoomChatStatus;
   active: boolean;
   onSend: (content: string) => Promise<void>;
+  onOpenProfile?: (nick: string, color: string) => void;
 }
 
 export function RoomMessagesTab({
@@ -31,13 +28,15 @@ export function RoomMessagesTab({
   status,
   active,
   onSend,
+  onOpenProfile,
 }: RoomMessagesTabProps) {
   const { t } = useTranslation();
+  const me = useAuthStore((state) => state.user);
 
   const [draft, setDraft] = useState('');
-  const [attachOpen, setAttachOpen] = useState(false);
-  const [attachTab, setAttachTab] = useState<AttachTab>('smiley');
+  const [smileyOpen, setSmileyOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     if (!active) return;
@@ -55,8 +54,19 @@ export function RoomMessagesTab({
     }
   }
 
-  const isTyping = draft.trim() !== '';
+  function insertSmiley(code: string) {
+    setDraft((current) => insertAtCursor(current, `${code} `, inputRef.current));
+  }
+
+  function onKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      sendText(draft);
+    }
+  }
+
   const canSend = status === 'joined';
+  const myName = me?.username ?? t('home.guest');
 
   return (
     <div className={`flex flex-1 flex-col overflow-hidden ${active ? '' : 'hidden'}`}>
@@ -66,103 +76,57 @@ export function RoomMessagesTab({
         </div>
       )}
 
-      <div ref={scrollRef} className="flex flex-1 flex-col gap-3 overflow-y-auto p-3">
-        {messages.map((message, index) => {
-          const clock = formatClock(message.createdAt);
-          const previous = messages[index - 1];
-          const showTime = clock !== '' && (!previous || formatClock(previous.createdAt) !== clock);
-          const isOwn = message.senderId === currentUserId;
-          const senderName = message.senderName ?? message.senderId;
-          return (
-            <Fragment key={message.id}>
-              {showTime && <span className="self-center text-xs text-black/26">{clock}</span>}
-              {isOwn ? (
-                <div className="max-w-[80%] self-end rounded-2xl rounded-br-md bg-[#dcedc8] px-3.5 py-2 text-base text-black/87">
-                  {message.content}
-                </div>
-              ) : (
-                <div className="flex max-w-[85%] items-end gap-2 self-start">
-                  {message.senderAvatar ? (
-                    <img
-                      src={message.senderAvatar}
-                      alt=""
-                      className="h-8 w-8 shrink-0 rounded-full object-cover"
-                    />
-                  ) : (
-                    <Avatar name={senderName} color={colorForName(senderName)} size={32} />
-                  )}
-                  <div className="min-w-0">
-                    <span className="mb-0.5 block text-xs text-black/54">{senderName}</span>
-                    <div className="rounded-2xl rounded-bl-md bg-white px-3.5 py-2 text-base text-black/87 shadow-sm">
-                      {message.content}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </Fragment>
-          );
-        })}
+      <div ref={scrollRef} className="flex flex-1 flex-col gap-2 overflow-y-auto p-3">
+        {buildRoomFeed(messages, currentUserId).map((item) =>
+          item.kind === 'date' ? (
+            <RoomDateSeparator key={item.key} iso={item.createdAt} />
+          ) : (
+            <RoomMessageGroup key={item.key} group={item} onOpenProfile={onOpenProfile} />
+          )
+        )}
       </div>
 
-      <form
-        onSubmit={(event) => {
-          event.preventDefault();
-          sendText(draft);
-        }}
-        className="flex items-end gap-1 border-t border-black/12 bg-white px-2 py-1.5"
-      >
+      {smileyOpen && (
+        <div className="border-t border-black/12 bg-white px-2">
+          <ComposerSmileyPanel onPick={insertSmiley} />
+        </div>
+      )}
+
+      <div className="flex shrink-0 items-end gap-2 border-t border-black/12 bg-white px-3 py-2">
+        {me?.avatar != null && me.avatar !== '' ? (
+          <img src={me.avatar} alt="" className="h-9 w-9 shrink-0 rounded-full object-cover" />
+        ) : (
+          <Avatar name={myName} color={colorForName(myName)} size={36} />
+        )}
+        <textarea
+          ref={inputRef}
+          value={draft}
+          onChange={(event) => setDraft(event.target.value)}
+          onKeyDown={onKeyDown}
+          onFocus={() => setSmileyOpen(false)}
+          disabled={!canSend}
+          placeholder={t('room.chatInputHint', { name: roomName })}
+          rows={1}
+          className="max-h-28 min-h-9 flex-1 resize-none rounded-2xl border border-black/12 px-3 py-2 text-sm text-black/87 outline-none focus:border-ola-primary disabled:opacity-50"
+        />
         <button
           type="button"
           aria-label={t('chat.attachTabSmiley')}
-          onClick={() => {
-            setAttachTab('smiley');
-            setAttachOpen((open) => !open);
-          }}
-          className="flex h-9 w-9 shrink-0 items-center justify-center"
-        >
-          <img
-            src={attachOpen ? smileyIconActive : smileyIcon}
-            alt=""
-            className="h-6 w-6 object-contain"
-          />
-        </button>
-        <input
-          value={draft}
-          onChange={(event) => setDraft(event.target.value)}
-          onFocus={() => setAttachOpen(false)}
           disabled={!canSend}
-          placeholder={t('room.chatInputHint', { name: roomName })}
-          className="min-h-9 flex-1 bg-transparent px-2 text-base text-black/87 outline-none placeholder:text-black/38 disabled:opacity-50"
-        />
-        {isTyping ? (
-          <button
-            type="submit"
-            disabled={!canSend}
-            className="min-w-12 px-2 text-base font-medium text-ola-primary disabled:opacity-50"
-          >
-            {t('chat.send')}
-          </button>
-        ) : (
-          <button
-            type="button"
-            aria-label={t('chat.like')}
-            disabled={!canSend}
-            onClick={() => sendText('👍')}
-            className="flex h-9 w-9 items-center justify-center disabled:opacity-50"
-          >
-            <img src={likeIcon} alt="" className="h-7 w-7 object-contain" />
-          </button>
-        )}
-      </form>
-
-      {attachOpen && (
-        <AttachmentBar
-          activeTab={attachTab}
-          onTabChange={setAttachTab}
-          onPickEmoji={(emoji) => setDraft((current) => current + emoji)}
-          onClose={() => setAttachOpen(false)}
-        />
-      )}
+          onClick={() => setSmileyOpen((open) => !open)}
+          className="flex h-9 w-9 shrink-0 items-center justify-center disabled:opacity-50"
+        >
+          <span className="text-2xl leading-none">😀</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => sendText(draft)}
+          disabled={!canSend || draft.trim() === ''}
+          className="h-9 shrink-0 rounded-full bg-ola-primary px-4 text-sm font-medium text-white disabled:opacity-40"
+        >
+          {t('chat.send')}
+        </button>
+      </div>
     </div>
   );
 }

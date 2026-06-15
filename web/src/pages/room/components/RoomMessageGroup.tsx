@@ -1,0 +1,85 @@
+import { Avatar } from '../../chat/components/Avatar';
+import { renderRichText } from '../../me/richText';
+import { colorForName } from '../avatarColor';
+import type { BubblePosition, MessageGroup } from '../messageGroups';
+
+const OWN_CORNERS: Record<BubblePosition, string> = {
+  single: 'rounded-2xl rounded-br-md',
+  first: 'rounded-2xl rounded-br-md',
+  middle: 'rounded-2xl rounded-tr-md rounded-br-md',
+  last: 'rounded-2xl rounded-tr-md',
+};
+
+const OTHER_CORNERS: Record<BubblePosition, string> = {
+  single: 'rounded-2xl rounded-bl-md',
+  first: 'rounded-2xl rounded-bl-md',
+  middle: 'rounded-2xl rounded-tl-md rounded-bl-md',
+  last: 'rounded-2xl rounded-tl-md',
+};
+
+function clock(iso: string): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+interface RoomMessageGroupProps {
+  group: MessageGroup;
+  onOpenProfile?: (nick: string, color: string) => void;
+}
+
+export function RoomMessageGroup({ group, onOpenProfile }: RoomMessageGroupProps) {
+  const onMention = (nick: string) => onOpenProfile?.(nick, colorForName(nick));
+
+  if (group.isOwn) {
+    const last = group.messages[group.messages.length - 1];
+    return (
+      <div className="flex flex-col items-end gap-0.5 self-end" style={{ maxWidth: '80%' }}>
+        {group.messages.map((message) => (
+          <div
+            key={message.id}
+            className={`w-fit max-w-full break-words bg-[#dcedc8] px-3.5 py-2 text-base text-black/87 ${OWN_CORNERS[message.position]}`}
+          >
+            {renderRichText(message.content, onMention)}
+          </div>
+        ))}
+        <span className="px-1 text-[11px] text-black/38">{clock(last.createdAt)}</span>
+      </div>
+    );
+  }
+
+  const last = group.messages[group.messages.length - 1];
+  const senderColor = colorForName(group.senderName);
+  const openSender = () => onOpenProfile?.(group.senderName, senderColor);
+  return (
+    <div className="flex flex-col gap-1 self-start" style={{ maxWidth: '85%' }}>
+      <div className="flex items-center gap-2">
+        <button type="button" onClick={openSender} className="shrink-0">
+          {group.senderAvatar != null && group.senderAvatar !== '' ? (
+            <img src={group.senderAvatar} alt="" className="h-8 w-8 rounded-full object-cover" />
+          ) : (
+            <Avatar name={group.senderName} color={senderColor} size={32} />
+          )}
+        </button>
+        <button
+          type="button"
+          onClick={openSender}
+          className="truncate text-sm font-medium text-black/87 hover:underline"
+        >
+          {group.senderName}
+        </button>
+      </div>
+      <div className="flex w-fit flex-col gap-0.5 pl-10">
+        {group.messages.map((message) => (
+          <div
+            key={message.id}
+            className={`w-fit max-w-full break-words bg-white px-3.5 py-2 text-base text-black/87 shadow-sm ${OTHER_CORNERS[message.position]}`}
+          >
+            {renderRichText(message.content, onMention)}
+          </div>
+        ))}
+        <span className="self-end px-1 text-[11px] text-black/38">{clock(last.createdAt)}</span>
+      </div>
+    </div>
+  );
+}
