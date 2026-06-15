@@ -21,6 +21,9 @@ export interface RoomMember {
   username: string;
   fullName?: string;
   avatar?: string;
+  gender?: 'male' | 'female';
+  vipUsed?: string | null;
+  vipEndTime?: string | null;
 }
 
 export interface RoomMessage {
@@ -29,6 +32,9 @@ export interface RoomMessage {
   senderId: string;
   senderName?: string;
   senderAvatar?: string;
+  senderGender?: 'male' | 'female';
+  senderVip?: string | null;
+  senderVipEnd?: string | null;
   content: string;
   createdAt: string;
 }

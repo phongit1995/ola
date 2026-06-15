@@ -1,3 +1,5 @@
+export type Gender = 'male' | 'female';
+
 export interface AuthUser {
   id: string;
   username: string;
@@ -5,9 +7,15 @@ export interface AuthUser {
   avatar?: string;
   phone?: string;
   fullName?: string;
+  gender?: Gender;
   bio?: string;
   dateOfBirth?: string;
   customInfo?: Record<string, unknown>;
+  ken?: number;
+  vipUsed?: string | null;
+  vipEndTime?: string | null;
+  followerCount?: number;
+  followingCount?: number;
 }
 
 export interface LoginRequest {

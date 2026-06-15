@@ -1,14 +1,14 @@
 package user
 
 import (
-	"ola-chat-server/internal/models"
-	"ola-chat-server/internal/modules/relationships"
-	"ola-chat-server/internal/utils"
-	"ola-chat-server/internal/services"
-	"ola-chat-server/internal/transport/websocket"
 	"context"
 	"errors"
 	"mime/multipart"
+	"ola-chat-server/internal/models"
+	"ola-chat-server/internal/modules/relationships"
+	"ola-chat-server/internal/services"
+	"ola-chat-server/internal/transport/websocket"
+	"ola-chat-server/internal/utils"
 	"time"
 
 	"github.com/google/uuid"
@@ -125,6 +125,9 @@ func (s *Service) UpdateProfile(userID uuid.UUID, req *UpdateProfileRequest) (*U
 	}
 	if req.FullName != "" {
 		user.FullName = req.FullName
+	}
+	if req.Gender != "" {
+		user.Gender = req.Gender
 	}
 	if req.Bio != "" {
 		user.Bio = req.Bio
@@ -315,20 +318,30 @@ func (s *Service) resolveRelationship(callerID, targetID uuid.UUID) *Relationshi
 
 func (s *Service) buildProfileResponse(user *models.User) *UserProfileResponse {
 	response := &UserProfileResponse{
-		ID:         user.ID.String(),
-		Username:   user.Username,
-		Email:      user.Email,
-		Avatar:     user.Avatar,
-		Phone:      user.Phone,
-		FullName:   user.FullName,
-		Bio:        user.Bio,
-		CustomInfo: user.CustomInfo,
-		CreatedAt:  user.CreatedAt.Format(time.RFC3339),
-		UpdatedAt:  user.UpdatedAt.Format(time.RFC3339),
+		ID:             user.ID.String(),
+		Username:       user.Username,
+		Email:          user.Email,
+		Avatar:         user.Avatar,
+		Phone:          user.Phone,
+		FullName:       user.FullName,
+		Gender:         user.Gender,
+		Bio:            user.Bio,
+		CustomInfo:     user.CustomInfo,
+		Ken:            user.Ken,
+		VipUsed:        user.VipUsed,
+		FollowerCount:  user.FollowerCount,
+		FollowingCount: user.FollowingCount,
+		CreatedAt:      user.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:      user.UpdatedAt.Format(time.RFC3339),
 	}
 
 	if user.DateOfBirth != nil {
 		response.DateOfBirth = user.DateOfBirth.Format("2006-01-02")
+	}
+
+	if user.VipEndTime != nil {
+		vipEndTime := user.VipEndTime.Format(time.RFC3339)
+		response.VipEndTime = &vipEndTime
 	}
 
 	return response

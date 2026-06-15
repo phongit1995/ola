@@ -1,15 +1,15 @@
 package room
 
 import (
+	"context"
+	"encoding/json"
+	"errors"
 	"ola-chat-server/internal/constants"
 	roomEvents "ola-chat-server/internal/domain/room"
 	"ola-chat-server/internal/models"
 	userModule "ola-chat-server/internal/modules/user"
 	"ola-chat-server/internal/transport/kafka"
 	"ola-chat-server/internal/transport/websocket"
-	"context"
-	"encoding/json"
-	"errors"
 	"time"
 
 	"github.com/google/uuid"
@@ -135,12 +135,19 @@ func (s *Service) ListMembers(ctx context.Context, roomID uuid.UUID) (*RoomMembe
 		if !ok || u == nil {
 			continue
 		}
-		items = append(items, RoomMemberResponse{
+		member := RoomMemberResponse{
 			UserID:   uid.String(),
 			Username: u.Username,
 			FullName: u.FullName,
 			Avatar:   u.Avatar,
-		})
+			Gender:   u.Gender,
+			VipUsed:  u.VipUsed,
+		}
+		if u.VipEndTime != nil {
+			vipEnd := u.VipEndTime.Format(time.RFC3339)
+			member.VipEndTime = &vipEnd
+		}
+		items = append(items, member)
 	}
 	return &RoomMembersResponse{Items: items, Total: len(items)}, nil
 }
@@ -195,9 +202,26 @@ func (s *Service) SendMessage(ctx context.Context, userID, roomID uuid.UUID, req
 		return nil, errors.New("not a room member")
 	}
 
-	senderName, senderAvatar := s.senderInfo(userID)
+	sender, _ := s.userCache.GetUserCache(userID, true)
+	senderName, senderAvatar, senderGender, senderVip, senderVipEnd := senderFields(sender)
 	msgID := uuid.New().String()
 	createdAt := time.Now().UTC()
+	createdAtStr := createdAt.Format(time.RFC3339)
+
+	stored := storedRoomMessage{
+		ID:        msgID,
+		RoomID:    roomID.String(),
+		SenderID:  userID.String(),
+		Content:   req.Content,
+		CreatedAt: createdAtStr,
+	}
+	data, err := json.Marshal(stored)
+	if err != nil {
+		return nil, err
+	}
+	if err := s.redisMsg.Append(ctx, roomID.String(), msgID, createdAt, data); err != nil {
+		return nil, err
+	}
 
 	msg := RoomMessageResponse{
 		ID:           msgID,
@@ -205,16 +229,11 @@ func (s *Service) SendMessage(ctx context.Context, userID, roomID uuid.UUID, req
 		SenderID:     userID.String(),
 		SenderName:   senderName,
 		SenderAvatar: senderAvatar,
+		SenderGender: senderGender,
+		SenderVip:    senderVip,
+		SenderVipEnd: senderVipEnd,
 		Content:      req.Content,
-		CreatedAt:    createdAt.Format(time.RFC3339),
-	}
-
-	data, err := json.Marshal(msg)
-	if err != nil {
-		return nil, err
-	}
-	if err := s.redisMsg.Append(ctx, roomID.String(), msgID, createdAt, data); err != nil {
-		return nil, err
+		CreatedAt:    createdAtStr,
 	}
 
 	event := &roomEvents.RoomMessageCreatedEvent{
@@ -225,6 +244,9 @@ func (s *Service) SendMessage(ctx context.Context, userID, roomID uuid.UUID, req
 			SenderID:     msg.SenderID,
 			SenderName:   msg.SenderName,
 			SenderAvatar: msg.SenderAvatar,
+			SenderGender: msg.SenderGender,
+			SenderVip:    msg.SenderVip,
+			SenderVipEnd: msg.SenderVipEnd,
 			Content:      msg.Content,
 			CreatedAt:    msg.CreatedAt,
 		},
@@ -283,13 +305,38 @@ func (s *Service) GetMessages(ctx context.Context, roomID uuid.UUID, limit int, 
 		return nil, err
 	}
 
-	items := make([]RoomMessageResponse, 0, len(raws))
+	stored := make([]storedRoomMessage, 0, len(raws))
+	idSet := make(map[uuid.UUID]struct{})
 	for _, raw := range raws {
-		var m RoomMessageResponse
+		var m storedRoomMessage
 		if err := json.Unmarshal(raw, &m); err != nil {
 			continue
 		}
-		items = append(items, m)
+		stored = append(stored, m)
+		if uid, err := uuid.Parse(m.SenderID); err == nil {
+			idSet[uid] = struct{}{}
+		}
+	}
+
+	ids := make([]uuid.UUID, 0, len(idSet))
+	for id := range idSet {
+		ids = append(ids, id)
+	}
+	users := s.userCache.GetUsersBatch(ids, true)
+
+	items := make([]RoomMessageResponse, 0, len(stored))
+	for _, m := range stored {
+		item := RoomMessageResponse{
+			ID:        m.ID,
+			RoomID:    m.RoomID,
+			SenderID:  m.SenderID,
+			Content:   m.Content,
+			CreatedAt: m.CreatedAt,
+		}
+		if uid, err := uuid.Parse(m.SenderID); err == nil {
+			item.SenderName, item.SenderAvatar, item.SenderGender, item.SenderVip, item.SenderVipEnd = senderFields(users[uid])
+		}
+		items = append(items, item)
 	}
 
 	resp := &RoomMessagesListResponse{Items: items, HasMore: len(raws) == limit}
@@ -311,16 +358,21 @@ func (s *Service) RoomEnabled(roomID string) (bool, error) {
 	return room.Enabled, nil
 }
 
-func (s *Service) senderInfo(userID uuid.UUID) (string, string) {
-	u, err := s.userCache.GetUserCache(userID, true)
-	if err != nil || u == nil {
-		return "", ""
+func senderFields(u *models.User) (name, avatar, gender string, vip, vipEnd *string) {
+	if u == nil {
+		return "", "", "", nil, nil
 	}
-	name := u.FullName
+	name = u.FullName
 	if name == "" {
 		name = u.Username
 	}
-	return name, u.Avatar
+	gender = u.Gender
+	vip = u.VipUsed
+	if u.VipEndTime != nil {
+		formatted := u.VipEndTime.Format(time.RFC3339)
+		vipEnd = &formatted
+	}
+	return name, u.Avatar, gender, vip, vipEnd
 }
 
 func (s *Service) getRoom(id uuid.UUID) (*models.Room, error) {

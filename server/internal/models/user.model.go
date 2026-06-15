@@ -30,17 +30,23 @@ func (j *JSONB) Scan(value interface{}) error {
 
 type User struct {
 	BaseModel
-	Username     string     `gorm:"unique;not null"`
-	Email        string     `gorm:"type:varchar(255)"`
-	Password     string     `gorm:"not null"`
-	Avatar       string     `gorm:"type:varchar(500)"`
-	Phone        string     `gorm:"type:varchar(20)"`
-	FullName     string     `gorm:"type:varchar(100)"`
-	Bio          string     `gorm:"type:text"`
-	DateOfBirth  *time.Time `gorm:"type:date"`
-	CustomInfo   JSONB      `gorm:"type:jsonb"`
-	IsActive     bool       `gorm:"not null;default:true"`
-	RefreshToken string     `gorm:"type:text"`
-	LastLoginIP  string     `gorm:"type:varchar(45)"`
-	LastLoginAt  *time.Time
+	Username       string     `gorm:"unique;not null"`
+	Email          string     `gorm:"type:varchar(255)"`
+	Password       string     `gorm:"not null"`
+	Avatar         string     `gorm:"type:varchar(500)"`
+	Phone          string     `gorm:"type:varchar(20)"`
+	FullName       string     `gorm:"type:varchar(100)"`
+	Gender         string     `gorm:"type:varchar(10);not null;default:'male'"`
+	Bio            string     `gorm:"type:text;default:'hello ola!!!'"`
+	DateOfBirth    *time.Time `gorm:"type:date"`
+	CustomInfo     JSONB      `gorm:"type:jsonb"`
+	Ken            int        `gorm:"not null;default:0"`
+	VipUsed        *string    `gorm:"type:varchar(50)"`
+	VipEndTime     *time.Time
+	FollowerCount  int    `gorm:"not null;default:0"`
+	FollowingCount int    `gorm:"not null;default:0"`
+	IsActive       bool   `gorm:"not null;default:true"`
+	RefreshToken   string `gorm:"type:text"`
+	LastLoginIP    string `gorm:"type:varchar(45)"`
+	LastLoginAt    *time.Time
 }

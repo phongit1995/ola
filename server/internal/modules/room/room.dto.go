@@ -41,10 +41,13 @@ type RoomListResponse struct {
 }
 
 type RoomMemberResponse struct {
-	UserID   string `json:"userId"`
-	Username string `json:"username"`
-	FullName string `json:"fullName,omitempty"`
-	Avatar   string `json:"avatar,omitempty"`
+	UserID     string  `json:"userId"`
+	Username   string  `json:"username"`
+	FullName   string  `json:"fullName,omitempty"`
+	Avatar     string  `json:"avatar,omitempty"`
+	Gender     string  `json:"gender,omitempty"`
+	VipUsed    *string `json:"vipUsed,omitempty"`
+	VipEndTime *string `json:"vipEndTime,omitempty"`
 }
 
 type RoomMembersResponse struct {
@@ -62,13 +65,24 @@ type SendRoomMessageRequest struct {
 }
 
 type RoomMessageResponse struct {
-	ID           string `json:"id"`
-	RoomID       string `json:"roomId"`
-	SenderID     string `json:"senderId"`
-	SenderName   string `json:"senderName,omitempty"`
-	SenderAvatar string `json:"senderAvatar,omitempty"`
-	Content      string `json:"content"`
-	CreatedAt    string `json:"createdAt"`
+	ID           string  `json:"id"`
+	RoomID       string  `json:"roomId"`
+	SenderID     string  `json:"senderId"`
+	SenderName   string  `json:"senderName,omitempty"`
+	SenderAvatar string  `json:"senderAvatar,omitempty"`
+	SenderGender string  `json:"senderGender,omitempty"`
+	SenderVip    *string `json:"senderVip,omitempty"`
+	SenderVipEnd *string `json:"senderVipEnd,omitempty"`
+	Content      string  `json:"content"`
+	CreatedAt    string  `json:"createdAt"`
+}
+
+type storedRoomMessage struct {
+	ID        string `json:"id"`
+	RoomID    string `json:"roomId"`
+	SenderID  string `json:"senderId"`
+	Content   string `json:"content"`
+	CreatedAt string `json:"createdAt"`
 }
 
 type RoomMessagesListResponse struct {

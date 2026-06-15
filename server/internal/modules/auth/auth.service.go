@@ -1,12 +1,12 @@
 package auth
 
 import (
+	"errors"
+	"fmt"
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/user"
 	"ola-chat-server/internal/services"
-	"errors"
-	"fmt"
 	"regexp"
 	"strings"
 	"time"
@@ -280,18 +280,28 @@ func (s *Service) ChangePassword(userID uuid.UUID, req *ChangePasswordRequest) e
 
 func (s *Service) buildAuthResponse(user *models.User, token, refreshToken string) *AuthResponse {
 	userResponse := UserResponse{
-		ID:         user.ID.String(),
-		Username:   user.Username,
-		Email:      user.Email,
-		Avatar:     user.Avatar,
-		Phone:      user.Phone,
-		FullName:   user.FullName,
-		Bio:        user.Bio,
-		CustomInfo: user.CustomInfo,
+		ID:             user.ID.String(),
+		Username:       user.Username,
+		Email:          user.Email,
+		Avatar:         user.Avatar,
+		Phone:          user.Phone,
+		FullName:       user.FullName,
+		Gender:         user.Gender,
+		Bio:            user.Bio,
+		CustomInfo:     user.CustomInfo,
+		Ken:            user.Ken,
+		VipUsed:        user.VipUsed,
+		FollowerCount:  user.FollowerCount,
+		FollowingCount: user.FollowingCount,
 	}
 
 	if user.DateOfBirth != nil {
 		userResponse.DateOfBirth = user.DateOfBirth.Format("2006-01-02")
+	}
+
+	if user.VipEndTime != nil {
+		vipEndTime := user.VipEndTime.Format(time.RFC3339)
+		userResponse.VipEndTime = &vipEndTime
 	}
 
 	return &AuthResponse{

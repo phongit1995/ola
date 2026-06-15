@@ -7,13 +7,16 @@ type RoomBrief struct {
 }
 
 type RoomMessageData struct {
-	ID           string `json:"id"`
-	RoomID       string `json:"roomId"`
-	SenderID     string `json:"senderId"`
-	SenderName   string `json:"senderName,omitempty"`
-	SenderAvatar string `json:"senderAvatar,omitempty"`
-	Content      string `json:"content"`
-	CreatedAt    string `json:"createdAt"`
+	ID           string  `json:"id"`
+	RoomID       string  `json:"roomId"`
+	SenderID     string  `json:"senderId"`
+	SenderName   string  `json:"senderName,omitempty"`
+	SenderAvatar string  `json:"senderAvatar,omitempty"`
+	SenderGender string  `json:"senderGender,omitempty"`
+	SenderVip    *string `json:"senderVip,omitempty"`
+	SenderVipEnd *string `json:"senderVipEnd,omitempty"`
+	Content      string  `json:"content"`
+	CreatedAt    string  `json:"createdAt"`
 }
 
 type RoomMessageCreatedEvent struct {
