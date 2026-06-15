@@ -1,12 +1,10 @@
 package user
 
 import (
-	"ola-chat-server/internal/middleware"
-	"ola-chat-server/internal/utils"
 	"net/http"
+	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
@@ -35,20 +33,19 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 // @Failure      404  {object}  utils.APIError
 // @Router       /user/{id} [get]
 func (ctrl *Controller) GetUserInfo(c *gin.Context) (interface{}, error) {
-	callerID, ok := middleware.GetUserID(c)
-	if !ok {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "user not authenticated")
+	callerID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
 	}
 
-	targetID, err := uuid.Parse(c.Param("id"))
+	targetID, err := utils.ParseUUIDParam(c, "id", "invalid user ID")
 	if err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid user ID")
+		return nil, err
 	}
 
 	profile, err := ctrl.service.GetPublicProfile(callerID, targetID)
 	if err != nil {
-		statusCode := utils.HTTPStatusFromError(err)
-		return nil, utils.NewHTTPError(statusCode, err.Error())
+		return nil, utils.ServiceError(err)
 	}
 
 	return profile, nil
@@ -67,13 +64,13 @@ func (ctrl *Controller) GetUserInfo(c *gin.Context) (interface{}, error) {
 // @Failure      401  {object}  utils.APIError
 // @Router       /user/presence [post]
 func (ctrl *Controller) GetPresenceBatch(c *gin.Context) (interface{}, error) {
-	if _, ok := middleware.GetUserID(c); !ok {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "user not authenticated")
+	if _, err := utils.RequireUserID(c); err != nil {
+		return nil, err
 	}
 
-	var req PresenceBatchRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
+	req, err := utils.BindJSON[PresenceBatchRequest](c)
+	if err != nil {
+		return nil, err
 	}
 
 	return ctrl.service.GetPresenceBatch(req.UserIds), nil
@@ -90,14 +87,14 @@ func (ctrl *Controller) GetPresenceBatch(c *gin.Context) (interface{}, error) {
 // @Failure      404  {object}  utils.APIError
 // @Router       /user/me [get]
 func (ctrl *Controller) GetProfile(c *gin.Context) (interface{}, error) {
-	userID, ok := middleware.GetUserID(c)
-	if !ok {
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
 		ctrl.logger.Warnw("User not authenticated",
 			"path", c.Request.URL.Path,
 			"method", c.Request.Method,
 			"ip", c.ClientIP(),
 		)
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "user not authenticated")
+		return nil, err
 	}
 
 	ctrl.logger.Infow("Getting user profile",
@@ -111,8 +108,7 @@ func (ctrl *Controller) GetProfile(c *gin.Context) (interface{}, error) {
 			"user_id", userID,
 			"error", err.Error(),
 		)
-		statusCode := utils.HTTPStatusFromError(err)
-		return nil, utils.NewHTTPError(statusCode, err.Error())
+		return nil, utils.ServiceError(err)
 	}
 
 	ctrl.logger.Infow("User profile retrieved successfully",
@@ -137,14 +133,14 @@ func (ctrl *Controller) GetProfile(c *gin.Context) (interface{}, error) {
 // @Failure      404  {object}  utils.APIError
 // @Router       /user/me [put]
 func (ctrl *Controller) UpdateProfile(c *gin.Context) (interface{}, error) {
-	userID, ok := middleware.GetUserID(c)
-	if !ok {
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
 		ctrl.logger.Warnw("User not authenticated",
 			"path", c.Request.URL.Path,
 			"method", c.Request.Method,
 			"ip", c.ClientIP(),
 		)
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "user not authenticated")
+		return nil, err
 	}
 
 	var req UpdateProfileRequest
@@ -166,8 +162,7 @@ func (ctrl *Controller) UpdateProfile(c *gin.Context) (interface{}, error) {
 			"user_id", userID,
 			"error", err.Error(),
 		)
-		statusCode := utils.HTTPStatusFromError(err)
-		return nil, utils.NewHTTPError(statusCode, err.Error())
+		return nil, utils.ServiceError(err)
 	}
 
 	ctrl.logger.Infow("User profile updated successfully",
@@ -190,14 +185,14 @@ func (ctrl *Controller) UpdateProfile(c *gin.Context) (interface{}, error) {
 // @Failure      401  {object}  utils.APIError
 // @Router       /user/search [get]
 func (ctrl *Controller) SearchUsers(c *gin.Context) (interface{}, error) {
-	userID, ok := middleware.GetUserID(c)
-	if !ok {
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
 		ctrl.logger.Warnw("User not authenticated",
 			"path", c.Request.URL.Path,
 			"method", c.Request.Method,
 			"ip", c.ClientIP(),
 		)
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "user not authenticated")
+		return nil, err
 	}
 
 	var q SearchUsersQuery
@@ -221,8 +216,7 @@ func (ctrl *Controller) SearchUsers(c *gin.Context) (interface{}, error) {
 			"query", q.Q,
 			"error", err.Error(),
 		)
-		statusCode := utils.HTTPStatusFromError(err)
-		return nil, utils.NewHTTPError(statusCode, err.Error())
+		return nil, utils.ServiceError(err)
 	}
 
 	ctrl.logger.Infow("User search completed",
@@ -249,14 +243,14 @@ func (ctrl *Controller) SearchUsers(c *gin.Context) (interface{}, error) {
 // @Failure      500  {object}  utils.APIError
 // @Router       /user/upload [post]
 func (ctrl *Controller) Upload(c *gin.Context) (interface{}, error) {
-	userID, ok := middleware.GetUserID(c)
-	if !ok {
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
 		ctrl.logger.Warnw("User not authenticated",
 			"path", c.Request.URL.Path,
 			"method", c.Request.Method,
 			"ip", c.ClientIP(),
 		)
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "user not authenticated")
+		return nil, err
 	}
 
 	file, header, err := c.Request.FormFile("file")
@@ -291,8 +285,7 @@ func (ctrl *Controller) Upload(c *gin.Context) (interface{}, error) {
 			"user_id", userID,
 			"error", err.Error(),
 		)
-		statusCode := utils.HTTPStatusFromError(err)
-		return nil, utils.NewHTTPError(statusCode, err.Error())
+		return nil, utils.ServiceError(err)
 	}
 
 	ctrl.logger.Infow("Image uploaded successfully",

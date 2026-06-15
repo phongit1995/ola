@@ -1,9 +1,8 @@
 package auth
 
 import (
-	"ola-chat-server/internal/middleware"
-	"ola-chat-server/internal/utils"
 	"net/http"
+	"ola-chat-server/internal/utils"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -54,8 +53,7 @@ func (ctrl *Controller) Register(c *gin.Context) (interface{}, error) {
 			"username", req.Username,
 			"error", err.Error(),
 		)
-		statusCode := utils.HTTPStatusFromError(err)
-		return nil, utils.NewHTTPError(statusCode, err.Error())
+		return nil, utils.ServiceError(err)
 	}
 
 	ctrl.logger.Infow("User registered successfully",
@@ -79,19 +77,18 @@ func (ctrl *Controller) Register(c *gin.Context) (interface{}, error) {
 // @Failure      401  {object}  utils.APIError
 // @Router       /auth/change-password [post]
 func (ctrl *Controller) ChangePassword(c *gin.Context) (interface{}, error) {
-	userID, ok := middleware.GetUserID(c)
-	if !ok {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "unauthorized")
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
 	}
 
-	var req ChangePasswordRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
+	req, err := utils.BindJSON[ChangePasswordRequest](c)
+	if err != nil {
+		return nil, err
 	}
 
-	if err := ctrl.service.ChangePassword(userID, &req); err != nil {
-		statusCode := utils.HTTPStatusFromError(err)
-		return nil, utils.NewHTTPError(statusCode, err.Error())
+	if err := ctrl.service.ChangePassword(userID, req); err != nil {
+		return nil, utils.ServiceError(err)
 	}
 
 	return &ChangePasswordResponse{Message: "Password changed successfully"}, nil
@@ -130,8 +127,7 @@ func (ctrl *Controller) Login(c *gin.Context) (interface{}, error) {
 			"error", err.Error(),
 			"ip", c.ClientIP(),
 		)
-		statusCode := utils.HTTPStatusFromError(err)
-		return nil, utils.NewHTTPError(statusCode, err.Error())
+		return nil, utils.ServiceError(err)
 	}
 
 	ctrl.logger.Infow("User logged in successfully",
@@ -155,15 +151,15 @@ func (ctrl *Controller) Login(c *gin.Context) (interface{}, error) {
 // @Failure      401 {object} utils.APIError
 // @Router       /auth/refresh [post]
 func (ctrl *Controller) Refresh(c *gin.Context) (interface{}, error) {
-	var req RefreshTokenRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
+	req, err := utils.BindJSON[RefreshTokenRequest](c)
+	if err != nil {
+		return nil, err
 	}
 
 	resp, err := ctrl.service.RefreshToken(req.RefreshToken, c.ClientIP())
 	if err != nil {
 		ctrl.logger.Warnw("Refresh failed", "error", err.Error(), "ip", c.ClientIP())
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, utils.ServiceError(err)
 	}
 
 	return resp, nil
@@ -179,9 +175,9 @@ func (ctrl *Controller) Refresh(c *gin.Context) (interface{}, error) {
 // @Failure      401 {object} utils.APIError
 // @Router       /auth/logout [post]
 func (ctrl *Controller) Logout(c *gin.Context) (interface{}, error) {
-	userID, exists := middleware.GetUserID(c)
-	if !exists {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "user not authenticated")
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
 	}
 
 	authHeader := c.GetHeader("Authorization")
@@ -192,7 +188,7 @@ func (ctrl *Controller) Logout(c *gin.Context) (interface{}, error) {
 	}
 
 	if err := ctrl.service.Logout(token); err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, utils.ServiceError(err)
 	}
 
 	ctrl.logger.Infow("User logged out", "user_id", userID)

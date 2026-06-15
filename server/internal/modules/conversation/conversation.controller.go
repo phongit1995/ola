@@ -1,7 +1,6 @@
 package conversation
 
 import (
-	"ola-chat-server/internal/middleware"
 	"ola-chat-server/internal/utils"
 	"net/http"
 
@@ -36,9 +35,9 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 // @Failure      404  {object}  utils.APIError
 // @Router       /conversations/direct [post]
 func (ctrl *Controller) CreateDirectConversation(c *gin.Context) (interface{}, error) {
-	userID, exists := middleware.GetUserID(c)
-	if !exists {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "user not authenticated")
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
 	}
 
 	var req CreateDirectConversationRequest
@@ -72,9 +71,9 @@ func (ctrl *Controller) CreateDirectConversation(c *gin.Context) (interface{}, e
 // @Failure      401  {object}  utils.APIError
 // @Router       /conversations/direct/check [get]
 func (ctrl *Controller) CheckDirectConversation(c *gin.Context) (interface{}, error) {
-	userID, exists := middleware.GetUserID(c)
-	if !exists {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "user not authenticated")
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
 	}
 
 	recipientIDStr := c.Query("recipientId")
@@ -109,9 +108,9 @@ func (ctrl *Controller) CheckDirectConversation(c *gin.Context) (interface{}, er
 // @Failure      401  {object}  utils.APIError
 // @Router       /conversations/group [post]
 func (ctrl *Controller) CreateGroupConversation(c *gin.Context) (interface{}, error) {
-	userID, exists := middleware.GetUserID(c)
-	if !exists {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "user not authenticated")
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
 	}
 
 	var req CreateGroupConversationRequest
@@ -148,9 +147,9 @@ func (ctrl *Controller) CreateGroupConversation(c *gin.Context) (interface{}, er
 // @Failure      401  {object}  utils.APIError
 // @Router       /conversations [get]
 func (ctrl *Controller) GetUserConversations(c *gin.Context) (interface{}, error) {
-	userID, exists := middleware.GetUserID(c)
-	if !exists {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "user not authenticated")
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
 	}
 
 	limit := utils.ParseLimit(c, 50, 200)
@@ -177,14 +176,14 @@ func (ctrl *Controller) GetUserConversations(c *gin.Context) (interface{}, error
 // @Failure      404  {object}  utils.APIError
 // @Router       /conversations/{id} [get]
 func (ctrl *Controller) GetConversationDetail(c *gin.Context) (interface{}, error) {
-	userID, exists := middleware.GetUserID(c)
-	if !exists {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "user not authenticated")
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
 	}
 
-	conversationID, err := uuid.Parse(c.Param("id"))
+	conversationID, err := utils.ParseUUIDParam(c, "id", "invalid conversation ID")
 	if err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid conversation ID")
+		return nil, err
 	}
 
 	detail, err := ctrl.service.GetConversationDetail(userID, conversationID)
@@ -209,14 +208,14 @@ func (ctrl *Controller) GetConversationDetail(c *gin.Context) (interface{}, erro
 // @Failure      403  {object}  utils.APIError
 // @Router       /conversations/{id}/read [put]
 func (ctrl *Controller) MarkConversationAsRead(c *gin.Context) (interface{}, error) {
-	userID, exists := middleware.GetUserID(c)
-	if !exists {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "user not authenticated")
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
 	}
 
-	conversationID, err := uuid.Parse(c.Param("id"))
+	conversationID, err := utils.ParseUUIDParam(c, "id", "invalid conversation ID")
 	if err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid conversation ID")
+		return nil, err
 	}
 
 	if err := ctrl.service.MarkConversationAsRead(userID, conversationID); err != nil {
@@ -240,14 +239,14 @@ func (ctrl *Controller) MarkConversationAsRead(c *gin.Context) (interface{}, err
 // @Failure      403  {object}  utils.APIError
 // @Router       /conversations/{id}/hide [post]
 func (ctrl *Controller) HideConversation(c *gin.Context) (interface{}, error) {
-	userID, exists := middleware.GetUserID(c)
-	if !exists {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "user not authenticated")
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
 	}
 
-	conversationID, err := uuid.Parse(c.Param("id"))
+	conversationID, err := utils.ParseUUIDParam(c, "id", "invalid conversation ID")
 	if err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid conversation ID")
+		return nil, err
 	}
 
 	if err := ctrl.service.HideConversation(userID, conversationID); err != nil {
@@ -293,17 +292,17 @@ func (ctrl *Controller) UnmuteConversation(c *gin.Context) (interface{}, error) 
 }
 
 func (ctrl *Controller) setMute(c *gin.Context, muted bool, msg string) (interface{}, error) {
-	userID, exists := middleware.GetUserID(c)
-	if !exists {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "user not authenticated")
-	}
-	conversationID, err := uuid.Parse(c.Param("id"))
+	userID, err := utils.RequireUserID(c)
 	if err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid conversation ID")
+		return nil, err
+	}
+	conversationID, err := utils.ParseUUIDParam(c, "id", "invalid conversation ID")
+	if err != nil {
+		return nil, err
 	}
 	if err := ctrl.service.SetConversationMuted(userID, conversationID, muted); err != nil {
 		ctrl.logger.Warnw("Failed to set mute", "error", err, "user_id", userID, "conversation_id", conversationID, "muted", muted)
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, utils.ServiceError(err)
 	}
 	return &SimpleSuccessResponse{Success: true, Message: msg}, nil
 }
@@ -321,14 +320,14 @@ func (ctrl *Controller) setMute(c *gin.Context, muted bool, msg string) (interfa
 // @Failure      404  {object}  utils.APIError
 // @Router       /conversations/{id}/unhide [post]
 func (ctrl *Controller) UnhideConversation(c *gin.Context) (interface{}, error) {
-	userID, exists := middleware.GetUserID(c)
-	if !exists {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "user not authenticated")
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
 	}
 
-	conversationID, err := uuid.Parse(c.Param("id"))
+	conversationID, err := utils.ParseUUIDParam(c, "id", "invalid conversation ID")
 	if err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid conversation ID")
+		return nil, err
 	}
 
 	if err := ctrl.service.UnhideConversation(userID, conversationID); err != nil {
@@ -356,9 +355,9 @@ func (ctrl *Controller) UnhideConversation(c *gin.Context) (interface{}, error) 
 // @Failure      403  {object}  utils.APIError
 // @Router       /conversations/typing [post]
 func (ctrl *Controller) SendTypingIndicator(c *gin.Context) (interface{}, error) {
-	userID, exists := middleware.GetUserID(c)
-	if !exists {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "user not authenticated")
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
 	}
 
 	var req TypingIndicatorRequest

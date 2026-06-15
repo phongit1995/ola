@@ -44,13 +44,20 @@ func NewService(repo *Repository, relRepo *relationships.Repository, minio *serv
 	}
 }
 
+var (
+	errMaxImages    = errors.New("max 5 images")
+	errEmptyPost    = errors.New("post must have content or images")
+	errPostNotFound = errors.New("post not found")
+	errNotYourPost  = errors.New("not your post")
+)
+
 func (s *Service) Create(userID uuid.UUID, req *CreatePostRequest) (*PostResponse, error) {
 	if len(req.Images) > constants.MaxPostImages {
-		return nil, errors.New("max 5 images")
+		return nil, errMaxImages
 	}
 	content := strings.TrimSpace(req.Content)
 	if content == "" && len(req.Images) == 0 {
-		return nil, errors.New("post must have content or images")
+		return nil, errEmptyPost
 	}
 
 	post := &models.Post{
@@ -75,12 +82,9 @@ func (s *Service) Create(userID uuid.UUID, req *CreatePostRequest) (*PostRespons
 }
 
 func (s *Service) Update(userID, postID uuid.UUID, req *UpdatePostRequest) (*PostResponse, error) {
-	post, err := s.getPost(postID)
+	post, err := s.ownedPost(userID, postID)
 	if err != nil {
 		return nil, err
-	}
-	if post.AuthorID != userID {
-		return nil, errors.New("not your post")
 	}
 
 	if req.Content != nil {
@@ -89,7 +93,7 @@ func (s *Service) Update(userID, postID uuid.UUID, req *UpdatePostRequest) (*Pos
 	}
 	if req.Images != nil {
 		if len(*req.Images) > constants.MaxPostImages {
-			return nil, errors.New("max 5 images")
+			return nil, errMaxImages
 		}
 		post.Images = toModelImages(*req.Images)
 	}
@@ -103,7 +107,7 @@ func (s *Service) Update(userID, postID uuid.UUID, req *UpdatePostRequest) (*Pos
 		post.Visibility = parseVisibility(*req.Visibility)
 	}
 	if strings.TrimSpace(post.Content) == "" && len(post.Images) == 0 {
-		return nil, errors.New("post must have content or images")
+		return nil, errEmptyPost
 	}
 
 	if err := s.repo.UpdateEditable(post); err != nil {
@@ -119,23 +123,16 @@ func (s *Service) Update(userID, postID uuid.UUID, req *UpdatePostRequest) (*Pos
 }
 
 func (s *Service) Delete(userID, postID uuid.UUID) error {
-	post, err := s.getPost(postID)
-	if err != nil {
+	if _, err := s.ownedPost(userID, postID); err != nil {
 		return err
-	}
-	if post.AuthorID != userID {
-		return errors.New("not your post")
 	}
 	return s.repo.SoftDelete(postID)
 }
 
 func (s *Service) GetByID(viewerID, postID uuid.UUID) (*PostResponse, error) {
-	post, err := s.getPost(postID)
+	post, err := s.viewablePost(viewerID, postID)
 	if err != nil {
 		return nil, err
-	}
-	if !s.canView(viewerID, post) {
-		return nil, errors.New("post not found")
 	}
 	resp := toPostResponse(post, s.myReaction(viewerID, postID))
 	return &resp, nil
@@ -193,12 +190,8 @@ func (s *Service) visibleScopes(viewerID, authorID uuid.UUID) []models.PostVisib
 }
 
 func (s *Service) Likers(viewerID, postID uuid.UUID, limit, offset int) (*LikerListResponse, error) {
-	post, err := s.getPost(postID)
-	if err != nil {
+	if _, err := s.viewablePost(viewerID, postID); err != nil {
 		return nil, err
-	}
-	if !s.canView(viewerID, post) {
-		return nil, errors.New("post not found")
 	}
 	users, total, err := s.repo.ListLikers(postID, limit, offset)
 	if err != nil {
@@ -206,23 +199,14 @@ func (s *Service) Likers(viewerID, postID uuid.UUID, limit, offset int) (*LikerL
 	}
 	items := make([]AuthorResponse, 0, len(users))
 	for _, u := range users {
-		items = append(items, AuthorResponse{
-			ID:       u.ID.String(),
-			Username: u.Username,
-			FullName: u.FullName,
-			Avatar:   u.Avatar,
-		})
+		items = append(items, *toAuthorResponse(u))
 	}
 	return &LikerListResponse{Items: items, Total: total, Limit: limit, Offset: offset}, nil
 }
 
 func (s *Service) React(userID, postID uuid.UUID, reactionType string) (*PostResponse, error) {
-	post, err := s.getPost(postID)
-	if err != nil {
+	if _, err := s.viewablePost(userID, postID); err != nil {
 		return nil, err
-	}
-	if !s.canView(userID, post) {
-		return nil, errors.New("post not found")
 	}
 
 	t := models.PostReactionType(reactionType)
@@ -239,12 +223,8 @@ func (s *Service) React(userID, postID uuid.UUID, reactionType string) (*PostRes
 }
 
 func (s *Service) RemoveReaction(userID, postID uuid.UUID) (*PostResponse, error) {
-	post, err := s.getPost(postID)
-	if err != nil {
+	if _, err := s.viewablePost(userID, postID); err != nil {
 		return nil, err
-	}
-	if !s.canView(userID, post) {
-		return nil, errors.New("post not found")
 	}
 
 	updated, err := s.repo.RemoveReaction(postID, userID)
@@ -256,12 +236,8 @@ func (s *Service) RemoveReaction(userID, postID uuid.UUID) (*PostResponse, error
 }
 
 func (s *Service) AddComment(viewerID, postID uuid.UUID, req *CreateCommentRequest) (*CommentResponse, error) {
-	post, err := s.getPost(postID)
-	if err != nil {
+	if _, err := s.viewablePost(viewerID, postID); err != nil {
 		return nil, err
-	}
-	if !s.canView(viewerID, post) {
-		return nil, errors.New("post not found")
 	}
 
 	comment := &models.PostComment{
@@ -278,12 +254,8 @@ func (s *Service) AddComment(viewerID, postID uuid.UUID, req *CreateCommentReque
 }
 
 func (s *Service) ListComments(viewerID, postID uuid.UUID, limit, offset int) (*CommentListResponse, error) {
-	post, err := s.getPost(postID)
-	if err != nil {
+	if _, err := s.viewablePost(viewerID, postID); err != nil {
 		return nil, err
-	}
-	if !s.canView(viewerID, post) {
-		return nil, errors.New("post not found")
 	}
 
 	comments, total, err := s.repo.ListComments(postID, limit, offset)
@@ -408,9 +380,31 @@ func (s *Service) getPost(id uuid.UUID) (*models.Post, error) {
 	post, err := s.repo.GetByID(id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errors.New("post not found")
+			return nil, errPostNotFound
 		}
 		return nil, err
+	}
+	return post, nil
+}
+
+func (s *Service) viewablePost(viewerID, postID uuid.UUID) (*models.Post, error) {
+	post, err := s.getPost(postID)
+	if err != nil {
+		return nil, err
+	}
+	if !s.canView(viewerID, post) {
+		return nil, errPostNotFound
+	}
+	return post, nil
+}
+
+func (s *Service) ownedPost(userID, postID uuid.UUID) (*models.Post, error) {
+	post, err := s.getPost(postID)
+	if err != nil {
+		return nil, err
+	}
+	if post.AuthorID != userID {
+		return nil, errNotYourPost
 	}
 	return post, nil
 }
@@ -577,36 +571,33 @@ func toPostResponse(post *models.Post, myReaction *models.PostReactionType) Post
 		DislikeCount: post.DislikeCount,
 		CommentCount: post.CommentCount,
 		MyReaction:   reaction,
+		Author:       toAuthorResponse(post.Author),
 		CreatedAt:    post.CreatedAt.UTC().Format(time.RFC3339),
 		UpdatedAt:    post.UpdatedAt.UTC().Format(time.RFC3339),
-	}
-	if post.Author != nil {
-		resp.Author = &AuthorResponse{
-			ID:       post.Author.ID.String(),
-			Username: post.Author.Username,
-			FullName: post.Author.FullName,
-			Avatar:   post.Author.Avatar,
-		}
 	}
 	return resp
 }
 
+func toAuthorResponse(u *models.User) *AuthorResponse {
+	if u == nil {
+		return nil
+	}
+	return &AuthorResponse{
+		ID:       u.ID.String(),
+		Username: u.Username,
+		FullName: u.FullName,
+		Avatar:   u.Avatar,
+	}
+}
+
 func toCommentResponse(comment *models.PostComment) CommentResponse {
-	resp := CommentResponse{
+	return CommentResponse{
 		ID:        comment.ID.String(),
 		PostID:    comment.PostID.String(),
 		Content:   comment.Content,
+		Author:    toAuthorResponse(comment.Author),
 		CreatedAt: comment.CreatedAt.UTC().Format(time.RFC3339),
 	}
-	if comment.Author != nil {
-		resp.Author = &AuthorResponse{
-			ID:       comment.Author.ID.String(),
-			Username: comment.Author.Username,
-			FullName: comment.Author.FullName,
-			Avatar:   comment.Author.Avatar,
-		}
-	}
-	return resp
 }
 
 func isAllowedImageMime(mime string) bool {

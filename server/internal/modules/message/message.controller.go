@@ -1,7 +1,6 @@
 package message
 
 import (
-	"ola-chat-server/internal/middleware"
 	"ola-chat-server/internal/utils"
 	"encoding/json"
 	"net/http"
@@ -39,14 +38,14 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 // @Failure      404  {object}  utils.APIError
 // @Router       /messages [post]
 func (ctrl *Controller) SendMessage(c *gin.Context) (interface{}, error) {
-	userID, exists := middleware.GetUserID(c)
-	if !exists {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "user not authenticated")
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
 	}
 
-	var req SendMessageRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid request body")
+	req, err := utils.BindJSON[SendMessageRequest](c)
+	if err != nil {
+		return nil, err
 	}
 
 	conversationID, err := uuid.Parse(req.ConversationID)
@@ -86,14 +85,14 @@ func (ctrl *Controller) SendMessage(c *gin.Context) (interface{}, error) {
 // @Failure      404  {object}  utils.APIError
 // @Router       /messages/direct [post]
 func (ctrl *Controller) SendDirectMessage(c *gin.Context) (interface{}, error) {
-	userID, exists := middleware.GetUserID(c)
-	if !exists {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "user not authenticated")
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
 	}
 
-	var req SendDirectMessageRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid request body")
+	req, err := utils.BindJSON[SendDirectMessageRequest](c)
+	if err != nil {
+		return nil, err
 	}
 
 	recipientID, err := uuid.Parse(req.RecipientID)
@@ -130,14 +129,14 @@ func (ctrl *Controller) SendDirectMessage(c *gin.Context) (interface{}, error) {
 // @Failure      404  {object}  utils.APIError
 // @Router       /messages/{conversationId} [get]
 func (ctrl *Controller) GetMessages(c *gin.Context) (interface{}, error) {
-	userID, exists := middleware.GetUserID(c)
-	if !exists {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "user not authenticated")
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
 	}
 
-	conversationID, err := uuid.Parse(c.Param("conversationId"))
+	conversationID, err := utils.ParseUUIDParam(c, "conversationId", "invalid conversation ID")
 	if err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid conversation ID")
+		return nil, err
 	}
 
 	limit := utils.ParseLimit(c, 50, 200)
@@ -173,17 +172,17 @@ func (ctrl *Controller) GetMessages(c *gin.Context) (interface{}, error) {
 // @Failure      404  {object}  utils.APIError
 // @Router       /messages/{conversationId}/{messageId} [patch]
 func (ctrl *Controller) UpdateMessage(c *gin.Context) (interface{}, error) {
-	userID, exists := middleware.GetUserID(c)
-	if !exists {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "user not authenticated")
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
 	}
 
 	conversationID := c.Param("conversationId")
 	messageID := c.Param("messageId")
 
-	var req UpdateMessageRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid request body")
+	req, err := utils.BindJSON[UpdateMessageRequest](c)
+	if err != nil {
+		return nil, err
 	}
 
 	message, err := ctrl.service.UpdateMessage(userID, conversationID, messageID, req.Content)
@@ -213,9 +212,9 @@ func (ctrl *Controller) UpdateMessage(c *gin.Context) (interface{}, error) {
 // @Failure      429  {object}  utils.APIError
 // @Router       /messages/images [post]
 func (ctrl *Controller) SendImageMessage(c *gin.Context) (interface{}, error) {
-	userID, exists := middleware.GetUserID(c)
-	if !exists {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "user not authenticated")
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
 	}
 
 	conversationID, err := uuid.Parse(c.PostForm("conversationId"))
@@ -264,9 +263,9 @@ func (ctrl *Controller) SendImageMessage(c *gin.Context) (interface{}, error) {
 // @Failure      429  {object}  utils.APIError
 // @Router       /messages/audio [post]
 func (ctrl *Controller) SendAudioMessage(c *gin.Context) (interface{}, error) {
-	userID, exists := middleware.GetUserID(c)
-	if !exists {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "user not authenticated")
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
 	}
 
 	conversationID, err := uuid.Parse(c.PostForm("conversationId"))
@@ -325,20 +324,20 @@ func (ctrl *Controller) SendAudioMessage(c *gin.Context) (interface{}, error) {
 // @Failure      429  {object}  utils.APIError
 // @Router       /messages/{conversationId}/{messageId}/reactions [post]
 func (ctrl *Controller) ToggleReaction(c *gin.Context) (interface{}, error) {
-	userID, exists := middleware.GetUserID(c)
-	if !exists {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "user not authenticated")
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
 	}
 
-	conversationID, err := uuid.Parse(c.Param("conversationId"))
+	conversationID, err := utils.ParseUUIDParam(c, "conversationId", "invalid conversation ID")
 	if err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid conversation ID")
+		return nil, err
 	}
 	messageID := c.Param("messageId")
 
-	var req ToggleReactionRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid request body")
+	req, err := utils.BindJSON[ToggleReactionRequest](c)
+	if err != nil {
+		return nil, err
 	}
 
 	result, err := ctrl.service.ToggleReaction(c.Request.Context(), userID, conversationID, messageID, req.Type)
@@ -369,9 +368,9 @@ func (ctrl *Controller) ToggleReaction(c *gin.Context) (interface{}, error) {
 // @Failure      404  {object}  utils.APIError
 // @Router       /messages/{conversationId}/{messageId} [delete]
 func (ctrl *Controller) DeleteMessage(c *gin.Context) (interface{}, error) {
-	userID, exists := middleware.GetUserID(c)
-	if !exists {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "user not authenticated")
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
 	}
 
 	conversationID := c.Param("conversationId")
@@ -379,7 +378,7 @@ func (ctrl *Controller) DeleteMessage(c *gin.Context) (interface{}, error) {
 
 	if err := ctrl.service.DeleteMessage(userID, conversationID, messageID); err != nil {
 		ctrl.logger.Warnw("Failed to delete message", "error", err)
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, utils.ServiceError(err)
 	}
 
 	return map[string]string{"message": "Message deleted successfully"}, nil

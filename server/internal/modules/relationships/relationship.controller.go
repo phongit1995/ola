@@ -1,7 +1,6 @@
 package relationships
 
 import (
-	"ola-chat-server/internal/middleware"
 	"ola-chat-server/internal/utils"
 	"net/http"
 
@@ -36,9 +35,9 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 // @Failure      409  {object}  utils.APIError
 // @Router       /relationships/request [post]
 func (ctrl *Controller) SendFriendRequest(c *gin.Context) (interface{}, error) {
-	userID, ok := middleware.GetUserID(c)
-	if !ok {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "user not authenticated")
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
 	}
 
 	var req SendFriendRequestRequest
@@ -67,8 +66,7 @@ func (ctrl *Controller) SendFriendRequest(c *gin.Context) (interface{}, error) {
 			"addressee_id", req.UserID,
 			"error", err.Error(),
 		)
-		statusCode := utils.HTTPStatusFromError(err)
-		return nil, utils.NewHTTPError(statusCode, err.Error())
+		return nil, utils.ServiceError(err)
 	}
 
 	ctrl.logger.Infow("Friend request sent successfully",
@@ -94,19 +92,19 @@ func (ctrl *Controller) SendFriendRequest(c *gin.Context) (interface{}, error) {
 // @Failure      404  {object}  utils.APIError
 // @Router       /relationships/{id}/respond [put]
 func (ctrl *Controller) RespondToFriendRequest(c *gin.Context) (interface{}, error) {
-	userID, ok := middleware.GetUserID(c)
-	if !ok {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "user not authenticated")
-	}
-
-	relationshipID, err := uuid.Parse(c.Param("id"))
+	userID, err := utils.RequireUserID(c)
 	if err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid relationship ID")
+		return nil, err
 	}
 
-	var req RespondToRequestRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
+	relationshipID, err := utils.ParseUUIDParam(c, "id", "invalid relationship ID")
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := utils.BindJSON[RespondToRequestRequest](c)
+	if err != nil {
+		return nil, err
 	}
 
 	ctrl.logger.Infow("Responding to friend request",
@@ -122,8 +120,7 @@ func (ctrl *Controller) RespondToFriendRequest(c *gin.Context) (interface{}, err
 				"relationship_id", relationshipID,
 				"error", err.Error(),
 			)
-			statusCode := utils.HTTPStatusFromError(err)
-			return nil, utils.NewHTTPError(statusCode, err.Error())
+			return nil, utils.ServiceError(err)
 		}
 		return response, nil
 	} else if req.Action == "reject" {
@@ -132,8 +129,7 @@ func (ctrl *Controller) RespondToFriendRequest(c *gin.Context) (interface{}, err
 				"relationship_id", relationshipID,
 				"error", err.Error(),
 			)
-			statusCode := utils.HTTPStatusFromError(err)
-			return nil, utils.NewHTTPError(statusCode, err.Error())
+			return nil, utils.ServiceError(err)
 		}
 		return map[string]string{"message": "Friend request rejected successfully"}, nil
 	}
@@ -153,14 +149,14 @@ func (ctrl *Controller) RespondToFriendRequest(c *gin.Context) (interface{}, err
 // @Failure      404  {object}  utils.APIError
 // @Router       /relationships/{id}/cancel [delete]
 func (ctrl *Controller) CancelFriendRequest(c *gin.Context) (interface{}, error) {
-	userID, ok := middleware.GetUserID(c)
-	if !ok {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "user not authenticated")
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
 	}
 
-	relationshipID, err := uuid.Parse(c.Param("id"))
+	relationshipID, err := utils.ParseUUIDParam(c, "id", "invalid relationship ID")
 	if err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid relationship ID")
+		return nil, err
 	}
 
 	if err := ctrl.service.CancelFriendRequest(relationshipID, userID); err != nil {
@@ -168,8 +164,7 @@ func (ctrl *Controller) CancelFriendRequest(c *gin.Context) (interface{}, error)
 			"relationship_id", relationshipID,
 			"error", err.Error(),
 		)
-		statusCode := utils.HTTPStatusFromError(err)
-		return nil, utils.NewHTTPError(statusCode, err.Error())
+		return nil, utils.ServiceError(err)
 	}
 
 	ctrl.logger.Infow("Friend request cancelled successfully",
@@ -192,14 +187,14 @@ func (ctrl *Controller) CancelFriendRequest(c *gin.Context) (interface{}, error)
 // @Failure      404  {object}  utils.APIError
 // @Router       /relationships/{id}/unfriend [delete]
 func (ctrl *Controller) Unfriend(c *gin.Context) (interface{}, error) {
-	userID, ok := middleware.GetUserID(c)
-	if !ok {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "user not authenticated")
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
 	}
 
-	relationshipID, err := uuid.Parse(c.Param("id"))
+	relationshipID, err := utils.ParseUUIDParam(c, "id", "invalid relationship ID")
 	if err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid relationship ID")
+		return nil, err
 	}
 
 	if err := ctrl.service.Unfriend(relationshipID, userID); err != nil {
@@ -207,8 +202,7 @@ func (ctrl *Controller) Unfriend(c *gin.Context) (interface{}, error) {
 			"relationship_id", relationshipID,
 			"error", err.Error(),
 		)
-		statusCode := utils.HTTPStatusFromError(err)
-		return nil, utils.NewHTTPError(statusCode, err.Error())
+		return nil, utils.ServiceError(err)
 	}
 
 	ctrl.logger.Infow("Unfriended successfully",
@@ -232,14 +226,14 @@ func (ctrl *Controller) Unfriend(c *gin.Context) (interface{}, error) {
 // @Failure      401  {object}  utils.APIError
 // @Router       /relationships/block [post]
 func (ctrl *Controller) BlockUser(c *gin.Context) (interface{}, error) {
-	userID, ok := middleware.GetUserID(c)
-	if !ok {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "user not authenticated")
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
 	}
 
-	var req BlockUserRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
+	req, err := utils.BindJSON[BlockUserRequest](c)
+	if err != nil {
+		return nil, err
 	}
 
 	blockedID, err := uuid.Parse(req.UserID)
@@ -259,8 +253,7 @@ func (ctrl *Controller) BlockUser(c *gin.Context) (interface{}, error) {
 			"blocked_id", req.UserID,
 			"error", err.Error(),
 		)
-		statusCode := utils.HTTPStatusFromError(err)
-		return nil, utils.NewHTTPError(statusCode, err.Error())
+		return nil, utils.ServiceError(err)
 	}
 
 	ctrl.logger.Infow("User blocked successfully",
@@ -283,14 +276,14 @@ func (ctrl *Controller) BlockUser(c *gin.Context) (interface{}, error) {
 // @Failure      404  {object}  utils.APIError
 // @Router       /relationships/{id}/unblock [delete]
 func (ctrl *Controller) UnblockUser(c *gin.Context) (interface{}, error) {
-	userID, ok := middleware.GetUserID(c)
-	if !ok {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "user not authenticated")
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
 	}
 
-	relationshipID, err := uuid.Parse(c.Param("id"))
+	relationshipID, err := utils.ParseUUIDParam(c, "id", "invalid relationship ID")
 	if err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid relationship ID")
+		return nil, err
 	}
 
 	if err := ctrl.service.UnblockUser(relationshipID, userID); err != nil {
@@ -298,8 +291,7 @@ func (ctrl *Controller) UnblockUser(c *gin.Context) (interface{}, error) {
 			"relationship_id", relationshipID,
 			"error", err.Error(),
 		)
-		statusCode := utils.HTTPStatusFromError(err)
-		return nil, utils.NewHTTPError(statusCode, err.Error())
+		return nil, utils.ServiceError(err)
 	}
 
 	ctrl.logger.Infow("User unblocked successfully",
@@ -322,9 +314,9 @@ func (ctrl *Controller) UnblockUser(c *gin.Context) (interface{}, error) {
 // @Failure      401  {object}  utils.APIError
 // @Router       /relationships/pending [get]
 func (ctrl *Controller) GetPendingRequests(c *gin.Context) (interface{}, error) {
-	userID, ok := middleware.GetUserID(c)
-	if !ok {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "user not authenticated")
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
 	}
 
 	limit := utils.ParseLimit(c, 20, 100)
@@ -354,9 +346,9 @@ func (ctrl *Controller) GetPendingRequests(c *gin.Context) (interface{}, error) 
 // @Failure      401  {object}  utils.APIError
 // @Router       /relationships/sent [get]
 func (ctrl *Controller) GetSentRequests(c *gin.Context) (interface{}, error) {
-	userID, ok := middleware.GetUserID(c)
-	if !ok {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "user not authenticated")
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
 	}
 
 	limit := utils.ParseLimit(c, 20, 100)
@@ -386,9 +378,9 @@ func (ctrl *Controller) GetSentRequests(c *gin.Context) (interface{}, error) {
 // @Failure      401  {object}  utils.APIError
 // @Router       /relationships/friends [get]
 func (ctrl *Controller) GetFriends(c *gin.Context) (interface{}, error) {
-	userID, ok := middleware.GetUserID(c)
-	if !ok {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "user not authenticated")
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
 	}
 
 	limit := utils.ParseLimit(c, 50, 100)
@@ -418,9 +410,9 @@ func (ctrl *Controller) GetFriends(c *gin.Context) (interface{}, error) {
 // @Failure      401  {object}  utils.APIError
 // @Router       /relationships/blocked [get]
 func (ctrl *Controller) GetBlockedUsers(c *gin.Context) (interface{}, error) {
-	userID, ok := middleware.GetUserID(c)
-	if !ok {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "user not authenticated")
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
 	}
 
 	limit := utils.ParseLimit(c, 20, 100)

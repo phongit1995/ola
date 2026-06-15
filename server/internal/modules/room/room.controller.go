@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
@@ -17,10 +16,6 @@ type Controller struct {
 
 func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 	return &Controller{service: service, logger: logger.Named("[room_controller]")}
-}
-
-func parseID(c *gin.Context) (uuid.UUID, error) {
-	return uuid.Parse(c.Param("id"))
 }
 
 // CreateRoom godoc
@@ -37,13 +32,13 @@ func (ctrl *Controller) CreateRoom(c *gin.Context) (interface{}, error) {
 	if !ok {
 		return nil, utils.NewHTTPError(http.StatusUnauthorized, "unauthorized")
 	}
-	var req CreateRoomRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-	resp, err := ctrl.service.Create(adminID, &req)
+	req, err := utils.BindJSON[CreateRoomRequest](c)
 	if err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, err
+	}
+	resp, err := ctrl.service.Create(adminID, req)
+	if err != nil {
+		return nil, utils.ServiceError(err)
 	}
 	return resp, nil
 }
@@ -63,7 +58,7 @@ func (ctrl *Controller) ListRoomsAdmin(c *gin.Context) (interface{}, error) {
 	offset := utils.ParseOffset(c)
 	resp, err := ctrl.service.ListAdmin(c.Request.Context(), c.Query("q"), limit, offset)
 	if err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, utils.ServiceError(err)
 	}
 	return resp, nil
 }
@@ -79,17 +74,17 @@ func (ctrl *Controller) ListRoomsAdmin(c *gin.Context) (interface{}, error) {
 // @Success      200  {object}  utils.BaseResponse[RoomResponse]
 // @Router       /admin/rooms/{id} [patch]
 func (ctrl *Controller) UpdateRoom(c *gin.Context) (interface{}, error) {
-	id, err := parseID(c)
+	id, err := utils.ParseUUIDParam(c, "id", "invalid room id")
 	if err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid room id")
+		return nil, err
 	}
-	var req UpdateRoomRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-	resp, err := ctrl.service.Update(c.Request.Context(), id, &req)
+	req, err := utils.BindJSON[UpdateRoomRequest](c)
 	if err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, err
+	}
+	resp, err := ctrl.service.Update(c.Request.Context(), id, req)
+	if err != nil {
+		return nil, utils.ServiceError(err)
 	}
 	return resp, nil
 }
@@ -103,12 +98,12 @@ func (ctrl *Controller) UpdateRoom(c *gin.Context) (interface{}, error) {
 // @Success      200  {object}  map[string]string
 // @Router       /admin/rooms/{id} [delete]
 func (ctrl *Controller) DeleteRoom(c *gin.Context) (interface{}, error) {
-	id, err := parseID(c)
+	id, err := utils.ParseUUIDParam(c, "id", "invalid room id")
 	if err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid room id")
+		return nil, err
 	}
 	if err := ctrl.service.Delete(id); err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, utils.ServiceError(err)
 	}
 	return map[string]string{"message": "room deleted"}, nil
 }
@@ -128,7 +123,7 @@ func (ctrl *Controller) BrowseRooms(c *gin.Context) (interface{}, error) {
 	offset := utils.ParseOffset(c)
 	resp, err := ctrl.service.ListPublic(c.Request.Context(), c.Query("q"), limit, offset)
 	if err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, utils.ServiceError(err)
 	}
 	return resp, nil
 }
@@ -142,13 +137,13 @@ func (ctrl *Controller) BrowseRooms(c *gin.Context) (interface{}, error) {
 // @Success      200  {object}  utils.BaseResponse[RoomResponse]
 // @Router       /rooms/{id} [get]
 func (ctrl *Controller) GetRoom(c *gin.Context) (interface{}, error) {
-	id, err := parseID(c)
+	id, err := utils.ParseUUIDParam(c, "id", "invalid room id")
 	if err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid room id")
+		return nil, err
 	}
 	resp, err := ctrl.service.GetByID(c.Request.Context(), id)
 	if err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, utils.ServiceError(err)
 	}
 	return resp, nil
 }
@@ -162,13 +157,13 @@ func (ctrl *Controller) GetRoom(c *gin.Context) (interface{}, error) {
 // @Success      200  {object}  utils.BaseResponse[RoomMembersResponse]
 // @Router       /rooms/{id}/members [get]
 func (ctrl *Controller) RoomMembers(c *gin.Context) (interface{}, error) {
-	id, err := parseID(c)
+	id, err := utils.ParseUUIDParam(c, "id", "invalid room id")
 	if err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid room id")
+		return nil, err
 	}
 	resp, err := ctrl.service.ListMembers(c.Request.Context(), id)
 	if err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, utils.ServiceError(err)
 	}
 	return resp, nil
 }
@@ -183,17 +178,17 @@ func (ctrl *Controller) RoomMembers(c *gin.Context) (interface{}, error) {
 // @Success      200  {object}  utils.BaseResponse[JoinRoomResponse]
 // @Router       /rooms/{id}/join [post]
 func (ctrl *Controller) JoinRoom(c *gin.Context) (interface{}, error) {
-	userID, ok := middleware.GetUserID(c)
-	if !ok {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "unauthorized")
-	}
-	id, err := parseID(c)
+	userID, err := utils.RequireUserID(c)
 	if err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid room id")
+		return nil, err
+	}
+	id, err := utils.ParseUUIDParam(c, "id", "invalid room id")
+	if err != nil {
+		return nil, err
 	}
 	resp, err := ctrl.service.RequestJoin(c.Request.Context(), userID, id)
 	if err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, utils.ServiceError(err)
 	}
 	return resp, nil
 }
@@ -209,21 +204,21 @@ func (ctrl *Controller) JoinRoom(c *gin.Context) (interface{}, error) {
 // @Success      201  {object}  utils.BaseResponse[RoomMessageResponse]
 // @Router       /rooms/{id}/messages [post]
 func (ctrl *Controller) SendRoomMessage(c *gin.Context) (interface{}, error) {
-	userID, ok := middleware.GetUserID(c)
-	if !ok {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "unauthorized")
-	}
-	id, err := parseID(c)
+	userID, err := utils.RequireUserID(c)
 	if err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid room id")
+		return nil, err
 	}
-	var req SendRoomMessageRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-	resp, err := ctrl.service.SendMessage(c.Request.Context(), userID, id, &req)
+	id, err := utils.ParseUUIDParam(c, "id", "invalid room id")
 	if err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, err
+	}
+	req, err := utils.BindJSON[SendRoomMessageRequest](c)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := ctrl.service.SendMessage(c.Request.Context(), userID, id, req)
+	if err != nil {
+		return nil, utils.ServiceError(err)
 	}
 	return resp, nil
 }
@@ -238,20 +233,20 @@ func (ctrl *Controller) SendRoomMessage(c *gin.Context) (interface{}, error) {
 // @Success      200  {object}  map[string]string
 // @Router       /rooms/{id}/messages/{messageId} [delete]
 func (ctrl *Controller) DeleteRoomMessage(c *gin.Context) (interface{}, error) {
-	userID, ok := middleware.GetUserID(c)
-	if !ok {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "unauthorized")
-	}
-	id, err := parseID(c)
+	userID, err := utils.RequireUserID(c)
 	if err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid room id")
+		return nil, err
+	}
+	id, err := utils.ParseUUIDParam(c, "id", "invalid room id")
+	if err != nil {
+		return nil, err
 	}
 	messageID := c.Param("messageId")
 	if messageID == "" {
 		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid message id")
 	}
 	if err := ctrl.service.DeleteMessage(c.Request.Context(), userID, id, messageID); err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, utils.ServiceError(err)
 	}
 	return map[string]string{"message": "message deleted"}, nil
 }
@@ -267,14 +262,14 @@ func (ctrl *Controller) DeleteRoomMessage(c *gin.Context) (interface{}, error) {
 // @Success      200  {object}  utils.BaseResponse[RoomMessagesListResponse]
 // @Router       /rooms/{id}/messages [get]
 func (ctrl *Controller) RoomMessages(c *gin.Context) (interface{}, error) {
-	id, err := parseID(c)
+	id, err := utils.ParseUUIDParam(c, "id", "invalid room id")
 	if err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid room id")
+		return nil, err
 	}
 	limit := utils.ParseLimit(c, 50, 200)
 	resp, err := ctrl.service.GetMessages(c.Request.Context(), id, limit, c.Query("before"))
 	if err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, utils.ServiceError(err)
 	}
 	return resp, nil
 }

@@ -1,7 +1,6 @@
 package call
 
 import (
-	"ola-chat-server/internal/middleware"
 	"ola-chat-server/internal/utils"
 	"encoding/json"
 	"io"
@@ -39,9 +38,9 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 // @Failure      500  {object}  utils.APIError
 // @Router       /calls/start [post]
 func (ctrl *Controller) StartCall(c *gin.Context) (interface{}, error) {
-	userID, ok := middleware.GetUserID(c)
-	if !ok {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "user not authenticated")
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
 	}
 
 	var req StartCallRequest
@@ -70,13 +69,13 @@ func (ctrl *Controller) StartCall(c *gin.Context) (interface{}, error) {
 // @Success      200  {object}  CallTokenSuccessResponse
 // @Router       /calls/{id}/answer [post]
 func (ctrl *Controller) AnswerCall(c *gin.Context) (interface{}, error) {
-	userID, ok := middleware.GetUserID(c)
-	if !ok {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "user not authenticated")
-	}
-	callID, err := uuid.Parse(c.Param("id"))
+	userID, err := utils.RequireUserID(c)
 	if err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid call ID")
+		return nil, err
+	}
+	callID, err := utils.ParseUUIDParam(c, "id", "invalid call ID")
+	if err != nil {
+		return nil, err
 	}
 	resp, err := ctrl.service.AnswerCall(c.Request.Context(), callID, userID)
 	if err != nil {
@@ -94,13 +93,13 @@ func (ctrl *Controller) AnswerCall(c *gin.Context) (interface{}, error) {
 // @Success      200  {object}  SimpleSuccessResponse
 // @Router       /calls/{id}/decline [post]
 func (ctrl *Controller) DeclineCall(c *gin.Context) (interface{}, error) {
-	userID, ok := middleware.GetUserID(c)
-	if !ok {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "user not authenticated")
-	}
-	callID, err := uuid.Parse(c.Param("id"))
+	userID, err := utils.RequireUserID(c)
 	if err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid call ID")
+		return nil, err
+	}
+	callID, err := utils.ParseUUIDParam(c, "id", "invalid call ID")
+	if err != nil {
+		return nil, err
 	}
 	if err := ctrl.service.DeclineCall(c.Request.Context(), callID, userID); err != nil {
 		return nil, ctrl.mapErr(err, "failed to decline call")
@@ -117,13 +116,13 @@ func (ctrl *Controller) DeclineCall(c *gin.Context) (interface{}, error) {
 // @Success      200  {object}  SimpleSuccessResponse
 // @Router       /calls/{id}/end [post]
 func (ctrl *Controller) EndCall(c *gin.Context) (interface{}, error) {
-	userID, ok := middleware.GetUserID(c)
-	if !ok {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "user not authenticated")
-	}
-	callID, err := uuid.Parse(c.Param("id"))
+	userID, err := utils.RequireUserID(c)
 	if err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid call ID")
+		return nil, err
+	}
+	callID, err := utils.ParseUUIDParam(c, "id", "invalid call ID")
+	if err != nil {
+		return nil, err
 	}
 	if err := ctrl.service.EndCall(c.Request.Context(), callID, userID); err != nil {
 		return nil, ctrl.mapErr(err, "failed to end call")

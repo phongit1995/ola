@@ -3,7 +3,6 @@ package me
 import (
 	"net/http"
 
-	"ola-chat-server/internal/middleware"
 	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
@@ -21,7 +20,7 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 }
 
 func parseID(c *gin.Context) (uuid.UUID, error) {
-	return uuid.Parse(c.Param("id"))
+	return utils.ParseUUIDParam(c, "id", "invalid post id")
 }
 
 // UploadImages godoc
@@ -34,9 +33,9 @@ func parseID(c *gin.Context) (uuid.UUID, error) {
 // @Success      201  {object}  utils.BaseResponse[UploadImagesResponse]
 // @Router       /me/images [post]
 func (ctrl *Controller) UploadImages(c *gin.Context) (interface{}, error) {
-	userID, ok := middleware.GetUserID(c)
-	if !ok {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "unauthorized")
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
 	}
 	form, err := c.MultipartForm()
 	if err != nil {
@@ -44,7 +43,7 @@ func (ctrl *Controller) UploadImages(c *gin.Context) (interface{}, error) {
 	}
 	resp, err := ctrl.service.UploadImages(c.Request.Context(), userID, form.File["images"])
 	if err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, utils.ServiceError(err)
 	}
 	return resp, nil
 }
@@ -59,17 +58,17 @@ func (ctrl *Controller) UploadImages(c *gin.Context) (interface{}, error) {
 // @Success      201  {object}  utils.BaseResponse[PostResponse]
 // @Router       /me [post]
 func (ctrl *Controller) Create(c *gin.Context) (interface{}, error) {
-	userID, ok := middleware.GetUserID(c)
-	if !ok {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "unauthorized")
-	}
-	var req CreatePostRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-	resp, err := ctrl.service.Create(userID, &req)
+	userID, err := utils.RequireUserID(c)
 	if err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, err
+	}
+	req, err := utils.BindJSON[CreatePostRequest](c)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := ctrl.service.Create(userID, req)
+	if err != nil {
+		return nil, utils.ServiceError(err)
 	}
 	return resp, nil
 }
@@ -85,29 +84,24 @@ func (ctrl *Controller) Create(c *gin.Context) (interface{}, error) {
 // @Success      200  {object}  utils.BaseResponse[PostListResponse]
 // @Router       /me [get]
 func (ctrl *Controller) Feed(c *gin.Context) (interface{}, error) {
-	userID, ok := middleware.GetUserID(c)
-	if !ok {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "unauthorized")
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
 	}
 	limit := utils.ParseLimit(c, 20, 100)
 	offset := utils.ParseOffset(c)
+
+	var resp *PostListResponse
 	switch c.Query("filter") {
 	case "mentions":
-		resp, err := ctrl.service.MentionsFeed(userID, limit, offset)
-		if err != nil {
-			return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
-		}
-		return resp, nil
+		resp, err = ctrl.service.MentionsFeed(userID, limit, offset)
 	case "media":
-		resp, err := ctrl.service.MediaFeed(userID, limit, offset)
-		if err != nil {
-			return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
-		}
-		return resp, nil
+		resp, err = ctrl.service.MediaFeed(userID, limit, offset)
+	default:
+		resp, err = ctrl.service.Feed(userID, limit, offset)
 	}
-	resp, err := ctrl.service.Feed(userID, limit, offset)
 	if err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, utils.ServiceError(err)
 	}
 	return resp, nil
 }
@@ -122,15 +116,15 @@ func (ctrl *Controller) Feed(c *gin.Context) (interface{}, error) {
 // @Success      200  {object}  utils.BaseResponse[PostListResponse]
 // @Router       /me/mine [get]
 func (ctrl *Controller) ListMine(c *gin.Context) (interface{}, error) {
-	userID, ok := middleware.GetUserID(c)
-	if !ok {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "unauthorized")
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
 	}
 	limit := utils.ParseLimit(c, 20, 100)
 	offset := utils.ParseOffset(c)
 	resp, err := ctrl.service.ListMine(userID, limit, offset)
 	if err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, utils.ServiceError(err)
 	}
 	return resp, nil
 }
@@ -146,19 +140,19 @@ func (ctrl *Controller) ListMine(c *gin.Context) (interface{}, error) {
 // @Success      200  {object}  utils.BaseResponse[PostListResponse]
 // @Router       /me/users/{userId} [get]
 func (ctrl *Controller) ListByUser(c *gin.Context) (interface{}, error) {
-	userID, ok := middleware.GetUserID(c)
-	if !ok {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "unauthorized")
-	}
-	authorID, err := uuid.Parse(c.Param("userId"))
+	userID, err := utils.RequireUserID(c)
 	if err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid user id")
+		return nil, err
+	}
+	authorID, err := utils.ParseUUIDParam(c, "userId", "invalid user id")
+	if err != nil {
+		return nil, err
 	}
 	limit := utils.ParseLimit(c, 20, 100)
 	offset := utils.ParseOffset(c)
 	resp, err := ctrl.service.ListByUser(userID, authorID, limit, offset)
 	if err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, utils.ServiceError(err)
 	}
 	return resp, nil
 }
@@ -172,17 +166,17 @@ func (ctrl *Controller) ListByUser(c *gin.Context) (interface{}, error) {
 // @Success      200  {object}  utils.BaseResponse[PostResponse]
 // @Router       /me/{id} [get]
 func (ctrl *Controller) GetPost(c *gin.Context) (interface{}, error) {
-	userID, ok := middleware.GetUserID(c)
-	if !ok {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "unauthorized")
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
 	}
 	id, err := parseID(c)
 	if err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid post id")
+		return nil, err
 	}
 	resp, err := ctrl.service.GetByID(userID, id)
 	if err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, utils.ServiceError(err)
 	}
 	return resp, nil
 }
@@ -198,21 +192,21 @@ func (ctrl *Controller) GetPost(c *gin.Context) (interface{}, error) {
 // @Success      200  {object}  utils.BaseResponse[PostResponse]
 // @Router       /me/{id} [put]
 func (ctrl *Controller) UpdatePost(c *gin.Context) (interface{}, error) {
-	userID, ok := middleware.GetUserID(c)
-	if !ok {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "unauthorized")
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
 	}
 	id, err := parseID(c)
 	if err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid post id")
+		return nil, err
 	}
-	var req UpdatePostRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-	resp, err := ctrl.service.Update(userID, id, &req)
+	req, err := utils.BindJSON[UpdatePostRequest](c)
 	if err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, err
+	}
+	resp, err := ctrl.service.Update(userID, id, req)
+	if err != nil {
+		return nil, utils.ServiceError(err)
 	}
 	return resp, nil
 }
@@ -226,16 +220,16 @@ func (ctrl *Controller) UpdatePost(c *gin.Context) (interface{}, error) {
 // @Success      200  {object}  map[string]string
 // @Router       /me/{id} [delete]
 func (ctrl *Controller) DeletePost(c *gin.Context) (interface{}, error) {
-	userID, ok := middleware.GetUserID(c)
-	if !ok {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "unauthorized")
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
 	}
 	id, err := parseID(c)
 	if err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid post id")
+		return nil, err
 	}
 	if err := ctrl.service.Delete(userID, id); err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, utils.ServiceError(err)
 	}
 	return map[string]string{"message": "post deleted"}, nil
 }
@@ -251,21 +245,21 @@ func (ctrl *Controller) DeletePost(c *gin.Context) (interface{}, error) {
 // @Success      201  {object}  utils.BaseResponse[CommentResponse]
 // @Router       /me/{id}/comments [post]
 func (ctrl *Controller) AddComment(c *gin.Context) (interface{}, error) {
-	userID, ok := middleware.GetUserID(c)
-	if !ok {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "unauthorized")
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
 	}
 	id, err := parseID(c)
 	if err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid post id")
+		return nil, err
 	}
-	var req CreateCommentRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-	resp, err := ctrl.service.AddComment(userID, id, &req)
+	req, err := utils.BindJSON[CreateCommentRequest](c)
 	if err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, err
+	}
+	resp, err := ctrl.service.AddComment(userID, id, req)
+	if err != nil {
+		return nil, utils.ServiceError(err)
 	}
 	return resp, nil
 }
@@ -281,19 +275,19 @@ func (ctrl *Controller) AddComment(c *gin.Context) (interface{}, error) {
 // @Success      200  {object}  utils.BaseResponse[CommentListResponse]
 // @Router       /me/{id}/comments [get]
 func (ctrl *Controller) ListComments(c *gin.Context) (interface{}, error) {
-	userID, ok := middleware.GetUserID(c)
-	if !ok {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "unauthorized")
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
 	}
 	id, err := parseID(c)
 	if err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid post id")
+		return nil, err
 	}
 	limit := utils.ParseLimit(c, 20, 100)
 	offset := utils.ParseOffset(c)
 	resp, err := ctrl.service.ListComments(userID, id, limit, offset)
 	if err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, utils.ServiceError(err)
 	}
 	return resp, nil
 }
@@ -308,20 +302,20 @@ func (ctrl *Controller) ListComments(c *gin.Context) (interface{}, error) {
 // @Success      200  {object}  map[string]string
 // @Router       /me/{id}/comments/{commentId} [delete]
 func (ctrl *Controller) DeleteComment(c *gin.Context) (interface{}, error) {
-	userID, ok := middleware.GetUserID(c)
-	if !ok {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "unauthorized")
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
 	}
 	id, err := parseID(c)
 	if err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid post id")
+		return nil, err
 	}
-	commentID, err := uuid.Parse(c.Param("commentId"))
+	commentID, err := utils.ParseUUIDParam(c, "commentId", "invalid comment id")
 	if err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid comment id")
+		return nil, err
 	}
 	if err := ctrl.service.DeleteComment(userID, id, commentID); err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, utils.ServiceError(err)
 	}
 	return map[string]string{"message": "comment deleted"}, nil
 }
@@ -337,21 +331,21 @@ func (ctrl *Controller) DeleteComment(c *gin.Context) (interface{}, error) {
 // @Success      200  {object}  utils.BaseResponse[PostResponse]
 // @Router       /me/{id}/react [post]
 func (ctrl *Controller) React(c *gin.Context) (interface{}, error) {
-	userID, ok := middleware.GetUserID(c)
-	if !ok {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "unauthorized")
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
 	}
 	id, err := parseID(c)
 	if err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid post id")
+		return nil, err
 	}
-	var req ReactRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
+	req, err := utils.BindJSON[ReactRequest](c)
+	if err != nil {
+		return nil, err
 	}
 	resp, err := ctrl.service.React(userID, id, req.Type)
 	if err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, utils.ServiceError(err)
 	}
 	return utils.NewHandlerResult(resp, http.StatusOK), nil
 }
@@ -365,17 +359,17 @@ func (ctrl *Controller) React(c *gin.Context) (interface{}, error) {
 // @Success      200  {object}  utils.BaseResponse[PostResponse]
 // @Router       /me/{id}/react [delete]
 func (ctrl *Controller) RemoveReaction(c *gin.Context) (interface{}, error) {
-	userID, ok := middleware.GetUserID(c)
-	if !ok {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "unauthorized")
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
 	}
 	id, err := parseID(c)
 	if err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid post id")
+		return nil, err
 	}
 	resp, err := ctrl.service.RemoveReaction(userID, id)
 	if err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, utils.ServiceError(err)
 	}
 	return utils.NewHandlerResult(resp, http.StatusOK), nil
 }
@@ -391,19 +385,19 @@ func (ctrl *Controller) RemoveReaction(c *gin.Context) (interface{}, error) {
 // @Success      200  {object}  utils.BaseResponse[LikerListResponse]
 // @Router       /me/{id}/likers [get]
 func (ctrl *Controller) Likers(c *gin.Context) (interface{}, error) {
-	userID, ok := middleware.GetUserID(c)
-	if !ok {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "unauthorized")
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
 	}
 	id, err := parseID(c)
 	if err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid post id")
+		return nil, err
 	}
 	limit := utils.ParseLimit(c, 20, 100)
 	offset := utils.ParseOffset(c)
 	resp, err := ctrl.service.Likers(userID, id, limit, offset)
 	if err != nil {
-		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		return nil, utils.ServiceError(err)
 	}
 	return resp, nil
 }
