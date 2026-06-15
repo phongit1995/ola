@@ -33,7 +33,12 @@ export function RoomMembersTab({ members, active }: RoomMembersTabProps) {
                 ) : (
                   <Avatar name={name} color={colorForName(name)} />
                 )}
-                <span className="min-w-0 flex-1 truncate text-base text-black/87">{name}</span>
+                <div className="flex min-w-0 flex-1 flex-col">
+                  <span className="truncate text-base text-black/87">{name}</span>
+                  {member.bio ? (
+                    <span className="truncate text-xs text-black/54">{member.bio}</span>
+                  ) : null}
+                </div>
                 <span className="shrink-0 text-xs text-ola-primary">{t('chat.online')}</span>
               </li>
             );

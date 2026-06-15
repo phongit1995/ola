@@ -121,15 +121,19 @@ LinearLayout (vertical, marginTop 16dp)
 .ola-edit-profile__value::placeholder { color: #e34545; }              /* hint đỏ */
 .ola-edit-profile__edit {                                              /* ✏️ ic_action_edit */
   width: 20px; height: 20px; padding: 2px;
-  background: rgba(0,0,0,.3); border-radius: 4px;                       /* bg_round_rect_black_translucent */
+  background: rgba(0,0,0,.38); border-radius: 4px;                      /* bg_round_rect_black_translucent = translucent_black_38_percent */
 }
 .ola-edit-profile__divider { height: 1px; background: rgba(0,0,0,.12); margin-top: 16px; }
 
-.ola-edit-profile__btn {
+.ola-edit-profile__btn {                /* FB: btn_default_button (trạng thái thường) */
   display: block; width: calc(100% - 32px); height: 48px; margin: 16px 16px 0;
-  border: 1px solid #558B2F; background: #fff; border-radius: 4px;
+  border: 1px solid rgba(0,0,0,.12);    /* stroke 1px colorTextBlackDivider — KHÔNG phải xanh */
+  background: #fff; color: rgba(0,0,0,.87); border-radius: 4px;   /* chữ đen .87 */
 }
-.ola-edit-profile__btn--support { background: #9CCC65; color: #fff; border: none; }  /* button.green */
+.ola-edit-profile__btn--support {       /* button.green: btn_green_button */
+  background: #9CCC65; color: #fff;     /* buttonGreen + chữ trắng */
+  border: 1px solid #558B2F;            /* stroke 1px colorOlaPrimaryDark */
+}
 ```
 
 ```html
@@ -158,12 +162,75 @@ LinearLayout (vertical, marginTop 16dp)
 </div>
 ```
 
-## 8. Icon & token UI
+## 8. Icon cụ thể (toàn màn chỉ có **2 icon**)
 
-| UI | Icon | Drawable |
-|----|------|----------|
-| Sửa trường (✏️) | ![edit](images/icons/ic_action_edit.png) | `ic_action_edit` (20dp, nền tròn đen mờ) |
-| Đóng (action bar) | ![quit](images/icons/ic_action_quit.png) | `ic_action_quit` |
+Màn này **không có icon dẫn đầu trường** — chỉ có **bút sửa** (lặp 4 lần, cùng 1 drawable) và **nút thoát** trên action bar.
+
+### 8.1. ✏️ Bút sửa `ic_action_edit` — ![edit](images/icons/ic_action_edit.png)
+
+Cùng **1 drawable** dùng cho **4 trường** (3 trường còn lại không có icon, bấm cả dòng):
+
+| Trường | id ImageView | Bấm → làm gì |
+|--------|--------------|--------------|
+| ① Họ và tên | `fullnameEditImageView` | bật `fullnameEditText` (đang khoá) + hiện bàn phím |
+| ② Số điện thoại | `phoneNumberEditImageView` | nếu SĐT bị khoá → dialog gọi tổng đài; nếu không → sửa `txtPhoneNumber` |
+| ③ Sinh nhật | `birthdayEditImageView` | mở **DatePickerDialog** |
+| ④ Giới tính | `genderEditImageView` | mở dialog chọn **Nam / Nữ / Linh hoạt** |
+| ⑤ Quan hệ · ⑥ Mật khẩu · ⑦ Tham gia Ola | *(không có icon)* | bấm cả dòng (⑤⑥) / chỉ đọc (⑦) |
+
+**Thông số icon bút** (giống hệt 4 chỗ):
+- `layout_width/height` = **20×20dp**, `padding` = **2dp** → vùng icon thật ~16dp.
+- `src` = `ic_action_edit` (bút chì trắng).
+- `background` = `bg_round_rect_black_translucent` → khối **bo góc 4dp**, nền **đen mờ 38%** (`translucent_black_38_percent` = `rgba(0,0,0,.38)`).
+- Đặt bên phải cùng hàng với giá trị (`gravity=center_vertical`).
+
+### 8.2. ✕ Nút thoát `ic_action_quit` — ![quit](images/icons/ic_action_quit.png)
+
+- Trên **action bar** (`ola_top_action_bar_center_title_layout`), vị trí phải: `olaActionBarMoreButtonImageView` **48dp**, `padding 8dp`.
+- Layout mặc định là `ic_more_white`, nhưng `onCreate` **ghi đè** thành `ic_action_quit` + cho `visible` (`:478-480`).
+- Bấm → **`finish()`** đóng màn (`:376-377`); lúc này `onPause` **tự lưu** hồ sơ.
+
+### 8.3. Các phần action bar khác (không phải icon)
+
+| id | Là gì | Trạng thái runtime |
+|----|-------|--------------------|
+| `olaActionBarBackViewLayout` | chữ **"Hủy"** (`string_cancel`), không phải icon | `onCreate` đặt `visibility=4` (**ẩn**) |
+| `olaActionBarTitleTextView` | tiêu đề giữa | set = "Thông tin cá nhân" (`string_persional_info`) |
+| `olaActionBarButtonTextView` | TextView (có `src=ic_action_notification` nhưng TextView **bỏ qua src**) | để **trống**, không hiển thị icon |
+
+> Tóm lại đúng **2 icon thật trên màn**: `ic_action_edit` (×4) và `ic_action_quit` (×1).
+
+## 8.4. Màn này có ẢNH không? → **KHÔNG**
+
+Quét `persionnal_infomation_view_layout.xml`: **0** view ảnh (`OlaCachedImageView` / `OlaRatioImageView` / `OlaSquareCachedImageView` = 0). `android:src` duy nhất trong layout là `ic_action_edit`.
+
+| Loại | Ở màn Sửa hồ sơ này | Sửa ở đâu |
+|------|---------------------|-----------|
+| **Avatar** | ❌ không có | [Trang cá nhân](../trang-ca-nhan/README.md) → bấm avatar → `editProfilePictureImageView` (📷) → `OlaCropImageActivity` |
+| **Ảnh bìa** | ❌ không có | Trang cá nhân → `editCoverPictureImageView` (📷) → `OlaCropImageActivity` |
+| **Kho Media / lưới ảnh** | ❌ không có | Trang cá nhân (Kho Media, Đang quan tâm) |
+
+> Màn này **thuần text + 2 nút**. Mọi thứ liên quan **hình ảnh** (avatar, bìa, media) nằm bên **Trang cá nhân** (`OlaUserMePageActivity`), không phải ở đây.
+
+## 8.5. Bảng màu chính xác (resolve từ `colors.xml` / drawable)
+
+| Vùng | Token / drawable | HEX gốc | CSS |
+|------|------------------|---------|-----|
+| Nền màn | `@color/white` | `#FFFFFF` | `#fff` |
+| **Action bar** | `bg_action_bar` = solid `colorOlaPrimary` + 6 lớp bóng đáy `#11–16000000` (mỗi lớp 1dp) | nền `#7CB342` | nền `#7CB342`, viền đáy ~6px đổ bóng đen rất nhạt |
+| Chữ action bar | `colorTextWhitePrimary` | `#FFFFFF` | `#fff` |
+| Nhãn trường (caption) | `colorTextBlackSecondaryOrIcon` | `#8A000000` | `rgba(0,0,0,.54)` |
+| Giá trị trường (body1) | `colorTextBlackPrimary` | `#DE000000` | `rgba(0,0,0,.87)` |
+| **Hint (chưa điền)** | `@color/red` | `#E34545` | `#e34545` |
+| Kẻ ngăn | `colorTextBlackDivider` | `#1F000000` | `rgba(0,0,0,.12)` |
+| Nền icon bút | `translucent_black_38_percent` | `#61000000` | `rgba(0,0,0,.38)` |
+| **Nút FB** (thường) | `btn_default_button`: solid `#FFFFFF` + stroke 1px `colorTextBlackDivider`; chữ `colorTextBlackPrimary` | nền `#FFFFFF`, viền `#1F000000`, chữ `#DE000000` | trắng · viền `rgba(0,0,0,.12)` · chữ đen |
+| **Nút Hỗ trợ** (button.green) | `btn_green_button`: solid `buttonGreen` + stroke 1px `colorOlaPrimaryDark`; chữ trắng | nền `#9CCC65`, viền `#558B2F`, chữ `#FFFFFF` | xanh · viền `#558B2F` · chữ trắng |
+| Nút khi chọn/nhấn | `btn_*_selected`: solid `buttonGreen` + stroke `colorOlaPrimaryDark` | `#9CCC65` / `#558B2F` | — |
+
+> ⚠️ Viền nút FB ở trạng thái thường là **xám `rgba(0,0,0,.12)`**, KHÔNG phải xanh. Màu xanh `#558B2F` chỉ xuất hiện ở trạng thái **selected/pressed** (và là viền cố định của nút Hỗ trợ).
+
+## 9b. Token UI
 
 | Thành phần | Giá trị |
 |------------|---------|
@@ -174,6 +241,6 @@ LinearLayout (vertical, marginTop 16dp)
 | Hint (gợi ý) | **đỏ `#e34545`** |
 | Icon sửa | 20×20dp, nền `bg_round_rect_black_translucent`, padding 2dp |
 | Kẻ ngăn | 1px `colorTextBlackDivider` (`rgba(0,0,0,.12)`) |
-| Nút | cao 48dp, margin ngang 16dp; FB = style button, Hỗ trợ = button.green (xanh `#9CCC65`) |
+| Nút | cao 48dp, margin ngang 16dp; **FB** = trắng + viền `rgba(0,0,0,.12)` + chữ đen; **Hỗ trợ** = nền `#9CCC65` + viền `#558B2F` + chữ trắng |
 | Lưu | **tự động ở `onPause`** (không có nút Lưu) |
 | Số trường | 7 (Họ tên · SĐT · Sinh nhật · Giới tính · Quan hệ · Mật khẩu · Tham gia Ola) |

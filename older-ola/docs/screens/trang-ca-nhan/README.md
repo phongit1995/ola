@@ -1,13 +1,99 @@
 # Màn hình Trang cá nhân / Thông tin người dùng (User Info)
 
-- **Activity:** `chat.ola.vn.me.OlaUserMePageActivity` — `jadx_out/sources/chat/ola/vn/me/OlaUserMePageActivity.java`
-- **Layout header:** `apktool_out/res/layout/ola_user_me_page_header_layout.xml` (header cuộn cùng feed bài đăng của người đó)
+- **Activity:** `chat.ola.vn.me.OlaUserMePageActivity` — `jadx_out/sources/chat/ola/vn/me/OlaUserMePageActivity.java` (1372 dòng)
+- **Layout màn (scaffold):** `apktool_out/res/layout/ola_user_me_page_layout.xml` (khung: action bar nổi + ListView pull-to-refresh + FAB)
+- **Layout action bar:** `ola_user_me_page_top_action_bar_layout.xml` (`@id/olaTopActionBarViewLayout` — back + ô tìm nick/#clan)
+- **Layout header:** `ola_user_me_page_header_layout.xml` (header cuộn cùng feed bài đăng của người đó)
 - **Cụm nút quan hệ:** `add_follow_post_more_button_layout.xml` (`@id/relationMakerPan`)
 - **Mở từ:** bấm avatar/tên trong feed Me, danh bạ, menu drawer trái màn Me, hoặc `OlaUserMePageActivity.a(context, "<nick>")`
 
 > Đây là **trang hồ sơ một người** (giống profile Facebook): ảnh bìa + avatar + ID + nút quan hệ + số người quan tâm + nụ hôn + tiểu sử + thông tin cá nhân + Kho Media + Đang quan tâm + danh sách bài Me. Khi xem **chính mình** vs **người khác** thì các nút/menu khác nhau.
 
 > Dựng từ **code + XML** (chưa chụp ảnh). Icon đã trích sẵn vào [images/icons/](images/icons/).
+
+> **Quy ước giá trị:** `dp/sp` lấy trực tiếp từ `res/values/dimens.xml`; màu `#AARRGGBB` (alpha trước) đã quy ra `rgba()`. Bảng cỡ chữ chuẩn của app dùng xuyên suốt tài liệu:
+>
+> | Style | size | weight | màu mặc định |
+> |-------|------|--------|--------------|
+> | `…text.caption` | 12sp | normal | `#8A000000` (đen .54) |
+> | `…text.body1` | 14sp | normal | `#DE000000` (đen .87) |
+> | `…text.subhead` | 16sp | normal | `#DE000000` |
+> | `…text.title` | 20sp | **bold** | `#DE000000` |
+> | `…text.headline` | 24sp | normal | `#DE000000` |
+
+---
+
+## 0. Khung màn hình tổng (`ola_user_me_page_layout.xml`)
+
+Root là **`FrameLayout` 3 lớp xếp chồng** (`@id/globalViewLayout`, match_parent) — action bar **nổi đè** lên nội dung, FAB nổi góc dưới-phải:
+
+```
+globalViewLayout (FrameLayout, match_parent)
+├─ [lớp 1 — NỘI DUNG] FrameLayout  paddingTop=42dp  ← chừa chỗ cho action bar nổi (metric.topbar.noshadow.42dp)
+│   ├─ SwipeRefreshLayout @id/pullToRefreshLayout         ← KÉO XUỐNG LÀM MỚI
+│   │   └─ ListView @id/pageListView  style=list.rowSpacing  ← header (§1) là headerView, dưới là list bài Me
+│   └─ ProgressBar @id/wattingProgressBar  48×48dp, center ← loading giữa màn
+├─ [lớp 2 — ACTION BAR] <include ola_user_me_page_top_action_bar_layout> ← NỔI TRÊN CÙNG (§0.1)
+└─ [lớp 3 — FAB] ImageButton @id/addConversationImageButton ← NÚT NHẮN TIN (§0.2)
+```
+
+- **`ListView` style `defaultStyle.list.rowSpacing`**: `scrollbars=none`, `fadingEdge=none`, `divider=transparent`, `cacheColorHint=transparent` → list **không kẻ vạch, không thanh cuộn**, các thẻ tự cách nhau bằng `marginBottom 8dp` của từng thẻ trong header.
+- **`paddingTop=42dp`** ở lớp nội dung = đúng chiều cao action bar nổi, nên ảnh bìa bắt đầu **ngay dưới** action bar (action bar che mép trên khi cuộn).
+
+### 0.1. Action bar trên cùng (`ola_user_me_page_top_action_bar_layout.xml`)
+
+`LinearLayout` ngang, `gravity=center_vertical`, nền `bg_action_bar` (xanh lá Ola), padding **L8 / T4 / R16 / B10 dp**:
+
+| # | id | Thành phần | Chi tiết |
+|---|----|-----------|----------|
+| 1 | `olaActionBarBackImageView` | **Nút back** `ic_action_back` | `wrap × match_parent`, `marginRight 8dp`, `scaleType=centerInside` → bấm = `finish()` (dòng 1305) |
+| 2 | (LinearLayout weight 1) | **Ô tìm kiếm** | style `edittext.small.border.light` (nền `bg_edit_text_small_light_border`, bo góc sáng, padding 8dp) |
+| 2a | — | Icon kính lúp `ic_action_search_small` | 16×16dp, `gravity=center` |
+| 2b | `searchEditText` | `OlaQuickTypingSuggestedText` (ô nhập gợi ý nhanh) | body1 **14sp**, chữ **trắng**, hint trắng-mờ `#4DFFFFFF` = "Enter nick or #clan", `maxLines=1`, `inputType=textNoSuggestions`, `imeOptions=actionSearch` |
+
+**Hành vi ô tìm (dòng 147+, `onEditorAction`):** nhấn Enter/Search → lấy text:
+- bắt đầu bằng **`#`** → mở **clan** tương ứng;
+- ngược lại → mở **trang cá nhân** của nick vừa nhập (`OlaUserMePageActivity.a(...)`).
+
+> Action bar **không có tiêu đề** — toàn bộ phần giữa là ô tìm nick/clan (đặc trưng màn Me: từ trang người này nhảy thẳng sang người khác).
+
+### 0.2. Nút nổi "Nhắn tin" (FAB — `addConversationImageButton`)
+
+| Thuộc tính | Giá trị |
+|-----------|---------|
+| Vị trí | góc phải-dưới (`layout_gravity=right\|bottom`), `marginRight/Bottom = 16dp` |
+| Kích thước | **56×56dp**, `padding 16dp` |
+| Nền | `floating_action_bar_shape` (tròn, xanh Ola, đổ bóng) |
+| Icon | `ic_action_compose_message`, `tint=white`, `scaleType=centerInside` |
+| Bấm → | mở **chat 1-1** với người này: `OlaChatViewActivity.a(this, m.j(nick))` (dòng 1194-1197) |
+
+> Đây là **nhắn tin riêng**, không phải viết Me. Nút "Viết Me" nằm trong cụm 5 nút quan hệ (§2).
+
+### 0.3. Vào màn từ đâu? (entry points)
+
+⚠️ **Phân biệt 2 màn "cá nhân":**
+
+| Màn | Activity | Là gì | Mở bằng |
+|-----|----------|-------|---------|
+| **Trang cá nhân** (màn này) | `OlaUserMePageActivity` | **XEM** hồ sơ 1 người | bấm **avatar / nick** của người đó ở bất kỳ đâu (không có icon riêng — chính ảnh avatar là vùng bấm) |
+| **Thông tin cá nhân** | `OlaUserProfileActivity` | **SỬA** hồ sơ của mình | tab **Ứng dụng** → mục **"Profile"** (icon ![per](images/icons/ic_tab_persional.png) `ic_tab_persional`), hoặc từ Trang cá nhân của mình → nút **"Cập Nhật Thông Tin"** (![edit](images/icons/ic_edit_profile_gray.png) `ic_edit_profile_gray`) |
+
+> ⛔ Không có icon "hồ sơ" trên bottom tab. Tab **Me** mở **bảng tin (newsfeed)**, không phải trang cá nhân. Muốn xem **hồ sơ của chính mình** → mở **drawer trái** màn Me rồi bấm **header (ảnh bìa + avatar + tên của bạn)**.
+
+**Mọi nơi bấm vào để mở Trang cá nhân** (đều gọi `OlaUserMePageActivity.a(ctx, nick)`; nếu nick bắt đầu `#` → mở Clan thay vì người):
+
+| Từ màn | Vùng bấm (view id) | File:line | Mở hồ sơ của |
+|--------|--------------------|-----------|--------------|
+| **Bảng tin Me** | avatar `profilePictureImageView`, nick `contactIdTextView`, ô gợi ý `suggestedFriendItemLayout`, cụm tác giả `meOwnerInfoSpan` | `q/b.java:1499`,`1555` | người đăng bài |
+| **Drawer trái màn Me** | **header** `system_me_menu_user_info_header` (cover + avatar 40dp + tên) | `me/c.java:551` | **chính mình** (`h.a()`) |
+| **Danh sách hội thoại / Danh bạ** | avatar `imgItemIcon` (khi `k()==0`) | `m/o.java:744` | người trong hội thoại |
+| **Thành viên nhóm / clan** | avatar `imgItemIcon` (khi `k()==0`) | `m/n.java:632` | thành viên |
+| **Thêm liên hệ / tìm bạn** | cả dòng `contactSummaryViewLayout` | `OlaAddContactActivity.java:203` | kết quả tìm |
+| **Chi tiết địa điểm (check-in)** | dòng người check-in | `OlaVenueDetailActivity.java:587`,`600` | người check-in |
+| **Nhật ký (Diary)** | chủ nhật ký | `OlaDiaryActivity.java:378` | chủ diary |
+| **Ngay trong Trang cá nhân** | ô tìm trên action bar (§0.1) | `OlaUserMePageActivity.java:147` | nick vừa nhập |
+
+> Tóm gọn: **bấm vào avatar hoặc tên của ai đó ở bất kỳ đâu** → ra Trang cá nhân của người đó. **Xem hồ sơ mình** = drawer trái màn Me → bấm header. **Sửa hồ sơ mình** = tab Ứng dụng → "Profile", hoặc nút "Cập Nhật Thông Tin" trong hồ sơ mình.
 
 ---
 
@@ -19,7 +105,7 @@ Toàn bộ header gồm **3 thẻ** (mỗi thẻ nền `bg_shadow_span`, cách n
 vLinearUserInfo (vertical)
 ├─ [A] THẺ HỒ SƠ (bg_shadow_span)
 │   ├─ FrameLayout (bìa + avatar)
-│   │   ├─ coverPictureImageView   (OlaRatioImageView, nền colorOlaPrimaryDarkMore)   ← ẢNH BÌA
+│   │   ├─ coverPictureImageView   (OlaRatioImageView ratio 1.777 = 16:9, nền colorOlaPrimaryDarkMore) ← ẢNH BÌA
 │   │   │   └─ editCoverPictureImageView  (ic_action_camera, ẩn — chỉ hồ sơ mình)
 │   │   └─ khung avatar (bg_shadown_border, đè đáy bìa, marginBottom 48dp)
 │   │       ├─ profilePictureImageView  96×96dp                                       ← AVATAR
@@ -104,6 +190,10 @@ Bấm nút **Quan tâm** không chỉ theo dõi ngay mà mở popup (khi đã c�
 
 | Vùng | id | Hành động |
 |------|----|-----------|
+| **Back** | `olaActionBarBackImageView` (1305) | `finish()` đóng màn |
+| **Tìm nick/clan** | `searchEditText` (147) | Enter → `#…` mở clan, ngược lại mở trang cá nhân nick đó |
+| **FAB Nhắn tin** | `addConversationImageButton` (1194) | mở chat 1-1: `OlaChatViewActivity.a(this, m.j(nick))` |
+| **Kéo làm mới** | `pullToRefreshLayout` | nạp lại hồ sơ + feed Me của người này |
 | **Xem ảnh bìa** | `coverPictureImageView` (1220) | mở `OlaImageViewerActivity` xem bìa full |
 | **Sửa ảnh bìa** | `editCoverPictureImageView` (1230) | `OlaCropImageActivity` (chỉ mình) |
 | **Xem avatar** | `profilePictureImageView` (1318) | `OlaImageViewerActivity` xem avatar full |
@@ -173,11 +263,20 @@ Bấm nút **Quan tâm** không chỉ theo dõi ngay mà mở popup (khi đã c�
 | Nút Viết Me | ![postme](images/icons/ic_post_me_gray.png) | `ic_post_me_gray` |
 | Nút Khác | ![more](images/icons/ic_more_horizon_black_disable.png) | `ic_more_horizon_black_disable` |
 | Tên bạn bè (overlay) | nền `bg_gradient_black`, chữ trắng | lưới Đang quan tâm |
+| Back (action bar) | ![back](images/icons/ic_action_back.png) | `ic_action_back` |
+| Kính lúp ô tìm | ![search](images/icons/ic_action_search_small.png) | `ic_action_search_small` (16dp) |
+| FAB Nhắn tin | ![compose](images/icons/ic_action_compose_message.png) | `ic_action_compose_message` (tint trắng) |
 
 ## 7. Tóm tắt token UI
 
 | Thành phần | Giá trị |
 |------------|---------|
+| Action bar | cao 42dp, nền `bg_action_bar` (#7CB342), padding L8/T4/R16/B10dp, **nổi đè** nội dung |
+| Back | `ic_action_back`, marginRight 8dp |
+| Ô tìm | nền `bg_edit_text_small_light_border`, padding 8dp; chữ trắng body1 14sp; hint `#4DFFFFFF`; icon kính lúp 16dp |
+| FAB Nhắn tin | 56×56dp, padding 16dp, nền `floating_action_bar_shape` tròn, icon tint trắng, margin 16dp |
+| ListView | `list.rowSpacing`: không divider/scrollbar; pull-to-refresh (`SwipeRefreshLayout`) |
+| Progress giữa màn | 48×48dp, center |
 | Thẻ | nền `bg_shadow_span`, cách nhau 8dp |
 | Ảnh bìa | tỉ lệ (OlaRatioImageView), nền tạm `#33691E` |
 | Avatar | **96×96dp**, khung `bg_shadown_border` (padding 4/4/4/6dp), đè đáy bìa (marginBottom 48dp) |
@@ -237,6 +336,30 @@ Tất cả lệnh gọi `OlaApplication.b.<method>` (= `OlaNetworkService`) tron
 ## 9. CSS tương đương (dựng lại trên web)
 
 ```css
+/* ===== Khung màn (scaffold) ===== */
+.ola-page { position: relative; min-height: 100vh; padding-top: 42px; }   /* chừa action bar nổi */
+.ola-page__actionbar {                              /* bg_action_bar xanh Ola */
+  position: fixed; top: 0; left: 0; right: 0; height: 42px; z-index: 10;
+  display: flex; align-items: center; gap: 8px;
+  padding: 4px 16px 10px 8px; background: #7CB342;
+}
+.ola-page__back { width: 24px; height: 24px; }
+.ola-page__search {                                 /* edittext.small.border.light */
+  flex: 1; display: flex; align-items: center; gap: 4px;
+  padding: 8px; border-radius: 4px; background: rgba(255,255,255,.18);
+}
+.ola-page__search img { width: 16px; height: 16px; }
+.ola-page__search input {
+  flex: 1; border: none; background: none; color: #fff; font-size: 14px;
+}
+.ola-page__search input::placeholder { color: rgba(255,255,255,.30); }   /* #4DFFFFFF */
+.ola-page__fab {                                    /* floating_action_bar_shape */
+  position: fixed; right: 16px; bottom: 16px; width: 56px; height: 56px;
+  padding: 16px; border-radius: 50%; border: none;
+  background: #7CB342; box-shadow: 0 3px 6px rgba(0,0,0,.3);
+}
+.ola-page__fab img { width: 100%; height: 100%; filter: brightness(0) invert(1); }  /* tint trắng */
+
 /* ===== Thẻ chung ===== */
 .ola-profile { background: #ECEFF1; font-family: Roboto, "Helvetica Neue", Arial, sans-serif; }
 .ola-profile__card {
@@ -246,7 +369,7 @@ Tất cả lệnh gọi `OlaApplication.b.<method>` (= `OlaNetworkService`) tron
 
 /* ===== Bìa + avatar ===== */
 .ola-profile__cover {
-  position: relative; width: 100%; aspect-ratio: 16/6;
+  position: relative; width: 100%; aspect-ratio: 16/9;  /* OlaRatioImageView mặc định 1.777 (BASE_WIDTH) */
   background: #33691E center/cover no-repeat;      /* colorOlaPrimaryDarkMore */
   margin-bottom: 48px;
 }
@@ -328,7 +451,15 @@ Tất cả lệnh gọi `OlaApplication.b.<method>` (= `OlaNetworkService`) tron
 ```
 
 ```html
-<div class="ola-profile">
+<div class="ola-page">
+  <div class="ola-page__actionbar">
+    <img class="ola-page__back" src="images/icons/ic_action_back.png">
+    <div class="ola-page__search">
+      <img src="images/icons/ic_action_search_small.png">
+      <input placeholder="Enter nick or #clan">
+    </div>
+  </div>
+  <div class="ola-profile">
   <div class="ola-profile__card">
     <div class="ola-profile__cover" style="background-image:url(cover.jpg)">
       <div class="ola-profile__avatar-frame">
@@ -348,5 +479,7 @@ Tất cả lệnh gọi `OlaApplication.b.<method>` (= `OlaNetworkService`) tron
     <div class="ola-profile__fans"><b>128</b><span>người quan tâm</span></div>
     <div class="ola-profile__info"><img src="images/icons/ic_indicate_dynamic_gender.png">Nữ</div>
   </div>
+  </div>
+  <button class="ola-page__fab"><img src="images/icons/ic_action_compose_message.png"></button>
 </div>
 ```

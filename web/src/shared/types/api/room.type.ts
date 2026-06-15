@@ -22,6 +22,7 @@ export interface RoomMember {
   fullName?: string;
   avatar?: string;
   gender?: 'male' | 'female';
+  bio?: string;
   vipUsed?: string | null;
   vipEndTime?: string | null;
 }
