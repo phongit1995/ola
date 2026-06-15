@@ -2,7 +2,8 @@
   "common": {
     "clear": "Clear",
     "cancel": "Cancel",
-    "loading": "Loading…"
+    "loading": "Loading…",
+    "error": "Something went wrong, please try again."
   },
   "auth": {
     "errGeneric": "Something went wrong, please try again.",
@@ -192,6 +193,19 @@
     "composerHint": "What's on your mind?",
     "post": "Post",
     "addPhoto": "Add photo",
+    "maxImages": "Up to 5 images",
+    "removeSticker": "Remove sticker",
+    "removeCheckIn": "Remove location",
+    "cloudUrlHint": "Paste image URL (http/https)",
+    "cloudAdd": "Add",
+    "cloudChecking": "Checking…",
+    "cloudInvalid": "Invalid URL",
+    "cloudLoadError": "Couldn't load image from this URL",
+    "checkInAction": "Staying at",
+    "checkInLocate": "Find nearby places",
+    "checkInLocating": "Getting location…",
+    "checkInNoVenues": "No nearby places found",
+    "checkInError": "Couldn't get location. Enable location and try again.",
     "removePhoto": "Remove photo",
     "seeMore": "See more",
     "postToMePage": "Post status to Me page",

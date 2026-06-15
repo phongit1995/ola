@@ -18,7 +18,7 @@ export function MePanel() {
   const username = useAuthStore((s) => s.user?.username ?? null);
   const displayName = username ?? t('home.guest');
 
-  const { tab, setTab, posts, loading, isFollower, toggleReaction, addPost } = useMeFeed();
+  const { tab, setTab, posts, loading, error, isFollower, toggleReaction, addPost } = useMeFeed();
 
   const [composerOpen, setComposerOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
@@ -45,15 +45,18 @@ export function MePanel() {
         </button>
       </HomeHeader>
 
-      <main className="relative flex-1 overflow-y-auto bg-[#f3f3f3]">
-        <MeFeedList
-          posts={posts}
-          loading={loading}
-          emptyText={emptyText}
-          onToggleLike={(id) => toggleReaction(id, 'like')}
-          onToggleDislike={(id) => toggleReaction(id, 'dislike')}
-          onOpenProfile={(author, color) => openProfile(author, color)}
-        />
+      <div className="relative min-h-0 flex-1">
+        <main className="absolute inset-0 overflow-y-auto bg-[#f3f3f3]">
+          <MeFeedList
+            posts={posts}
+            loading={loading}
+            error={error}
+            emptyText={emptyText}
+            onToggleLike={(id) => toggleReaction(id, 'like')}
+            onToggleDislike={(id) => toggleReaction(id, 'dislike')}
+            onOpenProfile={(author, color) => openProfile(author, color)}
+          />
+        </main>
 
         <button
           type="button"
@@ -63,15 +66,12 @@ export function MePanel() {
         >
           <img src={editIcon} alt="" className="h-6 w-6 object-contain" />
         </button>
-      </main>
+      </div>
 
       <MeComposerDialog
         open={composerOpen}
         onClose={() => setComposerOpen(false)}
-        onPost={(draft) => {
-          setComposerOpen(false);
-          addPost(draft);
-        }}
+        onPost={addPost}
       />
 
       <MeAccountDialog

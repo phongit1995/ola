@@ -34,7 +34,12 @@ export function toMePost(post: Post, formatTime: (iso: string) => string): MePos
     likers.push(AVATAR_PALETTE[(i * 5 + author.length) % AVATAR_PALETTE.length]);
   }
   const checkIn = post.checkIn
-    ? [post.checkIn.name, post.checkIn.address].filter(Boolean).join(' · ')
+    ? {
+        name: post.checkIn.name,
+        address: post.checkIn.address,
+        lat: post.checkIn.lat,
+        lng: post.checkIn.lng,
+      }
     : null;
   return {
     id: post.id,

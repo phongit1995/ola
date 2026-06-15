@@ -12,6 +12,7 @@ export function useMeFeed() {
 
   const rawPosts = useMeFeedStore((state) => state.posts);
   const loading = useMeFeedStore((state) => state.loading);
+  const error = useMeFeedStore((state) => state.error);
   const loadFeed = useMeFeedStore((state) => state.loadFeed);
   const toggleReaction = useMeFeedStore((state) => state.toggleReaction);
   const createPost = useMeFeedStore((state) => state.createPost);
@@ -30,17 +31,27 @@ export function useMeFeed() {
   );
 
   const addPost = useCallback(
-    async (draft: ComposedPost) => {
+    async (draft: ComposedPost): Promise<boolean> => {
       const created = await createPost(
         {
           content: draft.content,
-          checkIn: draft.checkIn ? { name: draft.checkIn } : undefined,
+          checkIn: draft.checkIn
+            ? {
+                name: draft.checkIn.name,
+                address: draft.checkIn.address,
+                lat: draft.checkIn.lat,
+                lng: draft.checkIn.lng,
+              }
+            : undefined,
           sticker: draft.sticker ?? undefined,
           visibility: draft.visibility,
         },
-        draft.files
+        draft.files,
+        draft.imageUrls
       );
-      if (created != null) setTab('feed');
+      if (created == null) return false;
+      setTab('feed');
+      return true;
     },
     [createPost]
   );
@@ -50,6 +61,7 @@ export function useMeFeed() {
     setTab,
     posts,
     loading: !isFollower && loading,
+    error: !isFollower && error,
     isFollower,
     toggleReaction,
     addPost,

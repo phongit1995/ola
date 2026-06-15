@@ -2,7 +2,8 @@
   "common": {
     "clear": "Xoá",
     "cancel": "Huỷ",
-    "loading": "Đang tải…"
+    "loading": "Đang tải…",
+    "error": "Đã có lỗi xảy ra, vui lòng thử lại."
   },
   "auth": {
     "errGeneric": "Đã có lỗi xảy ra, vui lòng thử lại.",
@@ -193,6 +194,19 @@
     "post": "Đăng",
     "addPhoto": "Thêm ảnh",
     "removePhoto": "Xoá ảnh",
+    "removeSticker": "Xóa sticker",
+    "removeCheckIn": "Xóa vị trí",
+    "maxImages": "Tối đa 5 ảnh",
+    "cloudUrlHint": "Dán URL ảnh (http/https)",
+    "cloudAdd": "Thêm",
+    "cloudChecking": "Đang kiểm tra…",
+    "cloudInvalid": "URL không hợp lệ",
+    "cloudLoadError": "Không tải được ảnh từ URL này",
+    "checkInAction": "Đang ở",
+    "checkInLocate": "Lấy vị trí gần đây",
+    "checkInLocating": "Đang lấy vị trí…",
+    "checkInNoVenues": "Không tìm thấy địa điểm gần đây",
+    "checkInError": "Không lấy được vị trí. Hãy bật định vị và thử lại.",
     "seeMore": "Xem thêm",
     "postToMePage": "Đăng trạng thái lên trang Me",
     "attachLocal": "Ảnh máy",

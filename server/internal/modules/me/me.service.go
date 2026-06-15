@@ -106,7 +106,7 @@ func (s *Service) Update(userID, postID uuid.UUID, req *UpdatePostRequest) (*Pos
 		return nil, errors.New("post must have content or images")
 	}
 
-	if err := s.repo.Save(post); err != nil {
+	if err := s.repo.UpdateEditable(post); err != nil {
 		return nil, err
 	}
 
@@ -150,7 +150,7 @@ func (s *Service) Feed(viewerID uuid.UUID, limit, offset int) (*PostListResponse
 }
 
 func (s *Service) MentionsFeed(viewerID uuid.UUID, limit, offset int) (*PostListResponse, error) {
-	posts, total, err := s.repo.FeedMentions(viewerID, limit, offset)
+	posts, total, err := s.repo.FeedMentions(viewerID, s.friendIDs(viewerID), limit, offset)
 	if err != nil {
 		return nil, err
 	}

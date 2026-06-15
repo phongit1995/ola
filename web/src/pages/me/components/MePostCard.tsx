@@ -9,6 +9,7 @@ import { Avatar } from '../../chat/components/Avatar';
 import { PostContent } from './PostContent';
 import { MediaGrid } from './MediaGrid';
 import { CheckInCard } from './CheckInCard';
+import { stickerImage } from '../stickers';
 import type { MePost } from '../types';
 
 interface MePostCardProps {
@@ -48,19 +49,22 @@ export function MePostCard({
       <PostContent
         content={post.content}
         onMention={(nick) => onOpenProfile?.(nick, '#7cb342')}
+        leading={
+          post.image == null ? undefined : stickerImage(post.image) != null ? (
+            <img
+              src={stickerImage(post.image) ?? ''}
+              alt=""
+              className="h-[84px] shrink-0 object-contain"
+            />
+          ) : (
+            <span className="shrink-0 text-5xl leading-none">{post.image}</span>
+          )
+        }
       />
 
-      {post.checkIn != null && post.checkIn !== '' && (
-        <CheckInCard venue={post.checkIn} label={t('me.postMenu')} />
-      )}
+      {post.checkIn != null && <CheckInCard checkIn={post.checkIn} label={t('me.postMenu')} />}
 
-      {post.photos != null && post.photos.length > 0 ? (
-        <MediaGrid photos={post.photos} />
-      ) : post.image != null ? (
-        <div className="mx-4 mt-3 flex h-44 items-center justify-center rounded bg-ola-primary-light text-6xl">
-          {post.image}
-        </div>
-      ) : null}
+      {post.photos != null && post.photos.length > 0 && <MediaGrid photos={post.photos} />}
 
       <div className="mx-4 mt-4 flex items-end gap-1 text-xs text-black/54">
         <span className="flex-1">

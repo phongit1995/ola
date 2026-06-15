@@ -26,6 +26,12 @@ func (r *Repository) Save(post *models.Post) error {
 	return r.db.Save(post).Error
 }
 
+func (r *Repository) UpdateEditable(post *models.Post) error {
+	return r.db.Model(post).
+		Select("Content", "Images", "Mentions", "CheckIn", "Sticker", "Visibility").
+		Updates(post).Error
+}
+
 func (r *Repository) GetByID(id uuid.UUID) (*models.Post, error) {
 	var post models.Post
 	if err := r.db.Preload("Author").First(&post, "id = ?", id).Error; err != nil {
@@ -76,12 +82,12 @@ func (r *Repository) ListByAuthor(authorID uuid.UUID, visibilities []models.Post
 	return r.paginate(db, limit, offset)
 }
 
-func (r *Repository) FeedMentions(viewerID uuid.UUID, limit, offset int) ([]*models.Post, int64, error) {
+func (r *Repository) FeedMentions(viewerID uuid.UUID, friendIDs []uuid.UUID, limit, offset int) ([]*models.Post, int64, error) {
 	target, err := json.Marshal([]string{viewerID.String()})
 	if err != nil {
 		return nil, 0, err
 	}
-	db := r.db.Model(&models.Post{}).Where("mentions @> ?", string(target))
+	db := r.feedScope(viewerID, friendIDs).Where("mentions @> ?", string(target))
 	return r.paginate(db, limit, offset)
 }
 

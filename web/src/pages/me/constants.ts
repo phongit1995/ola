@@ -55,13 +55,3 @@ export const ATTACH_BUTTONS = [
 ] as const;
 
 export type AttachButtonKey = (typeof ATTACH_BUTTONS)[number]['key'];
-
-export const STICKERS = ['😀', '😍', '😎', '😢', '😡', '👍', '❤️', '🔥', '🎉', '🌹', '☀️', '⚽'];
-
-export const VENUES = [
-  'The Coffee House',
-  'Vincom Center',
-  'Hồ Gươm',
-  'Sân vận động Mỹ Đình',
-  'Phố đi bộ Nguyễn Huệ',
-];

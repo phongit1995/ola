@@ -5,6 +5,7 @@ import type { MePost } from '../types';
 interface MeFeedListProps {
   posts: MePost[];
   loading: boolean;
+  error?: boolean;
   emptyText: string;
   onToggleLike: (id: string) => void;
   onToggleDislike: (id: string) => void;
@@ -14,6 +15,7 @@ interface MeFeedListProps {
 export function MeFeedList({
   posts,
   loading,
+  error,
   emptyText,
   onToggleLike,
   onToggleDislike,
@@ -25,6 +27,14 @@ export function MeFeedList({
     return (
       <div className="flex h-full items-center justify-center text-sm text-black/54">
         {t('common.loading')}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex h-full items-center justify-center px-8 text-center text-sm text-ola-error">
+        {t('common.error')}
       </div>
     );
   }

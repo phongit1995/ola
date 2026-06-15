@@ -1,3 +1,10 @@
+export interface MeCheckIn {
+  name: string;
+  address?: string;
+  lat?: number;
+  lng?: number;
+}
+
 export interface MePost {
   id: string;
   author: string;
@@ -6,7 +13,7 @@ export interface MePost {
   content: string;
   image: string | null;
   photos?: string[];
-  checkIn?: string | null;
+  checkIn?: MeCheckIn | null;
   comments: number;
   likes: number;
   likers: string[];

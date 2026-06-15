@@ -5,6 +5,7 @@ import { MENTION_TOKEN_PATTERN } from '../constants';
 interface PostContentProps {
   content: string;
   onMention: (nick: string) => void;
+  leading?: ReactNode;
 }
 
 function renderTokens(content: string, onMention: (nick: string) => void): ReactNode[] {
@@ -32,7 +33,7 @@ function renderTokens(content: string, onMention: (nick: string) => void): React
   });
 }
 
-export function PostContent({ content, onMention }: PostContentProps) {
+export function PostContent({ content, onMention, leading }: PostContentProps) {
   const { t } = useTranslation();
   const contentRef = useRef<HTMLParagraphElement>(null);
   const [expanded, setExpanded] = useState(false);
@@ -45,22 +46,25 @@ export function PostContent({ content, onMention }: PostContentProps) {
   }, [content]);
 
   return (
-    <div className="px-4 pt-3">
-      <p
-        ref={contentRef}
-        className={`text-sm leading-relaxed whitespace-pre-wrap text-black/87 ${expanded ? '' : 'line-clamp-5'}`}
-      >
-        {renderTokens(content, onMention)}
-      </p>
-      {clamped && !expanded && (
-        <button
-          type="button"
-          onClick={() => setExpanded(true)}
-          className="mt-0.5 text-sm text-ola-primary-dark"
+    <div className="flex items-start gap-2 px-4 pt-3">
+      {leading}
+      <div className="min-w-0 flex-1">
+        <p
+          ref={contentRef}
+          className={`text-sm leading-relaxed whitespace-pre-wrap text-black/87 ${expanded ? '' : 'line-clamp-5'}`}
         >
-          {t('me.seeMore')}
-        </button>
-      )}
+          {renderTokens(content, onMention)}
+        </p>
+        {clamped && !expanded && (
+          <button
+            type="button"
+            onClick={() => setExpanded(true)}
+            className="mt-0.5 text-sm text-ola-primary-dark"
+          >
+            {t('me.seeMore')}
+          </button>
+        )}
+      </div>
     </div>
   );
 }
