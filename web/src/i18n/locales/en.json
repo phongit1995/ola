@@ -40,7 +40,8 @@
     "errPasswordMax": "Password must be at most 20 characters.",
     "errConfirmRequired": "Please re-enter your password.",
     "errConfirmMismatch": "Passwords do not match.",
-    "errAgreeRequired": "You must agree to the Terms of Use to continue."
+    "errAgreeRequired": "You must agree to the Terms of Use to continue.",
+    "success": "Account created"
   },
   "forgot": {
     "title": "Forgot password",
@@ -143,7 +144,8 @@
     "menuChangeAvatar": "Change avatar",
     "menuLogout": "Log out",
     "menuLogoutAll": "Log out everywhere",
-    "menuBuyVip": "Subscribe VIP"
+    "menuBuyVip": "Subscribe VIP",
+    "logoutError": "Logout failed"
   },
   "room": {
     "refresh": "Refresh",
@@ -176,7 +178,9 @@
     "joining": "Joining room…",
     "joinError": "Unable to join room",
     "noMembers": "No members online yet",
-    "sendError": "Couldn't send message"
+    "sendError": "Couldn't send message",
+    "quitSuccess": "Left the room",
+    "loadError": "Couldn't load rooms"
   },
   "me": {
     "tabFeed": "Newsfeed",
@@ -233,7 +237,12 @@
     "empty": "Me page has no content",
     "viewProfile": "View profile",
     "commentSendError": "Couldn't send comment",
-    "commentDeleteError": "Couldn't delete comment"
+    "commentDeleteError": "Couldn't delete comment",
+    "commentSent": "Comment sent",
+    "commentDeleted": "Comment deleted",
+    "postSent": "Posted",
+    "postError": "Couldn't post",
+    "reactionError": "Couldn't react, try again"
   },
   "profile": {
     "makeFriend": "Add friend",
@@ -284,7 +293,10 @@
     "joinLabel": "Joined Ola",
     "linkFacebook": "Link to Facebook account",
     "support": "Customer support",
-    "supportHotline": "Hotline: 1900588883"
+    "supportHotline": "Hotline: 1900588883",
+    "avatarUpdated": "Avatar updated",
+    "avatarError": "Couldn't update avatar",
+    "saved": "Changes saved"
   },
   "vip": {
     "title": "VIP Store",

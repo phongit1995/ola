@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@constants';
 import { UserService } from '@services';
-import { ApiError } from '@lib';
+import { ApiError, toast } from '@lib';
 import type { Gender, UpdateProfileRequest } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
 import maleIcon from '@/assets/icons/chat/ic_indicate_male.png';
@@ -126,8 +126,9 @@ export function EditProfileMePage() {
     try {
       const result = await UserService.uploadAvatar(file);
       setAvatar(result.url);
+      toast.success(t('profileEdit.avatarUpdated'));
     } catch {
-      return;
+      toast.error(t('profileEdit.avatarError'));
     } finally {
       setUploading(false);
     }
@@ -152,9 +153,12 @@ export function EditProfileMePage() {
     try {
       await UserService.updateMe(payload);
       await refreshUser();
+      toast.success(t('profileEdit.saved'));
       navigate(ROUTES.home);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : t('profileEdit.saveError'));
+      const message = err instanceof ApiError ? err.message : t('profileEdit.saveError');
+      setError(message);
+      toast.error(message);
       setSaving(false);
     }
   }

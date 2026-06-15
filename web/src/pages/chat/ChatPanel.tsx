@@ -8,6 +8,7 @@ import {
   type ListOption,
 } from '@components';
 import { ROUTES } from '@constants';
+import { toast } from '@lib';
 import { HomeHeader } from '@components/HomeHeader';
 import moreIcon from '@/assets/icons/chat/ic_more_white.png';
 import { AuthService } from '@services';
@@ -76,6 +77,8 @@ export function ChatPanel() {
     setLogoutOpen(false);
     try {
       await AuthService.logout();
+    } catch {
+      toast.error(t('chat.logoutError'));
     } finally {
       clearUser();
       navigate(ROUTES.login);

@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { RoomService } from '@services';
+import { toast } from '@lib';
 import type { BrowseRoomsParams, Room } from '@app-types';
+import i18n from '@/i18n';
 
 interface RoomState {
   rooms: Room[];
@@ -25,9 +27,10 @@ export const useRoomStore = create<RoomState>((set) => ({
       set({ rooms: result.items, total: result.total, loading: false, loaded: true });
     } catch (err) {
       set({
-        error: err instanceof Error ? err.message : 'Không tải được danh sách phòng',
+        error: err instanceof Error ? err.message : i18n.t('room.loadError'),
         loading: false,
       });
+      toast.error(i18n.t('room.loadError'));
     }
   },
   reset: () => set({ rooms: [], total: 0, error: null, loaded: false }),

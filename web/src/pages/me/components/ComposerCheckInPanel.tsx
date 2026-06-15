@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { GeoService, type GeoVenue } from '@services';
+import { toast } from '@lib';
 import checkInIcon from '@/assets/icons/me/ic_check_in.png';
 import { CHECK_IN_ACTIONS, type CheckInAction } from '../checkInActions';
 
@@ -30,6 +31,7 @@ export function ComposerCheckInPanel({ onSelect }: ComposerCheckInPanelProps) {
   function locate() {
     if (!GeoService.enabled || !('geolocation' in navigator)) {
       setLocateError(true);
+      toast.error(t('me.checkInError'));
       return;
     }
     setLocating(true);
@@ -46,6 +48,7 @@ export function ComposerCheckInPanel({ onSelect }: ComposerCheckInPanelProps) {
           setCurrent(here ?? { name: '', address: '', lat: latitude, lng: longitude });
         } catch {
           setLocateError(true);
+          toast.error(t('me.checkInError'));
         } finally {
           setLocating(false);
         }
@@ -53,6 +56,7 @@ export function ComposerCheckInPanel({ onSelect }: ComposerCheckInPanelProps) {
       () => {
         setLocating(false);
         setLocateError(true);
+        toast.error(t('me.checkInError'));
       },
       { enableHighAccuracy: true, timeout: 10000 }
     );

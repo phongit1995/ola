@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { MeService } from '@services';
+import { toast } from '@lib';
 import type { CreatePostRequest, MeFeedFilter, Post, PostReaction } from '@app-types';
+import i18n from '@/i18n';
 
 interface MeFeedState {
   posts: Post[];
@@ -66,6 +68,7 @@ export const useMeFeedStore = create<MeFeedState>((set, get) => ({
     } catch (error) {
       console.error('toggle reaction failed', error);
       set((state) => ({ posts: replacePost(state.posts, post) }));
+      toast.error(i18n.t('me.reactionError'));
     } finally {
       set((state) => {
         const reacting = new Set(state.reacting);
@@ -81,9 +84,11 @@ export const useMeFeedStore = create<MeFeedState>((set, get) => ({
       const images = [...uploaded, ...urlImages];
       const created = await MeService.create({ ...payload, images });
       set((state) => ({ posts: [created, ...state.posts] }));
+      toast.success(i18n.t('me.postSent'));
       return created;
     } catch (error) {
       console.error('create post failed', error);
+      toast.error(i18n.t('me.postError'));
       return null;
     }
   },

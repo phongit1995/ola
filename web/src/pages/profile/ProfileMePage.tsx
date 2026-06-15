@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@constants';
 import { MeService } from '@services';
+import { toast } from '@lib';
 import type { Post, PostReaction } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
 import genderIcon from '@/assets/icons/profile/ic_indicate_dynamic_gender.png';
@@ -47,7 +48,7 @@ export function ProfileMePage() {
       const updated = isActive ? await MeService.removeReaction(id) : await MeService.react(id, type);
       setPosts((current) => current.map((item) => (item.id === id ? updated : item)));
     } catch {
-      return;
+      toast.error(t('me.reactionError'));
     }
   }
 

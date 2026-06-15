@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ConfirmDialog } from '@components';
+import { toast } from '@lib';
 import { HomeHeader } from '@components/HomeHeader';
 import { RoomChatView } from './components/RoomChatView';
 import { RoomJoiningOverlay } from './components/RoomJoiningOverlay';
@@ -62,6 +63,7 @@ export function RoomPanel() {
   function confirmQuit() {
     if (pendingQuit != null && activeRoom?.id === pendingQuit.id) {
       exitRoom();
+      toast.success(t('room.quitSuccess'));
     }
     setPendingQuit(null);
   }

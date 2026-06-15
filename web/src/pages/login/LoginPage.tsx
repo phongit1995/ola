@@ -8,7 +8,7 @@ import { ClearableInput } from '@components/form/ClearableInput';
 import { SubmitButton } from '@components/form/SubmitButton';
 import { LanguageSwitcher } from '@components/LanguageSwitcher';
 import { AuthService } from '@services';
-import { ApiError, USERNAME_MAX, sanitizeUsername } from '@lib';
+import { ApiError, USERNAME_MAX, sanitizeUsername, toast } from '@lib';
 import { useAuthStore } from '@/store/authStore';
 
 const APP_VERSION = '15240093';
@@ -61,7 +61,9 @@ export function LoginPage() {
       setUser(user);
       navigate(ROUTES.home);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : t('auth.errGeneric'));
+      const message = err instanceof ApiError ? err.message : t('auth.errGeneric');
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }

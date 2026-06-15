@@ -48,6 +48,7 @@ export function MePanel() {
     try {
       await MeService.addComment(postId, { content });
       adjustCommentCount(postId, 1);
+      toast.success(t('me.commentSent'));
       return true;
     } catch {
       toast.error(t('me.commentSendError'));

@@ -8,7 +8,7 @@ import { TextField } from '@components/form/TextField';
 import { SubmitButton } from '@components/form/SubmitButton';
 import { LanguageSwitcher } from '@components/LanguageSwitcher';
 import { AuthService } from '@services';
-import { resolveAuthError, USERNAME_MAX, sanitizeUsername } from '@lib';
+import { resolveAuthError, USERNAME_MAX, sanitizeUsername, toast } from '@lib';
 
 const USERNAME_MIN = 6;
 const PASSWORD_MIN = 6;
@@ -52,9 +52,12 @@ export function RegisterPage() {
     setSubmitError(null);
     try {
       await AuthService.register({ username: data.username, password: data.password });
+      toast.success(t('register.success'));
       navigate(ROUTES.login);
     } catch (err) {
-      setSubmitError(resolveAuthError(err, t));
+      const message = resolveAuthError(err, t);
+      setSubmitError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }

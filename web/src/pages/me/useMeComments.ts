@@ -46,6 +46,7 @@ export function useMeComments(postId: string, options: UseMeCommentsOptions = {}
         setComments((current) => [...current, created]);
         setTotal((value) => value + 1);
         onDelta?.(1);
+        toast.success(i18n.t('me.commentSent'));
         return true;
       } catch (err) {
         console.error('add comment failed', err);
@@ -66,6 +67,7 @@ export function useMeComments(postId: string, options: UseMeCommentsOptions = {}
       try {
         await MeService.deleteComment(postId, commentId);
         onDelta?.(-1);
+        toast.success(i18n.t('me.commentDeleted'));
       } catch (err) {
         console.error('delete comment failed', err);
         setComments(snapshot);
