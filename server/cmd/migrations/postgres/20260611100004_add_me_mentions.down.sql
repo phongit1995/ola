@@ -1,0 +1,3 @@
+DROP INDEX IF EXISTS idx_me_mentions;
+
+ALTER TABLE me DROP COLUMN IF EXISTS mentions;

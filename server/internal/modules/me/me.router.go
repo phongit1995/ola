@@ -27,6 +27,7 @@ func (r *Router) Setup(api *utils.AppGroup) {
 		me.DELETE("/:id", r.controller.DeletePost)
 		me.POST("/:id/react", r.controller.React)
 		me.DELETE("/:id/react", r.controller.RemoveReaction)
+		me.GET("/:id/likers", r.controller.Likers)
 		me.POST("/:id/comments", r.controller.AddComment)
 		me.GET("/:id/comments", r.controller.ListComments)
 		me.DELETE("/:id/comments/:commentId", r.controller.DeleteComment)

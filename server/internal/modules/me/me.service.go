@@ -12,6 +12,7 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
 
@@ -52,16 +53,14 @@ func (s *Service) Create(userID uuid.UUID, req *CreatePostRequest) (*PostRespons
 		return nil, errors.New("post must have content or images")
 	}
 
-	visibility := models.PostVisibilityPublic
-	if req.Visibility == string(models.PostVisibilityPrivate) {
-		visibility = models.PostVisibilityPrivate
-	}
-
 	post := &models.Post{
 		AuthorID:   userID,
 		Content:    content,
 		Images:     toModelImages(req.Images),
-		Visibility: visibility,
+		Mentions:   s.resolveMentions(content),
+		CheckIn:    toModelCheckIn(req.CheckIn),
+		Sticker:    strings.TrimSpace(req.Sticker),
+		Visibility: parseVisibility(req.Visibility),
 	}
 	if err := s.repo.Create(post); err != nil {
 		return nil, err
@@ -86,6 +85,7 @@ func (s *Service) Update(userID, postID uuid.UUID, req *UpdatePostRequest) (*Pos
 
 	if req.Content != nil {
 		post.Content = strings.TrimSpace(*req.Content)
+		post.Mentions = s.resolveMentions(post.Content)
 	}
 	if req.Images != nil {
 		if len(*req.Images) > constants.MaxPostImages {
@@ -93,8 +93,14 @@ func (s *Service) Update(userID, postID uuid.UUID, req *UpdatePostRequest) (*Pos
 		}
 		post.Images = toModelImages(*req.Images)
 	}
+	if req.CheckIn != nil {
+		post.CheckIn = toModelCheckIn(req.CheckIn)
+	}
+	if req.Sticker != nil {
+		post.Sticker = strings.TrimSpace(*req.Sticker)
+	}
 	if req.Visibility != nil {
-		post.Visibility = models.PostVisibility(*req.Visibility)
+		post.Visibility = parseVisibility(*req.Visibility)
 	}
 	if strings.TrimSpace(post.Content) == "" && len(post.Images) == 0 {
 		return nil, errors.New("post must have content or images")
@@ -143,8 +149,25 @@ func (s *Service) Feed(viewerID uuid.UUID, limit, offset int) (*PostListResponse
 	return s.buildList(viewerID, posts, total, limit, offset)
 }
 
+func (s *Service) MentionsFeed(viewerID uuid.UUID, limit, offset int) (*PostListResponse, error) {
+	posts, total, err := s.repo.FeedMentions(viewerID, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	return s.buildList(viewerID, posts, total, limit, offset)
+}
+
+func (s *Service) MediaFeed(viewerID uuid.UUID, limit, offset int) (*PostListResponse, error) {
+	posts, total, err := s.repo.FeedMedia(viewerID, s.friendIDs(viewerID), limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	return s.buildList(viewerID, posts, total, limit, offset)
+}
+
 func (s *Service) ListMine(userID uuid.UUID, limit, offset int) (*PostListResponse, error) {
-	posts, total, err := s.repo.ListByAuthor(userID, true, limit, offset)
+	all := []models.PostVisibility{models.PostVisibilityPublic, models.PostVisibilityFriend, models.PostVisibilityPrivate}
+	posts, total, err := s.repo.ListByAuthor(userID, all, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -152,12 +175,45 @@ func (s *Service) ListMine(userID uuid.UUID, limit, offset int) (*PostListRespon
 }
 
 func (s *Service) ListByUser(viewerID, authorID uuid.UUID, limit, offset int) (*PostListResponse, error) {
-	includePrivate := viewerID == authorID || s.isFriend(viewerID, authorID)
-	posts, total, err := s.repo.ListByAuthor(authorID, includePrivate, limit, offset)
+	posts, total, err := s.repo.ListByAuthor(authorID, s.visibleScopes(viewerID, authorID), limit, offset)
 	if err != nil {
 		return nil, err
 	}
 	return s.buildList(viewerID, posts, total, limit, offset)
+}
+
+func (s *Service) visibleScopes(viewerID, authorID uuid.UUID) []models.PostVisibility {
+	if viewerID == authorID {
+		return []models.PostVisibility{models.PostVisibilityPublic, models.PostVisibilityFriend, models.PostVisibilityPrivate}
+	}
+	if s.isFriend(viewerID, authorID) {
+		return []models.PostVisibility{models.PostVisibilityPublic, models.PostVisibilityFriend}
+	}
+	return []models.PostVisibility{models.PostVisibilityPublic}
+}
+
+func (s *Service) Likers(viewerID, postID uuid.UUID, limit, offset int) (*LikerListResponse, error) {
+	post, err := s.getPost(postID)
+	if err != nil {
+		return nil, err
+	}
+	if !s.canView(viewerID, post) {
+		return nil, errors.New("post not found")
+	}
+	users, total, err := s.repo.ListLikers(postID, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	items := make([]AuthorResponse, 0, len(users))
+	for _, u := range users {
+		items = append(items, AuthorResponse{
+			ID:       u.ID.String(),
+			Username: u.Username,
+			FullName: u.FullName,
+			Avatar:   u.Avatar,
+		})
+	}
+	return &LikerListResponse{Items: items, Total: total, Limit: limit, Offset: offset}, nil
 }
 
 func (s *Service) React(userID, postID uuid.UUID, reactionType string) (*PostResponse, error) {
@@ -366,7 +422,21 @@ func (s *Service) canView(viewerID uuid.UUID, post *models.Post) bool {
 	if post.AuthorID == viewerID {
 		return true
 	}
-	return s.isFriend(viewerID, post.AuthorID)
+	if post.Visibility == models.PostVisibilityFriend {
+		return s.isFriend(viewerID, post.AuthorID)
+	}
+	return false
+}
+
+func parseVisibility(value string) models.PostVisibility {
+	switch value {
+	case string(models.PostVisibilityFriend):
+		return models.PostVisibilityFriend
+	case string(models.PostVisibilityPrivate):
+		return models.PostVisibilityPrivate
+	default:
+		return models.PostVisibilityPublic
+	}
 }
 
 func (s *Service) isFriend(a, b uuid.UUID) bool {
@@ -399,6 +469,70 @@ func (s *Service) myReaction(userID, postID uuid.UUID) *models.PostReactionType 
 		return nil
 	}
 	return &reaction.Type
+}
+
+var mentionPattern = regexp.MustCompile(`@([A-Za-z0-9_]+)`)
+
+func parseMentionUsernames(content string) []string {
+	matches := mentionPattern.FindAllStringSubmatch(content, -1)
+	seen := make(map[string]bool, len(matches))
+	names := make([]string, 0, len(matches))
+	for _, match := range matches {
+		name := match[1]
+		if !seen[name] {
+			seen[name] = true
+			names = append(names, name)
+		}
+	}
+	return names
+}
+
+func (s *Service) resolveMentions(content string) models.MentionIDs {
+	names := parseMentionUsernames(content)
+	if len(names) == 0 {
+		return nil
+	}
+	idMap, err := s.repo.FindUserIDsByUsernames(names)
+	if err != nil {
+		s.logger.Warnw("failed to resolve mentions", "error", err)
+		return nil
+	}
+	if len(idMap) == 0 {
+		return nil
+	}
+	ids := make(models.MentionIDs, 0, len(idMap))
+	for _, id := range idMap {
+		ids = append(ids, id.String())
+	}
+	return ids
+}
+
+func toModelCheckIn(input *CheckInInput) *models.CheckIn {
+	if input == nil {
+		return nil
+	}
+	name := strings.TrimSpace(input.Name)
+	if name == "" {
+		return nil
+	}
+	return &models.CheckIn{
+		Name:    name,
+		Address: strings.TrimSpace(input.Address),
+		Lat:     input.Lat,
+		Lng:     input.Lng,
+	}
+}
+
+func toCheckInResponse(checkIn *models.CheckIn) *CheckInResponse {
+	if checkIn == nil {
+		return nil
+	}
+	return &CheckInResponse{
+		Name:    checkIn.Name,
+		Address: checkIn.Address,
+		Lat:     checkIn.Lat,
+		Lng:     checkIn.Lng,
+	}
 }
 
 func toModelImages(inputs []PostImageInput) models.PostImages {
@@ -435,6 +569,9 @@ func toPostResponse(post *models.Post, myReaction *models.PostReactionType) Post
 		ID:           post.ID.String(),
 		Content:      post.Content,
 		Images:       images,
+		Mentions:     []string(post.Mentions),
+		CheckIn:      toCheckInResponse(post.CheckIn),
+		Sticker:      post.Sticker,
 		Visibility:   string(post.Visibility),
 		LikeCount:    post.LikeCount,
 		DislikeCount: post.DislikeCount,

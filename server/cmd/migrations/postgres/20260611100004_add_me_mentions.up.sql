@@ -1,0 +1,3 @@
+ALTER TABLE me ADD COLUMN IF NOT EXISTS mentions JSONB;
+
+CREATE INDEX IF NOT EXISTS idx_me_mentions ON me USING GIN (mentions) WHERE deleted_at IS NULL;

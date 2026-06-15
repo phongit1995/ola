@@ -1,29 +1,62 @@
 import { useRef, useState, type ChangeEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dialog, DialogButton } from '@components';
+import { CONTACTS } from '../../chat/data';
+import { Avatar } from '../../chat/components/Avatar';
 
-type Privacy = 'public' | 'friend' | 'private';
+type Privacy = 'public' | 'friend' | 'private' | 'clan';
+type AttachPanel = 'tag' | 'checkin' | 'sticker' | null;
+
+interface ComposedPost {
+  content: string;
+  photos: string[];
+  checkIn: string | null;
+  sticker: string | null;
+}
 
 interface MeComposerDialogProps {
   open: boolean;
   onClose: () => void;
-  onPost: (content: string, photos: string[]) => void;
+  onPost: (post: ComposedPost) => void;
 }
 
-const PRIVACY_OPTIONS: Privacy[] = ['public', 'friend', 'private'];
-const MAX_PHOTOS = 5;
+const PRIVACY_OPTIONS: Privacy[] = ['public', 'friend', 'private', 'clan'];
+const ATTACH_BUTTONS = [
+  { key: 'local', glyph: '📷', labelKey: 'me.attachLocal' },
+  { key: 'cloud', glyph: '☁️', labelKey: 'me.attachCloud' },
+  { key: 'tag', glyph: '🏷️', labelKey: 'me.attachTag' },
+  { key: 'checkin', glyph: '📍', labelKey: 'me.attachCheckIn' },
+  { key: 'sticker', glyph: '😊', labelKey: 'me.attachSticker' },
+] as const;
+const STICKERS = ['😀', '😍', '😎', '😢', '😡', '👍', '❤️', '🔥', '🎉', '🌹', '☀️', '⚽'];
+const VENUES = [
+  'The Coffee House',
+  'Vincom Center',
+  'Hồ Gươm',
+  'Sân vận động Mỹ Đình',
+  'Phố đi bộ Nguyễn Huệ',
+];
 
 export function MeComposerDialog({ open, onClose, onPost }: MeComposerDialogProps) {
   const { t } = useTranslation();
   const [content, setContent] = useState('');
   const [privacy, setPrivacy] = useState<Privacy>('public');
   const [photos, setPhotos] = useState<string[]>([]);
+  const [checkIn, setCheckIn] = useState<string | null>(null);
+  const [sticker, setSticker] = useState<string | null>(null);
+  const [postToMe, setPostToMe] = useState(false);
+  const [panel, setPanel] = useState<AttachPanel>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   function reset() {
     setContent('');
     setPrivacy('public');
     setPhotos([]);
+    setCheckIn(null);
+    setSticker(null);
+    setPostToMe(false);
+    setPanel(null);
   }
 
   function handleClose() {
@@ -36,11 +69,10 @@ export function MeComposerDialog({ open, onClose, onPost }: MeComposerDialogProp
     const files = Array.from(event.target.files ?? []);
     event.target.value = '';
     if (files.length === 0) return;
-    setPhotos((current) => {
-      const room = MAX_PHOTOS - current.length;
-      const added = files.slice(0, room).map((file) => URL.createObjectURL(file));
-      return [...current, ...added];
-    });
+    setPhotos((current) => [
+      ...current,
+      ...files.map((file) => URL.createObjectURL(file)),
+    ]);
   }
 
   function removePhoto(url: string) {
@@ -48,10 +80,32 @@ export function MeComposerDialog({ open, onClose, onPost }: MeComposerDialogProp
     setPhotos((current) => current.filter((item) => item !== url));
   }
 
+  function insertMention(nick: string) {
+    const mention = ` @${nick}`;
+    const el = textareaRef.current;
+    setContent((current) => {
+      if (el == null) return current + mention;
+      const at = el.selectionStart ?? current.length;
+      return current.slice(0, at) + mention + current.slice(at);
+    });
+  }
+
+  function togglePanel(next: AttachPanel) {
+    setPanel((current) => (current === next ? null : next));
+  }
+
+  function handleAttach(key: (typeof ATTACH_BUTTONS)[number]['key']) {
+    if (key === 'local' || key === 'cloud') {
+      fileInputRef.current?.click();
+      return;
+    }
+    togglePanel(key);
+  }
+
   function submit() {
     const text = content.trim();
-    if (text === '' && photos.length === 0) return;
-    onPost(text, photos);
+    if (text === '' && photos.length === 0 && sticker == null && checkIn == null) return;
+    onPost({ content: text, photos, checkIn, sticker });
     reset();
   }
 
@@ -71,21 +125,35 @@ export function MeComposerDialog({ open, onClose, onPost }: MeComposerDialogProp
         </>
       }
     >
-      <label className="flex items-center gap-2 text-sm text-black/54">
-        {t('me.privacyTo')}
-        <select
-          value={privacy}
-          onChange={(event) => setPrivacy(event.target.value as Privacy)}
-          className="rounded border border-black/12 px-2 py-1 text-black/87 outline-none"
-        >
-          {PRIVACY_OPTIONS.map((option) => (
-            <option key={option} value={option}>
-              {t(`me.privacy_${option}` as 'me.privacy_public')}
-            </option>
-          ))}
-        </select>
+      <div className="flex items-center gap-2 text-sm text-black/54">
+        <label className="flex items-center gap-2">
+          {t('me.privacyTo')}
+          <select
+            value={privacy}
+            onChange={(event) => setPrivacy(event.target.value as Privacy)}
+            className="rounded border border-black/12 px-2 py-1 text-black/87 outline-none"
+          >
+            {PRIVACY_OPTIONS.map((option) => (
+              <option key={option} value={option}>
+                {t(`me.privacy_${option}` as 'me.privacy_public')}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+
+      <label className="mt-2 flex items-center gap-2 text-sm text-black/54">
+        <input
+          type="checkbox"
+          checked={postToMe}
+          onChange={(event) => setPostToMe(event.target.checked)}
+          className="h-4 w-4 accent-ola-primary"
+        />
+        {t('me.postToMePage')}
       </label>
+
       <textarea
+        ref={textareaRef}
         value={content}
         onChange={(event) => setContent(event.target.value)}
         placeholder={t('me.composerHint')}
@@ -93,12 +161,39 @@ export function MeComposerDialog({ open, onClose, onPost }: MeComposerDialogProp
         className="mt-3 w-full resize-none rounded-md border border-black/12 px-3 py-2 text-sm text-black/87 outline-none focus:border-ola-primary"
       />
 
+      {sticker != null && (
+        <div className="mt-2 flex items-center gap-2">
+          <span className="text-5xl">{sticker}</span>
+          <button
+            type="button"
+            onClick={() => setSticker(null)}
+            className="text-xs text-ola-error"
+          >
+            {t('me.removePhoto')}
+          </button>
+        </div>
+      )}
+
+      {checkIn != null && (
+        <div className="mt-2 flex items-center gap-1 text-sm text-black/54">
+          <span>📍</span>
+          <span className="flex-1 truncate">{checkIn}</span>
+          <button
+            type="button"
+            onClick={() => setCheckIn(null)}
+            className="text-xs text-ola-error"
+          >
+            {t('me.removePhoto')}
+          </button>
+        </div>
+      )}
+
       {photos.length > 0 && (
-        <div className="mt-3 grid grid-cols-3 gap-2">
+        <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
           {photos.map((url) => (
             <div
               key={url}
-              className="relative aspect-square overflow-hidden rounded-md border border-black/12"
+              className="relative h-20 w-20 shrink-0 overflow-hidden rounded-md border border-black/12"
             >
               <img src={url} alt="" className="h-full w-full object-cover" />
               <button
@@ -114,6 +209,76 @@ export function MeComposerDialog({ open, onClose, onPost }: MeComposerDialogProp
         </div>
       )}
 
+      <div className="mt-3 flex justify-around border-t border-black/12 pt-2">
+        {ATTACH_BUTTONS.map((button) => (
+          <button
+            key={button.key}
+            type="button"
+            aria-label={t(button.labelKey)}
+            onClick={() => handleAttach(button.key)}
+            className={`flex flex-col items-center gap-0.5 text-xs ${
+              panel === button.key ? 'text-ola-primary' : 'text-black/54'
+            }`}
+          >
+            <span className="text-2xl leading-none">{button.glyph}</span>
+            {t(button.labelKey)}
+          </button>
+        ))}
+      </div>
+
+      {panel === 'tag' && (
+        <div className="mt-2 max-h-44 overflow-y-auto rounded-md border border-black/12">
+          {CONTACTS.map((contact) => (
+            <button
+              key={contact.name}
+              type="button"
+              onClick={() => insertMention(contact.name)}
+              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-ola-primary-light"
+            >
+              <Avatar name={contact.name} color={contact.color} size={28} />
+              <span className="text-black/87">@{contact.name}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {panel === 'checkin' && (
+        <div className="mt-2 overflow-hidden rounded-md border border-black/12">
+          {VENUES.map((venue) => (
+            <button
+              key={venue}
+              type="button"
+              onClick={() => {
+                setCheckIn(venue);
+                setPanel(null);
+              }}
+              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-black/87 hover:bg-ola-primary-light"
+            >
+              <span>📍</span>
+              {venue}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {panel === 'sticker' && (
+        <div className="mt-2 grid grid-cols-6 gap-1 rounded-md border border-black/12 p-2">
+          {STICKERS.map((item) => (
+            <button
+              key={item}
+              type="button"
+              onClick={() => {
+                setSticker(item);
+                setPanel(null);
+              }}
+              className="flex h-10 items-center justify-center rounded text-2xl hover:bg-gray-100"
+            >
+              {item}
+            </button>
+          ))}
+        </div>
+      )}
+
       <input
         ref={fileInputRef}
         type="file"
@@ -122,15 +287,6 @@ export function MeComposerDialog({ open, onClose, onPost }: MeComposerDialogProp
         hidden
         onChange={pickPhotos}
       />
-      <button
-        type="button"
-        onClick={() => fileInputRef.current?.click()}
-        disabled={photos.length >= MAX_PHOTOS}
-        className="mt-3 flex items-center gap-2 rounded-md border border-dashed border-black/24 px-3 py-2 text-sm text-black/54 disabled:opacity-40"
-      >
-        <span className="text-lg leading-none">＋</span>
-        {t('me.addPhoto')} ({photos.length}/{MAX_PHOTOS})
-      </button>
     </Dialog>
   );
 }

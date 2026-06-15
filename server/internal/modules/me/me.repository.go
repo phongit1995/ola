@@ -1,6 +1,7 @@
 package me
 
 import (
+	"encoding/json"
 	"errors"
 
 	"ola-chat-server/internal/models"
@@ -50,25 +51,70 @@ func (r *Repository) paginate(db *gorm.DB, limit, offset int) ([]*models.Post, i
 	return posts, total, nil
 }
 
-func (r *Repository) Feed(viewerID uuid.UUID, friendIDs []uuid.UUID, limit, offset int) ([]*models.Post, int64, error) {
+func (r *Repository) feedScope(viewerID uuid.UUID, friendIDs []uuid.UUID) *gorm.DB {
 	db := r.db.Model(&models.Post{})
 	if len(friendIDs) > 0 {
-		db = db.Where(
+		return db.Where(
 			"visibility = ? OR author_id = ? OR (visibility = ? AND author_id IN ?)",
-			models.PostVisibilityPublic, viewerID, models.PostVisibilityPrivate, friendIDs,
+			models.PostVisibilityPublic, viewerID, models.PostVisibilityFriend, friendIDs,
 		)
-	} else {
-		db = db.Where("visibility = ? OR author_id = ?", models.PostVisibilityPublic, viewerID)
 	}
+	return db.Where("visibility = ? OR author_id = ?", models.PostVisibilityPublic, viewerID)
+}
+
+func (r *Repository) Feed(viewerID uuid.UUID, friendIDs []uuid.UUID, limit, offset int) ([]*models.Post, int64, error) {
+	return r.paginate(r.feedScope(viewerID, friendIDs), limit, offset)
+}
+
+func (r *Repository) FeedMedia(viewerID uuid.UUID, friendIDs []uuid.UUID, limit, offset int) ([]*models.Post, int64, error) {
+	db := r.feedScope(viewerID, friendIDs).Where("jsonb_array_length(images) > 0")
 	return r.paginate(db, limit, offset)
 }
 
-func (r *Repository) ListByAuthor(authorID uuid.UUID, includePrivate bool, limit, offset int) ([]*models.Post, int64, error) {
-	db := r.db.Model(&models.Post{}).Where("author_id = ?", authorID)
-	if !includePrivate {
-		db = db.Where("visibility = ?", models.PostVisibilityPublic)
-	}
+func (r *Repository) ListByAuthor(authorID uuid.UUID, visibilities []models.PostVisibility, limit, offset int) ([]*models.Post, int64, error) {
+	db := r.db.Model(&models.Post{}).Where("author_id = ? AND visibility IN ?", authorID, visibilities)
 	return r.paginate(db, limit, offset)
+}
+
+func (r *Repository) FeedMentions(viewerID uuid.UUID, limit, offset int) ([]*models.Post, int64, error) {
+	target, err := json.Marshal([]string{viewerID.String()})
+	if err != nil {
+		return nil, 0, err
+	}
+	db := r.db.Model(&models.Post{}).Where("mentions @> ?", string(target))
+	return r.paginate(db, limit, offset)
+}
+
+func (r *Repository) ListLikers(postID uuid.UUID, limit, offset int) ([]*models.User, int64, error) {
+	base := r.db.Model(&models.User{}).
+		Joins("JOIN me_reactions ON me_reactions.user_id = users.id").
+		Where("me_reactions.post_id = ? AND me_reactions.type = ?", postID, models.PostReactionLike)
+
+	var total int64
+	if err := base.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	var users []*models.User
+	if err := base.Order("me_reactions.created_at DESC").Limit(limit).Offset(offset).Find(&users).Error; err != nil {
+		return nil, 0, err
+	}
+	return users, total, nil
+}
+
+func (r *Repository) FindUserIDsByUsernames(names []string) (map[string]uuid.UUID, error) {
+	result := make(map[string]uuid.UUID)
+	if len(names) == 0 {
+		return result, nil
+	}
+	var users []models.User
+	if err := r.db.Select("id", "username").Where("username IN ?", names).Find(&users).Error; err != nil {
+		return nil, err
+	}
+	for _, u := range users {
+		result[u.Username] = u.ID
+	}
+	return result, nil
 }
 
 func (r *Repository) GetReaction(postID, userID uuid.UUID) (*models.PostReaction, error) {

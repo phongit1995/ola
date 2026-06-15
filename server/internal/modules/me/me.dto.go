@@ -7,16 +7,34 @@ type PostImageInput struct {
 	MimeType string `json:"mimeType" binding:"omitempty"`
 }
 
+type CheckInInput struct {
+	Name    string  `json:"name" binding:"required,max=255" example:"The Coffee House"`
+	Address string  `json:"address" binding:"omitempty,max=500" example:"86-88 Cao Thắng, Q3"`
+	Lat     float64 `json:"lat" binding:"omitempty,latitude" example:"10.771"`
+	Lng     float64 `json:"lng" binding:"omitempty,longitude" example:"106.682"`
+}
+
 type CreatePostRequest struct {
 	Content    string           `json:"content" binding:"omitempty,max=5000" example:"Hôm nay trời đẹp quá!"`
 	Images     []PostImageInput `json:"images" binding:"omitempty,max=5,dive"`
-	Visibility string           `json:"visibility" binding:"omitempty,oneof=public private" example:"public"`
+	CheckIn    *CheckInInput    `json:"checkIn" binding:"omitempty"`
+	Sticker    string           `json:"sticker" binding:"omitempty,max=500"`
+	Visibility string           `json:"visibility" binding:"omitempty,oneof=public friend private" example:"public"`
 }
 
 type UpdatePostRequest struct {
 	Content    *string           `json:"content" binding:"omitempty,max=5000"`
 	Images     *[]PostImageInput `json:"images" binding:"omitempty,max=5,dive"`
-	Visibility *string           `json:"visibility" binding:"omitempty,oneof=public private"`
+	CheckIn    *CheckInInput     `json:"checkIn" binding:"omitempty"`
+	Sticker    *string           `json:"sticker" binding:"omitempty,max=500"`
+	Visibility *string           `json:"visibility" binding:"omitempty,oneof=public friend private"`
+}
+
+type CheckInResponse struct {
+	Name    string  `json:"name"`
+	Address string  `json:"address,omitempty"`
+	Lat     float64 `json:"lat,omitempty"`
+	Lng     float64 `json:"lng,omitempty"`
 }
 
 type ReactRequest struct {
@@ -41,6 +59,9 @@ type PostResponse struct {
 	ID           string              `json:"id"`
 	Content      string              `json:"content,omitempty"`
 	Images       []PostImageResponse `json:"images"`
+	Mentions     []string            `json:"mentions,omitempty"`
+	CheckIn      *CheckInResponse    `json:"checkIn,omitempty"`
+	Sticker      string              `json:"sticker,omitempty"`
 	Visibility   string              `json:"visibility"`
 	LikeCount    int                 `json:"likeCount"`
 	DislikeCount int                 `json:"dislikeCount"`
@@ -56,6 +77,13 @@ type PostListResponse struct {
 	Total  int64          `json:"total"`
 	Limit  int            `json:"limit"`
 	Offset int            `json:"offset"`
+}
+
+type LikerListResponse struct {
+	Items  []AuthorResponse `json:"items"`
+	Total  int64            `json:"total"`
+	Limit  int              `json:"limit"`
+	Offset int              `json:"offset"`
 }
 
 type CreateCommentRequest struct {

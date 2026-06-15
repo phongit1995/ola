@@ -248,6 +248,75 @@ Code render bài (`entry/b/*.java`) set **động** cả icon lẫn màu chữ, 
 | Gợi ý kết bạn / ảnh | `me_entry_suggested_friend_layout`, `me_entry_suggested_photo_layout` |
 | Quảng cáo | `me_entry_advertisment_general_me_layout`, `_software_me_layout`, `me_entry_admob_native_layout` |
 
+### 4.4. Tô màu `@nick` và `#tag` trong nội dung
+
+Nội dung (`txtMeItemContent`, CommpressTextView) **không hiển thị `@nick`/`#tag` dạng text thường** — chúng được parse và bọc thành **ClickableSpan có màu** trong [`util/i.java`](../../../jadx_out/sources/chat/ola/vn/util/i.java):
+
+- Regex mention: `e = (\B@((?:[a-zA-Z][a-zA-Z0-9_]*[.]?[a-zA-Z0-9_]*[a-zA-Z0-9])))` → bắt `@nick`
+- Regex hashtag: `d = (\B#((?:[a-zA-Z0-9][a-zA-Z0-9_.]*[a-zA-Z0-9])))` → bắt `#clan`/`#tag`
+- Mỗi match → `com.mg.ola.common.d.a.a(màu, …)` (clickable). Bấm → mở trang Me của nick/clan đó.
+
+| Ngữ cảnh | Màu chữ `@nick` / `#tag` | Token |
+|----------|--------------------------|-------|
+| Bài trên **nền sáng** (card trắng — mặc định) | **`#33691E`** | `colorOlaPrimaryDarkMore` (`f.a`) — **xanh lá đậm** |
+| Bài trên **nền tối / nền ảnh** | `#FFFFFF` | trắng (`f.g`) |
+
+> Đây là **xanh lá** (không phải xanh dương). URL/RSS/file link trong nội dung cũng được tô cùng màu này. Click span gọi `OlaTextView.b.a(view, null, "@nick")`.
+
+### 4.5. Hiển thị ảnh đính kèm (`me_attached_media_layout.xml`)
+
+Lưới ảnh nằm trong `meMediaAttachedViewStub`, gắn từ `me_attached_media_layout` — **bố cục cố định 2 hàng** (`thumbnailSpan`, dọc), khoảng cách **8dp**:
+
+```
+┌───────────────┬───────────────┐
+│ mediaImageView1│ mediaImageView2│   ← hàng trên: 2 ô, OlaRatioImageView (giữ tỉ lệ), weight 1
+├──────────┬──────────┬──────────┤
+│ media3   │ media4   │ media5 + "+N"│ ← hàng dưới: 3 ô vuông, OlaSquareCachedImageView, weight 1
+└──────────┴──────────┴────────────┘
+```
+
+- Tối đa hiển thị **5 thumbnail**; nếu nhiều hơn 5 → ô thứ 5 (`theTenViewLayout`) phủ overlay `moreMediaTextView` = **"+N"** (số ảnh còn lại).
+- Ô 1–2: `OlaRatioImageView` (giữ tỉ lệ gốc); ô 3–5: `OlaSquareCachedImageView` (cắt vuông).
+- Số ô hiển thị tuỳ số ảnh thật (code ẩn các ô thừa); 1 ảnh → 1 ô rộng.
+- Bộ đếm video/audio (`imgMeItemMediaVideo`/`imgMeItemMediaSound`) nằm ở phần nút (mục 4.2), không nằm trong lưới ảnh.
+
+### 4.6. Hiển thị check-in / địa điểm (`me_entry_venue_layout`)
+
+Check-in nằm trong `meCheckInViewStub`. Code chọn 1 trong 2 layout ([entry/b/ab.java:218–239](../../../jadx_out/sources/chat/ola/vn/entry/b/ab.java#L218)):
+
+- **`me_entry_venue_layout`** — check-in **không kèm media**: là **thẻ ảnh bìa địa điểm** (`imCheckInCover` phủ kín) + lớp phủ đen **50%** (`translucent_black_50_percent` = `rgba(0,0,0,.5)`) chứa hàng thông tin.
+- **`me_entry_venue_with_mediacodes_layout`** — check-in **kèm ảnh**: cùng hàng thông tin nhưng đặt **đè lên lưới media** (không có ảnh bìa riêng).
+
+Hàng thông tin (trên nền phủ đen, padding 4dp, chữ **trắng**):
+
+| View | Kiểu | Nội dung |
+|------|------|----------|
+| `imgCheckInAction` | icon (mặc định `ic_check_in_action_default`) | biểu tượng hành động/loại địa điểm |
+| `txtCheckInAction` | `AutoScrollTextView`, **headline 24sp**, trắng, weight 2 | hành động (vd "đang ở", loại check-in) — tự cuộn nếu dài |
+| `txtCheckInVenueName` | `TextView`, **body1 14sp**, trắng, weight 1 | **tên địa điểm** |
+| `btnDetail` | `ImageView` `ic_arrow_right_white` | → mở chi tiết địa điểm (`OlaVenueDetailActivity`) |
+
+> Ảnh bìa (`imCheckInCover`) nạp từ media code đầu của check-in; icon hành động (`imgCheckInAction`) nạp từ `OlaCheckInItemEntity` (mặc định `ic_check_in_item_default`). Toàn khối bấm được → mở chi tiết venue.
+
+#### CSS tương đương — check-in card
+
+```css
+.ola-me-checkin {
+  position: relative; margin: 0 16px; border-radius: 2px; overflow: hidden;
+}
+.ola-me-checkin__cover { width: 100%; display: block; object-fit: cover; }
+.ola-me-checkin__bar {
+  position: absolute; inset: auto 0 0 0;            /* hoặc phủ toàn khối */
+  display: flex; align-items: center; gap: 4px; padding: 4px 8px;
+  background: rgba(0,0,0,.5);                        /* translucent_black_50_percent */
+  color: #fff;
+}
+.ola-me-checkin__icon { width: 24px; height: 24px; }
+.ola-me-checkin__action { flex: 2; font-size: 24px; }     /* headline, AutoScroll khi dài */
+.ola-me-checkin__venue  { flex: 1; font-size: 14px; }     /* body1 */
+.ola-me-checkin__detail { width: 16px; }                  /* ic_arrow_right_white */
+```
+
 ## 5. Trang cá nhân (`OlaUserMePageActivity` / `ola_user_me_page_header_layout.xml`)
 
 > 📄 **Tài liệu chi tiết riêng:** [trang-ca-nhan/README.md](../trang-ca-nhan/README.md) — đầy đủ 5 nút quan hệ, menu "Khác", mọi vùng bấm, icon & token. Dưới đây là bản tóm tắt.

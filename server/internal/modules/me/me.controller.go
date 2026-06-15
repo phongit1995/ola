@@ -81,6 +81,7 @@ func (ctrl *Controller) Create(c *gin.Context) (interface{}, error) {
 // @Security     BearerAuth
 // @Param        limit query int false "Page size"
 // @Param        offset query int false "Offset"
+// @Param        filter query string false "Set to 'mentions' (posts mentioning viewer) or 'media' (posts with images)"
 // @Success      200  {object}  utils.BaseResponse[PostListResponse]
 // @Router       /me [get]
 func (ctrl *Controller) Feed(c *gin.Context) (interface{}, error) {
@@ -90,6 +91,20 @@ func (ctrl *Controller) Feed(c *gin.Context) (interface{}, error) {
 	}
 	limit := utils.ParseLimit(c, 20, 100)
 	offset := utils.ParseOffset(c)
+	switch c.Query("filter") {
+	case "mentions":
+		resp, err := ctrl.service.MentionsFeed(userID, limit, offset)
+		if err != nil {
+			return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		}
+		return resp, nil
+	case "media":
+		resp, err := ctrl.service.MediaFeed(userID, limit, offset)
+		if err != nil {
+			return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+		}
+		return resp, nil
+	}
 	resp, err := ctrl.service.Feed(userID, limit, offset)
 	if err != nil {
 		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
@@ -363,4 +378,32 @@ func (ctrl *Controller) RemoveReaction(c *gin.Context) (interface{}, error) {
 		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
 	}
 	return utils.NewHandlerResult(resp, http.StatusOK), nil
+}
+
+// Likers godoc
+// @Summary      List users who liked a post
+// @Tags         me
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "Post ID"
+// @Param        limit query int false "Page size"
+// @Param        offset query int false "Offset"
+// @Success      200  {object}  utils.BaseResponse[LikerListResponse]
+// @Router       /me/{id}/likers [get]
+func (ctrl *Controller) Likers(c *gin.Context) (interface{}, error) {
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		return nil, utils.NewHTTPError(http.StatusUnauthorized, "unauthorized")
+	}
+	id, err := parseID(c)
+	if err != nil {
+		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid post id")
+	}
+	limit := utils.ParseLimit(c, 20, 100)
+	offset := utils.ParseOffset(c)
+	resp, err := ctrl.service.Likers(userID, id, limit, offset)
+	if err != nil {
+		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+	}
+	return resp, nil
 }

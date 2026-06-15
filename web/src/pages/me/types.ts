@@ -6,6 +6,7 @@ export interface MePost {
   content: string;
   image: string | null;
   photos?: string[];
+  checkIn?: string | null;
   comments: number;
   likes: number;
   likers: string[];

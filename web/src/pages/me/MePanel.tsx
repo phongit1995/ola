@@ -69,7 +69,12 @@ export function MePanel() {
     );
   }
 
-  function addPost(content: string, photos: string[]) {
+  function addPost(post: {
+    content: string;
+    photos: string[];
+    checkIn: string | null;
+    sticker: string | null;
+  }) {
     composedPostSeed += 1;
     setComposerOpen(false);
     setPosts((current) => [
@@ -78,9 +83,10 @@ export function MePanel() {
         author: displayName,
         color: '#7cb342',
         time: t('me.justNow'),
-        content,
-        image: null,
-        photos,
+        content: post.content,
+        image: post.sticker,
+        photos: post.photos,
+        checkIn: post.checkIn,
         comments: 0,
         likes: 0,
         likers: [],
