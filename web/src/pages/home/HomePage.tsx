@@ -15,9 +15,21 @@ const PANELS: Record<TabKey, ComponentType> = {
   apps: AppsPanel,
 };
 
+const ACTIVE_TAB_KEY = 'home.activeTab';
+
+function readStoredTab(): TabKey {
+  const stored = sessionStorage.getItem(ACTIVE_TAB_KEY);
+  return stored != null && stored in PANELS ? (stored as TabKey) : 'chat';
+}
+
 export function HomePage() {
-  const [tab, setTab] = useState<TabKey>('chat');
+  const [tab, setTab] = useState<TabKey>(readStoredTab);
   const ActivePanel = PANELS[tab];
+
+  function changeTab(next: TabKey) {
+    sessionStorage.setItem(ACTIVE_TAB_KEY, next);
+    setTab(next);
+  }
 
   useEffect(() => {
     SocketService.connect();
@@ -28,7 +40,7 @@ export function HomePage() {
     <div className="flex h-screen flex-col bg-white font-sans">
       <ActivePanel />
 
-      <BottomTabBar active={tab} onChange={setTab} badges={{ chat: 3 }} />
+      <BottomTabBar active={tab} onChange={changeTab} badges={{ chat: 3 }} />
     </div>
   );
 }

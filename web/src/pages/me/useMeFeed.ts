@@ -41,6 +41,8 @@ export function useMeFeed() {
                 address: draft.checkIn.address,
                 lat: draft.checkIn.lat,
                 lng: draft.checkIn.lng,
+                action: draft.checkIn.action,
+                actionIcon: draft.checkIn.actionIcon,
               }
             : undefined,
           sticker: draft.sticker ?? undefined,

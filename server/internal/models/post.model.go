@@ -45,10 +45,12 @@ func (p *PostImages) Scan(value interface{}) error {
 }
 
 type CheckIn struct {
-	Name    string  `json:"name"`
-	Address string  `json:"address,omitempty"`
-	Lat     float64 `json:"lat,omitempty"`
-	Lng     float64 `json:"lng,omitempty"`
+	Name       string  `json:"name"`
+	Address    string  `json:"address,omitempty"`
+	Lat        float64 `json:"lat,omitempty"`
+	Lng        float64 `json:"lng,omitempty"`
+	Action     string  `json:"action,omitempty"`
+	ActionIcon string  `json:"actionIcon,omitempty"`
 }
 
 func (c *CheckIn) Value() (driver.Value, error) {

@@ -8,7 +8,7 @@ export interface GeoVenue {
 }
 
 const PLACES_URL = 'https://api.geoapify.com/v2/places';
-const STATIC_MAP_URL = 'https://maps.geoapify.com/v1/staticmap';
+const REVERSE_URL = 'https://api.geoapify.com/v1/geocode/reverse';
 const NEARBY_CATEGORIES = 'catering,commercial,leisure,tourism,accommodation,education,office';
 
 export class GeoService {
@@ -45,18 +45,24 @@ export class GeoService {
     return venues;
   }
 
-  static staticMap(lat: number, lng: number, width = 600, height = 240): string {
-    if (!this.enabled) return '';
+  static async reverse(lat: number, lng: number): Promise<GeoVenue | null> {
+    if (!this.enabled) return null;
     const params = new URLSearchParams({
-      style: 'osm-bright',
-      width: String(width),
-      height: String(height),
-      center: `lonlat:${lng},${lat}`,
-      zoom: '15',
-      marker: `lonlat:${lng},${lat};type:material;color:%23e63946;size:medium`,
+      lat: String(lat),
+      lon: String(lng),
       apiKey: env.geoapifyKey,
     });
-    return `${STATIC_MAP_URL}?${params.toString()}`;
+    const res = await fetch(`${REVERSE_URL}?${params.toString()}`);
+    if (!res.ok) throw new Error(`geoapify reverse ${res.status}`);
+    const json = (await res.json()) as { features?: GeoFeature[] };
+    const p = json.features?.[0]?.properties;
+    if (p == null) return null;
+    const name = p.name ?? p.street ?? p.address_line1 ?? p.formatted ?? '';
+    return { name, address: p.formatted ?? '', lat, lng };
+  }
+
+  static mapLink(lat: number, lng: number): string {
+    return `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
   }
 }
 
@@ -65,6 +71,7 @@ interface GeoFeature {
     name?: string;
     street?: string;
     formatted?: string;
+    address_line1?: string;
     address_line2?: string;
     lat: number;
     lon: number;

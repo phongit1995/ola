@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import moreIcon from '@/assets/icons/me/ic_more.png';
 import replyIcon from '@/assets/icons/me/ic_action_reply_gray.png';
@@ -8,6 +9,7 @@ import likeIconActive from '@/assets/icons/me/ic_like_selected.png';
 import { Avatar } from '../../chat/components/Avatar';
 import { PostContent } from './PostContent';
 import { MediaGrid } from './MediaGrid';
+import { MediaViewer } from './MediaViewer';
 import { CheckInCard } from './CheckInCard';
 import { stickerImage } from '../stickers';
 import type { MePost } from '../types';
@@ -26,6 +28,7 @@ export function MePostCard({
   onOpenProfile,
 }: MePostCardProps) {
   const { t } = useTranslation();
+  const [viewerIndex, setViewerIndex] = useState<number | null>(null);
 
   return (
     <article className="mb-2 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.18)]">
@@ -64,7 +67,17 @@ export function MePostCard({
 
       {post.checkIn != null && <CheckInCard checkIn={post.checkIn} label={t('me.postMenu')} />}
 
-      {post.photos != null && post.photos.length > 0 && <MediaGrid photos={post.photos} />}
+      {post.photos != null && post.photos.length > 0 && (
+        <MediaGrid photos={post.photos} onOpen={setViewerIndex} />
+      )}
+
+      {viewerIndex != null && post.photos != null && (
+        <MediaViewer
+          photos={post.photos}
+          index={viewerIndex}
+          onClose={() => setViewerIndex(null)}
+        />
+      )}
 
       <div className="mx-4 mt-4 flex items-end gap-1 text-xs text-black/54">
         <span className="flex-1">

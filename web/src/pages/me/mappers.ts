@@ -39,6 +39,8 @@ export function toMePost(post: Post, formatTime: (iso: string) => string): MePos
         address: post.checkIn.address,
         lat: post.checkIn.lat,
         lng: post.checkIn.lng,
+        action: post.checkIn.action,
+        actionIcon: post.checkIn.actionIcon,
       }
     : null;
   return {

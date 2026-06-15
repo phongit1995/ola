@@ -9,6 +9,8 @@ export interface PostCheckIn {
   address?: string;
   lat?: number;
   lng?: number;
+  action?: string;
+  actionIcon?: string;
 }
 
 export interface PostImage {

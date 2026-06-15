@@ -8,10 +8,12 @@ type PostImageInput struct {
 }
 
 type CheckInInput struct {
-	Name    string  `json:"name" binding:"required,max=255" example:"The Coffee House"`
-	Address string  `json:"address" binding:"omitempty,max=500" example:"86-88 Cao Thắng, Q3"`
-	Lat     float64 `json:"lat" binding:"omitempty,latitude" example:"10.771"`
-	Lng     float64 `json:"lng" binding:"omitempty,longitude" example:"106.682"`
+	Name       string  `json:"name" binding:"required,max=255" example:"The Coffee House"`
+	Address    string  `json:"address" binding:"omitempty,max=500" example:"86-88 Cao Thắng, Q3"`
+	Lat        float64 `json:"lat" binding:"omitempty,latitude" example:"10.771"`
+	Lng        float64 `json:"lng" binding:"omitempty,longitude" example:"106.682"`
+	Action     string  `json:"action" binding:"omitempty,max=100" example:"Đang ăn"`
+	ActionIcon string  `json:"actionIcon" binding:"omitempty,max=16" example:"🍜"`
 }
 
 type CreatePostRequest struct {
@@ -31,10 +33,12 @@ type UpdatePostRequest struct {
 }
 
 type CheckInResponse struct {
-	Name    string  `json:"name"`
-	Address string  `json:"address,omitempty"`
-	Lat     float64 `json:"lat,omitempty"`
-	Lng     float64 `json:"lng,omitempty"`
+	Name       string  `json:"name"`
+	Address    string  `json:"address,omitempty"`
+	Lat        float64 `json:"lat,omitempty"`
+	Lng        float64 `json:"lng,omitempty"`
+	Action     string  `json:"action,omitempty"`
+	ActionIcon string  `json:"actionIcon,omitempty"`
 }
 
 type ReactRequest struct {

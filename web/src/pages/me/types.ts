@@ -3,6 +3,8 @@ export interface MeCheckIn {
   address?: string;
   lat?: number;
   lng?: number;
+  action?: string;
+  actionIcon?: string;
 }
 
 export interface MePost {

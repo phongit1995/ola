@@ -510,10 +510,12 @@ func toModelCheckIn(input *CheckInInput) *models.CheckIn {
 		return nil
 	}
 	return &models.CheckIn{
-		Name:    name,
-		Address: strings.TrimSpace(input.Address),
-		Lat:     input.Lat,
-		Lng:     input.Lng,
+		Name:       name,
+		Address:    strings.TrimSpace(input.Address),
+		Lat:        input.Lat,
+		Lng:        input.Lng,
+		Action:     strings.TrimSpace(input.Action),
+		ActionIcon: strings.TrimSpace(input.ActionIcon),
 	}
 }
 
@@ -522,10 +524,12 @@ func toCheckInResponse(checkIn *models.CheckIn) *CheckInResponse {
 		return nil
 	}
 	return &CheckInResponse{
-		Name:    checkIn.Name,
-		Address: checkIn.Address,
-		Lat:     checkIn.Lat,
-		Lng:     checkIn.Lng,
+		Name:       checkIn.Name,
+		Address:    checkIn.Address,
+		Lat:        checkIn.Lat,
+		Lng:        checkIn.Lng,
+		Action:     checkIn.Action,
+		ActionIcon: checkIn.ActionIcon,
 	}
 }
 
