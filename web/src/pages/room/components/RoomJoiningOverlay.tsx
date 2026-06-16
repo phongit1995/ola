@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import type { RoomChatStatus } from '@/store/roomChatStore';
-import { RoomHeader } from './RoomHeader';
+import { ScreenHeader, FullScreenOverlay } from '@components';
 
 interface RoomJoiningOverlayProps {
   name: string;
@@ -13,8 +13,8 @@ export function RoomJoiningOverlay({ name, status, onClose }: RoomJoiningOverlay
   const isError = status === 'error';
 
   return (
-    <div className="absolute inset-0 z-40 flex flex-col bg-[#eceff1]">
-      <RoomHeader name={name} onBack={onClose} />
+    <FullScreenOverlay position="absolute">
+      <ScreenHeader title={name} onBack={onClose} align="center" />
 
       <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
         {isError ? (
@@ -35,6 +35,6 @@ export function RoomJoiningOverlay({ name, status, onClose }: RoomJoiningOverlay
           </>
         )}
       </div>
-    </div>
+    </FullScreenOverlay>
   );
 }

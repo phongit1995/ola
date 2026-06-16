@@ -4,7 +4,7 @@ import addFriendIcon from '@/assets/icons/chat/ic_add_friend.png';
 import groupMessageIcon from '@/assets/icons/room/ic_notify_new_chat_group_message.png';
 import { useRoomChatStore } from '@/store/roomChatStore';
 import { useAuthStore } from '@/store/authStore';
-import { RoomHeader } from './RoomHeader';
+import { ScreenHeader, FullScreenOverlay } from '@components';
 import { RoomTabBar, type RoomTabItem } from './RoomTabBar';
 import { RoomMessagesTab } from './RoomMessagesTab';
 import { RoomMembersTab } from './RoomMembersTab';
@@ -39,8 +39,8 @@ export function RoomChatView({ onClose }: RoomChatViewProps) {
   ];
 
   return (
-    <div className="absolute inset-0 z-40 flex flex-col bg-[#eceff1]">
-      <RoomHeader name={name} onBack={onClose} />
+    <FullScreenOverlay position="absolute">
+      <ScreenHeader title={name} onBack={onClose} align="center" />
       <RoomTabBar tabs={tabs} activeTab={activeTab} onSelect={setActiveTab} />
       <RoomMessagesTab
         currentUserId={currentUserId}
@@ -63,6 +63,6 @@ export function RoomChatView({ onClose }: RoomChatViewProps) {
           onOpenFriend={(friend) => setProfile(buildProfile(friend.name, friend.color))}
         />
       )}
-    </div>
+    </FullScreenOverlay>
   );
 }

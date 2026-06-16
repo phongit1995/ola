@@ -8,7 +8,7 @@ import type { Post, PostReaction } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
 import genderIcon from '@/assets/icons/profile/ic_indicate_dynamic_gender.png';
 import birthdayIcon from '@/assets/icons/profile/ic_profile_birthday.png';
-import { Avatar } from '@components';
+import { Avatar, ScreenHeader, FullScreenOverlay } from '@components';
 import { MePostCard } from '../me/components/MePostCard';
 import { toMePost } from '../me/mappers';
 
@@ -53,20 +53,8 @@ export function ProfileMePage() {
   }
 
   return (
-    <div className="fixed inset-0 z-40 flex flex-col bg-[#eceff1]">
-      <header className="flex h-12 shrink-0 items-center gap-2 bg-ola-primary px-2 text-white shadow-[0_1px_0_rgba(0,0,0,.12)]">
-        <button
-          type="button"
-          aria-label={t('chat.back')}
-          onClick={() => navigate(ROUTES.home)}
-          className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-white/15"
-        >
-          <svg viewBox="0 0 24 24" className="h-6 w-6" fill="currentColor" aria-hidden="true">
-            <path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
-          </svg>
-        </button>
-        <span className="flex-1 truncate text-base font-medium">{nick}</span>
-      </header>
+    <FullScreenOverlay>
+      <ScreenHeader title={nick} onBack={() => navigate(ROUTES.home)} />
 
       <div className="flex-1 overflow-y-auto">
         <div className="mb-2 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.18)]">
@@ -139,6 +127,6 @@ export function ProfileMePage() {
           />
         ))}
       </div>
-    </div>
+    </FullScreenOverlay>
   );
 }

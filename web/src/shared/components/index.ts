@@ -1,5 +1,7 @@
 export * from './ui/Avatar';
 export * from './ui/Button';
+export * from './ui/ScreenHeader';
+export * from './ui/FullScreenOverlay';
 export * from './ui/Dialog';
 export * from './ui/ConfirmDialog';
 export * from './ui/ListOptionDialog';
