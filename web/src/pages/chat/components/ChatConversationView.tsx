@@ -90,7 +90,7 @@ export function ChatConversationView({
       >
         <button
           type="button"
-          aria-label="Menu"
+          aria-label={t('common.menu')}
           onClick={() => setMenuOpen(true)}
           className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-white/15"
         >

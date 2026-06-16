@@ -2,7 +2,7 @@ import { useState, type ChangeEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { Trans, useTranslation } from 'react-i18next';
-import { ROUTES } from '@constants';
+import { PASSWORD_MAX, PASSWORD_MIN, ROUTES } from '@constants';
 import olaLogo from '@/assets/images/ola-logo.png';
 import { TextField } from '@components/form/TextField';
 import { SubmitButton } from '@components/form/SubmitButton';
@@ -11,8 +11,6 @@ import { AuthService } from '@services';
 import { resolveAuthError, USERNAME_MAX, sanitizeUsername, toast } from '@lib';
 
 const USERNAME_MIN = 6;
-const PASSWORD_MIN = 6;
-const PASSWORD_MAX = 20;
 
 interface RegisterForm {
   username: string;

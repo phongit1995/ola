@@ -123,7 +123,7 @@ export function MediaViewer({ photos, index, onClose }: MediaViewerProps) {
         <>
           <button
             type="button"
-            aria-label="prev"
+            aria-label={t('common.prev')}
             onClick={(e) => {
               e.stopPropagation();
               prev();
@@ -136,7 +136,7 @@ export function MediaViewer({ photos, index, onClose }: MediaViewerProps) {
           </button>
           <button
             type="button"
-            aria-label="next"
+            aria-label={t('common.next')}
             onClick={(e) => {
               e.stopPropagation();
               next();

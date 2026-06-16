@@ -3,7 +3,10 @@
     "clear": "Xoá",
     "cancel": "Huỷ",
     "loading": "Đang tải…",
-    "error": "Đã có lỗi xảy ra, vui lòng thử lại."
+    "error": "Đã có lỗi xảy ra, vui lòng thử lại.",
+    "menu": "Menu",
+    "prev": "Trước",
+    "next": "Sau"
   },
   "auth": {
     "errGeneric": "Đã có lỗi xảy ra, vui lòng thử lại.",

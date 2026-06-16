@@ -7,6 +7,7 @@ import dislikeIconActive from '@/assets/icons/me/ic_dislike_black.png';
 import likeIcon from '@/assets/icons/me/ic_like_gray.png';
 import likeIconActive from '@/assets/icons/me/ic_like_selected.png';
 import { Avatar } from '@components';
+import { DEFAULT_AVATAR_COLOR } from '@lib';
 import { PostContent } from './PostContent';
 import { MediaGrid } from './MediaGrid';
 import { CheckInCard } from './CheckInCard';
@@ -65,7 +66,7 @@ function MePostCardComponent({
 
       <PostContent
         content={post.content}
-        onMention={(nick) => onOpenProfile?.(nick, '#7cb342')}
+        onMention={(nick) => onOpenProfile?.(nick, DEFAULT_AVATAR_COLOR)}
         leading={
           post.image == null ? undefined : stickerImage(post.image) != null ? (
             <img

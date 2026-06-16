@@ -3,6 +3,8 @@ export const AVATAR_PALETTE = [
   '#26a69a', '#ec407a', '#ffa726', '#7e57c2', '#9ccc65', '#26c6da',
 ];
 
+export const DEFAULT_AVATAR_COLOR = '#7cb342';
+
 export function colorForName(name: string): string {
   let hash = 0;
   for (let index = 0; index < name.length; index += 1) {

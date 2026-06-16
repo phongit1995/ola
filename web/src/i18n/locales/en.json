@@ -3,7 +3,10 @@
     "clear": "Clear",
     "cancel": "Cancel",
     "loading": "Loading…",
-    "error": "Something went wrong, please try again."
+    "error": "Something went wrong, please try again.",
+    "menu": "Menu",
+    "prev": "Previous",
+    "next": "Next"
   },
   "auth": {
     "errGeneric": "Something went wrong, please try again.",

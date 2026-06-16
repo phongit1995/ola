@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { HomeHeader } from '@components/HomeHeader';
-import { toast } from '@lib';
+import { DEFAULT_AVATAR_COLOR, toast } from '@lib';
 import { MeService } from '@services';
 import editIcon from '@/assets/icons/me/ic_action_edit.png';
 import { useAuthStore } from '@/store/authStore';
@@ -160,7 +160,7 @@ export function MePanel() {
         open={accountOpen}
         displayName={displayName}
         onClose={() => setAccountOpen(false)}
-        onViewProfile={() => openProfile(displayName, '#7cb342', true)}
+        onViewProfile={() => openProfile(displayName, DEFAULT_AVATAR_COLOR, true)}
       />
 
       {commentPost != null && (
