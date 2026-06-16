@@ -8,7 +8,7 @@ import { RoomJoiningOverlay } from './components/RoomJoiningOverlay';
 import { RoomList } from './components/RoomList';
 import { RoomFilterDialog } from './components/RoomFilterDialog';
 import { DEFAULT_ROOM_FILTERS } from './data';
-import type { Room, RoomFilters } from './types';
+import type { RoomListItem, RoomFilters } from './types';
 import { useRoomStore } from '@/store/roomStore';
 import { useRoomChatStore, type ActiveRoom } from '@/store/roomChatStore';
 import filterIcon from '@/assets/icons/room/ic_filter_unselected.png';
@@ -28,26 +28,26 @@ export function RoomPanel() {
   const [filters, setFilters] = useState<RoomFilters>(DEFAULT_ROOM_FILTERS);
   const [filterOpen, setFilterOpen] = useState(false);
   const [pendingQuit, setPendingQuit] = useState<ActiveRoom | null>(null);
-  const [fullRoom, setFullRoom] = useState<Room | null>(null);
+  const [fullRoom, setFullRoom] = useState<RoomListItem | null>(null);
 
   useEffect(() => {
     fetchRooms();
   }, [fetchRooms]);
 
-  const rooms = useMemo<Room[]>(
+  const rooms = useMemo<RoomListItem[]>(
     () =>
       apiRooms.map((room, index) => ({
         id: room.id,
         title: room.name,
         subtitle: room.description ?? '',
         members: room.memberCount,
-        color: ROOM_COLORS[index % ROOM_COLORS.length],
+        color: ROOM_COLORS[index % ROOM_COLORS.length]!,
         imageUrl: room.imageUrl,
       })),
     [apiRooms]
   );
 
-  function enterRoom(room: Room) {
+  function enterRoom(room: RoomListItem) {
     if (room.members >= ROOM_CAPACITY) {
       setFullRoom(room);
       return;

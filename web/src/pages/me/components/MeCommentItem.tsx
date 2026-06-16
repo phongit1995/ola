@@ -1,9 +1,7 @@
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ConfirmDialog } from '@components';
-import { Avatar } from '../../chat/components/Avatar';
-import { colorFromName } from '../mappers';
-import { renderRichText } from '../richText';
+import { ConfirmDialog, Avatar } from '@components';
+import { colorForName, renderRichText } from '@lib';
 import type { PostComment } from '@app-types';
 
 interface MeCommentItemProps {
@@ -14,7 +12,7 @@ interface MeCommentItemProps {
   onOpenProfile?: (nick: string, color: string) => void;
 }
 
-export function MeCommentItem({
+function MeCommentItemComponent({
   comment,
   time,
   canDelete,
@@ -24,7 +22,7 @@ export function MeCommentItem({
   const { t } = useTranslation();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const name = comment.author?.username ?? '';
-  const color = colorFromName(name);
+  const color = colorForName(name);
 
   return (
     <>
@@ -44,7 +42,7 @@ export function MeCommentItem({
           <span className="shrink-0 text-xs text-black/40">{time}</span>
         </div>
         <p className="mt-1 text-sm leading-relaxed whitespace-pre-wrap break-words text-black/87">
-          {renderRichText(comment.content, (nick) => onOpenProfile?.(nick, colorFromName(nick)))}
+          {renderRichText(comment.content, (nick) => onOpenProfile?.(nick, colorForName(nick)))}
         </p>
       </div>
       {canDelete && (
@@ -74,3 +72,5 @@ export function MeCommentItem({
     </>
   );
 }
+
+export const MeCommentItem = memo(MeCommentItemComponent);

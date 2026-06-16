@@ -2,8 +2,8 @@ import { useTranslation } from 'react-i18next';
 import maleIcon from '@/assets/icons/chat/ic_indicate_male.png';
 import femaleIcon from '@/assets/icons/chat/ic_indicate_female.png';
 import type { RoomMember } from '@app-types';
-import { Avatar } from '../../chat/components/Avatar';
-import { colorForName } from '../avatarColor';
+import { Avatar } from '@components';
+import { colorForName } from '@lib';
 
 interface RoomMembersTabProps {
   members: RoomMember[];

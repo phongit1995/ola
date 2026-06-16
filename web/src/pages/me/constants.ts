@@ -9,10 +9,6 @@ import tabFollowerActive from '@/assets/icons/me/ic_action_tab_follower_selected
 import type { MeFeedFilter, PostVisibility } from '@app-types';
 import type { MeTab } from './types';
 
-export const MENTION_TOKEN_PATTERN = /(@[A-Za-z0-9_]+|#[A-Za-z0-9_.]+)/g;
-
-export const POST_TOKEN_PATTERN = /(@[A-Za-z0-9_]+|#[A-Za-z0-9_.]+|:ola\d{1,2}:)/g;
-
 export const TAB_FILTER: Record<MeTab, MeFeedFilter | undefined> = {
   feed: undefined,
   tagged: 'tagged',
@@ -31,20 +27,6 @@ export const ME_TABS = [
   iconActive: string;
   labelKey: string;
 }>;
-
-export const AVATAR_PALETTE = [
-  '#7cb342', '#5d4037', '#6d4c41', '#4dd0e1', '#ef5350', '#5c6bc0',
-  '#26a69a', '#ec407a', '#ffa726', '#7e57c2', '#9ccc65', '#26c6da',
-];
-
-export const RELATIVE_TIME_UNITS: Array<[Intl.RelativeTimeFormatUnit, number]> = [
-  ['year', 31536000],
-  ['month', 2592000],
-  ['day', 86400],
-  ['hour', 3600],
-  ['minute', 60],
-  ['second', 1],
-];
 
 export const PRIVACY_OPTIONS: PostVisibility[] = ['public', 'friend', 'private'];
 

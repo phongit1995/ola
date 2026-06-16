@@ -3,7 +3,10 @@
     "clear": "Clear",
     "cancel": "Cancel",
     "loading": "Loading…",
-    "error": "Something went wrong, please try again."
+    "error": "Something went wrong, please try again.",
+    "menu": "Menu",
+    "prev": "Previous",
+    "next": "Next"
   },
   "auth": {
     "errGeneric": "Something went wrong, please try again.",
@@ -314,5 +317,139 @@
     "stateLocked": "Locked",
     "stateAvailable": "Available",
     "comingSoon": "Feature coming soon"
+  },
+  "terms": {
+    "back": "‹ Back",
+    "title": "TERMS OF USE",
+    "subtitle": "Ola social network",
+    "updated": "Updated 10/06/2026 — Version 1.0",
+    "noticeLabel": "Note:",
+    "notice": "This is a sample terms document for learning / research purposes, not an official legal document.",
+    "footer": "© 2026 Ola — Entertainment social network (demo)",
+    "sections": [
+      {
+        "title": "1. Acceptance of terms",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "By creating an account and using the Ola application/social network (\"Ola\", \"we\", \"the service\"), you confirm that you have read, understood and agree to comply with all of the content in these Terms of Use, as well as the rules and guidelines published alongside them. If you do not agree with any term, please do not register or stop using the service."
+          },
+          {
+            "type": "p",
+            "text": "We may update or amend these terms from time to time. Your continued use of the service after the terms are updated means you accept those changes."
+          }
+        ]
+      },
+      {
+        "title": "2. Eligibility & account",
+        "blocks": [
+          {
+            "type": "ul",
+            "items": [
+              "You must be 13 or older to create an account. If you are under 18, you need the consent/supervision of a parent or legal guardian.",
+              "Registration information (username, password…) must be accurate, must not violate good morals, and must not impersonate another individual/organization.",
+              "Each person should own only one account and is responsible for keeping login information secure as well as for all activity arising from the account.",
+              "If you detect unauthorized access to your account, please change your password and contact us immediately.",
+              "We have the right to refuse, temporarily lock or terminate accounts that violate the terms without prior notice."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "3. Code of conduct & prohibited content",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "When using Ola (posting, commenting, chatting, setting names/statuses, community rooms…), you must not:"
+          },
+          {
+            "type": "ul",
+            "items": [
+              "Post pornographic or violent content, content that discriminates by race/religion/gender, incites hatred, or violates Vietnamese law;",
+              "Harass, threaten, bully, or insult the honor and dignity of others;",
+              "Spread false information, fraud, spam, unauthorized advertising, or malicious links;",
+              "Impersonate other people, organizations, or state agencies;",
+              "Use automated software/tools (bots) or exploit system bugs for profit or to harm the shared experience;",
+              "Buy, sell or trade accounts or virtual items (KEN, VIP…) with real money outside the official channels provided by Ola."
+            ]
+          },
+          {
+            "type": "p",
+            "text": "Violating content may be removed; the accounts involved may be warned, temporarily locked or permanently terminated depending on severity."
+          }
+        ]
+      },
+      {
+        "title": "4. User-generated content",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "You retain ownership of the content (posts, images, messages, statuses…) that you upload. However, by uploading it to Ola, you grant us the right to store, display and back up that content to the extent necessary to operate and improve the service."
+          },
+          {
+            "type": "p",
+            "text": "You undertake that the content you upload does not infringe the intellectual property or privacy rights of any third party, and you take legal responsibility for the content you create."
+          }
+        ]
+      },
+      {
+        "title": "5. Virtual items and in-app currency (KEN, VIP…)",
+        "blocks": [
+          {
+            "type": "ul",
+            "items": [
+              "KEN, VIP and other virtual items/currencies in Ola are not real money, have no cash-conversion value, and are only usable within the application.",
+              "Topping up/purchasing KEN or virtual items (if any) is a voluntary transaction; we are not responsible for real-money trades between users outside the official system.",
+              "We have the right to adjust, suspend or terminate any virtual items/features at any time to ensure stable and fair operation.",
+              "Violating accounts (fraud, bug exploitation, illegal trading…) may have their virtual items revoked and/or the account locked without refund."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "6. Privacy & personal data",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "We collect some necessary information (username, recovery email if you provide one, usage data…) in order to operate, secure and improve the service. We do not sell your personal information to third parties."
+          },
+          {
+            "type": "p",
+            "text": "Private messages and chat content are stored to serve the application's features and are only accessed in cases necessary to operate the service, troubleshoot incidents, or upon the request of a competent state authority as required by law."
+          }
+        ]
+      },
+      {
+        "title": "7. Limitation of liability",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "Ola is provided \"as is\" and may experience interruptions, technical errors or scheduled maintenance. We strive to keep the service stable but do not absolutely guarantee continuity or freedom from errors."
+          },
+          {
+            "type": "p",
+            "text": "We are not responsible for damage arising from: the behavior of other users, content uploaded by users, data loss due to faults in your device/connection, or force-majeure events."
+          }
+        ]
+      },
+      {
+        "title": "8. Termination of use",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "You may stop using the service at any time. We have the right to temporarily lock or terminate an account if we detect violations of the terms or behavior harmful to the system or the user community, even without prior notice, in order to protect the common interest."
+          }
+        ]
+      },
+      {
+        "title": "9. Contact",
+        "blocks": [
+          {
+            "type": "p",
+            "text": "For any feedback, reports or complaints relating to your account, content or the terms of use, please contact us via Ola's support email."
+          }
+        ]
+      }
+    ]
   }
 }

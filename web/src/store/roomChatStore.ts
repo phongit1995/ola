@@ -3,12 +3,8 @@ import type { Socket } from 'socket.io-client';
 import { RoomService, SocketService } from '@services';
 import {
   ROOM_SOCKET_EVENTS,
-  type NewRoomMessageEvent,
-  type RoomJoinAck,
   type RoomMember,
-  type RoomMemberPresenceEvent,
   type RoomMessage,
-  type RoomMessageDeletedEvent,
   type RoomSocketEnvelope,
 } from '@app-types';
 
@@ -33,6 +29,10 @@ interface RoomChatState {
   close: () => void;
   setActiveTab: (tab: RoomTab) => void;
   sendMessage: (content: string) => Promise<void>;
+}
+
+function toRecord(value: unknown): Record<string, unknown> | null {
+  return typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : null;
 }
 
 let envelopeHandler: ((envelope: RoomSocketEnvelope) => void) | null = null;
@@ -81,27 +81,29 @@ export const useRoomChatStore = create<RoomChatState>((set, get) => ({
       if (get().activeRoom?.id !== roomId || envelope?.type == null) return;
       switch (envelope.type) {
         case ROOM_SOCKET_EVENTS.newMessage: {
-          const payload = envelope.data as NewRoomMessageEvent;
-          if (payload.message?.roomId !== roomId) return;
+          const message = toRecord(toRecord(envelope.data)?.message);
+          if (message?.roomId !== roomId || typeof message.id !== 'string') return;
+          const newMessage = message as unknown as RoomMessage;
           set((state) =>
-            state.messages.some((item) => item.id === payload.message.id)
+            state.messages.some((item) => item.id === newMessage.id)
               ? state
-              : { messages: [...state.messages, payload.message] }
+              : { messages: [...state.messages, newMessage] }
           );
           return;
         }
         case ROOM_SOCKET_EVENTS.messageDeleted: {
-          const payload = envelope.data as RoomMessageDeletedEvent;
-          if (payload.roomId !== roomId) return;
+          const payload = toRecord(envelope.data);
+          if (payload?.roomId !== roomId || typeof payload.messageId !== 'string') return;
+          const messageId = payload.messageId;
           set((state) => ({
-            messages: state.messages.filter((item) => item.id !== payload.messageId),
+            messages: state.messages.filter((item) => item.id !== messageId),
           }));
           return;
         }
         case ROOM_SOCKET_EVENTS.memberJoined:
         case ROOM_SOCKET_EVENTS.memberLeft: {
-          const payload = envelope.data as RoomMemberPresenceEvent;
-          if (payload.roomId !== roomId) return;
+          const payload = toRecord(envelope.data);
+          if (payload?.roomId !== roomId || typeof payload.memberCount !== 'number') return;
           set({ memberCount: payload.memberCount });
           refreshMembers();
           return;
@@ -115,10 +117,9 @@ export const useRoomChatStore = create<RoomChatState>((set, get) => ({
     async function joinAndLoad() {
       try {
         const { ticket } = await RoomService.join(roomId);
-        const ack = (await socket.emitWithAck(ROOM_SOCKET_EVENTS.join, {
-          roomId,
-          ticket,
-        })) as RoomJoinAck;
+        const ack = toRecord(
+          await socket.emitWithAck(ROOM_SOCKET_EVENTS.join, { roomId, ticket })
+        );
         if (get().activeRoom?.id !== roomId) return;
         if (!ack?.ok) {
           set({ status: 'error' });

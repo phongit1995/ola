@@ -61,7 +61,7 @@ export function MediaViewer({ photos, index, onClose }: MediaViewerProps) {
     return () => document.removeEventListener('keydown', onKey);
   }, [next, prev, onClose]);
 
-  const url = photos[current];
+  const url = photos[current] ?? '';
 
   return (
     <div className="fixed inset-0 z-50 bg-black/95">
@@ -123,7 +123,7 @@ export function MediaViewer({ photos, index, onClose }: MediaViewerProps) {
         <>
           <button
             type="button"
-            aria-label="prev"
+            aria-label={t('common.prev')}
             onClick={(e) => {
               e.stopPropagation();
               prev();
@@ -136,7 +136,7 @@ export function MediaViewer({ photos, index, onClose }: MediaViewerProps) {
           </button>
           <button
             type="button"
-            aria-label="next"
+            aria-label={t('common.next')}
             onClick={(e) => {
               e.stopPropagation();
               next();

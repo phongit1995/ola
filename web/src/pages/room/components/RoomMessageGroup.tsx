@@ -1,8 +1,8 @@
+import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import mentionIcon from '@/assets/icons/room/ic_notification_mention.png';
-import { Avatar } from '../../chat/components/Avatar';
-import { renderRichText } from '../../me/richText';
-import { colorForName } from '../avatarColor';
+import { Avatar } from '@components';
+import { colorForName, renderRichText } from '@lib';
 import type { BubblePosition, MessageGroup } from '../messageGroups';
 
 const OWN_CORNERS: Record<BubblePosition, string> = {
@@ -31,12 +31,12 @@ interface RoomMessageGroupProps {
   onQuickMention?: (name: string) => void;
 }
 
-export function RoomMessageGroup({ group, onOpenProfile, onQuickMention }: RoomMessageGroupProps) {
+function RoomMessageGroupComponent({ group, onOpenProfile, onQuickMention }: RoomMessageGroupProps) {
   const { t } = useTranslation();
   const onMention = (nick: string) => onOpenProfile?.(nick, colorForName(nick));
 
   if (group.isOwn) {
-    const last = group.messages[group.messages.length - 1];
+    const last = group.messages[group.messages.length - 1]!;
     return (
       <div className="flex flex-col items-end gap-1 self-end" style={{ maxWidth: '80%' }}>
         <span className="max-w-full truncate px-1 text-sm font-medium text-black/87">
@@ -57,7 +57,7 @@ export function RoomMessageGroup({ group, onOpenProfile, onQuickMention }: RoomM
     );
   }
 
-  const last = group.messages[group.messages.length - 1];
+  const last = group.messages[group.messages.length - 1]!;
   const senderColor = colorForName(group.senderName);
   const openSender = () => onOpenProfile?.(group.senderName, senderColor);
   return (
@@ -103,3 +103,5 @@ export function RoomMessageGroup({ group, onOpenProfile, onQuickMention }: RoomM
     </div>
   );
 }
+
+export const RoomMessageGroup = memo(RoomMessageGroupComponent);

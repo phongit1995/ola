@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { ScreenHeader, FullScreenOverlay } from '@components';
 import { MePostCard } from '../me/components/MePostCard';
 import type { MePost } from '../me/types';
 import { ProfileCard } from './components/ProfileCard';
@@ -38,20 +39,8 @@ export function ProfilePage({ profile, onClose, onOpenFriend }: ProfilePageProps
   }
 
   return (
-    <div className="fixed inset-0 z-40 flex flex-col bg-[#eceff1]">
-      <header className="flex h-12 shrink-0 items-center gap-2 bg-ola-primary px-2 text-white shadow-[0_1px_0_rgba(0,0,0,.12)]">
-        <button
-          type="button"
-          aria-label={t('chat.back')}
-          onClick={onClose}
-          className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-white/15"
-        >
-          <svg viewBox="0 0 24 24" className="h-6 w-6" fill="currentColor" aria-hidden="true">
-            <path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
-          </svg>
-        </button>
-        <span className="flex-1 truncate text-base font-medium">{profile.nick}</span>
-      </header>
+    <FullScreenOverlay>
+      <ScreenHeader title={profile.nick} onBack={onClose} />
 
       <div className="flex-1 overflow-y-auto">
         <ProfileCard
@@ -78,6 +67,6 @@ export function ProfilePage({ profile, onClose, onOpenFriend }: ProfilePageProps
       {editOpen && (
         <EditProfilePage profile={profile} onClose={() => setEditOpen(false)} />
       )}
-    </div>
+    </FullScreenOverlay>
   );
 }

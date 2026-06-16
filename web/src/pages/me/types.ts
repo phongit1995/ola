@@ -1,11 +1,6 @@
-export interface MeCheckIn {
-  name: string;
-  address?: string;
-  lat?: number;
-  lng?: number;
-  action?: string;
-  actionIcon?: string;
-}
+import type { PostCheckIn } from '@app-types';
+
+export type MeCheckIn = PostCheckIn;
 
 export interface MePost {
   id: string;

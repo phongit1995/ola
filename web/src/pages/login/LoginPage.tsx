@@ -2,7 +2,7 @@ import { useState, type ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { ROUTES } from '@constants';
+import { PASSWORD_MAX, PASSWORD_MIN, ROUTES } from '@constants';
 import olaLogo from '@/assets/images/ola-logo.png';
 import { ClearableInput } from '@components/form/ClearableInput';
 import { SubmitButton } from '@components/form/SubmitButton';
@@ -13,8 +13,6 @@ import { useAuthStore } from '@/store/authStore';
 
 const APP_VERSION = '15240093';
 const USERNAME_MIN = 5;
-const PASSWORD_MIN = 6;
-const PASSWORD_MAX = 20;
 
 interface LoginForm {
   username: string;

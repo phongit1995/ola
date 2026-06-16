@@ -61,7 +61,7 @@ export function buildRoomFeed(messages: RoomMessage[], currentUserId: string): R
     const count = pending.raw.length;
     items.push({
       kind: 'group',
-      key: pending.raw[0].id,
+      key: pending.raw[0]!.id,
       isOwn: pending.isOwn,
       senderId: pending.senderId,
       senderName: pending.senderName,

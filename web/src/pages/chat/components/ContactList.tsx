@@ -4,7 +4,7 @@ import maleIcon from '@/assets/icons/chat/ic_indicate_male.png';
 import femaleIcon from '@/assets/icons/chat/ic_indicate_female.png';
 import groupIcon from '@/assets/icons/room/ic_notify_new_chat_group_message.png';
 import type { Contact } from '../types';
-import { Avatar } from './Avatar';
+import { Avatar } from '@components';
 
 interface ContactListProps {
   contacts: Contact[];

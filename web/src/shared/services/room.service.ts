@@ -1,7 +1,6 @@
-import { api } from '@api';
+import { http } from '@api';
 import { API_PATH } from '@config';
 import type {
-  IApiResponse,
   MessageResult,
   Room,
   RoomJoinTicket,
@@ -17,66 +16,49 @@ import type {
 } from '@app-types';
 
 export class RoomService {
-  static async browse(params: BrowseRoomsParams = {}): Promise<RoomListResult> {
-    const { data } = await api.get<IApiResponse<RoomListResult>>(API_PATH.rooms.browse, { params });
-    return data.data;
+  static browse(params: BrowseRoomsParams = {}): Promise<RoomListResult> {
+    return http.get<RoomListResult>(API_PATH.rooms.browse, { params });
   }
 
-  static async getById(id: string): Promise<Room> {
-    const { data } = await api.get<IApiResponse<Room>>(API_PATH.rooms.detail(id));
-    return data.data;
+  static getById(id: string): Promise<Room> {
+    return http.get<Room>(API_PATH.rooms.detail(id));
   }
 
-  static async join(id: string): Promise<RoomJoinTicket> {
-    const { data } = await api.post<IApiResponse<RoomJoinTicket>>(API_PATH.rooms.join(id));
-    return data.data;
+  static join(id: string): Promise<RoomJoinTicket> {
+    return http.post<RoomJoinTicket>(API_PATH.rooms.join(id));
   }
 
-  static async members(id: string): Promise<RoomMembersResult> {
-    const { data } = await api.get<IApiResponse<RoomMembersResult>>(API_PATH.rooms.members(id));
-    return data.data;
+  static members(id: string): Promise<RoomMembersResult> {
+    return http.get<RoomMembersResult>(API_PATH.rooms.members(id));
   }
 
-  static async messages(id: string, params: RoomMessagesParams = {}): Promise<RoomMessagesResult> {
-    const { data } = await api.get<IApiResponse<RoomMessagesResult>>(API_PATH.rooms.messages(id), {
-      params,
-    });
-    return data.data;
+  static messages(id: string, params: RoomMessagesParams = {}): Promise<RoomMessagesResult> {
+    return http.get<RoomMessagesResult>(API_PATH.rooms.messages(id), { params });
   }
 
-  static async sendMessage(id: string, payload: SendRoomMessageRequest): Promise<RoomMessage> {
-    const { data } = await api.post<IApiResponse<RoomMessage>>(API_PATH.rooms.messages(id), payload);
-    return data.data;
+  static sendMessage(id: string, payload: SendRoomMessageRequest): Promise<RoomMessage> {
+    return http.post<RoomMessage>(API_PATH.rooms.messages(id), payload);
   }
 
-  static async deleteMessage(id: string, messageId: string): Promise<MessageResult> {
-    const { data } = await api.delete<IApiResponse<MessageResult>>(
-      API_PATH.rooms.message(id, messageId)
-    );
-    return data.data;
+  static deleteMessage(id: string, messageId: string): Promise<MessageResult> {
+    return http.del<MessageResult>(API_PATH.rooms.message(id, messageId));
   }
 }
 
 export class AdminRoomService {
-  static async create(payload: CreateRoomRequest): Promise<Room> {
-    const { data } = await api.post<IApiResponse<Room>>(API_PATH.adminRooms.base, payload);
-    return data.data;
+  static create(payload: CreateRoomRequest): Promise<Room> {
+    return http.post<Room>(API_PATH.adminRooms.base, payload);
   }
 
-  static async list(params: BrowseRoomsParams = {}): Promise<RoomListResult> {
-    const { data } = await api.get<IApiResponse<RoomListResult>>(API_PATH.adminRooms.base, {
-      params,
-    });
-    return data.data;
+  static list(params: BrowseRoomsParams = {}): Promise<RoomListResult> {
+    return http.get<RoomListResult>(API_PATH.adminRooms.base, { params });
   }
 
-  static async update(id: string, payload: UpdateRoomRequest): Promise<Room> {
-    const { data } = await api.patch<IApiResponse<Room>>(API_PATH.adminRooms.detail(id), payload);
-    return data.data;
+  static update(id: string, payload: UpdateRoomRequest): Promise<Room> {
+    return http.patch<Room>(API_PATH.adminRooms.detail(id), payload);
   }
 
-  static async remove(id: string): Promise<MessageResult> {
-    const { data } = await api.delete<IApiResponse<MessageResult>>(API_PATH.adminRooms.detail(id));
-    return data.data;
+  static remove(id: string): Promise<MessageResult> {
+    return http.del<MessageResult>(API_PATH.adminRooms.detail(id));
   }
 }

@@ -8,7 +8,7 @@ import {
   type ListOption,
 } from '@components';
 import { ROUTES } from '@constants';
-import { toast } from '@lib';
+import { DEFAULT_AVATAR_COLOR, toast } from '@lib';
 import { HomeHeader } from '@components/HomeHeader';
 import moreIcon from '@/assets/icons/chat/ic_more_white.png';
 import { AuthService } from '@services';
@@ -28,8 +28,6 @@ interface ActiveChat {
   color: string;
   seedMessage?: string;
 }
-
-const FALLBACK_COLOR = '#7cb342';
 
 export function ChatPanel() {
   const { t } = useTranslation();
@@ -59,7 +57,7 @@ export function ChatPanel() {
     });
   }
 
-  function startChatWith(name: string, color = FALLBACK_COLOR, seedMessage?: string) {
+  function startChatWith(name: string, color = DEFAULT_AVATAR_COLOR, seedMessage?: string) {
     setComposeOpen(false);
     setActiveChat({ name, color, seedMessage });
   }
@@ -127,7 +125,7 @@ export function ChatPanel() {
           {renderTab('contacts', t('home.subContacts'))}
           <button
             type="button"
-            aria-label="Menu"
+            aria-label={t('common.menu')}
             onClick={() => setHeaderMenuOpen(true)}
             className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-white/15"
           >

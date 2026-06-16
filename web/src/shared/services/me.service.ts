@@ -1,7 +1,6 @@
-import { api } from '@api';
+import { http } from '@api';
 import { API_PATH } from '@config';
 import type {
-  IApiResponse,
   MessageResult,
   Post,
   PostComment,
@@ -20,86 +19,62 @@ import type {
 } from '@app-types';
 
 export class MeService {
-  static async feed(params: FeedCursorParams = {}): Promise<MeFeedResult> {
-    const { data } = await api.get<IApiResponse<MeFeedResult>>(API_PATH.me.base, { params });
-    return data.data;
+  static feed(params: FeedCursorParams = {}): Promise<MeFeedResult> {
+    return http.get<MeFeedResult>(API_PATH.me.base, { params });
   }
 
-  static async mine(params: FeedParams = {}): Promise<PostListResult> {
-    const { data } = await api.get<IApiResponse<PostListResult>>(API_PATH.me.mine, { params });
-    return data.data;
+  static mine(params: FeedParams = {}): Promise<PostListResult> {
+    return http.get<PostListResult>(API_PATH.me.mine, { params });
   }
 
-  static async byUser(userId: string, params: FeedParams = {}): Promise<PostListResult> {
-    const { data } = await api.get<IApiResponse<PostListResult>>(API_PATH.me.users(userId), {
-      params,
-    });
-    return data.data;
+  static byUser(userId: string, params: FeedParams = {}): Promise<PostListResult> {
+    return http.get<PostListResult>(API_PATH.me.users(userId), { params });
   }
 
-  static async getById(id: string): Promise<Post> {
-    const { data } = await api.get<IApiResponse<Post>>(API_PATH.me.detail(id));
-    return data.data;
+  static getById(id: string): Promise<Post> {
+    return http.get<Post>(API_PATH.me.detail(id));
   }
 
-  static async create(payload: CreatePostRequest): Promise<Post> {
-    const { data } = await api.post<IApiResponse<Post>>(API_PATH.me.base, payload);
-    return data.data;
+  static create(payload: CreatePostRequest): Promise<Post> {
+    return http.post<Post>(API_PATH.me.base, payload);
   }
 
-  static async update(id: string, payload: UpdatePostRequest): Promise<Post> {
-    const { data } = await api.put<IApiResponse<Post>>(API_PATH.me.detail(id), payload);
-    return data.data;
+  static update(id: string, payload: UpdatePostRequest): Promise<Post> {
+    return http.put<Post>(API_PATH.me.detail(id), payload);
   }
 
-  static async remove(id: string): Promise<MessageResult> {
-    const { data } = await api.delete<IApiResponse<MessageResult>>(API_PATH.me.detail(id));
-    return data.data;
+  static remove(id: string): Promise<MessageResult> {
+    return http.del<MessageResult>(API_PATH.me.detail(id));
   }
 
-  static async uploadImages(files: File[]): Promise<UploadImagesResult> {
+  static uploadImages(files: File[]): Promise<UploadImagesResult> {
     const form = new FormData();
     files.forEach((file) => form.append('images', file));
-    const { data } = await api.post<IApiResponse<UploadImagesResult>>(API_PATH.me.images, form, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
-    return data.data;
+    return http.postForm<UploadImagesResult>(API_PATH.me.images, form);
   }
 
-  static async react(id: string, type: PostReaction): Promise<Post> {
+  static react(id: string, type: PostReaction): Promise<Post> {
     const payload: ReactRequest = { type };
-    const { data } = await api.post<IApiResponse<Post>>(API_PATH.me.react(id), payload);
-    return data.data;
+    return http.post<Post>(API_PATH.me.react(id), payload);
   }
 
-  static async removeReaction(id: string): Promise<Post> {
-    const { data } = await api.delete<IApiResponse<Post>>(API_PATH.me.react(id));
-    return data.data;
+  static removeReaction(id: string): Promise<Post> {
+    return http.del<Post>(API_PATH.me.react(id));
   }
 
-  static async likers(id: string, params: FeedParams = {}): Promise<PostLikerListResult> {
-    const { data } = await api.get<IApiResponse<PostLikerListResult>>(API_PATH.me.likers(id), {
-      params,
-    });
-    return data.data;
+  static likers(id: string, params: FeedParams = {}): Promise<PostLikerListResult> {
+    return http.get<PostLikerListResult>(API_PATH.me.likers(id), { params });
   }
 
-  static async comments(id: string, params: FeedParams = {}): Promise<PostCommentListResult> {
-    const { data } = await api.get<IApiResponse<PostCommentListResult>>(API_PATH.me.comments(id), {
-      params,
-    });
-    return data.data;
+  static comments(id: string, params: FeedParams = {}): Promise<PostCommentListResult> {
+    return http.get<PostCommentListResult>(API_PATH.me.comments(id), { params });
   }
 
-  static async addComment(id: string, payload: CreateCommentRequest): Promise<PostComment> {
-    const { data } = await api.post<IApiResponse<PostComment>>(API_PATH.me.comments(id), payload);
-    return data.data;
+  static addComment(id: string, payload: CreateCommentRequest): Promise<PostComment> {
+    return http.post<PostComment>(API_PATH.me.comments(id), payload);
   }
 
-  static async deleteComment(id: string, commentId: string): Promise<MessageResult> {
-    const { data } = await api.delete<IApiResponse<MessageResult>>(
-      API_PATH.me.comment(id, commentId)
-    );
-    return data.data;
+  static deleteComment(id: string, commentId: string): Promise<MessageResult> {
+    return http.del<MessageResult>(API_PATH.me.comment(id, commentId));
   }
 }

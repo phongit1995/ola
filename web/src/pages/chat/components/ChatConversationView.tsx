@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ConfirmDialog, ListOptionDialog, type ListOption } from '@components';
+import { ConfirmDialog, FullScreenOverlay, ListOptionDialog, ScreenHeader, type ListOption } from '@components';
 import moreIcon from '@/assets/icons/chat/ic_more_white.png';
 import likeIcon from '@/assets/icons/chat/smiley_35.png';
 import smileyIcon from '@/assets/icons/chat/ic_smiley.png';
 import smileyIconActive from '@/assets/icons/chat/ic_smiley_selected.png';
 import type { ChatMessage } from '../types';
-import { Avatar } from './Avatar';
+import { Avatar } from '@components';
 import { AttachmentBar, type AttachTab } from './AttachmentBar';
 
 interface ChatConversationViewProps {
@@ -54,7 +54,7 @@ export function ChatConversationView({
   }, [messages]);
 
   function appendBotReply() {
-    const reply = AUTO_REPLIES[Math.floor(Math.random() * AUTO_REPLIES.length)];
+    const reply = AUTO_REPLIES[Math.floor(Math.random() * AUTO_REPLIES.length)]!;
     setMessages((current) => [
       ...current,
       { id: nextMessageId(), text: reply, direction: 'in' },
@@ -82,29 +82,21 @@ export function ChatConversationView({
   ];
 
   return (
-    <div className="fixed inset-0 z-40 flex flex-col bg-[#eceff1]">
-      <header className="flex h-12 shrink-0 items-center gap-2 bg-ola-primary px-2 text-white shadow-[0_1px_0_rgba(0,0,0,.12)]">
+    <FullScreenOverlay>
+      <ScreenHeader
+        title={name}
+        onBack={onClose}
+        left={<Avatar name={name} color={color} size={32} />}
+      >
         <button
           type="button"
-          aria-label={t('chat.back')}
-          onClick={onClose}
-          className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-white/15"
-        >
-          <svg viewBox="0 0 24 24" className="h-6 w-6" fill="currentColor" aria-hidden="true">
-            <path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
-          </svg>
-        </button>
-        <Avatar name={name} color={color} size={32} />
-        <span className="flex-1 truncate text-base font-medium">{name}</span>
-        <button
-          type="button"
-          aria-label="Menu"
+          aria-label={t('common.menu')}
           onClick={() => setMenuOpen(true)}
           className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-white/15"
         >
           <img src={moreIcon} alt="" className="h-5 w-5 object-contain" />
         </button>
-      </header>
+      </ScreenHeader>
 
       <div ref={scrollRef} className="flex flex-1 flex-col gap-2 overflow-y-auto p-3">
         {messages.map((message) => (
@@ -197,6 +189,6 @@ export function ChatConversationView({
         }}
         onCancel={() => setBlockOpen(false)}
       />
-    </div>
+    </FullScreenOverlay>
   );
 }

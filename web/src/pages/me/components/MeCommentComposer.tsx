@@ -2,10 +2,9 @@ import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import smileyIcon from '@/assets/icons/chat/ic_smiley.png';
 import { useAuthStore } from '@/store/authStore';
-import { Avatar } from '../../chat/components/Avatar';
-import { ComposerSmileyPanel } from './ComposerSmileyPanel';
-import { colorFromName } from '../mappers';
-import { insertAtCursor } from '../textInsert';
+import { Avatar } from '@components';
+import { ComposerSmileyPanel } from '@components';
+import { colorForName, insertAtCursor } from '@lib';
 
 interface MeCommentComposerProps {
   submitting: boolean;
@@ -54,7 +53,7 @@ export function MeCommentComposer({ submitting, onSubmit, autoFocus = false }: M
       )}
 
       <div className="flex shrink-0 items-end gap-2 border-t border-black/12 bg-white px-3 py-2">
-        <Avatar name={myName} color={colorFromName(myName)} size={36} />
+        <Avatar name={myName} color={colorForName(myName)} size={36} />
         <textarea
           ref={inputRef}
           value={draft}

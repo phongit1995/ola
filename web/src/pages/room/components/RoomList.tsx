@@ -2,13 +2,13 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import autoJoinIcon from '@/assets/icons/room/ic_action_auto_join_room.png';
 import membersIcon from '@/assets/icons/room/ic_indicate_privacy_friends.png';
-import type { Room } from '../types';
+import type { RoomListItem } from '../types';
 
 interface RoomListProps {
-  rooms: Room[];
+  rooms: RoomListItem[];
   joinedRoomId: string | null;
-  onEnter: (room: Room) => void;
-  onQuit: (room: Room) => void;
+  onEnter: (room: RoomListItem) => void;
+  onQuit: (room: RoomListItem) => void;
   onAroundYou: () => void;
   onQuickJoin: () => void;
   onBuyVip: () => void;

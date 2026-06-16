@@ -1,8 +1,7 @@
-import { api } from '@api';
+import { api, http } from '@api';
 import { API_PATH } from '@config';
 import { authTokens } from '@lib';
 import type {
-  IApiResponse,
   AuthResult,
   ChangePasswordRequest,
   LoginRequest,
@@ -14,15 +13,13 @@ import type {
 
 export class AuthService {
   static async login(payload: LoginRequest): Promise<AuthResult> {
-    const { data } = await api.post<IApiResponse<AuthResult>>(API_PATH.auth.login, payload);
-    const result = data.data;
+    const result = await http.post<AuthResult>(API_PATH.auth.login, payload);
     authTokens.setTokens(result.token, result.refreshToken);
     return result;
   }
 
-  static async register(payload: RegisterRequest): Promise<RegisterResult> {
-    const { data } = await api.post<IApiResponse<RegisterResult>>(API_PATH.auth.register, payload);
-    return data.data;
+  static register(payload: RegisterRequest): Promise<RegisterResult> {
+    return http.post<RegisterResult>(API_PATH.auth.register, payload);
   }
 
   static async refresh(): Promise<RefreshTokenResult> {
@@ -30,22 +27,17 @@ export class AuthService {
     if (!current) {
       throw new Error('Missing refresh token');
     }
-    const { data } = await api.post<IApiResponse<RefreshTokenResult>>(
+    const result = await http.post<RefreshTokenResult>(
       API_PATH.auth.refresh,
       { refreshToken: current },
       { skipAuth: true, skipAuthRefresh: true }
     );
-    const result = data.data;
     authTokens.setTokens(result.token, result.refreshToken);
     return result;
   }
 
-  static async changePassword(payload: ChangePasswordRequest): Promise<MessageResult> {
-    const { data } = await api.post<IApiResponse<MessageResult>>(
-      API_PATH.auth.changePassword,
-      payload
-    );
-    return data.data;
+  static changePassword(payload: ChangePasswordRequest): Promise<MessageResult> {
+    return http.post<MessageResult>(API_PATH.auth.changePassword, payload);
   }
 
   static async logout(): Promise<void> {

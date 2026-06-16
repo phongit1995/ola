@@ -53,7 +53,7 @@ export function MediaGrid({ photos, onOpen }: MediaGridProps) {
     return (
       <div className={`mx-4 mt-3 grid gap-2 ${cols}`}>
         {photos.map((url, index) => (
-          <Cell key={index} url={url} index={index} heightClass={height} onOpen={onOpen} />
+          <Cell key={url} url={url} index={index} heightClass={height} onOpen={onOpen} />
         ))}
       </div>
     );
@@ -66,13 +66,13 @@ export function MediaGrid({ photos, onOpen }: MediaGridProps) {
     <div className="mx-4 mt-3 flex flex-col gap-2">
       <div className="grid grid-cols-2 gap-2">
         {top.map((url, index) => (
-          <Cell key={index} url={url} index={index} heightClass="h-44 md:h-72" onOpen={onOpen} />
+          <Cell key={url} url={url} index={index} heightClass="h-44 md:h-72" onOpen={onOpen} />
         ))}
       </div>
       <div className="grid grid-cols-3 gap-2">
         {bottom.map((url, index) => (
           <Cell
-            key={index}
+            key={url}
             url={url}
             index={index + 2}
             heightClass="h-28 md:h-52"

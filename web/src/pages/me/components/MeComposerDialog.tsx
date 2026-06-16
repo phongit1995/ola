@@ -1,14 +1,14 @@
-import { useRef, useState, type ChangeEvent } from 'react';
+import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dialog, DialogButton } from '@components';
 import { CONTACTS } from '../../chat/data';
-import { Avatar } from '../../chat/components/Avatar';
+import { Avatar } from '@components';
 import { ATTACH_BUTTONS, PRIVACY_OPTIONS, type AttachButtonKey } from '../constants';
 import { KUL_STICKERS, kulCode, stickerImage } from '../stickers';
-import { insertAtCursor } from '../textInsert';
+import { insertAtCursor } from '@lib';
 import checkInIcon from '@/assets/icons/me/ic_check_in.png';
 import { ComposerCheckInPanel, type ComposedCheckIn } from './ComposerCheckInPanel';
-import { ComposerSmileyPanel } from './ComposerSmileyPanel';
+import { ComposerSmileyPanel } from '@components';
 import type { PostVisibility } from '@app-types';
 
 type AttachPanel = 'tag' | 'checkin' | 'sticker' | 'smiley' | null;
@@ -57,6 +57,18 @@ export function MeComposerDialog({ open, onClose, onPost }: MeComposerDialogProp
       if (photo.file != null) URL.revokeObjectURL(photo.url);
     });
   }
+
+  const photosRef = useRef<PickedPhoto[]>([]);
+  useEffect(() => {
+    photosRef.current = photos;
+  }, [photos]);
+  useEffect(() => {
+    return () => {
+      photosRef.current.forEach((photo) => {
+        if (photo.file != null) URL.revokeObjectURL(photo.url);
+      });
+    };
+  }, []);
 
   function handleClose() {
     revokePhotos(photos);
