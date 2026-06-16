@@ -3,18 +3,22 @@ import { useTranslation } from 'react-i18next';
 import checkedIcon from '@/assets/icons/profile/ic_checked.png';
 import cameraIcon from '@/assets/icons/profile/ic_action_camera.png';
 import kissIcon from '@/assets/icons/profile/sticker_kiss.png';
-import genderIcon from '@/assets/icons/profile/ic_indicate_dynamic_gender.png';
+import maleIcon from '@/assets/icons/profile/ic_indicate_male.png';
+import femaleIcon from '@/assets/icons/profile/ic_indicate_female.png';
 import marriageIcon from '@/assets/icons/profile/ic_profile_marriage.png';
 import birthdayIcon from '@/assets/icons/profile/ic_profile_birthday.png';
 import noteIcon from '@/assets/icons/profile/ic_profile_note.png';
 import { Avatar } from '@components';
-import type { UserProfile } from '../types';
+import type { ProfileActions, UserProfile } from '../types';
+import type { RelationshipInfo } from '@app-types';
 import { RelationButtons } from './RelationButtons';
 
 interface ProfileCardProps {
   profile: UserProfile;
   onPostMe: () => void;
   onUpdateInfo: () => void;
+  relationship?: RelationshipInfo;
+  actions?: ProfileActions;
 }
 
 function InfoRow({ icon, text, note }: { icon: string; text: string; note?: boolean }) {
@@ -30,10 +34,14 @@ function InfoRow({ icon, text, note }: { icon: string; text: string; note?: bool
   );
 }
 
-export function ProfileCard({ profile, onPostMe, onUpdateInfo }: ProfileCardProps) {
+export function ProfileCard({ profile, onPostMe, onUpdateInfo, relationship, actions }: ProfileCardProps) {
   const { t } = useTranslation();
   const [blocked, setBlocked] = useState(false);
-  const [kisses, setKisses] = useState(profile.kisses);
+  const [localKisses, setLocalKisses] = useState(profile.kisses);
+
+  const wired = actions != null;
+  const kisses = wired ? profile.kisses : localKisses;
+  const onKiss = wired ? actions.kiss : () => setLocalKisses((value) => value + 1);
 
   return (
     <div className="mb-2 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.18)]">
@@ -66,9 +74,11 @@ export function ProfileCard({ profile, onPostMe, onUpdateInfo }: ProfileCardProp
         onBlock={() => setBlocked(true)}
         onPostMe={onPostMe}
         onUpdateInfo={onUpdateInfo}
+        relationship={relationship}
+        actions={actions}
       />
 
-      {blocked && (
+      {!wired && blocked && (
         <button
           type="button"
           onClick={() => setBlocked(false)}
@@ -87,7 +97,7 @@ export function ProfileCard({ profile, onPostMe, onUpdateInfo }: ProfileCardProp
 
       <button
         type="button"
-        onClick={() => setKisses((value) => value + 1)}
+        onClick={onKiss}
         className="mt-2 flex w-full flex-col items-center gap-1"
       >
         <img src={kissIcon} alt="" className="max-h-16 object-contain" />
@@ -109,7 +119,7 @@ export function ProfileCard({ profile, onPostMe, onUpdateInfo }: ProfileCardProp
 
       <div className="pb-4">
         <InfoRow
-          icon={genderIcon}
+          icon={profile.gender === 'female' ? femaleIcon : maleIcon}
           text={profile.gender === 'female' ? t('profile.genderFemale') : t('profile.genderMale')}
         />
         <InfoRow icon={marriageIcon} text={profile.marriage} />

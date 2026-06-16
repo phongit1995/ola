@@ -7,15 +7,18 @@ import { ProfileCard } from './components/ProfileCard';
 import { ProfileMediaStore } from './components/ProfileMediaStore';
 import { ProfileFollowing } from './components/ProfileFollowing';
 import { EditProfilePage } from './EditProfilePage';
-import type { ProfileFriend, UserProfile } from './types';
+import type { ProfileActions, ProfileFriend, UserProfile } from './types';
+import type { RelationshipInfo } from '@app-types';
 
 interface ProfilePageProps {
   profile: UserProfile;
   onClose: () => void;
   onOpenFriend: (friend: ProfileFriend) => void;
+  relationship?: RelationshipInfo;
+  actions?: ProfileActions;
 }
 
-export function ProfilePage({ profile, onClose, onOpenFriend }: ProfilePageProps) {
+export function ProfilePage({ profile, onClose, onOpenFriend, relationship, actions }: ProfilePageProps) {
   const { t } = useTranslation();
   const [posts, setPosts] = useState<MePost[]>(profile.posts);
   const [editOpen, setEditOpen] = useState(false);
@@ -45,10 +48,12 @@ export function ProfilePage({ profile, onClose, onOpenFriend }: ProfilePageProps
       <div className="flex-1 overflow-y-auto">
         <ProfileCard
           profile={profile}
+          relationship={relationship}
+          actions={actions}
           onPostMe={() => {}}
           onUpdateInfo={() => setEditOpen(true)}
         />
-        <ProfileMediaStore media={profile.media} />
+        {profile.media.length > 0 && <ProfileMediaStore media={profile.media} />}
         <ProfileFollowing following={profile.following} onSelect={onOpenFriend} />
 
         <h3 className="mx-4 mt-2 mb-1 text-base font-medium text-black/87">

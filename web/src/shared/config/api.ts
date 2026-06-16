@@ -21,6 +21,23 @@ export const API_PATH = {
   user: {
     me: '/user/me',
     upload: '/user/upload',
+    detail: (id: string) => `/user/${id}`,
+    kiss: (id: string) => `/user/${id}/kiss`,
+    follow: (id: string) => `/user/${id}/follow`,
+    followers: (id: string) => `/user/${id}/followers`,
+    following: (id: string) => `/user/${id}/following`,
+  },
+  relationships: {
+    request: '/relationships/request',
+    respond: (id: string) => `/relationships/${id}/respond`,
+    cancel: (id: string) => `/relationships/${id}/cancel`,
+    unfriend: (id: string) => `/relationships/${id}/unfriend`,
+    block: '/relationships/block',
+    unblock: (id: string) => `/relationships/${id}/unblock`,
+    pending: '/relationships/pending',
+    sent: '/relationships/sent',
+    friends: '/relationships/friends',
+    blocked: '/relationships/blocked',
   },
   me: {
     base: '/me',

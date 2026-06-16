@@ -1,8 +1,12 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ListOptionDialog, type ListOption } from '@components';
+import type { RelationshipInfo } from '@app-types';
+import type { ProfileActions } from '../types';
 import addFriendIcon from '@/assets/icons/profile/ic_add_friend_black_disable.png';
+import friendsActiveIcon from '@/assets/icons/profile/ic_state_friends.png';
 import followIcon from '@/assets/icons/profile/ic_follow_black_disable.png';
+import followingActiveIcon from '@/assets/icons/profile/ic_state_following.png';
 import editIcon from '@/assets/icons/profile/ic_edit_profile_gray.png';
 import postMeIcon from '@/assets/icons/profile/ic_post_me_gray.png';
 import moreIcon from '@/assets/icons/profile/ic_more_horizon_black_disable.png';
@@ -13,6 +17,8 @@ interface RelationButtonsProps {
   onBlock: () => void;
   onPostMe: () => void;
   onUpdateInfo: () => void;
+  relationship?: RelationshipInfo;
+  actions?: ProfileActions;
 }
 
 function RelationButton({
@@ -46,14 +52,44 @@ export function RelationButtons({
   onBlock,
   onPostMe,
   onUpdateInfo,
+  relationship,
+  actions,
 }: RelationButtonsProps) {
   const { t } = useTranslation();
-  const [friended, setFriended] = useState(false);
-  const [following, setFollowing] = useState(false);
+  const [friendedLocal, setFriendedLocal] = useState(false);
+  const [followingLocal, setFollowingLocal] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
+  const status = relationship?.status;
+  const isBlocked = status === 'blocked_by_me' || status === 'blocked_by_them';
+
+  const realFriendLabel =
+    status === 'friend'
+      ? t('profile.alreadyFriend')
+      : status === 'pending_outgoing'
+        ? t('profile.requestSent')
+        : status === 'pending_incoming'
+          ? t('profile.acceptFriend')
+          : t('profile.makeFriend');
+  const friendLabel = actions
+    ? realFriendLabel
+    : friendedLocal
+      ? t('profile.alreadyFriend')
+      : t('profile.makeFriend');
+  const isFriend = actions ? status === 'friend' : friendedLocal;
+  const friendActive = actions ? isFriend || status === 'pending_outgoing' : friendedLocal;
+  const friendIcon = isFriend ? friendsActiveIcon : addFriendIcon;
+  const onFriendClick = actions ? actions.friendAction : () => setFriendedLocal((value) => !value);
+
+  const following = actions ? Boolean(relationship?.isFollowing) : followingLocal;
+  const followIconSrc = following ? followingActiveIcon : followIcon;
+  const onFollowClick = actions ? actions.toggleFollow : () => setFollowingLocal((value) => !value);
+
+  const onBlockClick = actions ? actions.blockAction : onBlock;
+  const blockLabel = status === 'blocked_by_me' ? t('profile.unblock') : t('profile.block');
+
   const otherMenu: ListOption[] = [
-    { key: 'block', label: t('profile.block'), danger: true, onSelect: onBlock },
+    { key: 'block', label: blockLabel, danger: status !== 'blocked_by_me', onSelect: onBlockClick },
     { key: 'copy', label: t('profile.copyNick'), onSelect: () => navigator.clipboard?.writeText(nick) },
     { key: 'report', label: t('profile.report'), onSelect: () => {} },
   ];
@@ -65,27 +101,29 @@ export function RelationButtons({
     { key: 'help', label: t('profile.privacyHelp'), onSelect: () => {} },
   ];
 
+  const showRelationActions = !isSelf && !(actions != null && isBlocked);
+
   return (
     <>
       <div className="flex px-2 py-2">
         {isSelf ? (
           <RelationButton icon={editIcon} label={t('profile.updateInfo')} onClick={onUpdateInfo} />
-        ) : (
+        ) : showRelationActions ? (
           <>
             <RelationButton
-              icon={addFriendIcon}
-              label={friended ? t('profile.alreadyFriend') : t('profile.makeFriend')}
-              active={friended}
-              onClick={() => setFriended((value) => !value)}
+              icon={friendIcon}
+              label={friendLabel}
+              active={friendActive}
+              onClick={onFriendClick}
             />
             <RelationButton
-              icon={followIcon}
+              icon={followIconSrc}
               label={following ? t('profile.following') : t('profile.follow')}
               active={following}
-              onClick={() => setFollowing((value) => !value)}
+              onClick={onFollowClick}
             />
           </>
-        )}
+        ) : null}
         <RelationButton icon={postMeIcon} label={t('profile.postMe')} onClick={onPostMe} />
         <RelationButton icon={moreIcon} label={t('profile.more')} onClick={() => setMenuOpen(true)} />
       </div>

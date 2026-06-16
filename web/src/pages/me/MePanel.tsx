@@ -15,11 +15,9 @@ import { MeCommentSheet } from './components/MeCommentSheet';
 import { MeCommentComposer } from './components/MeCommentComposer';
 import { MeLikersDialog } from './components/MeLikersDialog';
 import { MeAccountDialog } from './components/MeAccountDialog';
-import { ProfilePage } from '../profile/ProfilePage';
-import { buildProfile } from '../profile/data';
+import { UserProfileView } from '../profile/UserProfileView';
 import { useMeFeed } from './useMeFeed';
 import { EDIT_WINDOW_MS } from './constants';
-import type { UserProfile } from '../profile/types';
 
 export function MePanel() {
   const { t } = useTranslation();
@@ -47,7 +45,9 @@ export function MePanel() {
 
   const [composerOpen, setComposerOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [profileTarget, setProfileTarget] = useState<{ username: string; color: string } | null>(
+    null
+  );
   const [commentPostId, setCommentPostId] = useState<string | null>(null);
   const [commentFocusInput, setCommentFocusInput] = useState(false);
   const [quickCommentPostId, setQuickCommentPostId] = useState<string | null>(null);
@@ -168,9 +168,9 @@ export function MePanel() {
     return ok;
   }
 
-  const openProfile = useCallback((nick: string, color: string, isSelf = false) => {
+  const openProfile = useCallback((nick: string, color: string) => {
     setAccountOpen(false);
-    setProfile(buildProfile(nick, color, isSelf));
+    setProfileTarget({ username: nick, color });
   }, []);
 
   const emptyText = t('me.empty');
@@ -299,7 +299,7 @@ export function MePanel() {
         open={accountOpen}
         displayName={displayName}
         onClose={() => setAccountOpen(false)}
-        onViewProfile={() => openProfile(displayName, DEFAULT_AVATAR_COLOR, true)}
+        onViewProfile={() => openProfile(displayName, DEFAULT_AVATAR_COLOR)}
       />
 
       {likersPostId != null && (
@@ -323,11 +323,13 @@ export function MePanel() {
         />
       )}
 
-      {profile != null && (
-        <ProfilePage
-          profile={profile}
-          onClose={() => setProfile(null)}
-          onOpenFriend={(friend) => setProfile(buildProfile(friend.name, friend.color))}
+      {profileTarget != null && (
+        <UserProfileView
+          key={profileTarget.username}
+          username={profileTarget.username}
+          color={profileTarget.color}
+          onClose={() => setProfileTarget(null)}
+          onOpenFriend={(friend) => setProfileTarget({ username: friend.name, color: friend.color })}
         />
       )}
     </>

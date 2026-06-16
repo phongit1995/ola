@@ -4,6 +4,11 @@ import type {
   AuthUser,
   UpdateProfileRequest,
   UploadAvatarResult,
+  PublicProfile,
+  KissResult,
+  FollowResult,
+  FollowListResult,
+  FollowListParams,
 } from '@app-types';
 
 export class UserService {
@@ -19,5 +24,29 @@ export class UserService {
     const form = new FormData();
     form.append('file', file);
     return http.postForm<UploadAvatarResult>(API_PATH.user.upload, form);
+  }
+
+  static publicProfile(id: string): Promise<PublicProfile> {
+    return http.get<PublicProfile>(API_PATH.user.detail(id));
+  }
+
+  static kiss(id: string): Promise<KissResult> {
+    return http.post<KissResult>(API_PATH.user.kiss(id));
+  }
+
+  static follow(id: string): Promise<FollowResult> {
+    return http.post<FollowResult>(API_PATH.user.follow(id));
+  }
+
+  static unfollow(id: string): Promise<FollowResult> {
+    return http.del<FollowResult>(API_PATH.user.follow(id));
+  }
+
+  static followers(id: string, params: FollowListParams = {}): Promise<FollowListResult> {
+    return http.get<FollowListResult>(API_PATH.user.followers(id), { params });
+  }
+
+  static following(id: string, params: FollowListParams = {}): Promise<FollowListResult> {
+    return http.get<FollowListResult>(API_PATH.user.following(id), { params });
   }
 }

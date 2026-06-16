@@ -5,6 +5,13 @@ export interface ProfileFriend {
   color: string;
 }
 
+export interface ProfileActions {
+  kiss: () => void;
+  toggleFollow: () => void;
+  friendAction: () => void;
+  blockAction: () => void;
+}
+
 export interface UserProfile {
   nick: string;
   color: string;
