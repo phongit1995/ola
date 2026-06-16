@@ -45,7 +45,7 @@ export function RoomChatView({ onClose }: RoomChatViewProps) {
     <FullScreenOverlay position="absolute">
       <ScreenHeader title={name} onBack={onClose} align="center" />
       <div className="flex shrink-0 justify-center">
-        <span className="w-10 border-t border-dashed border-white/60" />
+        <span className="h-px w-full bg-[repeating-linear-gradient(to_right,rgba(0,0,0,.3)_0_4px,transparent_4px_16px)]" />
       </div>
       <RoomTabBar tabs={tabs} activeTab={activeTab} onSelect={setActiveTab} />
       <RoomMessagesTab

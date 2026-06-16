@@ -84,7 +84,7 @@ function RoomMessageGroupComponent({ group, onOpenProfile, onQuickMention }: Roo
       <div className="flex w-fit min-w-0 flex-col gap-0.5 pl-10">
         {group.messages.map((message, index) =>
           index === lastIndex ? (
-            <div key={message.id} className="relative w-fit max-w-full">
+            <div key={message.id} className="relative w-fit max-w-full self-start">
               <div className={bubbleClass(message.position)}>
                 {renderRichText(message.content, onMention)}
               </div>
@@ -93,7 +93,7 @@ function RoomMessageGroupComponent({ group, onOpenProfile, onQuickMention }: Roo
                 aria-label={t('room.mentionUser', { name: group.senderName })}
                 title={t('room.mentionUser', { name: group.senderName })}
                 onClick={() => onQuickMention?.(group.senderName)}
-                className="absolute bottom-0 left-full ml-1 flex h-7 w-7 items-center justify-center rounded-full hover:bg-black/5 active:bg-black/10"
+                className="absolute -bottom-2 left-full -ml-2 flex h-7 w-7 items-center justify-center rounded-full hover:bg-black/5 active:bg-black/10"
               >
                 <img src={mentionIcon} alt="" className="h-6 w-6" />
               </button>
