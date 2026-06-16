@@ -121,7 +121,7 @@ export const useRoomChatStore = create<RoomChatState>((set, get) => ({
           await socket.emitWithAck(ROOM_SOCKET_EVENTS.join, { roomId, ticket })
         );
         if (get().activeRoom?.id !== roomId) return;
-        if (ack?.ok !== true) {
+        if (!ack?.ok) {
           set({ status: 'error' });
           return;
         }

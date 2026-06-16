@@ -1,4 +1,4 @@
-import { http } from '@api';
+import { api, http } from '@api';
 import { API_PATH } from '@config';
 import { authTokens } from '@lib';
 import type {
@@ -42,7 +42,7 @@ export class AuthService {
 
   static async logout(): Promise<void> {
     try {
-      await http.post(API_PATH.auth.logout);
+      await api.post(API_PATH.auth.logout);
     } finally {
       authTokens.clear();
     }
