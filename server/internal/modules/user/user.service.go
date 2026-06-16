@@ -283,13 +283,10 @@ func (s *Service) ensureNotBlockedByTarget(callerID, targetID uuid.UUID) error {
 }
 
 func (s *Service) buildPublicProfile(callerID uuid.UUID, user *models.User) *UserPublicProfileResponse {
-	targetUserID := user.ID
-	idStr := targetUserID.String()
-	isOnline := s.presence.IsUserOnline(idStr)
-	lastActiveAt := s.presence.GetLastActive(idStr)
+	idStr := user.ID.String()
 
 	response := &UserPublicProfileResponse{
-		ID:             user.ID.String(),
+		ID:             idStr,
 		Username:       user.Username,
 		FullName:       user.FullName,
 		Avatar:         user.Avatar,
@@ -300,33 +297,42 @@ func (s *Service) buildPublicProfile(callerID uuid.UUID, user *models.User) *Use
 		Verified:       user.Verified,
 		Kisses:         user.Kisses,
 		VipUsed:        user.VipUsed,
+		VipEndTime:     formatOptionalTime(user.VipEndTime),
 		FollowerCount:  user.FollowerCount,
 		FollowingCount: user.FollowingCount,
-		IsOnline:       isOnline,
-		LastActiveAt:   lastActiveAt,
+		IsOnline:       s.presence.IsUserOnline(idStr),
+		LastActiveAt:   s.presence.GetLastActive(idStr),
 		CreatedAt:      user.CreatedAt.Format(time.RFC3339),
-		Relationship:   s.resolveRelationship(callerID, targetUserID),
+		Relationship:   s.resolveRelationship(callerID, user.ID),
 	}
 
 	if user.DateOfBirth != nil {
 		response.DateOfBirth = user.DateOfBirth.Format("2006-01-02")
 	}
 
-	if user.VipEndTime != nil {
-		vipEndTime := user.VipEndTime.Format(time.RFC3339)
-		response.VipEndTime = &vipEndTime
-	}
-
-	if response.Relationship != nil && callerID != uuid.Nil && callerID != targetUserID {
-		if isFollowing, err := s.repo.IsFollowing(callerID, targetUserID); err == nil {
-			response.Relationship.IsFollowing = isFollowing
-		}
-		if followsMe, err := s.repo.IsFollowing(targetUserID, callerID); err == nil {
-			response.Relationship.FollowsMe = followsMe
-		}
-	}
+	s.applyFollowFlags(callerID, user.ID, response.Relationship)
 
 	return response
+}
+
+func (s *Service) applyFollowFlags(callerID, targetID uuid.UUID, rel *RelationshipInfo) {
+	if rel == nil || callerID == uuid.Nil || callerID == targetID {
+		return
+	}
+	if isFollowing, err := s.repo.IsFollowing(callerID, targetID); err == nil {
+		rel.IsFollowing = isFollowing
+	}
+	if followsMe, err := s.repo.IsFollowing(targetID, callerID); err == nil {
+		rel.FollowsMe = followsMe
+	}
+}
+
+func formatOptionalTime(t *time.Time) *string {
+	if t == nil {
+		return nil
+	}
+	formatted := t.Format(time.RFC3339)
+	return &formatted
 }
 
 func (s *Service) isEitherBlocked(a, b uuid.UUID) (bool, error) {
