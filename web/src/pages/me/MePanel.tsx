@@ -4,10 +4,12 @@ import { HomeHeader } from '@components/HomeHeader';
 import { DEFAULT_AVATAR_COLOR, toast } from '@lib';
 import { MeService } from '@services';
 import editIcon from '@/assets/icons/me/ic_action_edit.png';
+import menuIcon from '@/assets/icons/me/ic_more_white.png';
 import { useAuthStore } from '@/store/authStore';
 import { Avatar, ConfirmDialog, ListOptionDialog, type ListOption } from '@components';
 import { MeTabBar } from './components/MeTabBar';
 import { MeFeedList } from './components/MeFeedList';
+import { MeLeftDrawer } from './components/MeLeftDrawer';
 import { MeComposerDialog, type ComposedPost } from './components/MeComposerDialog';
 import { MeCommentSheet } from './components/MeCommentSheet';
 import { MeCommentComposer } from './components/MeCommentComposer';
@@ -52,6 +54,7 @@ export function MePanel() {
   const [menuPostId, setMenuPostId] = useState<string | null>(null);
   const [editPostId, setEditPostId] = useState<string | null>(null);
   const [deletePostId, setDeletePostId] = useState<string | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const commentPost = commentPostId == null ? null : posts.find((p) => p.id === commentPostId);
   const quickPost =
@@ -173,6 +176,14 @@ export function MePanel() {
   return (
     <>
       <HomeHeader>
+        <button
+          type="button"
+          aria-label={t('me.openMenu')}
+          onClick={() => setDrawerOpen(true)}
+          className="flex h-12 w-10 shrink-0 items-center justify-center"
+        >
+          <img src={menuIcon} alt="" className="h-5 w-5 object-contain" />
+        </button>
         <MeTabBar active={tab} onChange={setTab} />
         <button
           type="button"
@@ -233,6 +244,14 @@ export function MePanel() {
         >
           <img src={editIcon} alt="" className="h-6 w-6 object-contain" />
         </button>
+
+        {drawerOpen && (
+          <MeLeftDrawer
+            displayName={displayName}
+            onClose={() => setDrawerOpen(false)}
+            onSelect={() => toast.info(t('me.comingSoon'))}
+          />
+        )}
       </div>
 
       <MeComposerDialog
