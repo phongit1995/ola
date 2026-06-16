@@ -6,7 +6,7 @@ import likeIcon from '@/assets/icons/chat/smiley_35.png';
 import smileyIcon from '@/assets/icons/chat/ic_smiley.png';
 import smileyIconActive from '@/assets/icons/chat/ic_smiley_selected.png';
 import type { ChatMessage } from '../types';
-import { Avatar } from './Avatar';
+import { Avatar } from '@components';
 import { AttachmentBar, type AttachTab } from './AttachmentBar';
 
 interface ChatConversationViewProps {

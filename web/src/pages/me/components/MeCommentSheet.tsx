@@ -5,7 +5,7 @@ import { MePostCard } from './MePostCard';
 import { MeCommentItem } from './MeCommentItem';
 import { MeCommentComposer } from './MeCommentComposer';
 import { useMeComments } from '../useMeComments';
-import { createTimeFormatter } from '../mappers';
+import { createTimeFormatter } from '@lib';
 import type { MePost } from '../types';
 
 interface MeCommentSheetProps {

@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMeFeedStore } from '@/store/meFeedStore';
-import { createTimeFormatter, toMePost } from './mappers';
+import { createTimeFormatter } from '@lib';
+import { toMePost } from './mappers';
 import { TAB_FILTER } from './constants';
 import type { ComposedPost } from './components/MeComposerDialog';
 import type { MeTab } from './types';

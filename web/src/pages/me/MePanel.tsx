@@ -5,7 +5,7 @@ import { toast } from '@lib';
 import { MeService } from '@services';
 import editIcon from '@/assets/icons/me/ic_action_edit.png';
 import { useAuthStore } from '@/store/authStore';
-import { Avatar } from '../chat/components/Avatar';
+import { Avatar } from '@components';
 import { MeTabBar } from './components/MeTabBar';
 import { MeFeedList } from './components/MeFeedList';
 import { MeComposerDialog } from './components/MeComposerDialog';

@@ -3,13 +3,12 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@constants';
 import { UserService } from '@services';
-import { ApiError, toast } from '@lib';
+import { ApiError, colorForName, toast } from '@lib';
 import type { Gender, UpdateProfileRequest } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
 import maleIcon from '@/assets/icons/chat/ic_indicate_male.png';
 import femaleIcon from '@/assets/icons/chat/ic_indicate_female.png';
-import { Avatar } from '../chat/components/Avatar';
-import { colorFromName } from '../me/mappers';
+import { Avatar } from '@components';
 
 const INPUT_CLASS =
   'w-full bg-transparent text-sm text-black/87 outline-none placeholder:text-[#e34545]';
@@ -54,7 +53,7 @@ function AvatarPicker({ avatar, nick, uploading, onPick }: AvatarPickerProps) {
         {avatar ? (
           <img src={avatar} alt="" className="h-24 w-24 rounded-full object-cover" />
         ) : (
-          <Avatar name={nick} color={colorFromName(nick)} size={96} />
+          <Avatar name={nick} color={colorForName(nick)} size={96} />
         )}
         <span className="absolute right-0 bottom-0 flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-ola-primary text-white">
           <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden="true">

@@ -3,14 +3,14 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@constants';
 import { MeService } from '@services';
-import { toast } from '@lib';
+import { colorForName, createDateFormatter, createTimeFormatter, toast } from '@lib';
 import type { Post, PostReaction } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
 import genderIcon from '@/assets/icons/profile/ic_indicate_dynamic_gender.png';
 import birthdayIcon from '@/assets/icons/profile/ic_profile_birthday.png';
-import { Avatar } from '../chat/components/Avatar';
+import { Avatar } from '@components';
 import { MePostCard } from '../me/components/MePostCard';
-import { colorFromName, createDateFormatter, createTimeFormatter, toMePost } from '../me/mappers';
+import { toMePost } from '../me/mappers';
 
 export function ProfileMePage() {
   const { t, i18n } = useTranslation();
@@ -36,7 +36,7 @@ export function ProfileMePage() {
   if (!user) return null;
 
   const nick = user.fullName || user.username;
-  const color = colorFromName(nick);
+  const color = colorForName(nick);
   const isVip = Boolean(user.vipUsed);
   const mePosts = posts.map((post) => toMePost(post, formatTime));
 

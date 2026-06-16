@@ -7,7 +7,7 @@ import genderIcon from '@/assets/icons/profile/ic_indicate_dynamic_gender.png';
 import marriageIcon from '@/assets/icons/profile/ic_profile_marriage.png';
 import birthdayIcon from '@/assets/icons/profile/ic_profile_birthday.png';
 import noteIcon from '@/assets/icons/profile/ic_profile_note.png';
-import { Avatar } from '../../chat/components/Avatar';
+import { Avatar } from '@components';
 import type { UserProfile } from '../types';
 import { RelationButtons } from './RelationButtons';
 

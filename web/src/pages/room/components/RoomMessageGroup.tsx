@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import mentionIcon from '@/assets/icons/room/ic_notification_mention.png';
-import { Avatar } from '../../chat/components/Avatar';
+import { Avatar } from '@components';
 import { renderRichText } from '../../me/richText';
-import { colorForName } from '../avatarColor';
+import { colorForName } from '@lib';
 import type { BubblePosition, MessageGroup } from '../messageGroups';
 
 const OWN_CORNERS: Record<BubblePosition, string> = {

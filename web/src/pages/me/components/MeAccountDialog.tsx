@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Dialog, DialogButton } from '@components';
 import { LanguageSwitcher } from '@components/LanguageSwitcher';
-import { Avatar } from '../../chat/components/Avatar';
+import { Avatar } from '@components';
 
 interface MeAccountDialogProps {
   open: boolean;

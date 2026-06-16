@@ -1,13 +1,11 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { RoomMessage } from '@app-types';
-import { toast } from '@lib';
+import { colorForName, insertAtCursor, toast } from '@lib';
 import { useAuthStore } from '@/store/authStore';
-import { Avatar } from '../../chat/components/Avatar';
+import { Avatar } from '@components';
 import { ComposerSmileyPanel } from '../../me/components/ComposerSmileyPanel';
-import { insertAtCursor } from '../../me/textInsert';
 import { buildRoomFeed } from '../messageGroups';
-import { colorForName } from '../avatarColor';
 import { RoomDateSeparator } from './RoomDateSeparator';
 import { RoomMessageGroup } from './RoomMessageGroup';
 import type { RoomChatStatus } from '@/store/roomChatStore';

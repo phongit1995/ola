@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { createDateFormatter } from '../../me/mappers';
+import { createDateFormatter } from '@lib';
 
 interface RoomDateSeparatorProps {
   iso: string;

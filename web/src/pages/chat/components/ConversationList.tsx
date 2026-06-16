@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ConfirmDialog } from '@components';
 import type { Conversation } from '../types';
-import { Avatar } from './Avatar';
+import { Avatar } from '@components';
 import { EmptyMessages } from './EmptyMessages';
 
 interface ConversationListProps {

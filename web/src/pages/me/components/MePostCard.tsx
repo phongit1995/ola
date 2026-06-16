@@ -6,7 +6,7 @@ import dislikeIcon from '@/assets/icons/me/ic_dislike_gray.png';
 import dislikeIconActive from '@/assets/icons/me/ic_dislike_black.png';
 import likeIcon from '@/assets/icons/me/ic_like_gray.png';
 import likeIconActive from '@/assets/icons/me/ic_like_selected.png';
-import { Avatar } from '../../chat/components/Avatar';
+import { Avatar } from '@components';
 import { PostContent } from './PostContent';
 import { MediaGrid } from './MediaGrid';
 import { MediaViewer } from './MediaViewer';
