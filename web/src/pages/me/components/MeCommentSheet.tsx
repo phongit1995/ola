@@ -16,6 +16,7 @@ interface MeCommentSheetProps {
   onToggleLike: (id: string) => void;
   onToggleDislike: (id: string) => void;
   onOpenProfile?: (nick: string, color: string) => void;
+  onOpenLikers?: (id: string) => void;
   onCommentDelta: (postId: string, delta: number) => void;
 }
 
@@ -28,6 +29,7 @@ export function MeCommentSheet({
   onToggleLike,
   onToggleDislike,
   onOpenProfile,
+  onOpenLikers,
   onCommentDelta,
 }: MeCommentSheetProps) {
   const { t, i18n } = useTranslation();
@@ -68,6 +70,7 @@ export function MeCommentSheet({
             onToggleLike={onToggleLike}
             onToggleDislike={onToggleDislike}
             onOpenProfile={onOpenProfile}
+            onOpenLikers={onOpenLikers}
           />
 
           <div className="py-2">

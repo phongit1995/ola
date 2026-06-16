@@ -13,6 +13,7 @@ import { MeLeftDrawer } from './components/MeLeftDrawer';
 import { MeComposerDialog, type ComposedPost } from './components/MeComposerDialog';
 import { MeCommentSheet } from './components/MeCommentSheet';
 import { MeCommentComposer } from './components/MeCommentComposer';
+import { MeLikersDialog } from './components/MeLikersDialog';
 import { MeAccountDialog } from './components/MeAccountDialog';
 import { ProfilePage } from '../profile/ProfilePage';
 import { buildProfile } from '../profile/data';
@@ -54,6 +55,7 @@ export function MePanel() {
   const [menuPostId, setMenuPostId] = useState<string | null>(null);
   const [editPostId, setEditPostId] = useState<string | null>(null);
   const [deletePostId, setDeletePostId] = useState<string | null>(null);
+  const [likersPostId, setLikersPostId] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const commentPost = commentPostId == null ? null : posts.find((p) => p.id === commentPostId);
@@ -211,6 +213,7 @@ export function MePanel() {
             onOpenComments={openComments}
             onQuickComment={setQuickCommentPostId}
             onOpenMenu={setMenuPostId}
+            onOpenLikers={setLikersPostId}
           />
         </main>
 
@@ -299,6 +302,14 @@ export function MePanel() {
         onViewProfile={() => openProfile(displayName, DEFAULT_AVATAR_COLOR, true)}
       />
 
+      {likersPostId != null && (
+        <MeLikersDialog
+          postId={likersPostId}
+          onClose={() => setLikersPostId(null)}
+          onOpenProfile={openProfile}
+        />
+      )}
+
       {commentPost != null && (
         <MeCommentSheet
           post={commentPost}
@@ -307,6 +318,7 @@ export function MePanel() {
           onToggleLike={toggleLike}
           onToggleDislike={toggleDislike}
           onOpenProfile={openProfile}
+          onOpenLikers={setLikersPostId}
           onCommentDelta={adjustCommentCount}
         />
       )}

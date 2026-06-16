@@ -16,7 +16,6 @@ export interface MePost {
   checkIn?: MeCheckIn | null;
   comments: number;
   likes: number;
-  likers: string[];
   liked: boolean;
   disliked: boolean;
   mention: boolean;

@@ -40,6 +40,7 @@ export interface Post {
   commentCount: number;
   myReaction: PostReaction | null;
   author?: PostAuthor;
+  topLikers?: PostAuthor[];
   createdAt: string;
   updatedAt: string;
 }

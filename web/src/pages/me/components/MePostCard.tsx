@@ -24,6 +24,7 @@ interface MePostCardProps {
   onOpenComments?: (id: string, focusInput?: boolean) => void;
   onQuickComment?: (id: string) => void;
   onOpenMenu?: (id: string) => void;
+  onOpenLikers?: (id: string) => void;
 }
 
 function MePostCardComponent({
@@ -34,10 +35,12 @@ function MePostCardComponent({
   onOpenComments,
   onQuickComment,
   onOpenMenu,
+  onOpenLikers,
 }: MePostCardProps) {
   const { t } = useTranslation();
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
   const hasComments = post.comments > 0;
+  const hasLikes = post.likes > 0;
 
   function onCommentIconClick() {
     if (onQuickComment) {
@@ -114,16 +117,17 @@ function MePostCardComponent({
         >
           {t('me.commentCount', { count: post.comments })}
         </button>
-        <span className="flex items-center -space-x-1">
-          {post.likers.map((color, index) => (
-            <span
-              key={index}
-              className="inline-block h-5 w-5 rounded-full border border-white"
-              style={{ backgroundColor: color }}
-            />
-          ))}
-        </span>
-        <span className="ml-2">{t('me.likeCount', { count: post.likes })}</span>
+        {hasLikes && onOpenLikers != null ? (
+          <button
+            type="button"
+            onClick={() => onOpenLikers(post.id)}
+            className="ml-2 cursor-pointer hover:text-black/87 hover:underline"
+          >
+            {t('me.likeCount', { count: post.likes })}
+          </button>
+        ) : (
+          <span className="ml-2">{t('me.likeCount', { count: post.likes })}</span>
+        )}
       </div>
 
       <div className="mx-4 mt-1 h-px bg-black/12" />

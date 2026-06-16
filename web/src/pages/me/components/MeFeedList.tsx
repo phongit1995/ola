@@ -17,6 +17,7 @@ interface MeFeedListProps {
   onOpenComments: (id: string, focusInput?: boolean) => void;
   onQuickComment: (id: string) => void;
   onOpenMenu: (id: string) => void;
+  onOpenLikers: (id: string) => void;
 }
 
 export function MeFeedList({
@@ -33,6 +34,7 @@ export function MeFeedList({
   onOpenComments,
   onQuickComment,
   onOpenMenu,
+  onOpenLikers,
 }: MeFeedListProps) {
   const { t } = useTranslation();
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -86,6 +88,7 @@ export function MeFeedList({
           onOpenComments={onOpenComments}
           onQuickComment={onQuickComment}
           onOpenMenu={onOpenMenu}
+          onOpenLikers={onOpenLikers}
         />
       ))}
       <div ref={sentinelRef} className="h-1" />
