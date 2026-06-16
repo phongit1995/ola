@@ -21,6 +21,7 @@
     "version": "Phiên bản",
     "errUsernameRequired": "Vui lòng nhập tên đăng nhập.",
     "errUsernameLength": "Tên đăng nhập phải từ 5–20 ký tự.",
+    "errUsernameFormat": "Tên đăng nhập chỉ gồm chữ thường, số, dấu chấm và gạch dưới.",
     "errPasswordRequired": "Vui lòng nhập mật khẩu.",
     "errPasswordLength": "Mật khẩu phải từ 6–20 ký tự."
   },
@@ -38,6 +39,7 @@
     "errUsernameRequired": "Vui lòng nhập tên đăng nhập.",
     "errUsernameMin": "Tên đăng nhập phải có ít nhất 6 ký tự.",
     "errUsernameMax": "Tên đăng nhập tối đa 20 ký tự.",
+    "errUsernameFormat": "Tên đăng nhập chỉ gồm chữ thường, số, dấu chấm và gạch dưới.",
     "errPasswordRequired": "Vui lòng nhập mật khẩu.",
     "errPasswordMin": "Mật khẩu phải có ít nhất 6 ký tự.",
     "errPasswordMax": "Mật khẩu tối đa 20 ký tự.",
@@ -54,6 +56,7 @@
     "submit": "Tiếp tục",
     "backToLogin": "Quay lại đăng nhập",
     "errUsernameRequired": "Vui lòng nhập tên đăng nhập.",
+    "errUsernameFormat": "Tên đăng nhập chỉ gồm chữ thường, số, dấu chấm và gạch dưới.",
     "doneTitle": "Đã nhận yêu cầu",
     "doneDesc": "Nếu tài khoản tồn tại, chúng tôi sẽ gửi hướng dẫn khôi phục trong giây lát."
   },

@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -8,7 +8,7 @@ import { ClearableInput } from '@components/form/ClearableInput';
 import { SubmitButton } from '@components/form/SubmitButton';
 import { LanguageSwitcher } from '@components/LanguageSwitcher';
 import { AuthService } from '@services';
-import { ApiError, USERNAME_MAX, sanitizeUsername, toast } from '@lib';
+import { ApiError, USERNAME_MAX, USERNAME_PATTERN, toast } from '@lib';
 import { useAuthStore } from '@/store/authStore';
 
 const APP_VERSION = '15240093';
@@ -44,11 +44,6 @@ export function LoginPage() {
     if (error) {
       setError(null);
     }
-  }
-
-  function handleUsernameChange(event: ChangeEvent<HTMLInputElement>) {
-    setValue('username', sanitizeUsername(event.target.value), { shouldValidate: true });
-    clearError();
   }
 
   async function onSubmit(data: LoginForm) {
@@ -87,10 +82,11 @@ export function LoginPage() {
       >
         <ClearableInput
           field={register('username', {
-            onChange: handleUsernameChange,
+            onChange: clearError,
             required: t('login.errUsernameRequired'),
             minLength: { value: USERNAME_MIN, message: t('login.errUsernameLength') },
             maxLength: { value: USERNAME_MAX, message: t('login.errUsernameLength') },
+            pattern: { value: USERNAME_PATTERN, message: t('login.errUsernameFormat') },
           })}
           placeholder={t('login.username')}
           type="text"

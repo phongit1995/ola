@@ -21,6 +21,7 @@
     "version": "Version",
     "errUsernameRequired": "Please enter your username.",
     "errUsernameLength": "Username must be 5–20 characters.",
+    "errUsernameFormat": "Username can only contain lowercase letters, numbers, dot and underscore.",
     "errPasswordRequired": "Please enter your password.",
     "errPasswordLength": "Password must be 6–20 characters."
   },
@@ -38,6 +39,7 @@
     "errUsernameRequired": "Please enter a username.",
     "errUsernameMin": "Username must be at least 6 characters.",
     "errUsernameMax": "Username must be at most 20 characters.",
+    "errUsernameFormat": "Username can only contain lowercase letters, numbers, dot and underscore.",
     "errPasswordRequired": "Please enter a password.",
     "errPasswordMin": "Password must be at least 6 characters.",
     "errPasswordMax": "Password must be at most 20 characters.",
@@ -54,6 +56,7 @@
     "submit": "Continue",
     "backToLogin": "Back to login",
     "errUsernameRequired": "Please enter your username.",
+    "errUsernameFormat": "Username can only contain lowercase letters, numbers, dot and underscore.",
     "doneTitle": "Request received",
     "doneDesc": "If this account exists, we'll send recovery instructions shortly."
   },

@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { Trans, useTranslation } from 'react-i18next';
@@ -8,7 +8,7 @@ import { TextField } from '@components/form/TextField';
 import { SubmitButton } from '@components/form/SubmitButton';
 import { LanguageSwitcher } from '@components/LanguageSwitcher';
 import { AuthService } from '@services';
-import { resolveAuthError, USERNAME_MAX, sanitizeUsername, toast } from '@lib';
+import { resolveAuthError, USERNAME_MAX, USERNAME_PATTERN, toast } from '@lib';
 
 const USERNAME_MIN = 6;
 
@@ -40,10 +40,6 @@ export function RegisterPage() {
   const username = watch('username');
   const password = watch('password');
   const confirm = watch('confirm');
-
-  function handleUsernameChange(event: ChangeEvent<HTMLInputElement>) {
-    setValue('username', sanitizeUsername(event.target.value), { shouldValidate: true });
-  }
 
   async function onSubmit(data: RegisterForm) {
     setLoading(true);
@@ -87,10 +83,10 @@ export function RegisterPage() {
         placeholder={t('register.usernamePlaceholder')}
         error={errors.username?.message}
         field={register('username', {
-          onChange: handleUsernameChange,
           required: t('register.errUsernameRequired'),
           minLength: { value: USERNAME_MIN, message: t('register.errUsernameMin') },
           maxLength: { value: USERNAME_MAX, message: t('register.errUsernameMax') },
+          pattern: { value: USERNAME_PATTERN, message: t('register.errUsernameFormat') },
         })}
         showClear={!!username}
         onClear={() => setValue('username', '', { shouldValidate: true })}

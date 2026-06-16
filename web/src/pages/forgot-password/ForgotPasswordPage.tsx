@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -7,7 +7,7 @@ import olaLogo from '@/assets/images/ola-logo.png';
 import { TextField } from '@components/form/TextField';
 import { SubmitButton } from '@components/form/SubmitButton';
 import { LanguageSwitcher } from '@components/LanguageSwitcher';
-import { USERNAME_MAX, sanitizeUsername } from '@lib';
+import { USERNAME_MAX, USERNAME_PATTERN } from '@lib';
 
 const USERNAME_MIN = 5;
 
@@ -32,10 +32,6 @@ export function ForgotPasswordPage() {
   });
 
   const username = watch('username');
-
-  function handleUsernameChange(event: ChangeEvent<HTMLInputElement>) {
-    setValue('username', sanitizeUsername(event.target.value), { shouldValidate: true });
-  }
 
   function onSubmit() {
     setSubmitted(true);
@@ -73,10 +69,10 @@ export function ForgotPasswordPage() {
             placeholder={t('forgot.usernamePlaceholder')}
             error={errors.username?.message}
             field={register('username', {
-              onChange: handleUsernameChange,
               required: t('forgot.errUsernameRequired'),
               minLength: { value: USERNAME_MIN, message: t('forgot.errUsernameRequired') },
               maxLength: { value: USERNAME_MAX, message: t('forgot.errUsernameRequired') },
+              pattern: { value: USERNAME_PATTERN, message: t('forgot.errUsernameFormat') },
             })}
             showClear={!!username}
             onClear={() => setValue('username', '', { shouldValidate: true })}
