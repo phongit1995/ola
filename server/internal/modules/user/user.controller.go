@@ -5,6 +5,7 @@ import (
 	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
@@ -22,11 +23,11 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 
 // GetUserInfo godoc
 // @Summary      Get user public info
-// @Description  Get public profile information of a user by ID, including online status and last active time
+// @Description  Get public profile by user ID (UUID) or username, including online status and relationship
 // @Tags         user
 // @Produce      json
 // @Security     BearerAuth
-// @Param        id path string true "User ID (UUID)"
+// @Param        id path string true "User ID (UUID) or username"
 // @Success      200  {object}  UserPublicProfileSuccessResponse
 // @Failure      400  {object}  utils.APIError
 // @Failure      401  {object}  utils.APIError
@@ -38,12 +39,14 @@ func (ctrl *Controller) GetUserInfo(c *gin.Context) (interface{}, error) {
 		return nil, err
 	}
 
-	targetID, err := utils.ParseUUIDParam(c, "id", "invalid user ID")
-	if err != nil {
-		return nil, err
-	}
+	identifier := c.Param("id")
 
-	profile, err := ctrl.service.GetPublicProfile(callerID, targetID)
+	var profile *UserPublicProfileResponse
+	if targetID, parseErr := uuid.Parse(identifier); parseErr == nil {
+		profile, err = ctrl.service.GetPublicProfile(callerID, targetID)
+	} else {
+		profile, err = ctrl.service.GetPublicProfileByUsername(callerID, identifier)
+	}
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}

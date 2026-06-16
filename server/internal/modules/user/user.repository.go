@@ -25,6 +25,15 @@ func (r *Repository) FindByID(id uuid.UUID) (*models.User, error) {
 	return &user, nil
 }
 
+func (r *Repository) FindByUsername(username string) (*models.User, error) {
+	var user models.User
+	err := r.db.First(&user, "username = ?", username).Error
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
 func (r *Repository) Update(user *models.User) error {
 	return r.db.Save(user).Error
 }

@@ -60,6 +60,18 @@ async function main() {
     ok('blocked user sees blocked_by_them', cSee?.status === 'blocked_by_them')
   }
 
+  console.log('\n── fetch by USERNAME (same as by id) ──')
+  {
+    const byId = data(await publicOf(bob, charlie.id))
+    const byName = data(await publicOf(bob, charlie.username))
+    ok('GET /user/:username → 2xx with id', !!byName?.id)
+    ok('by-username returns same user as by-id', byName?.id === byId?.id)
+    ok('by-username username matches', byName?.username === charlie.username)
+
+    const missing = await publicOf(bob, 'no_such_user_xyz_0000')
+    ok('unknown username → 404', missing.status === 404)
+  }
+
   const s = summary()
   process.exit(s.failed > 0 ? 1 : 0)
 }

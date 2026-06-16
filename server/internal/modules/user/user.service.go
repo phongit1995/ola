@@ -248,7 +248,22 @@ func (s *Service) GetPublicProfile(callerID, targetUserID uuid.UUID) (*UserPubli
 		}
 		return nil, err
 	}
+	return s.buildPublicProfile(callerID, user), nil
+}
 
+func (s *Service) GetPublicProfileByUsername(callerID uuid.UUID, username string) (*UserPublicProfileResponse, error) {
+	user, err := s.repo.FindByUsername(username)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("user not found")
+		}
+		return nil, err
+	}
+	return s.buildPublicProfile(callerID, user), nil
+}
+
+func (s *Service) buildPublicProfile(callerID uuid.UUID, user *models.User) *UserPublicProfileResponse {
+	targetUserID := user.ID
 	idStr := targetUserID.String()
 	isOnline := s.presence.IsUserOnline(idStr)
 	lastActiveAt := s.presence.GetLastActive(idStr)
@@ -291,7 +306,7 @@ func (s *Service) GetPublicProfile(callerID, targetUserID uuid.UUID) (*UserPubli
 		}
 	}
 
-	return response, nil
+	return response
 }
 
 func (s *Service) isEitherBlocked(a, b uuid.UUID) (bool, error) {
