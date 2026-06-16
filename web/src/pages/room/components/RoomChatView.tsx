@@ -27,6 +27,7 @@ export function RoomChatView({ onClose }: RoomChatViewProps) {
   const members = useRoomChatStore((state) => state.members);
   const memberCount = useRoomChatStore((state) => state.memberCount);
   const activeTab = useRoomChatStore((state) => state.activeTab);
+  const messagesUnread = useRoomChatStore((state) => state.messagesUnread);
   const setActiveTab = useRoomChatStore((state) => state.setActiveTab);
   const sendMessage = useRoomChatStore((state) => state.sendMessage);
   const setRoomForeground = useRoomChatStore((state) => state.setRoomForeground);
@@ -44,7 +45,12 @@ export function RoomChatView({ onClose }: RoomChatViewProps) {
 
   const tabs: RoomTabItem[] = [
     { key: 'members', icon: addFriendIcon, label: `${t('room.tabMembers')} (${memberCount})` },
-    { key: 'messages', icon: groupMessageIcon, label: t('room.tabMessages') },
+    {
+      key: 'messages',
+      icon: groupMessageIcon,
+      label: t('room.tabMessages'),
+      indicator: messagesUnread && activeTab !== 'messages',
+    },
   ];
 
   return (

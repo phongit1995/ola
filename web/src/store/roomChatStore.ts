@@ -27,6 +27,7 @@ interface RoomChatState {
   members: RoomMember[];
   memberCount: number;
   hasUnread: boolean;
+  messagesUnread: boolean;
   roomForeground: boolean;
   open: (room: ActiveRoom) => Promise<void>;
   close: () => void;
@@ -61,6 +62,7 @@ const initialState = {
   members: [] as RoomMember[],
   memberCount: 0,
   hasUnread: false,
+  messagesUnread: false,
   roomForeground: false,
 };
 
@@ -93,11 +95,14 @@ export const useRoomChatStore = create<RoomChatState>((set, get) => ({
           const currentUserId = useAuthStore.getState().user?.id;
           set((state) => {
             if (state.messages.some((item) => item.id === newMessage.id)) return state;
+            const messages = [...state.messages, newMessage];
             const isOwn = newMessage.senderId === currentUserId;
-            const markUnread = !state.roomForeground && !isOwn;
-            return markUnread
-              ? { messages: [...state.messages, newMessage], hasUnread: true }
-              : { messages: [...state.messages, newMessage] };
+            if (isOwn) return { messages };
+            return {
+              messages,
+              ...(state.roomForeground ? {} : { hasUnread: true }),
+              ...(state.activeTab === 'messages' ? {} : { messagesUnread: true }),
+            };
           });
           return;
         }
@@ -167,7 +172,8 @@ export const useRoomChatStore = create<RoomChatState>((set, get) => ({
     set({ ...initialState });
   },
 
-  setActiveTab: (tab) => set({ activeTab: tab }),
+  setActiveTab: (tab) =>
+    set(tab === 'messages' ? { activeTab: tab, messagesUnread: false } : { activeTab: tab }),
 
   setRoomForeground: (foreground) =>
     set(foreground ? { roomForeground: true, hasUnread: false } : { roomForeground: false }),

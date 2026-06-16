@@ -4,6 +4,7 @@ export interface RoomTabItem {
   key: RoomTab;
   icon: string;
   label: string;
+  indicator?: boolean;
 }
 
 interface RoomTabBarProps {
@@ -27,7 +28,9 @@ export function RoomTabBar({ tabs, activeTab, onSelect }: RoomTabBarProps) {
             }`}
           >
             <span>{tab.label}</span>
-            <img src={tab.icon} alt="" className="h-5 w-5 object-contain brightness-0 invert" />
+            {(tab.indicator === undefined || tab.indicator) && (
+              <img src={tab.icon} alt="" className="h-5 w-5 object-contain brightness-0 invert" />
+            )}
             {active && <span className="absolute inset-x-0 bottom-0 h-0.5 bg-white" />}
           </button>
         );
