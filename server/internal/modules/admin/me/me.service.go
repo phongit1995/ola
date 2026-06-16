@@ -25,8 +25,21 @@ func NewService(repo *Repository, logger *zap.SugaredLogger) *Service {
 	return &Service{repo: repo, logger: logger.Named("[admin_me_service]")}
 }
 
-func (s *Service) List(query string, authorID *uuid.UUID, limit, offset int) (*PostListResponse, error) {
-	posts, total, err := s.repo.List(query, authorID, limit, offset)
+type ListFilter struct {
+	Query      string
+	AuthorID   *uuid.UUID
+	Enabled    *bool
+	Visibility string
+	HasImages  *bool
+	HasCheckin *bool
+	SortBy     string
+	SortDir    string
+	Limit      int
+	Offset     int
+}
+
+func (s *Service) List(f ListFilter) (*PostListResponse, error) {
+	posts, total, err := s.repo.List(f)
 	if err != nil {
 		return nil, err
 	}
@@ -34,7 +47,7 @@ func (s *Service) List(query string, authorID *uuid.UUID, limit, offset int) (*P
 	for _, p := range posts {
 		items = append(items, toListItem(p))
 	}
-	return &PostListResponse{Items: items, Total: total, Limit: limit, Offset: offset}, nil
+	return &PostListResponse{Items: items, Total: total, Limit: f.Limit, Offset: f.Offset}, nil
 }
 
 func (s *Service) GetByID(id uuid.UUID) (*PostDetail, error) {

@@ -5,20 +5,37 @@ import {
   Button,
   Card,
   Input,
+  Select,
   Space,
   Table,
   Tag,
+  Tooltip,
   type TableColumnsType,
 } from 'antd'
-import { DeleteOutlined, EyeOutlined, UserOutlined } from '@ant-design/icons'
+import {
+  ClearOutlined,
+  CrownOutlined,
+  DeleteOutlined,
+  EyeOutlined,
+  UserOutlined,
+} from '@ant-design/icons'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useDeleteUser, useUpdateUserStatus, useUsers } from '@/hooks/useUsers'
 import { formatDateTime } from '@/lib/format'
 import { ApiError } from '@/lib/apiError'
 import { UserDetailDrawer } from './UserDetailDrawer'
+import { GENDER } from './userMeta'
 import type { AdminUserListItem } from '@/types'
 
 const PAGE_SIZE = 20
+
+const SORT_OPTIONS = [
+  { value: 'newest', label: 'Mới nhất', params: {} as { sortBy?: string; sortDir?: string } },
+  { value: 'oldest', label: 'Cũ nhất', params: { sortBy: 'createdAt', sortDir: 'asc' } },
+  { value: 'recent_login', label: 'Đăng nhập gần đây', params: { sortBy: 'lastLoginAt', sortDir: 'desc' } },
+  { value: 'followers', label: 'Nhiều follower', params: { sortBy: 'followerCount', sortDir: 'desc' } },
+  { value: 'name', label: 'Tên A–Z', params: { sortBy: 'username', sortDir: 'asc' } },
+]
 
 export function UsersPage() {
   const { message, modal } = App.useApp()
@@ -26,11 +43,41 @@ export function UsersPage() {
   const [page, setPage] = useState(1)
   const q = useDebounce(search.trim())
 
+  const [status, setStatus] = useState<'all' | 'active' | 'banned'>('all')
+  const [gender, setGender] = useState<string>('all')
+  const [vip, setVip] = useState<'all' | 'vip' | 'normal'>('all')
+  const [sort, setSort] = useState('newest')
+
   const [detailId, setDetailId] = useState<string | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
 
+  function resetPage<T>(setter: (v: T) => void) {
+    return (v: T) => {
+      setter(v)
+      setPage(1)
+    }
+  }
+
+  const hasActiveFilter =
+    search !== '' || status !== 'all' || gender !== 'all' || vip !== 'all' || sort !== 'newest'
+
+  function clearFilters() {
+    setSearch('')
+    setStatus('all')
+    setGender('all')
+    setVip('all')
+    setSort('newest')
+    setPage(1)
+  }
+
+  const sortParams = SORT_OPTIONS.find((o) => o.value === sort)?.params ?? {}
+
   const { data, isFetching } = useUsers({
     q: q || undefined,
+    isActive: status === 'all' ? undefined : status === 'active',
+    gender: gender === 'all' ? undefined : gender,
+    vip: vip === 'all' ? undefined : vip === 'vip',
+    ...sortParams,
     limit: PAGE_SIZE,
     offset: (page - 1) * PAGE_SIZE,
   })
@@ -88,23 +135,41 @@ export function UsersPage() {
         <Space>
           <Avatar src={user.avatar} icon={<UserOutlined />} />
           <div style={{ lineHeight: 1.2 }}>
-            <div style={{ fontWeight: 600 }}>{user.fullName || user.username}</div>
+            <div style={{ fontWeight: 600 }}>
+              {user.fullName || user.username}
+              {user.isVip && (
+                <Tooltip title="VIP">
+                  <CrownOutlined style={{ color: '#faad14', marginLeft: 6 }} />
+                </Tooltip>
+              )}
+            </div>
             <div style={{ fontSize: 12, color: '#6b7785' }}>@{user.username}</div>
           </div>
         </Space>
       ),
     },
-    { title: 'Email', dataIndex: 'email', render: (v) => v || '—' },
+    { title: 'Email', dataIndex: 'email', width: 200, render: (v) => v || '—' },
+    {
+      title: 'Giới tính',
+      dataIndex: 'gender',
+      width: 100,
+      render: (g: string) => {
+        const info = GENDER[g] ?? { label: g || '—', color: 'default' }
+        return g ? <Tag color={info.color}>{info.label}</Tag> : '—'
+      },
+    },
     {
       title: 'Trạng thái',
       dataIndex: 'isActive',
-      width: 140,
+      width: 130,
       render: (isActive: boolean) =>
-        isActive ? (
-          <Tag color="green">Hoạt động</Tag>
-        ) : (
-          <Tag color="red">Đã khoá</Tag>
-        ),
+        isActive ? <Tag color="green">Hoạt động</Tag> : <Tag color="red">Đã khoá</Tag>,
+    },
+    {
+      title: 'Đăng nhập cuối',
+      dataIndex: 'lastLoginAt',
+      width: 170,
+      render: (v) => formatDateTime(v),
     },
     {
       title: 'Ngày tạo',
@@ -115,7 +180,7 @@ export function UsersPage() {
     {
       title: 'Thao tác',
       key: 'actions',
-      width: 230,
+      width: 240,
       render: (_, user) => (
         <Space>
           <Button size="small" icon={<EyeOutlined />} onClick={() => openDetail(user.id)}>
@@ -137,7 +202,15 @@ export function UsersPage() {
 
   return (
     <Card>
-      <div style={{ marginBottom: 16, maxWidth: 360 }}>
+      <div
+        style={{
+          marginBottom: 16,
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: 12,
+          alignItems: 'center',
+        }}
+      >
         <Input.Search
           allowClear
           placeholder="Tìm theo tên / email..."
@@ -146,14 +219,57 @@ export function UsersPage() {
             setSearch(e.target.value)
             setPage(1)
           }}
+          style={{ width: 280 }}
         />
+        <Select
+          value={status}
+          onChange={resetPage(setStatus)}
+          style={{ width: 150 }}
+          options={[
+            { value: 'all', label: 'Mọi trạng thái' },
+            { value: 'active', label: 'Hoạt động' },
+            { value: 'banned', label: 'Đã khoá' },
+          ]}
+        />
+        <Select
+          value={gender}
+          onChange={resetPage(setGender)}
+          style={{ width: 140 }}
+          options={[
+            { value: 'all', label: 'Mọi giới tính' },
+            { value: 'male', label: 'Nam' },
+            { value: 'female', label: 'Nữ' },
+            { value: 'other', label: 'Khác' },
+          ]}
+        />
+        <Select
+          value={vip}
+          onChange={resetPage(setVip)}
+          style={{ width: 130 }}
+          options={[
+            { value: 'all', label: 'VIP: tất cả' },
+            { value: 'vip', label: 'VIP' },
+            { value: 'normal', label: 'Thường' },
+          ]}
+        />
+        <Select
+          value={sort}
+          onChange={resetPage(setSort)}
+          style={{ width: 200 }}
+          options={SORT_OPTIONS.map((o) => ({ value: o.value, label: `Sắp xếp: ${o.label}` }))}
+        />
+        {hasActiveFilter && (
+          <Button icon={<ClearOutlined />} onClick={clearFilters}>
+            Xoá lọc
+          </Button>
+        )}
       </div>
       <Table<AdminUserListItem>
         rowKey="id"
         columns={columns}
         dataSource={data?.items ?? []}
         loading={isFetching}
-        scroll={{ x: 720 }}
+        scroll={{ x: 1100 }}
         pagination={{
           current: page,
           pageSize: PAGE_SIZE,

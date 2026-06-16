@@ -6,6 +6,7 @@ import {
   Card,
   Image,
   Input,
+  Select,
   Space,
   Switch,
   Table,
@@ -14,6 +15,7 @@ import {
   type TableColumnsType,
 } from 'antd'
 import {
+  ClearOutlined,
   EnvironmentOutlined,
   EyeOutlined,
   LikeOutlined,
@@ -30,17 +32,71 @@ import type { MeListItem } from '@/types'
 
 const PAGE_SIZE = 20
 
+type TriState = 'all' | 'yes' | 'no'
+
+const triToBool = (v: TriState): boolean | undefined =>
+  v === 'all' ? undefined : v === 'yes'
+
+const SORT_OPTIONS = [
+  { value: 'newest', label: 'Mới nhất', params: {} as { sortBy?: string; sortDir?: string } },
+  { value: 'oldest', label: 'Cũ nhất', params: { sortBy: 'createdAt', sortDir: 'asc' } },
+  { value: 'most_liked', label: 'Nhiều thích nhất', params: { sortBy: 'likeCount', sortDir: 'desc' } },
+  {
+    value: 'most_commented',
+    label: 'Nhiều bình luận nhất',
+    params: { sortBy: 'commentCount', sortDir: 'desc' },
+  },
+]
+
 export function MePage() {
   const { message, modal } = App.useApp()
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
   const q = useDebounce(search.trim())
 
+  const [status, setStatus] = useState<'all' | 'shown' | 'hidden'>('all')
+  const [visibility, setVisibility] = useState<string>('all')
+  const [hasImages, setHasImages] = useState<TriState>('all')
+  const [hasCheckin, setHasCheckin] = useState<TriState>('all')
+  const [sort, setSort] = useState('newest')
+
   const [detailId, setDetailId] = useState<string | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
 
+  function resetPage<T>(setter: (v: T) => void) {
+    return (v: T) => {
+      setter(v)
+      setPage(1)
+    }
+  }
+
+  const hasActiveFilter =
+    search !== '' ||
+    status !== 'all' ||
+    visibility !== 'all' ||
+    hasImages !== 'all' ||
+    hasCheckin !== 'all' ||
+    sort !== 'newest'
+
+  function clearFilters() {
+    setSearch('')
+    setStatus('all')
+    setVisibility('all')
+    setHasImages('all')
+    setHasCheckin('all')
+    setSort('newest')
+    setPage(1)
+  }
+
+  const sortParams = SORT_OPTIONS.find((o) => o.value === sort)?.params ?? {}
+
   const { data, isFetching } = useMeList({
     q: q || undefined,
+    enabled: status === 'all' ? undefined : status === 'shown',
+    visibility: visibility === 'all' ? undefined : visibility,
+    hasImages: triToBool(hasImages),
+    hasCheckin: triToBool(hasCheckin),
+    ...sortParams,
     limit: PAGE_SIZE,
     offset: (page - 1) * PAGE_SIZE,
   })
@@ -213,7 +269,15 @@ export function MePage() {
 
   return (
     <Card>
-      <div style={{ marginBottom: 16, maxWidth: 360 }}>
+      <div
+        style={{
+          marginBottom: 16,
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: 12,
+          alignItems: 'center',
+        }}
+      >
         <Input.Search
           allowClear
           placeholder="Tìm theo nội dung..."
@@ -222,7 +286,60 @@ export function MePage() {
             setSearch(e.target.value)
             setPage(1)
           }}
+          style={{ width: 280 }}
         />
+        <Select
+          value={status}
+          onChange={resetPage(setStatus)}
+          style={{ width: 150 }}
+          options={[
+            { value: 'all', label: 'Tất cả trạng thái' },
+            { value: 'shown', label: 'Đang hiện' },
+            { value: 'hidden', label: 'Đã ẩn' },
+          ]}
+        />
+        <Select
+          value={visibility}
+          onChange={resetPage(setVisibility)}
+          style={{ width: 150 }}
+          options={[
+            { value: 'all', label: 'Mọi hiển thị' },
+            { value: 'public', label: 'Công khai' },
+            { value: 'friend', label: 'Bạn bè' },
+            { value: 'private', label: 'Riêng tư' },
+          ]}
+        />
+        <Select
+          value={hasImages}
+          onChange={resetPage(setHasImages)}
+          style={{ width: 140 }}
+          options={[
+            { value: 'all', label: 'Ảnh: tất cả' },
+            { value: 'yes', label: 'Có ảnh' },
+            { value: 'no', label: 'Không ảnh' },
+          ]}
+        />
+        <Select
+          value={hasCheckin}
+          onChange={resetPage(setHasCheckin)}
+          style={{ width: 160 }}
+          options={[
+            { value: 'all', label: 'Check-in: tất cả' },
+            { value: 'yes', label: 'Có check-in' },
+            { value: 'no', label: 'Không check-in' },
+          ]}
+        />
+        <Select
+          value={sort}
+          onChange={resetPage(setSort)}
+          style={{ width: 180 }}
+          options={SORT_OPTIONS.map((o) => ({ value: o.value, label: `Sắp xếp: ${o.label}` }))}
+        />
+        {hasActiveFilter && (
+          <Button icon={<ClearOutlined />} onClick={clearFilters}>
+            Xoá lọc
+          </Button>
+        )}
       </div>
       <Table<MeListItem>
         rowKey="id"

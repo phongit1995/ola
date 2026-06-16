@@ -15,13 +15,33 @@ func NewRepository(db *gorm.DB) *Repository {
 	return &Repository{db: db}
 }
 
-func (r *Repository) List(query string, authorID *uuid.UUID, limit, offset int) ([]*models.Post, int64, error) {
+func (r *Repository) List(f ListFilter) ([]*models.Post, int64, error) {
 	db := r.db.Model(&models.Post{})
-	if authorID != nil {
-		db = db.Where("author_id = ?", *authorID)
+	if f.AuthorID != nil {
+		db = db.Where("author_id = ?", *f.AuthorID)
 	}
-	if query != "" {
-		db = db.Where("content ILIKE ?", "%"+query+"%")
+	if f.Query != "" {
+		db = db.Where("content ILIKE ?", "%"+f.Query+"%")
+	}
+	if f.Enabled != nil {
+		db = db.Where("enabled = ?", *f.Enabled)
+	}
+	if f.Visibility != "" {
+		db = db.Where("visibility = ?", f.Visibility)
+	}
+	if f.HasImages != nil {
+		if *f.HasImages {
+			db = db.Where("COALESCE(jsonb_array_length(images), 0) > 0")
+		} else {
+			db = db.Where("COALESCE(jsonb_array_length(images), 0) = 0")
+		}
+	}
+	if f.HasCheckin != nil {
+		if *f.HasCheckin {
+			db = db.Where("check_in IS NOT NULL")
+		} else {
+			db = db.Where("check_in IS NULL")
+		}
 	}
 
 	var total int64
@@ -30,10 +50,29 @@ func (r *Repository) List(query string, authorID *uuid.UUID, limit, offset int) 
 	}
 
 	var posts []*models.Post
-	if err := db.Preload("Author").Order("created_at DESC").Limit(limit).Offset(offset).Find(&posts).Error; err != nil {
+	if err := db.Preload("Author").Order(orderClause(f.SortBy, f.SortDir)).Limit(f.Limit).Offset(f.Offset).Find(&posts).Error; err != nil {
 		return nil, 0, err
 	}
 	return posts, total, nil
+}
+
+var sortColumns = map[string]string{
+	"createdAt":    "created_at",
+	"likeCount":    "like_count",
+	"commentCount": "comment_count",
+	"dislikeCount": "dislike_count",
+}
+
+func orderClause(sortBy, sortDir string) string {
+	col, ok := sortColumns[sortBy]
+	if !ok {
+		col = "created_at"
+	}
+	dir := "DESC"
+	if sortDir == "asc" {
+		dir = "ASC"
+	}
+	return col + " " + dir + ", id DESC"
 }
 
 func (r *Repository) GetByID(id uuid.UUID) (*models.Post, error) {

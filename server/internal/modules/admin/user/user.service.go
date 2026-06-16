@@ -19,8 +19,8 @@ func NewService(repo *Repository, logger *zap.SugaredLogger) *Service {
 	return &Service{repo: repo, logger: logger.Named("[admin_user_service]")}
 }
 
-func (s *Service) List(query string, limit, offset int) (*ListUsersResponse, error) {
-	users, total, err := s.repo.List(query, limit, offset)
+func (s *Service) List(f ListFilter) (*ListUsersResponse, error) {
+	users, total, err := s.repo.List(f)
 	if err != nil {
 		return nil, err
 	}
@@ -33,6 +33,8 @@ func (s *Service) List(query string, limit, offset int) (*ListUsersResponse, err
 			FullName:    u.FullName,
 			Email:       u.Email,
 			Avatar:      u.Avatar,
+			Gender:      u.Gender,
+			IsVip:       isVip(u),
 			IsActive:    u.IsActive,
 			CreatedAt:   u.CreatedAt.UTC().Format(time.RFC3339),
 			LastLoginAt: formatTime(u.LastLoginAt),
@@ -42,8 +44,8 @@ func (s *Service) List(query string, limit, offset int) (*ListUsersResponse, err
 	return &ListUsersResponse{
 		Items:  items,
 		Total:  total,
-		Limit:  limit,
-		Offset: offset,
+		Limit:  f.Limit,
+		Offset: f.Offset,
 	}, nil
 }
 
@@ -96,20 +98,35 @@ func (s *Service) Delete(id uuid.UUID) error {
 }
 
 func toDetail(u *models.User) *UserDetail {
-	return &UserDetail{
-		ID:          u.ID.String(),
-		Username:    u.Username,
-		FullName:    u.FullName,
-		Email:       u.Email,
-		Avatar:      u.Avatar,
-		Phone:       u.Phone,
-		Bio:         u.Bio,
-		IsActive:    u.IsActive,
-		LastLoginIP: u.LastLoginIP,
-		LastLoginAt: formatTime(u.LastLoginAt),
-		CreatedAt:   u.CreatedAt.UTC().Format(time.RFC3339),
-		UpdatedAt:   u.UpdatedAt.UTC().Format(time.RFC3339),
+	d := &UserDetail{
+		ID:             u.ID.String(),
+		Username:       u.Username,
+		FullName:       u.FullName,
+		Email:          u.Email,
+		Avatar:         u.Avatar,
+		Phone:          u.Phone,
+		Bio:            u.Bio,
+		Gender:         u.Gender,
+		DateOfBirth:    formatDate(u.DateOfBirth),
+		Ken:            u.Ken,
+		IsVip:          isVip(u),
+		VipEndTime:     formatTime(u.VipEndTime),
+		FollowerCount:  u.FollowerCount,
+		FollowingCount: u.FollowingCount,
+		IsActive:       u.IsActive,
+		LastLoginIP:    u.LastLoginIP,
+		LastLoginAt:    formatTime(u.LastLoginAt),
+		CreatedAt:      u.CreatedAt.UTC().Format(time.RFC3339),
+		UpdatedAt:      u.UpdatedAt.UTC().Format(time.RFC3339),
 	}
+	if u.VipUsed != nil {
+		d.VipUsed = *u.VipUsed
+	}
+	return d
+}
+
+func isVip(u *models.User) bool {
+	return u.VipEndTime != nil && u.VipEndTime.After(time.Now())
 }
 
 func formatTime(t *time.Time) string {
@@ -117,4 +134,11 @@ func formatTime(t *time.Time) string {
 		return ""
 	}
 	return t.UTC().Format(time.RFC3339)
+}
+
+func formatDate(t *time.Time) string {
+	if t == nil {
+		return ""
+	}
+	return t.UTC().Format("2006-01-02")
 }

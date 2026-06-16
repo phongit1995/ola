@@ -3,13 +3,13 @@ import type {
   ApiResponse,
   AdminUserDetail,
   AdminUserListItem,
-  ListParams,
   ListResult,
   MessageResult,
+  UserListParams,
 } from '@/types'
 
 export const AdminUserService = {
-  async list(params: ListParams = {}): Promise<ListResult<AdminUserListItem>> {
+  async list(params: UserListParams = {}): Promise<ListResult<AdminUserListItem>> {
     const { data } = await http.get<ApiResponse<ListResult<AdminUserListItem>>>(
       '/admin/users',
       { params },

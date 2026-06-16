@@ -7,10 +7,11 @@ import type {
   MeComment,
   MeDetail,
   MeListItem,
+  MeListParams,
 } from '@/types'
 
 export const AdminMeService = {
-  async list(params: ListParams = {}): Promise<ListResult<MeListItem>> {
+  async list(params: MeListParams = {}): Promise<ListResult<MeListItem>> {
     const { data } = await http.get<ApiResponse<ListResult<MeListItem>>>('/admin/me', {
       params,
     })

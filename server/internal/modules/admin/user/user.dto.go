@@ -6,6 +6,8 @@ type UserListItem struct {
 	FullName    string `json:"fullName,omitempty"`
 	Email       string `json:"email,omitempty"`
 	Avatar      string `json:"avatar,omitempty"`
+	Gender      string `json:"gender,omitempty"`
+	IsVip       bool   `json:"isVip"`
 	IsActive    bool   `json:"isActive"`
 	CreatedAt   string `json:"createdAt"`
 	LastLoginAt string `json:"lastLoginAt,omitempty"`
@@ -19,18 +21,37 @@ type ListUsersResponse struct {
 }
 
 type UserDetail struct {
-	ID          string `json:"id"`
-	Username    string `json:"username"`
-	FullName    string `json:"fullName,omitempty"`
-	Email       string `json:"email,omitempty"`
-	Avatar      string `json:"avatar,omitempty"`
-	Phone       string `json:"phone,omitempty"`
-	Bio         string `json:"bio,omitempty"`
-	IsActive    bool   `json:"isActive"`
-	LastLoginIP string `json:"lastLoginIp,omitempty"`
-	LastLoginAt string `json:"lastLoginAt,omitempty"`
-	CreatedAt   string `json:"createdAt"`
-	UpdatedAt   string `json:"updatedAt"`
+	ID             string `json:"id"`
+	Username       string `json:"username"`
+	FullName       string `json:"fullName,omitempty"`
+	Email          string `json:"email,omitempty"`
+	Avatar         string `json:"avatar,omitempty"`
+	Phone          string `json:"phone,omitempty"`
+	Bio            string `json:"bio,omitempty"`
+	Gender         string `json:"gender,omitempty"`
+	DateOfBirth    string `json:"dateOfBirth,omitempty"`
+	Ken            int    `json:"ken"`
+	IsVip          bool   `json:"isVip"`
+	VipUsed        string `json:"vipUsed,omitempty"`
+	VipEndTime     string `json:"vipEndTime,omitempty"`
+	FollowerCount  int    `json:"followerCount"`
+	FollowingCount int    `json:"followingCount"`
+	IsActive       bool   `json:"isActive"`
+	LastLoginIP    string `json:"lastLoginIp,omitempty"`
+	LastLoginAt    string `json:"lastLoginAt,omitempty"`
+	CreatedAt      string `json:"createdAt"`
+	UpdatedAt      string `json:"updatedAt"`
+}
+
+type ListFilter struct {
+	Query    string
+	IsActive *bool
+	Gender   string
+	Vip      *bool
+	SortBy   string
+	SortDir  string
+	Limit    int
+	Offset   int
 }
 
 type UpdateStatusRequest struct {

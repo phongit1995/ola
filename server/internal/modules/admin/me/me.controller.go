@@ -24,30 +24,66 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 // @Tags         admin-me
 // @Produce      json
 // @Security     BearerAuth
-// @Param        q        query string false "Search by content"
-// @Param        authorId query string false "Filter by author id"
-// @Param        limit    query int    false "Page size (default 20, max 100)"
-// @Param        offset   query int    false "Offset"
+// @Param        q          query string false "Search by content"
+// @Param        authorId   query string false "Filter by author id"
+// @Param        enabled    query bool   false "Filter by status (true=shown, false=hidden)"
+// @Param        visibility query string false "Filter by visibility (public, friend, private)"
+// @Param        hasImages  query bool   false "Filter posts with/without images"
+// @Param        hasCheckin query bool   false "Filter posts with/without check-in"
+// @Param        sortBy     query string false "Sort field (createdAt, likeCount, commentCount, dislikeCount)"
+// @Param        sortDir    query string false "Sort direction (asc, desc)"
+// @Param        limit      query int    false "Page size (default 20, max 100)"
+// @Param        offset     query int    false "Offset"
 // @Success      200  {object}  utils.BaseResponse[PostListResponse]
 // @Router       /admin/me [get]
 func (ctrl *Controller) ListPosts(c *gin.Context) (interface{}, error) {
-	limit := utils.ParseLimit(c, 20, 100)
-	offset := utils.ParseOffset(c)
+	filter := ListFilter{
+		Query:      c.Query("q"),
+		Enabled:    parseBoolQuery(c, "enabled"),
+		Visibility: parseVisibilityQuery(c.Query("visibility")),
+		HasImages:  parseBoolQuery(c, "hasImages"),
+		HasCheckin: parseBoolQuery(c, "hasCheckin"),
+		SortBy:     c.Query("sortBy"),
+		SortDir:    c.Query("sortDir"),
+		Limit:      utils.ParseLimit(c, 20, 100),
+		Offset:     utils.ParseOffset(c),
+	}
 
-	var authorID *uuid.UUID
 	if raw := c.Query("authorId"); raw != "" {
 		id, err := uuid.Parse(raw)
 		if err != nil {
 			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid author id")
 		}
-		authorID = &id
+		filter.AuthorID = &id
 	}
 
-	resp, err := ctrl.service.List(c.Query("q"), authorID, limit, offset)
+	resp, err := ctrl.service.List(filter)
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}
 	return resp, nil
+}
+
+func parseBoolQuery(c *gin.Context, key string) *bool {
+	switch c.Query(key) {
+	case "true":
+		t := true
+		return &t
+	case "false":
+		f := false
+		return &f
+	default:
+		return nil
+	}
+}
+
+func parseVisibilityQuery(v string) string {
+	switch v {
+	case "public", "friend", "private":
+		return v
+	default:
+		return ""
+	}
 }
 
 // GetPost godoc

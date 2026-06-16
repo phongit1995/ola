@@ -1,10 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AdminUserService } from '@/services/adminUser.service'
-import type { ListParams } from '@/types'
+import type { UserListParams } from '@/types'
 
 const USERS_KEY = 'admin-users'
 
-export function useUsers(params: ListParams) {
+export function useUsers(params: UserListParams) {
   return useQuery({
     queryKey: [USERS_KEY, params],
     queryFn: () => AdminUserService.list(params),

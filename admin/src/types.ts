@@ -65,6 +65,8 @@ export interface AdminUserListItem {
   fullName?: string
   email?: string
   avatar?: string
+  gender?: string
+  isVip: boolean
   isActive: boolean
   createdAt: string
   lastLoginAt?: string | null
@@ -73,8 +75,25 @@ export interface AdminUserListItem {
 export interface AdminUserDetail extends AdminUserListItem {
   phone?: string
   bio?: string
+  dateOfBirth?: string
+  ken?: number
+  vipUsed?: string
+  vipEndTime?: string
+  followerCount?: number
+  followingCount?: number
   lastLoginIp?: string
   updatedAt?: string
+}
+
+export interface UserListParams {
+  q?: string
+  limit?: number
+  offset?: number
+  isActive?: boolean
+  gender?: string
+  vip?: boolean
+  sortBy?: string
+  sortDir?: string
 }
 
 export interface Room {
@@ -185,4 +204,16 @@ export interface MeComment {
   content: string
   author?: MeAuthor
   createdAt: string
+}
+
+export interface MeListParams {
+  q?: string
+  limit?: number
+  offset?: number
+  enabled?: boolean
+  visibility?: string
+  hasImages?: boolean
+  hasCheckin?: boolean
+  sortBy?: string
+  sortDir?: string
 }
