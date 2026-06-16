@@ -121,20 +121,28 @@ type topLikerRow struct {
 	Avatar   string    `gorm:"column:avatar"`
 }
 
+const topLikersQuery = `
+SELECT p.id AS post_id, u.id AS id, u.username AS username, u.full_name AS full_name, u.avatar AS avatar
+FROM me p
+CROSS JOIN LATERAL (
+    SELECT r.user_id, r.created_at
+    FROM me_reactions r
+    WHERE r.post_id = p.id AND r.type = ?
+    ORDER BY r.created_at DESC
+    LIMIT ?
+) tl
+JOIN users u ON u.id = tl.user_id
+WHERE p.id IN ?
+ORDER BY p.id, tl.created_at DESC`
+
 func (r *Repository) TopLikersByPosts(postIDs []uuid.UUID, perPost int) (map[uuid.UUID][]*models.User, error) {
 	result := make(map[uuid.UUID][]*models.User)
 	if len(postIDs) == 0 {
 		return result, nil
 	}
 
-	sub := r.db.
-		Table("me_reactions AS r").
-		Select("r.post_id AS post_id, u.id AS id, u.username AS username, u.full_name AS full_name, u.avatar AS avatar, ROW_NUMBER() OVER (PARTITION BY r.post_id ORDER BY r.created_at DESC) AS rn").
-		Joins("JOIN users u ON u.id = r.user_id").
-		Where("r.post_id IN ? AND r.type = ?", postIDs, models.PostReactionLike)
-
 	var rows []topLikerRow
-	if err := r.db.Table("(?) AS t", sub).Where("t.rn <= ?", perPost).Order("t.post_id, t.rn").Scan(&rows).Error; err != nil {
+	if err := r.db.Raw(topLikersQuery, models.PostReactionLike, perPost, postIDs).Scan(&rows).Error; err != nil {
 		return nil, err
 	}
 
