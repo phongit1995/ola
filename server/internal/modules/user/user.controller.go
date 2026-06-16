@@ -51,6 +51,176 @@ func (ctrl *Controller) GetUserInfo(c *gin.Context) (interface{}, error) {
 	return profile, nil
 }
 
+// Kiss godoc
+// @Summary      Send a kiss to a user
+// @Description  Increment the target user's kiss count by one and return the new total
+// @Tags         user
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "User ID (UUID)"
+// @Success      200  {object}  KissSuccessResponse
+// @Failure      400  {object}  utils.APIError
+// @Failure      401  {object}  utils.APIError
+// @Failure      404  {object}  utils.APIError
+// @Router       /user/{id}/kiss [post]
+func (ctrl *Controller) Kiss(c *gin.Context) (interface{}, error) {
+	callerID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+
+	targetID, err := utils.ParseUUIDParam(c, "id", "invalid user ID")
+	if err != nil {
+		return nil, err
+	}
+
+	result, err := ctrl.service.Kiss(callerID, targetID)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+
+	return result, nil
+}
+
+// Follow godoc
+// @Summary      Follow a user
+// @Description  Follow the target user (idempotent) and return the new follower count
+// @Tags         user
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "User ID (UUID)"
+// @Success      200  {object}  FollowSuccessResponse
+// @Failure      400  {object}  utils.APIError
+// @Failure      401  {object}  utils.APIError
+// @Failure      404  {object}  utils.APIError
+// @Router       /user/{id}/follow [post]
+func (ctrl *Controller) Follow(c *gin.Context) (interface{}, error) {
+	callerID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+
+	targetID, err := utils.ParseUUIDParam(c, "id", "invalid user ID")
+	if err != nil {
+		return nil, err
+	}
+
+	result, err := ctrl.service.Follow(callerID, targetID)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+
+	return result, nil
+}
+
+// Unfollow godoc
+// @Summary      Unfollow a user
+// @Description  Stop following the target user (idempotent) and return the new follower count
+// @Tags         user
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "User ID (UUID)"
+// @Success      200  {object}  FollowSuccessResponse
+// @Failure      400  {object}  utils.APIError
+// @Failure      401  {object}  utils.APIError
+// @Router       /user/{id}/follow [delete]
+func (ctrl *Controller) Unfollow(c *gin.Context) (interface{}, error) {
+	callerID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+
+	targetID, err := utils.ParseUUIDParam(c, "id", "invalid user ID")
+	if err != nil {
+		return nil, err
+	}
+
+	result, err := ctrl.service.Unfollow(callerID, targetID)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+
+	return result, nil
+}
+
+// GetFollowers godoc
+// @Summary      List a user's followers
+// @Description  Paginated list of users that follow the target user
+// @Tags         user
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "User ID (UUID)"
+// @Param        limit query int false "Limit results" default(20)
+// @Param        offset query int false "Offset" default(0)
+// @Success      200  {object}  FollowListSuccessResponse
+// @Failure      400  {object}  utils.APIError
+// @Failure      401  {object}  utils.APIError
+// @Router       /user/{id}/followers [get]
+func (ctrl *Controller) GetFollowers(c *gin.Context) (interface{}, error) {
+	if _, err := utils.RequireUserID(c); err != nil {
+		return nil, err
+	}
+
+	targetID, err := utils.ParseUUIDParam(c, "id", "invalid user ID")
+	if err != nil {
+		return nil, err
+	}
+
+	var q FollowListQuery
+	if err := c.ShouldBindQuery(&q); err != nil {
+		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	if q.Limit == 0 {
+		q.Limit = 20
+	}
+
+	result, err := ctrl.service.ListFollowers(targetID, q.Limit, q.Offset)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+
+	return result, nil
+}
+
+// GetFollowing godoc
+// @Summary      List users a user is following
+// @Description  Paginated list of users that the target user follows
+// @Tags         user
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "User ID (UUID)"
+// @Param        limit query int false "Limit results" default(20)
+// @Param        offset query int false "Offset" default(0)
+// @Success      200  {object}  FollowListSuccessResponse
+// @Failure      400  {object}  utils.APIError
+// @Failure      401  {object}  utils.APIError
+// @Router       /user/{id}/following [get]
+func (ctrl *Controller) GetFollowing(c *gin.Context) (interface{}, error) {
+	if _, err := utils.RequireUserID(c); err != nil {
+		return nil, err
+	}
+
+	targetID, err := utils.ParseUUIDParam(c, "id", "invalid user ID")
+	if err != nil {
+		return nil, err
+	}
+
+	var q FollowListQuery
+	if err := c.ShouldBindQuery(&q); err != nil {
+		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	if q.Limit == 0 {
+		q.Limit = 20
+	}
+
+	result, err := ctrl.service.ListFollowing(targetID, q.Limit, q.Offset)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+
+	return result, nil
+}
+
 // GetPresenceBatch godoc
 // @Summary      Get presence status for multiple users
 // @Description  Returns online status and last active time for the given user IDs (reads from Redis cache, no DB hit)

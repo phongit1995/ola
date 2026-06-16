@@ -4,13 +4,16 @@ import (
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/transport/websocket"
 	"ola-chat-server/internal/utils"
+	"bytes"
 	"errors"
 	"fmt"
+	"hash/fnv"
 	"time"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 func nowPtr() *time.Time {
@@ -18,16 +21,74 @@ func nowPtr() *time.Time {
 	return &t
 }
 
+func addFollowTx(tx *gorm.DB, followerID, followeeID uuid.UUID) error {
+	follow := models.Follow{FollowerID: followerID, FolloweeID: followeeID}
+	res := tx.Clauses(clause.OnConflict{DoNothing: true}).Create(&follow)
+	if res.Error != nil {
+		return res.Error
+	}
+	if res.RowsAffected == 0 {
+		return nil
+	}
+	if err := tx.Model(&models.User{}).Where("id = ?", followeeID).
+		UpdateColumn("follower_count", gorm.Expr("follower_count + 1")).Error; err != nil {
+		return err
+	}
+	return tx.Model(&models.User{}).Where("id = ?", followerID).
+		UpdateColumn("following_count", gorm.Expr("following_count + 1")).Error
+}
+
+func addMutualFollowTx(tx *gorm.DB, a, b uuid.UUID) error {
+	if err := addFollowTx(tx, a, b); err != nil {
+		return err
+	}
+	return addFollowTx(tx, b, a)
+}
+
+func removeFollowTx(tx *gorm.DB, followerID, followeeID uuid.UUID) error {
+	res := tx.Where("follower_id = ? AND followee_id = ?", followerID, followeeID).
+		Delete(&models.Follow{})
+	if res.Error != nil {
+		return res.Error
+	}
+	if res.RowsAffected == 0 {
+		return nil
+	}
+	if err := tx.Model(&models.User{}).Where("id = ? AND follower_count > 0", followeeID).
+		UpdateColumn("follower_count", gorm.Expr("follower_count - 1")).Error; err != nil {
+		return err
+	}
+	return tx.Model(&models.User{}).Where("id = ? AND following_count > 0", followerID).
+		UpdateColumn("following_count", gorm.Expr("following_count - 1")).Error
+}
+
+func pairLockKey(a, b uuid.UUID) int64 {
+	lo, hi := a, b
+	if bytes.Compare(a[:], b[:]) > 0 {
+		lo, hi = b, a
+	}
+	h := fnv.New64a()
+	_, _ = h.Write(lo[:])
+	_, _ = h.Write(hi[:])
+	return int64(h.Sum64())
+}
+
+func lockPair(tx *gorm.DB, a, b uuid.UUID) error {
+	return tx.Exec("SELECT pg_advisory_xact_lock(?)", pairLockKey(a, b)).Error
+}
+
 type Service struct {
 	repo     *Repository
 	presence *websocket.PresenceService
+	db       *gorm.DB
 	logger   *zap.SugaredLogger
 }
 
-func NewService(repo *Repository, presence *websocket.PresenceService, logger *zap.SugaredLogger) *Service {
+func NewService(repo *Repository, presence *websocket.PresenceService, db *gorm.DB, logger *zap.SugaredLogger) *Service {
 	return &Service{
 		repo:     repo,
 		presence: presence,
+		db:       db,
 		logger:   logger.Named("[relationship_service]"),
 	}
 }
@@ -37,102 +98,137 @@ func (s *Service) SendFriendRequest(requesterID, addresseeID uuid.UUID) (*Relati
 		return nil, errors.New("cannot send friend request to yourself")
 	}
 
-	existing, err := s.repo.FindByUsers(requesterID, addresseeID)
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		s.logger.Errorw("Failed to load existing relationship",
-			"requester_id", requesterID, "addressee_id", addresseeID, "error", err.Error())
-		return nil, err
-	}
+	var result *RelationshipResponse
+	err := s.db.Transaction(func(tx *gorm.DB) error {
+		if err := lockPair(tx, requesterID, addresseeID); err != nil {
+			return err
+		}
+		txRepo := &Repository{db: tx}
 
-	if existing != nil {
-		switch existing.Status {
-		case models.RelationshipStatusBlocked:
-			if existing.RequesterID == requesterID {
-				return nil, errors.New("you have blocked this user, unblock first")
-			}
-			return nil, errors.New("unable to send friend request")
+		existing, err := txRepo.FindByUsers(requesterID, addresseeID)
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			s.logger.Errorw("Failed to load existing relationship",
+				"requester_id", requesterID, "addressee_id", addresseeID, "error", err.Error())
+			return err
+		}
 
-		case models.RelationshipStatusAccepted:
-			return nil, errors.New("you are already friends")
+		if existing != nil {
+			switch existing.Status {
+			case models.RelationshipStatusBlocked:
+				if existing.RequesterID == requesterID {
+					return errors.New("you have blocked this user, unblock first")
+				}
+				return errors.New("unable to send friend request")
 
-		case models.RelationshipStatusPending:
-			if existing.RequesterID == requesterID {
-				return nil, errors.New("friend request already sent")
-			}
-			existing.Status = models.RelationshipStatusAccepted
-			existing.ActionedAt = nowPtr()
-			if err := s.repo.Update(existing); err != nil {
-				return nil, err
-			}
-			s.logger.Infow("Friend request auto-accepted (mutual pending)",
-				"relationship_id", existing.ID, "requester_id", existing.RequesterID, "addressee_id", existing.AddresseeID)
-			existing, _ = s.repo.FindByID(existing.ID)
-			return s.buildRelationshipResponse(existing), nil
+			case models.RelationshipStatusAccepted:
+				return errors.New("you are already friends")
 
-		case models.RelationshipStatusRejected:
-			if err := s.repo.Delete(existing); err != nil {
-				return nil, err
+			case models.RelationshipStatusPending:
+				if existing.RequesterID == requesterID {
+					return errors.New("friend request already sent")
+				}
+				existing.Status = models.RelationshipStatusAccepted
+				existing.ActionedAt = nowPtr()
+				if err := txRepo.Update(existing); err != nil {
+					return err
+				}
+				if err := addMutualFollowTx(tx, existing.RequesterID, existing.AddresseeID); err != nil {
+					return err
+				}
+				s.logger.Infow("Friend request auto-accepted (mutual pending)",
+					"relationship_id", existing.ID, "requester_id", existing.RequesterID, "addressee_id", existing.AddresseeID)
+				result = s.buildRelationshipResponse(reloadOr(txRepo, existing))
+				return nil
+
+			case models.RelationshipStatusRejected:
+				if err := txRepo.Delete(existing); err != nil {
+					return err
+				}
 			}
 		}
-	}
 
-	relationship := &models.Relationship{
-		RequesterID: requesterID,
-		AddresseeID: addresseeID,
-		Status:      models.RelationshipStatusPending,
-	}
-	if err := s.repo.Create(relationship); err != nil {
-		s.logger.Errorw("Failed to create friend request",
-			"requester_id", requesterID, "addressee_id", addresseeID, "error", err.Error())
+		relationship := &models.Relationship{
+			RequesterID: requesterID,
+			AddresseeID: addresseeID,
+			Status:      models.RelationshipStatusPending,
+		}
+		if err := txRepo.Create(relationship); err != nil {
+			s.logger.Errorw("Failed to create friend request",
+				"requester_id", requesterID, "addressee_id", addresseeID, "error", err.Error())
+			return err
+		}
+
+		s.logger.Infow("Friend request sent",
+			"relationship_id", relationship.ID, "requester_id", requesterID, "addressee_id", addresseeID)
+		result = s.buildRelationshipResponse(reloadOr(txRepo, relationship))
+		return nil
+	})
+	if err != nil {
 		return nil, err
 	}
+	return result, nil
+}
 
-	s.logger.Infow("Friend request sent",
-		"relationship_id", relationship.ID, "requester_id", requesterID, "addressee_id", addresseeID)
-
-	relationship, _ = s.repo.FindByID(relationship.ID)
-	return s.buildRelationshipResponse(relationship), nil
+func reloadOr(repo *Repository, rel *models.Relationship) *models.Relationship {
+	reloaded, err := repo.FindByID(rel.ID)
+	if err != nil || reloaded == nil {
+		return rel
+	}
+	return reloaded
 }
 
 func (s *Service) AcceptFriendRequest(relationshipID, userID uuid.UUID) (*RelationshipResponse, error) {
-	relationship, err := s.repo.FindByID(relationshipID)
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errors.New("friend request not found")
-		}
-		return nil, err
-	}
+	var result *RelationshipResponse
+	err := s.db.Transaction(func(tx *gorm.DB) error {
+		txRepo := &Repository{db: tx}
 
-	if relationship.AddresseeID != userID {
-		s.logger.Warnw("Unauthorized accept attempt",
+		relationship, err := txRepo.FindByID(relationshipID)
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return errors.New("friend request not found")
+			}
+			return err
+		}
+
+		if relationship.AddresseeID != userID {
+			s.logger.Warnw("Unauthorized accept attempt",
+				"relationship_id", relationshipID,
+				"user_id", userID,
+				"addressee_id", relationship.AddresseeID,
+			)
+			return errors.New("only the addressee can accept this request")
+		}
+
+		if relationship.Status != models.RelationshipStatusPending {
+			return fmt.Errorf("cannot accept request with status: %s", relationship.Status)
+		}
+
+		relationship.Status = models.RelationshipStatusAccepted
+		relationship.ActionedAt = nowPtr()
+		if err := txRepo.Update(relationship); err != nil {
+			s.logger.Errorw("Failed to accept friend request",
+				"relationship_id", relationshipID,
+				"error", err.Error(),
+			)
+			return err
+		}
+
+		if err := addMutualFollowTx(tx, relationship.RequesterID, relationship.AddresseeID); err != nil {
+			return err
+		}
+
+		s.logger.Infow("Friend request accepted",
 			"relationship_id", relationshipID,
-			"user_id", userID,
+			"requester_id", relationship.RequesterID,
 			"addressee_id", relationship.AddresseeID,
 		)
-		return nil, errors.New("only the addressee can accept this request")
-	}
-
-	if relationship.Status != models.RelationshipStatusPending {
-		return nil, fmt.Errorf("cannot accept request with status: %s", relationship.Status)
-	}
-
-	relationship.Status = models.RelationshipStatusAccepted
-	relationship.ActionedAt = nowPtr()
-	if err := s.repo.Update(relationship); err != nil {
-		s.logger.Errorw("Failed to accept friend request",
-			"relationship_id", relationshipID,
-			"error", err.Error(),
-		)
+		result = s.buildRelationshipResponse(reloadOr(txRepo, relationship))
+		return nil
+	})
+	if err != nil {
 		return nil, err
 	}
-
-	s.logger.Infow("Friend request accepted",
-		"relationship_id", relationshipID,
-		"requester_id", relationship.RequesterID,
-		"addressee_id", relationship.AddresseeID,
-	)
-
-	return s.buildRelationshipResponse(relationship), nil
+	return result, nil
 }
 
 func (s *Service) RejectFriendRequest(relationshipID, userID uuid.UUID) error {
@@ -241,43 +337,59 @@ func (s *Service) BlockUser(blockerID, blockedID uuid.UUID) (*RelationshipRespon
 		return nil, errors.New("cannot block yourself")
 	}
 
-	existing, err := s.repo.FindByUsers(blockerID, blockedID)
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+	var result *RelationshipResponse
+	err := s.db.Transaction(func(tx *gorm.DB) error {
+		if err := lockPair(tx, blockerID, blockedID); err != nil {
+			return err
+		}
+		txRepo := &Repository{db: tx}
+
+		existing, err := txRepo.FindByUsers(blockerID, blockedID)
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			return err
+		}
+
+		if existing != nil &&
+			existing.Status == models.RelationshipStatusBlocked &&
+			existing.RequesterID == blockedID {
+			return errors.New("unable to block this user")
+		}
+
+		if existing != nil {
+			if existing.Status == models.RelationshipStatusBlocked && existing.RequesterID == blockerID {
+				result = s.buildRelationshipResponse(existing)
+				return nil
+			}
+			if err := txRepo.Delete(existing); err != nil {
+				return err
+			}
+		}
+
+		relationship := &models.Relationship{
+			RequesterID: blockerID,
+			AddresseeID: blockedID,
+			Status:      models.RelationshipStatusBlocked,
+			ActionedAt:  nowPtr(),
+		}
+		if err := txRepo.Create(relationship); err != nil {
+			return err
+		}
+
+		if err := removeFollowTx(tx, blockerID, blockedID); err != nil {
+			return err
+		}
+
+		s.logger.Infow("User blocked successfully",
+			"blocker_id", blockerID,
+			"blocked_id", blockedID,
+		)
+		result = s.buildRelationshipResponse(reloadOr(txRepo, relationship))
+		return nil
+	})
+	if err != nil {
 		return nil, err
 	}
-
-	if existing != nil &&
-		existing.Status == models.RelationshipStatusBlocked &&
-		existing.RequesterID == blockedID {
-		return nil, errors.New("unable to block this user")
-	}
-
-	if existing != nil {
-		if existing.Status == models.RelationshipStatusBlocked && existing.RequesterID == blockerID {
-			return s.buildRelationshipResponse(existing), nil
-		}
-		if err := s.repo.Delete(existing); err != nil {
-			return nil, err
-		}
-	}
-
-	relationship := &models.Relationship{
-		RequesterID: blockerID,
-		AddresseeID: blockedID,
-		Status:      models.RelationshipStatusBlocked,
-		ActionedAt:  nowPtr(),
-	}
-	if err := s.repo.Create(relationship); err != nil {
-		return nil, err
-	}
-
-	s.logger.Infow("User blocked successfully",
-		"blocker_id", blockerID,
-		"blocked_id", blockedID,
-	)
-
-	relationship, _ = s.repo.FindByID(relationship.ID)
-	return s.buildRelationshipResponse(relationship), nil
+	return result, nil
 }
 
 func (s *Service) UnblockUser(relationshipID, userID uuid.UUID) error {

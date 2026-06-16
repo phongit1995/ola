@@ -33,7 +33,9 @@ func (r *Repository) FindByUsers(userID1, userID2 uuid.UUID) (*models.Relationsh
 	err := r.db.Where(
 		"(requester_id = ? AND addressee_id = ?) OR (requester_id = ? AND addressee_id = ?)",
 		userID1, userID2, userID2, userID1,
-	).Preload("Requester").Preload("Addressee").First(&relationship).Error
+	).Preload("Requester").Preload("Addressee").
+		Order("created_at ASC, id ASC").
+		First(&relationship).Error
 
 	if err != nil {
 		return nil, err

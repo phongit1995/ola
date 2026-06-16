@@ -18,6 +18,10 @@ type UserProfileResponse struct {
 	VipEndTime     *string                `json:"vipEndTime" example:"2026-12-31T00:00:00Z"`
 	FollowerCount  int                    `json:"followerCount" example:"0"`
 	FollowingCount int                    `json:"followingCount" example:"0"`
+	Marriage       string                 `json:"marriage" example:"single"`
+	CoverPhoto     string                 `json:"coverPhoto,omitempty" example:"https://example.com/cover.jpg"`
+	Verified       bool                   `json:"verified" example:"false"`
+	Kisses         int                    `json:"kisses" example:"0"`
 	CreatedAt      string                 `json:"createdAt" example:"2024-01-01T00:00:00Z"`
 	UpdatedAt      string                 `json:"updatedAt" example:"2024-01-01T00:00:00Z"`
 }
@@ -34,6 +38,8 @@ type UpdateProfileRequest struct {
 	Gender      string                 `json:"gender,omitempty" binding:"omitempty,oneof=male female" example:"male"`
 	Bio         string                 `json:"bio,omitempty" binding:"omitempty,max=500" example:"hello ola!!!"`
 	DateOfBirth string                 `json:"dateOfBirth,omitempty" binding:"omitempty,datetime=2006-01-02" example:"1990-01-01"`
+	Marriage    string                 `json:"marriage,omitempty" binding:"omitempty,oneof=single married" example:"single"`
+	CoverPhoto  string                 `json:"coverPhoto,omitempty" binding:"omitempty,url,max=500" example:"https://example.com/cover.jpg"`
 	CustomInfo  map[string]interface{} `json:"customInfo,omitempty" swaggertype:"object"`
 }
 
@@ -61,15 +67,56 @@ type UploadAvatarResponse struct {
 }
 
 type UserPublicProfileResponse struct {
-	ID           string            `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	Username     string            `json:"username" example:"john_doe"`
-	FullName     string            `json:"fullName,omitempty" example:"John Doe"`
-	Avatar       string            `json:"avatar,omitempty" example:"https://example.com/avatar.jpg"`
-	Bio          string            `json:"bio,omitempty" example:"Software developer"`
-	IsOnline     bool              `json:"isOnline" example:"true"`
-	LastActiveAt string            `json:"lastActiveAt,omitempty" example:"2024-01-15T10:30:00Z"`
-	CreatedAt    string            `json:"createdAt" example:"2024-01-01T00:00:00Z"`
-	Relationship *RelationshipInfo `json:"relationship,omitempty"`
+	ID             string            `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	Username       string            `json:"username" example:"john_doe"`
+	FullName       string            `json:"fullName,omitempty" example:"John Doe"`
+	Avatar         string            `json:"avatar,omitempty" example:"https://example.com/avatar.jpg"`
+	CoverPhoto     string            `json:"coverPhoto,omitempty" example:"https://example.com/cover.jpg"`
+	Bio            string            `json:"bio,omitempty" example:"Software developer"`
+	Gender         string            `json:"gender" example:"male"`
+	DateOfBirth    string            `json:"dateOfBirth,omitempty" example:"1990-01-01"`
+	Marriage       string            `json:"marriage" example:"single"`
+	Verified       bool              `json:"verified" example:"false"`
+	Kisses         int               `json:"kisses" example:"0"`
+	VipUsed        *string           `json:"vipUsed" example:"gold"`
+	VipEndTime     *string           `json:"vipEndTime" example:"2026-12-31T00:00:00Z"`
+	FollowerCount  int               `json:"followerCount" example:"0"`
+	FollowingCount int               `json:"followingCount" example:"0"`
+	IsOnline       bool              `json:"isOnline" example:"true"`
+	LastActiveAt   string            `json:"lastActiveAt,omitempty" example:"2024-01-15T10:30:00Z"`
+	CreatedAt      string            `json:"createdAt" example:"2024-01-01T00:00:00Z"`
+	Relationship   *RelationshipInfo `json:"relationship,omitempty"`
+}
+
+type KissResponse struct {
+	Kisses int `json:"kisses" example:"1"`
+}
+
+type FollowResponse struct {
+	Following     bool `json:"following" example:"true"`
+	FollowerCount int  `json:"followerCount" example:"1"`
+}
+
+type FollowUser struct {
+	ID           string `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	Username     string `json:"username" example:"john_doe"`
+	FullName     string `json:"fullName,omitempty" example:"John Doe"`
+	Avatar       string `json:"avatar,omitempty" example:"https://example.com/avatar.jpg"`
+	Bio          string `json:"bio,omitempty" example:"Software developer"`
+	IsOnline     bool   `json:"isOnline" example:"true"`
+	LastActiveAt string `json:"lastActiveAt,omitempty" example:"2024-01-15T10:30:00Z"`
+}
+
+type FollowListResponse struct {
+	Users  []FollowUser `json:"users"`
+	Total  int64        `json:"total" example:"10"`
+	Limit  int          `json:"limit" example:"20"`
+	Offset int          `json:"offset" example:"0"`
+}
+
+type FollowListQuery struct {
+	Limit  int `form:"limit" binding:"omitempty,min=1,max=100"`
+	Offset int `form:"offset" binding:"omitempty,min=0"`
 }
 
 // RelationshipInfo describes the viewer's relationship state with the target user.
@@ -83,9 +130,11 @@ type UserPublicProfileResponse struct {
 //	blocked_by_me     - viewer has blocked the target
 //	blocked_by_them   - target has blocked the viewer
 type RelationshipInfo struct {
-	Status    string `json:"status" example:"friend"`
-	RequestID string `json:"requestId,omitempty" example:"550e8400-e29b-41d4-a716-446655440000"`
-	Since     string `json:"since,omitempty" example:"2024-01-15T10:30:00Z"`
+	Status      string `json:"status" example:"friend"`
+	RequestID   string `json:"requestId,omitempty" example:"550e8400-e29b-41d4-a716-446655440000"`
+	Since       string `json:"since,omitempty" example:"2024-01-15T10:30:00Z"`
+	IsFollowing bool   `json:"isFollowing" example:"false"`
+	FollowsMe   bool   `json:"followsMe" example:"false"`
 }
 
 const (
@@ -115,6 +164,9 @@ type PresenceBatchResponse struct {
 type PresenceBatchSuccessResponse = utils.BaseResponse[PresenceBatchResponse]
 
 type UserPublicProfileSuccessResponse = utils.BaseResponse[UserPublicProfileResponse]
+type KissSuccessResponse = utils.BaseResponse[KissResponse]
+type FollowSuccessResponse = utils.BaseResponse[FollowResponse]
+type FollowListSuccessResponse = utils.BaseResponse[FollowListResponse]
 
 type UserProfileSuccessResponse = utils.BaseResponse[UserProfileResponse]
 type SearchUsersSuccessResponse = utils.BaseResponse[SearchUsersResponse]
