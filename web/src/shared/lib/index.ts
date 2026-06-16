@@ -6,3 +6,5 @@ export * from './toast';
 export * from './avatarColor';
 export * from './datetime';
 export * from './textInsert';
+export * from './smileys';
+export * from './richText';

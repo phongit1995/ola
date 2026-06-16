@@ -1,4 +1,4 @@
-import { SMILEYS } from '../smileys';
+import { SMILEYS } from '@lib';
 
 interface ComposerSmileyPanelProps {
   onPick: (code: string) => void;

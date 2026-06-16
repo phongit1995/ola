@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ConfirmDialog } from '@components';
 import { Avatar } from '@components';
 import { colorForName } from '@lib';
-import { renderRichText } from '../richText';
+import { renderRichText } from '@lib';
 import type { PostComment } from '@app-types';
 
 interface MeCommentItemProps {

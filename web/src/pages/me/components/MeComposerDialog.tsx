@@ -8,7 +8,7 @@ import { KUL_STICKERS, kulCode, stickerImage } from '../stickers';
 import { insertAtCursor } from '@lib';
 import checkInIcon from '@/assets/icons/me/ic_check_in.png';
 import { ComposerCheckInPanel, type ComposedCheckIn } from './ComposerCheckInPanel';
-import { ComposerSmileyPanel } from './ComposerSmileyPanel';
+import { ComposerSmileyPanel } from '@components';
 import type { PostVisibility } from '@app-types';
 
 type AttachPanel = 'tag' | 'checkin' | 'sticker' | 'smiley' | null;

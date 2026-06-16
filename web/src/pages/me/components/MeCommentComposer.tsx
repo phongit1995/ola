@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import smileyIcon from '@/assets/icons/chat/ic_smiley.png';
 import { useAuthStore } from '@/store/authStore';
 import { Avatar } from '@components';
-import { ComposerSmileyPanel } from './ComposerSmileyPanel';
+import { ComposerSmileyPanel } from '@components';
 import { colorForName, insertAtCursor } from '@lib';
 
 interface MeCommentComposerProps {

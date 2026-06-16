@@ -9,10 +9,6 @@ import tabFollowerActive from '@/assets/icons/me/ic_action_tab_follower_selected
 import type { MeFeedFilter, PostVisibility } from '@app-types';
 import type { MeTab } from './types';
 
-export const MENTION_TOKEN_PATTERN = /(@[A-Za-z0-9_]+|#[A-Za-z0-9_.]+)/g;
-
-export const POST_TOKEN_PATTERN = /(@[A-Za-z0-9_]+|#[A-Za-z0-9_.]+|:ola\d{1,2}:)/g;
-
 export const TAB_FILTER: Record<MeTab, MeFeedFilter | undefined> = {
   feed: undefined,
   tagged: 'tagged',

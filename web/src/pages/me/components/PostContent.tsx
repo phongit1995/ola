@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { renderRichText } from '../richText';
+import { renderRichText } from '@lib';
 
 interface PostContentProps {
   content: string;

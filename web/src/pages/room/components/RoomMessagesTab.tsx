@@ -4,7 +4,7 @@ import type { RoomMessage } from '@app-types';
 import { colorForName, insertAtCursor, toast } from '@lib';
 import { useAuthStore } from '@/store/authStore';
 import { Avatar } from '@components';
-import { ComposerSmileyPanel } from '../../me/components/ComposerSmileyPanel';
+import { ComposerSmileyPanel } from '@components';
 import { buildRoomFeed } from '../messageGroups';
 import { RoomDateSeparator } from './RoomDateSeparator';
 import { RoomMessageGroup } from './RoomMessageGroup';

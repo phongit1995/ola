@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import mentionIcon from '@/assets/icons/room/ic_notification_mention.png';
 import { Avatar } from '@components';
-import { renderRichText } from '../../me/richText';
+import { renderRichText } from '@lib';
 import { colorForName } from '@lib';
 import type { BubblePosition, MessageGroup } from '../messageGroups';
 
