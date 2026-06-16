@@ -48,6 +48,7 @@ export function AppsPanel() {
         <ul className="min-h-full bg-[#d5d5d5]">
           {titles.map((title, index) => {
             const item = APP_ITEMS[index];
+            if (item == null) return null;
             return (
               <li key={title} className="border-b border-black/12 last:border-b-0">
                 <button

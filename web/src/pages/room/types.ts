@@ -1,4 +1,4 @@
-export interface Room {
+export interface RoomListItem {
   id: string;
   title: string;
   subtitle: string;

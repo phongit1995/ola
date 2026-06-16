@@ -36,7 +36,7 @@ function RoomMessageGroupComponent({ group, onOpenProfile, onQuickMention }: Roo
   const onMention = (nick: string) => onOpenProfile?.(nick, colorForName(nick));
 
   if (group.isOwn) {
-    const last = group.messages[group.messages.length - 1];
+    const last = group.messages[group.messages.length - 1]!;
     return (
       <div className="flex flex-col items-end gap-1 self-end" style={{ maxWidth: '80%' }}>
         <span className="max-w-full truncate px-1 text-sm font-medium text-black/87">
@@ -57,7 +57,7 @@ function RoomMessageGroupComponent({ group, onOpenProfile, onQuickMention }: Roo
     );
   }
 
-  const last = group.messages[group.messages.length - 1];
+  const last = group.messages[group.messages.length - 1]!;
   const senderColor = colorForName(group.senderName);
   const openSender = () => onOpenProfile?.(group.senderName, senderColor);
   return (

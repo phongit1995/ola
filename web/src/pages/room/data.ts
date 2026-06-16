@@ -1,6 +1,6 @@
-import type { Room, RoomFilters } from './types';
+import type { RoomListItem, RoomFilters } from './types';
 
-export const ROOMS: Room[] = [
+export const ROOMS: RoomListItem[] = [
   { id: 'sg', title: 'Sài Gòn vui vẻ', subtitle: 'Phòng tám chuyện 24/7', members: 235, color: '#ef5350' },
   { id: 'love', title: 'Kết bạn bốn phương', subtitle: 'Làm quen bạn mới khắp nơi', members: 312, color: '#ec407a' },
   { id: 'hn', title: 'Hà Nội thân yêu', subtitle: 'Giao lưu kết bạn thủ đô', members: 142, color: '#5c6bc0' },

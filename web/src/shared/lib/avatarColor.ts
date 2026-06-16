@@ -8,5 +8,5 @@ export function colorForName(name: string): string {
   for (let index = 0; index < name.length; index += 1) {
     hash = (hash * 31 + name.charCodeAt(index)) >>> 0;
   }
-  return AVATAR_PALETTE[hash % AVATAR_PALETTE.length];
+  return AVATAR_PALETTE[hash % AVATAR_PALETTE.length]!;
 }

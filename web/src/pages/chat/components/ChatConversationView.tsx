@@ -54,7 +54,7 @@ export function ChatConversationView({
   }, [messages]);
 
   function appendBotReply() {
-    const reply = AUTO_REPLIES[Math.floor(Math.random() * AUTO_REPLIES.length)];
+    const reply = AUTO_REPLIES[Math.floor(Math.random() * AUTO_REPLIES.length)]!;
     setMessages((current) => [
       ...current,
       { id: nextMessageId(), text: reply, direction: 'in' },

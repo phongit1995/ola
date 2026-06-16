@@ -7,7 +7,7 @@ export function toMePost(post: Post, formatTime: (iso: string) => string): MePos
   const likerCount = Math.min(3, post.likeCount);
   const likers: string[] = [];
   for (let i = 0; i < likerCount; i++) {
-    likers.push(AVATAR_PALETTE[(i * 5 + author.length) % AVATAR_PALETTE.length]);
+    likers.push(AVATAR_PALETTE[(i * 5 + author.length) % AVATAR_PALETTE.length]!);
   }
   const checkIn = post.checkIn
     ? {

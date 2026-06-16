@@ -1,29 +1,23 @@
-import { api } from '@api';
+import { http } from '@api';
 import { API_PATH } from '@config';
 import type {
   AuthUser,
-  IApiResponse,
   UpdateProfileRequest,
   UploadAvatarResult,
 } from '@app-types';
 
 export class UserService {
-  static async me(): Promise<AuthUser> {
-    const { data } = await api.get<IApiResponse<AuthUser>>(API_PATH.user.me);
-    return data.data;
+  static me(): Promise<AuthUser> {
+    return http.get<AuthUser>(API_PATH.user.me);
   }
 
-  static async updateMe(payload: UpdateProfileRequest): Promise<AuthUser> {
-    const { data } = await api.put<IApiResponse<AuthUser>>(API_PATH.user.me, payload);
-    return data.data;
+  static updateMe(payload: UpdateProfileRequest): Promise<AuthUser> {
+    return http.put<AuthUser>(API_PATH.user.me, payload);
   }
 
-  static async uploadAvatar(file: File): Promise<UploadAvatarResult> {
+  static uploadAvatar(file: File): Promise<UploadAvatarResult> {
     const form = new FormData();
     form.append('file', file);
-    const { data } = await api.post<IApiResponse<UploadAvatarResult>>(API_PATH.user.upload, form, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
-    return data.data;
+    return http.postForm<UploadAvatarResult>(API_PATH.user.upload, form);
   }
 }

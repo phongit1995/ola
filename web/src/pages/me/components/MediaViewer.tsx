@@ -61,7 +61,7 @@ export function MediaViewer({ photos, index, onClose }: MediaViewerProps) {
     return () => document.removeEventListener('keydown', onKey);
   }, [next, prev, onClose]);
 
-  const url = photos[current];
+  const url = photos[current] ?? '';
 
   return (
     <div className="fixed inset-0 z-50 bg-black/95">
