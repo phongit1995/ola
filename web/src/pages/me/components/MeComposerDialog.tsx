@@ -1,4 +1,4 @@
-import { useRef, useState, type ChangeEvent } from 'react';
+import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dialog, DialogButton } from '@components';
 import { CONTACTS } from '../../chat/data';
@@ -57,6 +57,18 @@ export function MeComposerDialog({ open, onClose, onPost }: MeComposerDialogProp
       if (photo.file != null) URL.revokeObjectURL(photo.url);
     });
   }
+
+  const photosRef = useRef<PickedPhoto[]>([]);
+  useEffect(() => {
+    photosRef.current = photos;
+  }, [photos]);
+  useEffect(() => {
+    return () => {
+      photosRef.current.forEach((photo) => {
+        if (photo.file != null) URL.revokeObjectURL(photo.url);
+      });
+    };
+  }, []);
 
   function handleClose() {
     revokePhotos(photos);

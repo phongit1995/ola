@@ -24,6 +24,7 @@ src/
 │  ├─ components/       UI dùng chung: ui/, form/, LanguageSwitcher
 │  ├─ lib/              hàm tiện ích (cn, ...)
 │  ├─ hooks/            hook dùng chung
+│  ├─ services/         *.service.ts — gọi API qua http helper
 │  └─ types/            type domain dùng chung
 ├─ routes/              AppRouter.tsx — khai báo route tập trung
 ├─ pages/               mỗi route 1 folder, component riêng của màn đặt cạnh
@@ -46,6 +47,7 @@ src/
 | `@components` (và `@components/*`) | `src/shared/components` |
 | `@lib` | `src/shared/lib` |
 | `@hooks` | `src/shared/hooks` |
+| `@services` | `src/shared/services` |
 | `@app-types` | `src/shared/types` |
 
 Khai báo alias ở **2 nơi và phải đồng bộ**: `tsconfig.app.json` (`compilerOptions.paths`) và `vite.config.ts` (`resolve.alias`). Mỗi module trong `shared/` có `index.ts` (barrel) để import gọn: `import { ROUTES } from '@constants'`.
