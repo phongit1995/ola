@@ -66,6 +66,7 @@ export interface AdminUserListItem {
   email?: string
   avatar?: string
   gender?: string
+  ken: number
   isVip: boolean
   isActive: boolean
   createdAt: string
@@ -76,7 +77,6 @@ export interface AdminUserDetail extends AdminUserListItem {
   phone?: string
   bio?: string
   dateOfBirth?: string
-  ken?: number
   vipUsed?: string
   vipEndTime?: string
   followerCount?: number

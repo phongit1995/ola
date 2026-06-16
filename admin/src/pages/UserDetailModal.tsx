@@ -1,11 +1,11 @@
 import type { ReactNode } from 'react'
-import { Avatar, Drawer, Skeleton, Tag, Typography } from 'antd'
+import { Avatar, Button, Modal, Skeleton, Tag, Typography } from 'antd'
 import { CrownOutlined, UserOutlined } from '@ant-design/icons'
 import { useUserDetail } from '@/hooks/useUsers'
 import { formatDateTime } from '@/lib/format'
 import { GENDER } from './userMeta'
 
-interface UserDetailDrawerProps {
+interface UserDetailModalProps {
   userId: string | null
   open: boolean
   onClose: () => void
@@ -55,12 +55,24 @@ function Row({ label, value }: { label: string; value?: ReactNode }) {
   )
 }
 
-export function UserDetailDrawer({ userId, open, onClose }: UserDetailDrawerProps) {
+export function UserDetailModal({ userId, open, onClose }: UserDetailModalProps) {
   const { data, isLoading } = useUserDetail(open ? userId : null)
   const gender = data?.gender ? GENDER[data.gender] ?? { label: data.gender, color: 'default' } : null
 
   return (
-    <Drawer title="Chi tiết người dùng" open={open} onClose={onClose} width={460}>
+    <Modal
+      title="Chi tiết người dùng"
+      open={open}
+      onCancel={onClose}
+      centered
+      width={560}
+      styles={{ body: { maxHeight: '72vh', overflowY: 'auto', paddingRight: 8 } }}
+      footer={[
+        <Button key="close" onClick={onClose}>
+          Đóng
+        </Button>,
+      ]}
+    >
       {isLoading || !data ? (
         <Skeleton active avatar paragraph={{ rows: 6 }} />
       ) : (
@@ -76,7 +88,7 @@ export function UserDetailDrawer({ userId, open, onClose }: UserDetailDrawerProp
               borderRadius: 12,
             }}
           >
-            <Avatar src={data.avatar} icon={<UserOutlined />} size={64} />
+            <Avatar src={data.avatar} icon={<UserOutlined />} size={72} />
             <div style={{ minWidth: 0 }}>
               <div style={{ fontSize: 18, fontWeight: 600 }}>
                 {data.fullName || data.username}
@@ -140,6 +152,6 @@ export function UserDetailDrawer({ userId, open, onClose }: UserDetailDrawerProp
           </Section>
         </>
       )}
-    </Drawer>
+    </Modal>
   )
 }

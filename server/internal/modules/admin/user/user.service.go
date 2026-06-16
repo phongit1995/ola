@@ -34,6 +34,7 @@ func (s *Service) List(f ListFilter) (*ListUsersResponse, error) {
 			Email:       u.Email,
 			Avatar:      u.Avatar,
 			Gender:      u.Gender,
+			Ken:         u.Ken,
 			IsVip:       isVip(u),
 			IsActive:    u.IsActive,
 			CreatedAt:   u.CreatedAt.UTC().Format(time.RFC3339),

@@ -23,7 +23,7 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { useDeleteUser, useUpdateUserStatus, useUsers } from '@/hooks/useUsers'
 import { formatDateTime } from '@/lib/format'
 import { ApiError } from '@/lib/apiError'
-import { UserDetailDrawer } from './UserDetailDrawer'
+import { UserDetailModal } from './UserDetailModal'
 import { GENDER } from './userMeta'
 import type { AdminUserListItem } from '@/types'
 
@@ -148,7 +148,6 @@ export function UsersPage() {
         </Space>
       ),
     },
-    { title: 'Email', dataIndex: 'email', width: 200, render: (v) => v || '—' },
     {
       title: 'Giới tính',
       dataIndex: 'gender',
@@ -157,6 +156,12 @@ export function UsersPage() {
         const info = GENDER[g] ?? { label: g || '—', color: 'default' }
         return g ? <Tag color={info.color}>{info.label}</Tag> : '—'
       },
+    },
+    {
+      title: 'Ken',
+      dataIndex: 'ken',
+      width: 100,
+      render: (v: number) => (v ?? 0).toLocaleString('vi-VN'),
     },
     {
       title: 'Trạng thái',
@@ -278,7 +283,7 @@ export function UsersPage() {
           onChange: setPage,
         }}
       />
-      <UserDetailDrawer
+      <UserDetailModal
         userId={detailId}
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}

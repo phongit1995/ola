@@ -7,6 +7,7 @@ type UserListItem struct {
 	Email       string `json:"email,omitempty"`
 	Avatar      string `json:"avatar,omitempty"`
 	Gender      string `json:"gender,omitempty"`
+	Ken         int    `json:"ken"`
 	IsVip       bool   `json:"isVip"`
 	IsActive    bool   `json:"isActive"`
 	CreatedAt   string `json:"createdAt"`
