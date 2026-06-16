@@ -304,7 +304,17 @@ func (s *Service) GetMessages(ctx context.Context, roomID uuid.UUID, limit int, 
 	if !room.Enabled {
 		return nil, errors.New("room is disabled")
 	}
+	return s.fetchMessages(ctx, roomID, limit, beforeID)
+}
 
+func (s *Service) GetMessagesAdmin(ctx context.Context, roomID uuid.UUID, limit int, beforeID string) (*RoomMessagesListResponse, error) {
+	if _, err := s.getRoom(roomID); err != nil {
+		return nil, err
+	}
+	return s.fetchMessages(ctx, roomID, limit, beforeID)
+}
+
+func (s *Service) fetchMessages(ctx context.Context, roomID uuid.UUID, limit int, beforeID string) (*RoomMessagesListResponse, error) {
 	raws, err := s.redisMsg.List(ctx, roomID.String(), limit, beforeID)
 	if err != nil {
 		return nil, err

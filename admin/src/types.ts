@@ -107,6 +107,23 @@ export interface UpdateRoomRequest {
   enabled?: boolean
 }
 
+export interface RoomMessage {
+  id: string
+  roomId: string
+  senderId: string
+  senderName?: string
+  senderAvatar?: string
+  senderGender?: string
+  content: string
+  createdAt: string
+}
+
+export interface RoomMessagesList {
+  items: RoomMessage[]
+  hasMore: boolean
+  nextBefore?: string
+}
+
 export interface MeAuthor {
   id: string
   username: string

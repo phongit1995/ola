@@ -15,14 +15,6 @@ func NewRouter(controller *Controller, authMiddleware *middleware.AuthMiddleware
 }
 
 func (r *Router) Setup(api *utils.AppGroup) {
-	admin := api.Group("/admin/rooms", r.authMiddleware.RequireAdmin())
-	{
-		admin.POST("", r.controller.CreateRoom)
-		admin.GET("", r.controller.ListRoomsAdmin)
-		admin.PATCH("/:id", r.controller.UpdateRoom)
-		admin.DELETE("/:id", r.controller.DeleteRoom)
-	}
-
 	rooms := api.Group("/rooms", r.authMiddleware.RequireAuth())
 	{
 		rooms.GET("", r.controller.BrowseRooms)

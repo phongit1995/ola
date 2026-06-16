@@ -74,14 +74,25 @@ export function MeDetailModal({ postId, open, onClose }: MeDetailModalProps) {
   const updateStatus = useUpdateMeStatus()
   const deleteComment = useDeleteMeComment()
 
-  async function toggleEnabled(enabled: boolean) {
+  function toggleEnabled(enabled: boolean) {
     if (!postId) return
-    try {
-      await updateStatus.mutateAsync({ id: postId, enabled })
-      message.success(enabled ? 'Đã hiện bài' : 'Đã ẩn bài')
-    } catch (err) {
-      message.error(err instanceof ApiError ? err.message : 'Thao tác thất bại')
-    }
+    modal.confirm({
+      title: enabled ? 'Hiện bài đăng này?' : 'Ẩn bài đăng này?',
+      content: enabled
+        ? 'Bài sẽ hiển thị lại với người dùng.'
+        : 'Bài sẽ bị ẩn khỏi người dùng.',
+      okText: enabled ? 'Hiện' : 'Ẩn',
+      okButtonProps: { danger: !enabled },
+      cancelText: 'Huỷ',
+      onOk: async () => {
+        try {
+          await updateStatus.mutateAsync({ id: postId, enabled })
+          message.success(enabled ? 'Đã hiện bài' : 'Đã ẩn bài')
+        } catch (err) {
+          message.error(err instanceof ApiError ? err.message : 'Thao tác thất bại')
+        }
+      },
+    })
   }
 
   function removeComment(commentId: string) {

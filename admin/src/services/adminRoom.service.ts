@@ -6,6 +6,7 @@ import type {
   ListResult,
   MessageResult,
   Room,
+  RoomMessagesList,
   UpdateRoomRequest,
 } from '@/types'
 
@@ -29,6 +30,17 @@ export const AdminRoomService = {
 
   async remove(id: string): Promise<MessageResult> {
     const { data } = await http.delete<ApiResponse<MessageResult>>(`/admin/rooms/${id}`)
+    return data.data
+  },
+
+  async messages(
+    id: string,
+    params: { limit?: number; before?: string } = {},
+  ): Promise<RoomMessagesList> {
+    const { data } = await http.get<ApiResponse<RoomMessagesList>>(
+      `/admin/rooms/${id}/messages`,
+      { params },
+    )
     return data.data
   },
 }

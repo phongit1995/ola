@@ -12,6 +12,14 @@ export function useRooms(params: ListParams) {
   })
 }
 
+export function useRoomMessages(id: string | null) {
+  return useQuery({
+    queryKey: [ROOMS_KEY, 'messages', id],
+    queryFn: () => AdminRoomService.messages(id as string, { limit: 100 }),
+    enabled: id != null,
+  })
+}
+
 export function useCreateRoom() {
   const queryClient = useQueryClient()
   return useMutation({

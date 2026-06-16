@@ -4,6 +4,7 @@ import {
   Avatar,
   Button,
   Card,
+  Image,
   Input,
   Space,
   Switch,
@@ -17,7 +18,6 @@ import {
   EyeOutlined,
   LikeOutlined,
   MessageOutlined,
-  PictureOutlined,
   UserOutlined,
 } from '@ant-design/icons'
 import { useDebounce } from '@/hooks/useDebounce'
@@ -31,7 +31,7 @@ import type { MeListItem } from '@/types'
 const PAGE_SIZE = 20
 
 export function MePage() {
-  const { message } = App.useApp()
+  const { message, modal } = App.useApp()
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
   const q = useDebounce(search.trim())
@@ -51,13 +51,24 @@ export function MePage() {
     setModalOpen(true)
   }
 
-  async function toggleEnabled(post: MeListItem, enabled: boolean) {
-    try {
-      await updateStatus.mutateAsync({ id: post.id, enabled })
-      message.success(enabled ? 'Đã hiện bài' : 'Đã ẩn bài')
-    } catch (err) {
-      message.error(err instanceof ApiError ? err.message : 'Thao tác thất bại')
-    }
+  function toggleEnabled(post: MeListItem, enabled: boolean) {
+    modal.confirm({
+      title: enabled ? 'Hiện bài đăng này?' : 'Ẩn bài đăng này?',
+      content: enabled
+        ? 'Bài sẽ hiển thị lại với người dùng.'
+        : 'Bài sẽ bị ẩn khỏi người dùng.',
+      okText: enabled ? 'Hiện' : 'Ẩn',
+      okButtonProps: { danger: !enabled },
+      cancelText: 'Huỷ',
+      onOk: async () => {
+        try {
+          await updateStatus.mutateAsync({ id: post.id, enabled })
+          message.success(enabled ? 'Đã hiện bài' : 'Đã ẩn bài')
+        } catch (err) {
+          message.error(err instanceof ApiError ? err.message : 'Thao tác thất bại')
+        }
+      },
+    })
   }
 
   const columns: TableColumnsType<MeListItem> = [
@@ -105,12 +116,17 @@ export function MePage() {
       render: (_, post) =>
         post.images.length > 0 ? (
           <Space size={4}>
-            <Avatar
-              src={post.images[0].url}
-              shape="square"
-              size={40}
-              icon={<PictureOutlined />}
-            />
+            <Image.PreviewGroup>
+              <Image
+                src={post.images[0].url}
+                width={40}
+                height={40}
+                style={{ objectFit: 'cover', borderRadius: 6, cursor: 'pointer' }}
+              />
+              {post.images.slice(1).map((img) => (
+                <Image key={img.url} src={img.url} style={{ display: 'none' }} />
+              ))}
+            </Image.PreviewGroup>
             {post.images.length > 1 && (
               <span style={{ color: '#6b7785', fontSize: 12 }}>+{post.images.length - 1}</span>
             )}

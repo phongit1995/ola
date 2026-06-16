@@ -1,7 +1,6 @@
 package room
 
 import (
-	"ola-chat-server/internal/middleware"
 	"ola-chat-server/internal/utils"
 	"net/http"
 
@@ -16,96 +15,6 @@ type Controller struct {
 
 func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 	return &Controller{service: service, logger: logger.Named("[room_controller]")}
-}
-
-// CreateRoom godoc
-// @Summary      Create room (admin)
-// @Tags         admin-room
-// @Accept       json
-// @Produce      json
-// @Security     BearerAuth
-// @Param        request body CreateRoomRequest true "Create Room"
-// @Success      201  {object}  utils.BaseResponse[RoomResponse]
-// @Router       /admin/rooms [post]
-func (ctrl *Controller) CreateRoom(c *gin.Context) (interface{}, error) {
-	adminID, ok := middleware.GetAdminID(c)
-	if !ok {
-		return nil, utils.NewHTTPError(http.StatusUnauthorized, "unauthorized")
-	}
-	req, err := utils.BindJSON[CreateRoomRequest](c)
-	if err != nil {
-		return nil, err
-	}
-	resp, err := ctrl.service.Create(adminID, req)
-	if err != nil {
-		return nil, utils.ServiceError(err)
-	}
-	return resp, nil
-}
-
-// ListRoomsAdmin godoc
-// @Summary      List rooms (admin, includes disabled)
-// @Tags         admin-room
-// @Produce      json
-// @Security     BearerAuth
-// @Param        q query string false "Search by name"
-// @Param        limit query int false "Page size"
-// @Param        offset query int false "Offset"
-// @Success      200  {object}  utils.BaseResponse[RoomListResponse]
-// @Router       /admin/rooms [get]
-func (ctrl *Controller) ListRoomsAdmin(c *gin.Context) (interface{}, error) {
-	limit := utils.ParseLimit(c, 20, 100)
-	offset := utils.ParseOffset(c)
-	resp, err := ctrl.service.ListAdmin(c.Request.Context(), c.Query("q"), limit, offset)
-	if err != nil {
-		return nil, utils.ServiceError(err)
-	}
-	return resp, nil
-}
-
-// UpdateRoom godoc
-// @Summary      Update room (admin)
-// @Tags         admin-room
-// @Accept       json
-// @Produce      json
-// @Security     BearerAuth
-// @Param        id path string true "Room ID"
-// @Param        request body UpdateRoomRequest true "Update Room"
-// @Success      200  {object}  utils.BaseResponse[RoomResponse]
-// @Router       /admin/rooms/{id} [patch]
-func (ctrl *Controller) UpdateRoom(c *gin.Context) (interface{}, error) {
-	id, err := utils.ParseUUIDParam(c, "id", "invalid room id")
-	if err != nil {
-		return nil, err
-	}
-	req, err := utils.BindJSON[UpdateRoomRequest](c)
-	if err != nil {
-		return nil, err
-	}
-	resp, err := ctrl.service.Update(c.Request.Context(), id, req)
-	if err != nil {
-		return nil, utils.ServiceError(err)
-	}
-	return resp, nil
-}
-
-// DeleteRoom godoc
-// @Summary      Delete room (admin)
-// @Tags         admin-room
-// @Produce      json
-// @Security     BearerAuth
-// @Param        id path string true "Room ID"
-// @Success      200  {object}  map[string]string
-// @Router       /admin/rooms/{id} [delete]
-func (ctrl *Controller) DeleteRoom(c *gin.Context) (interface{}, error) {
-	id, err := utils.ParseUUIDParam(c, "id", "invalid room id")
-	if err != nil {
-		return nil, err
-	}
-	if err := ctrl.service.Delete(id); err != nil {
-		return nil, utils.ServiceError(err)
-	}
-	return map[string]string{"message": "room deleted"}, nil
 }
 
 // BrowseRooms godoc

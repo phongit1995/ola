@@ -15,6 +15,7 @@ import {
   CommentOutlined,
   DeleteOutlined,
   EditOutlined,
+  MessageOutlined,
   PlusOutlined,
 } from '@ant-design/icons'
 import { useDebounce } from '@/hooks/useDebounce'
@@ -22,6 +23,7 @@ import { useDeleteRoom, useRooms, useUpdateRoom } from '@/hooks/useRooms'
 import { formatDateTime } from '@/lib/format'
 import { ApiError } from '@/lib/apiError'
 import { RoomFormModal } from './RoomFormModal'
+import { RoomMessagesModal } from './RoomMessagesModal'
 import type { Room } from '@/types'
 
 const PAGE_SIZE = 20
@@ -34,6 +36,8 @@ export function RoomsPage() {
 
   const [formOpen, setFormOpen] = useState(false)
   const [editing, setEditing] = useState<Room | null>(null)
+  const [msgOpen, setMsgOpen] = useState(false)
+  const [msgRoom, setMsgRoom] = useState<Room | null>(null)
 
   const { data, isFetching } = useRooms({
     q: q || undefined,
@@ -53,13 +57,29 @@ export function RoomsPage() {
     setFormOpen(true)
   }
 
-  async function toggleEnabled(room: Room, enabled: boolean) {
-    try {
-      await updateRoom.mutateAsync({ id: room.id, payload: { enabled } })
-      message.success(enabled ? 'Đã bật phòng' : 'Đã tắt phòng')
-    } catch (err) {
-      message.error(err instanceof ApiError ? err.message : 'Thao tác thất bại')
-    }
+  function openMessages(room: Room) {
+    setMsgRoom(room)
+    setMsgOpen(true)
+  }
+
+  function toggleEnabled(room: Room, enabled: boolean) {
+    modal.confirm({
+      title: enabled ? 'Bật phòng này?' : 'Tắt phòng này?',
+      content: enabled
+        ? 'Phòng sẽ hoạt động trở lại với người dùng.'
+        : 'Phòng sẽ bị tắt, người dùng không vào được.',
+      okText: enabled ? 'Bật' : 'Tắt',
+      okButtonProps: { danger: !enabled },
+      cancelText: 'Huỷ',
+      onOk: async () => {
+        try {
+          await updateRoom.mutateAsync({ id: room.id, payload: { enabled } })
+          message.success(enabled ? 'Đã bật phòng' : 'Đã tắt phòng')
+        } catch (err) {
+          message.error(err instanceof ApiError ? err.message : 'Thao tác thất bại')
+        }
+      },
+    })
   }
 
   function removeRoom(room: Room) {
@@ -132,9 +152,16 @@ export function RoomsPage() {
     {
       title: 'Thao tác',
       key: 'actions',
-      width: 150,
+      width: 240,
       render: (_, room) => (
         <Space>
+          <Button
+            size="small"
+            icon={<MessageOutlined />}
+            onClick={() => openMessages(room)}
+          >
+            Tin nhắn
+          </Button>
           <Button size="small" icon={<EditOutlined />} onClick={() => openEdit(room)}>
             Sửa
           </Button>
@@ -179,7 +206,7 @@ export function RoomsPage() {
         columns={columns}
         dataSource={data?.items ?? []}
         loading={isFetching}
-        scroll={{ x: 760 }}
+        scroll={{ x: 880 }}
         pagination={{
           current: page,
           pageSize: PAGE_SIZE,
@@ -189,6 +216,12 @@ export function RoomsPage() {
         }}
       />
       <RoomFormModal open={formOpen} room={editing} onClose={() => setFormOpen(false)} />
+      <RoomMessagesModal
+        roomId={msgRoom?.id ?? null}
+        roomName={msgRoom?.name}
+        open={msgOpen}
+        onClose={() => setMsgOpen(false)}
+      />
     </Card>
   )
 }
