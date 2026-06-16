@@ -5,6 +5,7 @@ type CreateRoomRequest struct {
 	Description string `json:"description" binding:"omitempty,max=2000" example:"Nơi chém gió"`
 	ImageURL    string `json:"imageUrl" binding:"omitempty,url" example:"https://example.com/room.jpg"`
 	MaxMembers  int    `json:"maxMembers" binding:"omitempty,min=0" example:"100"`
+	Index       int    `json:"index" binding:"omitempty,min=0" example:"0"`
 }
 
 type UpdateRoomRequest struct {
@@ -12,6 +13,7 @@ type UpdateRoomRequest struct {
 	Description *string `json:"description" binding:"omitempty,max=2000"`
 	ImageURL    *string `json:"imageUrl" binding:"omitempty,url"`
 	MaxMembers  *int    `json:"maxMembers" binding:"omitempty,min=0"`
+	Index       *int    `json:"index" binding:"omitempty,min=0"`
 	Enabled     *bool   `json:"enabled"`
 }
 
@@ -21,6 +23,7 @@ type RoomResponse struct {
 	Description string `json:"description,omitempty"`
 	ImageURL    string `json:"imageUrl,omitempty"`
 	MaxMembers  int    `json:"maxMembers"`
+	Index       int    `json:"index"`
 	MemberCount int    `json:"memberCount"`
 	Enabled     bool   `json:"enabled"`
 	CreatedBy   string `json:"createdBy"`

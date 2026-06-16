@@ -1,0 +1,3 @@
+DROP INDEX IF EXISTS idx_me_enabled;
+
+ALTER TABLE me DROP COLUMN IF EXISTS enabled;

@@ -24,6 +24,7 @@ export function RoomFormModal({ open, room, onClose }: RoomFormModalProps) {
         description: room?.description ?? '',
         imageUrl: room?.imageUrl ?? '',
         maxMembers: room?.maxMembers ?? undefined,
+        index: room?.index ?? 0,
       })
     }
   }, [open, room, form])
@@ -81,6 +82,9 @@ export function RoomFormModal({ open, room, onClose }: RoomFormModalProps) {
           <Input placeholder="https://..." />
         </Form.Item>
         <Form.Item name="maxMembers" label="Giới hạn thành viên (0 = không giới hạn)">
+          <InputNumber min={0} style={{ width: '100%' }} placeholder="0" />
+        </Form.Item>
+        <Form.Item name="index" label="Thứ tự sắp xếp (nhỏ hơn hiển thị trước)">
           <InputNumber min={0} style={{ width: '100%' }} placeholder="0" />
         </Form.Item>
       </Form>

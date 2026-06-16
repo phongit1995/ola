@@ -74,14 +74,14 @@ func (ctrl *Controller) Create(c *gin.Context) (interface{}, error) {
 }
 
 // Feed godoc
-// @Summary      Feed: public posts + own posts + friends' private posts
+// @Summary      Feed: public posts + own posts + friends' friend-only posts (keyset cursor)
 // @Tags         me
 // @Produce      json
 // @Security     BearerAuth
 // @Param        limit query int false "Page size"
-// @Param        offset query int false "Offset"
+// @Param        cursor query string false "Opaque keyset cursor from previous page's nextCursor"
 // @Param        filter query string false "Set to 'tagged' (posts with any @mention), 'mentions' (posts mentioning viewer) or 'media' (posts with images)"
-// @Success      200  {object}  utils.BaseResponse[PostListResponse]
+// @Success      200  {object}  utils.BaseResponse[PostFeedResponse]
 // @Router       /me [get]
 func (ctrl *Controller) Feed(c *gin.Context) (interface{}, error) {
 	userID, err := utils.RequireUserID(c)
@@ -89,19 +89,10 @@ func (ctrl *Controller) Feed(c *gin.Context) (interface{}, error) {
 		return nil, err
 	}
 	limit := utils.ParseLimit(c, 20, 100)
-	offset := utils.ParseOffset(c)
+	cursor := c.Query("cursor")
+	filter := c.Query("filter")
 
-	var resp *PostListResponse
-	switch c.Query("filter") {
-	case "tagged":
-		resp, err = ctrl.service.TaggedFeed(userID, limit, offset)
-	case "mentions":
-		resp, err = ctrl.service.MentionsFeed(userID, limit, offset)
-	case "media":
-		resp, err = ctrl.service.MediaFeed(userID, limit, offset)
-	default:
-		resp, err = ctrl.service.Feed(userID, limit, offset)
-	}
+	resp, err := ctrl.service.Feed(userID, filter, cursor, limit)
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}

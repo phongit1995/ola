@@ -7,13 +7,18 @@ import i18n from '@/i18n';
 interface MeFeedState {
   posts: Post[];
   loading: boolean;
+  loadingMore: boolean;
   error: boolean;
+  nextCursor: string | null;
   reacting: Set<string>;
   loadFeed: (filter?: MeFeedFilter) => Promise<void>;
+  loadMore: (filter?: MeFeedFilter) => Promise<void>;
   toggleReaction: (id: string, type: PostReaction) => Promise<void>;
   createPost: (payload: CreatePostRequest, files: File[], imageUrls: string[]) => Promise<Post | null>;
   adjustCommentCount: (id: string, delta: number) => void;
 }
+
+const FEED_PAGE_SIZE = 30;
 
 function replacePost(posts: Post[], updated: Post): Post[] {
   return posts.map((post) => (post.id === updated.id ? updated : post));
@@ -34,19 +39,40 @@ let feedRequestId = 0;
 export const useMeFeedStore = create<MeFeedState>((set, get) => ({
   posts: [],
   loading: true,
+  loadingMore: false,
   error: false,
+  nextCursor: null,
   reacting: new Set(),
   loadFeed: async (filter) => {
     const requestId = ++feedRequestId;
     set({ loading: true, error: false });
     try {
-      const result = await MeService.feed({ filter, limit: 30 });
+      const result = await MeService.feed({ filter, limit: FEED_PAGE_SIZE });
       if (requestId !== feedRequestId) return;
-      set({ posts: result.items, loading: false });
+      set({ posts: result.items, nextCursor: result.nextCursor, loading: false });
     } catch (error) {
       if (requestId !== feedRequestId) return;
       console.error('load me feed failed', error);
-      set({ posts: [], loading: false, error: true });
+      set({ posts: [], nextCursor: null, loading: false, error: true });
+    }
+  },
+  loadMore: async (filter) => {
+    const { nextCursor, loading, loadingMore } = get();
+    if (nextCursor == null || loading || loadingMore) return;
+    const requestId = feedRequestId;
+    set({ loadingMore: true });
+    try {
+      const result = await MeService.feed({ filter, limit: FEED_PAGE_SIZE, cursor: nextCursor });
+      if (requestId !== feedRequestId) return;
+      set((state) => ({
+        posts: [...state.posts, ...result.items],
+        nextCursor: result.nextCursor,
+        loadingMore: false,
+      }));
+    } catch (error) {
+      if (requestId !== feedRequestId) return;
+      console.error('load more me feed failed', error);
+      set({ loadingMore: false });
     }
   },
   toggleReaction: async (id, type) => {

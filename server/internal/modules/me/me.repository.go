@@ -3,6 +3,7 @@ package me
 import (
 	"encoding/json"
 	"errors"
+	"time"
 
 	"ola-chat-server/internal/models"
 
@@ -57,43 +58,97 @@ func (r *Repository) paginate(db *gorm.DB, limit, offset int) ([]*models.Post, i
 	return posts, total, nil
 }
 
-func (r *Repository) feedScope(viewerID uuid.UUID, friendIDs []uuid.UUID) *gorm.DB {
-	db := r.db.Model(&models.Post{})
-	if len(friendIDs) > 0 {
-		return db.Where(
-			"visibility = ? OR author_id = ? OR (visibility = ? AND author_id IN ?)",
-			models.PostVisibilityPublic, viewerID, models.PostVisibilityFriend, friendIDs,
-		)
-	}
-	return db.Where("visibility = ? OR author_id = ?", models.PostVisibilityPublic, viewerID)
-}
-
-func (r *Repository) Feed(viewerID uuid.UUID, friendIDs []uuid.UUID, limit, offset int) ([]*models.Post, int64, error) {
-	return r.paginate(r.feedScope(viewerID, friendIDs), limit, offset)
-}
-
-func (r *Repository) FeedMedia(viewerID uuid.UUID, friendIDs []uuid.UUID, limit, offset int) ([]*models.Post, int64, error) {
-	db := r.feedScope(viewerID, friendIDs).Where("jsonb_array_length(images) > 0")
-	return r.paginate(db, limit, offset)
-}
-
-func (r *Repository) FeedTagged(viewerID uuid.UUID, friendIDs []uuid.UUID, limit, offset int) ([]*models.Post, int64, error) {
-	db := r.feedScope(viewerID, friendIDs).Where("COALESCE(jsonb_array_length(mentions), 0) > 0")
-	return r.paginate(db, limit, offset)
-}
-
 func (r *Repository) ListByAuthor(authorID uuid.UUID, visibilities []models.PostVisibility, limit, offset int) ([]*models.Post, int64, error) {
-	db := r.db.Model(&models.Post{}).Where("author_id = ? AND visibility IN ?", authorID, visibilities)
+	db := r.db.Model(&models.Post{}).Where("author_id = ? AND enabled = ? AND visibility IN ?", authorID, true, visibilities)
 	return r.paginate(db, limit, offset)
 }
 
-func (r *Repository) FeedMentions(viewerID uuid.UUID, friendIDs []uuid.UUID, limit, offset int) ([]*models.Post, int64, error) {
-	target, err := json.Marshal([]string{viewerID.String()})
-	if err != nil {
-		return nil, 0, err
+type feedRow struct {
+	ID        uuid.UUID `gorm:"column:id"`
+	CreatedAt time.Time `gorm:"column:created_at"`
+}
+
+func feedFilterFragment(filter string) string {
+	switch filter {
+	case "media":
+		return " AND jsonb_array_length(m.images) > 0"
+	case "tagged":
+		return " AND COALESCE(jsonb_array_length(m.mentions), 0) > 0"
+	case "mentions":
+		return " AND m.mentions @> @viewerJson"
+	default:
+		return ""
 	}
-	db := r.feedScope(viewerID, friendIDs).Where("mentions @> ?", string(target))
-	return r.paginate(db, limit, offset)
+}
+
+func (r *Repository) FeedPage(viewerID uuid.UUID, filter string, cursorTime *time.Time, cursorID *uuid.UUID, limit int) ([]*models.Post, bool, error) {
+	filterFrag := feedFilterFragment(filter)
+	cursorFrag := ""
+	if cursorTime != nil && cursorID != nil {
+		cursorFrag = " AND (m.created_at, m.id) < (@curTs, @curId)"
+	}
+
+	branch := func(cond string) string {
+		return "(SELECT m.id, m.created_at FROM me m WHERE m.deleted_at IS NULL AND m.enabled = true AND " + cond + filterFrag + cursorFrag +
+			" ORDER BY m.created_at DESC, m.id DESC LIMIT @lim)"
+	}
+	friendCond := "m.visibility = 'friend' AND EXISTS (SELECT 1 FROM relationships rel WHERE rel.status = 'accepted'" +
+		" AND ((rel.requester_id = @viewer AND rel.addressee_id = m.author_id)" +
+		" OR (rel.addressee_id = @viewer AND rel.requester_id = m.author_id)))"
+
+	query := "SELECT id, created_at FROM (" +
+		branch("m.visibility = 'public'") + " UNION " +
+		branch("m.author_id = @viewer") + " UNION " +
+		branch(friendCond) +
+		") u ORDER BY created_at DESC, id DESC LIMIT @lim"
+
+	args := map[string]interface{}{"viewer": viewerID, "lim": limit + 1}
+	if filter == "mentions" {
+		target, err := json.Marshal([]string{viewerID.String()})
+		if err != nil {
+			return nil, false, err
+		}
+		args["viewerJson"] = string(target)
+	}
+	if cursorTime != nil && cursorID != nil {
+		args["curTs"] = *cursorTime
+		args["curId"] = *cursorID
+	}
+
+	var rows []feedRow
+	if err := r.db.Raw(query, args).Scan(&rows).Error; err != nil {
+		return nil, false, err
+	}
+
+	hasMore := len(rows) > limit
+	if hasMore {
+		rows = rows[:limit]
+	}
+	if len(rows) == 0 {
+		return []*models.Post{}, false, nil
+	}
+
+	ids := make([]uuid.UUID, len(rows))
+	for i, row := range rows {
+		ids[i] = row.ID
+	}
+
+	var posts []*models.Post
+	if err := r.db.Preload("Author").Where("id IN ?", ids).Find(&posts).Error; err != nil {
+		return nil, false, err
+	}
+
+	byID := make(map[uuid.UUID]*models.Post, len(posts))
+	for _, p := range posts {
+		byID[p.ID] = p
+	}
+	ordered := make([]*models.Post, 0, len(rows))
+	for _, row := range rows {
+		if p, ok := byID[row.ID]; ok {
+			ordered = append(ordered, p)
+		}
+	}
+	return ordered, hasMore, nil
 }
 
 func (r *Repository) ListLikers(postID uuid.UUID, limit, offset int) ([]*models.User, int64, error) {

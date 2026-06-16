@@ -5,6 +5,7 @@ import {
   AppstoreOutlined,
   CommentOutlined,
   LogoutOutlined,
+  PictureOutlined,
   TeamOutlined,
   UserOutlined,
 } from '@ant-design/icons'
@@ -17,12 +18,14 @@ const MENU_ITEMS = [
   { key: '/', icon: <AppstoreOutlined />, label: 'Tổng quan' },
   { key: '/users', icon: <TeamOutlined />, label: 'Người dùng' },
   { key: '/rooms', icon: <CommentOutlined />, label: 'Phòng chat' },
+  { key: '/me', icon: <PictureOutlined />, label: 'Me' },
 ]
 
 const PAGE_TITLES: Record<string, string> = {
   '/': 'Tổng quan',
   '/users': 'Quản lý người dùng',
   '/rooms': 'Quản lý phòng chat',
+  '/me': 'Quản lý Me',
 }
 
 export function AdminLayout() {

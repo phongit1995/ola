@@ -43,6 +43,7 @@ func (s *Service) Create(adminID uuid.UUID, req *CreateRoomRequest) (*RoomRespon
 		Description: req.Description,
 		ImageURL:    req.ImageURL,
 		MaxMembers:  req.MaxMembers,
+		Index:       req.Index,
 		Enabled:     true,
 		CreatedBy:   adminID,
 	}
@@ -69,6 +70,9 @@ func (s *Service) Update(ctx context.Context, id uuid.UUID, req *UpdateRoomReque
 	}
 	if req.MaxMembers != nil {
 		room.MaxMembers = *req.MaxMembers
+	}
+	if req.Index != nil {
+		room.Index = *req.Index
 	}
 	if req.Enabled != nil {
 		room.Enabled = *req.Enabled
@@ -405,6 +409,7 @@ func toRoomResponse(room *models.Room, memberCount int) *RoomResponse {
 		Description: room.Description,
 		ImageURL:    room.ImageURL,
 		MaxMembers:  room.MaxMembers,
+		Index:       room.Index,
 		MemberCount: memberCount,
 		Enabled:     room.Enabled,
 		CreatedBy:   room.CreatedBy.String(),

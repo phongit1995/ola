@@ -84,6 +84,11 @@ type PostListResponse struct {
 	Offset int            `json:"offset"`
 }
 
+type PostFeedResponse struct {
+	Items      []PostResponse `json:"items"`
+	NextCursor string         `json:"nextCursor,omitempty"`
+}
+
 type LikerListResponse struct {
 	Items  []AuthorResponse `json:"items"`
 	Total  int64            `json:"total"`

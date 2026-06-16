@@ -46,7 +46,7 @@ func (r *Repository) list(query string, limit, offset int, onlyEnabled bool) ([]
 	}
 
 	var rooms []*models.Room
-	if err := db.Order("created_at DESC").Limit(limit).Offset(offset).Find(&rooms).Error; err != nil {
+	if err := db.Order(`"index" ASC, created_at DESC`).Limit(limit).Offset(offset).Find(&rooms).Error; err != nil {
 		return nil, 0, err
 	}
 	return rooms, total, nil

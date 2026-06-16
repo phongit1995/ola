@@ -8,18 +8,20 @@ import type {
   PostCommentListResult,
   PostLikerListResult,
   PostListResult,
+  MeFeedResult,
   CreatePostRequest,
   UpdatePostRequest,
   CreateCommentRequest,
   ReactRequest,
   FeedParams,
+  FeedCursorParams,
   PostReaction,
   UploadImagesResult,
 } from '@app-types';
 
 export class MeService {
-  static async feed(params: FeedParams = {}): Promise<PostListResult> {
-    const { data } = await api.get<IApiResponse<PostListResult>>(API_PATH.me.base, { params });
+  static async feed(params: FeedCursorParams = {}): Promise<MeFeedResult> {
+    const { data } = await api.get<IApiResponse<MeFeedResult>>(API_PATH.me.base, { params });
     return data.data;
   }
 

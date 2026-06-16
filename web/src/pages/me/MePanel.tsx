@@ -22,8 +22,19 @@ export function MePanel() {
   const username = useAuthStore((s) => s.user?.username ?? null);
   const displayName = username ?? t('home.guest');
 
-  const { tab, setTab, posts, loading, error, toggleReaction, addPost, adjustCommentCount } =
-    useMeFeed();
+  const {
+    tab,
+    setTab,
+    posts,
+    loading,
+    loadingMore,
+    hasMore,
+    error,
+    loadMore,
+    toggleReaction,
+    addPost,
+    adjustCommentCount,
+  } = useMeFeed();
 
   const [composerOpen, setComposerOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
@@ -91,8 +102,11 @@ export function MePanel() {
           <MeFeedList
             posts={posts}
             loading={loading}
+            loadingMore={loadingMore}
+            hasMore={hasMore}
             error={error}
             emptyText={emptyText}
+            onLoadMore={loadMore}
             onToggleLike={(id) => toggleReaction(id, 'like')}
             onToggleDislike={(id) => toggleReaction(id, 'dislike')}
             onOpenProfile={(author, color) => openProfile(author, color)}

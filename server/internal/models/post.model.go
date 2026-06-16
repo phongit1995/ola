@@ -101,6 +101,7 @@ type Post struct {
 	CheckIn      *CheckIn       `gorm:"type:jsonb"`
 	Sticker      string         `gorm:"type:varchar(500)"`
 	Visibility   PostVisibility `gorm:"type:varchar(20);not null;default:'public'"`
+	Enabled      bool           `gorm:"not null;default:true"`
 	LikeCount    int            `gorm:"not null;default:0"`
 	DislikeCount int            `gorm:"not null;default:0"`
 	CommentCount int            `gorm:"not null;default:0"`

@@ -3,15 +3,18 @@ import { Button, Card, Col, Row, Statistic, Typography } from 'antd'
 import {
   ArrowRightOutlined,
   CommentOutlined,
+  PictureOutlined,
   TeamOutlined,
 } from '@ant-design/icons'
 import { useUsers } from '@/hooks/useUsers'
 import { useRooms } from '@/hooks/useRooms'
+import { useMeList } from '@/hooks/useMe'
 
 export function DashboardPage() {
   const navigate = useNavigate()
   const usersQuery = useUsers({ limit: 1, offset: 0 })
   const roomsQuery = useRooms({ limit: 1, offset: 0 })
+  const meQuery = useMeList({ limit: 1, offset: 0 })
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
@@ -45,6 +48,23 @@ export function DashboardPage() {
               type="link"
               style={{ paddingLeft: 0 }}
               onClick={() => navigate('/rooms')}
+            >
+              Quản lý <ArrowRightOutlined />
+            </Button>
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} lg={8}>
+          <Card>
+            <Statistic
+              title="Tổng bài đăng"
+              value={meQuery.data?.total ?? 0}
+              loading={meQuery.isLoading}
+              prefix={<PictureOutlined style={{ color: '#d4380d' }} />}
+            />
+            <Button
+              type="link"
+              style={{ paddingLeft: 0 }}
+              onClick={() => navigate('/me')}
             >
               Quản lý <ArrowRightOutlined />
             </Button>

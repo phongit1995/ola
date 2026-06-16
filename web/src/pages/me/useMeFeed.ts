@@ -12,8 +12,11 @@ export function useMeFeed() {
 
   const rawPosts = useMeFeedStore((state) => state.posts);
   const loading = useMeFeedStore((state) => state.loading);
+  const loadingMore = useMeFeedStore((state) => state.loadingMore);
   const error = useMeFeedStore((state) => state.error);
+  const hasMore = useMeFeedStore((state) => state.nextCursor != null);
   const loadFeed = useMeFeedStore((state) => state.loadFeed);
+  const loadMoreFeed = useMeFeedStore((state) => state.loadMore);
   const toggleReaction = useMeFeedStore((state) => state.toggleReaction);
   const createPost = useMeFeedStore((state) => state.createPost);
   const adjustCommentCount = useMeFeedStore((state) => state.adjustCommentCount);
@@ -23,6 +26,8 @@ export function useMeFeed() {
   useEffect(() => {
     loadFeed(TAB_FILTER[tab]);
   }, [tab, loadFeed]);
+
+  const loadMore = useCallback(() => loadMoreFeed(TAB_FILTER[tab]), [loadMoreFeed, tab]);
 
   const posts = useMemo(
     () => rawPosts.map((post) => toMePost(post, formatTime)),
@@ -62,7 +67,10 @@ export function useMeFeed() {
     setTab,
     posts,
     loading,
+    loadingMore,
+    hasMore,
     error,
+    loadMore,
     toggleReaction,
     addPost,
     adjustCommentCount,

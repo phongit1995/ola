@@ -1,0 +1,3 @@
+ALTER TABLE rooms ADD COLUMN IF NOT EXISTS "index" INT NOT NULL DEFAULT 0;
+
+CREATE INDEX IF NOT EXISTS idx_rooms_index ON rooms("index") WHERE deleted_at IS NULL;

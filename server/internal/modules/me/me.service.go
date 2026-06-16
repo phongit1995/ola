@@ -3,6 +3,7 @@ package me
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"image"
@@ -68,6 +69,7 @@ func (s *Service) Create(userID uuid.UUID, req *CreatePostRequest) (*PostRespons
 		CheckIn:    toModelCheckIn(req.CheckIn),
 		Sticker:    strings.TrimSpace(req.Sticker),
 		Visibility: parseVisibility(req.Visibility),
+		Enabled:    true,
 	}
 	if err := s.repo.Create(post); err != nil {
 		return nil, err
@@ -138,36 +140,25 @@ func (s *Service) GetByID(viewerID, postID uuid.UUID) (*PostResponse, error) {
 	return &resp, nil
 }
 
-func (s *Service) Feed(viewerID uuid.UUID, limit, offset int) (*PostListResponse, error) {
-	posts, total, err := s.repo.Feed(viewerID, s.friendIDs(viewerID), limit, offset)
+func (s *Service) Feed(viewerID uuid.UUID, filter, cursor string, limit int) (*PostFeedResponse, error) {
+	cursorTime, cursorID, err := decodeFeedCursor(cursor)
 	if err != nil {
 		return nil, err
 	}
-	return s.buildList(viewerID, posts, total, limit, offset)
-}
-
-func (s *Service) MentionsFeed(viewerID uuid.UUID, limit, offset int) (*PostListResponse, error) {
-	posts, total, err := s.repo.FeedMentions(viewerID, s.friendIDs(viewerID), limit, offset)
+	posts, hasMore, err := s.repo.FeedPage(viewerID, filter, cursorTime, cursorID, limit)
 	if err != nil {
 		return nil, err
 	}
-	return s.buildList(viewerID, posts, total, limit, offset)
-}
-
-func (s *Service) MediaFeed(viewerID uuid.UUID, limit, offset int) (*PostListResponse, error) {
-	posts, total, err := s.repo.FeedMedia(viewerID, s.friendIDs(viewerID), limit, offset)
+	items, err := s.enrich(viewerID, posts)
 	if err != nil {
 		return nil, err
 	}
-	return s.buildList(viewerID, posts, total, limit, offset)
-}
-
-func (s *Service) TaggedFeed(viewerID uuid.UUID, limit, offset int) (*PostListResponse, error) {
-	posts, total, err := s.repo.FeedTagged(viewerID, s.friendIDs(viewerID), limit, offset)
-	if err != nil {
-		return nil, err
+	var nextCursor string
+	if hasMore && len(posts) > 0 {
+		last := posts[len(posts)-1]
+		nextCursor = encodeFeedCursor(last.CreatedAt, last.ID)
 	}
-	return s.buildList(viewerID, posts, total, limit, offset)
+	return &PostFeedResponse{Items: items, NextCursor: nextCursor}, nil
 }
 
 func (s *Service) ListMine(userID uuid.UUID, limit, offset int) (*PostListResponse, error) {
@@ -362,6 +353,14 @@ func (s *Service) uploadImage(ctx context.Context, folder string, fileHeader *mu
 }
 
 func (s *Service) buildList(viewerID uuid.UUID, posts []*models.Post, total int64, limit, offset int) (*PostListResponse, error) {
+	items, err := s.enrich(viewerID, posts)
+	if err != nil {
+		return nil, err
+	}
+	return &PostListResponse{Items: items, Total: total, Limit: limit, Offset: offset}, nil
+}
+
+func (s *Service) enrich(viewerID uuid.UUID, posts []*models.Post) ([]PostResponse, error) {
 	ids := make([]uuid.UUID, 0, len(posts))
 	for _, p := range posts {
 		ids = append(ids, p.ID)
@@ -394,7 +393,7 @@ func (s *Service) buildList(viewerID uuid.UUID, posts []*models.Post, total int6
 		}
 		items = append(items, resp)
 	}
-	return &PostListResponse{Items: items, Total: total, Limit: limit, Offset: offset}, nil
+	return items, nil
 }
 
 func (s *Service) getPost(id uuid.UUID) (*models.Post, error) {
@@ -431,6 +430,9 @@ func (s *Service) ownedPost(userID, postID uuid.UUID) (*models.Post, error) {
 }
 
 func (s *Service) canView(viewerID uuid.UUID, post *models.Post) bool {
+	if !post.Enabled {
+		return false
+	}
 	if post.Visibility == models.PostVisibilityPublic {
 		return true
 	}
@@ -462,20 +464,32 @@ func (s *Service) isFriend(a, b uuid.UUID) bool {
 	return rel.Status == models.RelationshipStatusAccepted
 }
 
-func (s *Service) friendIDs(userID uuid.UUID) []uuid.UUID {
-	rels, _, err := s.relRepo.GetFriends(userID, 1000, 0)
+func encodeFeedCursor(t time.Time, id uuid.UUID) string {
+	raw := t.UTC().Format(time.RFC3339Nano) + "|" + id.String()
+	return base64.RawURLEncoding.EncodeToString([]byte(raw))
+}
+
+func decodeFeedCursor(cursor string) (*time.Time, *uuid.UUID, error) {
+	if cursor == "" {
+		return nil, nil, nil
+	}
+	data, err := base64.RawURLEncoding.DecodeString(cursor)
 	if err != nil {
-		return nil
+		return nil, nil, errors.New("invalid cursor")
 	}
-	ids := make([]uuid.UUID, 0, len(rels))
-	for _, rel := range rels {
-		if rel.RequesterID == userID {
-			ids = append(ids, rel.AddresseeID)
-		} else {
-			ids = append(ids, rel.RequesterID)
-		}
+	parts := strings.SplitN(string(data), "|", 2)
+	if len(parts) != 2 {
+		return nil, nil, errors.New("invalid cursor")
 	}
-	return ids
+	t, err := time.Parse(time.RFC3339Nano, parts[0])
+	if err != nil {
+		return nil, nil, errors.New("invalid cursor")
+	}
+	id, err := uuid.Parse(parts[1])
+	if err != nil {
+		return nil, nil, errors.New("invalid cursor")
+	}
+	return &t, &id, nil
 }
 
 func (s *Service) myReaction(userID, postID uuid.UUID) *models.PostReactionType {

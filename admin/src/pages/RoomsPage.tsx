@@ -99,6 +99,12 @@ export function RoomsPage() {
       ),
     },
     {
+      title: 'Thứ tự',
+      dataIndex: 'index',
+      width: 90,
+      render: (v: number) => v ?? 0,
+    },
+    {
       title: 'Thành viên',
       dataIndex: 'memberCount',
       width: 130,

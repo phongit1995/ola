@@ -51,6 +51,11 @@ export interface PostListResult {
   offset: number;
 }
 
+export interface MeFeedResult {
+  items: Post[];
+  nextCursor: string | null;
+}
+
 export interface PostComment {
   id: string;
   postId: string;
@@ -111,5 +116,11 @@ export interface CreateCommentRequest {
 export interface FeedParams {
   limit?: number;
   offset?: number;
+  filter?: MeFeedFilter;
+}
+
+export interface FeedCursorParams {
+  limit?: number;
+  cursor?: string;
   filter?: MeFeedFilter;
 }

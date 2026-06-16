@@ -30,14 +30,12 @@ dev-status:
 run: run-api run-chat
 
 run-api:
-	@echo "🚀 Starting API Service on :8080..."
-	@mkdir -p logs
-	go run ./cmd/api 2>&1 | tee logs/api.log
+	@echo "🚀 Starting API Service..."
+	go run ./cmd/api
 
 run-chat:
 	@echo "🚀 Starting Chat Service..."
-	@mkdir -p logs
-	go run ./cmd/chat 2>&1 | tee logs/chat.log
+	go run ./cmd/chat
 
 run-all:
 	@echo "🚀 Starting all services..."
