@@ -180,16 +180,91 @@ Item `contact_item_layout.xml` (gần giống dòng hội thoại, thêm giới 
 
 ## 4. Khung chat (mở 1 hội thoại) — `OlaChatViewActivity`
 
-- **Bong bóng tin nhắn** dùng 9-patch:
-  - **Đến** (incoming): `chat_incoming.9.png` — canh **trái**, nền sáng.
-  - **Đi** (outgoing): `chat_outgoing.9.png` — canh **phải**, nền xanh.
-  - Nội dung text: `messageTextContentTextview` (`subhead` 16sp, `maxWidth` 400dp).
-- **Thanh nhập dưới**: ô "Viết tin nhắn cho \<nick>" + icon **emoji / camera / ảnh / ghi âm** + nút **👍** (thumbs-up gửi nhanh).
-- **Nhiều loại tin nhắn** (mỗi loại 1 layout riêng):
+### 4.1. Cây layout (include lồng nhau)
+
+Gốc `ola_chat_view_resizable_layout.xml` = `SoftKeyLinearLayout` id `softKeyResizableViewLayout` (co giãn theo bàn phím), lồng nhiều include:
+
+```
+ola_chat_view_resizable_layout            (SoftKeyLinearLayout)
+└─ ola_chat_view_and_drawer_layout
+   └─ ola_chat_view_and_action_bar_layout
+      ├─ ola_chat_view_top_action_bar_layout      ← header trên cùng (mục 4.2)
+      └─ ola_chat_view_layout   (paddingTop 42dp)
+         ├─ ola_chat_message_list_layout          ← list tin + đang gõ + dải ngày (mục 4.4–4.5)
+         └─ chatInputAndAttachmentViewLayout   (bg_chat_input_with_top_border)
+            ├─ ola_chat_message_input_layout       ← ô nhập (mục 13)
+            └─ ola_chat_message_attachment_layout  ← toolbar đính kèm (mục 13)
+```
+
+### 4.2. Header trên cùng — `ola_chat_view_top_action_bar_layout.xml`
+
+LinearLayout ngang `olaTopActionBarViewLayout`, nền action bar xanh `#7CB342` (`defaultStyle.actionBar.background`), paddingLeft 8dp:
+
+| View | id | Ghi chú |
+|------|----|---------|
+| Nút back | `olaActionBarBackImageView` | `ic_action_back`, centerInside; badge `olaActionBarBackNotificationTextView` (ẩn) |
+| VIP | `vipIconImageView` | ẩn nếu không VIP |
+| Tên người/nhóm | `olaActionBarTitleTextView` | `colorTextWhitePrimary` #fff, `defaultStyle.text.button` (đậm ~14sp), 1 dòng `ellipsize=end` |
+| Trạng thái | `olaActionBarSubTitleTextView` | `colorTextWhiteSecondary` #b3ffffff, caption 12sp — **ẩn mặc định**, hiện online/offline/đang gõ |
+| Nút text | `olaActionBarButtonTextView` | ẩn mặc định |
+| Nút thông báo | `olaActionBarButtonImageView` | `ic_action_notification`, 48dp, ẩn |
+| Nút ⋮ | `olaActionBarMoreButtonImageView` | `ic_more_white`, 48dp, ẩn (menu trong chat — mục 8.2) |
+
+> Tên + trạng thái nằm trong cột `olaActionBarTitleViewLayout` (flex 1, marginLeft 8dp). Dòng trạng thái lấy từ `message_contact_status_online` = "%1$2s vừa đăng nhập" / `message_contact_status_offline` = "%1$2s vừa đăng xuất", hoặc trạng thái "đang gõ" (mục 4.5).
+
+### 4.3. Cấu trúc 1 DÒNG tin nhắn
+
+2 layout riêng cho nhận/gửi, cùng id gốc `chatMessageBubbleView` (LinearLayout **dọc**, padding ngang 8dp / dọc 1dp). Lưu ý: **giờ nằm Ở TRÊN** bong bóng (canh giữa), không phải bên cạnh.
+
+**Đến — `incoming_chat_message_layout.xml`** (`gravity=left`):
+```
+chatMessageBubbleView (vertical, left)
+├─ messageSeparatorView        View 8dp, ẩn — chèn khi đổi nhóm tin
+├─ chatMessageTimeTextView     GIỜ, canh giữa, caption 12sp, #42000000
+├─ messageSenderTextview       tên người gửi — CHỈ chat nhóm, marginLeft 48dp, body1 14sp, #8a000000
+├─ LinearLayout (horizontal)
+│  ├─ senderAvatarImageView    avatar 32dp (chỉ tin ĐẾN mới có), marginRight 4dp
+│  ├─ include chat_message_content_layout   ← bong bóng
+│  └─ bookmarkImageButton      ⭐ ic_star_gray 24dp (invisible)
+└─ readPeopleImageView         16dp, marginLeft 36dp, ic_message_sent (ẩn)
+```
+
+**Đi — `outgoing_chat_message_layout.xml`** (`gravity=right`):
+```
+chatMessageBubbleView (vertical, right)
+├─ messageSeparatorView
+├─ chatMessageTimeTextView     giờ, canh giữa
+├─ LinearLayout (horizontal, wrap)
+│  ├─ bookmarkImageButton      ⭐ (invisible)
+│  ├─ resendImageView          btn_resend_d 32dp (ẩn → hiện khi gửi lỗi)
+│  ├─ sendingProgressBar       spinner 24dp (ẩn → hiện khi đang gửi)
+│  └─ include chat_message_content_layout   ← bong bóng (KHÔNG có avatar)
+├─ readPeopleImageView         16dp, ic_contact_photo (ẩn — avatar người đã xem)
+└─ failReasonTextView          "Không thể gởi tin nhắn", colorOlaAccent, caption (ẩn)
+```
+
+> **Bong bóng** `chat_message_content_layout.xml` dùng **CHUNG**: `chatMessageTextContentView` có `background=@drawable/chat_incoming` ngay trong XML (mặc định), **code đổi sang `chat_outgoing`** cho tin gửi đi. minWidth/minHeight 32dp; nội dung `messageTextContentTextview` (`subhead` 16sp, `maxWidth` 400dp) + `chatAttachmentViewStub` (media). 9-patch: `chat_incoming.9` / `chat_outgoing.9` (+ biến thể `_top/_mid/_bottom` cho tin liền nhau, `chat_outgoing_fail.9` khi lỗi).
+
+### 4.4. Trạng thái gửi (tin đi)
+
+| Trạng thái | Hiển thị |
+|------------|----------|
+| Đang gửi | `sendingProgressBar` (spinner) hiện |
+| Lỗi | `resendImageView` (`btn_resend_d`) + `failReasonTextView` = "Không thể gởi tin nhắn"; bong bóng đổi `chat_outgoing_fail.9` |
+| Đã gửi / đã xem | `readPeopleImageView` hiện (`ic_message_sent` hoặc avatar người đã xem) |
+
+### 4.5. List tin — `ola_chat_message_list_layout.xml`
+
+- **ListView** `lvBubbleList` (`list.noDivider`).
+- **Dải ngày phân cách** `txtMessageTime`: nổi giữa trên cùng, nền `bg_time_line` (đen mờ 25%, bo 3pt), chữ trắng caption 12sp, padding 8/4dp — hiện khi cuộn, ẩn mặc định.
+- **Chỉ báo "đang gõ"** `txtTypingLinear` (đáy list, nền đen mờ 25%, minHeight 24dp): `txtTypingState` chữ **nghiêng** trắng `message_chat_typing` = "%1$2s đang trả lời..." (fallback `message_chat_typing_message` = "Đang trả lời...") + `imgEditAnimation` (`edit_typing_animation`) + `txtNewMessage` (mũi tên `ic_new_incom_message`).
+- **Nút cuộn xuống** `scrollDownIndicatorView`: 48×36dp góc phải-dưới, nền trắng mờ bo tròn, `icon_down_indicator` — ẩn khi đang ở đáy.
+
+### 4.6. Các loại tin nhắn (mỗi loại 1 layout)
 
 | Loại | Layout |
 |------|--------|
-| Text | `chat_balloon_text_message_item` |
+| Text (dòng gốc) | `incoming_chat_message_layout` / `outgoing_chat_message_layout` (+ `chat_message_content_layout`) |
 | Sticker | `chat_sticker_layout` |
 | Ghi âm (voice) | `chat_voice_message_item` |
 | Vị trí (location) | `chat_message_location_item` |
@@ -303,6 +378,13 @@ Item `contact_item_layout.xml` (gần giống dòng hội thoại, thêm giới 
 | `string_contacts` | CONTACTS | DANH BẠ |
 | `message_free_chat` | To begin a new chat, simply tap on the \<MESSAGE> icon at the bottom right corner | Để bắt đầu chat, bạn chỉ cần chạm vào biểu tượng \<MESSAGE> ở góc phía dưới bên phải. |
 | `message_make_friend_by_chat` | You can start chatting by join public room… | Bạn có thể bắt đầu trò chuyện bằng cách tham gia phòng chat công cộng… |
+| `message_chat_typing` | %1$2s is typing... | %1$2s đang trả lời... |
+| `message_chat_typing_message` | Typing... | Đang trả lời... |
+| `message_contact_status_online` | %1$2s just logged in | %1$2s vừa đăng nhập |
+| `message_contact_status_offline` | %1$2s just logged out | %1$2s vừa đăng xuất |
+| `message_fail_send_message` | Send message fail | Không thể gởi tin nhắn |
+| `message_not_send` | Not sent | Chưa gửi |
+| `string_send` | Send | Gửi |
 
 ---
 
@@ -421,7 +503,12 @@ Thanh nhập có nút mở **bảng đính kèm** trượt lên, gồm 6 tab:
 | Bố cục 2 tab con + action bar | ✅ mục 1 |
 | List hội thoại (item + style) | ✅ mục 2 |
 | Danh bạ (item + style + header) | ✅ mục 3 |
-| Khung chat + 11 loại bong bóng | ✅ mục 4 |
+| Khung chat — cây layout (include) | ✅ mục 4.1 |
+| Khung chat — header (back/tên/trạng thái/⋮) | ✅ mục 4.2 |
+| Khung chat — cấu trúc dòng tin (đến/đi) | ✅ mục 4.3 |
+| Khung chat — trạng thái gửi (đang gửi/lỗi/đã xem) | ✅ mục 4.4 |
+| Khung chat — dải ngày + đang gõ + nút cuộn xuống | ✅ mục 4.5 |
+| Khung chat — các loại bong bóng | ✅ mục 4.6 |
 | CSS (tab, dòng, FAB, bong bóng) | ✅ mục 5 |
 | CSS chi tiết dòng danh bạ riêng | ✅ mục 3 (gender + VIP + online + device) |
 | Header DANH BẠ (tìm kiếm / Invite / Chat group) | ✅ mục 3 |
