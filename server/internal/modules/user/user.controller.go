@@ -160,7 +160,8 @@ func (ctrl *Controller) Unfollow(c *gin.Context) (interface{}, error) {
 // @Failure      401  {object}  utils.APIError
 // @Router       /user/{id}/followers [get]
 func (ctrl *Controller) GetFollowers(c *gin.Context) (interface{}, error) {
-	if _, err := utils.RequireUserID(c); err != nil {
+	callerID, err := utils.RequireUserID(c)
+	if err != nil {
 		return nil, err
 	}
 
@@ -177,7 +178,7 @@ func (ctrl *Controller) GetFollowers(c *gin.Context) (interface{}, error) {
 		q.Limit = 20
 	}
 
-	result, err := ctrl.service.ListFollowers(targetID, q.Limit, q.Offset)
+	result, err := ctrl.service.ListFollowers(callerID, targetID, q.Limit, q.Offset)
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}
@@ -199,7 +200,8 @@ func (ctrl *Controller) GetFollowers(c *gin.Context) (interface{}, error) {
 // @Failure      401  {object}  utils.APIError
 // @Router       /user/{id}/following [get]
 func (ctrl *Controller) GetFollowing(c *gin.Context) (interface{}, error) {
-	if _, err := utils.RequireUserID(c); err != nil {
+	callerID, err := utils.RequireUserID(c)
+	if err != nil {
 		return nil, err
 	}
 
@@ -216,7 +218,7 @@ func (ctrl *Controller) GetFollowing(c *gin.Context) (interface{}, error) {
 		q.Limit = 20
 	}
 
-	result, err := ctrl.service.ListFollowing(targetID, q.Limit, q.Offset)
+	result, err := ctrl.service.ListFollowing(callerID, targetID, q.Limit, q.Offset)
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}

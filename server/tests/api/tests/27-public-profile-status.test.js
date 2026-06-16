@@ -48,7 +48,7 @@ async function main() {
     ok('friend followsMe=true (auto-follow)', aFriend?.followsMe === true)
   }
 
-  console.log('\n── blocked_by_me / blocked_by_them ──')
+  console.log('\n── blocked_by_me: blocker still sees target (to unblock) ──')
   {
     const blockId = data(await block(alice, charlie.id))?.id
 
@@ -56,8 +56,11 @@ async function main() {
     ok('blocker sees blocked_by_me', aSee?.status === 'blocked_by_me')
     ok('blocked_by_me requestId matches block row', aSee?.requestId === blockId)
 
-    const cSee = await relOf(charlie, alice.id)
-    ok('blocked user sees blocked_by_them', cSee?.status === 'blocked_by_them')
+    console.log('\n── blocked_by_them: blocked user can no longer view blocker (404) ──')
+    const cSee = await publicOf(charlie, alice.id)
+    ok('blocked user → profile 404 (as if not exist)', cSee.status === 404)
+    const cSeeName = await publicOf(charlie, alice.username)
+    ok('blocked user by-username → 404 too', cSeeName.status === 404)
   }
 
   console.log('\n── fetch by USERNAME (same as by id) ──')

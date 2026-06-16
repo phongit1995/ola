@@ -177,6 +177,15 @@ func (s *Service) ListMine(userID uuid.UUID, limit, offset int) (*PostListRespon
 }
 
 func (s *Service) ListByUser(viewerID, authorID uuid.UUID, limit, offset int) (*PostListResponse, error) {
+	if viewerID != authorID {
+		blocked, err := s.relRepo.IsBlocked(authorID, viewerID)
+		if err != nil {
+			return nil, err
+		}
+		if blocked {
+			return nil, errors.New("user not found")
+		}
+	}
 	posts, total, err := s.repo.ListByAuthor(authorID, s.visibleScopes(viewerID, authorID), limit, offset)
 	if err != nil {
 		return nil, err

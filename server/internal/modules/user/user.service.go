@@ -248,6 +248,9 @@ func (s *Service) GetPublicProfile(callerID, targetUserID uuid.UUID) (*UserPubli
 		}
 		return nil, err
 	}
+	if err := s.ensureNotBlockedByTarget(callerID, user.ID); err != nil {
+		return nil, err
+	}
 	return s.buildPublicProfile(callerID, user), nil
 }
 
@@ -259,7 +262,24 @@ func (s *Service) GetPublicProfileByUsername(callerID uuid.UUID, username string
 		}
 		return nil, err
 	}
+	if err := s.ensureNotBlockedByTarget(callerID, user.ID); err != nil {
+		return nil, err
+	}
 	return s.buildPublicProfile(callerID, user), nil
+}
+
+func (s *Service) ensureNotBlockedByTarget(callerID, targetID uuid.UUID) error {
+	if callerID == uuid.Nil || callerID == targetID {
+		return nil
+	}
+	blocked, err := s.relRepo.IsBlocked(targetID, callerID)
+	if err != nil {
+		return err
+	}
+	if blocked {
+		return errors.New("user not found")
+	}
+	return nil
 }
 
 func (s *Service) buildPublicProfile(callerID uuid.UUID, user *models.User) *UserPublicProfileResponse {
@@ -376,7 +396,10 @@ func (s *Service) Unfollow(followerID, followeeID uuid.UUID) (*FollowResponse, e
 	return &FollowResponse{Following: false, FollowerCount: followerCount}, nil
 }
 
-func (s *Service) ListFollowers(userID uuid.UUID, limit, offset int) (*FollowListResponse, error) {
+func (s *Service) ListFollowers(callerID, userID uuid.UUID, limit, offset int) (*FollowListResponse, error) {
+	if err := s.ensureNotBlockedByTarget(callerID, userID); err != nil {
+		return nil, err
+	}
 	users, total, err := s.repo.ListFollowers(userID, limit, offset)
 	if err != nil {
 		return nil, err
@@ -384,7 +407,10 @@ func (s *Service) ListFollowers(userID uuid.UUID, limit, offset int) (*FollowLis
 	return s.buildFollowList(users, total, limit, offset), nil
 }
 
-func (s *Service) ListFollowing(userID uuid.UUID, limit, offset int) (*FollowListResponse, error) {
+func (s *Service) ListFollowing(callerID, userID uuid.UUID, limit, offset int) (*FollowListResponse, error) {
+	if err := s.ensureNotBlockedByTarget(callerID, userID); err != nil {
+		return nil, err
+	}
 	users, total, err := s.repo.ListFollowing(userID, limit, offset)
 	if err != nil {
 		return nil, err
