@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+import mentionIcon from '@/assets/icons/room/ic_notification_mention.png';
 import { Avatar } from '../../chat/components/Avatar';
 import { renderRichText } from '../../me/richText';
 import { colorForName } from '../avatarColor';
@@ -26,9 +28,11 @@ function clock(iso: string): string {
 interface RoomMessageGroupProps {
   group: MessageGroup;
   onOpenProfile?: (nick: string, color: string) => void;
+  onQuickMention?: (name: string) => void;
 }
 
-export function RoomMessageGroup({ group, onOpenProfile }: RoomMessageGroupProps) {
+export function RoomMessageGroup({ group, onOpenProfile, onQuickMention }: RoomMessageGroupProps) {
+  const { t } = useTranslation();
   const onMention = (nick: string) => onOpenProfile?.(nick, colorForName(nick));
 
   if (group.isOwn) {
@@ -74,16 +78,27 @@ export function RoomMessageGroup({ group, onOpenProfile }: RoomMessageGroupProps
           {group.senderName}
         </button>
       </div>
-      <div className="flex w-fit flex-col gap-0.5 pl-10">
-        {group.messages.map((message) => (
-          <div
-            key={message.id}
-            className={`w-fit max-w-full break-words bg-white px-3.5 py-2 text-base text-black/87 shadow-sm ${OTHER_CORNERS[message.position]}`}
-          >
-            {renderRichText(message.content, onMention)}
-          </div>
-        ))}
-        <span className="self-end px-1 text-[11px] text-black/38">{clock(last.createdAt)}</span>
+      <div className="flex items-center gap-0 pl-10">
+        <div className="flex w-fit min-w-0 flex-col gap-0.5">
+          {group.messages.map((message) => (
+            <div
+              key={message.id}
+              className={`w-fit max-w-full break-words bg-white px-3.5 py-2 text-base text-black/87 shadow-sm ${OTHER_CORNERS[message.position]}`}
+            >
+              {renderRichText(message.content, onMention)}
+            </div>
+          ))}
+          <span className="self-start px-1 text-[11px] text-black/38">{clock(last.createdAt)}</span>
+        </div>
+        <button
+          type="button"
+          aria-label={t('room.mentionUser', { name: group.senderName })}
+          title={t('room.mentionUser', { name: group.senderName })}
+          onClick={() => onQuickMention?.(group.senderName)}
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full hover:bg-black/5 active:bg-black/10"
+        >
+          <img src={mentionIcon} alt="" className="h-6 w-6" />
+        </button>
       </div>
     </div>
   );

@@ -60,6 +60,15 @@ export function RoomMessagesTab({
     inputRef.current?.focus();
   }
 
+  function insertMention(name: string) {
+    const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const alreadyTagged = new RegExp(`@${escaped}(?![\\p{L}\\p{N}_])`, 'iu');
+    setDraft((current) =>
+      alreadyTagged.test(current) ? current : insertAtCursor(current, `@${name} `, inputRef.current)
+    );
+    inputRef.current?.focus();
+  }
+
   function onKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
     if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
       event.preventDefault();
@@ -83,7 +92,12 @@ export function RoomMessagesTab({
           item.kind === 'date' ? (
             <RoomDateSeparator key={item.key} iso={item.createdAt} />
           ) : (
-            <RoomMessageGroup key={item.key} group={item} onOpenProfile={onOpenProfile} />
+            <RoomMessageGroup
+              key={item.key}
+              group={item}
+              onOpenProfile={onOpenProfile}
+              onQuickMention={insertMention}
+            />
           )
         )}
       </div>
