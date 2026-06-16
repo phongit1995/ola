@@ -26,5 +26,10 @@ func (r *Router) Setup(api *utils.AppGroup) {
 		user.POST("/presence", r.controller.GetPresenceBatch)
 		user.GET("/search", r.controller.SearchUsers)
 		user.GET("/:id", r.controller.GetUserInfo)
+		user.POST("/:id/kiss", r.controller.Kiss)
+		user.POST("/:id/follow", r.controller.Follow)
+		user.DELETE("/:id/follow", r.controller.Unfollow)
+		user.GET("/:id/followers", r.controller.GetFollowers)
+		user.GET("/:id/following", r.controller.GetFollowing)
 	}
 }

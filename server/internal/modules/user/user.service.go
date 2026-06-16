@@ -130,6 +130,12 @@ func (s *Service) UpdateProfile(userID uuid.UUID, req *UpdateProfileRequest) (*U
 		}
 		user.DateOfBirth = &dob
 	}
+	if req.Marriage != "" {
+		user.Marriage = req.Marriage
+	}
+	if req.CoverPhoto != "" {
+		user.CoverPhoto = req.CoverPhoto
+	}
 	if req.CustomInfo != nil {
 		user.CustomInfo = models.JSONB(req.CustomInfo)
 	}
@@ -247,17 +253,196 @@ func (s *Service) GetPublicProfile(callerID, targetUserID uuid.UUID) (*UserPubli
 	isOnline := s.presence.IsUserOnline(idStr)
 	lastActiveAt := s.presence.GetLastActive(idStr)
 
-	return &UserPublicProfileResponse{
-		ID:           user.ID.String(),
-		Username:     user.Username,
-		FullName:     user.FullName,
-		Avatar:       user.Avatar,
-		Bio:          user.Bio,
-		IsOnline:     isOnline,
-		LastActiveAt: lastActiveAt,
-		CreatedAt:    user.CreatedAt.Format(time.RFC3339),
-		Relationship: s.resolveRelationship(callerID, targetUserID),
-	}, nil
+	response := &UserPublicProfileResponse{
+		ID:             user.ID.String(),
+		Username:       user.Username,
+		FullName:       user.FullName,
+		Avatar:         user.Avatar,
+		CoverPhoto:     user.CoverPhoto,
+		Bio:            user.Bio,
+		Gender:         user.Gender,
+		Marriage:       user.Marriage,
+		Verified:       user.Verified,
+		Kisses:         user.Kisses,
+		VipUsed:        user.VipUsed,
+		FollowerCount:  user.FollowerCount,
+		FollowingCount: user.FollowingCount,
+		IsOnline:       isOnline,
+		LastActiveAt:   lastActiveAt,
+		CreatedAt:      user.CreatedAt.Format(time.RFC3339),
+		Relationship:   s.resolveRelationship(callerID, targetUserID),
+	}
+
+	if user.DateOfBirth != nil {
+		response.DateOfBirth = user.DateOfBirth.Format("2006-01-02")
+	}
+
+	if user.VipEndTime != nil {
+		vipEndTime := user.VipEndTime.Format(time.RFC3339)
+		response.VipEndTime = &vipEndTime
+	}
+
+	if response.Relationship != nil && callerID != uuid.Nil && callerID != targetUserID {
+		if isFollowing, err := s.repo.IsFollowing(callerID, targetUserID); err == nil {
+			response.Relationship.IsFollowing = isFollowing
+		}
+		if followsMe, err := s.repo.IsFollowing(targetUserID, callerID); err == nil {
+			response.Relationship.FollowsMe = followsMe
+		}
+	}
+
+	return response, nil
+}
+
+func (s *Service) isEitherBlocked(a, b uuid.UUID) (bool, error) {
+	blocked, err := s.relRepo.IsBlocked(a, b)
+	if err != nil {
+		return false, err
+	}
+	if blocked {
+		return true, nil
+	}
+	return s.relRepo.IsBlocked(b, a)
+}
+
+func (s *Service) Follow(followerID, followeeID uuid.UUID) (*FollowResponse, error) {
+	if followerID == followeeID {
+		return nil, errors.New("cannot follow yourself")
+	}
+
+	target, err := s.repo.FindByID(followeeID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("user not found")
+		}
+		return nil, err
+	}
+
+	blocked, err := s.isEitherBlocked(followerID, followeeID)
+	if err != nil {
+		return nil, err
+	}
+	if blocked {
+		return nil, errors.New("cannot follow this user")
+	}
+
+	if _, err := s.repo.FollowTx(followerID, followeeID); err != nil {
+		s.logger.Errorw("Failed to follow user",
+			"follower_id", followerID, "followee_id", followeeID, "error", err.Error())
+		return nil, err
+	}
+
+	s.invalidateUsers(followerID, followeeID)
+
+	followerCount := target.FollowerCount + 1
+	if updated, err := s.repo.FindByID(followeeID); err == nil && updated != nil {
+		followerCount = updated.FollowerCount
+	}
+	return &FollowResponse{Following: true, FollowerCount: followerCount}, nil
+}
+
+func (s *Service) Unfollow(followerID, followeeID uuid.UUID) (*FollowResponse, error) {
+	if followerID == followeeID {
+		return nil, errors.New("cannot unfollow yourself")
+	}
+
+	if _, err := s.repo.UnfollowTx(followerID, followeeID); err != nil {
+		s.logger.Errorw("Failed to unfollow user",
+			"follower_id", followerID, "followee_id", followeeID, "error", err.Error())
+		return nil, err
+	}
+
+	s.invalidateUsers(followerID, followeeID)
+
+	followerCount := 0
+	if updated, err := s.repo.FindByID(followeeID); err == nil && updated != nil {
+		followerCount = updated.FollowerCount
+	}
+	return &FollowResponse{Following: false, FollowerCount: followerCount}, nil
+}
+
+func (s *Service) ListFollowers(userID uuid.UUID, limit, offset int) (*FollowListResponse, error) {
+	users, total, err := s.repo.ListFollowers(userID, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	return s.buildFollowList(users, total, limit, offset), nil
+}
+
+func (s *Service) ListFollowing(userID uuid.UUID, limit, offset int) (*FollowListResponse, error) {
+	users, total, err := s.repo.ListFollowing(userID, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	return s.buildFollowList(users, total, limit, offset), nil
+}
+
+func (s *Service) buildFollowList(users []*models.User, total int64, limit, offset int) *FollowListResponse {
+	items := make([]FollowUser, len(users))
+	ids := make([]string, len(users))
+	for i, u := range users {
+		ids[i] = u.ID.String()
+		items[i] = FollowUser{
+			ID:       u.ID.String(),
+			Username: u.Username,
+			FullName: u.FullName,
+			Avatar:   u.Avatar,
+			Bio:      u.Bio,
+		}
+	}
+
+	if len(ids) > 0 {
+		online := s.presence.GetOnlineUsers(ids)
+		lastActive := s.presence.GetLastActiveBatch(ids)
+		for i, id := range ids {
+			isOnline, lastActiveStr := utils.ApplyOnlineGrace(online[id], lastActive[id])
+			items[i].IsOnline = isOnline
+			items[i].LastActiveAt = lastActiveStr
+		}
+	}
+
+	return &FollowListResponse{
+		Users:  items,
+		Total:  total,
+		Limit:  limit,
+		Offset: offset,
+	}
+}
+
+func (s *Service) invalidateUsers(ids ...uuid.UUID) {
+	for _, id := range ids {
+		if err := s.cache.InvalidateUser(id); err != nil {
+			s.logger.Warnw("Failed to invalidate user cache",
+				"user_id", id, "error", err.Error())
+		}
+	}
+}
+
+func (s *Service) Kiss(callerID, targetUserID uuid.UUID) (*KissResponse, error) {
+	if callerID == targetUserID {
+		return nil, errors.New("cannot kiss yourself")
+	}
+
+	kisses, err := s.repo.IncrementKisses(targetUserID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("user not found")
+		}
+		s.logger.Errorw("Failed to increment kisses",
+			"target_user_id", targetUserID,
+			"error", err.Error(),
+		)
+		return nil, err
+	}
+
+	if err := s.cache.InvalidateUser(targetUserID); err != nil {
+		s.logger.Warnw("Failed to invalidate user cache after kiss",
+			"target_user_id", targetUserID,
+			"error", err.Error(),
+		)
+	}
+
+	return &KissResponse{Kisses: kisses}, nil
 }
 
 func (s *Service) resolveRelationship(callerID, targetID uuid.UUID) *RelationshipInfo {
@@ -318,6 +503,10 @@ func (s *Service) buildProfileResponse(user *models.User) *UserProfileResponse {
 		VipUsed:        user.VipUsed,
 		FollowerCount:  user.FollowerCount,
 		FollowingCount: user.FollowingCount,
+		Marriage:       user.Marriage,
+		CoverPhoto:     user.CoverPhoto,
+		Verified:       user.Verified,
+		Kisses:         user.Kisses,
 		CreatedAt:      user.CreatedAt.Format(time.RFC3339),
 		UpdatedAt:      user.UpdatedAt.Format(time.RFC3339),
 	}
