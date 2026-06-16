@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { HomeHeader } from '@components/HomeHeader';
 import { toast } from '@lib';
@@ -48,10 +48,13 @@ export function MePanel() {
   const quickPost =
     quickCommentPostId == null ? null : posts.find((p) => p.id === quickCommentPostId);
 
-  function openComments(id: string, focusInput = false) {
+  const openComments = useCallback((id: string, focusInput = false) => {
     setCommentPostId(id);
     setCommentFocusInput(focusInput);
-  }
+  }, []);
+
+  const toggleLike = useCallback((id: string) => toggleReaction(id, 'like'), [toggleReaction]);
+  const toggleDislike = useCallback((id: string) => toggleReaction(id, 'dislike'), [toggleReaction]);
 
   async function submitComment(postId: string, text: string): Promise<boolean> {
     const content = text.trim();
@@ -76,10 +79,10 @@ export function MePanel() {
     return ok;
   }
 
-  function openProfile(nick: string, color: string, isSelf = false) {
+  const openProfile = useCallback((nick: string, color: string, isSelf = false) => {
     setAccountOpen(false);
     setProfile(buildProfile(nick, color, isSelf));
-  }
+  }, []);
 
   const emptyText = t('me.empty');
 
@@ -107,9 +110,9 @@ export function MePanel() {
             error={error}
             emptyText={emptyText}
             onLoadMore={loadMore}
-            onToggleLike={(id) => toggleReaction(id, 'like')}
-            onToggleDislike={(id) => toggleReaction(id, 'dislike')}
-            onOpenProfile={(author, color) => openProfile(author, color)}
+            onToggleLike={toggleLike}
+            onToggleDislike={toggleDislike}
+            onOpenProfile={openProfile}
             onOpenComments={openComments}
             onQuickComment={setQuickCommentPostId}
           />
@@ -165,9 +168,9 @@ export function MePanel() {
           post={commentPost}
           autoFocusInput={commentFocusInput}
           onClose={() => setCommentPostId(null)}
-          onToggleLike={(id) => toggleReaction(id, 'like')}
-          onToggleDislike={(id) => toggleReaction(id, 'dislike')}
-          onOpenProfile={(author, color) => openProfile(author, color)}
+          onToggleLike={toggleLike}
+          onToggleDislike={toggleDislike}
+          onOpenProfile={openProfile}
           onCommentDelta={adjustCommentCount}
         />
       )}

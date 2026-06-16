@@ -1,9 +1,7 @@
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ConfirmDialog } from '@components';
-import { Avatar } from '@components';
-import { colorForName } from '@lib';
-import { renderRichText } from '@lib';
+import { ConfirmDialog, Avatar } from '@components';
+import { colorForName, renderRichText } from '@lib';
 import type { PostComment } from '@app-types';
 
 interface MeCommentItemProps {
@@ -14,7 +12,7 @@ interface MeCommentItemProps {
   onOpenProfile?: (nick: string, color: string) => void;
 }
 
-export function MeCommentItem({
+function MeCommentItemComponent({
   comment,
   time,
   canDelete,
@@ -74,3 +72,5 @@ export function MeCommentItem({
     </>
   );
 }
+
+export const MeCommentItem = memo(MeCommentItemComponent);

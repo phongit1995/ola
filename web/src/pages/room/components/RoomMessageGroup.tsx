@@ -1,8 +1,8 @@
+import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import mentionIcon from '@/assets/icons/room/ic_notification_mention.png';
 import { Avatar } from '@components';
-import { renderRichText } from '@lib';
-import { colorForName } from '@lib';
+import { colorForName, renderRichText } from '@lib';
 import type { BubblePosition, MessageGroup } from '../messageGroups';
 
 const OWN_CORNERS: Record<BubblePosition, string> = {
@@ -31,7 +31,7 @@ interface RoomMessageGroupProps {
   onQuickMention?: (name: string) => void;
 }
 
-export function RoomMessageGroup({ group, onOpenProfile, onQuickMention }: RoomMessageGroupProps) {
+function RoomMessageGroupComponent({ group, onOpenProfile, onQuickMention }: RoomMessageGroupProps) {
   const { t } = useTranslation();
   const onMention = (nick: string) => onOpenProfile?.(nick, colorForName(nick));
 
@@ -103,3 +103,5 @@ export function RoomMessageGroup({ group, onOpenProfile, onQuickMention }: RoomM
     </div>
   );
 }
+
+export const RoomMessageGroup = memo(RoomMessageGroupComponent);

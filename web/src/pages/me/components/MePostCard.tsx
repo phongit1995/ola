@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { lazy, memo, Suspense, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import moreIcon from '@/assets/icons/me/ic_more.png';
 import replyIcon from '@/assets/icons/me/ic_action_reply_gray.png';
@@ -9,10 +9,11 @@ import likeIconActive from '@/assets/icons/me/ic_like_selected.png';
 import { Avatar } from '@components';
 import { PostContent } from './PostContent';
 import { MediaGrid } from './MediaGrid';
-import { MediaViewer } from './MediaViewer';
 import { CheckInCard } from './CheckInCard';
 import { stickerImage } from '../stickers';
 import type { MePost } from '../types';
+
+const MediaViewer = lazy(() => import('./MediaViewer').then((m) => ({ default: m.MediaViewer })));
 
 interface MePostCardProps {
   post: MePost;
@@ -23,7 +24,7 @@ interface MePostCardProps {
   onQuickComment?: (id: string) => void;
 }
 
-export function MePostCard({
+function MePostCardComponent({
   post,
   onToggleLike,
   onToggleDislike,
@@ -85,11 +86,13 @@ export function MePostCard({
       )}
 
       {viewerIndex != null && post.photos != null && (
-        <MediaViewer
-          photos={post.photos}
-          index={viewerIndex}
-          onClose={() => setViewerIndex(null)}
-        />
+        <Suspense fallback={null}>
+          <MediaViewer
+            photos={post.photos}
+            index={viewerIndex}
+            onClose={() => setViewerIndex(null)}
+          />
+        </Suspense>
       )}
 
       <div className="mx-4 mt-4 flex items-end gap-1 text-xs text-black/54">
@@ -158,3 +161,5 @@ export function MePostCard({
     </article>
   );
 }
+
+export const MePostCard = memo(MePostCardComponent);

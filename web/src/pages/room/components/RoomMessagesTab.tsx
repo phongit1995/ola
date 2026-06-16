@@ -1,10 +1,9 @@
-import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { RoomMessage } from '@app-types';
 import { colorForName, insertAtCursor, toast } from '@lib';
 import { useAuthStore } from '@/store/authStore';
-import { Avatar } from '@components';
-import { ComposerSmileyPanel } from '@components';
+import { Avatar, ComposerSmileyPanel } from '@components';
 import { buildRoomFeed } from '../messageGroups';
 import { RoomDateSeparator } from './RoomDateSeparator';
 import { RoomMessageGroup } from './RoomMessageGroup';
@@ -58,14 +57,14 @@ export function RoomMessagesTab({
     inputRef.current?.focus();
   }
 
-  function insertMention(name: string) {
+  const insertMention = useCallback((name: string) => {
     const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const alreadyTagged = new RegExp(`@${escaped}(?![\\p{L}\\p{N}_])`, 'iu');
     setDraft((current) =>
       alreadyTagged.test(current) ? current : insertAtCursor(current, `@${name} `, inputRef.current)
     );
     inputRef.current?.focus();
-  }
+  }, []);
 
   function onKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
     if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
@@ -76,6 +75,7 @@ export function RoomMessagesTab({
 
   const canSend = status === 'joined';
   const myName = me?.username ?? t('home.guest');
+  const feed = useMemo(() => buildRoomFeed(messages, currentUserId), [messages, currentUserId]);
 
   return (
     <div className={`flex flex-1 flex-col overflow-hidden ${active ? '' : 'hidden'}`}>
@@ -86,7 +86,7 @@ export function RoomMessagesTab({
       )}
 
       <div ref={scrollRef} className="flex flex-1 flex-col gap-2 overflow-y-auto p-3">
-        {buildRoomFeed(messages, currentUserId).map((item) =>
+        {feed.map((item) =>
           item.kind === 'date' ? (
             <RoomDateSeparator key={item.key} iso={item.createdAt} />
           ) : (

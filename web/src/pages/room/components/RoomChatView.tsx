@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import addFriendIcon from '@/assets/icons/chat/ic_add_friend.png';
 import groupMessageIcon from '@/assets/icons/room/ic_notify_new_chat_group_message.png';
@@ -29,9 +29,9 @@ export function RoomChatView({ onClose }: RoomChatViewProps) {
   const currentUserId = useAuthStore((state) => state.user?.id) ?? '';
   const [profile, setProfile] = useState<UserProfile | null>(null);
 
-  function openProfile(nick: string, color: string) {
+  const openProfile = useCallback((nick: string, color: string) => {
     setProfile(buildProfile(nick, color));
-  }
+  }, []);
 
   const tabs: RoomTabItem[] = [
     { key: 'members', icon: addFriendIcon, label: `${t('room.tabMembers')} (${memberCount})` },

@@ -1,13 +1,14 @@
-import { useEffect, useState, type ComponentType } from 'react';
+import { lazy, Suspense, useEffect, useState, type ComponentType, type LazyExoticComponent } from 'react';
 import { SocketService } from '@services';
 import { BottomTabBar, type TabKey } from '@components/BottomTabBar';
-import { ChatPanel } from '../chat/ChatPanel';
-import { RoomPanel } from '../room/RoomPanel';
-import { RssPanel } from '../rss/RssPanel';
-import { MePanel } from '../me/MePanel';
-import { AppsPanel } from '../apps/AppsPanel';
 
-const PANELS: Record<TabKey, ComponentType> = {
+const ChatPanel = lazy(() => import('../chat/ChatPanel').then((m) => ({ default: m.ChatPanel })));
+const RoomPanel = lazy(() => import('../room/RoomPanel').then((m) => ({ default: m.RoomPanel })));
+const RssPanel = lazy(() => import('../rss/RssPanel').then((m) => ({ default: m.RssPanel })));
+const MePanel = lazy(() => import('../me/MePanel').then((m) => ({ default: m.MePanel })));
+const AppsPanel = lazy(() => import('../apps/AppsPanel').then((m) => ({ default: m.AppsPanel })));
+
+const PANELS: Record<TabKey, LazyExoticComponent<ComponentType>> = {
   chat: ChatPanel,
   room: RoomPanel,
   rss: RssPanel,
@@ -39,7 +40,9 @@ export function HomePage() {
   return (
     <div className="flex h-dvh flex-col bg-white font-sans">
       <div className="relative flex min-h-0 flex-1 flex-col">
-        <ActivePanel />
+        <Suspense fallback={<div className="flex-1" />}>
+          <ActivePanel />
+        </Suspense>
       </div>
 
       <BottomTabBar active={tab} onChange={changeTab} badges={{ chat: 3 }} />
