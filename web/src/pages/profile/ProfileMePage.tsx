@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@constants';
@@ -6,16 +6,23 @@ import { MeService } from '@services';
 import { colorForName, createDateFormatter, createTimeFormatter, toast } from '@lib';
 import type { Post, PostReaction } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
+import { useMeLocalStore } from '@/store/meLocalStore';
 import genderIcon from '@/assets/icons/profile/ic_indicate_dynamic_gender.png';
 import birthdayIcon from '@/assets/icons/profile/ic_profile_birthday.png';
 import { Avatar, ScreenHeader, FullScreenOverlay } from '@components';
 import { MePostCard } from '../me/components/MePostCard';
+import { MePostInteractions, type MePostSource } from '../me/MePostInteractions';
+import { composedToImages, composedToPayload } from '../me/composer';
 import { toMePost } from '../me/mappers';
+import type { ComposedPost } from '../me/components/MeComposerDialog';
 
 export function ProfileMePage() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
+  const hiddenPostIds = useMeLocalStore((s) => s.hiddenPostIds);
+  const hidePost = useMeLocalStore((s) => s.hidePost);
+  const blockAuthor = useMeLocalStore((s) => s.blockAuthor);
   const [posts, setPosts] = useState<Post[]>([]);
 
   const formatTime = useMemo(() => createTimeFormatter(i18n.language), [i18n.language]);
@@ -33,24 +40,79 @@ export function ProfileMePage() {
     };
   }, []);
 
+  const toggleReaction = useCallback(
+    async (id: string, type: PostReaction) => {
+      const post = posts.find((item) => item.id === id);
+      if (post == null) return;
+      const isActive = post.myReaction === type;
+      try {
+        const updated = isActive
+          ? await MeService.removeReaction(id)
+          : await MeService.react(id, type);
+        setPosts((current) => current.map((item) => (item.id === id ? updated : item)));
+      } catch {
+        toast.error(t('me.reactionError'));
+      }
+    },
+    [posts, t]
+  );
+
+  const adjustCommentCount = useCallback((id: string, delta: number) => {
+    setPosts((current) =>
+      current.map((item) =>
+        item.id === id ? { ...item, commentCount: Math.max(0, item.commentCount + delta) } : item
+      )
+    );
+  }, []);
+
+  const editPost = useCallback(
+    async (id: string, draft: ComposedPost): Promise<boolean> => {
+      try {
+        const images = await composedToImages(draft, 'existingFirst');
+        const updated = await MeService.update(id, { ...composedToPayload(draft), images });
+        setPosts((current) => current.map((item) => (item.id === id ? updated : item)));
+        toast.success(t('me.editSuccess'));
+        return true;
+      } catch {
+        toast.error(t('me.editError'));
+        return false;
+      }
+    },
+    [t]
+  );
+
+  const deletePost = useCallback(
+    async (id: string) => {
+      try {
+        await MeService.remove(id);
+        setPosts((current) => current.filter((item) => item.id !== id));
+        toast.success(t('me.deleteSuccess'));
+      } catch {
+        toast.error(t('me.deleteError'));
+      }
+    },
+    [t]
+  );
+
   if (!user) return null;
 
   const nick = user.fullName || user.username;
   const color = colorForName(nick);
   const isVip = Boolean(user.vipUsed);
-  const mePosts = posts.map((post) => toMePost(post, formatTime));
+  const mePosts = posts
+    .map((post) => toMePost(post, formatTime))
+    .filter((post) => !hiddenPostIds.includes(post.id));
 
-  async function toggle(id: string, type: PostReaction) {
-    const post = posts.find((item) => item.id === id);
-    if (!post) return;
-    const isActive = post.myReaction === type;
-    try {
-      const updated = isActive ? await MeService.removeReaction(id) : await MeService.react(id, type);
-      setPosts((current) => current.map((item) => (item.id === id ? updated : item)));
-    } catch {
-      toast.error(t('me.reactionError'));
-    }
-  }
+  const source: MePostSource = {
+    posts: mePosts,
+    meId: user.id,
+    toggleReaction,
+    adjustCommentCount,
+    hidePost,
+    blockAuthor,
+    editPost,
+    deletePost,
+  };
 
   return (
     <FullScreenOverlay>
@@ -118,14 +180,23 @@ export function ProfileMePage() {
         </div>
 
         <h3 className="mx-4 mt-2 mb-1 text-base font-medium text-black/87">{t('profile.mePosts')}</h3>
-        {mePosts.map((post) => (
-          <MePostCard
-            key={post.id}
-            post={post}
-            onToggleLike={(id) => toggle(id, 'like')}
-            onToggleDislike={(id) => toggle(id, 'dislike')}
-          />
-        ))}
+        <MePostInteractions source={source}>
+          {(handlers) =>
+            mePosts.map((post) => (
+              <MePostCard
+                key={post.id}
+                post={post}
+                onToggleLike={handlers.onToggleLike}
+                onToggleDislike={handlers.onToggleDislike}
+                onOpenProfile={handlers.onOpenProfile}
+                onOpenComments={handlers.onOpenComments}
+                onQuickComment={handlers.onQuickComment}
+                onOpenMenu={handlers.onOpenMenu}
+                onOpenLikers={handlers.onOpenLikers}
+              />
+            ))
+          }
+        </MePostInteractions>
       </div>
     </FullScreenOverlay>
   );

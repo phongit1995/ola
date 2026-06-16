@@ -13,7 +13,8 @@ interface UserProfileViewProps {
 
 export function UserProfileView({ username, color, onClose, onOpenFriend }: UserProfileViewProps) {
   const { t } = useTranslation();
-  const { profile, loading, notFound, relationship, actions, secondary } = useUserProfile(username, color);
+  const { profile, loading, notFound, relationship, actions, secondary, postActions } =
+    useUserProfile(username, color);
 
   if (profile && !loading) {
     return (
@@ -22,6 +23,7 @@ export function UserProfileView({ username, color, onClose, onOpenFriend }: User
         relationship={relationship}
         actions={actions}
         secondary={secondary}
+        postActions={postActions}
         onClose={onClose}
         onOpenFriend={onOpenFriend}
       />

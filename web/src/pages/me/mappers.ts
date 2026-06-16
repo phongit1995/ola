@@ -1,6 +1,20 @@
 import { colorForName } from '@lib';
-import type { Post } from '@app-types';
+import type { Post, PostReaction } from '@app-types';
 import type { MePost } from './types';
+
+export function applyMeReaction(post: MePost, type: PostReaction): MePost {
+  if (type === 'like') {
+    if (post.liked) return { ...post, liked: false, likes: Math.max(0, post.likes - 1) };
+    return { ...post, liked: true, disliked: false, likes: post.likes + 1 };
+  }
+  if (post.disliked) return { ...post, disliked: false };
+  return {
+    ...post,
+    disliked: true,
+    liked: false,
+    likes: post.liked ? Math.max(0, post.likes - 1) : post.likes,
+  };
+}
 
 export function toMePost(post: Post, formatTime: (iso: string) => string): MePost {
   const author = post.author?.username ?? '';

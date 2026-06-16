@@ -1,25 +1,29 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScreenHeader, FullScreenOverlay } from '@components';
+import { useAuthStore } from '@/store/authStore';
+import { useMeLocalStore } from '@/store/meLocalStore';
 import type { RelationshipInfo } from '@app-types';
 import { MePostCard } from '../me/components/MePostCard';
+import { MePostInteractions, type MePostSource } from '../me/MePostInteractions';
 import { ProfileCard } from './components/ProfileCard';
 import { ProfileMediaStore } from './components/ProfileMediaStore';
 import { ProfileFollowing } from './components/ProfileFollowing';
 import { EditProfilePage } from './EditProfilePage';
-import type { ProfileActions, ProfileFriend, ProfileSecondary, UserProfile } from './types';
-
-interface PostOverride {
-  liked: boolean;
-  disliked: boolean;
-  likes: number;
-}
+import type {
+  ProfileActions,
+  ProfileFriend,
+  ProfilePostActions,
+  ProfileSecondary,
+  UserProfile,
+} from './types';
 
 interface ProfilePageProps {
   profile: UserProfile;
   relationship: RelationshipInfo;
   actions: ProfileActions;
   secondary: ProfileSecondary;
+  postActions: ProfilePostActions;
   onClose: () => void;
   onOpenFriend: (friend: ProfileFriend) => void;
 }
@@ -29,38 +33,29 @@ export function ProfilePage({
   relationship,
   actions,
   secondary,
+  postActions,
   onClose,
   onOpenFriend,
 }: ProfilePageProps) {
   const { t } = useTranslation();
-  const [overrides, setOverrides] = useState<Record<string, PostOverride>>({});
+  const meId = useAuthStore((s) => s.user?.id ?? null);
+  const hiddenPostIds = useMeLocalStore((s) => s.hiddenPostIds);
+  const hidePost = useMeLocalStore((s) => s.hidePost);
+  const blockAuthor = useMeLocalStore((s) => s.blockAuthor);
   const [editOpen, setEditOpen] = useState(false);
 
-  const posts = secondary.posts.map((post) => {
-    const override = overrides[post.id];
-    return override ? { ...post, ...override } : post;
-  });
+  const posts = secondary.posts.filter((post) => !hiddenPostIds.includes(post.id));
 
-  function toggleLike(id: string) {
-    setOverrides((current) => {
-      const base = secondary.posts.find((post) => post.id === id);
-      if (!base) return current;
-      const merged = { ...base, ...current[id] };
-      return {
-        ...current,
-        [id]: { liked: !merged.liked, disliked: merged.disliked, likes: merged.likes + (merged.liked ? -1 : 1) },
-      };
-    });
-  }
-
-  function toggleDislike(id: string) {
-    setOverrides((current) => {
-      const base = secondary.posts.find((post) => post.id === id);
-      if (!base) return current;
-      const merged = { ...base, ...current[id] };
-      return { ...current, [id]: { liked: merged.liked, disliked: !merged.disliked, likes: merged.likes } };
-    });
-  }
+  const source: MePostSource = {
+    posts,
+    meId,
+    toggleReaction: postActions.toggleReaction,
+    adjustCommentCount: postActions.adjustCommentCount,
+    hidePost,
+    blockAuthor,
+    editPost: postActions.editPost,
+    deletePost: postActions.deletePost,
+  };
 
   return (
     <FullScreenOverlay>
@@ -80,20 +75,29 @@ export function ProfilePage({
         )}
 
         <h3 className="mx-4 mt-2 mb-1 text-base font-medium text-black/87">{t('profile.mePosts')}</h3>
-        {secondary.loading && posts.length === 0 ? (
-          <div className="flex justify-center py-6">
-            <div className="h-6 w-6 animate-spin rounded-full border-2 border-ola-primary border-t-transparent" />
-          </div>
-        ) : (
-          posts.map((post) => (
-            <MePostCard
-              key={post.id}
-              post={post}
-              onToggleLike={toggleLike}
-              onToggleDislike={toggleDislike}
-            />
-          ))
-        )}
+        <MePostInteractions source={source}>
+          {(handlers) =>
+            secondary.loading && posts.length === 0 ? (
+              <div className="flex justify-center py-6">
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-ola-primary border-t-transparent" />
+              </div>
+            ) : (
+              posts.map((post) => (
+                <MePostCard
+                  key={post.id}
+                  post={post}
+                  onToggleLike={handlers.onToggleLike}
+                  onToggleDislike={handlers.onToggleDislike}
+                  onOpenProfile={handlers.onOpenProfile}
+                  onOpenComments={handlers.onOpenComments}
+                  onQuickComment={handlers.onQuickComment}
+                  onOpenMenu={handlers.onOpenMenu}
+                  onOpenLikers={handlers.onOpenLikers}
+                />
+              ))
+            )
+          }
+        </MePostInteractions>
       </div>
 
       {editOpen && <EditProfilePage profile={profile} onClose={() => setEditOpen(false)} />}

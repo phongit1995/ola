@@ -9,9 +9,22 @@
   --color-ola-accent: #ff4081;
   --color-ola-accent-dark: #f50057;
   --color-ola-error: #e34545;
+  --color-ola-warning: #ff9800;
+  --animate-blink: blink 1s steps(1, end) infinite;
   --font-sans:
     Roboto, 'Helvetica Neue', ui-sans-serif, system-ui, -apple-system,
     'Segoe UI', Arial, sans-serif;
+}
+
+@keyframes blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  50.01%,
+  100% {
+    opacity: 0;
+  }
 }
 
 html,

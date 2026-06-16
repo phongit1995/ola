@@ -1,5 +1,13 @@
-import type { RelationshipInfo } from '@app-types';
+import type { PostReaction, RelationshipInfo } from '@app-types';
 import type { MePost } from '../me/types';
+import type { ComposedPost } from '../me/components/MeComposerDialog';
+
+export interface ProfilePostActions {
+  toggleReaction: (id: string, type: PostReaction) => void;
+  adjustCommentCount: (id: string, delta: number) => void;
+  editPost: (id: string, draft: ComposedPost) => Promise<boolean>;
+  deletePost: (id: string) => void;
+}
 
 export interface ProfileFriend {
   name: string;
@@ -44,4 +52,5 @@ export interface ProfileController {
   busy: boolean;
   actions: ProfileActions;
   secondary: ProfileSecondary;
+  postActions: ProfilePostActions;
 }

@@ -10,7 +10,7 @@ interface MockProfileViewProps {
 }
 
 export function MockProfileView({ nick, color, onClose, onOpenFriend }: MockProfileViewProps) {
-  const { profile, relationship, actions, secondary } = useMockUserProfile(nick, color);
+  const { profile, relationship, actions, secondary, postActions } = useMockUserProfile(nick, color);
 
   if (!profile) return null;
 
@@ -20,6 +20,7 @@ export function MockProfileView({ nick, color, onClose, onOpenFriend }: MockProf
       relationship={relationship}
       actions={actions}
       secondary={secondary}
+      postActions={postActions}
       onClose={onClose}
       onOpenFriend={onOpenFriend}
     />

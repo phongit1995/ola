@@ -24,15 +24,17 @@ interface BottomTabBarProps {
   active: TabKey;
   onChange: (key: TabKey) => void;
   badges?: Partial<Record<TabKey, number>>;
+  dots?: Partial<Record<TabKey, boolean>>;
 }
 
-export function BottomTabBar({ active, onChange, badges }: BottomTabBarProps) {
+export function BottomTabBar({ active, onChange, badges, dots }: BottomTabBarProps) {
   const { t } = useTranslation();
   return (
     <nav className="flex border-t border-[#a0a0a0] bg-white">
       {TABS.map((tab) => {
         const isActive = tab.key === active;
         const badge = badges?.[tab.key];
+        const dot = dots?.[tab.key];
         return (
           <button
             key={tab.key}
@@ -50,6 +52,8 @@ export function BottomTabBar({ active, onChange, badges }: BottomTabBarProps) {
                 <span className="absolute -top-1 -right-0 flex h-4 min-w-4 items-center justify-center rounded-full border-2 border-white bg-ola-accent px-1 text-[10px] font-bold text-white">
                   {badge}
                 </span>
+              ) : dot ? (
+                <span className="absolute -top-0.5 right-0 h-3 w-3 rounded-full border-2 border-white bg-ola-warning animate-blink" />
               ) : null}
             </span>
             <span

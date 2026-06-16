@@ -1,7 +1,13 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { RelationshipInfo } from '@app-types';
 import { buildMockProfile, buildMockSecondary } from './data';
-import type { ProfileActions, ProfileController, ProfileSecondary, UserProfile } from './types';
+import type {
+  ProfileActions,
+  ProfileController,
+  ProfilePostActions,
+  ProfileSecondary,
+  UserProfile,
+} from './types';
 
 const MOCK_RELATIONSHIP: RelationshipInfo = { status: 'none', isFollowing: false, followsMe: false };
 
@@ -33,5 +39,24 @@ export function useMockUserProfile(nick: string, color: string): ProfileControll
     [kiss, toggleFollow, friendAction, blockAction]
   );
 
-  return { profile, loading: false, notFound: false, relationship, busy: false, actions, secondary };
+  const postActions = useMemo<ProfilePostActions>(
+    () => ({
+      toggleReaction: () => {},
+      adjustCommentCount: () => {},
+      editPost: () => Promise.resolve(false),
+      deletePost: () => {},
+    }),
+    []
+  );
+
+  return {
+    profile,
+    loading: false,
+    notFound: false,
+    relationship,
+    busy: false,
+    actions,
+    secondary,
+    postActions,
+  };
 }

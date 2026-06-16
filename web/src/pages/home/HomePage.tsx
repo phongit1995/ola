@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useState, type ComponentType, type LazyExoticComponent } from 'react';
 import { SocketService } from '@services';
 import { BottomTabBar, type TabKey } from '@components/BottomTabBar';
+import { useRoomChatStore } from '@/store/roomChatStore';
 
 const ChatPanel = lazy(() => import('../chat/ChatPanel').then((m) => ({ default: m.ChatPanel })));
 const RoomPanel = lazy(() => import('../room/RoomPanel').then((m) => ({ default: m.RoomPanel })));
@@ -25,6 +26,7 @@ function readStoredTab(): TabKey {
 
 export function HomePage() {
   const [tab, setTab] = useState<TabKey>(readStoredTab);
+  const roomUnread = useRoomChatStore((state) => state.hasUnread);
   const ActivePanel = PANELS[tab];
 
   function changeTab(next: TabKey) {
@@ -45,7 +47,12 @@ export function HomePage() {
         </Suspense>
       </div>
 
-      <BottomTabBar active={tab} onChange={changeTab} badges={{ chat: 3 }} />
+      <BottomTabBar
+        active={tab}
+        onChange={changeTab}
+        badges={{ chat: 3 }}
+        dots={{ room: roomUnread && tab !== 'room' }}
+      />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { Socket } from 'socket.io-client';
+import { useAuthStore } from '@/store/authStore';
 import { RoomService, SocketService } from '@services';
 import {
   ROOM_SOCKET_EVENTS,
@@ -25,9 +26,12 @@ interface RoomChatState {
   messages: RoomMessage[];
   members: RoomMember[];
   memberCount: number;
+  hasUnread: boolean;
+  roomForeground: boolean;
   open: (room: ActiveRoom) => Promise<void>;
   close: () => void;
   setActiveTab: (tab: RoomTab) => void;
+  setRoomForeground: (foreground: boolean) => void;
   sendMessage: (content: string) => Promise<void>;
 }
 
@@ -56,6 +60,8 @@ const initialState = {
   messages: [] as RoomMessage[],
   members: [] as RoomMember[],
   memberCount: 0,
+  hasUnread: false,
+  roomForeground: false,
 };
 
 export const useRoomChatStore = create<RoomChatState>((set, get) => ({
@@ -84,11 +90,15 @@ export const useRoomChatStore = create<RoomChatState>((set, get) => ({
           const message = toRecord(toRecord(envelope.data)?.message);
           if (message?.roomId !== roomId || typeof message.id !== 'string') return;
           const newMessage = message as unknown as RoomMessage;
-          set((state) =>
-            state.messages.some((item) => item.id === newMessage.id)
-              ? state
-              : { messages: [...state.messages, newMessage] }
-          );
+          const currentUserId = useAuthStore.getState().user?.id;
+          set((state) => {
+            if (state.messages.some((item) => item.id === newMessage.id)) return state;
+            const isOwn = newMessage.senderId === currentUserId;
+            const markUnread = !state.roomForeground && !isOwn;
+            return markUnread
+              ? { messages: [...state.messages, newMessage], hasUnread: true }
+              : { messages: [...state.messages, newMessage] };
+          });
           return;
         }
         case ROOM_SOCKET_EVENTS.messageDeleted: {
@@ -158,6 +168,9 @@ export const useRoomChatStore = create<RoomChatState>((set, get) => ({
   },
 
   setActiveTab: (tab) => set({ activeTab: tab }),
+
+  setRoomForeground: (foreground) =>
+    set(foreground ? { roomForeground: true, hasUnread: false } : { roomForeground: false }),
 
   sendMessage: async (content) => {
     const room = get().activeRoom;

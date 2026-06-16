@@ -1,11 +1,15 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MeService, UserService } from '@services';
-import { createDateFormatter, createTimeFormatter } from '@lib';
-import type { RelationshipInfo } from '@app-types';
+import { createDateFormatter, createTimeFormatter, toast } from '@lib';
+import type { PostReaction, RelationshipInfo } from '@app-types';
+import { applyMeReaction, toMePost } from '../me/mappers';
+import type { MePost } from '../me/types';
+import type { ComposedPost } from '../me/components/MeComposerDialog';
+import { composedToImages, composedToPayload } from '../me/composer';
 import { mapFollowing, mapPosts, mapPublicProfile, type ProfileMapDeps } from './mappers';
 import { useProfileActions } from './useProfileActions';
-import type { ProfileController, ProfileSecondary, UserProfile } from './types';
+import type { ProfileController, ProfilePostActions, ProfileSecondary, UserProfile } from './types';
 
 const NO_RELATIONSHIP: RelationshipInfo = { status: 'none', isFollowing: false, followsMe: false };
 const EMPTY_SECONDARY: ProfileSecondary = { media: [], following: [], posts: [], loading: false };
@@ -63,6 +67,79 @@ export function useUserProfile(username: string, seedColor: string): ProfileCont
     await loadProfile();
   }, [loadProfile]);
 
+  const postsRef = useRef(secondary.posts);
+  useEffect(() => {
+    postsRef.current = secondary.posts;
+  }, [secondary.posts]);
+
+  const setPost = useCallback((id: string, next: (post: MePost) => MePost) => {
+    setSecondary((s) => ({ ...s, posts: s.posts.map((p) => (p.id === id ? next(p) : p)) }));
+  }, []);
+
+  const toggleReaction = useCallback(
+    async (id: string, type: PostReaction) => {
+      const current = postsRef.current.find((p) => p.id === id);
+      if (current == null) return;
+      const wasActive = type === 'like' ? current.liked : current.disliked;
+      setPost(id, (p) => applyMeReaction(p, type));
+      try {
+        const updated = wasActive
+          ? await MeService.removeReaction(id)
+          : await MeService.react(id, type);
+        const mapped = toMePost(updated, formatTime);
+        setPost(id, (p) => ({ ...mapped, color: p.color }));
+      } catch {
+        setPost(id, () => current);
+        toast.error(t('me.reactionError'));
+      }
+    },
+    [setPost, formatTime, t]
+  );
+
+  const adjustCommentCount = useCallback(
+    (id: string, delta: number) => {
+      setPost(id, (p) => ({ ...p, comments: Math.max(0, p.comments + delta) }));
+    },
+    [setPost]
+  );
+
+  const editPost = useCallback(
+    async (id: string, draft: ComposedPost): Promise<boolean> => {
+      try {
+        const images = await composedToImages(draft, 'existingFirst');
+        const updated = await MeService.update(id, { ...composedToPayload(draft), images });
+        const mapped = toMePost(updated, formatTime);
+        setPost(id, (p) => ({ ...mapped, color: p.color }));
+        toast.success(t('me.editSuccess'));
+        return true;
+      } catch {
+        toast.error(t('me.editError'));
+        return false;
+      }
+    },
+    [setPost, formatTime, t]
+  );
+
+  const deletePost = useCallback(
+    async (id: string) => {
+      try {
+        await MeService.remove(id);
+        setSecondary((s) => ({ ...s, posts: s.posts.filter((p) => p.id !== id) }));
+        toast.success(t('me.deleteSuccess'));
+      } catch {
+        toast.error(t('me.deleteError'));
+      }
+    },
+    [t]
+  );
+
+  const postActions: ProfilePostActions = {
+    toggleReaction,
+    adjustCommentCount,
+    editPost,
+    deletePost,
+  };
+
   useEffect(() => {
     let active = true;
     // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch bất đồng bộ: setState chạy sau await, không gây cascading render
@@ -85,5 +162,5 @@ export function useUserProfile(username: string, seedColor: string): ProfileCont
 
   const { actions, busy } = useProfileActions({ userId, relationship, setRelationship, setProfile, reload });
 
-  return { profile, loading, notFound, relationship, busy, actions, secondary };
+  return { profile, loading, notFound, relationship, busy, actions, secondary, postActions };
 }
