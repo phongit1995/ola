@@ -9,6 +9,9 @@ node_modules/
 # Ảnh extract từ APK (tư liệu, không commit)
 apk-images/
 
+# Ảnh gom từ apktool_out / jadx_out / extracted_full (decompile, không commit)
+images/
+
 # OS
 .DS_Store
 
