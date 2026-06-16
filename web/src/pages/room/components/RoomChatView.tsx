@@ -8,9 +8,12 @@ import { ScreenHeader, FullScreenOverlay } from '@components';
 import { RoomTabBar, type RoomTabItem } from './RoomTabBar';
 import { RoomMessagesTab } from './RoomMessagesTab';
 import { RoomMembersTab } from './RoomMembersTab';
-import { ProfilePage } from '../../profile/ProfilePage';
-import { buildProfile } from '../../profile/data';
-import type { UserProfile } from '../../profile/types';
+import { MockProfileView } from '../../profile/MockProfileView';
+
+interface ProfileTarget {
+  nick: string;
+  color: string;
+}
 
 interface RoomChatViewProps {
   onClose: () => void;
@@ -27,10 +30,10 @@ export function RoomChatView({ onClose }: RoomChatViewProps) {
   const setActiveTab = useRoomChatStore((state) => state.setActiveTab);
   const sendMessage = useRoomChatStore((state) => state.sendMessage);
   const currentUserId = useAuthStore((state) => state.user?.id) ?? '';
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [profileTarget, setProfileTarget] = useState<ProfileTarget | null>(null);
 
   const openProfile = useCallback((nick: string, color: string) => {
-    setProfile(buildProfile(nick, color));
+    setProfileTarget({ nick, color });
   }, []);
 
   const tabs: RoomTabItem[] = [
@@ -56,11 +59,13 @@ export function RoomChatView({ onClose }: RoomChatViewProps) {
         onOpenProfile={openProfile}
       />
 
-      {profile != null && (
-        <ProfilePage
-          profile={profile}
-          onClose={() => setProfile(null)}
-          onOpenFriend={(friend) => setProfile(buildProfile(friend.name, friend.color))}
+      {profileTarget != null && (
+        <MockProfileView
+          key={profileTarget.nick}
+          nick={profileTarget.nick}
+          color={profileTarget.color}
+          onClose={() => setProfileTarget(null)}
+          onOpenFriend={(friend) => setProfileTarget({ nick: friend.name, color: friend.color })}
         />
       )}
     </FullScreenOverlay>

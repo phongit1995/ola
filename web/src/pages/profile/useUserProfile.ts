@@ -1,148 +1,89 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { MeService, RelationshipService, UserService } from '@services';
-import { colorForName, createDateFormatter, createTimeFormatter, toast } from '@lib';
-import type { FollowUser, Post, PublicProfile, RelationshipInfo } from '@app-types';
-import { toMePost } from '../me/mappers';
-import type { ProfileActions, UserProfile } from './types';
+import { MeService, UserService } from '@services';
+import { createDateFormatter, createTimeFormatter } from '@lib';
+import type { RelationshipInfo } from '@app-types';
+import { mapFollowing, mapPosts, mapPublicProfile, type ProfileMapDeps } from './mappers';
+import { useProfileActions } from './useProfileActions';
+import type { ProfileController, ProfileSecondary, UserProfile } from './types';
 
-const DEFAULT_COVER_COLOR = '#33691e';
 const NO_RELATIONSHIP: RelationshipInfo = { status: 'none', isFollowing: false, followsMe: false };
+const EMPTY_SECONDARY: ProfileSecondary = { media: [], following: [], posts: [], loading: false };
 
-function formatBirthday(iso: string): string {
-  const [, month, day] = iso.split('-');
-  if (!day || !month) return iso;
-  return `${day}/${month}`;
-}
-
-export function useUserProfile(username: string, seedColor: string) {
+export function useUserProfile(username: string, seedColor: string): ProfileController {
   const { t, i18n } = useTranslation();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [userId, setUserId] = useState('');
   const [relationship, setRelationship] = useState<RelationshipInfo>(NO_RELATIONSHIP);
-  const [busy, setBusy] = useState(false);
+  const [secondary, setSecondary] = useState<ProfileSecondary>(EMPTY_SECONDARY);
 
   const formatTime = useMemo(() => createTimeFormatter(i18n.language), [i18n.language]);
   const formatDate = useMemo(() => createDateFormatter(i18n.language), [i18n.language]);
 
-  const mapProfile = useCallback(
-    (data: PublicProfile, posts: Post[], following: FollowUser[]): UserProfile => {
-      const nick = data.fullName && data.fullName !== '' ? data.fullName : data.username;
-      return {
-        nick,
-        color: seedColor !== '' ? seedColor : colorForName(data.username),
-        coverColor: DEFAULT_COVER_COLOR,
-        verified: data.verified,
-        vip: Boolean(data.vipUsed),
-        fans: data.followerCount,
-        kisses: data.kisses,
-        bio: data.bio ?? '',
-        gender: data.gender,
-        marriage: t(data.marriage === 'married' ? 'profile.marriageMarried' : 'profile.marriageSingle'),
-        birthday: data.dateOfBirth ? formatBirthday(data.dateOfBirth) : '',
-        joinDate: `${t('profile.joinedOla')} ${formatDate(data.createdAt)}`,
-        media: [],
-        following: following.map((u) => ({ name: u.username, color: colorForName(u.username) })),
-        posts: posts.map((post) => toMePost(post, formatTime)),
-        isSelf: data.relationship?.status === 'self',
-      };
-    },
-    [seedColor, t, formatTime, formatDate]
+  const mapDeps = useMemo<ProfileMapDeps>(
+    () => ({
+      seedColor,
+      marriedLabel: t('profile.marriageMarried'),
+      singleLabel: t('profile.marriageSingle'),
+      joinedLabel: t('profile.joinedOla'),
+      formatDate,
+    }),
+    [seedColor, t, formatDate]
   );
 
-  const load = useCallback(async () => {
+  const loadProfile = useCallback(async () => {
     const data = await UserService.publicProfile(username);
-    const [postsResult, followingResult] = await Promise.all([
-      MeService.byUser(data.id, { limit: 30 }).catch(() => null),
-      UserService.following(data.id, { limit: 12 }).catch(() => null),
-    ]);
     setUserId(data.id);
     setRelationship(data.relationship ?? NO_RELATIONSHIP);
-    setProfile(mapProfile(data, postsResult?.items ?? [], followingResult?.users ?? []));
+    setProfile(mapPublicProfile(data, mapDeps));
     setNotFound(false);
-  }, [username, mapProfile]);
+    return data.id;
+  }, [username, mapDeps]);
+
+  const loadSecondary = useCallback(
+    async (id: string) => {
+      setSecondary((s) => ({ ...s, loading: true }));
+      const [postsResult, followingResult] = await Promise.all([
+        MeService.byUser(id, { limit: 30 }).catch(() => null),
+        UserService.following(id, { limit: 12 }).catch(() => null),
+      ]);
+      setSecondary({
+        media: [],
+        following: mapFollowing(followingResult?.users ?? []),
+        posts: mapPosts(postsResult?.items ?? [], formatTime),
+        loading: false,
+      });
+    },
+    [formatTime]
+  );
+
+  const reload = useCallback(async () => {
+    await loadProfile();
+  }, [loadProfile]);
 
   useEffect(() => {
     let active = true;
     // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch bất đồng bộ: setState chạy sau await, không gây cascading render
-    load()
-      .catch(() => {
-        if (active) {
-          setProfile(null);
-          setNotFound(true);
-        }
+    loadProfile()
+      .then((id) => {
+        if (!active) return;
+        setLoading(false);
+        void loadSecondary(id).catch(() => undefined);
       })
-      .finally(() => {
-        if (active) setLoading(false);
+      .catch(() => {
+        if (!active) return;
+        setProfile(null);
+        setNotFound(true);
+        setLoading(false);
       });
     return () => {
       active = false;
     };
-  }, [load]);
+  }, [loadProfile, loadSecondary]);
 
-  const kiss = useCallback(() => {
-    if (userId === '') return;
-    setProfile((p) => (p ? { ...p, kisses: p.kisses + 1 } : p));
-    UserService.kiss(userId)
-      .then((r) => setProfile((p) => (p ? { ...p, kisses: r.kisses } : p)))
-      .catch(() => {
-        setProfile((p) => (p ? { ...p, kisses: Math.max(0, p.kisses - 1) } : p));
-        toast.error(t('profile.actionError'));
-      });
-  }, [userId, t]);
+  const { actions, busy } = useProfileActions({ userId, relationship, setRelationship, setProfile, reload });
 
-  const toggleFollow = useCallback(() => {
-    if (userId === '') return;
-    const wasFollowing = relationship.isFollowing;
-    setRelationship((r) => ({ ...r, isFollowing: !wasFollowing }));
-    setProfile((p) => (p ? { ...p, fans: Math.max(0, p.fans + (wasFollowing ? -1 : 1)) } : p));
-    const call = wasFollowing ? UserService.unfollow(userId) : UserService.follow(userId);
-    call
-      .then((res) => {
-        setRelationship((r) => ({ ...r, isFollowing: res.following }));
-        setProfile((p) => (p ? { ...p, fans: res.followerCount } : p));
-      })
-      .catch(() => {
-        setRelationship((r) => ({ ...r, isFollowing: wasFollowing }));
-        setProfile((p) => (p ? { ...p, fans: Math.max(0, p.fans + (wasFollowing ? 1 : -1)) } : p));
-        toast.error(t('profile.actionError'));
-      });
-  }, [userId, relationship.isFollowing, t]);
-
-  const runAndReload = useCallback(
-    (op: Promise<unknown>) => {
-      setBusy(true);
-      op
-        .then(() => load())
-        .catch(() => toast.error(t('profile.actionError')))
-        .finally(() => setBusy(false));
-    },
-    [load, t]
-  );
-
-  const friendAction = useCallback(() => {
-    if (userId === '' || busy) return;
-    const { status, requestId } = relationship;
-    if (status === 'none') runAndReload(RelationshipService.sendRequest(userId));
-    else if (status === 'pending_outgoing' && requestId) runAndReload(RelationshipService.cancel(requestId));
-    else if (status === 'pending_incoming' && requestId)
-      runAndReload(RelationshipService.respond(requestId, 'accept'));
-    else if (status === 'friend' && requestId) runAndReload(RelationshipService.unfriend(requestId));
-  }, [userId, busy, relationship, runAndReload]);
-
-  const blockAction = useCallback(() => {
-    if (userId === '' || busy) return;
-    const { status, requestId } = relationship;
-    if (status === 'blocked_by_me' && requestId) runAndReload(RelationshipService.unblock(requestId));
-    else runAndReload(RelationshipService.block(userId));
-  }, [userId, busy, relationship, runAndReload]);
-
-  const actions: ProfileActions = useMemo(
-    () => ({ kiss, toggleFollow, friendAction, blockAction }),
-    [kiss, toggleFollow, friendAction, blockAction]
-  );
-
-  return { profile, loading, notFound, userId, relationship, busy, actions };
+  return { profile, loading, notFound, relationship, busy, actions, secondary };
 }

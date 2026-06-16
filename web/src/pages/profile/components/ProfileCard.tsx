@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import checkedIcon from '@/assets/icons/profile/ic_checked.png';
 import cameraIcon from '@/assets/icons/profile/ic_action_camera.png';
@@ -15,10 +14,10 @@ import { RelationButtons } from './RelationButtons';
 
 interface ProfileCardProps {
   profile: UserProfile;
+  relationship: RelationshipInfo;
+  actions: ProfileActions;
   onPostMe: () => void;
   onUpdateInfo: () => void;
-  relationship?: RelationshipInfo;
-  actions?: ProfileActions;
 }
 
 function InfoRow({ icon, text, note }: { icon: string; text: string; note?: boolean }) {
@@ -34,14 +33,8 @@ function InfoRow({ icon, text, note }: { icon: string; text: string; note?: bool
   );
 }
 
-export function ProfileCard({ profile, onPostMe, onUpdateInfo, relationship, actions }: ProfileCardProps) {
+export function ProfileCard({ profile, relationship, actions, onPostMe, onUpdateInfo }: ProfileCardProps) {
   const { t } = useTranslation();
-  const [blocked, setBlocked] = useState(false);
-  const [localKisses, setLocalKisses] = useState(profile.kisses);
-
-  const wired = actions != null;
-  const kisses = wired ? profile.kisses : localKisses;
-  const onKiss = wired ? actions.kiss : () => setLocalKisses((value) => value + 1);
 
   return (
     <div className="mb-2 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.18)]">
@@ -71,22 +64,11 @@ export function ProfileCard({ profile, onPostMe, onUpdateInfo, relationship, act
       <RelationButtons
         nick={profile.nick}
         isSelf={profile.isSelf}
-        onBlock={() => setBlocked(true)}
         onPostMe={onPostMe}
         onUpdateInfo={onUpdateInfo}
         relationship={relationship}
         actions={actions}
       />
-
-      {!wired && blocked && (
-        <button
-          type="button"
-          onClick={() => setBlocked(false)}
-          className="w-full bg-[#e34545] py-3 text-xs text-white"
-        >
-          {t('profile.unblock')}
-        </button>
-      )}
 
       <div className="mx-4 h-px bg-black/12" />
 
@@ -97,12 +79,14 @@ export function ProfileCard({ profile, onPostMe, onUpdateInfo, relationship, act
 
       <button
         type="button"
-        onClick={onKiss}
+        onClick={actions.kiss}
         className="mt-2 flex w-full flex-col items-center gap-1"
       >
         <img src={kissIcon} alt="" className="max-h-16 object-contain" />
         <span className="text-sm text-black">
-          {kisses > 0 ? t('profile.kissCount', { count: kisses }) : t('profile.notKissed')}
+          {profile.kisses > 0
+            ? t('profile.kissCount', { count: profile.kisses })
+            : t('profile.notKissed')}
         </span>
       </button>
 

@@ -1,6 +1,6 @@
 import { CONTACTS } from '../chat/data';
 import type { MePost } from '../me/types';
-import type { UserProfile } from './types';
+import type { ProfileFriend, UserProfile } from './types';
 
 const MEDIA_COLORS = ['#7cb342', '#ef5350', '#5c6bc0', '#26a69a', '#ec407a', '#ffa726'];
 
@@ -45,15 +45,7 @@ function buildPosts(nick: string, color: string): MePost[] {
   ];
 }
 
-export function buildProfile(
-  nick: string,
-  color: string,
-  isSelf = false
-): UserProfile {
-  const following = CONTACTS.filter((c) => c.name !== nick)
-    .slice(0, 5)
-    .map((c) => ({ name: c.name, color: c.color }));
-
+export function buildMockProfile(nick: string, color: string, isSelf = false): UserProfile {
   return {
     nick,
     color,
@@ -67,9 +59,16 @@ export function buildProfile(
     marriage: 'Độc thân',
     birthday: '12/08',
     joinDate: 'Tham gia Ola từ 2014',
-    media: MEDIA_COLORS,
-    following,
-    posts: buildPosts(nick, color),
     isSelf,
   };
+}
+
+export function buildMockSecondary(
+  nick: string,
+  color: string
+): { media: string[]; following: ProfileFriend[]; posts: MePost[] } {
+  const following = CONTACTS.filter((c) => c.name !== nick)
+    .slice(0, 5)
+    .map((c) => ({ name: c.name, color: c.color }));
+  return { media: MEDIA_COLORS, following, posts: buildPosts(nick, color) };
 }

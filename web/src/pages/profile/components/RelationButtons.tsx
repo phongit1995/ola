@@ -14,11 +14,10 @@ import moreIcon from '@/assets/icons/profile/ic_more_horizon_black_disable.png';
 interface RelationButtonsProps {
   nick: string;
   isSelf: boolean;
-  onBlock: () => void;
   onPostMe: () => void;
   onUpdateInfo: () => void;
-  relationship?: RelationshipInfo;
-  actions?: ProfileActions;
+  relationship: RelationshipInfo;
+  actions: ProfileActions;
 }
 
 function RelationButton({
@@ -49,21 +48,20 @@ function RelationButton({
 export function RelationButtons({
   nick,
   isSelf,
-  onBlock,
   onPostMe,
   onUpdateInfo,
   relationship,
   actions,
 }: RelationButtonsProps) {
   const { t } = useTranslation();
-  const [friendedLocal, setFriendedLocal] = useState(false);
-  const [followingLocal, setFollowingLocal] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const status = relationship?.status;
+  const { status } = relationship;
   const isBlocked = status === 'blocked_by_me' || status === 'blocked_by_them';
+  const isFriend = status === 'friend';
+  const following = relationship.isFollowing;
 
-  const realFriendLabel =
+  const friendLabel =
     status === 'friend'
       ? t('profile.alreadyFriend')
       : status === 'pending_outgoing'
@@ -71,25 +69,13 @@ export function RelationButtons({
         : status === 'pending_incoming'
           ? t('profile.acceptFriend')
           : t('profile.makeFriend');
-  const friendLabel = actions
-    ? realFriendLabel
-    : friendedLocal
-      ? t('profile.alreadyFriend')
-      : t('profile.makeFriend');
-  const isFriend = actions ? status === 'friend' : friendedLocal;
-  const friendActive = actions ? isFriend || status === 'pending_outgoing' : friendedLocal;
+  const friendActive = isFriend || status === 'pending_outgoing';
   const friendIcon = isFriend ? friendsActiveIcon : addFriendIcon;
-  const onFriendClick = actions ? actions.friendAction : () => setFriendedLocal((value) => !value);
-
-  const following = actions ? Boolean(relationship?.isFollowing) : followingLocal;
   const followIconSrc = following ? followingActiveIcon : followIcon;
-  const onFollowClick = actions ? actions.toggleFollow : () => setFollowingLocal((value) => !value);
-
-  const onBlockClick = actions ? actions.blockAction : onBlock;
   const blockLabel = status === 'blocked_by_me' ? t('profile.unblock') : t('profile.block');
 
   const otherMenu: ListOption[] = [
-    { key: 'block', label: blockLabel, danger: status !== 'blocked_by_me', onSelect: onBlockClick },
+    { key: 'block', label: blockLabel, danger: status !== 'blocked_by_me', onSelect: actions.blockAction },
     { key: 'copy', label: t('profile.copyNick'), onSelect: () => navigator.clipboard?.writeText(nick) },
     { key: 'report', label: t('profile.report'), onSelect: () => {} },
   ];
@@ -101,7 +87,7 @@ export function RelationButtons({
     { key: 'help', label: t('profile.privacyHelp'), onSelect: () => {} },
   ];
 
-  const showRelationActions = !isSelf && !(actions != null && isBlocked);
+  const showRelationActions = !isSelf && !isBlocked;
 
   return (
     <>
@@ -114,13 +100,13 @@ export function RelationButtons({
               icon={friendIcon}
               label={friendLabel}
               active={friendActive}
-              onClick={onFriendClick}
+              onClick={actions.friendAction}
             />
             <RelationButton
               icon={followIconSrc}
               label={following ? t('profile.following') : t('profile.follow')}
               active={following}
-              onClick={onFollowClick}
+              onClick={actions.toggleFollow}
             />
           </>
         ) : null}

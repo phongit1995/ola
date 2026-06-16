@@ -1,3 +1,4 @@
+import type { RelationshipInfo } from '@app-types';
 import type { MePost } from '../me/types';
 
 export interface ProfileFriend {
@@ -25,8 +26,22 @@ export interface UserProfile {
   marriage: string;
   birthday: string;
   joinDate: string;
+  isSelf: boolean;
+}
+
+export interface ProfileSecondary {
   media: string[];
   following: ProfileFriend[];
   posts: MePost[];
-  isSelf: boolean;
+  loading: boolean;
+}
+
+export interface ProfileController {
+  profile: UserProfile | null;
+  loading: boolean;
+  notFound: boolean;
+  relationship: RelationshipInfo;
+  busy: boolean;
+  actions: ProfileActions;
+  secondary: ProfileSecondary;
 }
