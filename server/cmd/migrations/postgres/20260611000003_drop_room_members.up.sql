@@ -1,2 +1,0 @@
-DROP TABLE IF EXISTS room_members;
-ALTER TABLE rooms DROP COLUMN IF EXISTS member_count;

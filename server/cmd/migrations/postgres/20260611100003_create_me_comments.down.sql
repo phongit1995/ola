@@ -1,2 +1,0 @@
-DROP TABLE IF EXISTS me_comments;
-ALTER TABLE me DROP COLUMN IF EXISTS comment_count;

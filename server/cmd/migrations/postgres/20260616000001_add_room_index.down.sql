@@ -1,3 +1,0 @@
-DROP INDEX IF EXISTS idx_rooms_index;
-
-ALTER TABLE rooms DROP COLUMN IF EXISTS "index";

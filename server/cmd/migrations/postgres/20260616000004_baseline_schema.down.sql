@@ -1,0 +1,10 @@
+DROP TABLE IF EXISTS public.me_reactions CASCADE;
+DROP TABLE IF EXISTS public.me_comments CASCADE;
+DROP TABLE IF EXISTS public.me CASCADE;
+DROP TABLE IF EXISTS public.calls CASCADE;
+DROP TABLE IF EXISTS public.relationships CASCADE;
+DROP TABLE IF EXISTS public.rooms CASCADE;
+DROP TABLE IF EXISTS public.admin_users CASCADE;
+DROP TABLE IF EXISTS public.users CASCADE;
+
+DROP FUNCTION IF EXISTS public.update_updated_at_column() CASCADE;
