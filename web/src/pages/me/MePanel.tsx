@@ -37,6 +37,8 @@ export function MePanel() {
     addPost,
     editPost,
     deletePost,
+    hidePost,
+    blockAuthor,
     adjustCommentCount,
   } = useMeFeed();
 
@@ -56,7 +58,16 @@ export function MePanel() {
     quickCommentPostId == null ? null : posts.find((p) => p.id === quickCommentPostId);
   const menuPost = menuPostId == null ? null : posts.find((p) => p.id === menuPostId);
   const isMenuPostMine = menuPost != null && meId != null && menuPost.authorId === meId;
-  const showComingSoon = () => toast.info(t('me.menuComingSoon'));
+  const hideAndNotify = (id: string | null) => {
+    if (id == null) return;
+    hidePost(id);
+    toast.success(t('me.hideSuccess'));
+  };
+  const blockAndNotify = (authorId?: string) => {
+    if (authorId == null || authorId === '') return;
+    blockAuthor(authorId);
+    toast.success(t('me.blockSuccess'));
+  };
   const requestEdit = (id: string | null) => {
     if (id == null) return;
     const post = posts.find((p) => p.id === id);
@@ -79,10 +90,19 @@ export function MePanel() {
         },
       ]
     : [
-        { key: 'hide', label: t('me.menuHide'), onSelect: showComingSoon },
-        { key: 'save', label: t('me.menuSave'), onSelect: showComingSoon },
-        { key: 'share', label: t('me.menuShare'), onSelect: showComingSoon },
-        { key: 'block', label: t('me.menuBlock'), danger: true, onSelect: showComingSoon },
+        { key: 'hide', label: t('me.menuHide'), onSelect: () => hideAndNotify(menuPostId) },
+        { key: 'save', label: t('me.menuSave'), onSelect: () => toast.success(t('me.saveSuccess')) },
+        {
+          key: 'share',
+          label: t('me.menuShare'),
+          onSelect: () => toast.success(t('me.shareSuccess')),
+        },
+        {
+          key: 'block',
+          label: t('me.menuBlock'),
+          danger: true,
+          onSelect: () => blockAndNotify(menuPost?.authorId),
+        },
       ];
 
   const editingPost = editPostId == null ? null : posts.find((p) => p.id === editPostId);

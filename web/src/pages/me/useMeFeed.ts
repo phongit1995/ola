@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMeFeedStore } from '@/store/meFeedStore';
+import { useMeLocalStore } from '@/store/meLocalStore';
 import { createTimeFormatter } from '@lib';
 import { toMePost } from './mappers';
 import { TAB_FILTER } from './constants';
@@ -24,6 +25,11 @@ export function useMeFeed() {
   const removePost = useMeFeedStore((state) => state.removePost);
   const adjustCommentCount = useMeFeedStore((state) => state.adjustCommentCount);
 
+  const hiddenPostIds = useMeLocalStore((state) => state.hiddenPostIds);
+  const blockedAuthorIds = useMeLocalStore((state) => state.blockedAuthorIds);
+  const hidePost = useMeLocalStore((state) => state.hidePost);
+  const blockAuthor = useMeLocalStore((state) => state.blockAuthor);
+
   const formatTime = useMemo(() => createTimeFormatter(i18n.language), [i18n.language]);
 
   useEffect(() => {
@@ -33,8 +39,14 @@ export function useMeFeed() {
   const loadMore = useCallback(() => loadMoreFeed(TAB_FILTER[tab]), [loadMoreFeed, tab]);
 
   const posts = useMemo(
-    () => rawPosts.map((post) => toMePost(post, formatTime)),
-    [rawPosts, formatTime]
+    () =>
+      rawPosts
+        .map((post) => toMePost(post, formatTime))
+        .filter(
+          (post) =>
+            !hiddenPostIds.includes(post.id) && !blockedAuthorIds.includes(post.authorId)
+        ),
+    [rawPosts, formatTime, hiddenPostIds, blockedAuthorIds]
   );
 
   const addPost = useCallback(
@@ -107,6 +119,8 @@ export function useMeFeed() {
     addPost,
     editPost,
     deletePost,
+    hidePost,
+    blockAuthor,
     adjustCommentCount,
   };
 }
