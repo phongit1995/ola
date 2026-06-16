@@ -89,3 +89,23 @@ jobs:
               docker compose --env-file "$ENV_FILE" run --rm migrate seed
               echo "✅ Seed completed"
             fi
+
+  notify:
+    needs: [deploy]
+    # Chỉ báo khi deploy thành công.
+    if: ${{ needs.deploy.result == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Thông báo Discord
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: success
+          title: "🚀 Deploy thành công — ${{ inputs.environment }}"
+          description: |
+            **Thành phần:** ${{ inputs.target }}
+            **Tag:** `${{ inputs.tag }}`
+            **Migrations:** ${{ inputs.run_migrations }} · **Seed:** ${{ inputs.run_seed }}
+            **Commit:** [`${{ github.sha }}`](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})
+          username: GitHub Actions
+          nofail: true

@@ -97,3 +97,22 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/ola-chat-server-${{ matrix.service }}${{ env.SUFFIX }}:sha-${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  notify:
+    needs: [build-web, build-server]
+    # Chỉ báo khi build thành công, và phải build đủ cả web + server.
+    if: ${{ needs.build-web.result == 'success' && needs.build-server.result == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Thông báo Discord
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: success
+          title: "✅ Build thành công — ${{ inputs.environment }}"
+          description: |
+            **Thành phần:** ${{ inputs.target }}
+            **Tag:** `${{ inputs.tag }}`
+            **Commit:** [`${{ github.sha }}`](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})
+          username: GitHub Actions
+          nofail: true

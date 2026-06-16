@@ -175,3 +175,39 @@ jobs:
             WEB_HEALTH_URL='${{ inputs.environment == 'dev' && 'http://localhost:5082' || 'http://localhost:5081' }}' \
             ADMIN_HEALTH_URL='${{ inputs.environment == 'dev' && 'http://localhost:5084' || 'http://localhost:5083' }}' \
             ./deploy.sh
+
+  notify-build:
+    needs: [build-web, build-admin, build-server]
+    # Chỉ báo khi TẤT CẢ build (web + admin + server) đều thành công.
+    if: ${{ needs.build-web.result == 'success' && needs.build-admin.result == 'success' && needs.build-server.result == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Thông báo Discord
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: success
+          title: "✅ Build thành công — ${{ inputs.environment }}"
+          description: |
+            **Tag:** `${{ inputs.tag }}`
+            **Commit:** [`${{ github.sha }}`](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})
+          username: GitHub Actions
+          nofail: true
+
+  notify-deploy:
+    needs: [deploy]
+    # Chỉ báo khi deploy thành công.
+    if: ${{ needs.deploy.result == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Thông báo Discord
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: success
+          title: "🚀 Deploy thành công — ${{ inputs.environment }}"
+          description: |
+            **Tag:** `${{ inputs.tag }}`
+            **Commit:** [`${{ github.sha }}`](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})
+          username: GitHub Actions
+          nofail: true
