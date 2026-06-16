@@ -21,10 +21,13 @@ export function toMePost(post: Post, formatTime: (iso: string) => string): MePos
     : null;
   return {
     id: post.id,
+    authorId: post.author?.id ?? '',
     author,
     color: colorForName(author),
     time: formatTime(post.createdAt),
+    createdAt: post.createdAt,
     content: post.content ?? '',
+    visibility: post.visibility,
     image: post.sticker && post.sticker !== '' ? post.sticker : null,
     photos: post.images?.map((image) => image.url) ?? [],
     checkIn,

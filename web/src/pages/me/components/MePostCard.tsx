@@ -23,6 +23,7 @@ interface MePostCardProps {
   onOpenProfile?: (author: string, color: string) => void;
   onOpenComments?: (id: string, focusInput?: boolean) => void;
   onQuickComment?: (id: string) => void;
+  onOpenMenu?: (id: string) => void;
 }
 
 function MePostCardComponent({
@@ -32,6 +33,7 @@ function MePostCardComponent({
   onOpenProfile,
   onOpenComments,
   onQuickComment,
+  onOpenMenu,
 }: MePostCardProps) {
   const { t } = useTranslation();
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
@@ -59,7 +61,12 @@ function MePostCardComponent({
             <span className="mt-0.5 block text-xs text-black/54">{post.time}</span>
           </span>
         </button>
-        <button type="button" aria-label={t('me.postMenu')} className="p-2">
+        <button
+          type="button"
+          aria-label={t('me.postMenu')}
+          onClick={() => onOpenMenu?.(post.id)}
+          className="p-2"
+        >
           <img src={moreIcon} alt="" className="h-4 w-4 object-contain" />
         </button>
       </div>

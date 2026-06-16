@@ -179,6 +179,7 @@ var (
 		"room is disabled":                      true,
 		"not your post":                         true,
 		"not your comment":                      true,
+		"post is too old to edit":               true,
 	}
 )
 

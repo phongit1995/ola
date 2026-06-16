@@ -30,6 +30,8 @@ export const ME_TABS = [
 
 export const PRIVACY_OPTIONS: PostVisibility[] = ['public', 'friend', 'private'];
 
+export const EDIT_WINDOW_MS = 60 * 60 * 1000;
+
 export const ATTACH_BUTTONS = [
   { key: 'local', glyph: '📷', labelKey: 'me.attachLocal' },
   { key: 'smiley', glyph: '😀', labelKey: 'me.attachSmiley' },

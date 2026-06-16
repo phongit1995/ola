@@ -14,7 +14,9 @@ function buildPosts(nick: string, color: string): MePost[] {
   return [
     {
       id: `${nick}-post-1`,
+      authorId: nick,
       author: nick,
+      visibility: 'public',
       color,
       time: '2 giờ trước',
       content: 'Một ngày thật nhiều năng lượng 🌟',
@@ -28,7 +30,9 @@ function buildPosts(nick: string, color: string): MePost[] {
     },
     {
       id: `${nick}-post-2`,
+      authorId: nick,
       author: nick,
+      visibility: 'public',
       color,
       time: 'hôm qua',
       content: 'Cảm ơn mọi người đã ghé thăm trang của mình nhé 💚',

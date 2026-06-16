@@ -5,7 +5,7 @@ import { CONTACTS } from '../../chat/data';
 import { Avatar } from '@components';
 import { ATTACH_BUTTONS, PRIVACY_OPTIONS, type AttachButtonKey } from '../constants';
 import { KUL_STICKERS, kulCode, stickerImage } from '../stickers';
-import { insertAtCursor } from '@lib';
+import { useCaretInsert } from '@hooks';
 import checkInIcon from '@/assets/icons/me/ic_check_in.png';
 import { ComposerCheckInPanel, type ComposedCheckIn } from './ComposerCheckInPanel';
 import { ComposerSmileyPanel } from '@components';
@@ -29,19 +29,32 @@ interface MeComposerDialogProps {
   open: boolean;
   onClose: () => void;
   onPost: (post: ComposedPost) => Promise<boolean>;
+  initial?: ComposedPost | null;
+  title?: string;
+  submitLabel?: string;
 }
 
-export function MeComposerDialog({ open, onClose, onPost }: MeComposerDialogProps) {
+export function MeComposerDialog({
+  open,
+  onClose,
+  onPost,
+  initial,
+  title,
+  submitLabel,
+}: MeComposerDialogProps) {
   const { t } = useTranslation();
-  const [content, setContent] = useState('');
-  const [privacy, setPrivacy] = useState<PostVisibility>('public');
-  const [photos, setPhotos] = useState<PickedPhoto[]>([]);
-  const [checkIn, setCheckIn] = useState<ComposedCheckIn | null>(null);
-  const [sticker, setSticker] = useState<string | null>(null);
+  const [content, setContent] = useState(initial?.content ?? '');
+  const [privacy, setPrivacy] = useState<PostVisibility>(initial?.visibility ?? 'public');
+  const [photos, setPhotos] = useState<PickedPhoto[]>(() =>
+    (initial?.imageUrls ?? []).map((url) => ({ url }))
+  );
+  const [checkIn, setCheckIn] = useState<ComposedCheckIn | null>(initial?.checkIn ?? null);
+  const [sticker, setSticker] = useState<string | null>(initial?.sticker ?? null);
   const [panel, setPanel] = useState<AttachPanel>(null);
   const [submitting, setSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const insertToken = useCaretInsert(textareaRef, content, setContent);
 
   function reset() {
     setContent('');
@@ -94,11 +107,11 @@ export function MeComposerDialog({ open, onClose, onPost }: MeComposerDialogProp
   }
 
   function insertMention(nick: string) {
-    setContent((current) => insertAtCursor(current, ` @${nick}`, textareaRef.current));
+    insertToken(` @${nick}`);
   }
 
   function insertSmiley(code: string) {
-    setContent((current) => insertAtCursor(current, `${code} `, textareaRef.current));
+    insertToken(`${code} `);
   }
 
   function handleAttach(key: AttachButtonKey) {
@@ -134,11 +147,11 @@ export function MeComposerDialog({ open, onClose, onPost }: MeComposerDialogProp
     <Dialog
       open={open}
       onClose={handleClose}
-      title={t('me.composerTitle')}
+      title={title ?? t('me.composerTitle')}
       footer={
         <>
           <DialogButton variant="green" onClick={submit} disabled={submitting}>
-            {t('me.post')}
+            {submitLabel ?? t('me.post')}
           </DialogButton>
           <DialogButton variant="default" onClick={handleClose}>
             {t('dialog.cancel')}

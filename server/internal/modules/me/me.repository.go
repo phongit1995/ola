@@ -41,8 +41,8 @@ func (r *Repository) GetByID(id uuid.UUID) (*models.Post, error) {
 	return &post, nil
 }
 
-func (r *Repository) SoftDelete(id uuid.UUID) error {
-	return r.db.Delete(&models.Post{}, "id = ?", id).Error
+func (r *Repository) Disable(id uuid.UUID) error {
+	return r.db.Model(&models.Post{}).Where("id = ?", id).Update("enabled", false).Error
 }
 
 func (r *Repository) paginate(db *gorm.DB, limit, offset int) ([]*models.Post, int64, error) {

@@ -15,6 +15,8 @@ interface MeFeedState {
   loadMore: (filter?: MeFeedFilter) => Promise<void>;
   toggleReaction: (id: string, type: PostReaction) => Promise<void>;
   createPost: (payload: CreatePostRequest, files: File[], imageUrls: string[]) => Promise<Post | null>;
+  updatePost: (id: string, payload: CreatePostRequest, files: File[], imageUrls: string[]) => Promise<Post | null>;
+  removePost: (id: string) => Promise<boolean>;
   adjustCommentCount: (id: string, delta: number) => void;
 }
 
@@ -116,6 +118,33 @@ export const useMeFeedStore = create<MeFeedState>((set, get) => ({
       console.error('create post failed', error);
       toast.error(i18n.t('me.postError'));
       return null;
+    }
+  },
+  updatePost: async (id, payload, files, imageUrls) => {
+    try {
+      const uploaded = files.length > 0 ? (await MeService.uploadImages(files)).images : [];
+      const urlImages = imageUrls.map((url) => ({ url }));
+      const images = [...urlImages, ...uploaded];
+      const updated = await MeService.update(id, { ...payload, images });
+      set((state) => ({ posts: replacePost(state.posts, updated) }));
+      toast.success(i18n.t('me.editSuccess'));
+      return updated;
+    } catch (error) {
+      console.error('update post failed', error);
+      toast.error(i18n.t('me.editError'));
+      return null;
+    }
+  },
+  removePost: async (id) => {
+    try {
+      await MeService.remove(id);
+      set((state) => ({ posts: state.posts.filter((post) => post.id !== id) }));
+      toast.success(i18n.t('me.deleteSuccess'));
+      return true;
+    } catch (error) {
+      console.error('delete post failed', error);
+      toast.error(i18n.t('me.deleteError'));
+      return false;
     }
   },
   adjustCommentCount: (id, delta) => {

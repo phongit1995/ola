@@ -205,7 +205,7 @@ func (ctrl *Controller) UpdatePost(c *gin.Context) (interface{}, error) {
 }
 
 // DeletePost godoc
-// @Summary      Delete own post (soft delete)
+// @Summary      Delete own post (hide via enabled flag)
 // @Tags         me
 // @Produce      json
 // @Security     BearerAuth

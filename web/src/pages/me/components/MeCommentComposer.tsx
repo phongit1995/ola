@@ -4,7 +4,8 @@ import smileyIcon from '@/assets/icons/chat/ic_smiley.png';
 import { useAuthStore } from '@/store/authStore';
 import { Avatar } from '@components';
 import { ComposerSmileyPanel } from '@components';
-import { colorForName, insertAtCursor } from '@lib';
+import { colorForName } from '@lib';
+import { useCaretInsert } from '@hooks';
 
 interface MeCommentComposerProps {
   submitting: boolean;
@@ -18,13 +19,14 @@ export function MeCommentComposer({ submitting, onSubmit, autoFocus = false }: M
   const [draft, setDraft] = useState('');
   const [smileyOpen, setSmileyOpen] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const insertToken = useCaretInsert(inputRef, draft, setDraft);
 
   useEffect(() => {
     if (autoFocus) inputRef.current?.focus();
   }, [autoFocus]);
 
   function insertSmiley(code: string) {
-    setDraft((current) => insertAtCursor(current, `${code} `, inputRef.current));
+    insertToken(`${code} `);
   }
 
   async function submit() {

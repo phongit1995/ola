@@ -5,21 +5,23 @@ import { DEFAULT_AVATAR_COLOR, toast } from '@lib';
 import { MeService } from '@services';
 import editIcon from '@/assets/icons/me/ic_action_edit.png';
 import { useAuthStore } from '@/store/authStore';
-import { Avatar } from '@components';
+import { Avatar, ConfirmDialog, ListOptionDialog, type ListOption } from '@components';
 import { MeTabBar } from './components/MeTabBar';
 import { MeFeedList } from './components/MeFeedList';
-import { MeComposerDialog } from './components/MeComposerDialog';
+import { MeComposerDialog, type ComposedPost } from './components/MeComposerDialog';
 import { MeCommentSheet } from './components/MeCommentSheet';
 import { MeCommentComposer } from './components/MeCommentComposer';
 import { MeAccountDialog } from './components/MeAccountDialog';
 import { ProfilePage } from '../profile/ProfilePage';
 import { buildProfile } from '../profile/data';
 import { useMeFeed } from './useMeFeed';
+import { EDIT_WINDOW_MS } from './constants';
 import type { UserProfile } from '../profile/types';
 
 export function MePanel() {
   const { t } = useTranslation();
   const username = useAuthStore((s) => s.user?.username ?? null);
+  const meId = useAuthStore((s) => s.user?.id ?? null);
   const displayName = username ?? t('home.guest');
 
   const {
@@ -33,6 +35,8 @@ export function MePanel() {
     loadMore,
     toggleReaction,
     addPost,
+    editPost,
+    deletePost,
     adjustCommentCount,
   } = useMeFeed();
 
@@ -43,10 +47,70 @@ export function MePanel() {
   const [commentFocusInput, setCommentFocusInput] = useState(false);
   const [quickCommentPostId, setQuickCommentPostId] = useState<string | null>(null);
   const [quickSubmitting, setQuickSubmitting] = useState(false);
+  const [menuPostId, setMenuPostId] = useState<string | null>(null);
+  const [editPostId, setEditPostId] = useState<string | null>(null);
+  const [deletePostId, setDeletePostId] = useState<string | null>(null);
 
   const commentPost = commentPostId == null ? null : posts.find((p) => p.id === commentPostId);
   const quickPost =
     quickCommentPostId == null ? null : posts.find((p) => p.id === quickCommentPostId);
+  const menuPost = menuPostId == null ? null : posts.find((p) => p.id === menuPostId);
+  const isMenuPostMine = menuPost != null && meId != null && menuPost.authorId === meId;
+  const showComingSoon = () => toast.info(t('me.menuComingSoon'));
+  const requestEdit = (id: string | null) => {
+    if (id == null) return;
+    const post = posts.find((p) => p.id === id);
+    if (post == null) return;
+    const createdAtMs = post.createdAt != null ? new Date(post.createdAt).getTime() : 0;
+    if (Date.now() - createdAtMs > EDIT_WINDOW_MS) {
+      toast.info(t('me.editExpired'));
+      return;
+    }
+    setEditPostId(id);
+  };
+  const menuOptions: ListOption[] = isMenuPostMine
+    ? [
+        { key: 'edit', label: t('me.menuEdit'), onSelect: () => requestEdit(menuPostId) },
+        {
+          key: 'delete',
+          label: t('me.menuDelete'),
+          danger: true,
+          onSelect: () => setDeletePostId(menuPostId),
+        },
+      ]
+    : [
+        { key: 'hide', label: t('me.menuHide'), onSelect: showComingSoon },
+        { key: 'save', label: t('me.menuSave'), onSelect: showComingSoon },
+        { key: 'share', label: t('me.menuShare'), onSelect: showComingSoon },
+        { key: 'block', label: t('me.menuBlock'), danger: true, onSelect: showComingSoon },
+      ];
+
+  const editingPost = editPostId == null ? null : posts.find((p) => p.id === editPostId);
+  const editInitial: ComposedPost | undefined =
+    editingPost == null
+      ? undefined
+      : {
+          content: editingPost.content,
+          files: [],
+          imageUrls: editingPost.photos ?? [],
+          checkIn: editingPost.checkIn
+            ? {
+                name: editingPost.checkIn.name,
+                address: editingPost.checkIn.address ?? '',
+                lat: editingPost.checkIn.lat ?? 0,
+                lng: editingPost.checkIn.lng ?? 0,
+                action: editingPost.checkIn.action,
+                actionIcon: editingPost.checkIn.actionIcon,
+              }
+            : null,
+          sticker: editingPost.image,
+          visibility: editingPost.visibility,
+        };
+  const submitEdit = useCallback(
+    (draft: ComposedPost) =>
+      editPostId == null ? Promise.resolve(false) : editPost(editPostId, draft),
+    [editPostId, editPost]
+  );
 
   const openComments = useCallback((id: string, focusInput = false) => {
     setCommentPostId(id);
@@ -115,6 +179,7 @@ export function MePanel() {
             onOpenProfile={openProfile}
             onOpenComments={openComments}
             onQuickComment={setQuickCommentPostId}
+            onOpenMenu={setMenuPostId}
           />
         </main>
 
@@ -154,6 +219,38 @@ export function MePanel() {
         open={composerOpen}
         onClose={() => setComposerOpen(false)}
         onPost={addPost}
+      />
+
+      <ListOptionDialog
+        open={menuPost != null}
+        title={t('me.postMenu')}
+        options={menuOptions}
+        onClose={() => setMenuPostId(null)}
+      />
+
+      <MeComposerDialog
+        key={editPostId ?? 'edit'}
+        open={editingPost != null}
+        initial={editInitial}
+        title={t('me.editTitle')}
+        submitLabel={t('me.saveEdit')}
+        onClose={() => setEditPostId(null)}
+        onPost={submitEdit}
+      />
+
+      <ConfirmDialog
+        open={deletePostId != null}
+        title={t('me.deleteConfirmTitle')}
+        message={t('me.deleteConfirmText')}
+        confirmLabel={t('me.deleteConfirmOk')}
+        cancelLabel={t('dialog.cancel')}
+        danger
+        onCancel={() => setDeletePostId(null)}
+        onConfirm={() => {
+          const id = deletePostId;
+          setDeletePostId(null);
+          if (id != null) void deletePost(id);
+        }}
       />
 
       <MeAccountDialog

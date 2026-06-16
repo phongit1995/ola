@@ -20,6 +20,8 @@ export function useMeFeed() {
   const loadMoreFeed = useMeFeedStore((state) => state.loadMore);
   const toggleReaction = useMeFeedStore((state) => state.toggleReaction);
   const createPost = useMeFeedStore((state) => state.createPost);
+  const updatePost = useMeFeedStore((state) => state.updatePost);
+  const removePost = useMeFeedStore((state) => state.removePost);
   const adjustCommentCount = useMeFeedStore((state) => state.adjustCommentCount);
 
   const formatTime = useMemo(() => createTimeFormatter(i18n.language), [i18n.language]);
@@ -63,6 +65,35 @@ export function useMeFeed() {
     [createPost]
   );
 
+  const editPost = useCallback(
+    async (id: string, draft: ComposedPost): Promise<boolean> => {
+      const updated = await updatePost(
+        id,
+        {
+          content: draft.content,
+          checkIn: draft.checkIn
+            ? {
+                name: draft.checkIn.name,
+                address: draft.checkIn.address,
+                lat: draft.checkIn.lat,
+                lng: draft.checkIn.lng,
+                action: draft.checkIn.action,
+                actionIcon: draft.checkIn.actionIcon,
+              }
+            : undefined,
+          sticker: draft.sticker ?? undefined,
+          visibility: draft.visibility,
+        },
+        draft.files,
+        draft.imageUrls
+      );
+      return updated != null;
+    },
+    [updatePost]
+  );
+
+  const deletePost = useCallback((id: string) => removePost(id), [removePost]);
+
   return {
     tab,
     setTab,
@@ -74,6 +105,8 @@ export function useMeFeed() {
     loadMore,
     toggleReaction,
     addPost,
+    editPost,
+    deletePost,
     adjustCommentCount,
   };
 }

@@ -50,7 +50,10 @@ var (
 	errEmptyPost    = errors.New("post must have content or images")
 	errPostNotFound = errors.New("post not found")
 	errNotYourPost  = errors.New("not your post")
+	errEditExpired  = errors.New("post is too old to edit")
 )
+
+const editWindow = time.Hour
 
 func (s *Service) Create(userID uuid.UUID, req *CreatePostRequest) (*PostResponse, error) {
 	if len(req.Images) > constants.MaxPostImages {
@@ -87,6 +90,9 @@ func (s *Service) Update(userID, postID uuid.UUID, req *UpdatePostRequest) (*Pos
 	post, err := s.ownedPost(userID, postID)
 	if err != nil {
 		return nil, err
+	}
+	if time.Since(post.CreatedAt) > editWindow {
+		return nil, errEditExpired
 	}
 
 	if req.Content != nil {
@@ -128,7 +134,7 @@ func (s *Service) Delete(userID, postID uuid.UUID) error {
 	if _, err := s.ownedPost(userID, postID); err != nil {
 		return err
 	}
-	return s.repo.SoftDelete(postID)
+	return s.repo.Disable(postID)
 }
 
 func (s *Service) GetByID(viewerID, postID uuid.UUID) (*PostResponse, error) {
