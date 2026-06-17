@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useState, type ComponentType, type LazyExoti
 import { SocketService } from '@services';
 import { BottomTabBar, type TabKey } from '@components/BottomTabBar';
 import { useRoomChatStore } from '@/store/roomChatStore';
+import { ActiveConversationOverlay } from '../chat/ActiveConversationOverlay';
 
 const ChatPanel = lazy(() => import('../chat/ChatPanel').then((m) => ({ default: m.ChatPanel })));
 const RoomPanel = lazy(() => import('../room/RoomPanel').then((m) => ({ default: m.RoomPanel })));
@@ -53,6 +54,8 @@ export function HomePage() {
         badges={{ chat: 3 }}
         dots={{ room: roomUnread && tab !== 'room' }}
       />
+
+      <ActiveConversationOverlay />
     </div>
   );
 }

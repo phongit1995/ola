@@ -19,6 +19,7 @@ export interface ProfileActions {
   toggleFollow: () => void;
   friendAction: () => void;
   blockAction: () => void;
+  message: () => void;
 }
 
 export interface UserProfile {

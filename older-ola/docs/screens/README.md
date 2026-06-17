@@ -51,6 +51,9 @@ screens/
 ├── kho-vip/               ← màn Kho VIP (OlaVipStoreActivity)
 │   ├── README.md                scaffold + header (VIP đang dùng/quyền/buy/extend) + item + CSS
 │   └── images/                  icon (tab vip, mũi tên, back, quit)
+├── doi-anh-dai-dien/      ← Đổi ảnh đại diện / bìa (picker + crop, dùng chung)
+│   ├── README.md                điểm vào phòng/clan + dialog chọn ảnh + màn crop + upload + CSS
+│   └── images/                  4 icon (camera, hủy, xoay, xong)
 └── modal-dialog/          ← Modal/Dialog kiểu chung (confirm, nhập, progress…)
     └── README.md                khung 3 phần + màu/size/nút/icon + CSS
 ```
@@ -74,6 +77,7 @@ screens/
 | 3f | Hồ sơ bản thân (sửa thông tin) | [thong-tin-ca-nhan/](thong-tin-ca-nhan/README.md) | `OlaUserProfileActivity` | 📐 từ code/XML (chưa chụp) |
 | 4 | Ứng dụng (tab 5) | [ung-dung/](ung-dung/README.md) | `OlaBottomTabActivity` + fragment `m/d` | ✅ chụp thật + 10 icon |
 | 4a | Kho VIP | [kho-vip/](kho-vip/README.md) | `OlaVipStoreActivity` | 📐 từ code/XML (chưa chụp) |
+| — | Đổi ảnh đại diện / bìa (picker + crop) | [doi-anh-dai-dien/](doi-anh-dai-dien/README.md) | `OlaCropImageActivity` (vào từ `OlaClanMePageActivity`) | 📐 từ code/XML (chưa chụp) |
 | — | Modal / Dialog (kiểu chung) | [modal-dialog/](modal-dialog/README.md) | dùng chung (confirm, nhập, progress, chọn) | 📐 trích từ layout/style |
 
 ## Quy ước trong tài liệu

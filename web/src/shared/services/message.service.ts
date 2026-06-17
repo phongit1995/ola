@@ -21,6 +21,14 @@ export class MessageService {
     return http.post<Message>(API_PATH.messages.base, payload);
   }
 
+  static sendImage(conversationId: string, file: File, clientMsgId?: string): Promise<Message> {
+    const form = new FormData();
+    form.append('file', file);
+    form.append('conversationId', conversationId);
+    if (clientMsgId != null) form.append('clientMsgId', clientMsgId);
+    return http.postForm<Message>(API_PATH.messages.images, form);
+  }
+
   static sendDirect(payload: SendDirectMessageRequest): Promise<Message> {
     return http.post<Message>(API_PATH.messages.direct, payload);
   }

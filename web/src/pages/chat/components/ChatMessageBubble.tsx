@@ -23,9 +23,15 @@ export function ChatMessageBubble({ message }: ChatMessageBubbleProps) {
       return <span className="px-1 text-6xl leading-none">{message.sticker}</span>;
 
     case 'image':
-      return (
+      return message.image != null && message.image !== '' ? (
+        <img
+          src={message.image}
+          alt=""
+          className="max-h-60 max-w-[220px] rounded-lg object-cover shadow-sm"
+        />
+      ) : (
         <div className="flex h-44 w-44 items-center justify-center overflow-hidden rounded-lg bg-linear-to-br from-ola-primary-light to-ola-primary/30 text-6xl shadow-sm">
-          {message.image}
+          🖼️
         </div>
       );
 

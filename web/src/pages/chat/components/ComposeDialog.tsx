@@ -18,14 +18,11 @@ function friendName(friend: Friend): string {
 export function ComposeDialog({ open, onClose, onStart }: ComposeDialogProps) {
   const { t } = useTranslation();
   const [friends, setFriends] = useState<Friend[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
 
   useEffect(() => {
-    if (!open) return;
     let active = true;
-    setQuery('');
-    setLoading(true);
     RelationshipService.friends({ limit: 200 })
       .then((result) => {
         if (active) setFriends(result.friends);
@@ -39,7 +36,7 @@ export function ComposeDialog({ open, onClose, onStart }: ComposeDialogProps) {
     return () => {
       active = false;
     };
-  }, [open]);
+  }, []);
 
   const filtered = useMemo(() => {
     const keyword = query.trim().toLowerCase();

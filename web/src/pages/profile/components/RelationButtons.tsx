@@ -9,6 +9,7 @@ import followIcon from '@/assets/icons/profile/ic_follow_black_disable.png';
 import followingActiveIcon from '@/assets/icons/profile/ic_state_following.png';
 import editIcon from '@/assets/icons/profile/ic_edit_profile_gray.png';
 import postMeIcon from '@/assets/icons/profile/ic_post_me_gray.png';
+import messageIcon from '@/assets/icons/chat/ic_chat_text.png';
 import moreIcon from '@/assets/icons/profile/ic_more_horizon_black_disable.png';
 
 interface RelationButtonsProps {
@@ -110,7 +111,11 @@ export function RelationButtons({
             />
           </>
         ) : null}
-        <RelationButton icon={postMeIcon} label={t('profile.postMe')} onClick={onPostMe} />
+        {isSelf ? (
+          <RelationButton icon={postMeIcon} label={t('profile.postMe')} onClick={onPostMe} />
+        ) : (
+          <RelationButton icon={messageIcon} label={t('profile.message')} onClick={actions.message} />
+        )}
         <RelationButton icon={moreIcon} label={t('profile.more')} onClick={() => setMenuOpen(true)} />
       </div>
 

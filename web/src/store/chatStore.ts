@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { useAuthStore } from '@/store/authStore';
-import { ConversationService, MessageService, SocketService } from '@services';
-import type { Conversation, Message } from '@app-types';
+import { ConversationService, MessageService, SocketService, UserService } from '@services';
+import type { Conversation, Message, ReactionType, RelationshipStatus } from '@app-types';
 import { upsertConversation } from './chatHelpers';
 import { clearTypingTimers, registerChatRealtime } from './chatRealtime';
 
@@ -13,9 +13,17 @@ export interface TypingUser {
   username: string;
 }
 
+export interface DraftRecipient {
+  id: string;
+  name: string;
+  avatar?: string;
+}
+
 export interface ChatState {
   conversations: Conversation[];
   currentConversationId: string | null;
+  draftRecipient: DraftRecipient | null;
+  peerStatus: RelationshipStatus | null;
   messages: Message[];
   hasMore: boolean;
   loadingConversations: boolean;
@@ -29,6 +37,11 @@ export interface ChatState {
   hideConversation: (conversationId: string) => Promise<void>;
   loadMoreMessages: () => Promise<void>;
   sendText: (content: string) => Promise<void>;
+  sendFirstToDraft: (content: string) => Promise<void>;
+  sendImage: (file: File) => Promise<void>;
+  reactToMessage: (messageId: string, type: ReactionType) => Promise<void>;
+  deleteMessage: (messageId: string) => Promise<void>;
+  editMessage: (messageId: string, content: string) => Promise<void>;
   notifyTyping: () => void;
   markRead: (conversationId: string) => Promise<void>;
   reset: () => void;
@@ -39,6 +52,8 @@ let lastTypingSentAt = 0;
 const initialState = {
   conversations: [] as Conversation[],
   currentConversationId: null as string | null,
+  draftRecipient: null as DraftRecipient | null,
+  peerStatus: null as RelationshipStatus | null,
   messages: [] as Message[],
   hasMore: false,
   loadingConversations: false,
@@ -66,13 +81,26 @@ export const useChatStore = create<ChatState>((set, get) => {
 
     openConversation: async (conversationId) => {
       SocketService.connect();
+      const conversation = get().conversations.find((item) => item.id === conversationId) ?? null;
       set({
         currentConversationId: conversationId,
+        draftRecipient: null,
+        peerStatus: null,
         messages: [],
         typingUsers: [],
         hasMore: false,
         loadingMessages: true,
       });
+      const otherUserId = conversation?.otherUser?.id;
+      if (otherUserId != null && otherUserId !== '') {
+        UserService.publicProfile(otherUserId)
+          .then((profile) => {
+            if (get().currentConversationId === conversationId) {
+              set({ peerStatus: profile.relationship?.status ?? 'none' });
+            }
+          })
+          .catch(() => {});
+      }
       try {
         const result = await MessageService.list(conversationId, { limit: MESSAGE_PAGE_SIZE });
         if (get().currentConversationId !== conversationId) return;
@@ -81,7 +109,9 @@ export const useChatStore = create<ChatState>((set, get) => {
           hasMore: result.messages.length >= MESSAGE_PAGE_SIZE,
           loadingMessages: false,
         });
-        void get().markRead(conversationId);
+        if ((conversation?.unreadCount ?? 0) > 0) {
+          void get().markRead(conversationId);
+        }
       } catch {
         if (get().currentConversationId === conversationId) set({ loadingMessages: false });
       }
@@ -91,16 +121,49 @@ export const useChatStore = create<ChatState>((set, get) => {
       SocketService.connect();
       try {
         const existing = await ConversationService.checkDirect(recipientId);
-        const conversation = existing ?? (await ConversationService.createDirect(recipientId));
-        set((state) => ({ conversations: upsertConversation(state.conversations, conversation) }));
-        await get().openConversation(conversation.id);
-        return conversation;
+        if (existing != null && existing.id !== '') {
+          set((state) => ({ conversations: upsertConversation(state.conversations, existing) }));
+          await get().openConversation(existing.id);
+          return existing;
+        }
+        set({
+          currentConversationId: null,
+          messages: [],
+          typingUsers: [],
+          hasMore: false,
+          peerStatus: null,
+          draftRecipient: { id: recipientId, name: existing?.name ?? '', avatar: existing?.avatar },
+        });
+        UserService.publicProfile(recipientId)
+          .then((profile) => {
+            if (get().draftRecipient?.id !== recipientId) return;
+            set((state) => ({
+              peerStatus: profile.relationship?.status ?? 'none',
+              draftRecipient:
+                state.draftRecipient != null
+                  ? {
+                      ...state.draftRecipient,
+                      name: state.draftRecipient.name || profile.fullName || profile.username,
+                      avatar: state.draftRecipient.avatar ?? profile.avatar,
+                    }
+                  : state.draftRecipient,
+            }));
+          })
+          .catch(() => {});
+        return null;
       } catch {
         return null;
       }
     },
 
-    closeConversation: () => set({ currentConversationId: null, messages: [], typingUsers: [] }),
+    closeConversation: () =>
+      set({
+        currentConversationId: null,
+        draftRecipient: null,
+        peerStatus: null,
+        messages: [],
+        typingUsers: [],
+      }),
 
     hideConversation: async (conversationId) => {
       const isCurrent = get().currentConversationId === conversationId;
@@ -142,8 +205,12 @@ export const useChatStore = create<ChatState>((set, get) => {
 
     sendText: async (content) => {
       const text = content.trim();
+      if (text === '') return;
       const conversationId = get().currentConversationId;
-      if (text === '' || conversationId == null) return;
+      if (conversationId == null) {
+        if (get().draftRecipient != null) await get().sendFirstToDraft(text);
+        return;
+      }
 
       const clientMsgId = crypto.randomUUID();
       const user = useAuthStore.getState().user;
@@ -181,6 +248,117 @@ export const useChatStore = create<ChatState>((set, get) => {
             item.clientMsgId === clientMsgId ? { ...item, status: 'failed' } : item
           ),
         }));
+      }
+    },
+
+    sendFirstToDraft: async (content) => {
+      const draft = get().draftRecipient;
+      const text = content.trim();
+      if (draft == null || text === '') return;
+      try {
+        await MessageService.sendDirect({
+          recipientId: draft.id,
+          type: 'text',
+          content: text,
+          clientMsgId: crypto.randomUUID(),
+        });
+        await get().loadConversations();
+        const conversation = await ConversationService.checkDirect(draft.id);
+        if (conversation != null && conversation.id !== '') {
+          await get().openConversation(conversation.id);
+        }
+      } catch {
+        return;
+      }
+    },
+
+    sendImage: async (file) => {
+      const conversationId = get().currentConversationId;
+      if (conversationId == null) return;
+
+      const clientMsgId = crypto.randomUUID();
+      const user = useAuthStore.getState().user;
+      const now = new Date().toISOString();
+      const previewUrl = URL.createObjectURL(file);
+      const optimistic: Message = {
+        id: clientMsgId,
+        conversationId,
+        senderId: user?.id ?? '',
+        senderName: user?.fullName ?? user?.username,
+        senderAvatar: user?.avatar,
+        type: 'image',
+        content: '',
+        metadata: JSON.stringify({ url: previewUrl }),
+        status: 'uploading',
+        createdAt: now,
+        updatedAt: now,
+        clientMsgId,
+      };
+      set((state) => ({ messages: [...state.messages, optimistic] }));
+
+      try {
+        const saved = await MessageService.sendImage(conversationId, file, clientMsgId);
+        set((state) => ({
+          messages: state.messages.map((item) =>
+            item.clientMsgId === clientMsgId ? { ...saved, status: 'sent' } : item
+          ),
+        }));
+        URL.revokeObjectURL(previewUrl);
+      } catch {
+        set((state) => ({
+          messages: state.messages.map((item) =>
+            item.clientMsgId === clientMsgId ? { ...item, status: 'failed' } : item
+          ),
+        }));
+      }
+    },
+
+    reactToMessage: async (messageId, type) => {
+      const conversationId = get().currentConversationId;
+      if (conversationId == null) return;
+      try {
+        const updated = await MessageService.toggleReaction(conversationId, messageId, type);
+        set((state) => ({
+          messages: state.messages.map((item) =>
+            item.id === messageId ? { ...item, reactions: updated.reactions } : item
+          ),
+        }));
+      } catch {
+        return;
+      }
+    },
+
+    deleteMessage: async (messageId) => {
+      const conversationId = get().currentConversationId;
+      if (conversationId == null) return;
+      const snapshot = get().messages;
+      set((state) => ({ messages: state.messages.filter((item) => item.id !== messageId) }));
+      try {
+        await MessageService.remove(conversationId, messageId);
+      } catch {
+        set({ messages: snapshot });
+      }
+    },
+
+    editMessage: async (messageId, content) => {
+      const conversationId = get().currentConversationId;
+      const text = content.trim();
+      if (conversationId == null || text === '') return;
+      const snapshot = get().messages;
+      set((state) => ({
+        messages: state.messages.map((item) =>
+          item.id === messageId ? { ...item, content: text } : item
+        ),
+      }));
+      try {
+        const updated = await MessageService.update(conversationId, messageId, text);
+        set((state) => ({
+          messages: state.messages.map((item) =>
+            item.id === messageId ? { ...updated, status: 'sent' } : item
+          ),
+        }));
+      } catch {
+        set({ messages: snapshot });
       }
     },
 

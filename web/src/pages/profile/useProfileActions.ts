@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { RelationshipService, UserService } from '@services';
 import { toast } from '@lib';
 import type { RelationshipInfo } from '@app-types';
+import { useChatStore } from '@/store/chatStore';
 import type { ProfileActions, UserProfile } from './types';
 
 interface UseProfileActionsArgs {
@@ -80,9 +81,14 @@ export function useProfileActions({
     else runAndReload(RelationshipService.block(userId));
   }, [userId, busy, relationship, runAndReload]);
 
+  const message = useCallback(() => {
+    if (userId === '') return;
+    void useChatStore.getState().startDirect(userId);
+  }, [userId]);
+
   const actions = useMemo<ProfileActions>(
-    () => ({ kiss, toggleFollow, friendAction, blockAction }),
-    [kiss, toggleFollow, friendAction, blockAction]
+    () => ({ kiss, toggleFollow, friendAction, blockAction, message }),
+    [kiss, toggleFollow, friendAction, blockAction, message]
   );
 
   return { actions, busy };

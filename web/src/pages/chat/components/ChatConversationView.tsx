@@ -15,16 +15,20 @@ import sentIcon from '@/assets/icons/chat/ic_message_sent.png';
 import resendIcon from '@/assets/icons/chat/btn_resend_d.png';
 import { useChatStore } from '@/store/chatStore';
 import { useAuthStore } from '@/store/authStore';
+import type { RelationshipStatus } from '@app-types';
 import type { ChatMessage } from '../types';
-import { toBubble } from '../chatView';
+import { reactionChips, toBubble } from '../chatView';
+import { useLongPress } from '../useLongPress';
 import { AttachmentBar, type AttachTab } from './AttachmentBar';
 import { ChatMessageBubble } from './ChatMessageBubble';
+import { MessageActionSheet } from './MessageActionSheet';
 
 interface ChatConversationViewProps {
   name: string;
   color: string;
   avatar?: string;
   online?: boolean;
+  blockStatus?: RelationshipStatus | null;
   onClose: () => void;
 }
 
@@ -33,9 +37,13 @@ export function ChatConversationView({
   color,
   avatar,
   online,
+  blockStatus,
   onClose,
 }: ChatConversationViewProps) {
   const { t } = useTranslation();
+  const blockedByMe = blockStatus === 'blocked_by_me';
+  const blockedByThem = blockStatus === 'blocked_by_them';
+  const blocked = blockedByMe || blockedByThem;
 
   const myId = useAuthStore((s) => s.user?.id ?? '');
   const messages = useChatStore((s) => s.messages);
@@ -43,14 +51,26 @@ export function ChatConversationView({
   const hasMore = useChatStore((s) => s.hasMore);
   const loadingMore = useChatStore((s) => s.loadingMore);
   const sendText = useChatStore((s) => s.sendText);
+  const sendImage = useChatStore((s) => s.sendImage);
+  const reactToMessage = useChatStore((s) => s.reactToMessage);
+  const deleteMessage = useChatStore((s) => s.deleteMessage);
+  const editMessage = useChatStore((s) => s.editMessage);
   const notifyTyping = useChatStore((s) => s.notifyTyping);
   const loadMoreMessages = useChatStore((s) => s.loadMoreMessages);
+  const conversationSeen = useChatStore((s) => {
+    const conversation = s.conversations.find((item) => item.id === s.currentConversationId);
+    return conversation != null && conversation.isLastMessageFromMe && conversation.seen;
+  });
 
   const [draft, setDraft] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
   const [blockOpen, setBlockOpen] = useState(false);
   const [openTab, setOpenTab] = useState<AttachTab | null>(null);
+  const [actionTarget, setActionTarget] = useState<ChatMessage | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<ChatMessage | null>(null);
+  const [editing, setEditing] = useState<{ id: string } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const lastBubbleIdRef = useRef<string | null>(null);
   const prependAnchorRef = useRef<number | null>(null);
 
@@ -60,6 +80,13 @@ export function ChatConversationView({
     () => messages.map((message) => toBubble(message, myId)),
     [messages, myId]
   );
+
+  const lastOwnId = useMemo(() => {
+    for (let index = bubbles.length - 1; index >= 0; index -= 1) {
+      if (bubbles[index]!.direction === 'out') return bubbles[index]!.id;
+    }
+    return null;
+  }, [bubbles]);
 
   useLayoutEffect(() => {
     const element = scrollRef.current;
@@ -85,16 +112,41 @@ export function ChatConversationView({
     void loadMoreMessages();
   }
 
-  function send(text: string) {
-    const trimmed = text.trim();
+  function submitComposer() {
+    const trimmed = draft.trim();
     if (trimmed === '') return;
-    void sendText(trimmed);
+    if (editing != null) {
+      void editMessage(editing.id, trimmed);
+      setEditing(null);
+    } else {
+      void sendText(trimmed);
+    }
     setDraft('');
   }
 
   function handleDraftChange(value: string) {
     setDraft(value);
-    notifyTyping();
+    if (editing == null) notifyTyping();
+  }
+
+  function startEdit(message: ChatMessage) {
+    setEditing({ id: message.id });
+    setDraft(message.text ?? '');
+    setOpenTab(null);
+  }
+
+  function cancelEdit() {
+    setEditing(null);
+    setDraft('');
+  }
+
+  function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (file != null) {
+      void sendImage(file);
+      setOpenTab(null);
+    }
   }
 
   const isTyping = draft.trim() !== '';
@@ -107,7 +159,7 @@ export function ChatConversationView({
   ];
 
   return (
-    <FullScreenOverlay>
+    <FullScreenOverlay z={50}>
       <ScreenHeader
         title={name}
         subtitle={peerTyping ? t('chat.typing', { name }) : online ? t('chat.statusActive') : ''}
@@ -129,31 +181,19 @@ export function ChatConversationView({
         onScroll={handleScroll}
         className="flex flex-1 flex-col gap-0.5 overflow-y-auto bg-[#ECE5DD] px-2 py-3"
       >
-        {bubbles.map((message, index) => {
-          const prev = bubbles[index - 1];
-          const boundary = prev == null;
-          const isOut = message.direction === 'out';
-          const showTime = boundary || prev.direction !== message.direction || prev.time !== message.time;
-          const showAvatar = !isOut && (boundary || prev.direction !== 'in');
-
-          return (
-            <div key={message.id} className="flex flex-col">
-              {showTime && (
-                <span className="my-1 self-center text-xs text-black/26">{message.time}</span>
-              )}
-              <div className={`flex items-end gap-1 ${isOut ? 'flex-row-reverse' : ''}`}>
-                {!isOut &&
-                  (showAvatar ? (
-                    <Avatar name={name} color={color} src={avatar} size={32} />
-                  ) : (
-                    <span className="w-8 shrink-0" />
-                  ))}
-                <ChatMessageBubble message={message} />
-                {isOut && <SendStatus message={message} />}
-              </div>
-            </div>
-          );
-        })}
+        {bubbles.map((message, index) => (
+          <MessageRow
+            key={message.id}
+            message={message}
+            prev={bubbles[index - 1]}
+            name={name}
+            color={color}
+            avatar={avatar}
+            isLastOwn={message.id === lastOwnId}
+            seen={conversationSeen}
+            onOpenActions={setActionTarget}
+          />
+        ))}
 
         {peerTyping && (
           <div className="mt-1 flex items-end gap-1">
@@ -167,10 +207,30 @@ export function ChatConversationView({
         )}
       </div>
 
+      {blocked ? (
+        <div className="shrink-0 border-t border-black/12 bg-white px-4 py-3 text-center text-sm text-black/54">
+          {blockedByMe ? t('chat.blockedByMe') : t('chat.blockedByThem')}
+        </div>
+      ) : (
+       <>
+      {editing != null && (
+        <div className="flex items-center gap-2 border-t border-black/12 bg-ola-primary-light px-3 py-1.5 text-sm text-black/70">
+          <span className="flex-1">{t('chat.editingHint')}</span>
+          <button
+            type="button"
+            onClick={cancelEdit}
+            aria-label={t('dialog.cancel')}
+            className="px-2 text-base text-black/54"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
       <form
         onSubmit={(event) => {
           event.preventDefault();
-          send(draft);
+          submitComposer();
         }}
         className="flex shrink-0 items-end gap-1 border-t border-black/12 bg-white px-2 py-1.5"
       >
@@ -183,13 +243,13 @@ export function ChatConversationView({
         />
         {isTyping ? (
           <button type="submit" className="min-w-12 px-2 text-base font-medium text-ola-primary">
-            {t('chat.send')}
+            {editing != null ? t('chat.actionSave') : t('chat.send')}
           </button>
         ) : (
           <button
             type="button"
             aria-label={t('chat.like')}
-            onClick={() => send('👍')}
+            onClick={() => void sendText('👍')}
             className="flex h-9 w-9 items-center justify-center"
           >
             <img src={likeIcon} alt="" className="h-7 w-7 object-contain" />
@@ -201,10 +261,45 @@ export function ChatConversationView({
         openTab={openTab}
         onToggleTab={(tab) => setOpenTab((current) => (current === tab ? null : tab))}
         onPickEmoji={(emoji) => setDraft((current) => current + emoji)}
+        onPickImage={() => fileInputRef.current?.click()}
         onSend={() => toast.info(t('chat.comingSoon'))}
       />
 
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleFileChange}
+      />
+       </>
+      )}
+
+      {actionTarget != null && (
+        <MessageActionSheet
+          message={actionTarget}
+          isOwn={actionTarget.direction === 'out'}
+          onReact={(type) => void reactToMessage(actionTarget.id, type)}
+          onEdit={() => startEdit(actionTarget)}
+          onDelete={() => setDeleteTarget(actionTarget)}
+          onClose={() => setActionTarget(null)}
+        />
+      )}
+
       <ListOptionDialog open={menuOpen} title={name} options={menuOptions} onClose={() => setMenuOpen(false)} />
+      <ConfirmDialog
+        open={deleteTarget != null}
+        danger
+        title={t('chat.deleteTitle')}
+        message={t('chat.deleteConfirm')}
+        confirmLabel={t('dialog.delete')}
+        cancelLabel={t('dialog.cancel')}
+        onConfirm={() => {
+          if (deleteTarget != null) void deleteMessage(deleteTarget.id);
+          setDeleteTarget(null);
+        }}
+        onCancel={() => setDeleteTarget(null)}
+      />
       <ConfirmDialog
         open={blockOpen}
         danger
@@ -222,7 +317,87 @@ export function ChatConversationView({
   );
 }
 
-function SendStatus({ message }: { message: ChatMessage }) {
+interface MessageRowProps {
+  message: ChatMessage;
+  prev?: ChatMessage;
+  name: string;
+  color: string;
+  avatar?: string;
+  isLastOwn: boolean;
+  seen: boolean;
+  onOpenActions: (message: ChatMessage) => void;
+}
+
+function MessageRow({ message, prev, name, color, avatar, isLastOwn, seen, onOpenActions }: MessageRowProps) {
+  const isOut = message.direction === 'out';
+  const boundary = prev == null;
+  const showTime = boundary || prev.direction !== message.direction || prev.time !== message.time;
+  const showAvatar = !isOut && (boundary || prev.direction !== 'in');
+  const canAct = message.status !== 'sending' && message.status !== 'failed';
+  const chips = reactionChips(message.reactions);
+
+  const longPress = useLongPress(() => {
+    if (canAct) onOpenActions(message);
+  });
+
+  return (
+    <div className="flex flex-col">
+      {showTime && <span className="my-1 self-center text-xs text-black/26">{message.time}</span>}
+      <div className={`flex items-end gap-1 ${isOut ? 'flex-row-reverse' : ''}`}>
+        {!isOut &&
+          (showAvatar ? (
+            <Avatar name={name} color={color} src={avatar} size={32} />
+          ) : (
+            <span className="w-8 shrink-0" />
+          ))}
+        <div className="flex max-w-[78%] flex-col">
+          <div {...longPress} className="touch-pan-y select-none">
+            <ChatMessageBubble message={message} />
+          </div>
+          {chips.length > 0 && (
+            <div className={`mt-0.5 flex flex-wrap gap-1 ${isOut ? 'justify-end' : ''}`}>
+              {chips.map((chip) => (
+                <span
+                  key={chip.type}
+                  className="flex items-center gap-0.5 rounded-full bg-white px-1.5 py-0.5 text-xs shadow-sm"
+                >
+                  <span>{chip.emoji}</span>
+                  <span className="text-black/54">{chip.count}</span>
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+        {isOut && (
+          <SendStatus
+            message={message}
+            isLastOwn={isLastOwn}
+            seen={seen}
+            name={name}
+            color={color}
+            avatar={avatar}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SendStatus({
+  message,
+  isLastOwn,
+  seen,
+  name,
+  color,
+  avatar,
+}: {
+  message: ChatMessage;
+  isLastOwn: boolean;
+  seen: boolean;
+  name: string;
+  color: string;
+  avatar?: string;
+}) {
   const { t } = useTranslation();
 
   if (message.status === 'sending') {
@@ -237,5 +412,7 @@ function SendStatus({ message }: { message: ChatMessage }) {
       </span>
     );
   }
+  if (!isLastOwn) return null;
+  if (seen) return <Avatar name={name} color={color} src={avatar} size={14} />;
   return <img src={sentIcon} alt="" className="h-3.5 w-3.5 shrink-0 object-contain opacity-60" />;
 }

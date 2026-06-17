@@ -18,8 +18,7 @@ import { ConversationList } from './components/ConversationList';
 import { ContactList } from './components/ContactList';
 import { ComposeButton } from './components/ComposeButton';
 import { ComposeDialog } from './components/ComposeDialog';
-import { ChatConversationView } from './components/ChatConversationView';
-import { toConversationView } from './chatView';
+import { ChangeAvatarScreen } from './components/ChangeAvatarScreen';
 import { CONTACTS } from './data';
 
 type ChatSub = 'messages' | 'contacts';
@@ -30,10 +29,8 @@ export function ChatPanel() {
   const clearUser = useAuthStore((s) => s.clearUser);
 
   const conversations = useChatStore((s) => s.conversations);
-  const currentConversationId = useChatStore((s) => s.currentConversationId);
   const loadConversations = useChatStore((s) => s.loadConversations);
   const openConversation = useChatStore((s) => s.openConversation);
-  const closeConversation = useChatStore((s) => s.closeConversation);
   const hideConversation = useChatStore((s) => s.hideConversation);
   const startDirect = useChatStore((s) => s.startDirect);
 
@@ -44,14 +41,11 @@ export function ChatPanel() {
   const [deleteAllOpen, setDeleteAllOpen] = useState(false);
   const [blockedListOpen, setBlockedListOpen] = useState(false);
   const [logoutOpen, setLogoutOpen] = useState(false);
+  const [avatarOpen, setAvatarOpen] = useState(false);
 
   useEffect(() => {
     void loadConversations();
   }, [loadConversations]);
-
-  const activeConversation =
-    conversations.find((item) => item.id === currentConversationId) ?? null;
-  const activeView = activeConversation != null ? toConversationView(activeConversation) : null;
 
   function comingSoon() {
     toast.info(t('chat.comingSoon'));
@@ -80,7 +74,7 @@ export function ChatPanel() {
   ];
 
   const contactsMenu: ListOption[] = [
-    { key: 'change-avatar', label: t('chat.menuChangeAvatar'), onSelect: () => {} },
+    { key: 'change-avatar', label: t('chat.menuChangeAvatar'), onSelect: () => setAvatarOpen(true) },
     { key: 'logout', label: t('chat.menuLogout'), onSelect: () => setLogoutOpen(true) },
     { key: 'logout-all', label: t('chat.menuLogoutAll'), onSelect: () => setLogoutOpen(true) },
     { key: 'buy-vip', label: t('chat.menuBuyVip'), onSelect: () => {} },
@@ -135,24 +129,16 @@ export function ChatPanel() {
         )}
       </main>
 
-      {activeConversation != null && activeView != null && (
-        <ChatConversationView
-          name={activeView.name}
-          color={activeView.color}
-          avatar={activeView.avatar}
-          online={activeConversation.otherUser?.isOnline ?? false}
-          onClose={closeConversation}
+      {composeOpen && (
+        <ComposeDialog
+          open
+          onClose={() => setComposeOpen(false)}
+          onStart={(friendId) => {
+            setComposeOpen(false);
+            void startDirect(friendId);
+          }}
         />
       )}
-
-      <ComposeDialog
-        open={composeOpen}
-        onClose={() => setComposeOpen(false)}
-        onStart={(friendId) => {
-          setComposeOpen(false);
-          void startDirect(friendId);
-        }}
-      />
       <ListOptionDialog
         open={headerMenuOpen}
         title={sub === 'messages' ? t('home.subMessages') : t('home.subContacts')}
@@ -190,6 +176,7 @@ export function ChatPanel() {
       >
         <p className="py-2 text-center text-black/54">{t('chat.blockListEmpty')}</p>
       </Dialog>
+      <ChangeAvatarScreen open={avatarOpen} onClose={() => setAvatarOpen(false)} />
     </>
   );
 }

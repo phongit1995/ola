@@ -8,6 +8,18 @@
     "prev": "Trước",
     "next": "Sau"
   },
+  "avatar": {
+    "cancel": "Huỷ",
+    "success": "Đã đổi ảnh đại diện",
+    "error": "Không thể đổi ảnh đại diện vào lúc này. Vui lòng thử lại sau",
+    "tooSmall": "Ảnh quá nhỏ, vui lòng chọn ảnh lớn hơn",
+    "title": "Đổi ảnh đại diện",
+    "changeHint": "Chạm vào ảnh để chọn ảnh mới",
+    "postToMe": "Đăng lên Me",
+    "postContent": "Đổi ảnh đại diện mới",
+    "save": "Lưu",
+    "saving": "Đang lưu…"
+  },
   "auth": {
     "errGeneric": "Đã có lỗi xảy ra, vui lòng thử lại.",
     "errNetwork": "Không kết nối được tới máy chủ. Vui lòng kiểm tra mạng.",
@@ -108,6 +120,15 @@
   },
   "chat": {
     "comingSoon": "Tính năng sắp ra mắt.",
+    "blockedByMe": "Bạn đã chặn người này. Bỏ chặn để nhắn tin.",
+    "blockedByThem": "Bạn không thể nhắn tin cho người này.",
+    "attachPickImage": "Chọn ảnh từ máy",
+    "actionEdit": "Sửa tin nhắn",
+    "actionDelete": "Xoá tin nhắn",
+    "actionSave": "Lưu",
+    "editingHint": "Đang sửa tin nhắn",
+    "deleteTitle": "Xoá tin nhắn",
+    "deleteConfirm": "Bạn có chắc muốn xoá tin nhắn này?",
     "messageInputPlaceholder": "Viết tin nhắn cho {{name}}",
     "send": "Gửi",
     "like": "Thích",
@@ -311,6 +332,7 @@
     "following": "Đang quan tâm",
     "updateInfo": "Cập Nhật Thông Tin",
     "postMe": "Viết Me",
+    "message": "Nhắn tin",
     "more": "Khác",
     "block": "Chặn",
     "unblock": "Bỏ chặn",

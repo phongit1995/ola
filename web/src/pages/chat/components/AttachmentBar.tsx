@@ -21,6 +21,7 @@ interface AttachmentBarProps {
   openTab: AttachTab | null;
   onToggleTab: (tab: AttachTab) => void;
   onPickEmoji: (emoji: string) => void;
+  onPickImage: () => void;
   onSend: (payload: SendPayload) => void;
 }
 
@@ -40,8 +41,6 @@ const EMOJIS = [
 ];
 
 const STICKERS = ['👍', '😂', '😍', '😎', '😭', '🥰', '🤗', '🙌', '🎉', '💯', '🔥', '🌸'];
-
-const PHOTOS = ['🌅', '🏖️', '🌸', '🍜', '🐱', '🎂', '⛰️', '🌃'];
 
 function EmojiPanel({ onPick }: { onPick: (emoji: string) => void }) {
   return (
@@ -77,19 +76,20 @@ function StickerPanel({ onSend }: { onSend: (payload: SendPayload) => void }) {
   );
 }
 
-function PhotoPanel({ onSend }: { onSend: (payload: SendPayload) => void }) {
+function PhotoPanel({ onPickImage }: { onPickImage: () => void }) {
+  const { t } = useTranslation();
   return (
     <div className="grid grid-cols-4 gap-1 p-2">
-      {PHOTOS.map((photo) => (
-        <button
-          key={photo}
-          type="button"
-          onClick={() => onSend({ kind: 'image', image: photo })}
-          className="flex aspect-square items-center justify-center rounded bg-linear-to-br from-ola-primary-light to-ola-primary/30 text-3xl"
-        >
-          {photo}
-        </button>
-      ))}
+      <button
+        type="button"
+        onClick={onPickImage}
+        className="col-span-4 flex flex-col items-center gap-1 rounded py-6 text-sm text-black/54 hover:bg-gray-100"
+      >
+        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-ola-primary-light text-2xl">
+          🖼️
+        </span>
+        {t('chat.attachPickImage')}
+      </button>
     </div>
   );
 }
@@ -114,7 +114,7 @@ function ActionGrid({ items }: { items: Array<{ icon: string; label: string; onC
   );
 }
 
-export function AttachmentBar({ openTab, onToggleTab, onPickEmoji, onSend }: AttachmentBarProps) {
+export function AttachmentBar({ openTab, onToggleTab, onPickEmoji, onPickImage, onSend }: AttachmentBarProps) {
   const { t } = useTranslation();
 
   const tabLabels: Record<AttachTab, string> = {
@@ -154,12 +154,12 @@ export function AttachmentBar({ openTab, onToggleTab, onPickEmoji, onSend }: Att
           {openTab === 'camera' && (
             <ActionGrid
               items={[
-                { icon: '📷', label: t('chat.attachCameraCapture'), onClick: () => onSend({ kind: 'image', image: '📷' }) },
+                { icon: '📷', label: t('chat.attachCameraCapture'), onClick: onPickImage },
                 { icon: '🎥', label: t('chat.attachCameraRecord'), onClick: () => onSend({ kind: 'image', image: '🎬' }) },
               ]}
             />
           )}
-          {openTab === 'photo' && <PhotoPanel onSend={onSend} />}
+          {openTab === 'photo' && <PhotoPanel onPickImage={onPickImage} />}
           {openTab === 'voice' && (
             <ActionGrid
               items={[

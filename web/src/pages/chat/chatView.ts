@@ -48,13 +48,50 @@ const STATUS_MAP: Record<MessageStatus, ChatMessageStatus> = {
   failed: 'failed',
 };
 
+export const REACTION_EMOJI: Record<string, string> = {
+  LIKE: '👍',
+  LOVE: '❤️',
+  HAHA: '😂',
+  WOW: '😮',
+  SAD: '😢',
+  ANGRY: '😡',
+};
+
+export const REACTION_ORDER = ['LIKE', 'LOVE', 'HAHA', 'WOW', 'SAD', 'ANGRY'] as const;
+
+export interface ReactionChip {
+  type: string;
+  emoji: string;
+  count: number;
+}
+
+export function reactionChips(reactions?: Record<string, string[]>): ReactionChip[] {
+  if (reactions == null) return [];
+  return Object.entries(reactions)
+    .filter(([, users]) => users.length > 0)
+    .map(([type, users]) => ({ type, emoji: REACTION_EMOJI[type] ?? '❓', count: users.length }));
+}
+
+function imageUrlFromMetadata(metadata?: string): string | undefined {
+  if (metadata == null || metadata === '') return undefined;
+  try {
+    const parsed = JSON.parse(metadata) as { url?: string };
+    return parsed.url;
+  } catch {
+    return undefined;
+  }
+}
+
 export function toBubble(message: Message, myId: string): ChatMessage {
+  const isImage = message.type === 'image';
   return {
     id: message.id,
     direction: message.senderId === myId ? 'out' : 'in',
-    kind: 'text',
-    text: message.content,
+    kind: isImage ? 'image' : 'text',
+    text: isImage ? undefined : message.content,
+    image: isImage ? imageUrlFromMetadata(message.metadata) : undefined,
     time: formatClock(message.createdAt),
     status: STATUS_MAP[message.status] ?? 'sent',
+    reactions: message.reactions,
   };
 }

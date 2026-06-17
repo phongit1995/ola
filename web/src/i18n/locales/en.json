@@ -8,6 +8,18 @@
     "prev": "Previous",
     "next": "Next"
   },
+  "avatar": {
+    "cancel": "Cancel",
+    "success": "Profile picture was changed",
+    "error": "Cannot change profile picture at this time. Please try again later",
+    "tooSmall": "Image is too small, please choose a larger one",
+    "title": "Change avatar",
+    "changeHint": "Tap the photo to choose a new one",
+    "postToMe": "Post to Me",
+    "postContent": "Changed profile picture",
+    "save": "Save",
+    "saving": "Saving…"
+  },
   "auth": {
     "errGeneric": "Something went wrong, please try again.",
     "errNetwork": "Unable to connect to the server. Please check your network.",
@@ -108,6 +120,15 @@
   },
   "chat": {
     "comingSoon": "Coming soon.",
+    "blockedByMe": "You blocked this person. Unblock to send messages.",
+    "blockedByThem": "You can't message this person.",
+    "attachPickImage": "Choose a photo",
+    "actionEdit": "Edit message",
+    "actionDelete": "Delete message",
+    "actionSave": "Save",
+    "editingHint": "Editing message",
+    "deleteTitle": "Delete message",
+    "deleteConfirm": "Are you sure you want to delete this message?",
     "messageInputPlaceholder": "Message {{name}}",
     "send": "Send",
     "like": "Like",
@@ -311,6 +332,7 @@
     "following": "Following",
     "updateInfo": "Update info",
     "postMe": "Post Me",
+    "message": "Message",
     "more": "More",
     "block": "Block",
     "unblock": "Unblock",

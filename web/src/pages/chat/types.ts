@@ -58,4 +58,5 @@ export interface ChatMessage {
   stranger?: StrangerCard;
   senderName?: string;
   senderColor?: string;
+  reactions?: Record<string, string[]>;
 }
