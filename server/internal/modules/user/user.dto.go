@@ -20,6 +20,7 @@ type UserProfileResponse struct {
 	FollowingCount int                    `json:"followingCount" example:"0"`
 	Marriage       string                 `json:"marriage" example:"single"`
 	CoverPhoto     string                 `json:"coverPhoto,omitempty" example:"https://example.com/cover.jpg"`
+	BioImage       *string                `json:"bioImage,omitempty" example:"https://example.com/bio.jpg"`
 	Verified       bool                   `json:"verified" example:"false"`
 	Kisses         int                    `json:"kisses" example:"0"`
 	CreatedAt      string                 `json:"createdAt" example:"2024-01-01T00:00:00Z"`
@@ -40,6 +41,7 @@ type UpdateProfileRequest struct {
 	DateOfBirth string                 `json:"dateOfBirth,omitempty" binding:"omitempty,datetime=2006-01-02" example:"1990-01-01"`
 	Marriage    string                 `json:"marriage,omitempty" binding:"omitempty,oneof=single married" example:"single"`
 	CoverPhoto  string                 `json:"coverPhoto,omitempty" binding:"omitempty,url,max=500" example:"https://example.com/cover.jpg"`
+	BioImage    *string                `json:"bioImage,omitempty" binding:"omitempty,url,max=500" example:"https://example.com/bio.jpg"`
 	CustomInfo  map[string]interface{} `json:"customInfo,omitempty" swaggertype:"object"`
 }
 
@@ -72,6 +74,7 @@ type UserPublicProfileResponse struct {
 	FullName       string            `json:"fullName,omitempty" example:"John Doe"`
 	Avatar         string            `json:"avatar,omitempty" example:"https://example.com/avatar.jpg"`
 	CoverPhoto     string            `json:"coverPhoto,omitempty" example:"https://example.com/cover.jpg"`
+	BioImage       *string           `json:"bioImage,omitempty" example:"https://example.com/bio.jpg"`
 	Bio            string            `json:"bio,omitempty" example:"Software developer"`
 	Gender         string            `json:"gender" example:"male"`
 	DateOfBirth    string            `json:"dateOfBirth,omitempty" example:"1990-01-01"`

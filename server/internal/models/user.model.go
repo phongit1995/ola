@@ -43,14 +43,15 @@ type User struct {
 	Ken            int        `gorm:"not null;default:0"`
 	VipUsed        *string    `gorm:"type:varchar(50)"`
 	VipEndTime     *time.Time
-	FollowerCount  int    `gorm:"not null;default:0"`
-	FollowingCount int    `gorm:"not null;default:0"`
-	Marriage       string `gorm:"type:varchar(20);not null;default:'single'"`
-	CoverPhoto     string `gorm:"type:varchar(500)"`
-	Verified       bool   `gorm:"not null;default:false"`
-	Kisses         int    `gorm:"not null;default:0"`
-	IsActive       bool   `gorm:"not null;default:true"`
-	RefreshToken   string `gorm:"type:text"`
-	LastLoginIP    string `gorm:"type:varchar(45)"`
+	FollowerCount  int     `gorm:"not null;default:0"`
+	FollowingCount int     `gorm:"not null;default:0"`
+	Marriage       string  `gorm:"type:varchar(20);not null;default:'single'"`
+	CoverPhoto     string  `gorm:"type:varchar(500)"`
+	BioImage       *string `gorm:"type:varchar(500)"`
+	Verified       bool    `gorm:"not null;default:false"`
+	Kisses         int     `gorm:"not null;default:0"`
+	IsActive       bool    `gorm:"not null;default:true"`
+	RefreshToken   string  `gorm:"type:text"`
+	LastLoginIP    string  `gorm:"type:varchar(45)"`
 	LastLoginAt    *time.Time
 }

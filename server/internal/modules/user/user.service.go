@@ -136,6 +136,13 @@ func (s *Service) UpdateProfile(userID uuid.UUID, req *UpdateProfileRequest) (*U
 	if req.CoverPhoto != "" {
 		user.CoverPhoto = req.CoverPhoto
 	}
+	if req.BioImage != nil {
+		if *req.BioImage == "" {
+			user.BioImage = nil
+		} else {
+			user.BioImage = req.BioImage
+		}
+	}
 	if req.CustomInfo != nil {
 		user.CustomInfo = models.JSONB(req.CustomInfo)
 	}
@@ -291,6 +298,7 @@ func (s *Service) buildPublicProfile(callerID uuid.UUID, user *models.User) *Use
 		FullName:       user.FullName,
 		Avatar:         user.Avatar,
 		CoverPhoto:     user.CoverPhoto,
+		BioImage:       user.BioImage,
 		Bio:            user.Bio,
 		Gender:         user.Gender,
 		Marriage:       user.Marriage,
@@ -552,6 +560,7 @@ func (s *Service) buildProfileResponse(user *models.User) *UserProfileResponse {
 		FollowingCount: user.FollowingCount,
 		Marriage:       user.Marriage,
 		CoverPhoto:     user.CoverPhoto,
+		BioImage:       user.BioImage,
 		Verified:       user.Verified,
 		Kisses:         user.Kisses,
 		CreatedAt:      user.CreatedAt.Format(time.RFC3339),

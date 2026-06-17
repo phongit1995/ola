@@ -7053,6 +7053,11 @@ const docTemplate = `{
                     "maxLength": 500,
                     "example": "hello ola!!!"
                 },
+                "bioImage": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "example": "https://example.com/bio.jpg"
+                },
                 "coverPhoto": {
                     "type": "string",
                     "maxLength": 500,
@@ -7178,6 +7183,10 @@ const docTemplate = `{
                 "bio": {
                     "type": "string",
                     "example": "Software developer"
+                },
+                "bioImage": {
+                    "type": "string",
+                    "example": "https://example.com/bio.jpg"
                 },
                 "coverPhoto": {
                     "type": "string",

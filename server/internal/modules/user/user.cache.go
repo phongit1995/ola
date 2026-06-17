@@ -21,6 +21,7 @@ type cachedUser struct {
 	FullName       string                 `json:"fullName"`
 	Gender         string                 `json:"gender"`
 	Bio            string                 `json:"bio"`
+	BioImage       *string                `json:"bioImage"`
 	DateOfBirth    *time.Time             `json:"dateOfBirth"`
 	CustomInfo     map[string]interface{} `json:"customInfo"`
 	Ken            int                    `json:"ken"`
@@ -42,6 +43,7 @@ func toCachedUser(u *models.User) *cachedUser {
 		FullName:       u.FullName,
 		Gender:         u.Gender,
 		Bio:            u.Bio,
+		BioImage:       u.BioImage,
 		DateOfBirth:    u.DateOfBirth,
 		CustomInfo:     u.CustomInfo,
 		Ken:            u.Ken,
@@ -63,6 +65,7 @@ func (cu *cachedUser) toModel() *models.User {
 		FullName:       cu.FullName,
 		Gender:         cu.Gender,
 		Bio:            cu.Bio,
+		BioImage:       cu.BioImage,
 		DateOfBirth:    cu.DateOfBirth,
 		CustomInfo:     models.JSONB(cu.CustomInfo),
 		Ken:            cu.Ken,

@@ -1763,6 +1763,10 @@ definitions:
         example: hello ola!!!
         maxLength: 500
         type: string
+      bioImage:
+        example: https://example.com/bio.jpg
+        maxLength: 500
+        type: string
       coverPhoto:
         example: https://example.com/cover.jpg
         maxLength: 500
@@ -1852,6 +1856,9 @@ definitions:
         type: string
       bio:
         example: Software developer
+        type: string
+      bioImage:
+        example: https://example.com/bio.jpg
         type: string
       coverPhoto:
         example: https://example.com/cover.jpg
