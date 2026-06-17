@@ -1,6 +1,7 @@
 export * from './common.type';
 export * from './auth.type';
 export * from './room.type';
+export * from './chat.type';
 export * from './me.type';
 export * from './user.type';
 export * from './relationship.type';

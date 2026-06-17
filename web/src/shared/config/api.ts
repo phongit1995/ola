@@ -50,4 +50,28 @@ export const API_PATH = {
     comments: (id: string) => `/me/${id}/comments`,
     comment: (id: string, commentId: string) => `/me/${id}/comments/${commentId}`,
   },
+  conversations: {
+    base: '/conversations',
+    directCheck: '/conversations/direct/check',
+    direct: '/conversations/direct',
+    group: '/conversations/group',
+    detail: (id: string) => `/conversations/${id}`,
+    read: (id: string) => `/conversations/${id}/read`,
+    hide: (id: string) => `/conversations/${id}/hide`,
+    unhide: (id: string) => `/conversations/${id}/unhide`,
+    mute: (id: string) => `/conversations/${id}/mute`,
+    unmute: (id: string) => `/conversations/${id}/unmute`,
+    typing: '/conversations/typing',
+  },
+  messages: {
+    base: '/messages',
+    direct: '/messages/direct',
+    images: '/messages/images',
+    audio: '/messages/audio',
+    byConversation: (conversationId: string) => `/messages/${conversationId}`,
+    detail: (conversationId: string, messageId: string) =>
+      `/messages/${conversationId}/${messageId}`,
+    reactions: (conversationId: string, messageId: string) =>
+      `/messages/${conversationId}/${messageId}/reactions`,
+  },
 } as const;
