@@ -56,6 +56,159 @@ definitions:
       token:
         type: string
     type: object
+  internal_modules_admin_me.AuthorResponse:
+    properties:
+      avatar:
+        type: string
+      fullName:
+        type: string
+      id:
+        type: string
+      username:
+        type: string
+    type: object
+  internal_modules_admin_me.CheckInResponse:
+    properties:
+      action:
+        type: string
+      actionIcon:
+        type: string
+      address:
+        type: string
+      lat:
+        type: number
+      lng:
+        type: number
+      name:
+        type: string
+    type: object
+  internal_modules_admin_me.CommentListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_admin_me.CommentResponse'
+        type: array
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  internal_modules_admin_me.CommentResponse:
+    properties:
+      author:
+        $ref: '#/definitions/internal_modules_admin_me.AuthorResponse'
+      content:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: string
+      postId:
+        type: string
+    type: object
+  internal_modules_admin_me.PostDetail:
+    properties:
+      author:
+        $ref: '#/definitions/internal_modules_admin_me.AuthorResponse'
+      checkIn:
+        $ref: '#/definitions/internal_modules_admin_me.CheckInResponse'
+      commentCount:
+        type: integer
+      content:
+        type: string
+      createdAt:
+        type: string
+      dislikeCount:
+        type: integer
+      enabled:
+        type: boolean
+      id:
+        type: string
+      images:
+        items:
+          $ref: '#/definitions/internal_modules_admin_me.PostImageResponse'
+        type: array
+      likeCount:
+        type: integer
+      mentions:
+        items:
+          type: string
+        type: array
+      sticker:
+        type: string
+      updatedAt:
+        type: string
+      visibility:
+        type: string
+    type: object
+  internal_modules_admin_me.PostImageResponse:
+    properties:
+      height:
+        type: integer
+      mimeType:
+        type: string
+      url:
+        type: string
+      width:
+        type: integer
+    type: object
+  internal_modules_admin_me.PostListItem:
+    properties:
+      author:
+        $ref: '#/definitions/internal_modules_admin_me.AuthorResponse'
+      checkIn:
+        $ref: '#/definitions/internal_modules_admin_me.CheckInResponse'
+      commentCount:
+        type: integer
+      content:
+        type: string
+      createdAt:
+        type: string
+      dislikeCount:
+        type: integer
+      enabled:
+        type: boolean
+      id:
+        type: string
+      images:
+        items:
+          $ref: '#/definitions/internal_modules_admin_me.PostImageResponse'
+        type: array
+      likeCount:
+        type: integer
+      sticker:
+        type: string
+      visibility:
+        type: string
+    type: object
+  internal_modules_admin_me.PostListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_admin_me.PostListItem'
+        type: array
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  internal_modules_admin_me.UpdateStatusRequest:
+    properties:
+      enabled:
+        example: false
+        type: boolean
+    required:
+    - enabled
+    type: object
+  internal_modules_admin_upload.UploadResponse:
+    properties:
+      url:
+        type: string
+    type: object
   internal_modules_admin_user.ListUsersResponse:
     properties:
       items:
@@ -85,14 +238,26 @@ definitions:
         type: string
       createdAt:
         type: string
+      dateOfBirth:
+        type: string
       email:
         type: string
+      followerCount:
+        type: integer
+      followingCount:
+        type: integer
       fullName:
+        type: string
+      gender:
         type: string
       id:
         type: string
       isActive:
         type: boolean
+      isVip:
+        type: boolean
+      ken:
+        type: integer
       lastLoginAt:
         type: string
       lastLoginIp:
@@ -102,6 +267,10 @@ definitions:
       updatedAt:
         type: string
       username:
+        type: string
+      vipEndTime:
+        type: string
+      vipUsed:
         type: string
     type: object
   internal_modules_admin_user.UserListItem:
@@ -114,10 +283,16 @@ definitions:
         type: string
       fullName:
         type: string
+      gender:
+        type: string
       id:
         type: string
       isActive:
         type: boolean
+      isVip:
+        type: boolean
+      ken:
+        type: integer
       lastLoginAt:
         type: string
       username:
@@ -187,8 +362,25 @@ definitions:
       traceId:
         type: string
     type: object
+  internal_modules_auth.DeviceInfo:
+    properties:
+      appVersion:
+        example: 1.0.0
+        type: string
+      deviceId:
+        example: 6f1e...abc
+        type: string
+      deviceName:
+        example: iPhone 15
+        type: string
+      platform:
+        example: ios
+        type: string
+    type: object
   internal_modules_auth.LoginRequest:
     properties:
+      device:
+        $ref: '#/definitions/internal_modules_auth.DeviceInfo'
       password:
         example: password123
         type: string
@@ -528,6 +720,48 @@ definitions:
       username:
         type: string
     type: object
+  internal_modules_me.CheckInInput:
+    properties:
+      action:
+        example: Đang ăn
+        maxLength: 100
+        type: string
+      actionIcon:
+        example: "\U0001F35C"
+        maxLength: 16
+        type: string
+      address:
+        example: 86-88 Cao Thắng, Q3
+        maxLength: 500
+        type: string
+      lat:
+        example: 10.771
+        type: number
+      lng:
+        example: 106.682
+        type: number
+      name:
+        example: The Coffee House
+        maxLength: 255
+        type: string
+    required:
+    - name
+    type: object
+  internal_modules_me.CheckInResponse:
+    properties:
+      action:
+        type: string
+      actionIcon:
+        type: string
+      address:
+        type: string
+      lat:
+        type: number
+      lng:
+        type: number
+      name:
+        type: string
+    type: object
   internal_modules_me.CommentListResponse:
     properties:
       items:
@@ -566,6 +800,8 @@ definitions:
     type: object
   internal_modules_me.CreatePostRequest:
     properties:
+      checkIn:
+        $ref: '#/definitions/internal_modules_me.CheckInInput'
       content:
         example: Hôm nay trời đẹp quá!
         maxLength: 5000
@@ -575,11 +811,37 @@ definitions:
           $ref: '#/definitions/internal_modules_me.PostImageInput'
         maxItems: 5
         type: array
+      sticker:
+        maxLength: 500
+        type: string
       visibility:
         enum:
         - public
+        - friend
         - private
         example: public
+        type: string
+    type: object
+  internal_modules_me.LikerListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_me.AuthorResponse'
+        type: array
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  internal_modules_me.PostFeedResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_me.PostResponse'
+        type: array
+      nextCursor:
         type: string
     type: object
   internal_modules_me.PostImageInput:
@@ -626,6 +888,8 @@ definitions:
     properties:
       author:
         $ref: '#/definitions/internal_modules_me.AuthorResponse'
+      checkIn:
+        $ref: '#/definitions/internal_modules_me.CheckInResponse'
       commentCount:
         type: integer
       content:
@@ -642,8 +906,18 @@ definitions:
         type: array
       likeCount:
         type: integer
+      mentions:
+        items:
+          type: string
+        type: array
       myReaction:
         type: string
+      sticker:
+        type: string
+      topLikers:
+        items:
+          $ref: '#/definitions/internal_modules_me.AuthorResponse'
+        type: array
       updatedAt:
         type: string
       visibility:
@@ -662,6 +936,8 @@ definitions:
     type: object
   internal_modules_me.UpdatePostRequest:
     properties:
+      checkIn:
+        $ref: '#/definitions/internal_modules_me.CheckInInput'
       content:
         maxLength: 5000
         type: string
@@ -670,9 +946,13 @@ definitions:
           $ref: '#/definitions/internal_modules_me.PostImageInput'
         maxItems: 5
         type: array
+      sticker:
+        maxLength: 500
+        type: string
       visibility:
         enum:
         - public
+        - friend
         - private
         type: string
     type: object
@@ -1064,27 +1344,6 @@ definitions:
         example: john_doe
         type: string
     type: object
-  internal_modules_room.CreateRoomRequest:
-    properties:
-      description:
-        example: Nơi chém gió
-        maxLength: 2000
-        type: string
-      imageUrl:
-        example: https://example.com/room.jpg
-        type: string
-      maxMembers:
-        example: 100
-        minimum: 0
-        type: integer
-      name:
-        example: Phòng Tán Gẫu
-        maxLength: 150
-        minLength: 1
-        type: string
-    required:
-    - name
-    type: object
   internal_modules_room.JoinRoomResponse:
     properties:
       expiresIn:
@@ -1109,11 +1368,19 @@ definitions:
     properties:
       avatar:
         type: string
+      bio:
+        type: string
       fullName:
+        type: string
+      gender:
         type: string
       userId:
         type: string
       username:
+        type: string
+      vipEndTime:
+        type: string
+      vipUsed:
         type: string
     type: object
   internal_modules_room.RoomMembersResponse:
@@ -1137,9 +1404,15 @@ definitions:
         type: string
       senderAvatar:
         type: string
+      senderGender:
+        type: string
       senderId:
         type: string
       senderName:
+        type: string
+      senderVip:
+        type: string
+      senderVipEnd:
         type: string
     type: object
   internal_modules_room.RoomMessagesListResponse:
@@ -1167,6 +1440,8 @@ definitions:
         type: string
       imageUrl:
         type: string
+      index:
+        type: integer
       maxMembers:
         type: integer
       memberCount:
@@ -1184,21 +1459,216 @@ definitions:
     required:
     - content
     type: object
-  internal_modules_room.UpdateRoomRequest:
+  internal_modules_session.ListSessionsResponse:
     properties:
-      description:
-        maxLength: 2000
-        type: string
-      enabled:
-        type: boolean
-      imageUrl:
-        type: string
-      maxMembers:
-        minimum: 0
+      sessions:
+        items:
+          $ref: '#/definitions/internal_modules_session.SessionResponse'
+        type: array
+      total:
+        example: 2
         type: integer
-      name:
-        maxLength: 150
-        minLength: 1
+    type: object
+  internal_modules_session.ListSessionsSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_session.ListSessionsResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_session.RevokeOthersResponse:
+    properties:
+      message:
+        example: other sessions revoked
+        type: string
+      revoked:
+        example: 3
+        type: integer
+    type: object
+  internal_modules_session.RevokeOthersSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_session.RevokeOthersResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_session.RevokeResponse:
+    properties:
+      message:
+        example: session revoked
+        type: string
+    type: object
+  internal_modules_session.RevokeSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_session.RevokeResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_session.SessionResponse:
+    properties:
+      appVersion:
+        example: 1.0.0
+        type: string
+      createdAt:
+        example: "2026-06-17T14:46:40Z"
+        type: string
+      deviceId:
+        example: 6f1e...abc
+        type: string
+      deviceName:
+        example: Chrome on Windows
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      ipAddress:
+        example: ::1
+        type: string
+      isCurrent:
+        example: true
+        type: boolean
+      lastActiveAt:
+        example: "2026-06-17T14:46:40Z"
+        type: string
+      platform:
+        example: web
+        type: string
+    type: object
+  internal_modules_user.FollowListResponse:
+    properties:
+      limit:
+        example: 20
+        type: integer
+      offset:
+        example: 0
+        type: integer
+      total:
+        example: 10
+        type: integer
+      users:
+        items:
+          $ref: '#/definitions/internal_modules_user.FollowUser'
+        type: array
+    type: object
+  internal_modules_user.FollowListSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_user.FollowListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_user.FollowResponse:
+    properties:
+      followerCount:
+        example: 1
+        type: integer
+      following:
+        example: true
+        type: boolean
+    type: object
+  internal_modules_user.FollowSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_user.FollowResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_user.FollowUser:
+    properties:
+      avatar:
+        example: https://example.com/avatar.jpg
+        type: string
+      bio:
+        example: Software developer
+        type: string
+      fullName:
+        example: John Doe
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      isOnline:
+        example: true
+        type: boolean
+      lastActiveAt:
+        example: "2024-01-15T10:30:00Z"
+        type: string
+      username:
+        example: john_doe
+        type: string
+    type: object
+  internal_modules_user.KissResponse:
+    properties:
+      kisses:
+        example: 1
+        type: integer
+    type: object
+  internal_modules_user.KissSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_user.KissResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
         type: string
     type: object
   internal_modules_user.PresenceBatchRequest:
@@ -1240,6 +1710,12 @@ definitions:
     type: object
   internal_modules_user.RelationshipInfo:
     properties:
+      followsMe:
+        example: false
+        type: boolean
+      isFollowing:
+        example: false
+        type: boolean
       requestId:
         example: 550e8400-e29b-41d4-a716-446655440000
         type: string
@@ -1284,7 +1760,11 @@ definitions:
         maxLength: 500
         type: string
       bio:
-        example: Software developer
+        example: hello ola!!!
+        maxLength: 500
+        type: string
+      coverPhoto:
+        example: https://example.com/cover.jpg
         maxLength: 500
         type: string
       customInfo:
@@ -1295,6 +1775,18 @@ definitions:
       fullName:
         example: John Doe
         maxLength: 100
+        type: string
+      gender:
+        enum:
+        - male
+        - female
+        example: male
+        type: string
+      marriage:
+        enum:
+        - single
+        - married
+        example: single
         type: string
       phone:
         example: "+84987654321"
@@ -1361,11 +1853,26 @@ definitions:
       bio:
         example: Software developer
         type: string
+      coverPhoto:
+        example: https://example.com/cover.jpg
+        type: string
       createdAt:
         example: "2024-01-01T00:00:00Z"
         type: string
+      dateOfBirth:
+        example: "1990-01-01"
+        type: string
+      followerCount:
+        example: 0
+        type: integer
+      followingCount:
+        example: 0
+        type: integer
       fullName:
         example: John Doe
+        type: string
+      gender:
+        example: male
         type: string
       id:
         example: 550e8400-e29b-41d4-a716-446655440000
@@ -1373,13 +1880,28 @@ definitions:
       isOnline:
         example: true
         type: boolean
+      kisses:
+        example: 0
+        type: integer
       lastActiveAt:
         example: "2024-01-15T10:30:00Z"
+        type: string
+      marriage:
+        example: single
         type: string
       relationship:
         $ref: '#/definitions/internal_modules_user.RelationshipInfo'
       username:
         example: john_doe
+        type: string
+      verified:
+        example: false
+        type: boolean
+      vipEndTime:
+        example: "2026-12-31T00:00:00Z"
+        type: string
+      vipUsed:
+        example: gold
         type: string
     type: object
   internal_modules_user.UserPublicProfileSuccessResponse:
@@ -1418,6 +1940,121 @@ definitions:
         type: boolean
       username:
         example: john_doe
+        type: string
+    type: object
+  ola-chat-server_internal_modules_room.CreateRoomRequest:
+    properties:
+      description:
+        example: Nơi chém gió
+        maxLength: 2000
+        type: string
+      imageUrl:
+        example: https://example.com/room.jpg
+        type: string
+      index:
+        example: 0
+        minimum: 0
+        type: integer
+      maxMembers:
+        example: 100
+        minimum: 0
+        type: integer
+      name:
+        example: Phòng Tán Gẫu
+        maxLength: 150
+        minLength: 1
+        type: string
+    required:
+    - name
+    type: object
+  ola-chat-server_internal_modules_room.RoomListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_room.RoomResponse'
+        type: array
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  ola-chat-server_internal_modules_room.RoomMessageResponse:
+    properties:
+      content:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: string
+      roomId:
+        type: string
+      senderAvatar:
+        type: string
+      senderGender:
+        type: string
+      senderId:
+        type: string
+      senderName:
+        type: string
+      senderVip:
+        type: string
+      senderVipEnd:
+        type: string
+    type: object
+  ola-chat-server_internal_modules_room.RoomMessagesListResponse:
+    properties:
+      hasMore:
+        type: boolean
+      items:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_room.RoomMessageResponse'
+        type: array
+      nextBefore:
+        type: string
+    type: object
+  ola-chat-server_internal_modules_room.RoomResponse:
+    properties:
+      createdAt:
+        type: string
+      createdBy:
+        type: string
+      description:
+        type: string
+      enabled:
+        type: boolean
+      id:
+        type: string
+      imageUrl:
+        type: string
+      index:
+        type: integer
+      maxMembers:
+        type: integer
+      memberCount:
+        type: integer
+      name:
+        type: string
+    type: object
+  ola-chat-server_internal_modules_room.UpdateRoomRequest:
+    properties:
+      description:
+        maxLength: 2000
+        type: string
+      enabled:
+        type: boolean
+      imageUrl:
+        type: string
+      index:
+        minimum: 0
+        type: integer
+      maxMembers:
+        minimum: 0
+        type: integer
+      name:
+        maxLength: 150
+        minLength: 1
         type: string
     type: object
   ola-chat-server_internal_utils.APIError:
@@ -1479,6 +2116,74 @@ definitions:
     properties:
       data:
         $ref: '#/definitions/internal_modules_admin_auth.RefreshTokenResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_me_CommentListResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_me.CommentListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_me_PostDetail:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_me.PostDetail'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_me_PostListResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_me.PostListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_upload_UploadResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_upload.UploadResponse'
       error:
         type: string
       path:
@@ -1564,6 +2269,40 @@ definitions:
     properties:
       data:
         $ref: '#/definitions/internal_modules_me.CommentResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_me_LikerListResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_me.LikerListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_me_PostFeedResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_me.PostFeedResponse'
       error:
         type: string
       path:
@@ -1730,6 +2469,57 @@ definitions:
       traceId:
         type: string
     type: object
+  ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_room_RoomListResponse:
+    properties:
+      data:
+        $ref: '#/definitions/ola-chat-server_internal_modules_room.RoomListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_room_RoomMessagesListResponse:
+    properties:
+      data:
+        $ref: '#/definitions/ola-chat-server_internal_modules_room.RoomMessagesListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_room_RoomResponse:
+    properties:
+      data:
+        $ref: '#/definitions/ola-chat-server_internal_modules_room.RoomResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
 info:
   contact:
     email: support@chatserver.com
@@ -1829,6 +2619,164 @@ paths:
       summary: Refresh admin token
       tags:
       - admin-auth
+  /admin/me:
+    get:
+      parameters:
+      - description: Search by content
+        in: query
+        name: q
+        type: string
+      - description: Filter by author id
+        in: query
+        name: authorId
+        type: string
+      - description: Filter by status (true=shown, false=hidden)
+        in: query
+        name: enabled
+        type: boolean
+      - description: Filter by visibility (public, friend, private)
+        in: query
+        name: visibility
+        type: string
+      - description: Filter posts with/without images
+        in: query
+        name: hasImages
+        type: boolean
+      - description: Filter posts with/without check-in
+        in: query
+        name: hasCheckin
+        type: boolean
+      - description: Sort field (createdAt, likeCount, commentCount, dislikeCount)
+        in: query
+        name: sortBy
+        type: string
+      - description: Sort direction (asc, desc)
+        in: query
+        name: sortDir
+        type: string
+      - description: Page size (default 20, max 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_me_PostListResponse'
+      security:
+      - BearerAuth: []
+      summary: List posts (admin, all visibilities)
+      tags:
+      - admin-me
+  /admin/me/{id}:
+    get:
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_me_PostDetail'
+      security:
+      - BearerAuth: []
+      summary: Get post detail (admin)
+      tags:
+      - admin-me
+  /admin/me/{id}/comments:
+    get:
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_me_CommentListResponse'
+      security:
+      - BearerAuth: []
+      summary: List comments of a post (admin)
+      tags:
+      - admin-me
+  /admin/me/{id}/comments/{commentId}:
+    delete:
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Comment ID
+        in: path
+        name: commentId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete a comment (admin)
+      tags:
+      - admin-me
+  /admin/me/{id}/status:
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Status Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_admin_me.UpdateStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_me_PostDetail'
+      security:
+      - BearerAuth: []
+      summary: Enable/disable a post (admin)
+      tags:
+      - admin-me
   /admin/rooms:
     get:
       parameters:
@@ -1850,7 +2798,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_RoomListResponse'
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_room_RoomListResponse'
       security:
       - BearerAuth: []
       summary: List rooms (admin, includes disabled)
@@ -1865,14 +2813,14 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/internal_modules_room.CreateRoomRequest'
+          $ref: '#/definitions/ola-chat-server_internal_modules_room.CreateRoomRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_RoomResponse'
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_room_RoomResponse'
       security:
       - BearerAuth: []
       summary: Create room (admin)
@@ -1914,19 +2862,71 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/internal_modules_room.UpdateRoomRequest'
+          $ref: '#/definitions/ola-chat-server_internal_modules_room.UpdateRoomRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_RoomResponse'
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_room_RoomResponse'
       security:
       - BearerAuth: []
       summary: Update room (admin)
       tags:
       - admin-room
+  /admin/rooms/{id}/messages:
+    get:
+      parameters:
+      - description: Room ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Page size (default 50, max 200)
+        in: query
+        name: limit
+        type: integer
+      - description: 'Cursor: message id'
+        in: query
+        name: before
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_room_RoomMessagesListResponse'
+      security:
+      - BearerAuth: []
+      summary: Get room message history (admin, includes disabled rooms)
+      tags:
+      - admin-room
+  /admin/upload:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload an image to storage and get its URL (jpg, png, gif, webp,
+        ≤5MB)
+      parameters:
+      - description: Image file
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_upload_UploadResponse'
+      security:
+      - BearerAuth: []
+      summary: Upload an image (admin)
+      tags:
+      - admin-upload
   /admin/users:
     get:
       description: List users with pagination and optional search (admin only)
@@ -1934,6 +2934,26 @@ paths:
       - description: Search by username/full name/email
         in: query
         name: q
+        type: string
+      - description: Filter by status (true=active, false=banned)
+        in: query
+        name: isActive
+        type: boolean
+      - description: Filter by gender (male, female, other)
+        in: query
+        name: gender
+        type: string
+      - description: Filter VIP (true=vip, false=non-vip)
+        in: query
+        name: vip
+        type: boolean
+      - description: Sort field (createdAt, lastLoginAt, followerCount, username)
+        in: query
+        name: sortBy
+        type: string
+      - description: Sort direction (asc, desc)
+        in: query
+        name: sortDir
         type: string
       - description: Page size (default 20, max 100)
         in: query
@@ -2700,20 +3720,26 @@ paths:
         in: query
         name: limit
         type: integer
-      - description: Offset
+      - description: Opaque keyset cursor from previous page's nextCursor
         in: query
-        name: offset
-        type: integer
+        name: cursor
+        type: string
+      - description: Set to 'tagged' (posts with any @mention), 'mentions' (posts
+          mentioning viewer) or 'media' (posts with images)
+        in: query
+        name: filter
+        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_PostListResponse'
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_PostFeedResponse'
       security:
       - BearerAuth: []
-      summary: 'Feed: public posts + own posts + friends'' private posts'
+      summary: 'Feed: public posts + own posts + friends'' friend-only posts (keyset
+        cursor)'
       tags:
       - me
     post:
@@ -2757,7 +3783,7 @@ paths:
             type: object
       security:
       - BearerAuth: []
-      summary: Delete own post (soft delete)
+      summary: Delete own post (hide via enabled flag)
       tags:
       - me
     get:
@@ -2886,6 +3912,34 @@ paths:
       security:
       - BearerAuth: []
       summary: Delete a comment (comment author or post author)
+      tags:
+      - me
+  /me/{id}/likers:
+    get:
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_LikerListResponse'
+      security:
+      - BearerAuth: []
+      summary: List users who liked a post
       tags:
       - me
   /me/{id}/react:
@@ -3881,12 +4935,68 @@ paths:
       summary: Delete own room message (hard delete, sender only)
       tags:
       - room
+  /sessions:
+    get:
+      description: Trả về các phiên đăng nhập đang hoạt động của người dùng hiện tại
+        (đánh dấu phiên hiện tại)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_session.ListSessionsSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: List active login sessions
+      tags:
+      - sessions
+  /sessions/{id}:
+    delete:
+      description: Đăng xuất một thiết bị/phiên cụ thể của chính mình
+      parameters:
+      - description: Session ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_session.RevokeSuccessResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Revoke a specific session
+      tags:
+      - sessions
+  /sessions/others:
+    delete:
+      description: Đăng xuất tất cả thiết bị khác, giữ lại phiên hiện tại
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_session.RevokeOthersSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Revoke all other sessions
+      tags:
+      - sessions
   /user/{id}:
     get:
-      description: Get public profile information of a user by ID, including online
-        status and last active time
+      description: Get public profile by user ID (UUID) or username, including online
+        status and relationship
       parameters:
-      - description: User ID (UUID)
+      - description: User ID (UUID) or username
         in: path
         name: id
         required: true
@@ -3913,6 +5023,181 @@ paths:
       security:
       - BearerAuth: []
       summary: Get user public info
+      tags:
+      - user
+  /user/{id}/follow:
+    delete:
+      description: Stop following the target user (idempotent) and return the new
+        follower count
+      parameters:
+      - description: User ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_user.FollowSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Unfollow a user
+      tags:
+      - user
+    post:
+      description: Follow the target user (idempotent) and return the new follower
+        count
+      parameters:
+      - description: User ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_user.FollowSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Follow a user
+      tags:
+      - user
+  /user/{id}/followers:
+    get:
+      description: Paginated list of users that follow the target user
+      parameters:
+      - description: User ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - default: 20
+        description: Limit results
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_user.FollowListSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: List a user's followers
+      tags:
+      - user
+  /user/{id}/following:
+    get:
+      description: Paginated list of users that the target user follows
+      parameters:
+      - description: User ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - default: 20
+        description: Limit results
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_user.FollowListSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: List users a user is following
+      tags:
+      - user
+  /user/{id}/kiss:
+    post:
+      description: Increment the target user's kiss count by one and return the new
+        total
+      parameters:
+      - description: User ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_user.KissSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Send a kiss to a user
       tags:
       - user
   /user/me:

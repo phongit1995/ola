@@ -73,11 +73,45 @@ func (s *Service) Revoke(sessionID uuid.UUID) error {
 	if err := s.repo.Revoke(sessionID); err != nil {
 		return err
 	}
+	s.markRevoked(sessionID)
+	return nil
+}
+
+func (s *Service) List(userID uuid.UUID) ([]models.UserSession, error) {
+	return s.repo.ListActiveByUser(userID)
+}
+
+func (s *Service) RevokeForUser(userID, sessionID uuid.UUID) (bool, error) {
+	found, err := s.repo.RevokeForUser(userID, sessionID)
+	if err != nil {
+		return false, err
+	}
+	if found {
+		s.markRevoked(sessionID)
+	}
+	return found, nil
+}
+
+func (s *Service) RevokeOthers(userID, keepID uuid.UUID) (int, error) {
+	ids, err := s.repo.ListActiveIDsExcept(userID, keepID)
+	if err != nil {
+		return 0, err
+	}
+	for _, id := range ids {
+		s.markRevoked(id)
+	}
+	revoked, err := s.repo.RevokeAllExcept(userID, keepID)
+	if err != nil {
+		return 0, err
+	}
+	return int(revoked), nil
+}
+
+func (s *Service) markRevoked(sessionID uuid.UUID) {
 	key := fmt.Sprintf(constants.CacheKeySessionRevoked, sessionID.String())
 	if err := s.cache.Set(key, "1", s.accessTokenTTL()); err != nil {
 		s.logger.Warnw("Failed to mark session revoked in cache", "session_id", sessionID, "error", err.Error())
 	}
-	return nil
 }
 
 func (s *Service) accessTokenTTL() time.Duration {

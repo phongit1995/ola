@@ -155,6 +155,258 @@
                 }
             }
         },
+        "/admin/me": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-me"
+                ],
+                "summary": "List posts (admin, all visibilities)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Search by content",
+                        "name": "q",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by author id",
+                        "name": "authorId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Filter by status (true=shown, false=hidden)",
+                        "name": "enabled",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by visibility (public, friend, private)",
+                        "name": "visibility",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Filter posts with/without images",
+                        "name": "hasImages",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Filter posts with/without check-in",
+                        "name": "hasCheckin",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort field (createdAt, likeCount, commentCount, dislikeCount)",
+                        "name": "sortBy",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort direction (asc, desc)",
+                        "name": "sortDir",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size (default 20, max 100)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_me_PostListResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/me/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-me"
+                ],
+                "summary": "Get post detail (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Post ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_me_PostDetail"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/me/{id}/comments": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-me"
+                ],
+                "summary": "List comments of a post (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Post ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_me_CommentListResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/me/{id}/comments/{commentId}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-me"
+                ],
+                "summary": "Delete a comment (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Post ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Comment ID",
+                        "name": "commentId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/me/{id}/status": {
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-me"
+                ],
+                "summary": "Enable/disable a post (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Post ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Status Request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_me.UpdateStatusRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_me_PostDetail"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/rooms": {
             "get": {
                 "security": [
@@ -193,7 +445,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_RoomListResponse"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_room_RoomListResponse"
                         }
                     }
                 }
@@ -221,7 +473,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_modules_room.CreateRoomRequest"
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_room.CreateRoomRequest"
                         }
                     }
                 ],
@@ -229,7 +481,7 @@
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_RoomResponse"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_room_RoomResponse"
                         }
                     }
                 }
@@ -300,7 +552,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_modules_room.UpdateRoomRequest"
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_room.UpdateRoomRequest"
                         }
                     }
                 ],
@@ -308,7 +560,89 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_RoomResponse"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_room_RoomResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/rooms/{id}/messages": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-room"
+                ],
+                "summary": "Get room message history (admin, includes disabled rooms)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Room ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size (default 50, max 200)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Cursor: message id",
+                        "name": "before",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_room_RoomMessagesListResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/upload": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Upload an image to storage and get its URL (jpg, png, gif, webp, ≤5MB)",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-upload"
+                ],
+                "summary": "Upload an image (admin)",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "Image file",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_upload_UploadResponse"
                         }
                     }
                 }
@@ -334,6 +668,36 @@
                         "type": "string",
                         "description": "Search by username/full name/email",
                         "name": "q",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Filter by status (true=active, false=banned)",
+                        "name": "isActive",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by gender (male, female, other)",
+                        "name": "gender",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Filter VIP (true=vip, false=non-vip)",
+                        "name": "vip",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort field (createdAt, lastLoginAt, followerCount, username)",
+                        "name": "sortBy",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort direction (asc, desc)",
+                        "name": "sortDir",
                         "in": "query"
                     },
                     {
@@ -1527,7 +1891,7 @@
                 "tags": [
                     "me"
                 ],
-                "summary": "Feed: public posts + own posts + friends' private posts",
+                "summary": "Feed: public posts + own posts + friends' friend-only posts (keyset cursor)",
                 "parameters": [
                     {
                         "type": "integer",
@@ -1536,9 +1900,15 @@
                         "in": "query"
                     },
                     {
-                        "type": "integer",
-                        "description": "Offset",
-                        "name": "offset",
+                        "type": "string",
+                        "description": "Opaque keyset cursor from previous page's nextCursor",
+                        "name": "cursor",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Set to 'tagged' (posts with any @mention), 'mentions' (posts mentioning viewer) or 'media' (posts with images)",
+                        "name": "filter",
                         "in": "query"
                     }
                 ],
@@ -1546,7 +1916,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_PostListResponse"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_PostFeedResponse"
                         }
                     }
                 }
@@ -1794,7 +2164,7 @@
                 "tags": [
                     "me"
                 ],
-                "summary": "Delete own post (soft delete)",
+                "summary": "Delete own post (hide via enabled flag)",
                 "parameters": [
                     {
                         "type": "string",
@@ -1943,6 +2313,51 @@
                             "additionalProperties": {
                                 "type": "string"
                             }
+                        }
+                    }
+                }
+            }
+        },
+        "/me/{id}/likers": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "me"
+                ],
+                "summary": "List users who liked a post",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Post ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_LikerListResponse"
                         }
                     }
                 }
@@ -3387,6 +3802,96 @@
                 }
             }
         },
+        "/sessions": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Trả về các phiên đăng nhập đang hoạt động của người dùng hiện tại (đánh dấu phiên hiện tại)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sessions"
+                ],
+                "summary": "List active login sessions",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_session.ListSessionsSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/sessions/others": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Đăng xuất tất cả thiết bị khác, giữ lại phiên hiện tại",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sessions"
+                ],
+                "summary": "Revoke all other sessions",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_session.RevokeOthersSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/sessions/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Đăng xuất một thiết bị/phiên cụ thể của chính mình",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sessions"
+                ],
+                "summary": "Revoke a specific session",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Session ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_session.RevokeSuccessResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/user/me": {
             "get": {
                 "security": [
@@ -3645,7 +4150,7 @@
                         "BearerAuth": []
                     }
                 ],
-                "description": "Get public profile information of a user by ID, including online status and last active time",
+                "description": "Get public profile by user ID (UUID) or username, including online status and relationship",
                 "produces": [
                     "application/json"
                 ],
@@ -3653,6 +4158,58 @@
                     "user"
                 ],
                 "summary": "Get user public info",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID (UUID) or username",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_user.UserPublicProfileSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/{id}/follow": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Follow the target user (idempotent) and return the new follower count",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Follow a user",
                 "parameters": [
                     {
                         "type": "string",
@@ -3666,7 +4223,223 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_modules_user.UserPublicProfileSuccessResponse"
+                            "$ref": "#/definitions/internal_modules_user.FollowSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Stop following the target user (idempotent) and return the new follower count",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Unfollow a user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_user.FollowSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/{id}/followers": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Paginated list of users that follow the target user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "List a user's followers",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "Limit results",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_user.FollowListSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/{id}/following": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Paginated list of users that the target user follows",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "List users a user is following",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "Limit results",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_user.FollowListSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/{id}/kiss": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Increment the target user's kiss count by one and return the new total",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Send a kiss to a user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_user.KissSuccessResponse"
                         }
                     },
                     "400": {
@@ -3774,6 +4547,240 @@
                 }
             }
         },
+        "internal_modules_admin_me.AuthorResponse": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "fullName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_me.CheckInResponse": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "type": "string"
+                },
+                "actionIcon": {
+                    "type": "string"
+                },
+                "address": {
+                    "type": "string"
+                },
+                "lat": {
+                    "type": "number"
+                },
+                "lng": {
+                    "type": "number"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_me.CommentListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_me.CommentResponse"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_me.CommentResponse": {
+            "type": "object",
+            "properties": {
+                "author": {
+                    "$ref": "#/definitions/internal_modules_admin_me.AuthorResponse"
+                },
+                "content": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "postId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_me.PostDetail": {
+            "type": "object",
+            "properties": {
+                "author": {
+                    "$ref": "#/definitions/internal_modules_admin_me.AuthorResponse"
+                },
+                "checkIn": {
+                    "$ref": "#/definitions/internal_modules_admin_me.CheckInResponse"
+                },
+                "commentCount": {
+                    "type": "integer"
+                },
+                "content": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "dislikeCount": {
+                    "type": "integer"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "images": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_me.PostImageResponse"
+                    }
+                },
+                "likeCount": {
+                    "type": "integer"
+                },
+                "mentions": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "sticker": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "visibility": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_me.PostImageResponse": {
+            "type": "object",
+            "properties": {
+                "height": {
+                    "type": "integer"
+                },
+                "mimeType": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                },
+                "width": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_me.PostListItem": {
+            "type": "object",
+            "properties": {
+                "author": {
+                    "$ref": "#/definitions/internal_modules_admin_me.AuthorResponse"
+                },
+                "checkIn": {
+                    "$ref": "#/definitions/internal_modules_admin_me.CheckInResponse"
+                },
+                "commentCount": {
+                    "type": "integer"
+                },
+                "content": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "dislikeCount": {
+                    "type": "integer"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "images": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_me.PostImageResponse"
+                    }
+                },
+                "likeCount": {
+                    "type": "integer"
+                },
+                "sticker": {
+                    "type": "string"
+                },
+                "visibility": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_me.PostListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_me.PostListItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_me.UpdateStatusRequest": {
+            "type": "object",
+            "required": [
+                "enabled"
+            ],
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "example": false
+                }
+            }
+        },
+        "internal_modules_admin_upload.UploadResponse": {
+            "type": "object",
+            "properties": {
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
         "internal_modules_admin_user.ListUsersResponse": {
             "type": "object",
             "properties": {
@@ -3818,10 +4825,22 @@
                 "createdAt": {
                     "type": "string"
                 },
+                "dateOfBirth": {
+                    "type": "string"
+                },
                 "email": {
                     "type": "string"
                 },
+                "followerCount": {
+                    "type": "integer"
+                },
+                "followingCount": {
+                    "type": "integer"
+                },
                 "fullName": {
+                    "type": "string"
+                },
+                "gender": {
                     "type": "string"
                 },
                 "id": {
@@ -3829,6 +4848,12 @@
                 },
                 "isActive": {
                     "type": "boolean"
+                },
+                "isVip": {
+                    "type": "boolean"
+                },
+                "ken": {
+                    "type": "integer"
                 },
                 "lastLoginAt": {
                     "type": "string"
@@ -3843,6 +4868,12 @@
                     "type": "string"
                 },
                 "username": {
+                    "type": "string"
+                },
+                "vipEndTime": {
+                    "type": "string"
+                },
+                "vipUsed": {
                     "type": "string"
                 }
             }
@@ -3862,11 +4893,20 @@
                 "fullName": {
                     "type": "string"
                 },
+                "gender": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "string"
                 },
                 "isActive": {
                     "type": "boolean"
+                },
+                "isVip": {
+                    "type": "boolean"
+                },
+                "ken": {
+                    "type": "integer"
                 },
                 "lastLoginAt": {
                     "type": "string"
@@ -3971,6 +5011,27 @@
                 }
             }
         },
+        "internal_modules_auth.DeviceInfo": {
+            "type": "object",
+            "properties": {
+                "appVersion": {
+                    "type": "string",
+                    "example": "1.0.0"
+                },
+                "deviceId": {
+                    "type": "string",
+                    "example": "6f1e...abc"
+                },
+                "deviceName": {
+                    "type": "string",
+                    "example": "iPhone 15"
+                },
+                "platform": {
+                    "type": "string",
+                    "example": "ios"
+                }
+            }
+        },
         "internal_modules_auth.LoginRequest": {
             "type": "object",
             "required": [
@@ -3978,6 +5039,9 @@
                 "username"
             ],
             "properties": {
+                "device": {
+                    "$ref": "#/definitions/internal_modules_auth.DeviceInfo"
+                },
                 "password": {
                     "type": "string",
                     "example": "password123"
@@ -4465,6 +5529,65 @@
                 }
             }
         },
+        "internal_modules_me.CheckInInput": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "action": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "example": "Đang ăn"
+                },
+                "actionIcon": {
+                    "type": "string",
+                    "maxLength": 16,
+                    "example": "🍜"
+                },
+                "address": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "example": "86-88 Cao Thắng, Q3"
+                },
+                "lat": {
+                    "type": "number",
+                    "example": 10.771
+                },
+                "lng": {
+                    "type": "number",
+                    "example": 106.682
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "example": "The Coffee House"
+                }
+            }
+        },
+        "internal_modules_me.CheckInResponse": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "type": "string"
+                },
+                "actionIcon": {
+                    "type": "string"
+                },
+                "address": {
+                    "type": "string"
+                },
+                "lat": {
+                    "type": "number"
+                },
+                "lng": {
+                    "type": "number"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "internal_modules_me.CommentListResponse": {
             "type": "object",
             "properties": {
@@ -4522,6 +5645,9 @@
         "internal_modules_me.CreatePostRequest": {
             "type": "object",
             "properties": {
+                "checkIn": {
+                    "$ref": "#/definitions/internal_modules_me.CheckInInput"
+                },
                 "content": {
                     "type": "string",
                     "maxLength": 5000,
@@ -4534,13 +5660,52 @@
                         "$ref": "#/definitions/internal_modules_me.PostImageInput"
                     }
                 },
+                "sticker": {
+                    "type": "string",
+                    "maxLength": 500
+                },
                 "visibility": {
                     "type": "string",
                     "enum": [
                         "public",
+                        "friend",
                         "private"
                     ],
                     "example": "public"
+                }
+            }
+        },
+        "internal_modules_me.LikerListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_me.AuthorResponse"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_me.PostFeedResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_me.PostResponse"
+                    }
+                },
+                "nextCursor": {
+                    "type": "string"
                 }
             }
         },
@@ -4610,6 +5775,9 @@
                 "author": {
                     "$ref": "#/definitions/internal_modules_me.AuthorResponse"
                 },
+                "checkIn": {
+                    "$ref": "#/definitions/internal_modules_me.CheckInResponse"
+                },
                 "commentCount": {
                     "type": "integer"
                 },
@@ -4634,8 +5802,23 @@
                 "likeCount": {
                     "type": "integer"
                 },
+                "mentions": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "myReaction": {
                     "type": "string"
+                },
+                "sticker": {
+                    "type": "string"
+                },
+                "topLikers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_me.AuthorResponse"
+                    }
                 },
                 "updatedAt": {
                     "type": "string"
@@ -4664,6 +5847,9 @@
         "internal_modules_me.UpdatePostRequest": {
             "type": "object",
             "properties": {
+                "checkIn": {
+                    "$ref": "#/definitions/internal_modules_me.CheckInInput"
+                },
                 "content": {
                     "type": "string",
                     "maxLength": 5000
@@ -4675,10 +5861,15 @@
                         "$ref": "#/definitions/internal_modules_me.PostImageInput"
                     }
                 },
+                "sticker": {
+                    "type": "string",
+                    "maxLength": 500
+                },
                 "visibility": {
                     "type": "string",
                     "enum": [
                         "public",
+                        "friend",
                         "private"
                     ]
                 }
@@ -5237,34 +6428,6 @@
                 }
             }
         },
-        "internal_modules_room.CreateRoomRequest": {
-            "type": "object",
-            "required": [
-                "name"
-            ],
-            "properties": {
-                "description": {
-                    "type": "string",
-                    "maxLength": 2000,
-                    "example": "Nơi chém gió"
-                },
-                "imageUrl": {
-                    "type": "string",
-                    "example": "https://example.com/room.jpg"
-                },
-                "maxMembers": {
-                    "type": "integer",
-                    "minimum": 0,
-                    "example": 100
-                },
-                "name": {
-                    "type": "string",
-                    "maxLength": 150,
-                    "minLength": 1,
-                    "example": "Phòng Tán Gẫu"
-                }
-            }
-        },
         "internal_modules_room.JoinRoomResponse": {
             "type": "object",
             "properties": {
@@ -5302,13 +6465,25 @@
                 "avatar": {
                     "type": "string"
                 },
+                "bio": {
+                    "type": "string"
+                },
                 "fullName": {
+                    "type": "string"
+                },
+                "gender": {
                     "type": "string"
                 },
                 "userId": {
                     "type": "string"
                 },
                 "username": {
+                    "type": "string"
+                },
+                "vipEndTime": {
+                    "type": "string"
+                },
+                "vipUsed": {
                     "type": "string"
                 }
             }
@@ -5345,10 +6520,19 @@
                 "senderAvatar": {
                     "type": "string"
                 },
+                "senderGender": {
+                    "type": "string"
+                },
                 "senderId": {
                     "type": "string"
                 },
                 "senderName": {
+                    "type": "string"
+                },
+                "senderVip": {
+                    "type": "string"
+                },
+                "senderVipEnd": {
                     "type": "string"
                 }
             }
@@ -5391,6 +6575,9 @@
                 "imageUrl": {
                     "type": "string"
                 },
+                "index": {
+                    "type": "integer"
+                },
                 "maxMembers": {
                     "type": "integer"
                 },
@@ -5416,27 +6603,315 @@
                 }
             }
         },
-        "internal_modules_room.UpdateRoomRequest": {
+        "internal_modules_session.ListSessionsResponse": {
             "type": "object",
             "properties": {
-                "description": {
-                    "type": "string",
-                    "maxLength": 2000
+                "sessions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_session.SessionResponse"
+                    }
                 },
-                "enabled": {
-                    "type": "boolean"
+                "total": {
+                    "type": "integer",
+                    "example": 2
+                }
+            }
+        },
+        "internal_modules_session.ListSessionsSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_session.ListSessionsResponse"
                 },
-                "imageUrl": {
+                "error": {
                     "type": "string"
                 },
-                "maxMembers": {
-                    "type": "integer",
-                    "minimum": 0
+                "path": {
+                    "type": "string"
                 },
-                "name": {
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_session.RevokeOthersResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
                     "type": "string",
-                    "maxLength": 150,
-                    "minLength": 1
+                    "example": "other sessions revoked"
+                },
+                "revoked": {
+                    "type": "integer",
+                    "example": 3
+                }
+            }
+        },
+        "internal_modules_session.RevokeOthersSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_session.RevokeOthersResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_session.RevokeResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "session revoked"
+                }
+            }
+        },
+        "internal_modules_session.RevokeSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_session.RevokeResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_session.SessionResponse": {
+            "type": "object",
+            "properties": {
+                "appVersion": {
+                    "type": "string",
+                    "example": "1.0.0"
+                },
+                "createdAt": {
+                    "type": "string",
+                    "example": "2026-06-17T14:46:40Z"
+                },
+                "deviceId": {
+                    "type": "string",
+                    "example": "6f1e...abc"
+                },
+                "deviceName": {
+                    "type": "string",
+                    "example": "Chrome on Windows"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "ipAddress": {
+                    "type": "string",
+                    "example": "::1"
+                },
+                "isCurrent": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "lastActiveAt": {
+                    "type": "string",
+                    "example": "2026-06-17T14:46:40Z"
+                },
+                "platform": {
+                    "type": "string",
+                    "example": "web"
+                }
+            }
+        },
+        "internal_modules_user.FollowListResponse": {
+            "type": "object",
+            "properties": {
+                "limit": {
+                    "type": "integer",
+                    "example": 20
+                },
+                "offset": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "users": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_user.FollowUser"
+                    }
+                }
+            }
+        },
+        "internal_modules_user.FollowListSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_user.FollowListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_user.FollowResponse": {
+            "type": "object",
+            "properties": {
+                "followerCount": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "following": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "internal_modules_user.FollowSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_user.FollowResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_user.FollowUser": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string",
+                    "example": "https://example.com/avatar.jpg"
+                },
+                "bio": {
+                    "type": "string",
+                    "example": "Software developer"
+                },
+                "fullName": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "isOnline": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "lastActiveAt": {
+                    "type": "string",
+                    "example": "2024-01-15T10:30:00Z"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "john_doe"
+                }
+            }
+        },
+        "internal_modules_user.KissResponse": {
+            "type": "object",
+            "properties": {
+                "kisses": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "internal_modules_user.KissSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_user.KissResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
                 }
             }
         },
@@ -5499,6 +6974,14 @@
         "internal_modules_user.RelationshipInfo": {
             "type": "object",
             "properties": {
+                "followsMe": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "isFollowing": {
+                    "type": "boolean",
+                    "example": false
+                },
                 "requestId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440000"
@@ -5565,7 +7048,12 @@
                 "bio": {
                     "type": "string",
                     "maxLength": 500,
-                    "example": "Software developer"
+                    "example": "hello ola!!!"
+                },
+                "coverPhoto": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "example": "https://example.com/cover.jpg"
                 },
                 "customInfo": {
                     "type": "object"
@@ -5578,6 +7066,22 @@
                     "type": "string",
                     "maxLength": 100,
                     "example": "John Doe"
+                },
+                "gender": {
+                    "type": "string",
+                    "enum": [
+                        "male",
+                        "female"
+                    ],
+                    "example": "male"
+                },
+                "marriage": {
+                    "type": "string",
+                    "enum": [
+                        "single",
+                        "married"
+                    ],
+                    "example": "single"
                 },
                 "phone": {
                     "type": "string",
@@ -5672,13 +7176,33 @@
                     "type": "string",
                     "example": "Software developer"
                 },
+                "coverPhoto": {
+                    "type": "string",
+                    "example": "https://example.com/cover.jpg"
+                },
                 "createdAt": {
                     "type": "string",
                     "example": "2024-01-01T00:00:00Z"
                 },
+                "dateOfBirth": {
+                    "type": "string",
+                    "example": "1990-01-01"
+                },
+                "followerCount": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "followingCount": {
+                    "type": "integer",
+                    "example": 0
+                },
                 "fullName": {
                     "type": "string",
                     "example": "John Doe"
+                },
+                "gender": {
+                    "type": "string",
+                    "example": "male"
                 },
                 "id": {
                     "type": "string",
@@ -5688,9 +7212,17 @@
                     "type": "boolean",
                     "example": true
                 },
+                "kisses": {
+                    "type": "integer",
+                    "example": 0
+                },
                 "lastActiveAt": {
                     "type": "string",
                     "example": "2024-01-15T10:30:00Z"
+                },
+                "marriage": {
+                    "type": "string",
+                    "example": "single"
                 },
                 "relationship": {
                     "$ref": "#/definitions/internal_modules_user.RelationshipInfo"
@@ -5698,6 +7230,18 @@
                 "username": {
                     "type": "string",
                     "example": "john_doe"
+                },
+                "verified": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "vipEndTime": {
+                    "type": "string",
+                    "example": "2026-12-31T00:00:00Z"
+                },
+                "vipUsed": {
+                    "type": "string",
+                    "example": "gold"
                 }
             }
         },
@@ -5753,6 +7297,174 @@
                 "username": {
                     "type": "string",
                     "example": "john_doe"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_room.CreateRoomRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "maxLength": 2000,
+                    "example": "Nơi chém gió"
+                },
+                "imageUrl": {
+                    "type": "string",
+                    "example": "https://example.com/room.jpg"
+                },
+                "index": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "example": 0
+                },
+                "maxMembers": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "example": 100
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 150,
+                    "minLength": 1,
+                    "example": "Phòng Tán Gẫu"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_room.RoomListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_room.RoomResponse"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_room.RoomMessageResponse": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "roomId": {
+                    "type": "string"
+                },
+                "senderAvatar": {
+                    "type": "string"
+                },
+                "senderGender": {
+                    "type": "string"
+                },
+                "senderId": {
+                    "type": "string"
+                },
+                "senderName": {
+                    "type": "string"
+                },
+                "senderVip": {
+                    "type": "string"
+                },
+                "senderVipEnd": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_room.RoomMessagesListResponse": {
+            "type": "object",
+            "properties": {
+                "hasMore": {
+                    "type": "boolean"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_room.RoomMessageResponse"
+                    }
+                },
+                "nextBefore": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_room.RoomResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "createdBy": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "imageUrl": {
+                    "type": "string"
+                },
+                "index": {
+                    "type": "integer"
+                },
+                "maxMembers": {
+                    "type": "integer"
+                },
+                "memberCount": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_room.UpdateRoomRequest": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "maxLength": 2000
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "imageUrl": {
+                    "type": "string"
+                },
+                "index": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "maxMembers": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 150,
+                    "minLength": 1
                 }
             }
         },
@@ -5842,6 +7554,110 @@
             "properties": {
                 "data": {
                     "$ref": "#/definitions/internal_modules_admin_auth.RefreshTokenResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_me_CommentListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_me.CommentListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_me_PostDetail": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_me.PostDetail"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_me_PostListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_me.PostListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_upload_UploadResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_upload.UploadResponse"
                 },
                 "error": {
                     "type": "string"
@@ -5972,6 +7788,58 @@
             "properties": {
                 "data": {
                     "$ref": "#/definitions/internal_modules_me.CommentResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_me_LikerListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_me.LikerListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_me_PostFeedResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_me.PostFeedResponse"
                 },
                 "error": {
                     "type": "string"
@@ -6206,6 +8074,84 @@
             "properties": {
                 "data": {
                     "$ref": "#/definitions/internal_modules_room.RoomResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_room_RoomListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_room.RoomListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_room_RoomMessagesListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_room.RoomMessagesListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_room_RoomResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_room.RoomResponse"
                 },
                 "error": {
                     "type": "string"

@@ -27,6 +27,40 @@ func (r *Repository) FindActiveByDevice(userID uuid.UUID, deviceID string) (*mod
 	return &sess, nil
 }
 
+func (r *Repository) ListActiveByUser(userID uuid.UUID) ([]models.UserSession, error) {
+	var sessions []models.UserSession
+	err := r.db.
+		Where("user_id = ? AND revoked_at IS NULL", userID).
+		Order("last_active_at DESC").
+		Find(&sessions).Error
+	return sessions, err
+}
+
+func (r *Repository) RevokeForUser(userID, sessionID uuid.UUID) (bool, error) {
+	res := r.db.Model(&models.UserSession{}).
+		Where("id = ? AND user_id = ? AND revoked_at IS NULL", sessionID, userID).
+		Update("revoked_at", gorm.Expr("NOW()"))
+	if res.Error != nil {
+		return false, res.Error
+	}
+	return res.RowsAffected == 1, nil
+}
+
+func (r *Repository) ListActiveIDsExcept(userID, keepID uuid.UUID) ([]uuid.UUID, error) {
+	var ids []uuid.UUID
+	err := r.db.Model(&models.UserSession{}).
+		Where("user_id = ? AND id <> ? AND revoked_at IS NULL", userID, keepID).
+		Pluck("id", &ids).Error
+	return ids, err
+}
+
+func (r *Repository) RevokeAllExcept(userID, keepID uuid.UUID) (int64, error) {
+	res := r.db.Model(&models.UserSession{}).
+		Where("user_id = ? AND id <> ? AND revoked_at IS NULL", userID, keepID).
+		Update("revoked_at", gorm.Expr("NOW()"))
+	return res.RowsAffected, res.Error
+}
+
 func (r *Repository) RotateRefreshToken(sessionID uuid.UUID, oldToken, newToken string) (bool, error) {
 	res := r.db.Model(&models.UserSession{}).
 		Where("id = ? AND refresh_token = ? AND revoked_at IS NULL", sessionID, oldToken).
