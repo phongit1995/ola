@@ -44,8 +44,6 @@ type Config struct {
 	JWTSecret string `env:"JWT_SECRET"`
 	JWTExpiry string `env:"JWT_EXPIRY" envDefault:"15m"`
 
-	AllowLegacyRefresh bool `env:"ALLOW_LEGACY_REFRESH" envDefault:"true"`
-
 	APIGuardSecret string `env:"API_GUARD_SECRET"`
 
 	CORSAllowedOrigins []string `env:"CORS_ALLOWED_ORIGINS" envSeparator:","`

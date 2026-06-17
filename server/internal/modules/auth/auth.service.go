@@ -86,7 +86,7 @@ func (s *Service) RefreshToken(refreshTokenStr, clientIP, userAgent string) (*Re
 	}
 
 	if sessionID == uuid.Nil {
-		return s.refreshLegacy(userID, refreshTokenStr, clientIP, userAgent)
+		return nil, errors.New("invalid or expired refresh token")
 	}
 
 	newAccessToken, err := s.jwtService.GenerateTokenWithSession(userID, sessionID)
@@ -109,62 +109,6 @@ func (s *Service) RefreshToken(refreshTokenStr, clientIP, userAgent string) (*Re
 	}
 
 	s.logger.Infow("Token refreshed", "user_id", userID, "session_id", sessionID, "ip", clientIP)
-	return &RefreshTokenResponse{
-		Token:        newAccessToken,
-		RefreshToken: newRefreshToken,
-	}, nil
-}
-
-func (s *Service) refreshLegacy(userID uuid.UUID, oldRefreshToken, clientIP, userAgent string) (*RefreshTokenResponse, error) {
-	if !s.cfg.AllowLegacyRefresh {
-		return nil, errors.New("refresh token has been revoked")
-	}
-
-	user, err := s.repo.FindByID(userID)
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errors.New("user not found")
-		}
-		return nil, err
-	}
-
-	if user.RefreshToken == "" || user.RefreshToken != oldRefreshToken {
-		return nil, errors.New("refresh token has been revoked")
-	}
-
-	deviceName, platform, deviceID, appVersion := resolveDeviceInfo(nil, userAgent)
-	sessionID := s.sessionService.ResolveSessionID(userID, deviceID)
-
-	newAccessToken, err := s.jwtService.GenerateTokenWithSession(userID, sessionID)
-	if err != nil {
-		return nil, err
-	}
-
-	newRefreshToken, err := s.jwtService.GenerateRefreshTokenWithSession(userID, sessionID)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := s.sessionService.Save(session.SaveInput{
-		ID:           sessionID,
-		UserID:       userID,
-		DeviceName:   deviceName,
-		Platform:     platform,
-		DeviceID:     deviceID,
-		AppVersion:   appVersion,
-		UserAgent:    userAgent,
-		IPAddress:    clientIP,
-		RefreshToken: newRefreshToken,
-	}); err != nil {
-		s.logger.Errorw("Failed to migrate legacy session", "user_id", userID, "error", err)
-		return nil, err
-	}
-
-	if err := s.repo.ClearRefreshToken(userID); err != nil {
-		s.logger.Warnw("Failed to clear legacy refresh token", "user_id", userID, "error", err)
-	}
-
-	s.logger.Infow("Token refreshed (legacy migrated)", "user_id", userID, "session_id", sessionID, "ip", clientIP)
 	return &RefreshTokenResponse{
 		Token:        newAccessToken,
 		RefreshToken: newRefreshToken,
