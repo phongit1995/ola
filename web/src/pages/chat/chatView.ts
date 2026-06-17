@@ -5,6 +5,7 @@ import type { ChatMessage, ChatMessageStatus } from './types';
 export interface ConversationView {
   id: string;
   name: string;
+  title: string;
   avatar?: string;
   color: string;
   preview: string;
@@ -28,11 +29,19 @@ export function conversationDisplayName(conversation: Conversation): string {
   );
 }
 
+export function conversationHeaderTitle(conversation: Conversation): string {
+  const username = conversation.otherUser?.username ?? '';
+  const fullName = conversation.otherUser?.fullName ?? '';
+  if (username !== '' && fullName !== '') return `${username} · ${fullName}`;
+  return conversationDisplayName(conversation);
+}
+
 export function toConversationView(conversation: Conversation): ConversationView {
   const name = conversationDisplayName(conversation);
   return {
     id: conversation.id,
     name,
+    title: conversationHeaderTitle(conversation),
     avatar: conversation.otherUser?.avatar ?? conversation.avatar,
     color: name ? colorForName(name) : DEFAULT_AVATAR_COLOR,
     preview: conversation.lastMessageText ?? '',
@@ -91,6 +100,7 @@ export function toBubble(message: Message, myId: string): ChatMessage {
     text: isImage ? undefined : message.content,
     image: isImage ? imageUrlFromMetadata(message.metadata) : undefined,
     time: formatClock(message.createdAt),
+    createdAt: message.createdAt,
     status: STATUS_MAP[message.status] ?? 'sent',
     reactions: message.reactions,
   };

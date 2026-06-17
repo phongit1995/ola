@@ -45,6 +45,7 @@ export interface ChatMessage {
   direction: 'in' | 'out';
   kind: ChatMessageKind;
   time: string;
+  createdAt?: string;
   status?: ChatMessageStatus;
   text?: string;
   sticker?: string;

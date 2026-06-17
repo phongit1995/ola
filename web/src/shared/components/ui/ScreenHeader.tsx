@@ -32,7 +32,7 @@ export function ScreenHeader({ title, onBack, align = 'start', left, subtitle, c
         >
           <BackIcon />
         </button>
-        <span className="truncate text-base font-medium">{title}</span>
+        <span className="truncate text-sm font-bold">{title}</span>
       </header>
     );
   }
@@ -50,11 +50,11 @@ export function ScreenHeader({ title, onBack, align = 'start', left, subtitle, c
       {left}
       {subtitle != null ? (
         <span className="flex min-w-0 flex-1 flex-col leading-tight">
-          <span className="truncate text-base font-medium">{title}</span>
+          <span className="truncate text-sm font-bold">{title}</span>
           <span className="truncate text-xs text-white/70">{subtitle}</span>
         </span>
       ) : (
-        <span className="flex-1 truncate text-base font-medium">{title}</span>
+        <span className="flex-1 truncate text-sm font-bold">{title}</span>
       )}
       {children}
     </header>

@@ -25,6 +25,7 @@ import { MessageActionSheet } from './MessageActionSheet';
 
 interface ChatConversationViewProps {
   name: string;
+  title?: string;
   color: string;
   avatar?: string;
   online?: boolean;
@@ -34,6 +35,7 @@ interface ChatConversationViewProps {
 
 export function ChatConversationView({
   name,
+  title,
   color,
   avatar,
   online,
@@ -161,7 +163,7 @@ export function ChatConversationView({
   return (
     <FullScreenOverlay z={50}>
       <ScreenHeader
-        title={name}
+        title={title ?? name}
         subtitle={peerTyping ? t('chat.typing', { name }) : online ? t('chat.statusActive') : ''}
         onBack={onClose}
         left={<Avatar name={name} color={color} src={avatar} size={32} />}
@@ -186,6 +188,7 @@ export function ChatConversationView({
             key={message.id}
             message={message}
             prev={bubbles[index - 1]}
+            next={bubbles[index + 1]}
             name={name}
             color={color}
             avatar={avatar}
@@ -320,6 +323,7 @@ export function ChatConversationView({
 interface MessageRowProps {
   message: ChatMessage;
   prev?: ChatMessage;
+  next?: ChatMessage;
   name: string;
   color: string;
   avatar?: string;
@@ -328,11 +332,12 @@ interface MessageRowProps {
   onOpenActions: (message: ChatMessage) => void;
 }
 
-function MessageRow({ message, prev, name, color, avatar, isLastOwn, seen, onOpenActions }: MessageRowProps) {
+function MessageRow({ message, prev, next, name, color, avatar, isLastOwn, seen, onOpenActions }: MessageRowProps) {
   const isOut = message.direction === 'out';
   const boundary = prev == null;
-  const showTime = boundary || prev.direction !== message.direction || prev.time !== message.time;
-  const showAvatar = !isOut && (boundary || prev.direction !== 'in');
+  const firstInGroup = boundary || prev.direction !== message.direction;
+  const lastInGroup = next == null || next.direction !== message.direction;
+  const showAvatar = !isOut && firstInGroup;
   const canAct = message.status !== 'sending' && message.status !== 'failed';
   const chips = reactionChips(message.reactions);
 
@@ -341,18 +346,22 @@ function MessageRow({ message, prev, name, color, avatar, isLastOwn, seen, onOpe
   });
 
   return (
-    <div className="flex flex-col">
-      {showTime && <span className="my-1 self-center text-xs text-black/26">{message.time}</span>}
+    <div className={`flex flex-col ${firstInGroup && !boundary ? 'mt-2' : ''}`}>
       <div className={`flex items-end gap-1 ${isOut ? 'flex-row-reverse' : ''}`}>
         {!isOut &&
           (showAvatar ? (
-            <Avatar name={name} color={color} src={avatar} size={32} />
+            <span className="shrink-0 self-start">
+              <Avatar name={name} color={color} src={avatar} size={32} />
+            </span>
           ) : (
             <span className="w-8 shrink-0" />
           ))}
-        <div className="flex max-w-[78%] flex-col">
-          <div {...longPress} className="touch-pan-y select-none">
-            <ChatMessageBubble message={message} />
+        <div className={`flex max-w-[78%] flex-col ${isOut ? 'items-end' : ''}`}>
+          <div className={`flex items-center gap-2 ${isOut ? 'flex-row-reverse' : ''}`}>
+            <div {...longPress} className="touch-pan-y select-none">
+              <ChatMessageBubble message={message} firstInGroup={firstInGroup} lastInGroup={lastInGroup} />
+            </div>
+            <span className="shrink-0 text-[10px] text-black/38">{message.time}</span>
           </div>
           {chips.length > 0 && (
             <div className={`mt-0.5 flex flex-wrap gap-1 ${isOut ? 'justify-end' : ''}`}>
@@ -367,52 +376,51 @@ function MessageRow({ message, prev, name, color, avatar, isLastOwn, seen, onOpe
               ))}
             </div>
           )}
+          {isOut && isLastOwn && message.status !== 'sending' && message.status !== 'failed' && (
+            <SeenIndicator seen={seen} name={name} color={color} avatar={avatar} />
+          )}
         </div>
-        {isOut && (
-          <SendStatus
-            message={message}
-            isLastOwn={isLastOwn}
-            seen={seen}
-            name={name}
-            color={color}
-            avatar={avatar}
-          />
-        )}
+        {isOut && <InlineSendStatus message={message} />}
       </div>
     </div>
   );
 }
 
-function SendStatus({
-  message,
-  isLastOwn,
+function InlineSendStatus({ message }: { message: ChatMessage }) {
+  const { t } = useTranslation();
+
+  if (message.status === 'sending') {
+    return (
+      <span className="h-4 w-4 shrink-0 self-center animate-spin rounded-full border-2 border-black/20 border-t-transparent" />
+    );
+  }
+  if (message.status === 'failed') {
+    return (
+      <span className="flex shrink-0 items-center gap-1 self-center text-xs text-ola-error">
+        <img src={resendIcon} alt={t('chat.resend')} className="h-5 w-5 object-contain" />
+      </span>
+    );
+  }
+  return null;
+}
+
+function SeenIndicator({
   seen,
   name,
   color,
   avatar,
 }: {
-  message: ChatMessage;
-  isLastOwn: boolean;
   seen: boolean;
   name: string;
   color: string;
   avatar?: string;
 }) {
-  const { t } = useTranslation();
-
-  if (message.status === 'sending') {
+  if (seen) {
     return (
-      <span className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-black/20 border-t-transparent" />
-    );
-  }
-  if (message.status === 'failed') {
-    return (
-      <span className="flex shrink-0 items-center gap-1 text-xs text-ola-error">
-        <img src={resendIcon} alt={t('chat.resend')} className="h-5 w-5 object-contain" />
+      <span className="mt-1">
+        <Avatar name={name} color={color} src={avatar} size={16} />
       </span>
     );
   }
-  if (!isLastOwn) return null;
-  if (seen) return <Avatar name={name} color={color} src={avatar} size={14} />;
-  return <img src={sentIcon} alt="" className="h-3.5 w-3.5 shrink-0 object-contain opacity-60" />;
+  return <img src={sentIcon} alt="" className="mt-1 h-4 w-4 object-contain opacity-60" />;
 }

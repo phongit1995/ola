@@ -11,12 +11,23 @@ const VOICE_BARS = [6, 10, 14, 8, 12, 16, 9, 13, 7, 11, 15, 8, 12, 6];
 
 interface ChatMessageBubbleProps {
   message: ChatMessage;
+  firstInGroup?: boolean;
+  lastInGroup?: boolean;
 }
 
-export function ChatMessageBubble({ message }: ChatMessageBubbleProps) {
+export function ChatMessageBubble({
+  message,
+  firstInGroup = true,
+  lastInGroup = true,
+}: ChatMessageBubbleProps) {
   const { t } = useTranslation();
   const isOut = message.direction === 'out';
+  const failed = isOut && message.status === 'failed';
   const surface = isOut ? 'bg-[#dcedc8]' : 'bg-white shadow-sm';
+  const groupCorners = isOut
+    ? `${firstInGroup ? '' : 'rounded-tr-sm'} ${lastInGroup ? '' : 'rounded-br-sm'}`
+    : `${firstInGroup ? '' : 'rounded-tl-sm'} ${lastInGroup ? '' : 'rounded-bl-sm'}`;
+  const bubbleBg = failed ? 'bg-[#f8d7d7]' : isOut ? 'bg-[#dcedc8]' : 'bg-white shadow-sm';
 
   switch (message.kind) {
     case 'sticker':
@@ -118,9 +129,7 @@ export function ChatMessageBubble({ message }: ChatMessageBubbleProps) {
     default:
       return (
         <div
-          className={`max-w-[260px] rounded-2xl px-3 py-2 text-base break-words text-black/87 ${
-            isOut ? 'rounded-tr-sm bg-[#dcedc8]' : 'rounded-tl-sm bg-white shadow-sm'
-          }`}
+          className={`max-w-[300px] rounded-2xl px-3 py-2 text-base break-words text-black/87 ${groupCorners} ${bubbleBg}`}
         >
           {message.text}
         </div>
