@@ -8,10 +8,10 @@ import { ScreenHeader, FullScreenOverlay } from '@components';
 import { RoomTabBar, type RoomTabItem } from './RoomTabBar';
 import { RoomMessagesTab } from './RoomMessagesTab';
 import { RoomMembersTab } from './RoomMembersTab';
-import { MockProfileView } from '../../profile/MockProfileView';
+import { UserProfileView } from '../../profile/UserProfileView';
 
 interface ProfileTarget {
-  nick: string;
+  username: string;
   color: string;
 }
 
@@ -39,8 +39,8 @@ export function RoomChatView({ onClose }: RoomChatViewProps) {
     return () => setRoomForeground(false);
   }, [setRoomForeground]);
 
-  const openProfile = useCallback((nick: string, color: string) => {
-    setProfileTarget({ nick, color });
+  const openProfile = useCallback((username: string, color: string) => {
+    setProfileTarget({ username, color });
   }, []);
 
   const tabs: RoomTabItem[] = [
@@ -75,12 +75,12 @@ export function RoomChatView({ onClose }: RoomChatViewProps) {
       />
 
       {profileTarget != null && (
-        <MockProfileView
-          key={profileTarget.nick}
-          nick={profileTarget.nick}
+        <UserProfileView
+          key={profileTarget.username}
+          username={profileTarget.username}
           color={profileTarget.color}
           onClose={() => setProfileTarget(null)}
-          onOpenFriend={(friend) => setProfileTarget({ nick: friend.name, color: friend.color })}
+          onOpenFriend={(friend) => setProfileTarget({ username: friend.name, color: friend.color })}
         />
       )}
     </FullScreenOverlay>

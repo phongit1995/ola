@@ -160,7 +160,7 @@ export function ChangeAvatarScreen({ open, onClose }: ChangeAvatarScreenProps) {
 
         <p className="mt-3 text-xs text-black/54">{t('avatar.changeHint')}</p>
 
-        <label className="mt-6 flex w-full cursor-pointer items-center gap-3">
+        <label className="mt-6 flex cursor-pointer items-center justify-center gap-3">
           <input
             type="checkbox"
             checked={postToMe}
