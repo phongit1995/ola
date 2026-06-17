@@ -20,3 +20,26 @@ export interface Relationship {
   requester?: RelationshipUserInfo;
   addressee?: RelationshipUserInfo;
 }
+
+export interface Friend {
+  id: string;
+  username: string;
+  email?: string;
+  avatar?: string;
+  fullName?: string;
+  friendAt: string;
+  isOnline: boolean;
+  lastActiveAt?: string;
+}
+
+export interface FriendListParams {
+  limit?: number;
+  offset?: number;
+}
+
+export interface FriendListResult {
+  friends: Friend[];
+  total: number;
+  limit: number;
+  offset: number;
+}

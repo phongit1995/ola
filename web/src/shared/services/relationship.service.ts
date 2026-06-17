@@ -1,8 +1,18 @@
 import { http } from '@api';
 import { API_PATH } from '@config';
-import type { MessageResult, Relationship, RespondAction } from '@app-types';
+import type {
+  FriendListParams,
+  FriendListResult,
+  MessageResult,
+  Relationship,
+  RespondAction,
+} from '@app-types';
 
 export class RelationshipService {
+  static friends(params: FriendListParams = {}): Promise<FriendListResult> {
+    return http.get<FriendListResult>(API_PATH.relationships.friends, { params });
+  }
+
   static sendRequest(userId: string): Promise<Relationship> {
     return http.post<Relationship>(API_PATH.relationships.request, { userId });
   }

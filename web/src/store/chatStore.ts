@@ -26,6 +26,7 @@ export interface ChatState {
   openConversation: (conversationId: string) => Promise<void>;
   startDirect: (recipientId: string) => Promise<Conversation | null>;
   closeConversation: () => void;
+  hideConversation: (conversationId: string) => Promise<void>;
   loadMoreMessages: () => Promise<void>;
   sendText: (content: string) => Promise<void>;
   notifyTyping: () => void;
@@ -100,6 +101,19 @@ export const useChatStore = create<ChatState>((set, get) => {
     },
 
     closeConversation: () => set({ currentConversationId: null, messages: [], typingUsers: [] }),
+
+    hideConversation: async (conversationId) => {
+      const isCurrent = get().currentConversationId === conversationId;
+      set((state) => ({
+        conversations: state.conversations.filter((item) => item.id !== conversationId),
+        ...(isCurrent ? { currentConversationId: null, messages: [], typingUsers: [] } : {}),
+      }));
+      try {
+        await ConversationService.hide(conversationId);
+      } catch {
+        void get().loadConversations();
+      }
+    },
 
     loadMoreMessages: async () => {
       const { currentConversationId, messages, hasMore, loadingMore } = get();

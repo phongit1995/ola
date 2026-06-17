@@ -10,7 +10,8 @@
   },
   "auth": {
     "errGeneric": "Something went wrong, please try again.",
-    "errNetwork": "Unable to connect to the server. Please check your network."
+    "errNetwork": "Unable to connect to the server. Please check your network.",
+    "sessionReplaced": "Your account just signed in on another device."
   },
   "login": {
     "username": "Username",
@@ -106,6 +107,7 @@
     "close": "Close"
   },
   "chat": {
+    "comingSoon": "Coming soon.",
     "messageInputPlaceholder": "Message {{name}}",
     "send": "Send",
     "like": "Like",
@@ -127,6 +129,8 @@
     "block": "Block",
     "composeTitle": "New message",
     "composePlaceholder": "Enter a nickname or phone number to chat",
+    "composeSearchPlaceholder": "Search friends",
+    "composeEmpty": "No friends yet.",
     "composeStart": "Start",
     "attachTabText": "Keyboard",
     "attachTabSmiley": "Emoji",

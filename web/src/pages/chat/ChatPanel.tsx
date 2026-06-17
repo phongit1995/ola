@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -8,35 +8,36 @@ import {
   type ListOption,
 } from '@components';
 import { ROUTES } from '@constants';
-import { DEFAULT_AVATAR_COLOR, toast } from '@lib';
+import { toast } from '@lib';
 import { HomeHeader } from '@components/HomeHeader';
 import moreIcon from '@/assets/icons/chat/ic_more_white.png';
 import { AuthService } from '@services';
 import { useAuthStore } from '@/store/authStore';
+import { useChatStore } from '@/store/chatStore';
 import { ConversationList } from './components/ConversationList';
 import { ContactList } from './components/ContactList';
 import { ComposeButton } from './components/ComposeButton';
 import { ComposeDialog } from './components/ComposeDialog';
 import { ChatConversationView } from './components/ChatConversationView';
-import { CONTACTS, CONVERSATIONS } from './data';
-import type { Conversation } from './types';
+import { toConversationView } from './chatView';
+import { CONTACTS } from './data';
 
 type ChatSub = 'messages' | 'contacts';
-
-interface ActiveChat {
-  name: string;
-  color: string;
-  seedMessage?: string;
-}
 
 export function ChatPanel() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const clearUser = useAuthStore((s) => s.clearUser);
 
+  const conversations = useChatStore((s) => s.conversations);
+  const currentConversationId = useChatStore((s) => s.currentConversationId);
+  const loadConversations = useChatStore((s) => s.loadConversations);
+  const openConversation = useChatStore((s) => s.openConversation);
+  const closeConversation = useChatStore((s) => s.closeConversation);
+  const hideConversation = useChatStore((s) => s.hideConversation);
+  const startDirect = useChatStore((s) => s.startDirect);
+
   const [sub, setSub] = useState<ChatSub>('messages');
-  const [conversations, setConversations] = useState<Conversation[]>(CONVERSATIONS);
-  const [activeChat, setActiveChat] = useState<ActiveChat | null>(null);
   const [composeOpen, setComposeOpen] = useState(false);
   const [headerMenuOpen, setHeaderMenuOpen] = useState(false);
   const [showStrangers, setShowStrangers] = useState(true);
@@ -44,31 +45,16 @@ export function ChatPanel() {
   const [blockedListOpen, setBlockedListOpen] = useState(false);
   const [logoutOpen, setLogoutOpen] = useState(false);
 
-  function openConversation(conversation: Conversation) {
-    setConversations((current) =>
-      current.map((item) =>
-        item.name === conversation.name ? { ...item, unread: 0 } : item
-      )
-    );
-    setActiveChat({
-      name: conversation.name,
-      color: conversation.color,
-      seedMessage: conversation.last,
-    });
-  }
+  useEffect(() => {
+    void loadConversations();
+  }, [loadConversations]);
 
-  function startChatWith(name: string, color = DEFAULT_AVATAR_COLOR, seedMessage?: string) {
-    setComposeOpen(false);
-    setActiveChat({ name, color, seedMessage });
-  }
+  const activeConversation =
+    conversations.find((item) => item.id === currentConversationId) ?? null;
+  const activeView = activeConversation != null ? toConversationView(activeConversation) : null;
 
-  function deleteConversation(name: string) {
-    setConversations((current) => current.filter((item) => item.name !== name));
-  }
-
-  function confirmDeleteAll() {
-    setConversations([]);
-    setDeleteAllOpen(false);
+  function comingSoon() {
+    toast.info(t('chat.comingSoon'));
   }
 
   async function confirmLogout() {
@@ -140,33 +126,32 @@ export function ChatPanel() {
             <ConversationList
               conversations={conversations}
               onSelect={openConversation}
-              onDelete={deleteConversation}
+              onDelete={hideConversation}
             />
             <ComposeButton onClick={() => setComposeOpen(true)} />
           </div>
         ) : (
-          <ContactList
-            contacts={CONTACTS}
-            onSelect={(contact) =>
-              startChatWith(contact.name, contact.color, contact.status)
-            }
-          />
+          <ContactList contacts={CONTACTS} onSelect={comingSoon} />
         )}
       </main>
 
-      {activeChat != null && (
+      {activeConversation != null && activeView != null && (
         <ChatConversationView
-          name={activeChat.name}
-          color={activeChat.color}
-          seedMessage={activeChat.seedMessage}
-          onClose={() => setActiveChat(null)}
+          name={activeView.name}
+          color={activeView.color}
+          avatar={activeView.avatar}
+          online={activeConversation.otherUser?.isOnline ?? false}
+          onClose={closeConversation}
         />
       )}
 
       <ComposeDialog
         open={composeOpen}
         onClose={() => setComposeOpen(false)}
-        onStart={(name) => startChatWith(name)}
+        onStart={(friendId) => {
+          setComposeOpen(false);
+          void startDirect(friendId);
+        }}
       />
       <ListOptionDialog
         open={headerMenuOpen}
@@ -181,7 +166,10 @@ export function ChatPanel() {
         message={t('chat.menuDeleteAllConfirm')}
         confirmLabel={t('dialog.delete')}
         cancelLabel={t('dialog.no')}
-        onConfirm={confirmDeleteAll}
+        onConfirm={() => {
+          setDeleteAllOpen(false);
+          comingSoon();
+        }}
         onCancel={() => setDeleteAllOpen(false)}
       />
       <ConfirmDialog

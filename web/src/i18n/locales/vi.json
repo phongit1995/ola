@@ -10,7 +10,8 @@
   },
   "auth": {
     "errGeneric": "Đã có lỗi xảy ra, vui lòng thử lại.",
-    "errNetwork": "Không kết nối được tới máy chủ. Vui lòng kiểm tra mạng."
+    "errNetwork": "Không kết nối được tới máy chủ. Vui lòng kiểm tra mạng.",
+    "sessionReplaced": "Tài khoản của bạn vừa đăng nhập trên thiết bị khác."
   },
   "login": {
     "username": "Tên đăng nhập",
@@ -106,6 +107,7 @@
     "close": "Đóng"
   },
   "chat": {
+    "comingSoon": "Tính năng sắp ra mắt.",
     "messageInputPlaceholder": "Viết tin nhắn cho {{name}}",
     "send": "Gửi",
     "like": "Thích",
@@ -127,6 +129,8 @@
     "block": "Chặn",
     "composeTitle": "Soạn tin mới",
     "composePlaceholder": "Nhập tên nick hoặc số điện thoại cần chat",
+    "composeSearchPlaceholder": "Tìm bạn bè",
+    "composeEmpty": "Chưa có bạn bè nào.",
     "composeStart": "Bắt đầu",
     "attachTabText": "Bàn phím",
     "attachTabSmiley": "Biểu cảm",
