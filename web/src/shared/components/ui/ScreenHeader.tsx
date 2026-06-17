@@ -14,10 +14,11 @@ interface ScreenHeaderProps {
   onBack: () => void;
   align?: 'start' | 'center';
   left?: ReactNode;
+  subtitle?: ReactNode;
   children?: ReactNode;
 }
 
-export function ScreenHeader({ title, onBack, align = 'start', left, children }: ScreenHeaderProps) {
+export function ScreenHeader({ title, onBack, align = 'start', left, subtitle, children }: ScreenHeaderProps) {
   const { t } = useTranslation();
 
   if (align === 'center') {
@@ -47,7 +48,14 @@ export function ScreenHeader({ title, onBack, align = 'start', left, children }:
         <BackIcon />
       </button>
       {left}
-      <span className="flex-1 truncate text-base font-medium">{title}</span>
+      {subtitle != null ? (
+        <span className="flex min-w-0 flex-1 flex-col leading-tight">
+          <span className="truncate text-base font-medium">{title}</span>
+          <span className="truncate text-xs text-white/70">{subtitle}</span>
+        </span>
+      ) : (
+        <span className="flex-1 truncate text-base font-medium">{title}</span>
+      )}
       {children}
     </header>
   );
