@@ -120,6 +120,7 @@
   },
   "chat": {
     "comingSoon": "Coming soon.",
+    "youPrefix": "You",
     "blockedByMe": "You blocked this person. Unblock to send messages.",
     "blockedByThem": "You can't message this person.",
     "attachPickImage": "Choose a photo",

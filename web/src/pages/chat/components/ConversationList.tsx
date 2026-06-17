@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ConfirmDialog } from '@components';
 import type { Conversation } from '@app-types';
 import { Avatar } from '@components';
+import sentIcon from '@/assets/icons/chat/ic_message_sent.png';
 import { EmptyMessages } from './EmptyMessages';
 import { toConversationView, type ConversationView } from '../chatView';
 
@@ -11,6 +12,9 @@ interface ConversationListProps {
   onSelect: (id: string) => void;
   onDelete: (id: string) => void;
 }
+
+const SWIPE_TRIGGER = 56;
+const SWIPE_MAX = 88;
 
 export function ConversationList({
   conversations,
@@ -21,7 +25,7 @@ export function ConversationList({
   const [pendingDelete, setPendingDelete] = useState<ConversationView | null>(null);
   const [deleteArchived, setDeleteArchived] = useState(false);
 
-  function openDelete(conversation: ConversationView) {
+  function requestDelete(conversation: ConversationView) {
     setDeleteArchived(false);
     setPendingDelete(conversation);
   }
@@ -36,65 +40,14 @@ export function ConversationList({
   return (
     <>
       <ul>
-        {conversations.map((conversation) => {
-          const view = toConversationView(conversation);
-          const unread = view.unread > 0;
-          return (
-            <li
-              key={view.id}
-              className={`group flex items-center gap-4 border-b border-black/12 px-4 py-3 ${
-                unread ? 'bg-ola-primary-light' : 'bg-white/80'
-              }`}
-            >
-              <button
-                type="button"
-                onClick={() => onSelect(view.id)}
-                className="flex min-h-12 min-w-0 flex-1 items-center gap-4 text-left"
-              >
-                <Avatar name={view.name} color={view.color} src={view.avatar} />
-                <span className="min-w-0 flex-1">
-                  <span className="flex items-center justify-between gap-2">
-                    <span
-                      className={`truncate text-base text-black/87 ${unread ? 'font-bold' : ''}`}
-                    >
-                      {view.name}
-                    </span>
-                    <span
-                      className={`shrink-0 text-xs whitespace-nowrap ${
-                        unread ? 'font-bold text-black/87' : 'text-black/54'
-                      }`}
-                    >
-                      {view.time}
-                    </span>
-                  </span>
-                  <span className="mt-0.5 flex items-center gap-2">
-                    <span className="min-w-0 flex-1 truncate text-sm text-black/87">
-                      {view.preview}
-                    </span>
-                    {unread && (
-                      <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-ola-accent px-1.5 text-xs font-bold text-white">
-                        {view.unread}
-                      </span>
-                    )}
-                  </span>
-                </span>
-              </button>
-              <button
-                type="button"
-                aria-label={t('dialog.deleteAria', { name: view.name })}
-                onClick={() => openDelete(view)}
-                className="shrink-0 rounded-full p-2 text-gray-400 opacity-0 transition hover:bg-gray-100 hover:text-[#dd4b39] focus:opacity-100 group-hover:opacity-100"
-              >
-                <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
-                  <path
-                    fill="currentColor"
-                    d="M6 7h12l-1 13H7L6 7zm3-3h6l1 2H8l1-2zM5 5h14v2H5V5z"
-                  />
-                </svg>
-              </button>
-            </li>
-          );
-        })}
+        {conversations.map((conversation) => (
+          <ConversationRow
+            key={conversation.id}
+            view={toConversationView(conversation)}
+            onSelect={onSelect}
+            onRequestDelete={requestDelete}
+          />
+        ))}
       </ul>
       <ConfirmDialog
         open={pendingDelete != null}
@@ -110,5 +63,115 @@ export function ConversationList({
         onCancel={() => setPendingDelete(null)}
       />
     </>
+  );
+}
+
+interface ConversationRowProps {
+  view: ConversationView;
+  onSelect: (id: string) => void;
+  onRequestDelete: (view: ConversationView) => void;
+}
+
+function ConversationRow({ view, onSelect, onRequestDelete }: ConversationRowProps) {
+  const { t } = useTranslation();
+  const unread = view.unread > 0;
+  const previewPrefix =
+    view.preview === ''
+      ? ''
+      : view.fromMe
+        ? `${t('chat.youPrefix')}: `
+        : view.isGroup && view.senderName
+          ? `${view.senderName}: `
+          : '';
+  const [offset, setOffset] = useState(0);
+  const startX = useRef<number | null>(null);
+  const swiped = useRef(false);
+
+  function handlePointerDown(event: React.PointerEvent) {
+    startX.current = event.clientX;
+    swiped.current = false;
+  }
+
+  function handlePointerMove(event: React.PointerEvent) {
+    if (startX.current == null) return;
+    const delta = event.clientX - startX.current;
+    if (Math.abs(delta) > 6) swiped.current = true;
+    setOffset(Math.min(0, Math.max(delta, -SWIPE_MAX)));
+  }
+
+  function handlePointerUp() {
+    if (startX.current == null) return;
+    const trigger = offset <= -SWIPE_TRIGGER;
+    startX.current = null;
+    setOffset(0);
+    if (trigger) onRequestDelete(view);
+  }
+
+  function handleSelect() {
+    if (swiped.current) {
+      swiped.current = false;
+      return;
+    }
+    onSelect(view.id);
+  }
+
+  return (
+    <li className="relative overflow-hidden after:absolute after:right-4 after:bottom-0 after:left-4 after:h-px after:bg-black/12">
+      {offset < 0 && (
+        <span className="absolute inset-y-0 right-0 flex w-[88px] items-center justify-center bg-[#dd4b39] text-sm font-medium text-white">
+          {t('dialog.delete')}
+        </span>
+      )}
+      <div
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+        style={{ transform: `translateX(${offset}px)` }}
+        className={`relative flex min-h-[72px] touch-pan-y items-center gap-4 px-4 ${
+          unread ? 'bg-ola-primary-light' : 'bg-white/80'
+        } ${offset === 0 ? 'transition-transform' : ''}`}
+      >
+        <button
+          type="button"
+          onClick={handleSelect}
+          className="flex min-w-0 flex-1 items-center gap-4 text-left"
+        >
+          <Avatar name={view.name} color={view.color} src={view.avatar} />
+          <span className="min-w-0 flex-1">
+            <span className="flex items-center justify-between gap-2">
+              <span className={`truncate text-base text-black/87 ${unread ? 'font-bold' : ''}`}>
+                {view.name}
+              </span>
+              <span
+                className={`shrink-0 text-xs whitespace-nowrap ${
+                  unread ? 'font-bold text-black/87' : 'text-black/54'
+                }`}
+              >
+                {view.time}
+              </span>
+            </span>
+            <span className="mt-0.5 flex items-center gap-1">
+              <span className="min-w-0 flex-1 truncate text-sm text-black/87">
+                {previewPrefix}
+                {view.preview}
+              </span>
+              {view.fromMe &&
+                view.preview !== '' &&
+                (view.seen ? (
+                  <Avatar name={view.name} color={view.color} src={view.avatar} size={16} />
+                ) : (
+                  <img src={sentIcon} alt="" className="h-3.5 w-3.5 shrink-0 object-contain opacity-60" />
+                ))}
+            </span>
+          </span>
+        </button>
+        {unread && (
+          <span className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-ola-accent px-1.5 text-xs font-bold text-white ring-2 ring-white">
+            {view.unread}
+          </span>
+        )}
+      </div>
+    </li>
   );
 }

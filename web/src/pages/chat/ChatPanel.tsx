@@ -29,6 +29,7 @@ export function ChatPanel() {
   const clearUser = useAuthStore((s) => s.clearUser);
 
   const conversations = useChatStore((s) => s.conversations);
+  const loadingConversations = useChatStore((s) => s.loadingConversations);
   const loadConversations = useChatStore((s) => s.loadConversations);
   const openConversation = useChatStore((s) => s.openConversation);
   const hideConversation = useChatStore((s) => s.hideConversation);
@@ -81,8 +82,9 @@ export function ChatPanel() {
   ];
 
   const headerMenuOptions = sub === 'messages' ? messagesMenu : contactsMenu;
+  const totalUnread = conversations.reduce((sum, item) => sum + (item.unreadCount ?? 0), 0);
 
-  function renderTab(value: ChatSub, label: string) {
+  function renderTab(value: ChatSub, label: string, badge = 0) {
     const isActive = sub === value;
     return (
       <button
@@ -92,7 +94,14 @@ export function ChatPanel() {
           isActive ? 'border-b-2 border-white text-white' : 'text-white/70'
         }`}
       >
-        {label}
+        <span className="relative inline-flex items-center">
+          {label}
+          {badge > 0 && (
+            <span className="absolute -top-1 -right-5 flex h-4 min-w-4 items-center justify-center rounded-full bg-ola-accent px-1 text-[10px] font-bold text-white ring-2 ring-ola-primary">
+              {badge > 99 ? '99+' : badge}
+            </span>
+          )}
+        </span>
       </button>
     );
   }
@@ -101,7 +110,7 @@ export function ChatPanel() {
     <>
       <HomeHeader>
         <div className="flex w-full items-center">
-          {renderTab('messages', t('home.subMessages'))}
+          {renderTab('messages', t('home.subMessages'), totalUnread)}
           {renderTab('contacts', t('home.subContacts'))}
           <button
             type="button"
@@ -117,12 +126,20 @@ export function ChatPanel() {
       <main className="relative flex-1 overflow-y-auto">
         {sub === 'messages' ? (
           <div className="relative h-full bg-[#f3f3f3]">
-            <ConversationList
-              conversations={conversations}
-              onSelect={openConversation}
-              onDelete={hideConversation}
-            />
-            <ComposeButton onClick={() => setComposeOpen(true)} />
+            {loadingConversations && conversations.length === 0 ? (
+              <div className="flex h-full items-center justify-center">
+                <span className="h-8 w-8 animate-spin rounded-full border-4 border-ola-primary/30 border-t-ola-primary" />
+              </div>
+            ) : (
+              <>
+                <ConversationList
+                  conversations={conversations}
+                  onSelect={openConversation}
+                  onDelete={hideConversation}
+                />
+                <ComposeButton onClick={() => setComposeOpen(true)} />
+              </>
+            )}
           </div>
         ) : (
           <ContactList contacts={CONTACTS} onSelect={comingSoon} />

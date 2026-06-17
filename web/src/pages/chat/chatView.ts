@@ -9,6 +9,10 @@ export interface ConversationView {
   avatar?: string;
   color: string;
   preview: string;
+  fromMe: boolean;
+  seen: boolean;
+  senderName?: string;
+  isGroup: boolean;
   time: string;
   unread: number;
 }
@@ -45,6 +49,10 @@ export function toConversationView(conversation: Conversation): ConversationView
     avatar: conversation.otherUser?.avatar ?? conversation.avatar,
     color: name ? colorForName(name) : DEFAULT_AVATAR_COLOR,
     preview: conversation.lastMessageText ?? '',
+    fromMe: conversation.isLastMessageFromMe,
+    seen: conversation.seen,
+    senderName: conversation.lastMessageSenderName,
+    isGroup: conversation.type === 'group',
     time: formatClock(conversation.lastMessageAt),
     unread: conversation.unreadCount,
   };
