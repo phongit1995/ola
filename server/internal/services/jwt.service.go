@@ -28,6 +28,13 @@ func (s *JWTService) GenerateToken(userID uuid.UUID) (string, error) {
 	})
 }
 
+func (s *JWTService) GenerateTokenWithSession(userID, sessionID uuid.UUID) (string, error) {
+	return s.GenerateTokenWithClaims(map[string]interface{}{
+		"id":  userID.String(),
+		"sid": sessionID.String(),
+	})
+}
+
 func (s *JWTService) GenerateTokenWithClaims(data interface{}) (string, error) {
 	expiry, err := time.ParseDuration(s.cfg.JWTExpiry)
 	if err != nil {
@@ -83,6 +90,13 @@ func (s *JWTService) GenerateRefreshToken(userID uuid.UUID) (string, error) {
 	})
 }
 
+func (s *JWTService) GenerateRefreshTokenWithSession(userID, sessionID uuid.UUID) (string, error) {
+	return s.GenerateRefreshTokenWithClaims(map[string]interface{}{
+		"id":  userID.String(),
+		"sid": sessionID.String(),
+	})
+}
+
 func (s *JWTService) GenerateRefreshTokenWithClaims(data interface{}) (string, error) {
 	now := time.Now()
 	claims := TokenClaims{
@@ -121,4 +135,28 @@ func (s *JWTService) GetUserIDFromToken(tokenString string) (uuid.UUID, error) {
 	}
 
 	return userID, nil
+}
+
+func (s *JWTService) GetSessionIDFromToken(tokenString string) (uuid.UUID, error) {
+	data, err := s.GetDataFromToken(tokenString)
+	if err != nil {
+		return uuid.Nil, err
+	}
+
+	dataMap, ok := data.(map[string]interface{})
+	if !ok {
+		return uuid.Nil, errors.New("invalid data format in token")
+	}
+
+	sidStr, ok := dataMap["sid"].(string)
+	if !ok || sidStr == "" {
+		return uuid.Nil, nil
+	}
+
+	sessionID, err := uuid.Parse(sidStr)
+	if err != nil {
+		return uuid.Nil, errors.New("invalid sid format in token")
+	}
+
+	return sessionID, nil
 }

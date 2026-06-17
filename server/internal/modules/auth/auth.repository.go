@@ -43,21 +43,13 @@ func (r *Repository) UpdatePassword(userID uuid.UUID, hashedPassword string) err
 		Update("password", hashedPassword).Error
 }
 
-func (r *Repository) UpdateLoginInfo(userID uuid.UUID, ip, refreshToken string) error {
-	now := gorm.Expr("NOW()")
+func (r *Repository) UpdateLastLogin(userID uuid.UUID, ip string) error {
 	return r.db.Model(&models.User{}).
 		Where("id = ?", userID).
 		Updates(map[string]interface{}{
-			"last_login_ip":  ip,
-			"last_login_at":  now,
-			"refresh_token":  refreshToken,
+			"last_login_ip": ip,
+			"last_login_at": gorm.Expr("NOW()"),
 		}).Error
-}
-
-func (r *Repository) UpdateRefreshToken(userID uuid.UUID, refreshToken string) error {
-	return r.db.Model(&models.User{}).
-		Where("id = ?", userID).
-		Update("refresh_token", refreshToken).Error
 }
 
 func (r *Repository) ClearRefreshToken(userID uuid.UUID) error {

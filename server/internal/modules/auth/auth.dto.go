@@ -8,8 +8,16 @@ type RegisterRequest struct {
 }
 
 type LoginRequest struct {
-	Username string `json:"username" binding:"required" example:"john_doe"`
-	Password string `json:"password" binding:"required" example:"password123"`
+	Username string      `json:"username" binding:"required" example:"john_doe"`
+	Password string      `json:"password" binding:"required" example:"password123"`
+	Device   *DeviceInfo `json:"device,omitempty"`
+}
+
+type DeviceInfo struct {
+	DeviceName string `json:"deviceName" example:"iPhone 15"`
+	Platform   string `json:"platform" example:"ios"`
+	DeviceID   string `json:"deviceId" example:"6f1e...abc"`
+	AppVersion string `json:"appVersion" example:"1.0.0"`
 }
 
 type RegisterResponse struct {

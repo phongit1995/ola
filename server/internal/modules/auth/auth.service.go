@@ -3,10 +3,13 @@ package auth
 import (
 	"errors"
 	"fmt"
+	"ola-chat-server/internal/config"
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
+	"ola-chat-server/internal/modules/session"
 	"ola-chat-server/internal/modules/user"
 	"ola-chat-server/internal/services"
+	"ola-chat-server/internal/utils"
 	"regexp"
 	"strings"
 	"time"
@@ -20,20 +23,24 @@ import (
 var usernameRegex = regexp.MustCompile(`^[a-z0-9_-]+$`)
 
 type Service struct {
-	repo       *Repository
-	jwtService *services.JWTService
-	userCache  *user.CacheService
-	cache      *services.CacheService
-	logger     *zap.SugaredLogger
+	repo           *Repository
+	jwtService     *services.JWTService
+	userCache      *user.CacheService
+	cache          *services.CacheService
+	sessionService *session.Service
+	cfg            *config.Config
+	logger         *zap.SugaredLogger
 }
 
-func NewService(repo *Repository, jwtService *services.JWTService, userCache *user.CacheService, cache *services.CacheService, logger *zap.SugaredLogger) *Service {
+func NewService(repo *Repository, jwtService *services.JWTService, userCache *user.CacheService, cache *services.CacheService, sessionService *session.Service, cfg *config.Config, logger *zap.SugaredLogger) *Service {
 	return &Service{
-		repo:       repo,
-		jwtService: jwtService,
-		userCache:  userCache,
-		cache:      cache,
-		logger:     logger.Named("[auth_service]"),
+		repo:           repo,
+		jwtService:     jwtService,
+		userCache:      userCache,
+		cache:          cache,
+		sessionService: sessionService,
+		cfg:            cfg,
+		logger:         logger.Named("[auth_service]"),
 	}
 }
 
@@ -53,7 +60,11 @@ func (s *Service) Logout(token string) error {
 		}
 	}
 
-	if userID, err := s.jwtService.GetUserIDFromToken(token); err == nil {
+	if sessionID, err := s.jwtService.GetSessionIDFromToken(token); err == nil && sessionID != uuid.Nil {
+		if err := s.sessionService.Revoke(sessionID); err != nil {
+			s.logger.Warnw("Failed to revoke session", "session_id", sessionID, "error", err)
+		}
+	} else if userID, err := s.jwtService.GetUserIDFromToken(token); err == nil {
 		if err := s.repo.ClearRefreshToken(userID); err != nil {
 			s.logger.Warnw("Failed to clear refresh token", "user_id", userID, "error", err)
 		}
@@ -63,10 +74,50 @@ func (s *Service) Logout(token string) error {
 	return nil
 }
 
-func (s *Service) RefreshToken(refreshTokenStr, clientIP string) (*RefreshTokenResponse, error) {
+func (s *Service) RefreshToken(refreshTokenStr, clientIP, userAgent string) (*RefreshTokenResponse, error) {
 	userID, err := s.jwtService.GetUserIDFromToken(refreshTokenStr)
 	if err != nil {
 		return nil, errors.New("invalid or expired refresh token")
+	}
+
+	sessionID, err := s.jwtService.GetSessionIDFromToken(refreshTokenStr)
+	if err != nil {
+		return nil, errors.New("invalid or expired refresh token")
+	}
+
+	if sessionID == uuid.Nil {
+		return s.refreshLegacy(userID, refreshTokenStr, clientIP, userAgent)
+	}
+
+	newAccessToken, err := s.jwtService.GenerateTokenWithSession(userID, sessionID)
+	if err != nil {
+		return nil, err
+	}
+
+	newRefreshToken, err := s.jwtService.GenerateRefreshTokenWithSession(userID, sessionID)
+	if err != nil {
+		return nil, err
+	}
+
+	rotated, err := s.sessionService.Rotate(sessionID, refreshTokenStr, newRefreshToken)
+	if err != nil {
+		s.logger.Errorw("Failed to rotate session refresh token", "session_id", sessionID, "error", err)
+		return nil, err
+	}
+	if !rotated {
+		return nil, errors.New("refresh token has been revoked")
+	}
+
+	s.logger.Infow("Token refreshed", "user_id", userID, "session_id", sessionID, "ip", clientIP)
+	return &RefreshTokenResponse{
+		Token:        newAccessToken,
+		RefreshToken: newRefreshToken,
+	}, nil
+}
+
+func (s *Service) refreshLegacy(userID uuid.UUID, oldRefreshToken, clientIP, userAgent string) (*RefreshTokenResponse, error) {
+	if !s.cfg.AllowLegacyRefresh {
+		return nil, errors.New("refresh token has been revoked")
 	}
 
 	user, err := s.repo.FindByID(userID)
@@ -77,26 +128,43 @@ func (s *Service) RefreshToken(refreshTokenStr, clientIP string) (*RefreshTokenR
 		return nil, err
 	}
 
-	if user.RefreshToken == "" || user.RefreshToken != refreshTokenStr {
+	if user.RefreshToken == "" || user.RefreshToken != oldRefreshToken {
 		return nil, errors.New("refresh token has been revoked")
 	}
 
-	newAccessToken, err := s.jwtService.GenerateToken(user.ID)
+	deviceName, platform, deviceID, appVersion := resolveDeviceInfo(nil, userAgent)
+	sessionID := s.sessionService.ResolveSessionID(userID, deviceID)
+
+	newAccessToken, err := s.jwtService.GenerateTokenWithSession(userID, sessionID)
 	if err != nil {
 		return nil, err
 	}
 
-	newRefreshToken, err := s.jwtService.GenerateRefreshToken(user.ID)
+	newRefreshToken, err := s.jwtService.GenerateRefreshTokenWithSession(userID, sessionID)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := s.repo.UpdateRefreshToken(user.ID, newRefreshToken); err != nil {
-		s.logger.Errorw("Failed to rotate refresh token", "user_id", user.ID, "error", err)
+	if err := s.sessionService.Save(session.SaveInput{
+		ID:           sessionID,
+		UserID:       userID,
+		DeviceName:   deviceName,
+		Platform:     platform,
+		DeviceID:     deviceID,
+		AppVersion:   appVersion,
+		UserAgent:    userAgent,
+		IPAddress:    clientIP,
+		RefreshToken: newRefreshToken,
+	}); err != nil {
+		s.logger.Errorw("Failed to migrate legacy session", "user_id", userID, "error", err)
 		return nil, err
 	}
 
-	s.logger.Infow("Token refreshed", "user_id", user.ID, "ip", clientIP)
+	if err := s.repo.ClearRefreshToken(userID); err != nil {
+		s.logger.Warnw("Failed to clear legacy refresh token", "user_id", userID, "error", err)
+	}
+
+	s.logger.Infow("Token refreshed (legacy migrated)", "user_id", userID, "session_id", sessionID, "ip", clientIP)
 	return &RefreshTokenResponse{
 		Token:        newAccessToken,
 		RefreshToken: newRefreshToken,
@@ -169,7 +237,7 @@ func (s *Service) Register(req *RegisterRequest) (*RegisterResponse, error) {
 	}, nil
 }
 
-func (s *Service) Login(req *LoginRequest, clientIP string) (*AuthResponse, error) {
+func (s *Service) Login(req *LoginRequest, clientIP, userAgent string) (*AuthResponse, error) {
 	req.Username = strings.ToLower(strings.TrimSpace(req.Username))
 
 	s.logger.Debugw("Finding user by username",
@@ -212,7 +280,10 @@ func (s *Service) Login(req *LoginRequest, clientIP string) (*AuthResponse, erro
 		"user_id", user.ID,
 	)
 
-	token, err := s.jwtService.GenerateToken(user.ID)
+	deviceName, platform, deviceID, appVersion := resolveDeviceInfo(req.Device, userAgent)
+	sessionID := s.sessionService.ResolveSessionID(user.ID, deviceID)
+
+	token, err := s.jwtService.GenerateTokenWithSession(user.ID, sessionID)
 	if err != nil {
 		s.logger.Errorw("Failed to generate access token",
 			"user_id", user.ID,
@@ -221,7 +292,7 @@ func (s *Service) Login(req *LoginRequest, clientIP string) (*AuthResponse, erro
 		return nil, err
 	}
 
-	refreshToken, err := s.jwtService.GenerateRefreshToken(user.ID)
+	refreshToken, err := s.jwtService.GenerateRefreshTokenWithSession(user.ID, sessionID)
 	if err != nil {
 		s.logger.Errorw("Failed to generate refresh token",
 			"user_id", user.ID,
@@ -235,9 +306,27 @@ func (s *Service) Login(req *LoginRequest, clientIP string) (*AuthResponse, erro
 		"ip", clientIP,
 	)
 
-	if err := s.repo.UpdateLoginInfo(user.ID, clientIP, refreshToken); err != nil {
+	if err := s.repo.UpdateLastLogin(user.ID, clientIP); err != nil {
 		s.logger.Errorw("Failed to update login info",
 			"user_id", user.ID,
+			"error", err.Error(),
+		)
+	}
+
+	if err := s.sessionService.Save(session.SaveInput{
+		ID:           sessionID,
+		UserID:       user.ID,
+		DeviceName:   deviceName,
+		Platform:     platform,
+		DeviceID:     deviceID,
+		AppVersion:   appVersion,
+		UserAgent:    userAgent,
+		IPAddress:    clientIP,
+		RefreshToken: refreshToken,
+	}); err != nil {
+		s.logger.Errorw("Failed to save session",
+			"user_id", user.ID,
+			"session_id", sessionID,
 			"error", err.Error(),
 		)
 	}
@@ -309,4 +398,20 @@ func (s *Service) buildAuthResponse(user *models.User, token, refreshToken strin
 		RefreshToken: refreshToken,
 		User:         userResponse,
 	}
+}
+
+func resolveDeviceInfo(device *DeviceInfo, userAgent string) (name, platform, deviceID, appVersion string) {
+	if device != nil {
+		name = strings.TrimSpace(device.DeviceName)
+		platform = strings.TrimSpace(device.Platform)
+		deviceID = strings.TrimSpace(device.DeviceID)
+		appVersion = strings.TrimSpace(device.AppVersion)
+	}
+	if name == "" {
+		name = utils.ParseDeviceName(userAgent)
+	}
+	if platform == "" {
+		platform = utils.ParsePlatform(userAgent)
+	}
+	return
 }

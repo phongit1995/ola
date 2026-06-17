@@ -45,6 +45,7 @@ const (
 	CacheKeyUserSession         = "USER:%s:SESSION"
 	CacheKeyUserRefreshToken    = "USER:%s:REFRESH_TOKEN"
 	CacheKeyTokenBlacklist      = "JWT_BLACKLIST:%s"
+	CacheKeySessionRevoked      = "SESSION_REVOKED:%s"
 	CacheKeyConversation        = "CONVERSATION:%s:DETAIL"
 	CacheKeyConversationList    = "USER:%s:CONVERSATIONS"
 	CacheKeyConversationMembers = "CONVERSATION:%s:MEMBERS"

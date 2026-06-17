@@ -95,6 +95,18 @@ func (m *AuthMiddleware) RequireAuth() gin.HandlerFunc {
 			return
 		}
 
+		if sidStr, ok := dataMap["sid"].(string); ok && sidStr != "" {
+			if sessionID, err := uuid.Parse(sidStr); err == nil {
+				revokedKey := fmt.Sprintf(constants.CacheKeySessionRevoked, sessionID.String())
+				if exists, _ := m.cache.Exists(revokedKey); exists {
+					utils.RespondError(c, http.StatusUnauthorized, "session revoked")
+					c.Abort()
+					return
+				}
+				c.Set("session_id", sessionID)
+			}
+		}
+
 		c.Set("user_id", userID)
 		c.Next()
 	}

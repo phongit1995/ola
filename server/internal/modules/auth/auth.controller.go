@@ -120,7 +120,7 @@ func (ctrl *Controller) Login(c *gin.Context) (interface{}, error) {
 		"ip", c.ClientIP(),
 	)
 
-	resp, err := ctrl.service.Login(&req, c.ClientIP())
+	resp, err := ctrl.service.Login(&req, c.ClientIP(), c.GetHeader("User-Agent"))
 	if err != nil {
 		ctrl.logger.Warnw("Login failed",
 			"username", req.Username,
@@ -156,7 +156,7 @@ func (ctrl *Controller) Refresh(c *gin.Context) (interface{}, error) {
 		return nil, err
 	}
 
-	resp, err := ctrl.service.RefreshToken(req.RefreshToken, c.ClientIP())
+	resp, err := ctrl.service.RefreshToken(req.RefreshToken, c.ClientIP(), c.GetHeader("User-Agent"))
 	if err != nil {
 		ctrl.logger.Warnw("Refresh failed", "error", err.Error(), "ip", c.ClientIP())
 		return nil, utils.ServiceError(err)
