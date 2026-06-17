@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import maleIcon from '@/assets/icons/chat/ic_indicate_male.png';
 import femaleIcon from '@/assets/icons/chat/ic_indicate_female.png';
+import androidIcon from '@/assets/icons/me/ic_indicate_android.png';
 import type { RoomMember } from '@app-types';
 import { Avatar } from '@components';
 import { colorForName } from '@lib';
@@ -22,6 +23,14 @@ function GenderIcon({ gender }: { gender: RoomMember['gender'] }) {
   );
 }
 
+function DeviceBadge() {
+  return (
+    <span className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full border border-white bg-white">
+      <img src={androidIcon} alt="" className="h-3 w-3 object-contain" />
+    </span>
+  );
+}
+
 export function RoomMembersTab({ members, active, onOpenProfile }: RoomMembersTabProps) {
   const { t } = useTranslation();
 
@@ -32,28 +41,35 @@ export function RoomMembersTab({ members, active, onOpenProfile }: RoomMembersTa
       ) : (
         <ul>
           {members.map((member) => {
-            const name = member.username;
-            const color = colorForName(name);
+            const color = colorForName(member.username);
+            const subName =
+              member.fullName && member.fullName !== '' && member.fullName !== member.username
+                ? member.fullName
+                : null;
             return (
               <li key={member.userId} className="border-b border-black/12">
                 <button
                   type="button"
-                  onClick={() => onOpenProfile?.(name, color)}
+                  onClick={() => onOpenProfile?.(member.username, color)}
                   className="flex w-full items-center gap-2 px-4 py-3 text-left hover:bg-black/[0.03]"
                 >
-                  {member.avatar ? (
-                    <img
-                      src={member.avatar}
-                      alt=""
-                      className="h-10 w-10 shrink-0 rounded-full object-cover"
-                    />
-                  ) : (
-                    <Avatar name={name} color={color} />
-                  )}
+                  <GenderIcon gender={member.gender} />
+                  <span className="relative h-10 w-10 shrink-0">
+                    {member.avatar ? (
+                      <img
+                        src={member.avatar}
+                        alt=""
+                        className="h-10 w-10 rounded-full object-cover"
+                      />
+                    ) : (
+                      <Avatar name={member.username} color={color} />
+                    )}
+                    <DeviceBadge />
+                  </span>
                   <div className="flex min-w-0 flex-1 flex-col">
-                    <span className="flex items-center gap-1 text-base text-black/87">
-                      <span className="truncate">{name}</span>
-                      <GenderIcon gender={member.gender} />
+                    <span className="truncate text-base">
+                      <span className="text-black/87">{member.username}</span>
+                      {subName ? <span className="text-black/54"> · {subName}</span> : null}
                     </span>
                     {member.bio ? (
                       <span className="truncate text-xs text-black/54">{member.bio}</span>
