@@ -1,32 +1,36 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import maleIcon from '@/assets/icons/chat/ic_indicate_male.png';
-import femaleIcon from '@/assets/icons/chat/ic_indicate_female.png';
-import groupIcon from '@/assets/icons/room/ic_notify_new_chat_group_message.png';
-import type { Contact } from '../types';
-import { Avatar } from '@components';
+import { Avatar, ListOptionDialog, type ListOption } from '@components';
 import type { AuthUser } from '@app-types';
+import type { Contact, DeviceType } from '../types';
+import { SUGGESTED_FRIENDS } from '../data';
 import smileyIcon from '@/assets/icons/chat/ola_smiley_online.png';
 import vipIcon from '@/assets/icons/apps/vip.png';
 import snapPicIcon from '@/assets/icons/chat/icon_snap_pic.png';
+import groupIcon from '@/assets/icons/room/ic_notify_new_chat_group_message.png';
+import devicePhone from '@/assets/icons/chat/ic_device_type_phone.png';
+import devicePc from '@/assets/icons/chat/ic_device_type_pc.png';
+import deviceApple from '@/assets/icons/chat/ic_device_type_apple.png';
+import deviceAndroid from '@/assets/icons/chat/ic_device_type_android.png';
+import deviceWinphone from '@/assets/icons/chat/ic_device_type_winphone.png';
+import birthdayIcon from '@/assets/icons/chat/ic_buddy_birthday.png';
+
+const DEVICE_ICONS: Record<DeviceType, string> = {
+  phone: devicePhone,
+  pc: devicePc,
+  apple: deviceApple,
+  android: deviceAndroid,
+  winphone: deviceWinphone,
+};
 
 interface ContactListProps {
   contacts: Contact[];
   onSelect: (contact: Contact) => void;
   me?: AuthUser | null;
-  onOpenProfile?: () => void;
+  onAccountMenu?: () => void;
   onEditStatus?: () => void;
   onPreviewImage?: () => void;
-}
-
-function GenderIcon({ gender }: { gender: Contact['gender'] }) {
-  return (
-    <img
-      src={gender === 'male' ? maleIcon : femaleIcon}
-      alt=""
-      className="h-4 w-4 shrink-0 self-start object-contain"
-    />
-  );
+  onComingSoon?: () => void;
 }
 
 function ActionRow({
@@ -46,7 +50,7 @@ function ActionRow({
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full items-center gap-3 border-b border-black/12 bg-white px-4 py-3 text-left"
+      className="flex w-full items-center gap-3 border-b border-black/12 bg-white/80 px-4 py-3 text-left"
     >
       {badge}
       <span className="min-w-0 flex-1">
@@ -58,16 +62,117 @@ function ActionRow({
   );
 }
 
+function SectionHeader({ label }: { label: string }) {
+  return (
+    <div className="flex h-9 items-center bg-[#d5d5d5] px-4">
+      <span className="truncate text-sm font-medium text-white">{label}</span>
+    </div>
+  );
+}
+
+function BuddyRow({
+  contact,
+  highlight,
+  onSelect,
+  onLongPress,
+}: {
+  contact: Contact;
+  highlight: boolean;
+  onSelect: () => void;
+  onLongPress: () => void;
+}) {
+  const timer = useRef<number | undefined>(undefined);
+  const longPressed = useRef(false);
+  const showVip = contact.online && contact.vip;
+  const badge =
+    contact.group === 'birthday'
+      ? birthdayIcon
+      : contact.online
+        ? DEVICE_ICONS[contact.deviceType]
+        : null;
+
+  function startPress() {
+    longPressed.current = false;
+    timer.current = window.setTimeout(() => {
+      longPressed.current = true;
+      onLongPress();
+    }, 450);
+  }
+
+  function cancelPress() {
+    window.clearTimeout(timer.current);
+  }
+
+  function handleClick() {
+    if (longPressed.current) {
+      longPressed.current = false;
+      return;
+    }
+    onSelect();
+  }
+
+  return (
+    <li>
+      <button
+        type="button"
+        onClick={handleClick}
+        onPointerDown={startPress}
+        onPointerUp={cancelPress}
+        onPointerLeave={cancelPress}
+        onContextMenu={(event) => {
+          event.preventDefault();
+          onLongPress();
+        }}
+        className={`flex w-full items-center border-b border-black/12 px-4 py-3 text-left ${
+          highlight ? 'bg-[#f1f8e9]' : 'bg-white/80'
+        }`}
+      >
+        <span className="relative h-10 w-10 shrink-0">
+          <span className="block h-10 w-10 overflow-hidden rounded">
+            <Avatar name={contact.name} color={contact.color} rounded={false} />
+          </span>
+          {badge != null && (
+            <span className="absolute right-0 bottom-0 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-ola-primary ring-1 ring-white">
+              <img src={badge} alt="" className="h-2.5 w-2.5 object-contain" />
+            </span>
+          )}
+        </span>
+        <span className="ml-4 min-w-0 flex-1">
+          <span className="flex items-center gap-1">
+            {showVip && <img src={vipIcon} alt="" className="h-6 w-6 shrink-0 object-contain" />}
+            <span className="truncate text-base text-black/87">{contact.name}</span>
+          </span>
+          {contact.alias != null && contact.alias !== '' && (
+            <span className="block truncate text-xs text-black/54">{contact.alias}</span>
+          )}
+        </span>
+        {contact.statusImage != null && contact.statusImage !== '' && (
+          <img
+            src={contact.statusImage}
+            alt=""
+            className="ml-2 h-10 w-10 shrink-0 rounded border border-black/12 object-cover"
+          />
+        )}
+        {!contact.online && contact.lastActive != null && contact.lastActive !== '' && (
+          <span className="ml-2 shrink-0 text-xs text-black/54">{contact.lastActive}</span>
+        )}
+      </button>
+    </li>
+  );
+}
+
 export function ContactList({
   contacts,
   onSelect,
   me,
-  onOpenProfile,
+  onAccountMenu,
   onEditStatus,
   onPreviewImage,
+  onComingSoon,
 }: ContactListProps) {
   const { t } = useTranslation();
   const [query, setQuery] = useState('');
+  const [menuContact, setMenuContact] = useState<Contact | null>(null);
   const hasStatus = me?.bio != null && me.bio !== '';
   const hasVip = me?.vipEndTime != null && me.vipEndTime !== '' && new Date(me.vipEndTime) > new Date();
   const hasBioImage = me?.bioImage != null && me.bioImage !== '';
@@ -75,8 +180,28 @@ export function ContactList({
   const filtered = useMemo(() => {
     const term = query.trim().toLowerCase();
     if (term === '') return contacts;
-    return contacts.filter((c) => c.name.toLowerCase().includes(term));
+    return contacts.filter(
+      (c) => c.name.toLowerCase().includes(term) || (c.alias ?? '').toLowerCase().includes(term),
+    );
   }, [contacts, query]);
+
+  const sections = useMemo(() => {
+    const pick = (predicate: (c: Contact) => boolean) => filtered.filter(predicate);
+    return [
+      { key: 'birthday', label: t('chat.sectionBirthday'), highlight: false, items: pick((c) => c.group === 'birthday') },
+      { key: 'new', label: t('chat.sectionNew'), highlight: true, items: pick((c) => c.group === 'new') },
+      { key: 'utility', label: t('chat.sectionUtility'), highlight: false, items: pick((c) => c.group === 'utility') },
+      { key: 'online', label: t('chat.sectionOnline'), highlight: false, items: pick((c) => c.group === 'friend' && c.online) },
+      { key: 'friend', label: t('chat.sectionFriend'), highlight: false, items: pick((c) => c.group === 'friend' && !c.online) },
+    ].filter((section) => section.items.length > 0);
+  }, [filtered, t]);
+
+  const menuOptions: ListOption[] = [
+    { key: 'view', label: t('chat.menuViewMe'), onSelect: () => onComingSoon?.() },
+    { key: 'alias', label: t('chat.changeAlias'), onSelect: () => onComingSoon?.() },
+    { key: 'delete', label: t('dialog.delete'), danger: true, onSelect: () => onComingSoon?.() },
+    { key: 'block', label: t('chat.menuBlock'), onSelect: () => onComingSoon?.() },
+  ];
 
   return (
     <div className="h-full overflow-y-auto bg-[#f3f3f3]">
@@ -96,62 +221,67 @@ export function ContactList({
       </div>
 
       {me != null && (
-        <div className="flex min-h-[72px] w-full items-center gap-2 border-b border-black/12 bg-white/80 px-4 py-2">
-          <button type="button" onClick={onOpenProfile} aria-label={t('chat.myAccount')} className="shrink-0">
-            <img src={hasVip ? vipIcon : smileyIcon} alt="" className="h-10 w-10 object-contain" />
-          </button>
-          <button type="button" onClick={onEditStatus} className="min-w-0 flex-1 text-left">
-            <span
-              className={`block truncate text-base italic ${
-                hasStatus ? 'text-black/87' : 'text-black/26'
-              }`}
+        <div className="border-b border-black/12 bg-white/80">
+          {!hasVip && (
+            <button
+              type="button"
+              onClick={onComingSoon}
+              className="m-2 block rounded border border-[#ff8f00] bg-white px-3 py-2 text-left"
             >
-              {hasStatus ? me.bio : t('chat.myStatusHint')}
-            </span>
-          </button>
-          <button
-            type="button"
-            onClick={hasBioImage ? onPreviewImage : onEditStatus}
-            aria-label={t('chat.myStatusImage')}
-            className="shrink-0"
-          >
-            <img
-              src={hasBioImage ? me.bioImage! : snapPicIcon}
-              alt=""
-              className="h-9 w-9 object-cover"
-            />
-          </button>
+              <span className="block text-sm font-medium text-ola-accent">{t('chat.vipBannerTitle')}</span>
+              <span className="block text-xs text-black/54">{t('chat.vipBannerSub')}</span>
+            </button>
+          )}
+          <div className="flex min-h-[72px] items-center gap-2 px-4 py-2">
+            <button type="button" onClick={onAccountMenu} aria-label={t('chat.myAccount')} className="shrink-0">
+              <img src={hasVip ? vipIcon : smileyIcon} alt="" className="h-10 w-10 object-contain" />
+            </button>
+            <button type="button" onClick={onEditStatus} className="min-w-0 flex-1 text-left">
+              <span
+                className={`block truncate text-base italic ${
+                  hasStatus ? 'text-black/87' : 'text-black/26'
+                }`}
+              >
+                {hasStatus ? me.bio : t('chat.myStatusHint')}
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={hasBioImage ? onPreviewImage : onEditStatus}
+              aria-label={t('chat.myStatusImage')}
+              className="shrink-0"
+            >
+              <img src={hasBioImage ? me.bioImage! : snapPicIcon} alt="" className="h-9 w-9 object-cover" />
+            </button>
+          </div>
         </div>
       )}
 
-      <ul>
-        {filtered.map((c) => (
-          <li key={c.name}>
-            <button
-              type="button"
-              onClick={() => onSelect(c)}
-              className="flex w-full items-center gap-2 border-b border-black/12 bg-white/80 px-4 py-3 text-left"
-            >
-              <GenderIcon gender={c.gender} />
-              <Avatar name={c.name} color={c.color} />
-              <span className="min-w-0 flex-1 pl-1">
-                <span className="flex items-center gap-2">
-                  {c.vip && (
-                    <span className="rounded-sm bg-amber-400 px-1 text-[10px] font-bold text-white">
-                      VIP
-                    </span>
-                  )}
-                  <span className="truncate text-base text-black/87">{c.name}</span>
-                </span>
-                <span className="block truncate text-xs text-black/54">{c.status}</span>
+      <button
+        type="button"
+        onClick={onComingSoon}
+        className="flex w-full items-center gap-3 border-b border-black/12 bg-white/80 px-4 py-2 text-left"
+      >
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#e0e0e0]">
+          <svg viewBox="0 0 24 24" className="h-6 w-6 text-black/54" fill="currentColor" aria-hidden="true">
+            <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+          </svg>
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-base text-black/87">{t('chat.suggestFriends')}</span>
+          <span className="mt-1 flex items-center gap-2">
+            {SUGGESTED_FRIENDS.map((friend) => (
+              <span key={friend.name} className="block overflow-hidden rounded">
+                <Avatar name={friend.name} color={friend.color} size={28} rounded={false} />
               </span>
-              {c.online && (
-                <span className="shrink-0 text-xs text-ola-primary">{t('chat.online')}</span>
-              )}
-            </button>
-          </li>
-        ))}
-      </ul>
+            ))}
+          </span>
+        </span>
+        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-ola-accent px-1 text-[10px] font-bold text-white">
+          12
+        </span>
+        <span className="shrink-0 text-xl text-black/26">›</span>
+      </button>
 
       <ActionRow
         badge={
@@ -161,6 +291,7 @@ export function ContactList({
         }
         title={t('chat.inviteFriends')}
         subtitle={t('chat.inviteFriendsSub')}
+        onClick={onComingSoon}
       />
       <ActionRow
         badge={
@@ -171,6 +302,31 @@ export function ContactList({
         title={t('chat.chatGroup')}
         subtitle={t('chat.chatGroupSub')}
         showChevron
+        onClick={onComingSoon}
+      />
+
+      {sections.map((section) => (
+        <div key={section.key}>
+          <SectionHeader label={section.label} />
+          <ul>
+            {section.items.map((contact) => (
+              <BuddyRow
+                key={contact.name}
+                contact={contact}
+                highlight={section.highlight}
+                onSelect={() => onSelect(contact)}
+                onLongPress={() => setMenuContact(contact)}
+              />
+            ))}
+          </ul>
+        </div>
+      ))}
+
+      <ListOptionDialog
+        open={menuContact != null}
+        title={menuContact?.name ?? ''}
+        options={menuOptions}
+        onClose={() => setMenuContact(null)}
       />
     </div>
   );

@@ -46,6 +46,7 @@ export function ChatPanel() {
   const [deleteAllOpen, setDeleteAllOpen] = useState(false);
   const [blockedListOpen, setBlockedListOpen] = useState(false);
   const [logoutOpen, setLogoutOpen] = useState(false);
+  const [logoutAll, setLogoutAll] = useState(false);
   const [avatarOpen, setAvatarOpen] = useState(false);
   const [statusOpen, setStatusOpen] = useState(false);
   const [statusImageOpen, setStatusImageOpen] = useState(false);
@@ -81,10 +82,10 @@ export function ChatPanel() {
   ];
 
   const contactsMenu: ListOption[] = [
+    { key: 'buy-vip', label: t('chat.menuBuyVip'), onSelect: () => comingSoon() },
     { key: 'change-avatar', label: t('chat.menuChangeAvatar'), onSelect: () => setAvatarOpen(true) },
-    { key: 'logout', label: t('chat.menuLogout'), onSelect: () => setLogoutOpen(true) },
-    { key: 'logout-all', label: t('chat.menuLogoutAll'), onSelect: () => setLogoutOpen(true) },
-    { key: 'buy-vip', label: t('chat.menuBuyVip'), onSelect: () => {} },
+    { key: 'logout', label: t('chat.menuLogout'), onSelect: () => { setLogoutAll(false); setLogoutOpen(true); } },
+    { key: 'logout-all', label: t('chat.menuLogoutAll'), onSelect: () => { setLogoutAll(true); setLogoutOpen(true); } },
   ];
 
   const headerMenuOptions = sub === 'messages' ? messagesMenu : contactsMenu;
@@ -153,9 +154,10 @@ export function ChatPanel() {
               contacts={CONTACTS}
               onSelect={comingSoon}
               me={user}
-              onOpenProfile={() => navigate(ROUTES.profile)}
+              onAccountMenu={() => setHeaderMenuOpen(true)}
               onEditStatus={() => setStatusOpen(true)}
               onPreviewImage={() => setStatusImageOpen(true)}
+              onComingSoon={comingSoon}
             />
             <button
               type="button"
@@ -202,7 +204,7 @@ export function ChatPanel() {
         open={logoutOpen}
         showIcon={false}
         danger
-        title={t('dialog.logoutTitle')}
+        title={logoutAll ? t('chat.menuLogoutAll') : t('chat.menuLogout')}
         message={t('dialog.logoutMessage')}
         confirmLabel={t('dialog.logoutButton')}
         cancelLabel={t('dialog.no')}

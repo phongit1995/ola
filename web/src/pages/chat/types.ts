@@ -6,13 +6,25 @@ export interface Conversation {
   unread: number;
 }
 
+export type DeviceType = 'phone' | 'pc' | 'apple' | 'android' | 'winphone';
+
+export type ContactGroup = 'birthday' | 'new' | 'utility' | 'friend';
+
 export interface Contact {
   name: string;
-  status: string;
+  alias?: string;
   color: string;
-  gender: 'male' | 'female';
   vip: boolean;
   online: boolean;
+  deviceType: DeviceType;
+  lastActive?: string;
+  statusImage?: string;
+  group: ContactGroup;
+}
+
+export interface SuggestedFriend {
+  name: string;
+  color: string;
 }
 
 export type ChatMessageKind =
