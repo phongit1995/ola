@@ -30,6 +30,10 @@ function playLikeSound() {
   audio.play().catch(() => undefined);
 }
 
+function formatLikeCount(count: number): string {
+  return count > 9 ? '9+' : String(count);
+}
+
 interface MePostCardProps {
   post: MePost;
   onToggleLike: (id: string) => void;
@@ -156,17 +160,18 @@ function MePostCardComponent({
         >
           {t('me.commentCount', { count: post.comments })}
         </button>
-        {hasLikes && onOpenLikers != null ? (
-          <button
-            type="button"
-            onClick={() => onOpenLikers(post.id)}
-            className="ml-2 cursor-pointer hover:text-black/87 hover:underline"
-          >
-            {t('me.likeCount', { count: post.likes })}
-          </button>
-        ) : (
-          <span className="ml-2">{t('me.likeCount', { count: post.likes })}</span>
-        )}
+        {hasLikes &&
+          (onOpenLikers != null ? (
+            <button
+              type="button"
+              onClick={() => onOpenLikers(post.id)}
+              className="ml-2 cursor-pointer hover:text-black/87 hover:underline"
+            >
+              {t('me.likeCount', { value: formatLikeCount(post.likes) })}
+            </button>
+          ) : (
+            <span className="ml-2">{t('me.likeCount', { value: formatLikeCount(post.likes) })}</span>
+          ))}
       </div>
 
       <div className="mx-4 mt-1 h-px bg-black/12" />

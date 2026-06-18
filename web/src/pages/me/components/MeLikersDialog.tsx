@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Avatar, Dialog } from '@components';
-import { colorForName } from '@lib';
+import { colorForName, toast } from '@lib';
 import { MeService } from '@services';
 import type { PostAuthor } from '@app-types';
 
@@ -82,7 +82,7 @@ export function MeLikersDialog({ postId, onClose, onOpenProfile }: MeLikersDialo
     <Dialog
       open
       onClose={onClose}
-      title={`${t('me.likersTitle')}${total > 0 ? ` (${total})` : ''}`}
+      title={total > 0 ? t('me.likersCount', { count: total }) : t('me.likersTitle')}
     >
       <div ref={scrollRef} className="max-h-80 min-h-15 overflow-y-auto">
         {loading && (
@@ -97,17 +97,34 @@ export function MeLikersDialog({ postId, onClose, onOpenProfile }: MeLikersDialo
         {!loading &&
           !error &&
           likers.map((user) => (
-            <button
+            <div
               key={user.id}
-              type="button"
-              onClick={() => openProfile(user.username)}
-              className="flex w-full items-center gap-3 rounded-md px-1 py-2 text-left hover:bg-black/5"
+              className="flex items-center gap-3 border-b border-black/12 px-2 py-3 last:border-b-0"
             >
-              <Avatar name={user.username} color={colorForName(user.username)} size={36} />
-              <span className="min-w-0 flex-1 truncate text-sm font-medium text-black/87">
-                {user.fullName != null && user.fullName !== '' ? user.fullName : user.username}
-              </span>
-            </button>
+              <button
+                type="button"
+                onClick={() => openProfile(user.username)}
+                className="flex min-w-0 flex-1 items-center gap-3 text-left"
+              >
+                <Avatar
+                  name={user.username}
+                  color={colorForName(user.username)}
+                  size={72}
+                  src={user.avatar}
+                  rounded={false}
+                />
+                <span className="min-w-0 flex-1 truncate text-base font-medium text-black/87">
+                  {user.fullName != null && user.fullName !== '' ? user.fullName : user.username}
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => toast.info(t('me.makeFriendSoon'))}
+                className="shrink-0 rounded bg-ola-primary px-3 py-1.5 text-sm font-medium text-white"
+              >
+                {t('me.makeFriend')}
+              </button>
+            </div>
           ))}
         <div ref={sentinelRef} className="h-1" />
         {loadingMore && (
