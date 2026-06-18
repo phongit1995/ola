@@ -39,8 +39,12 @@ export function ProfileCard({ profile, relationship, actions, onPostMe, onUpdate
   return (
     <div className="mb-2 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.18)]">
       <div
-        className="relative mb-12 aspect-[16/6] w-full"
-        style={{ backgroundColor: profile.coverColor }}
+        className="relative mb-12 h-48 w-full bg-cover bg-center"
+        style={
+          profile.coverPhoto
+            ? { backgroundImage: `url(${profile.coverPhoto})` }
+            : { backgroundColor: profile.coverColor }
+        }
       >
         {profile.isSelf && (
           <img
@@ -50,7 +54,7 @@ export function ProfileCard({ profile, relationship, actions, onPostMe, onUpdate
           />
         )}
         <div className="absolute -bottom-12 left-1/2 flex -translate-x-1/2 bg-white p-1 pb-1.5 shadow-[0_1px_3px_rgba(0,0,0,0.3)]">
-          <Avatar name={profile.nick} color={profile.color} size={96} />
+          <Avatar name={profile.nick} color={profile.color} size={96} src={profile.avatar} rounded={false} />
         </div>
       </div>
 
@@ -80,7 +84,8 @@ export function ProfileCard({ profile, relationship, actions, onPostMe, onUpdate
       <button
         type="button"
         onClick={actions.kiss}
-        className="mt-2 flex w-full flex-col items-center gap-1"
+        disabled={profile.isSelf}
+        className="mt-2 flex w-full flex-col items-center gap-1 disabled:opacity-100"
       >
         <img src={kissIcon} alt="" className="max-h-16 object-contain" />
         <span className="text-sm text-black">
@@ -90,7 +95,7 @@ export function ProfileCard({ profile, relationship, actions, onPostMe, onUpdate
         </span>
       </button>
 
-      <p className="mt-3 px-4 text-center text-xs text-black/54">{profile.bio}</p>
+      <p className="mt-3 line-clamp-5 px-4 text-center text-xs text-black/54">{profile.bio}</p>
 
       {profile.vip && (
         <div className="mt-3 ml-4 flex items-center gap-1">

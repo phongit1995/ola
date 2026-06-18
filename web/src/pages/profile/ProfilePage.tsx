@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScreenHeader, FullScreenOverlay } from '@components';
+import { toast } from '@lib';
+import composeIcon from '@/assets/icons/chat/ic_action_compose_message.png';
 import { useAuthStore } from '@/store/authStore';
 import { useMeLocalStore } from '@/store/meLocalStore';
 import type { RelationshipInfo } from '@app-types';
@@ -66,7 +68,7 @@ export function ProfilePage({
           profile={profile}
           relationship={relationship}
           actions={actions}
-          onPostMe={() => {}}
+          onPostMe={() => toast.info(t('profile.comingSoon'))}
           onUpdateInfo={() => setEditOpen(true)}
         />
         {secondary.media.length > 0 && <ProfileMediaStore media={secondary.media} />}
@@ -99,6 +101,17 @@ export function ProfilePage({
           }
         </MePostInteractions>
       </div>
+
+      {!profile.isSelf && (
+        <button
+          type="button"
+          aria-label={t('profile.message')}
+          onClick={actions.message}
+          className="absolute right-4 bottom-4 flex h-14 w-14 items-center justify-center rounded-full bg-ola-primary shadow-lg"
+        >
+          <img src={composeIcon} alt="" className="h-6 w-6 object-contain brightness-0 invert" />
+        </button>
+      )}
 
       {editOpen && <EditProfilePage profile={profile} onClose={() => setEditOpen(false)} />}
     </FullScreenOverlay>

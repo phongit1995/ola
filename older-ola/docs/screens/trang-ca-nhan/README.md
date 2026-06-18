@@ -95,6 +95,25 @@ globalViewLayout (FrameLayout, match_parent)
 
 > Tóm gọn: **bấm vào avatar hoặc tên của ai đó ở bất kỳ đâu** → ra Trang cá nhân của người đó. **Xem hồ sơ mình** = drawer trái màn Me → bấm header. **Sửa hồ sơ mình** = tab Ứng dụng → "Profile", hoặc nút "Cập Nhật Thông Tin" trong hồ sơ mình.
 
+### 0.4. Xem hồ sơ NGƯỜI KHÁC vs CHÍNH MÌNH (trả lời nhanh)
+
+Cùng **một** Activity `OlaUserMePageActivity` dùng cho cả hai; nick mở màn truyền qua **Intent extra `"contactId"`** (đọc ở dòng 118). Mở bằng `OlaUserMePageActivity.a(ctx, nick)` (896) → nick bắt đầu `#` mở **Clan**, ngược lại `b(ctx, nick)` (969: `putExtra("contactId", nick)` + trượt trái + ghi "gần đây" `h(nick)`).
+
+Sau khi tải hồ sơ (`b.a(contactId, cb)`, dòng 387 → đổ vào entity `ag e`), hàm `V()` (674: `m.b(h.a(), e.c)` — so nick mình với nick đang xem) quyết định **mình hay người khác**, rồi `R()` (502) bật/tắt UI:
+
+| | Xem **người khác** | Xem **chính mình** |
+|---|---|---|
+| Cụm nút quan hệ | **Kết bạn · Quan tâm · Viết Me · Khác** | **Cập Nhật Thông Tin · Viết Me · Khác** |
+| Camera sửa avatar/bìa | ẩn | hiện (`ic_action_camera`) |
+| FAB nhắn tin (`addConversationImageButton`) | **hiện** → chat 1-1 với họ | **ẩn** (`L()`, 417) |
+| Gửi nụ hôn 💋 | được (`!V()`, dòng 1278) | bị chặn (không tự hôn mình) |
+| Bấm "Kho Media" | `OlaCloudPhotoListActivity(nick)` — ảnh của họ (1293) | `OlaCloudAlbumListActivity` — album mình (1291) |
+| "Viết Me" | soạn Me kèm "@nick" (1314) | soạn Me của mình (1310) |
+| Menu "Khác" | Chặn / Copy nick / Báo nick xấu (`X()`) | Đổi ảnh đại diện / bìa / quyền riêng tư (`W()`) |
+| Khi **đã chặn** họ (`e.A=true`) | chỉ còn nút **"Bỏ chặn"** đỏ, cả cụm quan hệ ẩn | — |
+
+> Muốn **xem hồ sơ người khác**: bấm avatar/tên họ ở bất kỳ đâu (§0.3) → màn này mở với `contactId = nick của họ`; mọi nút quan hệ + nụ hôn + nhắn tin đều hướng tới họ. Trạng thái quan hệ (đã là bạn? đang theo dõi? đã chặn?) lấy từ `e` (`h.t.d(nick)` cho bạn, `e.y` cho theo dõi, `e.A` cho chặn).
+
 ---
 
 ## 1. Cấu trúc header (`ola_user_me_page_header_layout.xml`)
@@ -128,8 +147,8 @@ vLinearUserInfo (vertical)
 │   ├─ vipAccountGroup (ngang, ẩn nếu không VIP)
 │   │   ├─ imgVipIcon 24dp (tải từ URL) + "Tài khoản VIP" (đậm, màu colorOlaAccent)   ← VIP
 │   ├─ txtJoinOlaDate (caption)                                                       ← "Tham gia Ola …"
-│   ├─ txtMeUserGender         (drawableLeft ic_indicate_dynamic_gender)              ← GIỚI TÍNH
-│   ├─ txtMeUserMarriesStatus  (drawableLeft ic_profile_marriage)                     ← TÌNH TRẠNG HÔN NHÂN
+│   ├─ txtMeUserGender         (drawableLeft ĐỘNG: ic_indicate_male/female/dynamic)   ← GIỚI TÍNH (Nam/Nữ/Linh hoạt/Chưa biết — O() dòng 450)
+│   ├─ txtMeUserMarriesStatus  (drawableLeft ic_profile_marriage)                     ← HÔN NHÂN ("Độc thân" / "Kết hôn với @nick" — N() dòng 442)
 │   ├─ txtMeUserBirthday       (drawableLeft ic_profile_birthday)                     ← SINH NHẬT
 │   └─ txtMeUserNote (italic, màu colorOlaPrimaryDarkMore, drawableLeft ic_profile_note) ← "Xem bài viết"
 ├─ [B] mediaStorageViewLayout (bg_shadow_span)                                        ← KHO MEDIA
@@ -143,48 +162,61 @@ vLinearUserInfo (vertical)
 └─ TextView "ME Đã Đăng" (subhead, màu đen)                                          ← mở đầu list bài Me
 ```
 
-## 2. Cụm 5 nút quan hệ (`add_follow_post_more_button_layout.xml`)
+## 2. Cụm nút quan hệ (`add_follow_post_more_button_layout.xml`) — đổi theo mình / người khác
 
-5 nút ngang đều nhau (weight 1), mỗi nút = icon 20dp + nhãn caption (màu `colorTextBlackHintOrDisable`). Hành động xử lý trong `OlaUserMePageActivity.onClick` (dòng 1200+):
+Layout có **5 ô** ngang đều nhau (weight 1), mỗi ô = icon 20dp + nhãn caption. Nhưng **không hiện cả 5 cùng lúc** — `R()` (dòng 502) bật/tắt theo `V()`:
 
-| # | id | Icon | Nhãn (VI) | Bấm → làm gì |
-|---|----|------|-----------|---------------|
-| 1 | `addFriendViewLayout` | ![addf](images/icons/ic_add_friend_black_disable.png) `ic_add_friend_black_disable` | **Kết bạn** (`string_make_friend`) | gửi lời mời kết bạn `OlaApplication.b.d(nick)`; nếu đã là bạn → nhãn đổi **"Đã Kết Bạn"** (`string_already_friend`) |
-| 2 | `followViewLayout` | ![follow](images/icons/ic_follow_black_disable.png) `ic_follow_black_disable` | **Quan tâm** (`string_follow`) | `Z()` theo dõi; đang theo dõi → **"Đang quan tâm"** (`string_following`) |
-| 3 | `editProfileViewLayout` | ![edit](images/icons/ic_edit_profile_gray.png) `ic_edit_profile_gray` | **Cập Nhật Thông Tin** (`string_update_info`) | **chỉ hồ sơ MÌNH** (ẩn với người khác) → `OlaUserProfileActivity` ([tài liệu màn sửa hồ sơ](../thong-tin-ca-nhan/README.md)); có badge "!" nếu cần cập nhật |
-| 4 | `postMeViewLayout` | ![postme](images/icons/ic_post_me_gray.png) `ic_post_me_gray` | **Viết Me** (`string_post_me`) | mình → `OlaMeComposerActivity`; người khác → soạn Me nhắc "@nick" |
-| 5 | `moreViewLayout` | ![more](images/icons/ic_more_horizon_black_disable.png) `ic_more_horizon_black_disable` | **Khác** (`string_more`) | mở menu (xem §3) |
+| Trạng thái | Nút HIỆN | Nút ẨN |
+|-----------|----------|--------|
+| **Người khác** (`!V()`, chưa chặn) | **Kết bạn · Quan tâm · Viết Me · Khác** (4) | `editProfileViewLayout` |
+| **Người khác** (đã chặn `e.A=true`) | chỉ **"Bỏ chặn"** đỏ (`btnUnBlockMe`); cụm `relationMakerPan` ẩn (552) | add / follow / edit |
+| **Chính mình** (`V()`) | **Cập Nhật Thông Tin · Viết Me · Khác** (3) | `addFriendViewLayout` + `followViewLayout` (509-510) |
 
-## 3. Menu "Khác" (đổi theo mình / người khác)
+**Màu nhãn** mặc định `f.A` = **`#42000000`** (đen .26, inactive); khi **đã bạn / đang theo dõi** đổi sang `f.H` = **`#7CB342`** (xanh Ola). **Icon cũng đổi** theo trạng thái. Hành động trong `onClick` (1193+):
 
-`moreViewLayout` → nếu là **hồ sơ mình** (`V()`) gọi `W()`, ngược lại gọi `X()`:
+| # | id | Icon (mặc định → active) | Nhãn (VI) | Bấm → làm gì (dòng) |
+|---|----|--------------------------|-----------|----------------------|
+| 1 | `addFriendViewLayout` | ![addf](images/icons/ic_add_friend_black_disable.png) `ic_add_friend_black_disable` → đã bạn ![fr](images/icons/ic_state_friends.png) `ic_state_friends` | **Kết bạn** → **Đã Kết Bạn** | chưa bạn: gửi mời `b.d(nick)` + `e.y=true` (1203); đã bạn (`h.t.d(nick)≠null`): mở menu `aa()` (1207) |
+| 2 | `followViewLayout` | ![fl](images/icons/ic_follow_black_disable.png) `ic_follow_black_disable` → đang theo dõi ![flg](images/icons/ic_state_following.png) `ic_state_following` | **Quan tâm** → **Đang quan tâm** | `Z()` (1244): chưa theo dõi → theo dõi ngay; đang theo dõi → hỏi xác nhận rồi bỏ |
+| 3 | `editProfileViewLayout` | ![edit](images/icons/ic_edit_profile_gray.png) `ic_edit_profile_gray` | **Cập Nhật Thông Tin** (`string_update_info`) | **chỉ hồ sơ MÌNH** → `OlaUserProfileActivity.a(this)` (1240) ([màn sửa hồ sơ](../thong-tin-ca-nhan/README.md)); badge "!" (`editProfileNotificationTextView`) hiện khi thiếu thông tin (512) |
+| 4 | `postMeViewLayout` | ![postme](images/icons/ic_post_me_gray.png) `ic_post_me_gray` | **Viết Me** (`string_post_me`) | mình → `OlaMeComposerActivity.a(this)`; người khác → soạn Me kèm "@nick" (1308) |
+| 5 | `moreViewLayout` | ![more](images/icons/ic_more_horizon_black_disable.png) `ic_more_horizon_black_disable` | **Khác** (`string_more`) | mình → `W()`; người khác → `X()` (1296) — xem §3 |
 
-**Người khác** (`X()`, dòng 708) — list popup `chat.ola.vn.i.m`:
+## 3. Các menu popup (đổi theo mình / người khác)
 
-| Mục | String (VI) | Hành động |
+### 3.1. Nút "Khác" (`moreViewLayout`, 1296)
+
+**Người khác** → `X()` (708) — list popup `chat.ola.vn.i.m`:
+
+| Mục | String (VI) | Hành động (dòng) |
+|-----|-------------|------------------|
+| Chặn | `string_block` = "Chặn" | `b.m(nick)` → `e.A=true; e.y=false; K()` → nút **"Bỏ chặn"** hiện (721-724) |
+| Copy nick | `string_copy_nick` = "Copy nick" | copy `@nick` vào clipboard (732) |
+| Báo nick xấu | `string_bad_nick_report` = "Báo nick xấu" | mở dialog báo cáo `i.a(...)` (729) |
+
+**Chính mình** → `W()` (682) — list popup gồm 3 mục:
+
+| Mục | EN | VI | Hành động |
+|-----|----|----|-----------|
+| `string_change_profile_picture` | Change Profile Picture | Đổi Ảnh Đại Diện | `OlaCropImageActivity.c(...)` (695) |
+| `string_change_cover_picture` | Change Cover Picture | Đổi Ảnh Bìa | `OlaCropImageActivity.b(...)` (697) |
+| `string_change_me_privacy` | Change Me Page Privacy | Đổi Chế Độ Riêng Tư | → mở tiếp `Y()` (699) |
+
+> ⚠️ Danh sách quyền riêng tư **không** nằm trực tiếp trong "Khác". Chỉ sau khi chọn "Đổi Chế Độ Riêng Tư" mới mở `Y()` (742) — popup: **Cộng đồng** (`string_me_privacy_public` → `b.g(0)`, 773) · **Bạn bè** (`string_me_privacy_friend` → `b.f(0)`, 790) · **Riêng tư** (`string_me_privacy_private` → `b.e(0)`, 824) · **Hướng dẫn** (`string_me_privacy_help` → mở `me_privacy_help-vi/en.html`, 810). Mỗi mục hỏi xác nhận (Yes/No) trước khi đổi.
+
+### 3.2. Menu nút "Kết bạn" khi ĐÃ là bạn (`aa()`, 907)
+
+Bấm nút **Đã Kết Bạn** (khi `h.t.d(nick) ≠ null`) → popup tiêu đề = tên người đó:
+
+| Mục | String (VI) | API (dòng) |
 |-----|-------------|-----------|
-| Chặn | `string_block` = "Chặn" | chặn người này (sau đó nút **"Bỏ chặn"** `btnUnBlockMe` hiện) |
-| Copy nick | `string_copy_nick` = "Copy nick" | sao chép nick |
-| Báo nick xấu | `string_bad_nick_report` = "Báo nick xấu" | báo cáo |
+| Quan tâm / Ngừng quan tâm (tuỳ `e.y`) | `string_follow` / `string_notfollow` | `b.a(nick, true/false, 0)` (924-930) |
+| Hủy kết bạn | `string_unfriend` = "Hủy kết bạn" | `b.e(nick)` + `h.t.d(remove)` (919-923) |
 
-**Hồ sơ mình** (`W()`) — chọn quyền riêng tư Me:
+### 3.3. Nút "Quan tâm" (`Z()`, 840)
 
-| Mục | VI |
-|-----|----|
-| `string_me_privacy_public` | Cộng đồng |
-| `string_me_privacy_friend` | Bạn bè |
-| `string_me_privacy_private` | Riêng tư |
-| `string_me_privacy_help` | Hướng dẫn |
-
-### Menu nút **Quan tâm** (ẩn — `Z()`, dòng 915)
-
-Bấm nút **Quan tâm** không chỉ theo dõi ngay mà mở popup (khi đã có quan hệ) gồm:
-
-| Mục | String (VI) | API |
-|-----|-------------|-----|
-| Hủy kết bạn | `string_unfriend` = "Hủy kết bạn" | `OlaApplication.b.e(nick)` |
-| Ngừng quan tâm | `string_notfollow` = "Ngừng quan tâm" | `b.a(nick, false, 0)` |
-| Quan tâm | `string_follow` = "Quan tâm" | `b.a(nick, true, 0)` |
+- Chưa theo dõi → `b.a(nick, true, …)` theo dõi **ngay** + `e.y=true` (874).
+- Đang theo dõi → dialog xác nhận "Ngừng quan tâm @nick?" → đồng ý: `b.a(nick, false, …)` (883).
 
 ## 4. Tính năng (tổng hợp các vùng bấm được — `onClick`)
 
@@ -207,17 +239,20 @@ Bấm nút **Quan tâm** không chỉ theo dõi ngay mà mở popup (khi đã c�
 | **Xem note** | `txtMeUserNote` (1328) | mở `rss://note/<nick>` |
 | **Bỏ chặn** | `btnUnBlockMe` (1211) | `OlaApplication.b.o(nick)` bỏ chặn |
 
-### Trạng thái động (các text đổi theo dữ liệu)
-- Giới tính: **Nam** (`string_male`) / **Nữ** (`string_female`).
-- Hôn nhân: **Độc thân** (`string_marry_alone`/`string_single`) / **Chưa biết** (`string_unknown`) / đã cưới (hiện avatar bạn đời).
-- Kết bạn: **Kết bạn** → **Đã Kết Bạn**. Theo dõi: **Quan tâm** → **Đang quan tâm**.
+### Trạng thái động (text + icon đổi theo dữ liệu)
+- **Giới tính** (`O()`, 450, theo `e.w`): `1` → ![m](images/icons/ic_indicate_male.png) **Nam** (`string_male`); `0` → ![f](images/icons/ic_indicate_female.png) **Nữ** (`string_female`); `2` → `ic_indicate_dynamic_gender` **Linh hoạt** (`string_flexible`); `-1` → `ic_indicate_dynamic_gender` **Chưa biết** (`string_unknown`).
+- **Hôn nhân** (`N()`, 442): `e.e == null` → **"Độc thân"** (`string_marry_alone`); có → **"Kết hôn với @\<nick bạn đời\>"** (`string_marry_with`) + hiện avatar bạn đời `honeyProfilePictureImageView`.
+- **Sinh nhật** (`M()`, 434): `e.l != 0` → `dd/MM/yyyy`; bằng 0 → "Chưa biết".
+- **Tham gia Ola** (`P()`, 480): `e.m != 0` → "Tham gia Ola \<khoảng thời gian\>" (`string_join_ola_date`); bằng 0 → "Chưa biết".
+- **Số nụ hôn** (`K()`, 353): `e.t==0` → "Chưa ai hôn"; `>1` → "\<n\> Nụ hôn" (`string_kisses`); `==1` → "1 Nụ hôn" (`string_kiss`).
+- **Quan hệ** (`R()`, 502): Kết bạn → Đã Kết Bạn (`ic_add_friend_black_disable`→`ic_state_friends`, chữ .26→xanh `#7CB342`); Quan tâm → Đang quan tâm (`ic_follow_black_disable`→`ic_state_following`).
 
 ## 5. Strings (EN → VI)
 
 | Key | EN | VI |
 |-----|----|----|
-| `string_make_friend` | Make friend | Kết bạn |
-| `string_already_friend` | Friend | Đã Kết Bạn |
+| `string_make_friend` | Add friend | Kết bạn |
+| `string_already_friend` | Friends | Đã Kết Bạn |
 | `string_follow` | Follow | Quan tâm |
 | `string_following` | Following | Đang quan tâm |
 | `string_update_info` | Update info | Cập Nhật Thông Tin |
@@ -227,7 +262,7 @@ Bấm nút **Quan tâm** không chỉ theo dõi ngay mà mở popup (khi đã c�
 | `string_kiss` | Kiss | Nụ hôn |
 | `string_not_yet_been_kissed` | — | Chưa ai hôn |
 | `message_vip_account` | VIP account | Tài khoản VIP |
-| `string_join_ola` | Join Ola | Tham gia Ola |
+| `string_join_ola_date` | Joined Ola for %1$s | Tham gia Ola %1$s |
 | `string_view_note` | View note | Xem bài viết |
 | `string_media_store` | Photos | Kho Media |
 | `string_view_all_photos` | View all photos | Xem Tất Cả Ảnh |
@@ -239,7 +274,15 @@ Bấm nút **Quan tâm** không chỉ theo dõi ngay mà mở popup (khi đã c�
 | `string_copy_nick` | Copy nick | Copy nick |
 | `string_bad_nick_report` | Report | Báo nick xấu |
 | `string_male` / `string_female` | Male / Female | Nam / Nữ |
+| `string_flexible` | Flexible | Linh hoạt |
 | `string_marry_alone` / `string_unknown` | Single / Unknown | Độc thân / Chưa biết |
+| `string_marry_with` | Married to | Kết hôn với |
+| `string_kisses` | Kisses | Nụ hôn |
+| `string_notfollow` | Unfollow | Ngừng quan tâm |
+| `string_unfriend` | Unfriend | Hủy kết bạn |
+| `string_change_profile_picture` | Change Profile Picture | Đổi Ảnh Đại Diện |
+| `string_change_cover_picture` | Change Cover Picture | Đổi Ảnh Bìa |
+| `string_change_me_privacy` | Change Me Page Privacy | Đổi Chế Độ Riêng Tư |
 
 ## 6. Bảng icon & ảnh hiển thị
 
@@ -252,13 +295,15 @@ Bấm nút **Quan tâm** không chỉ theo dõi ngay mà mở popup (khi đã c�
 | Đã xác thực SĐT | ![check](images/icons/ic_checked.png) | `ic_checked` |
 | Nụ hôn | ![kiss](images/icons/sticker_kiss.png) | `sticker_kiss` |
 | Ảnh kèm status | ![photo](images/icons/ic_media_photo.png) | `ic_media_photo` (mặc định) |
-| Giới tính | ![gender](images/icons/ic_indicate_dynamic_gender.png) | `ic_indicate_dynamic_gender` |
+| Giới tính (động) | ![male](images/icons/ic_indicate_male.png) ![female](images/icons/ic_indicate_female.png) ![gender](images/icons/ic_indicate_dynamic_gender.png) | `ic_indicate_male` (Nam) / `ic_indicate_female` (Nữ) / `ic_indicate_dynamic_gender` (Linh hoạt·Chưa biết) |
 | Hôn nhân | ![marriage](images/icons/ic_profile_marriage.png) | `ic_profile_marriage` |
 | Sinh nhật | ![bday](images/icons/ic_profile_birthday.png) | `ic_profile_birthday` |
 | Note | ![note](images/icons/ic_profile_note.png) | `ic_profile_note` |
 | VIP | (tải từ URL) | `imgVipIcon` |
-| Nút Kết bạn | ![addf](images/icons/ic_add_friend_black_disable.png) | `ic_add_friend_black_disable` |
-| Nút Quan tâm | ![follow](images/icons/ic_follow_black_disable.png) | `ic_follow_black_disable` |
+| Nút Kết bạn (chưa bạn) | ![addf](images/icons/ic_add_friend_black_disable.png) | `ic_add_friend_black_disable` |
+| Nút Kết bạn (đã bạn) | ![fr](images/icons/ic_state_friends.png) | `ic_state_friends` (chữ xanh `#7CB342`) |
+| Nút Quan tâm (chưa theo dõi) | ![follow](images/icons/ic_follow_black_disable.png) | `ic_follow_black_disable` |
+| Nút Quan tâm (đang theo dõi) | ![flg](images/icons/ic_state_following.png) | `ic_state_following` (chữ xanh `#7CB342`) |
 | Nút Cập nhật | ![edit](images/icons/ic_edit_profile_gray.png) | `ic_edit_profile_gray` |
 | Nút Viết Me | ![postme](images/icons/ic_post_me_gray.png) | `ic_post_me_gray` |
 | Nút Khác | ![more](images/icons/ic_more_horizon_black_disable.png) | `ic_more_horizon_black_disable` |
@@ -309,7 +354,7 @@ Tất cả lệnh gọi `OlaApplication.b.<method>` (= `OlaNetworkService`) tron
 | **Tải feed Me** (cũ hơn) | `b.a(nick, false, …)` (883) | tải tiếp |
 | **Tải thêm bài (paging)** 🔒 | `b.a(nick, n.k(), (short) 79)` (1159) | gọi khi cuộn cuối list (`a_(int)`), **svc 79** |
 | **Kết bạn** | `b.d(nick)` (1203) | gửi lời mời / tạo hội thoại |
-| **Hủy kết bạn** 🔒 | `b.e(nick)` (921) | trong menu nút Quan tâm |
+| **Hủy kết bạn** 🔒 | `b.e(nick)` (921) | trong menu nút **Kết bạn** khi đã là bạn (`aa()`) |
 | **Theo dõi / Bỏ theo dõi** | `b.a(nick, true/false, 0)` (925/928) | "Quan tâm" / "Ngừng quan tâm" |
 | **Gửi nụ hôn** 💋 | `b.i(nick)` (1280) | tiêu **KEN** (`i()` kiểm `x.e()` + phát hiệu ứng); chặn tự hôn mình |
 | **Chặn** | `b.m(nick)` (721) | menu "Khác" |
@@ -328,8 +373,8 @@ Tất cả lệnh gọi `OlaApplication.b.<method>` (= `OlaNetworkService`) tron
 | `btnUnBlockMe` ("Bỏ chặn", nền đỏ) | đang **chặn** người này |
 | `vipAccountGroup` ("Tài khoản VIP") | tài khoản **VIP** |
 | `imgCheckedPhoneNumberVerified` (✓) | đã **xác thực SĐT** |
-| Menu Quan tâm (`Z()`: Hủy kết bạn / Ngừng quan tâm) | đã là **bạn / đang theo dõi** |
-| Menu "Khác" = privacy (`W()`) vs block/report (`X()`) | **mình** vs **người khác** |
+| Menu nút **Kết bạn** (`aa()`: Hủy kết bạn / theo dõi) | đã là **bạn** (`h.t.d(nick)≠null`) |
+| Menu "Khác": đổi ảnh/bìa/quyền riêng tư (`W()`) vs Chặn/Copy/Báo (`X()`) | **mình** vs **người khác** |
 
 ---
 

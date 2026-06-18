@@ -26,6 +26,8 @@ export interface UserProfile {
   nick: string;
   color: string;
   coverColor: string;
+  avatar?: string;
+  coverPhoto?: string;
   verified: boolean;
   vip: boolean;
   fans: number;

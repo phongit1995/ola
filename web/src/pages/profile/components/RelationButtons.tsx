@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ListOptionDialog, type ListOption } from '@components';
+import { toast } from '@lib';
 import type { RelationshipInfo } from '@app-types';
 import type { ProfileActions } from '../types';
 import addFriendIcon from '@/assets/icons/profile/ic_add_friend_black_disable.png';
@@ -9,7 +10,6 @@ import followIcon from '@/assets/icons/profile/ic_follow_black_disable.png';
 import followingActiveIcon from '@/assets/icons/profile/ic_state_following.png';
 import editIcon from '@/assets/icons/profile/ic_edit_profile_gray.png';
 import postMeIcon from '@/assets/icons/profile/ic_post_me_gray.png';
-import messageIcon from '@/assets/icons/message.png';
 import moreIcon from '@/assets/icons/profile/ic_more_horizon_black_disable.png';
 
 interface RelationButtonsProps {
@@ -58,9 +58,11 @@ export function RelationButtons({
   const [menuOpen, setMenuOpen] = useState(false);
 
   const { status } = relationship;
-  const isBlocked = status === 'blocked_by_me' || status === 'blocked_by_them';
   const isFriend = status === 'friend';
   const following = relationship.isFollowing;
+  const blockedByMe = status === 'blocked_by_me';
+
+  const comingSoon = () => toast.info(t('profile.comingSoon'));
 
   const friendLabel =
     status === 'friend'
@@ -73,29 +75,39 @@ export function RelationButtons({
   const friendActive = isFriend || status === 'pending_outgoing';
   const friendIcon = isFriend ? friendsActiveIcon : addFriendIcon;
   const followIconSrc = following ? followingActiveIcon : followIcon;
-  const blockLabel = status === 'blocked_by_me' ? t('profile.unblock') : t('profile.block');
 
   const otherMenu: ListOption[] = [
-    { key: 'block', label: blockLabel, danger: status !== 'blocked_by_me', onSelect: actions.blockAction },
+    { key: 'block', label: t('profile.block'), danger: true, onSelect: actions.blockAction },
     { key: 'copy', label: t('profile.copyNick'), onSelect: () => navigator.clipboard?.writeText(nick) },
-    { key: 'report', label: t('profile.report'), onSelect: () => {} },
+    { key: 'report', label: t('profile.report'), onSelect: comingSoon },
   ];
 
   const selfMenu: ListOption[] = [
-    { key: 'public', label: t('me.privacy_public'), onSelect: () => {} },
-    { key: 'friend', label: t('me.privacy_friend'), onSelect: () => {} },
-    { key: 'private', label: t('me.privacy_private'), onSelect: () => {} },
-    { key: 'help', label: t('profile.privacyHelp'), onSelect: () => {} },
+    { key: 'avatar', label: t('profile.changeAvatar'), onSelect: comingSoon },
+    { key: 'cover', label: t('profile.changeCover'), onSelect: comingSoon },
+    { key: 'privacy', label: t('profile.changePrivacy'), onSelect: comingSoon },
   ];
 
-  const showRelationActions = !isSelf && !isBlocked;
+  if (blockedByMe) {
+    return (
+      <div className="px-2 py-2">
+        <button
+          type="button"
+          onClick={actions.blockAction}
+          className="w-full rounded bg-ola-error py-3 text-sm font-medium text-white"
+        >
+          {t('profile.unblock')}
+        </button>
+      </div>
+    );
+  }
 
   return (
     <>
       <div className="flex px-2 py-2">
         {isSelf ? (
           <RelationButton icon={editIcon} label={t('profile.updateInfo')} onClick={onUpdateInfo} />
-        ) : showRelationActions ? (
+        ) : (
           <>
             <RelationButton
               icon={friendIcon}
@@ -110,12 +122,8 @@ export function RelationButtons({
               onClick={actions.toggleFollow}
             />
           </>
-        ) : null}
-        {isSelf ? (
-          <RelationButton icon={postMeIcon} label={t('profile.postMe')} onClick={onPostMe} />
-        ) : (
-          <RelationButton icon={messageIcon} label={t('profile.message')} onClick={actions.message} />
         )}
+        <RelationButton icon={postMeIcon} label={t('profile.postMe')} onClick={onPostMe} />
         <RelationButton icon={moreIcon} label={t('profile.more')} onClick={() => setMenuOpen(true)} />
       </div>
 

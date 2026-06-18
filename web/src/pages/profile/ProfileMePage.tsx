@@ -122,11 +122,7 @@ export function ProfileMePage() {
         <div className="mb-2 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.18)]">
           <div className="relative mb-12 aspect-[16/9] w-full bg-ola-primary-darker">
             <div className="absolute -bottom-12 left-1/2 flex -translate-x-1/2 bg-white p-1 pb-1.5 shadow-[0_1px_3px_rgba(0,0,0,0.3)]">
-              {user.avatar ? (
-                <img src={user.avatar} alt="" className="h-24 w-24 object-cover" />
-              ) : (
-                <Avatar name={nick} color={color} size={96} />
-              )}
+              <Avatar name={nick} color={color} size={96} src={user.avatar} rounded={false} />
             </div>
           </div>
 

@@ -7,9 +7,9 @@ import type { ProfileFriend, UserProfile } from './types';
 const DEFAULT_COVER_COLOR = '#33691e';
 
 function formatBirthday(iso: string): string {
-  const [, month, day] = iso.split('-');
+  const [year, month, day] = iso.split('-');
   if (!day || !month) return iso;
-  return `${day}/${month}`;
+  return year ? `${day}/${month}/${year}` : `${day}/${month}`;
 }
 
 export interface ProfileMapDeps {
@@ -26,6 +26,8 @@ export function mapPublicProfile(data: PublicProfile, deps: ProfileMapDeps): Use
     nick,
     color: deps.seedColor !== '' ? deps.seedColor : colorForName(data.username),
     coverColor: DEFAULT_COVER_COLOR,
+    avatar: data.avatar,
+    coverPhoto: data.coverPhoto,
     verified: data.verified,
     vip: Boolean(data.vipUsed),
     fans: data.followerCount,
