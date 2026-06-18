@@ -30,6 +30,7 @@ interface ContactListProps {
   onAccountMenu?: () => void;
   onEditStatus?: () => void;
   onPreviewImage?: () => void;
+  onPreviewBuddyImage?: (url: string) => void;
   onComingSoon?: () => void;
 }
 
@@ -75,11 +76,13 @@ function BuddyRow({
   highlight,
   onSelect,
   onLongPress,
+  onPreviewImage,
 }: {
   contact: Contact;
   highlight: boolean;
   onSelect: () => void;
   onLongPress: () => void;
+  onPreviewImage?: (url: string) => void;
 }) {
   const timer = useRef<number | undefined>(undefined);
   const longPressed = useRef(false);
@@ -155,7 +158,11 @@ function BuddyRow({
           <img
             src={contact.statusImage}
             alt=""
-            className="ml-2 h-10 w-10 shrink-0 rounded border border-black/12 object-cover"
+            onClick={(event) => {
+              event.stopPropagation();
+              onPreviewImage?.(contact.statusImage!);
+            }}
+            className="ml-2 h-10 w-10 shrink-0 cursor-pointer rounded border border-black/12 object-cover"
           />
         )}
         {!contact.online && contact.lastActive != null && contact.lastActive !== '' && (
@@ -173,6 +180,7 @@ export function ContactList({
   onAccountMenu,
   onEditStatus,
   onPreviewImage,
+  onPreviewBuddyImage,
   onComingSoon,
 }: ContactListProps) {
   const { t } = useTranslation();
@@ -321,6 +329,7 @@ export function ContactList({
                 highlight={section.highlight}
                 onSelect={() => onSelect(contact)}
                 onLongPress={() => setMenuContact(contact)}
+                onPreviewImage={onPreviewBuddyImage}
               />
             ))}
           </ul>

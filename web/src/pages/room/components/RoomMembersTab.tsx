@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import maleIcon from '@/assets/icons/chat/ic_indicate_male.png';
 import femaleIcon from '@/assets/icons/chat/ic_indicate_female.png';
@@ -5,6 +6,7 @@ import androidIcon from '@/assets/icons/me/ic_indicate_android.png';
 import type { RoomMember } from '@app-types';
 import { Avatar } from '@components';
 import { colorForName } from '@lib';
+import { MediaViewer } from '../../me/components/MediaViewer';
 
 interface RoomMembersTabProps {
   members: RoomMember[];
@@ -33,6 +35,7 @@ function DeviceBadge() {
 
 export function RoomMembersTab({ members, active, onOpenProfile }: RoomMembersTabProps) {
   const { t } = useTranslation();
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   return (
     <div className={`relative flex-1 overflow-y-auto bg-white ${active ? '' : 'hidden'}`}>
@@ -76,11 +79,25 @@ export function RoomMembersTab({ members, active, onOpenProfile }: RoomMembersTa
                     ) : null}
                   </div>
                   <span className="shrink-0 text-xs text-ola-primary">{t('chat.online')}</span>
+                  {member.bioImage != null && member.bioImage !== '' && (
+                    <img
+                      src={member.bioImage}
+                      alt=""
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        setPreviewImage(member.bioImage!);
+                      }}
+                      className="ml-1 h-10 w-10 shrink-0 cursor-pointer rounded border border-black/12 object-cover"
+                    />
+                  )}
                 </button>
               </li>
             );
           })}
         </ul>
+      )}
+      {previewImage != null && (
+        <MediaViewer photos={[previewImage]} index={0} onClose={() => setPreviewImage(null)} />
       )}
     </div>
   );

@@ -22,6 +22,7 @@ import { useLongPress } from '../useLongPress';
 import { AttachmentBar, type AttachTab } from './AttachmentBar';
 import { ChatMessageBubble } from './ChatMessageBubble';
 import { MessageActionSheet } from './MessageActionSheet';
+import { MediaViewer } from '../../me/components/MediaViewer';
 import { UserProfileView } from '../../profile/UserProfileView';
 
 interface ChatConversationViewProps {
@@ -62,6 +63,7 @@ export function ChatConversationView({
   const editMessage = useChatStore((s) => s.editMessage);
   const notifyTyping = useChatStore((s) => s.notifyTyping);
   const loadMoreMessages = useChatStore((s) => s.loadMoreMessages);
+  const currentConversationId = useChatStore((s) => s.currentConversationId);
   const conversationSeen = useChatStore((s) => {
     const conversation = s.conversations.find((item) => item.id === s.currentConversationId);
     return conversation != null && conversation.isLastMessageFromMe && conversation.seen;
@@ -74,6 +76,7 @@ export function ChatConversationView({
   const [actionTarget, setActionTarget] = useState<ChatMessage | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ChatMessage | null>(null);
   const [editing, setEditing] = useState<{ id: string } | null>(null);
+  const [viewerImage, setViewerImage] = useState<string | null>(null);
   const [profileTarget, setProfileTarget] = useState<{ username: string; color: string } | null>(
     null
   );
@@ -81,6 +84,7 @@ export function ChatConversationView({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const lastBubbleIdRef = useRef<string | null>(null);
   const prependAnchorRef = useRef<number | null>(null);
+  const stickToBottomRef = useRef(true);
 
   const peerTyping = typingUsers.length > 0;
 
@@ -96,6 +100,11 @@ export function ChatConversationView({
     return null;
   }, [bubbles]);
 
+  useEffect(() => {
+    stickToBottomRef.current = true;
+    lastBubbleIdRef.current = null;
+  }, [currentConversationId]);
+
   useLayoutEffect(() => {
     const element = scrollRef.current;
     if (element == null) return;
@@ -103,21 +112,38 @@ export function ChatConversationView({
     if (prependAnchorRef.current != null) {
       element.scrollTop = element.scrollHeight - prependAnchorRef.current;
       prependAnchorRef.current = null;
-    } else if (lastId !== lastBubbleIdRef.current) {
-      element.scrollTo({ top: element.scrollHeight });
+    } else if (lastId !== lastBubbleIdRef.current && stickToBottomRef.current) {
+      element.scrollTop = element.scrollHeight;
     }
     lastBubbleIdRef.current = lastId;
   }, [bubbles]);
 
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
+    const element = scrollRef.current;
+    if (element == null) return;
+    function scrollToBottomIfPinned() {
+      const target = scrollRef.current;
+      if (target != null && stickToBottomRef.current) target.scrollTop = target.scrollHeight;
+    }
+    element.addEventListener('load', scrollToBottomIfPinned, true);
+    return () => element.removeEventListener('load', scrollToBottomIfPinned, true);
+  }, []);
+
+  useEffect(() => {
+    if (stickToBottomRef.current) {
+      scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
+    }
   }, [peerTyping, openTab]);
 
   function handleScroll() {
     const element = scrollRef.current;
-    if (element == null || element.scrollTop > 0 || !hasMore || loadingMore) return;
-    prependAnchorRef.current = element.scrollHeight;
-    void loadMoreMessages();
+    if (element == null) return;
+    const distanceFromBottom = element.scrollHeight - element.scrollTop - element.clientHeight;
+    stickToBottomRef.current = distanceFromBottom < 80;
+    if (element.scrollTop <= 0 && hasMore && !loadingMore) {
+      prependAnchorRef.current = element.scrollHeight;
+      void loadMoreMessages();
+    }
   }
 
   function submitComposer() {
@@ -213,6 +239,7 @@ export function ChatConversationView({
             seen={conversationSeen}
             onOpenActions={setActionTarget}
             onOpenProfile={canViewProfile ? openPeerProfile : undefined}
+            onOpenImage={setViewerImage}
           />
         ))}
 
@@ -344,6 +371,10 @@ export function ChatConversationView({
           onOpenFriend={(friend) => setProfileTarget({ username: friend.name, color: friend.color })}
         />
       )}
+
+      {viewerImage != null && (
+        <MediaViewer photos={[viewerImage]} index={0} onClose={() => setViewerImage(null)} />
+      )}
     </FullScreenOverlay>
   );
 }
@@ -359,9 +390,10 @@ interface MessageRowProps {
   seen: boolean;
   onOpenActions: (message: ChatMessage) => void;
   onOpenProfile?: () => void;
+  onOpenImage: (url: string) => void;
 }
 
-function MessageRow({ message, prev, next, name, color, avatar, isLastOwn, seen, onOpenActions, onOpenProfile }: MessageRowProps) {
+function MessageRow({ message, prev, next, name, color, avatar, isLastOwn, seen, onOpenActions, onOpenProfile, onOpenImage }: MessageRowProps) {
   const isOut = message.direction === 'out';
   const boundary = prev == null;
   const firstInGroup = boundary || prev.direction !== message.direction;
@@ -369,10 +401,22 @@ function MessageRow({ message, prev, next, name, color, avatar, isLastOwn, seen,
   const showAvatar = !isOut && firstInGroup;
   const canAct = message.status !== 'sending' && message.status !== 'failed';
   const chips = reactionChips(message.reactions);
+  const suppressClick = useRef(false);
 
   const longPress = useLongPress(() => {
+    suppressClick.current = true;
     if (canAct) onOpenActions(message);
   });
+
+  function handleBubbleClick() {
+    if (suppressClick.current) {
+      suppressClick.current = false;
+      return;
+    }
+    if (message.kind === 'image' && message.image != null && message.image !== '') {
+      onOpenImage(message.image);
+    }
+  }
 
   return (
     <div className={`flex flex-col ${firstInGroup && !boundary ? 'mt-2' : ''}`}>
@@ -398,7 +442,15 @@ function MessageRow({ message, prev, next, name, color, avatar, isLastOwn, seen,
           ))}
         <div className={`flex max-w-[78%] flex-col ${isOut ? 'items-end' : ''}`}>
           <div className={`flex items-center gap-2 ${isOut ? 'flex-row-reverse' : ''}`}>
-            <div {...longPress} className="touch-pan-y select-none">
+            <div
+              {...longPress}
+              onPointerDown={(event) => {
+                suppressClick.current = false;
+                longPress.onPointerDown(event);
+              }}
+              onClick={handleBubbleClick}
+              className="touch-pan-y select-none"
+            >
               <ChatMessageBubble message={message} firstInGroup={firstInGroup} lastInGroup={lastInGroup} />
             </div>
             <span className="shrink-0 text-[10px] text-black/38">{message.time}</span>

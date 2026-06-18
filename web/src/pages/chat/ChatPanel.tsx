@@ -51,6 +51,7 @@ export function ChatPanel() {
   const [avatarOpen, setAvatarOpen] = useState(false);
   const [statusOpen, setStatusOpen] = useState(false);
   const [statusImageOpen, setStatusImageOpen] = useState(false);
+  const [buddyImage, setBuddyImage] = useState<string | null>(null);
   const [friends, setFriends] = useState<Contact[]>([]);
   const friendsLoadedRef = useRef(false);
 
@@ -171,6 +172,7 @@ export function ChatPanel() {
               onAccountMenu={() => setHeaderMenuOpen(true)}
               onEditStatus={() => setStatusOpen(true)}
               onPreviewImage={() => setStatusImageOpen(true)}
+              onPreviewBuddyImage={setBuddyImage}
               onComingSoon={comingSoon}
             />
             <button
@@ -236,6 +238,9 @@ export function ChatPanel() {
       {statusOpen && <StatusEditDialog open onClose={() => setStatusOpen(false)} />}
       {statusImageOpen && user?.bioImage != null && user.bioImage !== '' && (
         <MediaViewer photos={[user.bioImage]} index={0} onClose={() => setStatusImageOpen(false)} />
+      )}
+      {buddyImage != null && (
+        <MediaViewer photos={[buddyImage]} index={0} onClose={() => setBuddyImage(null)} />
       )}
     </>
   );

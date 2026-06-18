@@ -38,7 +38,7 @@ export function ChatMessageBubble({
         <img
           src={message.image}
           alt=""
-          className="max-h-60 max-w-[220px] rounded-lg object-cover shadow-sm"
+          className="max-h-60 max-w-[220px] cursor-pointer rounded-lg object-cover shadow-sm"
         />
       ) : (
         <div className="flex h-44 w-44 items-center justify-center overflow-hidden rounded-lg bg-linear-to-br from-ola-primary-light to-ola-primary/30 text-6xl shadow-sm">
