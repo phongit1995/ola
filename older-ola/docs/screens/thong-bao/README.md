@@ -305,7 +305,7 @@ Tất cả là `AlertDialog` dựng qua `chat.ola.vn.i.i.a(ctx, title, message, 
   "id":        "string",      // j.d  — id thông báo (dùng mark-read)
   "senderId":  "string|null", // j.b  — nick/id người gửi (null => ẩn tên + avatar mặc định)
   "content":   "string",      // j.e  — nội dung (hỗ trợ emoji/markup)
-  "appCode":   "string",      // j.f  — "3" | "1" | "1.4" | "3.1" | "2"
+  "appCode":   "string",      // j.f  — MỞ (server tự do); client chỉ gán icon cho "3"|"1"|"1.4"|"3.1"|"2", khác → generic
   "type":      "string|null", // j.g  — khi appCode="2": "proposal" | "divorce"
   "timestamp": 0,             // j.h  — ms; vừa hiển thị "x phút trước" vừa là cursor phân trang
   "inlineImage": "bytes|null",// j.i  — ảnh nhúng (hiếm dùng)
@@ -313,23 +313,54 @@ Tất cả là `AlertDialog` dựng qua `chat.ola.vn.i.i.a(ctx, title, message, 
 }
 ```
 
+**Wire-format (parser `w/ap.java`, opcode 39)** — mỗi bản ghi là 1 phần tử trong mảng tag **109**; tổng số chưa đọc/đếm ở tag **124**:
+
+| Tag | → trường | Ghi chú |
+|----:|----------|---------|
+| 109 | (container) | mảng bản ghi thông báo; `count = c(109)` |
+| —   | `d` (id) | `sVar.c(iB)` (khoá bản ghi) |
+| 112 | `g` (type) | proposal/divorce… |
+| 7   | `b` (sender) | nick người gửi |
+| 22  | `c` (extra) | tham số phụ |
+| 9   | `h` (timestamp ms) | dùng cả làm cursor phân trang |
+| 23  | `i` (ảnh inline) | bytes |
+| 110 | `e` (nội dung) | server cắt tiền tố `@sender`/`sender` rồi `trim()` |
+| 113 | `f` (appCode) | quyết định icon |
+| 111 | `a` (actions[]) | parse qua `util.o.a(str, ...)` |
+| 124 | (total) | tổng/đếm |
+
 ### 7.3. Mô hình hành động (`entity.j.a[0]` = `entity.d`) — điều hướng khi chạm dòng
 
 Mỗi thông báo mang **mảng action**; client đọc `a[0]` rồi điều phối theo `action = d.a()` (+ tham số `d.b()`, `d.c()`, nhãn `d.d()`, media `d.e()`):
 
-| `action` (d.a()) | Ý nghĩa | Đích |
-|------------------|---------|------|
-| `viewme` + sub `comment` | Xem bình luận trên Me | `OlaMeCommentActivity(id=d.b())` |
-| `viewme` + sub `homepage` | Mở trang cá nhân người dùng | `me.c.a(..., d.b())` |
-| `viewmedia` / `openphoto` | Xem ảnh | `OlaImageViewerActivity` |
+**Đủ ~26 action** (đọc `entity/d.java`, hàm `c(context, dVar)`):
+
+| `action` (d.a()) | Ý nghĩa | Đích / hành vi |
+|------------------|---------|----------------|
+| `viewme` + `comment` | Xem bình luận trên Me | `OlaMeCommentActivity(id=d.b())` |
+| `viewme` + `homepage` | Mở trang cá nhân | `me.c.a(..., d.b())` |
+| `viewmedia` | Xem media | `OlaImageViewerActivity` |
+| `openphoto` | Xem ảnh | `OlaImageViewerActivity` |
+| `openaudio` / `openvideo` | Mở audio/video | trình phát tương ứng |
 | `chatto` | Mở hội thoại 1-1 | `OlaChatViewActivity(nick=d.b())` |
+| `replyto` | Trả lời nhanh | khung chat/reply |
+| `viewbox` / `viewproposalrequest` / `viewproposallist` | Hộp/danh sách cầu hôn | màn Box - Kết hôn |
+| `checkin` + `venue` | Mở địa điểm check-in | `OlaVenueDetailActivity` |
 | `vip` | Mua VIP | `BuyVipActivity` |
 | `postme` | Soạn bài Me | `OlaMeComposerActivity` |
-| `wap` / `webapp` | Mở web (in-app/ngoài) | web; `wap` có thể hỏi xác nhận trả phí (`d.j` ≠ rỗng) |
-| `call` | Quay số | trình gọi điện |
-| `rss` / `like` / `likeadme` / `checkin`(venue) … | hành động phụ | xem `entity/d.java` |
+| `like` / `likeadme` | Gửi like (Me / quảng cáo) | gọi API like |
+| `rss` | Mở RSS | tab RSS |
+| `wap` | Mở web (có thể tính phí) | web in-app/ngoài; `d.j`≠rỗng → dialog xác nhận trả phí |
+| `webapp` | Mở web-app | `m.m.a(...)` |
+| `call` (`CATEGORY_CALL`) | Quay số | trình gọi điện |
+| `sms` / `message` (`CATEGORY_MESSAGE`) | Nhắn tin | trình SMS / chat |
+| `app` / `dpk` / `xt` | Mở ứng dụng/đối tác | handler tương ứng |
+| `copy` / `delme` | Copy / xoá | thao tác nội bộ |
 
-> Khi dựng backend: mỗi notification nên kèm **`actions[]`** dạng `{action, param, sub, label}` để client biết điều hướng — đây là phần "động" của hệ thống thông báo, không hard-code theo `appCode`.
+> **Hai tầng "loại" — đây là lý do nhìn tưởng ít:**
+> 1. **`appCode` (j.f)** chỉ quyết định **icon + nút** trong list. Server gửi string tự do (tag 113); client **chỉ gán icon cho 6** giá trị (`3`,`1`,`1.4`,`3.1`,`2`+proposal/divorce). **Mọi appCode khác → dòng generic** (avatar + chữ + giờ, không icon) — backend mở rộng bao nhiêu loại cũng được.
+> 2. **`action` (entity.d, tag 111)** mới là phần **đa dạng thật** (~26 ở trên) — quyết định chạm vào đi đâu, **độc lập** với appCode.
+> ⇒ Một notification = **appCode (hình) + actions[] (hành vi)**; số "loại chức năng" là tổ hợp 2 tầng, không phải 6.
 
 ### 7.4. Quy tắc hiển thị (tóm tắt để khớp backend ↔ UI)
 - `appCode` quyết định **icon nhỏ** + **có nút hay không** (xem §1 view type). Lưu ý nhánh `f="2"` proposal/divorce **không vẽ icon** (bug bind), proposal có 2 nút Đồng ý/Không, divorce không nút.

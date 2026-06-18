@@ -1,6 +1,12 @@
 import type { Conversation, Message, MessageStatus } from '@app-types';
 import { colorForName, DEFAULT_AVATAR_COLOR } from '@lib';
+import { kulImageForText } from './kul';
 import type { ChatMessage, ChatMessageStatus } from './types';
+
+function previewText(text?: string): string {
+  if (text == null || text === '') return '';
+  return kulImageForText(text) != null ? 'Kul' : text;
+}
 
 export interface ConversationView {
   id: string;
@@ -50,7 +56,7 @@ export function toConversationView(conversation: Conversation): ConversationView
     title: conversationHeaderTitle(conversation),
     avatar: conversation.otherUser?.avatar ?? conversation.avatar,
     color: name ? colorForName(name) : DEFAULT_AVATAR_COLOR,
-    preview: conversation.lastMessageText ?? '',
+    preview: previewText(conversation.lastMessageText),
     fromMe: conversation.isLastMessageFromMe,
     seen: conversation.seen,
     senderName: conversation.lastMessageSenderName,

@@ -5,6 +5,7 @@ import playIcon from '@/assets/icons/chat/ic_play_media.png';
 import snapIcon from '@/assets/icons/chat/icon_snap_pic.png';
 import kenIcon from '@/assets/icons/chat/ic_ken_white.png';
 import addFriendIcon from '@/assets/icons/chat/ic_add_friend.png';
+import { kulImageForText } from '../kul';
 import type { ChatMessage } from '../types';
 
 const VOICE_BARS = [6, 10, 14, 8, 12, 16, 9, 13, 7, 11, 15, 8, 12, 6];
@@ -28,6 +29,13 @@ export function ChatMessageBubble({
     ? `${firstInGroup ? '' : 'rounded-tr-sm'} ${lastInGroup ? '' : 'rounded-br-sm'}`
     : `${firstInGroup ? '' : 'rounded-tl-sm'} ${lastInGroup ? '' : 'rounded-bl-sm'}`;
   const bubbleBg = failed ? 'bg-[#f8d7d7]' : isOut ? 'bg-[#dcedc8]' : 'bg-white shadow-sm';
+
+  if (message.kind === 'text') {
+    const kulImage = kulImageForText(message.text);
+    if (kulImage != null) {
+      return <img src={kulImage} alt="" className="h-30 w-auto object-contain" />;
+    }
+  }
 
   switch (message.kind) {
     case 'sticker':

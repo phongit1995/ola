@@ -19,6 +19,7 @@ import cloudPhotoIcon from '@/assets/icons/chat/ic_cloud_photo_storage.png';
 import switchCameraIcon from '@/assets/icons/chat/ic_action_switch_camera.png';
 import snapTimerIcon from '@/assets/icons/chat/ic_snap_timer.png';
 import expandCameraIcon from '@/assets/icons/chat/ic_action_expand_selected.png';
+import { KUL_IMAGES } from '../kul';
 import type { ChatMessage } from '../types';
 
 export type AttachTab = 'smiley' | 'kul' | 'camera' | 'photo' | 'voice' | 'more';
@@ -31,6 +32,7 @@ interface AttachmentBarProps {
   onPickEmoji: (emoji: string) => void;
   onBackspace: () => void;
   onPickImage: () => void;
+  onSendKul: (index: number) => void;
   onSend: (payload: SendPayload) => void;
 }
 
@@ -59,15 +61,6 @@ const SMILEY_CODES = [
 const SMILEYS: Array<{ image: string; code: string }> = Object.keys(smileyFiles)
   .sort()
   .map((path, index) => ({ image: smileyFiles[path]!, code: SMILEY_CODES[index] ?? '' }));
-
-const kulFiles = import.meta.glob('../../../assets/icons/chat/kul/*.png', {
-  eager: true,
-  import: 'default',
-}) as Record<string, string>;
-
-const KULS: string[] = Object.keys(kulFiles)
-  .sort()
-  .map((path) => kulFiles[path]!);
 
 function SmileyPanel({ onPick, onBackspace }: { onPick: (code: string) => void; onBackspace: () => void }) {
   return (
@@ -100,14 +93,14 @@ function SmileyPanel({ onPick, onBackspace }: { onPick: (code: string) => void; 
   );
 }
 
-function KulPanel({ onSend }: { onSend: (payload: SendPayload) => void }) {
+function KulPanel({ onSendKul }: { onSendKul: (index: number) => void }) {
   return (
     <div className="grid grid-cols-6 gap-1 p-2">
-      {KULS.map((image, index) => (
+      {KUL_IMAGES.map((image, index) => (
         <button
           key={index}
           type="button"
-          onClick={() => onSend({ kind: 'sticker', sticker: image })}
+          onClick={() => onSendKul(index + 1)}
           className="flex aspect-square items-center justify-center rounded-lg hover:bg-gray-100"
         >
           <img src={image} alt="" className="max-h-full max-w-full object-contain" />
@@ -244,6 +237,7 @@ export function AttachmentBar({
   onPickEmoji,
   onBackspace,
   onPickImage,
+  onSendKul,
   onSend,
 }: AttachmentBarProps) {
   const { t } = useTranslation();
@@ -281,7 +275,7 @@ export function AttachmentBar({
       {openTab != null && (
         <div className="h-52 overflow-y-auto border-t border-black/12">
           {openTab === 'smiley' && <SmileyPanel onPick={onPickEmoji} onBackspace={onBackspace} />}
-          {openTab === 'kul' && <KulPanel onSend={onSend} />}
+          {openTab === 'kul' && <KulPanel onSendKul={onSendKul} />}
           {openTab === 'camera' && <CameraPanel onCapture={onPickImage} />}
           {openTab === 'photo' && <PhotoPanel onPickImage={onPickImage} />}
           {openTab === 'voice' && <VoicePanel onRecord={() => onSend({ kind: 'voice', voiceDuration: '0:08' })} />}

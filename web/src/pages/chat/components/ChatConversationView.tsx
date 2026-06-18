@@ -18,6 +18,7 @@ import { useAuthStore } from '@/store/authStore';
 import type { RelationshipStatus } from '@app-types';
 import type { ChatMessage } from '../types';
 import { reactionChips, toBubble } from '../chatView';
+import { kulToken } from '../kul';
 import { useLongPress } from '../useLongPress';
 import { AttachmentBar, type AttachTab } from './AttachmentBar';
 import { ChatMessageBubble } from './ChatMessageBubble';
@@ -311,6 +312,10 @@ export function ChatConversationView({
         onPickEmoji={(emoji) => setDraft((current) => current + emoji)}
         onBackspace={() => setDraft((current) => Array.from(current).slice(0, -1).join(''))}
         onPickImage={() => fileInputRef.current?.click()}
+        onSendKul={(index) => {
+          void sendText(kulToken(index));
+          setOpenTab(null);
+        }}
         onSend={() => toast.info(t('chat.comingSoon'))}
       />
 
