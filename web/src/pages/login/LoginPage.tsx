@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -9,8 +9,10 @@ import { SubmitButton } from '@components/form/SubmitButton';
 import { LanguageSwitcher } from '@components/LanguageSwitcher';
 import { Spinner } from '@components';
 import { AuthService } from '@services';
-import { ApiError, USERNAME_MAX, USERNAME_PATTERN, toast } from '@lib';
+import { ApiError, USERNAME_MAX, USERNAME_PATTERN, decodeSecret, toast } from '@lib';
 import { useAuthStore } from '@/store/authStore';
+import { useSavedAccountsStore, type SavedAccount } from '@/store/savedAccountsStore';
+import { SavedAccountGallery } from './SavedAccountGallery';
 
 const APP_VERSION = '15240093';
 const USERNAME_MIN = 5;
@@ -24,6 +26,9 @@ export function LoginPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const setUser = useAuthStore((s) => s.setUser);
+  const accounts = useSavedAccountsStore((s) => s.accounts);
+  const saveAccount = useSavedAccountsStore((s) => s.saveAccount);
+  const removeAccount = useSavedAccountsStore((s) => s.removeAccount);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -41,10 +46,29 @@ export function LoginPage() {
   const username = watch('username');
   const password = watch('password');
 
+  const prefilled = useRef(false);
+  useEffect(() => {
+    if (prefilled.current) {
+      return;
+    }
+    prefilled.current = true;
+    const recent = accounts[0];
+    if (recent != null) {
+      setValue('username', recent.username);
+      setValue('password', decodeSecret(recent.secret));
+    }
+  }, [accounts, setValue]);
+
   function clearError() {
     if (error) {
       setError(null);
     }
+  }
+
+  function pickAccount(account: SavedAccount) {
+    setValue('username', account.username, { shouldValidate: true });
+    setValue('password', decodeSecret(account.secret), { shouldValidate: true });
+    clearError();
   }
 
   async function onSubmit(data: LoginForm) {
@@ -52,6 +76,7 @@ export function LoginPage() {
     setError(null);
     try {
       const { user } = await AuthService.login(data);
+      saveAccount(data.username, data.password);
       setUser(user);
       navigate(ROUTES.home);
     } catch (err) {
@@ -70,11 +95,19 @@ export function LoginPage() {
     >
       <LanguageSwitcher className="mt-3 self-end" />
 
-      <img
-        src={olaLogo}
-        alt="Ola"
-        className="mt-8 mb-4 h-14 w-14 object-contain"
-      />
+      {accounts.length > 0 ? (
+        <SavedAccountGallery
+          accounts={accounts}
+          onPick={pickAccount}
+          onRemove={removeAccount}
+        />
+      ) : (
+        <img
+          src={olaLogo}
+          alt="Ola"
+          className="mt-8 mb-4 h-14 w-14 object-contain"
+        />
+      )}
 
       <div
         className={`w-full max-w-md overflow-hidden rounded-sm bg-white shadow-[0_1px_4px_rgba(0,0,0,.24),0_0_2px_rgba(0,0,0,.12)] ${

@@ -4,6 +4,7 @@ export * from './tokenStorage';
 export * from './username';
 export * from './toast';
 export * from './avatarColor';
+export * from './secret';
 export * from './datetime';
 export * from './textInsert';
 export * from './smileys';

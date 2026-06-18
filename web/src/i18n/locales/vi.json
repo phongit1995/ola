@@ -1,6 +1,7 @@
 {
   "common": {
     "clear": "Xoá",
+    "delete": "Xoá",
     "cancel": "Huỷ",
     "loading": "Đang tải…",
     "error": "Đã có lỗi xảy ra, vui lòng thử lại.",
@@ -36,7 +37,10 @@
     "errUsernameLength": "Tên đăng nhập phải từ 5–20 ký tự.",
     "errUsernameFormat": "Tên đăng nhập chỉ gồm chữ thường, số, dấu chấm và gạch dưới.",
     "errPasswordRequired": "Vui lòng nhập mật khẩu.",
-    "errPasswordLength": "Mật khẩu phải từ 6–20 ký tự."
+    "errPasswordLength": "Mật khẩu phải từ 6–20 ký tự.",
+    "removeAccount": "Xoá tài khoản đã lưu",
+    "removeAccountTitle": "Thông báo",
+    "removeAccountConfirm": "Bạn có muốn xoá toàn bộ thông tin lưu trữ của tài khoản {{username}} trên thiết bị không?"
   },
   "register": {
     "title": "Tạo tài khoản Ola",

@@ -1,6 +1,7 @@
 {
   "common": {
     "clear": "Clear",
+    "delete": "Delete",
     "cancel": "Cancel",
     "loading": "Loading…",
     "error": "Something went wrong, please try again.",
@@ -36,7 +37,10 @@
     "errUsernameLength": "Username must be 5–20 characters.",
     "errUsernameFormat": "Username can only contain lowercase letters, numbers, dot and underscore.",
     "errPasswordRequired": "Please enter your password.",
-    "errPasswordLength": "Password must be 6–20 characters."
+    "errPasswordLength": "Password must be 6–20 characters.",
+    "removeAccount": "Remove saved account",
+    "removeAccountTitle": "Inform",
+    "removeAccountConfirm": "Do you want to delete all saved data of account {{username}} on this device?"
   },
   "register": {
     "title": "Create an Ola account",
