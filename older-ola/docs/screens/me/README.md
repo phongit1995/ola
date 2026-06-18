@@ -120,18 +120,35 @@ left_drawer (240dp)
 
 > Ngoài ra trong cùng nhóm icon còn có `me` → "Mọi người" (`ic_indicate_public`) và `rs` → RSS (`ic_indicate_rss`) khi xuất hiện.
 
-**Bấm 1 mục** (`me.c` `onItemClick` → `a(String, long)` dòng 205) — rẽ nhánh theo mã:
+**Bấm 1 mục** — `onItemClick` ([me/c.java:1309](../../../jadx_out/sources/chat/ola/vn/me/c.java#L1309)) lấy `af` tại vị trí, **chặn riêng `mariage diary`** rồi gọi `f(af.b())` → `a(af.b(), 0)` ([me/c.java:205](../../../jadx_out/sources/chat/ola/vn/me/c.java#L205)), cuối cùng `e()` đóng drawer. Rẽ nhánh theo mã `af.b()` — **có mục mở màn mới, có mục chỉ nạp feed TẠI CHỖ:**
 
-| Mã `af.b()` | Mở |
-|-------------|----|
-| `my diary` | `OlaDiaryActivity` (Nhật ký của tôi) |
-| `mariage diary` | nhật ký hôn nhân (`a(j)`) |
-| `#<clan>` (kể cả `#daptrung`, `#apk`, `#Ola`, `#hai`) — `e(strJ)==true` | nạp trang Me kiểu Clan → `OlaClanMePageActivity` |
-| nick / còn lại | `OlaUserMePageActivity` (trang cá nhân) |
+| Mã `af.b()` | Cử chỉ | Hành vi |
+|-------------|--------|---------|
+| `my diary` | click | mở **`OlaDiaryActivity`** (màn Nhật ký riêng) — [me/c.java:210](../../../jadx_out/sources/chat/ola/vn/me/c.java#L210) |
+| `mariage diary` | click | **chưa kết hôn → mở dialog "Thông báo"** (xem *Modal* dưới); **đã kết hôn →** nạp **feed nhật ký hôn nhân TẠI CHỖ** (`a(long)` → `OlaApplication.b.c(...)`, [me/c.java:119](../../../jadx_out/sources/chat/ola/vn/me/c.java#L119)) |
+| `me` · `lk` · `rs` (và `tl`/`md`/`av` ẩn) — `e(strJ)==true` | click | **nạp feed TẠI CHỖ** vào `listView` qua network service ([me/c.java:222](../../../jadx_out/sources/chat/ola/vn/me/c.java#L222)) — **KHÔNG** mở màn mới |
+| nick thường · `#daptrung` · `#apk` · `#ola` · `#hai` (`e(strJ)==false`) | click | mở **`OlaUserMePageActivity`** (trang Me của nick/tag đó) — [me/c.java:219](../../../jadx_out/sources/chat/ola/vn/me/c.java#L219) |
+
+> `e(strJ)` ([me/c.java:351](../../../jadx_out/sources/chat/ola/vn/me/c.java#L351)) chỉ `true` khi mã **rỗng** hoặc thuộc `{tl, md, rs, me, lk, av}` — đây là các **feed hệ thống nạp tại chỗ**. Mọi mã khác (kể cả các `#tag`) → `false` → mở `OlaUserMePageActivity`.
+
+> ⚠️ **Đính chính so với bản trước:** click `#daptrung`/`#apk`/`#ola`/`#hai` mở **`OlaUserMePageActivity`** (KHÔNG phải `OlaClanMePageActivity`); còn `me`/`lk`/`rs` **chỉ nạp feed tại chỗ**, không điều hướng.
 
 > Tức drawer trái = **Nhật ký + Box Kết Hôn + (Clan/trang theo dõi) + Me yêu thích + Đập trứng + #Android + #Ola + Hài hước** — nên danh sách dài chứ không chỉ vài mục.
 
-> **"Đập trứng" (`#daptrung`) nằm ở đây.** Hệ thống tự thêm một `entity.af` = `af("Đập trứng" /*system_me_eggy*/, "#daptrung")` ([network/e.java:2986](../../../jadx_out/sources/chat/ola/vn/network/e.java#L2986)); item này được gán icon **trứng nứt** `ic_indicate_broken_egg` ([r/a/e.java:517](../../../jadx_out/sources/chat/ola/vn/r/a/e.java#L517)). Bấm vào → mở **`OlaClanMePageActivity`** (trang Me kiểu Clan, feed bài đăng) — **KHÔNG phải lưới trứng để đập**. Client **không có** màn game đập trứng riêng (không layout/Activity `egg`); trò đập trứng do **server/web** điều khiển qua feed của trang `#daptrung`.
+> **"Đập trứng" (`#daptrung`) nằm ở đây.** Hệ thống tự thêm một `entity.af` = `af("Đập trứng" /*system_me_eggy*/, "#daptrung")` ([network/e.java:2986](../../../jadx_out/sources/chat/ola/vn/network/e.java#L2986)); item này được gán icon **trứng nứt** `ic_indicate_broken_egg` ([r/a/e.java:517](../../../jadx_out/sources/chat/ola/vn/r/a/e.java#L517)). Bấm vào → mở **`OlaUserMePageActivity`** cho tag `#daptrung` (feed bài đăng) — **KHÔNG phải lưới trứng để đập**. Client **không có** màn game đập trứng riêng (không layout/Activity `egg`); trò đập trứng do **server/web** điều khiển qua feed của tag này.
+
+##### Modal "Thông báo — chưa kết hôn" (mở khi bấm `mariage diary` lúc chưa cưới)
+
+[me/c.java:1315](../../../jadx_out/sources/chat/ola/vn/me/c.java#L1315) — kiểm tra `h.O.e` rỗng (chưa kết hôn) → dựng `AlertDialog` 2 nút (helper `i.a(...)`):
+
+| Phần | Resource | VI | EN |
+|------|----------|----|----|
+| Tiêu đề | `dialog_title_inform` | **Thông báo** | Inform |
+| Nội dung | `message_cannot_open_box_because_not_married` | **Tính năng chỉ dành cho người có trạng thái Kết Hôn trên Ola** | Only for married person on Ola |
+| Nút phải | `string_get_married` | **Kết Hôn** → mở `MarriageRequestComposerActivity` (gửi yêu cầu kết hôn) | Married |
+| Nút trái | `string_close` | **Đóng** → đóng dialog | Close |
+
+Sau khi hiện dialog, drawer đóng lại (`e()`) và **không nạp feed**. Nếu **đã** kết hôn thì bỏ qua dialog, nạp luôn feed nhật ký hôn nhân.
 
 #### b) Drawer PHẢI — tìm kiếm Me (`Gravity.RIGHT`, `right_drawer` = `this.w`)
 
@@ -355,6 +372,64 @@ Hàng thông tin (trên nền phủ đen, padding 4dp, chữ **trắng**):
 .ola-me-checkin__detail { width: 16px; }                  /* ic_arrow_right_white */
 ```
 
+### 4.7. Cử chỉ trên bài đăng & menu ⋮ (xử lý ở `chat.ola.vn.q.b`)
+
+Mọi chạm trên 1 bài đăng **KHÔNG** do `me.c` xử lý trực tiếp: adapter `me.u` gắn **2 listener dùng chung** cho từng dòng ([me/c.java:748](../../../jadx_out/sources/chat/ola/vn/me/c.java#L748)), cả hai uỷ quyền cho singleton **`chat.ola.vn.q.b`**:
+
+- **click** → `q.b.a().b(activity, view)` — `switch(view.getId())` ([q/b.java:1571](../../../jadx_out/sources/chat/ola/vn/q/b.java#L1571))
+- **long-press** → `q.b.a().a(activity, view)` — `switch(view.getId())` ([q/b.java:1487](../../../jadx_out/sources/chat/ola/vn/q/b.java#L1487))
+
+`view.getTag()` mang model `entry.b` (bài) hoặc `message.f` (nick) để 2 hàm biết tác động lên bài/nick nào.
+
+#### Bảng cử chỉ (click vs long-press)
+
+| View (id) | Click | Long-press |
+|-----------|-------|------------|
+| `btnMeItemFooterMore` (⋮) | **mở menu ⋮** (`c()`→`f()`, xem dưới) | — |
+| `btnMeItemFooterReply` ("Bình luận") | mở **`OlaMeCommentActivity`** | chia sẻ nhanh (`h()` → đăng lại lên timeline) |
+| `btnMeItemFooterShare` ("Chia sẻ") | đăng lại `rss://<id>` lên timeline + dialog **"Đã chia sẻ…"** | — |
+| `btnMeItemLikeSpan` (dòng thống kê like) | mở **`OlaMeLikerListActivity`** (ai đã thích) | — |
+| `btnMeItemViewComment` ("X bình luận") | mở luồng bình luận | — |
+| `imgMeAvatarThumbnail` (avatar) | mở trang Me tác giả | popup nhanh / mở trang Me |
+| `meOwnerInfoSpan` · `txtMeItemTitle` (tên) | mở trang Me tác giả | **menu nick** (Kết bạn/Chat/VIP/Thêm) → `a(ctx,nick)` |
+| `contactIdTextView` · `profilePictureImageView` · `suggestedFriendItemLayout` | mở trang Me | mở **`OlaUserMePageActivity`** |
+| `mediaImageView1..5` | xem ảnh | xem/menu ảnh (`a(ctx,view,idx)`) |
+| `imgMeItemMediaVideo` / `imgMeItemMediaSound` | phát video / audio | phát |
+| `imgMeYoutubeThumbnail1` / `linearYoutubeSpan` | mở YouTube | mở YouTube |
+| `txtMeItemLikeWrapper` (nút Thích) | toggle Thích (xem §4.2) | hiện popup người thích |
+
+#### Menu ⋮ — `f(ctx, bVar)` ([q/b.java:898](../../../jadx_out/sources/chat/ola/vn/q/b.java#L898))
+
+`c()` ([q/b.java:589](../../../jadx_out/sources/chat/ola/vn/q/b.java#L589)) chọn biến thể theo feed: feed thường → `f()`; đang trong feed `#clan` mà mình là chủ clan → biến thể có thêm **Chặn khỏi Clan** (`string_ban_from_clan`). `f()` dựng **`ListOptionDialog`** (`chat.ola.vn.i.m`) — mỗi mục map sang hành động (theo `onItemClick`, [q/b.java:914](../../../jadx_out/sources/chat/ola/vn/q/b.java#L914)):
+
+| Mục | String | Hành động |
+|-----|--------|-----------|
+| **Copy** | `string_copy` | chép nội dung bài (+ `#tag`) vào clipboard |
+| **Copy+** | `string_copy_plus` | chép kèm thông tin mở rộng |
+| **Copy nick** | `string_copy_nick` | chép `@nick` tác giả |
+| **Chat** | `string_chat` | mở `OlaChatViewActivity` (nhắn tin tác giả) |
+| **Chia sẻ** | `string_share` | đăng lại bài lên timeline của mình (`h()`) |
+| **Phiên dịch** | `general_tab_translater` | dịch nội dung bài (`z.a()`) |
+| **Xem kho VIP** | `string_view_vip_store` | mở `OlaVipStoreActivity` |
+| **Báo nick xấu** | `string_bad_nick_report` | gửi báo cáo nick (`i.a(ctx,nick)`) |
+| **Cài làm Me TOP / Bỏ Me top** | `string_post_me_top` / `string_discard_me_top` | ghim / bỏ ghim bài lên đầu trang |
+| **Xoá Me** | `string_delete_me` | **dialog xác nhận** (xem dưới) → xoá bài |
+| **Thao tác khác** | `string_more_action` | mở submenu phụ (`g(ctx,bVar)`) |
+
+> Bài **nháp / đang gửi** (`bVar.h()==1|2`) → menu rút gọn chỉ **[Copy · Copy+ · Xoá Me]**.
+
+#### Menu long-press nick — `a(ctx, nick)` ([q/b.java:357](../../../jadx_out/sources/chat/ola/vn/q/b.java#L357))
+
+`ListOptionDialog` mở khi long-press tên/owner-info: **Kết bạn** (`string_make_friend`, ẩn nếu đã là bạn) · **Chat** (`string_chat`) · **Xem kho VIP** (`string_view_vip_store`) · **Thao tác khác** (`string_more_action`).
+
+#### Các dialog xác nhận liên quan
+
+| Dialog | Mở khi | Tiêu đề | Nội dung | Nút |
+|--------|--------|---------|----------|-----|
+| **Xoá bài** | menu ⋮ → *Xoá Me* | `string_delete_me` = **Xoá Me** | `message_delete_me_format` = **"Bạn muốn xoá Me của %s?"** | **Xoá Me** / **Huỷ** |
+| **Chia sẻ xong** | nút *Chia sẻ* | `dialog_title_inform` = **Thông báo** | `message_shared_on_your_timeline` = **"Đã chia sẻ lên trang cá nhân của bạn"** | OK |
+| **Xoá lịch sử Me** (drawer phải) | nút *Xóa* `clearHistoryTextView` ([me/c.java:1028](../../../jadx_out/sources/chat/ola/vn/me/c.java#L1028)) | `dialog_title_confirm` = **Xác nhận** | `message_delete_me_history` = **"Bạn muốn xóa danh sách ghi nhớ các trang Me đã xem?"** | **Có** / **Không** |
+
 ## 5. Trang cá nhân (`OlaUserMePageActivity` / `ola_user_me_page_header_layout.xml`)
 
 > 📄 **Tài liệu chi tiết riêng:** [trang-ca-nhan/README.md](../trang-ca-nhan/README.md) — đầy đủ 5 nút quan hệ, menu "Khác", mọi vùng bấm, icon & token. Dưới đây là bản tóm tắt.
@@ -441,6 +516,32 @@ Mở từ FAB ✎. Bố cục (SoftKeyLinearLayout — co theo bàn phím):
 | `string_recent_me` | Recent Me | ME ĐÃ XEM |
 | `string_clear` | Clear | Xóa |
 | `string_enter_nick_name_or_clan` | Enter nick name or clan | Nhập nick hoặc #clan |
+| `dialog_title_inform` | Inform | Thông báo |
+| `message_cannot_open_box_because_not_married` | Only for married person on Ola | Tính năng chỉ dành cho người có trạng thái Kết Hôn trên Ola |
+| `string_get_married` | Married | Kết Hôn |
+| `string_close` | Close | Đóng |
+| `string_copy` | Copy | Copy |
+| `string_copy_plus` | Copy+ | Copy+ |
+| `string_copy_nick` | Copy nick | Copy nick |
+| `string_chat` | Chat | Chat |
+| `string_share` | Share | Chia sẻ |
+| `string_delete_me` | Delete Me | Xoá Me |
+| `string_more_action` | More actions | Thao tác khác |
+| `string_bad_nick_report` | Report bad account | Báo nick xấu |
+| `string_view_vip_store` | View VIP icon collection | Xem kho VIP |
+| `string_make_friend` | Add friend | Kết bạn |
+| `string_block_me` | Block | Chặn Me |
+| `general_tab_translater` | Translator | Phiên dịch |
+| `string_post_me_top` | Set Me Top | Cài đặt làm Me TOP trang cá nhân |
+| `string_discard_me_top` | Discard Me top | Bỏ Me top |
+| `string_ban_from_clan` | Ban from Clan | Chặn khỏi Clan |
+| `string_cancel` | Cancel | Huỷ |
+| `string_yes` | Yes | Có |
+| `string_no` | No | Không |
+| `dialog_title_confirm` | Confirmation | Xác nhận |
+| `message_delete_me_format` | Do you want to delete Me of %s? | Bạn muốn xoá Me của %s? |
+| `message_delete_me_history` | Do you want to delete Me history? | Bạn muốn xóa danh sách ghi nhớ các trang Me đã xem? |
+| `message_shared_on_your_timeline` | Shared on your timeline | Đã chia sẻ lên trang cá nhân của bạn |
 
 ## 8. CSS tương đương — 1 bài đăng (card feed)
 
@@ -555,3 +656,20 @@ Mở từ FAB ✎. Bố cục (SoftKeyLinearLayout — co theo bàn phím):
 | Nút Bình luận/Ghét/Thích | cao 28dp, chữ xám `rgba(0,0,0,.26)`, đã thích → xanh `#7CB342` |
 | Avatar trang cá nhân | 96×96dp |
 | Lưới ảnh hồ sơ | 6 ô; lưới bạn bè 5 ô |
+
+## 11. Màn mở ra từ đây (điều hướng)
+
+Mọi màn (Activity) mà màn Me feed điều hướng tới — dùng làm hàng đợi tài liệu hoá:
+
+| Từ (nút/cử chỉ) | Màn đích (class) | Doc |
+|------------------|------------------|-----|
+| FAB ✎ `writeStatusImageButton` | `OlaMeComposerActivity` (đăng bài) | mô tả ở §6 (chưa tách file riêng) |
+| Drawer trái: mục nick / `#tag` · avatar/tên trong bài | `OlaUserMePageActivity` (trang Me người dùng/tag) | [../trang-ca-nhan/README.md](../trang-ca-nhan/README.md) |
+| Post: nút **Bình luận** | `OlaMeCommentActivity` (luồng bình luận) | [comment/README.md](comment/README.md) |
+| Drawer trái: mục **Nhật ký** (`my diary`) | `OlaDiaryActivity` | *(chưa có doc — cần làm)* |
+| Dialog "Thông báo" → nút **Kết Hôn** | `MarriageRequestComposerActivity` (gửi yêu cầu kết hôn) | *(chưa có doc — cần làm)* |
+| Action bar: icon **Quan tâm** (`buttonFollowerImageView`) | `OlaVisitorListActivity` (khách ghé thăm) | *(chưa có doc — cần làm)* |
+| Check-in trong bài: `btnDetail` | `OlaVenueDetailActivity` (chi tiết địa điểm) | *(chưa có doc — cần làm)* |
+| Composer: nút Ảnh máy / Ảnh cloud / Tag người / Check-in | `OlaLocalPhotoChooserActivity` · `OlaCloudPhotoChooserActivity` · `OlaContactPickerActivity` · `OlaCheckInActivity` | *(chưa có doc — cần làm)* |
+
+> `OlaClanMePageActivity` **không** được mở từ click drawer của màn này (xem đính chính §2.1) — nó vào từ ngữ cảnh clan khác (vd luồng đổi ảnh bìa, [../doi-anh-dai-dien/README.md](../doi-anh-dai-dien/README.md)).
