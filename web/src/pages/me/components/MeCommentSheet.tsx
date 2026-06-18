@@ -6,7 +6,7 @@ import { MeCommentItem } from './MeCommentItem';
 import { MeCommentComposer } from './MeCommentComposer';
 import { useMeComments } from '../useMeComments';
 import { createTimeFormatter } from '@lib';
-import { ScreenHeader, FullScreenOverlay } from '@components';
+import { ScreenHeader, FullScreenOverlay, Spinner } from '@components';
 import type { MePost } from '../types';
 
 interface MeCommentSheetProps {
@@ -75,7 +75,9 @@ export function MeCommentSheet({
 
           <div className="py-2">
             {loading && (
-              <div className="py-8 text-center text-sm text-black/54">{t('common.loading')}</div>
+              <div className="flex justify-center py-8">
+                <Spinner size={24} />
+              </div>
             )}
             {!loading && error && (
               <div className="py-8 text-center text-sm text-ola-error">

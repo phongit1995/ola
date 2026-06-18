@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Spinner } from '@components';
 import { MePostCard } from './MePostCard';
 import type { MePost } from '../types';
 
@@ -54,8 +55,8 @@ export function MeFeedList({
 
   if (loading) {
     return (
-      <div className="flex h-full items-center justify-center text-sm text-black/54">
-        {t('common.loading')}
+      <div className="flex h-full items-center justify-center">
+        <Spinner size={28} />
       </div>
     );
   }
@@ -93,8 +94,8 @@ export function MeFeedList({
       ))}
       <div ref={sentinelRef} className="h-1" />
       {loadingMore && (
-        <div className="flex items-center justify-center py-3 text-sm text-black/54">
-          {t('common.loading')}
+        <div className="flex items-center justify-center py-3">
+          <Spinner size={22} />
         </div>
       )}
     </div>

@@ -7,6 +7,7 @@ import olaLogo from '@/assets/images/ola-logo.png';
 import { ClearableInput } from '@components/form/ClearableInput';
 import { SubmitButton } from '@components/form/SubmitButton';
 import { LanguageSwitcher } from '@components/LanguageSwitcher';
+import { Spinner } from '@components';
 import { AuthService } from '@services';
 import { ApiError, USERNAME_MAX, USERNAME_PATTERN, toast } from '@lib';
 import { useAuthStore } from '@/store/authStore';
@@ -142,7 +143,7 @@ export function LoginPage() {
 
       {loading && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/38">
-          <span className="h-12 w-12 animate-spin rounded-full border-4 border-white/40 border-t-white" />
+          <Spinner size={48} thickness={4} tone="light" />
         </div>
       )}
     </form>

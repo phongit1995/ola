@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Avatar, Dialog } from '@components';
+import { Avatar, Dialog, Spinner } from '@components';
 import { colorForName, toast } from '@lib';
 import { MeService, RelationshipService } from '@services';
 import type { PostAuthor } from '@app-types';
@@ -98,7 +98,9 @@ export function MeLikersDialog({ postId, onClose, onOpenProfile }: MeLikersDialo
     >
       <div ref={scrollRef} className="max-h-80 min-h-15 overflow-y-auto">
         {loading && (
-          <div className="py-6 text-center text-sm text-black/54">{t('common.loading')}</div>
+          <div className="flex justify-center py-6">
+            <Spinner size={24} />
+          </div>
         )}
         {!loading && error && (
           <div className="py-6 text-center text-sm text-ola-error">{t('me.likersError')}</div>
@@ -151,7 +153,9 @@ export function MeLikersDialog({ postId, onClose, onOpenProfile }: MeLikersDialo
           ))}
         <div ref={sentinelRef} className="h-1" />
         {loadingMore && (
-          <div className="py-3 text-center text-sm text-black/54">{t('common.loading')}</div>
+          <div className="flex justify-center py-3">
+            <Spinner size={22} />
+          </div>
         )}
       </div>
     </Dialog>

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScreenHeader, FullScreenOverlay } from '@components';
+import { ScreenHeader, FullScreenOverlay, Spinner } from '@components';
 import { toast } from '@lib';
 import composeIcon from '@/assets/icons/chat/ic_action_compose_message.png';
 import { useAuthStore } from '@/store/authStore';
@@ -81,7 +81,7 @@ export function ProfilePage({
           {(handlers) =>
             secondary.loading && posts.length === 0 ? (
               <div className="flex justify-center py-6">
-                <div className="h-6 w-6 animate-spin rounded-full border-2 border-ola-primary border-t-transparent" />
+                <Spinner size={24} />
               </div>
             ) : (
               posts.map((post) => (

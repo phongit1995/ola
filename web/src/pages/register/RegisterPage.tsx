@@ -7,6 +7,7 @@ import olaLogo from '@/assets/images/ola-logo.png';
 import { TextField } from '@components/form/TextField';
 import { SubmitButton } from '@components/form/SubmitButton';
 import { LanguageSwitcher } from '@components/LanguageSwitcher';
+import { Spinner } from '@components';
 import { AuthService } from '@services';
 import { resolveAuthError, USERNAME_MAX, USERNAME_PATTERN, toast } from '@lib';
 
@@ -168,7 +169,7 @@ export function RegisterPage() {
 
       {loading && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/38">
-          <span className="h-12 w-12 animate-spin rounded-full border-4 border-white/40 border-t-white" />
+          <Spinner size={48} thickness={4} tone="light" />
         </div>
       )}
     </form>

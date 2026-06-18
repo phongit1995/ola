@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { ScreenHeader, FullScreenOverlay } from '@components';
+import { ScreenHeader, FullScreenOverlay, Spinner } from '@components';
 import { ProfilePage } from './ProfilePage';
 import { useUserProfile } from './useUserProfile';
 import type { ProfileFriend } from './types';
@@ -35,7 +35,7 @@ export function UserProfileView({ username, color, onClose, onOpenFriend }: User
       <ScreenHeader title={username} onBack={onClose} />
       <div className="flex flex-1 items-center justify-center px-6 text-center">
         {loading ? (
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-ola-primary border-t-transparent" />
+          <Spinner size={32} />
         ) : (
           <p className="text-sm text-black/54">{notFound ? t('profile.notFound') : ''}</p>
         )}

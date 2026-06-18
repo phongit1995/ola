@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import type { RoomChatStatus } from '@/store/roomChatStore';
-import { ScreenHeader, FullScreenOverlay } from '@components';
+import { ScreenHeader, FullScreenOverlay, Spinner } from '@components';
 
 interface RoomJoiningOverlayProps {
   name: string;
@@ -30,7 +30,7 @@ export function RoomJoiningOverlay({ name, status, onClose }: RoomJoiningOverlay
           </>
         ) : (
           <>
-            <span className="h-9 w-9 animate-spin rounded-full border-[3px] border-ola-primary/30 border-t-ola-primary" />
+            <Spinner size={36} thickness={3} />
             <p className="text-sm text-black/54">{t('room.joining')}</p>
           </>
         )}
