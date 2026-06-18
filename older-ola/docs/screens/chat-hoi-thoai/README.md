@@ -215,14 +215,25 @@ Biến trạng thái: `this.ae` = tab panel đang chọn · `this.M.a()` = panel
 | Khác | `moreImageButton` | click | **Nếu ô nhập có chữ → GỬI tin** (`a(text,0,true)`); nếu trống → `ae=5` → panel **Khác** |
 | Trả lời nhanh (ẩn) | `quickReplyImageButton` | click | `au()` — bảng trả lời nhanh (chỉ hiện khi được bật, mặc định `gone`) |
 
-→ Panel chung `chatAttachmentFrameLayout` trượt lên thay bàn phím, nội dung theo `ae`: **1** Biểu cảm · **2** KUL · **3** Ảnh máy · **4** Ghi âm · **5** Khác. Tab **Khác** gồm: vị trí, YouTube, snap pic, KEN, VIP… (chi tiết panel ở [chat/README.md §9](../chat/README.md)).
+→ Panel chung `chatAttachmentFrameLayout` trượt lên thay bàn phím (chiều cao `general_keyboard_height` = **208dp**), nội dung theo `ae`: **1** Biểu cảm · **2** KUL · **3** Ảnh máy · **4** Ghi âm · **5** Khác (chi tiết §9.3).
 
-### 9.2. Đối chiếu web ([AttachmentBar.tsx](../../../../web/src/pages/chat/components/AttachmentBar.tsx))
+### 9.2. Chi tiết từng panel (đọc từ `ola_attachment_*_tab_layout.xml`)
 
-- ✅ Đúng **6 nút** khớp tập nút hiện mặc định của APK (quick-reply ẩn); có đủ icon thường + `_selected`.
-- ❌ Web cho **mọi nút toggle panel tab** (kể cả **Máy ảnh**) → APK **Máy ảnh mở camera trực tiếp** (`ao()`), không qua panel.
-- ❌ Web nút **"Khác"** chỉ mở panel → APK **"Khác" kiêm nút Gửi** khi ô nhập có chữ.
-- ⚠️ Web tab "Ảnh máy" và "Máy ảnh" tách 2 nút riêng; APK: nút Ảnh = panel tab 3, nút Máy ảnh = camera activity (khác cơ chế).
+| Tab | Layout | Nền | Nội dung |
+|-----|--------|-----|----------|
+| **Biểu cảm** | `ola_attachment_smiley_tab_layout` | trắng | ViewPager smiley phân trang; thanh dưới `bg_chat_input_with_top_border` (#16000000) = 6 chấm chỉ trang + divider `#1f000000` + backspace `ic_backspace_selected`. Bộ smiley = **45 ảnh** `smiley_01..45` (`chat/ola/vn/r/c.java`), mỗi cái gắn **mã text** (`:)`, `:P`, `<3`, `(y)`, `^_^`…) → bấm chèn mã vào ô nhập |
+| **KUL** | `ola_attachment_sticker_tab_layout` | trắng | ViewPager + HListView album; bộ KUL = **48 ảnh** `kul01..24` + `kul_25..48` (`chat/ola/vn/util/c.java`). KUL = emoticon lớn kèm chữ tuỳ chọn (`message_kul_attached_message_hint`), **khác** sticker |
+| **Máy ảnh** | `ola_attachment_camera_tab_layout` | đen | preview camera (ViewStub); nút chụp = **vòng viền trắng + "Gửi"** (`bg_circle_stroke_white`, KHÔNG phải `ic_camera_shutter_button`), switch-camera `ic_action_switch_camera`, snap-timer `ic_snap_timer`, expand `expand_camera_selector` |
+| **Ảnh** | `ola_attachment_photo_tab_layout` | `#d5d5d5` | HListView ảnh gallery; góc trái open-grid `ic_open_grid_view` (nền tròn đen), góc phải toggle cloud/local `cloud_and_local_photo_button_selector` (`ic_local_photo_storage` / `ic_cloud_photo_storage`) |
+| **Ghi âm** | `ola_attachment_voice_tab_layout` | `#d5d5d5` | "0:00" trên + nút tròn `bg_accent_color_circle` (#ff4081, 100dp) "Ghi âm" + tip hủy `message_voice_recording_cancel_tip` |
+| **Khác** | `ola_attachment_more_tab_layout` | trắng | **4 nút text** full-width (`defaultStyle.button`, nền trắng viền): Gởi vị trí của bạn · Chuyển KEN · Giao dịch VIP · Tặng ngày VIP. **KHÔNG** có YouTube/Snap ở tab này |
+
+### 9.3. Đối chiếu web ([AttachmentBar.tsx](../../../../web/src/pages/chat/components/AttachmentBar.tsx))
+
+- ✅ **6 nút toolbar** khớp tập nút hiện mặc định của APK (quick-reply ẩn), đủ icon thường + `_selected`.
+- ✅ **Panel đã dựng lại khớp APK** (icon + màu thật, trích từ APK): Biểu cảm = 45 smiley thật + backspace, bấm chèn mã text · KUL = 48 ảnh kul thật · Máy ảnh = shutter "Gửi" + switch/snap-timer/expand · Ảnh = open-grid + toggle cloud/local (nền `#d5d5d5`) · Ghi âm = nút tròn accent `#ff4081` (nền `#d5d5d5`) · Khác = 4 nút text. Chiều cao panel `h-52` = 208dp.
+- ❌ **Còn lệch hành vi**: web nút **Máy ảnh** mở panel → APK `ao()` mở **camera activity trực tiếp**; web nút **"Khác"** chỉ mở panel → APK **"Khác" kiêm Gửi** khi ô nhập có chữ.
+- ⚠️ **Giới hạn web**: camera preview & strip ảnh gallery thật không tái hiện được → web mô phỏng lớp điều khiển bằng icon thật, bấm = mở file picker. Gửi sticker/KUL/voice/location/KEN/VIP còn "coming soon" (cần backend).
 
 ---
 
