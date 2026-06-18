@@ -22,9 +22,11 @@ import { useLongPress } from '../useLongPress';
 import { AttachmentBar, type AttachTab } from './AttachmentBar';
 import { ChatMessageBubble } from './ChatMessageBubble';
 import { MessageActionSheet } from './MessageActionSheet';
+import { UserProfileView } from '../../profile/UserProfileView';
 
 interface ChatConversationViewProps {
   name: string;
+  username?: string;
   title?: string;
   color: string;
   avatar?: string;
@@ -35,6 +37,7 @@ interface ChatConversationViewProps {
 
 export function ChatConversationView({
   name,
+  username,
   title,
   color,
   avatar,
@@ -71,6 +74,9 @@ export function ChatConversationView({
   const [actionTarget, setActionTarget] = useState<ChatMessage | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ChatMessage | null>(null);
   const [editing, setEditing] = useState<{ id: string } | null>(null);
+  const [profileTarget, setProfileTarget] = useState<{ username: string; color: string } | null>(
+    null
+  );
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const lastBubbleIdRef = useRef<string | null>(null);
@@ -153,9 +159,19 @@ export function ChatConversationView({
 
   const isTyping = draft.trim() !== '';
 
+  const canViewProfile = username != null && username !== '';
+
+  function openPeerProfile() {
+    if (username != null && username !== '') setProfileTarget({ username, color });
+  }
+
   const menuOptions: ListOption[] = [
     { key: 'make-friend', label: t('chat.menuMakeFriend'), onSelect: () => toast.info(t('chat.comingSoon')) },
-    { key: 'view-me', label: t('chat.menuViewMe'), onSelect: () => toast.info(t('chat.comingSoon')) },
+    {
+      key: 'view-me',
+      label: t('chat.menuViewMe'),
+      onSelect: () => (canViewProfile ? openPeerProfile() : toast.info(t('chat.comingSoon'))),
+    },
     { key: 'block', label: t('chat.menuBlock'), danger: true, onSelect: () => setBlockOpen(true) },
     { key: 'chat-group', label: t('chat.menuChatGroup'), onSelect: () => toast.info(t('chat.comingSoon')) },
   ];
@@ -167,6 +183,7 @@ export function ChatConversationView({
         subtitle={peerTyping ? t('chat.typing', { name }) : online ? t('chat.statusActive') : ''}
         onBack={onClose}
         left={<Avatar name={name} color={color} src={avatar} size={32} />}
+        onTitlePress={canViewProfile ? openPeerProfile : undefined}
       >
         <button
           type="button"
@@ -195,6 +212,7 @@ export function ChatConversationView({
             isLastOwn={message.id === lastOwnId}
             seen={conversationSeen}
             onOpenActions={setActionTarget}
+            onOpenProfile={canViewProfile ? openPeerProfile : undefined}
           />
         ))}
 
@@ -316,6 +334,16 @@ export function ChatConversationView({
         }}
         onCancel={() => setBlockOpen(false)}
       />
+
+      {profileTarget != null && (
+        <UserProfileView
+          key={profileTarget.username}
+          username={profileTarget.username}
+          color={profileTarget.color}
+          onClose={() => setProfileTarget(null)}
+          onOpenFriend={(friend) => setProfileTarget({ username: friend.name, color: friend.color })}
+        />
+      )}
     </FullScreenOverlay>
   );
 }
@@ -330,9 +358,10 @@ interface MessageRowProps {
   isLastOwn: boolean;
   seen: boolean;
   onOpenActions: (message: ChatMessage) => void;
+  onOpenProfile?: () => void;
 }
 
-function MessageRow({ message, prev, next, name, color, avatar, isLastOwn, seen, onOpenActions }: MessageRowProps) {
+function MessageRow({ message, prev, next, name, color, avatar, isLastOwn, seen, onOpenActions, onOpenProfile }: MessageRowProps) {
   const isOut = message.direction === 'out';
   const boundary = prev == null;
   const firstInGroup = boundary || prev.direction !== message.direction;
@@ -350,9 +379,20 @@ function MessageRow({ message, prev, next, name, color, avatar, isLastOwn, seen,
       <div className={`flex items-end gap-1 ${isOut ? 'flex-row-reverse' : ''}`}>
         {!isOut &&
           (showAvatar ? (
-            <span className="shrink-0 self-start">
-              <Avatar name={name} color={color} src={avatar} size={32} />
-            </span>
+            onOpenProfile != null ? (
+              <button
+                type="button"
+                aria-label={name}
+                onClick={onOpenProfile}
+                className="shrink-0 self-start"
+              >
+                <Avatar name={name} color={color} src={avatar} size={32} />
+              </button>
+            ) : (
+              <span className="shrink-0 self-start">
+                <Avatar name={name} color={color} src={avatar} size={32} />
+              </span>
+            )
           ) : (
             <span className="w-8 shrink-0" />
           ))}

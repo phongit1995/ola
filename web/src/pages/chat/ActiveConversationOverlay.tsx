@@ -17,6 +17,7 @@ export function ActiveConversationOverlay() {
     return (
       <ChatConversationView
         name={view.name}
+        username={view.username}
         title={view.title}
         color={view.color}
         avatar={view.avatar}

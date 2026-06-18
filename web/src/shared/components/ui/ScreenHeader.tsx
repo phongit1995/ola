@@ -15,10 +15,19 @@ interface ScreenHeaderProps {
   align?: 'start' | 'center';
   left?: ReactNode;
   subtitle?: ReactNode;
+  onTitlePress?: () => void;
   children?: ReactNode;
 }
 
-export function ScreenHeader({ title, onBack, align = 'start', left, subtitle, children }: ScreenHeaderProps) {
+export function ScreenHeader({
+  title,
+  onBack,
+  align = 'start',
+  left,
+  subtitle,
+  onTitlePress,
+  children,
+}: ScreenHeaderProps) {
   const { t } = useTranslation();
 
   if (align === 'center') {
@@ -47,14 +56,34 @@ export function ScreenHeader({ title, onBack, align = 'start', left, subtitle, c
       >
         <BackIcon />
       </button>
-      {left}
-      {subtitle != null ? (
-        <span className="flex min-w-0 flex-1 flex-col leading-tight">
-          <span className="truncate text-sm font-bold">{title}</span>
-          <span className="truncate text-xs text-white/70">{subtitle}</span>
-        </span>
+      {onTitlePress != null ? (
+        <button
+          type="button"
+          onClick={onTitlePress}
+          className="flex min-w-0 flex-1 items-center gap-2 text-left"
+        >
+          {left}
+          {subtitle != null ? (
+            <span className="flex min-w-0 flex-col leading-tight">
+              <span className="truncate text-sm font-bold">{title}</span>
+              <span className="truncate text-xs text-white/70">{subtitle}</span>
+            </span>
+          ) : (
+            <span className="min-w-0 truncate text-sm font-bold">{title}</span>
+          )}
+        </button>
       ) : (
-        <span className="flex-1 truncate text-sm font-bold">{title}</span>
+        <>
+          {left}
+          {subtitle != null ? (
+            <span className="flex min-w-0 flex-1 flex-col leading-tight">
+              <span className="truncate text-sm font-bold">{title}</span>
+              <span className="truncate text-xs text-white/70">{subtitle}</span>
+            </span>
+          ) : (
+            <span className="flex-1 truncate text-sm font-bold">{title}</span>
+          )}
+        </>
       )}
       {children}
     </header>

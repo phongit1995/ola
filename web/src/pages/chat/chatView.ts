@@ -5,6 +5,7 @@ import type { ChatMessage, ChatMessageStatus } from './types';
 export interface ConversationView {
   id: string;
   name: string;
+  username: string;
   title: string;
   avatar?: string;
   color: string;
@@ -45,6 +46,7 @@ export function toConversationView(conversation: Conversation): ConversationView
   return {
     id: conversation.id,
     name,
+    username: conversation.otherUser?.username ?? '',
     title: conversationHeaderTitle(conversation),
     avatar: conversation.otherUser?.avatar ?? conversation.avatar,
     color: name ? colorForName(name) : DEFAULT_AVATAR_COLOR,
