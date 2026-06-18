@@ -7,6 +7,10 @@ export const ROUTES = {
   profile: '/profile',
   profileEdit: '/profile/edit',
   vip: '/vip',
+  notifications: '/thong-bao',
+  ken: '/ken',
+  media: '/hinh-anh',
+  nearby: '/lan-can',
 } as const;
 
 export type RoutePath = (typeof ROUTES)[keyof typeof ROUTES];

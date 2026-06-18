@@ -50,6 +50,18 @@ screens/
 ├── ung-dung/              ← màn Ứng dụng (tab 5: list tiện ích)
 │   ├── README.md                10 tiện ích + style item + CSS
 │   └── images/                  ảnh chụp + 10 icon tiện ích
+├── thong-bao/             ← Thông báo (mở từ tab Ứng dụng, frag m.k)
+│   ├── README.md                list thông báo + 6 loại + nút kết bạn/cầu hôn + CSS
+│   └── images/                  icon các loại thông báo
+├── kho-ken/               ← Cửa hàng KEN (mở từ tab Ứng dụng, frag m.b)
+│   ├── README.md                số dư KEN + nạp/chuyển/lịch sử + hỗ trợ + CSS
+│   └── images/                  icon (ken, tab, back, quit)
+├── hinh-anh/              ← Hình Ảnh / Kho ảnh cloud (OlaCloudAlbumListActivity)
+│   ├── README.md                grid album + chọn nhiều + quyền riêng tư + xoá + CSS
+│   └── images/                  icon (tick, cờ quyền, loại media)
+├── lan-can/               ← Lân cận / địa điểm gần (frag m.i + luồng GPS)
+│   ├── README.md                list venue + load-more + dialog GPS + CSS
+│   └── images/                  icon (check-in, mũi tên, quit)
 ├── kho-vip/               ← màn Kho VIP (OlaVipStoreActivity)
 │   ├── README.md                scaffold + header (VIP đang dùng/quyền/buy/extend) + item + CSS
 │   └── images/                  icon (tab vip, mũi tên, back, quit)
@@ -80,6 +92,10 @@ screens/
 | 5 | Cài đặt (Settings) | [cai-dat/](cai-dat/README.md) | `OlaAppSettingActivity` | 📐 từ code/XML (chưa chụp) |
 | 3f | Hồ sơ bản thân (sửa thông tin) | [thong-tin-ca-nhan/](thong-tin-ca-nhan/README.md) | `OlaUserProfileActivity` | 📐 từ code/XML (chưa chụp) |
 | 4 | Ứng dụng (tab 5) | [ung-dung/](ung-dung/README.md) | `OlaBottomTabActivity` + fragment `m/d` | ✅ chụp thật + 10 icon |
+| 4b | ↳ Thông báo (từ tab Ứng dụng) | [thong-bao/](thong-bao/README.md) | `OlaBottomTabActivity` (frag `m.k`, vị trí 9) | 📐 từ code/XML (chưa chụp) |
+| 4c | ↳ Cửa hàng KEN (từ tab Ứng dụng) | [kho-ken/](kho-ken/README.md) | `OlaBottomTabActivity` (frag `m.b`, vị trí 10) | 📐 từ code/XML (chưa chụp) |
+| 4d | ↳ Hình Ảnh / Kho ảnh (từ tab Ứng dụng) | [hinh-anh/](hinh-anh/README.md) | `cloud.OlaCloudAlbumListActivity` | 📐 từ code/XML (chưa chụp) |
+| 4e | ↳ Lân cận / Địa điểm gần (từ tab Ứng dụng) | [lan-can/](lan-can/README.md) | `OlaBottomTabActivity` (frag `m.i`, vị trí 13) → `checkin.OlaVenueDetailActivity` | 📐 từ code/XML (chưa chụp) |
 | 4a | Kho VIP | [kho-vip/](kho-vip/README.md) | `OlaVipStoreActivity` | 📐 từ code/XML (chưa chụp) |
 | — | Đổi ảnh đại diện / bìa (picker + crop) | [doi-anh-dai-dien/](doi-anh-dai-dien/README.md) | `OlaCropImageActivity` (vào từ `OlaClanMePageActivity`) | 📐 từ code/XML (chưa chụp) |
 | — | Modal / Dialog (kiểu chung) | [modal-dialog/](modal-dialog/README.md) | dùng chung (confirm, nhập, progress, chọn) | 📐 trích từ layout/style |

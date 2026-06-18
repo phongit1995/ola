@@ -22,8 +22,14 @@ import { ComposeDialog } from './components/ComposeDialog';
 import { ChangeAvatarScreen } from './components/ChangeAvatarScreen';
 import { StatusEditDialog } from './components/StatusEditDialog';
 import { MediaViewer } from '@/pages/me/components/MediaViewer';
+import { UserProfileView } from '../profile/UserProfileView';
 import { mapFriendsToContacts } from './friends';
 import type { Contact } from './types';
+
+interface ProfileTarget {
+  username: string;
+  color: string;
+}
 
 type ChatSub = 'messages' | 'contacts';
 
@@ -53,6 +59,7 @@ export function ChatPanel() {
   const [statusImageOpen, setStatusImageOpen] = useState(false);
   const [buddyImage, setBuddyImage] = useState<string | null>(null);
   const [friends, setFriends] = useState<Contact[]>([]);
+  const [profileTarget, setProfileTarget] = useState<ProfileTarget | null>(null);
   const friendsLoadedRef = useRef(false);
 
   useEffect(() => {
@@ -167,7 +174,10 @@ export function ChatPanel() {
           <div className="relative h-full">
             <ContactList
               contacts={friends}
-              onSelect={comingSoon}
+              onSelect={(contact) => void startDirect(contact.id)}
+              onOpenProfile={(contact) =>
+                setProfileTarget({ username: contact.name, color: contact.color })
+              }
               me={user}
               onAccountMenu={() => setHeaderMenuOpen(true)}
               onEditStatus={() => setStatusOpen(true)}
@@ -241,6 +251,15 @@ export function ChatPanel() {
       )}
       {buddyImage != null && (
         <MediaViewer photos={[buddyImage]} index={0} onClose={() => setBuddyImage(null)} />
+      )}
+      {profileTarget != null && (
+        <UserProfileView
+          key={profileTarget.username}
+          username={profileTarget.username}
+          color={profileTarget.color}
+          onClose={() => setProfileTarget(null)}
+          onOpenFriend={(friend) => setProfileTarget({ username: friend.name, color: friend.color })}
+        />
       )}
     </>
   );

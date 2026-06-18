@@ -572,5 +572,38 @@
         ]
       }
     ]
+  },
+  "notify": {
+    "title": "Thông báo",
+    "comingSoon": "Tính năng đang được phát triển",
+    "addFriend": "Kết bạn",
+    "agree": "Đồng ý",
+    "decline": "Không",
+    "msg_friend": "đã gửi cho bạn lời mời kết bạn",
+    "msg_mention": "đã nhắc đến bạn trong một bình luận",
+    "msg_like": "đã thích trạng thái của bạn",
+    "msg_photo": "vừa đăng một ảnh mới",
+    "msg_proposal": "muốn cầu hôn bạn",
+    "msg_divorce": "đã từ chối lời cầu hôn của bạn"
+  },
+  "ken": {
+    "title": "KEN",
+    "lowWarning": "Bạn sắp hết KEN. Hãy nạp thêm để tiếp tục dùng các tính năng VIP.",
+    "balance": "Số dư",
+    "purchase": "Nạp KEN",
+    "transfer": "Chuyển KEN",
+    "history": "Lịch sử giao dịch",
+    "support": "Hỗ trợ khách hàng",
+    "comingSoon": "Tính năng đang được phát triển"
+  },
+  "media": {
+    "title": "Kho ảnh",
+    "comingSoon": "Tính năng đang được phát triển"
+  },
+  "nearby": {
+    "title": "Địa điểm lân cận",
+    "distance": "Cách đây",
+    "checkedIn": "{{count}} lượt ghé thăm",
+    "comingSoon": "Tính năng đang được phát triển"
   }
 }

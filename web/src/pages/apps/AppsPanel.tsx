@@ -20,15 +20,15 @@ interface AppItem {
 }
 
 const APP_ITEMS: AppItem[] = [
-  { icon: iconNotify },
+  { icon: iconNotify, route: ROUTES.notifications },
   { icon: iconGame, subtitleKey: 'home.appGameSubtitle' },
   { icon: iconPersonal, route: ROUTES.profileEdit },
   { icon: iconVip, route: ROUTES.vip },
-  { icon: iconKen },
+  { icon: iconKen, route: ROUTES.ken },
   { icon: iconAdme },
-  { icon: iconMedia },
+  { icon: iconMedia, route: ROUTES.media },
   { icon: iconMall, subtitleKey: 'home.appMallSubtitle' },
-  { icon: iconNearby },
+  { icon: iconNearby, route: ROUTES.nearby },
   { icon: iconSetting },
 ];
 

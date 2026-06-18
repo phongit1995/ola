@@ -26,6 +26,7 @@ const DEVICE_ICONS: Record<DeviceType, string> = {
 interface ContactListProps {
   contacts: Contact[];
   onSelect: (contact: Contact) => void;
+  onOpenProfile: (contact: Contact) => void;
   me?: AuthUser | null;
   onAccountMenu?: () => void;
   onEditStatus?: () => void;
@@ -75,12 +76,14 @@ function BuddyRow({
   contact,
   highlight,
   onSelect,
+  onOpenProfile,
   onLongPress,
   onPreviewImage,
 }: {
   contact: Contact;
   highlight: boolean;
   onSelect: () => void;
+  onOpenProfile: () => void;
   onLongPress: () => void;
   onPreviewImage?: (url: string) => void;
 }) {
@@ -114,10 +117,18 @@ function BuddyRow({
     onSelect();
   }
 
+  function openProfile(event: { stopPropagation: () => void }) {
+    event.stopPropagation();
+    if (longPressed.current) {
+      longPressed.current = false;
+      return;
+    }
+    onOpenProfile();
+  }
+
   return (
     <li>
-      <button
-        type="button"
+      <div
         onClick={handleClick}
         onPointerDown={startPress}
         onPointerUp={cancelPress}
@@ -126,11 +137,16 @@ function BuddyRow({
           event.preventDefault();
           onLongPress();
         }}
-        className={`flex w-full items-center border-b border-black/12 px-4 py-3 text-left ${
+        className={`flex w-full cursor-pointer items-center border-b border-black/12 px-4 py-3 text-left ${
           highlight ? 'bg-[#f1f8e9]' : 'bg-white/80'
         }`}
       >
-        <span className="relative h-10 w-10 shrink-0">
+        <button
+          type="button"
+          onClick={openProfile}
+          aria-label={contact.name}
+          className="relative h-10 w-10 shrink-0"
+        >
           <span className="block h-10 w-10 overflow-hidden rounded">
             <Avatar name={contact.name} color={contact.color} src={contact.avatar} rounded={false} />
           </span>
@@ -139,9 +155,9 @@ function BuddyRow({
               <img src={badge} alt="" className="h-2.5 w-2.5 object-contain" />
             </span>
           )}
-        </span>
+        </button>
         <span className="ml-4 min-w-0 flex-1">
-          <span className="flex items-center gap-1">
+          <button type="button" onClick={openProfile} className="flex items-center gap-1 text-left">
             {showVip && <img src={vipIcon} alt="" className="h-6 w-6 shrink-0 object-contain" />}
             <span className="truncate text-base text-black/87">
               {contact.name}
@@ -149,7 +165,7 @@ function BuddyRow({
                 <span className="text-black/45"> · {contact.fullName}</span>
               )}
             </span>
-          </span>
+          </button>
           {contact.status != null && contact.status !== '' && (
             <span className="block truncate text-xs text-black/54">{contact.status}</span>
           )}
@@ -168,7 +184,7 @@ function BuddyRow({
         {!contact.online && contact.lastActive != null && contact.lastActive !== '' && (
           <span className="ml-2 shrink-0 text-xs text-black/54">{contact.lastActive}</span>
         )}
-      </button>
+      </div>
     </li>
   );
 }
@@ -176,6 +192,7 @@ function BuddyRow({
 export function ContactList({
   contacts,
   onSelect,
+  onOpenProfile,
   me,
   onAccountMenu,
   onEditStatus,
@@ -328,6 +345,7 @@ export function ContactList({
                 contact={contact}
                 highlight={section.highlight}
                 onSelect={() => onSelect(contact)}
+                onOpenProfile={() => onOpenProfile(contact)}
                 onLongPress={() => setMenuContact(contact)}
                 onPreviewImage={onPreviewBuddyImage}
               />

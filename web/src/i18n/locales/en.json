@@ -572,5 +572,38 @@
         ]
       }
     ]
+  },
+  "notify": {
+    "title": "Notifications",
+    "comingSoon": "Feature coming soon",
+    "addFriend": "Add friend",
+    "agree": "Agree",
+    "decline": "No",
+    "msg_friend": "sent you a friend request",
+    "msg_mention": "mentioned you in a comment",
+    "msg_like": "liked your status",
+    "msg_photo": "just posted a new photo",
+    "msg_proposal": "wants to propose to you",
+    "msg_divorce": "declined your proposal"
+  },
+  "ken": {
+    "title": "KEN",
+    "lowWarning": "You are running low on KEN. Top up to keep using VIP features.",
+    "balance": "Balance",
+    "purchase": "Buy KEN",
+    "transfer": "Transfer KEN",
+    "history": "Transaction history",
+    "support": "Customer support",
+    "comingSoon": "Feature coming soon"
+  },
+  "media": {
+    "title": "Photos",
+    "comingSoon": "Feature coming soon"
+  },
+  "nearby": {
+    "title": "Nearby places",
+    "distance": "Distance",
+    "checkedIn": "{{count}} visits",
+    "comingSoon": "Feature coming soon"
   }
 }
