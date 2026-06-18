@@ -131,7 +131,6 @@ export function RoomPanel() {
           onAroundYou={aroundYou}
           onQuickJoin={quickJoin}
           showQuickJoin={roomsLoaded}
-          onBuyVip={() => {}}
         />
       </main>
 

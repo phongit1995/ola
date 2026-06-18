@@ -78,7 +78,6 @@ export function RoomMembersTab({ members, active, onOpenProfile }: RoomMembersTa
                       <span className="truncate text-xs text-black/54">{member.bio}</span>
                     ) : null}
                   </div>
-                  <span className="shrink-0 text-xs text-ola-primary">{t('chat.online')}</span>
                   {member.bioImage != null && member.bioImage !== '' && (
                     <img
                       src={member.bioImage}

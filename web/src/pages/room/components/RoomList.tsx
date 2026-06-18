@@ -12,7 +12,6 @@ interface RoomListProps {
   onAroundYou: () => void;
   onQuickJoin: () => void;
   showQuickJoin: boolean;
-  onBuyVip: () => void;
 }
 
 function MembersBadge({ members }: { members: number }) {
@@ -77,11 +76,11 @@ export function RoomList({
   onAroundYou,
   onQuickJoin,
   showQuickJoin,
-  onBuyVip,
 }: RoomListProps) {
   const { t } = useTranslation();
   return (
     <ul>
+      {/* Banner VIP tạm ẩn theo yêu cầu — bật lại: bỏ comment + thêm lại prop onBuyVip
       <li className="flex items-center justify-between gap-3 border-b border-black/12 bg-[#fff8e1] px-4 py-3">
         <span className="min-w-0">
           <span className="block text-sm font-medium text-black/87">
@@ -99,7 +98,7 @@ export function RoomList({
           {t('room.buyVip')}
         </button>
       </li>
-
+      */}
       <SpecialRow
         icon="📍"
         title={t('room.aroundYou')}
