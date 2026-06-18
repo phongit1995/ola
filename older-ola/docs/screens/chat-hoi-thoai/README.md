@@ -219,21 +219,24 @@ Biến trạng thái: `this.ae` = tab panel đang chọn · `this.M.a()` = panel
 
 ### 9.2. Chi tiết từng panel (đọc từ `ola_attachment_*_tab_layout.xml`)
 
-| Tab | Layout | Nền | Nội dung |
-|-----|--------|-----|----------|
-| **Biểu cảm** | `ola_attachment_smiley_tab_layout` | trắng | ViewPager smiley phân trang; thanh dưới `bg_chat_input_with_top_border` (#16000000) = 6 chấm chỉ trang + divider `#1f000000` + backspace `ic_backspace_selected`. Bộ smiley = **45 ảnh** `smiley_01..45` (`chat/ola/vn/r/c.java`), mỗi cái gắn **mã text** (`:)`, `:P`, `<3`, `(y)`, `^_^`…) → bấm chèn mã vào ô nhập |
-| **KUL** | `ola_attachment_sticker_tab_layout` | trắng | ViewPager + HListView album; bộ KUL = **48 ảnh** `kul01..24` + `kul_25..48` (`chat/ola/vn/util/c.java`). KUL = emoticon lớn kèm chữ tuỳ chọn (`message_kul_attached_message_hint`), **khác** sticker |
-| **Máy ảnh** | `ola_attachment_camera_tab_layout` | đen | preview camera (ViewStub); nút chụp = **vòng viền trắng + "Gửi"** (`bg_circle_stroke_white`, KHÔNG phải `ic_camera_shutter_button`), switch-camera `ic_action_switch_camera`, snap-timer `ic_snap_timer`, expand `expand_camera_selector` |
-| **Ảnh** | `ola_attachment_photo_tab_layout` | `#d5d5d5` | HListView ảnh gallery; góc trái open-grid `ic_open_grid_view` (nền tròn đen), góc phải toggle cloud/local `cloud_and_local_photo_button_selector` (`ic_local_photo_storage` / `ic_cloud_photo_storage`) |
-| **Ghi âm** | `ola_attachment_voice_tab_layout` | `#d5d5d5` | "0:00" trên + nút tròn `bg_accent_color_circle` (#ff4081, 100dp) "Ghi âm" + tip hủy `message_voice_recording_cancel_tip` |
-| **Khác** | `ola_attachment_more_tab_layout` | trắng | **4 nút text** full-width (`defaultStyle.button`, nền trắng viền): Gởi vị trí của bạn · Chuyển KEN · Giao dịch VIP · Tặng ngày VIP. **KHÔNG** có YouTube/Snap ở tab này |
+> **1-1 chat chỉ có 5 panel inline** (`ae` 1→5). **Camera KHÔNG phải panel** — nút Máy ảnh gọi `ao()` = `startActivityForResult(ACTION_IMAGE_CAPTURE)` → mở **app camera ngoài** (xác minh `OlaChatViewActivity.ao()` dòng 1345). Layout `ola_attachment_camera_tab_layout` + view `chat/ola/vn/view/e.java` (preview TextureView) chỉ dùng ở **OlaNoteComposerActivity / OlaBalloonChatViewActivity**, không phải khung chat 1-1.
+
+| `ae` | Tab | Layout | Nền | Nội dung |
+|------|-----|--------|-----|----------|
+| 1 | **Biểu cảm** | `ola_attachment_smiley_tab_layout` | trắng | ViewPager smiley phân trang; thanh dưới `bg_chat_input_with_top_border` (= **nền trắng + 1px viền trên `#16000000`**) gồm 6 chấm chỉ trang + divider `#1f000000` + backspace `ic_backspace_selected`. Bộ smiley = **45 ảnh** `smiley_01..45` (`chat/ola/vn/r/c.java`), mỗi cái gắn **mã text** (`:)`, `:P`, `<3`, `(y)`, `^_^`…) → bấm chèn mã vào ô nhập |
+| 2 | **KUL** | `ola_attachment_sticker_tab_layout` | trắng | ViewPager + HListView album; bộ KUL = **48 ảnh** `kul01..24` + `kul_25..48` (`chat/ola/vn/util/c.java`). KUL = emoticon lớn kèm chữ tuỳ chọn (`message_kul_attached_message_hint`), **khác** sticker |
+| 3 | **Ảnh** | `ola_attachment_photo_tab_layout` | `#d5d5d5` | `U()` xin quyền `READ_EXTERNAL_STORAGE` → `ae=3` → HListView ảnh gallery; góc trái open-grid `ic_open_grid_view` (nền tròn đen → `ap()` mở chooser hệ thống), góc phải toggle cloud/local `cloud_and_local_photo_button_selector` (`ic_local_photo_storage` / `ic_cloud_photo_storage`) |
+| 4 | **Ghi âm** | `ola_attachment_voice_tab_layout` | `#d5d5d5` | "0:00" trên + nút tròn `bg_accent_color_circle` (#ff4081, 100dp) "Ghi âm" + tip hủy `message_voice_recording_cancel_tip` |
+| 5 | **Khác** | `ola_attachment_more_tab_layout` | trắng | **4 nút text** full-width (`defaultStyle.button`, nền trắng viền): Gởi vị trí của bạn · Chuyển KEN · Giao dịch VIP · Tặng ngày VIP. **KHÔNG** có YouTube/Snap ở tab này |
+
+> **Máy ảnh** (chỉ note/balloon composer): nền đen, preview ViewStub, nút chụp = **vòng viền trắng + "Gửi"** (`bg_circle_stroke_white`, KHÔNG phải `ic_camera_shutter_button`), switch-camera `ic_action_switch_camera`, snap-timer `ic_snap_timer`, expand `expand_camera_selector`.
 
 ### 9.3. Đối chiếu web ([AttachmentBar.tsx](../../../../web/src/pages/chat/components/AttachmentBar.tsx))
 
 - ✅ **6 nút toolbar** khớp tập nút hiện mặc định của APK (quick-reply ẩn), đủ icon thường + `_selected`.
-- ✅ **Panel đã dựng lại khớp APK** (icon + màu thật, trích từ APK): Biểu cảm = 45 smiley thật + backspace, bấm chèn mã text · KUL = 48 ảnh kul thật · Máy ảnh = shutter "Gửi" + switch/snap-timer/expand · Ảnh = open-grid + toggle cloud/local (nền `#d5d5d5`) · Ghi âm = nút tròn accent `#ff4081` (nền `#d5d5d5`) · Khác = 4 nút text. Chiều cao panel `h-52` = 208dp.
-- ❌ **Còn lệch hành vi**: web nút **Máy ảnh** mở panel → APK `ao()` mở **camera activity trực tiếp**; web nút **"Khác"** chỉ mở panel → APK **"Khác" kiêm Gửi** khi ô nhập có chữ.
-- ⚠️ **Giới hạn web**: camera preview & strip ảnh gallery thật không tái hiện được → web mô phỏng lớp điều khiển bằng icon thật, bấm = mở file picker. Gửi sticker/KUL/voice/location/KEN/VIP còn "coming soon" (cần backend).
+- ✅ **5 panel inline dựng lại khớp APK** (icon + màu thật, trích từ APK): Biểu cảm = 45 smiley thật + backspace (thanh dưới **trắng** + viền trên), bấm chèn mã text · KUL = 48 ảnh kul thật · Ảnh = open-grid + toggle cloud/local (nền `#d5d5d5`) · Ghi âm = nút tròn accent `#ff4081` (nền `#d5d5d5`) · Khác = 4 nút text. Chiều cao panel `h-52` = 208dp.
+- ❌ **Còn lệch hành vi**: web nút **Máy ảnh** mở **panel** (web không có panel camera trong chat APK) → APK `ao()` mở **app camera ngoài** (web nên cho bấm = mở file-capture trực tiếp); web nút **"Khác"** chỉ mở panel → APK **"Khác" kiêm Gửi** khi ô nhập có chữ.
+- ⚠️ **Giới hạn web**: strip ảnh gallery thật (tab Ảnh) không tái hiện được → web mô phỏng lớp điều khiển bằng icon thật, bấm = mở file picker. Web dựng thêm 1 "panel camera" (mô phỏng) dù chat APK không có. Gửi sticker/KUL/voice/location/KEN/VIP còn "coming soon" (cần backend).
 
 ---
 

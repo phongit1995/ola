@@ -85,7 +85,7 @@ function SmileyPanel({ onPick, onBackspace }: { onPick: (code: string) => void; 
           </button>
         ))}
       </div>
-      <div className="flex h-8 shrink-0 items-center justify-end gap-1 border-t border-black/12 bg-black/[0.08] px-2">
+      <div className="flex h-8 shrink-0 items-center justify-end gap-1 border-t border-black/12 bg-white px-2">
         <span className="mr-1 h-4 w-px bg-black/12" />
         <button
           type="button"
