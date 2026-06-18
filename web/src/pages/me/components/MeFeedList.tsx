@@ -55,7 +55,7 @@ export function MeFeedList({
 
   if (loading) {
     return (
-      <div className="flex h-full items-center justify-center">
+      <div className="flex flex-1 items-center justify-center">
         <Spinner size={28} />
       </div>
     );
@@ -63,7 +63,7 @@ export function MeFeedList({
 
   if (error) {
     return (
-      <div className="flex h-full items-center justify-center px-8 text-center text-sm text-ola-error">
+      <div className="flex flex-1 items-center justify-center px-8 text-center text-sm text-ola-error">
         {t('common.error')}
       </div>
     );
@@ -71,7 +71,7 @@ export function MeFeedList({
 
   if (posts.length === 0) {
     return (
-      <div className="flex h-full items-center justify-center px-8 text-center text-sm text-black/54">
+      <div className="flex flex-1 items-center justify-center px-8 text-center text-sm text-black/54">
         {emptyText}
       </div>
     );

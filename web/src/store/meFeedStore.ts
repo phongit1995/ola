@@ -11,7 +11,9 @@ interface MeFeedState {
   error: boolean;
   nextCursor: string | null;
   reacting: Set<string>;
+  refreshing: boolean;
   loadFeed: (filter?: MeFeedFilter) => Promise<void>;
+  refreshFeed: (filter?: MeFeedFilter) => Promise<void>;
   loadMore: (filter?: MeFeedFilter) => Promise<void>;
   toggleReaction: (id: string, type: PostReaction) => Promise<void>;
   createPost: (payload: CreatePostRequest, files: File[], imageUrls: string[]) => Promise<Post | null>;
@@ -45,6 +47,7 @@ export const useMeFeedStore = create<MeFeedState>((set, get) => ({
   error: false,
   nextCursor: null,
   reacting: new Set(),
+  refreshing: false,
   loadFeed: async (filter) => {
     const requestId = ++feedRequestId;
     set({ loading: true, error: false });
@@ -56,6 +59,19 @@ export const useMeFeedStore = create<MeFeedState>((set, get) => ({
       if (requestId !== feedRequestId) return;
       console.error('load me feed failed', error);
       set({ posts: [], nextCursor: null, loading: false, error: true });
+    }
+  },
+  refreshFeed: async (filter) => {
+    const requestId = ++feedRequestId;
+    set({ refreshing: true, error: false });
+    try {
+      const result = await MeService.feed({ filter, limit: FEED_PAGE_SIZE });
+      if (requestId !== feedRequestId) return;
+      set({ posts: result.items, nextCursor: result.nextCursor, refreshing: false });
+    } catch (error) {
+      if (requestId !== feedRequestId) return;
+      console.error('refresh me feed failed', error);
+      set({ refreshing: false });
     }
   },
   loadMore: async (filter) => {

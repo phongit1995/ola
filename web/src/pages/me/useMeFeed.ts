@@ -18,6 +18,7 @@ export function useMeFeed() {
   const error = useMeFeedStore((state) => state.error);
   const hasMore = useMeFeedStore((state) => state.nextCursor != null);
   const loadFeed = useMeFeedStore((state) => state.loadFeed);
+  const refreshFeed = useMeFeedStore((state) => state.refreshFeed);
   const loadMoreFeed = useMeFeedStore((state) => state.loadMore);
   const toggleReaction = useMeFeedStore((state) => state.toggleReaction);
   const createPost = useMeFeedStore((state) => state.createPost);
@@ -37,6 +38,7 @@ export function useMeFeed() {
   }, [tab, loadFeed]);
 
   const loadMore = useCallback(() => loadMoreFeed(TAB_FILTER[tab]), [loadMoreFeed, tab]);
+  const refresh = useCallback(() => refreshFeed(TAB_FILTER[tab]), [refreshFeed, tab]);
 
   const posts = useMemo(
     () =>
@@ -115,6 +117,7 @@ export function useMeFeed() {
     hasMore,
     error,
     loadMore,
+    refresh,
     toggleReaction,
     addPost,
     editPost,

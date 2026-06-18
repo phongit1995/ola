@@ -5,7 +5,7 @@ import { DEFAULT_AVATAR_COLOR, toast } from '@lib';
 import editIcon from '@/assets/icons/me/ic_action_edit.png';
 import menuIcon from '@/assets/icons/me/ic_more_white.png';
 import { useAuthStore } from '@/store/authStore';
-import { Avatar } from '@components';
+import { Avatar, PullToRefresh } from '@components';
 import { MeTabBar } from './components/MeTabBar';
 import { MeFeedList } from './components/MeFeedList';
 import { MeLeftDrawer } from './components/MeLeftDrawer';
@@ -29,6 +29,7 @@ export function MePanel() {
     hasMore,
     error,
     loadMore,
+    refresh,
     toggleReaction,
     addPost,
     editPost,
@@ -80,7 +81,10 @@ export function MePanel() {
           </HomeHeader>
 
           <div className="relative min-h-0 flex-1">
-            <main className="absolute inset-0 overflow-y-auto bg-[#f3f3f3]">
+            <PullToRefresh
+              onRefresh={refresh}
+              className="absolute inset-0 overflow-y-auto bg-[#f3f3f3]"
+            >
               <MeFeedList
                 posts={posts}
                 loading={loading}
@@ -97,7 +101,7 @@ export function MePanel() {
                 onOpenMenu={handlers.onOpenMenu}
                 onOpenLikers={handlers.onOpenLikers}
               />
-            </main>
+            </PullToRefresh>
 
             <button
               type="button"
