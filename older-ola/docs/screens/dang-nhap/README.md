@@ -279,6 +279,55 @@ ScrollView (nền xanh #7CB342, fillViewport)
   - **req 6** (từ "Quên mật khẩu"): có token → `OlaApplication.b.a(token, H())`; callback `H()` xử lý khôi phục như mục 4.4.
 - **req 7 / req 1** (trả về từ `OlaRecoveredAccountListActivity` / `OlaSignUpActivity`): nhận `_username` + `_pass` → điền 2 ô và gọi `B()` đăng nhập.
 
+### 4.6. Lưu thông tin đăng nhập (cách lưu + UI gallery account)
+
+**Model account** `chat.ola.vn.h.a`: `a` = `Account`(nick) · `b` = mật khẩu · `c` = workingSession · `d` = trustToken · `e` = lastAccessTime (ms).
+
+**Lưu ở 2 tầng song song:**
+
+| Tầng | Nơi lưu | Trường |
+|------|---------|--------|
+| **Android AccountManager** (chính) | account type `chat.ola.vn.ACCOUNT` (`@string/account_type`) | `name`=nick · `password`=**mật khẩu plaintext** (`addAccountExplicitly`/`setPassword`) · `authToken` type `"Working Session"` (`@string/token_type`)=phiên · userData `_time`=lần đăng nhập gần nhất · `_trust_token`=trust token |
+| **SharedPreferences dự phòng** | key `key_account_list` (`com.mg.ola.common.b.d`) | JSON array `{username, password, workingSession, trustToken, lastAccessTime}` (đọc qua `e.a().n()`) |
+
+- **Đọc danh sách** `b.a(ctx)`: gộp AccountManager + list SharedPreferences → **khử trùng theo nick** (nếu bản AccountManager thiếu mật khẩu thì lấy từ bản prefs) → **sắp xếp giảm dần theo `lastAccessTime`** (mới nhất đứng trước, comparator `chat.ola.vn.e.a`). Nick gần nhất: `e.a().i()` (`key_last_online_account_id`).
+- **Ghi khi đăng nhập thành công** (callback `b(user,pass,session)` → `chat.ola.vn.h.b.a(ctx,user,pass,session,trust)`): `addAccountExplicitly(account,pass)` → nếu thành công thì `setAuthToken(session)`, nếu account đã có thì `setPassword`; set `_time = now`, `_trust_token`; **đồng thời mirror** sang SharedPreferences (`e.a().a(...)`).
+- **Đổi mật khẩu** `b.a(ctx,_,pass)`: `setPassword` + cập nhật prefs. **Xoá account** `b.a(ctx,nick)`: `removeAccount` + `e.a().f(nick)`. **Dọn khi nâng cấp từ bản cũ** (version `1..88`): `b.g()`.
+
+> ⚠️ Mật khẩu được lưu **dạng thô** trong AccountManager và trong JSON prefs — không mã hoá.
+
+**UI gallery account đã lưu** — container `OlaGalleryView` (`accountGallery`) = `HorizontalScrollView` **cuộn ngang**, spacing 16dp, minHeight 96dp; mỗi account là 1 item layout `user_account_icon.xml`:
+
+```
+LinearLayout vertical, padding 8dp, gravity=center_horizontal
+├─ FrameLayout (nền bg_shadown_border — khung viền + bóng)
+│   ├─ OlaCachedImageView  imgIcon  96×96dp   ← avatar VUÔNG bo góc, CHỮ CÁI ĐẦU của nick sinh tự động
+│   └─ ImageView           imgAccountRemoveAction  24×24dp, góc phải-dưới
+│                          (nền tròn đen mờ bg_round_rect_black_translucent, icon × ic_action_quit)
+└─ TextView  txtAccountName  ← nick, chữ trắng 14sp bold (style defaultStyle.text.body2)
+```
+
+> **Avatar = ô vuông chữ-cái-đầu sinh tự động** (`chat.ola.vn.c.t.a().a(nick,false,img)` → `f.b(chữ, màu)`): lấy ký tự đầu của nick + màu nền chọn theo ký tự đó (vd `unfriend`→ "U" nền nâu, `sugardaddy`→ "S" nền xanh). Vì màn login chưa có phiên nên **không tải được ảnh đại diện thật từ server** → luôn hiển thị ô chữ cái này. `@drawable/ic_contact_photo` chỉ là `src` tĩnh khai trong XML, thực tế bị thay bằng bitmap chữ-cái.
+
+| Asset | Ảnh | Dùng cho |
+|-------|-----|----------|
+| `ic_action_quit` | ![remove](images/ic_action_quit.png) | Icon × trên badge xoá account |
+| `ic_contact_photo` | ![avatar](images/ic_contact_photo.png) | `src` tĩnh khai trong XML (thực tế bị thay bằng ô chữ-cái) |
+
+- **Hiện/ẩn:** gallery chỉ hiện khi danh sách account ≠ rỗng (đồng thời **ẩn logo Ola** `olaLogoImageView`); hết account → ẩn gallery, hiện lại logo.
+- **Khi nào account vào gallery:** account (nick + mật khẩu) được lưu sau **mỗi lần đăng nhập thành công**. **Đăng xuất** (Cài đặt → *Đăng xuất*, hàm `C()`) chỉ ngắt phiên (`OlaApplication.b.l()`) + logout Facebook rồi quay về màn login — **KHÔNG xoá account đã lưu** (không gọi `removeAccount`), nên account vẫn hiện ở gallery để đăng nhập nhanh. Chỉ nút **×** mới xoá hẳn.
+- **Cử chỉ trên item** (uỷ quyền về `onClick` Activity qua `view.getTag()`, **không long-press**): chạm **avatar/nick** → điền nick + mật khẩu đã lưu, nếu đủ 2 ô thì `B()` đăng nhập luôn; chạm **badge ×** → mở dialog xoá account (mục 4.4).
+
+### 4.7. Đối chiếu bản web (`web/src/pages/login/LoginPage.tsx`)
+
+Web đã dựng lại UI bám sát (nền `bg-ola-primary`, card trắng đổ bóng, logo 56px, nút submit, nhãn 9px version `15240093`). **Khác biệt** so với APK:
+
+- **Đăng nhập bằng REST** (`AuthService.login`) thay vì socket; lỗi hiện inline + toast (không có dialog Hỗ trợ/hotline).
+- **Chưa có**: gallery account đã lưu, đăng nhập **Facebook/AccountKit**, **captcha**, dialog gợi ý khôi phục/đếm số lần sai, nút xanh đổi nhãn "Tạo tài khoản Ola" khi trống.
+- **"Quên mật khẩu"** → route riêng `forgot-password`; **"Tạo tài khoản Ola"** → route `register` (web tách trang, APK đi qua AccountKit trước).
+- Có **`LanguageSwitcher`** hiện thường trực góc trên (APK chỉ hỏi ngôn ngữ 1 lần ở `onCreate`).
+- Validate client: username `USERNAME_MIN=5..USERNAME_MAX` + `USERNAME_PATTERN`, password `PASSWORD_MIN..MAX` — tương ứng `C()` của APK.
+
 ## 5. Strings (đa ngôn ngữ)
 
 | Resource | EN (`values/strings.xml`) | VI (`values-vi/strings.xml`) |
@@ -314,16 +363,6 @@ ScrollView (nền xanh #7CB342, fillViewport)
 | `dialog_title_fail` / `dialog_title_inform` / `dialog_title_warning` | Error / Inform / Warning | Lỗi hệ thống / Thông báo / Chú ý |
 | `string_select_account_to_login` | Select account to login | Chọn tài khoản để đăng nhập |
 | `message_login_by_facebook_account_error` | (lỗi liên kết FB) | (lỗi liên kết Facebook) |
-
-### 4.6. Đối chiếu bản web (`web/src/pages/login/LoginPage.tsx`)
-
-Web đã dựng lại UI bám sát (nền `bg-ola-primary`, card trắng đổ bóng, logo 56px, nút submit, nhãn 9px version `15240093`). **Khác biệt** so với APK:
-
-- **Đăng nhập bằng REST** (`AuthService.login`) thay vì socket; lỗi hiện inline + toast (không có dialog Hỗ trợ/hotline).
-- **Chưa có**: gallery account đã lưu, đăng nhập **Facebook/AccountKit**, **captcha**, dialog gợi ý khôi phục/đếm số lần sai, nút xanh đổi nhãn "Tạo tài khoản Ola" khi trống.
-- **"Quên mật khẩu"** → route riêng `forgot-password`; **"Tạo tài khoản Ola"** → route `register` (web tách trang, APK đi qua AccountKit trước).
-- Có **`LanguageSwitcher`** hiện thường trực góc trên (APK chỉ hỏi ngôn ngữ 1 lần ở `onCreate`).
-- Validate client: username `USERNAME_MIN=5..USERNAME_MAX` + `USERNAME_PATTERN`, password `PASSWORD_MIN..MAX` — tương ứng `C()` của APK.
 
 ## 6. Màn mở ra từ đây (điều hướng)
 
