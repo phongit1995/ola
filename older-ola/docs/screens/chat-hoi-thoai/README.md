@@ -197,7 +197,32 @@ chatTextInputLayout (horizontal, gravity bottom, minHeight 36dp, padding 8/2dp)
 
 > Mỗi nút có 2 bản: bình thường (xám) + `_selected` (xanh `#7CB342`) khi tab đang mở.
 
-Bấm 1 nút → **panel** trượt lên thay bàn phím (`chatAttachmentFrameLayout`). Panel có 6 tab (chi tiết ở [chat/README.md §9](../chat/README.md)): Biểu cảm · Sticker · Ảnh · Máy ảnh · Ghi âm · Khác.
+**Kích thước thật** (`ola_chat_message_attachment_layout.xml`): thanh cao `metric.36dp`, padding L/R `8dp`, T/B `2dp`; mỗi nút `layout_weight=1` (chia đều), `scaleType=centerInside`, nền trong suốt; padding nút: smiley/kul/camera = `2dp`, local/voice/more = `4dp`.
+
+> ⚠️ **Nút #1 `quickReplyImageButton` có `visibility="gone"`** → mặc định **chỉ 6 nút hiển thị** (Biểu cảm · KUL · Máy ảnh · Ảnh · Ghi âm · Khác). Đây chính là 6 nút bản web đang dựng.
+
+### 9.1. Hành vi từng nút (`OlaChatViewActivity.onClick`, ~dòng 3050)
+
+Biến trạng thái: `this.ae` = tab panel đang chọn · `this.M.a()` = panel đang mở (bấm lại để toggle / chỉ ẩn bàn phím) · `f(false)` = ẩn bàn phím · `j(false)` = mở panel `chatAttachmentFrameLayout`.
+
+| Nút | id | Cử chỉ | Hành vi |
+|-----|----|--------|---------|
+| Biểu cảm | `chatTextSmileyImageButton` | click | `ae=1` → mở panel **Biểu cảm** (emoji); nếu panel đang mở thì chỉ ẩn bàn phím |
+| KUL | `kulImageButton` | click | ẩn bàn phím, `ae=2` → panel **KUL** (sticker động) |
+| Máy ảnh | `cameraImageButton` | click | `an()` → xin quyền `CAMERA` → `ao()` **mở camera trực tiếp** (KHÔNG qua panel) |
+| Ảnh | `localPhotoImageButton` | click | `U()` → xin quyền `READ_EXTERNAL_STORAGE` → `ae=3` → panel **lưới ảnh trong máy** |
+| Ghi âm | `voiceImageButton` | click | ẩn bàn phím, `ae=4` → panel **Ghi âm** |
+| Khác | `moreImageButton` | click | **Nếu ô nhập có chữ → GỬI tin** (`a(text,0,true)`); nếu trống → `ae=5` → panel **Khác** |
+| Trả lời nhanh (ẩn) | `quickReplyImageButton` | click | `au()` — bảng trả lời nhanh (chỉ hiện khi được bật, mặc định `gone`) |
+
+→ Panel chung `chatAttachmentFrameLayout` trượt lên thay bàn phím, nội dung theo `ae`: **1** Biểu cảm · **2** KUL · **3** Ảnh máy · **4** Ghi âm · **5** Khác. Tab **Khác** gồm: vị trí, YouTube, snap pic, KEN, VIP… (chi tiết panel ở [chat/README.md §9](../chat/README.md)).
+
+### 9.2. Đối chiếu web ([AttachmentBar.tsx](../../../../web/src/pages/chat/components/AttachmentBar.tsx))
+
+- ✅ Đúng **6 nút** khớp tập nút hiện mặc định của APK (quick-reply ẩn); có đủ icon thường + `_selected`.
+- ❌ Web cho **mọi nút toggle panel tab** (kể cả **Máy ảnh**) → APK **Máy ảnh mở camera trực tiếp** (`ao()`), không qua panel.
+- ❌ Web nút **"Khác"** chỉ mở panel → APK **"Khác" kiêm nút Gửi** khi ô nhập có chữ.
+- ⚠️ Web tab "Ảnh máy" và "Máy ảnh" tách 2 nút riêng; APK: nút Ảnh = panel tab 3, nút Máy ảnh = camera activity (khác cơ chế).
 
 ---
 

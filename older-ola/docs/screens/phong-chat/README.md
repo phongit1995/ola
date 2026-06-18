@@ -105,19 +105,31 @@ Hiện 1 trong 3 trạng thái (ưu tiên từ trên xuống, `y.java` dòng 103
 
 > Phòng đầy: thông báo `message_room_full_format` = "Phòng chat đã đầy. Để vào ngay, bạn cần có VIP".
 
-## 5. Bộ lọc phòng (`OlaPublicRoomFilterSettingActivity` / `ola_public_room_filter_setting_layout.xml`)
+## 5. Bộ lọc phòng (`chat.ola.vn.room.OlaPublicRoomFilterSettingActivity` / `ola_public_room_filter_setting_layout.xml`)
 
-Mở từ icon ⚙/lọc trên action bar. Panel checkbox (padding 16dp):
+Mở từ icon lọc trên action bar màn phòng chat → mở **một Activity full-screen riêng** (KHÔNG phải dialog), nền trắng, có action bar tiêu đề `string_select_filter_mode` = **"Chọn chế độ lọc"** + nút back trái `string_back` = **"Trở về"**. Thân màn là `LinearLayout` dọc (padding top 42dp chừa action bar + ngang 16dp) gồm **5 CheckBox**:
 
-| CheckBox id | String | VI |
-|-------------|--------|----|
-| `filterShowAllCheckBox` | `filter_show_all` | Hiện tất cả |
-| `filterMediaCheckBox` | `filter_media_status` | Hiện tin nhắn có hình ảnh |
-| `filterFemaleCheckBox` | `filter_gender_female` | Hiển thị nữ |
-| `filterMaleCheckBox` | `filter_gender_male` | Hiển thị nam |
-| `filterFlexibleCheckBox` | `filter_gender_flexible` | Hiển thị linh hoạt về giới tính |
+| # | CheckBox id | String | VI thật | Bit |
+|---|-------------|--------|---------|-----|
+| 1 | `filterShowAllCheckBox` | `filter_show_all` | **Hiện tất cả** | = 255 (`f.e`) |
+| 2 | `filterMediaCheckBox` | `filter_media_status` | **Hiện thông điệp hình** | 8 (`f.d`) |
+| 3 | `filterFemaleCheckBox` | `filter_gender_female` | **Hiện nữ** | 1 (`f.a`) |
+| 4 | `filterMaleCheckBox` | `filter_gender_male` | **Hiện nam** | 2 (`f.b`) |
+| 5 | `filterFlexibleCheckBox` | `filter_gender_flexible` | **Hiện giới tính linh hoạt** | 4 (`f.c`) |
 
-> Cờ lọc lưu dạng bitmask short (1/2/4/8…, 255 = tất cả) ở `chat.ola.vn.h.x`.
+> Bitmask định nghĩa ở `chat.ola.vn.r.a.f`: `a=1` (nữ) · `b=2` (nam) · `c=4` (linh hoạt) · `d=8` (media) · `e=255` (tất cả). Cờ hiện hành lưu/đọc qua `chat.ola.vn.h.x` (`q()`=đọc short, `a(short)`=ghi, `r()`=có đang lọc cụ thể không). **Mặc định = 255 (hiện tất cả).**
+
+### 5.1. Logic checkbox & lưu (không có nút "Áp dụng")
+
+- **Nạp khi mở** (`C()` chạy ở `a()`/resume): đọc `h.x.q()`. Nếu đang lọc cụ thể (`r()`) → tick các ô theo bit đang bật (media/nữ/nam/linh hoạt); nếu không → tick **"Hiện tất cả"**.
+- **Đồng bộ tự động** (`onCheckedChanged` + `D()`):
+  - Tick **"Hiện tất cả"** → tự **tick cả 4 ô** còn lại.
+  - **Bỏ tick** bất kỳ 1 trong 4 ô → tự **bỏ tick "Hiện tất cả"**.
+  - Tick đủ **cả 4 ô** (media+nữ+nam+linh hoạt) → tự **tick lại "Hiện tất cả"** (`D()`).
+- **Lưu khi rời màn** (`E()` gọi trong `finish()` — tức bấm **"Trở về"**/back, KHÔNG có nút Apply): nếu "Hiện tất cả" đang tick → lưu `255`; nếu không → **OR các bit** đang tick (vd chỉ "Hiện nữ" + "media" → `1|8 = 9`). Ghi vào `h.x.a(s)`.
+- **Áp dụng vào list**: lớp dữ liệu phòng `r.a.f` giữ field cờ `g` (mặc định `= e = 255`); danh sách phòng/tin được lọc theo `g` khi dựng lại (lọc theo giới tính + có/không media).
+
+> Đối chiếu web: web có dialog `RoomFilterDialog` cùng 5 lựa chọn nhưng cơ chế khác — **có nút Áp dụng** (APK lưu khi back), và cần kiểm tra cờ có thực sự lọc danh sách phòng không. (Xem mục đối chiếu khi dựng lại UI.)
 
 ## 6. Bấm vào 1 phòng → chuyện gì xảy ra
 
