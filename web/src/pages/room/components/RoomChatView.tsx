@@ -1,18 +1,33 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import addFriendIcon from '@/assets/icons/chat/ic_add_friend.png';
 import groupMessageIcon from '@/assets/icons/room/ic_notify_new_chat_group_message.png';
+import filterIcon from '@/assets/icons/room/ic_filter_unselected.png';
 import { useRoomChatStore } from '@/store/roomChatStore';
 import { useAuthStore } from '@/store/authStore';
+import { useRoomFilterStore } from '@/store/roomFilterStore';
 import { ScreenHeader, FullScreenOverlay } from '@components';
+import type { RoomMember } from '@app-types';
 import { RoomTabBar, type RoomTabItem } from './RoomTabBar';
 import { RoomMessagesTab } from './RoomMessagesTab';
 import { RoomMembersTab } from './RoomMembersTab';
+import { RoomFilterDialog } from './RoomFilterDialog';
+import type { RoomFilters } from '../types';
 import { UserProfileView } from '../../profile/UserProfileView';
 
 interface ProfileTarget {
   username: string;
   color: string;
+}
+
+function memberMatchesFilter(member: RoomMember, filters: RoomFilters): boolean {
+  if (filters.showAll) return true;
+  const anyGender = filters.female || filters.male || filters.flexible;
+  if (!anyGender) return true;
+  if (filters.female && member.gender === 'female') return true;
+  if (filters.male && member.gender === 'male') return true;
+  if (filters.flexible && member.gender !== 'female' && member.gender !== 'male') return true;
+  return false;
 }
 
 interface RoomChatViewProps {
@@ -33,6 +48,13 @@ export function RoomChatView({ onClose }: RoomChatViewProps) {
   const setRoomForeground = useRoomChatStore((state) => state.setRoomForeground);
   const currentUserId = useAuthStore((state) => state.user?.id) ?? '';
   const [profileTarget, setProfileTarget] = useState<ProfileTarget | null>(null);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const filters = useRoomFilterStore((state) => state.filters);
+  const setFilters = useRoomFilterStore((state) => state.setFilters);
+  const visibleMembers = useMemo(
+    () => members.filter((member) => memberMatchesFilter(member, filters)),
+    [members, filters]
+  );
 
   useEffect(() => {
     setRoomForeground(true);
@@ -55,7 +77,18 @@ export function RoomChatView({ onClose }: RoomChatViewProps) {
 
   return (
     <FullScreenOverlay position="absolute">
-      <ScreenHeader title={name} onBack={onClose} align="center" />
+      <ScreenHeader title={name} onBack={onClose} align="center">
+        {activeTab === 'members' && (
+          <button
+            type="button"
+            aria-label={t('room.filterTitle')}
+            onClick={() => setFilterOpen(true)}
+            className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-white/15"
+          >
+            <img src={filterIcon} alt="" className="h-5 w-5 object-contain" />
+          </button>
+        )}
+      </ScreenHeader>
       <div className="flex shrink-0 justify-center">
         <span className="h-px w-full bg-[repeating-linear-gradient(to_right,rgba(0,0,0,.3)_0_4px,transparent_4px_16px)]" />
       </div>
@@ -69,7 +102,7 @@ export function RoomChatView({ onClose }: RoomChatViewProps) {
         onOpenProfile={openProfile}
       />
       <RoomMembersTab
-        members={members}
+        members={visibleMembers}
         active={activeTab === 'members'}
         onOpenProfile={openProfile}
       />
@@ -83,6 +116,17 @@ export function RoomChatView({ onClose }: RoomChatViewProps) {
           onOpenFriend={(friend) => setProfileTarget({ username: friend.name, color: friend.color })}
         />
       )}
+
+      <RoomFilterDialog
+        key={filterOpen ? 'open' : 'closed'}
+        open={filterOpen}
+        value={filters}
+        onApply={(value) => {
+          setFilters(value);
+          setFilterOpen(false);
+        }}
+        onClose={() => setFilterOpen(false)}
+      />
     </FullScreenOverlay>
   );
 }

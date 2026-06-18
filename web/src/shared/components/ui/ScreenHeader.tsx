@@ -42,6 +42,9 @@ export function ScreenHeader({
           <BackIcon />
         </button>
         <span className="truncate text-sm font-bold">{title}</span>
+        {children != null && (
+          <div className="absolute right-2 flex items-center">{children}</div>
+        )}
       </header>
     );
   }

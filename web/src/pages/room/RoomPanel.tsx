@@ -6,12 +6,9 @@ import { HomeHeader } from '@components/HomeHeader';
 import { RoomChatView } from './components/RoomChatView';
 import { RoomJoiningOverlay } from './components/RoomJoiningOverlay';
 import { RoomList } from './components/RoomList';
-import { RoomFilterDialog } from './components/RoomFilterDialog';
-import { DEFAULT_ROOM_FILTERS } from './data';
-import type { RoomListItem, RoomFilters } from './types';
+import type { RoomListItem } from './types';
 import { useRoomStore } from '@/store/roomStore';
 import { useRoomChatStore, type ActiveRoom } from '@/store/roomChatStore';
-import filterIcon from '@/assets/icons/room/ic_filter_unselected.png';
 
 const ROOM_CAPACITY = 200;
 const ROOM_COLORS = ['#ef5350', '#ec407a', '#5c6bc0', '#26a69a', '#7e57c2', '#ffa726'];
@@ -26,8 +23,6 @@ export function RoomPanel() {
   const joinStatus = useRoomChatStore((state) => state.status);
   const openRoom = useRoomChatStore((state) => state.open);
   const closeRoom = useRoomChatStore((state) => state.close);
-  const [filters, setFilters] = useState<RoomFilters>(DEFAULT_ROOM_FILTERS);
-  const [filterOpen, setFilterOpen] = useState(false);
   const [pendingQuit, setPendingQuit] = useState<ActiveRoom | null>(null);
   const [fullRoom, setFullRoom] = useState<RoomListItem | null>(null);
 
@@ -107,14 +102,6 @@ export function RoomPanel() {
             <path d="M17.65 6.35A8 8 0 1 0 19.73 14h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
           </svg>
         </button>
-        <button
-          type="button"
-          aria-label={t('room.filterTitle')}
-          onClick={() => setFilterOpen(true)}
-          className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-white/15"
-        >
-          <img src={filterIcon} alt="" className="h-5 w-5 object-contain" />
-        </button>
       </HomeHeader>
 
       <main className="relative flex-1 overflow-y-auto bg-[#f3f3f3]">
@@ -141,16 +128,6 @@ export function RoomPanel() {
         <RoomJoiningOverlay name={activeRoom.name} status={joinStatus} onClose={exitRoom} />
       )}
 
-      <RoomFilterDialog
-        key={filterOpen ? 'open' : 'closed'}
-        open={filterOpen}
-        value={filters}
-        onApply={(value) => {
-          setFilters(value);
-          setFilterOpen(false);
-        }}
-        onClose={() => setFilterOpen(false)}
-      />
       <ConfirmDialog
         open={pendingQuit != null}
         danger
