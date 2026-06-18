@@ -146,6 +146,7 @@ func (s *Service) ListMembers(ctx context.Context, roomID uuid.UUID) (*RoomMembe
 			Avatar:   u.Avatar,
 			Gender:   u.Gender,
 			Bio:      u.Bio,
+			BioImage: u.BioImage,
 			VipUsed:  u.VipUsed,
 		}
 		if u.VipEndTime != nil {

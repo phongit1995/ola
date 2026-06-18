@@ -717,6 +717,10 @@ definitions:
         type: string
       id:
         type: string
+      isFriend:
+        type: boolean
+      isSelf:
+        type: boolean
       username:
         type: string
     type: object
@@ -1178,12 +1182,6 @@ definitions:
         items:
           $ref: '#/definitions/internal_modules_relationships.FriendResponse'
         type: array
-      limit:
-        example: 20
-        type: integer
-      offset:
-        example: 0
-        type: integer
       total:
         example: 5
         type: integer
@@ -1210,6 +1208,18 @@ definitions:
       avatar:
         example: https://example.com/avatar.jpg
         type: string
+      bio:
+        example: hello ola!!!
+        type: string
+      bioImage:
+        example: https://example.com/bio.jpg
+        type: string
+      dateOfBirth:
+        example: "1990-01-01"
+        type: string
+      deviceType:
+        example: android
+        type: string
       email:
         example: john@example.com
         type: string
@@ -1230,6 +1240,12 @@ definitions:
         type: string
       username:
         example: john_doe
+        type: string
+      vipEndTime:
+        example: "2026-12-31T00:00:00Z"
+        type: string
+      vipUsed:
+        example: gold
         type: string
     type: object
   internal_modules_relationships.RelationshipListResponse:
@@ -1369,6 +1385,8 @@ definitions:
       avatar:
         type: string
       bio:
+        type: string
+      bioImage:
         type: string
       fullName:
         type: string
@@ -4647,18 +4665,7 @@ paths:
       - relationships
   /relationships/friends:
     get:
-      description: Get friends of the user (paginated)
-      parameters:
-      - default: 50
-        description: Limit results (max 100)
-        in: query
-        name: limit
-        type: integer
-      - default: 0
-        description: Offset for pagination
-        in: query
-        name: offset
-        type: integer
+      description: Get the full friends list of the user (no pagination)
       produces:
       - application/json
       responses:

@@ -50,6 +50,7 @@ type RoomMemberResponse struct {
 	Avatar     string  `json:"avatar,omitempty"`
 	Gender     string  `json:"gender,omitempty"`
 	Bio        string  `json:"bio,omitempty"`
+	BioImage   *string `json:"bioImage,omitempty"`
 	VipUsed    *string `json:"vipUsed,omitempty"`
 	VipEndTime *string `json:"vipEndTime,omitempty"`
 }

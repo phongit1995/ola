@@ -3128,7 +3128,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Get friends of the user (paginated)",
+                "description": "Get the full friends list of the user (no pagination)",
                 "produces": [
                     "application/json"
                 ],
@@ -3136,22 +3136,6 @@ const docTemplate = `{
                     "relationships"
                 ],
                 "summary": "Get friends list",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "default": 50,
-                        "description": "Limit results (max 100)",
-                        "name": "limit",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "default": 0,
-                        "description": "Offset for pagination",
-                        "name": "offset",
-                        "in": "query"
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -5527,6 +5511,12 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "isFriend": {
+                    "type": "boolean"
+                },
+                "isSelf": {
+                    "type": "boolean"
+                },
                 "username": {
                     "type": "string"
                 }
@@ -6191,14 +6181,6 @@ const docTemplate = `{
                         "$ref": "#/definitions/internal_modules_relationships.FriendResponse"
                     }
                 },
-                "limit": {
-                    "type": "integer",
-                    "example": 20
-                },
-                "offset": {
-                    "type": "integer",
-                    "example": 0
-                },
                 "total": {
                     "type": "integer",
                     "example": 5
@@ -6238,6 +6220,22 @@ const docTemplate = `{
                     "type": "string",
                     "example": "https://example.com/avatar.jpg"
                 },
+                "bio": {
+                    "type": "string",
+                    "example": "hello ola!!!"
+                },
+                "bioImage": {
+                    "type": "string",
+                    "example": "https://example.com/bio.jpg"
+                },
+                "dateOfBirth": {
+                    "type": "string",
+                    "example": "1990-01-01"
+                },
+                "deviceType": {
+                    "type": "string",
+                    "example": "android"
+                },
                 "email": {
                     "type": "string",
                     "example": "john@example.com"
@@ -6265,6 +6263,14 @@ const docTemplate = `{
                 "username": {
                     "type": "string",
                     "example": "john_doe"
+                },
+                "vipEndTime": {
+                    "type": "string",
+                    "example": "2026-12-31T00:00:00Z"
+                },
+                "vipUsed": {
+                    "type": "string",
+                    "example": "gold"
                 }
             }
         },
@@ -6469,6 +6475,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "bio": {
+                    "type": "string"
+                },
+                "bioImage": {
                     "type": "string"
                 },
                 "fullName": {
