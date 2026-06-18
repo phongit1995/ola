@@ -151,7 +151,22 @@ func (r *Repository) FeedPage(viewerID uuid.UUID, filter string, cursorTime *tim
 	return ordered, hasMore, nil
 }
 
-func (r *Repository) ListLikers(postID uuid.UUID, limit, offset int) ([]*models.User, int64, error) {
+type LikerRow struct {
+	ID       uuid.UUID `gorm:"column:id"`
+	Username string    `gorm:"column:username"`
+	FullName string    `gorm:"column:full_name"`
+	Avatar   string    `gorm:"column:avatar"`
+	IsFriend bool      `gorm:"column:is_friend"`
+}
+
+const likerFriendExists = `EXISTS (
+	SELECT 1 FROM relationships rel
+	WHERE rel.status = ?
+	  AND ((rel.requester_id = ? AND rel.addressee_id = users.id)
+	    OR (rel.addressee_id = ? AND rel.requester_id = users.id))
+) AS is_friend`
+
+func (r *Repository) ListLikers(viewerID, postID uuid.UUID, limit, offset int) ([]LikerRow, int64, error) {
 	base := r.db.Model(&models.User{}).
 		Joins("JOIN me_reactions ON me_reactions.user_id = users.id").
 		Where("me_reactions.post_id = ? AND me_reactions.type = ?", postID, models.PostReactionLike)
@@ -161,11 +176,16 @@ func (r *Repository) ListLikers(postID uuid.UUID, limit, offset int) ([]*models.
 		return nil, 0, err
 	}
 
-	var users []*models.User
-	if err := base.Order("me_reactions.created_at DESC").Limit(limit).Offset(offset).Find(&users).Error; err != nil {
+	var rows []LikerRow
+	if err := base.
+		Select("users.id, users.username, users.full_name, users.avatar, "+likerFriendExists,
+			models.RelationshipStatusAccepted, viewerID, viewerID).
+		Order("me_reactions.created_at DESC").
+		Limit(limit).Offset(offset).
+		Scan(&rows).Error; err != nil {
 		return nil, 0, err
 	}
-	return users, total, nil
+	return rows, total, nil
 }
 
 type topLikerRow struct {

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Avatar, Dialog } from '@components';
 import { colorForName, toast } from '@lib';
-import { MeService } from '@services';
+import { MeService, RelationshipService } from '@services';
 import type { PostAuthor } from '@app-types';
 
 interface MeLikersDialogProps {
@@ -73,9 +73,21 @@ export function MeLikersDialog({ postId, onClose, onOpenProfile }: MeLikersDialo
     return () => observer.disconnect();
   }, [hasMore, loadMore, likers.length]);
 
+  const [requested, setRequested] = useState<Record<string, boolean>>({});
+
   function openProfile(name: string) {
     onOpenProfile?.(name, colorForName(name));
     onClose();
+  }
+
+  async function addFriend(user: PostAuthor) {
+    try {
+      await RelationshipService.sendRequest(user.id);
+      setRequested((current) => ({ ...current, [user.id]: true }));
+      toast.success(t('me.friendRequestSent'));
+    } catch {
+      toast.error(t('me.makeFriendError'));
+    }
   }
 
   return (
@@ -117,13 +129,24 @@ export function MeLikersDialog({ postId, onClose, onOpenProfile }: MeLikersDialo
                   {user.fullName != null && user.fullName !== '' ? user.fullName : user.username}
                 </span>
               </button>
-              <button
-                type="button"
-                onClick={() => toast.info(t('me.makeFriendSoon'))}
-                className="shrink-0 rounded bg-ola-primary px-3 py-1.5 text-sm font-medium text-white"
-              >
-                {t('me.makeFriend')}
-              </button>
+              {user.isSelf !== true &&
+                (user.isFriend === true ? (
+                  <span className="shrink-0 rounded bg-black/8 px-3 py-1.5 text-sm font-medium text-black/45">
+                    {t('me.alreadyFriend')}
+                  </span>
+                ) : requested[user.id] === true ? (
+                  <span className="shrink-0 rounded bg-black/8 px-3 py-1.5 text-sm font-medium text-black/45">
+                    {t('me.friendRequestSent')}
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => void addFriend(user)}
+                    className="shrink-0 rounded bg-ola-primary px-3 py-1.5 text-sm font-medium text-white"
+                  >
+                    {t('me.makeFriend')}
+                  </button>
+                ))}
             </div>
           ))}
         <div ref={sentinelRef} className="h-1" />

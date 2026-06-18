@@ -57,6 +57,8 @@ type AuthorResponse struct {
 	Username string `json:"username"`
 	FullName string `json:"fullName,omitempty"`
 	Avatar   string `json:"avatar,omitempty"`
+	IsFriend bool   `json:"isFriend,omitempty"`
+	IsSelf   bool   `json:"isSelf,omitempty"`
 }
 
 type PostResponse struct {

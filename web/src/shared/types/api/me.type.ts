@@ -25,6 +25,8 @@ export interface PostAuthor {
   username: string;
   fullName?: string;
   avatar?: string;
+  isFriend?: boolean;
+  isSelf?: boolean;
 }
 
 export interface Post {

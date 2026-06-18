@@ -207,13 +207,20 @@ func (s *Service) Likers(viewerID, postID uuid.UUID, limit, offset int) (*LikerL
 	if _, err := s.viewablePost(viewerID, postID); err != nil {
 		return nil, err
 	}
-	users, total, err := s.repo.ListLikers(postID, limit, offset)
+	rows, total, err := s.repo.ListLikers(viewerID, postID, limit, offset)
 	if err != nil {
 		return nil, err
 	}
-	items := make([]AuthorResponse, 0, len(users))
-	for _, u := range users {
-		items = append(items, *toAuthorResponse(u))
+	items := make([]AuthorResponse, 0, len(rows))
+	for _, row := range rows {
+		items = append(items, AuthorResponse{
+			ID:       row.ID.String(),
+			Username: row.Username,
+			FullName: row.FullName,
+			Avatar:   row.Avatar,
+			IsFriend: row.IsFriend,
+			IsSelf:   row.ID == viewerID,
+		})
 	}
 	return &LikerListResponse{Items: items, Total: total, Limit: limit, Offset: offset}, nil
 }
