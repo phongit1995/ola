@@ -1,36 +1,75 @@
-const RELATIVE_TIME_UNITS: Array<[Intl.RelativeTimeFormatUnit, number]> = [
-  ['year', 31536000],
-  ['month', 2592000],
-  ['day', 86400],
-  ['hour', 3600],
-  ['minute', 60],
-  ['second', 1],
-];
+import dayjs from 'dayjs';
+import localizedFormat from 'dayjs/plugin/localizedFormat';
+import 'dayjs/locale/vi';
+
+dayjs.extend(localizedFormat);
+
+function resolveLocale(locale: string): string {
+  return locale.startsWith('vi') ? 'vi' : 'en';
+}
 
 export function createDateFormatter(locale: string): (iso: string) => string {
-  const formatter = new Intl.DateTimeFormat(locale, {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  });
+  const lang = resolveLocale(locale);
   return (iso: string) => {
-    const date = new Date(iso);
-    return Number.isNaN(date.getTime()) ? iso : formatter.format(date);
+    const date = dayjs(iso);
+    return date.isValid() ? date.locale(lang).format('L') : iso;
   };
 }
 
+interface TimeLabels {
+  justNow: string;
+  minute: (n: number) => string;
+  hour: (n: number) => string;
+  today: string;
+  yesterday: string;
+  dayBefore: string;
+  weekdays: string[];
+}
+
+const VI_LABELS: TimeLabels = {
+  justNow: 'vừa tức thì',
+  minute: (n) => `${n} phút`,
+  hour: (n) => `${n} giờ`,
+  today: 'hôm nay',
+  yesterday: 'hôm qua',
+  dayBefore: 'hôm kia',
+  weekdays: ['Chủ Nhật', 'thứ Hai', 'thứ Ba', 'thứ Tư', 'thứ Năm', 'thứ Sáu', 'thứ Bảy'],
+};
+
+const EN_LABELS: TimeLabels = {
+  justNow: 'now',
+  minute: (n) => `${n} ${n > 1 ? 'mins' : 'min'}`,
+  hour: (n) => `${n} ${n > 1 ? 'hrs' : 'hr'}`,
+  today: 'today',
+  yesterday: 'yesterday',
+  dayBefore: '2 days',
+  weekdays: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+};
+
 export function createTimeFormatter(locale: string): (iso: string) => string {
-  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
+  const labels = resolveLocale(locale) === 'vi' ? VI_LABELS : EN_LABELS;
   return (iso: string) => {
-    const then = new Date(iso).getTime();
-    if (Number.isNaN(then)) return '';
-    const diffSeconds = Math.round((then - Date.now()) / 1000);
-    const abs = Math.abs(diffSeconds);
-    for (const [unit, secs] of RELATIVE_TIME_UNITS) {
-      if (abs >= secs || unit === 'second') {
-        return rtf.format(Math.round(diffSeconds / secs), unit);
-      }
+    const then = dayjs(iso);
+    if (!then.isValid()) return '';
+    const now = dayjs();
+    const time = then.format('HH:mm');
+    const ageSeconds = Math.max(0, now.diff(then, 'second'));
+
+    if (then.isSame(now, 'day')) {
+      if (ageSeconds <= 60) return labels.justNow;
+      const minutes = Math.floor(ageSeconds / 60);
+      if (minutes < 60) return labels.minute(minutes);
+      const hours = Math.floor(minutes / 60);
+      if (hours < 7) return labels.hour(hours);
+      return `${time} ${labels.today}`;
     }
-    return '';
+
+    const days = now.startOf('day').diff(then.startOf('day'), 'day');
+    if (days === 1) return `${time} ${labels.yesterday}`;
+    if (days === 2) return `${time} ${labels.dayBefore}`;
+    if (days >= 3 && days <= 6) return `${time} ${labels.weekdays[then.day()] ?? ''}`;
+
+    if (then.year() === now.year()) return `${time} ${then.format('DD/MM')}`;
+    return `${time} ${then.format('DD/MM/YYYY')}`;
   };
 }
