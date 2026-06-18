@@ -102,6 +102,7 @@ export function EditProfileMePage() {
 
   const [avatar, setAvatar] = useState(user?.avatar ?? '');
   const [fullName, setFullName] = useState(user?.fullName ?? '');
+  const [bio, setBio] = useState(user?.bio ?? '');
   const [phone, setPhone] = useState(user?.phone ?? '');
   const [gender, setGender] = useState<Gender>(user?.gender ?? 'male');
   const [dateOfBirth, setDateOfBirth] = useState(user?.dateOfBirth ?? '');
@@ -145,6 +146,7 @@ export function EditProfileMePage() {
     const payload: UpdateProfileRequest = {
       avatar,
       fullName: fullName.trim(),
+      bio: bio.trim(),
       phone: phone.trim(),
       gender,
       dateOfBirth,
@@ -192,6 +194,17 @@ export function EditProfileMePage() {
             onChange={(event) => setFullName(event.target.value)}
             placeholder={t('profileEdit.fullnameHint')}
             maxLength={100}
+          />
+        </Field>
+
+        <Field label={t('profileEdit.bioLabel')}>
+          <textarea
+            className={`${INPUT_CLASS} resize-none`}
+            value={bio}
+            onChange={(event) => setBio(event.target.value)}
+            placeholder={t('profileEdit.bioHint')}
+            maxLength={500}
+            rows={2}
           />
         </Field>
 

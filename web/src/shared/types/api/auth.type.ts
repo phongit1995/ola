@@ -9,6 +9,7 @@ export interface AuthUser {
   fullName?: string;
   gender?: Gender;
   bio?: string;
+  bioImage?: string | null;
   dateOfBirth?: string;
   customInfo?: Record<string, unknown>;
   ken?: number;
@@ -25,6 +26,7 @@ export interface UpdateProfileRequest {
   fullName?: string;
   gender?: Gender;
   bio?: string;
+  bioImage?: string | null;
   dateOfBirth?: string;
 }
 

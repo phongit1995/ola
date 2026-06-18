@@ -11,6 +11,7 @@ import { ROUTES } from '@constants';
 import { toast } from '@lib';
 import { HomeHeader } from '@components/HomeHeader';
 import moreIcon from '@/assets/icons/chat/ic_more_white.png';
+import addFriendIcon from '@/assets/icons/chat/ic_add_friend.png';
 import { AuthService } from '@services';
 import { useAuthStore } from '@/store/authStore';
 import { useChatStore } from '@/store/chatStore';
@@ -19,6 +20,7 @@ import { ContactList } from './components/ContactList';
 import { ComposeButton } from './components/ComposeButton';
 import { ComposeDialog } from './components/ComposeDialog';
 import { ChangeAvatarScreen } from './components/ChangeAvatarScreen';
+import { StatusEditDialog } from './components/StatusEditDialog';
 import { CONTACTS } from './data';
 
 type ChatSub = 'messages' | 'contacts';
@@ -27,6 +29,7 @@ export function ChatPanel() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const clearUser = useAuthStore((s) => s.clearUser);
+  const user = useAuthStore((s) => s.user);
 
   const conversations = useChatStore((s) => s.conversations);
   const loadingConversations = useChatStore((s) => s.loadingConversations);
@@ -43,6 +46,7 @@ export function ChatPanel() {
   const [blockedListOpen, setBlockedListOpen] = useState(false);
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [avatarOpen, setAvatarOpen] = useState(false);
+  const [statusOpen, setStatusOpen] = useState(false);
 
   useEffect(() => {
     void loadConversations();
@@ -142,7 +146,23 @@ export function ChatPanel() {
             )}
           </div>
         ) : (
-          <ContactList contacts={CONTACTS} onSelect={comingSoon} />
+          <div className="relative h-full">
+            <ContactList
+              contacts={CONTACTS}
+              onSelect={comingSoon}
+              me={user}
+              onOpenProfile={() => navigate(ROUTES.profile)}
+              onEditStatus={() => setStatusOpen(true)}
+            />
+            <button
+              type="button"
+              onClick={comingSoon}
+              aria-label={t('chat.menuAddContact')}
+              className="absolute right-4 bottom-4 flex h-14 w-14 items-center justify-center rounded-full bg-ola-primary shadow-[0_3px_6px_rgba(0,0,0,.3)]"
+            >
+              <img src={addFriendIcon} alt="" className="h-6 w-6 object-contain brightness-0 invert" />
+            </button>
+          </div>
         )}
       </main>
 
@@ -194,6 +214,7 @@ export function ChatPanel() {
         <p className="py-2 text-center text-black/54">{t('chat.blockListEmpty')}</p>
       </Dialog>
       <ChangeAvatarScreen open={avatarOpen} onClose={() => setAvatarOpen(false)} />
+      {statusOpen && <StatusEditDialog open onClose={() => setStatusOpen(false)} />}
     </>
   );
 }

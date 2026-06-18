@@ -177,6 +177,10 @@
     "menuLogout": "Log out",
     "menuLogoutAll": "Log out everywhere",
     "menuBuyVip": "Subscribe VIP",
+    "menuAddContact": "Add contact",
+    "myStatusHint": "What's on your mind?",
+    "myAccount": "My account",
+    "myStatusImage": "Status image",
     "logoutError": "Logout failed",
     "statusActive": "Active now",
     "typing": "{{name}} is typing…",
@@ -393,6 +397,13 @@
     "avatarUpdated": "Avatar updated",
     "avatarError": "Couldn't update avatar",
     "saved": "Changes saved"
+  },
+  "statusDialog": {
+    "title": "Update status",
+    "save": "Save",
+    "photoHint": "Tap to choose a photo",
+    "saved": "Status updated",
+    "saveError": "Couldn't update status, please try again."
   },
   "vip": {
     "title": "VIP Store",

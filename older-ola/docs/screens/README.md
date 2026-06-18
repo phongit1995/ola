@@ -22,7 +22,9 @@ screens/
 │   ├── README.md                tài liệu chi tiết (bottom bar 5 tab)
 │   └── images/                  ảnh chụp 5 tab + 10 icon bottom bar
 ├── chat/                  ← màn Chat (tab 1: TIN NHẮN + DANH BẠ)
-│   ├── README.md                list hội thoại + danh bạ + khung chat + CSS
+│   ├── README.md                tổng quan khung 2 tab (action bar + ViewPager) + link
+│   ├── tin-nhan.md              tab TIN NHẮN: list hội thoại + menu + dialog + CSS
+│   ├── danh-ba.md               tab DANH BẠ: search + panel cá nhân + danh bạ + menu
 │   └── images/                  ảnh chụp TIN NHẮN, DANH BẠ, bong bóng chat
 ├── chat-hoi-thoai/        ← màn Hội thoại 1-1 (OlaChatViewActivity — chuyên sâu)
 │   ├── README.md                cây layout + 13 loại bong bóng + nhập/đính kèm + realtime + CSS
@@ -67,7 +69,9 @@ screens/
 | 1 | Đăng nhập | [dang-nhap/](dang-nhap/README.md) | `OlaLoginActivity` | ✅ chụp thật |
 | 2 | Đăng ký | [dang-ky/](dang-ky/README.md) | `OlaSignUpActivity` (qua Facebook AccountKit) | ⚠️ dựng từ layout (cần FB AccountKit) |
 | 3 | Trang chủ (bottom tab) | [trang-chu/](trang-chu/README.md) | `OlaBottomTabActivity` | ✅ chụp thật cả 5 tab |
-| 3a | Chat (TIN NHẮN + DANH BẠ) | [chat/](chat/README.md) | `OlaBottomTabActivity` (frag `e`) + `OlaChatViewActivity` | ✅ chụp thật |
+| 3a | Chat — khung 2 tab | [chat/](chat/README.md) | `OlaBottomTabActivity` (frag `m.e`) | ✅ chụp thật |
+| 3a¹ | ↳ TIN NHẮN (hội thoại) | [chat/tin-nhan.md](chat/tin-nhan.md) | frag `m.o` | ✅ chụp thật |
+| 3a² | ↳ DANH BẠ (danh bạ + info cá nhân) | [chat/danh-ba.md](chat/danh-ba.md) | frag `m.n` | ✅ chụp thật |
 | 3a′ | Hội thoại 1-1 (khung chat — chuyên sâu) | [chat-hoi-thoai/](chat-hoi-thoai/README.md) | `OlaChatViewActivity` | 📐 từ code/XML (chưa chụp) |
 | 3b | Phòng chat (tab 2) | [phong-chat/](phong-chat/README.md) | `OlaBottomTabActivity` (frag `l`) + `OlaChatViewActivity` | ✅ chụp (list trống) |
 | 3c | Me (tab 3 — newsfeed) | [me/](me/README.md) | `OlaBottomTabActivity` (frag `me.c`) + `OlaMeComposerActivity` / `OlaUserMePageActivity` | 📐 từ code/XML (chưa chụp) |

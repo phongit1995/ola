@@ -5,10 +5,17 @@ import femaleIcon from '@/assets/icons/chat/ic_indicate_female.png';
 import groupIcon from '@/assets/icons/room/ic_notify_new_chat_group_message.png';
 import type { Contact } from '../types';
 import { Avatar } from '@components';
+import type { AuthUser } from '@app-types';
+import smileyIcon from '@/assets/icons/chat/ola_smiley_online.png';
+import vipIcon from '@/assets/icons/apps/vip.png';
+import snapPicIcon from '@/assets/icons/chat/icon_snap_pic.png';
 
 interface ContactListProps {
   contacts: Contact[];
   onSelect: (contact: Contact) => void;
+  me?: AuthUser | null;
+  onOpenProfile?: () => void;
+  onEditStatus?: () => void;
 }
 
 function GenderIcon({ gender }: { gender: Contact['gender'] }) {
@@ -50,9 +57,11 @@ function ActionRow({
   );
 }
 
-export function ContactList({ contacts, onSelect }: ContactListProps) {
+export function ContactList({ contacts, onSelect, me, onOpenProfile, onEditStatus }: ContactListProps) {
   const { t } = useTranslation();
   const [query, setQuery] = useState('');
+  const hasStatus = me?.bio != null && me.bio !== '';
+  const hasVip = me?.vipEndTime != null && me.vipEndTime !== '' && new Date(me.vipEndTime) > new Date();
 
   const filtered = useMemo(() => {
     const term = query.trim().toLowerCase();
@@ -62,8 +71,8 @@ export function ContactList({ contacts, onSelect }: ContactListProps) {
 
   return (
     <div className="h-full overflow-y-auto bg-[#f3f3f3]">
-      <div className="bg-white p-3">
-        <div className="flex items-center gap-2 rounded-md border border-black/12 bg-[#f3f3f3] px-3 py-2">
+      <div className="border-b border-[#b2b2b2] bg-[#d5d5d5] px-4 py-3">
+        <div className="flex h-10 items-center gap-1 rounded-[5px] border border-[#b2b2b2] bg-white px-1">
           <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-black/38" fill="currentColor" aria-hidden="true">
             <path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 5 1.5-1.5-5-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14z" />
           </svg>
@@ -72,10 +81,34 @@ export function ContactList({ contacts, onSelect }: ContactListProps) {
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder={t('chat.searchContacts')}
-            className="w-full bg-transparent text-sm text-black/87 outline-none placeholder:text-black/38"
+            className="w-full bg-transparent text-base text-black/87 outline-none placeholder:text-black/26"
           />
         </div>
       </div>
+
+      {me != null && (
+        <div className="flex min-h-[72px] w-full items-center gap-2 border-b border-black/12 bg-white/80 px-4 py-2">
+          <button type="button" onClick={onOpenProfile} aria-label={t('chat.myAccount')} className="shrink-0">
+            <img src={hasVip ? vipIcon : smileyIcon} alt="" className="h-10 w-10 object-contain" />
+          </button>
+          <button type="button" onClick={onEditStatus} className="min-w-0 flex-1 text-left">
+            <span
+              className={`block truncate text-base italic ${
+                hasStatus ? 'text-black/87' : 'text-black/26'
+              }`}
+            >
+              {hasStatus ? me.bio : t('chat.myStatusHint')}
+            </span>
+          </button>
+          <button type="button" onClick={onEditStatus} aria-label={t('chat.myStatusImage')} className="shrink-0">
+            <img
+              src={me.bioImage != null && me.bioImage !== '' ? me.bioImage : snapPicIcon}
+              alt=""
+              className="h-9 w-9 rounded-sm border border-black/12 object-cover"
+            />
+          </button>
+        </div>
+      )}
 
       <ul>
         {filtered.map((c) => (

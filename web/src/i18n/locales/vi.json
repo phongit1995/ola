@@ -177,6 +177,10 @@
     "menuLogout": "Đăng xuất",
     "menuLogoutAll": "Đăng xuất mọi nơi",
     "menuBuyVip": "Đăng ký VIP",
+    "menuAddContact": "Thêm liên hệ",
+    "myStatusHint": "Bạn đang nghĩ gì...",
+    "myAccount": "Tài khoản của tôi",
+    "myStatusImage": "Ảnh trạng thái",
     "logoutError": "Đăng xuất thất bại",
     "statusActive": "Đang hoạt động",
     "typing": "{{name}} đang trả lời…",
@@ -393,6 +397,13 @@
     "avatarUpdated": "Đã cập nhật ảnh đại diện",
     "avatarError": "Cập nhật ảnh đại diện thất bại",
     "saved": "Đã lưu thay đổi"
+  },
+  "statusDialog": {
+    "title": "Cập nhật trạng thái",
+    "save": "Lưu",
+    "photoHint": "Chạm để chọn ảnh",
+    "saved": "Đã cập nhật trạng thái",
+    "saveError": "Cập nhật trạng thái thất bại, vui lòng thử lại."
   },
   "vip": {
     "title": "Kho VIP",
