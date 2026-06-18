@@ -169,7 +169,36 @@ FrameLayout chatViewGlobalLayout
    (+ chatAttachmentFrameLayout dưới cùng, 100dp, ẩn — bảng đính kèm)
 ```
 
-> Item thành viên dùng `contact_item_layout.xml` (avatar + giới tính + nick + VIP + trạng thái) — giống dòng DANH BẠ. Adapter `chat.ola.vn.b.n`.
+#### 6.2.1. Dòng thành viên — `contact_item_layout.xml` (adapter `chat.ola.vn.b.n`, view-holder `chat.ola.vn.g.k`)
+
+Danh sách thành viên trong drawer phải dùng **cùng layout item với DANH BẠ** (`contact_item_layout.xml`) nhưng **adapter khác** (`b/n`, không phải `h.t` của DANH BẠ). Trong `b/n.a(...)` (getView) mỗi dòng được set **2 cờ quyết định hiển thị**: `kVar.k = true; kVar.l = false;` → đây là điểm khác cốt lõi so với DANH BẠ.
+
+Hệ quả của `k=true, l=false` (logic trong `g/k.java`):
+
+| Thành phần (id) | DANH BẠ (`l=true`) | **Phòng chat (`b/n`: `k=true, l=false`)** |
+|---|---|---|
+| **Icon giới tính** `imgGenderIcon` (12dp, trái) | hiện ♂/♀ (`c()` khi `l=true` & type 0) | **ẨN hẳn** — `c()` nhánh `else` → `setVisibility(8)`. **Phòng KHÔNG hiện giới tính.** |
+| **Avatar** `imgItemIcon` (40dp, bo, centerCrop) | hiện | hiện (load theo `o.j()`) |
+| **Badge thiết bị** `imgDeviceType` (12dp, góc phải-dưới avatar, nền tròn `bg_contact_item_device`) | `j()`: online → ✓ `ic_checked` | `k()`: online (`g()==2`) → **icon theo LOẠI THIẾT BỊ** `o.h()`; sinh nhật (`f()!=0`) → 🎂 `ic_buddy_birthday`; còn lại **ẩn** |
+| **Nick** `txtItemTitle` | `o.L()`, style `subhead` | `o.L()`, **subhead 16sp, MỘT màu** `colorTextBlackPrimary` #DE000000 (.87) — **không tách 2 màu, không kèm tên thật** |
+| **Phụ đề** `txtItemSubTitle` (caption 12sp .54) | trạng thái | = `o.M()` (mô tả/ghi chú) nếu có, rỗng thì ẩn |
+| **Icon VIP** `vipImageHolder` (24dp) | hiện nếu online+VIP | `l()`: chỉ hiện khi member **không phải type 4/1/2** + online + `i()!=0`; phòng broadcast thường **ẩn** |
+| Nền dòng | `translucent_white_80_percent` #CCFFFFFF | như nhau (override `f.d` mặc định) |
+| Divider | 1dp #1F000000, margin ngang 16dp | như nhau |
+
+**Badge thiết bị** (`k()` đọc `o.h()` khi online): `0` → `ic_device_type_phone` · `1`/`2` → `ic_device_type_pc` · `3` → `ic_device_type_apple` (iOS) · `4` → `ic_device_type_android` · `5` → `ic_device_type_winphone`. (Các glyph này là **icon trắng** đặt trên nền tròn `bg_contact_item_device`.)
+
+| `ic_device_type_phone` | `ic_device_type_pc` | `ic_device_type_apple` | `ic_device_type_android` | `ic_device_type_winphone` | `ic_buddy_birthday` |
+|---|---|---|---|---|---|
+| ![phone](images/icons/ic_device_type_phone.png) | ![pc](images/icons/ic_device_type_pc.png) | ![apple](images/icons/ic_device_type_apple.png) | ![android](images/icons/ic_device_type_android.png) | ![winphone](images/icons/ic_device_type_winphone.png) | ![bd](images/icons/ic_buddy_birthday.png) |
+
+> ⚠️ **Đối chiếu WEB ([RoomMembersTab.tsx](../../../../web/src/pages/room/components/RoomMembersTab.tsx)) — đang LỆCH so với APK:**
+> 1. Web **hiện icon giới tính bên trái** mỗi dòng → APK phòng chat **ẩn giới tính** (`l=false`). (DANH BẠ mới là nơi hiện giới tính.)
+> 2. Web hiển thị nick **2 màu** (`username` .87 + ` · fullName` .54) → APK chỉ **1 nick `L()` một màu** (.87), không kèm tên thật.
+> 3. Web **hard-code badge Android** cho mọi thành viên → APK đổi badge **theo `o.h()`** (phone/pc/apple/android/winphone) và **chỉ khi online**.
+> 4. Web luôn hiện chữ "online" bên phải → APK không có nhãn chữ đó (trạng thái thể hiện qua badge + phụ đề).
+>
+> Nếu muốn "bám APK" đúng: bỏ icon giới tính khỏi dòng thành viên phòng, nick 1 màu, và map badge theo loại thiết bị (field `deviceType` cần bổ sung vào `RoomMember`).
 
 > **Thứ tự vào phòng: KHÔNG có màn "danh sách user online" chắn trước.** Bấm phòng → join server → **vào thẳng khung chat** (khi khởi tạo, `W()` gọi `closeDrawer(3)+closeDrawer(5)` đóng cả 2 drawer). Danh sách thành viên là **drawer phải**, mở **chỉ bằng vuốt mép phải** — trong cả `OlaChatViewActivity` **không có lệnh `openDrawer` nào**; nút ⋮ phòng (`v()`) chỉ là menu 1 mục `string_quit_chat_room` = "Tắt loa loa", không mở drawer.
 

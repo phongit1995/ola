@@ -222,6 +222,43 @@ LinearLayout vertical (paddingBottom 12dp)
 
 > Thứ tự nút trái→phải: **Bình luận · Ghét · Thích**. Chữ nút mặc định màu `colorTextBlackHintOrDisable` (xám .26).
 
+#### Số lượt bình luận (`btnMeItemViewComment` — method `o()` trong `entry/b/ab.java`)
+
+TextView nằm **bên trái dòng thống kê** (`btnMeItemLikeSpan`), `weight=1` nên chiếm phần trái; bên phải cùng dòng là 3 avatar người thích + `txtMeItemLikeNumber`.
+
+- **Style:** `defaultStyle.text.caption` → cỡ chữ **12sp**, màu `colorTextBlackSecondaryOrIcon` = **#8A000000** (đen 54%); `gravity=left|bottom`, `maxLines=1`, `ellipsize=end`, `marginRight=48dp`.
+- **Điều kiện hiện chung:** chỉ chạy khi cờ `this.L` bật **và** loại bài `k() != 11`; nếu không → **ẩn** (`setVisibility(GONE)`).
+- **Văn bản theo số bình luận `g()`** (và loại bài `k()`):
+
+| Trường hợp | Hiển thị |
+|---|---|
+| `g() == 0` (mặc định / type 2) | **Ẩn** — không hiện gì |
+| `g() == 1` | `1 Bình luận` — số + `string_comment` (**viết hoa** "Bình luận") |
+| `g() > 1` | `N bình luận` — số + `string_comment_plural` (**viết thường** "bình luận") |
+| type `k()==1` (hoặc `k()==2` khi có lượt xem `v()>0`) | chữ tĩnh **`Xem bình luận`** (`string_view_comment`), **không kèm số** |
+
+> Tức APK **không hiển thị "0 bình luận"** — khi chưa có bình luận thì ẩn hẳn dòng này. Phân biệt số ít/số nhiều: `1 Bình luận` (B hoa) vs `5 bình luận` (b thường).
+
+#### Số lượt thích + avatar người thích (`txtMeItemLikeNumber` / `imgMeItemLikeBuddy1-3` — method `t()`)
+
+Nằm **bên phải dòng thống kê** (đối diện số bình luận): tối đa **3 avatar người thích** rồi tới **số lượt thích**.
+
+- **Style số:** `txtMeItemLikeNumber` — caption **12sp**, màu **#8A000000** (đen 54%), `marginLeft=8dp`.
+- **Avatar người thích:** `imgMeItemLikeBuddy1/2/3` — mỗi cái **20dp** tròn, cách nhau `marginLeft=2dp`, nạp từ mảng avatar người thích `E()`. Hiện **tối đa 3** (nhiều hơn vẫn chỉ 3); ít hơn thì ẩn bớt; không có ai (`E()==null`) → ẩn cả 3.
+- **Điều kiện chung:** ẩn hết khi bài đang gửi/nháp (`h()==1||2`).
+- **Văn bản theo lượt thích `f()`:**
+
+| Lượt thích `f()` | Hiển thị |
+|---|---|
+| **0** | **Ẩn** — APK không hiện "0 lượt thích" |
+| **1** | `1 Lượt thích` (`string_like_single`) |
+| **2–9** | `N Lượt thích` (`string_like_plural`), vd `5 Lượt thích` |
+| **> 9** | `9+ Lượt thích` — **chặn trần ở "9+"** qua `m.a(n) = a(9, n)` |
+
+> Khác số bình luận ở chỗ: lượt thích **chặn trần "9+"** (qua `util/m.a`), còn số bình luận in **số thực** (không chặn). VI cả số ít lẫn số nhiều đều là "Lượt thích" (EN: Like / Likes).
+
+**Bonus — số "Ghét" hiển thị khác hẳn:** số ghét KHÔNG nằm ở dòng thống kê mà **gắn ngay trong chữ nút Ghét** (method `v()`): text = `Ghét (N)` với `N = m.a(D())` (cũng chặn 9+); khi mình đã ghét (`i()==2`) → icon `ic_dislike_black` + chữ đổi sang màu `f.y`. Chưa có lượt ghét → chỉ chữ "Ghét".
+
 #### Đổi màu icon + chữ theo trạng thái
 
 Code render bài (`entry/b/*.java`) set **động** cả icon lẫn màu chữ, dùng hằng màu trong [`chat/ola/vn/f.java`](../../../jadx_out/sources/chat/ola/vn/f.java):
@@ -379,8 +416,13 @@ Mở từ FAB ✎. Bố cục (SoftKeyLinearLayout — co theo bàn phím):
 | `general_tab_me_edit` | Post Me | Viết mới |
 | `general_hint_me` | What hot today... | Hôm nay có gì hot … |
 | `string_like` | Like | Thích |
+| `string_like_single` | Like | Lượt thích |
+| `string_like_plural` | Likes | Lượt thích |
+| `string_like_friend_list` | %1$s people like this | %1$s người thích |
 | `string_dislike` | Dislike | Ghét |
 | `string_comment` | Comment | Bình luận |
+| `string_comment_plural` | comments | bình luận |
+| `string_view_comment` | View comment | Xem bình luận |
 | `string_follow` | Follow | Quan tâm |
 | `string_following` | Following | Đang quan tâm |
 | `string_people_care` | people care | người quan tâm |

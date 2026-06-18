@@ -12,19 +12,46 @@
 
 ---
 
-## 1. Bố cục — `ola_contact_list_view_layout.xml`
+## 1. Bố cục & thứ tự dựng list — `ola_contact_list_view_layout.xml`
+
+Danh bạ **KHÔNG phải list phẳng**. Adapter `message.g#H()` ([message/g.java:56-152](../../../jadx_out/sources/chat/ola/vn/message/g.java#L56)) build mảng `n` gồm các **row-builder** `chat.ola.vn.g.*` theo đúng thứ tự dưới đây; mỗi builder có **view type riêng** (`getViewTypeCount()=8`):
 
 ```
 RelativeLayout
 ├─ ListView  lvBuddyList   (style list.noDivider, match_parent)
-│   ├─ HEADER (addHeaderView) = edit_view_search_layout.xml      ← ô TÌM KIẾM (mục 2)
-│   ├─ [adapter] contact_status_panel_layout                      ← PANEL CÁ NHÂN của mình (mục 3)
-│   ├─ [adapter] contact_suggest_friend_layout                    ← "Có thể bạn muốn làm quen" (mục 3b)
-│   ├─ [adapter] Mời thêm bạn + Chat nhóm                         ← 2 dòng đặc biệt (mục 5)
-│   └─ [adapter] contact_item_layout × N                          ← các dòng bạn bè (mục 4)
+│   ├─ HEADER (addHeaderView) = edit_view_search_layout.xml        ← ô TÌM KIẾM (mục 2)
+│   ├─ g.f  type 0  contact_status_panel_layout                    ← PANEL CÁ NHÂN (mục 3)        — LUÔN có
+│   ├─ g.g  type 1  contact_suggest_friend_layout                  ← "Có thể bạn muốn làm quen" (3b) — CHỈ khi có data gợi ý (B()||C())
+│   ├─ g.c  type 2  contact_invite_fb_friend_layout                ← "Mời thêm bạn" (FB) (mục 5)   — LUÔN có
+│   ├─ g.b  type 3  contact_chatgroup_layout                       ← "Chat nhóm" (mục 5)           — LUÔN có
+│   ├─ ── nhóm SINH NHẬT ──   (chỉ khi list c≠rỗng)
+│   │     ├─ g.e type 4  list_view_section_item_layout  = "SINH NHẬT"
+│   │     └─ g.d type 7  contact_item_layout × N   ← bạn có sinh nhật
+│   ├─ ── nhóm BẠN MỚI ──     (chỉ khi list b≠rỗng)
+│   │     ├─ g.e "BẠN MỚI"
+│   │     └─ g.d × N   ← bạn mới kết bạn  (NỀN HIGHLIGHT, xem mục 4)
+│   ├─ ── nhóm TIỆN ÍCH ──    (chỉ khi list d≠rỗng)
+│   │     ├─ g.e "TIỆN ÍCH"
+│   │     └─ g.d × N
+│   └─ ── nhóm bạn bè (list i) ──  (chỉ khi i≠rỗng)
+│         ├─ g.e "TRỰC TUYẾN"  (nếu phần đầu đang online) + g.d × N (online)
+│         └─ g.e "BẠN BÈ"      (khi chuyển sang offline) + g.d × N (offline)
 └─ addContactImageButton  FAB 56dp ↘ góc phải-dưới
       nền floating_action_bar_shape (oval xanh #7CB342), src ic_add_friend (👤+), tint trắng, margin 16dp
 ```
+
+| Builder | View type | Layout | Holder | Vai trò |
+|---|---|---|---|---|
+| `g.f` | 0 | `contact_status_panel_layout` | `g.m` | Panel cá nhân (mục 3) |
+| `g.g` | 1 | `contact_suggest_friend_layout` | `g.n` | "Có thể bạn muốn làm quen" (3b) |
+| `g.c` | 2 | `contact_invite_fb_friend_layout` | `g.j` | "Mời thêm bạn" (FB) (mục 5) |
+| `g.b` | 3 | `contact_chatgroup_layout` | `g.i` | "Chat nhóm" (mục 5) |
+| `g.e` | 4 | `list_view_section_item_layout` | `g.l` | **Tiêu đề section** (mục 5b) |
+| `g.d` | 7 | `contact_item_layout` | `g.k` | Dòng bạn bè (mục 4) |
+
+> ⚠️ Trong ảnh `02-danh-ba.png` danh bạ **trống** nên chỉ thấy panel cá nhân + "Mời thêm bạn" + "Chat nhóm"; **không** thấy section header — nhưng code luôn dựng chúng khi có bạn. Cờ `dVar.b(true)`/`dVar.a(true)` (dòng đầu/cuối mỗi section) điều khiển bo góc/divider của dòng.
+
+> ℹ️ `getViewTypeCount()=8` nhưng **DANH BẠ chỉ dùng 6 type (0,1,2,3,4,7)**. Type **5/6** (dòng bot "Chat ROBOT" + quảng cáo `admob-native`) thuộc **list `k` = màn TIN NHẮN/hội thoại**, được `message.g` thêm qua `h()`/`f()` (→ `c(f)`→`b(f)`→list `k`), **KHÔNG** vào list `n` của DANH BẠ. Nhóm **TIỆN ÍCH** ở DANH BẠ là list `d` riêng (đặt qua `b(List)`), không phải robot/ad.
 
 > Vì có 1 header (ô search), `onItemClick` trừ `i--` trước khi map sang dữ liệu.
 
@@ -124,27 +151,82 @@ LinearLayout (vertical, nền translucent_white_80_percent, padding 16/8dp)
 
 ## 4. Item bạn bè — `contact_item_layout.xml`
 
-| Thành phần | id | Style / kích thước | Ghi chú |
-|------------|----|--------------------|---------|
+- **Adapter:** `chat.ola.vn.message.g` (= `h.t`); mỗi dòng bạn bè do **row-builder `chat.ola.vn.g.d`** (view type 7) dựng → holder `chat.ola.vn.g.k`.
+- **Cờ quyết định hiển thị** (set trong `g/d.java#a(view,h)`, dòng 58–59): **`k = true; l = false;`** → **GIỐNG HỆT dòng thành viên phòng chat** (`b/n`). Mấu chốt: `l=false` ⇒ **KHÔNG hiện icon giới tính**; `k=true` ⇒ badge avatar theo **loại thiết bị**.
+
+**Cây layout (contact_item_layout.xml) + hiển thị THỰC TẾ ở DANH BẠ:**
+
+| Thành phần | id | Style / kích thước | Render thực tế (g.d: `k=true, l=false`) |
+|------------|----|--------------------|------------------------------------------|
 | Khung dòng | (LinearLayout) | nền `#CCFFFFFF`, padding 16dp | |
-| Icon giới tính | `imgGenderIcon` | **rộng 12dp** (`contact.item.device.size`), cao match dòng, marginRight 8dp, gravity left\|top | `ic_indicate_male` / `ic_indicate_female` |
-| Avatar | `imgItemIcon` | **40×40dp**, `centerCrop`, bo tròn | trong FrameLayout `imgMeAvatarThumbnail` |
-| Icon thiết bị | `imgDeviceType` | 12dp, nền `bg_contact_item_device`, góc phải-dưới avatar | INVISIBLE mặc định |
-| Icon VIP | `vipImageHolder` | 24dp, marginRight 4dp | **GONE** nếu không VIP |
-| Nick | `txtItemTitle` | `subhead` 16sp, `ellipsize=end`, 1 dòng | |
-| Trạng thái | `txtItemSubTitle` | `caption` 12sp, marginTop 2dp, 1 dòng | status message của bạn |
-| Ảnh đính kèm | `imgMediaThumbnail` | 40×40dp, `centerCrop`, marginLeft 8dp | **GONE** mặc định — bấm mở `OlaImageViewerActivity` |
-| Online/offline | `timeOfflineTextView` | `caption` 12sp, marginLeft 8dp | **GONE** mặc định — "online"/thời gian offline |
+| Icon giới tính | `imgGenderIcon` | 12dp (`contact.item.device.size`), marginRight 8dp, gravity left\|top | **ẨN** — `g/k.java#c()` khi `l=false` → `setVisibility(8)`. Giới tính **chỉ hiện** ở list dùng adapter `b/z` (tab phòng `m/l`), KHÔNG hiện ở DANH BẠ |
+| Avatar | `imgItemIcon` | **40×40dp**, `centerCrop` | hiện (load theo `j()`) |
+| Badge thiết bị | `imgDeviceType` | 12dp, nền tròn `bg_contact_item_device`, góc phải-dưới avatar | online (`g()==2`) → icon **theo loại máy** `h()` (0 phone · 1/2 pc · 3 apple/iOS · 4 android · 5 winphone); sinh nhật (`f()!=0`) → 🎂 `ic_buddy_birthday`; còn lại **ẩn** |
+| Icon VIP | `vipImageHolder` | 24dp, marginRight 4dp | hiện khi **online + có VIP** (`i()!=0`), nick thường (type 0); không thì **GONE** |
+| Nick | `txtItemTitle` | `subhead` 16sp, ellipsize end, 1 dòng | `L()` — **một màu** `colorTextBlackPrimary` #DE000000 (.87) |
+| Phụ đề | `txtItemSubTitle` | `caption` 12sp #8A000000 (.54), marginTop 2dp | = `M()` (bí danh/alias) nếu có; rỗng → ẩn |
+| Ảnh đính kèm | `imgMediaThumbnail` | 40×40dp, `centerCrop`, nền `bg_shadown_border`, marginLeft 8dp | hiện khi status có **ảnh** (`o.R` bắt đầu `?P…`, `i()`); không có → GONE |
+| Thời gian offline | `timeOfflineTextView` | `caption` 12sp, marginLeft 8dp | hiện **"x phút/giờ trước"** khi **offline** (`g()!=2`) và có `N>0` (lần online gần nhất); đang online → GONE (`g/k.java#g()`) |
 | Divider | `listViewBottomDividerView` | `#1F000000` 1dp, margin ngang 16dp | |
 
-## 5. Dòng đặc biệt trong list (adapter chèn)
+> Icon badge thiết bị (glyph trắng trên nền tròn) xem ở [phong-chat §6.2.1](../phong-chat/README.md#621-dòng-thành-viên--contact_item_layoutxml-adapter-chatolavnbn-view-holder-chatolavngk).
 
-| Dòng | Icon | Tiêu đề (VI) | Phụ đề (VI) | Bấm vào |
-|------|------|--------------|-------------|---------|
-| **Mời thêm bạn** | logo Facebook xanh | `string_invite_friend` = "Mời thêm bạn" | `string_invite_fb_friend_description` = "Càng đông càng vui" | → luồng **mời bạn qua Facebook** |
-| **Chat nhóm** | icon nhóm Ola (+ ❯) | `string_chat_group` = "Chat nhóm" | `string_chat_group_description` = "Trò chuyện trong nhóm với cùng lúc những bạn bè khác" | → **tạo nhóm chat** |
+> **Nền dòng:** mặc định màu `chat.ola.vn.f.d`. Riêng dòng thuộc nhóm **BẠN MỚI** được `g/d` set `c(true)` → holder `g/k#c(true)` → `r=true` → đổi nền sang `chat.ola.vn.f.I` (**highlight**) để nổi bật bạn mới (`g/k.java#b()`).
 
-> 2 dòng này **có cả EN lẫn VI**, hiển thị theo locale thiết bị. Ảnh `02-danh-ba.png` chụp ở locale EN ("Invite more friends / Chat group"); thực tế VI là **"Mời thêm bạn / Càng đông càng vui / Chat nhóm"** (xem ảnh người dùng cung cấp).
+> ⚠️ **Đối chiếu WEB ([ContactList.tsx](../../../../web/src/pages/chat/components/ContactList.tsx)) — đang LỆCH APK:**
+> 1. Web **hiện icon giới tính trái** mỗi dòng bạn bè → APK **ẩn giới tính** (g.d `l=false`).
+> 2. Web **chưa** hiện badge thiết bị theo loại máy (APK hiện khi online).
+> 3. Nick APK một màu .87 (không tách 2 phần).
+>
+> Dòng bạn bè DANH BẠ render **y hệt** dòng thành viên phòng chat (cùng holder `g.k`, cùng `k=true, l=false`) — xem [phong-chat §6.2.1](../phong-chat/README.md). Tức cả 2 màn web đều đang vẽ thừa icon giới tính so với APK.
+
+## 5. 2 dòng cố định: "Mời thêm bạn" + "Chat nhóm"
+
+Luôn nằm ngay dưới panel (sau panel gợi ý nếu có), **không phụ thuộc dữ liệu**. Mỗi dòng là 1 view type + layout + holder riêng:
+
+**a) "Mời thêm bạn"** — `g.c` (type 2), layout `contact_invite_fb_friend_layout.xml`, holder `g.j`:
+```
+LinearLayout (vertical, nền translucent_white_80_percent #CCFFFFFF, minHeight 72dp)
+└─ LinearLayout (horizontal, padding 16/8dp)
+    ├─ ImageView  com_facebook_button_icon_blue  40×40dp, centerCrop   ← logo Facebook xanh
+    └─ LinearLayout (vertical, weight 1, marginLeft 8dp)
+        ├─ TextView  string_invite_friend (subhead 16sp) = "Mời thêm bạn"
+        └─ TextView  string_invite_fb_friend_description (caption 12sp) = "Càng đông càng vui"
+└─ listViewBottomDividerView 1dp
+```
+- Không có mũi tên ❯. Bấm → `AppInviteDialog.show()` (FB app-invite, applink `fb.me/1199434326766314`) — **chỉ khi `AppInviteDialog.canShow()`**; máy không có FB → bấm không làm gì.
+
+**b) "Chat nhóm"** — `g.b` (type 3), layout `contact_chatgroup_layout.xml`, holder `g.i`:
+```
+LinearLayout (vertical, nền translucent_white_80_percent, minHeight 72dp)
+└─ LinearLayout (horizontal, padding 16/8dp)
+    ├─ ImageView  ic_chatgroup_vip  40×40dp, centerInside     ← icon nhóm Ola
+    ├─ LinearLayout (vertical, weight 1, marginLeft 8dp)
+    │   ├─ TextView  string_chat_group (subhead) = "Chat nhóm"
+    │   └─ TextView  chatGroupDescriptionTextView (caption) = "Trò chuyện trong nhóm với cùng lúc những bạn bè khác"
+    └─ ImageView  ic_arrow_right  ❯  (marginLeft 8dp)
+└─ listViewBottomDividerView 1dp
+```
+- Bấm → **`OlaChatGroupListActivity.a(context)`** = mở **danh sách nhóm chat** (KHÔNG phải "tạo nhóm"). → sang màn.
+
+> 2 dòng có cả EN lẫn VI theo locale. Ảnh `02-danh-ba.png` chụp locale EN ("Invite more friends / Chat group"); VI = "Mời thêm bạn / Càng đông càng vui" và "Chat nhóm".
+
+## 5b. Tiêu đề section — `list_view_section_item_layout.xml` (`g.e` type 4, holder `g.l`)
+
+Mỗi nhóm bạn bè (SINH NHẬT / BẠN MỚI / TIỆN ÍCH / TRỰC TUYẾN / BẠN BÈ) có 1 dòng tiêu đề chèn trước:
+```
+LinearLayout (vertical, nền app_background_color #d5d5d5, padding 16dp ngang / 8dp dọc, cao 72dp)
+└─ TextView labelTextView  style subhead (16sp), màu colorTextWhitePrimary #ffffff, 1 dòng, gravity left|center
+```
+- Text **IN HOA** (code `.toUpperCase(Locale.US)`). Chữ trắng trên nền xám nhạt #d5d5d5 (tương phản thấp — bám đúng resource).
+
+| String | EN | VI (hiển thị IN HOA) | Hiện khi |
+|---|---|---|---|
+| `string_birthday` | Birthday | SINH NHẬT | có bạn sinh nhật hôm nay (list `c`) |
+| `string_new_friends` | New Friends | BẠN MỚI | có bạn mới kết bạn (list `b`) — dòng nền highlight |
+| `string_utilities` | Utilities | TIỆN ÍCH | có liên hệ tiện ích/bot (list `d`) |
+| `string_online` | Online | TRỰC TUYẾN | phần đầu list `i` đang online |
+| `string_friend` | Friends | BẠN BÈ | nhóm bạn offline (phần sau list `i`) |
 
 ---
 
@@ -154,12 +236,26 @@ LinearLayout (vertical, nền translucent_white_80_percent, padding 16/8dp)
 |------------|---------|------|
 | **Gõ search + Enter** | Tìm nick/SĐT: tồn tại → **`OlaChatViewActivity`** (chat 1-1); không tồn tại → **dialog "Tài khoản không tồn tại!"** (mục 8) | → màn / **modal** |
 | **Bấm 1 dòng contact** | Mở chat 1-1 (adapter `h.t` xử lý) | → sang màn |
+| **Giữ (long-press) 1 dòng bạn** (người, `k()==0`) | Mở **menu ngữ cảnh** Xem Me / Đổi tên hiển thị / Xoá / Chặn (mục 6b) | **modal** |
 | **Bấm avatar** `imgItemIcon` | `k()==0` (người) → **`OlaUserMePageActivity`**; `k()==2` (nhóm) → **popup nhóm** [Đổi chủ đề/Đổi tên/Rời nhóm] (mục 9) | → màn / **modal** |
 | **Bấm ảnh đính kèm** `imgMediaThumbnail` | Mở **`OlaImageViewerActivity`** | → sang màn |
 | **FAB** `addContactImageButton` (👤+) | Mở **`OlaAddContactActivity`** (thêm liên hệ) | → sang màn |
 | **Nút ⋮** action bar (hoặc `vipIconImageView` panel cá nhân) | Mở **popup menu tài khoản** (mục 7) | **modal** |
 
 ---
+
+## 6b. Long-press dòng bạn bè → menu ngữ cảnh (`g/d.java#a()`)
+
+Giữ một dòng **bạn là người** (`k()==0`; dòng nhóm/đặc biệt **không** có menu này) → popup list `chat.ola.vn.i.m`, **tiêu đề = nick `L()`**, 4 mục:
+
+| Mục | String (VI / EN) | Hành động |
+|-----|------------------|-----------|
+| **Xem Me** | `string_view_me` = "Xem Me" / "View Me" | `chat.ola.vn.me.c.a(...)` → mở **trang Me** của bạn đó (→ sang màn) |
+| **Đổi tên hiển thị** | `string_change_alias` = "Đổi tên hiển thị" / "Change alias" | → **dialog nhập biệt danh**: tiêu đề `message_change_alias` = "Thay đổi biệt danh", hint `general_hint_alias` = "Nhập biệt danh mới", nút `string_ok`/`string_cancel`. OK → `OlaApplication.b.c(nick, alias)` → đặt **bí danh** (hiển thị làm **phụ đề `M()`** của dòng — xem §4) |
+| **Xoá** | `string_delete` = "Xoá" | → **dialog xác nhận** `string_delete_something_confirm` = "Bạn muốn xóa &lt;nick&gt;?" (Xoá / Không). Đồng ý → `OlaApplication.b.e(nick)` + `chat.ola.vn.h.t.d(buddy)` (xoá khỏi danh bạ) |
+| **Chặn nick** | `string_block_chat` = "Chặn nick" | → **dialog xác nhận** `message_block_chat_title` + `message_block_chat_confirm_format` = "Bạn có muốn chặn tin nhắn từ @&lt;nick&gt; không?" (nút `string_block` = "Chặn" / `string_cancel`). Đồng ý → `OlaApplication.b.l(nick)` (chặn) |
+
+> ⚠️ Web ([ContactList.tsx](../../../../web/src/pages/chat/components/ContactList.tsx)) **chưa có** menu long-press này (đổi bí danh / xoá bạn / chặn). Đây là nhóm thao tác quản lý bạn bè cốt lõi của DANH BẠ — cần bổ sung khi làm danh bạ thật.
 
 ## 7. Menu ⋮ DANH BẠ — menu tài khoản (`n.h_()`)
 
@@ -259,11 +355,21 @@ Bấm avatar dòng nhóm (`k()==2`) → popup list `chat.ola.vn.i.m`:
 | `string_chat_group_description` | Chat to friends as group | Trò chuyện trong nhóm với cùng lúc những bạn bè khác |
 | `string_may_be_you_want_to_make_friend` | (suggested friends) | Có thể bạn muốn làm quen |
 | `string_find_suggested_friend` | Find friends | Tìm người quen |
+| `string_birthday` | Birthday | Sinh nhật → **SINH NHẬT** |
+| `string_new_friends` | New Friends | Bạn Mới → **BẠN MỚI** |
+| `string_utilities` | Utilities | Tiện ích → **TIỆN ÍCH** |
+| `string_online` | Online | Trực tuyến → **TRỰC TUYẾN** |
+| `string_friend` | Friends | Bạn Bè → **BẠN BÈ** |
 | `string_change_ovatar` | Change my profile picture | Đổi hình đại diện |
 | `string_logout` / `string_logout_all` | Log Out / Logout all sessions | Đăng xuất / Đăng xuất mọi nơi |
 | `string_buy_vip` / `string_buy_vip_day` | Buy VIP / Purchase VIP duration | Đăng ký VIP / Mua ngày VIP |
 | `string_change_topic` / `string_rename` / `string_quit_group` | Change topic / Rename / Leave group | Đổi chủ đề / Đổi tên / Rời nhóm |
 | `message_logout_waiting` | Sign out Ola, please wait! | Đang đăng xuất, vui lòng chờ! |
+| `string_view_me` | View Me | Xem Me |
+| `string_change_alias` | Change alias | Đổi tên hiển thị |
+| `message_change_alias` / `general_hint_alias` | Change alias / Enter new alias | Thay đổi biệt danh / Nhập biệt danh mới |
+| `string_delete` / `string_delete_something_confirm` | Delete / Do you want to delete %1$s? | Xoá / Bạn muốn xóa %1$s? |
+| `string_block_chat` / `string_block` / `message_block_chat_confirm_format` | Block / Block / Do you want to block messages from %1$s? | Chặn nick / Chặn / Bạn có muốn chặn tin nhắn từ %1$s không? |
 
 ---
 
