@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -12,7 +12,7 @@ import { toast } from '@lib';
 import { HomeHeader } from '@components/HomeHeader';
 import moreIcon from '@/assets/icons/chat/ic_more_white.png';
 import addFriendIcon from '@/assets/icons/chat/ic_add_friend.png';
-import { AuthService } from '@services';
+import { AuthService, RelationshipService } from '@services';
 import { useAuthStore } from '@/store/authStore';
 import { useChatStore } from '@/store/chatStore';
 import { ConversationList } from './components/ConversationList';
@@ -22,7 +22,8 @@ import { ComposeDialog } from './components/ComposeDialog';
 import { ChangeAvatarScreen } from './components/ChangeAvatarScreen';
 import { StatusEditDialog } from './components/StatusEditDialog';
 import { MediaViewer } from '@/pages/me/components/MediaViewer';
-import { CONTACTS } from './data';
+import { mapFriendsToContacts } from './friends';
+import type { Contact } from './types';
 
 type ChatSub = 'messages' | 'contacts';
 
@@ -50,10 +51,23 @@ export function ChatPanel() {
   const [avatarOpen, setAvatarOpen] = useState(false);
   const [statusOpen, setStatusOpen] = useState(false);
   const [statusImageOpen, setStatusImageOpen] = useState(false);
+  const [friends, setFriends] = useState<Contact[]>([]);
+  const friendsLoadedRef = useRef(false);
 
   useEffect(() => {
     void loadConversations();
   }, [loadConversations]);
+
+  useEffect(() => {
+    if (sub !== 'contacts' || friendsLoadedRef.current) return;
+    friendsLoadedRef.current = true;
+    RelationshipService.friends()
+      .then((res) => setFriends(mapFriendsToContacts(res.friends)))
+      .catch(() => {
+        friendsLoadedRef.current = false;
+        toast.error(t('chat.loadFriendsError'));
+      });
+  }, [sub, t]);
 
   function comingSoon() {
     toast.info(t('chat.comingSoon'));
@@ -151,7 +165,7 @@ export function ChatPanel() {
         ) : (
           <div className="relative h-full">
             <ContactList
-              contacts={CONTACTS}
+              contacts={friends}
               onSelect={comingSoon}
               me={user}
               onAccountMenu={() => setHeaderMenuOpen(true)}

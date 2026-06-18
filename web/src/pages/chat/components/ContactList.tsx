@@ -129,7 +129,7 @@ function BuddyRow({
       >
         <span className="relative h-10 w-10 shrink-0">
           <span className="block h-10 w-10 overflow-hidden rounded">
-            <Avatar name={contact.name} color={contact.color} rounded={false} />
+            <Avatar name={contact.name} color={contact.color} src={contact.avatar} rounded={false} />
           </span>
           {badge != null && (
             <span className="absolute right-0 bottom-0 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-ola-primary ring-1 ring-white">
@@ -140,10 +140,15 @@ function BuddyRow({
         <span className="ml-4 min-w-0 flex-1">
           <span className="flex items-center gap-1">
             {showVip && <img src={vipIcon} alt="" className="h-6 w-6 shrink-0 object-contain" />}
-            <span className="truncate text-base text-black/87">{contact.name}</span>
+            <span className="truncate text-base text-black/87">
+              {contact.name}
+              {contact.fullName != null && contact.fullName !== '' && (
+                <span className="text-black/45"> · {contact.fullName}</span>
+              )}
+            </span>
           </span>
-          {contact.alias != null && contact.alias !== '' && (
-            <span className="block truncate text-xs text-black/54">{contact.alias}</span>
+          {contact.status != null && contact.status !== '' && (
+            <span className="block truncate text-xs text-black/54">{contact.status}</span>
           )}
         </span>
         {contact.statusImage != null && contact.statusImage !== '' && (
@@ -181,7 +186,7 @@ export function ContactList({
     const term = query.trim().toLowerCase();
     if (term === '') return contacts;
     return contacts.filter(
-      (c) => c.name.toLowerCase().includes(term) || (c.alias ?? '').toLowerCase().includes(term),
+      (c) => c.name.toLowerCase().includes(term) || (c.fullName ?? '').toLowerCase().includes(term),
     );
   }, [contacts, query]);
 
@@ -311,7 +316,7 @@ export function ContactList({
           <ul>
             {section.items.map((contact) => (
               <BuddyRow
-                key={contact.name}
+                key={contact.id}
                 contact={contact}
                 highlight={section.highlight}
                 onSelect={() => onSelect(contact)}

@@ -27,6 +27,12 @@ export interface Friend {
   email?: string;
   avatar?: string;
   fullName?: string;
+  bio?: string;
+  bioImage?: string | null;
+  dateOfBirth?: string;
+  deviceType?: string;
+  vipUsed?: string | null;
+  vipEndTime?: string | null;
   friendAt: string;
   isOnline: boolean;
   lastActiveAt?: string;
@@ -40,6 +46,6 @@ export interface FriendListParams {
 export interface FriendListResult {
   friends: Friend[];
   total: number;
-  limit: number;
-  offset: number;
+  limit?: number;
+  offset?: number;
 }

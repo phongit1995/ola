@@ -191,6 +191,7 @@
     "vipBannerTitle": "Đăng ký VIP",
     "vipBannerSub": "Vào ngay phòng chat đang đầy, đọc tin HOT mỗi ngày",
     "logoutError": "Đăng xuất thất bại",
+    "loadFriendsError": "Không tải được danh sách bạn bè",
     "statusActive": "Đang hoạt động",
     "typing": "{{name}} đang trả lời…",
     "today": "Hôm nay",

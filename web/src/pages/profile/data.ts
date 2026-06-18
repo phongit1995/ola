@@ -1,8 +1,16 @@
-import { CONTACTS } from '../chat/data';
 import type { MePost } from '../me/types';
 import type { ProfileFriend, UserProfile } from './types';
 
 const MEDIA_COLORS = ['#7cb342', '#ef5350', '#5c6bc0', '#26a69a', '#ec407a', '#ffa726'];
+
+const FOLLOWING_SAMPLE: ProfileFriend[] = [
+  { name: 'linhchi92', color: '#7cb342' },
+  { name: 'tuananh', color: '#5d4037' },
+  { name: 'maiphuong', color: '#6d4c41' },
+  { name: 'quanghuy', color: '#4dd0e1' },
+  { name: 'thuhuong', color: '#5d4037' },
+  { name: 'minhduc', color: '#ef6c00' },
+];
 
 function hashIndex(text: string, max: number) {
   let sum = 0;
@@ -67,7 +75,7 @@ export function buildMockSecondary(
   nick: string,
   color: string
 ): { media: string[]; following: ProfileFriend[]; posts: MePost[] } {
-  const following = CONTACTS.filter((c) => c.name !== nick)
+  const following = FOLLOWING_SAMPLE.filter((c) => c.name !== nick)
     .slice(0, 5)
     .map((c) => ({ name: c.name, color: c.color }));
   return { media: MEDIA_COLORS, following, posts: buildPosts(nick, color) };

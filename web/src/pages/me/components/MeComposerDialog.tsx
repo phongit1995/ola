@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dialog, DialogButton } from '@components';
-import { CONTACTS } from '../../chat/data';
+import { SUGGESTED_FRIENDS } from '../../chat/data';
 import { Avatar } from '@components';
 import { ATTACH_BUTTONS, PRIVACY_OPTIONS, type AttachButtonKey } from '../constants';
 import { KUL_STICKERS, kulCode, stickerImage } from '../stickers';
@@ -265,7 +265,7 @@ export function MeComposerDialog({
 
       {panel === 'tag' && (
         <div className="mt-2 max-h-44 overflow-y-auto rounded-md border border-black/12">
-          {CONTACTS.map((contact) => (
+          {SUGGESTED_FRIENDS.map((contact) => (
             <button
               key={contact.name}
               type="button"

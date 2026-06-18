@@ -191,6 +191,7 @@
     "vipBannerTitle": "Subscribe VIP",
     "vipBannerSub": "Enter full rooms instantly, read hot news daily",
     "logoutError": "Logout failed",
+    "loadFriendsError": "Failed to load friends",
     "statusActive": "Active now",
     "typing": "{{name}} is typing…",
     "today": "Today",
