@@ -383,3 +383,25 @@ Bấm avatar dòng nhóm (`k()==2`) → popup list `chat.ola.vn.i.m`:
 | Giới tính nam | ![male](images/icons/ic_indicate_male.png) | `ic_indicate_male` |
 | Giới tính nữ | ![female](images/icons/ic_indicate_female.png) | `ic_indicate_female` |
 | Thiết bị Android/iOS | ![android](images/icons/ic_device_type_android.png) ![apple](images/icons/ic_device_type_apple.png) | `ic_device_type_android` / `ic_device_type_apple` |
+
+---
+
+## 13. Màn mở ra từ đây (điều hướng) — hàng đợi tài liệu hoá
+
+Mọi màn (Activity) mà DANH BẠ điều hướng tới. Màn nào CHƯA có doc = việc cần làm tiếp.
+
+| Từ (nút / cử chỉ) | Màn đích (class) | Doc |
+|---|---|---|
+| Bấm 1 dòng contact / search ra kết quả | `OlaChatViewActivity` | [chat-hoi-thoai](../chat-hoi-thoai/README.md) ✅ |
+| Bấm avatar người · long-press "Xem Me" | `OlaUserMePageActivity` | [trang-ca-nhan](../trang-ca-nhan/README.md) ✅ |
+| Menu ⋮ → "Đổi hình đại diện" | `OlaCropImageActivity` | [doi-anh-dai-dien](../doi-anh-dai-dien/README.md) ✅ |
+| Panel cá nhân → bấm dòng status | `OlaMeComposerActivity` | [me](../me/README.md) ✅ |
+| FAB 👤+ (thêm liên hệ) | `OlaAddContactActivity` | (chưa có doc — cần làm) |
+| Banner VIP · menu ⋮ → Đăng ký/Mua/Gia hạn VIP | `BuyVipActivity` | (chưa có doc — cần làm; **khác** `OlaVipStoreActivity` của [kho-vip](../kho-vip/README.md)) |
+| Bấm ảnh status (panel) · ảnh đính kèm (dòng) | `OlaImageViewerActivity` | (chưa có doc — cần làm) |
+| Dòng "Có thể bạn muốn làm quen" | `OlaSuggestedFriendListActivity` | (chưa có doc — cần làm) |
+| Dòng "Chat nhóm" | `OlaChatGroupListActivity` | (chưa có doc — cần làm) |
+| Banner "Số điện thoại chưa xác thực" | `OlaPhoneVerificationActivity` | (chưa có doc — cần làm) |
+| (nếu có nút search action-bar tag "Search") | `ContactFinderActivity` | (chưa có doc — cần làm) |
+
+> **Modal/popup mở NGAY trong màn** (không điều hướng — đã tả chi tiết ở trên, không tính vào hàng đợi): menu tài khoản (§7), dialog "Tài khoản không tồn tại" (§8), dialog đăng xuất (§8b), popup nhóm + `ChangeChatGroupTopticDialog` + dialog rời nhóm (§9), menu long-press + dialog đổi bí danh/xoá/chặn (§6b). FB `AppInviteDialog` (dòng "Mời thêm bạn") là dialog **của Facebook**, không phải màn Ola.
