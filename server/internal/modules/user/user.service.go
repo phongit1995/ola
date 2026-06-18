@@ -116,8 +116,8 @@ func (s *Service) UpdateProfile(userID uuid.UUID, req *UpdateProfileRequest) (*U
 	if req.Gender != "" {
 		user.Gender = req.Gender
 	}
-	if req.Bio != "" {
-		user.Bio = req.Bio
+	if req.Bio != nil {
+		user.Bio = *req.Bio
 	}
 	if req.DateOfBirth != "" {
 		dob, err := time.Parse("2006-01-02", req.DateOfBirth)

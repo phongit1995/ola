@@ -37,7 +37,7 @@ type UpdateProfileRequest struct {
 	Phone       string                 `json:"phone,omitempty" binding:"omitempty,max=20" example:"+84987654321"`
 	FullName    string                 `json:"fullName,omitempty" binding:"omitempty,max=100" example:"John Doe"`
 	Gender      string                 `json:"gender,omitempty" binding:"omitempty,oneof=male female" example:"male"`
-	Bio         string                 `json:"bio,omitempty" binding:"omitempty,max=500" example:"hello ola!!!"`
+	Bio         *string                `json:"bio,omitempty" binding:"omitempty,max=500" example:"hello ola!!!"`
 	DateOfBirth string                 `json:"dateOfBirth,omitempty" binding:"omitempty,datetime=2006-01-02" example:"1990-01-01"`
 	Marriage    string                 `json:"marriage,omitempty" binding:"omitempty,oneof=single married" example:"single"`
 	CoverPhoto  string                 `json:"coverPhoto,omitempty" binding:"omitempty,url,max=500" example:"https://example.com/cover.jpg"`

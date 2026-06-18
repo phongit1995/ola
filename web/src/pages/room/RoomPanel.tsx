@@ -20,6 +20,7 @@ export function RoomPanel() {
   const { t } = useTranslation();
   const apiRooms = useRoomStore((state) => state.rooms);
   const loadingRooms = useRoomStore((state) => state.loading);
+  const roomsLoaded = useRoomStore((state) => state.loaded);
   const fetchRooms = useRoomStore((state) => state.fetchRooms);
   const activeRoom = useRoomChatStore((state) => state.activeRoom);
   const joinStatus = useRoomChatStore((state) => state.status);
@@ -129,6 +130,7 @@ export function RoomPanel() {
           onQuit={(room) => setPendingQuit({ id: room.id, name: room.title })}
           onAroundYou={aroundYou}
           onQuickJoin={quickJoin}
+          showQuickJoin={roomsLoaded}
           onBuyVip={() => {}}
         />
       </main>

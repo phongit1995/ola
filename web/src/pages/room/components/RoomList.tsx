@@ -11,6 +11,7 @@ interface RoomListProps {
   onQuit: (room: RoomListItem) => void;
   onAroundYou: () => void;
   onQuickJoin: () => void;
+  showQuickJoin: boolean;
   onBuyVip: () => void;
 }
 
@@ -75,6 +76,7 @@ export function RoomList({
   onQuit,
   onAroundYou,
   onQuickJoin,
+  showQuickJoin,
   onBuyVip,
 }: RoomListProps) {
   const { t } = useTranslation();
@@ -104,12 +106,14 @@ export function RoomList({
         subtitle={t('room.aroundYouDesc')}
         onClick={onAroundYou}
       />
-      <SpecialRow
-        icon={<img src={autoJoinIcon} alt="" className="h-12 w-12 object-contain" />}
-        title={t('room.quickJoin')}
-        subtitle={t('room.quickJoinDesc')}
-        onClick={onQuickJoin}
-      />
+      {showQuickJoin && (
+        <SpecialRow
+          icon={<img src={autoJoinIcon} alt="" className="h-12 w-12 object-contain" />}
+          title={t('room.quickJoin')}
+          subtitle={t('room.quickJoinDesc')}
+          onClick={onQuickJoin}
+        />
+      )}
 
       <SectionHeader label={t('room.sectionPublic')} />
 

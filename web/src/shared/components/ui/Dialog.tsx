@@ -1,4 +1,4 @@
-import { useEffect, type ButtonHTMLAttributes, type ReactNode } from 'react';
+import { useEffect, useRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { cn } from '@lib';
 
@@ -21,6 +21,8 @@ export function Dialog({
   children,
   footer,
 }: DialogProps) {
+  const backdropDownRef = useRef(false);
+
   useEffect(() => {
     if (!open) return;
     function handleKey(event: KeyboardEvent) {
@@ -35,7 +37,13 @@ export function Dialog({
   return createPortal(
     <div
       role="presentation"
-      onClick={dismissOnBackdrop ? onClose : undefined}
+      onMouseDown={(event) => {
+        backdropDownRef.current = event.target === event.currentTarget;
+      }}
+      onClick={(event) => {
+        if (!dismissOnBackdrop) return;
+        if (event.target === event.currentTarget && backdropDownRef.current) onClose();
+      }}
       className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4"
     >
       <div
