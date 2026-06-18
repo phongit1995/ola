@@ -1,4 +1,5 @@
-import { lazy, memo, Suspense, useState } from 'react';
+import { lazy, memo, Suspense, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import moreIcon from '@/assets/icons/me/ic_more.png';
 import replyIcon from '@/assets/icons/me/ic_action_reply_gray.png';
@@ -6,6 +7,8 @@ import dislikeIcon from '@/assets/icons/me/ic_dislike_gray.png';
 import dislikeIconActive from '@/assets/icons/me/ic_dislike_black.png';
 import likeIcon from '@/assets/icons/me/ic_like_gray.png';
 import likeIconActive from '@/assets/icons/me/ic_like_selected.png';
+import likeStickerFly from '@/assets/icons/me/sticker_like.png';
+import likeSoundUrl from '@/assets/sounds/like_me.mp3';
 import { Avatar } from '@components';
 import { DEFAULT_AVATAR_COLOR } from '@lib';
 import { PostContent } from './PostContent';
@@ -15,6 +18,17 @@ import { stickerImage } from '../stickers';
 import type { MePost } from '../types';
 
 const MediaViewer = lazy(() => import('./MediaViewer').then((m) => ({ default: m.MediaViewer })));
+
+function popClass(anim: 'in' | 'out' | null): string {
+  if (anim === 'in') return 'animate-ola-pop';
+  if (anim === 'out') return 'animate-ola-pop-out';
+  return '';
+}
+
+function playLikeSound() {
+  const audio = new Audio(likeSoundUrl);
+  audio.play().catch(() => undefined);
+}
 
 interface MePostCardProps {
   post: MePost;
@@ -39,6 +53,11 @@ function MePostCardComponent({
 }: MePostCardProps) {
   const { t } = useTranslation();
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
+  const [likeAnim, setLikeAnim] = useState<'in' | 'out' | null>(null);
+  const [dislikeAnim, setDislikeAnim] = useState<'in' | 'out' | null>(null);
+  const [fly, setFly] = useState<{ x: number; y: number; id: number } | null>(null);
+  const likeIconRef = useRef<HTMLImageElement>(null);
+  const flySeq = useRef(0);
   const hasComments = post.comments > 0;
   const hasLikes = post.likes > 0;
 
@@ -48,6 +67,26 @@ function MePostCardComponent({
     } else {
       onOpenComments?.(post.id, true);
     }
+  }
+
+  function onLikeClick() {
+    const becomingLiked = !post.liked;
+    setLikeAnim(becomingLiked ? 'in' : 'out');
+    if (becomingLiked) {
+      const icon = likeIconRef.current;
+      if (icon != null) {
+        const rect = icon.getBoundingClientRect();
+        flySeq.current += 1;
+        setFly({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2, id: flySeq.current });
+      }
+      playLikeSound();
+    }
+    onToggleLike(post.id);
+  }
+
+  function onDislikeClick() {
+    setDislikeAnim(post.disliked ? 'out' : 'in');
+    onToggleDislike(post.id);
   }
 
   return (
@@ -143,7 +182,7 @@ function MePostCardComponent({
         </button>
         <button
           type="button"
-          onClick={() => onToggleDislike(post.id)}
+          onClick={onDislikeClick}
           className={`flex h-7 flex-1 items-center justify-center gap-1 text-sm ${
             post.disliked ? 'text-black/87' : 'text-black/26'
           }`}
@@ -151,25 +190,41 @@ function MePostCardComponent({
           <img
             src={post.disliked ? dislikeIconActive : dislikeIcon}
             alt=""
-            className="h-full object-contain"
+            onAnimationEnd={() => setDislikeAnim(null)}
+            className={`h-full object-contain ${popClass(dislikeAnim)}`}
           />
           {t('me.dislike')}
         </button>
         <button
           type="button"
-          onClick={() => onToggleLike(post.id)}
+          onClick={onLikeClick}
           className={`flex h-7 flex-1 items-center justify-center gap-1 text-sm ${
             post.liked ? 'text-ola-primary' : 'text-black/26'
           }`}
         >
           <img
+            ref={likeIconRef}
             src={post.liked ? likeIconActive : likeIcon}
             alt=""
-            className="h-full object-contain"
+            onAnimationEnd={() => setLikeAnim(null)}
+            className={`h-full object-contain ${popClass(likeAnim)}`}
           />
           {post.liked ? t('me.liked') : t('me.like')}
         </button>
       </div>
+
+      {fly != null &&
+        createPortal(
+          <img
+            key={fly.id}
+            src={likeStickerFly}
+            alt=""
+            onAnimationEnd={() => setFly(null)}
+            style={{ left: fly.x, top: fly.y }}
+            className="pointer-events-none fixed z-50 -mt-12 -ml-12 h-24 w-24 animate-ola-fly object-contain"
+          />,
+          document.body
+        )}
     </article>
   );
 }
