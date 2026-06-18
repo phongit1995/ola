@@ -309,6 +309,7 @@ export function ChatConversationView({
         openTab={openTab}
         onToggleTab={(tab) => setOpenTab((current) => (current === tab ? null : tab))}
         onPickEmoji={(emoji) => setDraft((current) => current + emoji)}
+        onBackspace={() => setDraft((current) => Array.from(current).slice(0, -1).join(''))}
         onPickImage={() => fileInputRef.current?.click()}
         onSend={() => toast.info(t('chat.comingSoon'))}
       />
