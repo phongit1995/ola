@@ -54,6 +54,7 @@ const (
 	CacheKeyMessageList         = "CONVERSATION:%s:MESSAGES"
 	CacheKeyRelationship        = "RELATIONSHIP:%s:DETAIL"
 	CacheKeyRelationshipList    = "USER:%s:RELATIONSHIPS"
+	CacheKeyFriendList          = "USER:%s:FRIENDS"
 	CacheKeyUnreadCount         = "CONVERSATION:%s:USER:%s:UNREAD"
 	CacheKeyTypingUsers         = "CONVERSATION:%s:TYPING"
 	CacheKeyTypingRateLimit     = "TYPING:%s:%s:RATE_LIMIT"
@@ -128,6 +129,7 @@ const (
 	CacheTTLMessage             = 3600
 	CacheTTLMessageList         = 300
 	CacheTTLRelationship        = 3600
+	CacheTTLFriendList          = 60
 	CacheTTLUnreadCount         = 60
 	CacheTTLRateLimit           = 60
 	CacheTTLOTP                 = 300

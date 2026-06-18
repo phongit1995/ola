@@ -1,7 +1,9 @@
 package relationships
 
 import (
+	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
+	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/transport/websocket"
 	"ola-chat-server/internal/utils"
 	"bytes"
@@ -80,14 +82,16 @@ func lockPair(tx *gorm.DB, a, b uuid.UUID) error {
 type Service struct {
 	repo     *Repository
 	presence *websocket.PresenceService
+	cache    *services.CacheService
 	db       *gorm.DB
 	logger   *zap.SugaredLogger
 }
 
-func NewService(repo *Repository, presence *websocket.PresenceService, db *gorm.DB, logger *zap.SugaredLogger) *Service {
+func NewService(repo *Repository, presence *websocket.PresenceService, cache *services.CacheService, db *gorm.DB, logger *zap.SugaredLogger) *Service {
 	return &Service{
 		repo:     repo,
 		presence: presence,
+		cache:    cache,
 		db:       db,
 		logger:   logger.Named("[relationship_service]"),
 	}
@@ -179,6 +183,7 @@ func reloadOr(repo *Repository, rel *models.Relationship) *models.Relationship {
 
 func (s *Service) AcceptFriendRequest(relationshipID, userID uuid.UUID) (*RelationshipResponse, error) {
 	var result *RelationshipResponse
+	var friendA, friendB uuid.UUID
 	err := s.db.Transaction(func(tx *gorm.DB) error {
 		txRepo := &Repository{db: tx}
 
@@ -222,12 +227,14 @@ func (s *Service) AcceptFriendRequest(relationshipID, userID uuid.UUID) (*Relati
 			"requester_id", relationship.RequesterID,
 			"addressee_id", relationship.AddresseeID,
 		)
+		friendA, friendB = relationship.RequesterID, relationship.AddresseeID
 		result = s.buildRelationshipResponse(reloadOr(txRepo, relationship))
 		return nil
 	})
 	if err != nil {
 		return nil, err
 	}
+	s.invalidateFriendList(friendA, friendB)
 	return result, nil
 }
 
@@ -324,6 +331,8 @@ func (s *Service) Unfriend(relationshipID, userID uuid.UUID) error {
 		return err
 	}
 
+	s.invalidateFriendList(relationship.RequesterID, relationship.AddresseeID)
+
 	s.logger.Infow("Unfriended successfully",
 		"relationship_id", relationshipID,
 		"user_id", userID,
@@ -389,6 +398,7 @@ func (s *Service) BlockUser(blockerID, blockedID uuid.UUID) (*RelationshipRespon
 	if err != nil {
 		return nil, err
 	}
+	s.invalidateFriendList(blockerID, blockedID)
 	return result, nil
 }
 
@@ -416,6 +426,8 @@ func (s *Service) UnblockUser(relationshipID, userID uuid.UUID) error {
 		)
 		return err
 	}
+
+	s.invalidateFriendList(relationship.RequesterID, relationship.AddresseeID)
 
 	s.logger.Infow("User unblocked successfully",
 		"relationship_id", relationshipID,
@@ -464,37 +476,17 @@ func (s *Service) GetSentRequests(userID uuid.UUID, limit, offset int) (*Relatio
 	}, nil
 }
 
-func (s *Service) GetFriends(userID uuid.UUID, limit, offset int) (*FriendListResponse, error) {
-	relationships, total, err := s.repo.GetFriends(userID, limit, offset)
+func (s *Service) GetFriends(userID uuid.UUID) (*FriendListResponse, error) {
+	friends, err := s.getFriendBase(userID)
 	if err != nil {
 		return nil, err
 	}
 
-	friends := make([]FriendResponse, len(relationships))
-	friendIDs := make([]string, len(relationships))
-	for i, rel := range relationships {
-		var friend *models.User
-		if rel.RequesterID == userID {
-			friend = rel.Addressee
-		} else {
-			friend = rel.Requester
+	if len(friends) > 0 {
+		friendIDs := make([]string, len(friends))
+		for i := range friends {
+			friendIDs[i] = friends[i].ID
 		}
-
-		friendIDs[i] = friend.ID.String()
-		friends[i] = FriendResponse{
-			ID:       friend.ID.String(),
-			Username: friend.Username,
-			Email:    friend.Email,
-			Avatar:   friend.Avatar,
-			FullName: friend.FullName,
-		}
-
-		if rel.ActionedAt != nil {
-			friends[i].FriendAt = rel.ActionedAt.Format("2006-01-02T15:04:05Z07:00")
-		}
-	}
-
-	if len(friendIDs) > 0 {
 		online := s.presence.GetOnlineUsers(friendIDs)
 		lastActive := s.presence.GetLastActiveBatch(friendIDs)
 		for i, id := range friendIDs {
@@ -506,10 +498,83 @@ func (s *Service) GetFriends(userID uuid.UUID, limit, offset int) (*FriendListRe
 
 	return &FriendListResponse{
 		Friends: friends,
-		Total:   total,
-		Limit:   limit,
-		Offset:  offset,
+		Total:   int64(len(friends)),
 	}, nil
+}
+
+func (s *Service) getFriendBase(userID uuid.UUID) ([]FriendResponse, error) {
+	key := fmt.Sprintf(constants.CacheKeyFriendList, userID.String())
+
+	if s.cache != nil {
+		var cached []FriendResponse
+		if err := s.cache.Get(key, &cached); err == nil {
+			return cached, nil
+		}
+	}
+
+	relationships, err := s.repo.GetAllFriends(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	friends := make([]FriendResponse, 0, len(relationships))
+	for _, rel := range relationships {
+		var friend *models.User
+		if rel.RequesterID == userID {
+			friend = rel.Addressee
+		} else {
+			friend = rel.Requester
+		}
+		if friend == nil {
+			continue
+		}
+		friends = append(friends, s.buildFriendBase(friend, rel.ActionedAt))
+	}
+
+	if s.cache != nil {
+		if err := s.cache.Set(key, friends, constants.CacheTTLFriendList*time.Second); err != nil {
+			s.logger.Warnw("Failed to cache friend list", "user_id", userID, "error", err.Error())
+		}
+	}
+
+	return friends, nil
+}
+
+func (s *Service) buildFriendBase(u *models.User, actionedAt *time.Time) FriendResponse {
+	friend := FriendResponse{
+		ID:         u.ID.String(),
+		Username:   u.Username,
+		Email:      u.Email,
+		Avatar:     u.Avatar,
+		FullName:   u.FullName,
+		Bio:        u.Bio,
+		BioImage:   u.BioImage,
+		DeviceType: "android",
+		VipUsed:    u.VipUsed,
+	}
+	if u.DateOfBirth != nil {
+		friend.DateOfBirth = u.DateOfBirth.Format("2006-01-02")
+	}
+	if u.VipEndTime != nil {
+		vipEnd := u.VipEndTime.Format(time.RFC3339)
+		friend.VipEndTime = &vipEnd
+	}
+	if actionedAt != nil {
+		friend.FriendAt = actionedAt.Format("2006-01-02T15:04:05Z07:00")
+	}
+	return friend
+}
+
+func (s *Service) invalidateFriendList(userIDs ...uuid.UUID) {
+	if s.cache == nil {
+		return
+	}
+	for _, id := range userIDs {
+		key := fmt.Sprintf(constants.CacheKeyFriendList, id.String())
+		if err := s.cache.Delete(key); err != nil {
+			s.logger.Warnw("Failed to invalidate friend list cache", "user_id", id, "error", err.Error())
+		}
+	}
 }
 
 func (s *Service) GetBlockedUsers(userID uuid.UUID, limit, offset int) (*RelationshipListResponse, error) {

@@ -368,12 +368,10 @@ func (ctrl *Controller) GetSentRequests(c *gin.Context) (interface{}, error) {
 
 // GetFriends godoc
 // @Summary      Get friends list
-// @Description  Get friends of the user (paginated)
+// @Description  Get the full friends list of the user (no pagination)
 // @Tags         relationships
 // @Produce      json
 // @Security     BearerAuth
-// @Param        limit  query int false "Limit results (max 100)" default(50)
-// @Param        offset query int false "Offset for pagination" default(0)
 // @Success      200  {object}  FriendListSuccessResponse
 // @Failure      401  {object}  utils.APIError
 // @Router       /relationships/friends [get]
@@ -383,10 +381,7 @@ func (ctrl *Controller) GetFriends(c *gin.Context) (interface{}, error) {
 		return nil, err
 	}
 
-	limit := utils.ParseLimit(c, 50, 100)
-	offset := utils.ParseOffset(c)
-
-	response, err := ctrl.service.GetFriends(userID, limit, offset)
+	response, err := ctrl.service.GetFriends(userID)
 	if err != nil {
 		ctrl.logger.Errorw("Failed to get friends",
 			"user_id", userID,

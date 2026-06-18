@@ -34,14 +34,20 @@ type RelationshipResponse struct {
 }
 
 type FriendResponse struct {
-	ID           string `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	Username     string `json:"username" example:"john_doe"`
-	Email        string `json:"email" example:"john@example.com"`
-	Avatar       string `json:"avatar,omitempty" example:"https://example.com/avatar.jpg"`
-	FullName     string `json:"fullName,omitempty" example:"John Doe"`
-	FriendAt     string `json:"friendAt" example:"2024-01-15T10:30:00Z"`
-	IsOnline     bool   `json:"isOnline" example:"true"`
-	LastActiveAt string `json:"lastActiveAt,omitempty" example:"2024-01-15T10:30:00Z"`
+	ID           string  `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	Username     string  `json:"username" example:"john_doe"`
+	Email        string  `json:"email" example:"john@example.com"`
+	Avatar       string  `json:"avatar,omitempty" example:"https://example.com/avatar.jpg"`
+	FullName     string  `json:"fullName,omitempty" example:"John Doe"`
+	Bio          string  `json:"bio,omitempty" example:"hello ola!!!"`
+	BioImage     *string `json:"bioImage,omitempty" example:"https://example.com/bio.jpg"`
+	DateOfBirth  string  `json:"dateOfBirth,omitempty" example:"1990-01-01"`
+	DeviceType   string  `json:"deviceType" example:"android"`
+	VipUsed      *string `json:"vipUsed" example:"gold"`
+	VipEndTime   *string `json:"vipEndTime" example:"2026-12-31T00:00:00Z"`
+	FriendAt     string  `json:"friendAt" example:"2024-01-15T10:30:00Z"`
+	IsOnline     bool    `json:"isOnline" example:"true"`
+	LastActiveAt string  `json:"lastActiveAt,omitempty" example:"2024-01-15T10:30:00Z"`
 }
 
 type RelationshipListResponse struct {
@@ -54,8 +60,6 @@ type RelationshipListResponse struct {
 type FriendListResponse struct {
 	Friends []FriendResponse `json:"friends"`
 	Total   int64            `json:"total" example:"5"`
-	Limit   int              `json:"limit" example:"20"`
-	Offset  int              `json:"offset" example:"0"`
 }
 
 type RelationshipSuccessResponse = utils.BaseResponse[RelationshipResponse]
