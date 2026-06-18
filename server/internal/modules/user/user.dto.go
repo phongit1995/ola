@@ -41,7 +41,7 @@ type UpdateProfileRequest struct {
 	DateOfBirth string                 `json:"dateOfBirth,omitempty" binding:"omitempty,datetime=2006-01-02" example:"1990-01-01"`
 	Marriage    string                 `json:"marriage,omitempty" binding:"omitempty,oneof=single married" example:"single"`
 	CoverPhoto  string                 `json:"coverPhoto,omitempty" binding:"omitempty,url,max=500" example:"https://example.com/cover.jpg"`
-	BioImage    *string                `json:"bioImage,omitempty" binding:"omitempty,url,max=500" example:"https://example.com/bio.jpg"`
+	BioImage    *string                `json:"bioImage,omitempty" binding:"omitempty,max=500,url|eq=" example:"https://example.com/bio.jpg"`
 	CustomInfo  map[string]interface{} `json:"customInfo,omitempty" swaggertype:"object"`
 }
 

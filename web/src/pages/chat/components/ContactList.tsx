@@ -16,6 +16,7 @@ interface ContactListProps {
   me?: AuthUser | null;
   onOpenProfile?: () => void;
   onEditStatus?: () => void;
+  onPreviewImage?: () => void;
 }
 
 function GenderIcon({ gender }: { gender: Contact['gender'] }) {
@@ -57,11 +58,19 @@ function ActionRow({
   );
 }
 
-export function ContactList({ contacts, onSelect, me, onOpenProfile, onEditStatus }: ContactListProps) {
+export function ContactList({
+  contacts,
+  onSelect,
+  me,
+  onOpenProfile,
+  onEditStatus,
+  onPreviewImage,
+}: ContactListProps) {
   const { t } = useTranslation();
   const [query, setQuery] = useState('');
   const hasStatus = me?.bio != null && me.bio !== '';
   const hasVip = me?.vipEndTime != null && me.vipEndTime !== '' && new Date(me.vipEndTime) > new Date();
+  const hasBioImage = me?.bioImage != null && me.bioImage !== '';
 
   const filtered = useMemo(() => {
     const term = query.trim().toLowerCase();
@@ -100,11 +109,16 @@ export function ContactList({ contacts, onSelect, me, onOpenProfile, onEditStatu
               {hasStatus ? me.bio : t('chat.myStatusHint')}
             </span>
           </button>
-          <button type="button" onClick={onEditStatus} aria-label={t('chat.myStatusImage')} className="shrink-0">
+          <button
+            type="button"
+            onClick={hasBioImage ? onPreviewImage : onEditStatus}
+            aria-label={t('chat.myStatusImage')}
+            className="shrink-0"
+          >
             <img
-              src={me.bioImage != null && me.bioImage !== '' ? me.bioImage : snapPicIcon}
+              src={hasBioImage ? me.bioImage! : snapPicIcon}
               alt=""
-              className="h-9 w-9 rounded-sm border border-black/12 object-cover"
+              className="h-9 w-9 object-cover"
             />
           </button>
         </div>

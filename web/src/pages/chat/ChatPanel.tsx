@@ -21,6 +21,7 @@ import { ComposeButton } from './components/ComposeButton';
 import { ComposeDialog } from './components/ComposeDialog';
 import { ChangeAvatarScreen } from './components/ChangeAvatarScreen';
 import { StatusEditDialog } from './components/StatusEditDialog';
+import { MediaViewer } from '@/pages/me/components/MediaViewer';
 import { CONTACTS } from './data';
 
 type ChatSub = 'messages' | 'contacts';
@@ -47,6 +48,7 @@ export function ChatPanel() {
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [avatarOpen, setAvatarOpen] = useState(false);
   const [statusOpen, setStatusOpen] = useState(false);
+  const [statusImageOpen, setStatusImageOpen] = useState(false);
 
   useEffect(() => {
     void loadConversations();
@@ -153,6 +155,7 @@ export function ChatPanel() {
               me={user}
               onOpenProfile={() => navigate(ROUTES.profile)}
               onEditStatus={() => setStatusOpen(true)}
+              onPreviewImage={() => setStatusImageOpen(true)}
             />
             <button
               type="button"
@@ -215,6 +218,9 @@ export function ChatPanel() {
       </Dialog>
       <ChangeAvatarScreen open={avatarOpen} onClose={() => setAvatarOpen(false)} />
       {statusOpen && <StatusEditDialog open onClose={() => setStatusOpen(false)} />}
+      {statusImageOpen && user?.bioImage != null && user.bioImage !== '' && (
+        <MediaViewer photos={[user.bioImage]} index={0} onClose={() => setStatusImageOpen(false)} />
+      )}
     </>
   );
 }

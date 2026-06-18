@@ -403,7 +403,9 @@
   "statusDialog": {
     "title": "Cập nhật trạng thái",
     "save": "Lưu",
-    "photoHint": "Chạm để chọn ảnh",
+    "photoHint": "Chạm để đổi ảnh trạng thái",
+    "photoHintFirst": "Hãy upload ảnh trạng thái đầu tiên",
+    "removePhoto": "Xoá ảnh trạng thái",
     "saved": "Đã cập nhật trạng thái",
     "saveError": "Cập nhật trạng thái thất bại, vui lòng thử lại."
   },

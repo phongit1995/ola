@@ -403,7 +403,9 @@
   "statusDialog": {
     "title": "Update status",
     "save": "Save",
-    "photoHint": "Tap to choose a photo",
+    "photoHint": "Tap to change status image",
+    "photoHintFirst": "Upload your first status image",
+    "removePhoto": "Remove status image",
     "saved": "Status updated",
     "saveError": "Couldn't update status, please try again."
   },
