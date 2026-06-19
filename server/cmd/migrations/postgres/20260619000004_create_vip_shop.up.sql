@@ -1,3 +1,5 @@
+DROP TABLE IF EXISTS public.vip_icon_types;
+
 CREATE TABLE public.vip_shop_items (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     vip_type_id smallint NOT NULL,
