@@ -7,6 +7,7 @@ export const ROUTES = {
   profile: '/profile',
   profileEdit: '/profile/edit',
   vip: '/vip',
+  vipBuy: '/vip/mua',
   notifications: '/thong-bao',
   ken: '/ken',
   media: '/hinh-anh',

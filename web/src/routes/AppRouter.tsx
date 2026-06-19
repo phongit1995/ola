@@ -23,6 +23,9 @@ const EditProfileMePage = lazy(() =>
 const VipStorePage = lazy(() =>
   import('@/pages/vip/VipStorePage').then((m) => ({ default: m.VipStorePage }))
 );
+const BuyVipPage = lazy(() =>
+  import('@/pages/vip/BuyVipPage').then((m) => ({ default: m.BuyVipPage }))
+);
 const NotificationsPage = lazy(() =>
   import('@/pages/apps/NotificationsPage').then((m) => ({ default: m.NotificationsPage }))
 );
@@ -94,6 +97,14 @@ export function AppRouter() {
             element={
               <ProtectedRoute>
                 <VipStorePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path={ROUTES.vipBuy}
+            element={
+              <ProtectedRoute>
+                <BuyVipPage />
               </ProtectedRoute>
             }
           />
