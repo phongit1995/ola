@@ -494,14 +494,19 @@
       "actionGive": "Tặng VIP",
       "cancel": "Huỷ",
       "confirmBuy": "Bạn mua VIP {{name}} với gói {{pkg}}",
+      "confirmBuyIcon": "Bạn mua VIP {{name}} với giá {{ken}} KEN",
       "confirmGive": "Bạn tặng VIP {{name}} gói {{pkg}} cho {{receiver}}",
+      "confirmGiveIcon": "Bạn tặng VIP {{name}} cho {{receiver}}",
       "confirmGiveDays": "Bạn gửi {{days}} ngày (giá {{ken}} KEN) cho {{receiver}}",
       "confirmExtend": "Bạn sẽ gia hạn {{days}} ngày với giá {{ken}} KEN",
       "needReceiver": "Hãy nhập nick người nhận",
       "needVip": "Hãy chọn icon VIP",
+      "needPackage": "Hãy chọn gói ngày",
       "bought": "Đã mua VIP {{name}}",
+      "extended": "Đã gia hạn {{days}} ngày VIP",
       "failed": "Mua VIP thất bại",
-      "shopEmpty": "Chưa có VIP nào được bán"
+      "shopEmpty": "Chưa có VIP nào được bán",
+      "packagesEmpty": "Chưa có gói ngày nào"
     }
   },
   "terms": {

@@ -65,8 +65,15 @@ export const API_PATH = {
   },
   vip: {
     store: '/vip/store',
+    storePrivacy: '/vip/store/privacy',
     iconCatalog: '/vip/icons/catalog',
     buy: '/vip/buy',
+    packages: '/vip/packages',
+    buyPackage: (id: string) => `/vip/packages/${id}/buy`,
+    iconUse: (id: string) => `/vip/icons/${id}/use`,
+    iconLock: (id: string) => `/vip/icons/${id}/lock`,
+    iconUnlock: (id: string) => `/vip/icons/${id}/unlock`,
+    iconDelete: (id: string) => `/vip/icons/${id}`,
   },
   messages: {
     base: '/messages',

@@ -12,42 +12,14 @@ import {
 } from '@components';
 import type { ListOption } from '@components';
 import { VipService } from '@services';
-import type { VipIconCatalogItem } from '@app-types';
+import type { VipIconCatalogItem, VipPackageItem } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
 import { VIP_CATALOG, vipById, vipIconUrl } from './vipCatalog';
 
 type BuyVipMode = 'buy' | 'give' | 'giveDays' | 'extend';
 
-interface KenPackage {
-  kind: 'ken';
-  days: number;
-  ken: number;
-}
-
-interface SmsPackage {
-  kind: 'sms';
-  days: number;
-  vnd: string;
-  code: string;
-}
-
-type VipPackage = KenPackage | SmsPackage;
-
-const KEN_PACKAGES: KenPackage[] = [
-  { kind: 'ken', days: 7, ken: 70 },
-  { kind: 'ken', days: 30, ken: 250 },
-  { kind: 'ken', days: 90, ken: 600 },
-  { kind: 'ken', days: 365, ken: 2000 },
-];
-
-const SMS_PACKAGES: SmsPackage[] = [
-  { kind: 'sms', days: 10, vnd: '10,000', code: '8655' },
-  { kind: 'sms', days: 20, vnd: '15,000', code: '8755' },
-];
-
 const MOCK_KEN_BALANCE = 12_345;
 const DEFAULT_VIP_ID = 4;
-const FALLBACK_PACKAGE: KenPackage = { kind: 'ken', days: 7, ken: 70 };
 const MODE_ORDER: BuyVipMode[] = ['buy', 'give', 'giveDays', 'extend'];
 
 const MODE_TITLE = {
@@ -150,15 +122,15 @@ export function BuyVipPage() {
 
   const initialMode = (location.state as { mode?: BuyVipMode } | null)?.mode ?? 'buy';
   const [mode, setMode] = useState<BuyVipMode>(initialMode);
-  const [bySms, setBySms] = useState(false);
   const [selectedVipId, setSelectedVipId] = useState(DEFAULT_VIP_ID);
   const [selectedShopId, setSelectedShopId] = useState('');
-  const [packageIndex, setPackageIndex] = useState(0);
+  const [selectedPackageId, setSelectedPackageId] = useState('');
   const [receiver, setReceiver] = useState('');
   const [vipPickerOpen, setVipPickerOpen] = useState(false);
   const [packagePickerOpen, setPackagePickerOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [catalog, setCatalog] = useState<VipIconCatalogItem[]>([]);
+  const [packages, setPackages] = useState<VipPackageItem[]>([]);
   const [purchasing, setPurchasing] = useState(false);
 
   useEffect(() => {
@@ -179,10 +151,26 @@ export function BuyVipPage() {
     };
   }, []);
 
-  const showReceiver = mode !== 'buy';
+  useEffect(() => {
+    let active = true;
+    VipService.listPackages()
+      .then((res) => {
+        if (!active) return;
+        setPackages(res.items);
+        const first = res.items[0];
+        if (first) setSelectedPackageId(first.id);
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const showReceiver = mode === 'give' || mode === 'giveDays';
   const showVipSelect = mode === 'buy' || mode === 'give';
-  const receiverLocked = mode === 'extend';
+  const showPackage = mode === 'extend' || mode === 'giveDays';
   const isBuyIcon = mode === 'buy';
+  const isExtend = mode === 'extend';
 
   const buyItems: PickerItem[] = useMemo(
     () =>
@@ -204,30 +192,24 @@ export function BuyVipPage() {
   const selectedShopItem = catalog.find((c) => c.id === selectedShopId);
   const displayVipId = isBuyIcon ? (selectedShopItem?.vipTypeId ?? selectedVipId) : selectedVipId;
   const selectedKey = isBuyIcon ? selectedShopId : String(selectedVipId);
-
-  const packages: VipPackage[] = bySms ? SMS_PACKAGES : KEN_PACKAGES;
-  const selectedPackage: VipPackage =
-    packages[Math.min(packageIndex, packages.length - 1)] ?? FALLBACK_PACKAGE;
   const selectedVip = vipById(displayVipId);
+
+  const selectedPackage = packages.find((p) => p.id === selectedPackageId) ?? null;
   const kenBalance = user?.ken ?? MOCK_KEN_BALANCE;
-  const receiverValue = receiverLocked ? (user?.username ?? '') : receiver;
 
   function handlePickVip(item: PickerItem) {
     setSelectedVipId(item.typeId);
     if (isBuyIcon) setSelectedShopId(item.key);
   }
 
-  function packageLabel(pkg: VipPackage): string {
-    if (pkg.kind === 'ken') {
-      return t('vip.buy.kenPrice', { ken: pkg.ken.toLocaleString('en-US'), days: pkg.days });
-    }
-    return t('vip.buy.smsPrice', { vnd: pkg.vnd, days: pkg.days });
+  function packageLabel(pkg: VipPackageItem): string {
+    return t('vip.buy.kenPrice', { ken: pkg.kenPrice.toLocaleString('en-US'), days: pkg.days });
   }
 
-  const packageOptions: ListOption[] = packages.map((pkg, index) => ({
-    key: `${pkg.kind}-${index}`,
+  const packageOptions: ListOption[] = packages.map((pkg) => ({
+    key: pkg.id,
     label: packageLabel(pkg),
-    onSelect: () => setPackageIndex(index),
+    onSelect: () => setSelectedPackageId(pkg.id),
   }));
 
   function changeMode(next: BuyVipMode) {
@@ -235,17 +217,12 @@ export function BuyVipPage() {
     setConfirmOpen(false);
   }
 
-  function toggleSms(value: boolean) {
-    setBySms(value);
-    setPackageIndex(0);
-  }
-
   function startPurchase() {
-    if (showReceiver && !receiverLocked && receiverValue.trim().length === 0) {
+    if (showReceiver && receiver.trim().length === 0) {
       toast.info(t('vip.buy.needReceiver'));
       return;
     }
-    if (isBuyIcon && !bySms && !selectedShopId) {
+    if (isBuyIcon && !selectedShopId) {
       toast.info(t('vip.buy.needVip'));
       return;
     }
@@ -253,12 +230,16 @@ export function BuyVipPage() {
       toast.info(t('vip.buy.needVip'));
       return;
     }
+    if (showPackage && !selectedPackageId) {
+      toast.info(t('vip.buy.needPackage'));
+      return;
+    }
     setConfirmOpen(true);
   }
 
   async function confirmPurchase() {
     if (purchasing) return;
-    if (isBuyIcon && !bySms) {
+    if (isBuyIcon) {
       if (!selectedShopId) {
         setConfirmOpen(false);
         toast.info(t('vip.buy.needVip'));
@@ -278,21 +259,43 @@ export function BuyVipPage() {
       }
       return;
     }
+    if (isExtend) {
+      if (!selectedPackageId) {
+        setConfirmOpen(false);
+        toast.info(t('vip.buy.needPackage'));
+        return;
+      }
+      setPurchasing(true);
+      try {
+        const result = await VipService.buyPackage(selectedPackageId);
+        if (user) setUser({ ...user, ken: result.kenBalance });
+        setConfirmOpen(false);
+        toast.success(t('vip.buy.extended', { days: result.days }));
+        navigate(ROUTES.vip);
+      } catch {
+        toast.info(t('vip.buy.failed'));
+      } finally {
+        setPurchasing(false);
+      }
+      return;
+    }
     setConfirmOpen(false);
     toast.info(t('vip.comingSoon'));
   }
 
   function confirmMessage(): string {
-    const pkg = packageLabel(selectedPackage);
-    const days = selectedPackage.days;
-    const ken = selectedPackage.kind === 'ken' ? selectedPackage.ken.toLocaleString('en-US') : '—';
+    const days = selectedPackage?.days ?? 0;
+    const ken = (selectedPackage?.kenPrice ?? 0).toLocaleString('en-US');
     switch (mode) {
       case 'buy':
-        return t('vip.buy.confirmBuy', { name: selectedVip?.name ?? '', pkg });
+        return t('vip.buy.confirmBuyIcon', {
+          name: selectedVip?.name ?? '',
+          ken: (selectedShopItem?.kenPrice ?? 0).toLocaleString('en-US'),
+        });
       case 'give':
-        return t('vip.buy.confirmGive', { name: selectedVip?.name ?? '', pkg, receiver: receiverValue });
+        return t('vip.buy.confirmGiveIcon', { name: selectedVip?.name ?? '', receiver });
       case 'giveDays':
-        return t('vip.buy.confirmGiveDays', { days, ken, receiver: receiverValue });
+        return t('vip.buy.confirmGiveDays', { days, ken, receiver });
       case 'extend':
       default:
         return t('vip.buy.confirmExtend', { days, ken });
@@ -333,11 +336,10 @@ export function BuyVipPage() {
             <span className="text-xs text-black/54">{t('vip.buy.receiverLabel')}</span>
             <input
               type="text"
-              value={receiverValue}
-              disabled={receiverLocked}
+              value={receiver}
               onChange={(event) => setReceiver(event.target.value)}
               placeholder={t('vip.buy.receiverHint')}
-              className="mt-1 w-full rounded border border-black/12 bg-white px-3 py-2 text-sm text-black/87 outline-none placeholder:text-black/38 focus:border-ola-primary disabled:bg-black/5 disabled:text-black/54"
+              className="mt-1 w-full rounded border border-black/12 bg-white px-3 py-2 text-sm text-black/87 outline-none placeholder:text-black/38 focus:border-ola-primary"
             />
           </div>
         )}
@@ -363,27 +365,21 @@ export function BuyVipPage() {
           </div>
         )}
 
-        <div className="mt-2 bg-white px-4 py-3">
-          <span className="text-xs text-black/54">{t('vip.buy.choosePackage')}</span>
-          <button
-            type="button"
-            onClick={() => setPackagePickerOpen(true)}
-            className="mt-1 flex w-full items-center rounded border border-black/12 px-3 py-2 text-left active:bg-black/5"
-          >
-            <span className="flex-1 text-sm text-black/87">{packageLabel(selectedPackage)}</span>
-            <ChevronIcon />
-          </button>
-        </div>
-
-        <label className="mt-2 flex items-center gap-2 bg-white px-4 py-3 text-sm text-black/87">
-          <input
-            type="checkbox"
-            checked={bySms}
-            onChange={(event) => toggleSms(event.target.checked)}
-            className="h-4 w-4 accent-ola-primary"
-          />
-          {t('vip.buy.bySms')}
-        </label>
+        {showPackage && (
+          <div className="mt-2 bg-white px-4 py-3">
+            <span className="text-xs text-black/54">{t('vip.buy.choosePackage')}</span>
+            <button
+              type="button"
+              onClick={() => setPackagePickerOpen(true)}
+              className="mt-1 flex w-full items-center rounded border border-black/12 px-3 py-2 text-left active:bg-black/5"
+            >
+              <span className="flex-1 text-sm text-black/87">
+                {selectedPackage ? packageLabel(selectedPackage) : t('vip.buy.packagesEmpty')}
+              </span>
+              <ChevronIcon />
+            </button>
+          </div>
+        )}
 
         <div className="px-4">
           <button

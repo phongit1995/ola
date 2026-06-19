@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@constants';
@@ -10,35 +10,14 @@ import {
   ScreenHeader,
   type ListOption,
 } from '@components';
-import { useAuthStore } from '@/store/authStore';
+import { VipService } from '@services';
+import type { VipIconInstance, VipStoreResult } from '@app-types';
 import { vipById, vipIconUrl } from './vipCatalog';
-
-interface OwnedVipIcon {
-  instanceId: string;
-  typeId: number;
-  isUsing: boolean;
-  isLocked: boolean;
-}
-
-const INITIAL_OWNED: OwnedVipIcon[] = [
-  { instanceId: 'i1', typeId: 11, isUsing: true, isLocked: false },
-  { instanceId: 'i2', typeId: 4, isUsing: false, isLocked: false },
-  { instanceId: 'i3', typeId: 72, isUsing: false, isLocked: true },
-  { instanceId: 'i4', typeId: 100, isUsing: false, isLocked: false },
-  { instanceId: 'i5', typeId: 51, isUsing: false, isLocked: false },
-];
 
 const PRIVACY_KEYS = ['privacyPublic', 'privacyFriends', 'privacyPrivate'] as const;
 
 function vipName(typeId: number): string {
   return vipById(typeId)?.name ?? `VIP ${typeId}`;
-}
-
-function daysLeft(iso?: string | null): number {
-  if (!iso) return 0;
-  const end = new Date(iso).getTime();
-  if (Number.isNaN(end)) return 0;
-  return Math.max(0, Math.ceil((end - Date.now()) / 86_400_000));
 }
 
 function VipIconImage({ typeId, size = 40 }: { typeId: number; size?: number }) {
@@ -55,7 +34,7 @@ function VipIconImage({ typeId, size = 40 }: { typeId: number; size?: number }) 
 }
 
 interface VipRowProps {
-  icon: OwnedVipIcon;
+  icon: VipIconInstance;
   onSelect: () => void;
 }
 
@@ -84,46 +63,76 @@ function VipRow({ icon, onSelect }: VipRowProps) {
 export function VipStorePage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const user = useAuthStore((s) => s.user);
 
-  const [owned, setOwned] = useState<OwnedVipIcon[]>(INITIAL_OWNED);
-  const [privacy, setPrivacy] = useState<0 | 1 | 2>(0);
+  const [store, setStore] = useState<VipStoreResult | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
   const [privacyOpen, setPrivacyOpen] = useState(false);
-  const [menuIcon, setMenuIcon] = useState<OwnedVipIcon | null>(null);
-  const [useTarget, setUseTarget] = useState<OwnedVipIcon | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<OwnedVipIcon | null>(null);
+  const [menuIcon, setMenuIcon] = useState<VipIconInstance | null>(null);
+  const [useTarget, setUseTarget] = useState<VipIconInstance | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<VipIconInstance | null>(null);
 
-  const usingIcon = useMemo(() => owned.find((icon) => icon.isUsing) ?? null, [owned]);
+  const reload = useCallback(async () => {
+    const res = await VipService.store();
+    setStore(res);
+  }, []);
 
-  if (!user) return null;
+  useEffect(() => {
+    let active = true;
+    VipService.store()
+      .then((res) => {
+        if (active) setStore(res);
+      })
+      .catch(() => {
+        if (active) toast.info(t('common.error'));
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [t]);
 
-  const remainingDays = daysLeft(user.vipEndTime);
+  const items = store?.items ?? [];
+  const usingIcon = items.find((icon) => icon.isUsing) ?? null;
+  const privacy = (store?.privacy ?? 0) as 0 | 1 | 2;
+  const remainingDays = store?.days ?? 0;
   const hasVip = usingIcon != null;
   const durationText = hasVip ? t('vip.daysLeft', { count: remainingDays }) : t('vip.noVip');
 
+  async function runAction(action: () => Promise<unknown>, successText: string) {
+    if (busy) return;
+    setBusy(true);
+    try {
+      await action();
+      await reload();
+      toast.success(successText);
+    } catch {
+      toast.info(t('common.error'));
+    } finally {
+      setBusy(false);
+    }
+  }
+
   function changePrivacy(value: 0 | 1 | 2) {
-    setPrivacy(value);
-    toast.success(t('vip.privacyChanged'));
+    void runAction(() => VipService.setPrivacy(value), t('vip.privacyChanged'));
   }
 
   function confirmUse() {
     if (!useTarget) return;
     const target = useTarget;
-    setOwned((list) =>
-      list.map((icon) => ({ ...icon, isUsing: icon.instanceId === target.instanceId })),
-    );
     setUseTarget(null);
-    toast.success(t('vip.toastUsed', { name: vipName(target.typeId) }));
+    void runAction(
+      () => VipService.activateIcon(target.instanceId),
+      t('vip.toastUsed', { name: vipName(target.typeId) }),
+    );
   }
 
-  function toggleLock(icon: OwnedVipIcon) {
+  function toggleLock(icon: VipIconInstance) {
     const willLock = !icon.isLocked;
-    setOwned((list) =>
-      list.map((item) =>
-        item.instanceId === icon.instanceId ? { ...item, isLocked: willLock } : item,
-      ),
-    );
-    toast.success(
+    void runAction(
+      () => (willLock ? VipService.lockIcon(icon.instanceId) : VipService.unlockIcon(icon.instanceId)),
       t(willLock ? 'vip.toastLocked' : 'vip.toastUnlocked', { name: vipName(icon.typeId) }),
     );
   }
@@ -131,12 +140,14 @@ export function VipStorePage() {
   function confirmDelete() {
     if (!deleteTarget) return;
     const target = deleteTarget;
-    setOwned((list) => list.filter((icon) => icon.instanceId !== target.instanceId));
     setDeleteTarget(null);
-    toast.success(t('vip.toastDeleted', { name: vipName(target.typeId) }));
+    void runAction(
+      () => VipService.deleteIcon(target.instanceId),
+      t('vip.toastDeleted', { name: vipName(target.typeId) }),
+    );
   }
 
-  function buildMenuOptions(icon: OwnedVipIcon): ListOption[] {
+  function buildMenuOptions(icon: VipIconInstance): ListOption[] {
     const options: ListOption[] = [];
     if (!icon.isUsing) {
       options.push({ key: 'use', label: t('vip.actionUse'), onSelect: () => setUseTarget(icon) });
@@ -180,10 +191,7 @@ export function VipStorePage() {
               {usingIcon ? (
                 <VipIconImage typeId={usingIcon.typeId} />
               ) : (
-                <span
-                  className="shrink-0 rounded bg-black/12"
-                  style={{ width: 40, height: 40 }}
-                />
+                <span className="shrink-0 rounded bg-black/12" style={{ width: 40, height: 40 }} />
               )}
               <div className="ml-2 flex flex-col justify-center">
                 <span className="text-base text-black/87">
@@ -231,12 +239,16 @@ export function VipStorePage() {
           </div>
         </div>
 
-        {owned.length === 0 ? (
+        {loading ? (
+          <div className="flex h-24 items-center justify-center text-sm text-black/54">
+            {t('common.loading')}
+          </div>
+        ) : items.length === 0 ? (
           <div className="flex h-24 items-center justify-center text-sm text-black/54">
             {t('vip.empty')}
           </div>
         ) : (
-          owned.map((icon) => (
+          items.map((icon) => (
             <VipRow key={icon.instanceId} icon={icon} onSelect={() => setMenuIcon(icon)} />
           ))
         )}

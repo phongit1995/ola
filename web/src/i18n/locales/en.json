@@ -494,14 +494,19 @@
       "actionGive": "Send VIP",
       "cancel": "Cancel",
       "confirmBuy": "You buy VIP {{name}} with package {{pkg}}",
+      "confirmBuyIcon": "You buy VIP {{name}} for {{ken}} KEN",
       "confirmGive": "You give VIP {{name}} with package {{pkg}} to {{receiver}}",
+      "confirmGiveIcon": "You give VIP {{name}} to {{receiver}}",
       "confirmGiveDays": "You send {{days}} day(s) (price {{ken}} KEN) to {{receiver}}",
       "confirmExtend": "You will extend {{days}} day(s) for {{ken}} KEN",
       "needReceiver": "Please enter a receiver nick",
       "needVip": "Please select a VIP icon",
+      "needPackage": "Please select a day package",
       "bought": "Bought VIP {{name}}",
+      "extended": "Extended {{days}} VIP day(s)",
       "failed": "Purchase failed",
-      "shopEmpty": "No VIP for sale yet"
+      "shopEmpty": "No VIP for sale yet",
+      "packagesEmpty": "No day package yet"
     }
   },
   "terms": {
