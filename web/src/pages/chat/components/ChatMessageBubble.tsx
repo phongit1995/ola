@@ -6,9 +6,29 @@ import snapIcon from '@/assets/icons/chat/icon_snap_pic.png';
 import kenIcon from '@/assets/icons/chat/ic_ken_white.png';
 import addFriendIcon from '@/assets/icons/chat/ic_add_friend.png';
 import { kulImageForText } from '../kul';
+import { splitSmileys } from '../smiley';
 import type { ChatMessage } from '../types';
 
 const VOICE_BARS = [6, 10, 14, 8, 12, 16, 9, 13, 7, 11, 15, 8, 12, 6];
+
+function SmileyText({ text }: { text: string }) {
+  return (
+    <>
+      {splitSmileys(text).map((segment, index) =>
+        segment.kind === 'image' ? (
+          <img
+            key={index}
+            src={segment.src}
+            alt={segment.code}
+            className="inline-block h-[1.25em] w-auto align-text-bottom"
+          />
+        ) : (
+          <span key={index}>{segment.value}</span>
+        )
+      )}
+    </>
+  );
+}
 
 interface ChatMessageBubbleProps {
   message: ChatMessage;
@@ -139,7 +159,7 @@ export function ChatMessageBubble({
         <div
           className={`max-w-[300px] rounded-2xl px-3 py-2 text-base break-words text-black/87 ${groupCorners} ${bubbleBg}`}
         >
-          {message.text}
+          <SmileyText text={message.text ?? ''} />
         </div>
       );
   }

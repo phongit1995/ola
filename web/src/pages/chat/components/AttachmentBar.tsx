@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import smileyIcon from '@/assets/icons/chat/ic_smiley.png';
 import smileyIconActive from '@/assets/icons/chat/ic_smiley_selected.png';
@@ -20,6 +20,8 @@ import switchCameraIcon from '@/assets/icons/chat/ic_action_switch_camera.png';
 import snapTimerIcon from '@/assets/icons/chat/ic_snap_timer.png';
 import expandCameraIcon from '@/assets/icons/chat/ic_action_expand_selected.png';
 import { KUL_IMAGES } from '../kul';
+import { SMILEY_PANEL } from '../smiley';
+import { useLongPress } from '../useLongPress';
 import type { ChatMessage } from '../types';
 
 export type AttachTab = 'smiley' | 'kul' | 'camera' | 'photo' | 'voice' | 'more';
@@ -45,28 +47,11 @@ const TABS: Array<{ key: AttachTab; icon: string; iconActive: string }> = [
   { key: 'more', icon: moreIcon, iconActive: moreIconActive },
 ];
 
-const smileyFiles = import.meta.glob('../../../assets/icons/chat/smiley/*.png', {
-  eager: true,
-  import: 'default',
-}) as Record<string, string>;
-
-const SMILEY_CODES = [
-  ':-)', ':-P', '>:D<', ':-))', ':">', 'B-)', ':-X', ':-*', ':-|', ':-D',
-  ';-)', '|-)', '(:|', ':-/', ':-<', ':-&', ':-(', ':-B', ':-O', ':-h',
-  ':-S', ':-?', ':-((', '=((', '=;', ':-W', 'X-(', '>:)', ';))', '>:P',
-  '/:)', '<3', '(*)', '@;-', '(y)', '(n)', '^_^', ':v', ':3', '=))',
-  '@@', '@)', ':’(', 'O:)', '>:O',
-];
-
-const SMILEYS: Array<{ image: string; code: string }> = Object.keys(smileyFiles)
-  .sort()
-  .map((path, index) => ({ image: smileyFiles[path]!, code: SMILEY_CODES[index] ?? '' }));
-
 function SmileyPanel({ onPick, onBackspace }: { onPick: (code: string) => void; onBackspace: () => void }) {
   return (
     <div className="flex h-full flex-col">
       <div className="grid flex-1 grid-cols-8 gap-1 overflow-y-auto p-2">
-        {SMILEYS.map((smiley) => (
+        {SMILEY_PANEL.map((smiley) => (
           <button
             key={smiley.code}
             type="button"
@@ -241,6 +226,11 @@ export function AttachmentBar({
   onSend,
 }: AttachmentBarProps) {
   const { t } = useTranslation();
+  const suppressPhotoClick = useRef(false);
+  const photoLongPress = useLongPress(() => {
+    suppressPhotoClick.current = true;
+    onPickImage();
+  });
 
   const tabLabels: Record<AttachTab, string> = {
     smiley: t('chat.attachTabSmiley'),
@@ -256,13 +246,29 @@ export function AttachmentBar({
       <div className="flex">
         {TABS.map((tab) => {
           const isActive = tab.key === openTab;
+          const isPhoto = tab.key === 'photo';
           return (
             <button
               key={tab.key}
               type="button"
               aria-label={tabLabels[tab.key]}
-              onClick={() => onToggleTab(tab.key)}
-              className={`flex h-11 flex-1 items-center justify-center ${
+              {...(isPhoto ? photoLongPress : {})}
+              onPointerDown={
+                isPhoto
+                  ? (event) => {
+                      suppressPhotoClick.current = false;
+                      photoLongPress.onPointerDown(event);
+                    }
+                  : undefined
+              }
+              onClick={() => {
+                if (isPhoto && suppressPhotoClick.current) {
+                  suppressPhotoClick.current = false;
+                  return;
+                }
+                onToggleTab(tab.key);
+              }}
+              className={`flex h-11 flex-1 select-none items-center justify-center ${
                 isActive ? 'opacity-100' : 'opacity-60'
               }`}
             >

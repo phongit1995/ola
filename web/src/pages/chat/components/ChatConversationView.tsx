@@ -86,6 +86,11 @@ export function ChatConversationView({
   const lastBubbleIdRef = useRef<string | null>(null);
   const prependAnchorRef = useRef<number | null>(null);
   const stickToBottomRef = useRef(true);
+  const suppressLikeClick = useRef(false);
+  const likeLongPress = useLongPress(() => {
+    suppressLikeClick.current = true;
+    void sendText('(Y)');
+  });
 
   const peerTyping = typingUsers.length > 0;
 
@@ -176,10 +181,10 @@ export function ChatConversationView({
   }
 
   function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
+    const files = Array.from(event.target.files ?? []);
     event.target.value = '';
-    if (file != null) {
-      void sendImage(file);
+    if (files.length > 0) {
+      files.forEach((file) => void sendImage(file));
       setOpenTab(null);
     }
   }
@@ -298,8 +303,19 @@ export function ChatConversationView({
           <button
             type="button"
             aria-label={t('chat.like')}
-            onClick={() => void sendText('👍')}
-            className="flex h-9 w-9 items-center justify-center"
+            {...likeLongPress}
+            onPointerDown={(event) => {
+              suppressLikeClick.current = false;
+              likeLongPress.onPointerDown(event);
+            }}
+            onClick={() => {
+              if (suppressLikeClick.current) {
+                suppressLikeClick.current = false;
+                return;
+              }
+              void sendText('(y)');
+            }}
+            className="flex h-9 w-9 select-none items-center justify-center"
           >
             <img src={likeIcon} alt="" className="h-7 w-7 object-contain" />
           </button>
@@ -323,6 +339,7 @@ export function ChatConversationView({
         ref={fileInputRef}
         type="file"
         accept="image/*"
+        multiple
         className="hidden"
         onChange={handleFileChange}
       />

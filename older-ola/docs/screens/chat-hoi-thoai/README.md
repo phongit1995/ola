@@ -217,6 +217,17 @@ Biến trạng thái: `this.ae` = tab panel đang chọn · `this.M.a()` = panel
 
 → Panel chung `chatAttachmentFrameLayout` trượt lên thay bàn phím (chiều cao `general_keyboard_height` = **208dp**), nội dung theo `ae`: **1** Biểu cảm · **2** KUL · **3** Ảnh máy · **4** Ghi âm · **5** Khác (chi tiết §9.3).
 
+**Long-press (giữ) — `OlaChatViewActivity.onLongClick` (~dòng 3320):** một số nút có hành vi GIỮ riêng, KHÁC click:
+
+| Nút | id | Long-press | Hành vi |
+|-----|----|-----------|---------|
+| Ảnh | `localPhotoImageButton` | giữ | `ap()` → mở **chooser ảnh của hệ thống**, chọn NHIỀU ảnh (`GET_CONTENT` + `ALLOW_MULTIPLE`, `image/*`) — bỏ qua panel lưới ảnh nội bộ |
+| Máy ảnh | `cameraImageButton` | giữ | `an()` — giống click (mở camera ngoài) |
+| 👍 like | `likeButton` | giữ | gửi **`(Y)`** (chữ HOA) — click thường gửi `(y)` (thường); cùng có animation `zoom_icon_animation` |
+| Trả lời nhanh (ẩn) | `quickReplyImageButton` | giữ | mở màn `OlaQuickReplyComposerActivity` (soạn câu trả lời nhanh) |
+
+> Các nút Biểu cảm / KUL / Ghi âm / Khác **không** đăng ký long-press riêng (giữ = không khác click).
+
 ### 9.2. Chi tiết từng panel (đọc từ `ola_attachment_*_tab_layout.xml`)
 
 > **1-1 chat chỉ có 5 panel inline** (`ae` 1→5). **Camera KHÔNG phải panel** — nút Máy ảnh gọi `ao()` = `startActivityForResult(ACTION_IMAGE_CAPTURE)` → mở **app camera ngoài** (xác minh `OlaChatViewActivity.ao()` dòng 1345). Layout `ola_attachment_camera_tab_layout` + view `chat/ola/vn/view/e.java` (preview TextureView) chỉ dùng ở **OlaNoteComposerActivity / OlaBalloonChatViewActivity**, không phải khung chat 1-1.
@@ -235,8 +246,24 @@ Biến trạng thái: `this.ae` = tab panel đang chọn · `this.M.a()` = panel
 
 - ✅ **6 nút toolbar** khớp tập nút hiện mặc định của APK (quick-reply ẩn), đủ icon thường + `_selected`.
 - ✅ **5 panel inline dựng lại khớp APK** (icon + màu thật, trích từ APK): Biểu cảm = 45 smiley thật + backspace (thanh dưới **trắng** + viền trên), bấm chèn mã text · KUL = 48 ảnh kul thật · Ảnh = open-grid + toggle cloud/local (nền `#d5d5d5`) · Ghi âm = nút tròn accent `#ff4081` (nền `#d5d5d5`) · Khác = 4 nút text. Chiều cao panel `h-52` = 208dp.
-- ❌ **Còn lệch hành vi**: web nút **Máy ảnh** mở **panel** (web không có panel camera trong chat APK) → APK `ao()` mở **app camera ngoài** (web nên cho bấm = mở file-capture trực tiếp); web nút **"Khác"** chỉ mở panel → APK **"Khác" kiêm Gửi** khi ô nhập có chữ.
-- ⚠️ **Giới hạn web**: strip ảnh gallery thật (tab Ảnh) không tái hiện được → web mô phỏng lớp điều khiển bằng icon thật, bấm = mở file picker. Web dựng thêm 1 "panel camera" (mô phỏng) dù chat APK không có. Gửi sticker/KUL/voice/location/KEN/VIP còn "coming soon" (cần backend).
+- ✅ **Long-press đã khớp một phần** ([ChatConversationView.tsx](../../../../web/src/pages/chat/components/ChatConversationView.tsx) + `useLongPress` 450ms): **giữ nút Ảnh** → mở picker hệ thống **chọn nhiều ảnh** (input `multiple`, gửi từng ảnh) ≈ APK `ap()`; **giữ nút 👍** → gửi `(Y)`, **bấm** gửi `(y)` (trước đây gửi emoji `👍`) ≈ APK `likeButton`.
+- ❌ **Còn lệch hành vi**: web nút **Máy ảnh** mở **panel** (web không có panel camera trong chat APK) → APK `ao()` mở **app camera ngoài** (web nên cho bấm/giữ = mở file-capture trực tiếp — *P3, gộp khi fix camera*); web nút **"Khác"** chỉ mở panel → APK **"Khác" kiêm Gửi** khi ô nhập có chữ. Nút **Trả lời nhanh** chưa render ở web (APK cũng `gone` mặc định — *P4, bỏ qua*).
+- ✅ **Mã smiley đã render thành ảnh** ([`smiley.ts`](../../../../web/src/pages/chat/smiley.ts) + [`ChatMessageBubble.tsx`](../../../../web/src/pages/chat/components/ChatMessageBubble.tsx)): bong bóng parse 45 mã (đủ alias từ `r/c.java`) → `<img>` inline, mirror `util.h`. Nút 👍 (`(y)`/`(Y)`) ra ảnh `smiley_35`; tab Biểu cảm gửi mã cũng hiện ảnh (xem WT-1).
+- ⚠️ **Giới hạn web còn lại**: ô **nhập** vẫn hiện mã text khi đang gõ (APK render ảnh ngay trong EditText qua `util.h.a(Editable)`) — bong bóng đã đúng, chỉ thiếu preview trong ô nhập. Strip ảnh gallery thật (tab Ảnh) không tái hiện được → web mô phỏng lớp điều khiển bằng icon thật, bấm = mở file picker. Web dựng thêm 1 "panel camera" (mô phỏng) dù chat APK không có. Gửi sticker/KUL/voice/location/KEN/VIP còn "coming soon" (cần backend).
+
+### 9.4. Cách hiển thị message khi gửi (APK) & 2 điểm lệch web cần fix
+
+**APK render text qua bộ parser mã → ảnh inline trước khi hiển thị bong bóng:**
+- Smiley: [`util/h.java`](../../../jadx_out/sources/chat/ola/vn/util/h.java) — regex quét **45 mã** trong [`r/c.java`](../../../jadx_out/sources/chat/ola/vn/r/c.java), thay mỗi mã bằng `ImageSpan`. Emoji unicode: `util/g.java`. Chuỗi áp dụng: `util.g.a().a(util.h.a().a(text))`, gọi từ bong bóng tại [`message/f.java:317`](../../../jadx_out/sources/chat/ola/vn/message/f.java#L317) (`util.i.b(...)`).
+- ⇒ Gửi `(y)` **hoặc** `(Y)` → **cùng** drawable `smiley_35` (👍) — xem `r/c.java`: `new h(R.drawable.smiley_35, (short)0, "(y)", "(Y)")`. Nút 👍 hiện **ảnh ngón cái nhỏ inline**, KHÔNG phải chữ; `(y)` ≡ `(Y)` về mặt hiển thị (phân biệt click/long-press là vô hình với người dùng).
+- ⇒ Mã giữa câu ("ok `(y)` nhé") → chữ + ảnh xen kẽ ở cỡ chữ (inline span), không phải sticker to.
+
+**Trạng thái 2 điểm lệch:**
+
+| # | Điểm lệch | APK | Web | Trạng thái |
+|---|-----------|-----|-----|-----------|
+| WT-1 | **Mã smiley ra ảnh** | `util.h` → `ImageSpan` (45 mã); `(y)/(Y)`→`smiley_35` | [`smiley.ts`](../../../../web/src/pages/chat/smiley.ts): `splitSmileys()` parse 45 mã (đủ alias) → `<img>` inline ở `1.25em`; [`ChatMessageBubble.tsx`](../../../../web/src/pages/chat/components/ChatMessageBubble.tsx) `SmileyText` render trong bong bóng | ✅ **ĐÃ FIX** — nút 👍 + tab Biểu cảm hiện ảnh đúng |
+| WT-2 | **Nhiều ảnh không gộp** | gộp ≤5 ảnh vào **1 bong bóng** lưới 2+3 + "+N" (`chat_attached_media_layout`, doc §7) | sau P1 web gửi **mỗi ảnh 1 bong bóng** riêng (`forEach sendImage`) | ⏳ **chưa làm** — cần trace đường multi-pick APK (request `3` từ `ap()`) để xác nhận cơ chế gộp, rồi dựng bong bóng nhiều ảnh |
 
 ---
 
