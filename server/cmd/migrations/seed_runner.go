@@ -43,6 +43,10 @@ func RunSeed(cfg *Config) error {
 		return fmt.Errorf("failed to seed rooms: %w", err)
 	}
 
+	if err := seed.SeedVipStore(db); err != nil {
+		return fmt.Errorf("failed to seed vip store: %w", err)
+	}
+
 	log.Println()
 	log.Println("📋 Test Credentials:")
 	log.Println("   Username: test1 to test100")

@@ -148,28 +148,29 @@ var (
 	}
 
 	errorsNotFound = map[string]bool{
-		"user not found":              true,
-		"admin not found":             true,
-		"room not found":              true,
-		"message not found":           true,
-		"resource not found":          true,
-		"friend request not found":    true,
-		"friendship not found":        true,
+		"user not found":               true,
+		"admin not found":              true,
+		"room not found":               true,
+		"message not found":            true,
+		"resource not found":           true,
+		"friend request not found":     true,
+		"friendship not found":         true,
 		"block relationship not found": true,
-		"relationship not found":      true,
-		"post not found":              true,
-		"comment not found":           true,
+		"relationship not found":       true,
+		"post not found":               true,
+		"comment not found":            true,
+		"vip icon not found":           true,
 	}
 
 	errorsConflict = map[string]bool{
-		"email already exists":      true,
-		"username already exists":   true,
-		"you are already friends":   true,
+		"email already exists":        true,
+		"username already exists":     true,
+		"you are already friends":     true,
 		"friend request already sent": true,
 	}
 
 	errorsForbidden = map[string]bool{
-		"message is too old to delete": true,
+		"message is too old to delete":          true,
 		"you can only delete your own messages": true,
 		"admin access required":                 true,
 		"admin account is disabled":             true,
@@ -180,6 +181,9 @@ var (
 		"not your post":                         true,
 		"not your comment":                      true,
 		"post is too old to edit":               true,
+		"vip is locked":                         true,
+		"vip does not belong to you":            true,
+		"vip store is private":                  true,
 	}
 )
 

@@ -4,8 +4,6 @@ import (
 	"ola-chat-server/internal/config"
 	"ola-chat-server/internal/db"
 	domConversation "ola-chat-server/internal/domain/conversation"
-	"ola-chat-server/internal/transport/kafka"
-	"ola-chat-server/internal/transport/websocket"
 	"ola-chat-server/internal/logger"
 	"ola-chat-server/internal/middleware"
 	"ola-chat-server/internal/modules/admin"
@@ -19,7 +17,10 @@ import (
 	"ola-chat-server/internal/modules/room"
 	"ola-chat-server/internal/modules/session"
 	"ola-chat-server/internal/modules/user"
+	"ola-chat-server/internal/modules/vip"
 	"ola-chat-server/internal/services"
+	"ola-chat-server/internal/transport/kafka"
+	"ola-chat-server/internal/transport/websocket"
 
 	"go.uber.org/dig"
 )
@@ -64,6 +65,7 @@ func NewContainer() (*dig.Container, error) {
 		message.Provider,
 		call.Provider,
 		me.Provider,
+		vip.Provider,
 	}
 
 	for _, module := range modules {

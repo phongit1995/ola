@@ -14,6 +14,7 @@ import (
 	"ola-chat-server/internal/modules/room"
 	"ola-chat-server/internal/modules/session"
 	"ola-chat-server/internal/modules/user"
+	"ola-chat-server/internal/modules/vip"
 	"ola-chat-server/internal/transport/websocket"
 	"ola-chat-server/internal/utils"
 
@@ -42,6 +43,7 @@ func CreateServer(
 	roomService *room.Service,
 	meRouter *me.Router,
 	sessionRouter *session.Router,
+	vipRouter *vip.Router,
 	wsServer *websocket.Server,
 	apiGuard *middleware.ApiGuardMiddleware,
 	cfg *config.Config,
@@ -86,6 +88,7 @@ func CreateServer(
 		roomRouter.Setup(api)
 		meRouter.Setup(api)
 		sessionRouter.Setup(api)
+		vipRouter.Setup(api)
 	}
 
 	r.NoRoute(func(c *gin.Context) {
