@@ -134,3 +134,7 @@ export const VIP_CATALOG: VipCatalogEntry[] = VIP_NAMES.map((name, index) => ({
 export function vipName(id: number): string {
   return VIP_CATALOG[id - 1]?.name ?? `VIP ${id}`
 }
+
+export function vipIconUrl(id: number): string {
+  return `/vip-icons/vip_${String(id).padStart(3, '0')}.png`
+}

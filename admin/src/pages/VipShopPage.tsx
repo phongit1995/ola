@@ -22,7 +22,7 @@ import {
   useVipShopItems,
 } from '@/hooks/useVipShop'
 import { ApiError } from '@/lib/apiError'
-import { VIP_CATALOG, vipName } from '@/lib/vipCatalog'
+import { VIP_CATALOG, vipIconUrl, vipName } from '@/lib/vipCatalog'
 import type { VipShopItem } from '@/types'
 
 interface ShopFormValues {
@@ -131,6 +131,13 @@ export function VipShopPage() {
       dataIndex: 'vipTypeId',
       render: (typeId: number) => (
         <Space>
+          <img
+            src={vipIconUrl(typeId)}
+            alt={vipName(typeId)}
+            width={36}
+            height={36}
+            style={{ objectFit: 'contain' }}
+          />
           <Tag>{typeId}</Tag>
           <Typography.Text strong>{vipName(typeId)}</Typography.Text>
         </Space>
@@ -213,10 +220,26 @@ export function VipShopPage() {
               <Select
                 showSearch
                 placeholder="Tìm và chọn VIP..."
-                optionFilterProp="label"
+                filterOption={(input, option) =>
+                  String(option?.name ?? '').toLowerCase().includes(input.toLowerCase())
+                }
                 options={availableTypes.map((entry) => ({
                   value: entry.id,
-                  label: `#${entry.id} — ${entry.name}`,
+                  name: `#${entry.id} ${entry.name}`,
+                  label: (
+                    <Space>
+                      <img
+                        src={vipIconUrl(entry.id)}
+                        alt=""
+                        width={22}
+                        height={22}
+                        style={{ objectFit: 'contain' }}
+                      />
+                      <span>
+                        #{entry.id} — {entry.name}
+                      </span>
+                    </Space>
+                  ),
                 }))}
               />
             </Form.Item>
