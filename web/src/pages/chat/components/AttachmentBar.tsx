@@ -50,16 +50,16 @@ const TABS: Array<{ key: AttachTab; icon: string; iconActive: string }> = [
 function SmileyPanel({ onPick, onBackspace }: { onPick: (code: string) => void; onBackspace: () => void }) {
   return (
     <div className="flex h-full flex-col">
-      <div className="grid flex-1 grid-cols-8 gap-1 overflow-y-auto p-2">
+      <div className="flex flex-1 flex-wrap content-start gap-1 overflow-y-auto p-2">
         {SMILEY_PANEL.map((smiley) => (
           <button
             key={smiley.code}
             type="button"
             aria-label={smiley.code}
             onClick={() => onPick(smiley.code)}
-            className="flex aspect-square items-center justify-center rounded hover:bg-gray-100"
+            className="flex h-12 items-center justify-center rounded px-1.5 hover:bg-gray-100"
           >
-            <img src={smiley.image} alt="" className="h-7 w-7 object-contain" />
+            <img src={smiley.image} alt="" className="h-9 w-auto object-contain" />
           </button>
         ))}
       </div>
