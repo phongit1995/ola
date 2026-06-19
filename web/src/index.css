@@ -92,3 +92,9 @@ textarea,
 select {
   font-size: 16px;
 }
+
+.smiley-input:empty::before {
+  content: attr(data-placeholder);
+  color: rgba(0, 0, 0, 0.38);
+  pointer-events: none;
+}

@@ -1,14 +1,18 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  AttachmentBar,
+  type AttachTab,
   Avatar,
   ConfirmDialog,
   FullScreenOverlay,
   ListOptionDialog,
   ScreenHeader,
+  SmileyInput,
+  type SmileyInputHandle,
   type ListOption,
 } from '@components';
-import { toast } from '@lib';
+import { colorForName, kulToken, toast } from '@lib';
 import moreIcon from '@/assets/icons/chat/ic_more_white.png';
 import likeIcon from '@/assets/icons/chat/smiley_35.png';
 import sentIcon from '@/assets/icons/chat/ic_message_sent.png';
@@ -18,9 +22,7 @@ import { useAuthStore } from '@/store/authStore';
 import type { RelationshipStatus } from '@app-types';
 import type { ChatMessage } from '../types';
 import { reactionChips, toBubble } from '../chatView';
-import { kulToken } from '../kul';
-import { useLongPress } from '../useLongPress';
-import { AttachmentBar, type AttachTab } from './AttachmentBar';
+import { useLongPress } from '@hooks';
 import { ChatMessageBubble } from './ChatMessageBubble';
 import { MessageActionSheet } from './MessageActionSheet';
 import { MediaViewer } from '../../me/components/MediaViewer';
@@ -83,6 +85,7 @@ export function ChatConversationView({
   );
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const composerRef = useRef<SmileyInputHandle>(null);
   const lastBubbleIdRef = useRef<string | null>(null);
   const prependAnchorRef = useRef<number | null>(null);
   const stickToBottomRef = useRef(true);
@@ -197,6 +200,10 @@ export function ChatConversationView({
     if (username != null && username !== '') setProfileTarget({ username, color });
   }
 
+  function openMentionProfile(nick: string) {
+    if (nick !== '') setProfileTarget({ username: nick, color: colorForName(nick) });
+  }
+
   const menuOptions: ListOption[] = [
     { key: 'make-friend', label: t('chat.menuMakeFriend'), onSelect: () => toast.info(t('chat.comingSoon')) },
     {
@@ -245,6 +252,7 @@ export function ChatConversationView({
             seen={conversationSeen}
             onOpenActions={setActionTarget}
             onOpenProfile={canViewProfile ? openPeerProfile : undefined}
+            onMention={openMentionProfile}
             onOpenImage={setViewerImage}
           />
         ))}
@@ -288,12 +296,15 @@ export function ChatConversationView({
         }}
         className="flex shrink-0 items-end gap-1 border-t border-black/12 bg-white px-2 py-1.5"
       >
-        <input
+        <SmileyInput
+          ref={composerRef}
           value={draft}
-          onChange={(event) => handleDraftChange(event.target.value)}
+          onChange={handleDraftChange}
+          onEnter={submitComposer}
           onFocus={() => setOpenTab(null)}
           placeholder={t('chat.messageInputPlaceholder', { name })}
-          className="min-h-9 flex-1 bg-transparent px-2 text-base text-black/87 outline-none placeholder:text-black/38"
+          multiline
+          className="max-h-32 min-h-9 flex-1 overflow-y-auto bg-transparent px-2 py-1.5 text-base text-black/87"
         />
         {isTyping ? (
           <button type="submit" className="min-w-12 px-2 text-base font-medium text-ola-primary">
@@ -325,8 +336,8 @@ export function ChatConversationView({
       <AttachmentBar
         openTab={openTab}
         onToggleTab={(tab) => setOpenTab((current) => (current === tab ? null : tab))}
-        onPickEmoji={(emoji) => setDraft((current) => current + emoji)}
-        onBackspace={() => setDraft((current) => Array.from(current).slice(0, -1).join(''))}
+        onPickEmoji={(emoji) => composerRef.current?.insertCode(emoji)}
+        onBackspace={() => composerRef.current?.backspace()}
         onPickImage={() => fileInputRef.current?.click()}
         onSendKul={(index) => {
           void sendText(kulToken(index));
@@ -413,10 +424,11 @@ interface MessageRowProps {
   seen: boolean;
   onOpenActions: (message: ChatMessage) => void;
   onOpenProfile?: () => void;
+  onMention?: (nick: string) => void;
   onOpenImage: (url: string) => void;
 }
 
-function MessageRow({ message, prev, next, name, color, avatar, isLastOwn, seen, onOpenActions, onOpenProfile, onOpenImage }: MessageRowProps) {
+function MessageRow({ message, prev, next, name, color, avatar, isLastOwn, seen, onOpenActions, onOpenProfile, onMention, onOpenImage }: MessageRowProps) {
   const isOut = message.direction === 'out';
   const boundary = prev == null;
   const firstInGroup = boundary || prev.direction !== message.direction;
@@ -474,7 +486,7 @@ function MessageRow({ message, prev, next, name, color, avatar, isLastOwn, seen,
               onClick={handleBubbleClick}
               className="touch-pan-y select-none"
             >
-              <ChatMessageBubble message={message} firstInGroup={firstInGroup} lastInGroup={lastInGroup} />
+              <ChatMessageBubble message={message} firstInGroup={firstInGroup} lastInGroup={lastInGroup} onMention={onMention} />
             </div>
             <span className="shrink-0 text-[10px] text-black/38">{message.time}</span>
           </div>

@@ -7,5 +7,7 @@ export * from './avatarColor';
 export * from './secret';
 export * from './datetime';
 export * from './textInsert';
-export * from './smileys';
+export * from './chatSmiley';
+export * from './kul';
+export * from './SmileyText';
 export * from './richText';

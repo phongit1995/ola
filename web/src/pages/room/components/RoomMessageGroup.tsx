@@ -2,7 +2,7 @@ import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import mentionIcon from '@/assets/icons/room/ic_notification_mention.png';
 import { Avatar } from '@components';
-import { colorForName, renderRichText } from '@lib';
+import { colorForName, kulImageForText, renderRichText } from '@lib';
 import type { BubblePosition, MessageGroup } from '../messageGroups';
 
 const OWN_CORNERS: Record<BubblePosition, string> = {
@@ -41,14 +41,19 @@ function RoomMessageGroupComponent({ group, onOpenProfile, onQuickMention }: Roo
       <div className="flex w-full flex-col gap-0.5">
         <span className="text-center text-xs text-black/26">{time}</span>
         <div className="flex max-w-[80%] flex-col items-end gap-0.5 self-end">
-          {group.messages.map((message) => (
-            <div
-              key={message.id}
-              className={`w-fit max-w-full break-words bg-[#7cb342] px-3.5 py-2 text-base text-white ${OWN_CORNERS[message.position]}`}
-            >
-              {renderRichText(message.content, onMention)}
-            </div>
-          ))}
+          {group.messages.map((message) => {
+            const kul = kulImageForText(message.content);
+            return kul != null ? (
+              <img key={message.id} src={kul} alt="" className="h-28 w-auto object-contain" />
+            ) : (
+              <div
+                key={message.id}
+                className={`w-fit max-w-full break-words bg-[#7cb342] px-3.5 py-2 text-base text-white ${OWN_CORNERS[message.position]}`}
+              >
+                {renderRichText(message.content, onMention)}
+              </div>
+            );
+          })}
         </div>
       </div>
     );
@@ -78,12 +83,19 @@ function RoomMessageGroupComponent({ group, onOpenProfile, onQuickMention }: Roo
           )}
         </button>
         <div className="flex w-fit min-w-0 flex-col gap-0.5">
-          {group.messages.map((message, index) =>
-            index === lastIndex ? (
-              <div key={message.id} className="relative w-fit max-w-full self-start">
+          {group.messages.map((message, index) => {
+            const kul = kulImageForText(message.content);
+            const body =
+              kul != null ? (
+                <img src={kul} alt="" className="h-28 w-auto object-contain" />
+              ) : (
                 <div className={bubbleClass(message.position)}>
                   {renderRichText(message.content, onMention)}
                 </div>
+              );
+            return index === lastIndex ? (
+              <div key={message.id} className="relative w-fit max-w-full self-start">
+                {body}
                 <button
                   type="button"
                   aria-label={t('room.mentionUser', { name: group.senderName })}
@@ -95,11 +107,11 @@ function RoomMessageGroupComponent({ group, onOpenProfile, onQuickMention }: Roo
                 </button>
               </div>
             ) : (
-              <div key={message.id} className={bubbleClass(message.position)}>
-                {renderRichText(message.content, onMention)}
+              <div key={message.id} className="w-fit max-w-full self-start">
+                {body}
               </div>
-            )
-          )}
+            );
+          })}
         </div>
       </div>
     </div>

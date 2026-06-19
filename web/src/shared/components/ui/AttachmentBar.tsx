@@ -19,14 +19,30 @@ import cloudPhotoIcon from '@/assets/icons/chat/ic_cloud_photo_storage.png';
 import switchCameraIcon from '@/assets/icons/chat/ic_action_switch_camera.png';
 import snapTimerIcon from '@/assets/icons/chat/ic_snap_timer.png';
 import expandCameraIcon from '@/assets/icons/chat/ic_action_expand_selected.png';
-import { KUL_IMAGES } from '../kul';
-import { SMILEY_PANEL } from '../smiley';
-import { useLongPress } from '../useLongPress';
-import type { ChatMessage } from '../types';
+import { KUL_IMAGES } from '@lib';
+import { useLongPress } from '@hooks';
+import { SmileyGrid } from './SmileyGrid';
 
 export type AttachTab = 'smiley' | 'kul' | 'camera' | 'photo' | 'voice' | 'more';
 
-type SendPayload = Partial<ChatMessage> & Pick<ChatMessage, 'kind'>;
+export interface AttachSendPayload {
+  kind: 'location' | 'ken' | 'vip' | 'voice';
+  address?: string;
+  kenAmount?: number;
+  vipDirection?: 'sent' | 'received';
+  voiceDuration?: string;
+}
+
+const ALL_TABS: AttachTab[] = ['smiley', 'kul', 'camera', 'photo', 'voice', 'more'];
+
+const TAB_ICONS: Record<AttachTab, { icon: string; iconActive: string }> = {
+  smiley: { icon: smileyIcon, iconActive: smileyIconActive },
+  kul: { icon: kulIcon, iconActive: kulIconActive },
+  camera: { icon: cameraIcon, iconActive: cameraIconActive },
+  photo: { icon: photoIcon, iconActive: photoIconActive },
+  voice: { icon: voiceIcon, iconActive: voiceIconActive },
+  more: { icon: moreIcon, iconActive: moreIconActive },
+};
 
 interface AttachmentBarProps {
   openTab: AttachTab | null;
@@ -35,33 +51,15 @@ interface AttachmentBarProps {
   onBackspace: () => void;
   onPickImage: () => void;
   onSendKul: (index: number) => void;
-  onSend: (payload: SendPayload) => void;
+  onSend: (payload: AttachSendPayload) => void;
+  tabs?: AttachTab[];
 }
-
-const TABS: Array<{ key: AttachTab; icon: string; iconActive: string }> = [
-  { key: 'smiley', icon: smileyIcon, iconActive: smileyIconActive },
-  { key: 'kul', icon: kulIcon, iconActive: kulIconActive },
-  { key: 'camera', icon: cameraIcon, iconActive: cameraIconActive },
-  { key: 'photo', icon: photoIcon, iconActive: photoIconActive },
-  { key: 'voice', icon: voiceIcon, iconActive: voiceIconActive },
-  { key: 'more', icon: moreIcon, iconActive: moreIconActive },
-];
 
 function SmileyPanel({ onPick, onBackspace }: { onPick: (code: string) => void; onBackspace: () => void }) {
   return (
     <div className="flex h-full flex-col">
-      <div className="flex flex-1 flex-wrap content-start gap-1 overflow-y-auto p-2">
-        {SMILEY_PANEL.map((smiley) => (
-          <button
-            key={smiley.code}
-            type="button"
-            aria-label={smiley.code}
-            onClick={() => onPick(smiley.code)}
-            className="flex h-12 items-center justify-center rounded px-1.5 hover:bg-gray-100"
-          >
-            <img src={smiley.image} alt="" className="h-9 w-auto object-contain" />
-          </button>
-        ))}
+      <div className="flex-1 overflow-y-auto">
+        <SmileyGrid onPick={onPick} />
       </div>
       <div className="flex h-8 shrink-0 items-center justify-end gap-1 border-t border-black/12 bg-white px-2">
         <span className="mr-1 h-4 w-px bg-black/12" />
@@ -176,7 +174,7 @@ function VoicePanel({ onRecord }: { onRecord: () => void }) {
   );
 }
 
-function MorePanel({ onSend }: { onSend: (payload: SendPayload) => void }) {
+function MorePanel({ onSend }: { onSend: (payload: AttachSendPayload) => void }) {
   const { t } = useTranslation();
   const buttons: Array<{ key: string; label: string; onClick: () => void }> = [
     {
@@ -224,6 +222,7 @@ export function AttachmentBar({
   onPickImage,
   onSendKul,
   onSend,
+  tabs = ALL_TABS,
 }: AttachmentBarProps) {
   const { t } = useTranslation();
   const suppressPhotoClick = useRef(false);
@@ -244,14 +243,14 @@ export function AttachmentBar({
   return (
     <div className="shrink-0 border-t border-black/12 bg-white">
       <div className="flex">
-        {TABS.map((tab) => {
-          const isActive = tab.key === openTab;
-          const isPhoto = tab.key === 'photo';
+        {tabs.map((tab) => {
+          const isActive = tab === openTab;
+          const isPhoto = tab === 'photo';
           return (
             <button
-              key={tab.key}
+              key={tab}
               type="button"
-              aria-label={tabLabels[tab.key]}
+              aria-label={tabLabels[tab]}
               {...(isPhoto ? photoLongPress : {})}
               onPointerDown={
                 isPhoto
@@ -266,13 +265,13 @@ export function AttachmentBar({
                   suppressPhotoClick.current = false;
                   return;
                 }
-                onToggleTab(tab.key);
+                onToggleTab(tab);
               }}
               className={`flex h-11 flex-1 select-none items-center justify-center ${
                 isActive ? 'opacity-100' : 'opacity-60'
               }`}
             >
-              <img src={isActive ? tab.iconActive : tab.icon} alt="" className="h-6 w-6 object-contain" />
+              <img src={isActive ? TAB_ICONS[tab].iconActive : TAB_ICONS[tab].icon} alt="" className="h-6 w-6 object-contain" />
             </button>
           );
         })}

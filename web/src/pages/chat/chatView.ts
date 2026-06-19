@@ -1,6 +1,5 @@
 import type { Conversation, Message, MessageStatus } from '@app-types';
-import { colorForName, DEFAULT_AVATAR_COLOR } from '@lib';
-import { kulImageForText } from './kul';
+import { colorForName, DEFAULT_AVATAR_COLOR, kulImageForText } from '@lib';
 import type { ChatMessage, ChatMessageStatus } from './types';
 
 function previewText(text?: string): string {

@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
-import { smileyImage } from './smileys';
+import { SmileyText } from './SmileyText';
 
-const POST_TOKEN_PATTERN = /(@[A-Za-z0-9_]+|#[A-Za-z0-9_.]+|:ola\d{1,2}:)/g;
+const POST_TOKEN_PATTERN = /(@[A-Za-z0-9_]+|#[A-Za-z0-9_.]+)/g;
 
 export function renderRichText(content: string, onMention: (nick: string) => void): ReactNode[] {
   return content.split(POST_TOKEN_PATTERN).map((part, index) => {
@@ -24,17 +24,6 @@ export function renderRichText(content: string, onMention: (nick: string) => voi
         </span>
       );
     }
-    const smiley = smileyImage(part);
-    if (smiley != null) {
-      return (
-        <img
-          key={index}
-          src={smiley}
-          alt={part}
-          className="inline-block h-6 w-auto align-text-bottom"
-        />
-      );
-    }
-    return <span key={index}>{part}</span>;
+    return <SmileyText key={index} text={part} />;
   });
 }

@@ -5,10 +5,9 @@ import { SUGGESTED_FRIENDS } from '../../chat/data';
 import { Avatar } from '@components';
 import { ATTACH_BUTTONS, PRIVACY_OPTIONS, type AttachButtonKey } from '../constants';
 import { KUL_STICKERS, kulCode, stickerImage } from '../stickers';
-import { useCaretInsert } from '@hooks';
 import checkInIcon from '@/assets/icons/me/ic_check_in.png';
 import { ComposerCheckInPanel, type ComposedCheckIn } from './ComposerCheckInPanel';
-import { ComposerSmileyPanel } from '@components';
+import { ComposerSmileyPanel, SmileyInput, type SmileyInputHandle } from '@components';
 import type { PostVisibility } from '@app-types';
 
 type AttachPanel = 'tag' | 'checkin' | 'sticker' | 'smiley' | null;
@@ -53,8 +52,7 @@ export function MeComposerDialog({
   const [panel, setPanel] = useState<AttachPanel>(null);
   const [submitting, setSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const insertToken = useCaretInsert(textareaRef, content, setContent);
+  const composerRef = useRef<SmileyInputHandle>(null);
 
   function reset() {
     setContent('');
@@ -107,11 +105,11 @@ export function MeComposerDialog({
   }
 
   function insertMention(nick: string) {
-    insertToken(` @${nick}`);
+    composerRef.current?.insertText(` @${nick}`);
   }
 
   function insertSmiley(code: string) {
-    insertToken(`${code} `);
+    composerRef.current?.insertCode(code);
   }
 
   function handleAttach(key: AttachButtonKey) {
@@ -176,13 +174,13 @@ export function MeComposerDialog({
         </label>
       </div>
 
-      <textarea
-        ref={textareaRef}
+      <SmileyInput
+        ref={composerRef}
         value={content}
-        onChange={(event) => setContent(event.target.value)}
+        onChange={setContent}
         placeholder={t('me.composerHint')}
-        rows={4}
-        className="mt-3 w-full resize-none rounded-md border border-black/12 px-3 py-2 text-sm text-black/87 outline-none focus:border-ola-primary"
+        multiline
+        className="mt-3 max-h-60 min-h-24 w-full overflow-y-auto rounded-md border border-black/12 px-3 py-2 text-sm text-black/87 focus:border-ola-primary"
       />
 
       {sticker != null && stickerImage(sticker) != null && (

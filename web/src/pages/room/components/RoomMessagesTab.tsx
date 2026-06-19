@@ -1,9 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { RoomMessage } from '@app-types';
-import { colorForName, insertAtCursor, toast } from '@lib';
+import { colorForName, kulToken, toast } from '@lib';
 import { useAuthStore } from '@/store/authStore';
-import { Avatar, ComposerSmileyPanel } from '@components';
+import { useLongPress } from '@hooks';
+import { AttachmentBar, type AttachTab, Avatar, SmileyInput, type SmileyInputHandle } from '@components';
+import likeIcon from '@/assets/icons/chat/smiley_35.png';
 import { buildRoomFeed } from '../messageGroups';
 import { RoomDateSeparator } from './RoomDateSeparator';
 import { RoomMessageGroup } from './RoomMessageGroup';
@@ -30,9 +32,19 @@ export function RoomMessagesTab({
   const me = useAuthStore((state) => state.user);
 
   const [draft, setDraft] = useState('');
-  const [smileyOpen, setSmileyOpen] = useState(false);
+  const [openTab, setOpenTab] = useState<AttachTab | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const composerRef = useRef<SmileyInputHandle>(null);
+  const draftRef = useRef(draft);
+  const suppressLikeClick = useRef(false);
+  const likeLongPress = useLongPress(() => {
+    suppressLikeClick.current = true;
+    void sendText('(Y)');
+  });
+
+  useEffect(() => {
+    draftRef.current = draft;
+  }, [draft]);
 
   useEffect(() => {
     if (!active) return;
@@ -43,7 +55,7 @@ export function RoomMessagesTab({
     const trimmed = text.trim();
     if (trimmed === '' || status !== 'joined') return;
     setDraft('');
-    setSmileyOpen(false);
+    setOpenTab(null);
     try {
       await onSend(trimmed);
     } catch {
@@ -52,28 +64,15 @@ export function RoomMessagesTab({
     }
   }
 
-  function insertSmiley(code: string) {
-    setDraft((current) => insertAtCursor(current, `${code} `, inputRef.current));
-    inputRef.current?.focus();
-  }
-
   const insertMention = useCallback((name: string) => {
     const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const alreadyTagged = new RegExp(`@${escaped}(?![\\p{L}\\p{N}_])`, 'iu');
-    setDraft((current) =>
-      alreadyTagged.test(current) ? current : insertAtCursor(current, `@${name} `, inputRef.current)
-    );
-    inputRef.current?.focus();
+    if (!alreadyTagged.test(draftRef.current)) composerRef.current?.insertText(`@${name} `);
+    composerRef.current?.focus();
   }, []);
 
-  function onKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
-    if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
-      event.preventDefault();
-      sendText(draft);
-    }
-  }
-
   const canSend = status === 'joined';
+  const isTyping = draft.trim() !== '';
   const myName = me?.username ?? t('home.guest');
   const feed = useMemo(() => buildRoomFeed(messages, currentUserId), [messages, currentUserId]);
 
@@ -100,47 +99,73 @@ export function RoomMessagesTab({
         )}
       </div>
 
-      {smileyOpen && (
-        <div className="border-t border-black/12 bg-white px-2">
-          <ComposerSmileyPanel onPick={insertSmiley} />
-        </div>
-      )}
-
       <div className="flex shrink-0 items-end gap-2 border-t border-black/12 bg-white px-3 py-2">
         {me?.avatar != null && me.avatar !== '' ? (
           <img src={me.avatar} alt="" className="h-9 w-9 shrink-0 rounded-full object-cover" />
         ) : (
           <Avatar name={myName} color={colorForName(myName)} size={36} />
         )}
-        <textarea
-          ref={inputRef}
+        <SmileyInput
+          ref={composerRef}
           value={draft}
-          onChange={(event) => setDraft(event.target.value)}
-          onKeyDown={onKeyDown}
-          onFocus={() => setSmileyOpen(false)}
+          onChange={setDraft}
+          onEnter={() => sendText(draft)}
+          onFocus={() => setOpenTab(null)}
           disabled={!canSend}
           placeholder={t('room.chatInputHint')}
-          rows={1}
-          className="max-h-28 min-h-9 flex-1 resize-none rounded-2xl border border-black/12 px-3 py-2 text-sm text-black/87 outline-none focus:border-ola-primary disabled:opacity-50"
+          multiline
+          className={`max-h-28 min-h-9 flex-1 overflow-y-auto rounded-2xl border border-black/12 px-3 py-2 text-sm text-black/87 focus:border-ola-primary ${
+            canSend ? '' : 'opacity-50'
+          }`}
         />
-        <button
-          type="button"
-          aria-label={t('chat.attachTabSmiley')}
-          disabled={!canSend}
-          onClick={() => setSmileyOpen((open) => !open)}
-          className="flex h-9 w-9 shrink-0 items-center justify-center disabled:opacity-50"
-        >
-          <span className="text-2xl leading-none">😀</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => sendText(draft)}
-          disabled={!canSend || draft.trim() === ''}
-          className="h-9 shrink-0 rounded-full bg-ola-primary px-4 text-sm font-medium text-white disabled:opacity-40"
-        >
-          {t('chat.send')}
-        </button>
+        {isTyping ? (
+          <button
+            type="button"
+            onClick={() => sendText(draft)}
+            disabled={!canSend}
+            className="min-w-12 shrink-0 px-2 text-base font-medium text-ola-primary disabled:opacity-40"
+          >
+            {t('chat.send')}
+          </button>
+        ) : (
+          <button
+            type="button"
+            aria-label={t('chat.like')}
+            disabled={!canSend}
+            {...likeLongPress}
+            onPointerDown={(event) => {
+              suppressLikeClick.current = false;
+              likeLongPress.onPointerDown(event);
+            }}
+            onClick={() => {
+              if (suppressLikeClick.current) {
+                suppressLikeClick.current = false;
+                return;
+              }
+              void sendText('(y)');
+            }}
+            className="flex h-9 w-9 shrink-0 select-none items-center justify-center disabled:opacity-40"
+          >
+            <img src={likeIcon} alt="" className="h-7 w-7 object-contain" />
+          </button>
+        )}
       </div>
+
+      {canSend && (
+        <AttachmentBar
+          tabs={['smiley', 'kul']}
+          openTab={openTab}
+          onToggleTab={(tab) => setOpenTab((current) => (current === tab ? null : tab))}
+          onPickEmoji={(code) => composerRef.current?.insertCode(code)}
+          onBackspace={() => composerRef.current?.backspace()}
+          onPickImage={() => undefined}
+          onSendKul={(index) => {
+            void sendText(kulToken(index));
+            setOpenTab(null);
+          }}
+          onSend={() => undefined}
+        />
+      )}
     </div>
   );
 }

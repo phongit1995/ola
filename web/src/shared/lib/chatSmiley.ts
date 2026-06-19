@@ -69,6 +69,10 @@ const SMILEY_MAP: Record<string, string> = (() => {
   return map;
 })();
 
+export function smileyImageForCode(code: string): string | null {
+  return SMILEY_MAP[code] ?? null;
+}
+
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }

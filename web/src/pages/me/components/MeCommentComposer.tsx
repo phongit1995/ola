@@ -1,11 +1,9 @@
-import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import smileyIcon from '@/assets/icons/chat/ic_smiley.png';
 import { useAuthStore } from '@/store/authStore';
-import { Avatar } from '@components';
-import { ComposerSmileyPanel } from '@components';
+import { Avatar, ComposerSmileyPanel, SmileyInput, type SmileyInputHandle } from '@components';
 import { colorForName } from '@lib';
-import { useCaretInsert } from '@hooks';
 
 interface MeCommentComposerProps {
   submitting: boolean;
@@ -18,15 +16,14 @@ export function MeCommentComposer({ submitting, onSubmit, autoFocus = false }: M
   const me = useAuthStore((state) => state.user);
   const [draft, setDraft] = useState('');
   const [smileyOpen, setSmileyOpen] = useState(false);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
-  const insertToken = useCaretInsert(inputRef, draft, setDraft);
+  const composerRef = useRef<SmileyInputHandle>(null);
 
   useEffect(() => {
-    if (autoFocus) inputRef.current?.focus();
+    if (autoFocus) composerRef.current?.focus();
   }, [autoFocus]);
 
   function insertSmiley(code: string) {
-    insertToken(`${code} `);
+    composerRef.current?.insertCode(code);
   }
 
   async function submit() {
@@ -34,13 +31,6 @@ export function MeCommentComposer({ submitting, onSubmit, autoFocus = false }: M
     if (ok) {
       setDraft('');
       setSmileyOpen(false);
-    }
-  }
-
-  function onKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
-    if (event.key === 'Enter' && !event.shiftKey) {
-      event.preventDefault();
-      submit();
     }
   }
 
@@ -56,14 +46,14 @@ export function MeCommentComposer({ submitting, onSubmit, autoFocus = false }: M
 
       <div className="flex shrink-0 items-end gap-2 border-t border-black/12 bg-white px-3 py-2">
         <Avatar name={myName} color={colorForName(myName)} size={36} />
-        <textarea
-          ref={inputRef}
+        <SmileyInput
+          ref={composerRef}
           value={draft}
-          onChange={(event) => setDraft(event.target.value)}
-          onKeyDown={onKeyDown}
+          onChange={setDraft}
+          onEnter={submit}
           placeholder={t('me.commentInputHint')}
-          rows={1}
-          className="max-h-28 min-h-9 flex-1 resize-none rounded-2xl border border-black/12 px-3 py-2 text-sm text-black/87 outline-none focus:border-ola-primary"
+          multiline
+          className="max-h-28 min-h-9 flex-1 overflow-y-auto rounded-2xl border border-black/12 px-3 py-2 text-sm text-black/87 focus:border-ola-primary"
         />
         <button
           type="button"
