@@ -66,6 +66,7 @@ export interface ChatMessage {
   sticker?: string;
   image?: string;
   voiceDuration?: string;
+  audioUrl?: string;
   address?: string;
   youtubeTitle?: string;
   youtubeDuration?: string;

@@ -61,6 +61,7 @@ export function ChatConversationView({
   const loadingMore = useChatStore((s) => s.loadingMore);
   const sendText = useChatStore((s) => s.sendText);
   const sendImage = useChatStore((s) => s.sendImage);
+  const sendAudio = useChatStore((s) => s.sendAudio);
   const reactToMessage = useChatStore((s) => s.reactToMessage);
   const deleteMessage = useChatStore((s) => s.deleteMessage);
   const editMessage = useChatStore((s) => s.editMessage);
@@ -347,6 +348,7 @@ export function ChatConversationView({
           setOpenTab(null);
         }}
         onSend={() => toast.info(t('chat.comingSoon'))}
+        onSendAudio={(blob, duration) => void sendAudio(blob, duration)}
       />
 
       <input
@@ -436,6 +438,7 @@ function MessageRow({ message, prev, next, name, color, avatar, isLastOwn, seen,
   const boundary = prev == null;
   const firstInGroup = boundary || prev.direction !== message.direction;
   const lastInGroup = next == null || next.direction !== message.direction;
+  const showTime = lastInGroup || next.time !== message.time;
   const showAvatar = !isOut && firstInGroup;
   const canAct = message.status !== 'sending' && message.status !== 'failed';
   const chips = reactionChips(message.reactions);
@@ -491,7 +494,9 @@ function MessageRow({ message, prev, next, name, color, avatar, isLastOwn, seen,
             >
               <ChatMessageBubble message={message} firstInGroup={firstInGroup} lastInGroup={lastInGroup} onMention={onMention} />
             </div>
-            <span className="shrink-0 text-[10px] text-black/38">{message.time}</span>
+            {showTime && (
+              <span className="shrink-0 text-[10px] text-black/38">{message.time}</span>
+            )}
           </div>
           {chips.length > 0 && (
             <div className={`mt-0.5 flex flex-wrap gap-1 ${isOut ? 'justify-end' : ''}`}>

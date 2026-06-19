@@ -39,6 +39,7 @@ export interface ChatState {
   sendText: (content: string) => Promise<void>;
   sendFirstToDraft: (content: string) => Promise<void>;
   sendImage: (file: File) => Promise<void>;
+  sendAudio: (blob: Blob, duration: number) => Promise<void>;
   reactToMessage: (messageId: string, type: ReactionType) => Promise<void>;
   deleteMessage: (messageId: string) => Promise<void>;
   editMessage: (messageId: string, content: string) => Promise<void>;
@@ -298,6 +299,47 @@ export const useChatStore = create<ChatState>((set, get) => {
 
       try {
         const saved = await MessageService.sendImage(conversationId, file, clientMsgId);
+        set((state) => ({
+          messages: state.messages.map((item) =>
+            item.clientMsgId === clientMsgId ? { ...saved, status: 'sent' } : item
+          ),
+        }));
+        URL.revokeObjectURL(previewUrl);
+      } catch {
+        set((state) => ({
+          messages: state.messages.map((item) =>
+            item.clientMsgId === clientMsgId ? { ...item, status: 'failed' } : item
+          ),
+        }));
+      }
+    },
+
+    sendAudio: async (blob, duration) => {
+      const conversationId = get().currentConversationId;
+      if (conversationId == null) return;
+
+      const clientMsgId = crypto.randomUUID();
+      const user = useAuthStore.getState().user;
+      const now = new Date().toISOString();
+      const previewUrl = URL.createObjectURL(blob);
+      const optimistic: Message = {
+        id: clientMsgId,
+        conversationId,
+        senderId: user?.id ?? '',
+        senderName: user?.fullName ?? user?.username,
+        senderAvatar: user?.avatar,
+        type: 'audio',
+        content: '',
+        metadata: JSON.stringify({ url: previewUrl, duration }),
+        status: 'uploading',
+        createdAt: now,
+        updatedAt: now,
+        clientMsgId,
+      };
+      set((state) => ({ messages: [...state.messages, optimistic] }));
+
+      try {
+        const saved = await MessageService.sendAudio(conversationId, blob, duration, clientMsgId);
         set((state) => ({
           messages: state.messages.map((item) =>
             item.clientMsgId === clientMsgId ? { ...saved, status: 'sent' } : item

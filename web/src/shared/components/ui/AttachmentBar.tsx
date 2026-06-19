@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import smileyIcon from '@/assets/icons/chat/ic_smiley.png';
 import smileyIconActive from '@/assets/icons/chat/ic_smiley_selected.png';
@@ -19,8 +19,8 @@ import cloudPhotoIcon from '@/assets/icons/chat/ic_cloud_photo_storage.png';
 import switchCameraIcon from '@/assets/icons/chat/ic_action_switch_camera.png';
 import snapTimerIcon from '@/assets/icons/chat/ic_snap_timer.png';
 import expandCameraIcon from '@/assets/icons/chat/ic_action_expand_selected.png';
-import { KUL_IMAGES } from '@lib';
-import { useLongPress } from '@hooks';
+import { KUL_IMAGES, toast } from '@lib';
+import { useLongPress, useVoiceRecorder } from '@hooks';
 import { SmileyGrid } from './SmileyGrid';
 
 export type AttachTab = 'smiley' | 'kul' | 'camera' | 'photo' | 'voice' | 'more';
@@ -52,6 +52,7 @@ interface AttachmentBarProps {
   onPickImage: () => void;
   onSendKul: (index: number) => void;
   onSend: (payload: AttachSendPayload) => void;
+  onSendAudio?: (blob: Blob, duration: number) => void;
   tabs?: AttachTab[];
 }
 
@@ -157,19 +158,90 @@ function PhotoPanel({ onPickImage }: { onPickImage: () => void }) {
   );
 }
 
-function VoicePanel({ onRecord }: { onRecord: () => void }) {
+function formatTimer(ms: number): string {
+  const total = Math.floor(ms / 1000);
+  const minutes = Math.floor(total / 60);
+  return `${minutes}:${String(total % 60).padStart(2, '0')}`;
+}
+
+function VoicePanel({ onSendAudio }: { onSendAudio: (blob: Blob, duration: number) => void }) {
   const { t } = useTranslation();
+  const [cancelArmed, setCancelArmed] = useState(false);
+  const activeRef = useRef(false);
+  const heldRef = useRef(false);
+  const cancelRef = useRef(false);
+  const recorder = useVoiceRecorder((error) => {
+    activeRef.current = false;
+    heldRef.current = false;
+    cancelRef.current = false;
+    setCancelArmed(false);
+    toast.error(error === 'denied' ? t('chat.voiceMicDenied') : t('chat.voiceRecordError'));
+  });
+
+  async function finalize() {
+    if (!activeRef.current) return;
+    activeRef.current = false;
+    if (cancelRef.current) {
+      recorder.cancel();
+      cancelRef.current = false;
+      setCancelArmed(false);
+      return;
+    }
+    const result = await recorder.stop();
+    setCancelArmed(false);
+    if (result != null) onSendAudio(result.blob, result.duration);
+  }
+
+  async function handlePointerDown(event: ReactPointerEvent<HTMLButtonElement>) {
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    heldRef.current = true;
+    cancelRef.current = false;
+    setCancelArmed(false);
+    const started = await recorder.start();
+    if (!started) {
+      heldRef.current = false;
+      return;
+    }
+    activeRef.current = true;
+    if (!heldRef.current) await finalize();
+  }
+
+  function handlePointerMove(event: ReactPointerEvent<HTMLButtonElement>) {
+    if (!activeRef.current) return;
+    const rect = event.currentTarget.getBoundingClientRect();
+    const outside =
+      event.clientX < rect.left ||
+      event.clientX > rect.right ||
+      event.clientY < rect.top ||
+      event.clientY > rect.bottom;
+    cancelRef.current = outside;
+    setCancelArmed(outside);
+  }
+
+  async function handlePointerUp() {
+    heldRef.current = false;
+    if (!activeRef.current) return;
+    await finalize();
+  }
+
   return (
     <div className="flex h-full flex-col items-center justify-between bg-[#d5d5d5] py-4">
-      <span className="text-sm text-black/54">0:00</span>
+      <span className="text-sm text-black/54">{formatTimer(recorder.elapsedMs)}</span>
       <button
         type="button"
-        onClick={onRecord}
-        className="flex h-24 w-24 items-center justify-center rounded-full bg-ola-accent text-base font-medium text-white shadow-md active:scale-95"
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+        className={`flex h-24 w-24 touch-none items-center justify-center rounded-full text-base font-medium text-white shadow-md transition select-none active:scale-95 ${
+          recorder.isRecording ? `scale-110 ${cancelArmed ? 'bg-ola-error' : 'bg-ola-accent'}` : 'bg-ola-accent'
+        }`}
       >
         {t('chat.attachRecord')}
       </button>
-      <span className="text-xs text-black/54">{t('chat.attachRecordCancelTip')}</span>
+      <span className="text-xs text-black/54">
+        {cancelArmed ? t('chat.voiceReleaseCancel') : t('chat.attachRecordCancelTip')}
+      </span>
     </div>
   );
 }
@@ -222,6 +294,7 @@ export function AttachmentBar({
   onPickImage,
   onSendKul,
   onSend,
+  onSendAudio,
   tabs = ALL_TABS,
 }: AttachmentBarProps) {
   const { t } = useTranslation();
@@ -283,7 +356,7 @@ export function AttachmentBar({
           {openTab === 'kul' && <KulPanel onSendKul={onSendKul} />}
           {openTab === 'camera' && <CameraPanel onCapture={onPickImage} />}
           {openTab === 'photo' && <PhotoPanel onPickImage={onPickImage} />}
-          {openTab === 'voice' && <VoicePanel onRecord={() => onSend({ kind: 'voice', voiceDuration: '0:08' })} />}
+          {openTab === 'voice' && <VoicePanel onSendAudio={onSendAudio ?? (() => undefined)} />}
           {openTab === 'more' && <MorePanel onSend={onSend} />}
         </div>
       )}

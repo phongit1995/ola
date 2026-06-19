@@ -29,6 +29,21 @@ export class MessageService {
     return http.postForm<Message>(API_PATH.messages.images, form);
   }
 
+  static sendAudio(
+    conversationId: string,
+    blob: Blob,
+    duration: number,
+    clientMsgId?: string
+  ): Promise<Message> {
+    const form = new FormData();
+    const ext = blob.type.includes('mp4') ? 'm4a' : 'webm';
+    form.append('file', blob, `voice.${ext}`);
+    form.append('conversationId', conversationId);
+    form.append('duration', String(duration));
+    if (clientMsgId != null) form.append('clientMsgId', clientMsgId);
+    return http.postForm<Message>(API_PATH.messages.audio, form);
+  }
+
   static sendDirect(payload: SendDirectMessageRequest): Promise<Message> {
     return http.post<Message>(API_PATH.messages.direct, payload);
   }

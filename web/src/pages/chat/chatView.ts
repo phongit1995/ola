@@ -95,24 +95,33 @@ export function reactionChips(reactions?: Record<string, string[]>): ReactionChi
     .map(([type, users]) => ({ type, emoji: REACTION_EMOJI[type] ?? '❓', count: users.length }));
 }
 
-function imageUrlFromMetadata(metadata?: string): string | undefined {
-  if (metadata == null || metadata === '') return undefined;
+function parseMetadata(metadata?: string): { url?: string; duration?: number } {
+  if (metadata == null || metadata === '') return {};
   try {
-    const parsed = JSON.parse(metadata) as { url?: string };
-    return parsed.url;
+    return JSON.parse(metadata) as { url?: string; duration?: number };
   } catch {
-    return undefined;
+    return {};
   }
+}
+
+export function formatDuration(seconds?: number): string {
+  const total = Math.max(0, Math.round(seconds ?? 0));
+  const minutes = Math.floor(total / 60);
+  return `${minutes}:${String(total % 60).padStart(2, '0')}`;
 }
 
 export function toBubble(message: Message, myId: string): ChatMessage {
   const isImage = message.type === 'image';
+  const isAudio = message.type === 'audio';
+  const meta = isImage || isAudio ? parseMetadata(message.metadata) : {};
   return {
     id: message.id,
     direction: message.senderId === myId ? 'out' : 'in',
-    kind: isImage ? 'image' : 'text',
-    text: isImage ? undefined : message.content,
-    image: isImage ? imageUrlFromMetadata(message.metadata) : undefined,
+    kind: isImage ? 'image' : isAudio ? 'voice' : 'text',
+    text: isImage || isAudio ? undefined : message.content,
+    image: isImage ? meta.url : undefined,
+    audioUrl: isAudio ? meta.url : undefined,
+    voiceDuration: isAudio ? formatDuration(meta.duration) : undefined,
     time: formatClock(message.createdAt),
     createdAt: message.createdAt,
     status: STATUS_MAP[message.status] ?? 'sent',
