@@ -224,28 +224,76 @@ func (ctrl *Controller) Buy(c *gin.Context) (interface{}, error) {
 	return item, nil
 }
 
-// Extend godoc
-// @Summary      Gia hạn VIP (cộng số ngày vào thời hạn tài khoản)
+// ListPackages godoc
+// @Summary      Danh sách gói ngày VIP đang bán
 // @Tags         vip
-// @Accept       json
 // @Produce      json
 // @Security     BearerAuth
-// @Param        request body ExtendRequest true "Days"
-// @Success      200  {object}  MessageSuccessResponse
-// @Router       /vip/extend [post]
-func (ctrl *Controller) Extend(c *gin.Context) (interface{}, error) {
+// @Success      200  {object}  PackageListSuccessResponse
+// @Router       /vip/packages [get]
+func (ctrl *Controller) ListPackages(c *gin.Context) (interface{}, error) {
+	if _, err := utils.RequireUserID(c); err != nil {
+		return nil, err
+	}
+	items, err := ctrl.service.ListActivePackages()
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return PackageListResponse{
+		Total:  len(items),
+		Limit:  len(items),
+		Offset: 0,
+		Items:  items,
+	}, nil
+}
+
+// BuyPackage godoc
+// @Summary      Mua gói ngày VIP (trừ KEN, cộng ngày vào thời hạn)
+// @Tags         vip
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "Package ID"
+// @Success      201  {object}  BuyPackageSuccessResponse
+// @Failure      400  {object}  utils.APIError
+// @Failure      404  {object}  utils.APIError
+// @Router       /vip/packages/{id}/buy [post]
+func (ctrl *Controller) BuyPackage(c *gin.Context) (interface{}, error) {
 	userID, err := utils.RequireUserID(c)
 	if err != nil {
 		return nil, err
 	}
-	req, err := utils.BindJSON[ExtendRequest](c)
+	packageID, err := utils.ParseUUIDParam(c, "id", "invalid package id")
 	if err != nil {
 		return nil, err
 	}
-	if err := ctrl.service.Extend(userID, req.Days); err != nil {
+	resp, err := ctrl.service.BuyPackage(userID, packageID)
+	if err != nil {
 		return nil, utils.ServiceError(err)
 	}
-	return MessageResponse{Message: "vip extended"}, nil
+	return resp, nil
+}
+
+// GetHistory godoc
+// @Summary      Lịch sử mua gói VIP của tôi
+// @Tags         vip
+// @Produce      json
+// @Security     BearerAuth
+// @Param        limit query int false "Page size"
+// @Param        offset query int false "Offset"
+// @Success      200  {object}  HistoryListSuccessResponse
+// @Router       /vip/history [get]
+func (ctrl *Controller) GetHistory(c *gin.Context) (interface{}, error) {
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+	limit := utils.ParseLimit(c, 50, 100)
+	offset := utils.ParseOffset(c)
+	resp, err := ctrl.service.ListHistory(&userID, limit, offset)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
 }
 
 // SetPrivacy godoc

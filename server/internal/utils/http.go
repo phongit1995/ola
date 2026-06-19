@@ -160,6 +160,7 @@ var (
 		"post not found":               true,
 		"comment not found":            true,
 		"vip icon not found":           true,
+		"vip package not found":        true,
 	}
 
 	errorsConflict = map[string]bool{

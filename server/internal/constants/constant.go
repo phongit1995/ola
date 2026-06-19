@@ -70,6 +70,7 @@ const (
 	CacheKeyRoomMsgIndex        = "ROOM:%s:MSG_INDEX"
 	CacheKeyRoomMsgData         = "ROOM:%s:MSG"
 	CacheKeyRoomJoinTicket      = "ROOM:JOIN_TICKET:%s"
+	CacheKeyVipPackages         = "VIP:PACKAGES:ACTIVE"
 )
 
 const (
@@ -136,6 +137,7 @@ const (
 	CacheTTLPasswordResetToken  = 1800
 	CacheTTLClientMsgIDDedup    = 300
 	CacheTTLLastRead            = 31536000
+	CacheTTLVipPackages         = 3600
 )
 
 const (

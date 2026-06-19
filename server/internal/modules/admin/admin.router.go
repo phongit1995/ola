@@ -6,6 +6,7 @@ import (
 	adminroom "ola-chat-server/internal/modules/admin/room"
 	adminupload "ola-chat-server/internal/modules/admin/upload"
 	adminuser "ola-chat-server/internal/modules/admin/user"
+	adminvip "ola-chat-server/internal/modules/admin/vip"
 	"ola-chat-server/internal/utils"
 )
 
@@ -15,10 +16,11 @@ type Router struct {
 	meRouter     *adminme.Router
 	roomRouter   *adminroom.Router
 	uploadRouter *adminupload.Router
+	vipRouter    *adminvip.Router
 }
 
-func NewRouter(authRouter *adminauth.Router, userRouter *adminuser.Router, meRouter *adminme.Router, roomRouter *adminroom.Router, uploadRouter *adminupload.Router) *Router {
-	return &Router{authRouter: authRouter, userRouter: userRouter, meRouter: meRouter, roomRouter: roomRouter, uploadRouter: uploadRouter}
+func NewRouter(authRouter *adminauth.Router, userRouter *adminuser.Router, meRouter *adminme.Router, roomRouter *adminroom.Router, uploadRouter *adminupload.Router, vipRouter *adminvip.Router) *Router {
+	return &Router{authRouter: authRouter, userRouter: userRouter, meRouter: meRouter, roomRouter: roomRouter, uploadRouter: uploadRouter, vipRouter: vipRouter}
 }
 
 func (r *Router) Setup(api *utils.AppGroup) {
@@ -29,5 +31,6 @@ func (r *Router) Setup(api *utils.AppGroup) {
 		r.meRouter.Setup(admin)
 		r.roomRouter.Setup(admin)
 		r.uploadRouter.Setup(admin)
+		r.vipRouter.Setup(admin)
 	}
 }

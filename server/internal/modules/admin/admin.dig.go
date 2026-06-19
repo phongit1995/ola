@@ -6,6 +6,7 @@ import (
 	adminroom "ola-chat-server/internal/modules/admin/room"
 	adminupload "ola-chat-server/internal/modules/admin/upload"
 	adminuser "ola-chat-server/internal/modules/admin/user"
+	adminvip "ola-chat-server/internal/modules/admin/vip"
 
 	"go.uber.org/dig"
 )
@@ -24,6 +25,9 @@ func Provider(c *dig.Container) error {
 		return err
 	}
 	if err := adminupload.Provider(c); err != nil {
+		return err
+	}
+	if err := adminvip.Provider(c); err != nil {
 		return err
 	}
 

@@ -6,8 +6,10 @@ import (
 	"strconv"
 	"time"
 
+	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/user"
+	"ola-chat-server/internal/services"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -22,18 +24,22 @@ var (
 	ErrPrivateStore       = errors.New("vip store is private")
 	ErrCannotTransferSelf = errors.New("cannot transfer to yourself")
 	ErrUserNotFound       = errors.New("user not found")
+	ErrPackageNotFound    = errors.New("vip package not found")
+	ErrInsufficientKen    = errors.New("insufficient ken balance")
 )
 
 type Service struct {
 	repo      *Repository
 	userCache *user.CacheService
+	cache     *services.CacheService
 	logger    *zap.SugaredLogger
 }
 
-func NewService(repo *Repository, userCache *user.CacheService, logger *zap.SugaredLogger) *Service {
+func NewService(repo *Repository, userCache *user.CacheService, cache *services.CacheService, logger *zap.SugaredLogger) *Service {
 	return &Service{
 		repo:      repo,
 		userCache: userCache,
+		cache:     cache,
 		logger:    logger.Named("[vip_service]"),
 	}
 }
@@ -274,23 +280,189 @@ func (s *Service) Buy(userID uuid.UUID, typeID int16) (*VipItem, error) {
 	return &out, nil
 }
 
-func (s *Service) Extend(userID uuid.UUID, days int) error {
-	u, err := s.repo.GetUser(userID)
-	if err != nil {
-		return err
-	}
-	base := time.Now()
-	if u.VipEndTime != nil && u.VipEndTime.After(base) {
-		base = *u.VipEndTime
-	}
-	newEnd := base.Add(time.Duration(days) * 24 * time.Hour)
-	if err := s.repo.UpdateUserFields(userID, map[string]interface{}{"vip_end_time": newEnd}); err != nil {
-		return err
-	}
-	s.invalidate(userID)
-	return nil
-}
-
 func (s *Service) SetPrivacy(userID uuid.UUID, privacy int16) error {
 	return s.repo.UpdateUserFields(userID, map[string]interface{}{"vip_store_privacy": privacy})
+}
+
+func toPackageItem(p *models.VipPackage) PackageItem {
+	return PackageItem{
+		ID:        p.ID.String(),
+		Name:      p.Name,
+		Days:      p.Days,
+		KenPrice:  p.KenPrice,
+		IsActive:  p.IsActive,
+		SortOrder: p.SortOrder,
+	}
+}
+
+func toHistoryItem(p *models.VipPurchase) PurchaseHistoryItem {
+	return PurchaseHistoryItem{
+		ID:              p.ID.String(),
+		PackageName:     p.PackageName,
+		Days:            p.Days,
+		KenPrice:        p.KenPrice,
+		KenBalanceAfter: p.KenBalanceAfter,
+		VipEndTime:      p.VipEndTimeAfter.Format(time.RFC3339),
+		Source:          p.Source,
+		CreatedAt:       p.CreatedAt.Format(time.RFC3339),
+	}
+}
+
+func (s *Service) invalidatePackages() {
+	if err := s.cache.Delete(constants.CacheKeyVipPackages); err != nil {
+		s.logger.Warnw("Failed to invalidate vip packages cache", "error", err.Error())
+	}
+}
+
+func (s *Service) ListActivePackages() ([]PackageItem, error) {
+	var cached []PackageItem
+	if err := s.cache.Get(constants.CacheKeyVipPackages, &cached); err == nil {
+		return cached, nil
+	}
+
+	pkgs, err := s.repo.ListActivePackages()
+	if err != nil {
+		return nil, err
+	}
+	items := make([]PackageItem, 0, len(pkgs))
+	for i := range pkgs {
+		items = append(items, toPackageItem(&pkgs[i]))
+	}
+
+	if err := s.cache.Set(constants.CacheKeyVipPackages, items, constants.CacheTTLVipPackages*time.Second); err != nil {
+		s.logger.Warnw("Failed to cache vip packages", "error", err.Error())
+	}
+	return items, nil
+}
+
+func (s *Service) BuyPackage(userID, packageID uuid.UUID) (*BuyPackageResponse, error) {
+	pkg, err := s.repo.FindActivePackage(packageID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrPackageNotFound
+		}
+		return nil, err
+	}
+
+	purchase, updatedUser, err := s.repo.Purchase(userID, pkg)
+	if err != nil {
+		return nil, err
+	}
+
+	s.invalidate(userID)
+
+	return &BuyPackageResponse{
+		PurchaseID:  purchase.ID.String(),
+		PackageName: purchase.PackageName,
+		Days:        purchase.Days,
+		KenSpent:    purchase.KenPrice,
+		KenBalance:  updatedUser.Ken,
+		VipEndTime:  purchase.VipEndTimeAfter.Format(time.RFC3339),
+	}, nil
+}
+
+func (s *Service) ListHistory(userID *uuid.UUID, limit, offset int) (*HistoryListResponse, error) {
+	items, total, err := s.repo.ListHistory(userID, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]PurchaseHistoryItem, 0, len(items))
+	for i := range items {
+		out = append(out, toHistoryItem(&items[i]))
+	}
+	return &HistoryListResponse{
+		Total:  int(total),
+		Limit:  limit,
+		Offset: offset,
+		Items:  out,
+	}, nil
+}
+
+func (s *Service) ListAllPackages(limit, offset int) (*PackageListResponse, error) {
+	pkgs, total, err := s.repo.ListAllPackages(limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	items := make([]PackageItem, 0, len(pkgs))
+	for i := range pkgs {
+		items = append(items, toPackageItem(&pkgs[i]))
+	}
+	return &PackageListResponse{
+		Total:  int(total),
+		Limit:  limit,
+		Offset: offset,
+		Items:  items,
+	}, nil
+}
+
+func (s *Service) CreatePackage(req CreatePackageRequest) (*PackageItem, error) {
+	pkg := &models.VipPackage{
+		Name:      req.Name,
+		Days:      req.Days,
+		KenPrice:  req.KenPrice,
+		IsActive:  true,
+		SortOrder: req.SortOrder,
+	}
+	if req.IsActive != nil {
+		pkg.IsActive = *req.IsActive
+	}
+	if err := s.repo.CreatePackage(pkg); err != nil {
+		return nil, err
+	}
+	s.invalidatePackages()
+	item := toPackageItem(pkg)
+	return &item, nil
+}
+
+func (s *Service) UpdatePackage(id uuid.UUID, req UpdatePackageRequest) (*PackageItem, error) {
+	if _, err := s.repo.FindPackage(id); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrPackageNotFound
+		}
+		return nil, err
+	}
+
+	fields := map[string]interface{}{}
+	if req.Name != nil {
+		fields["name"] = *req.Name
+	}
+	if req.Days != nil {
+		fields["days"] = *req.Days
+	}
+	if req.KenPrice != nil {
+		fields["ken_price"] = *req.KenPrice
+	}
+	if req.IsActive != nil {
+		fields["is_active"] = *req.IsActive
+	}
+	if req.SortOrder != nil {
+		fields["sort_order"] = *req.SortOrder
+	}
+	if len(fields) > 0 {
+		if err := s.repo.UpdatePackage(id, fields); err != nil {
+			return nil, err
+		}
+	}
+	s.invalidatePackages()
+
+	pkg, err := s.repo.FindPackage(id)
+	if err != nil {
+		return nil, err
+	}
+	item := toPackageItem(pkg)
+	return &item, nil
+}
+
+func (s *Service) DeletePackage(id uuid.UUID) error {
+	if _, err := s.repo.FindPackage(id); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ErrPackageNotFound
+		}
+		return err
+	}
+	if err := s.repo.SoftDeletePackage(id); err != nil {
+		return err
+	}
+	s.invalidatePackages()
+	return nil
 }
