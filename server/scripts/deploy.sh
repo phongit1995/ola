@@ -88,6 +88,12 @@ for s in "${RESTART_SVCS[@]}"; do
   fi
 done
 
+if [ -n "${TARGETS[migrate]:-}" ]; then
+  log "Running DB migrations (up all)..."
+  docker compose --env-file "$ENV_FILE" run --rm -T migrate up all
+  log "Migrations applied"
+fi
+
 if [ ${#RESTART_SVCS[@]} -gt 0 ]; then
   log "Recreating services: ${RESTART_SVCS[*]}"
   docker compose --env-file "$ENV_FILE" up -d --no-deps --remove-orphans "${RESTART_SVCS[@]}"

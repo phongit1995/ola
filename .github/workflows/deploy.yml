@@ -20,11 +20,6 @@ on:
         default: 'both'
         type: choice
         options: [both, web, server]
-      run_migrations:
-        description: 'Chạy DB migrations trước khi restart server'
-        required: false
-        default: true
-        type: boolean
       run_seed:
         description: 'Seed database với test data (100 users + 10 rooms)'
         required: false
@@ -77,7 +72,6 @@ jobs:
             chmod +x deploy.sh
             VERSION='${{ inputs.tag || 'latest' }}' \
             SERVICES='${{ inputs.target == 'web' && 'web' || (inputs.target == 'server' && 'api,chat,migrate' || 'api,chat,web,migrate') }}' \
-            RUN_MIGRATIONS='${{ inputs.run_migrations == false && 'false' || 'true' }}' \
             ENV_FILE='${{ inputs.environment == 'dev' && 'env.development' || '.env' }}' \
             HEALTH_URL='${{ inputs.environment == 'dev' && 'http://localhost:5242/api/v1/health' || 'http://localhost:5241/api/v1/health' }}' \
             WEB_HEALTH_URL='${{ inputs.environment == 'dev' && 'http://localhost:5082' || 'http://localhost:5081' }}' \
@@ -86,7 +80,7 @@ jobs:
             if [ '${{ inputs.run_seed }}' = 'true' ]; then
               echo "🌱 Running database seed..."
               ENV_FILE='${{ inputs.environment == 'dev' && 'env.development' || '.env' }}'
-              docker compose --env-file "$ENV_FILE" run --rm migrate seed
+              docker compose --env-file "$ENV_FILE" run --rm -T migrate seed
               echo "✅ Seed completed"
             fi
 
@@ -105,7 +99,7 @@ jobs:
           description: |
             **Thành phần:** ${{ inputs.target }}
             **Tag:** `${{ inputs.tag }}`
-            **Migrations:** ${{ inputs.run_migrations }} · **Seed:** ${{ inputs.run_seed }}
+            **Migrations:** auto · **Seed:** ${{ inputs.run_seed }}
             **Commit:** [`${{ github.sha }}`](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})
           username: GitHub Actions
           nofail: true
