@@ -3,7 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { ConfirmDialog } from '@components';
 import type { Conversation } from '@app-types';
 import { Avatar } from '@components';
+import { SmileyText } from '@lib';
 import sentIcon from '@/assets/icons/chat/ic_message_sent.png';
+import kulIcon from '@/assets/icons/chat/ic_kul.png';
 import { EmptyMessages } from './EmptyMessages';
 import { toConversationView, type ConversationView } from '../chatView';
 
@@ -75,14 +77,14 @@ interface ConversationRowProps {
 function ConversationRow({ view, onSelect, onRequestDelete }: ConversationRowProps) {
   const { t } = useTranslation();
   const unread = view.unread > 0;
-  const previewPrefix =
-    view.preview === ''
-      ? ''
-      : view.fromMe
-        ? `${t('chat.youPrefix')}: `
-        : view.isGroup && view.senderName
-          ? `${view.senderName}: `
-          : '';
+  const hasPreview = view.preview !== '' || view.previewIsSticker;
+  const previewPrefix = !hasPreview
+    ? ''
+    : view.fromMe
+      ? `${t('chat.youPrefix')}: `
+      : view.isGroup && view.senderName
+        ? `${view.senderName}: `
+        : '';
   const [offset, setOffset] = useState(0);
   const startX = useRef<number | null>(null);
   const swiped = useRef(false);
@@ -154,10 +156,17 @@ function ConversationRow({ view, onSelect, onRequestDelete }: ConversationRowPro
             <span className="mt-0.5 flex items-center gap-1">
               <span className="min-w-0 flex-1 truncate text-sm text-black/87">
                 {previewPrefix}
-                {view.preview}
+                {view.previewIsSticker ? (
+                  <span className="inline-flex items-center gap-1 align-middle">
+                    <img src={kulIcon} alt="" className="h-4 w-4 object-contain" />
+                    {t('chat.stickerPreview')}
+                  </span>
+                ) : (
+                  <SmileyText text={view.preview} />
+                )}
               </span>
               {view.fromMe &&
-                view.preview !== '' &&
+                hasPreview &&
                 (view.seen ? (
                   <Avatar name={view.name} color={view.color} src={view.avatar} size={16} />
                 ) : (

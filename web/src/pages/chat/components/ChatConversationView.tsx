@@ -307,7 +307,10 @@ export function ChatConversationView({
           className="max-h-32 min-h-9 flex-1 overflow-y-auto bg-transparent px-2 py-1.5 text-base text-black/87"
         />
         {isTyping ? (
-          <button type="submit" className="min-w-12 px-2 text-base font-medium text-ola-primary">
+          <button
+            type="submit"
+            className="h-9 shrink-0 rounded-full bg-ola-primary px-4 text-sm font-semibold text-white shadow-sm transition active:scale-95"
+          >
             {editing != null ? t('chat.actionSave') : t('chat.send')}
           </button>
         ) : (

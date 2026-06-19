@@ -2,11 +2,6 @@ import type { Conversation, Message, MessageStatus } from '@app-types';
 import { colorForName, DEFAULT_AVATAR_COLOR, kulImageForText } from '@lib';
 import type { ChatMessage, ChatMessageStatus } from './types';
 
-function previewText(text?: string): string {
-  if (text == null || text === '') return '';
-  return kulImageForText(text) != null ? 'Kul' : text;
-}
-
 export interface ConversationView {
   id: string;
   name: string;
@@ -15,6 +10,7 @@ export interface ConversationView {
   avatar?: string;
   color: string;
   preview: string;
+  previewIsSticker: boolean;
   fromMe: boolean;
   seen: boolean;
   senderName?: string;
@@ -48,6 +44,8 @@ export function conversationHeaderTitle(conversation: Conversation): string {
 
 export function toConversationView(conversation: Conversation): ConversationView {
   const name = conversationDisplayName(conversation);
+  const lastText = conversation.lastMessageText ?? '';
+  const isSticker = kulImageForText(lastText) != null;
   return {
     id: conversation.id,
     name,
@@ -55,7 +53,8 @@ export function toConversationView(conversation: Conversation): ConversationView
     title: conversationHeaderTitle(conversation),
     avatar: conversation.otherUser?.avatar ?? conversation.avatar,
     color: name ? colorForName(name) : DEFAULT_AVATAR_COLOR,
-    preview: previewText(conversation.lastMessageText),
+    preview: isSticker ? '' : lastText,
+    previewIsSticker: isSticker,
     fromMe: conversation.isLastMessageFromMe,
     seen: conversation.seen,
     senderName: conversation.lastMessageSenderName,

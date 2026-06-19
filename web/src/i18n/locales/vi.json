@@ -125,6 +125,7 @@
   "chat": {
     "comingSoon": "Tính năng sắp ra mắt.",
     "youPrefix": "Bạn",
+    "stickerPreview": "Nhãn dán",
     "blockedByMe": "Bạn đã chặn người này. Bỏ chặn để nhắn tin.",
     "blockedByThem": "Bạn không thể nhắn tin cho người này.",
     "attachPickImage": "Chọn ảnh từ máy",

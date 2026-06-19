@@ -123,7 +123,7 @@ export function RoomMessagesTab({
             type="button"
             onClick={() => sendText(draft)}
             disabled={!canSend}
-            className="min-w-12 shrink-0 px-2 text-base font-medium text-ola-primary disabled:opacity-40"
+            className="h-9 shrink-0 rounded-full bg-ola-primary px-4 text-sm font-semibold text-white shadow-sm transition active:scale-95 disabled:opacity-40"
           >
             {t('chat.send')}
           </button>
