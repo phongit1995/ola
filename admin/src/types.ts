@@ -96,6 +96,31 @@ export interface UserListParams {
   sortDir?: string
 }
 
+export interface VipPackage {
+  id: string
+  name: string
+  days: number
+  kenPrice: number
+  isActive: boolean
+  sortOrder: number
+}
+
+export interface CreateVipPackageRequest {
+  name: string
+  days: number
+  kenPrice: number
+  isActive?: boolean
+  sortOrder?: number
+}
+
+export interface UpdateVipPackageRequest {
+  name?: string
+  days?: number
+  kenPrice?: number
+  isActive?: boolean
+  sortOrder?: number
+}
+
 export interface Room {
   id: string
   name: string

@@ -4,6 +4,7 @@ import { Avatar, Dropdown, Layout, Menu, Typography } from 'antd'
 import {
   AppstoreOutlined,
   CommentOutlined,
+  CrownOutlined,
   LogoutOutlined,
   PictureOutlined,
   TeamOutlined,
@@ -18,6 +19,7 @@ const MENU_ITEMS = [
   { key: '/', icon: <AppstoreOutlined />, label: 'Tổng quan' },
   { key: '/users', icon: <TeamOutlined />, label: 'Người dùng' },
   { key: '/rooms', icon: <CommentOutlined />, label: 'Phòng chat' },
+  { key: '/vip-packages', icon: <CrownOutlined />, label: 'Gói VIP' },
   { key: '/me', icon: <PictureOutlined />, label: 'Me' },
 ]
 
@@ -25,6 +27,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/': 'Tổng quan',
   '/users': 'Quản lý người dùng',
   '/rooms': 'Quản lý phòng chat',
+  '/vip-packages': 'Quản lý gói VIP',
   '/me': 'Quản lý Me',
 }
 
