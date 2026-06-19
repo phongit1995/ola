@@ -1,6 +1,8 @@
 package adminvip
 
 import (
+	"strconv"
+
 	"ola-chat-server/internal/modules/vip"
 	"ola-chat-server/internal/utils"
 
@@ -133,4 +135,46 @@ func (ctrl *Controller) ListHistory(c *gin.Context) (interface{}, error) {
 		return nil, utils.ServiceError(err)
 	}
 	return resp, nil
+}
+
+// ListIconTypes godoc
+// @Summary      Danh sách loại VIP icon (admin, gồm cả loại tắt)
+// @Tags         admin-vip
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200  {object}  vip.IconTypeListSuccessResponse
+// @Router       /admin/vip/icon-types [get]
+func (ctrl *Controller) ListIconTypes(c *gin.Context) (interface{}, error) {
+	resp, err := ctrl.service.ListAllIconTypes()
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
+// UpdateIconType godoc
+// @Summary      Cập nhật giá / trạng thái bán loại VIP icon (admin)
+// @Tags         admin-vip
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        typeId path int true "VIP type ID"
+// @Param        request body vip.UpdateIconTypeRequest true "Icon type"
+// @Success      200  {object}  vip.IconTypeItemSuccessResponse
+// @Failure      404  {object}  utils.APIError
+// @Router       /admin/vip/icon-types/{typeId} [patch]
+func (ctrl *Controller) UpdateIconType(c *gin.Context) (interface{}, error) {
+	n, err := strconv.Atoi(c.Param("typeId"))
+	if err != nil || n < 1 || n > 120 {
+		return nil, utils.NewHTTPError(400, "invalid vip type id")
+	}
+	req, err := utils.BindJSON[vip.UpdateIconTypeRequest](c)
+	if err != nil {
+		return nil, err
+	}
+	item, err := ctrl.service.UpdateIconType(int16(n), *req)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return item, nil
 }

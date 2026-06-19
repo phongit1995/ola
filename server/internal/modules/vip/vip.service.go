@@ -26,6 +26,8 @@ var (
 	ErrUserNotFound       = errors.New("user not found")
 	ErrPackageNotFound    = errors.New("vip package not found")
 	ErrInsufficientKen    = errors.New("insufficient ken balance")
+	ErrIconTypeNotFound   = errors.New("vip type not found")
+	ErrIconNotSellable    = errors.New("vip type not sellable")
 )
 
 type Service struct {
@@ -261,23 +263,94 @@ func (s *Service) clearActiveIfGone(userID, instanceID uuid.UUID, typeID int16) 
 	return nil
 }
 
-func (s *Service) Buy(userID uuid.UUID, typeID int16) (*VipItem, error) {
-	item := &models.UserVipIcon{
-		UserID:     userID,
-		VipIconID:  typeID,
-		Source:     "purchase",
-		AcquiredAt: time.Now(),
-	}
-	if err := s.repo.Create(item); err != nil {
+func (s *Service) ListIconCatalog() (*IconCatalogResponse, error) {
+	types, err := s.repo.ListSellableIconTypes()
+	if err != nil {
 		return nil, err
 	}
-	u, _ := s.repo.GetUser(userID)
-	var active *int16
-	if u != nil {
-		active = parseTypeID(u.VipUsed)
+	items := make([]IconCatalogItem, 0, len(types))
+	for i := range types {
+		items = append(items, IconCatalogItem{
+			TypeID:   types[i].TypeID,
+			Name:     types[i].Name,
+			KenPrice: types[i].KenPrice,
+		})
 	}
-	out := toVipItem(item, active)
-	return &out, nil
+	return &IconCatalogResponse{Total: len(items), Items: items}, nil
+}
+
+func (s *Service) Buy(userID uuid.UUID, typeID int16) (*BuyIconResponse, error) {
+	t, err := s.repo.FindIconType(typeID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrIconTypeNotFound
+		}
+		return nil, err
+	}
+	if !t.IsActive {
+		return nil, ErrIconNotSellable
+	}
+
+	icon, updatedUser, err := s.repo.PurchaseIcon(userID, t)
+	if err != nil {
+		return nil, err
+	}
+
+	s.invalidate(userID)
+
+	active := parseTypeID(updatedUser.VipUsed)
+	item := toVipItem(icon, active)
+	return &BuyIconResponse{Item: item, KenBalance: updatedUser.Ken}, nil
+}
+
+func (s *Service) ListAllIconTypes() (*IconTypeListResponse, error) {
+	types, err := s.repo.ListAllIconTypes()
+	if err != nil {
+		return nil, err
+	}
+	items := make([]IconTypeItem, 0, len(types))
+	for i := range types {
+		items = append(items, toIconTypeItem(&types[i]))
+	}
+	return &IconTypeListResponse{Total: len(items), Items: items}, nil
+}
+
+func (s *Service) UpdateIconType(typeID int16, req UpdateIconTypeRequest) (*IconTypeItem, error) {
+	if _, err := s.repo.FindIconType(typeID); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrIconTypeNotFound
+		}
+		return nil, err
+	}
+
+	fields := map[string]interface{}{}
+	if req.KenPrice != nil {
+		fields["ken_price"] = *req.KenPrice
+	}
+	if req.IsActive != nil {
+		fields["is_active"] = *req.IsActive
+	}
+	if len(fields) > 0 {
+		if err := s.repo.UpdateIconType(typeID, fields); err != nil {
+			return nil, err
+		}
+	}
+
+	t, err := s.repo.FindIconType(typeID)
+	if err != nil {
+		return nil, err
+	}
+	item := toIconTypeItem(t)
+	return &item, nil
+}
+
+func toIconTypeItem(t *models.VipIconType) IconTypeItem {
+	return IconTypeItem{
+		TypeID:   t.TypeID,
+		Name:     t.Name,
+		KenPrice: t.KenPrice,
+		IsActive: t.IsActive,
+	}
 }
 
 func (s *Service) SetPrivacy(userID uuid.UUID, privacy int16) error {

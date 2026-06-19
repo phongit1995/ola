@@ -103,6 +103,39 @@ type UpdatePackageRequest struct {
 	SortOrder *int    `json:"sortOrder" example:"2"`
 }
 
+type IconCatalogItem struct {
+	TypeID   int16  `json:"typeId" example:"4"`
+	Name     string `json:"name" example:"Zakumi Đại Đế"`
+	KenPrice int    `json:"kenPrice" example:"100"`
+}
+
+type IconCatalogResponse struct {
+	Total int               `json:"total" example:"120"`
+	Items []IconCatalogItem `json:"items"`
+}
+
+type BuyIconResponse struct {
+	Item       VipItem `json:"item"`
+	KenBalance int     `json:"kenBalance" example:"900"`
+}
+
+type IconTypeItem struct {
+	TypeID   int16  `json:"typeId" example:"4"`
+	Name     string `json:"name" example:"Zakumi Đại Đế"`
+	KenPrice int    `json:"kenPrice" example:"100"`
+	IsActive bool   `json:"isActive" example:"true"`
+}
+
+type IconTypeListResponse struct {
+	Total int            `json:"total" example:"120"`
+	Items []IconTypeItem `json:"items"`
+}
+
+type UpdateIconTypeRequest struct {
+	KenPrice *int  `json:"kenPrice" binding:"omitempty,min=0" example:"150"`
+	IsActive *bool `json:"isActive" example:"true"`
+}
+
 type StoreSuccessResponse = utils.BaseResponse[StoreResponse]
 type VipItemSuccessResponse = utils.BaseResponse[VipItem]
 type MessageSuccessResponse = utils.BaseResponse[MessageResponse]
@@ -110,3 +143,7 @@ type PackageListSuccessResponse = utils.BaseResponse[PackageListResponse]
 type PackageItemSuccessResponse = utils.BaseResponse[PackageItem]
 type BuyPackageSuccessResponse = utils.BaseResponse[BuyPackageResponse]
 type HistoryListSuccessResponse = utils.BaseResponse[HistoryListResponse]
+type IconCatalogSuccessResponse = utils.BaseResponse[IconCatalogResponse]
+type BuyIconSuccessResponse = utils.BaseResponse[BuyIconResponse]
+type IconTypeListSuccessResponse = utils.BaseResponse[IconTypeListResponse]
+type IconTypeItemSuccessResponse = utils.BaseResponse[IconTypeItem]

@@ -910,6 +910,290 @@
                 }
             }
         },
+        "/admin/vip/history": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-vip"
+                ],
+                "summary": "Lịch sử mua gói VIP toàn hệ thống (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Filter theo user",
+                        "name": "userId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_vip.HistoryListSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/vip/icon-types": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-vip"
+                ],
+                "summary": "Danh sách loại VIP icon (admin, gồm cả loại tắt)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_vip.IconTypeListSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/vip/icon-types/{typeId}": {
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-vip"
+                ],
+                "summary": "Cập nhật giá / trạng thái bán loại VIP icon (admin)",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "VIP type ID",
+                        "name": "typeId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Icon type",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_vip.UpdateIconTypeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_vip.IconTypeItemSuccessResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/vip/packages": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-vip"
+                ],
+                "summary": "Danh sách gói VIP (admin, gồm cả gói tắt)",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_vip.PackageListSuccessResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-vip"
+                ],
+                "summary": "Tạo gói VIP (admin)",
+                "parameters": [
+                    {
+                        "description": "Package",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_vip.CreatePackageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_vip.PackageItemSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/vip/packages/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-vip"
+                ],
+                "summary": "Xoá gói VIP (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Package ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-vip"
+                ],
+                "summary": "Cập nhật gói VIP (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Package ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Package",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_vip.UpdatePackageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_vip.PackageItemSuccessResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/change-password": {
             "post": {
                 "security": [
@@ -4446,6 +4730,465 @@
                     }
                 }
             }
+        },
+        "/vip/buy": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vip"
+                ],
+                "summary": "Thêm một VIP vào kho",
+                "parameters": [
+                    {
+                        "description": "VIP type",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_vip.BuyRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_vip.BuyIconSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/vip/history": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vip"
+                ],
+                "summary": "Lịch sử mua gói VIP của tôi",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_vip.HistoryListSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/vip/icons/catalog": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vip"
+                ],
+                "summary": "Danh sách loại VIP icon đang bán",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_vip.IconCatalogSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/vip/icons/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vip"
+                ],
+                "summary": "Xoá một VIP (chặn nếu đang khoá)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "VIP instance ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_vip.MessageSuccessResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/vip/icons/{id}/lock": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vip"
+                ],
+                "summary": "Khoá một VIP",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "VIP instance ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_vip.MessageSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/vip/icons/{id}/transfer": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vip"
+                ],
+                "summary": "Tặng/chuyển một VIP cho người khác (chặn nếu đang khoá)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "VIP instance ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Receiver",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_vip.TransferRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_vip.MessageSuccessResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/vip/icons/{id}/unlock": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vip"
+                ],
+                "summary": "Mở khoá một VIP",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "VIP instance ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_vip.MessageSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/vip/icons/{id}/use": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vip"
+                ],
+                "summary": "Dùng (đeo) một VIP, tốn 1 ngày VIP",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "VIP instance ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_vip.MessageSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/vip/packages": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vip"
+                ],
+                "summary": "Danh sách gói ngày VIP đang bán",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_vip.PackageListSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/vip/packages/{id}/buy": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vip"
+                ],
+                "summary": "Mua gói ngày VIP (trừ KEN, cộng ngày vào thời hạn)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Package ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_vip.BuyPackageSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/vip/store": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vip"
+                ],
+                "summary": "Kho VIP của tôi",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_vip.StoreSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/vip/store/privacy": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vip"
+                ],
+                "summary": "Đổi quyền xem kho VIP (0 public, 1 friends, 2 private)",
+                "parameters": [
+                    {
+                        "description": "Privacy",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_vip.PrivacyRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_vip.MessageSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/vip/users/{userId}/store": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vip"
+                ],
+                "summary": "Kho VIP của người khác (theo quyền xem)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "userId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_vip.StoreSuccessResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -7318,6 +8061,491 @@
                 }
             }
         },
+        "internal_modules_vip.BuyIconResponse": {
+            "type": "object",
+            "properties": {
+                "item": {
+                    "$ref": "#/definitions/internal_modules_vip.VipItem"
+                },
+                "kenBalance": {
+                    "type": "integer",
+                    "example": 900
+                }
+            }
+        },
+        "internal_modules_vip.BuyIconSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_vip.BuyIconResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_vip.BuyPackageResponse": {
+            "type": "object",
+            "properties": {
+                "days": {
+                    "type": "integer",
+                    "example": 30
+                },
+                "kenBalance": {
+                    "type": "integer",
+                    "example": 1750
+                },
+                "kenSpent": {
+                    "type": "integer",
+                    "example": 250
+                },
+                "packageName": {
+                    "type": "string",
+                    "example": "Gói 30 ngày"
+                },
+                "purchaseId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "vipEndTime": {
+                    "type": "string",
+                    "example": "2026-12-31T00:00:00Z"
+                }
+            }
+        },
+        "internal_modules_vip.BuyPackageSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_vip.BuyPackageResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_vip.BuyRequest": {
+            "type": "object",
+            "required": [
+                "typeId"
+            ],
+            "properties": {
+                "typeId": {
+                    "type": "integer",
+                    "maximum": 120,
+                    "minimum": 1,
+                    "example": 4
+                }
+            }
+        },
+        "internal_modules_vip.HistoryListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_vip.PurchaseHistoryItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 50
+                },
+                "offset": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "internal_modules_vip.HistoryListSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_vip.HistoryListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_vip.IconCatalogItem": {
+            "type": "object",
+            "properties": {
+                "kenPrice": {
+                    "type": "integer",
+                    "example": 100
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Zakumi Đại Đế"
+                },
+                "typeId": {
+                    "type": "integer",
+                    "example": 4
+                }
+            }
+        },
+        "internal_modules_vip.IconCatalogResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_vip.IconCatalogItem"
+                    }
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 120
+                }
+            }
+        },
+        "internal_modules_vip.IconCatalogSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_vip.IconCatalogResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_vip.MessageResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "ok"
+                }
+            }
+        },
+        "internal_modules_vip.MessageSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_vip.MessageResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_vip.PackageItem": {
+            "type": "object",
+            "properties": {
+                "days": {
+                    "type": "integer",
+                    "example": 30
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "isActive": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "kenPrice": {
+                    "type": "integer",
+                    "example": 250
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Gói 30 ngày"
+                },
+                "sortOrder": {
+                    "type": "integer",
+                    "example": 2
+                }
+            }
+        },
+        "internal_modules_vip.PackageListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_vip.PackageItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 50
+                },
+                "offset": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 4
+                }
+            }
+        },
+        "internal_modules_vip.PackageListSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_vip.PackageListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_vip.PrivacyRequest": {
+            "type": "object",
+            "properties": {
+                "privacy": {
+                    "type": "integer",
+                    "maximum": 2,
+                    "minimum": 0,
+                    "example": 0
+                }
+            }
+        },
+        "internal_modules_vip.PurchaseHistoryItem": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string",
+                    "example": "2026-06-19T10:00:00Z"
+                },
+                "days": {
+                    "type": "integer",
+                    "example": 30
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "kenBalanceAfter": {
+                    "type": "integer",
+                    "example": 1750
+                },
+                "kenPrice": {
+                    "type": "integer",
+                    "example": 250
+                },
+                "packageName": {
+                    "type": "string",
+                    "example": "Gói 30 ngày"
+                },
+                "source": {
+                    "type": "string",
+                    "example": "package"
+                },
+                "vipEndTime": {
+                    "type": "string",
+                    "example": "2026-12-31T00:00:00Z"
+                }
+            }
+        },
+        "internal_modules_vip.StoreResponse": {
+            "type": "object",
+            "properties": {
+                "activeTypeId": {
+                    "type": "integer",
+                    "example": 4
+                },
+                "days": {
+                    "type": "integer",
+                    "example": 30
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_vip.VipItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 50
+                },
+                "offset": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "privacy": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 3
+                },
+                "userId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "vipEndTime": {
+                    "type": "string",
+                    "example": "2026-12-31T00:00:00Z"
+                }
+            }
+        },
+        "internal_modules_vip.StoreSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_vip.StoreResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_vip.TransferRequest": {
+            "type": "object",
+            "required": [
+                "toUserId"
+            ],
+            "properties": {
+                "toUserId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                }
+            }
+        },
+        "internal_modules_vip.VipItem": {
+            "type": "object",
+            "properties": {
+                "acquiredAt": {
+                    "type": "string",
+                    "example": "2026-06-19T10:00:00Z"
+                },
+                "instanceId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "isLocked": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "isUsing": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "source": {
+                    "type": "string",
+                    "example": "purchase"
+                },
+                "typeId": {
+                    "type": "integer",
+                    "example": 4
+                }
+            }
+        },
         "ola-chat-server_internal_modules_room.CreateRoomRequest": {
             "type": "object",
             "required": [
@@ -7483,6 +8711,360 @@
                     "type": "string",
                     "maxLength": 150,
                     "minLength": 1
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_vip.CreatePackageRequest": {
+            "type": "object",
+            "required": [
+                "days",
+                "name"
+            ],
+            "properties": {
+                "days": {
+                    "type": "integer",
+                    "maximum": 3650,
+                    "minimum": 1,
+                    "example": 30
+                },
+                "isActive": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "kenPrice": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "example": 250
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "example": "Gói 30 ngày"
+                },
+                "sortOrder": {
+                    "type": "integer",
+                    "example": 2
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_vip.HistoryListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_vip.PurchaseHistoryItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 50
+                },
+                "offset": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_vip.HistoryListSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_vip.HistoryListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_vip.IconTypeItem": {
+            "type": "object",
+            "properties": {
+                "isActive": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "kenPrice": {
+                    "type": "integer",
+                    "example": 100
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Zakumi Đại Đế"
+                },
+                "typeId": {
+                    "type": "integer",
+                    "example": 4
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_vip.IconTypeItemSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_vip.IconTypeItem"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_vip.IconTypeListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_vip.IconTypeItem"
+                    }
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 120
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_vip.IconTypeListSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_vip.IconTypeListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_vip.PackageItem": {
+            "type": "object",
+            "properties": {
+                "days": {
+                    "type": "integer",
+                    "example": 30
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "isActive": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "kenPrice": {
+                    "type": "integer",
+                    "example": 250
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Gói 30 ngày"
+                },
+                "sortOrder": {
+                    "type": "integer",
+                    "example": 2
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_vip.PackageItemSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_vip.PackageItem"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_vip.PackageListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_vip.PackageItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 50
+                },
+                "offset": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 4
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_vip.PackageListSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_vip.PackageListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_vip.PurchaseHistoryItem": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string",
+                    "example": "2026-06-19T10:00:00Z"
+                },
+                "days": {
+                    "type": "integer",
+                    "example": 30
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "kenBalanceAfter": {
+                    "type": "integer",
+                    "example": 1750
+                },
+                "kenPrice": {
+                    "type": "integer",
+                    "example": 250
+                },
+                "packageName": {
+                    "type": "string",
+                    "example": "Gói 30 ngày"
+                },
+                "source": {
+                    "type": "string",
+                    "example": "package"
+                },
+                "vipEndTime": {
+                    "type": "string",
+                    "example": "2026-12-31T00:00:00Z"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_vip.UpdateIconTypeRequest": {
+            "type": "object",
+            "properties": {
+                "isActive": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "kenPrice": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "example": 150
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_vip.UpdatePackageRequest": {
+            "type": "object",
+            "properties": {
+                "days": {
+                    "type": "integer",
+                    "maximum": 3650,
+                    "minimum": 1,
+                    "example": 30
+                },
+                "isActive": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "kenPrice": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "example": 250
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "example": "Gói 30 ngày"
+                },
+                "sortOrder": {
+                    "type": "integer",
+                    "example": 2
                 }
             }
         },

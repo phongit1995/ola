@@ -1967,6 +1967,340 @@ definitions:
         example: john_doe
         type: string
     type: object
+  internal_modules_vip.BuyIconResponse:
+    properties:
+      item:
+        $ref: '#/definitions/internal_modules_vip.VipItem'
+      kenBalance:
+        example: 900
+        type: integer
+    type: object
+  internal_modules_vip.BuyIconSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_vip.BuyIconResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_vip.BuyPackageResponse:
+    properties:
+      days:
+        example: 30
+        type: integer
+      kenBalance:
+        example: 1750
+        type: integer
+      kenSpent:
+        example: 250
+        type: integer
+      packageName:
+        example: Gói 30 ngày
+        type: string
+      purchaseId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      vipEndTime:
+        example: "2026-12-31T00:00:00Z"
+        type: string
+    type: object
+  internal_modules_vip.BuyPackageSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_vip.BuyPackageResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_vip.BuyRequest:
+    properties:
+      typeId:
+        example: 4
+        maximum: 120
+        minimum: 1
+        type: integer
+    required:
+    - typeId
+    type: object
+  internal_modules_vip.HistoryListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_vip.PurchaseHistoryItem'
+        type: array
+      limit:
+        example: 50
+        type: integer
+      offset:
+        example: 0
+        type: integer
+      total:
+        example: 1
+        type: integer
+    type: object
+  internal_modules_vip.HistoryListSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_vip.HistoryListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_vip.IconCatalogItem:
+    properties:
+      kenPrice:
+        example: 100
+        type: integer
+      name:
+        example: Zakumi Đại Đế
+        type: string
+      typeId:
+        example: 4
+        type: integer
+    type: object
+  internal_modules_vip.IconCatalogResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_vip.IconCatalogItem'
+        type: array
+      total:
+        example: 120
+        type: integer
+    type: object
+  internal_modules_vip.IconCatalogSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_vip.IconCatalogResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_vip.MessageResponse:
+    properties:
+      message:
+        example: ok
+        type: string
+    type: object
+  internal_modules_vip.MessageSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_vip.MessageResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_vip.PackageItem:
+    properties:
+      days:
+        example: 30
+        type: integer
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      isActive:
+        example: true
+        type: boolean
+      kenPrice:
+        example: 250
+        type: integer
+      name:
+        example: Gói 30 ngày
+        type: string
+      sortOrder:
+        example: 2
+        type: integer
+    type: object
+  internal_modules_vip.PackageListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_vip.PackageItem'
+        type: array
+      limit:
+        example: 50
+        type: integer
+      offset:
+        example: 0
+        type: integer
+      total:
+        example: 4
+        type: integer
+    type: object
+  internal_modules_vip.PackageListSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_vip.PackageListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_vip.PrivacyRequest:
+    properties:
+      privacy:
+        example: 0
+        maximum: 2
+        minimum: 0
+        type: integer
+    type: object
+  internal_modules_vip.PurchaseHistoryItem:
+    properties:
+      createdAt:
+        example: "2026-06-19T10:00:00Z"
+        type: string
+      days:
+        example: 30
+        type: integer
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      kenBalanceAfter:
+        example: 1750
+        type: integer
+      kenPrice:
+        example: 250
+        type: integer
+      packageName:
+        example: Gói 30 ngày
+        type: string
+      source:
+        example: package
+        type: string
+      vipEndTime:
+        example: "2026-12-31T00:00:00Z"
+        type: string
+    type: object
+  internal_modules_vip.StoreResponse:
+    properties:
+      activeTypeId:
+        example: 4
+        type: integer
+      days:
+        example: 30
+        type: integer
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_vip.VipItem'
+        type: array
+      limit:
+        example: 50
+        type: integer
+      offset:
+        example: 0
+        type: integer
+      privacy:
+        example: 0
+        type: integer
+      total:
+        example: 3
+        type: integer
+      userId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      vipEndTime:
+        example: "2026-12-31T00:00:00Z"
+        type: string
+    type: object
+  internal_modules_vip.StoreSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_vip.StoreResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_vip.TransferRequest:
+    properties:
+      toUserId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+    required:
+    - toUserId
+    type: object
+  internal_modules_vip.VipItem:
+    properties:
+      acquiredAt:
+        example: "2026-06-19T10:00:00Z"
+        type: string
+      instanceId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      isLocked:
+        example: false
+        type: boolean
+      isUsing:
+        example: true
+        type: boolean
+      source:
+        example: purchase
+        type: string
+      typeId:
+        example: 4
+        type: integer
+    type: object
   ola-chat-server_internal_modules_room.CreateRoomRequest:
     properties:
       description:
@@ -2081,6 +2415,253 @@ definitions:
         maxLength: 150
         minLength: 1
         type: string
+    type: object
+  ola-chat-server_internal_modules_vip.CreatePackageRequest:
+    properties:
+      days:
+        example: 30
+        maximum: 3650
+        minimum: 1
+        type: integer
+      isActive:
+        example: true
+        type: boolean
+      kenPrice:
+        example: 250
+        minimum: 0
+        type: integer
+      name:
+        example: Gói 30 ngày
+        maxLength: 100
+        type: string
+      sortOrder:
+        example: 2
+        type: integer
+    required:
+    - days
+    - name
+    type: object
+  ola-chat-server_internal_modules_vip.HistoryListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_vip.PurchaseHistoryItem'
+        type: array
+      limit:
+        example: 50
+        type: integer
+      offset:
+        example: 0
+        type: integer
+      total:
+        example: 1
+        type: integer
+    type: object
+  ola-chat-server_internal_modules_vip.HistoryListSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/ola-chat-server_internal_modules_vip.HistoryListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_modules_vip.IconTypeItem:
+    properties:
+      isActive:
+        example: true
+        type: boolean
+      kenPrice:
+        example: 100
+        type: integer
+      name:
+        example: Zakumi Đại Đế
+        type: string
+      typeId:
+        example: 4
+        type: integer
+    type: object
+  ola-chat-server_internal_modules_vip.IconTypeItemSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/ola-chat-server_internal_modules_vip.IconTypeItem'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_modules_vip.IconTypeListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_vip.IconTypeItem'
+        type: array
+      total:
+        example: 120
+        type: integer
+    type: object
+  ola-chat-server_internal_modules_vip.IconTypeListSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/ola-chat-server_internal_modules_vip.IconTypeListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_modules_vip.PackageItem:
+    properties:
+      days:
+        example: 30
+        type: integer
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      isActive:
+        example: true
+        type: boolean
+      kenPrice:
+        example: 250
+        type: integer
+      name:
+        example: Gói 30 ngày
+        type: string
+      sortOrder:
+        example: 2
+        type: integer
+    type: object
+  ola-chat-server_internal_modules_vip.PackageItemSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/ola-chat-server_internal_modules_vip.PackageItem'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_modules_vip.PackageListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_vip.PackageItem'
+        type: array
+      limit:
+        example: 50
+        type: integer
+      offset:
+        example: 0
+        type: integer
+      total:
+        example: 4
+        type: integer
+    type: object
+  ola-chat-server_internal_modules_vip.PackageListSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/ola-chat-server_internal_modules_vip.PackageListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_modules_vip.PurchaseHistoryItem:
+    properties:
+      createdAt:
+        example: "2026-06-19T10:00:00Z"
+        type: string
+      days:
+        example: 30
+        type: integer
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      kenBalanceAfter:
+        example: 1750
+        type: integer
+      kenPrice:
+        example: 250
+        type: integer
+      packageName:
+        example: Gói 30 ngày
+        type: string
+      source:
+        example: package
+        type: string
+      vipEndTime:
+        example: "2026-12-31T00:00:00Z"
+        type: string
+    type: object
+  ola-chat-server_internal_modules_vip.UpdateIconTypeRequest:
+    properties:
+      isActive:
+        example: true
+        type: boolean
+      kenPrice:
+        example: 150
+        minimum: 0
+        type: integer
+    type: object
+  ola-chat-server_internal_modules_vip.UpdatePackageRequest:
+    properties:
+      days:
+        example: 30
+        maximum: 3650
+        minimum: 1
+        type: integer
+      isActive:
+        example: true
+        type: boolean
+      kenPrice:
+        example: 250
+        minimum: 0
+        type: integer
+      name:
+        example: Gói 30 ngày
+        maxLength: 100
+        type: string
+      sortOrder:
+        example: 2
+        type: integer
     type: object
   ola-chat-server_internal_utils.APIError:
     properties:
@@ -3120,6 +3701,181 @@ paths:
       summary: Ban/unban user
       tags:
       - admin-user
+  /admin/vip/history:
+    get:
+      parameters:
+      - description: Filter theo user
+        in: query
+        name: userId
+        type: string
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_modules_vip.HistoryListSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Lịch sử mua gói VIP toàn hệ thống (admin)
+      tags:
+      - admin-vip
+  /admin/vip/icon-types:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_modules_vip.IconTypeListSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Danh sách loại VIP icon (admin, gồm cả loại tắt)
+      tags:
+      - admin-vip
+  /admin/vip/icon-types/{typeId}:
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: VIP type ID
+        in: path
+        name: typeId
+        required: true
+        type: integer
+      - description: Icon type
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ola-chat-server_internal_modules_vip.UpdateIconTypeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_modules_vip.IconTypeItemSuccessResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Cập nhật giá / trạng thái bán loại VIP icon (admin)
+      tags:
+      - admin-vip
+  /admin/vip/packages:
+    get:
+      parameters:
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_modules_vip.PackageListSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Danh sách gói VIP (admin, gồm cả gói tắt)
+      tags:
+      - admin-vip
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Package
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ola-chat-server_internal_modules_vip.CreatePackageRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_modules_vip.PackageItemSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Tạo gói VIP (admin)
+      tags:
+      - admin-vip
+  /admin/vip/packages/{id}:
+    delete:
+      parameters:
+      - description: Package ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Xoá gói VIP (admin)
+      tags:
+      - admin-vip
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Package ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Package
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ola-chat-server_internal_modules_vip.UpdatePackageRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_modules_vip.PackageItemSuccessResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Cập nhật gói VIP (admin)
+      tags:
+      - admin-vip
   /auth/change-password:
     post:
       consumes:
@@ -5374,6 +6130,285 @@ paths:
       summary: Upload image
       tags:
       - upload
+  /vip/buy:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: VIP type
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_vip.BuyRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/internal_modules_vip.BuyIconSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Thêm một VIP vào kho
+      tags:
+      - vip
+  /vip/history:
+    get:
+      parameters:
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_vip.HistoryListSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Lịch sử mua gói VIP của tôi
+      tags:
+      - vip
+  /vip/icons/{id}:
+    delete:
+      parameters:
+      - description: VIP instance ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_vip.MessageSuccessResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Xoá một VIP (chặn nếu đang khoá)
+      tags:
+      - vip
+  /vip/icons/{id}/lock:
+    post:
+      parameters:
+      - description: VIP instance ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_vip.MessageSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Khoá một VIP
+      tags:
+      - vip
+  /vip/icons/{id}/transfer:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: VIP instance ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Receiver
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_vip.TransferRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_vip.MessageSuccessResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Tặng/chuyển một VIP cho người khác (chặn nếu đang khoá)
+      tags:
+      - vip
+  /vip/icons/{id}/unlock:
+    post:
+      parameters:
+      - description: VIP instance ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_vip.MessageSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Mở khoá một VIP
+      tags:
+      - vip
+  /vip/icons/{id}/use:
+    post:
+      parameters:
+      - description: VIP instance ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_vip.MessageSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Dùng (đeo) một VIP, tốn 1 ngày VIP
+      tags:
+      - vip
+  /vip/icons/catalog:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_vip.IconCatalogSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Danh sách loại VIP icon đang bán
+      tags:
+      - vip
+  /vip/packages:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_vip.PackageListSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Danh sách gói ngày VIP đang bán
+      tags:
+      - vip
+  /vip/packages/{id}/buy:
+    post:
+      parameters:
+      - description: Package ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/internal_modules_vip.BuyPackageSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Mua gói ngày VIP (trừ KEN, cộng ngày vào thời hạn)
+      tags:
+      - vip
+  /vip/store:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_vip.StoreSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Kho VIP của tôi
+      tags:
+      - vip
+  /vip/store/privacy:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Privacy
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_vip.PrivacyRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_vip.MessageSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Đổi quyền xem kho VIP (0 public, 1 friends, 2 private)
+      tags:
+      - vip
+  /vip/users/{userId}/store:
+    get:
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_vip.StoreSuccessResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Kho VIP của người khác (theo quyền xem)
+      tags:
+      - vip
 schemes:
 - http
 - https

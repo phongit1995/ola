@@ -494,7 +494,9 @@
       "confirmGiveDays": "Bạn gửi {{days}} ngày (giá {{ken}} KEN) cho {{receiver}}",
       "confirmExtend": "Bạn sẽ gia hạn {{days}} ngày với giá {{ken}} KEN",
       "needReceiver": "Hãy nhập nick người nhận",
-      "needVip": "Hãy chọn icon VIP"
+      "needVip": "Hãy chọn icon VIP",
+      "bought": "Đã mua VIP {{name}}",
+      "failed": "Mua VIP thất bại"
     }
   },
   "terms": {

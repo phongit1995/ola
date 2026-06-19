@@ -175,6 +175,85 @@ func (r *Repository) ListHistory(userID *uuid.UUID, limit, offset int) ([]models
 	return items, total, nil
 }
 
+func (r *Repository) ListSellableIconTypes() ([]models.VipIconType, error) {
+	var types []models.VipIconType
+	err := r.db.Where("is_active = ?", true).Order("type_id ASC").Find(&types).Error
+	return types, err
+}
+
+func (r *Repository) ListAllIconTypes() ([]models.VipIconType, error) {
+	var types []models.VipIconType
+	err := r.db.Order("type_id ASC").Find(&types).Error
+	return types, err
+}
+
+func (r *Repository) FindIconType(typeID int16) (*models.VipIconType, error) {
+	var t models.VipIconType
+	if err := r.db.First(&t, "type_id = ?", typeID).Error; err != nil {
+		return nil, err
+	}
+	return &t, nil
+}
+
+func (r *Repository) UpdateIconType(typeID int16, fields map[string]interface{}) error {
+	return r.db.Model(&models.VipIconType{}).Where("type_id = ?", typeID).Updates(fields).Error
+}
+
+func (r *Repository) PurchaseIcon(userID uuid.UUID, t *models.VipIconType) (*models.UserVipIcon, *models.User, error) {
+	var icon models.UserVipIcon
+	var updatedUser models.User
+
+	err := r.db.Transaction(func(tx *gorm.DB) error {
+		var u models.User
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&u, "id = ?", userID).Error; err != nil {
+			return err
+		}
+		if u.Ken < t.KenPrice {
+			return ErrInsufficientKen
+		}
+		newKen := u.Ken - t.KenPrice
+
+		if err := tx.Model(&models.User{}).Where("id = ?", userID).Update("ken", newKen).Error; err != nil {
+			return err
+		}
+
+		icon = models.UserVipIcon{
+			UserID:     userID,
+			VipIconID:  t.TypeID,
+			Source:     "purchase",
+			AcquiredAt: time.Now(),
+		}
+		if err := tx.Create(&icon).Error; err != nil {
+			return err
+		}
+
+		endAfter := time.Now()
+		if u.VipEndTime != nil {
+			endAfter = *u.VipEndTime
+		}
+		purchase := models.VipPurchase{
+			UserID:          userID,
+			PackageName:     t.Name,
+			Days:            0,
+			KenPrice:        t.KenPrice,
+			KenBalanceAfter: newKen,
+			VipEndTimeAfter: endAfter,
+			Source:          "icon",
+		}
+		if err := tx.Create(&purchase).Error; err != nil {
+			return err
+		}
+
+		u.Ken = newKen
+		updatedUser = u
+		return nil
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+	return &icon, &updatedUser, nil
+}
+
 func (r *Repository) Purchase(userID uuid.UUID, pkg *models.VipPackage) (*models.VipPurchase, *models.User, error) {
 	var purchase models.VipPurchase
 	var updatedUser models.User

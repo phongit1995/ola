@@ -6,6 +6,7 @@ import {
   CommentOutlined,
   CrownOutlined,
   LogoutOutlined,
+  SmileOutlined,
   PictureOutlined,
   TeamOutlined,
   UserOutlined,
@@ -20,6 +21,7 @@ const MENU_ITEMS = [
   { key: '/users', icon: <TeamOutlined />, label: 'Người dùng' },
   { key: '/rooms', icon: <CommentOutlined />, label: 'Phòng chat' },
   { key: '/vip-packages', icon: <CrownOutlined />, label: 'Gói VIP' },
+  { key: '/vip-icons', icon: <SmileOutlined />, label: 'Loại VIP icon' },
   { key: '/me', icon: <PictureOutlined />, label: 'Me' },
 ]
 
@@ -28,6 +30,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/users': 'Quản lý người dùng',
   '/rooms': 'Quản lý phòng chat',
   '/vip-packages': 'Quản lý gói VIP',
+  '/vip-icons': 'Quản lý loại VIP icon',
   '/me': 'Quản lý Me',
 }
 

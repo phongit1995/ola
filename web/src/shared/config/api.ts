@@ -63,6 +63,11 @@ export const API_PATH = {
     unmute: (id: string) => `/conversations/${id}/unmute`,
     typing: '/conversations/typing',
   },
+  vip: {
+    store: '/vip/store',
+    iconCatalog: '/vip/icons/catalog',
+    buy: '/vip/buy',
+  },
   messages: {
     base: '/messages',
     direct: '/messages/direct',

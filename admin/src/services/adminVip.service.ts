@@ -5,7 +5,9 @@ import type {
   ListParams,
   ListResult,
   MessageResult,
+  UpdateVipIconTypeRequest,
   UpdateVipPackageRequest,
+  VipIconType,
   VipPackage,
 } from '@/types'
 
@@ -33,6 +35,24 @@ export const AdminVipService = {
 
   async remove(id: string): Promise<MessageResult> {
     const { data } = await http.delete<ApiResponse<MessageResult>>(`/admin/vip/packages/${id}`)
+    return data.data
+  },
+
+  async listIconTypes(): Promise<VipIconType[]> {
+    const { data } = await http.get<ApiResponse<{ total: number; items: VipIconType[] }>>(
+      '/admin/vip/icon-types',
+    )
+    return data.data.items
+  },
+
+  async updateIconType(
+    typeId: number,
+    payload: UpdateVipIconTypeRequest,
+  ): Promise<VipIconType> {
+    const { data } = await http.patch<ApiResponse<VipIconType>>(
+      `/admin/vip/icon-types/${typeId}`,
+      payload,
+    )
     return data.data
   },
 }

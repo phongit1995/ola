@@ -206,7 +206,7 @@ func (ctrl *Controller) Transfer(c *gin.Context) (interface{}, error) {
 // @Produce      json
 // @Security     BearerAuth
 // @Param        request body BuyRequest true "VIP type"
-// @Success      201  {object}  VipItemSuccessResponse
+// @Success      201  {object}  BuyIconSuccessResponse
 // @Router       /vip/buy [post]
 func (ctrl *Controller) Buy(c *gin.Context) (interface{}, error) {
 	userID, err := utils.RequireUserID(c)
@@ -217,11 +217,26 @@ func (ctrl *Controller) Buy(c *gin.Context) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	item, err := ctrl.service.Buy(userID, req.TypeID)
+	resp, err := ctrl.service.Buy(userID, req.TypeID)
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}
-	return item, nil
+	return resp, nil
+}
+
+// IconCatalog godoc
+// @Summary      Danh sách loại VIP icon đang bán
+// @Tags         vip
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200  {object}  IconCatalogSuccessResponse
+// @Router       /vip/icons/catalog [get]
+func (ctrl *Controller) IconCatalog(c *gin.Context) (interface{}, error) {
+	resp, err := ctrl.service.ListIconCatalog()
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
 }
 
 // ListPackages godoc

@@ -494,7 +494,9 @@
       "confirmGiveDays": "You send {{days}} day(s) (price {{ken}} KEN) to {{receiver}}",
       "confirmExtend": "You will extend {{days}} day(s) for {{ken}} KEN",
       "needReceiver": "Please enter a receiver nick",
-      "needVip": "Please select a VIP icon"
+      "needVip": "Please select a VIP icon",
+      "bought": "Bought VIP {{name}}",
+      "failed": "Purchase failed"
     }
   },
   "terms": {

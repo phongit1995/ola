@@ -5,3 +5,4 @@ export * from './chat.type';
 export * from './me.type';
 export * from './user.type';
 export * from './relationship.type';
+export * from './vip.type';
