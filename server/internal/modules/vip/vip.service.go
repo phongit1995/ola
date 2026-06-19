@@ -26,8 +26,8 @@ var (
 	ErrUserNotFound       = errors.New("user not found")
 	ErrPackageNotFound    = errors.New("vip package not found")
 	ErrInsufficientKen    = errors.New("insufficient ken balance")
-	ErrIconTypeNotFound   = errors.New("vip type not found")
-	ErrIconNotSellable    = errors.New("vip type not sellable")
+	ErrShopItemNotFound   = errors.New("vip shop item not found")
+	ErrShopTypeExists     = errors.New("vip already in shop")
 )
 
 type Service struct {
@@ -263,35 +263,32 @@ func (s *Service) clearActiveIfGone(userID, instanceID uuid.UUID, typeID int16) 
 	return nil
 }
 
-func (s *Service) ListIconCatalog() (*IconCatalogResponse, error) {
-	types, err := s.repo.ListSellableIconTypes()
+func (s *Service) ListShopCatalog() (*ShopCatalogResponse, error) {
+	items, err := s.repo.ListActiveShopItems()
 	if err != nil {
 		return nil, err
 	}
-	items := make([]IconCatalogItem, 0, len(types))
-	for i := range types {
-		items = append(items, IconCatalogItem{
-			TypeID:   types[i].TypeID,
-			Name:     types[i].Name,
-			KenPrice: types[i].KenPrice,
+	out := make([]ShopCatalogItem, 0, len(items))
+	for i := range items {
+		out = append(out, ShopCatalogItem{
+			ID:        items[i].ID.String(),
+			VipTypeID: items[i].VipTypeID,
+			KenPrice:  items[i].KenPrice,
 		})
 	}
-	return &IconCatalogResponse{Total: len(items), Items: items}, nil
+	return &ShopCatalogResponse{Total: len(out), Items: out}, nil
 }
 
-func (s *Service) Buy(userID uuid.UUID, typeID int16) (*BuyIconResponse, error) {
-	t, err := s.repo.FindIconType(typeID)
+func (s *Service) Buy(userID, shopItemID uuid.UUID) (*BuyIconResponse, error) {
+	item, err := s.repo.FindActiveShopItem(shopItemID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ErrIconTypeNotFound
+			return nil, ErrShopItemNotFound
 		}
 		return nil, err
 	}
-	if !t.IsActive {
-		return nil, ErrIconNotSellable
-	}
 
-	icon, updatedUser, err := s.repo.PurchaseIcon(userID, t)
+	icon, updatedUser, err := s.repo.PurchaseShopItem(userID, item)
 	if err != nil {
 		return nil, err
 	}
@@ -299,26 +296,51 @@ func (s *Service) Buy(userID uuid.UUID, typeID int16) (*BuyIconResponse, error) 
 	s.invalidate(userID)
 
 	active := parseTypeID(updatedUser.VipUsed)
-	item := toVipItem(icon, active)
-	return &BuyIconResponse{Item: item, KenBalance: updatedUser.Ken}, nil
+	out := toVipItem(icon, active)
+	return &BuyIconResponse{Item: out, KenBalance: updatedUser.Ken}, nil
 }
 
-func (s *Service) ListAllIconTypes() (*IconTypeListResponse, error) {
-	types, err := s.repo.ListAllIconTypes()
+func (s *Service) ListAllShopItems() (*ShopListResponse, error) {
+	items, err := s.repo.ListAllShopItems()
 	if err != nil {
 		return nil, err
 	}
-	items := make([]IconTypeItem, 0, len(types))
-	for i := range types {
-		items = append(items, toIconTypeItem(&types[i]))
+	out := make([]ShopItem, 0, len(items))
+	for i := range items {
+		out = append(out, toShopItem(&items[i]))
 	}
-	return &IconTypeListResponse{Total: len(items), Items: items}, nil
+	return &ShopListResponse{Total: len(out), Items: out}, nil
 }
 
-func (s *Service) UpdateIconType(typeID int16, req UpdateIconTypeRequest) (*IconTypeItem, error) {
-	if _, err := s.repo.FindIconType(typeID); err != nil {
+func (s *Service) CreateShopItem(req CreateShopItemRequest) (*ShopItem, error) {
+	exists, err := s.repo.ShopTypeExists(req.VipTypeID)
+	if err != nil {
+		return nil, err
+	}
+	if exists {
+		return nil, ErrShopTypeExists
+	}
+
+	item := &models.VipShopItem{
+		VipTypeID: req.VipTypeID,
+		KenPrice:  req.KenPrice,
+		SortOrder: req.SortOrder,
+		IsActive:  true,
+	}
+	if req.IsActive != nil {
+		item.IsActive = *req.IsActive
+	}
+	if err := s.repo.CreateShopItem(item); err != nil {
+		return nil, err
+	}
+	out := toShopItem(item)
+	return &out, nil
+}
+
+func (s *Service) UpdateShopItem(id uuid.UUID, req UpdateShopItemRequest) (*ShopItem, error) {
+	if _, err := s.repo.FindShopItem(id); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, ErrIconTypeNotFound
+			return nil, ErrShopItemNotFound
 		}
 		return nil, err
 	}
@@ -330,26 +352,40 @@ func (s *Service) UpdateIconType(typeID int16, req UpdateIconTypeRequest) (*Icon
 	if req.IsActive != nil {
 		fields["is_active"] = *req.IsActive
 	}
+	if req.SortOrder != nil {
+		fields["sort_order"] = *req.SortOrder
+	}
 	if len(fields) > 0 {
-		if err := s.repo.UpdateIconType(typeID, fields); err != nil {
+		if err := s.repo.UpdateShopItem(id, fields); err != nil {
 			return nil, err
 		}
 	}
 
-	t, err := s.repo.FindIconType(typeID)
+	item, err := s.repo.FindShopItem(id)
 	if err != nil {
 		return nil, err
 	}
-	item := toIconTypeItem(t)
-	return &item, nil
+	out := toShopItem(item)
+	return &out, nil
 }
 
-func toIconTypeItem(t *models.VipIconType) IconTypeItem {
-	return IconTypeItem{
-		TypeID:   t.TypeID,
-		Name:     t.Name,
-		KenPrice: t.KenPrice,
-		IsActive: t.IsActive,
+func (s *Service) DeleteShopItem(id uuid.UUID) error {
+	if _, err := s.repo.FindShopItem(id); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ErrShopItemNotFound
+		}
+		return err
+	}
+	return s.repo.SoftDeleteShopItem(id)
+}
+
+func toShopItem(it *models.VipShopItem) ShopItem {
+	return ShopItem{
+		ID:        it.ID.String(),
+		VipTypeID: it.VipTypeID,
+		KenPrice:  it.KenPrice,
+		IsActive:  it.IsActive,
+		SortOrder: it.SortOrder,
 	}
 }
 

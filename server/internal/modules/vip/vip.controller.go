@@ -217,7 +217,11 @@ func (ctrl *Controller) Buy(c *gin.Context) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	resp, err := ctrl.service.Buy(userID, req.TypeID)
+	shopItemID, err := uuid.Parse(req.ShopItemID)
+	if err != nil {
+		return nil, utils.NewHTTPError(400, "invalid shop item id")
+	}
+	resp, err := ctrl.service.Buy(userID, shopItemID)
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}
@@ -225,14 +229,14 @@ func (ctrl *Controller) Buy(c *gin.Context) (interface{}, error) {
 }
 
 // IconCatalog godoc
-// @Summary      Danh sách loại VIP icon đang bán
+// @Summary      Danh sách VIP đang bán trong shop
 // @Tags         vip
 // @Produce      json
 // @Security     BearerAuth
-// @Success      200  {object}  IconCatalogSuccessResponse
+// @Success      200  {object}  ShopCatalogSuccessResponse
 // @Router       /vip/icons/catalog [get]
 func (ctrl *Controller) IconCatalog(c *gin.Context) (interface{}, error) {
-	resp, err := ctrl.service.ListIconCatalog()
+	resp, err := ctrl.service.ListShopCatalog()
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}

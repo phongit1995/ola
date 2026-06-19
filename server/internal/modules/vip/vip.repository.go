@@ -175,31 +175,53 @@ func (r *Repository) ListHistory(userID *uuid.UUID, limit, offset int) ([]models
 	return items, total, nil
 }
 
-func (r *Repository) ListSellableIconTypes() ([]models.VipIconType, error) {
-	var types []models.VipIconType
-	err := r.db.Where("is_active = ?", true).Order("type_id ASC").Find(&types).Error
-	return types, err
+func (r *Repository) ListActiveShopItems() ([]models.VipShopItem, error) {
+	var items []models.VipShopItem
+	err := r.db.Where("is_active = ?", true).Order("sort_order ASC, created_at ASC").Find(&items).Error
+	return items, err
 }
 
-func (r *Repository) ListAllIconTypes() ([]models.VipIconType, error) {
-	var types []models.VipIconType
-	err := r.db.Order("type_id ASC").Find(&types).Error
-	return types, err
+func (r *Repository) ListAllShopItems() ([]models.VipShopItem, error) {
+	var items []models.VipShopItem
+	err := r.db.Order("sort_order ASC, created_at ASC").Find(&items).Error
+	return items, err
 }
 
-func (r *Repository) FindIconType(typeID int16) (*models.VipIconType, error) {
-	var t models.VipIconType
-	if err := r.db.First(&t, "type_id = ?", typeID).Error; err != nil {
+func (r *Repository) FindShopItem(id uuid.UUID) (*models.VipShopItem, error) {
+	var item models.VipShopItem
+	if err := r.db.First(&item, "id = ?", id).Error; err != nil {
 		return nil, err
 	}
-	return &t, nil
+	return &item, nil
 }
 
-func (r *Repository) UpdateIconType(typeID int16, fields map[string]interface{}) error {
-	return r.db.Model(&models.VipIconType{}).Where("type_id = ?", typeID).Updates(fields).Error
+func (r *Repository) FindActiveShopItem(id uuid.UUID) (*models.VipShopItem, error) {
+	var item models.VipShopItem
+	if err := r.db.First(&item, "id = ? AND is_active = ?", id, true).Error; err != nil {
+		return nil, err
+	}
+	return &item, nil
 }
 
-func (r *Repository) PurchaseIcon(userID uuid.UUID, t *models.VipIconType) (*models.UserVipIcon, *models.User, error) {
+func (r *Repository) ShopTypeExists(vipTypeID int16) (bool, error) {
+	var count int64
+	err := r.db.Model(&models.VipShopItem{}).Where("vip_type_id = ?", vipTypeID).Count(&count).Error
+	return count > 0, err
+}
+
+func (r *Repository) CreateShopItem(item *models.VipShopItem) error {
+	return r.db.Create(item).Error
+}
+
+func (r *Repository) UpdateShopItem(id uuid.UUID, fields map[string]interface{}) error {
+	return r.db.Model(&models.VipShopItem{}).Where("id = ?", id).Updates(fields).Error
+}
+
+func (r *Repository) SoftDeleteShopItem(id uuid.UUID) error {
+	return r.db.Delete(&models.VipShopItem{}, "id = ?", id).Error
+}
+
+func (r *Repository) PurchaseShopItem(userID uuid.UUID, item *models.VipShopItem) (*models.UserVipIcon, *models.User, error) {
 	var icon models.UserVipIcon
 	var updatedUser models.User
 
@@ -208,10 +230,10 @@ func (r *Repository) PurchaseIcon(userID uuid.UUID, t *models.VipIconType) (*mod
 		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&u, "id = ?", userID).Error; err != nil {
 			return err
 		}
-		if u.Ken < t.KenPrice {
+		if u.Ken < item.KenPrice {
 			return ErrInsufficientKen
 		}
-		newKen := u.Ken - t.KenPrice
+		newKen := u.Ken - item.KenPrice
 
 		if err := tx.Model(&models.User{}).Where("id = ?", userID).Update("ken", newKen).Error; err != nil {
 			return err
@@ -219,7 +241,7 @@ func (r *Repository) PurchaseIcon(userID uuid.UUID, t *models.VipIconType) (*mod
 
 		icon = models.UserVipIcon{
 			UserID:     userID,
-			VipIconID:  t.TypeID,
+			VipIconID:  item.VipTypeID,
 			Source:     "purchase",
 			AcquiredAt: time.Now(),
 		}
@@ -233,9 +255,9 @@ func (r *Repository) PurchaseIcon(userID uuid.UUID, t *models.VipIconType) (*mod
 		}
 		purchase := models.VipPurchase{
 			UserID:          userID,
-			PackageName:     t.Name,
+			PackageName:     fmt.Sprintf("VIP #%d", item.VipTypeID),
 			Days:            0,
-			KenPrice:        t.KenPrice,
+			KenPrice:        item.KenPrice,
 			KenBalanceAfter: newKen,
 			VipEndTimeAfter: endAfter,
 			Source:          "icon",

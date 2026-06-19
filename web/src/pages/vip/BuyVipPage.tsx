@@ -14,7 +14,7 @@ import type { ListOption } from '@components';
 import { VipService } from '@services';
 import type { VipIconCatalogItem } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
-import { VIP_CATALOG, vipById, vipIconUrl, type VipCatalogEntry } from './vipCatalog';
+import { VIP_CATALOG, vipById, vipIconUrl } from './vipCatalog';
 
 type BuyVipMode = 'buy' | 'give' | 'giveDays' | 'extend';
 
@@ -91,52 +91,52 @@ function VipThumbnail({ id, size = 40 }: { id: number; size?: number }) {
   );
 }
 
+interface PickerItem {
+  key: string;
+  typeId: number;
+  name: string;
+  price?: number;
+}
+
 interface VipPickerDialogProps {
   open: boolean;
-  selectedId: number;
-  entries: VipCatalogEntry[];
-  priceOf: (id: number) => number | undefined;
-  onSelect: (entry: VipCatalogEntry) => void;
+  selectedKey: string;
+  items: PickerItem[];
+  onSelect: (item: PickerItem) => void;
   onClose: () => void;
 }
 
-function VipPickerDialog({
-  open,
-  selectedId,
-  entries,
-  priceOf,
-  onSelect,
-  onClose,
-}: VipPickerDialogProps) {
+function VipPickerDialog({ open, selectedKey, items, onSelect, onClose }: VipPickerDialogProps) {
   const { t } = useTranslation();
   return (
     <Dialog open={open} onClose={onClose} title={t('vip.buy.pickVipTitle')}>
-      <div className="grid max-h-[60vh] grid-cols-3 gap-1 overflow-y-auto sm:grid-cols-4">
-        {entries.map((entry) => {
-          const price = priceOf(entry.id);
-          return (
+      {items.length === 0 ? (
+        <div className="py-8 text-center text-sm text-black/54">{t('vip.buy.shopEmpty')}</div>
+      ) : (
+        <div className="grid max-h-[60vh] grid-cols-3 gap-1 overflow-y-auto sm:grid-cols-4">
+          {items.map((item) => (
             <button
-              key={entry.id}
+              key={item.key}
               type="button"
               onClick={() => {
-                onSelect(entry);
+                onSelect(item);
                 onClose();
               }}
               className={`flex flex-col items-center gap-1 rounded p-2 active:bg-black/5 ${
-                entry.id === selectedId ? 'bg-ola-primary/10 ring-1 ring-ola-primary' : ''
+                item.key === selectedKey ? 'bg-ola-primary/10 ring-1 ring-ola-primary' : ''
               }`}
             >
-              <VipThumbnail id={entry.id} size={44} />
+              <VipThumbnail id={item.typeId} size={44} />
               <span className="line-clamp-2 text-center text-[11px] leading-tight text-black/70">
-                {entry.name}
+                {item.name}
               </span>
-              {price != null && (
-                <span className="text-[11px] font-medium text-ola-primary">{price} KEN</span>
+              {item.price != null && (
+                <span className="text-[11px] font-medium text-ola-primary">{item.price} KEN</span>
               )}
             </button>
-          );
-        })}
-      </div>
+          ))}
+        </div>
+      )}
     </Dialog>
   );
 }
@@ -152,6 +152,7 @@ export function BuyVipPage() {
   const [mode, setMode] = useState<BuyVipMode>(initialMode);
   const [bySms, setBySms] = useState(false);
   const [selectedVipId, setSelectedVipId] = useState(DEFAULT_VIP_ID);
+  const [selectedShopId, setSelectedShopId] = useState('');
   const [packageIndex, setPackageIndex] = useState(0);
   const [receiver, setReceiver] = useState('');
   const [vipPickerOpen, setVipPickerOpen] = useState(false);
@@ -164,7 +165,13 @@ export function BuyVipPage() {
     let active = true;
     VipService.iconCatalog()
       .then((res) => {
-        if (active) setCatalog(res.items);
+        if (!active) return;
+        setCatalog(res.items);
+        const first = res.items[0];
+        if (first) {
+          setSelectedShopId(first.id);
+          setSelectedVipId(first.vipTypeId);
+        }
       })
       .catch(() => undefined);
     return () => {
@@ -172,27 +179,43 @@ export function BuyVipPage() {
     };
   }, []);
 
-  const priceMap = useMemo(() => {
-    const m = new Map<number, number>();
-    catalog.forEach((item) => m.set(item.typeId, item.kenPrice));
-    return m;
-  }, [catalog]);
-
-  const pickerEntries: VipCatalogEntry[] = useMemo(
-    () => (catalog.length > 0 ? catalog.map((c) => ({ id: c.typeId, name: c.name })) : VIP_CATALOG),
-    [catalog],
-  );
-
   const showReceiver = mode !== 'buy';
   const showVipSelect = mode === 'buy' || mode === 'give';
   const receiverLocked = mode === 'extend';
+  const isBuyIcon = mode === 'buy';
+
+  const buyItems: PickerItem[] = useMemo(
+    () =>
+      catalog.map((c) => ({
+        key: c.id,
+        typeId: c.vipTypeId,
+        name: vipById(c.vipTypeId)?.name ?? `VIP ${c.vipTypeId}`,
+        price: c.kenPrice,
+      })),
+    [catalog],
+  );
+
+  const giveItems: PickerItem[] = useMemo(
+    () => VIP_CATALOG.map((e) => ({ key: String(e.id), typeId: e.id, name: e.name })),
+    [],
+  );
+
+  const pickerItems = isBuyIcon ? buyItems : giveItems;
+  const selectedShopItem = catalog.find((c) => c.id === selectedShopId);
+  const displayVipId = isBuyIcon ? (selectedShopItem?.vipTypeId ?? selectedVipId) : selectedVipId;
+  const selectedKey = isBuyIcon ? selectedShopId : String(selectedVipId);
 
   const packages: VipPackage[] = bySms ? SMS_PACKAGES : KEN_PACKAGES;
   const selectedPackage: VipPackage =
     packages[Math.min(packageIndex, packages.length - 1)] ?? FALLBACK_PACKAGE;
-  const selectedVip = vipById(selectedVipId);
+  const selectedVip = vipById(displayVipId);
   const kenBalance = user?.ken ?? MOCK_KEN_BALANCE;
   const receiverValue = receiverLocked ? (user?.username ?? '') : receiver;
+
+  function handlePickVip(item: PickerItem) {
+    setSelectedVipId(item.typeId);
+    if (isBuyIcon) setSelectedShopId(item.key);
+  }
 
   function packageLabel(pkg: VipPackage): string {
     if (pkg.kind === 'ken') {
@@ -222,6 +245,10 @@ export function BuyVipPage() {
       toast.info(t('vip.buy.needReceiver'));
       return;
     }
+    if (isBuyIcon && !bySms && !selectedShopId) {
+      toast.info(t('vip.buy.needVip'));
+      return;
+    }
     if (showVipSelect && selectedVip == null) {
       toast.info(t('vip.buy.needVip'));
       return;
@@ -231,10 +258,15 @@ export function BuyVipPage() {
 
   async function confirmPurchase() {
     if (purchasing) return;
-    if (mode === 'buy' && !bySms) {
+    if (isBuyIcon && !bySms) {
+      if (!selectedShopId) {
+        setConfirmOpen(false);
+        toast.info(t('vip.buy.needVip'));
+        return;
+      }
       setPurchasing(true);
       try {
-        const result = await VipService.buyIcon(selectedVipId);
+        const result = await VipService.buyIcon(selectedShopId);
         if (user) setUser({ ...user, ken: result.kenBalance });
         setConfirmOpen(false);
         toast.success(t('vip.buy.bought', { name: selectedVip?.name ?? '' }));
@@ -318,12 +350,12 @@ export function BuyVipPage() {
               onClick={() => setVipPickerOpen(true)}
               className="mt-1 flex w-full items-center gap-2 rounded border border-black/12 px-2 py-1.5 text-left active:bg-black/5"
             >
-              <VipThumbnail id={selectedVipId} />
+              <VipThumbnail id={displayVipId} />
               <span className="h-9 w-px bg-black/12" />
               <span className="flex-1 truncate text-sm text-black/87">{selectedVip?.name}</span>
-              {priceMap.get(selectedVipId) != null && (
+              {isBuyIcon && selectedShopItem != null && (
                 <span className="text-sm font-medium text-ola-primary">
-                  {priceMap.get(selectedVipId)} KEN
+                  {selectedShopItem.kenPrice} KEN
                 </span>
               )}
               <ChevronIcon />
@@ -366,10 +398,9 @@ export function BuyVipPage() {
 
       <VipPickerDialog
         open={vipPickerOpen}
-        selectedId={selectedVipId}
-        entries={pickerEntries}
-        priceOf={(id) => priceMap.get(id)}
-        onSelect={(entry) => setSelectedVipId(entry.id)}
+        selectedKey={selectedKey}
+        items={pickerItems}
+        onSelect={handlePickVip}
         onClose={() => setVipPickerOpen(false)}
       />
 

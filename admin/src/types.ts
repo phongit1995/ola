@@ -121,16 +121,25 @@ export interface UpdateVipPackageRequest {
   sortOrder?: number
 }
 
-export interface VipIconType {
-  typeId: number
-  name: string
+export interface VipShopItem {
+  id: string
+  vipTypeId: number
   kenPrice: number
   isActive: boolean
+  sortOrder: number
 }
 
-export interface UpdateVipIconTypeRequest {
+export interface CreateVipShopItemRequest {
+  vipTypeId: number
+  kenPrice: number
+  isActive?: boolean
+  sortOrder?: number
+}
+
+export interface UpdateVipShopItemRequest {
   kenPrice?: number
   isActive?: boolean
+  sortOrder?: number
 }
 
 export interface Room {

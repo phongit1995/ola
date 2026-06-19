@@ -497,7 +497,8 @@
       "needReceiver": "Please enter a receiver nick",
       "needVip": "Please select a VIP icon",
       "bought": "Bought VIP {{name}}",
-      "failed": "Purchase failed"
+      "failed": "Purchase failed",
+      "shopEmpty": "No VIP for sale yet"
     }
   },
   "terms": {

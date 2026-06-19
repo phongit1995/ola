@@ -7,7 +7,7 @@ export class VipService {
     return http.get<VipIconCatalogResult>(API_PATH.vip.iconCatalog);
   }
 
-  static buyIcon(typeId: number): Promise<BuyVipIconResult> {
-    return http.post<BuyVipIconResult>(API_PATH.vip.buy, { typeId });
+  static buyIcon(shopItemId: string): Promise<BuyVipIconResult> {
+    return http.post<BuyVipIconResult>(API_PATH.vip.buy, { shopItemId });
   }
 }

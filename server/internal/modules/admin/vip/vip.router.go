@@ -22,7 +22,9 @@ func (r *Router) Setup(admin *utils.AppGroup) {
 		vip.PATCH("/packages/:id", r.controller.UpdatePackage)
 		vip.DELETE("/packages/:id", r.controller.DeletePackage)
 		vip.GET("/history", r.controller.ListHistory)
-		vip.GET("/icon-types", r.controller.ListIconTypes)
-		vip.PATCH("/icon-types/:typeId", r.controller.UpdateIconType)
+		vip.GET("/shop", r.controller.ListShopItems)
+		vip.POST("/shop", r.controller.CreateShopItem)
+		vip.PATCH("/shop/:id", r.controller.UpdateShopItem)
+		vip.DELETE("/shop/:id", r.controller.DeleteShopItem)
 	}
 }

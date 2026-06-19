@@ -29,7 +29,7 @@ type StoreResponse struct {
 }
 
 type BuyRequest struct {
-	TypeID int16 `json:"typeId" binding:"required,min=1,max=120" example:"4"`
+	ShopItemID string `json:"shopItemId" binding:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440000"`
 }
 
 type TransferRequest struct {
@@ -103,15 +103,15 @@ type UpdatePackageRequest struct {
 	SortOrder *int    `json:"sortOrder" example:"2"`
 }
 
-type IconCatalogItem struct {
-	TypeID   int16  `json:"typeId" example:"4"`
-	Name     string `json:"name" example:"Zakumi Đại Đế"`
-	KenPrice int    `json:"kenPrice" example:"100"`
+type ShopCatalogItem struct {
+	ID        string `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	VipTypeID int16  `json:"vipTypeId" example:"4"`
+	KenPrice  int    `json:"kenPrice" example:"100"`
 }
 
-type IconCatalogResponse struct {
-	Total int               `json:"total" example:"120"`
-	Items []IconCatalogItem `json:"items"`
+type ShopCatalogResponse struct {
+	Total int               `json:"total" example:"5"`
+	Items []ShopCatalogItem `json:"items"`
 }
 
 type BuyIconResponse struct {
@@ -119,21 +119,30 @@ type BuyIconResponse struct {
 	KenBalance int     `json:"kenBalance" example:"900"`
 }
 
-type IconTypeItem struct {
-	TypeID   int16  `json:"typeId" example:"4"`
-	Name     string `json:"name" example:"Zakumi Đại Đế"`
-	KenPrice int    `json:"kenPrice" example:"100"`
-	IsActive bool   `json:"isActive" example:"true"`
+type ShopItem struct {
+	ID        string `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	VipTypeID int16  `json:"vipTypeId" example:"4"`
+	KenPrice  int    `json:"kenPrice" example:"100"`
+	IsActive  bool   `json:"isActive" example:"true"`
+	SortOrder int    `json:"sortOrder" example:"0"`
 }
 
-type IconTypeListResponse struct {
-	Total int            `json:"total" example:"120"`
-	Items []IconTypeItem `json:"items"`
+type ShopListResponse struct {
+	Total int        `json:"total" example:"5"`
+	Items []ShopItem `json:"items"`
 }
 
-type UpdateIconTypeRequest struct {
-	KenPrice *int  `json:"kenPrice" binding:"omitempty,min=0" example:"150"`
-	IsActive *bool `json:"isActive" example:"true"`
+type CreateShopItemRequest struct {
+	VipTypeID int16 `json:"vipTypeId" binding:"required,min=1,max=120" example:"4"`
+	KenPrice  int   `json:"kenPrice" binding:"min=0" example:"100"`
+	IsActive  *bool `json:"isActive" example:"true"`
+	SortOrder int   `json:"sortOrder" example:"0"`
+}
+
+type UpdateShopItemRequest struct {
+	KenPrice  *int  `json:"kenPrice" binding:"omitempty,min=0" example:"150"`
+	IsActive  *bool `json:"isActive" example:"true"`
+	SortOrder *int  `json:"sortOrder" example:"0"`
 }
 
 type StoreSuccessResponse = utils.BaseResponse[StoreResponse]
@@ -143,7 +152,7 @@ type PackageListSuccessResponse = utils.BaseResponse[PackageListResponse]
 type PackageItemSuccessResponse = utils.BaseResponse[PackageItem]
 type BuyPackageSuccessResponse = utils.BaseResponse[BuyPackageResponse]
 type HistoryListSuccessResponse = utils.BaseResponse[HistoryListResponse]
-type IconCatalogSuccessResponse = utils.BaseResponse[IconCatalogResponse]
+type ShopCatalogSuccessResponse = utils.BaseResponse[ShopCatalogResponse]
 type BuyIconSuccessResponse = utils.BaseResponse[BuyIconResponse]
-type IconTypeListSuccessResponse = utils.BaseResponse[IconTypeListResponse]
-type IconTypeItemSuccessResponse = utils.BaseResponse[IconTypeItem]
+type ShopListSuccessResponse = utils.BaseResponse[ShopListResponse]
+type ShopItemSuccessResponse = utils.BaseResponse[ShopItem]

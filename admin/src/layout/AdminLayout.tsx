@@ -20,17 +20,31 @@ const MENU_ITEMS = [
   { key: '/', icon: <AppstoreOutlined />, label: 'Tổng quan' },
   { key: '/users', icon: <TeamOutlined />, label: 'Người dùng' },
   { key: '/rooms', icon: <CommentOutlined />, label: 'Phòng chat' },
-  { key: '/vip-packages', icon: <CrownOutlined />, label: 'Gói VIP' },
-  { key: '/vip-icons', icon: <SmileOutlined />, label: 'Loại VIP icon' },
+  {
+    key: 'vip',
+    icon: <CrownOutlined />,
+    label: 'VIP',
+    children: [
+      { key: '/vip-packages', icon: <CrownOutlined />, label: 'Gói ngày VIP' },
+      { key: '/vip-shop', icon: <SmileOutlined />, label: 'Shop VIP' },
+    ],
+  },
   { key: '/me', icon: <PictureOutlined />, label: 'Me' },
 ]
+
+const LEAF_KEYS = MENU_ITEMS.flatMap((item) => {
+  const children = (item as { children?: { key: string }[] }).children
+  return children ? children.map((child) => child.key) : [item.key]
+})
+
+const VIP_KEYS = ['/vip-packages', '/vip-shop']
 
 const PAGE_TITLES: Record<string, string> = {
   '/': 'Tổng quan',
   '/users': 'Quản lý người dùng',
   '/rooms': 'Quản lý phòng chat',
   '/vip-packages': 'Quản lý gói VIP',
-  '/vip-icons': 'Quản lý loại VIP icon',
+  '/vip-shop': 'Shop VIP',
   '/me': 'Quản lý Me',
 }
 
@@ -42,9 +56,11 @@ export function AdminLayout() {
   const clear = useAuthStore((s) => s.clear)
 
   const selectedKey =
-    MENU_ITEMS.map((item) => item.key)
-      .filter((key) => key !== '/' && location.pathname.startsWith(key))
-      .sort((a, b) => b.length - a.length)[0] ?? '/'
+    LEAF_KEYS.filter((key) => key !== '/' && location.pathname.startsWith(key)).sort(
+      (a, b) => b.length - a.length,
+    )[0] ?? '/'
+
+  const openKeys = VIP_KEYS.includes(selectedKey) ? ['vip'] : []
 
   function logout() {
     AdminAuthService.logout()
@@ -82,6 +98,7 @@ export function AdminLayout() {
           theme="dark"
           mode="inline"
           selectedKeys={[selectedKey]}
+          defaultOpenKeys={openKeys}
           items={MENU_ITEMS}
           onClick={({ key }) => navigate(key)}
         />

@@ -2,13 +2,14 @@ import http from '@/api/http'
 import type {
   ApiResponse,
   CreateVipPackageRequest,
+  CreateVipShopItemRequest,
   ListParams,
   ListResult,
   MessageResult,
-  UpdateVipIconTypeRequest,
   UpdateVipPackageRequest,
-  VipIconType,
+  UpdateVipShopItemRequest,
   VipPackage,
+  VipShopItem,
 } from '@/types'
 
 export const AdminVipService = {
@@ -38,21 +39,25 @@ export const AdminVipService = {
     return data.data
   },
 
-  async listIconTypes(): Promise<VipIconType[]> {
-    const { data } = await http.get<ApiResponse<{ total: number; items: VipIconType[] }>>(
-      '/admin/vip/icon-types',
+  async listShopItems(): Promise<VipShopItem[]> {
+    const { data } = await http.get<ApiResponse<{ total: number; items: VipShopItem[] }>>(
+      '/admin/vip/shop',
     )
     return data.data.items
   },
 
-  async updateIconType(
-    typeId: number,
-    payload: UpdateVipIconTypeRequest,
-  ): Promise<VipIconType> {
-    const { data } = await http.patch<ApiResponse<VipIconType>>(
-      `/admin/vip/icon-types/${typeId}`,
-      payload,
-    )
+  async createShopItem(payload: CreateVipShopItemRequest): Promise<VipShopItem> {
+    const { data } = await http.post<ApiResponse<VipShopItem>>('/admin/vip/shop', payload)
+    return data.data
+  },
+
+  async updateShopItem(id: string, payload: UpdateVipShopItemRequest): Promise<VipShopItem> {
+    const { data } = await http.patch<ApiResponse<VipShopItem>>(`/admin/vip/shop/${id}`, payload)
+    return data.data
+  },
+
+  async removeShopItem(id: string): Promise<MessageResult> {
+    const { data } = await http.delete<ApiResponse<MessageResult>>(`/admin/vip/shop/${id}`)
     return data.data
   },
 }

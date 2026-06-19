@@ -957,81 +957,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/admin/vip/icon-types": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "admin-vip"
-                ],
-                "summary": "Danh sách loại VIP icon (admin, gồm cả loại tắt)",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/ola-chat-server_internal_modules_vip.IconTypeListSuccessResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/admin/vip/icon-types/{typeId}": {
-            "patch": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "admin-vip"
-                ],
-                "summary": "Cập nhật giá / trạng thái bán loại VIP icon (admin)",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "VIP type ID",
-                        "name": "typeId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Icon type",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/ola-chat-server_internal_modules_vip.UpdateIconTypeRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/ola-chat-server_internal_modules_vip.IconTypeItemSuccessResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
-                        }
-                    }
-                }
-            }
-        },
         "/admin/vip/packages": {
             "get": {
                 "security": [
@@ -1186,6 +1111,163 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/ola-chat-server_internal_modules_vip.PackageItemSuccessResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/vip/shop": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-vip"
+                ],
+                "summary": "Danh sách VIP trong shop (admin, gồm cả mục tắt)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_vip.ShopListSuccessResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-vip"
+                ],
+                "summary": "Thêm VIP vào shop để bán (admin)",
+                "parameters": [
+                    {
+                        "description": "Shop item",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_vip.CreateShopItemRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_vip.ShopItemSuccessResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/vip/shop/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-vip"
+                ],
+                "summary": "Xoá VIP khỏi shop (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Shop item ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-vip"
+                ],
+                "summary": "Cập nhật giá / trạng thái VIP trong shop (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Shop item ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Shop item",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_vip.UpdateShopItemRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_vip.ShopItemSuccessResponse"
                         }
                     },
                     "404": {
@@ -4823,12 +4905,12 @@ const docTemplate = `{
                 "tags": [
                     "vip"
                 ],
-                "summary": "Danh sách loại VIP icon đang bán",
+                "summary": "Danh sách VIP đang bán trong shop",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_modules_vip.IconCatalogSuccessResponse"
+                            "$ref": "#/definitions/internal_modules_vip.ShopCatalogSuccessResponse"
                         }
                     }
                 }
@@ -8160,14 +8242,12 @@ const docTemplate = `{
         "internal_modules_vip.BuyRequest": {
             "type": "object",
             "required": [
-                "typeId"
+                "shopItemId"
             ],
             "properties": {
-                "typeId": {
-                    "type": "integer",
-                    "maximum": 120,
-                    "minimum": 1,
-                    "example": 4
+                "shopItemId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 }
             }
         },
@@ -8199,64 +8279,6 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "$ref": "#/definitions/internal_modules_vip.HistoryListResponse"
-                },
-                "error": {
-                    "type": "string"
-                },
-                "path": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "integer"
-                },
-                "success": {
-                    "type": "boolean"
-                },
-                "timestamp": {
-                    "type": "string"
-                },
-                "traceId": {
-                    "type": "string"
-                }
-            }
-        },
-        "internal_modules_vip.IconCatalogItem": {
-            "type": "object",
-            "properties": {
-                "kenPrice": {
-                    "type": "integer",
-                    "example": 100
-                },
-                "name": {
-                    "type": "string",
-                    "example": "Zakumi Đại Đế"
-                },
-                "typeId": {
-                    "type": "integer",
-                    "example": 4
-                }
-            }
-        },
-        "internal_modules_vip.IconCatalogResponse": {
-            "type": "object",
-            "properties": {
-                "items": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/internal_modules_vip.IconCatalogItem"
-                    }
-                },
-                "total": {
-                    "type": "integer",
-                    "example": 120
-                }
-            }
-        },
-        "internal_modules_vip.IconCatalogSuccessResponse": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "$ref": "#/definitions/internal_modules_vip.IconCatalogResponse"
                 },
                 "error": {
                     "type": "string"
@@ -8436,6 +8458,64 @@ const docTemplate = `{
                 "vipEndTime": {
                     "type": "string",
                     "example": "2026-12-31T00:00:00Z"
+                }
+            }
+        },
+        "internal_modules_vip.ShopCatalogItem": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "kenPrice": {
+                    "type": "integer",
+                    "example": 100
+                },
+                "vipTypeId": {
+                    "type": "integer",
+                    "example": 4
+                }
+            }
+        },
+        "internal_modules_vip.ShopCatalogResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_vip.ShopCatalogItem"
+                    }
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 5
+                }
+            }
+        },
+        "internal_modules_vip.ShopCatalogSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_vip.ShopCatalogResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
                 }
             }
         },
@@ -8750,6 +8830,33 @@ const docTemplate = `{
                 }
             }
         },
+        "ola-chat-server_internal_modules_vip.CreateShopItemRequest": {
+            "type": "object",
+            "required": [
+                "vipTypeId"
+            ],
+            "properties": {
+                "isActive": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "kenPrice": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "example": 100
+                },
+                "sortOrder": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "vipTypeId": {
+                    "type": "integer",
+                    "maximum": 120,
+                    "minimum": 1,
+                    "example": 4
+                }
+            }
+        },
         "ola-chat-server_internal_modules_vip.HistoryListResponse": {
             "type": "object",
             "properties": {
@@ -8778,94 +8885,6 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "$ref": "#/definitions/ola-chat-server_internal_modules_vip.HistoryListResponse"
-                },
-                "error": {
-                    "type": "string"
-                },
-                "path": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "integer"
-                },
-                "success": {
-                    "type": "boolean"
-                },
-                "timestamp": {
-                    "type": "string"
-                },
-                "traceId": {
-                    "type": "string"
-                }
-            }
-        },
-        "ola-chat-server_internal_modules_vip.IconTypeItem": {
-            "type": "object",
-            "properties": {
-                "isActive": {
-                    "type": "boolean",
-                    "example": true
-                },
-                "kenPrice": {
-                    "type": "integer",
-                    "example": 100
-                },
-                "name": {
-                    "type": "string",
-                    "example": "Zakumi Đại Đế"
-                },
-                "typeId": {
-                    "type": "integer",
-                    "example": 4
-                }
-            }
-        },
-        "ola-chat-server_internal_modules_vip.IconTypeItemSuccessResponse": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "$ref": "#/definitions/ola-chat-server_internal_modules_vip.IconTypeItem"
-                },
-                "error": {
-                    "type": "string"
-                },
-                "path": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "integer"
-                },
-                "success": {
-                    "type": "boolean"
-                },
-                "timestamp": {
-                    "type": "string"
-                },
-                "traceId": {
-                    "type": "string"
-                }
-            }
-        },
-        "ola-chat-server_internal_modules_vip.IconTypeListResponse": {
-            "type": "object",
-            "properties": {
-                "items": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/ola-chat-server_internal_modules_vip.IconTypeItem"
-                    }
-                },
-                "total": {
-                    "type": "integer",
-                    "example": 120
-                }
-            }
-        },
-        "ola-chat-server_internal_modules_vip.IconTypeListSuccessResponse": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "$ref": "#/definitions/ola-chat-server_internal_modules_vip.IconTypeListResponse"
                 },
                 "error": {
                     "type": "string"
@@ -9028,17 +9047,95 @@ const docTemplate = `{
                 }
             }
         },
-        "ola-chat-server_internal_modules_vip.UpdateIconTypeRequest": {
+        "ola-chat-server_internal_modules_vip.ShopItem": {
             "type": "object",
             "properties": {
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
                 "isActive": {
                     "type": "boolean",
                     "example": true
                 },
                 "kenPrice": {
                     "type": "integer",
-                    "minimum": 0,
-                    "example": 150
+                    "example": 100
+                },
+                "sortOrder": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "vipTypeId": {
+                    "type": "integer",
+                    "example": 4
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_vip.ShopItemSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_vip.ShopItem"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_vip.ShopListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_vip.ShopItem"
+                    }
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 5
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_vip.ShopListSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_vip.ShopListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
                 }
             }
         },
@@ -9068,6 +9165,24 @@ const docTemplate = `{
                 "sortOrder": {
                     "type": "integer",
                     "example": 2
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_vip.UpdateShopItemRequest": {
+            "type": "object",
+            "properties": {
+                "isActive": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "kenPrice": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "example": 150
+                },
+                "sortOrder": {
+                    "type": "integer",
+                    "example": 0
                 }
             }
         },

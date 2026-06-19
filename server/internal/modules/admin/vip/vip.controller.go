@@ -1,8 +1,6 @@
 package adminvip
 
 import (
-	"strconv"
-
 	"ola-chat-server/internal/modules/vip"
 	"ola-chat-server/internal/utils"
 
@@ -137,44 +135,86 @@ func (ctrl *Controller) ListHistory(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// ListIconTypes godoc
-// @Summary      Danh sách loại VIP icon (admin, gồm cả loại tắt)
+// ListShopItems godoc
+// @Summary      Danh sách VIP trong shop (admin, gồm cả mục tắt)
 // @Tags         admin-vip
 // @Produce      json
 // @Security     BearerAuth
-// @Success      200  {object}  vip.IconTypeListSuccessResponse
-// @Router       /admin/vip/icon-types [get]
-func (ctrl *Controller) ListIconTypes(c *gin.Context) (interface{}, error) {
-	resp, err := ctrl.service.ListAllIconTypes()
+// @Success      200  {object}  vip.ShopListSuccessResponse
+// @Router       /admin/vip/shop [get]
+func (ctrl *Controller) ListShopItems(c *gin.Context) (interface{}, error) {
+	resp, err := ctrl.service.ListAllShopItems()
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}
 	return resp, nil
 }
 
-// UpdateIconType godoc
-// @Summary      Cập nhật giá / trạng thái bán loại VIP icon (admin)
+// CreateShopItem godoc
+// @Summary      Thêm VIP vào shop để bán (admin)
 // @Tags         admin-vip
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
-// @Param        typeId path int true "VIP type ID"
-// @Param        request body vip.UpdateIconTypeRequest true "Icon type"
-// @Success      200  {object}  vip.IconTypeItemSuccessResponse
-// @Failure      404  {object}  utils.APIError
-// @Router       /admin/vip/icon-types/{typeId} [patch]
-func (ctrl *Controller) UpdateIconType(c *gin.Context) (interface{}, error) {
-	n, err := strconv.Atoi(c.Param("typeId"))
-	if err != nil || n < 1 || n > 120 {
-		return nil, utils.NewHTTPError(400, "invalid vip type id")
-	}
-	req, err := utils.BindJSON[vip.UpdateIconTypeRequest](c)
+// @Param        request body vip.CreateShopItemRequest true "Shop item"
+// @Success      201  {object}  vip.ShopItemSuccessResponse
+// @Failure      409  {object}  utils.APIError
+// @Router       /admin/vip/shop [post]
+func (ctrl *Controller) CreateShopItem(c *gin.Context) (interface{}, error) {
+	req, err := utils.BindJSON[vip.CreateShopItemRequest](c)
 	if err != nil {
 		return nil, err
 	}
-	item, err := ctrl.service.UpdateIconType(int16(n), *req)
+	item, err := ctrl.service.CreateShopItem(*req)
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}
 	return item, nil
+}
+
+// UpdateShopItem godoc
+// @Summary      Cập nhật giá / trạng thái VIP trong shop (admin)
+// @Tags         admin-vip
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "Shop item ID"
+// @Param        request body vip.UpdateShopItemRequest true "Shop item"
+// @Success      200  {object}  vip.ShopItemSuccessResponse
+// @Failure      404  {object}  utils.APIError
+// @Router       /admin/vip/shop/{id} [patch]
+func (ctrl *Controller) UpdateShopItem(c *gin.Context) (interface{}, error) {
+	id, err := utils.ParseUUIDParam(c, "id", "invalid shop item id")
+	if err != nil {
+		return nil, err
+	}
+	req, err := utils.BindJSON[vip.UpdateShopItemRequest](c)
+	if err != nil {
+		return nil, err
+	}
+	item, err := ctrl.service.UpdateShopItem(id, *req)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return item, nil
+}
+
+// DeleteShopItem godoc
+// @Summary      Xoá VIP khỏi shop (admin)
+// @Tags         admin-vip
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "Shop item ID"
+// @Success      200  {object}  map[string]string
+// @Failure      404  {object}  utils.APIError
+// @Router       /admin/vip/shop/{id} [delete]
+func (ctrl *Controller) DeleteShopItem(c *gin.Context) (interface{}, error) {
+	id, err := utils.ParseUUIDParam(c, "id", "invalid shop item id")
+	if err != nil {
+		return nil, err
+	}
+	if err := ctrl.service.DeleteShopItem(id); err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return map[string]string{"message": "shop item deleted"}, nil
 }

@@ -161,7 +161,7 @@ var (
 		"comment not found":            true,
 		"vip icon not found":           true,
 		"vip package not found":        true,
-		"vip type not found":           true,
+		"vip shop item not found":      true,
 	}
 
 	errorsConflict = map[string]bool{
@@ -169,6 +169,7 @@ var (
 		"username already exists":     true,
 		"you are already friends":     true,
 		"friend request already sent": true,
+		"vip already in shop":         true,
 	}
 
 	errorsForbidden = map[string]bool{
@@ -186,7 +187,6 @@ var (
 		"vip is locked":                         true,
 		"vip does not belong to you":            true,
 		"vip store is private":                  true,
-		"vip type not sellable":                 true,
 	}
 )
 

@@ -1,6 +1,6 @@
 export interface VipIconCatalogItem {
-  typeId: number;
-  name: string;
+  id: string;
+  vipTypeId: number;
   kenPrice: number;
 }
 
