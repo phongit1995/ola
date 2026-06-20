@@ -67,6 +67,7 @@ export interface ChatMessage {
   image?: string;
   voiceDuration?: string;
   audioUrl?: string;
+  audioDuration?: number;
   address?: string;
   youtubeTitle?: string;
   youtubeDuration?: string;

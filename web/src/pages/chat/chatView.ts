@@ -121,6 +121,7 @@ export function toBubble(message: Message, myId: string): ChatMessage {
     text: isImage || isAudio ? undefined : message.content,
     image: isImage ? meta.url : undefined,
     audioUrl: isAudio ? meta.url : undefined,
+    audioDuration: isAudio ? meta.duration : undefined,
     voiceDuration: isAudio ? formatDuration(meta.duration) : undefined,
     time: formatClock(message.createdAt),
     createdAt: message.createdAt,

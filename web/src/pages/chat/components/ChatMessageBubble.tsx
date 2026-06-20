@@ -2,6 +2,10 @@ import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Avatar } from '@components';
 import checkedIcon from '@/assets/icons/profile/ic_checked.png';
+import playMediaIcon from '@/assets/icons/chat/ic_play_media.png';
+import pauseMediaIcon from '@/assets/icons/chat/ic_pause_media.png';
+import playMediaGrayIcon from '@/assets/icons/chat/ic_play_media_gray.png';
+import pauseMediaGrayIcon from '@/assets/icons/chat/ic_pause_media_gray.png';
 import snapIcon from '@/assets/icons/chat/icon_snap_pic.png';
 import kenIcon from '@/assets/icons/chat/ic_ken_white.png';
 import addFriendIcon from '@/assets/icons/chat/ic_add_friend.png';
@@ -13,10 +17,12 @@ const noop = () => undefined;
 function VoiceBubble({
   url,
   duration,
+  durationSec,
   isOut,
 }: {
   url?: string;
   duration?: string;
+  durationSec?: number;
   isOut: boolean;
 }) {
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -28,6 +34,8 @@ function VoiceBubble({
   const fillClass = isOut ? 'bg-ola-primary-dark' : 'bg-ola-primary';
   const badgeClass = isOut ? 'bg-white text-ola-primary-darker' : 'bg-[#8f8f8f] text-white';
   const iconColor = isOut ? '#ffffff' : '#8f8f8f';
+  const playSrc = isOut ? playMediaIcon : playMediaGrayIcon;
+  const pauseSrc = isOut ? pauseMediaIcon : pauseMediaGrayIcon;
 
   function toggle() {
     const el = audioRef.current;
@@ -55,15 +63,8 @@ function VoiceBubble({
             className="h-4 w-4 animate-spin rounded-full border-2 border-t-transparent"
             style={{ borderColor: iconColor, borderTopColor: 'transparent' }}
           />
-        ) : playing ? (
-          <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden="true">
-            <rect x="6" y="5" width="4" height="14" rx="1" fill={iconColor} />
-            <rect x="14" y="5" width="4" height="14" rx="1" fill={iconColor} />
-          </svg>
         ) : (
-          <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden="true">
-            <path d="M8 5v14l11-7z" fill={iconColor} />
-          </svg>
+          <img src={playing ? pauseSrc : playSrc} alt="" className="h-5 w-5 object-contain" />
         )}
       </button>
       <span className="relative h-0.5 flex-1 rounded-full bg-white" />
@@ -87,7 +88,8 @@ function VoiceBubble({
         }}
         onTimeUpdate={(event) => {
           const el = event.currentTarget;
-          setProgress(el.duration > 0 ? el.currentTime / el.duration : 0);
+          const total = Number.isFinite(el.duration) && el.duration > 0 ? el.duration : durationSec ?? 0;
+          setProgress(total > 0 ? Math.min(1, el.currentTime / total) : 0);
         }}
       />
     </div>
@@ -142,7 +144,12 @@ export function ChatMessageBubble({
 
     case 'voice':
       return (
-        <VoiceBubble url={message.audioUrl} duration={message.voiceDuration} isOut={isOut} />
+        <VoiceBubble
+          url={message.audioUrl}
+          duration={message.voiceDuration}
+          durationSec={message.audioDuration}
+          isOut={isOut}
+        />
       );
 
     case 'location':

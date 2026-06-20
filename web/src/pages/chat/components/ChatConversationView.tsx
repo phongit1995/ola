@@ -25,6 +25,7 @@ import { reactionChips, toBubble } from '../chatView';
 import { useLongPress } from '@hooks';
 import { ChatMessageBubble } from './ChatMessageBubble';
 import { MessageActionSheet } from './MessageActionSheet';
+import { VoicePreviewBar } from './VoicePreviewBar';
 import { MediaViewer } from '../../me/components/MediaViewer';
 import { UserProfileView } from '../../profile/UserProfileView';
 
@@ -77,6 +78,7 @@ export function ChatConversationView({
   const [menuOpen, setMenuOpen] = useState(false);
   const [blockOpen, setBlockOpen] = useState(false);
   const [openTab, setOpenTab] = useState<AttachTab | null>(null);
+  const [pendingAudio, setPendingAudio] = useState<{ blob: Blob; duration: number } | null>(null);
   const [actionTarget, setActionTarget] = useState<ChatMessage | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ChatMessage | null>(null);
   const [editing, setEditing] = useState<{ id: string } | null>(null);
@@ -109,6 +111,15 @@ export function ChatConversationView({
     }
     return null;
   }, [bubbles]);
+
+  const [activeConversationId, setActiveConversationId] = useState(currentConversationId);
+  if (activeConversationId !== currentConversationId) {
+    setActiveConversationId(currentConversationId);
+    setPendingAudio(null);
+    setOpenTab(null);
+    setEditing(null);
+    setDraft('');
+  }
 
   useEffect(() => {
     stickToBottomRef.current = true;
@@ -290,6 +301,18 @@ export function ChatConversationView({
         </div>
       )}
 
+      {pendingAudio != null && (
+        <VoicePreviewBar
+          blob={pendingAudio.blob}
+          duration={pendingAudio.duration}
+          onSend={() => {
+            void sendAudio(pendingAudio.blob, pendingAudio.duration);
+            setPendingAudio(null);
+          }}
+          onDiscard={() => setPendingAudio(null)}
+        />
+      )}
+
       <form
         onSubmit={(event) => {
           event.preventDefault();
@@ -348,7 +371,10 @@ export function ChatConversationView({
           setOpenTab(null);
         }}
         onSend={() => toast.info(t('chat.comingSoon'))}
-        onSendAudio={(blob, duration) => void sendAudio(blob, duration)}
+        onRecorded={(blob, duration) => {
+          setPendingAudio({ blob, duration });
+          setOpenTab(null);
+        }}
       />
 
       <input

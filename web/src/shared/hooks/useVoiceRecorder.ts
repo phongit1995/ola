@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 const MAX_DURATION_MS = 300_000;
 const MIN_DURATION_SEC = 1;
@@ -156,6 +156,21 @@ export function useVoiceRecorder(onError?: (error: VoiceRecorderError) => void):
       cleanup();
     }
   }, [cleanup]);
+
+  useEffect(() => {
+    return () => {
+      const recorder = recorderRef.current;
+      if (recorder != null && recorder.state !== 'inactive') {
+        try {
+          recorder.stop();
+        } catch {
+          recorderRef.current = null;
+        }
+      }
+      if (timerRef.current != null) clearInterval(timerRef.current);
+      streamRef.current?.getTracks().forEach((track) => track.stop());
+    };
+  }, []);
 
   return { isRecording, elapsedMs, start, stop, cancel };
 }

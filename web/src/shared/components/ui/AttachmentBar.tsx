@@ -52,7 +52,7 @@ interface AttachmentBarProps {
   onPickImage: () => void;
   onSendKul: (index: number) => void;
   onSend: (payload: AttachSendPayload) => void;
-  onSendAudio?: (blob: Blob, duration: number) => void;
+  onRecorded?: (blob: Blob, duration: number) => void;
   tabs?: AttachTab[];
 }
 
@@ -164,7 +164,7 @@ function formatTimer(ms: number): string {
   return `${minutes}:${String(total % 60).padStart(2, '0')}`;
 }
 
-function VoicePanel({ onSendAudio }: { onSendAudio: (blob: Blob, duration: number) => void }) {
+function VoicePanel({ onRecorded }: { onRecorded: (blob: Blob, duration: number) => void }) {
   const { t } = useTranslation();
   const [cancelArmed, setCancelArmed] = useState(false);
   const activeRef = useRef(false);
@@ -189,7 +189,7 @@ function VoicePanel({ onSendAudio }: { onSendAudio: (blob: Blob, duration: numbe
     }
     const result = await recorder.stop();
     setCancelArmed(false);
-    if (result != null) onSendAudio(result.blob, result.duration);
+    if (result != null) onRecorded(result.blob, result.duration);
   }
 
   async function handlePointerDown(event: ReactPointerEvent<HTMLButtonElement>) {
@@ -294,7 +294,7 @@ export function AttachmentBar({
   onPickImage,
   onSendKul,
   onSend,
-  onSendAudio,
+  onRecorded,
   tabs = ALL_TABS,
 }: AttachmentBarProps) {
   const { t } = useTranslation();
@@ -356,7 +356,7 @@ export function AttachmentBar({
           {openTab === 'kul' && <KulPanel onSendKul={onSendKul} />}
           {openTab === 'camera' && <CameraPanel onCapture={onPickImage} />}
           {openTab === 'photo' && <PhotoPanel onPickImage={onPickImage} />}
-          {openTab === 'voice' && <VoicePanel onSendAudio={onSendAudio ?? (() => undefined)} />}
+          {openTab === 'voice' && <VoicePanel onRecorded={onRecorded ?? (() => undefined)} />}
           {openTab === 'more' && <MorePanel onSend={onSend} />}
         </div>
       )}
