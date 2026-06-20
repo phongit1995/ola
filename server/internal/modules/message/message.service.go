@@ -523,7 +523,9 @@ func (s *Service) SendDirectMessage(senderID, recipientID uuid.UUID, messageType
 	}
 
 	if isNew {
-		go s.publishConversationCreatedEvent(conversationID, senderID, recipientID, messageResponse)
+		utils.SafeGo(s.logger, func() {
+			s.publishConversationCreatedEvent(conversationID, senderID, recipientID, messageResponse)
+		})
 	}
 
 	return messageResponse, nil
@@ -633,17 +635,17 @@ func (s *Service) createFullDirectConversation(conversationID, userA, userB, cre
 
 	var wg sync.WaitGroup
 	wg.Add(2)
-	go func() {
+	utils.SafeGo(s.logger, func() {
 		defer wg.Done()
 		s.convCache.InvalidateUserConversations([]uuid.UUID{userA, userB})
-	}()
-	go func() {
+	})
+	utils.SafeGo(s.logger, func() {
 		defer wg.Done()
 		if err := s.convCache.SetConversationMembers(conversationID, members); err != nil {
 			s.logger.Warnw("Failed to cache conversation members after creation",
 				"conversation_id", conversationID, "error", err)
 		}
-	}()
+	})
 	wg.Wait()
 
 	return nil
@@ -735,7 +737,9 @@ func (s *Service) SendMessage(senderID, conversationID uuid.UUID, messageType, c
 		}
 	}
 
-	go s.postSendMessageTasks(conversationID, memberIDs, members, msg, response, shortContent, senderID, messageID, now)
+	utils.SafeGo(s.logger, func() {
+		s.postSendMessageTasks(conversationID, memberIDs, members, msg, response, shortContent, senderID, messageID, now)
+	})
 
 	return response, nil
 }
@@ -772,12 +776,19 @@ func (s *Service) applyInboxFanout(conversationID uuid.UUID, members []conversat
 
 		_, hasInbox := currentUnread[member.UserID]
 		if !hasInbox {
-			isHidden, _ := s.convRepo.CheckIfHidden(member.UserID, conversationID)
+			isHidden, hiddenErr := s.convRepo.CheckIfHidden(member.UserID, conversationID)
+			if hiddenErr != nil {
+				s.logger.Warnw("Failed to check hidden status, treating as not hidden",
+					"user_id", member.UserID, "conversation_id", conversationID, "error", hiddenErr)
+			}
 			if isHidden {
 				hiddenMembers = append(hiddenMembers, member)
 			} else {
 				s.logger.Warnw("Inbox entry missing, will recreate", "user_id", member.UserID)
-				go s.recreateInboxEntry(member.UserID, conversationID, messageID, shortContent, senderID, member.UserID != senderID)
+				memberID := member.UserID
+				utils.SafeGo(s.logger, func() {
+					s.recreateInboxEntry(memberID, conversationID, messageID, shortContent, senderID, memberID != senderID)
+				})
 			}
 			continue
 		}
@@ -890,11 +901,11 @@ func (s *Service) GetMessages(userID, conversationID uuid.UUID, limit int, befor
 		}
 
 		if beforeTimeuuid == nil && len(messages) > 0 {
-			go func() {
+			utils.SafeGo(s.logger, func() {
 				if err := s.cache.SetConversationMessages(conversationID, limit, messages); err != nil {
 					s.logger.Warnw("Failed to cache messages", "conversation_id", conversationID, "error", err)
 				}
-			}()
+			})
 		}
 	}
 
@@ -997,7 +1008,9 @@ func (s *Service) UpdateMessage(userID uuid.UUID, conversationIDStr, messageIDSt
 	}
 
 	// Update inbox preview if this is the last message
-	go s.updateInboxPreviewIfLastMessage(conversationID, messageID, newContent, members)
+	utils.SafeGo(s.logger, func() {
+		s.updateInboxPreviewIfLastMessage(conversationID, messageID, newContent, members)
+	})
 
 	// Build response
 	now := time.Now()
@@ -1028,7 +1041,7 @@ func (s *Service) UpdateMessage(userID uuid.UUID, conversationIDStr, messageIDSt
 }
 
 func (s *Service) invalidateMessageCachesAsync(conversationID uuid.UUID, messageID gocql.UUID) {
-	go func() {
+	utils.SafeGo(s.logger, func() {
 		if err := s.cache.DeleteMessage(conversationID, messageID); err != nil {
 			s.logger.Warnw("Failed to invalidate message cache after update",
 				"conversation_id", conversationID, "message_id", messageID, "error", err)
@@ -1037,7 +1050,7 @@ func (s *Service) invalidateMessageCachesAsync(conversationID uuid.UUID, message
 			s.logger.Warnw("Failed to invalidate conversation messages cache after update",
 				"conversation_id", conversationID, "error", err)
 		}
-	}()
+	})
 }
 
 func conversationToEventData(conv *conversation.Conversation) *messageEvents.ConversationData {
@@ -1082,7 +1095,7 @@ func (s *Service) publishWithTimeout(action string, publish func(ctx context.Con
 }
 
 func (s *Service) publishAsync(action string, publish func(ctx context.Context) error) {
-	go s.publishWithTimeout(action, publish)
+	utils.SafeGo(s.logger, func() { s.publishWithTimeout(action, publish) })
 }
 
 func (s *Service) conversationEventData(convID uuid.UUID) *messageEvents.ConversationData {
@@ -1142,9 +1155,9 @@ func (s *Service) DeleteMessage(userID uuid.UUID, conversationIDStr, messageIDSt
 	}
 
 	// Update inbox preview if this is the last message
-	go s.updateInboxPreviewAfterDelete(conversationID, messageID, members)
+	utils.SafeGo(s.logger, func() { s.updateInboxPreviewAfterDelete(conversationID, messageID, members) })
 
-	go s.invalidateCachesAfterDelete(conversationID, messageID)
+	utils.SafeGo(s.logger, func() { s.invalidateCachesAfterDelete(conversationID, messageID) })
 
 	s.publishAsync("message deleted event", func(ctx context.Context) error {
 		return s.kafkaProducer.PublishMessageDeleted(ctx, &messageEvents.MessageDeletedEvent{
@@ -1172,12 +1185,13 @@ func (s *Service) invalidateCachesAfterSend(conversationID uuid.UUID, memberIDs 
 	var wg sync.WaitGroup
 	for _, userID := range memberIDs {
 		wg.Add(1)
-		go func(uid uuid.UUID) {
+		uid := userID
+		utils.SafeGo(s.logger, func() {
 			defer wg.Done()
 			if err := s.convCache.DeleteUserConversations(uid); err != nil {
 				s.logger.Warnw("Failed to invalidate user conversations cache", "user_id", uid, "error", err)
 			}
-		}(userID)
+		})
 	}
 	wg.Wait()
 
@@ -1386,7 +1400,7 @@ func (s *Service) recreateInboxEntry(userID, conversationID uuid.UUID, messageID
 		return fmt.Errorf("failed to add conversation to inbox: %w", err)
 	}
 
-	go s.convCache.DeleteUserConversations(userID)
+	utils.SafeGo(s.logger, func() { s.convCache.DeleteUserConversations(userID) })
 
 	return nil
 }
@@ -1443,10 +1457,16 @@ func (s *Service) ToggleReaction(ctx context.Context, userID, conversationID uui
 	}
 
 	lockKey := fmt.Sprintf(constants.CacheKeyReactionLock, messageIDStr)
-	acquired, _ := s.redis.SetNX(lockKey, "1", time.Duration(constants.ReactionLockTTLSeconds)*time.Second)
+	acquired, lockErr := s.redis.SetNX(lockKey, "1", time.Duration(constants.ReactionLockTTLSeconds)*time.Second)
+	if lockErr != nil {
+		s.logger.Warnw("Reaction lock SetNX failed", "message_id", messageIDStr, "error", lockErr)
+	}
 	if !acquired {
 		time.Sleep(time.Duration(constants.ReactionLockRetryMs) * time.Millisecond)
-		acquired, _ = s.redis.SetNX(lockKey, "1", time.Duration(constants.ReactionLockTTLSeconds)*time.Second)
+		acquired, lockErr = s.redis.SetNX(lockKey, "1", time.Duration(constants.ReactionLockTTLSeconds)*time.Second)
+		if lockErr != nil {
+			s.logger.Warnw("Reaction lock SetNX retry failed", "message_id", messageIDStr, "error", lockErr)
+		}
 		if !acquired {
 			return nil, fmt.Errorf("reaction in progress, please retry")
 		}

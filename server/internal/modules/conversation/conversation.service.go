@@ -354,14 +354,14 @@ func newDirectInboxEntry(owner, other, convID gocql.UUID, otherName, otherAvatar
 }
 
 func (s *Service) cacheAndPublishDirectCreated(conversationID, user1ID, user2ID uuid.UUID, user1, otherUser *models.User, members []ConversationMember, now time.Time) {
-	go func() {
+	utils.SafeGo(s.logger, func() {
 		s.InvalidateUserConversationsCache([]uuid.UUID{user1ID, user2ID})
 		if err := s.cache.SetConversationMembers(conversationID, members); err != nil {
 			s.logger.Warnw("Failed to cache conversation members after creation",
 				"conversation_id", conversationID, "error", err)
 		}
 		s.publishDirectConversationCreated(conversationID, user1ID, user2ID, user1, otherUser, now)
-	}()
+	})
 }
 
 func (s *Service) publishDirectConversationCreated(convID, user1ID, user2ID uuid.UUID, user1, user2 *models.User, createdAt time.Time) {
@@ -525,14 +525,14 @@ func (s *Service) resolveGroupParticipants(creatorID uuid.UUID, participantIDs [
 }
 
 func (s *Service) cacheAndPublishGroupCreated(conversationID uuid.UUID, name string, participantIDs []uuid.UUID, members []ConversationMember, now time.Time) {
-	go func() {
+	utils.SafeGo(s.logger, func() {
 		s.InvalidateUserConversationsCache(participantIDs)
 		if err := s.cache.SetConversationMembers(conversationID, members); err != nil {
 			s.logger.Warnw("Failed to cache conversation members after creation",
 				"conversation_id", conversationID, "error", err)
 		}
 		s.publishGroupConversationCreated(conversationID, name, participantIDs, now)
-	}()
+	})
 }
 
 func (s *Service) publishGroupConversationCreated(convID uuid.UUID, name string, participantIDs []uuid.UUID, createdAt time.Time) {
@@ -648,14 +648,14 @@ func (s *Service) resolveOtherReadStates(conversations []ConversationByUser, use
 	for k, v := range dbReads {
 		otherReads[k] = v
 	}
-	go func() {
+	utils.SafeGo(s.logger, func() {
 		for _, p := range otherReadPairs {
 			key := p.UserID.String() + ":" + p.ConversationID.String()
 			if msgID, ok := dbReads[key]; ok && msgID != nil {
 				s.cache.SetLastRead(p.ConversationID, p.UserID, msgID.String())
 			}
 		}
-	}()
+	})
 	return otherReads
 }
 
@@ -740,11 +740,11 @@ func (s *Service) MarkConversationAsRead(userID, conversationID uuid.UUID) error
 		return fmt.Errorf("failed to mark as read: %w", err)
 	}
 
-	go func() {
+	utils.SafeGo(s.logger, func() {
 		s.cache.ResetUnreadCount(conversationID, userID)
 		s.cache.SetLastRead(conversationID, userID, lastReadMessageID.String())
 		s.InvalidateUserConversationsCache([]uuid.UUID{userID})
-	}()
+	})
 
 	if userConv.LastMessageSender != nil && userConv.OtherUserID != nil {
 		senderID := *userConv.LastMessageSender
@@ -811,7 +811,7 @@ func (s *Service) SetConversationMuted(userID, conversationID uuid.UUID, muted b
 		return fmt.Errorf("failed to set mute state: %w", err)
 	}
 
-	go s.InvalidateUserConversationsCache([]uuid.UUID{userID})
+	utils.SafeGo(s.logger, func() { s.InvalidateUserConversationsCache([]uuid.UUID{userID}) })
 	return nil
 }
 
@@ -828,12 +828,12 @@ func (s *Service) HideConversation(userID, conversationID uuid.UUID) error {
 		return fmt.Errorf("failed to hide conversation: %w", err)
 	}
 
-	go func() {
+	utils.SafeGo(s.logger, func() {
 		if err := s.cache.AddHiddenConversation(userID, conversationID); err != nil {
 			s.logger.Warnw("Failed to update hidden cache", "user_id", userID, "conversation_id", conversationID, "error", err)
 		}
 		s.InvalidateUserConversationsCache([]uuid.UUID{userID})
-	}()
+	})
 
 	return nil
 }
@@ -852,7 +852,11 @@ func (s *Service) UnhideConversation(userID, conversationID uuid.UUID) error {
 		return fmt.Errorf("failed to get conversation: %w", err)
 	}
 
-	members, _ := s.GetMembersCached(conversationID)
+	members, membersErr := s.GetMembersCached(conversationID)
+	if membersErr != nil {
+		s.logger.Warnw("Failed to get members, resolving display without them",
+			"conversation_id", conversationID, "error", membersErr)
+	}
 	d := s.resolveConversationDisplay(conv, userID, members)
 
 	newLastMessageAt := gocql.TimeUUID()
@@ -861,12 +865,12 @@ func (s *Service) UnhideConversation(userID, conversationID uuid.UUID) error {
 		return fmt.Errorf("failed to unhide conversation: %w", err)
 	}
 
-	go func() {
+	utils.SafeGo(s.logger, func() {
 		if err := s.cache.RemoveHiddenConversation(userID, conversationID); err != nil {
 			s.logger.Warnw("Failed to update hidden cache", "user_id", userID, "conversation_id", conversationID, "error", err)
 		}
 		s.InvalidateUserConversationsCache([]uuid.UUID{userID})
-	}()
+	})
 
 	return nil
 }
@@ -895,7 +899,11 @@ func (s *Service) AutoUnhideOnNewMessage(userID, conversationID uuid.UUID, messa
 		return fmt.Errorf("failed to get conversation: %w", err)
 	}
 
-	members, _ := s.GetMembersCached(conversationID)
+	members, membersErr := s.GetMembersCached(conversationID)
+	if membersErr != nil {
+		s.logger.Warnw("Failed to get members, resolving display without them",
+			"conversation_id", conversationID, "error", membersErr)
+	}
 	d := s.resolveConversationDisplay(conv, userID, members)
 
 	unreadAfter := 0
@@ -908,12 +916,12 @@ func (s *Service) AutoUnhideOnNewMessage(userID, conversationID uuid.UUID, messa
 		return fmt.Errorf("failed to auto-unhide conversation: %w", err)
 	}
 
-	go func() {
+	utils.SafeGo(s.logger, func() {
 		if err := s.cache.RemoveHiddenConversation(userID, conversationID); err != nil {
 			s.logger.Warnw("Failed to update hidden cache", "user_id", userID, "conversation_id", conversationID, "error", err)
 		}
 		s.InvalidateUserConversationsCache([]uuid.UUID{userID})
-	}()
+	})
 
 	return nil
 }

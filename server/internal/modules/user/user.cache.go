@@ -5,6 +5,7 @@ import (
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/services"
+	"ola-chat-server/internal/utils"
 	"time"
 
 	"github.com/google/uuid"
@@ -163,11 +164,11 @@ func (c *CacheService) GetUsersBatch(userIDs []uuid.UUID, fallbackToDB bool) map
 	for i := range users {
 		u := &users[i]
 		result[u.ID] = u
-		go func(uid uuid.UUID, model *models.User) {
-			if err := c.SetUser(uid, model); err != nil {
-				c.logger.Warnw("Failed to cache user after batch fetch", "user_id", uid, "error", err)
+		utils.SafeGo(c.logger, func() {
+			if err := c.SetUser(u.ID, u); err != nil {
+				c.logger.Warnw("Failed to cache user after batch fetch", "user_id", u.ID, "error", err)
 			}
-		}(u.ID, u)
+		})
 	}
 
 	return result
@@ -190,11 +191,12 @@ func (c *CacheService) GetUserCache(userID uuid.UUID, fallbackToDB bool) (*model
 		return nil, err
 	}
 
-	go func(uid uuid.UUID, u *models.User) {
-		if setErr := c.SetUser(uid, u); setErr != nil {
-			c.logger.Warnw("Failed to cache user after DB fetch", "user_id", uid, "error", setErr)
+	cached := &user
+	utils.SafeGo(c.logger, func() {
+		if setErr := c.SetUser(userID, cached); setErr != nil {
+			c.logger.Warnw("Failed to cache user after DB fetch", "user_id", userID, "error", setErr)
 		}
-	}(userID, &user)
+	})
 
 	return &user, nil
 }

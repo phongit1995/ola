@@ -3,6 +3,7 @@ package utils
 import (
 	"errors"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -190,6 +191,18 @@ var (
 	}
 )
 
+func matchKnownError(msg string, table map[string]bool) bool {
+	if table[msg] {
+		return true
+	}
+	for key := range table {
+		if strings.HasPrefix(msg, key+": ") {
+			return true
+		}
+	}
+	return false
+}
+
 func HTTPStatusFromError(err error) int {
 	if err == nil {
 		return http.StatusOK
@@ -197,19 +210,19 @@ func HTTPStatusFromError(err error) int {
 
 	msg := err.Error()
 
-	if errorsUnauthorized[msg] {
+	if matchKnownError(msg, errorsUnauthorized) {
 		return http.StatusUnauthorized
 	}
 
-	if errorsNotFound[msg] {
+	if matchKnownError(msg, errorsNotFound) {
 		return http.StatusNotFound
 	}
 
-	if errorsConflict[msg] {
+	if matchKnownError(msg, errorsConflict) {
 		return http.StatusConflict
 	}
 
-	if errorsForbidden[msg] {
+	if matchKnownError(msg, errorsForbidden) {
 		return http.StatusForbidden
 	}
 

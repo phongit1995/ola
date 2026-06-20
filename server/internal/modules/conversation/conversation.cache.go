@@ -1,9 +1,10 @@
 package conversation
 
 import (
+	"fmt"
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/services"
-	"fmt"
+	"ola-chat-server/internal/utils"
 	"time"
 
 	"github.com/google/uuid"
@@ -240,11 +241,11 @@ func (c *CacheService) GetMembersCached(conversationID uuid.UUID) ([]Conversatio
 		return nil, err
 	}
 
-	go func() {
+	utils.SafeGo(c.logger, func() {
 		if err := c.SetConversationMembers(conversationID, members); err != nil {
 			c.logger.Warnw("Failed to cache conversation members", "conversation_id", conversationID, "error", err)
 		}
-	}()
+	})
 
 	return members, nil
 }
@@ -259,11 +260,11 @@ func (c *CacheService) GetConversationByIDCached(conversationID uuid.UUID) (*Con
 		return nil, err
 	}
 
-	go func() {
+	utils.SafeGo(c.logger, func() {
 		if err := c.SetConversation(conv); err != nil {
 			c.logger.Warnw("Failed to cache conversation", "conversation_id", conversationID, "error", err)
 		}
-	}()
+	})
 
 	return conv, nil
 }
@@ -281,11 +282,11 @@ func (c *CacheService) GetUserConversationsCached(userID uuid.UUID, limit int) (
 		return nil, err
 	}
 
-	go func() {
+	utils.SafeGo(c.logger, func() {
 		if err := c.SetUserConversations(userID, conversations); err != nil {
 			c.logger.Warnw("Failed to cache user conversations", "user_id", userID, "error", err)
 		}
-	}()
+	})
 
 	return conversations, nil
 }
@@ -302,11 +303,11 @@ func (c *CacheService) CheckIfHiddenCached(userID, conversationID uuid.UUID) (bo
 	}
 
 	if isHidden {
-		go func() {
+		utils.SafeGo(c.logger, func() {
 			if err := c.AddHiddenConversation(userID, conversationID); err != nil {
 				c.logger.Warnw("Failed to cache hidden status", "user_id", userID, "conversation_id", conversationID, "error", err)
 			}
-		}()
+		})
 	}
 
 	return isHidden, nil
