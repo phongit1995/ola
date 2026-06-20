@@ -12,6 +12,7 @@ import {
 } from '@components';
 import { VipService } from '@services';
 import type { VipIconInstance, VipStoreResult } from '@app-types';
+import { useAuthStore } from '@/store/authStore';
 import { vipById, vipIconUrl } from './vipCatalog';
 
 const PRIVACY_KEYS = ['privacyPublic', 'privacyFriends', 'privacyPrivate'] as const;
@@ -71,6 +72,7 @@ function VipRow({ icon, onSelect }: VipRowProps) {
 export function VipStorePage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const refreshUser = useAuthStore((s) => s.refreshUser);
 
   const [store, setStore] = useState<VipStoreResult | null>(null);
   const [loadedAt, setLoadedAt] = useState(0);
@@ -143,12 +145,13 @@ export function VipStorePage() {
 
   const durationText = buildDurationText();
 
-  async function runAction(action: () => Promise<unknown>, successText: string) {
+  async function runAction(action: () => Promise<unknown>, successText: string, syncUser = false) {
     if (busy) return;
     setBusy(true);
     try {
       await action();
       await reload();
+      if (syncUser) await refreshUser();
       toast.success(successText);
     } catch {
       toast.info(t('common.error'));
@@ -168,6 +171,7 @@ export function VipStorePage() {
     void runAction(
       () => VipService.activateIcon(target.instanceId),
       t('vip.toastUsed', { name: vipName(target.typeId) }),
+      true,
     );
   }
 
@@ -186,6 +190,7 @@ export function VipStorePage() {
     void runAction(
       () => VipService.deleteIcon(target.instanceId),
       t('vip.toastDeleted', { name: vipName(target.typeId) }),
+      true,
     );
   }
 
