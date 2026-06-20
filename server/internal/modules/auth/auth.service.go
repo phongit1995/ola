@@ -182,79 +182,21 @@ func (s *Service) Register(req *RegisterRequest) (*RegisterResponse, error) {
 }
 
 func (s *Service) Login(req *LoginRequest, clientIP, userAgent string) (*AuthResponse, error) {
-	req.Username = strings.ToLower(strings.TrimSpace(req.Username))
-
-	s.logger.Debugw("Finding user by username",
-		"username", req.Username,
-	)
-
-	user, err := s.repo.FindByUsername(req.Username)
+	user, err := s.authenticate(req)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			s.logger.Warnw("User not found",
-				"username", req.Username,
-			)
-			return nil, errors.New("invalid username or password")
-		}
-		s.logger.Errorw("Database error while finding user",
-			"username", req.Username,
-			"error", err.Error(),
-		)
 		return nil, err
 	}
-
-	s.logger.Debugw("Verifying password",
-		"user_id", user.ID,
-	)
-
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
-		s.logger.Warnw("Invalid password",
-			"user_id", user.ID,
-			"username", req.Username,
-		)
-		return nil, errors.New("invalid username or password")
-	}
-
-	if !user.IsActive {
-		s.logger.Warnw("Login blocked: account disabled", "user_id", user.ID)
-		return nil, errors.New("account is disabled")
-	}
-
-	s.logger.Debugw("Generating JWT tokens",
-		"user_id", user.ID,
-	)
 
 	deviceName, platform, deviceID, appVersion := resolveDeviceInfo(req.Device, userAgent)
 	sessionID := s.sessionService.ResolveSessionID(user.ID, deviceID)
 
-	token, err := s.jwtService.GenerateTokenWithSession(user.ID, sessionID)
+	token, refreshToken, err := s.issueTokens(user.ID, sessionID)
 	if err != nil {
-		s.logger.Errorw("Failed to generate access token",
-			"user_id", user.ID,
-			"error", err.Error(),
-		)
 		return nil, err
 	}
-
-	refreshToken, err := s.jwtService.GenerateRefreshTokenWithSession(user.ID, sessionID)
-	if err != nil {
-		s.logger.Errorw("Failed to generate refresh token",
-			"user_id", user.ID,
-			"error", err.Error(),
-		)
-		return nil, err
-	}
-
-	s.logger.Debugw("Updating user login info",
-		"user_id", user.ID,
-		"ip", clientIP,
-	)
 
 	if err := s.repo.UpdateLastLogin(user.ID, clientIP); err != nil {
-		s.logger.Errorw("Failed to update login info",
-			"user_id", user.ID,
-			"error", err.Error(),
-		)
+		s.logger.Errorw("Failed to update login info", "user_id", user.ID, "error", err.Error())
 	}
 
 	if err := s.sessionService.Save(session.SaveInput{
@@ -268,29 +210,59 @@ func (s *Service) Login(req *LoginRequest, clientIP, userAgent string) (*AuthRes
 		IPAddress:    clientIP,
 		RefreshToken: refreshToken,
 	}); err != nil {
-		s.logger.Errorw("Failed to save session",
-			"user_id", user.ID,
-			"session_id", sessionID,
-			"error", err.Error(),
-		)
+		s.logger.Errorw("Failed to save session", "user_id", user.ID, "session_id", sessionID, "error", err.Error())
 	}
 
-	user, _ = s.repo.FindByID(user.ID)
+	if refreshed, err := s.repo.FindByID(user.ID); err == nil && refreshed != nil {
+		user = refreshed
+	}
 
 	if err := s.userCache.SetUser(user.ID, user); err != nil {
-		s.logger.Warnw("Failed to cache user after login",
-			"user_id", user.ID,
-			"error", err.Error(),
-		)
+		s.logger.Warnw("Failed to cache user after login", "user_id", user.ID, "error", err.Error())
 	}
 
-	s.logger.Infow("User logged in successfully",
-		"user_id", user.ID,
-		"email", user.Email,
-		"ip", clientIP,
-	)
-
+	s.logger.Infow("User logged in successfully", "user_id", user.ID, "ip", clientIP)
 	return s.buildAuthResponse(user, token, refreshToken), nil
+}
+
+func (s *Service) authenticate(req *LoginRequest) (*models.User, error) {
+	req.Username = strings.ToLower(strings.TrimSpace(req.Username))
+
+	user, err := s.repo.FindByUsername(req.Username)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			s.logger.Warnw("User not found", "username", req.Username)
+			return nil, errors.New("invalid username or password")
+		}
+		s.logger.Errorw("Database error while finding user", "username", req.Username, "error", err.Error())
+		return nil, err
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
+		s.logger.Warnw("Invalid password", "user_id", user.ID, "username", req.Username)
+		return nil, errors.New("invalid username or password")
+	}
+
+	if !user.IsActive {
+		s.logger.Warnw("Login blocked: account disabled", "user_id", user.ID)
+		return nil, errors.New("account is disabled")
+	}
+
+	return user, nil
+}
+
+func (s *Service) issueTokens(userID, sessionID uuid.UUID) (string, string, error) {
+	token, err := s.jwtService.GenerateTokenWithSession(userID, sessionID)
+	if err != nil {
+		s.logger.Errorw("Failed to generate access token", "user_id", userID, "error", err.Error())
+		return "", "", err
+	}
+	refreshToken, err := s.jwtService.GenerateRefreshTokenWithSession(userID, sessionID)
+	if err != nil {
+		s.logger.Errorw("Failed to generate refresh token", "user_id", userID, "error", err.Error())
+		return "", "", err
+	}
+	return token, refreshToken, nil
 }
 
 func (s *Service) ChangePassword(userID uuid.UUID, req *ChangePasswordRequest) error {

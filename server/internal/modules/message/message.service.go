@@ -1,15 +1,6 @@
 package message
 
 import (
-	conversationEvents "ola-chat-server/internal/domain/conversation"
-	messageEvents "ola-chat-server/internal/domain/message"
-	"ola-chat-server/internal/config"
-	"ola-chat-server/internal/constants"
-	"ola-chat-server/internal/services"
-	"ola-chat-server/internal/transport/kafka"
-	"ola-chat-server/internal/modules/conversation"
-	userModule "ola-chat-server/internal/modules/user"
-	"ola-chat-server/internal/utils"
 	"bytes"
 	"context"
 	"encoding/json"
@@ -22,6 +13,15 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/url"
+	"ola-chat-server/internal/config"
+	"ola-chat-server/internal/constants"
+	conversationEvents "ola-chat-server/internal/domain/conversation"
+	messageEvents "ola-chat-server/internal/domain/message"
+	"ola-chat-server/internal/modules/conversation"
+	userModule "ola-chat-server/internal/modules/user"
+	"ola-chat-server/internal/services"
+	"ola-chat-server/internal/transport/kafka"
+	"ola-chat-server/internal/utils"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -362,6 +362,48 @@ func parseReactions(raw string) map[string][]string {
 	return m
 }
 
+func applyReactionToggle(reactions map[string][]string, reactionType, userIDStr string) (string, error) {
+	users := reactions[reactionType]
+
+	filtered := make([]string, 0, len(users))
+	hasReacted := false
+	for _, u := range users {
+		if u == userIDStr {
+			hasReacted = true
+			continue
+		}
+		filtered = append(filtered, u)
+	}
+
+	if hasReacted {
+		if len(filtered) == 0 {
+			delete(reactions, reactionType)
+		} else {
+			reactions[reactionType] = filtered
+		}
+		return constants.ReactionActionRemoved, nil
+	}
+
+	typesByUser := 0
+	for _, ulist := range reactions {
+		for _, u := range ulist {
+			if u == userIDStr {
+				typesByUser++
+				break
+			}
+		}
+	}
+	if typesByUser >= constants.MaxReactionTypesPerUserPerMessage {
+		return "", fmt.Errorf("%w: max %d", ErrMaxReactions, constants.MaxReactionTypesPerUserPerMessage)
+	}
+
+	newUsers := make([]string, len(users)+1)
+	copy(newUsers, users)
+	newUsers[len(users)] = userIDStr
+	reactions[reactionType] = newUsers
+	return constants.ReactionActionAdded, nil
+}
+
 func isAllowedReactionType(t string) bool {
 	for _, v := range constants.AllowedReactionTypes {
 		if v == t {
@@ -425,6 +467,31 @@ func imagePreviewText(content string) string {
 
 func audioPreviewText() string {
 	return "🎵 Audio"
+}
+
+func validateMessageContent(messageType, content, metadata string) error {
+	switch messageType {
+	case constants.MessageTypeImage:
+		return validateImageMetadata(metadata, nil)
+	case constants.MessageTypeAudio:
+		return validateAudioMetadata(metadata)
+	case constants.MessageTypeText:
+		if strings.TrimSpace(content) == "" {
+			return fmt.Errorf("content required for text message")
+		}
+	}
+	return nil
+}
+
+func previewForType(messageType, content string) string {
+	switch messageType {
+	case constants.MessageTypeImage:
+		return imagePreviewText(content)
+	case constants.MessageTypeAudio:
+		return audioPreviewText()
+	default:
+		return truncatePreview(content, 100)
+	}
 }
 
 func (s *Service) SendDirectMessage(senderID, recipientID uuid.UUID, messageType, content, metadata, clientMsgID string) (*MessageResponse, error) {
@@ -616,18 +683,8 @@ func (s *Service) SendMessage(senderID, conversationID uuid.UUID, messageType, c
 		return nil, fmt.Errorf("user is not a member of this conversation")
 	}
 
-	if messageType == constants.MessageTypeImage {
-		if err := validateImageMetadata(metadata, nil); err != nil {
-			return nil, err
-		}
-	} else if messageType == constants.MessageTypeAudio {
-		if err := validateAudioMetadata(metadata); err != nil {
-			return nil, err
-		}
-	} else if messageType == constants.MessageTypeText {
-		if strings.TrimSpace(content) == "" {
-			return nil, fmt.Errorf("content required for text message")
-		}
+	if err := validateMessageContent(messageType, content, metadata); err != nil {
+		return nil, err
 	}
 
 	now := time.Now()
@@ -656,14 +713,7 @@ func (s *Service) SendMessage(senderID, conversationID uuid.UUID, messageType, c
 		return nil, fmt.Errorf("failed to create message: %w", err)
 	}
 
-	var shortContent string
-	if messageType == constants.MessageTypeImage {
-		shortContent = imagePreviewText(content)
-	} else if messageType == constants.MessageTypeAudio {
-		shortContent = audioPreviewText()
-	} else {
-		shortContent = truncatePreview(content, 100)
-	}
+	shortContent := previewForType(messageType, content)
 
 	memberIDs := make([]uuid.UUID, 0, len(members))
 	for _, m := range members {
@@ -1009,6 +1059,19 @@ func (s *Service) UpdateMessage(userID uuid.UUID, conversationIDStr, messageIDSt
 		EditedAt:       now.Format(time.RFC3339),
 	}
 
+	s.invalidateMessageCachesAsync(conversationID, messageID)
+	s.publishMessageUpdatedAsync(*response, conversationID)
+
+	s.logger.Infow("Message updated successfully",
+		"conversation_id", conversationID,
+		"message_id", messageID,
+		"user_id", userID,
+	)
+
+	return response, nil
+}
+
+func (s *Service) invalidateMessageCachesAsync(conversationID uuid.UUID, messageID gocql.UUID) {
 	go func() {
 		if err := s.cache.DeleteMessage(conversationID, messageID); err != nil {
 			s.logger.Warnw("Failed to invalidate message cache after update",
@@ -1019,11 +1082,10 @@ func (s *Service) UpdateMessage(userID uuid.UUID, conversationIDStr, messageIDSt
 				"conversation_id", conversationID, "error", err)
 		}
 	}()
+}
 
-	responseCopy := *response
-	conversationIDCopy := conversationID
-
-	go func(resp MessageResponse, convID uuid.UUID) {
+func (s *Service) publishMessageUpdatedAsync(resp MessageResponse, convID uuid.UUID) {
+	go func() {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
@@ -1063,15 +1125,7 @@ func (s *Service) UpdateMessage(userID uuid.UUID, conversationIDStr, messageIDSt
 		if err := s.kafkaProducer.PublishMessageUpdated(ctx, event); err != nil {
 			s.logger.Errorw("Failed to publish message updated event", "error", err)
 		}
-	}(responseCopy, conversationIDCopy)
-
-	s.logger.Infow("Message updated successfully",
-		"conversation_id", conversationID,
-		"message_id", messageID,
-		"user_id", userID,
-	)
-
-	return response, nil
+	}()
 }
 
 func (s *Service) DeleteMessage(userID uuid.UUID, conversationIDStr, messageIDStr string) error {
@@ -1473,43 +1527,9 @@ func (s *Service) ToggleReaction(ctx context.Context, userID, conversationID uui
 
 	reactions := parseReactions(msg.Reactions)
 	userIDStr := userID.String()
-	users := reactions[reactionType]
-
-	hasReacted := false
-	filtered := make([]string, 0, len(users))
-	for _, u := range users {
-		if u == userIDStr {
-			hasReacted = true
-			continue
-		}
-		filtered = append(filtered, u)
-	}
-
-	action := constants.ReactionActionAdded
-	if hasReacted {
-		action = constants.ReactionActionRemoved
-		if len(filtered) == 0 {
-			delete(reactions, reactionType)
-		} else {
-			reactions[reactionType] = filtered
-		}
-	} else {
-		typesByUser := 0
-		for _, ulist := range reactions {
-			for _, u := range ulist {
-				if u == userIDStr {
-					typesByUser++
-					break
-				}
-			}
-		}
-		if typesByUser >= constants.MaxReactionTypesPerUserPerMessage {
-			return nil, fmt.Errorf("%w: max %d", ErrMaxReactions, constants.MaxReactionTypesPerUserPerMessage)
-		}
-		newUsers := make([]string, len(users)+1)
-		copy(newUsers, users)
-		newUsers[len(users)] = userIDStr
-		reactions[reactionType] = newUsers
+	action, err := applyReactionToggle(reactions, reactionType, userIDStr)
+	if err != nil {
+		return nil, err
 	}
 
 	var newRaw string

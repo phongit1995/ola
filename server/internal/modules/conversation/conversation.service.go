@@ -1,6 +1,8 @@
 package conversation
 
 import (
+	"context"
+	"fmt"
 	"ola-chat-server/internal/constants"
 	conversationEvents "ola-chat-server/internal/domain/conversation"
 	"ola-chat-server/internal/models"
@@ -8,8 +10,6 @@ import (
 	"ola-chat-server/internal/transport/kafka"
 	"ola-chat-server/internal/transport/websocket"
 	"ola-chat-server/internal/utils"
-	"context"
-	"fmt"
 	"time"
 
 	"github.com/gocql/gocql"
@@ -72,10 +72,7 @@ func ResolveConversationDisplay(conv *Conversation, viewerID uuid.UUID, members 
 				continue
 			}
 			if otherUser, err := userCache.GetUserCache(m.UserID, true); err == nil {
-				name := otherUser.FullName
-				if name == "" {
-					name = otherUser.Username
-				}
+				name := userDisplayName(otherUser)
 				gocqlID, _ := utils.ToGocqlUUID(m.UserID)
 				return ResolvedDisplay{
 					ConversationType: constants.ConversationTypeDirect,
@@ -106,13 +103,6 @@ func requireActiveMember(members []ConversationMember, userID uuid.UUID) bool {
 	return false
 }
 
-func displayName(u *models.User) string {
-	if u.FullName != "" {
-		return u.FullName
-	}
-	return u.Username
-}
-
 func (s *Service) buildConversationResponse(conv ConversationByUser, viewerID uuid.UUID, otherLastRead *gocql.UUID) ConversationResponse {
 	resp := ConversationResponse{
 		ID:              conv.ConversationID.String(),
@@ -132,7 +122,7 @@ func (s *Service) buildConversationResponse(conv ConversationByUser, viewerID uu
 				s.logger.Warnw("buildConversationResponse: failed to fetch other user",
 					"conversation_id", conv.ConversationID, "other_user_id", otherUserID, "error", err)
 			} else {
-				resp.Name = displayName(u)
+				resp.Name = userDisplayName(u)
 				resp.Avatar = u.Avatar
 				resp.OtherUser = &OtherUserBrief{
 					ID:       otherUserID.String(),
@@ -154,7 +144,7 @@ func (s *Service) buildConversationResponse(conv ConversationByUser, viewerID uu
 		resp.IsLastMessageFromMe = senderIDStr == viewerID.String()
 		if senderUUID, err := uuid.Parse(senderIDStr); err == nil {
 			if u, err := s.userCache.GetUserCache(senderUUID, false); err == nil && u != nil {
-				resp.LastMessageSenderName = displayName(u)
+				resp.LastMessageSenderName = userDisplayName(u)
 			}
 		}
 	}
@@ -171,7 +161,6 @@ func (s *Service) buildConversationResponse(conv ConversationByUser, viewerID uu
 
 	return resp
 }
-
 
 func (s *Service) CheckDirectConversation(user1ID, user2ID uuid.UUID) (*ConversationResponse, error) {
 	if user1ID == user2ID {
@@ -193,10 +182,7 @@ func (s *Service) CheckDirectConversation(user1ID, user2ID uuid.UUID) (*Conversa
 		return nil, fmt.Errorf("failed to check existing conversation: %w", err)
 	}
 
-	displayName := otherUser.FullName
-	if displayName == "" {
-		displayName = otherUser.Username
-	}
+	displayName := userDisplayName(otherUser)
 
 	if existingConvID == nil {
 		return &ConversationResponse{
@@ -224,6 +210,13 @@ func (s *Service) CheckDirectConversation(user1ID, user2ID uuid.UUID) (*Conversa
 		ParticipantCount: 2,
 		IsNew:            false,
 	}, nil
+}
+
+func userDisplayName(u *models.User) string {
+	if u.FullName != "" {
+		return u.FullName
+	}
+	return u.Username
 }
 
 func (s *Service) CreateDirectConversation(user1ID, user2ID uuid.UUID) (*ConversationResponse, error) {
@@ -256,10 +249,7 @@ func (s *Service) CreateDirectConversation(user1ID, user2ID uuid.UUID) (*Convers
 	if !applied {
 		s.logger.Infow("Direct conversation already exists (race condition prevented)",
 			"user1", user1ID, "user2", user2ID, "existing_conv_id", existingConvID)
-		otherUserDisplayName := otherUser.FullName
-		if otherUserDisplayName == "" {
-			otherUserDisplayName = otherUser.Username
-		}
+		otherUserDisplayName := userDisplayName(otherUser)
 		return &ConversationResponse{
 			ID:               existingConvID.String(),
 			Type:             constants.ConversationTypeDirect,
@@ -318,14 +308,8 @@ func (s *Service) CreateDirectConversation(user1ID, user2ID uuid.UUID) (*Convers
 		return nil, fmt.Errorf("failed to convert conversationID: %w", err)
 	}
 
-	otherUserDisplayName := otherUser.FullName
-	if otherUserDisplayName == "" {
-		otherUserDisplayName = otherUser.Username
-	}
-	user1DisplayName := user1.FullName
-	if user1DisplayName == "" {
-		user1DisplayName = user1.Username
-	}
+	otherUserDisplayName := userDisplayName(otherUser)
+	user1DisplayName := userDisplayName(user1)
 
 	inbox1 := &ConversationByUser{
 		UserID:           gocqlUser1ID,
@@ -378,10 +362,7 @@ func (s *Service) CreateDirectConversation(user1ID, user2ID uuid.UUID) (*Convers
 		s.publishDirectConversationCreated(conversationID, user1ID, user2ID, user1, otherUser, now)
 	}()
 
-	otherUserResponseName := otherUser.FullName
-	if otherUserResponseName == "" {
-		otherUserResponseName = otherUser.Username
-	}
+	otherUserResponseName := userDisplayName(otherUser)
 
 	return &ConversationResponse{
 		ID:               conversationID.String(),
@@ -399,14 +380,8 @@ func (s *Service) publishDirectConversationCreated(convID, user1ID, user2ID uuid
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	user1Name := user1.FullName
-	if user1Name == "" {
-		user1Name = user1.Username
-	}
-	user2Name := user2.FullName
-	if user2Name == "" {
-		user2Name = user2.Username
-	}
+	user1Name := userDisplayName(user1)
+	user2Name := userDisplayName(user2)
 
 	participants := []map[string]interface{}{
 		{"userId": user1ID.String(), "username": user1.Username, "avatar": user1.Avatar},
@@ -777,8 +752,8 @@ func (s *Service) MarkConversationAsRead(userID, conversationID uuid.UUID) error
 				},
 			}
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-		if err := s.kafkaProducer.PublishConversationUpdated(ctx, event); err != nil {
+			defer cancel()
+			if err := s.kafkaProducer.PublishConversationUpdated(ctx, event); err != nil {
 				s.logger.Warnw("Failed to publish conversation updated event for seen", "error", err)
 			}
 		}
