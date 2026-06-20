@@ -10,6 +10,7 @@ export const ROUTES = {
   vipBuy: '/vip/mua',
   notifications: '/thong-bao',
   ken: '/ken',
+  kenBuy: '/ken/nap',
   media: '/hinh-anh',
   nearby: '/lan-can',
 } as const;

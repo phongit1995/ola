@@ -689,7 +689,22 @@
     "transfer": "Chuyển KEN",
     "history": "Lịch sử giao dịch",
     "support": "Hỗ trợ khách hàng",
-    "comingSoon": "Tính năng đang được phát triển"
+    "comingSoon": "Tính năng đang được phát triển",
+    "buy": {
+      "title": "Nạp KEN",
+      "balance": "Số dư hiện tại",
+      "chooseAmount": "Chọn mệnh giá",
+      "customLabel": "Hoặc nhập số tiền (VNĐ)",
+      "customHint": "Tối thiểu 10.000, bội số 1.000",
+      "receive": "Bạn sẽ nhận",
+      "invalid": "Số tiền tối thiểu 10.000đ và là bội số của 1.000đ",
+      "qrTitle": "Quét mã để thanh toán",
+      "qrHint": "Mở app ngân hàng/ví và quét mã QR để nạp {{ken}} KEN.",
+      "amountLabel": "Số tiền cần chuyển",
+      "paid": "Tôi đã thanh toán",
+      "paidPending": "Đang chờ xác nhận thanh toán. Tính năng sẽ sớm hoàn thiện.",
+      "demoNote": "Mã QR demo — chưa kết nối cổng thanh toán thật."
+    }
   },
   "media": {
     "title": "Kho ảnh",

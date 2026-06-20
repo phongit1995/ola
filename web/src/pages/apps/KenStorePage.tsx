@@ -4,8 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@constants';
 import { toast } from '@lib';
 import { ScreenHeader, FullScreenOverlay } from '@components';
-
-const MOCK_BALANCE = 12_345;
+import { useAuthStore } from '@/store/authStore';
 
 function KenCoin({ className = 'h-[18px] w-[18px]' }: { className?: string }) {
   return (
@@ -48,12 +47,13 @@ function RowAction({ icon, label, onClick }: RowActionProps) {
 export function KenStorePage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const user = useAuthStore((s) => s.user);
 
   function comingSoon() {
     toast.info(t('ken.comingSoon'));
   }
 
-  const balanceText = `${MOCK_BALANCE.toLocaleString('en-US')} KEN`;
+  const balanceText = `${(user?.ken ?? 0).toLocaleString('en-US')} KEN`;
 
   return (
     <FullScreenOverlay>
@@ -73,7 +73,7 @@ export function KenStorePage() {
             </span>
           </div>
 
-          <RowAction icon={<KenCoin />} label={t('ken.purchase')} onClick={comingSoon} />
+          <RowAction icon={<KenCoin />} label={t('ken.purchase')} onClick={() => navigate(ROUTES.kenBuy)} />
           <div className="mx-2 h-px bg-black/12" />
           <RowAction icon={<KenCoin />} label={t('ken.transfer')} onClick={comingSoon} />
           <div className="mx-2 h-px bg-black/12" />

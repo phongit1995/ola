@@ -32,6 +32,9 @@ const NotificationsPage = lazy(() =>
 const KenStorePage = lazy(() =>
   import('@/pages/apps/KenStorePage').then((m) => ({ default: m.KenStorePage }))
 );
+const BuyKenPage = lazy(() =>
+  import('@/pages/apps/BuyKenPage').then((m) => ({ default: m.BuyKenPage }))
+);
 const MediaStorePage = lazy(() =>
   import('@/pages/apps/MediaStorePage').then((m) => ({ default: m.MediaStorePage }))
 );
@@ -121,6 +124,14 @@ export function AppRouter() {
             element={
               <ProtectedRoute>
                 <KenStorePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path={ROUTES.kenBuy}
+            element={
+              <ProtectedRoute>
+                <BuyKenPage />
               </ProtectedRoute>
             }
           />
