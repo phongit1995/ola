@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Avatar, Dialog } from '@components';
+import { UserListDialog, UserRow } from '@components';
 import { RelationshipService } from '@services';
 import { colorForName } from '@lib';
 import type { Friend } from '@app-types';
@@ -49,46 +49,27 @@ export function ComposeDialog({ open, onClose, onStart }: ComposeDialogProps) {
   }, [friends, query]);
 
   return (
-    <Dialog open={open} onClose={onClose} title={t('chat.composeTitle')}>
-      <input
-        value={query}
-        onChange={(event) => setQuery(event.target.value)}
-        placeholder={t('chat.composeSearchPlaceholder')}
-        className="w-full rounded-md border border-black/12 px-3 py-2 text-sm text-black/87 outline-none focus:border-ola-primary"
-      />
-      <div className="mt-3 max-h-72 overflow-y-auto">
-        {loading ? (
-          <p className="py-6 text-center text-sm text-black/54">{t('common.loading')}</p>
-        ) : filtered.length === 0 ? (
-          <p className="py-6 text-center text-sm text-black/54">{t('chat.composeEmpty')}</p>
-        ) : (
-          <ul className="divide-y divide-black/8">
-            {filtered.map((friend) => {
-              const name = friendName(friend);
-              return (
-                <li key={friend.id}>
-                  <button
-                    type="button"
-                    onClick={() => onStart(friend.id)}
-                    className="flex w-full items-center gap-3 py-2 text-left"
-                  >
-                    <span className="relative shrink-0">
-                      <Avatar name={name} color={colorForName(name)} src={friend.avatar} size={40} />
-                      {friend.isOnline && (
-                        <span className="absolute right-0 bottom-0 h-3 w-3 rounded-full border-2 border-white bg-ola-primary" />
-                      )}
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-base text-black/87">{name}</span>
-                      <span className="block truncate text-xs text-black/54">@{friend.username}</span>
-                    </span>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </div>
-    </Dialog>
+    <UserListDialog
+      open={open}
+      onClose={onClose}
+      title={t('chat.composeTitle')}
+      search={{ value: query, onChange: setQuery, placeholder: t('chat.composeSearchPlaceholder') }}
+      loading={loading}
+      isEmpty={filtered.length === 0}
+      empty={<p className="py-6 text-center text-sm text-black/54">{t('chat.composeEmpty')}</p>}
+    >
+      {filtered.map((friend) => (
+        <li key={friend.id}>
+          <UserRow
+            name={friendName(friend)}
+            username={friend.username}
+            avatar={friend.avatar}
+            color={colorForName(friend.username)}
+            online={friend.isOnline}
+            onClick={() => onStart(friend.id)}
+          />
+        </li>
+      ))}
+    </UserListDialog>
   );
 }

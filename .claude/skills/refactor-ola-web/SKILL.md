@@ -32,6 +32,14 @@ Trước khi tự viết util, kiểm tra `src/shared/lib` (export qua `@lib`):
 - **Toast**: `toast.success/error/info` (`lib/toast.ts`).
 - **Hook**: `useLongPress` (`hooks/useLongPress.ts`) — ĐỪNG tự viết `setTimeout` long-press; `useVoiceRecorder`.
 
+### Component UI dùng chung (`@components`, `shared/components/ui`) — đừng dựng lại
+- `ActionButton({ variant: 'filled'|'outline' })` — nút pill (kết bạn / bỏ chặn...). ĐỪNG tự viết `rounded-full ... px-3 py-1`.
+- `PresenceBadge({ icon?, tone: 'primary'|'white', className })` — chấm online / badge thiết bị (đặt `className="absolute right-0 bottom-0"`). Điều kiện `online &&` để ở call-site.
+- `UserName({ name, fullName?, className?, fullNameClassName? })` — render `name · fullName` 1 dòng, tự `truncate`.
+- `UserRow({ name, username?, fullName?, avatar, color, online?, deviceIcon?, layout: 'stacked'|'inline', onClick?, trailing? })` — 1 hàng user: avatar + presence + tên + slot phải.
+- `UserListDialog({ open, title, onClose, loading, isEmpty, empty, search?, children })` — vỏ dialog tìm-kiếm-+-danh-sách (Compose / AddContact / BlockedList đều dùng). Mỗi item bọc `<li>` quanh `<UserRow>`.
+- Khác: `Avatar`, `Dialog`, `ConfirmDialog`, `ListOptionDialog`, `Spinner`, `FullScreenOverlay`, `ScreenHeader`, `AttachmentBar`, `SmileyInput`, `SmileyGrid`.
+
 ## 2. Pattern store (zustand) — theo đúng để khỏi lặp
 - **Optimistic send** (chatStore): dùng `store/messageHelpers.ts`:
   `buildOptimisticMessage({ clientMsgId, conversationId, type, status, content?, metadata? })`,

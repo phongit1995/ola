@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Avatar, ListOptionDialog, type ListOption } from '@components';
+import { Avatar, ListOptionDialog, PresenceBadge, UserName, type ListOption } from '@components';
 import { vipIconUrl, isVipActive, activeVipTypeId } from '@lib';
 import type { AuthUser } from '@app-types';
 import type { Contact, DeviceType } from '../types';
@@ -152,21 +152,12 @@ function BuddyRow({
           <span className="block h-10 w-10 overflow-hidden rounded">
             <Avatar name={contact.name} color={contact.color} src={contact.avatar} rounded={false} />
           </span>
-          {badge != null && (
-            <span className="absolute right-0 bottom-0 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-ola-primary ring-1 ring-white">
-              <img src={badge} alt="" className="h-2.5 w-2.5 object-contain" />
-            </span>
-          )}
+          {badge != null && <PresenceBadge icon={badge} className="absolute right-0 bottom-0" />}
         </button>
         <span className="ml-4 min-w-0 flex-1">
           <button type="button" onClick={openProfile} className="flex items-center gap-1 text-left">
             {showVip && <img src={vipSrc} alt="" className="h-6 w-6 shrink-0 object-contain" />}
-            <span className="truncate text-base text-black/87">
-              {contact.name}
-              {contact.fullName != null && contact.fullName !== '' && (
-                <span className="text-black/45"> · {contact.fullName}</span>
-              )}
-            </span>
+            <UserName name={contact.name} fullName={contact.fullName} />
           </button>
           {contact.status != null && contact.status !== '' && (
             <span className="block truncate text-xs text-black/54">{contact.status}</span>

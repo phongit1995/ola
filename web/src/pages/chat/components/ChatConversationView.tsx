@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  ActionButton,
   AttachmentBar,
   type AttachTab,
   Avatar,
@@ -320,13 +321,9 @@ export function ChatConversationView({
         <div className="flex shrink-0 items-center justify-center gap-3 border-t border-black/12 bg-white px-4 py-3 text-center text-sm text-black/54">
           <span>{blockedByMe ? t('chat.blockedByMe') : t('chat.blockedByThem')}</span>
           {blockedByMe && (
-            <button
-              type="button"
-              onClick={() => void handleUnblock()}
-              className="shrink-0 rounded-full border border-ola-primary px-3 py-1 text-sm font-medium text-ola-primary"
-            >
+            <ActionButton variant="outline" onClick={() => void handleUnblock()}>
               {t('chat.unblock')}
-            </button>
+            </ActionButton>
           )}
         </div>
       ) : (
