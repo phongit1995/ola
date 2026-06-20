@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Avatar, ListOptionDialog, type ListOption } from '@components';
+import { vipIconUrl, parseVipTypeId } from '@lib';
 import type { AuthUser } from '@app-types';
 import type { Contact, DeviceType } from '../types';
 import { SUGGESTED_FRIENDS } from '../data';
@@ -205,6 +206,8 @@ export function ContactList({
   const [menuContact, setMenuContact] = useState<Contact | null>(null);
   const hasStatus = me?.bio != null && me.bio !== '';
   const hasVip = me?.vipEndTime != null && me.vipEndTime !== '' && new Date(me.vipEndTime) > new Date();
+  const activeVipTypeId = hasVip ? parseVipTypeId(me?.vipUsed) : null;
+  const meVipIconSrc = activeVipTypeId != null ? vipIconUrl(activeVipTypeId) : vipIcon;
   const hasBioImage = me?.bioImage != null && me.bioImage !== '';
 
   const filtered = useMemo(() => {
@@ -264,7 +267,7 @@ export function ContactList({
           )}
           <div className="flex min-h-[72px] items-center gap-2 px-4 py-2">
             <button type="button" onClick={onAccountMenu} aria-label={t('chat.myAccount')} className="shrink-0">
-              <img src={hasVip ? vipIcon : smileyIcon} alt="" className="h-10 w-10 object-contain" />
+              <img src={hasVip ? meVipIconSrc : smileyIcon} alt="" className="h-10 w-10 object-contain" />
             </button>
             <button type="button" onClick={onEditStatus} className="min-w-0 flex-1 text-left">
               <span

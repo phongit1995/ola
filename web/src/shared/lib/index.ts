@@ -11,3 +11,4 @@ export * from './chatSmiley';
 export * from './kul';
 export * from './SmileyText';
 export * from './richText';
+export * from './vipIcon';

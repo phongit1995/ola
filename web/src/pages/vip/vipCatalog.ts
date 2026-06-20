@@ -1,3 +1,5 @@
+export { vipIconUrl, parseVipTypeId } from '@lib';
+
 export interface VipCatalogEntry {
   id: number;
   name: string;
@@ -130,10 +132,6 @@ export const VIP_CATALOG: VipCatalogEntry[] = VIP_NAMES.map((name, index) => ({
   id: index + 1,
   name,
 }));
-
-export function vipIconUrl(id: number): string {
-  return `/vip-icons/vip_${String(id).padStart(3, '0')}.png`;
-}
 
 export function vipById(id: number): VipCatalogEntry | undefined {
   return VIP_CATALOG[id - 1];
