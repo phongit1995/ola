@@ -6,7 +6,7 @@ import { ConfirmDialog, ListOptionDialog, type ListOption } from '@components';
 import type { PostReaction } from '@app-types';
 import { MeComposerDialog, type ComposedPost } from './components/MeComposerDialog';
 import { MeCommentSheet } from './components/MeCommentSheet';
-import { MeCommentComposer } from './components/MeCommentComposer';
+import { QuickCommentBar } from './components/QuickCommentBar';
 import { MeLikersDialog } from './components/MeLikersDialog';
 import { UserProfileView } from '../profile/UserProfileView';
 import { EDIT_WINDOW_MS } from './constants';
@@ -201,25 +201,18 @@ export function MePostInteractions({ source, children }: MePostInteractionsProps
       {children(handlers)}
 
       {quickCommentPostId != null && (
-        <>
-          <button
-            type="button"
-            aria-label={t('chat.back')}
-            onClick={() => setQuickCommentPostId(null)}
-            className="fixed inset-0 z-30 bg-black/20"
-          />
-          <div className="fixed inset-x-0 bottom-0 z-40">
-            {quickPost != null && (
-              <div className="flex items-center gap-2 border-t border-black/12 bg-white/95 px-3 py-1.5 text-xs text-black/54">
-                <span className="shrink-0">{t('me.commentingOn')}</span>
-                <span className="min-w-0 flex-1 truncate text-black/87">
-                  {quickPost.content !== '' ? quickPost.content : quickPost.author}
-                </span>
-              </div>
-            )}
-            <MeCommentComposer submitting={quickSubmitting} onSubmit={submitQuickComment} autoFocus />
-          </div>
-        </>
+        <QuickCommentBar
+          contextLabel={
+            quickPost == null
+              ? undefined
+              : quickPost.content !== ''
+                ? quickPost.content
+                : quickPost.author
+          }
+          submitting={quickSubmitting}
+          onSubmit={submitQuickComment}
+          onClose={() => setQuickCommentPostId(null)}
+        />
       )}
 
       <ListOptionDialog
