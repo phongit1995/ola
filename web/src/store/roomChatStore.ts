@@ -30,6 +30,7 @@ export interface ActiveRoom {
 }
 
 const MESSAGE_PAGE_SIZE = 50;
+const JOIN_ACK_TIMEOUT_MS = 10_000;
 
 interface RoomChatState {
   activeRoom: ActiveRoom | null;
@@ -145,7 +146,7 @@ export const useRoomChatStore = create<RoomChatState>((set, get) => ({
       try {
         const { ticket } = await RoomService.join(roomId);
         const ack = toRecord(
-          await socket.emitWithAck(ROOM_SOCKET_EVENTS.join, { roomId, ticket })
+          await socket.timeout(JOIN_ACK_TIMEOUT_MS).emitWithAck(ROOM_SOCKET_EVENTS.join, { roomId, ticket })
         );
         if (get().activeRoom?.id !== roomId) return;
         if (!ack?.ok) {

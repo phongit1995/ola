@@ -37,6 +37,9 @@ export class SocketService {
     });
     socket.on('connect', () => this.startHeartbeat());
     socket.on('disconnect', () => this.stopHeartbeat());
+    socket.io.on('reconnect_attempt', () => {
+      socket.auth = { token: authTokens.getAccessToken() ?? '' };
+    });
     this.socket = socket;
     return socket;
   }

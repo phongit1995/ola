@@ -11,7 +11,7 @@ import { toast } from '@lib';
 import { HomeHeader } from '@components/HomeHeader';
 import moreIcon from '@/assets/icons/chat/ic_more_white.png';
 import addFriendIcon from '@/assets/icons/chat/ic_add_friend.png';
-import { AuthService, RelationshipService } from '@services';
+import { AuthService, RelationshipService, SocketService } from '@services';
 import { useAuthStore } from '@/store/authStore';
 import { useChatStore } from '@/store/chatStore';
 import { ConversationList } from './components/ConversationList';
@@ -97,6 +97,7 @@ export function ChatPanel() {
     } catch {
       toast.error(t('chat.logoutError'));
     } finally {
+      SocketService.disconnect();
       clearUser();
       navigate(ROUTES.login);
     }

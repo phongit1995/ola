@@ -11,7 +11,11 @@ function App() {
   const { t } = useTranslation();
 
   useEffect(() => {
-    setOnUnauthorized(() => useAuthStore.getState().clearUser());
+    setOnUnauthorized(() => {
+      SocketService.disconnect();
+      authTokens.clear();
+      useAuthStore.getState().clearUser();
+    });
     return () => setOnUnauthorized(null);
   }, []);
 

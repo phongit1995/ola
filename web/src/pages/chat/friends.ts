@@ -10,9 +10,13 @@ function normalizeDevice(value?: string): DeviceType {
 
 function isBirthdayToday(dateOfBirth?: string): boolean {
   if (dateOfBirth == null || dateOfBirth === '') return false;
+  const now = new Date();
+  const parts = /^(\d{4})-(\d{2})-(\d{2})/.exec(dateOfBirth);
+  if (parts != null) {
+    return Number(parts[2]) === now.getMonth() + 1 && Number(parts[3]) === now.getDate();
+  }
   const date = new Date(dateOfBirth);
   if (Number.isNaN(date.getTime())) return false;
-  const now = new Date();
   return date.getMonth() === now.getMonth() && date.getDate() === now.getDate();
 }
 
