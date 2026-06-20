@@ -4,7 +4,7 @@ import maleIcon from '@/assets/icons/chat/ic_indicate_male.png';
 import femaleIcon from '@/assets/icons/chat/ic_indicate_female.png';
 import androidIcon from '@/assets/icons/me/ic_indicate_android.png';
 import type { RoomMember } from '@app-types';
-import { Avatar, PresenceBadge, UserName, VipIcon } from '@components';
+import { PresenceBadge, UserName, VipAvatar } from '@components';
 import { colorForName } from '@lib';
 import { MediaViewer } from '../../me/components/MediaViewer';
 
@@ -50,15 +50,7 @@ export function RoomMembersTab({ members, active, onOpenProfile }: RoomMembersTa
                 >
                   <GenderIcon gender={member.gender} />
                   <span className="relative h-10 w-10 shrink-0">
-                    {member.avatar ? (
-                      <img
-                        src={member.avatar}
-                        alt=""
-                        className="h-10 w-10 rounded-full object-cover"
-                      />
-                    ) : (
-                      <Avatar name={member.username} color={color} />
-                    )}
+                    <VipAvatar typeId={member.vipTypeId} className="h-10 w-10" />
                     <PresenceBadge
                       icon={androidIcon}
                       tone="white"
@@ -67,7 +59,6 @@ export function RoomMembersTab({ members, active, onOpenProfile }: RoomMembersTa
                   </span>
                   <div className="flex min-w-0 flex-1 flex-col">
                     <span className="flex min-w-0 items-center gap-1 text-base">
-                      <VipIcon typeId={member.vipTypeId} />
                       <UserName
                         name={member.username}
                         fullName={subName ?? undefined}

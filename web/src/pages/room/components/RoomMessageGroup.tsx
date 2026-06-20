@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import mentionIcon from '@/assets/icons/room/ic_notification_mention.png';
-import { Avatar, VipIcon } from '@components';
+import { VipAvatar } from '@components';
 import { colorForName, kulImageForText, renderRichText } from '@lib';
 import type { BubblePosition, MessageGroup } from '../messageGroups';
 import { OTHER_CORNERS, OWN_CORNERS } from '../constants';
@@ -60,15 +60,10 @@ function RoomMessageGroupComponent({ group, onOpenProfile, onQuickMention }: Roo
         className="ml-12 flex max-w-[85%] items-center gap-1 self-start text-sm text-black/54"
       >
         <span className="truncate hover:underline">{group.senderName}</span>
-        <VipIcon typeId={group.senderVipTypeId} />
       </button>
       <div className="flex max-w-[85%] items-start gap-2 self-start">
         <button type="button" onClick={openSender} className="shrink-0">
-          {group.senderAvatar != null && group.senderAvatar !== '' ? (
-            <img src={group.senderAvatar} alt="" className="h-8 w-8 rounded-full object-cover" />
-          ) : (
-            <Avatar name={group.senderName} color={senderColor} size={32} />
-          )}
+          <VipAvatar typeId={group.senderVipTypeId} className="h-8 w-8" />
         </button>
         <div className="flex w-fit min-w-0 flex-col gap-0.5">
           {group.messages.map((message, index) => {
