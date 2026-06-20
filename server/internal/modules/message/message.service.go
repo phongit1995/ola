@@ -660,7 +660,7 @@ func (s *Service) SendMessage(senderID, conversationID uuid.UUID, messageType, c
 	}
 
 	if !isActiveMember(members, senderID) {
-		return nil, fmt.Errorf("user is not a member of this conversation")
+		return nil, ErrNotMember
 	}
 
 	if err := validateMessageContent(messageType, content, metadata); err != nil {
@@ -853,7 +853,7 @@ func (s *Service) GetMessages(userID, conversationID uuid.UUID, limit int, befor
 	}
 
 	if !isActiveMember(members, userID) {
-		return nil, fmt.Errorf("user is not a member of this conversation")
+		return nil, ErrNotMember
 	}
 
 	var beforeTimeuuid *gocql.UUID
@@ -889,6 +889,18 @@ func (s *Service) GetMessages(userID, conversationID uuid.UUID, limit int, befor
 		}
 	}
 
+	senderIDSet := make(map[uuid.UUID]struct{}, len(messages))
+	for _, msg := range messages {
+		if msg.DeletedAt == nil {
+			senderIDSet[msg.SenderID] = struct{}{}
+		}
+	}
+	senderIDs := make([]uuid.UUID, 0, len(senderIDSet))
+	for id := range senderIDSet {
+		senderIDs = append(senderIDs, id)
+	}
+	senders := s.userCache.GetUsersBatch(senderIDs, false)
+
 	responses := make([]MessageResponse, 0, len(messages))
 	for _, msg := range messages {
 		if msg.DeletedAt != nil {
@@ -897,7 +909,7 @@ func (s *Service) GetMessages(userID, conversationID uuid.UUID, limit int, befor
 
 		senderName := msg.SenderName
 		senderAvatar := msg.SenderAvatar
-		if u, err := s.userCache.GetUserCache(msg.SenderID, false); err == nil && u != nil {
+		if u, ok := senders[msg.SenderID]; ok && u != nil {
 			senderName = u.Username
 			senderAvatar = u.Avatar
 		}
@@ -972,7 +984,7 @@ func (s *Service) UpdateMessage(userID uuid.UUID, conversationIDStr, messageIDSt
 		return nil, fmt.Errorf("failed to check conversation membership: %w", err)
 	}
 	if !isMember(members, userID) {
-		return nil, fmt.Errorf("you are not a member of this conversation")
+		return nil, ErrNotMember
 	}
 
 	// Update message in ScyllaDB
@@ -1123,7 +1135,7 @@ func (s *Service) DeleteMessage(userID uuid.UUID, conversationIDStr, messageIDSt
 		return fmt.Errorf("failed to check conversation membership: %w", err)
 	}
 	if !isMember(members, userID) {
-		return fmt.Errorf("you are not a member of this conversation")
+		return ErrNotMember
 	}
 
 	if err := s.repo.DeleteMessage(conversationID, messageID); err != nil {

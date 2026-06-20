@@ -1,8 +1,9 @@
 package adminuser
 
 import (
-	"ola-chat-server/internal/models"
 	"errors"
+	"ola-chat-server/internal/apperr"
+	"ola-chat-server/internal/models"
 	"time"
 
 	"github.com/google/uuid"
@@ -54,7 +55,7 @@ func (s *Service) GetByID(id uuid.UUID) (*UserDetail, error) {
 	user, err := s.repo.FindByID(id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errors.New("user not found")
+			return nil, apperr.ErrUserNotFound
 		}
 		return nil, err
 	}
@@ -64,7 +65,7 @@ func (s *Service) GetByID(id uuid.UUID) (*UserDetail, error) {
 func (s *Service) SetStatus(id uuid.UUID, active bool) (*UserDetail, error) {
 	if _, err := s.repo.FindByID(id); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errors.New("user not found")
+			return nil, apperr.ErrUserNotFound
 		}
 		return nil, err
 	}
@@ -85,7 +86,7 @@ func (s *Service) SetStatus(id uuid.UUID, active bool) (*UserDetail, error) {
 func (s *Service) Delete(id uuid.UUID) error {
 	if _, err := s.repo.FindByID(id); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return errors.New("user not found")
+			return apperr.ErrUserNotFound
 		}
 		return err
 	}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"mime/multipart"
+	"ola-chat-server/internal/apperr"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/relationships"
 	"ola-chat-server/internal/services"
@@ -60,7 +61,7 @@ func (s *Service) GetProfile(userID uuid.UUID) (*UserProfileResponse, error) {
 			s.logger.Warnw("User not found",
 				"user_id", userID,
 			)
-			return nil, errors.New("user not found")
+			return nil, apperr.ErrUserNotFound
 		}
 		s.logger.Errorw("Database error while fetching user",
 			"user_id", userID,
@@ -137,7 +138,7 @@ func (s *Service) UpdateProfile(userID uuid.UUID, req *UpdateProfileRequest) (*U
 			s.logger.Warnw("User not found",
 				"user_id", userID,
 			)
-			return nil, errors.New("user not found")
+			return nil, apperr.ErrUserNotFound
 		}
 		s.logger.Errorw("Database error while fetching user",
 			"user_id", userID,
@@ -255,7 +256,7 @@ func (s *Service) GetPublicProfile(callerID, targetUserID uuid.UUID) (*UserPubli
 	user, err := s.repo.FindByID(targetUserID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errors.New("user not found")
+			return nil, apperr.ErrUserNotFound
 		}
 		return nil, err
 	}
@@ -269,7 +270,7 @@ func (s *Service) GetPublicProfileByUsername(callerID uuid.UUID, username string
 	user, err := s.repo.FindByUsername(username)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errors.New("user not found")
+			return nil, apperr.ErrUserNotFound
 		}
 		return nil, err
 	}
@@ -288,7 +289,7 @@ func (s *Service) ensureNotBlockedByTarget(callerID, targetID uuid.UUID) error {
 		return err
 	}
 	if blocked {
-		return errors.New("user not found")
+		return apperr.ErrUserNotFound
 	}
 	return nil
 }
@@ -366,7 +367,7 @@ func (s *Service) Follow(followerID, followeeID uuid.UUID) (*FollowResponse, err
 	target, err := s.repo.FindByID(followeeID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errors.New("user not found")
+			return nil, apperr.ErrUserNotFound
 		}
 		return nil, err
 	}
@@ -485,7 +486,7 @@ func (s *Service) Kiss(callerID, targetUserID uuid.UUID) (*KissResponse, error) 
 	kisses, err := s.repo.IncrementKisses(targetUserID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errors.New("user not found")
+			return nil, apperr.ErrUserNotFound
 		}
 		s.logger.Errorw("Failed to increment kisses",
 			"target_user_id", targetUserID,

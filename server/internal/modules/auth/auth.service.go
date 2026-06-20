@@ -3,6 +3,7 @@ package auth
 import (
 	"errors"
 	"fmt"
+	"ola-chat-server/internal/apperr"
 	"ola-chat-server/internal/config"
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
@@ -268,7 +269,7 @@ func (s *Service) issueTokens(userID, sessionID uuid.UUID) (string, string, erro
 func (s *Service) ChangePassword(userID uuid.UUID, req *ChangePasswordRequest) error {
 	user, err := s.repo.FindByID(userID)
 	if err != nil {
-		return errors.New("user not found")
+		return apperr.ErrUserNotFound
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.CurrentPassword)); err != nil {

@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"ola-chat-server/internal/apperr"
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/user"
@@ -25,7 +26,7 @@ var (
 	ErrVipExpired         = errors.New("vip membership expired")
 	ErrPrivateStore       = errors.New("vip store is private")
 	ErrCannotTransferSelf = errors.New("cannot transfer to yourself")
-	ErrUserNotFound       = errors.New("user not found")
+	ErrUserNotFound       = apperr.ErrUserNotFound
 	ErrPackageNotFound    = errors.New("vip package not found")
 	ErrInsufficientKen    = errors.New("insufficient ken balance")
 	ErrShopItemNotFound   = errors.New("vip shop item not found")

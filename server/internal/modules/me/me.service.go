@@ -19,6 +19,7 @@ import (
 
 	_ "golang.org/x/image/webp"
 
+	"ola-chat-server/internal/apperr"
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/relationships"
@@ -183,7 +184,7 @@ func (s *Service) ListByUser(viewerID, authorID uuid.UUID, limit, offset int) (*
 			return nil, err
 		}
 		if blocked {
-			return nil, errors.New("user not found")
+			return nil, apperr.ErrUserNotFound
 		}
 	}
 	posts, total, err := s.repo.ListByAuthor(authorID, s.visibleScopes(viewerID, authorID), limit, offset)
