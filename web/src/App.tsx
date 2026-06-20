@@ -25,6 +25,14 @@ function App() {
   }, [t]);
 
   useEffect(() => {
+    return SocketService.on<{ ken?: number }>('KEN_UPDATED', (data) => {
+      if (typeof data?.ken !== 'number') return;
+      const { user, setUser } = useAuthStore.getState();
+      if (user) setUser({ ...user, ken: data.ken });
+    });
+  }, []);
+
+  useEffect(() => {
     useAuthStore.getState().refreshUser();
   }, []);
 

@@ -10,6 +10,8 @@ import (
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/user"
 	"ola-chat-server/internal/services"
+	"ola-chat-server/internal/transport/websocket"
+	"ola-chat-server/internal/utils"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -34,16 +36,28 @@ type Service struct {
 	repo      *Repository
 	userCache *user.CacheService
 	cache     *services.CacheService
+	wsServer  *websocket.Server
 	logger    *zap.SugaredLogger
 }
 
-func NewService(repo *Repository, userCache *user.CacheService, cache *services.CacheService, logger *zap.SugaredLogger) *Service {
+func NewService(repo *Repository, userCache *user.CacheService, cache *services.CacheService, wsServer *websocket.Server, logger *zap.SugaredLogger) *Service {
 	return &Service{
 		repo:      repo,
 		userCache: userCache,
 		cache:     cache,
+		wsServer:  wsServer,
 		logger:    logger.Named("[vip_service]"),
 	}
+}
+
+func (s *Service) emitKenUpdate(userID uuid.UUID, ken int) {
+	if s.wsServer == nil {
+		return
+	}
+	payload := utils.WrapWebSocketMessage(constants.WebSocketEventKenUpdated, map[string]interface{}{
+		"ken": ken,
+	})
+	s.wsServer.EmitToUser(userID.String(), constants.WebSocketMessageEvent, payload)
 }
 
 func parseTypeID(vipUsed *string) *int16 {
@@ -294,6 +308,7 @@ func (s *Service) Buy(userID, shopItemID uuid.UUID) (*BuyIconResponse, error) {
 	}
 
 	s.invalidate(userID)
+	s.emitKenUpdate(userID, updatedUser.Ken)
 
 	active := parseTypeID(updatedUser.VipUsed)
 	out := toVipItem(icon, active)
@@ -459,6 +474,7 @@ func (s *Service) BuyPackage(userID, packageID uuid.UUID) (*BuyPackageResponse, 
 	}
 
 	s.invalidate(userID)
+	s.emitKenUpdate(userID, updatedUser.Ken)
 
 	return &BuyPackageResponse{
 		PurchaseID:  purchase.ID.String(),

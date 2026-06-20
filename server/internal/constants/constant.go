@@ -105,6 +105,7 @@ const (
 	WebSocketEventRoomMemberJoined    = "ROOM_MEMBER_JOINED"
 	WebSocketEventRoomMemberLeft      = "ROOM_MEMBER_LEFT"
 	WebSocketEventSessionReplaced     = "SESSION_REPLACED"
+	WebSocketEventKenUpdated          = "KEN_UPDATED"
 )
 
 var CallRingTimeoutSeconds = 30
