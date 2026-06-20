@@ -143,7 +143,7 @@ function ConversationRow({ view, onSelect, onRequestDelete }: ConversationRowPro
           <span className="min-w-0 flex-1">
             <span className="flex items-center justify-between gap-2">
               <span className={`truncate text-base text-black/87 ${unread ? 'font-bold' : ''}`}>
-                {view.name}
+                {view.title}
               </span>
               <span
                 className={`shrink-0 text-xs whitespace-nowrap ${
