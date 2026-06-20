@@ -10,8 +10,7 @@ import { LanguageSwitcher } from '@components/LanguageSwitcher';
 import { Spinner } from '@components';
 import { AuthService } from '@services';
 import { resolveAuthError, USERNAME_MAX, USERNAME_PATTERN, toast } from '@lib';
-
-const USERNAME_MIN = 6;
+import { USERNAME_MIN } from './constants';
 
 interface RegisterForm {
   username: string;

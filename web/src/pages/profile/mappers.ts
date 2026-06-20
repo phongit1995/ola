@@ -3,8 +3,7 @@ import type { FollowUser, Post, PublicProfile } from '@app-types';
 import { toMePost } from '../me/mappers';
 import type { MePost } from '../me/types';
 import type { ProfileFriend, UserProfile } from './types';
-
-const DEFAULT_COVER_COLOR = '#33691e';
+import { DEFAULT_COVER_COLOR } from './constants';
 
 function formatBirthday(iso: string): string {
   const [year, month, day] = iso.split('-');

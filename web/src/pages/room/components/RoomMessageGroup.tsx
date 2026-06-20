@@ -4,20 +4,7 @@ import mentionIcon from '@/assets/icons/room/ic_notification_mention.png';
 import { Avatar, VipIcon } from '@components';
 import { colorForName, kulImageForText, renderRichText } from '@lib';
 import type { BubblePosition, MessageGroup } from '../messageGroups';
-
-const OWN_CORNERS: Record<BubblePosition, string> = {
-  single: 'rounded-2xl',
-  first: 'rounded-2xl rounded-br-none',
-  middle: 'rounded-2xl rounded-tr-none rounded-br-none',
-  last: 'rounded-2xl rounded-tr-none',
-};
-
-const OTHER_CORNERS: Record<BubblePosition, string> = {
-  single: 'rounded-2xl',
-  first: 'rounded-2xl rounded-bl-none',
-  middle: 'rounded-2xl rounded-tl-none rounded-bl-none',
-  last: 'rounded-2xl rounded-tl-none',
-};
+import { OTHER_CORNERS, OWN_CORNERS } from '../constants';
 
 function clock(iso: string): string {
   const date = new Date(iso);

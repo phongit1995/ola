@@ -4,36 +4,17 @@ import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@constants';
 import { toast, colorForName } from '@lib';
 import { ScreenHeader, FullScreenOverlay, Avatar } from '@components';
-import icFriend from '@/assets/icons/notify/ic_notification_add_friend.png';
-import icMention from '@/assets/icons/notify/ic_notification_mention.png';
-import icLike from '@/assets/icons/notify/ic_notification_like.png';
-import icPhoto from '@/assets/icons/notify/ic_notification_photo.png';
 import icAddSmall from '@/assets/icons/notify/ic_action_add_small.png';
+import { TYPE_ICON, MOCK_NOTIFICATIONS } from './constants';
 
-type NotificationType = 'friend' | 'mention' | 'like' | 'photo' | 'proposal' | 'divorce';
+export type NotificationType = 'friend' | 'mention' | 'like' | 'photo' | 'proposal' | 'divorce';
 
-const TYPE_ICON: Partial<Record<NotificationType, string>> = {
-  friend: icFriend,
-  mention: icMention,
-  like: icLike,
-  photo: icPhoto,
-};
-
-interface NotificationItem {
+export interface NotificationItem {
   id: string;
   sender: string;
   type: NotificationType;
   time: string;
 }
-
-const MOCK_NOTIFICATIONS: NotificationItem[] = [
-  { id: '1', sender: 'Minh Anh', type: 'friend', time: '5 phút trước' },
-  { id: '2', sender: 'Hoàng Nam', type: 'mention', time: '12 phút trước' },
-  { id: '3', sender: 'Lan Phương', type: 'like', time: '1 giờ trước' },
-  { id: '4', sender: 'Đức Huy', type: 'photo', time: '2 giờ trước' },
-  { id: '5', sender: 'Thu Trang', type: 'proposal', time: 'Hôm qua' },
-  { id: '6', sender: 'Bảo Ngọc', type: 'divorce', time: '3 ngày trước' },
-];
 
 function TypeIcon({ type }: { type: NotificationType }) {
   const icon = TYPE_ICON[type];

@@ -8,8 +8,7 @@ import { TextField } from '@components/form/TextField';
 import { SubmitButton } from '@components/form/SubmitButton';
 import { LanguageSwitcher } from '@components/LanguageSwitcher';
 import { USERNAME_MAX, USERNAME_PATTERN } from '@lib';
-
-const USERNAME_MIN = 5;
+import { USERNAME_MIN } from './constants';
 
 interface ForgotForm {
   username: string;

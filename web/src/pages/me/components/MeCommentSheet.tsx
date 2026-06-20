@@ -8,6 +8,7 @@ import { useMeComments } from '../useMeComments';
 import { createTimeFormatter } from '@lib';
 import { ScreenHeader, FullScreenOverlay, Spinner } from '@components';
 import type { MePost } from '../types';
+import { CLOSE_ANIMATION_MS } from '../constants';
 
 interface MeCommentSheetProps {
   post: MePost;
@@ -19,8 +20,6 @@ interface MeCommentSheetProps {
   onOpenLikers?: (id: string) => void;
   onCommentDelta: (postId: string, delta: number) => void;
 }
-
-const CLOSE_ANIMATION_MS = 200;
 
 export function MeCommentSheet({
   post,

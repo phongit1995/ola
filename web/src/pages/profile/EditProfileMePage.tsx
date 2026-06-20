@@ -9,11 +9,7 @@ import { useAuthStore } from '@/store/authStore';
 import maleIcon from '@/assets/icons/chat/ic_indicate_male.png';
 import femaleIcon from '@/assets/icons/chat/ic_indicate_female.png';
 import { Avatar } from '@components';
-
-const INPUT_CLASS =
-  'w-full bg-transparent text-sm text-black/87 outline-none placeholder:text-[#e34545]';
-
-const PHONE_PATTERN = /^[0-9+\-() ]{6,20}$/;
+import { INPUT_CLASS, PHONE_PATTERN } from './constants';
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (

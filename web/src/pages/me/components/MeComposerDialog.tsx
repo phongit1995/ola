@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dialog, DialogButton, SmileyInput, type SmileyInputHandle } from '@components';
-import { ATTACH_BUTTONS, PRIVACY_OPTIONS, type AttachButtonKey } from '../constants';
+import { ATTACH_BUTTONS, MAX_IMAGES, PRIVACY_OPTIONS, type AttachButtonKey } from '../constants';
 import { type ComposedCheckIn } from './ComposerCheckInPanel';
 import { ComposerPreview } from './ComposerPreview';
 import { ComposerAttachPanels } from './ComposerAttachPanels';
@@ -9,8 +9,6 @@ import type { PostVisibility } from '@app-types';
 
 type AttachPanel = 'tag' | 'checkin' | 'sticker' | 'smiley' | null;
 type PickedPhoto = { url: string; file?: File };
-
-const MAX_IMAGES = 5;
 
 export interface ComposedPost {
   content: string;

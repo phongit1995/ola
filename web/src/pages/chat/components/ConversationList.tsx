@@ -8,15 +8,13 @@ import sentIcon from '@/assets/icons/chat/ic_message_sent.png';
 import kulIcon from '@/assets/icons/chat/ic_kul.png';
 import { EmptyMessages } from './EmptyMessages';
 import { toConversationView, type ConversationView } from '../chatView';
+import { SWIPE_MAX, SWIPE_TRIGGER } from '../constants';
 
 interface ConversationListProps {
   conversations: Conversation[];
   onSelect: (id: string) => void;
   onDelete: (id: string) => void;
 }
-
-const SWIPE_TRIGGER = 56;
-const SWIPE_MAX = 88;
 
 export function ConversationList({
   conversations,

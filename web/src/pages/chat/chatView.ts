@@ -1,4 +1,4 @@
-import type { Conversation, Message, MessageStatus } from '@app-types';
+import type { Conversation, Message } from '@app-types';
 import {
   colorForName,
   DEFAULT_AVATAR_COLOR,
@@ -6,7 +6,8 @@ import {
   kulImageForText,
   parseMessageMetadata,
 } from '@lib';
-import type { ChatMessage, ChatMessageStatus } from './types';
+import type { ChatMessage } from './types';
+import { STATUS_MAP } from './constants';
 
 export interface ConversationView {
   id: string;
@@ -69,13 +70,6 @@ export function toConversationView(conversation: Conversation): ConversationView
     unread: conversation.unreadCount,
   };
 }
-
-const STATUS_MAP: Record<MessageStatus, ChatMessageStatus> = {
-  sending: 'sending',
-  uploading: 'sending',
-  sent: 'sent',
-  failed: 'failed',
-};
 
 export const REACTION_EMOJI: Record<string, string> = {
   LIKE: '👍',

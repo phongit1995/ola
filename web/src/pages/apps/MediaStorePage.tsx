@@ -3,11 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@constants';
 import { toast } from '@lib';
 import { ScreenHeader, FullScreenOverlay } from '@components';
+import { MOCK_ALBUMS } from './constants';
 
-type Privacy = 'public' | 'friends' | 'private';
-type MediaKind = 'photo' | 'video' | 'sound';
+export type Privacy = 'public' | 'friends' | 'private';
+export type MediaKind = 'photo' | 'video' | 'sound';
 
-interface Album {
+export interface Album {
   id: string;
   name: string;
   count: number;
@@ -15,15 +16,6 @@ interface Album {
   kind: MediaKind;
   cover: string;
 }
-
-const MOCK_ALBUMS: Album[] = [
-  { id: '1', name: 'Ảnh của tôi', count: 128, privacy: 'public', kind: 'photo', cover: 'linear-gradient(135deg,#90caf9,#1976d2)' },
-  { id: '2', name: 'Du lịch', count: 54, privacy: 'public', kind: 'photo', cover: 'linear-gradient(135deg,#a5d6a7,#388e3c)' },
-  { id: '3', name: 'Video', count: 12, privacy: 'friends', kind: 'video', cover: 'linear-gradient(135deg,#ffcc80,#f57c00)' },
-  { id: '4', name: 'Riêng tư', count: 7, privacy: 'private', kind: 'photo', cover: 'linear-gradient(135deg,#ce93d8,#7b1fa2)' },
-  { id: '5', name: 'Ghi âm', count: 31, privacy: 'friends', kind: 'sound', cover: 'linear-gradient(135deg,#ef9a9a,#c62828)' },
-  { id: '6', name: 'Kỷ niệm', count: 203, privacy: 'public', kind: 'photo', cover: 'linear-gradient(135deg,#b0bec5,#546e7a)' },
-];
 
 function KindIcon({ kind }: { kind: MediaKind }) {
   const cls = 'h-9 w-9 opacity-90';

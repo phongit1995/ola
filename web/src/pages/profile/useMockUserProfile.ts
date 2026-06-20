@@ -8,8 +8,7 @@ import type {
   ProfileSecondary,
   UserProfile,
 } from './types';
-
-const MOCK_RELATIONSHIP: RelationshipInfo = { status: 'none', isFollowing: false, followsMe: false };
+import { MOCK_RELATIONSHIP } from './constants';
 
 export function useMockUserProfile(nick: string, color: string): ProfileController {
   const [profile, setProfile] = useState<UserProfile>(() => buildMockProfile(nick, color));

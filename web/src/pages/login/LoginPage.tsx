@@ -13,9 +13,7 @@ import { ApiError, USERNAME_MAX, USERNAME_PATTERN, decodeSecret, toast } from '@
 import { useAuthStore } from '@/store/authStore';
 import { useSavedAccountsStore, type SavedAccount } from '@/store/savedAccountsStore';
 import { SavedAccountGallery } from './SavedAccountGallery';
-
-const APP_VERSION = '15240093';
-const USERNAME_MIN = 5;
+import { APP_VERSION, USERNAME_MIN } from './constants';
 
 interface LoginForm {
   username: string;

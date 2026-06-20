@@ -5,11 +5,7 @@ import { ROUTES } from '@constants';
 import { toast } from '@lib';
 import { ScreenHeader, FullScreenOverlay } from '@components';
 import { useAuthStore } from '@/store/authStore';
-
-const MIN_AMOUNT = 10_000;
-const STEP_AMOUNT = 1_000;
-const PRESET_AMOUNTS = [10_000, 20_000, 50_000, 100_000, 200_000, 500_000];
-const QR_MODULES = 29;
+import { MIN_AMOUNT, STEP_AMOUNT, PRESET_AMOUNTS, QR_MODULES } from './constants';
 
 function formatVnd(value: number): string {
   return value.toLocaleString('vi-VN');

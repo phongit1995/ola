@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dialog, DialogButton } from '@components';
 import type { RoomFilters } from '../types';
+import { FILTER_KEYS } from '../constants';
 
 interface RoomFilterDialogProps {
   open: boolean;
@@ -9,14 +10,6 @@ interface RoomFilterDialogProps {
   onApply: (value: RoomFilters) => void;
   onClose: () => void;
 }
-
-const FILTER_KEYS = [
-  { key: 'showAll', labelKey: 'room.filterShowAll' },
-  { key: 'media', labelKey: 'room.filterMedia' },
-  { key: 'female', labelKey: 'room.filterFemale' },
-  { key: 'male', labelKey: 'room.filterMale' },
-  { key: 'flexible', labelKey: 'room.filterFlexible' },
-] as const satisfies ReadonlyArray<{ key: keyof RoomFilters; labelKey: string }>;
 
 export function RoomFilterDialog({
   open,

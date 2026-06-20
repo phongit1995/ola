@@ -4,14 +4,13 @@ import { Avatar, Dialog, Spinner } from '@components';
 import { colorForName, toast } from '@lib';
 import { MeService, RelationshipService } from '@services';
 import type { PostAuthor } from '@app-types';
+import { PAGE_SIZE } from '../constants';
 
 interface MeLikersDialogProps {
   postId: string;
   onClose: () => void;
   onOpenProfile?: (nick: string, color: string) => void;
 }
-
-const PAGE_SIZE = 30;
 
 export function MeLikersDialog({ postId, onClose, onOpenProfile }: MeLikersDialogProps) {
   const { t } = useTranslation();

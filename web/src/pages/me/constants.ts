@@ -41,3 +41,9 @@ export const ATTACH_BUTTONS = [
 ] as const;
 
 export type AttachButtonKey = (typeof ATTACH_BUTTONS)[number]['key'];
+
+export const PAGE_SIZE = 30;
+
+export const MAX_IMAGES = 5;
+
+export const CLOSE_ANIMATION_MS = 200;

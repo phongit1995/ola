@@ -11,14 +11,13 @@ import olaIcon from '@/assets/icons/me/ic_indicate_me.png';
 import funnyIcon from '@/assets/icons/me/ic_indicate_funny.png';
 import publicIcon from '@/assets/icons/me/ic_indicate_public.png';
 import rssIcon from '@/assets/icons/me/ic_indicate_rss.png';
+import { CLOSE_ANIMATION_MS } from '../constants';
 
 interface MeLeftDrawerProps {
   displayName: string;
   onClose: () => void;
   onSelect: (key: string) => void;
 }
-
-const CLOSE_ANIMATION_MS = 200;
 
 interface DrawerItem {
   key: string;

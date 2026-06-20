@@ -1,4 +1,5 @@
 import type { RoomMessage } from '@app-types';
+import { GROUP_GAP_MS } from './constants';
 
 export type BubblePosition = 'single' | 'first' | 'middle' | 'last';
 
@@ -27,8 +28,6 @@ export interface DateSeparator {
 }
 
 export type RoomFeedItem = MessageGroup | DateSeparator;
-
-const GROUP_GAP_MS = 5 * 60 * 1000;
 
 function dayKey(iso: string): string {
   const date = new Date(iso);

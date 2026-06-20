@@ -9,9 +9,7 @@ import { RoomList } from './components/RoomList';
 import type { RoomListItem } from './types';
 import { useRoomStore } from '@/store/roomStore';
 import { useRoomChatStore, type ActiveRoom } from '@/store/roomChatStore';
-
-const ROOM_CAPACITY = 200;
-const ROOM_COLORS = ['#ef5350', '#ec407a', '#5c6bc0', '#26a69a', '#7e57c2', '#ffa726'];
+import { ROOM_CAPACITY, ROOM_COLORS } from './constants';
 
 export function RoomPanel() {
   const { t } = useTranslation();

@@ -1,36 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { ROUTES, type RoutePath } from '@constants';
+import { type RoutePath } from '@constants';
 import { HomeHeader } from '@components/HomeHeader';
-import iconNotify from '@/assets/icons/apps/notify.png';
-import iconGame from '@/assets/icons/apps/game.png';
-import iconPersonal from '@/assets/icons/apps/personal.png';
-import iconVip from '@/assets/icons/apps/vip.png';
-import iconKen from '@/assets/icons/apps/ken.png';
-import iconAdme from '@/assets/icons/apps/adme.png';
-import iconMedia from '@/assets/icons/apps/media.png';
-import iconMall from '@/assets/icons/apps/mall.png';
-import iconNearby from '@/assets/icons/apps/nearby.png';
-import iconSetting from '@/assets/icons/apps/setting.png';
-
-interface AppItem {
-  icon: string;
-  subtitleKey?: 'home.appGameSubtitle' | 'home.appMallSubtitle';
-  route?: RoutePath;
-}
-
-const APP_ITEMS: AppItem[] = [
-  { icon: iconNotify, route: ROUTES.notifications },
-  { icon: iconGame, subtitleKey: 'home.appGameSubtitle' },
-  { icon: iconPersonal, route: ROUTES.profileEdit },
-  { icon: iconVip, route: ROUTES.vip },
-  { icon: iconKen, route: ROUTES.ken },
-  { icon: iconAdme },
-  { icon: iconMedia, route: ROUTES.media },
-  { icon: iconMall, subtitleKey: 'home.appMallSubtitle' },
-  { icon: iconNearby, route: ROUTES.nearby },
-  { icon: iconSetting },
-];
+import { APP_ITEMS } from './constants';
 
 export function AppsPanel() {
   const { t } = useTranslation();

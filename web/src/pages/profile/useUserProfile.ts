@@ -10,9 +10,7 @@ import { composedToImages, composedToPayload } from '../me/composer';
 import { mapFollowing, mapPosts, mapPublicProfile, type ProfileMapDeps } from './mappers';
 import { useProfileActions } from './useProfileActions';
 import type { ProfileController, ProfilePostActions, ProfileSecondary, UserProfile } from './types';
-
-const NO_RELATIONSHIP: RelationshipInfo = { status: 'none', isFollowing: false, followsMe: false };
-const EMPTY_SECONDARY: ProfileSecondary = { media: [], following: [], posts: [], loading: false };
+import { EMPTY_SECONDARY, NO_RELATIONSHIP } from './constants';
 
 export function useUserProfile(username: string, seedColor: string): ProfileController {
   const { t, i18n } = useTranslation();

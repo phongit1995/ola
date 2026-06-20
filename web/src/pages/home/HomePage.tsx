@@ -1,24 +1,9 @@
-import { lazy, Suspense, useEffect, useState, type ComponentType, type LazyExoticComponent } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { SocketService } from '@services';
 import { BottomTabBar, type TabKey } from '@components/BottomTabBar';
 import { useRoomChatStore } from '@/store/roomChatStore';
 import { ActiveConversationOverlay } from '../chat/ActiveConversationOverlay';
-
-const ChatPanel = lazy(() => import('../chat/ChatPanel').then((m) => ({ default: m.ChatPanel })));
-const RoomPanel = lazy(() => import('../room/RoomPanel').then((m) => ({ default: m.RoomPanel })));
-const RssPanel = lazy(() => import('../rss/RssPanel').then((m) => ({ default: m.RssPanel })));
-const MePanel = lazy(() => import('../me/MePanel').then((m) => ({ default: m.MePanel })));
-const AppsPanel = lazy(() => import('../apps/AppsPanel').then((m) => ({ default: m.AppsPanel })));
-
-const PANELS: Record<TabKey, LazyExoticComponent<ComponentType>> = {
-  chat: ChatPanel,
-  room: RoomPanel,
-  rss: RssPanel,
-  me: MePanel,
-  apps: AppsPanel,
-};
-
-const ACTIVE_TAB_KEY = 'home.activeTab';
+import { ACTIVE_TAB_KEY, PANELS } from './constants';
 
 function readStoredTab(): TabKey {
   const stored = sessionStorage.getItem(ACTIVE_TAB_KEY);

@@ -4,8 +4,7 @@ import { Avatar, Dialog, DialogButton } from '@components';
 import { MeService, UserService } from '@services';
 import { colorForName, toast } from '@lib';
 import { useAuthStore } from '@/store/authStore';
-
-const MIN_SOURCE_WIDTH = 100;
+import { MIN_SOURCE_WIDTH } from '../constants';
 
 interface ChangeAvatarScreenProps {
   open: boolean;

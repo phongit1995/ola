@@ -1,22 +1,10 @@
 import { useRef } from 'react';
 import { Avatar, PresenceBadge, UserName, VipIcon } from '@components';
 import { vipIconUrl } from '@lib';
-import type { Contact, DeviceType } from '../types';
+import type { Contact } from '../types';
 import vipIcon from '@/assets/icons/apps/vip.png';
-import devicePhone from '@/assets/icons/chat/ic_device_type_phone.png';
-import devicePc from '@/assets/icons/chat/ic_device_type_pc.png';
-import deviceApple from '@/assets/icons/chat/ic_device_type_apple.png';
-import deviceAndroid from '@/assets/icons/chat/ic_device_type_android.png';
-import deviceWinphone from '@/assets/icons/chat/ic_device_type_winphone.png';
 import birthdayIcon from '@/assets/icons/chat/ic_buddy_birthday.png';
-
-const DEVICE_ICONS: Record<DeviceType, string> = {
-  phone: devicePhone,
-  pc: devicePc,
-  apple: deviceApple,
-  android: deviceAndroid,
-  winphone: deviceWinphone,
-};
+import { DEVICE_ICONS } from '../constants';
 
 interface BuddyRowProps {
   contact: Contact;
