@@ -16,6 +16,7 @@ export * from './ui/UserRow';
 export * from './ui/UserName';
 export * from './ui/PresenceBadge';
 export * from './ui/ActionButton';
+export * from './ui/VipIcon';
 export * from './ui/Toast';
 export * from './form/ClearableInput';
 export * from './form/SubmitButton';

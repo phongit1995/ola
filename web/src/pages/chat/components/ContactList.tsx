@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Avatar, ListOptionDialog, PresenceBadge, UserName, type ListOption } from '@components';
+import { Avatar, ListOptionDialog, PresenceBadge, UserName, VipIcon, type ListOption } from '@components';
 import { vipIconUrl, isVipActive, activeVipTypeId } from '@lib';
 import type { AuthUser } from '@app-types';
 import type { Contact, DeviceType } from '../types';
@@ -156,7 +156,7 @@ function BuddyRow({
         </button>
         <span className="ml-4 min-w-0 flex-1">
           <button type="button" onClick={openProfile} className="flex items-center gap-1 text-left">
-            {showVip && <img src={vipSrc} alt="" className="h-6 w-6 shrink-0 object-contain" />}
+            {showVip && <VipIcon src={vipSrc} className="h-6 w-6" />}
             <UserName name={contact.name} fullName={contact.fullName} />
           </button>
           {contact.status != null && contact.status !== '' && (

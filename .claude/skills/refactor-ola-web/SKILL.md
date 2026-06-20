@@ -36,6 +36,7 @@ Trước khi tự viết util, kiểm tra `src/shared/lib` (export qua `@lib`):
 - `ActionButton({ variant: 'filled'|'outline' })` — nút pill (kết bạn / bỏ chặn...). ĐỪNG tự viết `rounded-full ... px-3 py-1`.
 - `PresenceBadge({ icon?, tone: 'primary'|'white', className })` — chấm online / badge thiết bị (đặt `className="absolute right-0 bottom-0"`). Điều kiện `online &&` để ở call-site.
 - `UserName({ name, fullName?, className?, fullNameClassName? })` — render `name · fullName` 1 dòng, tự `truncate`.
+- `VipIcon({ typeId?, src?, className?='h-4 w-4' })` — icon VIP (tự `vipIconUrl(typeId)`, hoặc `src` resolved sẵn); trả null nếu không có. Đừng tự `<img src={vipIconUrl(...)}>`.
 - `UserRow({ name, username?, fullName?, avatar, color, online?, deviceIcon?, layout: 'stacked'|'inline', onClick?, trailing? })` — 1 hàng user: avatar + presence + tên + slot phải.
 - `UserListDialog({ open, title, onClose, loading, isEmpty, empty, search?, children })` — vỏ dialog tìm-kiếm-+-danh-sách (Compose / AddContact / BlockedList đều dùng). Mỗi item bọc `<li>` quanh `<UserRow>`.
 - Khác: `Avatar`, `Dialog`, `ConfirmDialog`, `ListOptionDialog`, `Spinner`, `FullScreenOverlay`, `ScreenHeader`, `AttachmentBar`, `SmileyInput`, `SmileyGrid`.
