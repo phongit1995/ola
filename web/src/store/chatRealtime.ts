@@ -10,6 +10,7 @@ import {
   type UserTypingEvent,
 } from '@app-types';
 import { currentUserId, moveToTop, previewOf } from './chatHelpers';
+import { markById } from './messageHelpers';
 import type { ChatState } from './chatStore';
 
 type ChatSet = StoreApi<ChatState>['setState'];
@@ -124,9 +125,7 @@ export function registerChatRealtime(set: ChatSet, get: ChatGet) {
   SocketService.on<MessageUpdatedEvent>(CHAT_SOCKET_EVENTS.messageUpdated, ({ message }) => {
     if (message.conversationId !== get().currentConversationId) return;
     set((state) => ({
-      messages: state.messages.map((item) =>
-        item.id === message.id ? { ...message, status: 'sent' as const } : item
-      ),
+      messages: markById(state.messages, message.id, { ...message, status: 'sent' }),
     }));
   });
 
@@ -138,9 +137,7 @@ export function registerChatRealtime(set: ChatSet, get: ChatGet) {
   SocketService.on<MessageReactionUpdatedEvent>(CHAT_SOCKET_EVENTS.reactionUpdated, (data) => {
     if (data.conversationId !== get().currentConversationId) return;
     set((state) => ({
-      messages: state.messages.map((item) =>
-        item.id === data.messageId ? { ...item, reactions: data.reactions } : item
-      ),
+      messages: markById(state.messages, data.messageId, { reactions: data.reactions }),
     }));
   });
 

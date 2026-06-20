@@ -1,6 +1,11 @@
 import { create } from 'zustand';
-import { useAuthStore } from '@/store/authStore';
 import { parseMessageMetadata } from '@lib';
+import {
+  buildOptimisticMessage,
+  markById,
+  markByClientMsgId,
+  runOptimisticSend,
+} from './messageHelpers';
 import {
   ConversationService,
   MessageService,
@@ -232,42 +237,11 @@ export const useChatStore = create<ChatState>((set, get) => {
       }
 
       const clientMsgId = crypto.randomUUID();
-      const user = useAuthStore.getState().user;
-      const now = new Date().toISOString();
-      const optimistic: Message = {
-        id: clientMsgId,
-        conversationId,
-        senderId: user?.id ?? '',
-        senderName: user?.fullName ?? user?.username,
-        senderAvatar: user?.avatar,
-        type: 'text',
-        content: text,
-        status: 'sending',
-        createdAt: now,
-        updatedAt: now,
-        clientMsgId,
-      };
-      set((state) => ({ messages: [...state.messages, optimistic] }));
-
-      try {
-        const saved = await MessageService.send({
-          conversationId,
-          type: 'text',
-          content: text,
-          clientMsgId,
-        });
-        set((state) => ({
-          messages: state.messages.map((item) =>
-            item.clientMsgId === clientMsgId ? { ...saved, status: 'sent' } : item
-          ),
-        }));
-      } catch {
-        set((state) => ({
-          messages: state.messages.map((item) =>
-            item.clientMsgId === clientMsgId ? { ...item, status: 'failed' } : item
-          ),
-        }));
-      }
+      await runOptimisticSend(
+        set,
+        buildOptimisticMessage({ clientMsgId, conversationId, type: 'text', content: text, status: 'sending' }),
+        (id) => MessageService.send({ conversationId, type: 'text', content: text, clientMsgId: id })
+      );
     },
 
     sendFirstToDraft: async (content) => {
@@ -296,40 +270,19 @@ export const useChatStore = create<ChatState>((set, get) => {
       if (conversationId == null) return;
 
       const clientMsgId = crypto.randomUUID();
-      const user = useAuthStore.getState().user;
-      const now = new Date().toISOString();
       const previewUrl = URL.createObjectURL(file);
-      const optimistic: Message = {
-        id: clientMsgId,
-        conversationId,
-        senderId: user?.id ?? '',
-        senderName: user?.fullName ?? user?.username,
-        senderAvatar: user?.avatar,
-        type: 'image',
-        content: '',
-        metadata: JSON.stringify({ url: previewUrl }),
-        status: 'uploading',
-        createdAt: now,
-        updatedAt: now,
-        clientMsgId,
-      };
-      set((state) => ({ messages: [...state.messages, optimistic] }));
-
-      try {
-        const saved = await MessageService.sendImage(conversationId, file, clientMsgId);
-        set((state) => ({
-          messages: state.messages.map((item) =>
-            item.clientMsgId === clientMsgId ? { ...saved, status: 'sent' } : item
-          ),
-        }));
-        URL.revokeObjectURL(previewUrl);
-      } catch {
-        set((state) => ({
-          messages: state.messages.map((item) =>
-            item.clientMsgId === clientMsgId ? { ...item, status: 'failed' } : item
-          ),
-        }));
-      }
+      await runOptimisticSend(
+        set,
+        buildOptimisticMessage({
+          clientMsgId,
+          conversationId,
+          type: 'image',
+          metadata: JSON.stringify({ url: previewUrl }),
+          status: 'uploading',
+        }),
+        (id) => MessageService.sendImage(conversationId, file, id),
+        () => URL.revokeObjectURL(previewUrl)
+      );
     },
 
     sendAudio: async (blob, duration) => {
@@ -337,40 +290,19 @@ export const useChatStore = create<ChatState>((set, get) => {
       if (conversationId == null) return;
 
       const clientMsgId = crypto.randomUUID();
-      const user = useAuthStore.getState().user;
-      const now = new Date().toISOString();
       const previewUrl = URL.createObjectURL(blob);
-      const optimistic: Message = {
-        id: clientMsgId,
-        conversationId,
-        senderId: user?.id ?? '',
-        senderName: user?.fullName ?? user?.username,
-        senderAvatar: user?.avatar,
-        type: 'audio',
-        content: '',
-        metadata: JSON.stringify({ url: previewUrl, duration }),
-        status: 'uploading',
-        createdAt: now,
-        updatedAt: now,
-        clientMsgId,
-      };
-      set((state) => ({ messages: [...state.messages, optimistic] }));
-
-      try {
-        const saved = await MessageService.sendAudio(conversationId, blob, duration, clientMsgId);
-        set((state) => ({
-          messages: state.messages.map((item) =>
-            item.clientMsgId === clientMsgId ? { ...saved, status: 'sent' } : item
-          ),
-        }));
-        URL.revokeObjectURL(previewUrl);
-      } catch {
-        set((state) => ({
-          messages: state.messages.map((item) =>
-            item.clientMsgId === clientMsgId ? { ...item, status: 'failed' } : item
-          ),
-        }));
-      }
+      await runOptimisticSend(
+        set,
+        buildOptimisticMessage({
+          clientMsgId,
+          conversationId,
+          type: 'audio',
+          metadata: JSON.stringify({ url: previewUrl, duration }),
+          status: 'uploading',
+        }),
+        (id) => MessageService.sendAudio(conversationId, blob, duration, id),
+        () => URL.revokeObjectURL(previewUrl)
+      );
     },
 
     resendMessage: async (messageId) => {
@@ -382,9 +314,7 @@ export const useChatStore = create<ChatState>((set, get) => {
       const clientMsgId = target.clientMsgId ?? crypto.randomUUID();
       const sendingStatus = target.type === 'text' ? 'sending' : 'uploading';
       set((state) => ({
-        messages: state.messages.map((item) =>
-          item.id === messageId ? { ...item, status: sendingStatus, clientMsgId } : item
-        ),
+        messages: markById(state.messages, messageId, { status: sendingStatus, clientMsgId }),
       }));
 
       try {
@@ -407,15 +337,11 @@ export const useChatStore = create<ChatState>((set, get) => {
           }
         }
         set((state) => ({
-          messages: state.messages.map((item) =>
-            item.clientMsgId === clientMsgId ? { ...saved, status: 'sent' } : item
-          ),
+          messages: markByClientMsgId(state.messages, clientMsgId, { ...saved, status: 'sent' }),
         }));
       } catch {
         set((state) => ({
-          messages: state.messages.map((item) =>
-            item.clientMsgId === clientMsgId ? { ...item, status: 'failed' } : item
-          ),
+          messages: markByClientMsgId(state.messages, clientMsgId, { status: 'failed' }),
         }));
       }
     },

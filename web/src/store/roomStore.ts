@@ -14,12 +14,16 @@ interface RoomState {
   reset: () => void;
 }
 
-export const useRoomStore = create<RoomState>((set) => ({
-  rooms: [],
+const initialState = {
+  rooms: [] as Room[],
   total: 0,
   loading: false,
-  error: null,
+  error: null as string | null,
   loaded: false,
+};
+
+export const useRoomStore = create<RoomState>((set) => ({
+  ...initialState,
   fetchRooms: async (params) => {
     set({ loading: true, error: null });
     try {
@@ -33,5 +37,5 @@ export const useRoomStore = create<RoomState>((set) => ({
       toast.error(i18n.t('room.loadError'));
     }
   },
-  reset: () => set({ rooms: [], total: 0, error: null, loaded: false }),
+  reset: () => set({ ...initialState }),
 }));
