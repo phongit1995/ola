@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"time"
 
+	"ola-chat-server/internal/utils"
+
 	"github.com/gocql/gocql"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -28,11 +30,11 @@ type RoomMessageRow struct {
 }
 
 func (r *MessageRepository) CreateMessage(roomID uuid.UUID, messageID gocql.UUID, senderID uuid.UUID, senderName, senderAvatar, content string, createdAt time.Time) error {
-	gocqlRoomID, err := gocql.ParseUUID(roomID.String())
+	gocqlRoomID, err := utils.ToGocqlUUID(roomID)
 	if err != nil {
 		return fmt.Errorf("invalid room ID: %w", err)
 	}
-	gocqlSenderID, err := gocql.ParseUUID(senderID.String())
+	gocqlSenderID, err := utils.ToGocqlUUID(senderID)
 	if err != nil {
 		return fmt.Errorf("invalid sender ID: %w", err)
 	}
@@ -45,7 +47,7 @@ func (r *MessageRepository) CreateMessage(roomID uuid.UUID, messageID gocql.UUID
 }
 
 func (r *MessageRepository) GetMessages(roomID uuid.UUID, limit int, before *gocql.UUID) ([]RoomMessageRow, error) {
-	gocqlRoomID, err := gocql.ParseUUID(roomID.String())
+	gocqlRoomID, err := utils.ToGocqlUUID(roomID)
 	if err != nil {
 		return nil, fmt.Errorf("invalid room ID: %w", err)
 	}

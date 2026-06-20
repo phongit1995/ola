@@ -847,44 +847,12 @@ func (s *Service) postSendMessageTasks(conversationID uuid.UUID, memberIDs []uui
 
 	s.invalidateCachesAfterSend(conversationID, memberIDs)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	conv, err := s.getConversationByIDCached(conversationID)
-	var convData *messageEvents.ConversationData
-	if err == nil && conv != nil {
-		convData = &messageEvents.ConversationData{
-			ID:               conv.ConversationID.String(),
-			Type:             conv.Type,
-			Name:             conv.Name,
-			Avatar:           conv.Avatar,
-			CreatedAt:        conv.CreatedAt.Format(time.RFC3339),
-			UpdatedAt:        conv.UpdatedAt.Format(time.RFC3339),
-			ParticipantCount: conv.ParticipantCount,
-		}
-	}
-
-	event := &messageEvents.MessageCreatedEvent{
-		Conversation: convData,
-		Message: &messageEvents.MessageData{
-			ID:             response.ID,
-			ConversationID: response.ConversationID,
-			SenderID:       response.SenderID,
-			SenderName:     response.SenderName,
-			SenderAvatar:   response.SenderAvatar,
-			Type:           response.Type,
-			Content:        response.Content,
-			Metadata:       response.Metadata,
-			CreatedAt:      response.CreatedAt,
-			UpdatedAt:      response.UpdatedAt,
-			ReplyToID:      response.ReplyToID,
-			ClientMsgID:    response.ClientMsgID,
-		},
-	}
-
-	if err := s.kafkaProducer.PublishMessageCreated(ctx, event); err != nil {
-		s.logger.Errorw("Failed to publish message created event", "error", err)
-	}
+	s.publishWithTimeout("message created event", func(ctx context.Context) error {
+		return s.kafkaProducer.PublishMessageCreated(ctx, &messageEvents.MessageCreatedEvent{
+			Conversation: s.conversationEventData(conversationID),
+			Message:      messageDataFromResponse(*response),
+		})
+	})
 }
 
 func (s *Service) GetMessages(userID, conversationID uuid.UUID, limit int, beforeMessageID *string) (*MessagesListResponse, error) {
@@ -1072,48 +1040,66 @@ func (s *Service) invalidateMessageCachesAsync(conversationID uuid.UUID, message
 	}()
 }
 
+func conversationToEventData(conv *conversation.Conversation) *messageEvents.ConversationData {
+	if conv == nil {
+		return nil
+	}
+	return &messageEvents.ConversationData{
+		ID:               conv.ConversationID.String(),
+		Type:             conv.Type,
+		Name:             conv.Name,
+		Avatar:           conv.Avatar,
+		CreatedAt:        conv.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:        conv.UpdatedAt.Format(time.RFC3339),
+		ParticipantCount: conv.ParticipantCount,
+	}
+}
+
+func messageDataFromResponse(resp MessageResponse) *messageEvents.MessageData {
+	return &messageEvents.MessageData{
+		ID:             resp.ID,
+		ConversationID: resp.ConversationID,
+		SenderID:       resp.SenderID,
+		SenderName:     resp.SenderName,
+		SenderAvatar:   resp.SenderAvatar,
+		Type:           resp.Type,
+		Content:        resp.Content,
+		Metadata:       resp.Metadata,
+		CreatedAt:      resp.CreatedAt,
+		UpdatedAt:      resp.UpdatedAt,
+		EditedAt:       resp.EditedAt,
+		ReplyToID:      resp.ReplyToID,
+		ClientMsgID:    resp.ClientMsgID,
+	}
+}
+
+func (s *Service) publishWithTimeout(action string, publish func(ctx context.Context) error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := publish(ctx); err != nil {
+		s.logger.Errorw("Failed to publish "+action, "error", err)
+	}
+}
+
+func (s *Service) publishAsync(action string, publish func(ctx context.Context) error) {
+	go s.publishWithTimeout(action, publish)
+}
+
+func (s *Service) conversationEventData(convID uuid.UUID) *messageEvents.ConversationData {
+	conv, err := s.getConversationByIDCached(convID)
+	if err != nil {
+		return nil
+	}
+	return conversationToEventData(conv)
+}
+
 func (s *Service) publishMessageUpdatedAsync(resp MessageResponse, convID uuid.UUID) {
-	go func() {
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-
-		conv, err := s.getConversationByIDCached(convID)
-		var convData *messageEvents.ConversationData
-		if err == nil && conv != nil {
-			convData = &messageEvents.ConversationData{
-				ID:               conv.ConversationID.String(),
-				Type:             conv.Type,
-				Name:             conv.Name,
-				Avatar:           conv.Avatar,
-				CreatedAt:        conv.CreatedAt.Format(time.RFC3339),
-				UpdatedAt:        conv.UpdatedAt.Format(time.RFC3339),
-				ParticipantCount: conv.ParticipantCount,
-			}
-		}
-
-		messageData := &messageEvents.MessageData{
-			ID:             resp.ID,
-			ConversationID: resp.ConversationID,
-			SenderID:       resp.SenderID,
-			SenderName:     resp.SenderName,
-			SenderAvatar:   resp.SenderAvatar,
-			Type:           resp.Type,
-			Content:        resp.Content,
-			Metadata:       resp.Metadata,
-			CreatedAt:      resp.CreatedAt,
-			UpdatedAt:      resp.UpdatedAt,
-			EditedAt:       resp.EditedAt,
-			ReplyToID:      resp.ReplyToID,
-		}
-
-		event := &messageEvents.MessageUpdatedEvent{
-			Conversation: convData,
-			Message:      messageData,
-		}
-		if err := s.kafkaProducer.PublishMessageUpdated(ctx, event); err != nil {
-			s.logger.Errorw("Failed to publish message updated event", "error", err)
-		}
-	}()
+	s.publishAsync("message updated event", func(ctx context.Context) error {
+		return s.kafkaProducer.PublishMessageUpdated(ctx, &messageEvents.MessageUpdatedEvent{
+			Conversation: s.conversationEventData(convID),
+			Message:      messageDataFromResponse(resp),
+		})
+	})
 }
 
 func (s *Service) DeleteMessage(userID uuid.UUID, conversationIDStr, messageIDStr string) error {
@@ -1160,32 +1146,12 @@ func (s *Service) DeleteMessage(userID uuid.UUID, conversationIDStr, messageIDSt
 
 	go s.invalidateCachesAfterDelete(conversationID, messageID)
 
-	go func(convID uuid.UUID, msgID string) {
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-
-		conv, err := s.getConversationByIDCached(convID)
-		var convData *messageEvents.ConversationData
-		if err == nil && conv != nil {
-			convData = &messageEvents.ConversationData{
-				ID:               conv.ConversationID.String(),
-				Type:             conv.Type,
-				Name:             conv.Name,
-				Avatar:           conv.Avatar,
-				CreatedAt:        conv.CreatedAt.Format(time.RFC3339),
-				UpdatedAt:        conv.UpdatedAt.Format(time.RFC3339),
-				ParticipantCount: conv.ParticipantCount,
-			}
-		}
-
-		event := &messageEvents.MessageDeletedEvent{
-			Conversation: convData,
-			MessageID:    msgID,
-		}
-		if err := s.kafkaProducer.PublishMessageDeleted(ctx, event); err != nil {
-			s.logger.Errorw("Failed to publish message deleted event", "error", err)
-		}
-	}(conversationID, messageIDStr)
+	s.publishAsync("message deleted event", func(ctx context.Context) error {
+		return s.kafkaProducer.PublishMessageDeleted(ctx, &messageEvents.MessageDeletedEvent{
+			Conversation: s.conversationEventData(conversationID),
+			MessageID:    messageIDStr,
+		})
+	})
 
 	return nil
 }
@@ -1520,21 +1486,16 @@ func (s *Service) ToggleReaction(ctx context.Context, userID, conversationID uui
 	s.cache.InvalidateConversationMessages(conversationID)
 	s.cache.DeleteMessage(conversationID, messageID)
 
-	go func() {
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-		event := &messageEvents.MessageReactionUpdatedEvent{
+	s.publishAsync("reaction event", func(ctx context.Context) error {
+		return s.kafkaProducer.PublishMessageReactionUpdated(ctx, &messageEvents.MessageReactionUpdatedEvent{
 			ConversationID: conversationID.String(),
 			MessageID:      messageIDStr,
 			Reactions:      reactions,
 			ActorUserID:    userIDStr,
 			Type:           reactionType,
 			Action:         action,
-		}
-		if err := s.kafkaProducer.PublishMessageReactionUpdated(ctx, event); err != nil {
-			s.logger.Warnw("Failed to publish reaction event", "error", err)
-		}
-	}()
+		})
+	})
 
 	senderUUID, _ := uuid.Parse(msg.SenderID.String())
 	resp := &MessageResponse{
