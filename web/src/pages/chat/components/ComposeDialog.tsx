@@ -55,6 +55,7 @@ export function ComposeDialog({ open, onClose, onStart }: ComposeDialogProps) {
       title={t('chat.composeTitle')}
       search={{ value: query, onChange: setQuery, placeholder: t('chat.composeSearchPlaceholder') }}
       loading={loading}
+      loadingText={t('common.loading')}
       isEmpty={filtered.length === 0}
       empty={<p className="py-6 text-center text-sm text-black/54">{t('chat.composeEmpty')}</p>}
     >

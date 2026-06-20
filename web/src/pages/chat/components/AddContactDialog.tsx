@@ -62,6 +62,7 @@ export function AddContactDialog({ open, onClose }: AddContactDialogProps) {
         placeholder: t('chat.addContactSearchPlaceholder'),
       }}
       loading={loading}
+      loadingText={t('common.loading')}
       isEmpty={results.length === 0}
       empty={<p className="py-6 text-center text-sm text-black/54">{emptyMessage}</p>}
     >

@@ -58,6 +58,8 @@ export function BlockedListDialog({ open, onClose }: BlockedListDialogProps) {
       loading={loading}
       isEmpty={items.length === 0}
       empty={<p className="py-2 text-center text-black/54">{t('chat.blockListEmpty')}</p>}
+      divided={false}
+      listMaxHeightClass="max-h-80"
     >
       {items.map((relationship) => {
         const name = blockedName(relationship);
