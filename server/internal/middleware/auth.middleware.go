@@ -1,11 +1,11 @@
 package middleware
 
 import (
+	"fmt"
+	"net/http"
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/utils"
-	"fmt"
-	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -110,14 +110,4 @@ func (m *AuthMiddleware) RequireAuth() gin.HandlerFunc {
 		c.Set("user_id", userID)
 		c.Next()
 	}
-}
-
-func GetUserID(c *gin.Context) (uuid.UUID, bool) {
-	userID, exists := c.Get("user_id")
-	if !exists {
-		return uuid.Nil, false
-	}
-
-	id, ok := userID.(uuid.UUID)
-	return id, ok
 }

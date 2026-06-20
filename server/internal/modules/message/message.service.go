@@ -415,12 +415,7 @@ func isAllowedReactionType(t string) bool {
 }
 
 func isActiveMember(members []conversation.ConversationMember, userID uuid.UUID) bool {
-	for _, m := range members {
-		if m.UserID == userID && m.IsActive {
-			return true
-		}
-	}
-	return false
+	return conversation.IsActiveMember(members, userID)
 }
 
 func (s *Service) checkRateLimit(key string, windowSecs, maxReqs int) error {
@@ -442,12 +437,7 @@ func (s *Service) checkRateLimit(key string, windowSecs, maxReqs int) error {
 }
 
 func isMember(members []conversation.ConversationMember, userID uuid.UUID) bool {
-	for _, m := range members {
-		if m.UserID == userID {
-			return true
-		}
-	}
-	return false
+	return conversation.IsMember(members, userID)
 }
 
 func truncatePreview(content string, maxRunes int) string {
@@ -705,12 +695,7 @@ func (s *Service) SendMessage(senderID, conversationID uuid.UUID, messageType, c
 
 	shortContent := previewForType(messageType, content)
 
-	memberIDs := make([]uuid.UUID, 0, len(members))
-	for _, m := range members {
-		if m.IsActive {
-			memberIDs = append(memberIDs, m.UserID)
-		}
-	}
+	memberIDs := conversation.ActiveMemberIDs(members)
 
 	response := &MessageResponse{
 		ID:             messageID.String(),
@@ -753,12 +738,7 @@ func (s *Service) applyInboxFanout(conversationID uuid.UUID, members []conversat
 			"conversation_id", conversationID, "error", err)
 	}
 
-	activeIDs := make([]uuid.UUID, 0, len(members))
-	for _, m := range members {
-		if m.IsActive {
-			activeIDs = append(activeIDs, m.UserID)
-		}
-	}
+	activeIDs := conversation.ActiveMemberIDs(members)
 
 	currentUnread, err := s.repo.GetUnreadCounts(activeIDs, conversationID)
 	if err != nil {
@@ -1087,15 +1067,11 @@ func messageDataFromResponse(resp MessageResponse) *messageEvents.MessageData {
 }
 
 func (s *Service) publishWithTimeout(action string, publish func(ctx context.Context) error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	if err := publish(ctx); err != nil {
-		s.logger.Errorw("Failed to publish "+action, "error", err)
-	}
+	utils.PublishWithTimeout(s.logger, action, publish)
 }
 
 func (s *Service) publishAsync(action string, publish func(ctx context.Context) error) {
-	utils.SafeGo(s.logger, func() { s.publishWithTimeout(action, publish) })
+	utils.PublishAsync(s.logger, action, publish)
 }
 
 func (s *Service) conversationEventData(convID uuid.UUID) *messageEvents.ConversationData {

@@ -1,10 +1,10 @@
 package middleware
 
 import (
-	"ola-chat-server/internal/constants"
-	"ola-chat-server/internal/utils"
 	"fmt"
 	"net/http"
+	"ola-chat-server/internal/constants"
+	"ola-chat-server/internal/utils"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -90,13 +90,4 @@ func GetAdminID(c *gin.Context) (uuid.UUID, bool) {
 	}
 	id, ok := adminID.(uuid.UUID)
 	return id, ok
-}
-
-func GetAdminRole(c *gin.Context) (string, bool) {
-	role, exists := c.Get("admin_role")
-	if !exists {
-		return "", false
-	}
-	r, ok := role.(string)
-	return r, ok
 }

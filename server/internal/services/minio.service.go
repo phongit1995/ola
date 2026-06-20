@@ -1,13 +1,12 @@
 package services
 
 import (
-	"ola-chat-server/internal/config"
 	"context"
 	"fmt"
 	"mime/multipart"
+	"ola-chat-server/internal/config"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/minio/minio-go/v7"
@@ -136,30 +135,6 @@ func (s *MinIOService) UploadFile(ctx context.Context, file multipart.File, file
 		PublicID:  objectName,
 		Format:    strings.TrimPrefix(ext, "."),
 	}, nil
-}
-
-func (s *MinIOService) DeleteFile(ctx context.Context, objectName string) error {
-	if objectName == "" {
-		return nil
-	}
-
-	s.logger.Infow("Deleting file from MinIO", "object", objectName)
-
-	err := s.client.RemoveObject(ctx, s.bucket, objectName, minio.RemoveObjectOptions{})
-	if err != nil {
-		s.logger.Errorw("Failed to delete from MinIO", "object", objectName, "error", err)
-		return fmt.Errorf("failed to delete file: %w", err)
-	}
-
-	return nil
-}
-
-func (s *MinIOService) GetPresignedURL(ctx context.Context, objectName string, expiry time.Duration) (string, error) {
-	url, err := s.client.PresignedGetObject(ctx, s.bucket, objectName, expiry, nil)
-	if err != nil {
-		return "", fmt.Errorf("failed to generate presigned URL: %w", err)
-	}
-	return url.String(), nil
 }
 
 func getFileSize(file multipart.File) (int64, error) {

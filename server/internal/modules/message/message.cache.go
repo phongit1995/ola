@@ -1,9 +1,9 @@
 package message
 
 import (
+	"fmt"
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/services"
-	"fmt"
 	"time"
 
 	"github.com/gocql/gocql"
@@ -21,15 +21,6 @@ func NewCacheService(cache *services.CacheService, logger *zap.SugaredLogger) *C
 		cache:  cache,
 		logger: logger.Named("[message_cache]"),
 	}
-}
-
-func (c *CacheService) GetMessage(conversationID uuid.UUID, messageID gocql.UUID) (*Message, error) {
-	key := fmt.Sprintf(constants.CacheKeyMessage, fmt.Sprintf("%s:%s", conversationID.String(), messageID.String()))
-	var message Message
-	if err := c.cache.Get(key, &message); err != nil {
-		return nil, err
-	}
-	return &message, nil
 }
 
 func (c *CacheService) SetMessage(message *Message) error {
@@ -61,20 +52,6 @@ func (c *CacheService) DeleteConversationMessages(conversationID uuid.UUID) erro
 	return c.cache.DeletePattern(pattern)
 }
 
-func (c *CacheService) GetLastMessage(conversationID uuid.UUID) (*Message, error) {
-	key := fmt.Sprintf(constants.CacheKeyMessage, fmt.Sprintf("%s:last", conversationID.String()))
-	var message Message
-	if err := c.cache.Get(key, &message); err != nil {
-		return nil, err
-	}
-	return &message, nil
-}
-
-func (c *CacheService) SetLastMessage(conversationID uuid.UUID, message *Message) error {
-	key := fmt.Sprintf(constants.CacheKeyMessage, fmt.Sprintf("%s:last", conversationID.String()))
-	return c.cache.Set(key, message, constants.CacheTTLMessage*time.Second)
-}
-
 func (c *CacheService) DeleteLastMessage(conversationID uuid.UUID) error {
 	key := fmt.Sprintf(constants.CacheKeyMessage, fmt.Sprintf("%s:last", conversationID.String()))
 	return c.cache.Delete(key)
@@ -89,15 +66,6 @@ func (c *CacheService) InvalidateConversationMessages(conversationID uuid.UUID) 
 		c.logger.Warnw("Failed to delete last message cache", "conversation_id", conversationID, "error", err)
 	}
 
-	return nil
-}
-
-func (c *CacheService) CacheMessageBatch(messages []Message) error {
-	for _, msg := range messages {
-		if err := c.SetMessage(&msg); err != nil {
-			c.logger.Warnw("Failed to cache message", "message_id", msg.MessageID, "error", err)
-		}
-	}
 	return nil
 }
 

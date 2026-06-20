@@ -1,15 +1,15 @@
 package kafka
 
 import (
+	"context"
+	"encoding/json"
+	"fmt"
 	"ola-chat-server/internal/config"
 	"ola-chat-server/internal/constants"
 	callEvents "ola-chat-server/internal/domain/call"
 	conversationEvents "ola-chat-server/internal/domain/conversation"
 	messageEvents "ola-chat-server/internal/domain/message"
 	roomEvents "ola-chat-server/internal/domain/room"
-	"context"
-	"encoding/json"
-	"fmt"
 	"time"
 
 	"github.com/segmentio/kafka-go"
@@ -64,10 +64,6 @@ func (p *Producer) PublishConversationCreated(ctx context.Context, event *conver
 
 func (p *Producer) PublishConversationUpdated(ctx context.Context, event *conversationEvents.UpdatedEvent) error {
 	return p.publishKeyed(ctx, constants.KafkaTopicConversationUpdated, event.ConversationID, event)
-}
-
-func (p *Producer) PublishConversationDeleted(ctx context.Context, event *conversationEvents.DeletedEvent) error {
-	return p.publishKeyed(ctx, constants.KafkaTopicConversationDeleted, event.ConversationID, event)
 }
 
 func (p *Producer) PublishConversationTyping(ctx context.Context, event *conversationEvents.TypingEvent) error {

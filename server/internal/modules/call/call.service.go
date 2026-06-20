@@ -1,17 +1,17 @@
 package call
 
 import (
+	"context"
+	"crypto/sha256"
+	"encoding/base64"
+	"errors"
+	"fmt"
 	"ola-chat-server/internal/config"
 	"ola-chat-server/internal/constants"
 	callEvents "ola-chat-server/internal/domain/call"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/conversation"
 	"ola-chat-server/internal/transport/kafka"
-	"context"
-	"crypto/sha256"
-	"encoding/base64"
-	"errors"
-	"fmt"
 	"sync"
 	"time"
 
@@ -66,20 +66,10 @@ func (s *Service) StartCall(ctx context.Context, callerID, conversationID uuid.U
 		return nil, fmt.Errorf("get members: %w", err)
 	}
 
-	memberIDs := make([]uuid.UUID, 0, len(members))
-	callerIsMember := false
-	for _, m := range members {
-		if !m.IsActive {
-			continue
-		}
-		memberIDs = append(memberIDs, m.UserID)
-		if m.UserID == callerID {
-			callerIsMember = true
-		}
-	}
-	if !callerIsMember {
+	if !conversation.IsActiveMember(members, callerID) {
 		return nil, ErrConversationNotFound
 	}
+	memberIDs := conversation.ActiveMemberIDs(members)
 
 	roomName := fmt.Sprintf("call_%s_%s", conversationID.String(), uuid.New().String()[:8])
 

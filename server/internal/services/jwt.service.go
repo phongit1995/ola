@@ -1,8 +1,8 @@
 package services
 
 import (
-	"ola-chat-server/internal/config"
 	"errors"
+	"ola-chat-server/internal/config"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -20,12 +20,6 @@ type TokenClaims struct {
 
 func NewJWTService(cfg *config.Config) *JWTService {
 	return &JWTService{cfg: cfg}
-}
-
-func (s *JWTService) GenerateToken(userID uuid.UUID) (string, error) {
-	return s.GenerateTokenWithClaims(map[string]interface{}{
-		"id": userID.String(),
-	})
 }
 
 func (s *JWTService) GenerateTokenWithSession(userID, sessionID uuid.UUID) (string, error) {
@@ -82,12 +76,6 @@ func (s *JWTService) GetDataFromToken(tokenString string) (interface{}, error) {
 	}
 
 	return claims.Data, nil
-}
-
-func (s *JWTService) GenerateRefreshToken(userID uuid.UUID) (string, error) {
-	return s.GenerateRefreshTokenWithClaims(map[string]interface{}{
-		"id": userID.String(),
-	})
 }
 
 func (s *JWTService) GenerateRefreshTokenWithSession(userID, sessionID uuid.UUID) (string, error) {

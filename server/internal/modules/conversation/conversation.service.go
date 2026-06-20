@@ -95,12 +95,7 @@ func ResolveConversationDisplay(conv *Conversation, viewerID uuid.UUID, members 
 }
 
 func requireActiveMember(members []ConversationMember, userID uuid.UUID) bool {
-	for _, m := range members {
-		if m.UserID == userID && m.IsActive {
-			return true
-		}
-	}
-	return false
+	return IsActiveMember(members, userID)
 }
 
 func (s *Service) buildConversationResponse(conv ConversationByUser, viewerID uuid.UUID, otherLastRead *gocql.UUID) ConversationResponse {
@@ -365,9 +360,6 @@ func (s *Service) cacheAndPublishDirectCreated(conversationID, user1ID, user2ID 
 }
 
 func (s *Service) publishDirectConversationCreated(convID, user1ID, user2ID uuid.UUID, user1, user2 *models.User, createdAt time.Time) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
 	user1Name := userDisplayName(user1)
 	user2Name := userDisplayName(user2)
 
@@ -407,12 +399,12 @@ func (s *Service) publishDirectConversationCreated(convID, user1ID, user2ID uuid
 		},
 	}
 
-	if err := s.kafkaProducer.PublishConversationCreated(ctx, user1Event); err != nil {
-		s.logger.Errorw("Failed to publish CONVERSATION_CREATED for user1", "conversation_id", convID, "error", err)
-	}
-	if err := s.kafkaProducer.PublishConversationCreated(ctx, user2Event); err != nil {
-		s.logger.Errorw("Failed to publish CONVERSATION_CREATED for user2", "conversation_id", convID, "error", err)
-	}
+	utils.PublishWithTimeout(s.logger, "CONVERSATION_CREATED for user1", func(ctx context.Context) error {
+		return s.kafkaProducer.PublishConversationCreated(ctx, user1Event)
+	})
+	utils.PublishWithTimeout(s.logger, "CONVERSATION_CREATED for user2", func(ctx context.Context) error {
+		return s.kafkaProducer.PublishConversationCreated(ctx, user2Event)
+	})
 }
 
 func (s *Service) CreateGroupConversation(creatorID uuid.UUID, name string, participantIDs []uuid.UUID) (*ConversationResponse, error) {
@@ -536,9 +528,6 @@ func (s *Service) cacheAndPublishGroupCreated(conversationID uuid.UUID, name str
 }
 
 func (s *Service) publishGroupConversationCreated(convID uuid.UUID, name string, participantIDs []uuid.UUID, createdAt time.Time) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
 	usersMap := s.userCache.GetUsersBatch(participantIDs, true)
 	participants := make([]map[string]interface{}, 0, len(participantIDs))
 	for _, pid := range participantIDs {
@@ -569,10 +558,9 @@ func (s *Service) publishGroupConversationCreated(convID uuid.UUID, name string,
 				"participants":     participants,
 			},
 		}
-		if err := s.kafkaProducer.PublishConversationCreated(ctx, event); err != nil {
-			s.logger.Errorw("Failed to publish CONVERSATION_CREATED for group participant",
-				"conversation_id", convID, "user_id", pid, "error", err)
-		}
+		utils.PublishWithTimeout(s.logger, fmt.Sprintf("CONVERSATION_CREATED for group participant %s", pid), func(ctx context.Context) error {
+			return s.kafkaProducer.PublishConversationCreated(ctx, event)
+		})
 	}
 }
 
@@ -757,11 +745,9 @@ func (s *Service) MarkConversationAsRead(userID, conversationID uuid.UUID) error
 					"seen": true,
 				},
 			}
-			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-			defer cancel()
-			if err := s.kafkaProducer.PublishConversationUpdated(ctx, event); err != nil {
-				s.logger.Warnw("Failed to publish conversation updated event for seen", "error", err)
-			}
+			utils.PublishWithTimeout(s.logger, "conversation updated event for seen", func(ctx context.Context) error {
+				return s.kafkaProducer.PublishConversationUpdated(ctx, event)
+			})
 		}
 	}
 

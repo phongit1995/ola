@@ -1,9 +1,10 @@
 package conversation
 
 import (
+	"fmt"
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/services"
-	"fmt"
+	"ola-chat-server/internal/utils"
 	"time"
 
 	"github.com/google/uuid"
@@ -49,7 +50,6 @@ func (c *ConversationCache) SetConversationMembers(conversationID uuid.UUID, mem
 	key := fmt.Sprintf(constants.CacheKeyConversationMembers, conversationID.String())
 	return c.cache.Set(key, members, constants.CacheTTLConversation*time.Second)
 }
-
 
 type ConversationCacheAdapter struct {
 	cache  *ConversationCache
@@ -102,8 +102,7 @@ func (a *ConversationCacheAdapter) GetConversationMembers(conversationID string)
 		userIDs = append(userIDs, row.UserID.String())
 	}
 
-	// Backfill cache async
-	go func() {
+	utils.SafeGo(a.logger, func() {
 		cacheMembers := make([]ConversationMember, 0, len(rows))
 		for _, row := range rows {
 			cacheMembers = append(cacheMembers, ConversationMember{
@@ -116,7 +115,7 @@ func (a *ConversationCacheAdapter) GetConversationMembers(conversationID string)
 		if err := a.cache.SetConversationMembers(convID, cacheMembers); err != nil {
 			a.logger.Warnw("Failed to backfill members cache", "conversation_id", conversationID, "error", err)
 		}
-	}()
+	})
 
 	return userIDs, nil
 }
