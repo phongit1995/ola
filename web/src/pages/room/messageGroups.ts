@@ -16,6 +16,7 @@ export interface MessageGroup {
   senderId: string;
   senderName: string;
   senderAvatar?: string;
+  senderVipTypeId?: number | null;
   messages: GroupedMessage[];
 }
 
@@ -47,6 +48,7 @@ interface PendingGroup {
   senderId: string;
   senderName: string;
   senderAvatar?: string;
+  senderVipTypeId?: number | null;
   raw: RoomMessage[];
 }
 
@@ -66,6 +68,7 @@ export function buildRoomFeed(messages: RoomMessage[], currentUserId: string): R
       senderId: pending.senderId,
       senderName: pending.senderName,
       senderAvatar: pending.senderAvatar,
+      senderVipTypeId: pending.senderVipTypeId,
       messages: pending.raw.map((message, index) => ({
         id: message.id,
         content: message.content,
@@ -100,6 +103,7 @@ export function buildRoomFeed(messages: RoomMessage[], currentUserId: string): R
         senderId: message.senderId,
         senderName: message.senderName ?? message.senderId,
         senderAvatar: message.senderAvatar,
+        senderVipTypeId: message.senderVipTypeId,
         raw: [message],
       };
     }

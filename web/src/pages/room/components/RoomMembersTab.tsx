@@ -5,7 +5,7 @@ import femaleIcon from '@/assets/icons/chat/ic_indicate_female.png';
 import androidIcon from '@/assets/icons/me/ic_indicate_android.png';
 import type { RoomMember } from '@app-types';
 import { Avatar } from '@components';
-import { colorForName } from '@lib';
+import { colorForName, vipIconUrl } from '@lib';
 import { MediaViewer } from '../../me/components/MediaViewer';
 
 interface RoomMembersTabProps {
@@ -70,9 +70,18 @@ export function RoomMembersTab({ members, active, onOpenProfile }: RoomMembersTa
                     <DeviceBadge />
                   </span>
                   <div className="flex min-w-0 flex-1 flex-col">
-                    <span className="truncate text-base">
-                      <span className="text-black/87">{member.username}</span>
-                      {subName ? <span className="text-black/54"> · {subName}</span> : null}
+                    <span className="flex min-w-0 items-center gap-1 text-base">
+                      {member.vipTypeId != null && (
+                        <img
+                          src={vipIconUrl(member.vipTypeId)}
+                          alt=""
+                          className="h-4 w-4 shrink-0 object-contain"
+                        />
+                      )}
+                      <span className="min-w-0 truncate">
+                        <span className="text-black/87">{member.username}</span>
+                        {subName ? <span className="text-black/54"> · {subName}</span> : null}
+                      </span>
                     </span>
                     {member.bio ? (
                       <span className="truncate text-xs text-black/54">{member.bio}</span>

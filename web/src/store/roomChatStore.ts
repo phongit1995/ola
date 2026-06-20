@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { Socket } from 'socket.io-client';
 import { useAuthStore } from '@/store/authStore';
+import { parseVipTypeId } from '@lib';
 import { RoomService, SocketService } from '@services';
 import {
   ROOM_SOCKET_EVENTS,
@@ -8,6 +9,23 @@ import {
   type RoomMessage,
   type RoomSocketEnvelope,
 } from '@app-types';
+
+function activeVipTypeId(vipUsed?: string | null, vipEndTime?: string | null): number | null {
+  const end = vipEndTime != null ? new Date(vipEndTime).getTime() : NaN;
+  const active = !Number.isNaN(end) && end > Date.now();
+  return active ? parseVipTypeId(vipUsed) : null;
+}
+
+function withVipTypeId(members: RoomMember[]): RoomMember[] {
+  return members.map((member) => ({
+    ...member,
+    vipTypeId: activeVipTypeId(member.vipUsed, member.vipEndTime),
+  }));
+}
+
+function withSenderVip(message: RoomMessage): RoomMessage {
+  return { ...message, senderVipTypeId: activeVipTypeId(message.senderVip, message.senderVipEnd) };
+}
 
 export type RoomChatStatus = 'connecting' | 'joined' | 'error';
 export type RoomTab = 'members' | 'messages';
@@ -79,7 +97,7 @@ export const useRoomChatStore = create<RoomChatState>((set, get) => ({
       try {
         const result = await RoomService.members(roomId);
         if (get().activeRoom?.id !== roomId) return;
-        set({ members: result.items, memberCount: result.total });
+        set({ members: withVipTypeId(result.items), memberCount: result.total });
       } catch {
         return;
       }
@@ -91,7 +109,7 @@ export const useRoomChatStore = create<RoomChatState>((set, get) => ({
         case ROOM_SOCKET_EVENTS.newMessage: {
           const message = toRecord(toRecord(envelope.data)?.message);
           if (message?.roomId !== roomId || typeof message.id !== 'string') return;
-          const newMessage = message as unknown as RoomMessage;
+          const newMessage = withSenderVip(message as unknown as RoomMessage);
           const currentUserId = useAuthStore.getState().user?.id;
           set((state) => {
             if (state.messages.some((item) => item.id === newMessage.id)) return state;
@@ -147,8 +165,8 @@ export const useRoomChatStore = create<RoomChatState>((set, get) => ({
         if (get().activeRoom?.id !== roomId) return;
         set({
           status: 'joined',
-          messages: [...msgs.items].reverse(),
-          members: mem.items,
+          messages: [...msgs.items].reverse().map(withSenderVip),
+          members: withVipTypeId(mem.items),
           memberCount: mem.total,
         });
       } catch {
@@ -183,7 +201,7 @@ export const useRoomChatStore = create<RoomChatState>((set, get) => ({
     if (!room) return;
     const trimmed = content.trim();
     if (trimmed === '') return;
-    const message = await RoomService.sendMessage(room.id, { content: trimmed });
+    const message = withSenderVip(await RoomService.sendMessage(room.id, { content: trimmed }));
     if (get().activeRoom?.id !== room.id) return;
     set((state) =>
       state.messages.some((item) => item.id === message.id)

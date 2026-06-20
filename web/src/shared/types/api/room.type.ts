@@ -26,6 +26,7 @@ export interface RoomMember {
   bioImage?: string | null;
   vipUsed?: string | null;
   vipEndTime?: string | null;
+  vipTypeId?: number | null;
 }
 
 export interface RoomMessage {
@@ -37,6 +38,7 @@ export interface RoomMessage {
   senderGender?: 'male' | 'female';
   senderVip?: string | null;
   senderVipEnd?: string | null;
+  senderVipTypeId?: number | null;
   content: string;
   createdAt: string;
 }
