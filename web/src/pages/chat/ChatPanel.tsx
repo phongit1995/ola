@@ -73,7 +73,7 @@ export function ChatPanel() {
     if (sub !== 'contacts' || friendsLoadedRef.current) return;
     friendsLoadedRef.current = true;
     RelationshipService.friends()
-      .then((res) => setFriends(mapFriendsToContacts(res.friends)))
+      .then((res) => setFriends(mapFriendsToContacts(res.friends, t)))
       .catch(() => {
         friendsLoadedRef.current = false;
         toast.error(t('chat.loadFriendsError'));

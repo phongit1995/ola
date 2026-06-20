@@ -124,6 +124,10 @@
   },
   "chat": {
     "comingSoon": "Tính năng sắp ra mắt.",
+    "lastActiveJustNow": "vừa xong",
+    "lastActiveMinutes": "{{count}} phút trước",
+    "lastActiveHours": "{{count}} giờ trước",
+    "lastActiveDays": "{{count}} ngày trước",
     "youPrefix": "Bạn",
     "stickerPreview": "Nhãn dán",
     "blockedByMe": "Bạn đã chặn người này. Bỏ chặn để nhắn tin.",

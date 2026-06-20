@@ -1,8 +1,8 @@
+import type { TFunction } from 'i18next';
 import { activeVipTypeId, colorForName, isVipActive } from '@lib';
 import type { Friend } from '@app-types';
 import type { Contact, ContactGroup, DeviceType } from './types';
-
-const DEVICE_TYPES: DeviceType[] = ['phone', 'pc', 'apple', 'android', 'winphone'];
+import { DEVICE_TYPES } from './constants';
 
 function normalizeDevice(value?: string): DeviceType {
   return DEVICE_TYPES.includes(value as DeviceType) ? (value as DeviceType) : 'android';
@@ -16,23 +16,23 @@ function isBirthdayToday(dateOfBirth?: string): boolean {
   return date.getMonth() === now.getMonth() && date.getDate() === now.getDate();
 }
 
-function formatLastActive(lastActiveAt?: string): string | undefined {
+function formatLastActive(t: TFunction, lastActiveAt?: string): string | undefined {
   if (lastActiveAt == null || lastActiveAt === '') return undefined;
   const then = new Date(lastActiveAt);
   if (Number.isNaN(then.getTime())) return undefined;
   const minutes = Math.floor((Date.now() - then.getTime()) / 60000);
-  if (minutes < 1) return 'vừa xong';
-  if (minutes < 60) return `${minutes} phút trước`;
+  if (minutes < 1) return t('chat.lastActiveJustNow');
+  if (minutes < 60) return t('chat.lastActiveMinutes', { count: minutes });
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours} giờ trước`;
-  return `${Math.floor(hours / 24)} ngày trước`;
+  if (hours < 24) return t('chat.lastActiveHours', { count: hours });
+  return t('chat.lastActiveDays', { count: Math.floor(hours / 24) });
 }
 
 function groupOf(friend: Friend): ContactGroup {
   return isBirthdayToday(friend.dateOfBirth) ? 'birthday' : 'friend';
 }
 
-export function mapFriendsToContacts(friends: Friend[]): Contact[] {
+export function mapFriendsToContacts(friends: Friend[], t: TFunction): Contact[] {
   return friends.map((friend) => {
     return {
       id: friend.id,
@@ -45,7 +45,7 @@ export function mapFriendsToContacts(friends: Friend[]): Contact[] {
       vipTypeId: activeVipTypeId(friend.vipUsed, friend.vipEndTime),
       online: friend.isOnline,
       deviceType: normalizeDevice(friend.deviceType),
-      lastActive: friend.isOnline ? undefined : formatLastActive(friend.lastActiveAt),
+      lastActive: friend.isOnline ? undefined : formatLastActive(t, friend.lastActiveAt),
       statusImage: friend.bioImage ?? undefined,
       group: groupOf(friend),
     };

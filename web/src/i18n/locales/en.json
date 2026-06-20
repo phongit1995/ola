@@ -124,6 +124,10 @@
   },
   "chat": {
     "comingSoon": "Coming soon.",
+    "lastActiveJustNow": "just now",
+    "lastActiveMinutes": "{{count}} min ago",
+    "lastActiveHours": "{{count}}h ago",
+    "lastActiveDays": "{{count}}d ago",
     "youPrefix": "You",
     "stickerPreview": "Sticker",
     "blockedByMe": "You blocked this person. Unblock to send messages.",
