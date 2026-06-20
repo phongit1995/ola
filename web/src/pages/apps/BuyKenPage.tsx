@@ -2,14 +2,10 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@constants';
-import { toast } from '@lib';
+import { toast, formatKen, formatVnd } from '@lib';
 import { ScreenHeader, FullScreenOverlay } from '@components';
 import { useAuthStore } from '@/store/authStore';
 import { MIN_AMOUNT, STEP_AMOUNT, PRESET_AMOUNTS, QR_MODULES } from './constants';
-
-function formatVnd(value: number): string {
-  return value.toLocaleString('vi-VN');
-}
 
 function isFinderBit(localRow: number, localCol: number): boolean {
   const onOuterRing =
@@ -107,7 +103,7 @@ export function BuyKenPage() {
         <div className="m-2 flex items-center rounded-sm border border-black/12 bg-white px-3 py-2.5">
           <span className="text-sm text-black/54">{t('ken.buy.balance')}</span>
           <span className="ml-2 flex-1 text-lg font-bold text-ola-primary">
-            {balance.toLocaleString('en-US')} KEN
+            {formatKen(balance)} KEN
           </span>
         </div>
 
@@ -143,7 +139,7 @@ export function BuyKenPage() {
           <div className="mt-3 flex items-center">
             <span className="text-sm text-black/54">{t('ken.buy.receive')}</span>
             <span className="ml-2 flex-1 text-lg font-bold text-ola-accent">
-              {(isValid ? kenAmount : 0).toLocaleString('en-US')} KEN
+              {formatKen(isValid ? kenAmount : 0)} KEN
             </span>
           </div>
           {!isValid && <span className="mt-1 block text-xs text-[#e34545]">{t('ken.buy.invalid')}</span>}
@@ -164,7 +160,7 @@ export function BuyKenPage() {
               <span className="block text-lg font-bold text-black/87">{formatVnd(amount)}đ</span>
             </div>
             <p className="mt-2 text-center text-xs text-black/54">
-              {t('ken.buy.qrHint', { ken: kenAmount.toLocaleString('en-US') })}
+              {t('ken.buy.qrHint', { ken: formatKen(kenAmount) })}
             </p>
             <button
               type="button"

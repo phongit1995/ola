@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@constants';
-import { toast } from '@lib';
+import { toast, formatKen } from '@lib';
 import { ScreenHeader, FullScreenOverlay } from '@components';
 import { useAuthStore } from '@/store/authStore';
 
@@ -53,7 +53,7 @@ export function KenStorePage() {
     toast.info(t('ken.comingSoon'));
   }
 
-  const balanceText = `${(user?.ken ?? 0).toLocaleString('en-US')} KEN`;
+  const balanceText = `${formatKen(user?.ken ?? 0)} KEN`;
 
   return (
     <FullScreenOverlay>

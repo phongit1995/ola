@@ -15,3 +15,4 @@ export * from './vipIcon';
 export * from './vip';
 export * from './messageMetadata';
 export * from './duration';
+export * from './number';

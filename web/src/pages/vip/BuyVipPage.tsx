@@ -2,19 +2,20 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ROUTES } from '@constants';
-import { toast, ApiError } from '@lib';
+import { toast, ApiError, formatKen } from '@lib';
 import {
   ScreenHeader,
   FullScreenOverlay,
   Dialog,
   ConfirmDialog,
   ListOptionDialog,
+  VipIcon,
 } from '@components';
 import type { ListOption } from '@components';
 import { VipService } from '@services';
 import type { VipIconCatalogItem, VipPackageItem } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
-import { VIP_CATALOG, vipById, vipIconUrl } from './vipCatalog';
+import { VIP_CATALOG, vipById, vipName } from './vipCatalog';
 
 type BuyVipMode = 'buy' | 'give' | 'giveDays' | 'extend';
 
@@ -62,18 +63,6 @@ function ChevronIcon() {
   );
 }
 
-function VipThumbnail({ id, size = 40 }: { id: number; size?: number }) {
-  return (
-    <img
-      src={vipIconUrl(id)}
-      alt=""
-      width={size}
-      height={size}
-      className="shrink-0 object-contain"
-    />
-  );
-}
-
 interface PickerItem {
   key: string;
   typeId: number;
@@ -109,7 +98,7 @@ function VipPickerDialog({ open, selectedKey, items, onSelect, onClose }: VipPic
                 item.key === selectedKey ? 'bg-ola-primary/10 ring-1 ring-ola-primary' : ''
               }`}
             >
-              <VipThumbnail id={item.typeId} size={44} />
+              <VipIcon typeId={item.typeId} size={44} />
               <span className="line-clamp-2 text-center text-[11px] leading-tight text-black/70">
                 {item.name}
               </span>
@@ -189,7 +178,7 @@ export function BuyVipPage() {
       catalog.map((c) => ({
         key: c.id,
         typeId: c.vipTypeId,
-        name: vipById(c.vipTypeId)?.name ?? `VIP ${c.vipTypeId}`,
+        name: vipName(c.vipTypeId),
         price: c.kenPrice,
       })),
     [catalog],
@@ -215,7 +204,7 @@ export function BuyVipPage() {
   }
 
   function packageLabel(pkg: VipPackageItem): string {
-    return t('vip.buy.kenPrice', { ken: pkg.kenPrice.toLocaleString('en-US'), days: pkg.days });
+    return t('vip.buy.kenPrice', { ken: formatKen(pkg.kenPrice), days: pkg.days });
   }
 
   const packageOptions: ListOption[] = packages.map((pkg) => ({
@@ -307,12 +296,12 @@ export function BuyVipPage() {
 
   function confirmMessage(): string {
     const days = selectedPackage?.days ?? 0;
-    const ken = (selectedPackage?.kenPrice ?? 0).toLocaleString('en-US');
+    const ken = formatKen(selectedPackage?.kenPrice ?? 0);
     switch (mode) {
       case 'buy':
         return t('vip.buy.confirmBuyIcon', {
           name: selectedVip?.name ?? '',
-          ken: (selectedShopItem?.kenPrice ?? 0).toLocaleString('en-US'),
+          ken: formatKen(selectedShopItem?.kenPrice ?? 0),
         });
       case 'give':
         return t('vip.buy.confirmGiveIcon', { name: selectedVip?.name ?? '', receiver });
@@ -348,7 +337,7 @@ export function BuyVipPage() {
           <div className="flex items-center">
             <span className="text-sm text-black/54">{t('vip.buy.balance')}</span>
             <span className="ml-2 text-lg font-bold text-ola-primary">
-              {kenBalance.toLocaleString('en-US')} KEN
+              {formatKen(kenBalance)} KEN
             </span>
           </div>
         </div>
@@ -374,7 +363,7 @@ export function BuyVipPage() {
               onClick={() => setVipPickerOpen(true)}
               className="mt-1 flex w-full items-center gap-2 rounded border border-black/12 px-2 py-1.5 text-left active:bg-black/5"
             >
-              <VipThumbnail id={displayVipId} />
+              <VipIcon typeId={displayVipId} size={40} />
               <span className="h-9 w-px bg-black/12" />
               <span className="flex-1 truncate text-sm text-black/87">{selectedVip?.name}</span>
               {isBuyIcon && selectedShopItem != null && (

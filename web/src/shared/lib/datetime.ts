@@ -8,6 +8,14 @@ function resolveLocale(locale: string): string {
   return locale.startsWith('vi') ? 'vi' : 'en';
 }
 
+export function formatDateDMY(iso: string): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return '';
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  return `${day}-${month}-${date.getFullYear()}`;
+}
+
 export function createDateFormatter(locale: string): (iso: string) => string {
   const lang = resolveLocale(locale);
   return (iso: string) => {

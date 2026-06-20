@@ -8,39 +8,16 @@ import {
   FullScreenOverlay,
   ListOptionDialog,
   ScreenHeader,
+  VipIcon,
   type ListOption,
 } from '@components';
+import { formatDateDMY } from '@lib';
 import { VipService } from '@services';
 import type { VipIconInstance, VipStoreResult } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
-import { vipById, vipIconUrl } from './vipCatalog';
+import { vipName } from './vipCatalog';
 
 const PRIVACY_KEYS = ['privacyPublic', 'privacyFriends', 'privacyPrivate'] as const;
-
-function vipName(typeId: number): string {
-  return vipById(typeId)?.name ?? `VIP ${typeId}`;
-}
-
-function formatVipDate(iso: string): string {
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return '';
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  return `${day}-${month}-${date.getFullYear()}`;
-}
-
-function VipIconImage({ typeId, size = 40 }: { typeId: number; size?: number }) {
-  return (
-    <img
-      src={vipIconUrl(typeId)}
-      alt={vipName(typeId)}
-      width={size}
-      height={size}
-      className="shrink-0 rounded object-contain"
-      style={{ width: size, height: size }}
-    />
-  );
-}
 
 interface VipRowProps {
   icon: VipIconInstance;
@@ -58,7 +35,7 @@ function VipRow({ icon, onSelect }: VipRowProps) {
       className="flex h-[72px] w-full flex-col bg-white/80 text-left active:bg-black/5"
     >
       <div className="flex flex-1 items-center px-4">
-        <VipIconImage typeId={icon.typeId} />
+        <VipIcon typeId={icon.typeId} size={40} rounded alt={vipName(icon.typeId)} />
         <div className="ml-2 flex flex-col justify-center">
           <span className="text-base text-black/87">{vipName(icon.typeId)}</span>
           <span className="mt-0.5 text-xs text-black/54">{t(stateKey)}</span>
@@ -236,7 +213,7 @@ export function VipStorePage() {
           <div className="mt-1 flex h-[72px] flex-col">
             <div className="flex flex-1 items-center px-4">
               {usingIcon ? (
-                <VipIconImage typeId={usingIcon.typeId} />
+                <VipIcon typeId={usingIcon.typeId} size={40} rounded alt={vipName(usingIcon.typeId)} />
               ) : (
                 <span className="shrink-0 rounded bg-black/12" style={{ width: 40, height: 40 }} />
               )}
@@ -247,7 +224,7 @@ export function VipStorePage() {
                 <span className="mt-0.5 text-xs text-black/54">
                   {usingIcon
                     ? vipEndTime
-                      ? formatVipDate(vipEndTime)
+                      ? formatDateDMY(vipEndTime)
                       : t('vip.stateInUse')
                     : t('vip.empty')}
                 </span>

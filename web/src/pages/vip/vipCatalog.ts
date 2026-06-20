@@ -136,3 +136,7 @@ export const VIP_CATALOG: VipCatalogEntry[] = VIP_NAMES.map((name, index) => ({
 export function vipById(id: number): VipCatalogEntry | undefined {
   return VIP_CATALOG[id - 1];
 }
+
+export function vipName(id: number): string {
+  return vipById(id)?.name ?? `VIP ${id}`;
+}
