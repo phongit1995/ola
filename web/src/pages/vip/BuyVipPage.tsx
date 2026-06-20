@@ -130,6 +130,7 @@ export function BuyVipPage() {
   const location = useLocation();
   const user = useAuthStore((s) => s.user);
   const setUser = useAuthStore((s) => s.setUser);
+  const refreshUser = useAuthStore((s) => s.refreshUser);
 
   const initialMode = (location.state as { mode?: BuyVipMode } | null)?.mode ?? 'buy';
   const [mode, setMode] = useState<BuyVipMode>(initialMode);
@@ -268,6 +269,7 @@ export function BuyVipPage() {
       try {
         const result = await VipService.buyIcon(selectedShopId);
         if (user) setUser({ ...user, ken: result.kenBalance });
+        await refreshUser();
         setConfirmOpen(false);
         toast.success(t('vip.buy.bought', { name: selectedVip?.name ?? '' }));
         navigate(ROUTES.vip);
@@ -288,6 +290,7 @@ export function BuyVipPage() {
       try {
         const result = await VipService.buyPackage(selectedPackageId);
         if (user) setUser({ ...user, ken: result.kenBalance });
+        await refreshUser();
         setConfirmOpen(false);
         toast.success(t('vip.buy.extended', { days: result.days }));
         navigate(ROUTES.vip);

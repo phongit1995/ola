@@ -73,6 +73,7 @@ export function VipStorePage() {
   const navigate = useNavigate();
 
   const [store, setStore] = useState<VipStoreResult | null>(null);
+  const [loadedAt, setLoadedAt] = useState(0);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [privacyOpen, setPrivacyOpen] = useState(false);
@@ -83,13 +84,17 @@ export function VipStorePage() {
   const reload = useCallback(async () => {
     const res = await VipService.store();
     setStore(res);
+    setLoadedAt(Date.now());
   }, []);
 
   useEffect(() => {
     let active = true;
     VipService.store()
       .then((res) => {
-        if (active) setStore(res);
+        if (active) {
+          setStore(res);
+          setLoadedAt(Date.now());
+        }
       })
       .catch(() => {
         if (active) toast.info(t('common.error'));
@@ -107,12 +112,36 @@ export function VipStorePage() {
   const privacy = (store?.privacy ?? 0) as 0 | 1 | 2;
   const remainingDays = store?.days ?? null;
   const vipEndTime = store?.vipEndTime ?? null;
-  const durationText =
-    remainingDays != null && remainingDays > 0
+
+  function buildDurationText(): string {
+    if (vipEndTime != null) {
+      const diffMs = new Date(vipEndTime).getTime() - loadedAt;
+      if (Number.isNaN(diffMs)) {
+        return remainingDays != null && remainingDays > 0
+          ? t('vip.daysLeft', { count: remainingDays })
+          : t('vip.noVip');
+      }
+      if (diffMs <= 0) return t('vip.expired');
+      const ONE_DAY = 86_400_000;
+      const ONE_HOUR = 3_600_000;
+      const ONE_MINUTE = 60_000;
+      if (diffMs >= ONE_DAY) return t('vip.daysLeft', { count: Math.ceil(diffMs / ONE_DAY) });
+      const hours = Math.floor(diffMs / ONE_HOUR);
+      const minutes = Math.floor((diffMs % ONE_HOUR) / ONE_MINUTE);
+      if (hours >= 1) {
+        return minutes > 0
+          ? t('vip.hoursMinutesLeft', { hours, minutes })
+          : t('vip.hoursLeft', { count: hours });
+      }
+      if (minutes >= 1) return t('vip.minutesLeft', { count: minutes });
+      return t('vip.expiringSoon');
+    }
+    return remainingDays != null && remainingDays > 0
       ? t('vip.daysLeft', { count: remainingDays })
-      : vipEndTime != null
-        ? t('vip.expired')
-        : t('vip.noVip');
+      : t('vip.noVip');
+  }
+
+  const durationText = buildDurationText();
 
   async function runAction(action: () => Promise<unknown>, successText: string) {
     if (busy) return;
