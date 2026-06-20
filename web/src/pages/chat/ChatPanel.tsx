@@ -42,7 +42,6 @@ export function ChatPanel() {
 
   const conversations = useChatStore((s) => s.conversations);
   const loadingConversations = useChatStore((s) => s.loadingConversations);
-  const loadConversations = useChatStore((s) => s.loadConversations);
   const openConversation = useChatStore((s) => s.openConversation);
   const hideConversation = useChatStore((s) => s.hideConversation);
   const deleteAllConversations = useChatStore((s) => s.deleteAllConversations);
@@ -64,10 +63,6 @@ export function ChatPanel() {
   const [friends, setFriends] = useState<Contact[]>([]);
   const [profileTarget, setProfileTarget] = useState<ProfileTarget | null>(null);
   const friendsLoadedRef = useRef(false);
-
-  useEffect(() => {
-    void loadConversations();
-  }, [loadConversations]);
 
   useEffect(() => {
     if (sub !== 'contacts' || friendsLoadedRef.current) return;

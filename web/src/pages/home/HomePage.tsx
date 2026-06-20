@@ -2,6 +2,7 @@ import { Suspense, useEffect, useState } from 'react';
 import { SocketService } from '@services';
 import { BottomTabBar, type TabKey } from '@components/BottomTabBar';
 import { useRoomChatStore } from '@/store/roomChatStore';
+import { useChatStore } from '@/store/chatStore';
 import { ActiveConversationOverlay } from '../chat/ActiveConversationOverlay';
 import { ACTIVE_TAB_KEY, PANELS } from './constants';
 
@@ -13,6 +14,9 @@ function readStoredTab(): TabKey {
 export function HomePage() {
   const [tab, setTab] = useState<TabKey>(readStoredTab);
   const roomUnread = useRoomChatStore((state) => state.hasUnread);
+  const chatUnread = useChatStore((state) =>
+    state.conversations.reduce((sum, item) => sum + (item.unreadCount ?? 0), 0)
+  );
   const ActivePanel = PANELS[tab];
 
   function changeTab(next: TabKey) {
@@ -22,6 +26,7 @@ export function HomePage() {
 
   useEffect(() => {
     SocketService.connect();
+    void useChatStore.getState().loadConversations();
     return () => SocketService.disconnect();
   }, []);
 
@@ -36,7 +41,7 @@ export function HomePage() {
       <BottomTabBar
         active={tab}
         onChange={changeTab}
-        badges={{ chat: 3 }}
+        badges={{ chat: chatUnread }}
         dots={{ room: roomUnread && tab !== 'room' }}
       />
 

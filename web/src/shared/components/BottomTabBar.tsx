@@ -50,7 +50,7 @@ export function BottomTabBar({ active, onChange, badges, dots }: BottomTabBarPro
               />
               {badge ? (
                 <span className="absolute -top-1 -right-0 flex h-4 min-w-4 items-center justify-center rounded-full border-2 border-white bg-ola-accent px-1 text-[10px] font-bold text-white">
-                  {badge}
+                  {badge > 99 ? '99+' : badge}
                 </span>
               ) : dot ? (
                 <span className="absolute -top-0.5 right-0 h-3 w-3 rounded-full border-2 border-white bg-ola-warning animate-blink" />
