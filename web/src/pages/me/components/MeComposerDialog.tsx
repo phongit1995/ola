@@ -97,7 +97,8 @@ export function MeComposerDialog({
   }
 
   function removePhoto(url: string) {
-    URL.revokeObjectURL(url);
+    const target = photos.find((item) => item.url === url);
+    if (target?.file != null) URL.revokeObjectURL(url);
     setPhotos((current) => current.filter((item) => item.url !== url));
   }
 

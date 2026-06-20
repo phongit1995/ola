@@ -66,11 +66,15 @@ export function VoiceBubble({ url, duration, durationSec, isOut }: VoiceBubblePr
         preload="metadata"
         className="hidden"
         onPlay={() => setPlaying(true)}
-        onPause={() => setPlaying(false)}
+        onPause={() => {
+          setPlaying(false);
+          setLoading(false);
+        }}
         onWaiting={() => setLoading(true)}
         onPlaying={() => setLoading(false)}
         onEnded={() => {
           setPlaying(false);
+          setLoading(false);
           setProgress(0);
         }}
         onTimeUpdate={(event) => {

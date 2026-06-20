@@ -6,7 +6,9 @@ export interface MessageMetadata {
 export function parseMessageMetadata(metadata?: string | null): MessageMetadata {
   if (metadata == null || metadata === '') return {};
   try {
-    return JSON.parse(metadata) as MessageMetadata;
+    const parsed = JSON.parse(metadata);
+    if (parsed == null || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
+    return parsed as MessageMetadata;
   } catch {
     return {};
   }
