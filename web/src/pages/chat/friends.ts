@@ -1,3 +1,4 @@
+import { parseVipTypeId } from '@lib';
 import type { Friend } from '@app-types';
 import type { Contact, ContactGroup, DeviceType } from './types';
 
@@ -59,18 +60,22 @@ function groupOf(friend: Friend): ContactGroup {
 }
 
 export function mapFriendsToContacts(friends: Friend[]): Contact[] {
-  return friends.map((friend) => ({
-    id: friend.id,
-    name: friend.username,
-    fullName: friend.fullName,
-    status: friend.bio,
-    color: colorForId(friend.id),
-    avatar: friend.avatar,
-    vip: hasActiveVip(friend.vipEndTime),
-    online: friend.isOnline,
-    deviceType: normalizeDevice(friend.deviceType),
-    lastActive: friend.isOnline ? undefined : formatLastActive(friend.lastActiveAt),
-    statusImage: friend.bioImage ?? undefined,
-    group: groupOf(friend),
-  }));
+  return friends.map((friend) => {
+    const vip = hasActiveVip(friend.vipEndTime);
+    return {
+      id: friend.id,
+      name: friend.username,
+      fullName: friend.fullName,
+      status: friend.bio,
+      color: colorForId(friend.id),
+      avatar: friend.avatar,
+      vip,
+      vipTypeId: vip ? parseVipTypeId(friend.vipUsed) : null,
+      online: friend.isOnline,
+      deviceType: normalizeDevice(friend.deviceType),
+      lastActive: friend.isOnline ? undefined : formatLastActive(friend.lastActiveAt),
+      statusImage: friend.bioImage ?? undefined,
+      group: groupOf(friend),
+    };
+  });
 }

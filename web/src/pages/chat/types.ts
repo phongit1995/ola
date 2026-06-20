@@ -18,6 +18,7 @@ export interface Contact {
   color: string;
   avatar?: string;
   vip: boolean;
+  vipTypeId?: number | null;
   online: boolean;
   deviceType: DeviceType;
   lastActive?: string;

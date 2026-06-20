@@ -91,6 +91,7 @@ function BuddyRow({
   const timer = useRef<number | undefined>(undefined);
   const longPressed = useRef(false);
   const showVip = contact.online && contact.vip;
+  const vipSrc = contact.vipTypeId != null ? vipIconUrl(contact.vipTypeId) : vipIcon;
   const badge =
     contact.group === 'birthday'
       ? birthdayIcon
@@ -159,7 +160,7 @@ function BuddyRow({
         </button>
         <span className="ml-4 min-w-0 flex-1">
           <button type="button" onClick={openProfile} className="flex items-center gap-1 text-left">
-            {showVip && <img src={vipIcon} alt="" className="h-6 w-6 shrink-0 object-contain" />}
+            {showVip && <img src={vipSrc} alt="" className="h-6 w-6 shrink-0 object-contain" />}
             <span className="truncate text-base text-black/87">
               {contact.name}
               {contact.fullName != null && contact.fullName !== '' && (
