@@ -1,4 +1,4 @@
-import { lazy, memo, Suspense, useRef, useState } from 'react';
+import { memo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import moreIcon from '@/assets/icons/me/ic_more.png';
@@ -11,13 +11,12 @@ import likeStickerFly from '@/assets/icons/me/sticker_like.png';
 import likeSoundUrl from '@/assets/sounds/like_me.mp3';
 import { Avatar } from '@components';
 import { DEFAULT_AVATAR_COLOR, portalRoot } from '@lib';
+import { useMediaViewerStore } from '@/store/mediaViewerStore';
 import { PostContent } from './PostContent';
 import { MediaGrid } from './MediaGrid';
 import { CheckInCard } from './CheckInCard';
 import { stickerImage } from '../stickers';
 import type { MePost } from '../types';
-
-const MediaViewer = lazy(() => import('./MediaViewer').then((m) => ({ default: m.MediaViewer })));
 
 function popClass(anim: 'in' | 'out' | null): string {
   if (anim === 'in') return 'animate-ola-pop';
@@ -56,7 +55,7 @@ function MePostCardComponent({
   onOpenLikers,
 }: MePostCardProps) {
   const { t } = useTranslation();
-  const [viewerIndex, setViewerIndex] = useState<number | null>(null);
+  const openViewer = useMediaViewerStore((s) => s.openViewer);
   const [likeAnim, setLikeAnim] = useState<'in' | 'out' | null>(null);
   const [dislikeAnim, setDislikeAnim] = useState<'in' | 'out' | null>(null);
   const [fly, setFly] = useState<{ x: number; y: number; id: number } | null>(null);
@@ -136,17 +135,10 @@ function MePostCardComponent({
       {post.checkIn != null && <CheckInCard checkIn={post.checkIn} label={t('me.postMenu')} />}
 
       {post.photos != null && post.photos.length > 0 && (
-        <MediaGrid photos={post.photos} onOpen={setViewerIndex} />
-      )}
-
-      {viewerIndex != null && post.photos != null && (
-        <Suspense fallback={null}>
-          <MediaViewer
-            photos={post.photos}
-            index={viewerIndex}
-            onClose={() => setViewerIndex(null)}
-          />
-        </Suspense>
+        <MediaGrid
+          photos={post.photos}
+          onOpen={(i) => openViewer(post.photos!, i)}
+        />
       )}
 
       <div className="mx-4 mt-4 flex items-end gap-1 text-xs text-black/54">

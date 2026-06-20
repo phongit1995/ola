@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { setOnUnauthorized } from '@api';
 import { ToastViewport } from '@components';
@@ -7,6 +7,24 @@ import { SocketService } from '@services';
 import { AppRouter } from '@/routes';
 import { useAuthStore } from '@/store/authStore';
 import { useLayoutStore } from '@/store/layoutStore';
+import { useMediaViewerStore } from '@/store/mediaViewerStore';
+
+const MediaViewer = lazy(() =>
+  import('@/pages/me/components/MediaViewer').then((m) => ({ default: m.MediaViewer })),
+);
+
+function GlobalMediaViewer() {
+  const open = useMediaViewerStore((s) => s.open);
+  const photos = useMediaViewerStore((s) => s.photos);
+  const index = useMediaViewerStore((s) => s.index);
+  const closeViewer = useMediaViewerStore((s) => s.closeViewer);
+  if (!open || photos.length === 0) return null;
+  return (
+    <Suspense fallback={null}>
+      <MediaViewer key={`${index}-${photos[0]}`} photos={photos} index={index} onClose={closeViewer} />
+    </Suspense>
+  );
+}
 
 function App() {
   const { t } = useTranslation();
@@ -43,15 +61,18 @@ function App() {
   }, []);
 
   return (
-    <div
-      className={`relative mx-auto flex h-dvh w-full flex-col overflow-hidden bg-white shadow-2xl [transform:translateZ(0)] ${
-        wide ? 'max-w-none' : 'max-w-[645px]'
-      }`}
-    >
-      <AppRouter />
-      <ToastViewport />
-      <div id="ola-portal" />
-    </div>
+    <>
+      <div
+        className={`relative mx-auto flex h-dvh w-full flex-col overflow-hidden bg-white shadow-2xl [transform:translateZ(0)] ${
+          wide ? 'max-w-none' : 'max-w-[645px]'
+        }`}
+      >
+        <AppRouter />
+        <ToastViewport />
+        <div id="ola-portal" />
+      </div>
+      <GlobalMediaViewer />
+    </>
   );
 }
 

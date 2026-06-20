@@ -22,8 +22,8 @@ import { ComposeButton } from './components/ComposeButton';
 import { ComposeDialog } from './components/ComposeDialog';
 import { ChangeAvatarScreen } from './components/ChangeAvatarScreen';
 import { StatusEditDialog } from './components/StatusEditDialog';
-import { MediaViewer } from '@/pages/me/components/MediaViewer';
 import { UserProfileView } from '../profile/UserProfileView';
+import { useMediaViewerStore } from '@/store/mediaViewerStore';
 import { mapFriendsToContacts } from './friends';
 import type { Contact } from './types';
 
@@ -58,8 +58,7 @@ export function ChatPanel() {
   const [logoutAll, setLogoutAll] = useState(false);
   const [avatarOpen, setAvatarOpen] = useState(false);
   const [statusOpen, setStatusOpen] = useState(false);
-  const [statusImageOpen, setStatusImageOpen] = useState(false);
-  const [buddyImage, setBuddyImage] = useState<string | null>(null);
+  const openViewer = useMediaViewerStore((s) => s.openViewer);
   const [friends, setFriends] = useState<Contact[]>([]);
   const [profileTarget, setProfileTarget] = useState<ProfileTarget | null>(null);
   const friendsLoadedRef = useRef(false);
@@ -186,8 +185,10 @@ export function ChatPanel() {
               me={user}
               onAccountMenu={() => setHeaderMenuOpen(true)}
               onEditStatus={() => setStatusOpen(true)}
-              onPreviewImage={() => setStatusImageOpen(true)}
-              onPreviewBuddyImage={setBuddyImage}
+              onPreviewImage={() => {
+                if (user?.bioImage != null && user.bioImage !== '') openViewer([user.bioImage]);
+              }}
+              onPreviewBuddyImage={(img) => openViewer([img])}
               onComingSoon={comingSoon}
             />
             <button
@@ -245,12 +246,6 @@ export function ChatPanel() {
       <AddContactDialog open={addContactOpen} onClose={() => setAddContactOpen(false)} />
       <ChangeAvatarScreen open={avatarOpen} onClose={() => setAvatarOpen(false)} />
       {statusOpen && <StatusEditDialog open onClose={() => setStatusOpen(false)} />}
-      {statusImageOpen && user?.bioImage != null && user.bioImage !== '' && (
-        <MediaViewer photos={[user.bioImage]} index={0} onClose={() => setStatusImageOpen(false)} />
-      )}
-      {buddyImage != null && (
-        <MediaViewer photos={[buddyImage]} index={0} onClose={() => setBuddyImage(null)} />
-      )}
       {profileTarget != null && (
         <UserProfileView
           key={profileTarget.username}

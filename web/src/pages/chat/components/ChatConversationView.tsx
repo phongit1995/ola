@@ -25,8 +25,8 @@ import { useLongPress } from '@hooks';
 import { MessageRow } from './MessageRow';
 import { MessageActionSheet } from './MessageActionSheet';
 import { VoicePreviewBar } from './VoicePreviewBar';
-import { MediaViewer } from '../../me/components/MediaViewer';
 import { UserProfileView } from '../../profile/UserProfileView';
+import { useMediaViewerStore } from '@/store/mediaViewerStore';
 
 interface ChatConversationViewProps {
   name: string;
@@ -85,7 +85,7 @@ export function ChatConversationView({
   const [actionTarget, setActionTarget] = useState<ChatMessage | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ChatMessage | null>(null);
   const [editing, setEditing] = useState<{ id: string } | null>(null);
-  const [viewerImage, setViewerImage] = useState<string | null>(null);
+  const openViewer = useMediaViewerStore((s) => s.openViewer);
   const [profileTarget, setProfileTarget] = useState<{ username: string; color: string } | null>(
     null
   );
@@ -298,7 +298,7 @@ export function ChatConversationView({
             onOpenActions={setActionTarget}
             onOpenProfile={canViewProfile ? openPeerProfile : undefined}
             onMention={openMentionProfile}
-            onOpenImage={setViewerImage}
+            onOpenImage={(img) => openViewer([img])}
             onResend={resendMessage}
           />
         ))}
@@ -473,9 +473,6 @@ export function ChatConversationView({
         />
       )}
 
-      {viewerImage != null && (
-        <MediaViewer photos={[viewerImage]} index={0} onClose={() => setViewerImage(null)} />
-      )}
     </FullScreenOverlay>
   );
 }

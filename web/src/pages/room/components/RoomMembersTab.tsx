@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import maleIcon from '@/assets/icons/chat/ic_indicate_male.png';
 import femaleIcon from '@/assets/icons/chat/ic_indicate_female.png';
@@ -6,7 +5,7 @@ import androidIcon from '@/assets/icons/me/ic_indicate_android.png';
 import type { RoomMember } from '@app-types';
 import { PresenceBadge, UserName, VipAvatar } from '@components';
 import { colorForName } from '@lib';
-import { MediaViewer } from '../../me/components/MediaViewer';
+import { useMediaViewerStore } from '@/store/mediaViewerStore';
 
 interface RoomMembersTabProps {
   members: RoomMember[];
@@ -27,7 +26,7 @@ function GenderIcon({ gender }: { gender: RoomMember['gender'] }) {
 
 export function RoomMembersTab({ members, active, onOpenProfile }: RoomMembersTabProps) {
   const { t } = useTranslation();
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const openViewer = useMediaViewerStore((s) => s.openViewer);
 
   return (
     <div className={`relative flex-1 overflow-y-auto bg-white ${active ? '' : 'hidden'}`}>
@@ -76,7 +75,7 @@ export function RoomMembersTab({ members, active, onOpenProfile }: RoomMembersTa
                       alt=""
                       onClick={(event) => {
                         event.stopPropagation();
-                        setPreviewImage(member.bioImage!);
+                        openViewer([member.bioImage!]);
                       }}
                       className="ml-1 h-10 w-10 shrink-0 cursor-pointer rounded border border-black/12 object-cover"
                     />
@@ -86,9 +85,6 @@ export function RoomMembersTab({ members, active, onOpenProfile }: RoomMembersTa
             );
           })}
         </ul>
-      )}
-      {previewImage != null && (
-        <MediaViewer photos={[previewImage]} index={0} onClose={() => setPreviewImage(null)} />
       )}
     </div>
   );
