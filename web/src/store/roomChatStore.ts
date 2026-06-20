@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import type { Socket } from 'socket.io-client';
 import { useAuthStore } from '@/store/authStore';
-import { parseVipTypeId } from '@lib';
+import { activeVipTypeId } from '@lib';
 import { RoomService, SocketService } from '@services';
 import {
   ROOM_SOCKET_EVENTS,
@@ -9,12 +9,6 @@ import {
   type RoomMessage,
   type RoomSocketEnvelope,
 } from '@app-types';
-
-function activeVipTypeId(vipUsed?: string | null, vipEndTime?: string | null): number | null {
-  const end = vipEndTime != null ? new Date(vipEndTime).getTime() : NaN;
-  const active = !Number.isNaN(end) && end > Date.now();
-  return active ? parseVipTypeId(vipUsed) : null;
-}
 
 function withVipTypeId(members: RoomMember[]): RoomMember[] {
   return members.map((member) => ({

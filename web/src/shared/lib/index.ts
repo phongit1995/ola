@@ -12,3 +12,6 @@ export * from './kul';
 export * from './SmileyText';
 export * from './richText';
 export * from './vipIcon';
+export * from './vip';
+export * from './messageMetadata';
+export * from './duration';

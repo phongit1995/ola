@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { useAuthStore } from '@/store/authStore';
+import { parseMessageMetadata } from '@lib';
 import {
   ConversationService,
   MessageService,
@@ -396,7 +397,7 @@ export const useChatStore = create<ChatState>((set, get) => {
             clientMsgId,
           });
         } else {
-          const meta = JSON.parse(target.metadata ?? '{}') as { url?: string; duration?: number };
+          const meta = parseMessageMetadata(target.metadata);
           const blob = await (await fetch(meta.url ?? '')).blob();
           if (target.type === 'image') {
             const file = new File([blob], 'image', { type: blob.type || 'image/jpeg' });

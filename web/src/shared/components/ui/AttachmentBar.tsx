@@ -19,7 +19,7 @@ import cloudPhotoIcon from '@/assets/icons/chat/ic_cloud_photo_storage.png';
 import switchCameraIcon from '@/assets/icons/chat/ic_action_switch_camera.png';
 import snapTimerIcon from '@/assets/icons/chat/ic_snap_timer.png';
 import expandCameraIcon from '@/assets/icons/chat/ic_action_expand_selected.png';
-import { KUL_IMAGES, toast } from '@lib';
+import { formatDurationMs, KUL_IMAGES, toast } from '@lib';
 import { useLongPress, useVoiceRecorder } from '@hooks';
 import { SmileyGrid } from './SmileyGrid';
 
@@ -158,12 +158,6 @@ function PhotoPanel({ onPickImage }: { onPickImage: () => void }) {
   );
 }
 
-function formatTimer(ms: number): string {
-  const total = Math.floor(ms / 1000);
-  const minutes = Math.floor(total / 60);
-  return `${minutes}:${String(total % 60).padStart(2, '0')}`;
-}
-
 function VoicePanel({ onRecorded }: { onRecorded: (blob: Blob, duration: number) => void }) {
   const { t } = useTranslation();
   const [cancelArmed, setCancelArmed] = useState(false);
@@ -226,7 +220,7 @@ function VoicePanel({ onRecorded }: { onRecorded: (blob: Blob, duration: number)
 
   return (
     <div className="flex h-full flex-col items-center justify-between bg-[#d5d5d5] py-4">
-      <span className="text-sm text-black/54">{formatTimer(recorder.elapsedMs)}</span>
+      <span className="text-sm text-black/54">{formatDurationMs(recorder.elapsedMs)}</span>
       <button
         type="button"
         onPointerDown={handlePointerDown}

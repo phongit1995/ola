@@ -1,29 +1,8 @@
-import { parseVipTypeId } from '@lib';
+import { activeVipTypeId, colorForName, isVipActive } from '@lib';
 import type { Friend } from '@app-types';
 import type { Contact, ContactGroup, DeviceType } from './types';
 
-const AVATAR_COLORS = [
-  '#7cb342',
-  '#5d4037',
-  '#6d4c41',
-  '#4dd0e1',
-  '#ef6c00',
-  '#00897b',
-  '#9c27b0',
-  '#ec407a',
-  '#26a69a',
-  '#7e57c2',
-];
-
 const DEVICE_TYPES: DeviceType[] = ['phone', 'pc', 'apple', 'android', 'winphone'];
-
-function colorForId(id: string): string {
-  let hash = 0;
-  for (let i = 0; i < id.length; i += 1) {
-    hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
-  }
-  return AVATAR_COLORS[hash % AVATAR_COLORS.length] ?? '#7cb342';
-}
 
 function normalizeDevice(value?: string): DeviceType {
   return DEVICE_TYPES.includes(value as DeviceType) ? (value as DeviceType) : 'android';
@@ -35,12 +14,6 @@ function isBirthdayToday(dateOfBirth?: string): boolean {
   if (Number.isNaN(date.getTime())) return false;
   const now = new Date();
   return date.getMonth() === now.getMonth() && date.getDate() === now.getDate();
-}
-
-function hasActiveVip(vipEndTime?: string | null): boolean {
-  if (vipEndTime == null || vipEndTime === '') return false;
-  const end = new Date(vipEndTime);
-  return !Number.isNaN(end.getTime()) && end.getTime() > Date.now();
 }
 
 function formatLastActive(lastActiveAt?: string): string | undefined {
@@ -61,16 +34,15 @@ function groupOf(friend: Friend): ContactGroup {
 
 export function mapFriendsToContacts(friends: Friend[]): Contact[] {
   return friends.map((friend) => {
-    const vip = hasActiveVip(friend.vipEndTime);
     return {
       id: friend.id,
       name: friend.username,
       fullName: friend.fullName,
       status: friend.bio,
-      color: colorForId(friend.id),
+      color: colorForName(friend.id),
       avatar: friend.avatar,
-      vip,
-      vipTypeId: vip ? parseVipTypeId(friend.vipUsed) : null,
+      vip: isVipActive(friend.vipEndTime),
+      vipTypeId: activeVipTypeId(friend.vipUsed, friend.vipEndTime),
       online: friend.isOnline,
       deviceType: normalizeDevice(friend.deviceType),
       lastActive: friend.isOnline ? undefined : formatLastActive(friend.lastActiveAt),

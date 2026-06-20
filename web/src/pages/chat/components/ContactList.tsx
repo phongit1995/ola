@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Avatar, ListOptionDialog, type ListOption } from '@components';
-import { vipIconUrl, parseVipTypeId } from '@lib';
+import { vipIconUrl, isVipActive, activeVipTypeId } from '@lib';
 import type { AuthUser } from '@app-types';
 import type { Contact, DeviceType } from '../types';
 import { SUGGESTED_FRIENDS } from '../data';
@@ -206,9 +206,9 @@ export function ContactList({
   const [query, setQuery] = useState('');
   const [menuContact, setMenuContact] = useState<Contact | null>(null);
   const hasStatus = me?.bio != null && me.bio !== '';
-  const hasVip = me?.vipEndTime != null && me.vipEndTime !== '' && new Date(me.vipEndTime) > new Date();
-  const activeVipTypeId = hasVip ? parseVipTypeId(me?.vipUsed) : null;
-  const meVipIconSrc = activeVipTypeId != null ? vipIconUrl(activeVipTypeId) : vipIcon;
+  const hasVip = isVipActive(me?.vipEndTime);
+  const meVipTypeId = activeVipTypeId(me?.vipUsed, me?.vipEndTime);
+  const meVipIconSrc = meVipTypeId != null ? vipIconUrl(meVipTypeId) : vipIcon;
   const hasBioImage = me?.bioImage != null && me.bioImage !== '';
 
   const filtered = useMemo(() => {

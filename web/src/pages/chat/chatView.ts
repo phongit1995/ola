@@ -1,5 +1,11 @@
 import type { Conversation, Message, MessageStatus } from '@app-types';
-import { colorForName, DEFAULT_AVATAR_COLOR, kulImageForText } from '@lib';
+import {
+  colorForName,
+  DEFAULT_AVATAR_COLOR,
+  formatDuration,
+  kulImageForText,
+  parseMessageMetadata,
+} from '@lib';
 import type { ChatMessage, ChatMessageStatus } from './types';
 
 export interface ConversationView {
@@ -95,25 +101,10 @@ export function reactionChips(reactions?: Record<string, string[]>): ReactionChi
     .map(([type, users]) => ({ type, emoji: REACTION_EMOJI[type] ?? '❓', count: users.length }));
 }
 
-function parseMetadata(metadata?: string): { url?: string; duration?: number } {
-  if (metadata == null || metadata === '') return {};
-  try {
-    return JSON.parse(metadata) as { url?: string; duration?: number };
-  } catch {
-    return {};
-  }
-}
-
-export function formatDuration(seconds?: number): string {
-  const total = Math.max(0, Math.round(seconds ?? 0));
-  const minutes = Math.floor(total / 60);
-  return `${minutes}:${String(total % 60).padStart(2, '0')}`;
-}
-
 export function toBubble(message: Message, myId: string): ChatMessage {
   const isImage = message.type === 'image';
   const isAudio = message.type === 'audio';
-  const meta = isImage || isAudio ? parseMetadata(message.metadata) : {};
+  const meta = isImage || isAudio ? parseMessageMetadata(message.metadata) : {};
   return {
     id: message.id,
     direction: message.senderId === myId ? 'out' : 'in',

@@ -4,7 +4,7 @@ import playIcon from '@/assets/icons/chat/ic_play_media_gray.png';
 import pauseIcon from '@/assets/icons/chat/ic_pause_media_gray.png';
 import sendIcon from '@/assets/icons/chat/ic_action_send_white.png';
 import deleteIcon from '@/assets/icons/chat/ic_menu_delete.png';
-import { formatDuration } from '../chatView';
+import { formatDuration } from '@lib';
 
 interface VoicePreviewBarProps {
   blob: Blob;
