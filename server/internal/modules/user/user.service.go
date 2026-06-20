@@ -84,6 +84,48 @@ func (s *Service) GetProfile(userID uuid.UUID) (*UserProfileResponse, error) {
 	return s.buildProfileResponse(user), nil
 }
 
+func applyProfileUpdates(user *models.User, req *UpdateProfileRequest) error {
+	if req.Avatar != "" {
+		user.Avatar = req.Avatar
+	}
+	if req.Phone != "" {
+		user.Phone = req.Phone
+	}
+	if req.FullName != "" {
+		user.FullName = req.FullName
+	}
+	if req.Gender != "" {
+		user.Gender = req.Gender
+	}
+	if req.Bio != nil {
+		user.Bio = *req.Bio
+	}
+	if req.DateOfBirth != "" {
+		dob, err := time.Parse("2006-01-02", req.DateOfBirth)
+		if err != nil {
+			return errors.New("invalid date format, use YYYY-MM-DD")
+		}
+		user.DateOfBirth = &dob
+	}
+	if req.Marriage != "" {
+		user.Marriage = req.Marriage
+	}
+	if req.CoverPhoto != "" {
+		user.CoverPhoto = req.CoverPhoto
+	}
+	if req.BioImage != nil {
+		if *req.BioImage == "" {
+			user.BioImage = nil
+		} else {
+			user.BioImage = req.BioImage
+		}
+	}
+	if req.CustomInfo != nil {
+		user.CustomInfo = models.JSONB(req.CustomInfo)
+	}
+	return nil
+}
+
 func (s *Service) UpdateProfile(userID uuid.UUID, req *UpdateProfileRequest) (*UserProfileResponse, error) {
 	s.logger.Debugw("Updating user profile",
 		"user_id", userID,
@@ -104,47 +146,9 @@ func (s *Service) UpdateProfile(userID uuid.UUID, req *UpdateProfileRequest) (*U
 		return nil, err
 	}
 
-	if req.Avatar != "" {
-		user.Avatar = req.Avatar
-	}
-	if req.Phone != "" {
-		user.Phone = req.Phone
-	}
-	if req.FullName != "" {
-		user.FullName = req.FullName
-	}
-	if req.Gender != "" {
-		user.Gender = req.Gender
-	}
-	if req.Bio != nil {
-		user.Bio = *req.Bio
-	}
-	if req.DateOfBirth != "" {
-		dob, err := time.Parse("2006-01-02", req.DateOfBirth)
-		if err != nil {
-			s.logger.Warnw("Invalid date format",
-				"user_id", userID,
-				"date", req.DateOfBirth,
-			)
-			return nil, errors.New("invalid date format, use YYYY-MM-DD")
-		}
-		user.DateOfBirth = &dob
-	}
-	if req.Marriage != "" {
-		user.Marriage = req.Marriage
-	}
-	if req.CoverPhoto != "" {
-		user.CoverPhoto = req.CoverPhoto
-	}
-	if req.BioImage != nil {
-		if *req.BioImage == "" {
-			user.BioImage = nil
-		} else {
-			user.BioImage = req.BioImage
-		}
-	}
-	if req.CustomInfo != nil {
-		user.CustomInfo = models.JSONB(req.CustomInfo)
+	if err := applyProfileUpdates(user, req); err != nil {
+		s.logger.Warnw("Invalid profile update", "user_id", userID, "error", err.Error())
+		return nil, err
 	}
 
 	if err := s.repo.Update(user); err != nil {

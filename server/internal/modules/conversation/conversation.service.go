@@ -311,32 +311,8 @@ func (s *Service) CreateDirectConversation(user1ID, user2ID uuid.UUID) (*Convers
 	otherUserDisplayName := userDisplayName(otherUser)
 	user1DisplayName := userDisplayName(user1)
 
-	inbox1 := &ConversationByUser{
-		UserID:           gocqlUser1ID,
-		ConversationID:   gocqlConvID,
-		ConversationType: constants.ConversationTypeDirect,
-		DisplayName:      otherUserDisplayName,
-		DisplayAvatar:    otherUser.Avatar,
-		OtherUserID:      &gocqlUser2ID,
-		OtherUserName:    otherUserDisplayName,
-		OtherUserAvatar:  otherUser.Avatar,
-		LastMessageAt:    lastMessageAt,
-		UnreadCount:      0,
-		UpdatedAt:        &now,
-	}
-	inbox2 := &ConversationByUser{
-		UserID:           gocqlUser2ID,
-		ConversationID:   gocqlConvID,
-		ConversationType: constants.ConversationTypeDirect,
-		DisplayName:      user1DisplayName,
-		DisplayAvatar:    user1.Avatar,
-		OtherUserID:      &gocqlUser1ID,
-		OtherUserName:    user1DisplayName,
-		OtherUserAvatar:  user1.Avatar,
-		LastMessageAt:    lastMessageAt,
-		UnreadCount:      0,
-		UpdatedAt:        &now,
-	}
+	inbox1 := newDirectInboxEntry(gocqlUser1ID, gocqlUser2ID, gocqlConvID, otherUserDisplayName, otherUser.Avatar, lastMessageAt, now)
+	inbox2 := newDirectInboxEntry(gocqlUser2ID, gocqlUser1ID, gocqlConvID, user1DisplayName, user1.Avatar, lastMessageAt, now)
 	s.repo.AddConversationToUserInboxBatch(batch, inbox1)
 	s.repo.AddConversationToUserInboxBatch(batch, inbox2)
 
@@ -345,35 +321,47 @@ func (s *Service) CreateDirectConversation(user1ID, user2ID uuid.UUID) (*Convers
 	}
 
 	members := []ConversationMember{*member1, *member2}
-
-	go func() {
-		s.InvalidateUserConversationsCache([]uuid.UUID{user1ID, user2ID})
-		if err := s.cache.SetConversationMembers(conversationID, members); err != nil {
-			s.logger.Warnw("Failed to cache conversation members after creation",
-				"conversation_id", conversationID,
-				"error", err,
-			)
-		} else {
-			s.logger.Debugw("Cached conversation members after creation",
-				"conversation_id", conversationID,
-				"member_count", len(members),
-			)
-		}
-		s.publishDirectConversationCreated(conversationID, user1ID, user2ID, user1, otherUser, now)
-	}()
-
-	otherUserResponseName := userDisplayName(otherUser)
+	s.cacheAndPublishDirectCreated(conversationID, user1ID, user2ID, user1, otherUser, members, now)
 
 	return &ConversationResponse{
 		ID:               conversationID.String(),
 		Type:             constants.ConversationTypeDirect,
-		Name:             otherUserResponseName,
+		Name:             userDisplayName(otherUser),
 		Avatar:           otherUser.Avatar,
 		CreatedAt:        now.Format(time.RFC3339),
 		UpdatedAt:        now.Format(time.RFC3339),
 		ParticipantCount: 2,
 		IsNew:            true,
 	}, nil
+}
+
+func newDirectInboxEntry(owner, other, convID gocql.UUID, otherName, otherAvatar string, lastMessageAt gocql.UUID, now time.Time) *ConversationByUser {
+	otherID := other
+	updatedAt := now
+	return &ConversationByUser{
+		UserID:           owner,
+		ConversationID:   convID,
+		ConversationType: constants.ConversationTypeDirect,
+		DisplayName:      otherName,
+		DisplayAvatar:    otherAvatar,
+		OtherUserID:      &otherID,
+		OtherUserName:    otherName,
+		OtherUserAvatar:  otherAvatar,
+		LastMessageAt:    lastMessageAt,
+		UnreadCount:      0,
+		UpdatedAt:        &updatedAt,
+	}
+}
+
+func (s *Service) cacheAndPublishDirectCreated(conversationID, user1ID, user2ID uuid.UUID, user1, otherUser *models.User, members []ConversationMember, now time.Time) {
+	go func() {
+		s.InvalidateUserConversationsCache([]uuid.UUID{user1ID, user2ID})
+		if err := s.cache.SetConversationMembers(conversationID, members); err != nil {
+			s.logger.Warnw("Failed to cache conversation members after creation",
+				"conversation_id", conversationID, "error", err)
+		}
+		s.publishDirectConversationCreated(conversationID, user1ID, user2ID, user1, otherUser, now)
+	}()
 }
 
 func (s *Service) publishDirectConversationCreated(convID, user1ID, user2ID uuid.UUID, user1, user2 *models.User, createdAt time.Time) {
@@ -435,22 +423,11 @@ func (s *Service) CreateGroupConversation(creatorID uuid.UUID, name string, part
 		return nil, fmt.Errorf("group name is required")
 	}
 
-	participantIDs = append(participantIDs, creatorID)
-	uniqueParticipants := make(map[uuid.UUID]bool)
-	for _, id := range participantIDs {
-		uniqueParticipants[id] = true
+	participants, err := s.resolveGroupParticipants(creatorID, participantIDs)
+	if err != nil {
+		return nil, err
 	}
-
-	participantIDsToCheck := make([]uuid.UUID, 0, len(uniqueParticipants))
-	for participantID := range uniqueParticipants {
-		participantIDsToCheck = append(participantIDsToCheck, participantID)
-	}
-	usersFound := s.userCache.GetUsersBatch(participantIDsToCheck, true)
-	for _, pid := range participantIDsToCheck {
-		if u, ok := usersFound[pid]; !ok || u == nil {
-			return nil, fmt.Errorf("participant %s not found", pid)
-		}
-	}
+	participantCount := len(participants)
 
 	now := time.Now()
 	conversationID := uuid.New()
@@ -466,15 +443,12 @@ func (s *Service) CreateGroupConversation(creatorID uuid.UUID, name string, part
 		CreatedBy:        creatorID,
 		CreatedAt:        now,
 		UpdatedAt:        now,
-		ParticipantCount: len(uniqueParticipants),
+		ParticipantCount: participantCount,
 	}
 	s.repo.AddConversationToBatch(batch, conv)
 
-	allParticipantIDs := make([]uuid.UUID, 0, len(uniqueParticipants))
-	members := make([]ConversationMember, 0, len(uniqueParticipants))
-	for participantID := range uniqueParticipants {
-		allParticipantIDs = append(allParticipantIDs, participantID)
-
+	members := make([]ConversationMember, 0, participantCount)
+	for _, participantID := range participants {
 		role := constants.MemberRoleDefault
 		if participantID == creatorID {
 			role = "admin"
@@ -516,21 +490,7 @@ func (s *Service) CreateGroupConversation(creatorID uuid.UUID, name string, part
 		return nil, fmt.Errorf("failed to create group conversation: %w", err)
 	}
 
-	go func() {
-		s.InvalidateUserConversationsCache(allParticipantIDs)
-		if err := s.cache.SetConversationMembers(conversationID, members); err != nil {
-			s.logger.Warnw("Failed to cache conversation members after creation",
-				"conversation_id", conversationID,
-				"error", err,
-			)
-		} else {
-			s.logger.Debugw("Cached conversation members after creation",
-				"conversation_id", conversationID,
-				"member_count", len(members),
-			)
-		}
-		s.publishGroupConversationCreated(conversationID, name, allParticipantIDs, now)
-	}()
+	s.cacheAndPublishGroupCreated(conversationID, name, participants, members, now)
 
 	return &ConversationResponse{
 		ID:               conversationID.String(),
@@ -538,9 +498,41 @@ func (s *Service) CreateGroupConversation(creatorID uuid.UUID, name string, part
 		Name:             name,
 		CreatedAt:        now.Format(time.RFC3339),
 		UpdatedAt:        now.Format(time.RFC3339),
-		ParticipantCount: len(uniqueParticipants),
+		ParticipantCount: participantCount,
 		IsNew:            true,
 	}, nil
+}
+
+func (s *Service) resolveGroupParticipants(creatorID uuid.UUID, participantIDs []uuid.UUID) ([]uuid.UUID, error) {
+	all := append(participantIDs, creatorID)
+	seen := make(map[uuid.UUID]bool, len(all))
+	unique := make([]uuid.UUID, 0, len(all))
+	for _, id := range all {
+		if seen[id] {
+			continue
+		}
+		seen[id] = true
+		unique = append(unique, id)
+	}
+
+	usersFound := s.userCache.GetUsersBatch(unique, true)
+	for _, id := range unique {
+		if u, ok := usersFound[id]; !ok || u == nil {
+			return nil, fmt.Errorf("participant %s not found", id)
+		}
+	}
+	return unique, nil
+}
+
+func (s *Service) cacheAndPublishGroupCreated(conversationID uuid.UUID, name string, participantIDs []uuid.UUID, members []ConversationMember, now time.Time) {
+	go func() {
+		s.InvalidateUserConversationsCache(participantIDs)
+		if err := s.cache.SetConversationMembers(conversationID, members); err != nil {
+			s.logger.Warnw("Failed to cache conversation members after creation",
+				"conversation_id", conversationID, "error", err)
+		}
+		s.publishGroupConversationCreated(conversationID, name, participantIDs, now)
+	}()
 }
 
 func (s *Service) publishGroupConversationCreated(convID uuid.UUID, name string, participantIDs []uuid.UUID, createdAt time.Time) {
@@ -590,53 +582,7 @@ func (s *Service) GetUserConversations(userID uuid.UUID, limit int) (*Conversati
 		return nil, fmt.Errorf("failed to get user conversations: %w", err)
 	}
 
-	otherReadPairs := make([]OtherUserReadState, 0)
-	otherReads := make(map[string]*gocql.UUID)
-	for _, conv := range conversations {
-		if conv.ConversationType == constants.ConversationTypeDirect &&
-			conv.OtherUserID != nil &&
-			conv.LastMessageSender != nil &&
-			conv.LastMessageSender.String() == userID.String() {
-			otherUUID, err := uuid.Parse(conv.OtherUserID.String())
-			if err != nil {
-				continue
-			}
-			convUUID, err := uuid.Parse(conv.ConversationID.String())
-			if err != nil {
-				continue
-			}
-			key := otherUUID.String() + ":" + convUUID.String()
-			if cachedMsgID, cacheErr := s.cache.GetLastRead(convUUID, otherUUID); cacheErr == nil && cachedMsgID != "" {
-				gocqlMsgID, parseErr := gocql.ParseUUID(cachedMsgID)
-				if parseErr == nil {
-					otherReads[key] = &gocqlMsgID
-					continue
-				}
-			}
-			otherReadPairs = append(otherReadPairs, OtherUserReadState{
-				UserID:         otherUUID,
-				ConversationID: convUUID,
-			})
-		}
-	}
-	if len(otherReadPairs) > 0 {
-		dbReads, err := s.repo.GetOtherUsersLastRead(otherReadPairs)
-		if err != nil {
-			s.logger.Warnw("Failed to fetch other users last read", "error", err)
-		} else {
-			for k, v := range dbReads {
-				otherReads[k] = v
-			}
-			go func() {
-				for _, p := range otherReadPairs {
-					key := p.UserID.String() + ":" + p.ConversationID.String()
-					if msgID, ok := dbReads[key]; ok && msgID != nil {
-						s.cache.SetLastRead(p.ConversationID, p.UserID, msgID.String())
-					}
-				}
-			}()
-		}
-	}
+	otherReads := s.resolveOtherReadStates(conversations, userID)
 
 	responses := make([]ConversationResponse, 0, len(conversations))
 	for _, conv := range conversations {
@@ -651,34 +597,94 @@ func (s *Service) GetUserConversations(userID uuid.UUID, limit int) (*Conversati
 		responses = append(responses, s.buildConversationResponse(conv, userID, otherLastRead))
 	}
 
-	if s.presence != nil {
-		otherIDs := make([]string, 0, len(responses))
-		seen := make(map[string]bool, len(responses))
-		for _, r := range responses {
-			if r.OtherUser != nil && !seen[r.OtherUser.ID] {
-				otherIDs = append(otherIDs, r.OtherUser.ID)
-				seen[r.OtherUser.ID] = true
-			}
-		}
-		if len(otherIDs) > 0 {
-			online := s.presence.GetOnlineUsers(otherIDs)
-			lastActive := s.presence.GetLastActiveBatch(otherIDs)
-			for i := range responses {
-				if responses[i].OtherUser == nil {
-					continue
-				}
-				oid := responses[i].OtherUser.ID
-				isOnline, lastActiveOut := utils.ApplyOnlineGrace(online[oid], lastActive[oid])
-				responses[i].OtherUser.IsOnline = isOnline
-				responses[i].OtherUser.LastActiveAt = lastActiveOut
-			}
-		}
-	}
+	s.enrichPresence(responses)
 
 	return &ConversationsListResponse{
 		Conversations: responses,
 		Total:         len(responses),
 	}, nil
+}
+
+func (s *Service) resolveOtherReadStates(conversations []ConversationByUser, userID uuid.UUID) map[string]*gocql.UUID {
+	otherReadPairs := make([]OtherUserReadState, 0)
+	otherReads := make(map[string]*gocql.UUID)
+	for _, conv := range conversations {
+		if conv.ConversationType != constants.ConversationTypeDirect ||
+			conv.OtherUserID == nil ||
+			conv.LastMessageSender == nil ||
+			conv.LastMessageSender.String() != userID.String() {
+			continue
+		}
+		otherUUID, err := uuid.Parse(conv.OtherUserID.String())
+		if err != nil {
+			continue
+		}
+		convUUID, err := uuid.Parse(conv.ConversationID.String())
+		if err != nil {
+			continue
+		}
+		key := otherUUID.String() + ":" + convUUID.String()
+		if cachedMsgID, cacheErr := s.cache.GetLastRead(convUUID, otherUUID); cacheErr == nil && cachedMsgID != "" {
+			if gocqlMsgID, parseErr := gocql.ParseUUID(cachedMsgID); parseErr == nil {
+				otherReads[key] = &gocqlMsgID
+				continue
+			}
+		}
+		otherReadPairs = append(otherReadPairs, OtherUserReadState{
+			UserID:         otherUUID,
+			ConversationID: convUUID,
+		})
+	}
+
+	if len(otherReadPairs) == 0 {
+		return otherReads
+	}
+
+	dbReads, err := s.repo.GetOtherUsersLastRead(otherReadPairs)
+	if err != nil {
+		s.logger.Warnw("Failed to fetch other users last read", "error", err)
+		return otherReads
+	}
+	for k, v := range dbReads {
+		otherReads[k] = v
+	}
+	go func() {
+		for _, p := range otherReadPairs {
+			key := p.UserID.String() + ":" + p.ConversationID.String()
+			if msgID, ok := dbReads[key]; ok && msgID != nil {
+				s.cache.SetLastRead(p.ConversationID, p.UserID, msgID.String())
+			}
+		}
+	}()
+	return otherReads
+}
+
+func (s *Service) enrichPresence(responses []ConversationResponse) {
+	if s.presence == nil {
+		return
+	}
+	otherIDs := make([]string, 0, len(responses))
+	seen := make(map[string]bool, len(responses))
+	for _, r := range responses {
+		if r.OtherUser != nil && !seen[r.OtherUser.ID] {
+			otherIDs = append(otherIDs, r.OtherUser.ID)
+			seen[r.OtherUser.ID] = true
+		}
+	}
+	if len(otherIDs) == 0 {
+		return
+	}
+	online := s.presence.GetOnlineUsers(otherIDs)
+	lastActive := s.presence.GetLastActiveBatch(otherIDs)
+	for i := range responses {
+		if responses[i].OtherUser == nil {
+			continue
+		}
+		oid := responses[i].OtherUser.ID
+		isOnline, lastActiveOut := utils.ApplyOnlineGrace(online[oid], lastActive[oid])
+		responses[i].OtherUser.IsOnline = isOnline
+		responses[i].OtherUser.LastActiveAt = lastActiveOut
+	}
 }
 
 func (s *Service) MarkConversationAsRead(userID, conversationID uuid.UUID) error {

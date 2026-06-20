@@ -17,6 +17,7 @@ import (
 	"ola-chat-server/internal/constants"
 	conversationEvents "ola-chat-server/internal/domain/conversation"
 	messageEvents "ola-chat-server/internal/domain/message"
+	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/conversation"
 	userModule "ola-chat-server/internal/modules/user"
 	"ola-chat-server/internal/services"
@@ -528,6 +529,31 @@ func (s *Service) SendDirectMessage(senderID, recipientID uuid.UUID, messageType
 	return messageResponse, nil
 }
 
+func directDisplayName(u *models.User) string {
+	if u.FullName != "" {
+		return u.FullName
+	}
+	return u.Username
+}
+
+func newDirectInbox(owner, other, convID gocql.UUID, otherName, otherAvatar string, lastMessageAt gocql.UUID, now time.Time) *conversation.ConversationByUser {
+	otherID := other
+	updatedAt := now
+	return &conversation.ConversationByUser{
+		UserID:           owner,
+		ConversationID:   convID,
+		ConversationType: constants.ConversationTypeDirect,
+		DisplayName:      otherName,
+		DisplayAvatar:    otherAvatar,
+		OtherUserID:      &otherID,
+		OtherUserName:    otherName,
+		OtherUserAvatar:  otherAvatar,
+		LastMessageAt:    lastMessageAt,
+		UnreadCount:      0,
+		UpdatedAt:        &updatedAt,
+	}
+}
+
 func (s *Service) createFullDirectConversation(conversationID, userA, userB, createdBy uuid.UUID) error {
 	user1Info, err := s.userCache.GetUserCache(userA, true)
 	if err != nil {
@@ -585,42 +611,11 @@ func (s *Service) createFullDirectConversation(conversationID, userA, userB, cre
 		return fmt.Errorf("failed to convert conversationID: %w", err)
 	}
 
-	user1DisplayName := user1Info.FullName
-	if user1DisplayName == "" {
-		user1DisplayName = user1Info.Username
-	}
-	user2DisplayName := user2Info.FullName
-	if user2DisplayName == "" {
-		user2DisplayName = user2Info.Username
-	}
+	user1DisplayName := directDisplayName(user1Info)
+	user2DisplayName := directDisplayName(user2Info)
 
-	userAInbox := &conversation.ConversationByUser{
-		UserID:           gocqlUserAID,
-		ConversationID:   gocqlConvID,
-		ConversationType: constants.ConversationTypeDirect,
-		DisplayName:      user2DisplayName,
-		DisplayAvatar:    user2Info.Avatar,
-		OtherUserID:      &gocqlUserBID,
-		OtherUserName:    user2DisplayName,
-		OtherUserAvatar:  user2Info.Avatar,
-		LastMessageAt:    lastMessageAt,
-		UnreadCount:      0,
-		UpdatedAt:        &now,
-	}
-
-	userBInbox := &conversation.ConversationByUser{
-		UserID:           gocqlUserBID,
-		ConversationID:   gocqlConvID,
-		ConversationType: constants.ConversationTypeDirect,
-		DisplayName:      user1DisplayName,
-		DisplayAvatar:    user1Info.Avatar,
-		OtherUserID:      &gocqlUserAID,
-		OtherUserName:    user1DisplayName,
-		OtherUserAvatar:  user1Info.Avatar,
-		LastMessageAt:    lastMessageAt,
-		UnreadCount:      0,
-		UpdatedAt:        &now,
-	}
+	userAInbox := newDirectInbox(gocqlUserAID, gocqlUserBID, gocqlConvID, user2DisplayName, user2Info.Avatar, lastMessageAt, now)
+	userBInbox := newDirectInbox(gocqlUserBID, gocqlUserAID, gocqlConvID, user1DisplayName, user1Info.Avatar, lastMessageAt, now)
 
 	if err := s.convRepo.ExecuteBatch(batch); err != nil {
 		return fmt.Errorf("failed to execute batch: %w", err)
@@ -646,14 +641,7 @@ func (s *Service) createFullDirectConversation(conversationID, userA, userB, cre
 		defer wg.Done()
 		if err := s.convCache.SetConversationMembers(conversationID, members); err != nil {
 			s.logger.Warnw("Failed to cache conversation members after creation",
-				"conversation_id", conversationID,
-				"error", err,
-			)
-		} else {
-			s.logger.Debugw("Cached conversation members after creation",
-				"conversation_id", conversationID,
-				"member_count", len(members),
-			)
+				"conversation_id", conversationID, "error", err)
 		}
 	}()
 	wg.Wait()
@@ -1393,94 +1381,76 @@ func (s *Service) recreateInboxEntry(userID, conversationID uuid.UUID, messageID
 		return fmt.Errorf("failed to convert senderID: %w", err)
 	}
 
+	initialUnread := 0
+	if incrementUnread {
+		initialUnread = 1
+	}
+	now := time.Now()
+
+	inboxEntry := &conversation.ConversationByUser{
+		UserID:             gocqlUserID,
+		ConversationID:     gocqlConvID,
+		LastMessageAt:      messageID,
+		LastMessageID:      &messageID,
+		LastMessagePreview: messageBody,
+		LastMessageSender:  &gocqlSenderID,
+		UnreadCount:        initialUnread,
+		UpdatedAt:          &now,
+	}
+
 	if conv.Type == constants.ConversationTypeDirect {
-		members, err := s.getMembersCached(conversationID)
+		otherUser, gocqlOtherUserID, err := s.resolveDirectOther(conversationID, userID)
 		if err != nil {
-			return fmt.Errorf("failed to get members: %w", err)
+			return err
 		}
-
-		var otherUserID uuid.UUID
-		for _, member := range members {
-			if member.UserID != userID && member.IsActive {
-				otherUserID = member.UserID
-				break
-			}
-		}
-
-		if otherUserID == uuid.Nil {
-			return fmt.Errorf("failed to find other user in conversation")
-		}
-
-		otherUser, err := s.userCache.GetUserCache(otherUserID, true)
-		if err != nil {
-			return fmt.Errorf("failed to get other user: %w", err)
-		}
-
-		gocqlOtherUserID, err := utils.ToGocqlUUID(otherUserID)
-		if err != nil {
-			return fmt.Errorf("failed to convert otherUserID: %w", err)
-		}
-
-		otherUserDisplayName := otherUser.FullName
-		if otherUserDisplayName == "" {
-			otherUserDisplayName = otherUser.Username
-		}
-
-		initialUnread := 0
-		if incrementUnread {
-			initialUnread = 1
-		}
-
-		now := time.Now()
-		inboxEntry := &conversation.ConversationByUser{
-			UserID:             gocqlUserID,
-			ConversationID:     gocqlConvID,
-			ConversationType:   constants.ConversationTypeDirect,
-			DisplayName:        otherUserDisplayName,
-			DisplayAvatar:      otherUser.Avatar,
-			OtherUserID:        &gocqlOtherUserID,
-			OtherUserName:      otherUserDisplayName,
-			OtherUserAvatar:    otherUser.Avatar,
-			LastMessageAt:      messageID,
-			LastMessageID:      &messageID,
-			LastMessagePreview: messageBody,
-			LastMessageSender:  &gocqlSenderID,
-			UnreadCount:        initialUnread,
-			UpdatedAt:          &now,
-		}
-
-		if err := s.convRepo.AddConversationToUserInbox(inboxEntry); err != nil {
-			return fmt.Errorf("failed to add conversation to inbox: %w", err)
-		}
+		name := directDisplayName(otherUser)
+		inboxEntry.ConversationType = constants.ConversationTypeDirect
+		inboxEntry.DisplayName = name
+		inboxEntry.DisplayAvatar = otherUser.Avatar
+		inboxEntry.OtherUserID = &gocqlOtherUserID
+		inboxEntry.OtherUserName = name
+		inboxEntry.OtherUserAvatar = otherUser.Avatar
 	} else {
-		initialUnread := 0
-		if incrementUnread {
-			initialUnread = 1
-		}
+		inboxEntry.ConversationType = constants.ConversationTypeGroupDB
+		inboxEntry.DisplayName = conv.Name
+		inboxEntry.DisplayAvatar = conv.Avatar
+	}
 
-		now := time.Now()
-		inboxEntry := &conversation.ConversationByUser{
-			UserID:             gocqlUserID,
-			ConversationID:     gocqlConvID,
-			ConversationType:   constants.ConversationTypeGroupDB,
-			DisplayName:        conv.Name,
-			DisplayAvatar:      conv.Avatar,
-			LastMessageAt:      messageID,
-			LastMessageID:      &messageID,
-			LastMessagePreview: messageBody,
-			LastMessageSender:  &gocqlSenderID,
-			UnreadCount:        initialUnread,
-			UpdatedAt:          &now,
-		}
-
-		if err := s.convRepo.AddConversationToUserInbox(inboxEntry); err != nil {
-			return fmt.Errorf("failed to add conversation to inbox: %w", err)
-		}
+	if err := s.convRepo.AddConversationToUserInbox(inboxEntry); err != nil {
+		return fmt.Errorf("failed to add conversation to inbox: %w", err)
 	}
 
 	go s.convCache.DeleteUserConversations(userID)
 
 	return nil
+}
+
+func (s *Service) resolveDirectOther(conversationID, selfID uuid.UUID) (*models.User, gocql.UUID, error) {
+	members, err := s.getMembersCached(conversationID)
+	if err != nil {
+		return nil, gocql.UUID{}, fmt.Errorf("failed to get members: %w", err)
+	}
+
+	var otherUserID uuid.UUID
+	for _, member := range members {
+		if member.UserID != selfID && member.IsActive {
+			otherUserID = member.UserID
+			break
+		}
+	}
+	if otherUserID == uuid.Nil {
+		return nil, gocql.UUID{}, fmt.Errorf("failed to find other user in conversation")
+	}
+
+	otherUser, err := s.userCache.GetUserCache(otherUserID, true)
+	if err != nil {
+		return nil, gocql.UUID{}, fmt.Errorf("failed to get other user: %w", err)
+	}
+	gocqlOtherUserID, err := utils.ToGocqlUUID(otherUserID)
+	if err != nil {
+		return nil, gocql.UUID{}, fmt.Errorf("failed to convert otherUserID: %w", err)
+	}
+	return otherUser, gocqlOtherUserID, nil
 }
 
 func (s *Service) ToggleReaction(ctx context.Context, userID, conversationID uuid.UUID, messageIDStr, reactionType string) (*MessageResponse, error) {
