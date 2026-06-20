@@ -171,8 +171,11 @@ export const useRoomChatStore = create<RoomChatState>((set, get) => ({
     if (socket.connected) {
       joinAndLoad();
     } else {
-      connectHandler = joinAndLoad;
-      socket.once('connect', joinAndLoad);
+      connectHandler = () => {
+        connectHandler = null;
+        joinAndLoad();
+      };
+      socket.once('connect', connectHandler);
     }
   },
 

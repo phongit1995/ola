@@ -36,6 +36,7 @@ export function RoomMessagesTab({
   const scrollRef = useRef<HTMLDivElement>(null);
   const composerRef = useRef<SmileyInputHandle>(null);
   const draftRef = useRef(draft);
+  const stickToBottomRef = useRef(true);
   const suppressLikeClick = useRef(false);
   const likeLongPress = useLongPress(() => {
     suppressLikeClick.current = true;
@@ -48,12 +49,22 @@ export function RoomMessagesTab({
 
   useEffect(() => {
     if (!active) return;
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
+    if (stickToBottomRef.current) {
+      scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
+    }
   }, [messages, active]);
+
+  function handleScroll() {
+    const element = scrollRef.current;
+    if (element == null) return;
+    const distanceFromBottom = element.scrollHeight - element.scrollTop - element.clientHeight;
+    stickToBottomRef.current = distanceFromBottom < 80;
+  }
 
   async function sendText(text: string) {
     const trimmed = text.trim();
     if (trimmed === '' || status !== 'joined') return;
+    stickToBottomRef.current = true;
     setDraft('');
     setOpenTab(null);
     try {
@@ -84,7 +95,11 @@ export function RoomMessagesTab({
         </div>
       )}
 
-      <div ref={scrollRef} className="flex flex-1 flex-col gap-2 overflow-y-auto p-3">
+      <div
+        ref={scrollRef}
+        onScroll={handleScroll}
+        className="flex flex-1 flex-col gap-2 overflow-y-auto p-3"
+      >
         {feed.map((item) =>
           item.kind === 'date' ? (
             <RoomDateSeparator key={item.key} iso={item.createdAt} />
