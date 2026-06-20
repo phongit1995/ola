@@ -63,9 +63,13 @@ export function ChatConversationView({
   const sendText = useChatStore((s) => s.sendText);
   const sendImage = useChatStore((s) => s.sendImage);
   const sendAudio = useChatStore((s) => s.sendAudio);
+  const resendMessage = useChatStore((s) => s.resendMessage);
   const reactToMessage = useChatStore((s) => s.reactToMessage);
   const deleteMessage = useChatStore((s) => s.deleteMessage);
   const editMessage = useChatStore((s) => s.editMessage);
+  const blockPeer = useChatStore((s) => s.blockPeer);
+  const unblockPeer = useChatStore((s) => s.unblockPeer);
+  const addPeerFriend = useChatStore((s) => s.addPeerFriend);
   const notifyTyping = useChatStore((s) => s.notifyTyping);
   const loadMoreMessages = useChatStore((s) => s.loadMoreMessages);
   const currentConversationId = useChatStore((s) => s.currentConversationId);
@@ -216,14 +220,44 @@ export function ChatConversationView({
     if (nick !== '') setProfileTarget({ username: nick, color: colorForName(nick) });
   }
 
+  async function handleBlock() {
+    setBlockOpen(false);
+    const ok = await blockPeer();
+    toast[ok ? 'success' : 'error'](ok ? t('chat.blockDone', { name }) : t('chat.actionError'));
+  }
+
+  async function handleUnblock() {
+    const ok = await unblockPeer();
+    toast[ok ? 'success' : 'error'](ok ? t('chat.unblockDone', { name }) : t('chat.actionError'));
+  }
+
+  async function handleMakeFriend() {
+    if (blocked) {
+      toast.info(t('chat.makeFriendBlocked'));
+      return;
+    }
+    if (blockStatus === 'friend') {
+      toast.info(t('chat.alreadyFriend'));
+      return;
+    }
+    if (blockStatus === 'pending_outgoing' || blockStatus === 'pending_incoming') {
+      toast.info(t('chat.friendRequestPending'));
+      return;
+    }
+    const ok = await addPeerFriend();
+    toast[ok ? 'success' : 'error'](ok ? t('chat.friendRequestSent') : t('chat.actionError'));
+  }
+
   const menuOptions: ListOption[] = [
-    { key: 'make-friend', label: t('chat.menuMakeFriend'), onSelect: () => toast.info(t('chat.comingSoon')) },
+    { key: 'make-friend', label: t('chat.menuMakeFriend'), onSelect: () => void handleMakeFriend() },
     {
       key: 'view-me',
       label: t('chat.menuViewMe'),
       onSelect: () => (canViewProfile ? openPeerProfile() : toast.info(t('chat.comingSoon'))),
     },
-    { key: 'block', label: t('chat.menuBlock'), danger: true, onSelect: () => setBlockOpen(true) },
+    blockedByMe
+      ? { key: 'unblock', label: t('chat.menuUnblock'), onSelect: () => void handleUnblock() }
+      : { key: 'block', label: t('chat.menuBlock'), danger: true, onSelect: () => setBlockOpen(true) },
     { key: 'chat-group', label: t('chat.menuChatGroup'), onSelect: () => toast.info(t('chat.comingSoon')) },
   ];
 
@@ -266,6 +300,7 @@ export function ChatConversationView({
             onOpenProfile={canViewProfile ? openPeerProfile : undefined}
             onMention={openMentionProfile}
             onOpenImage={setViewerImage}
+            onResend={resendMessage}
           />
         ))}
 
@@ -282,8 +317,17 @@ export function ChatConversationView({
       </div>
 
       {blocked ? (
-        <div className="shrink-0 border-t border-black/12 bg-white px-4 py-3 text-center text-sm text-black/54">
-          {blockedByMe ? t('chat.blockedByMe') : t('chat.blockedByThem')}
+        <div className="flex shrink-0 items-center justify-center gap-3 border-t border-black/12 bg-white px-4 py-3 text-center text-sm text-black/54">
+          <span>{blockedByMe ? t('chat.blockedByMe') : t('chat.blockedByThem')}</span>
+          {blockedByMe && (
+            <button
+              type="button"
+              onClick={() => void handleUnblock()}
+              className="shrink-0 rounded-full border border-ola-primary px-3 py-1 text-sm font-medium text-ola-primary"
+            >
+              {t('chat.unblock')}
+            </button>
+          )}
         </div>
       ) : (
        <>
@@ -420,10 +464,7 @@ export function ChatConversationView({
         message={t('chat.blockMessage', { name })}
         confirmLabel={t('chat.block')}
         cancelLabel={t('dialog.cancel')}
-        onConfirm={() => {
-          setBlockOpen(false);
-          toast.info(t('chat.comingSoon'));
-        }}
+        onConfirm={() => void handleBlock()}
         onCancel={() => setBlockOpen(false)}
       />
 
@@ -457,9 +498,10 @@ interface MessageRowProps {
   onOpenProfile?: () => void;
   onMention?: (nick: string) => void;
   onOpenImage: (url: string) => void;
+  onResend: (id: string) => void;
 }
 
-function MessageRow({ message, prev, next, name, color, avatar, isLastOwn, seen, onOpenActions, onOpenProfile, onMention, onOpenImage }: MessageRowProps) {
+function MessageRow({ message, prev, next, name, color, avatar, isLastOwn, seen, onOpenActions, onOpenProfile, onMention, onOpenImage, onResend }: MessageRowProps) {
   const isOut = message.direction === 'out';
   const boundary = prev == null;
   const firstInGroup = boundary || prev.direction !== message.direction;
@@ -541,13 +583,19 @@ function MessageRow({ message, prev, next, name, color, avatar, isLastOwn, seen,
             <SeenIndicator seen={seen} name={name} color={color} avatar={avatar} />
           )}
         </div>
-        {isOut && <InlineSendStatus message={message} />}
+        {isOut && <InlineSendStatus message={message} onResend={onResend} />}
       </div>
     </div>
   );
 }
 
-function InlineSendStatus({ message }: { message: ChatMessage }) {
+function InlineSendStatus({
+  message,
+  onResend,
+}: {
+  message: ChatMessage;
+  onResend: (id: string) => void;
+}) {
   const { t } = useTranslation();
 
   if (message.status === 'sending') {
@@ -557,9 +605,14 @@ function InlineSendStatus({ message }: { message: ChatMessage }) {
   }
   if (message.status === 'failed') {
     return (
-      <span className="flex shrink-0 items-center gap-1 self-center text-xs text-ola-error">
+      <button
+        type="button"
+        onClick={() => onResend(message.id)}
+        aria-label={t('chat.resend')}
+        className="flex shrink-0 items-center gap-1 self-center text-xs text-ola-error active:scale-95"
+      >
         <img src={resendIcon} alt={t('chat.resend')} className="h-5 w-5 object-contain" />
-      </span>
+      </button>
     );
   }
   return null;

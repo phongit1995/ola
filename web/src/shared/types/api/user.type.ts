@@ -41,6 +41,20 @@ export interface PublicProfile {
   relationship?: RelationshipInfo;
 }
 
+export interface UserSearchResult {
+  id: string;
+  username: string;
+  fullName?: string;
+  avatar?: string;
+  bio?: string;
+  isOnline: boolean;
+}
+
+export interface SearchUsersResult {
+  users: UserSearchResult[];
+  total: number;
+}
+
 export interface KissResult {
   kisses: number;
 }

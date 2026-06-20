@@ -7,7 +7,7 @@ export function ActiveConversationOverlay() {
   const currentConversationId = useChatStore((s) => s.currentConversationId);
   const conversations = useChatStore((s) => s.conversations);
   const draftRecipient = useChatStore((s) => s.draftRecipient);
-  const peerStatus = useChatStore((s) => s.peerStatus);
+  const peerRelationship = useChatStore((s) => s.peerRelationship);
   const closeConversation = useChatStore((s) => s.closeConversation);
 
   if (currentConversationId != null) {
@@ -22,7 +22,7 @@ export function ActiveConversationOverlay() {
         color={view.color}
         avatar={view.avatar}
         online={conversation.otherUser?.isOnline ?? false}
-        blockStatus={peerStatus}
+        blockStatus={peerRelationship?.status ?? null}
         onClose={closeConversation}
       />
     );
@@ -35,7 +35,7 @@ export function ActiveConversationOverlay() {
         color={colorForName(draftRecipient.name)}
         avatar={draftRecipient.avatar}
         online={false}
-        blockStatus={peerStatus}
+        blockStatus={peerRelationship?.status ?? null}
         onClose={closeConversation}
       />
     );

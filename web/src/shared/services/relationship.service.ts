@@ -5,6 +5,7 @@ import type {
   FriendListResult,
   MessageResult,
   Relationship,
+  RelationshipListResult,
   RespondAction,
 } from '@app-types';
 
@@ -35,5 +36,9 @@ export class RelationshipService {
 
   static unblock(id: string): Promise<MessageResult> {
     return http.del<MessageResult>(API_PATH.relationships.unblock(id));
+  }
+
+  static blocked(params: FriendListParams = {}): Promise<RelationshipListResult> {
+    return http.get<RelationshipListResult>(API_PATH.relationships.blocked, { params });
   }
 }

@@ -9,6 +9,7 @@ import type {
   FollowResult,
   FollowListResult,
   FollowListParams,
+  SearchUsersResult,
 } from '@app-types';
 
 export class UserService {
@@ -24,6 +25,10 @@ export class UserService {
     const form = new FormData();
     form.append('file', file);
     return http.postForm<UploadAvatarResult>(API_PATH.user.upload, form);
+  }
+
+  static search(query: string, limit = 20): Promise<SearchUsersResult> {
+    return http.get<SearchUsersResult>(API_PATH.user.search, { params: { q: query, limit } });
   }
 
   static publicProfile(id: string): Promise<PublicProfile> {

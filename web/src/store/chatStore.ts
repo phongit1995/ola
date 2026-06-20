@@ -1,7 +1,13 @@
 import { create } from 'zustand';
 import { useAuthStore } from '@/store/authStore';
-import { ConversationService, MessageService, SocketService, UserService } from '@services';
-import type { Conversation, Message, ReactionType, RelationshipStatus } from '@app-types';
+import {
+  ConversationService,
+  MessageService,
+  RelationshipService,
+  SocketService,
+  UserService,
+} from '@services';
+import type { Conversation, Message, ReactionType, RelationshipInfo } from '@app-types';
 import { upsertConversation } from './chatHelpers';
 import { clearTypingTimers, registerChatRealtime } from './chatRealtime';
 
@@ -23,7 +29,7 @@ export interface ChatState {
   conversations: Conversation[];
   currentConversationId: string | null;
   draftRecipient: DraftRecipient | null;
-  peerStatus: RelationshipStatus | null;
+  peerRelationship: RelationshipInfo | null;
   messages: Message[];
   hasMore: boolean;
   loadingConversations: boolean;
@@ -40,9 +46,14 @@ export interface ChatState {
   sendFirstToDraft: (content: string) => Promise<void>;
   sendImage: (file: File) => Promise<void>;
   sendAudio: (blob: Blob, duration: number) => Promise<void>;
+  resendMessage: (messageId: string) => Promise<void>;
   reactToMessage: (messageId: string, type: ReactionType) => Promise<void>;
   deleteMessage: (messageId: string) => Promise<void>;
+  deleteAllConversations: () => Promise<void>;
   editMessage: (messageId: string, content: string) => Promise<void>;
+  blockPeer: () => Promise<boolean>;
+  unblockPeer: () => Promise<boolean>;
+  addPeerFriend: () => Promise<boolean>;
   notifyTyping: () => void;
   markRead: (conversationId: string) => Promise<void>;
   reset: () => void;
@@ -54,7 +65,7 @@ const initialState = {
   conversations: [] as Conversation[],
   currentConversationId: null as string | null,
   draftRecipient: null as DraftRecipient | null,
-  peerStatus: null as RelationshipStatus | null,
+  peerRelationship: null as RelationshipInfo | null,
   messages: [] as Message[],
   hasMore: false,
   loadingConversations: false,
@@ -65,6 +76,12 @@ const initialState = {
 
 export const useChatStore = create<ChatState>((set, get) => {
   registerChatRealtime(set, get);
+
+  const peerUserId = (): string => {
+    const state = get();
+    const conversation = state.conversations.find((item) => item.id === state.currentConversationId);
+    return conversation?.otherUser?.id ?? state.draftRecipient?.id ?? '';
+  };
 
   return {
     ...initialState,
@@ -86,7 +103,7 @@ export const useChatStore = create<ChatState>((set, get) => {
       set({
         currentConversationId: conversationId,
         draftRecipient: null,
-        peerStatus: null,
+        peerRelationship: null,
         messages: [],
         typingUsers: [],
         hasMore: false,
@@ -97,7 +114,7 @@ export const useChatStore = create<ChatState>((set, get) => {
         UserService.publicProfile(otherUserId)
           .then((profile) => {
             if (get().currentConversationId === conversationId) {
-              set({ peerStatus: profile.relationship?.status ?? 'none' });
+              set({ peerRelationship: profile.relationship ?? null });
             }
           })
           .catch(() => {});
@@ -132,14 +149,14 @@ export const useChatStore = create<ChatState>((set, get) => {
           messages: [],
           typingUsers: [],
           hasMore: false,
-          peerStatus: null,
+          peerRelationship: null,
           draftRecipient: { id: recipientId, name: existing?.name ?? '', avatar: existing?.avatar },
         });
         UserService.publicProfile(recipientId)
           .then((profile) => {
             if (get().draftRecipient?.id !== recipientId) return;
             set((state) => ({
-              peerStatus: profile.relationship?.status ?? 'none',
+              peerRelationship: profile.relationship ?? null,
               draftRecipient:
                 state.draftRecipient != null
                   ? {
@@ -161,7 +178,7 @@ export const useChatStore = create<ChatState>((set, get) => {
       set({
         currentConversationId: null,
         draftRecipient: null,
-        peerStatus: null,
+        peerRelationship: null,
         messages: [],
         typingUsers: [],
       }),
@@ -355,6 +372,53 @@ export const useChatStore = create<ChatState>((set, get) => {
       }
     },
 
+    resendMessage: async (messageId) => {
+      const conversationId = get().currentConversationId;
+      if (conversationId == null) return;
+      const target = get().messages.find((item) => item.id === messageId);
+      if (target == null || target.status !== 'failed') return;
+
+      const clientMsgId = target.clientMsgId ?? crypto.randomUUID();
+      const sendingStatus = target.type === 'text' ? 'sending' : 'uploading';
+      set((state) => ({
+        messages: state.messages.map((item) =>
+          item.id === messageId ? { ...item, status: sendingStatus, clientMsgId } : item
+        ),
+      }));
+
+      try {
+        let saved: Message;
+        if (target.type === 'text') {
+          saved = await MessageService.send({
+            conversationId,
+            type: 'text',
+            content: target.content,
+            clientMsgId,
+          });
+        } else {
+          const meta = JSON.parse(target.metadata ?? '{}') as { url?: string; duration?: number };
+          const blob = await (await fetch(meta.url ?? '')).blob();
+          if (target.type === 'image') {
+            const file = new File([blob], 'image', { type: blob.type || 'image/jpeg' });
+            saved = await MessageService.sendImage(conversationId, file, clientMsgId);
+          } else {
+            saved = await MessageService.sendAudio(conversationId, blob, meta.duration ?? 0, clientMsgId);
+          }
+        }
+        set((state) => ({
+          messages: state.messages.map((item) =>
+            item.clientMsgId === clientMsgId ? { ...saved, status: 'sent' } : item
+          ),
+        }));
+      } catch {
+        set((state) => ({
+          messages: state.messages.map((item) =>
+            item.clientMsgId === clientMsgId ? { ...item, status: 'failed' } : item
+          ),
+        }));
+      }
+    },
+
     reactToMessage: async (messageId, type) => {
       const conversationId = get().currentConversationId;
       if (conversationId == null) return;
@@ -382,6 +446,16 @@ export const useChatStore = create<ChatState>((set, get) => {
       }
     },
 
+    deleteAllConversations: async () => {
+      const ids = get().conversations.map((item) => item.id);
+      if (ids.length === 0) return;
+      set({ conversations: [], currentConversationId: null, messages: [], typingUsers: [] });
+      const results = await Promise.allSettled(ids.map((id) => ConversationService.hide(id)));
+      if (results.some((item) => item.status === 'rejected')) {
+        await get().loadConversations();
+      }
+    },
+
     editMessage: async (messageId, content) => {
       const conversationId = get().currentConversationId;
       const text = content.trim();
@@ -401,6 +475,58 @@ export const useChatStore = create<ChatState>((set, get) => {
         }));
       } catch {
         set({ messages: snapshot });
+      }
+    },
+
+    blockPeer: async () => {
+      const userId = peerUserId();
+      if (userId === '') return false;
+      try {
+        const relationship = await RelationshipService.block(userId);
+        const current = get().peerRelationship;
+        set({
+          peerRelationship: {
+            status: 'blocked_by_me',
+            requestId: relationship.id,
+            isFollowing: current?.isFollowing ?? false,
+            followsMe: current?.followsMe ?? false,
+          },
+        });
+        return true;
+      } catch {
+        return false;
+      }
+    },
+
+    unblockPeer: async () => {
+      const current = get().peerRelationship;
+      if (current?.requestId == null || current.requestId === '') return false;
+      try {
+        await RelationshipService.unblock(current.requestId);
+        set({ peerRelationship: { ...current, status: 'none', requestId: undefined } });
+        return true;
+      } catch {
+        return false;
+      }
+    },
+
+    addPeerFriend: async () => {
+      const userId = peerUserId();
+      if (userId === '') return false;
+      try {
+        const relationship = await RelationshipService.sendRequest(userId);
+        const current = get().peerRelationship;
+        set({
+          peerRelationship: {
+            status: 'pending_outgoing',
+            requestId: relationship.id,
+            isFollowing: current?.isFollowing ?? false,
+            followsMe: current?.followsMe ?? false,
+          },
+        });
+        return true;
+      } catch {
+        return false;
       }
     },
 

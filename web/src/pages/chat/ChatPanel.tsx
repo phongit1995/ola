@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   ConfirmDialog,
-  Dialog,
   ListOptionDialog,
   type ListOption,
 } from '@components';
@@ -17,6 +16,8 @@ import { useAuthStore } from '@/store/authStore';
 import { useChatStore } from '@/store/chatStore';
 import { ConversationList } from './components/ConversationList';
 import { ContactList } from './components/ContactList';
+import { BlockedListDialog } from './components/BlockedListDialog';
+import { AddContactDialog } from './components/AddContactDialog';
 import { ComposeButton } from './components/ComposeButton';
 import { ComposeDialog } from './components/ComposeDialog';
 import { ChangeAvatarScreen } from './components/ChangeAvatarScreen';
@@ -44,6 +45,7 @@ export function ChatPanel() {
   const loadConversations = useChatStore((s) => s.loadConversations);
   const openConversation = useChatStore((s) => s.openConversation);
   const hideConversation = useChatStore((s) => s.hideConversation);
+  const deleteAllConversations = useChatStore((s) => s.deleteAllConversations);
   const startDirect = useChatStore((s) => s.startDirect);
 
   const [sub, setSub] = useState<ChatSub>('messages');
@@ -52,6 +54,7 @@ export function ChatPanel() {
   const [showStrangers, setShowStrangers] = useState(true);
   const [deleteAllOpen, setDeleteAllOpen] = useState(false);
   const [blockedListOpen, setBlockedListOpen] = useState(false);
+  const [addContactOpen, setAddContactOpen] = useState(false);
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [logoutAll, setLogoutAll] = useState(false);
   const [avatarOpen, setAvatarOpen] = useState(false);
@@ -79,6 +82,12 @@ export function ChatPanel() {
 
   function comingSoon() {
     toast.info(t('chat.comingSoon'));
+  }
+
+  async function confirmDeleteAll() {
+    setDeleteAllOpen(false);
+    await deleteAllConversations();
+    toast.success(t('chat.deleteAllDone'));
   }
 
   async function confirmLogout() {
@@ -187,7 +196,7 @@ export function ChatPanel() {
             />
             <button
               type="button"
-              onClick={comingSoon}
+              onClick={() => setAddContactOpen(true)}
               aria-label={t('chat.menuAddContact')}
               className="absolute right-4 bottom-4 flex h-14 w-14 items-center justify-center rounded-full bg-ola-primary shadow-[0_3px_6px_rgba(0,0,0,.3)]"
             >
@@ -220,10 +229,7 @@ export function ChatPanel() {
         message={t('chat.menuDeleteAllConfirm')}
         confirmLabel={t('dialog.delete')}
         cancelLabel={t('dialog.no')}
-        onConfirm={() => {
-          setDeleteAllOpen(false);
-          comingSoon();
-        }}
+        onConfirm={() => void confirmDeleteAll()}
         onCancel={() => setDeleteAllOpen(false)}
       />
       <ConfirmDialog
@@ -237,13 +243,10 @@ export function ChatPanel() {
         onConfirm={confirmLogout}
         onCancel={() => setLogoutOpen(false)}
       />
-      <Dialog
-        open={blockedListOpen}
-        onClose={() => setBlockedListOpen(false)}
-        title={t('chat.menuBlockList')}
-      >
-        <p className="py-2 text-center text-black/54">{t('chat.blockListEmpty')}</p>
-      </Dialog>
+      {blockedListOpen && (
+        <BlockedListDialog open onClose={() => setBlockedListOpen(false)} />
+      )}
+      <AddContactDialog open={addContactOpen} onClose={() => setAddContactOpen(false)} />
       <ChangeAvatarScreen open={avatarOpen} onClose={() => setAvatarOpen(false)} />
       {statusOpen && <StatusEditDialog open onClose={() => setStatusOpen(false)} />}
       {statusImageOpen && user?.bioImage != null && user.bioImage !== '' && (

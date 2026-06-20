@@ -49,3 +49,10 @@ export interface FriendListResult {
   limit?: number;
   offset?: number;
 }
+
+export interface RelationshipListResult {
+  relationships: Relationship[];
+  total: number;
+  limit?: number;
+  offset?: number;
+}
