@@ -78,12 +78,12 @@ export function MediaViewer({ photos, index, onClose }: MediaViewerProps) {
           wrapperStyle={{ width: '100%', height: '100%' }}
           contentStyle={{ width: '100%', height: '100%' }}
         >
-          <div className="flex h-screen w-screen items-center justify-center">
+          <div className="flex h-full w-full items-center justify-center">
             <img
               src={url}
               alt=""
               draggable={false}
-              className="max-h-screen max-w-[100vw] object-contain select-none"
+              className="max-h-full max-w-full object-contain select-none"
             />
           </div>
         </TransformComponent>

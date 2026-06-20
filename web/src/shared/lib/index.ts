@@ -16,3 +16,4 @@ export * from './vip';
 export * from './messageMetadata';
 export * from './duration';
 export * from './number';
+export * from './portal';

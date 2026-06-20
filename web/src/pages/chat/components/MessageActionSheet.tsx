@@ -1,5 +1,6 @@
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
+import { portalRoot } from '@lib';
 import type { ReactionType } from '@app-types';
 import type { ChatMessage } from '../types';
 import { REACTION_EMOJI, REACTION_ORDER } from '../chatView';
@@ -82,6 +83,6 @@ export function MessageActionSheet({
         </div>
       </div>
     </div>,
-    document.body
+    portalRoot()
   );
 }

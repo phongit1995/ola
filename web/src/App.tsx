@@ -6,9 +6,11 @@ import { authTokens, toast } from '@lib';
 import { SocketService } from '@services';
 import { AppRouter } from '@/routes';
 import { useAuthStore } from '@/store/authStore';
+import { useLayoutStore } from '@/store/layoutStore';
 
 function App() {
   const { t } = useTranslation();
+  const wide = useLayoutStore((s) => s.wide);
 
   useEffect(() => {
     setOnUnauthorized(() => {
@@ -41,10 +43,15 @@ function App() {
   }, []);
 
   return (
-    <>
+    <div
+      className={`relative mx-auto flex h-dvh w-full flex-col overflow-hidden bg-white shadow-2xl [transform:translateZ(0)] ${
+        wide ? 'max-w-none' : 'max-w-[645px]'
+      }`}
+    >
       <AppRouter />
       <ToastViewport />
-    </>
+      <div id="ola-portal" />
+    </div>
   );
 }
 

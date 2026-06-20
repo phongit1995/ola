@@ -3,6 +3,7 @@ import { Dialog, DialogButton } from '@components';
 import { LanguageSwitcher } from '@components/LanguageSwitcher';
 import { Avatar } from '@components';
 import { DEFAULT_AVATAR_COLOR } from '@lib';
+import { useLayoutStore } from '@/store/layoutStore';
 
 interface MeAccountDialogProps {
   open: boolean;
@@ -18,6 +19,8 @@ export function MeAccountDialog({
   onViewProfile,
 }: MeAccountDialogProps) {
   const { t } = useTranslation();
+  const wide = useLayoutStore((s) => s.wide);
+  const setWide = useLayoutStore((s) => s.setWide);
 
   return (
     <Dialog
@@ -34,6 +37,29 @@ export function MeAccountDialog({
         <Avatar name={displayName} color={DEFAULT_AVATAR_COLOR} size={64} />
         <p className="text-base font-medium text-black/87">{displayName}</p>
         <LanguageSwitcher tone="dark" />
+        <div className="flex items-center gap-2 text-xs text-black/54">
+          <span>{t('me.screenMode')}</span>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => setWide(false)}
+              className={`rounded px-2 py-0.5 ${
+                !wide ? 'bg-ola-primary font-semibold text-white' : 'text-gray-500'
+              }`}
+            >
+              {t('me.screenNarrow')}
+            </button>
+            <button
+              type="button"
+              onClick={() => setWide(true)}
+              className={`rounded px-2 py-0.5 ${
+                wide ? 'bg-ola-primary font-semibold text-white' : 'text-gray-500'
+              }`}
+            >
+              {t('me.screenWide')}
+            </button>
+          </div>
+        </div>
       </div>
     </Dialog>
   );

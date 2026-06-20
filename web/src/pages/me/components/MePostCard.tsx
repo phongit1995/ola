@@ -10,7 +10,7 @@ import likeIconActive from '@/assets/icons/me/ic_like_selected.png';
 import likeStickerFly from '@/assets/icons/me/sticker_like.png';
 import likeSoundUrl from '@/assets/sounds/like_me.mp3';
 import { Avatar } from '@components';
-import { DEFAULT_AVATAR_COLOR } from '@lib';
+import { DEFAULT_AVATAR_COLOR, portalRoot } from '@lib';
 import { PostContent } from './PostContent';
 import { MediaGrid } from './MediaGrid';
 import { CheckInCard } from './CheckInCard';
@@ -228,7 +228,7 @@ function MePostCardComponent({
             style={{ left: fly.x, top: fly.y }}
             className="pointer-events-none fixed z-50 -mt-12 -ml-12 h-24 w-24 animate-ola-fly object-contain"
           />,
-          document.body
+          portalRoot()
         )}
     </article>
   );

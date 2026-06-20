@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { cn } from '@lib';
+import { cn, portalRoot } from '@lib';
 import { useToastStore, type ToastItem, type ToastType } from '@/store/toastStore';
 
 const AUTO_DISMISS_MS = 3000;
@@ -28,7 +28,7 @@ function ToastRow({ toast, onDismiss }: { toast: ToastItem; onDismiss: (id: numb
       type="button"
       onClick={() => onDismiss(toast.id)}
       className={cn(
-        'pointer-events-auto max-w-[90vw] rounded-full px-4 py-2 text-center text-sm shadow-[0_4px_16px_rgba(0,0,0,0.3)] transition-all duration-200',
+        'pointer-events-auto max-w-[90%] rounded-full px-4 py-2 text-center text-sm shadow-[0_4px_16px_rgba(0,0,0,0.3)] transition-all duration-200',
         toastStyles[toast.type],
         visible ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0'
       )}
@@ -50,6 +50,6 @@ export function ToastViewport() {
         <ToastRow key={item.id} toast={item} onDismiss={dismiss} />
       ))}
     </div>,
-    document.body
+    portalRoot()
   );
 }

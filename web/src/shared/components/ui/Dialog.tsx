@@ -1,6 +1,6 @@
 import { useEffect, useRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { cn } from '@lib';
+import { cn, portalRoot } from '@lib';
 
 interface DialogProps {
   open: boolean;
@@ -72,7 +72,7 @@ export function Dialog({
         )}
       </div>
     </div>,
-    document.body
+    portalRoot()
   );
 }
 

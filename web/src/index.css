@@ -84,7 +84,7 @@ body {
 
 body {
   margin: 0;
-  @apply bg-white text-gray-900 antialiased;
+  @apply bg-neutral-800 text-gray-900 antialiased;
 }
 
 input,
