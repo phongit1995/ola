@@ -181,6 +181,7 @@
     "voiceReleaseCancel": "Thả ra để huỷ",
     "voiceMicDenied": "Cần quyền micro để ghi âm.",
     "voiceRecordError": "Không ghi âm được. Vui lòng thử lại.",
+    "voiceDiscard": "Huỷ ghi âm",
     "attachCameraOpening": "Đang mở máy ảnh…",
     "attachHoldForCam": "Giữ để chụp/quay",
     "attachPhotoOpenGrid": "Mở thư viện",
@@ -505,6 +506,9 @@
       "bought": "Đã mua VIP {{name}}",
       "extended": "Đã gia hạn {{days}} ngày VIP",
       "failed": "Mua VIP thất bại",
+      "errInsufficientKen": "Số dư KEN không đủ",
+      "errItemUnavailable": "VIP này hiện không còn bán",
+      "errPackageUnavailable": "Gói ngày này hiện không còn bán",
       "shopEmpty": "Chưa có VIP nào được bán",
       "packagesEmpty": "Chưa có gói ngày nào"
     }

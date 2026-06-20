@@ -181,6 +181,7 @@
     "voiceReleaseCancel": "Release to cancel",
     "voiceMicDenied": "Microphone access is needed to record.",
     "voiceRecordError": "Could not record audio. Please try again.",
+    "voiceDiscard": "Discard recording",
     "attachCameraOpening": "Camera is opening…",
     "attachHoldForCam": "Hold for phone cam",
     "attachPhotoOpenGrid": "Open gallery",
@@ -505,6 +506,9 @@
       "bought": "Bought VIP {{name}}",
       "extended": "Extended {{days}} VIP day(s)",
       "failed": "Purchase failed",
+      "errInsufficientKen": "Insufficient KEN balance",
+      "errItemUnavailable": "This VIP is no longer for sale",
+      "errPackageUnavailable": "This day package is no longer for sale",
       "shopEmpty": "No VIP for sale yet",
       "packagesEmpty": "No day package yet"
     }

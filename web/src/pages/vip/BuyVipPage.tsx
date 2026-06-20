@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ROUTES } from '@constants';
-import { toast } from '@lib';
+import { toast, ApiError } from '@lib';
 import {
   ScreenHeader,
   FullScreenOverlay,
@@ -35,6 +35,17 @@ const MODE_ACTION = {
   giveDays: 'vip.buy.actionGive',
   extend: 'vip.extendVip',
 } as const;
+
+type BuyErrorKey =
+  | 'vip.buy.errInsufficientKen'
+  | 'vip.buy.errItemUnavailable'
+  | 'vip.buy.errPackageUnavailable';
+
+const BUY_ERROR_KEYS: Record<string, BuyErrorKey> = {
+  'insufficient ken balance': 'vip.buy.errInsufficientKen',
+  'vip shop item not found': 'vip.buy.errItemUnavailable',
+  'vip package not found': 'vip.buy.errPackageUnavailable',
+};
 
 const MODE_TAB = {
   buy: 'vip.buy.modeBuy',
@@ -212,6 +223,14 @@ export function BuyVipPage() {
     onSelect: () => setSelectedPackageId(pkg.id),
   }));
 
+  function buyErrorText(error: unknown): string {
+    if (error instanceof ApiError) {
+      const key = BUY_ERROR_KEYS[error.message];
+      if (key) return t(key);
+    }
+    return t('vip.buy.failed');
+  }
+
   function changeMode(next: BuyVipMode) {
     setMode(next);
     setConfirmOpen(false);
@@ -252,8 +271,8 @@ export function BuyVipPage() {
         setConfirmOpen(false);
         toast.success(t('vip.buy.bought', { name: selectedVip?.name ?? '' }));
         navigate(ROUTES.vip);
-      } catch {
-        toast.info(t('vip.buy.failed'));
+      } catch (error) {
+        toast.info(buyErrorText(error));
       } finally {
         setPurchasing(false);
       }
@@ -272,8 +291,8 @@ export function BuyVipPage() {
         setConfirmOpen(false);
         toast.success(t('vip.buy.extended', { days: result.days }));
         navigate(ROUTES.vip);
-      } catch {
-        toast.info(t('vip.buy.failed'));
+      } catch (error) {
+        toast.info(buyErrorText(error));
       } finally {
         setPurchasing(false);
       }
