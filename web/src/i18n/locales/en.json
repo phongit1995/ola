@@ -447,6 +447,7 @@
     "collection": "VIP icon collection",
     "duration": "VIP duration",
     "noVip": "No VIP",
+    "expired": "VIP expired",
     "daysLeft": "{{count}} day(s)",
     "stateInUse": "In use",
     "stateLocked": "Locked",

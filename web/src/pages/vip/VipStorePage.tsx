@@ -20,6 +20,14 @@ function vipName(typeId: number): string {
   return vipById(typeId)?.name ?? `VIP ${typeId}`;
 }
 
+function formatVipDate(iso: string): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return '';
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  return `${day}-${month}-${date.getFullYear()}`;
+}
+
 function VipIconImage({ typeId, size = 40 }: { typeId: number; size?: number }) {
   return (
     <img
@@ -97,9 +105,14 @@ export function VipStorePage() {
   const items = store?.items ?? [];
   const usingIcon = items.find((icon) => icon.isUsing) ?? null;
   const privacy = (store?.privacy ?? 0) as 0 | 1 | 2;
-  const remainingDays = store?.days ?? 0;
-  const hasVip = usingIcon != null;
-  const durationText = hasVip ? t('vip.daysLeft', { count: remainingDays }) : t('vip.noVip');
+  const remainingDays = store?.days ?? null;
+  const vipEndTime = store?.vipEndTime ?? null;
+  const durationText =
+    remainingDays != null && remainingDays > 0
+      ? t('vip.daysLeft', { count: remainingDays })
+      : vipEndTime != null
+        ? t('vip.expired')
+        : t('vip.noVip');
 
   async function runAction(action: () => Promise<unknown>, successText: string) {
     if (busy) return;
@@ -198,7 +211,11 @@ export function VipStorePage() {
                   {usingIcon ? vipName(usingIcon.typeId) : t('vip.empty')}
                 </span>
                 <span className="mt-0.5 text-xs text-black/54">
-                  {usingIcon ? t('vip.stateInUse') : t('vip.empty')}
+                  {usingIcon
+                    ? vipEndTime
+                      ? formatVipDate(vipEndTime)
+                      : t('vip.stateInUse')
+                    : t('vip.empty')}
                 </span>
               </div>
             </div>

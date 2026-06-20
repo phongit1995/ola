@@ -447,6 +447,7 @@
     "collection": "Kho icon VIP",
     "duration": "Thời hạn VIP",
     "noVip": "Chưa có VIP",
+    "expired": "VIP đã hết hạn",
     "daysLeft": "{{count}} ngày",
     "stateInUse": "Đang dùng",
     "stateLocked": "Đã khoá",
