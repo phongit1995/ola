@@ -1,8 +1,8 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Avatar, ListOptionDialog, type ListOption } from '@components';
-import { vipIconUrl, isVipActive, activeVipTypeId } from '@lib';
-import type { AuthUser } from '@app-types';
+import { Avatar, ListOptionDialog, VipIcon, type ListOption } from '@components';
+import { vipIconUrl, isVipActive, activeVipTypeId, colorForName } from '@lib';
+import type { AuthUser, Relationship } from '@app-types';
 import type { Contact } from '../types';
 import { SUGGESTED_FRIENDS } from '../data';
 import { BuddyRow } from './BuddyRow';
@@ -10,6 +10,7 @@ import smileyIcon from '@/assets/icons/chat/ola_smiley_online.png';
 import vipIcon from '@/assets/icons/apps/vip.png';
 import snapPicIcon from '@/assets/icons/chat/icon_snap_pic.png';
 import groupIcon from '@/assets/icons/room/ic_notify_new_chat_group_message.png';
+import addFriendIcon from '@/assets/icons/chat/ic_add_friend.png';
 
 interface ContactListProps {
   contacts: Contact[];
@@ -21,6 +22,9 @@ interface ContactListProps {
   onPreviewImage?: () => void;
   onPreviewBuddyImage?: (url: string) => void;
   onComingSoon?: () => void;
+  requests?: Relationship[];
+  onOpenSuggested?: () => void;
+  onOpenRequests?: () => void;
 }
 
 function ActionRow({
@@ -70,6 +74,9 @@ export function ContactList({
   onPreviewImage,
   onPreviewBuddyImage,
   onComingSoon,
+  requests = [],
+  onOpenSuggested,
+  onOpenRequests,
 }: ContactListProps) {
   const { t } = useTranslation();
   const [query, setQuery] = useState('');
@@ -160,9 +167,55 @@ export function ContactList({
         </div>
       )}
 
+      {requests.length > 0 && (
+        <button
+          type="button"
+          onClick={onOpenRequests}
+          className="flex w-full items-center gap-3 border-b border-black/12 bg-white/80 px-4 py-2 text-left"
+        >
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ola-primary">
+            <img src={addFriendIcon} alt="" className="h-6 w-6 object-contain brightness-0 invert" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-base text-black/87">{t('chat.friendRequests')}</span>
+            <span className="mt-1 flex items-center gap-2">
+              {requests.slice(0, 3).map((relationship) => {
+                const requester = relationship.requester;
+                const name = requester?.fullName || requester?.username || '';
+                const vipTypeId = activeVipTypeId(requester?.vipUsed, requester?.vipEndTime);
+                return (
+                  <span key={relationship.id} className="relative block">
+                    {requester?.avatar ? (
+                      <img src={requester.avatar} alt="" className="h-7 w-7 rounded object-cover" />
+                    ) : (
+                      <Avatar
+                        name={name}
+                        color={colorForName(requester?.id ?? name)}
+                        size={28}
+                        rounded={false}
+                      />
+                    )}
+                    {vipTypeId != null && (
+                      <VipIcon
+                        typeId={vipTypeId}
+                        className="absolute -right-1 -bottom-1 h-3.5 w-3.5"
+                      />
+                    )}
+                  </span>
+                );
+              })}
+            </span>
+          </span>
+          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-ola-accent px-1 text-[10px] font-bold text-white">
+            {requests.length}
+          </span>
+          <span className="shrink-0 text-xl text-black/26">›</span>
+        </button>
+      )}
+
       <button
         type="button"
-        onClick={onComingSoon}
+        onClick={onOpenSuggested}
         className="flex w-full items-center gap-3 border-b border-black/12 bg-white/80 px-4 py-2 text-left"
       >
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#e0e0e0]">
@@ -173,7 +226,7 @@ export function ContactList({
         <span className="min-w-0 flex-1">
           <span className="block text-base text-black/87">{t('chat.suggestFriends')}</span>
           <span className="mt-1 flex items-center gap-2">
-            {SUGGESTED_FRIENDS.map((friend) => (
+            {SUGGESTED_FRIENDS.slice(0, 3).map((friend) => (
               <span key={friend.name} className="block overflow-hidden rounded">
                 <Avatar name={friend.name} color={friend.color} size={28} rounded={false} />
               </span>
@@ -181,7 +234,7 @@ export function ContactList({
           </span>
         </span>
         <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-ola-accent px-1 text-[10px] font-bold text-white">
-          12
+          {SUGGESTED_FRIENDS.length}
         </span>
         <span className="shrink-0 text-xl text-black/26">›</span>
       </button>

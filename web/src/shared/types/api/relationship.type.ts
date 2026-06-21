@@ -8,6 +8,8 @@ export interface RelationshipUserInfo {
   email?: string;
   avatar?: string;
   fullName?: string;
+  vipUsed?: string | null;
+  vipEndTime?: string | null;
 }
 
 export interface Relationship {

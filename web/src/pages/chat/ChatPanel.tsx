@@ -23,9 +23,12 @@ import { ComposeDialog } from './components/ComposeDialog';
 import { ChangeAvatarScreen } from './components/ChangeAvatarScreen';
 import { StatusEditDialog } from './components/StatusEditDialog';
 import { UserProfileView } from '../profile/UserProfileView';
+import { SuggestedFriendsScreen } from './components/SuggestedFriendsScreen';
+import { FriendRequestsScreen } from './components/FriendRequestsScreen';
 import { useMediaViewerStore } from '@/store/mediaViewerStore';
 import { mapFriendsToContacts } from './friends';
 import type { Contact } from './types';
+import type { Relationship } from '@app-types';
 
 interface ProfileTarget {
   username: string;
@@ -58,8 +61,12 @@ export function ChatPanel() {
   const [logoutAll, setLogoutAll] = useState(false);
   const [avatarOpen, setAvatarOpen] = useState(false);
   const [statusOpen, setStatusOpen] = useState(false);
+  const [suggestedOpen, setSuggestedOpen] = useState(false);
+  const [requestsOpen, setRequestsOpen] = useState(false);
   const openViewer = useMediaViewerStore((s) => s.openViewer);
   const [friends, setFriends] = useState<Contact[]>([]);
+  const [requests, setRequests] = useState<Relationship[]>([]);
+  const [requestsLoading, setRequestsLoading] = useState(true);
   const [profileTarget, setProfileTarget] = useState<ProfileTarget | null>(null);
   const friendsLoadedRef = useRef(false);
 
@@ -72,7 +79,37 @@ export function ChatPanel() {
         friendsLoadedRef.current = false;
         toast.error(t('chat.loadFriendsError'));
       });
+    RelationshipService.pending()
+      .then((res) => setRequests(res.relationships))
+      .catch(() => undefined)
+      .finally(() => setRequestsLoading(false));
   }, [sub, t]);
+
+  function reloadFriends() {
+    RelationshipService.friends()
+      .then((res) => setFriends(mapFriendsToContacts(res.friends, t)))
+      .catch(() => undefined);
+  }
+
+  async function acceptRequest(relationship: Relationship) {
+    try {
+      await RelationshipService.respond(relationship.id, 'accept');
+      setRequests((prev) => prev.filter((item) => item.id !== relationship.id));
+      reloadFriends();
+      toast.success(t('chat.requestAccepted'));
+    } catch {
+      toast.error(t('chat.requestActionError'));
+    }
+  }
+
+  async function declineRequest(relationship: Relationship) {
+    try {
+      await RelationshipService.respond(relationship.id, 'reject');
+      setRequests((prev) => prev.filter((item) => item.id !== relationship.id));
+    } catch {
+      toast.error(t('chat.requestActionError'));
+    }
+  }
 
   function comingSoon() {
     toast.info(t('chat.comingSoon'));
@@ -190,6 +227,9 @@ export function ChatPanel() {
               }}
               onPreviewBuddyImage={(img) => openViewer([img])}
               onComingSoon={comingSoon}
+              requests={requests}
+              onOpenSuggested={() => setSuggestedOpen(true)}
+              onOpenRequests={() => setRequestsOpen(true)}
             />
             <button
               type="button"
@@ -202,6 +242,17 @@ export function ChatPanel() {
           </div>
         )}
       </main>
+
+      {suggestedOpen && <SuggestedFriendsScreen onClose={() => setSuggestedOpen(false)} />}
+      {requestsOpen && (
+        <FriendRequestsScreen
+          requests={requests}
+          loading={requestsLoading}
+          onAccept={acceptRequest}
+          onDecline={declineRequest}
+          onClose={() => setRequestsOpen(false)}
+        />
+      )}
 
       {composeOpen && (
         <ComposeDialog

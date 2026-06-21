@@ -41,4 +41,8 @@ export class RelationshipService {
   static blocked(params: FriendListParams = {}): Promise<RelationshipListResult> {
     return http.get<RelationshipListResult>(API_PATH.relationships.blocked, { params });
   }
+
+  static pending(params: FriendListParams = {}): Promise<RelationshipListResult> {
+    return http.get<RelationshipListResult>(API_PATH.relationships.pending, { params });
+  }
 }
