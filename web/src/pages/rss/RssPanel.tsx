@@ -10,7 +10,7 @@ export function RssPanel() {
         <div className="flex w-full items-center gap-2">
           <input
             placeholder={t('home.search')}
-            className="flex-1 rounded bg-white/20 px-3 py-1.5 text-sm text-white outline-none placeholder:text-white/70"
+            className="flex-1 rounded bg-white/20 px-3 py-1.5 text-base text-white outline-none placeholder:text-white/70"
           />
           <button type="button" aria-label={t('common.menu')} className="px-2 text-xl">
             ⋮

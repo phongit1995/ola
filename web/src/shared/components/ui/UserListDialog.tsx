@@ -41,7 +41,7 @@ export function UserListDialog({
           value={search.value}
           onChange={(event) => search.onChange(event.target.value)}
           placeholder={search.placeholder}
-          className="w-full rounded-md border border-black/12 px-3 py-2 text-sm text-black/87 outline-none focus:border-ola-primary"
+          className="w-full rounded-md border border-black/12 px-3 py-2 text-base text-black/87 outline-none focus:border-ola-primary"
         />
       )}
       <div className={`${listMaxHeightClass} overflow-y-auto ${search != null ? 'mt-3' : ''}`}>

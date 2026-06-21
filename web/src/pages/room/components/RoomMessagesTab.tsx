@@ -129,7 +129,7 @@ export function RoomMessagesTab({
           disabled={!canSend}
           placeholder={t('room.chatInputHint')}
           multiline
-          className={`max-h-28 min-h-9 flex-1 overflow-y-auto rounded-2xl border border-black/12 px-3 py-2 text-sm text-black/87 focus:border-ola-primary ${
+          className={`max-h-28 min-h-9 flex-1 overflow-y-auto rounded-2xl border border-black/12 px-3 py-2 text-base text-black/87 focus:border-ola-primary ${
             canSend ? '' : 'opacity-50'
           }`}
         />

@@ -16,7 +16,7 @@ export function ClearableInput({
   type = 'text',
   showClear,
   onClear,
-  inputClassName = 'text-sm',
+  inputClassName = 'text-base',
 }: ClearableInputProps) {
   const { t } = useTranslation();
   return (

@@ -133,7 +133,7 @@ export function BuyKenPage() {
             value={customText}
             onChange={(event) => changeCustom(event.target.value)}
             placeholder={t('ken.buy.customHint')}
-            className="mt-1 w-full rounded border border-black/12 bg-white px-3 py-2 text-sm text-black/87 outline-none placeholder:text-black/38 focus:border-ola-primary"
+            className="mt-1 w-full rounded border border-black/12 bg-white px-3 py-2 text-base text-black/87 outline-none placeholder:text-black/38 focus:border-ola-primary"
           />
 
           <div className="mt-3 flex items-center">

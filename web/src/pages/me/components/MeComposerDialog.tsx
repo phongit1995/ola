@@ -176,7 +176,7 @@ export function MeComposerDialog({
         onChange={setContent}
         placeholder={t('me.composerHint')}
         multiline
-        className="mt-3 max-h-60 min-h-24 w-full overflow-y-auto rounded-md border border-black/12 px-3 py-2 text-sm text-black/87 focus:border-ola-primary"
+        className="mt-3 max-h-60 min-h-24 w-full overflow-y-auto rounded-md border border-black/12 px-3 py-2 text-base text-black/87 focus:border-ola-primary"
       />
 
       <ComposerPreview

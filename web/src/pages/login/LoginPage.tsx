@@ -122,7 +122,7 @@ export function LoginPage() {
           })}
           placeholder={t('login.username')}
           type="text"
-          inputClassName="text-sm"
+          inputClassName="text-base"
           showClear={!!username}
           onClear={() => setValue('username', '', { shouldValidate: true })}
         />

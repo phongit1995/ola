@@ -82,7 +82,7 @@ export function EditProfilePage({ profile, onClose }: EditProfilePageProps) {
               onChange={(event) => setFullname(event.target.value)}
               onBlur={() => setEditing(null)}
               placeholder={t('profileEdit.fullnameHint')}
-              className="flex-1 bg-transparent text-sm text-black/87 outline-none placeholder:text-[#e34545]"
+              className="flex-1 bg-transparent text-base text-black/87 outline-none placeholder:text-[#e34545]"
             />
             <EditButton
               label={t('profileEdit.fullnameLabel')}
@@ -103,7 +103,7 @@ export function EditProfilePage({ profile, onClose }: EditProfilePageProps) {
               onChange={(event) => setPhone(event.target.value)}
               onBlur={() => setEditing(null)}
               placeholder={t('profileEdit.phoneHint')}
-              className="flex-1 bg-transparent text-sm text-black/87 outline-none placeholder:text-[#e34545]"
+              className="flex-1 bg-transparent text-base text-black/87 outline-none placeholder:text-[#e34545]"
             />
             <EditButton
               label={t('profileEdit.phoneLabel')}
@@ -123,7 +123,7 @@ export function EditProfilePage({ profile, onClose }: EditProfilePageProps) {
                 autoFocus
                 onChange={(event) => setBirthday(event.target.value)}
                 onBlur={() => setEditing(null)}
-                className="flex-1 bg-transparent text-sm text-black/87 outline-none"
+                className="flex-1 bg-transparent text-base text-black/87 outline-none"
               />
             ) : (
               <span className="flex-1 text-sm text-black/87">
