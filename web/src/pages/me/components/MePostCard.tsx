@@ -94,6 +94,12 @@ function MePostCardComponent({
 
   return (
     <article className="mb-2 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.18)]">
+      {post.pinned && (
+        <div className="flex items-center gap-1 border-b border-black/8 px-4 py-1.5 text-xs text-black/54">
+          <span>📌</span>
+          <span>{t('me.pinned')}</span>
+        </div>
+      )}
       <div className="flex items-start gap-4 px-4 pt-4">
         <button
           type="button"

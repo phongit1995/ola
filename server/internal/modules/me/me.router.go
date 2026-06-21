@@ -25,6 +25,8 @@ func (r *Router) Setup(api *utils.AppGroup) {
 		me.GET("/:id", r.controller.GetPost)
 		me.PUT("/:id", r.controller.UpdatePost)
 		me.DELETE("/:id", r.controller.DeletePost)
+		me.POST("/:id/pin", r.controller.Pin)
+		me.DELETE("/:id/pin", r.controller.Unpin)
 		me.POST("/:id/react", r.controller.React)
 		me.DELETE("/:id/react", r.controller.RemoveReaction)
 		me.GET("/:id/likers", r.controller.Likers)

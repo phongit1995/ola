@@ -94,6 +94,21 @@ export function ProfileMePage() {
     [t]
   );
 
+  const togglePin = useCallback(
+    async (id: string, pinned: boolean) => {
+      try {
+        if (pinned) await MeService.pin(id);
+        else await MeService.unpin(id);
+        const result = await MeService.mine({ limit: 30 });
+        setPosts(result.items);
+        toast.success(t(pinned ? 'me.pinSuccess' : 'me.unpinSuccess'));
+      } catch {
+        toast.error(t('me.pinError'));
+      }
+    },
+    [t]
+  );
+
   if (!user) return null;
 
   const nick = user.fullName || user.username;
@@ -112,6 +127,7 @@ export function ProfileMePage() {
     blockAuthor,
     editPost,
     deletePost,
+    togglePin,
   };
 
   return (

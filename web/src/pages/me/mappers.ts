@@ -45,5 +45,6 @@ export function toMePost(post: Post, formatTime: (iso: string) => string): MePos
     liked: post.myReaction === 'like',
     disliked: post.myReaction === 'dislike',
     mention: (post.mentions?.length ?? 0) > 0,
+    pinned: post.isPinned,
   };
 }

@@ -38,19 +38,19 @@ type ListFilter struct {
 	Offset     int
 }
 
-func (s *Service) List(f ListFilter) (*PostListResponse, error) {
+func (s *Service) List(f ListFilter) (*MeListResponse, error) {
 	posts, total, err := s.repo.List(f)
 	if err != nil {
 		return nil, err
 	}
-	items := make([]PostListItem, 0, len(posts))
+	items := make([]MeListItem, 0, len(posts))
 	for _, p := range posts {
 		items = append(items, toListItem(p))
 	}
-	return &PostListResponse{Items: items, Total: total, Limit: f.Limit, Offset: f.Offset}, nil
+	return &MeListResponse{Items: items, Total: total, Limit: f.Limit, Offset: f.Offset}, nil
 }
 
-func (s *Service) GetByID(id uuid.UUID) (*PostDetail, error) {
+func (s *Service) GetByID(id uuid.UUID) (*MeDetail, error) {
 	post, err := s.getPost(id)
 	if err != nil {
 		return nil, err
@@ -58,7 +58,7 @@ func (s *Service) GetByID(id uuid.UUID) (*PostDetail, error) {
 	return toDetail(post), nil
 }
 
-func (s *Service) SetEnabled(id uuid.UUID, enabled bool) (*PostDetail, error) {
+func (s *Service) SetEnabled(id uuid.UUID, enabled bool) (*MeDetail, error) {
 	if _, err := s.getPost(id); err != nil {
 		return nil, err
 	}
@@ -109,7 +109,7 @@ func (s *Service) DeleteComment(postID, commentID uuid.UUID) error {
 	return nil
 }
 
-func (s *Service) getPost(id uuid.UUID) (*models.Post, error) {
+func (s *Service) getPost(id uuid.UUID) (*models.Me, error) {
 	post, err := s.repo.GetByID(id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -120,8 +120,8 @@ func (s *Service) getPost(id uuid.UUID) (*models.Post, error) {
 	return post, nil
 }
 
-func toListItem(p *models.Post) PostListItem {
-	return PostListItem{
+func toListItem(p *models.Me) MeListItem {
+	return MeListItem{
 		ID:           p.ID.String(),
 		Content:      p.Content,
 		Images:       toImages(p.Images),
@@ -137,8 +137,8 @@ func toListItem(p *models.Post) PostListItem {
 	}
 }
 
-func toDetail(p *models.Post) *PostDetail {
-	return &PostDetail{
+func toDetail(p *models.Me) *MeDetail {
+	return &MeDetail{
 		ID:           p.ID.String(),
 		Content:      p.Content,
 		Images:       toImages(p.Images),
@@ -156,10 +156,10 @@ func toDetail(p *models.Post) *PostDetail {
 	}
 }
 
-func toImages(imgs models.PostImages) []PostImageResponse {
-	images := make([]PostImageResponse, 0, len(imgs))
+func toImages(imgs models.MeImages) []MeImageResponse {
+	images := make([]MeImageResponse, 0, len(imgs))
 	for _, img := range imgs {
-		images = append(images, PostImageResponse{
+		images = append(images, MeImageResponse{
 			URL:      img.URL,
 			Width:    img.Width,
 			Height:   img.Height,
@@ -183,7 +183,7 @@ func toCheckIn(checkIn *models.CheckIn) *CheckInResponse {
 	}
 }
 
-func toComment(c *models.PostComment) CommentResponse {
+func toComment(c *models.MeComment) CommentResponse {
 	return CommentResponse{
 		ID:        c.ID.String(),
 		PostID:    c.PostID.String(),

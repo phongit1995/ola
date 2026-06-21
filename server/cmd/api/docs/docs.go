@@ -238,7 +238,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_me_PostListResponse"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_me_MeListResponse"
                         }
                     }
                 }
@@ -271,7 +271,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_me_PostDetail"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_me_MeDetail"
                         }
                     }
                 }
@@ -404,7 +404,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_me_PostDetail"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_me_MeDetail"
                         }
                     }
                 }
@@ -2285,7 +2285,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_PostFeedResponse"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_MeFeedResponse"
                         }
                     }
                 }
@@ -2313,7 +2313,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_modules_me.CreatePostRequest"
+                            "$ref": "#/definitions/internal_modules_me.CreateMeRequest"
                         }
                     }
                 ],
@@ -2321,7 +2321,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_PostResponse"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_MeResponse"
                         }
                     }
                 }
@@ -2395,7 +2395,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_PostListResponse"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_MeListResponse"
                         }
                     }
                 }
@@ -2440,7 +2440,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_PostListResponse"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_MeListResponse"
                         }
                     }
                 }
@@ -2473,7 +2473,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_PostResponse"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_MeResponse"
                         }
                     }
                 }
@@ -2508,7 +2508,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_modules_me.UpdatePostRequest"
+                            "$ref": "#/definitions/internal_modules_me.UpdateMeRequest"
                         }
                     }
                 ],
@@ -2516,7 +2516,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_PostResponse"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_MeResponse"
                         }
                     }
                 }
@@ -2732,6 +2732,70 @@ const docTemplate = `{
                 }
             }
         },
+        "/me/{id}/pin": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "me"
+                ],
+                "summary": "Pin own post (only one pinned post per user; pinning replaces the previous one)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Post ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_MeResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "me"
+                ],
+                "summary": "Unpin own post",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Post ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_MeResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/me/{id}/react": {
             "post": {
                 "security": [
@@ -2771,7 +2835,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_PostResponse"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_MeResponse"
                         }
                     }
                 }
@@ -2802,7 +2866,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_PostResponse"
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_MeResponse"
                         }
                     }
                 }
@@ -5439,7 +5503,7 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_modules_admin_me.PostDetail": {
+        "internal_modules_admin_me.MeDetail": {
             "type": "object",
             "properties": {
                 "author": {
@@ -5469,7 +5533,7 @@ const docTemplate = `{
                 "images": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/internal_modules_admin_me.PostImageResponse"
+                        "$ref": "#/definitions/internal_modules_admin_me.MeImageResponse"
                     }
                 },
                 "likeCount": {
@@ -5492,7 +5556,7 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_modules_admin_me.PostImageResponse": {
+        "internal_modules_admin_me.MeImageResponse": {
             "type": "object",
             "properties": {
                 "height": {
@@ -5509,7 +5573,7 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_modules_admin_me.PostListItem": {
+        "internal_modules_admin_me.MeListItem": {
             "type": "object",
             "properties": {
                 "author": {
@@ -5539,7 +5603,7 @@ const docTemplate = `{
                 "images": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/internal_modules_admin_me.PostImageResponse"
+                        "$ref": "#/definitions/internal_modules_admin_me.MeImageResponse"
                     }
                 },
                 "likeCount": {
@@ -5553,13 +5617,13 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_modules_admin_me.PostListResponse": {
+        "internal_modules_admin_me.MeListResponse": {
             "type": "object",
             "properties": {
                 "items": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/internal_modules_admin_me.PostListItem"
+                        "$ref": "#/definitions/internal_modules_admin_me.MeListItem"
                     }
                 },
                 "limit": {
@@ -6460,7 +6524,7 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_modules_me.CreatePostRequest": {
+        "internal_modules_me.CreateMeRequest": {
             "type": "object",
             "properties": {
                 "checkIn": {
@@ -6475,7 +6539,7 @@ const docTemplate = `{
                     "type": "array",
                     "maxItems": 5,
                     "items": {
-                        "$ref": "#/definitions/internal_modules_me.PostImageInput"
+                        "$ref": "#/definitions/internal_modules_me.MeImageInput"
                     }
                 },
                 "sticker": {
@@ -6513,13 +6577,13 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_modules_me.PostFeedResponse": {
+        "internal_modules_me.MeFeedResponse": {
             "type": "object",
             "properties": {
                 "items": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/internal_modules_me.PostResponse"
+                        "$ref": "#/definitions/internal_modules_me.MeResponse"
                     }
                 },
                 "nextCursor": {
@@ -6527,7 +6591,7 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_modules_me.PostImageInput": {
+        "internal_modules_me.MeImageInput": {
             "type": "object",
             "required": [
                 "url"
@@ -6550,7 +6614,7 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_modules_me.PostImageResponse": {
+        "internal_modules_me.MeImageResponse": {
             "type": "object",
             "properties": {
                 "height": {
@@ -6567,13 +6631,13 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_modules_me.PostListResponse": {
+        "internal_modules_me.MeListResponse": {
             "type": "object",
             "properties": {
                 "items": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/internal_modules_me.PostResponse"
+                        "$ref": "#/definitions/internal_modules_me.MeResponse"
                     }
                 },
                 "limit": {
@@ -6587,7 +6651,7 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_modules_me.PostResponse": {
+        "internal_modules_me.MeResponse": {
             "type": "object",
             "properties": {
                 "author": {
@@ -6614,8 +6678,11 @@ const docTemplate = `{
                 "images": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/internal_modules_me.PostImageResponse"
+                        "$ref": "#/definitions/internal_modules_me.MeImageResponse"
                     }
+                },
+                "isPinned": {
+                    "type": "boolean"
                 },
                 "likeCount": {
                     "type": "integer"
@@ -6662,7 +6729,7 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_modules_me.UpdatePostRequest": {
+        "internal_modules_me.UpdateMeRequest": {
             "type": "object",
             "properties": {
                 "checkIn": {
@@ -6676,7 +6743,7 @@ const docTemplate = `{
                     "type": "array",
                     "maxItems": 5,
                     "items": {
-                        "$ref": "#/definitions/internal_modules_me.PostImageInput"
+                        "$ref": "#/definitions/internal_modules_me.MeImageInput"
                     }
                 },
                 "sticker": {
@@ -9319,11 +9386,11 @@ const docTemplate = `{
                 }
             }
         },
-        "ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_me_PostDetail": {
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_me_MeDetail": {
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/internal_modules_admin_me.PostDetail"
+                    "$ref": "#/definitions/internal_modules_admin_me.MeDetail"
                 },
                 "error": {
                     "type": "string"
@@ -9345,11 +9412,11 @@ const docTemplate = `{
                 }
             }
         },
-        "ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_me_PostListResponse": {
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_me_MeListResponse": {
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/internal_modules_admin_me.PostListResponse"
+                    "$ref": "#/definitions/internal_modules_admin_me.MeListResponse"
                 },
                 "error": {
                     "type": "string"
@@ -9553,11 +9620,11 @@ const docTemplate = `{
                 }
             }
         },
-        "ola-chat-server_internal_utils.BaseResponse-internal_modules_me_PostFeedResponse": {
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_me_MeFeedResponse": {
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/internal_modules_me.PostFeedResponse"
+                    "$ref": "#/definitions/internal_modules_me.MeFeedResponse"
                 },
                 "error": {
                     "type": "string"
@@ -9579,11 +9646,11 @@ const docTemplate = `{
                 }
             }
         },
-        "ola-chat-server_internal_utils.BaseResponse-internal_modules_me_PostListResponse": {
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_me_MeListResponse": {
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/internal_modules_me.PostListResponse"
+                    "$ref": "#/definitions/internal_modules_me.MeListResponse"
                 },
                 "error": {
                     "type": "string"
@@ -9605,11 +9672,11 @@ const docTemplate = `{
                 }
             }
         },
-        "ola-chat-server_internal_utils.BaseResponse-internal_modules_me_PostResponse": {
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_me_MeResponse": {
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/internal_modules_me.PostResponse"
+                    "$ref": "#/definitions/internal_modules_me.MeResponse"
                 },
                 "error": {
                     "type": "string"

@@ -24,6 +24,7 @@ export function useMeFeed() {
   const createPost = useMeFeedStore((state) => state.createPost);
   const updatePost = useMeFeedStore((state) => state.updatePost);
   const removePost = useMeFeedStore((state) => state.removePost);
+  const togglePin = useMeFeedStore((state) => state.togglePin);
   const adjustCommentCount = useMeFeedStore((state) => state.adjustCommentCount);
 
   const hiddenPostIds = useMeLocalStore((state) => state.hiddenPostIds);
@@ -122,6 +123,7 @@ export function useMeFeed() {
     addPost,
     editPost,
     deletePost,
+    togglePin,
     hidePost,
     blockAuthor,
     adjustCommentCount,

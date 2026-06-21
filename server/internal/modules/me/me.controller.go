@@ -54,15 +54,15 @@ func (ctrl *Controller) UploadImages(c *gin.Context) (interface{}, error) {
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
-// @Param        request body CreatePostRequest true "Create Post"
-// @Success      201  {object}  utils.BaseResponse[PostResponse]
+// @Param        request body CreateMeRequest true "Create Post"
+// @Success      201  {object}  utils.BaseResponse[MeResponse]
 // @Router       /me [post]
 func (ctrl *Controller) Create(c *gin.Context) (interface{}, error) {
 	userID, err := utils.RequireUserID(c)
 	if err != nil {
 		return nil, err
 	}
-	req, err := utils.BindJSON[CreatePostRequest](c)
+	req, err := utils.BindJSON[CreateMeRequest](c)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +81,7 @@ func (ctrl *Controller) Create(c *gin.Context) (interface{}, error) {
 // @Param        limit query int false "Page size"
 // @Param        cursor query string false "Opaque keyset cursor from previous page's nextCursor"
 // @Param        filter query string false "Set to 'tagged' (posts with any @mention), 'mentions' (posts mentioning viewer) or 'media' (posts with images)"
-// @Success      200  {object}  utils.BaseResponse[PostFeedResponse]
+// @Success      200  {object}  utils.BaseResponse[MeFeedResponse]
 // @Router       /me [get]
 func (ctrl *Controller) Feed(c *gin.Context) (interface{}, error) {
 	userID, err := utils.RequireUserID(c)
@@ -106,7 +106,7 @@ func (ctrl *Controller) Feed(c *gin.Context) (interface{}, error) {
 // @Security     BearerAuth
 // @Param        limit query int false "Page size"
 // @Param        offset query int false "Offset"
-// @Success      200  {object}  utils.BaseResponse[PostListResponse]
+// @Success      200  {object}  utils.BaseResponse[MeListResponse]
 // @Router       /me/mine [get]
 func (ctrl *Controller) ListMine(c *gin.Context) (interface{}, error) {
 	userID, err := utils.RequireUserID(c)
@@ -130,7 +130,7 @@ func (ctrl *Controller) ListMine(c *gin.Context) (interface{}, error) {
 // @Param        userId path string true "User ID"
 // @Param        limit query int false "Page size"
 // @Param        offset query int false "Offset"
-// @Success      200  {object}  utils.BaseResponse[PostListResponse]
+// @Success      200  {object}  utils.BaseResponse[MeListResponse]
 // @Router       /me/users/{userId} [get]
 func (ctrl *Controller) ListByUser(c *gin.Context) (interface{}, error) {
 	userID, err := utils.RequireUserID(c)
@@ -156,7 +156,7 @@ func (ctrl *Controller) ListByUser(c *gin.Context) (interface{}, error) {
 // @Produce      json
 // @Security     BearerAuth
 // @Param        id path string true "Post ID"
-// @Success      200  {object}  utils.BaseResponse[PostResponse]
+// @Success      200  {object}  utils.BaseResponse[MeResponse]
 // @Router       /me/{id} [get]
 func (ctrl *Controller) GetPost(c *gin.Context) (interface{}, error) {
 	userID, err := utils.RequireUserID(c)
@@ -181,8 +181,8 @@ func (ctrl *Controller) GetPost(c *gin.Context) (interface{}, error) {
 // @Produce      json
 // @Security     BearerAuth
 // @Param        id path string true "Post ID"
-// @Param        request body UpdatePostRequest true "Update Post"
-// @Success      200  {object}  utils.BaseResponse[PostResponse]
+// @Param        request body UpdateMeRequest true "Update Post"
+// @Success      200  {object}  utils.BaseResponse[MeResponse]
 // @Router       /me/{id} [put]
 func (ctrl *Controller) UpdatePost(c *gin.Context) (interface{}, error) {
 	userID, err := utils.RequireUserID(c)
@@ -193,7 +193,7 @@ func (ctrl *Controller) UpdatePost(c *gin.Context) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	req, err := utils.BindJSON[UpdatePostRequest](c)
+	req, err := utils.BindJSON[UpdateMeRequest](c)
 	if err != nil {
 		return nil, err
 	}
@@ -225,6 +225,54 @@ func (ctrl *Controller) DeletePost(c *gin.Context) (interface{}, error) {
 		return nil, utils.ServiceError(err)
 	}
 	return map[string]string{"message": "post deleted"}, nil
+}
+
+// Pin godoc
+// @Summary      Pin own post (only one pinned post per user; pinning replaces the previous one)
+// @Tags         me
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "Post ID"
+// @Success      200  {object}  utils.BaseResponse[MeResponse]
+// @Router       /me/{id}/pin [post]
+func (ctrl *Controller) Pin(c *gin.Context) (interface{}, error) {
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+	id, err := parseID(c)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := ctrl.service.SetPinned(userID, id, true)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
+// Unpin godoc
+// @Summary      Unpin own post
+// @Tags         me
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "Post ID"
+// @Success      200  {object}  utils.BaseResponse[MeResponse]
+// @Router       /me/{id}/pin [delete]
+func (ctrl *Controller) Unpin(c *gin.Context) (interface{}, error) {
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+	id, err := parseID(c)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := ctrl.service.SetPinned(userID, id, false)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
 }
 
 // AddComment godoc
@@ -321,7 +369,7 @@ func (ctrl *Controller) DeleteComment(c *gin.Context) (interface{}, error) {
 // @Security     BearerAuth
 // @Param        id path string true "Post ID"
 // @Param        request body ReactRequest true "Reaction"
-// @Success      200  {object}  utils.BaseResponse[PostResponse]
+// @Success      200  {object}  utils.BaseResponse[MeResponse]
 // @Router       /me/{id}/react [post]
 func (ctrl *Controller) React(c *gin.Context) (interface{}, error) {
 	userID, err := utils.RequireUserID(c)
@@ -349,7 +397,7 @@ func (ctrl *Controller) React(c *gin.Context) (interface{}, error) {
 // @Produce      json
 // @Security     BearerAuth
 // @Param        id path string true "Post ID"
-// @Success      200  {object}  utils.BaseResponse[PostResponse]
+// @Success      200  {object}  utils.BaseResponse[MeResponse]
 // @Router       /me/{id}/react [delete]
 func (ctrl *Controller) RemoveReaction(c *gin.Context) (interface{}, error) {
 	userID, err := utils.RequireUserID(c)

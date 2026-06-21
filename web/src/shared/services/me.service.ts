@@ -53,6 +53,14 @@ export class MeService {
     return http.postForm<UploadImagesResult>(API_PATH.me.images, form);
   }
 
+  static pin(id: string): Promise<Post> {
+    return http.post<Post>(API_PATH.me.pin(id), {});
+  }
+
+  static unpin(id: string): Promise<Post> {
+    return http.del<Post>(API_PATH.me.pin(id));
+  }
+
   static react(id: string, type: PostReaction): Promise<Post> {
     const payload: ReactRequest = { type };
     return http.post<Post>(API_PATH.me.react(id), payload);

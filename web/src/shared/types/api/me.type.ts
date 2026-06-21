@@ -41,6 +41,7 @@ export interface Post {
   dislikeCount: number;
   commentCount: number;
   myReaction: PostReaction | null;
+  isPinned: boolean;
   author?: PostAuthor;
   topLikers?: PostAuthor[];
   createdAt: string;

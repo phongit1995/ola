@@ -19,6 +19,7 @@ interface MeFeedState {
   createPost: (payload: CreatePostRequest, files: File[], imageUrls: string[]) => Promise<Post | null>;
   updatePost: (id: string, payload: CreatePostRequest, files: File[], imageUrls: string[]) => Promise<Post | null>;
   removePost: (id: string) => Promise<boolean>;
+  togglePin: (id: string, pinned: boolean) => Promise<void>;
   adjustCommentCount: (id: string, delta: number) => void;
 }
 
@@ -26,6 +27,17 @@ const FEED_PAGE_SIZE = 30;
 
 function replacePost(posts: Post[], updated: Post): Post[] {
   return posts.map((post) => (post.id === updated.id ? updated : post));
+}
+
+function applyPin(posts: Post[], updated: Post): Post[] {
+  const authorId = updated.author?.id;
+  return posts.map((post) => {
+    if (post.id === updated.id) return updated;
+    if (updated.isPinned && authorId != null && post.author?.id === authorId) {
+      return { ...post, isPinned: false };
+    }
+    return post;
+  });
 }
 
 function applyReaction(post: Post, next: PostReaction | null): Post {
@@ -161,6 +173,16 @@ export const useMeFeedStore = create<MeFeedState>((set, get) => ({
       console.error('delete post failed', error);
       toast.error(i18n.t('me.deleteError'));
       return false;
+    }
+  },
+  togglePin: async (id, pinned) => {
+    try {
+      const updated = pinned ? await MeService.pin(id) : await MeService.unpin(id);
+      set((state) => ({ posts: applyPin(state.posts, updated) }));
+      toast.success(i18n.t(pinned ? 'me.pinSuccess' : 'me.unpinSuccess'));
+    } catch (error) {
+      console.error('toggle pin failed', error);
+      toast.error(i18n.t('me.pinError'));
     }
   },
   adjustCommentCount: (id, delta) => {

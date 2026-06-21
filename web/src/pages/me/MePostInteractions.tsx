@@ -21,6 +21,7 @@ export interface MePostSource {
   blockAuthor: (authorId: string) => void;
   editPost?: (id: string, draft: ComposedPost) => Promise<boolean>;
   deletePost?: (id: string) => void;
+  togglePin?: (id: string, pinned: boolean) => void;
 }
 
 export interface MePostCardHandlers {
@@ -40,7 +41,8 @@ interface MePostInteractionsProps {
 
 export function MePostInteractions({ source, children }: MePostInteractionsProps) {
   const { t } = useTranslation();
-  const { posts, meId, toggleReaction, adjustCommentCount, editPost, deletePost } = source;
+  const { posts, meId, toggleReaction, adjustCommentCount, editPost, deletePost, togglePin } =
+    source;
 
   const [profileTarget, setProfileTarget] = useState<{ username: string; color: string } | null>(
     null
@@ -85,17 +87,26 @@ export function MePostInteractions({ source, children }: MePostInteractionsProps
     setEditPostId(id);
   };
 
+  const ownMenuOptions: ListOption[] = [
+    { key: 'edit', label: t('me.menuEdit'), onSelect: () => requestEdit(menuPostId) },
+  ];
+  if (togglePin != null && menuPost != null) {
+    ownMenuOptions.push({
+      key: 'pin',
+      label: menuPost.pinned ? t('me.menuUnpin') : t('me.menuPin'),
+      onSelect: () => togglePin(menuPost.id, !menuPost.pinned),
+    });
+  }
+  ownMenuOptions.push({
+    key: 'delete',
+    label: t('me.menuDelete'),
+    danger: true,
+    onSelect: () => setDeletePostId(menuPostId),
+  });
+
   const menuOptions: ListOption[] =
     isMenuPostMine && canManageOwn
-      ? [
-          { key: 'edit', label: t('me.menuEdit'), onSelect: () => requestEdit(menuPostId) },
-          {
-            key: 'delete',
-            label: t('me.menuDelete'),
-            danger: true,
-            onSelect: () => setDeletePostId(menuPostId),
-          },
-        ]
+      ? ownMenuOptions
       : [
           { key: 'hide', label: t('me.menuHide'), onSelect: () => hideAndNotify(menuPostId) },
           { key: 'save', label: t('me.menuSave'), onSelect: () => toast.success(t('me.saveSuccess')) },

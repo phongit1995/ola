@@ -108,7 +108,7 @@ definitions:
       postId:
         type: string
     type: object
-  internal_modules_admin_me.PostDetail:
+  internal_modules_admin_me.MeDetail:
     properties:
       author:
         $ref: '#/definitions/internal_modules_admin_me.AuthorResponse'
@@ -128,7 +128,7 @@ definitions:
         type: string
       images:
         items:
-          $ref: '#/definitions/internal_modules_admin_me.PostImageResponse'
+          $ref: '#/definitions/internal_modules_admin_me.MeImageResponse'
         type: array
       likeCount:
         type: integer
@@ -143,7 +143,7 @@ definitions:
       visibility:
         type: string
     type: object
-  internal_modules_admin_me.PostImageResponse:
+  internal_modules_admin_me.MeImageResponse:
     properties:
       height:
         type: integer
@@ -154,7 +154,7 @@ definitions:
       width:
         type: integer
     type: object
-  internal_modules_admin_me.PostListItem:
+  internal_modules_admin_me.MeListItem:
     properties:
       author:
         $ref: '#/definitions/internal_modules_admin_me.AuthorResponse'
@@ -174,7 +174,7 @@ definitions:
         type: string
       images:
         items:
-          $ref: '#/definitions/internal_modules_admin_me.PostImageResponse'
+          $ref: '#/definitions/internal_modules_admin_me.MeImageResponse'
         type: array
       likeCount:
         type: integer
@@ -183,11 +183,11 @@ definitions:
       visibility:
         type: string
     type: object
-  internal_modules_admin_me.PostListResponse:
+  internal_modules_admin_me.MeListResponse:
     properties:
       items:
         items:
-          $ref: '#/definitions/internal_modules_admin_me.PostListItem'
+          $ref: '#/definitions/internal_modules_admin_me.MeListItem'
         type: array
       limit:
         type: integer
@@ -802,7 +802,7 @@ definitions:
     required:
     - content
     type: object
-  internal_modules_me.CreatePostRequest:
+  internal_modules_me.CreateMeRequest:
     properties:
       checkIn:
         $ref: '#/definitions/internal_modules_me.CheckInInput'
@@ -812,7 +812,7 @@ definitions:
         type: string
       images:
         items:
-          $ref: '#/definitions/internal_modules_me.PostImageInput'
+          $ref: '#/definitions/internal_modules_me.MeImageInput'
         maxItems: 5
         type: array
       sticker:
@@ -839,16 +839,16 @@ definitions:
       total:
         type: integer
     type: object
-  internal_modules_me.PostFeedResponse:
+  internal_modules_me.MeFeedResponse:
     properties:
       items:
         items:
-          $ref: '#/definitions/internal_modules_me.PostResponse'
+          $ref: '#/definitions/internal_modules_me.MeResponse'
         type: array
       nextCursor:
         type: string
     type: object
-  internal_modules_me.PostImageInput:
+  internal_modules_me.MeImageInput:
     properties:
       height:
         minimum: 0
@@ -864,7 +864,7 @@ definitions:
     required:
     - url
     type: object
-  internal_modules_me.PostImageResponse:
+  internal_modules_me.MeImageResponse:
     properties:
       height:
         type: integer
@@ -875,11 +875,11 @@ definitions:
       width:
         type: integer
     type: object
-  internal_modules_me.PostListResponse:
+  internal_modules_me.MeListResponse:
     properties:
       items:
         items:
-          $ref: '#/definitions/internal_modules_me.PostResponse'
+          $ref: '#/definitions/internal_modules_me.MeResponse'
         type: array
       limit:
         type: integer
@@ -888,7 +888,7 @@ definitions:
       total:
         type: integer
     type: object
-  internal_modules_me.PostResponse:
+  internal_modules_me.MeResponse:
     properties:
       author:
         $ref: '#/definitions/internal_modules_me.AuthorResponse'
@@ -906,8 +906,10 @@ definitions:
         type: string
       images:
         items:
-          $ref: '#/definitions/internal_modules_me.PostImageResponse'
+          $ref: '#/definitions/internal_modules_me.MeImageResponse'
         type: array
+      isPinned:
+        type: boolean
       likeCount:
         type: integer
       mentions:
@@ -938,7 +940,7 @@ definitions:
     required:
     - type
     type: object
-  internal_modules_me.UpdatePostRequest:
+  internal_modules_me.UpdateMeRequest:
     properties:
       checkIn:
         $ref: '#/definitions/internal_modules_me.CheckInInput'
@@ -947,7 +949,7 @@ definitions:
         type: string
       images:
         items:
-          $ref: '#/definitions/internal_modules_me.PostImageInput'
+          $ref: '#/definitions/internal_modules_me.MeImageInput'
         maxItems: 5
         type: array
       sticker:
@@ -2776,10 +2778,10 @@ definitions:
       traceId:
         type: string
     type: object
-  ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_me_PostDetail:
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_me_MeDetail:
     properties:
       data:
-        $ref: '#/definitions/internal_modules_admin_me.PostDetail'
+        $ref: '#/definitions/internal_modules_admin_me.MeDetail'
       error:
         type: string
       path:
@@ -2793,10 +2795,10 @@ definitions:
       traceId:
         type: string
     type: object
-  ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_me_PostListResponse:
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_me_MeListResponse:
     properties:
       data:
-        $ref: '#/definitions/internal_modules_admin_me.PostListResponse'
+        $ref: '#/definitions/internal_modules_admin_me.MeListResponse'
       error:
         type: string
       path:
@@ -2929,10 +2931,10 @@ definitions:
       traceId:
         type: string
     type: object
-  ola-chat-server_internal_utils.BaseResponse-internal_modules_me_PostFeedResponse:
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_me_MeFeedResponse:
     properties:
       data:
-        $ref: '#/definitions/internal_modules_me.PostFeedResponse'
+        $ref: '#/definitions/internal_modules_me.MeFeedResponse'
       error:
         type: string
       path:
@@ -2946,10 +2948,10 @@ definitions:
       traceId:
         type: string
     type: object
-  ola-chat-server_internal_utils.BaseResponse-internal_modules_me_PostListResponse:
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_me_MeListResponse:
     properties:
       data:
-        $ref: '#/definitions/internal_modules_me.PostListResponse'
+        $ref: '#/definitions/internal_modules_me.MeListResponse'
       error:
         type: string
       path:
@@ -2963,10 +2965,10 @@ definitions:
       traceId:
         type: string
     type: object
-  ola-chat-server_internal_utils.BaseResponse-internal_modules_me_PostResponse:
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_me_MeResponse:
     properties:
       data:
-        $ref: '#/definitions/internal_modules_me.PostResponse'
+        $ref: '#/definitions/internal_modules_me.MeResponse'
       error:
         type: string
       path:
@@ -3298,7 +3300,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_me_PostListResponse'
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_me_MeListResponse'
       security:
       - BearerAuth: []
       summary: List posts (admin, all visibilities)
@@ -3318,7 +3320,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_me_PostDetail'
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_me_MeDetail'
       security:
       - BearerAuth: []
       summary: Get post detail (admin)
@@ -3401,7 +3403,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_me_PostDetail'
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_me_MeDetail'
       security:
       - BearerAuth: []
       summary: Enable/disable a post (admin)
@@ -4591,7 +4593,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_PostFeedResponse'
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_MeFeedResponse'
       security:
       - BearerAuth: []
       summary: 'Feed: public posts + own posts + friends'' friend-only posts (keyset
@@ -4607,14 +4609,14 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/internal_modules_me.CreatePostRequest'
+          $ref: '#/definitions/internal_modules_me.CreateMeRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_PostResponse'
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_MeResponse'
       security:
       - BearerAuth: []
       summary: Create a post
@@ -4655,7 +4657,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_PostResponse'
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_MeResponse'
       security:
       - BearerAuth: []
       summary: Get post detail
@@ -4675,14 +4677,14 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/internal_modules_me.UpdatePostRequest'
+          $ref: '#/definitions/internal_modules_me.UpdateMeRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_PostResponse'
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_MeResponse'
       security:
       - BearerAuth: []
       summary: Update own post
@@ -4798,6 +4800,46 @@ paths:
       summary: List users who liked a post
       tags:
       - me
+  /me/{id}/pin:
+    delete:
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_MeResponse'
+      security:
+      - BearerAuth: []
+      summary: Unpin own post
+      tags:
+      - me
+    post:
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_MeResponse'
+      security:
+      - BearerAuth: []
+      summary: Pin own post (only one pinned post per user; pinning replaces the previous
+        one)
+      tags:
+      - me
   /me/{id}/react:
     delete:
       parameters:
@@ -4812,7 +4854,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_PostResponse'
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_MeResponse'
       security:
       - BearerAuth: []
       summary: Remove your reaction from a post
@@ -4839,7 +4881,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_PostResponse'
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_MeResponse'
       security:
       - BearerAuth: []
       summary: Like or dislike a post (same reaction again removes it)
@@ -4884,7 +4926,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_PostListResponse'
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_MeListResponse'
       security:
       - BearerAuth: []
       summary: List my own posts (public + private)
@@ -4912,7 +4954,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_PostListResponse'
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_MeListResponse'
       security:
       - BearerAuth: []
       summary: List a user's posts (visibility-aware)

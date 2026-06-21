@@ -34,7 +34,7 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 // @Param        sortDir    query string false "Sort direction (asc, desc)"
 // @Param        limit      query int    false "Page size (default 20, max 100)"
 // @Param        offset     query int    false "Offset"
-// @Success      200  {object}  utils.BaseResponse[PostListResponse]
+// @Success      200  {object}  utils.BaseResponse[MeListResponse]
 // @Router       /admin/me [get]
 func (ctrl *Controller) ListPosts(c *gin.Context) (interface{}, error) {
 	filter := ListFilter{
@@ -92,7 +92,7 @@ func parseVisibilityQuery(v string) string {
 // @Produce      json
 // @Security     BearerAuth
 // @Param        id path string true "Post ID"
-// @Success      200  {object}  utils.BaseResponse[PostDetail]
+// @Success      200  {object}  utils.BaseResponse[MeDetail]
 // @Router       /admin/me/{id} [get]
 func (ctrl *Controller) GetPost(c *gin.Context) (interface{}, error) {
 	id, err := utils.ParseUUIDParam(c, "id", "invalid post id")
@@ -114,7 +114,7 @@ func (ctrl *Controller) GetPost(c *gin.Context) (interface{}, error) {
 // @Security     BearerAuth
 // @Param        id      path string              true "Post ID"
 // @Param        request body UpdateStatusRequest true "Status Request"
-// @Success      200  {object}  utils.BaseResponse[PostDetail]
+// @Success      200  {object}  utils.BaseResponse[MeDetail]
 // @Router       /admin/me/{id}/status [patch]
 func (ctrl *Controller) UpdateStatus(c *gin.Context) (interface{}, error) {
 	id, err := utils.ParseUUIDParam(c, "id", "invalid post id")

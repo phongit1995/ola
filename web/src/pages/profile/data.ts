@@ -34,6 +34,7 @@ function buildPosts(nick: string, color: string): MePost[] {
       liked: false,
       disliked: false,
       mention: false,
+      pinned: false,
     },
     {
       id: `${nick}-post-2`,
@@ -49,6 +50,7 @@ function buildPosts(nick: string, color: string): MePost[] {
       liked: false,
       disliked: false,
       mention: false,
+      pinned: false,
     },
   ];
 }

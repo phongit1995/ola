@@ -56,7 +56,7 @@ var (
 
 const editWindow = time.Hour
 
-func (s *Service) Create(userID uuid.UUID, req *CreatePostRequest) (*PostResponse, error) {
+func (s *Service) Create(userID uuid.UUID, req *CreateMeRequest) (*MeResponse, error) {
 	if len(req.Images) > constants.MaxPostImages {
 		return nil, errMaxImages
 	}
@@ -65,7 +65,7 @@ func (s *Service) Create(userID uuid.UUID, req *CreatePostRequest) (*PostRespons
 		return nil, errEmptyPost
 	}
 
-	post := &models.Post{
+	post := &models.Me{
 		AuthorID:   userID,
 		Content:    content,
 		Images:     toModelImages(req.Images),
@@ -83,11 +83,11 @@ func (s *Service) Create(userID uuid.UUID, req *CreatePostRequest) (*PostRespons
 	if err != nil {
 		return nil, err
 	}
-	resp := toPostResponse(created, nil)
+	resp := toMeResponse(created, nil)
 	return &resp, nil
 }
 
-func (s *Service) Update(userID, postID uuid.UUID, req *UpdatePostRequest) (*PostResponse, error) {
+func (s *Service) Update(userID, postID uuid.UUID, req *UpdateMeRequest) (*MeResponse, error) {
 	post, err := s.ownedPost(userID, postID)
 	if err != nil {
 		return nil, err
@@ -127,7 +127,7 @@ func (s *Service) Update(userID, postID uuid.UUID, req *UpdatePostRequest) (*Pos
 	if err != nil {
 		return nil, err
 	}
-	resp := toPostResponse(updated, s.myReaction(userID, postID))
+	resp := toMeResponse(updated, s.myReaction(userID, postID))
 	return &resp, nil
 }
 
@@ -138,16 +138,31 @@ func (s *Service) Delete(userID, postID uuid.UUID) error {
 	return s.repo.Disable(postID)
 }
 
-func (s *Service) GetByID(viewerID, postID uuid.UUID) (*PostResponse, error) {
+func (s *Service) SetPinned(userID, postID uuid.UUID, pinned bool) (*MeResponse, error) {
+	if _, err := s.ownedPost(userID, postID); err != nil {
+		return nil, err
+	}
+	if err := s.repo.SetPinned(userID, postID, pinned); err != nil {
+		return nil, err
+	}
+	updated, err := s.repo.GetByID(postID)
+	if err != nil {
+		return nil, err
+	}
+	resp := toMeResponse(updated, s.myReaction(userID, postID))
+	return &resp, nil
+}
+
+func (s *Service) GetByID(viewerID, postID uuid.UUID) (*MeResponse, error) {
 	post, err := s.viewablePost(viewerID, postID)
 	if err != nil {
 		return nil, err
 	}
-	resp := toPostResponse(post, s.myReaction(viewerID, postID))
+	resp := toMeResponse(post, s.myReaction(viewerID, postID))
 	return &resp, nil
 }
 
-func (s *Service) Feed(viewerID uuid.UUID, filter, cursor string, limit int) (*PostFeedResponse, error) {
+func (s *Service) Feed(viewerID uuid.UUID, filter, cursor string, limit int) (*MeFeedResponse, error) {
 	cursorTime, cursorID, err := decodeFeedCursor(cursor)
 	if err != nil {
 		return nil, err
@@ -165,11 +180,11 @@ func (s *Service) Feed(viewerID uuid.UUID, filter, cursor string, limit int) (*P
 		last := posts[len(posts)-1]
 		nextCursor = encodeFeedCursor(last.CreatedAt, last.ID)
 	}
-	return &PostFeedResponse{Items: items, NextCursor: nextCursor}, nil
+	return &MeFeedResponse{Items: items, NextCursor: nextCursor}, nil
 }
 
-func (s *Service) ListMine(userID uuid.UUID, limit, offset int) (*PostListResponse, error) {
-	all := []models.PostVisibility{models.PostVisibilityPublic, models.PostVisibilityFriend, models.PostVisibilityPrivate}
+func (s *Service) ListMine(userID uuid.UUID, limit, offset int) (*MeListResponse, error) {
+	all := []models.MeVisibility{models.MeVisibilityPublic, models.MeVisibilityFriend, models.MeVisibilityPrivate}
 	posts, total, err := s.repo.ListByAuthor(userID, all, limit, offset)
 	if err != nil {
 		return nil, err
@@ -177,7 +192,7 @@ func (s *Service) ListMine(userID uuid.UUID, limit, offset int) (*PostListRespon
 	return s.buildList(userID, posts, total, limit, offset)
 }
 
-func (s *Service) ListByUser(viewerID, authorID uuid.UUID, limit, offset int) (*PostListResponse, error) {
+func (s *Service) ListByUser(viewerID, authorID uuid.UUID, limit, offset int) (*MeListResponse, error) {
 	if viewerID != authorID {
 		blocked, err := s.relRepo.IsBlocked(authorID, viewerID)
 		if err != nil {
@@ -194,14 +209,14 @@ func (s *Service) ListByUser(viewerID, authorID uuid.UUID, limit, offset int) (*
 	return s.buildList(viewerID, posts, total, limit, offset)
 }
 
-func (s *Service) visibleScopes(viewerID, authorID uuid.UUID) []models.PostVisibility {
+func (s *Service) visibleScopes(viewerID, authorID uuid.UUID) []models.MeVisibility {
 	if viewerID == authorID {
-		return []models.PostVisibility{models.PostVisibilityPublic, models.PostVisibilityFriend, models.PostVisibilityPrivate}
+		return []models.MeVisibility{models.MeVisibilityPublic, models.MeVisibilityFriend, models.MeVisibilityPrivate}
 	}
 	if s.isFriend(viewerID, authorID) {
-		return []models.PostVisibility{models.PostVisibilityPublic, models.PostVisibilityFriend}
+		return []models.MeVisibility{models.MeVisibilityPublic, models.MeVisibilityFriend}
 	}
-	return []models.PostVisibility{models.PostVisibilityPublic}
+	return []models.MeVisibility{models.MeVisibilityPublic}
 }
 
 func (s *Service) Likers(viewerID, postID uuid.UUID, limit, offset int) (*LikerListResponse, error) {
@@ -226,13 +241,13 @@ func (s *Service) Likers(viewerID, postID uuid.UUID, limit, offset int) (*LikerL
 	return &LikerListResponse{Items: items, Total: total, Limit: limit, Offset: offset}, nil
 }
 
-func (s *Service) React(userID, postID uuid.UUID, reactionType string) (*PostResponse, error) {
+func (s *Service) React(userID, postID uuid.UUID, reactionType string) (*MeResponse, error) {
 	if _, err := s.viewablePost(userID, postID); err != nil {
 		return nil, err
 	}
 
-	t := models.PostReactionType(reactionType)
-	if t != models.PostReactionLike && t != models.PostReactionDislike {
+	t := models.MeReactionType(reactionType)
+	if t != models.MeReactionLike && t != models.MeReactionDislike {
 		return nil, errors.New("invalid reaction type")
 	}
 
@@ -240,11 +255,11 @@ func (s *Service) React(userID, postID uuid.UUID, reactionType string) (*PostRes
 	if err != nil {
 		return nil, err
 	}
-	resp := toPostResponse(updated, current)
+	resp := toMeResponse(updated, current)
 	return &resp, nil
 }
 
-func (s *Service) RemoveReaction(userID, postID uuid.UUID) (*PostResponse, error) {
+func (s *Service) RemoveReaction(userID, postID uuid.UUID) (*MeResponse, error) {
 	if _, err := s.viewablePost(userID, postID); err != nil {
 		return nil, err
 	}
@@ -253,7 +268,7 @@ func (s *Service) RemoveReaction(userID, postID uuid.UUID) (*PostResponse, error
 	if err != nil {
 		return nil, err
 	}
-	resp := toPostResponse(updated, nil)
+	resp := toMeResponse(updated, nil)
 	return &resp, nil
 }
 
@@ -262,7 +277,7 @@ func (s *Service) AddComment(viewerID, postID uuid.UUID, req *CreateCommentReque
 		return nil, err
 	}
 
-	comment := &models.PostComment{
+	comment := &models.MeComment{
 		PostID:   postID,
 		AuthorID: viewerID,
 		Content:  strings.TrimSpace(req.Content),
@@ -375,15 +390,15 @@ func (s *Service) uploadImage(ctx context.Context, folder string, fileHeader *mu
 	return &UploadedImage{URL: upload.URL, Width: cfg.Width, Height: cfg.Height, MimeType: mimeType}, nil
 }
 
-func (s *Service) buildList(viewerID uuid.UUID, posts []*models.Post, total int64, limit, offset int) (*PostListResponse, error) {
+func (s *Service) buildList(viewerID uuid.UUID, posts []*models.Me, total int64, limit, offset int) (*MeListResponse, error) {
 	items, err := s.enrich(viewerID, posts)
 	if err != nil {
 		return nil, err
 	}
-	return &PostListResponse{Items: items, Total: total, Limit: limit, Offset: offset}, nil
+	return &MeListResponse{Items: items, Total: total, Limit: limit, Offset: offset}, nil
 }
 
-func (s *Service) enrich(viewerID uuid.UUID, posts []*models.Post) ([]PostResponse, error) {
+func (s *Service) enrich(viewerID uuid.UUID, posts []*models.Me) ([]MeResponse, error) {
 	ids := make([]uuid.UUID, 0, len(posts))
 	for _, p := range posts {
 		ids = append(ids, p.ID)
@@ -399,14 +414,14 @@ func (s *Service) enrich(viewerID uuid.UUID, posts []*models.Post) ([]PostRespon
 		return nil, err
 	}
 
-	items := make([]PostResponse, 0, len(posts))
+	items := make([]MeResponse, 0, len(posts))
 	for _, p := range posts {
-		var mr *models.PostReactionType
+		var mr *models.MeReactionType
 		if t, ok := reactions[p.ID]; ok {
 			rt := t
 			mr = &rt
 		}
-		resp := toPostResponse(p, mr)
+		resp := toMeResponse(p, mr)
 		if likers, ok := topLikers[p.ID]; ok {
 			tl := make([]AuthorResponse, 0, len(likers))
 			for _, u := range likers {
@@ -419,7 +434,7 @@ func (s *Service) enrich(viewerID uuid.UUID, posts []*models.Post) ([]PostRespon
 	return items, nil
 }
 
-func (s *Service) getPost(id uuid.UUID) (*models.Post, error) {
+func (s *Service) getPost(id uuid.UUID) (*models.Me, error) {
 	post, err := s.repo.GetByID(id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -430,7 +445,7 @@ func (s *Service) getPost(id uuid.UUID) (*models.Post, error) {
 	return post, nil
 }
 
-func (s *Service) viewablePost(viewerID, postID uuid.UUID) (*models.Post, error) {
+func (s *Service) viewablePost(viewerID, postID uuid.UUID) (*models.Me, error) {
 	post, err := s.getPost(postID)
 	if err != nil {
 		return nil, err
@@ -441,7 +456,7 @@ func (s *Service) viewablePost(viewerID, postID uuid.UUID) (*models.Post, error)
 	return post, nil
 }
 
-func (s *Service) ownedPost(userID, postID uuid.UUID) (*models.Post, error) {
+func (s *Service) ownedPost(userID, postID uuid.UUID) (*models.Me, error) {
 	post, err := s.getPost(postID)
 	if err != nil {
 		return nil, err
@@ -452,30 +467,30 @@ func (s *Service) ownedPost(userID, postID uuid.UUID) (*models.Post, error) {
 	return post, nil
 }
 
-func (s *Service) canView(viewerID uuid.UUID, post *models.Post) bool {
+func (s *Service) canView(viewerID uuid.UUID, post *models.Me) bool {
 	if !post.Enabled {
 		return false
 	}
-	if post.Visibility == models.PostVisibilityPublic {
+	if post.Visibility == models.MeVisibilityPublic {
 		return true
 	}
 	if post.AuthorID == viewerID {
 		return true
 	}
-	if post.Visibility == models.PostVisibilityFriend {
+	if post.Visibility == models.MeVisibilityFriend {
 		return s.isFriend(viewerID, post.AuthorID)
 	}
 	return false
 }
 
-func parseVisibility(value string) models.PostVisibility {
+func parseVisibility(value string) models.MeVisibility {
 	switch value {
-	case string(models.PostVisibilityFriend):
-		return models.PostVisibilityFriend
-	case string(models.PostVisibilityPrivate):
-		return models.PostVisibilityPrivate
+	case string(models.MeVisibilityFriend):
+		return models.MeVisibilityFriend
+	case string(models.MeVisibilityPrivate):
+		return models.MeVisibilityPrivate
 	default:
-		return models.PostVisibilityPublic
+		return models.MeVisibilityPublic
 	}
 }
 
@@ -515,7 +530,7 @@ func decodeFeedCursor(cursor string) (*time.Time, *uuid.UUID, error) {
 	return &t, &id, nil
 }
 
-func (s *Service) myReaction(userID, postID uuid.UUID) *models.PostReactionType {
+func (s *Service) myReaction(userID, postID uuid.UUID) *models.MeReactionType {
 	reaction, err := s.repo.GetReaction(postID, userID)
 	if err != nil {
 		return nil
@@ -591,10 +606,10 @@ func toCheckInResponse(checkIn *models.CheckIn) *CheckInResponse {
 	}
 }
 
-func toModelImages(inputs []PostImageInput) models.PostImages {
-	images := make(models.PostImages, 0, len(inputs))
+func toModelImages(inputs []MeImageInput) models.MeImages {
+	images := make(models.MeImages, 0, len(inputs))
 	for _, img := range inputs {
-		images = append(images, models.PostImage{
+		images = append(images, models.MeImage{
 			URL:      img.URL,
 			Width:    img.Width,
 			Height:   img.Height,
@@ -604,10 +619,10 @@ func toModelImages(inputs []PostImageInput) models.PostImages {
 	return images
 }
 
-func toPostResponse(post *models.Post, myReaction *models.PostReactionType) PostResponse {
-	images := make([]PostImageResponse, 0, len(post.Images))
+func toMeResponse(post *models.Me, myReaction *models.MeReactionType) MeResponse {
+	images := make([]MeImageResponse, 0, len(post.Images))
 	for _, img := range post.Images {
-		images = append(images, PostImageResponse{
+		images = append(images, MeImageResponse{
 			URL:      img.URL,
 			Width:    img.Width,
 			Height:   img.Height,
@@ -621,7 +636,7 @@ func toPostResponse(post *models.Post, myReaction *models.PostReactionType) Post
 		reaction = &v
 	}
 
-	resp := PostResponse{
+	resp := MeResponse{
 		ID:           post.ID.String(),
 		Content:      post.Content,
 		Images:       images,
@@ -633,6 +648,7 @@ func toPostResponse(post *models.Post, myReaction *models.PostReactionType) Post
 		DislikeCount: post.DislikeCount,
 		CommentCount: post.CommentCount,
 		MyReaction:   reaction,
+		IsPinned:     post.PinnedAt != nil,
 		Author:       toAuthorResponse(post.Author),
 		CreatedAt:    post.CreatedAt.UTC().Format(time.RFC3339),
 		UpdatedAt:    post.UpdatedAt.UTC().Format(time.RFC3339),
@@ -652,7 +668,7 @@ func toAuthorResponse(u *models.User) *AuthorResponse {
 	}
 }
 
-func toCommentResponse(comment *models.PostComment) CommentResponse {
+func toCommentResponse(comment *models.MeComment) CommentResponse {
 	return CommentResponse{
 		ID:        comment.ID.String(),
 		PostID:    comment.PostID.String(),

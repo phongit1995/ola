@@ -1,6 +1,6 @@
 package me
 
-type PostImageInput struct {
+type MeImageInput struct {
 	URL      string `json:"url" binding:"required,url" example:"http://localhost:9000/chat-uploads/posts/abc.jpg"`
 	Width    int    `json:"width" binding:"omitempty,min=0"`
 	Height   int    `json:"height" binding:"omitempty,min=0"`
@@ -16,20 +16,20 @@ type CheckInInput struct {
 	ActionIcon string  `json:"actionIcon" binding:"omitempty,max=16" example:"🍜"`
 }
 
-type CreatePostRequest struct {
-	Content    string           `json:"content" binding:"omitempty,max=5000" example:"Hôm nay trời đẹp quá!"`
-	Images     []PostImageInput `json:"images" binding:"omitempty,max=5,dive"`
-	CheckIn    *CheckInInput    `json:"checkIn" binding:"omitempty"`
-	Sticker    string           `json:"sticker" binding:"omitempty,max=500"`
-	Visibility string           `json:"visibility" binding:"omitempty,oneof=public friend private" example:"public"`
+type CreateMeRequest struct {
+	Content    string         `json:"content" binding:"omitempty,max=5000" example:"Hôm nay trời đẹp quá!"`
+	Images     []MeImageInput `json:"images" binding:"omitempty,max=5,dive"`
+	CheckIn    *CheckInInput  `json:"checkIn" binding:"omitempty"`
+	Sticker    string         `json:"sticker" binding:"omitempty,max=500"`
+	Visibility string         `json:"visibility" binding:"omitempty,oneof=public friend private" example:"public"`
 }
 
-type UpdatePostRequest struct {
-	Content    *string           `json:"content" binding:"omitempty,max=5000"`
-	Images     *[]PostImageInput `json:"images" binding:"omitempty,max=5,dive"`
-	CheckIn    *CheckInInput     `json:"checkIn" binding:"omitempty"`
-	Sticker    *string           `json:"sticker" binding:"omitempty,max=500"`
-	Visibility *string           `json:"visibility" binding:"omitempty,oneof=public friend private"`
+type UpdateMeRequest struct {
+	Content    *string         `json:"content" binding:"omitempty,max=5000"`
+	Images     *[]MeImageInput `json:"images" binding:"omitempty,max=5,dive"`
+	CheckIn    *CheckInInput   `json:"checkIn" binding:"omitempty"`
+	Sticker    *string         `json:"sticker" binding:"omitempty,max=500"`
+	Visibility *string         `json:"visibility" binding:"omitempty,oneof=public friend private"`
 }
 
 type CheckInResponse struct {
@@ -45,7 +45,7 @@ type ReactRequest struct {
 	Type string `json:"type" binding:"required,oneof=like dislike" example:"like"`
 }
 
-type PostImageResponse struct {
+type MeImageResponse struct {
 	URL      string `json:"url"`
 	Width    int    `json:"width,omitempty"`
 	Height   int    `json:"height,omitempty"`
@@ -61,34 +61,35 @@ type AuthorResponse struct {
 	IsSelf   bool   `json:"isSelf,omitempty"`
 }
 
-type PostResponse struct {
-	ID           string              `json:"id"`
-	Content      string              `json:"content,omitempty"`
-	Images       []PostImageResponse `json:"images"`
-	Mentions     []string            `json:"mentions,omitempty"`
-	CheckIn      *CheckInResponse    `json:"checkIn,omitempty"`
-	Sticker      string              `json:"sticker,omitempty"`
-	Visibility   string              `json:"visibility"`
-	LikeCount    int                 `json:"likeCount"`
-	DislikeCount int                 `json:"dislikeCount"`
-	CommentCount int                 `json:"commentCount"`
-	MyReaction   *string             `json:"myReaction"`
-	Author       *AuthorResponse     `json:"author,omitempty"`
-	TopLikers    []AuthorResponse    `json:"topLikers,omitempty"`
-	CreatedAt    string              `json:"createdAt"`
-	UpdatedAt    string              `json:"updatedAt"`
+type MeResponse struct {
+	ID           string            `json:"id"`
+	Content      string            `json:"content,omitempty"`
+	Images       []MeImageResponse `json:"images"`
+	Mentions     []string          `json:"mentions,omitempty"`
+	CheckIn      *CheckInResponse  `json:"checkIn,omitempty"`
+	Sticker      string            `json:"sticker,omitempty"`
+	Visibility   string            `json:"visibility"`
+	LikeCount    int               `json:"likeCount"`
+	DislikeCount int               `json:"dislikeCount"`
+	CommentCount int               `json:"commentCount"`
+	MyReaction   *string           `json:"myReaction"`
+	IsPinned     bool              `json:"isPinned"`
+	Author       *AuthorResponse   `json:"author,omitempty"`
+	TopLikers    []AuthorResponse  `json:"topLikers,omitempty"`
+	CreatedAt    string            `json:"createdAt"`
+	UpdatedAt    string            `json:"updatedAt"`
 }
 
-type PostListResponse struct {
-	Items  []PostResponse `json:"items"`
-	Total  int64          `json:"total"`
-	Limit  int            `json:"limit"`
-	Offset int            `json:"offset"`
+type MeListResponse struct {
+	Items  []MeResponse `json:"items"`
+	Total  int64        `json:"total"`
+	Limit  int          `json:"limit"`
+	Offset int          `json:"offset"`
 }
 
-type PostFeedResponse struct {
-	Items      []PostResponse `json:"items"`
-	NextCursor string         `json:"nextCursor,omitempty"`
+type MeFeedResponse struct {
+	Items      []MeResponse `json:"items"`
+	NextCursor string       `json:"nextCursor,omitempty"`
 }
 
 type LikerListResponse struct {

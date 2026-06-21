@@ -19,6 +19,7 @@ export interface MePost {
   liked: boolean;
   disliked: boolean;
   mention: boolean;
+  pinned: boolean;
 }
 
 export type MeTab = 'feed' | 'tagged' | 'media' | 'mentions';

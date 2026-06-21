@@ -4,42 +4,43 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
+	"time"
 
 	"github.com/google/uuid"
 )
 
-type PostVisibility string
+type MeVisibility string
 
 const (
-	PostVisibilityPublic  PostVisibility = "public"
-	PostVisibilityFriend  PostVisibility = "friend"
-	PostVisibilityPrivate PostVisibility = "private"
+	MeVisibilityPublic  MeVisibility = "public"
+	MeVisibilityFriend  MeVisibility = "friend"
+	MeVisibilityPrivate MeVisibility = "private"
 )
 
-type PostImage struct {
+type MeImage struct {
 	URL      string `json:"url"`
 	Width    int    `json:"width"`
 	Height   int    `json:"height"`
 	MimeType string `json:"mimeType"`
 }
 
-type PostImages []PostImage
+type MeImages []MeImage
 
-func (p PostImages) Value() (driver.Value, error) {
+func (p MeImages) Value() (driver.Value, error) {
 	if p == nil {
 		return nil, nil
 	}
 	return json.Marshal(p)
 }
 
-func (p *PostImages) Scan(value interface{}) error {
+func (p *MeImages) Scan(value interface{}) error {
 	if value == nil {
 		*p = nil
 		return nil
 	}
 	bytes, ok := value.([]byte)
 	if !ok {
-		return errors.New("failed to unmarshal PostImages value")
+		return errors.New("failed to unmarshal MeImages value")
 	}
 	return json.Unmarshal(bytes, p)
 }
@@ -92,22 +93,23 @@ func (m *MentionIDs) Scan(value interface{}) error {
 	return json.Unmarshal(bytes, m)
 }
 
-type Post struct {
+type Me struct {
 	BaseModel
-	AuthorID     uuid.UUID      `gorm:"type:uuid;not null;index"`
-	Content      string         `gorm:"type:text"`
-	Images       PostImages     `gorm:"type:jsonb"`
-	Mentions     MentionIDs     `gorm:"type:jsonb"`
-	CheckIn      *CheckIn       `gorm:"type:jsonb"`
-	Sticker      string         `gorm:"type:varchar(500)"`
-	Visibility   PostVisibility `gorm:"type:varchar(20);not null;default:'public'"`
-	Enabled      bool           `gorm:"not null;default:true"`
-	LikeCount    int            `gorm:"not null;default:0"`
-	DislikeCount int            `gorm:"not null;default:0"`
-	CommentCount int            `gorm:"not null;default:0"`
-	Author       *User          `gorm:"foreignKey:AuthorID;constraint:OnDelete:CASCADE"`
+	AuthorID     uuid.UUID    `gorm:"type:uuid;not null;index"`
+	Content      string       `gorm:"type:text"`
+	Images       MeImages     `gorm:"type:jsonb"`
+	Mentions     MentionIDs   `gorm:"type:jsonb"`
+	CheckIn      *CheckIn     `gorm:"type:jsonb"`
+	Sticker      string       `gorm:"type:varchar(500)"`
+	Visibility   MeVisibility `gorm:"type:varchar(20);not null;default:'public'"`
+	Enabled      bool         `gorm:"not null;default:true"`
+	LikeCount    int          `gorm:"not null;default:0"`
+	DislikeCount int          `gorm:"not null;default:0"`
+	CommentCount int          `gorm:"not null;default:0"`
+	PinnedAt     *time.Time   `gorm:"index"`
+	Author       *User        `gorm:"foreignKey:AuthorID;constraint:OnDelete:CASCADE"`
 }
 
-func (Post) TableName() string {
+func (Me) TableName() string {
 	return "me"
 }
