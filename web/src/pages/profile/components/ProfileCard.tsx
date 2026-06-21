@@ -7,7 +7,7 @@ import femaleIcon from '@/assets/icons/profile/ic_indicate_female.png';
 import marriageIcon from '@/assets/icons/profile/ic_profile_marriage.png';
 import birthdayIcon from '@/assets/icons/profile/ic_profile_birthday.png';
 import noteIcon from '@/assets/icons/profile/ic_profile_note.png';
-import { Avatar } from '@components';
+import { Avatar, UserName, VipIcon } from '@components';
 import type { ProfileActions, UserProfile } from '../types';
 import type { RelationshipInfo } from '@app-types';
 import { RelationButtons } from './RelationButtons';
@@ -59,7 +59,12 @@ export function ProfileCard({ profile, relationship, actions, onPostMe, onUpdate
       </div>
 
       <div className="flex items-center justify-center gap-1 p-2">
-        <span className="text-lg text-black/54">{profile.nick}</span>
+        <UserName
+          name={`@${profile.username}`}
+          fullName={profile.fullName}
+          className="min-w-0 truncate text-lg text-black/87"
+          fullNameClassName="text-black/54"
+        />
         {profile.verified && <img src={checkedIcon} alt="" className="h-5 w-5 object-contain" />}
       </div>
 
@@ -97,11 +102,9 @@ export function ProfileCard({ profile, relationship, actions, onPostMe, onUpdate
 
       <p className="mt-3 line-clamp-5 px-4 text-center text-xs text-black/54">{profile.bio}</p>
 
-      {profile.vip && (
+      {profile.vipTypeId != null && (
         <div className="mt-3 ml-4 flex items-center gap-1">
-          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-ola-accent text-xs font-bold text-white">
-            ★
-          </span>
+          <VipIcon typeId={profile.vipTypeId} className="h-6 w-6" />
           <span className="text-xs font-bold text-ola-accent">{t('profile.vipAccount')}</span>
         </div>
       )}

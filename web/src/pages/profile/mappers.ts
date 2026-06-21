@@ -1,4 +1,4 @@
-import { colorForName } from '@lib';
+import { activeVipTypeId, colorForName } from '@lib';
 import type { FollowUser, Post, PublicProfile } from '@app-types';
 import { toMePost } from '../me/mappers';
 import type { MePost } from '../me/types';
@@ -23,12 +23,14 @@ export function mapPublicProfile(data: PublicProfile, deps: ProfileMapDeps): Use
   const nick = data.fullName && data.fullName !== '' ? data.fullName : data.username;
   return {
     nick,
+    username: data.username,
+    fullName: data.fullName ?? '',
     color: deps.seedColor !== '' ? deps.seedColor : colorForName(data.username),
     coverColor: DEFAULT_COVER_COLOR,
     avatar: data.avatar,
     coverPhoto: data.coverPhoto,
     verified: data.verified,
-    vip: Boolean(data.vipUsed),
+    vipTypeId: activeVipTypeId(data.vipUsed, data.vipEndTime),
     fans: data.followerCount,
     kisses: data.kisses,
     bio: data.bio ?? '',

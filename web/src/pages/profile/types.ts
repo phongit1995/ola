@@ -24,12 +24,14 @@ export interface ProfileActions {
 
 export interface UserProfile {
   nick: string;
+  username: string;
+  fullName: string;
   color: string;
   coverColor: string;
   avatar?: string;
   coverPhoto?: string;
   verified: boolean;
-  vip: boolean;
+  vipTypeId: number | null;
   fans: number;
   kisses: number;
   bio: string;

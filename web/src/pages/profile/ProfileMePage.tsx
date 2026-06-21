@@ -3,13 +3,13 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@constants';
 import { MeService } from '@services';
-import { colorForName, createDateFormatter, createTimeFormatter, toast } from '@lib';
+import { activeVipTypeId, colorForName, createDateFormatter, createTimeFormatter, toast } from '@lib';
 import type { Post, PostReaction } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
 import { useMeLocalStore } from '@/store/meLocalStore';
 import genderIcon from '@/assets/icons/profile/ic_indicate_dynamic_gender.png';
 import birthdayIcon from '@/assets/icons/profile/ic_profile_birthday.png';
-import { Avatar, ScreenHeader, FullScreenOverlay } from '@components';
+import { Avatar, ScreenHeader, FullScreenOverlay, UserName, VipIcon } from '@components';
 import { MePostCard } from '../me/components/MePostCard';
 import { MePostInteractions, type MePostSource } from '../me/MePostInteractions';
 import { composedToImages, composedToPayload } from '../me/composer';
@@ -113,7 +113,7 @@ export function ProfileMePage() {
 
   const nick = user.fullName || user.username;
   const color = colorForName(nick);
-  const isVip = Boolean(user.vipUsed);
+  const vipTypeId = activeVipTypeId(user.vipUsed, user.vipEndTime);
   const mePosts = posts
     .map((post) => toMePost(post, formatTime))
     .filter((post) => !hiddenPostIds.includes(post.id));
@@ -143,7 +143,12 @@ export function ProfileMePage() {
           </div>
 
           <div className="flex items-center justify-center p-2">
-            <span className="text-lg text-black/54">{nick}</span>
+            <UserName
+              name={`@${user.username}`}
+              fullName={user.fullName}
+              className="min-w-0 truncate text-lg text-black/87"
+              fullNameClassName="text-black/54"
+            />
           </div>
 
           <div className="mx-4 h-px bg-black/12" />
@@ -163,11 +168,9 @@ export function ProfileMePage() {
             <p className="mt-3 px-4 text-center text-xs text-black/54">{user.bio}</p>
           ) : null}
 
-          {isVip ? (
+          {vipTypeId != null ? (
             <div className="mt-3 ml-4 flex items-center gap-1">
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-ola-accent text-xs font-bold text-white">
-                ★
-              </span>
+              <VipIcon typeId={vipTypeId} className="h-6 w-6" />
               <span className="text-xs font-bold text-ola-accent">{t('profile.vipAccount')}</span>
             </div>
           ) : null}

@@ -58,10 +58,12 @@ function buildPosts(nick: string, color: string): MePost[] {
 export function buildMockProfile(nick: string, color: string, isSelf = false): UserProfile {
   return {
     nick,
+    username: nick,
+    fullName: '',
     color,
     coverColor: '#33691e',
     verified: hashIndex(nick, 2) === 0,
-    vip: hashIndex(nick, 3) === 0,
+    vipTypeId: hashIndex(nick, 3) === 0 ? 1 : null,
     fans: 40 + hashIndex(nick, 260),
     kisses: hashIndex(nick, 30),
     bio: 'Sống hết mình với đam mê 🌸 Yêu âm nhạc và những chuyến đi.',
