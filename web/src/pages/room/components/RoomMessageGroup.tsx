@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import mentionIcon from '@/assets/icons/room/ic_notification_mention.png';
+import mentionIcon from '@/assets/icons/room/ic_tag_people.png';
 import { VipAvatar } from '@components';
 import { colorForName, kulImageForText, renderRichText } from '@lib';
 import type { BubblePosition, MessageGroup } from '../messageGroups';
@@ -84,7 +84,7 @@ function RoomMessageGroupComponent({ group, onOpenProfile, onQuickMention }: Roo
                   aria-label={t('room.mentionUser', { name: group.senderName })}
                   title={t('room.mentionUser', { name: group.senderName })}
                   onClick={() => onQuickMention?.(group.senderName)}
-                  className="absolute -bottom-2 left-full -ml-2 flex h-7 w-7 items-center justify-center rounded-full hover:bg-black/5 active:bg-black/10"
+                  className="absolute bottom-0 left-full ml-1 flex h-7 w-7 items-center justify-center rounded-full hover:bg-black/5 active:bg-black/10"
                 >
                   <img src={mentionIcon} alt="" className="h-6 w-6" />
                 </button>
