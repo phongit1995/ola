@@ -44,6 +44,7 @@ export function useMockUserProfile(nick: string, color: string): ProfileControll
       adjustCommentCount: () => {},
       editPost: () => Promise.resolve(false),
       deletePost: () => {},
+      togglePin: () => {},
     }),
     []
   );

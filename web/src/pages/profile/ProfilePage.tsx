@@ -57,6 +57,7 @@ export function ProfilePage({
     blockAuthor,
     editPost: postActions.editPost,
     deletePost: postActions.deletePost,
+    togglePin: postActions.togglePin,
   };
 
   return (

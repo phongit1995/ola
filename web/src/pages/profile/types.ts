@@ -7,6 +7,7 @@ export interface ProfilePostActions {
   adjustCommentCount: (id: string, delta: number) => void;
   editPost: (id: string, draft: ComposedPost) => Promise<boolean>;
   deletePost: (id: string) => void;
+  togglePin: (id: string, pinned: boolean) => void;
 }
 
 export interface ProfileFriend {

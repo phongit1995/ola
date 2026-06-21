@@ -131,11 +131,26 @@ export function useUserProfile(username: string, seedColor: string): ProfileCont
     [t]
   );
 
+  const togglePin = useCallback(
+    async (id: string, pinned: boolean) => {
+      try {
+        if (pinned) await MeService.pin(id);
+        else await MeService.unpin(id);
+        await loadSecondary(userId);
+        toast.success(t(pinned ? 'me.pinSuccess' : 'me.unpinSuccess'));
+      } catch {
+        toast.error(t('me.pinError'));
+      }
+    },
+    [loadSecondary, userId, t]
+  );
+
   const postActions: ProfilePostActions = {
     toggleReaction,
     adjustCommentCount,
     editPost,
     deletePost,
+    togglePin,
   };
 
   useEffect(() => {
