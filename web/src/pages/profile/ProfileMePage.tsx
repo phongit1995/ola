@@ -11,6 +11,7 @@ import genderIcon from '@/assets/icons/profile/ic_indicate_dynamic_gender.png';
 import birthdayIcon from '@/assets/icons/profile/ic_profile_birthday.png';
 import cameraIcon from '@/assets/icons/profile/ic_action_camera.png';
 import { Avatar, ScreenHeader, FullScreenOverlay, UserName, VipIcon } from '@components';
+import { CoverPreviewOverlay } from './components/CoverPreviewOverlay';
 import { MePostCard } from '../me/components/MePostCard';
 import { MePostInteractions, type MePostSource } from '../me/MePostInteractions';
 import { composedToImages, composedToPayload } from '../me/composer';
@@ -27,6 +28,7 @@ export function ProfileMePage() {
   const blockAuthor = useMeLocalStore((s) => s.blockAuthor);
   const [posts, setPosts] = useState<Post[]>([]);
   const [uploadingCover, setUploadingCover] = useState(false);
+  const [coverPreview, setCoverPreview] = useState<{ url: string; file: File } | null>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
   const formatTime = useMemo(() => createTimeFormatter(i18n.language), [i18n.language]);
@@ -121,8 +123,10 @@ export function ProfileMePage() {
         await UserService.updateMe({ coverPhoto: url });
         await refreshUser();
         toast.success(t('profileEdit.coverUpdated'));
+        return true;
       } catch {
         toast.error(t('profileEdit.coverError'));
+        return false;
       } finally {
         setUploadingCover(false);
       }
@@ -130,10 +134,27 @@ export function ProfileMePage() {
     [refreshUser, t]
   );
 
+  const clearCoverPreview = useCallback(() => {
+    setCoverPreview((prev) => {
+      if (prev) URL.revokeObjectURL(prev.url);
+      return null;
+    });
+  }, []);
+
+  useEffect(() => clearCoverPreview, [clearCoverPreview]);
+
   function pickCover(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     event.target.value = '';
-    if (file) uploadCover(file);
+    if (!file) return;
+    clearCoverPreview();
+    setCoverPreview({ url: URL.createObjectURL(file), file });
+  }
+
+  async function confirmCover() {
+    if (!coverPreview) return;
+    const ok = await uploadCover(coverPreview.file);
+    if (ok) clearCoverPreview();
   }
 
   if (!user) return null;
@@ -192,6 +213,15 @@ export function ProfileMePage() {
               <Avatar name={nick} color={color} size={96} src={user.avatar} rounded={false} />
             </div>
           </div>
+
+          {coverPreview && (
+            <CoverPreviewOverlay
+              url={coverPreview.url}
+              uploading={uploadingCover}
+              onCancel={clearCoverPreview}
+              onConfirm={confirmCover}
+            />
+          )}
 
           <div className="flex items-center justify-center p-2">
             <UserName

@@ -467,6 +467,8 @@
     "avatarError": "Cập nhật ảnh đại diện thất bại",
     "coverUpdated": "Đã cập nhật ảnh bìa",
     "coverError": "Cập nhật ảnh bìa thất bại",
+    "coverConfirm": "Dùng ảnh này",
+    "coverPreviewTitle": "Xem trước ảnh bìa",
     "saved": "Đã lưu thay đổi"
   },
   "statusDialog": {

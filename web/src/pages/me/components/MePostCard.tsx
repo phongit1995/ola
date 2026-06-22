@@ -33,6 +33,14 @@ function formatLikeCount(count: number): string {
   return count > 9 ? '9+' : String(count);
 }
 
+function PinIcon({ className, title }: { className?: string; title?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="currentColor" role="img" aria-label={title}>
+      <path d="M16 9V4h1c.55 0 1-.45 1-1s-.45-1-1-1H7c-.55 0-1 .45-1 1s.45 1 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z" />
+    </svg>
+  );
+}
+
 interface MePostCardProps {
   post: MePost;
   onToggleLike: (id: string) => void;
@@ -102,7 +110,12 @@ function MePostCardComponent({
         >
           <Avatar name={post.author} color={post.color} />
           <span className="min-w-0 flex-1">
-            <span className="block truncate text-base text-black/87">{post.author}</span>
+            <span className="flex items-center gap-1">
+              <span className="min-w-0 truncate text-base text-black/87">{post.author}</span>
+              {post.pinned && (
+                <PinIcon className="h-3.5 w-3.5 shrink-0 text-ola-primary" title={t('me.pinned')} />
+              )}
+            </span>
             <span className="mt-0.5 block text-xs text-black/54">{post.time}</span>
           </span>
         </button>

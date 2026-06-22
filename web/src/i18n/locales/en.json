@@ -467,6 +467,8 @@
     "avatarError": "Couldn't update avatar",
     "coverUpdated": "Cover photo updated",
     "coverError": "Couldn't update cover photo",
+    "coverConfirm": "Use this photo",
+    "coverPreviewTitle": "Preview cover photo",
     "saved": "Changes saved"
   },
   "statusDialog": {

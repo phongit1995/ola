@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import checkedIcon from '@/assets/icons/profile/ic_checked.png';
 import cameraIcon from '@/assets/icons/profile/ic_action_camera.png';
@@ -12,6 +12,7 @@ import { Avatar, UserName, VipIcon } from '@components';
 import type { ProfileActions, UserProfile } from '../types';
 import type { RelationshipInfo } from '@app-types';
 import { RelationButtons } from './RelationButtons';
+import { CoverPreviewOverlay } from './CoverPreviewOverlay';
 
 interface ProfileCardProps {
   profile: UserProfile;
@@ -38,16 +39,33 @@ export function ProfileCard({ profile, relationship, actions, onPostMe, onUpdate
   const { t } = useTranslation();
   const coverInputRef = useRef<HTMLInputElement>(null);
   const [uploadingCover, setUploadingCover] = useState(false);
+  const [coverPreview, setCoverPreview] = useState<{ url: string; file: File } | null>(null);
 
   const triggerCover = () => coverInputRef.current?.click();
 
-  async function onCoverPick(event: React.ChangeEvent<HTMLInputElement>) {
+  const clearCoverPreview = useCallback(() => {
+    setCoverPreview((prev) => {
+      if (prev) URL.revokeObjectURL(prev.url);
+      return null;
+    });
+  }, []);
+
+  useEffect(() => clearCoverPreview, [clearCoverPreview]);
+
+  function onCoverPick(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     event.target.value = '';
     if (!file) return;
+    clearCoverPreview();
+    setCoverPreview({ url: URL.createObjectURL(file), file });
+  }
+
+  async function confirmCover() {
+    if (!coverPreview) return;
     setUploadingCover(true);
-    await actions.changeCover(file);
+    await actions.changeCover(coverPreview.file);
     setUploadingCover(false);
+    clearCoverPreview();
   }
 
   return (
@@ -89,6 +107,15 @@ export function ProfileCard({ profile, relationship, actions, onPostMe, onUpdate
           <Avatar name={profile.nick} color={profile.color} size={96} src={profile.avatar} rounded={false} />
         </div>
       </div>
+
+      {coverPreview && (
+        <CoverPreviewOverlay
+          url={coverPreview.url}
+          uploading={uploadingCover}
+          onCancel={clearCoverPreview}
+          onConfirm={confirmCover}
+        />
+      )}
 
       <div className="flex items-center justify-center gap-1 p-2">
         <UserName
