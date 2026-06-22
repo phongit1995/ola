@@ -1,10 +1,13 @@
 package adminegg
 
 import (
+	"net/http"
+
 	"ola-chat-server/internal/modules/egg"
 	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
@@ -127,24 +130,28 @@ func (ctrl *Controller) SaveConfig(c *gin.Context) (interface{}, error) {
 	return pack, nil
 }
 
-// UserHistory godoc
-// @Summary      Lịch sử đập trứng của một user (admin)
+// ListDraws godoc
+// @Summary      Lịch sử đập trứng toàn hệ thống, lọc theo user (admin)
 // @Tags         admin-egg
 // @Produce      json
 // @Security     BearerAuth
-// @Param        userId path string true "User ID"
+// @Param        userId query string false "Lọc theo user"
 // @Param        limit query int false "Page size"
 // @Param        offset query int false "Offset"
-// @Success      200  {object}  egg.DrawListResponse
-// @Router       /admin/egg/users/{userId}/history [get]
-func (ctrl *Controller) UserHistory(c *gin.Context) (interface{}, error) {
-	userID, err := utils.ParseUUIDParam(c, "userId", "invalid user id")
-	if err != nil {
-		return nil, err
+// @Success      200  {object}  egg.AdminDrawListResponse
+// @Router       /admin/egg/draws [get]
+func (ctrl *Controller) ListDraws(c *gin.Context) (interface{}, error) {
+	var userID *uuid.UUID
+	if raw := c.Query("userId"); raw != "" {
+		parsed, err := uuid.Parse(raw)
+		if err != nil {
+			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid user id")
+		}
+		userID = &parsed
 	}
 	limit := utils.ParseLimit(c, 50, 100)
 	offset := utils.ParseOffset(c)
-	resp, err := ctrl.service.ListHistory(userID, limit, offset)
+	resp, err := ctrl.service.ListAllDraws(userID, limit, offset)
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}

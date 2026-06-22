@@ -22,6 +22,6 @@ func (r *Router) Setup(admin *utils.AppGroup) {
 		egg.PATCH("/packs/:id", r.controller.UpdatePack)
 		egg.DELETE("/packs/:id", r.controller.DeletePack)
 		egg.PUT("/packs/:id/config", r.controller.SaveConfig)
-		egg.GET("/users/:userId/history", r.controller.UserHistory)
+		egg.GET("/draws", r.controller.ListDraws)
 	}
 }

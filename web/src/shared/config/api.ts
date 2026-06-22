@@ -77,6 +77,11 @@ export const API_PATH = {
     iconUnlock: (id: string) => `/vip/icons/${id}/unlock`,
     iconDelete: (id: string) => `/vip/icons/${id}`,
   },
+  egg: {
+    packs: '/egg/packs',
+    draw: (id: string) => `/egg/packs/${id}/draws`,
+    draws: '/egg/draws',
+  },
   messages: {
     base: '/messages',
     direct: '/messages/direct',

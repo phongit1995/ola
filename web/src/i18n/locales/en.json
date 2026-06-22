@@ -752,6 +752,12 @@
     "win": "🎁 You won! +{{ken}} KEN",
     "bigWin": "🎉 BIG WIN! +{{ken}} KEN",
     "miss": "💨 Missed! Try another egg.",
-    "outOfKen": "You're out of KEN! Top up to keep playing."
+    "outOfKen": "You're out of KEN! Top up to keep playing.",
+    "superLucky": "🍀 SO LUCKY! You won {{reward}}",
+    "wonVip": "🎁 You won {{reward}}!",
+    "wonVipDays": "🎁 You won {{days}} days of VIP!",
+    "noPack": "No egg pack available right now.",
+    "error": "Something went wrong. Please try again.",
+    "contactAdmin": "Something went wrong. Please contact an admin."
   }
 }

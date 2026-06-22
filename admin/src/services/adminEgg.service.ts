@@ -1,8 +1,9 @@
 import http from '@/api/http'
 import type {
+  AdminEggDraw,
   ApiResponse,
   CreateEggPackRequest,
-  EggDraw,
+  EggDrawListParams,
   EggPack,
   ListResult,
   MessageResult,
@@ -36,11 +37,10 @@ export const AdminEggService = {
     return data.data
   },
 
-  async userHistory(userId: string, limit = 50, offset = 0): Promise<ListResult<EggDraw>> {
-    const { data } = await http.get<ApiResponse<ListResult<EggDraw>>>(
-      `/admin/egg/users/${userId}/history`,
-      { params: { limit, offset } },
-    )
+  async listDraws(params: EggDrawListParams = {}): Promise<ListResult<AdminEggDraw>> {
+    const { data } = await http.get<ApiResponse<ListResult<AdminEggDraw>>>('/admin/egg/draws', {
+      params,
+    })
     return data.data
   },
 }

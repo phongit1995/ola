@@ -23,11 +23,16 @@ export function EggGamePage() {
   const navigate = useNavigate();
   const userKen = useAuthStore((s) => s.user?.ken);
   const init = useEggGameStore((s) => s.init);
-  const { ken, totalWin, cost, muted, play, topup, toggleMute } = useEggGame();
+  const loadPacks = useEggGameStore((s) => s.loadPacks);
+  const { ken, totalWin, cost, packsStatus, play } = useEggGame();
 
   useEffect(() => {
     init(userKen ?? EGG_START_KEN);
   }, [init, userKen]);
+
+  useEffect(() => {
+    void loadPacks();
+  }, [loadPacks]);
 
   return (
     <FullScreenOverlay>
@@ -49,15 +54,7 @@ export function EggGamePage() {
             <span className="flex-1" />
             <button
               type="button"
-              onClick={toggleMute}
-              className="flex h-9 w-9 items-center justify-center rounded-full text-lg hover:bg-white/15"
-              aria-label="mute"
-            >
-              {muted ? '🔇' : '🔊'}
-            </button>
-            <button
-              type="button"
-              onClick={topup}
+              onClick={() => navigate(ROUTES.kenBuy)}
               className="rounded-full bg-[#ffca28] px-3 py-1.5 text-sm font-bold text-[#5b3b00] shadow-[0_2px_0_#c79400] active:translate-y-0.5 active:shadow-none"
             >
               + {t('ken.purchase')}
@@ -65,10 +62,17 @@ export function EggGamePage() {
           </div>
 
           <main className="relative min-h-0 flex-1 bg-[#2c1f12]">
-            <EggStage play={play} />
-            <p className="pointer-events-none absolute inset-x-0 top-2 text-center text-xs text-white/80 drop-shadow">
-              {t('eggGame.hint', { cost })}
-            </p>
+            {packsStatus === 'error' ? (
+              <div className="flex h-full w-full items-center justify-center px-8 text-center text-sm text-white/85">
+                {t('eggGame.contactAdmin')}
+              </div>
+            ) : packsStatus === 'ready' ? (
+              <EggStage hint={t('eggGame.hint', { cost })} play={play} />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-sm text-white/80">
+                {t('eggGame.loading')}
+              </div>
+            )}
           </main>
 
           <footer className="flex shrink-0 items-center justify-between bg-[#3e2a18] px-4 py-2.5 text-sm text-white/90">

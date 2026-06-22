@@ -18,7 +18,7 @@ func (r *Router) Setup(api *utils.AppGroup) {
 	egg := api.Group("/egg", r.authMiddleware.RequireAuth())
 	{
 		egg.GET("/packs", r.controller.ListPacks)
-		egg.POST("/packs/:id/open", r.controller.OpenPack)
-		egg.GET("/history", r.controller.ListHistory)
+		egg.POST("/packs/:id/draws", r.controller.Draw)
+		egg.GET("/draws", r.controller.ListDraws)
 	}
 }

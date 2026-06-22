@@ -1,8 +1,22 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AdminEggService } from '@/services/adminEgg.service'
-import type { CreateEggPackRequest, SaveEggConfigRequest, UpdateEggPackRequest } from '@/types'
+import type {
+  CreateEggPackRequest,
+  EggDrawListParams,
+  SaveEggConfigRequest,
+  UpdateEggPackRequest,
+} from '@/types'
 
 const EGG_PACKS_KEY = 'admin-egg-packs'
+const EGG_DRAWS_KEY = 'admin-egg-draws'
+
+export function useEggDraws(params: EggDrawListParams, enabled = true) {
+  return useQuery({
+    queryKey: [EGG_DRAWS_KEY, params],
+    queryFn: () => AdminEggService.listDraws(params),
+    enabled,
+  })
+}
 
 export function useEggPacks() {
   return useQuery({

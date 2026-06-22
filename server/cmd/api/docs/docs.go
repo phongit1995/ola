@@ -158,6 +158,50 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/egg/draws": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-egg"
+                ],
+                "summary": "Lịch sử đập trứng toàn hệ thống, lọc theo user (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Lọc theo user",
+                        "name": "userId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_egg.AdminDrawListResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/egg/packs": {
             "get": {
                 "security": [
@@ -355,51 +399,6 @@ const docTemplate = `{
                         "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
-                        }
-                    }
-                }
-            }
-        },
-        "/admin/egg/users/{userId}/history": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "admin-egg"
-                ],
-                "summary": "Lịch sử đập trứng của một user (admin)",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "User ID",
-                        "name": "userId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Page size",
-                        "name": "limit",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Offset",
-                        "name": "offset",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/ola-chat-server_internal_modules_egg.DrawListResponse"
                         }
                     }
                 }
@@ -2589,7 +2588,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/egg/history": {
+        "/egg/draws": {
             "get": {
                 "security": [
                     {
@@ -2651,7 +2650,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/egg/packs/{id}/open": {
+        "/egg/packs/{id}/draws": {
             "post": {
                 "security": [
                     {
@@ -10137,6 +10136,70 @@ const docTemplate = `{
                 "EggCategoryVipDays"
             ]
         },
+        "ola-chat-server_internal_modules_egg.AdminDrawListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_egg.AdminDrawView"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_egg.AdminDrawView": {
+            "type": "object",
+            "properties": {
+                "categoryType": {
+                    "$ref": "#/definitions/ola-chat-server_internal_models.EggCategoryType"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isSuperLucky": {
+                    "type": "boolean"
+                },
+                "kenAmount": {
+                    "type": "integer"
+                },
+                "kenCost": {
+                    "type": "integer"
+                },
+                "packId": {
+                    "type": "string"
+                },
+                "packName": {
+                    "type": "string"
+                },
+                "rewardLabel": {
+                    "type": "string"
+                },
+                "rewardType": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_egg.DrawUserView"
+                },
+                "vipDays": {
+                    "type": "integer"
+                },
+                "vipTypeId": {
+                    "type": "integer"
+                }
+            }
+        },
         "ola-chat-server_internal_modules_egg.CategoryInput": {
             "type": "object",
             "required": [
@@ -10236,64 +10299,20 @@ const docTemplate = `{
                 }
             }
         },
-        "ola-chat-server_internal_modules_egg.DrawListResponse": {
+        "ola-chat-server_internal_modules_egg.DrawUserView": {
             "type": "object",
             "properties": {
-                "items": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/ola-chat-server_internal_modules_egg.DrawView"
-                    }
+                "avatar": {
+                    "type": "string"
                 },
-                "limit": {
-                    "type": "integer"
-                },
-                "offset": {
-                    "type": "integer"
-                },
-                "total": {
-                    "type": "integer"
-                }
-            }
-        },
-        "ola-chat-server_internal_modules_egg.DrawView": {
-            "type": "object",
-            "properties": {
-                "categoryType": {
-                    "$ref": "#/definitions/ola-chat-server_internal_models.EggCategoryType"
-                },
-                "createdAt": {
+                "fullName": {
                     "type": "string"
                 },
                 "id": {
                     "type": "string"
                 },
-                "isSuperLucky": {
-                    "type": "boolean"
-                },
-                "kenAmount": {
-                    "type": "integer"
-                },
-                "kenCost": {
-                    "type": "integer"
-                },
-                "packId": {
+                "username": {
                     "type": "string"
-                },
-                "packName": {
-                    "type": "string"
-                },
-                "rewardLabel": {
-                    "type": "string"
-                },
-                "rewardType": {
-                    "type": "string"
-                },
-                "vipDays": {
-                    "type": "integer"
-                },
-                "vipTypeId": {
-                    "type": "integer"
                 }
             }
         },

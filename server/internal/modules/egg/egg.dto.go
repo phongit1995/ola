@@ -122,3 +122,22 @@ type DrawListResponse struct {
 	Limit  int        `json:"limit"`
 	Offset int        `json:"offset"`
 }
+
+type DrawUserView struct {
+	ID       uuid.UUID `json:"id"`
+	Username string    `json:"username"`
+	FullName string    `json:"fullName"`
+	Avatar   string    `json:"avatar"`
+}
+
+type AdminDrawView struct {
+	DrawView
+	User DrawUserView `json:"user"`
+}
+
+type AdminDrawListResponse struct {
+	Items  []AdminDrawView `json:"items"`
+	Total  int64           `json:"total"`
+	Limit  int             `json:"limit"`
+	Offset int             `json:"offset"`
+}

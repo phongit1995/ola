@@ -8,3 +8,4 @@ export * from './geo.service';
 export * from './conversation.service';
 export * from './message.service';
 export * from './vip.service';
+export * from './egg.service';

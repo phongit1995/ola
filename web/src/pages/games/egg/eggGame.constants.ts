@@ -39,34 +39,8 @@ export const HIT_HOLD_TICKS = 14;
 export const MISS_HOLD_TICKS = 10;
 
 export const EGG_COST = 10;
-export const EGG_TOPUP = 100;
-export const EGG_HIT_RATE = 0.6;
 export const EGG_START_KEN = 200;
 export const BIG_WIN_KEN = 120;
-
-export interface Prize {
-  ken: number;
-  weight: number;
-}
-
-export const PRIZES: Prize[] = [
-  { ken: 20, weight: 52 },
-  { ken: 50, weight: 30 },
-  { ken: 120, weight: 13 },
-  { ken: 300, weight: 5 },
-];
-
-const DEFAULT_PRIZE: Prize = { ken: 20, weight: 0 };
-
-export function rollPrize(): Prize {
-  const total = PRIZES.reduce((sum, p) => sum + p.weight, 0);
-  let r = Math.random() * total;
-  for (const p of PRIZES) {
-    r -= p.weight;
-    if (r <= 0) return p;
-  }
-  return PRIZES[0] ?? DEFAULT_PRIZE;
-}
 
 export function expandFrames(keys: string[]): string[] {
   const seq: string[] = [];

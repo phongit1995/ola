@@ -2775,6 +2775,48 @@ definitions:
     - EggCategoryVipIcon
     - EggCategoryKen
     - EggCategoryVipDays
+  ola-chat-server_internal_modules_egg.AdminDrawListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_egg.AdminDrawView'
+        type: array
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  ola-chat-server_internal_modules_egg.AdminDrawView:
+    properties:
+      categoryType:
+        $ref: '#/definitions/ola-chat-server_internal_models.EggCategoryType'
+      createdAt:
+        type: string
+      id:
+        type: string
+      isSuperLucky:
+        type: boolean
+      kenAmount:
+        type: integer
+      kenCost:
+        type: integer
+      packId:
+        type: string
+      packName:
+        type: string
+      rewardLabel:
+        type: string
+      rewardType:
+        type: string
+      user:
+        $ref: '#/definitions/ola-chat-server_internal_modules_egg.DrawUserView'
+      vipDays:
+        type: integer
+      vipTypeId:
+        type: integer
+    type: object
   ola-chat-server_internal_modules_egg.CategoryInput:
     properties:
       isActive:
@@ -2841,45 +2883,16 @@ definitions:
     required:
     - name
     type: object
-  ola-chat-server_internal_modules_egg.DrawListResponse:
+  ola-chat-server_internal_modules_egg.DrawUserView:
     properties:
-      items:
-        items:
-          $ref: '#/definitions/ola-chat-server_internal_modules_egg.DrawView'
-        type: array
-      limit:
-        type: integer
-      offset:
-        type: integer
-      total:
-        type: integer
-    type: object
-  ola-chat-server_internal_modules_egg.DrawView:
-    properties:
-      categoryType:
-        $ref: '#/definitions/ola-chat-server_internal_models.EggCategoryType'
-      createdAt:
+      avatar:
+        type: string
+      fullName:
         type: string
       id:
         type: string
-      isSuperLucky:
-        type: boolean
-      kenAmount:
-        type: integer
-      kenCost:
-        type: integer
-      packId:
+      username:
         type: string
-      packName:
-        type: string
-      rewardLabel:
-        type: string
-      rewardType:
-        type: string
-      vipDays:
-        type: integer
-      vipTypeId:
-        type: integer
     type: object
   ola-chat-server_internal_modules_egg.PackListResponse:
     properties:
@@ -3917,6 +3930,33 @@ paths:
       summary: Refresh admin token
       tags:
       - admin-auth
+  /admin/egg/draws:
+    get:
+      parameters:
+      - description: Lọc theo user
+        in: query
+        name: userId
+        type: string
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_modules_egg.AdminDrawListResponse'
+      security:
+      - BearerAuth: []
+      summary: Lịch sử đập trứng toàn hệ thống, lọc theo user (admin)
+      tags:
+      - admin-egg
   /admin/egg/packs:
     get:
       produces:
@@ -4040,34 +4080,6 @@ paths:
       security:
       - BearerAuth: []
       summary: Lưu cả cây nhóm + phần thưởng của gói (admin)
-      tags:
-      - admin-egg
-  /admin/egg/users/{userId}/history:
-    get:
-      parameters:
-      - description: User ID
-        in: path
-        name: userId
-        required: true
-        type: string
-      - description: Page size
-        in: query
-        name: limit
-        type: integer
-      - description: Offset
-        in: query
-        name: offset
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/ola-chat-server_internal_modules_egg.DrawListResponse'
-      security:
-      - BearerAuth: []
-      summary: Lịch sử đập trứng của một user (admin)
       tags:
       - admin-egg
   /admin/ken/users/{userId}/adjust:
@@ -5451,7 +5463,7 @@ paths:
       summary: Send typing indicator
       tags:
       - conversations
-  /egg/history:
+  /egg/draws:
     get:
       parameters:
       - description: Page size
@@ -5488,7 +5500,7 @@ paths:
       summary: Danh sách gói đập trứng đang bật
       tags:
       - egg
-  /egg/packs/{id}/open:
+  /egg/packs/{id}/draws:
     post:
       consumes:
       - application/json

@@ -383,3 +383,20 @@ export interface EggDraw {
   isSuperLucky: boolean
   createdAt: string
 }
+
+export interface EggDrawUser {
+  id: string
+  username: string
+  fullName: string
+  avatar: string
+}
+
+export interface AdminEggDraw extends EggDraw {
+  user: EggDrawUser
+}
+
+export interface EggDrawListParams {
+  userId?: string
+  limit?: number
+  offset?: number
+}

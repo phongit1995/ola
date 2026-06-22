@@ -1,18 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Assets, Container, Sprite, Texture } from 'pixi.js';
+import { Assets, Container, Sprite, Text, Texture } from 'pixi.js';
 import { Application, extend } from '@pixi/react';
 import { EggScene } from './EggScene';
 import { EGG_TEXTURE_URLS } from './eggAssets';
 import type { SmashOutcome } from './useEggGame';
 
-extend({ Container, Sprite });
+extend({ Container, Sprite, Text });
 
 interface EggStageProps {
-  play: () => SmashOutcome | null;
+  hint: string;
+  play: () => Promise<SmashOutcome | null>;
 }
 
-export function EggStage({ play }: EggStageProps) {
+export function EggStage({ hint, play }: EggStageProps) {
   const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
   const [textures, setTextures] = useState<Record<string, Texture> | null>(null);
@@ -41,7 +42,7 @@ export function EggStage({ play }: EggStageProps) {
           autoDensity
           resolution={window.devicePixelRatio || 1}
         >
-          <EggScene textures={textures} play={play} />
+          <EggScene textures={textures} hint={hint} play={play} />
         </Application>
       ) : (
         <div className="flex h-full w-full items-center justify-center text-sm text-white/80">

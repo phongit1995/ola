@@ -394,6 +394,39 @@ func (s *Service) ListHistory(userID uuid.UUID, limit, offset int) (*DrawListRes
 	return &DrawListResponse{Items: items, Total: total, Limit: limit, Offset: offset}, nil
 }
 
+func (s *Service) ListAllDraws(userID *uuid.UUID, limit, offset int) (*AdminDrawListResponse, error) {
+	rows, total, err := s.repo.ListAllDraws(userID, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	items := make([]AdminDrawView, len(rows))
+	for i, r := range rows {
+		items[i] = AdminDrawView{
+			DrawView: DrawView{
+				ID:           r.ID,
+				PackID:       r.PackID,
+				PackName:     r.PackName,
+				KenCost:      r.KenCost,
+				CategoryType: r.CategoryType,
+				RewardType:   r.RewardType,
+				RewardLabel:  r.RewardLabel,
+				VipTypeID:    r.VipTypeID,
+				KenAmount:    r.KenAmount,
+				VipDays:      r.VipDays,
+				IsSuperLucky: r.IsSuperLucky,
+				CreatedAt:    r.CreatedAt,
+			},
+			User: DrawUserView{
+				ID:       r.UserID,
+				Username: r.Username,
+				FullName: r.FullName,
+				Avatar:   r.Avatar,
+			},
+		}
+	}
+	return &AdminDrawListResponse{Items: items, Total: total, Limit: limit, Offset: offset}, nil
+}
+
 func buildPackViews(packs []models.EggPack, cats []models.EggCategory, rewards []models.EggReward) []PackView {
 	rewardsByCat := map[uuid.UUID][]RewardView{}
 	for _, rw := range rewards {

@@ -31,7 +31,7 @@ func (ctrl *Controller) ListPacks(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
-// OpenPack godoc
+// Draw godoc
 // @Summary      Đập một quả trứng trong gói
 // @Tags         egg
 // @Accept       json
@@ -42,8 +42,8 @@ func (ctrl *Controller) ListPacks(c *gin.Context) (interface{}, error) {
 // @Success      200  {object}  OpenResult
 // @Failure      400  {object}  utils.APIError
 // @Failure      404  {object}  utils.APIError
-// @Router       /egg/packs/{id}/open [post]
-func (ctrl *Controller) OpenPack(c *gin.Context) (interface{}, error) {
+// @Router       /egg/packs/{id}/draws [post]
+func (ctrl *Controller) Draw(c *gin.Context) (interface{}, error) {
 	userID, err := utils.RequireUserID(c)
 	if err != nil {
 		return nil, err
@@ -62,7 +62,7 @@ func (ctrl *Controller) OpenPack(c *gin.Context) (interface{}, error) {
 	return result, nil
 }
 
-// ListHistory godoc
+// ListDraws godoc
 // @Summary      Lịch sử đập trứng của tôi
 // @Tags         egg
 // @Produce      json
@@ -70,8 +70,8 @@ func (ctrl *Controller) OpenPack(c *gin.Context) (interface{}, error) {
 // @Param        limit query int false "Page size"
 // @Param        offset query int false "Offset"
 // @Success      200  {object}  DrawListResponse
-// @Router       /egg/history [get]
-func (ctrl *Controller) ListHistory(c *gin.Context) (interface{}, error) {
+// @Router       /egg/draws [get]
+func (ctrl *Controller) ListDraws(c *gin.Context) (interface{}, error) {
 	userID, err := utils.RequireUserID(c)
 	if err != nil {
 		return nil, err

@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Sprite, type Texture } from 'pixi.js';
 import { useTick } from '@pixi/react';
 import {
@@ -14,6 +14,8 @@ import {
 } from './eggGame.constants';
 import type { SmashOutcome } from './useEggGame';
 
+type Phase = 'idle' | 'smashing' | 'broken';
+
 interface AnimState {
   frames: string[];
   revealAt: number;
@@ -27,17 +29,24 @@ interface EggSpriteProps {
   nest: Nest;
   restTexture: Texture;
   frameTextures: Record<string, Texture>;
-  onSmash: () => SmashOutcome | null;
+  onSmash: () => Promise<SmashOutcome | null>;
+  onBroken: () => void;
 }
 
-export function EggSprite({ nest, restTexture, frameTextures, onSmash }: EggSpriteProps) {
+export function EggSprite({ nest, restTexture, frameTextures, onSmash, onBroken }: EggSpriteProps) {
   const restRef = useRef<Sprite>(null);
   const animRef = useRef<AnimState | null>(null);
-  const phaseRef = useRef<number>(nest.x % 6);
+  const pendingRef = useRef(false);
+  const bobRef = useRef<number>(nest.x % 6);
   const baseY = nest.y + REST_OFFSET_Y;
 
-  const [smashing, setSmashing] = useState(false);
+  const [phase, setPhase] = useState<Phase>('idle');
   const [frameKey, setFrameKey] = useState<string | null>(null);
+
+  const onBrokenRef = useRef(onBroken);
+  useEffect(() => {
+    onBrokenRef.current = onBroken;
+  });
 
   useTick((ticker) => {
     const anim = animRef.current;
@@ -51,25 +60,30 @@ export function EggSprite({ nest, restTexture, frameTextures, onSmash }: EggSpri
           anim.finalize();
         }
         if (anim.idx >= anim.frames.length) {
+          const last = anim.frames[anim.frames.length - 1] ?? null;
           animRef.current = null;
-          setSmashing(false);
-          setFrameKey(null);
+          setFrameKey(last);
+          setPhase('broken');
+          onBrokenRef.current();
           return;
         }
         setFrameKey(anim.frames[anim.idx] ?? null);
       }
       return;
     }
-    phaseRef.current += 0.04 * ticker.deltaTime;
+    if (phase !== 'idle') return;
+    bobRef.current += 0.04 * ticker.deltaTime;
     const rest = restRef.current;
-    if (rest) rest.y = baseY + Math.sin(phaseRef.current) * 1.5;
+    if (rest) rest.y = baseY + Math.sin(bobRef.current) * 1.5;
   });
 
-  function handleTap() {
-    if (animRef.current) return;
-    const outcome = onSmash();
-    if (!outcome) return;
-    setSmashing(true);
+  async function handleTap() {
+    if (phase !== 'idle' || animRef.current || pendingRef.current) return;
+    pendingRef.current = true;
+    const outcome = await onSmash();
+    pendingRef.current = false;
+    if (!outcome || animRef.current) return;
+    setPhase('smashing');
     setFrameKey(outcome.frames[0] ?? null);
     animRef.current = {
       frames: outcome.frames,
@@ -88,16 +102,16 @@ export function EggSprite({ nest, restTexture, frameTextures, onSmash }: EggSpri
       <pixiSprite
         ref={restRef}
         texture={restTexture}
-        visible={!smashing}
+        visible={phase === 'idle'}
         anchor={{ x: 0.5, y: REST_ANCHOR_Y }}
         scale={REST_SCALE}
         x={nest.x}
         y={baseY}
         eventMode="static"
         cursor="pointer"
-        onPointerTap={handleTap}
+        onPointerTap={() => void handleTap()}
       />
-      {smashing && animTexture && (
+      {phase !== 'idle' && animTexture && (
         <pixiSprite
           texture={animTexture}
           anchor={{ x: ANIM_ANCHOR_X, y: ANIM_ANCHOR_Y }}

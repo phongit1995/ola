@@ -752,6 +752,12 @@
     "win": "🎁 Trúng quà! +{{ken}} KEN",
     "bigWin": "🎉 TRÚNG LỚN! +{{ken}} KEN",
     "miss": "💨 Trượt rồi! Thử quả khác nhé.",
-    "outOfKen": "Bạn đã hết KEN! Hãy nạp thêm để chơi tiếp."
+    "outOfKen": "Bạn đã hết KEN! Hãy nạp thêm để chơi tiếp.",
+    "superLucky": "🍀 QUÁ MAY MẮN! Bạn trúng {{reward}}",
+    "wonVip": "🎁 Bạn trúng {{reward}}!",
+    "wonVipDays": "🎁 Bạn trúng {{days}} ngày VIP!",
+    "noPack": "Hiện chưa có gói đập trứng nào.",
+    "error": "Có lỗi xảy ra, vui lòng thử lại.",
+    "contactAdmin": "Có lỗi xảy ra, vui lòng liên hệ admin."
   }
 }

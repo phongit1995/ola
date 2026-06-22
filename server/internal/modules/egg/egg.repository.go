@@ -276,6 +276,39 @@ func (r *Repository) ListDraws(userID uuid.UUID, limit, offset int) ([]models.Eg
 	return draws, total, nil
 }
 
+type AdminDrawRow struct {
+	models.EggDraw
+	Username string `gorm:"column:username"`
+	FullName string `gorm:"column:full_name"`
+	Avatar   string `gorm:"column:avatar"`
+}
+
+func (r *Repository) ListAllDraws(userID *uuid.UUID, limit, offset int) ([]AdminDrawRow, int64, error) {
+	count := r.db.Model(&models.EggDraw{})
+	if userID != nil {
+		count = count.Where("user_id = ?", *userID)
+	}
+	var total int64
+	if err := count.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	query := r.db.Table("egg_draws").
+		Select("egg_draws.*, users.username, users.full_name, users.avatar").
+		Joins("LEFT JOIN users ON users.id = egg_draws.user_id").
+		Order("egg_draws.created_at DESC").
+		Limit(limit).Offset(offset)
+	if userID != nil {
+		query = query.Where("egg_draws.user_id = ?", *userID)
+	}
+
+	var rows []AdminDrawRow
+	if err := query.Scan(&rows).Error; err != nil {
+		return nil, 0, err
+	}
+	return rows, total, nil
+}
+
 func nilIfEmpty(s string) *string {
 	if s == "" {
 		return nil
