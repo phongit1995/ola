@@ -12,6 +12,18 @@ export function useMeList(params: MeListParams) {
   })
 }
 
+export function useUserPosts(
+  authorId: string | null,
+  params: { limit: number; offset: number },
+) {
+  return useQuery({
+    queryKey: [ME_KEY, 'by-author', authorId, params],
+    queryFn: () => AdminMeService.list({ authorId: authorId as string, ...params }),
+    enabled: authorId != null,
+    placeholderData: (prev) => prev,
+  })
+}
+
 export function useMeDetail(id: string | null) {
   return useQuery({
     queryKey: [ME_KEY, 'detail', id],

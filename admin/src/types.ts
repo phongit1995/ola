@@ -288,6 +288,7 @@ export interface MeListParams {
   q?: string
   limit?: number
   offset?: number
+  authorId?: string
   enabled?: boolean
   visibility?: string
   hasImages?: boolean

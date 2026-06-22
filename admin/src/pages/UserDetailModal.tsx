@@ -1,11 +1,18 @@
 import { useState, type ReactNode } from 'react'
 import { Avatar, Button, Modal, Skeleton, Tag, Typography } from 'antd'
-import { CrownOutlined, HistoryOutlined, UserOutlined, WalletOutlined } from '@ant-design/icons'
+import {
+  CrownOutlined,
+  FileTextOutlined,
+  HistoryOutlined,
+  UserOutlined,
+  WalletOutlined,
+} from '@ant-design/icons'
 import { useUserDetail } from '@/hooks/useUsers'
 import { formatDateTime } from '@/lib/format'
 import { GENDER } from './userMeta'
 import { KenAdjustModal } from './KenAdjustModal'
 import { KenHistoryModal } from './KenHistoryModal'
+import { UserMeModal } from './UserMeModal'
 
 interface UserDetailModalProps {
   userId: string | null
@@ -62,6 +69,7 @@ export function UserDetailModal({ userId, open, onClose }: UserDetailModalProps)
   const gender = data?.gender ? GENDER[data.gender] ?? { label: data.gender, color: 'default' } : null
   const [adjustOpen, setAdjustOpen] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
+  const [meOpen, setMeOpen] = useState(false)
 
   return (
     <>
@@ -73,6 +81,14 @@ export function UserDetailModal({ userId, open, onClose }: UserDetailModalProps)
       width={560}
       styles={{ body: { maxHeight: '72vh', overflowY: 'auto', paddingRight: 8 } }}
       footer={[
+        <Button
+          key="me"
+          icon={<FileTextOutlined />}
+          disabled={!userId}
+          onClick={() => setMeOpen(true)}
+        >
+          Bài đăng (Me)
+        </Button>,
         <Button
           key="history"
           icon={<HistoryOutlined />}
@@ -188,6 +204,12 @@ export function UserDetailModal({ userId, open, onClose }: UserDetailModalProps)
       userId={userId}
       username={data?.username}
       onClose={() => setHistoryOpen(false)}
+    />
+    <UserMeModal
+      open={meOpen}
+      userId={userId}
+      username={data?.username}
+      onClose={() => setMeOpen(false)}
     />
     </>
   )
