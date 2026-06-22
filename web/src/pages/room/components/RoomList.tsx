@@ -57,7 +57,6 @@ export function RoomList({
   joinedRoomId,
   onEnter,
   onQuit,
-  onAroundYou,
   onQuickJoin,
   showQuickJoin,
 }: RoomListProps) {
@@ -83,12 +82,14 @@ export function RoomList({
         </button>
       </li>
       */}
+      {/* "Xung quanh bạn" tạm ẩn theo yêu cầu — bật lại: bỏ comment + thêm lại prop onAroundYou vào destructure
       <SpecialRow
         icon="📍"
         title={t('room.aroundYou')}
         subtitle={t('room.aroundYouDesc')}
         onClick={onAroundYou}
       />
+      */}
       {showQuickJoin && (
         <SpecialRow
           icon={<img src={autoJoinIcon} alt="" className="h-12 w-12 object-contain" />}
