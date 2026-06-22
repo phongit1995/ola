@@ -5,6 +5,7 @@ import { UsersPage } from '@/pages/UsersPage'
 import { RoomsPage } from '@/pages/RoomsPage'
 import { VipPackagesPage } from '@/pages/VipPackagesPage'
 import { VipShopPage } from '@/pages/VipShopPage'
+import { EggRewardsPage } from '@/pages/EggRewardsPage'
 import { MePage } from '@/pages/MePage'
 import { AdminLayout } from '@/layout/AdminLayout'
 import { RedirectIfAuthed, RequireAuth } from './RequireAuth'
@@ -31,6 +32,7 @@ export const router = createBrowserRouter([
       { path: 'rooms', element: <RoomsPage /> },
       { path: 'vip-packages', element: <VipPackagesPage /> },
       { path: 'vip-shop', element: <VipShopPage /> },
+      { path: 'games/egg', element: <EggRewardsPage /> },
       { path: 'me', element: <MePage /> },
     ],
   },

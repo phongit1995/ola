@@ -1,0 +1,120 @@
+export type EggCategoryType = 'nothing' | 'vip_icon' | 'ken' | 'vip_days'
+
+export interface EggPack {
+  id: string
+  name: string
+  kenCost: number
+  isEnabled: boolean
+}
+
+export interface EggCategory {
+  id: string
+  packId: string
+  type: EggCategoryType
+  label: string
+  weight: number
+  isActive: boolean
+}
+
+export interface EggReward {
+  id: string
+  categoryId: string
+  label: string
+  weight: number
+  vipTypeId?: number
+  kenAmount?: number
+  vipDays?: number
+  isActive: boolean
+  sortOrder: number
+}
+
+export const CATEGORY_COLORS: Record<EggCategoryType, string> = {
+  nothing: '#94a3b8',
+  vip_icon: '#faad14',
+  ken: '#2563eb',
+  vip_days: '#5b8c2a',
+}
+
+export interface CategoryTemplate {
+  type: EggCategoryType
+  label: string
+  hasItems: boolean
+}
+
+export const CATEGORY_TEMPLATES: CategoryTemplate[] = [
+  { type: 'nothing', label: 'Không trúng', hasItems: false },
+  { type: 'vip_icon', label: 'VIP', hasItems: true },
+  { type: 'ken', label: 'Ken', hasItems: true },
+  { type: 'vip_days', label: 'Ngày VIP', hasItems: true },
+]
+
+export const MOCK_PACKS: EggPack[] = [
+  { id: 'pk-bronze', name: 'Trứng Đồng', kenCost: 100, isEnabled: true },
+  { id: 'pk-gold', name: 'Trứng Vàng', kenCost: 1000, isEnabled: true },
+]
+
+export const MOCK_CATEGORIES: EggCategory[] = [
+  { id: 'c-bz-no', packId: 'pk-bronze', type: 'nothing', label: 'Không trúng', weight: 70, isActive: true },
+  { id: 'c-bz-vip', packId: 'pk-bronze', type: 'vip_icon', label: 'VIP', weight: 10, isActive: true },
+  { id: 'c-bz-ken', packId: 'pk-bronze', type: 'ken', label: 'Ken', weight: 15, isActive: true },
+  { id: 'c-bz-vd', packId: 'pk-bronze', type: 'vip_days', label: 'Ngày VIP', weight: 5, isActive: true },
+  { id: 'c-gd-no', packId: 'pk-gold', type: 'nothing', label: 'Không trúng', weight: 40, isActive: true },
+  { id: 'c-gd-ken', packId: 'pk-gold', type: 'ken', label: 'Ken', weight: 60, isActive: true },
+]
+
+export const MOCK_REWARDS: EggReward[] = [
+  { id: 'r-vip-1', categoryId: 'c-bz-vip', label: 'Zakumi Đại Đế', weight: 4, vipTypeId: 4, isActive: true, sortOrder: 1 },
+  { id: 'r-vip-2', categoryId: 'c-bz-vip', label: 'Vua Của Các Vị Thần Zeus', weight: 1, vipTypeId: 51, isActive: true, sortOrder: 2 },
+  { id: 'r-ken-1', categoryId: 'c-bz-ken', label: '1000 Ken', weight: 6, kenAmount: 1000, isActive: true, sortOrder: 1 },
+  { id: 'r-ken-2', categoryId: 'c-bz-ken', label: '2000 Ken', weight: 3, kenAmount: 2000, isActive: true, sortOrder: 2 },
+  { id: 'r-ken-3', categoryId: 'c-bz-ken', label: '5000 Ken', weight: 1, kenAmount: 5000, isActive: true, sortOrder: 3 },
+  { id: 'r-vd-1', categoryId: 'c-bz-vd', label: 'VIP 7 ngày', weight: 4, vipDays: 7, isActive: true, sortOrder: 1 },
+  { id: 'r-vd-2', categoryId: 'c-bz-vd', label: 'VIP 30 ngày', weight: 2, vipDays: 30, isActive: true, sortOrder: 2 },
+  { id: 'r-vd-3', categoryId: 'c-bz-vd', label: 'VIP 90 ngày', weight: 1, vipDays: 90, isActive: true, sortOrder: 3 },
+  { id: 'r-gd-ken-1', categoryId: 'c-gd-ken', label: '5000 Ken', weight: 3, kenAmount: 5000, isActive: true, sortOrder: 1 },
+  { id: 'r-gd-ken-2', categoryId: 'c-gd-ken', label: '10000 Ken', weight: 1, kenAmount: 10000, isActive: true, sortOrder: 2 },
+]
+
+export function newId(prefix: string): string {
+  const rnd = Math.random().toString(36).slice(2, 8)
+  return `${prefix}-${Date.now().toString(36)}-${rnd}`
+}
+
+export function sumActiveWeight<T extends { weight: number; isActive: boolean }>(rows: T[]): number {
+  return rows.reduce((acc, row) => (row.isActive ? acc + row.weight : acc), 0)
+}
+
+export function percent(part: number, total: number): number {
+  return total > 0 ? (part / total) * 100 : 0
+}
+
+export function formatPercent(value: number): string {
+  if (value === 0) return '0%'
+  return `${value.toFixed(value < 1 ? 2 : value % 1 === 0 ? 0 : 1)}%`
+}
+
+export function categoryTemplate(type: EggCategoryType): CategoryTemplate {
+  return CATEGORY_TEMPLATES.find((t) => t.type === type) ?? CATEGORY_TEMPLATES[0]
+}
+
+export function rebalanceWeights<T extends { id: string; weight: number; isActive: boolean }>(
+  rows: T[],
+  id: string,
+  targetPercent: number,
+): Map<string, number> {
+  const result = new Map<string, number>()
+  const active = rows.filter((r) => r.isActive)
+  if (!active.some((r) => r.id === id)) return result
+  const target = Math.max(0, Math.min(100, targetPercent))
+  const others = active.filter((r) => r.id !== id)
+  result.set(id, others.length === 0 ? 100 : target)
+  if (others.length === 0) return result
+  const sumOthers = others.reduce((acc, r) => acc + r.weight, 0)
+  if (sumOthers <= 0) {
+    const each = (100 - target) / others.length
+    others.forEach((r) => result.set(r.id, each))
+  } else {
+    others.forEach((r) => result.set(r.id, (r.weight / sumOthers) * (100 - target)))
+  }
+  return result
+}

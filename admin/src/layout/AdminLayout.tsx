@@ -5,7 +5,9 @@ import {
   AppstoreOutlined,
   CommentOutlined,
   CrownOutlined,
+  GiftOutlined,
   LogoutOutlined,
+  RocketOutlined,
   SmileOutlined,
   PictureOutlined,
   TeamOutlined,
@@ -29,6 +31,12 @@ const MENU_ITEMS = [
       { key: '/vip-shop', icon: <SmileOutlined />, label: 'Shop VIP' },
     ],
   },
+  {
+    key: 'games',
+    icon: <RocketOutlined />,
+    label: 'Trò chơi',
+    children: [{ key: '/games/egg', icon: <GiftOutlined />, label: 'Đập trứng' }],
+  },
   { key: '/me', icon: <PictureOutlined />, label: 'Me' },
 ]
 
@@ -45,6 +53,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/rooms': 'Quản lý phòng chat',
   '/vip-packages': 'Quản lý gói VIP',
   '/vip-shop': 'Shop VIP',
+  '/games/egg': 'Đập trứng',
   '/me': 'Quản lý Me',
 }
 
@@ -60,7 +69,10 @@ export function AdminLayout() {
       (a, b) => b.length - a.length,
     )[0] ?? '/'
 
-  const openKeys = VIP_KEYS.includes(selectedKey) ? ['vip'] : []
+  const openKeys = [
+    ...(VIP_KEYS.includes(selectedKey) ? ['vip'] : []),
+    ...(selectedKey.startsWith('/games') ? ['games'] : []),
+  ]
 
   function logout() {
     AdminAuthService.logout()
