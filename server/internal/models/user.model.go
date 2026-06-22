@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type JSONB map[string]interface{}
@@ -43,16 +45,18 @@ type User struct {
 	Ken             int        `gorm:"not null;default:0"`
 	VipUsed         *string    `gorm:"type:varchar(50)"`
 	VipEndTime      *time.Time
-	VipStorePrivacy int16   `gorm:"not null;default:0"`
-	FollowerCount   int     `gorm:"not null;default:0"`
-	FollowingCount  int     `gorm:"not null;default:0"`
-	Marriage        string  `gorm:"type:varchar(20);not null;default:'single'"`
-	CoverPhoto      string  `gorm:"type:varchar(500)"`
-	BioImage        *string `gorm:"type:varchar(500)"`
-	Verified        bool    `gorm:"not null;default:false"`
-	Kisses          int     `gorm:"not null;default:0"`
-	IsActive        bool    `gorm:"not null;default:true"`
-	RefreshToken    string  `gorm:"type:text"`
-	LastLoginIP     string  `gorm:"type:varchar(45)"`
+	VipStorePrivacy int16      `gorm:"not null;default:0"`
+	FollowerCount   int        `gorm:"not null;default:0"`
+	FollowingCount  int        `gorm:"not null;default:0"`
+	SpouseID        *uuid.UUID `gorm:"type:uuid;index"`
+	CoverPhoto      string     `gorm:"type:varchar(500)"`
+	BioImage        *string    `gorm:"type:varchar(500)"`
+	Verified        bool       `gorm:"not null;default:false"`
+	Kisses          int        `gorm:"not null;default:0"`
+	IsActive        bool       `gorm:"not null;default:true"`
+	RefreshToken    string     `gorm:"type:text"`
+	LastLoginIP     string     `gorm:"type:varchar(45)"`
 	LastLoginAt     *time.Time
+
+	Spouse *User `gorm:"foreignKey:SpouseID;references:ID"`
 }

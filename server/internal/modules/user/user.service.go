@@ -108,9 +108,6 @@ func applyProfileUpdates(user *models.User, req *UpdateProfileRequest) error {
 		}
 		user.DateOfBirth = &dob
 	}
-	if req.Marriage != "" {
-		user.Marriage = req.Marriage
-	}
 	if req.CoverPhoto != "" {
 		user.CoverPhoto = req.CoverPhoto
 	}
@@ -306,7 +303,6 @@ func (s *Service) buildPublicProfile(callerID uuid.UUID, user *models.User) *Use
 		BioImage:       user.BioImage,
 		Bio:            user.Bio,
 		Gender:         user.Gender,
-		Marriage:       user.Marriage,
 		Verified:       user.Verified,
 		Kisses:         user.Kisses,
 		VipUsed:        user.VipUsed,
@@ -322,6 +318,8 @@ func (s *Service) buildPublicProfile(callerID uuid.UUID, user *models.User) *Use
 	if user.DateOfBirth != nil {
 		response.DateOfBirth = user.DateOfBirth.Format("2006-01-02")
 	}
+
+	response.Spouse = s.resolveSpouse(user)
 
 	s.applyFollowFlags(callerID, user.ID, response.Relationship)
 
@@ -563,7 +561,6 @@ func (s *Service) buildProfileResponse(user *models.User) *UserProfileResponse {
 		VipUsed:        user.VipUsed,
 		FollowerCount:  user.FollowerCount,
 		FollowingCount: user.FollowingCount,
-		Marriage:       user.Marriage,
 		CoverPhoto:     user.CoverPhoto,
 		BioImage:       user.BioImage,
 		Verified:       user.Verified,
@@ -581,7 +578,25 @@ func (s *Service) buildProfileResponse(user *models.User) *UserProfileResponse {
 		response.VipEndTime = &vipEndTime
 	}
 
+	response.Spouse = s.resolveSpouse(user)
+
 	return response
+}
+
+func (s *Service) resolveSpouse(user *models.User) *SpouseInfo {
+	if user.SpouseID == nil {
+		return nil
+	}
+	spouse, err := s.cache.GetUserCache(*user.SpouseID, true)
+	if err != nil || spouse == nil {
+		return nil
+	}
+	return &SpouseInfo{
+		ID:       user.SpouseID.String(),
+		Username: spouse.Username,
+		FullName: spouse.FullName,
+		Avatar:   spouse.Avatar,
+	}
 }
 
 func (s *Service) UploadImage(ctx context.Context, userID uuid.UUID, file multipart.File, filename string) (*UploadAvatarResponse, error) {

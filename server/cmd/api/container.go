@@ -11,6 +11,7 @@ import (
 	"ola-chat-server/internal/modules/call"
 	"ola-chat-server/internal/modules/conversation"
 	"ola-chat-server/internal/modules/health"
+	"ola-chat-server/internal/modules/marriage"
 	"ola-chat-server/internal/modules/me"
 	"ola-chat-server/internal/modules/message"
 	"ola-chat-server/internal/modules/relationships"
@@ -66,6 +67,7 @@ func NewContainer() (*dig.Container, error) {
 		call.Provider,
 		me.Provider,
 		vip.Provider,
+		marriage.Provider,
 	}
 
 	for _, module := range modules {
