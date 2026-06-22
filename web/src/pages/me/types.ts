@@ -6,6 +6,7 @@ export interface MePost {
   id: string;
   authorId: string;
   author: string;
+  fullName: string;
   color: string;
   time: string;
   createdAt?: string;

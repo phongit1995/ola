@@ -9,7 +9,7 @@ import likeIcon from '@/assets/icons/me/ic_like_gray.png';
 import likeIconActive from '@/assets/icons/me/ic_like_selected.png';
 import likeStickerFly from '@/assets/icons/me/sticker_like.png';
 import likeSoundUrl from '@/assets/sounds/like_me.mp3';
-import { Avatar } from '@components';
+import { Avatar, UserName } from '@components';
 import { DEFAULT_AVATAR_COLOR, portalRoot } from '@lib';
 import { useMediaViewerStore } from '@/store/mediaViewerStore';
 import { PostContent } from './PostContent';
@@ -111,7 +111,12 @@ function MePostCardComponent({
           <Avatar name={post.author} color={post.color} />
           <span className="min-w-0 flex-1">
             <span className="flex items-center gap-1">
-              <span className="min-w-0 truncate text-base text-black/87">{post.author}</span>
+              <UserName
+                name={post.author}
+                fullName={post.fullName}
+                className="min-w-0 truncate text-base text-black/87"
+                fullNameClassName="text-black/54"
+              />
               {post.pinned && (
                 <PinIcon className="h-3.5 w-3.5 shrink-0 text-ola-primary" title={t('me.pinned')} />
               )}

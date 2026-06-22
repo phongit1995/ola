@@ -32,6 +32,7 @@ export function toMePost(post: Post, formatTime: (iso: string) => string): MePos
     id: post.id,
     authorId: post.author?.id ?? '',
     author,
+    fullName: post.author?.fullName ?? '',
     color: colorForName(author),
     time: formatTime(post.createdAt),
     createdAt: post.createdAt,
