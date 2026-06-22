@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from 'react'
 import { Form, Input, InputNumber, Modal, Select, Space, Switch, Typography } from 'antd'
 import { VIP_CATALOG, vipIconUrl, vipName } from '@/lib/vipCatalog'
-import { rebalanceWeights, type EggCategoryType, type EggReward } from './egg/mockEgg'
+import { rebalanceWeights, type EggCategoryType, type EggReward } from './egg/eggHelpers'
 
 export interface EggItemFormValues {
   label: string
