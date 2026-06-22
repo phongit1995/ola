@@ -94,6 +94,7 @@
     "composeAria": "Soạn tin nhắn",
     "apps": [
       "Thông báo",
+      "Đập Trứng",
       "Kho Game",
       "Cá nhân",
       "Kho VIP",
@@ -739,5 +740,16 @@
     "distance": "Cách đây",
     "checkedIn": "{{count}} lượt ghé thăm",
     "comingSoon": "Tính năng đang được phát triển"
+  },
+  "eggGame": {
+    "title": "Đập Trứng",
+    "cost": "Mỗi lần đập",
+    "totalWin": "Tổng thưởng",
+    "hint": "Chạm vào quả trứng để đập! Mỗi lần {{cost}} KEN.",
+    "loading": "Đang tải sân chơi...",
+    "win": "🎁 Trúng quà! +{{ken}} KEN",
+    "bigWin": "🎉 TRÚNG LỚN! +{{ken}} KEN",
+    "miss": "💨 Trượt rồi! Thử quả khác nhé.",
+    "outOfKen": "Bạn đã hết KEN! Hãy nạp thêm để chơi tiếp."
   }
 }

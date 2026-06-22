@@ -94,6 +94,7 @@
     "composeAria": "Compose message",
     "apps": [
       "Notifications",
+      "Egg Smash",
       "Game Store",
       "Profile",
       "VIP Store",
@@ -739,5 +740,16 @@
     "distance": "Distance",
     "checkedIn": "{{count}} visits",
     "comingSoon": "Feature coming soon"
+  },
+  "eggGame": {
+    "title": "Egg Smash",
+    "cost": "Per smash",
+    "totalWin": "Total reward",
+    "hint": "Tap an egg to smash it! {{cost}} KEN each.",
+    "loading": "Loading the field...",
+    "win": "🎁 You won! +{{ken}} KEN",
+    "bigWin": "🎉 BIG WIN! +{{ken}} KEN",
+    "miss": "💨 Missed! Try another egg.",
+    "outOfKen": "You're out of KEN! Top up to keep playing."
   }
 }

@@ -13,6 +13,7 @@ export const ROUTES = {
   kenBuy: '/ken/nap',
   media: '/hinh-anh',
   nearby: '/lan-can',
+  eggGame: '/dap-trung',
 } as const;
 
 export type RoutePath = (typeof ROUTES)[keyof typeof ROUTES];
