@@ -133,14 +133,16 @@ export function ContactList({
       {me != null && (
         <div className="border-b border-black/12 bg-white/80">
           {!hasVip && (
-            <button
-              type="button"
-              onClick={onComingSoon}
-              className="m-2 block rounded border border-[#ff8f00] bg-white px-3 py-2 text-left"
-            >
-              <span className="block text-sm font-medium text-ola-accent">{t('chat.vipBannerTitle')}</span>
-              <span className="block text-xs text-black/54">{t('chat.vipBannerSub')}</span>
-            </button>
+            <div className="p-2">
+              <button
+                type="button"
+                onClick={onComingSoon}
+                className="block w-full rounded border border-[#ff8f00] bg-white px-3 py-2 text-left"
+              >
+                <span className="block text-sm font-medium text-ola-accent">{t('chat.vipBannerTitle')}</span>
+                <span className="block text-xs text-black/54">{t('chat.vipBannerSub')}</span>
+              </button>
+            </div>
           )}
           <div className="flex min-h-[72px] items-center gap-2 px-4 py-2">
             <button type="button" onClick={onAccountMenu} aria-label={t('chat.myAccount')} className="shrink-0">
