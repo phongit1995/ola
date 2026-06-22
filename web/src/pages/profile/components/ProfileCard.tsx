@@ -1,3 +1,4 @@
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import checkedIcon from '@/assets/icons/profile/ic_checked.png';
 import cameraIcon from '@/assets/icons/profile/ic_action_camera.png';
@@ -35,6 +36,19 @@ function InfoRow({ icon, text, note }: { icon: string; text: string; note?: bool
 
 export function ProfileCard({ profile, relationship, actions, onPostMe, onUpdateInfo }: ProfileCardProps) {
   const { t } = useTranslation();
+  const coverInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingCover, setUploadingCover] = useState(false);
+
+  const triggerCover = () => coverInputRef.current?.click();
+
+  async function onCoverPick(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+    setUploadingCover(true);
+    await actions.changeCover(file);
+    setUploadingCover(false);
+  }
 
   return (
     <div className="mb-2 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.18)]">
@@ -47,11 +61,29 @@ export function ProfileCard({ profile, relationship, actions, onPostMe, onUpdate
         }
       >
         {profile.isSelf && (
-          <img
-            src={cameraIcon}
-            alt=""
-            className="absolute right-2 bottom-2 h-6 w-6 object-contain"
-          />
+          <>
+            <button
+              type="button"
+              onClick={triggerCover}
+              disabled={uploadingCover}
+              aria-label={t('profile.changeCover')}
+              className="absolute right-2 bottom-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/40 disabled:opacity-60"
+            >
+              <img src={cameraIcon} alt="" className="h-5 w-5 object-contain brightness-0 invert" />
+            </button>
+            <input
+              ref={coverInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={onCoverPick}
+            />
+            {uploadingCover && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/30 text-sm text-white">
+                {t('common.loading')}
+              </div>
+            )}
+          </>
         )}
         <div className="absolute -bottom-12 left-1/2 flex -translate-x-1/2 bg-white p-1 pb-1.5 shadow-[0_1px_3px_rgba(0,0,0,0.3)]">
           <Avatar name={profile.nick} color={profile.color} size={96} src={profile.avatar} rounded={false} />
@@ -75,6 +107,7 @@ export function ProfileCard({ profile, relationship, actions, onPostMe, onUpdate
         isSelf={profile.isSelf}
         onPostMe={onPostMe}
         onUpdateInfo={onUpdateInfo}
+        onChangeCover={triggerCover}
         relationship={relationship}
         actions={actions}
       />

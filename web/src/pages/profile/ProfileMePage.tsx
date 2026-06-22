@@ -1,14 +1,15 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@constants';
-import { MeService } from '@services';
+import { MeService, UserService } from '@services';
 import { activeVipTypeId, colorForName, createDateFormatter, createTimeFormatter, toast } from '@lib';
 import type { Post, PostReaction } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
 import { useMeLocalStore } from '@/store/meLocalStore';
 import genderIcon from '@/assets/icons/profile/ic_indicate_dynamic_gender.png';
 import birthdayIcon from '@/assets/icons/profile/ic_profile_birthday.png';
+import cameraIcon from '@/assets/icons/profile/ic_action_camera.png';
 import { Avatar, ScreenHeader, FullScreenOverlay, UserName, VipIcon } from '@components';
 import { MePostCard } from '../me/components/MePostCard';
 import { MePostInteractions, type MePostSource } from '../me/MePostInteractions';
@@ -20,10 +21,13 @@ export function ProfileMePage() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
+  const refreshUser = useAuthStore((s) => s.refreshUser);
   const hiddenPostIds = useMeLocalStore((s) => s.hiddenPostIds);
   const hidePost = useMeLocalStore((s) => s.hidePost);
   const blockAuthor = useMeLocalStore((s) => s.blockAuthor);
   const [posts, setPosts] = useState<Post[]>([]);
+  const [uploadingCover, setUploadingCover] = useState(false);
+  const coverInputRef = useRef<HTMLInputElement>(null);
 
   const formatTime = useMemo(() => createTimeFormatter(i18n.language), [i18n.language]);
   const formatDate = useMemo(() => createDateFormatter(i18n.language), [i18n.language]);
@@ -109,6 +113,29 @@ export function ProfileMePage() {
     [t]
   );
 
+  const uploadCover = useCallback(
+    async (file: File) => {
+      setUploadingCover(true);
+      try {
+        const { url } = await UserService.uploadAvatar(file);
+        await UserService.updateMe({ coverPhoto: url });
+        await refreshUser();
+        toast.success(t('profileEdit.coverUpdated'));
+      } catch {
+        toast.error(t('profileEdit.coverError'));
+      } finally {
+        setUploadingCover(false);
+      }
+    },
+    [refreshUser, t]
+  );
+
+  function pickCover(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (file) uploadCover(file);
+  }
+
   if (!user) return null;
 
   const nick = user.fullName || user.username;
@@ -136,7 +163,31 @@ export function ProfileMePage() {
 
       <div className="flex-1 overflow-y-auto">
         <div className="mb-2 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.18)]">
-          <div className="relative mb-12 aspect-[16/9] w-full bg-ola-primary-darker">
+          <div
+            className="relative mb-12 aspect-video w-full bg-ola-primary-darker bg-cover bg-center"
+            style={user.coverPhoto ? { backgroundImage: `url(${user.coverPhoto})` } : undefined}
+          >
+            <button
+              type="button"
+              onClick={() => coverInputRef.current?.click()}
+              disabled={uploadingCover}
+              aria-label={t('profile.changeCover')}
+              className="absolute right-2 bottom-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/40 disabled:opacity-60"
+            >
+              <img src={cameraIcon} alt="" className="h-5 w-5 object-contain brightness-0 invert" />
+            </button>
+            {uploadingCover && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/30 text-sm text-white">
+                {t('common.loading')}
+              </div>
+            )}
+            <input
+              ref={coverInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={pickCover}
+            />
             <div className="absolute -bottom-12 left-1/2 flex -translate-x-1/2 bg-white p-1 pb-1.5 shadow-[0_1px_3px_rgba(0,0,0,0.3)]">
               <Avatar name={nick} color={color} size={96} src={user.avatar} rounded={false} />
             </div>

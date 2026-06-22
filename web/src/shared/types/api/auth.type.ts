@@ -5,6 +5,7 @@ export interface AuthUser {
   username: string;
   email: string;
   avatar?: string;
+  coverPhoto?: string;
   phone?: string;
   fullName?: string;
   gender?: Gender;
@@ -22,6 +23,7 @@ export interface AuthUser {
 
 export interface UpdateProfileRequest {
   avatar?: string;
+  coverPhoto?: string;
   phone?: string;
   fullName?: string;
   gender?: Gender;

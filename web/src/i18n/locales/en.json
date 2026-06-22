@@ -464,6 +464,8 @@
     "supportHotline": "Hotline: 1900588883",
     "avatarUpdated": "Avatar updated",
     "avatarError": "Couldn't update avatar",
+    "coverUpdated": "Cover photo updated",
+    "coverError": "Couldn't update cover photo",
     "saved": "Changes saved"
   },
   "statusDialog": {

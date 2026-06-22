@@ -34,7 +34,7 @@ export function useMockUserProfile(nick: string, color: string): ProfileControll
   }, []);
 
   const actions = useMemo<ProfileActions>(
-    () => ({ kiss, toggleFollow, friendAction, blockAction, message: () => {} }),
+    () => ({ kiss, toggleFollow, friendAction, blockAction, message: () => {}, changeCover: async () => {} }),
     [kiss, toggleFollow, friendAction, blockAction]
   );
 

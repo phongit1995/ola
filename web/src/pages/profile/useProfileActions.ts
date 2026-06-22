@@ -5,6 +5,7 @@ import { RelationshipService, UserService } from '@services';
 import { toast } from '@lib';
 import type { RelationshipInfo } from '@app-types';
 import { useChatStore } from '@/store/chatStore';
+import { useAuthStore } from '@/store/authStore';
 import type { ProfileActions, UserProfile } from './types';
 
 interface UseProfileActionsArgs {
@@ -24,6 +25,22 @@ export function useProfileActions({
 }: UseProfileActionsArgs): { actions: ProfileActions; busy: boolean } {
   const { t } = useTranslation();
   const [busy, setBusy] = useState(false);
+  const refreshUser = useAuthStore((s) => s.refreshUser);
+
+  const changeCover = useCallback(
+    async (file: File) => {
+      try {
+        const { url } = await UserService.uploadAvatar(file);
+        await UserService.updateMe({ coverPhoto: url });
+        setProfile((p) => (p ? { ...p, coverPhoto: url } : p));
+        await refreshUser();
+        toast.success(t('profileEdit.coverUpdated'));
+      } catch {
+        toast.error(t('profileEdit.coverError'));
+      }
+    },
+    [setProfile, refreshUser, t]
+  );
 
   const kiss = useCallback(() => {
     if (userId === '') return;
@@ -87,8 +104,8 @@ export function useProfileActions({
   }, [userId]);
 
   const actions = useMemo<ProfileActions>(
-    () => ({ kiss, toggleFollow, friendAction, blockAction, message }),
-    [kiss, toggleFollow, friendAction, blockAction, message]
+    () => ({ kiss, toggleFollow, friendAction, blockAction, message, changeCover }),
+    [kiss, toggleFollow, friendAction, blockAction, message, changeCover]
   );
 
   return { actions, busy };

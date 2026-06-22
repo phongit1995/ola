@@ -464,6 +464,8 @@
     "supportHotline": "Tổng đài: 1900588883",
     "avatarUpdated": "Đã cập nhật ảnh đại diện",
     "avatarError": "Cập nhật ảnh đại diện thất bại",
+    "coverUpdated": "Đã cập nhật ảnh bìa",
+    "coverError": "Cập nhật ảnh bìa thất bại",
     "saved": "Đã lưu thay đổi"
   },
   "statusDialog": {

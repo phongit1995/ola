@@ -21,6 +21,7 @@ export interface ProfileActions {
   friendAction: () => void;
   blockAction: () => void;
   message: () => void;
+  changeCover: (file: File) => Promise<void>;
 }
 
 export interface UserProfile {
