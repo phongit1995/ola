@@ -163,6 +163,7 @@ var (
 		"vip icon not found":           true,
 		"vip package not found":        true,
 		"vip shop item not found":      true,
+		"egg pack not found":           true,
 	}
 
 	errorsConflict = map[string]bool{

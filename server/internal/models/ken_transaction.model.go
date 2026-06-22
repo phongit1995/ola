@@ -17,6 +17,7 @@ const (
 	KenTxTypeAdminGrant   KenTxType = "ADMIN_GRANT"
 	KenTxTypeAdminDeduct  KenTxType = "ADMIN_DEDUCT"
 	KenTxTypeReward       KenTxType = "REWARD"
+	KenTxTypeEggOpen      KenTxType = "EGG_OPEN"
 	KenTxTypeTopup        KenTxType = "TOPUP"
 	KenTxTypeRefund       KenTxType = "REFUND"
 	KenTxTypeGiftSent     KenTxType = "GIFT_SENT"

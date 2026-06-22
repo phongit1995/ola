@@ -155,6 +155,253 @@
                 }
             }
         },
+        "/admin/egg/packs": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-egg"
+                ],
+                "summary": "Danh sách gói đập trứng + cấu hình (admin)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_egg.PackListResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-egg"
+                ],
+                "summary": "Tạo gói đập trứng (admin)",
+                "parameters": [
+                    {
+                        "description": "Pack",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_egg.CreatePackRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_egg.PackView"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/egg/packs/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-egg"
+                ],
+                "summary": "Xoá gói đập trứng (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Pack ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-egg"
+                ],
+                "summary": "Cập nhật gói đập trứng (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Pack ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Pack",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_egg.UpdatePackRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_egg.PackView"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/egg/packs/{id}/config": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-egg"
+                ],
+                "summary": "Lưu cả cây nhóm + phần thưởng của gói (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Pack ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Config",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_egg.SaveConfigRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_egg.PackView"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/egg/users/{userId}/history": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-egg"
+                ],
+                "summary": "Lịch sử đập trứng của một user (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "userId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_egg.DrawListResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/ken/users/{userId}/adjust": {
             "post": {
                 "security": [
@@ -2332,6 +2579,124 @@
                     },
                     "401": {
                         "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/egg/history": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "egg"
+                ],
+                "summary": "Lịch sử đập trứng của tôi",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_egg.DrawListResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/egg/packs": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "egg"
+                ],
+                "summary": "Danh sách gói đập trứng đang bật",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_egg.PackListResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/egg/packs/{id}/open": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "egg"
+                ],
+                "summary": "Đập một quả trứng trong gói",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Pack ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Idempotency",
+                        "name": "request",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_egg.OpenPackRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_egg.OpenResult"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
@@ -6916,6 +7281,214 @@
                 }
             }
         },
+        "internal_modules_egg.CategoryView": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "isActive": {
+                    "type": "boolean"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "rewards": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_egg.RewardView"
+                    }
+                },
+                "sortOrder": {
+                    "type": "integer"
+                },
+                "type": {
+                    "$ref": "#/definitions/ola-chat-server_internal_models.EggCategoryType"
+                },
+                "weight": {
+                    "type": "number"
+                }
+            }
+        },
+        "internal_modules_egg.DrawListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_egg.DrawView"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_egg.DrawView": {
+            "type": "object",
+            "properties": {
+                "categoryType": {
+                    "$ref": "#/definitions/ola-chat-server_internal_models.EggCategoryType"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isSuperLucky": {
+                    "type": "boolean"
+                },
+                "kenAmount": {
+                    "type": "integer"
+                },
+                "kenCost": {
+                    "type": "integer"
+                },
+                "packId": {
+                    "type": "string"
+                },
+                "packName": {
+                    "type": "string"
+                },
+                "rewardLabel": {
+                    "type": "string"
+                },
+                "rewardType": {
+                    "type": "string"
+                },
+                "vipDays": {
+                    "type": "integer"
+                },
+                "vipTypeId": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_egg.OpenPackRequest": {
+            "type": "object",
+            "properties": {
+                "idempotencyKey": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_egg.OpenResult": {
+            "type": "object",
+            "properties": {
+                "categoryType": {
+                    "$ref": "#/definitions/ola-chat-server_internal_models.EggCategoryType"
+                },
+                "drawId": {
+                    "type": "string"
+                },
+                "isSuperLucky": {
+                    "type": "boolean"
+                },
+                "isWin": {
+                    "type": "boolean"
+                },
+                "kenAmount": {
+                    "type": "integer"
+                },
+                "kenBalance": {
+                    "type": "integer"
+                },
+                "kenCost": {
+                    "type": "integer"
+                },
+                "packId": {
+                    "type": "string"
+                },
+                "rewardLabel": {
+                    "type": "string"
+                },
+                "rewardType": {
+                    "type": "string"
+                },
+                "vipDays": {
+                    "type": "integer"
+                },
+                "vipTypeId": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_egg.PackListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_egg.PackView"
+                    }
+                }
+            }
+        },
+        "internal_modules_egg.PackView": {
+            "type": "object",
+            "properties": {
+                "categories": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_egg.CategoryView"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isEnabled": {
+                    "type": "boolean"
+                },
+                "kenCost": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "sortOrder": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_egg.RewardView": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "isActive": {
+                    "type": "boolean"
+                },
+                "isSuperLucky": {
+                    "type": "boolean"
+                },
+                "kenAmount": {
+                    "type": "integer"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "sortOrder": {
+                    "type": "integer"
+                },
+                "vipDays": {
+                    "type": "integer"
+                },
+                "vipTypeId": {
+                    "type": "integer"
+                },
+                "weight": {
+                    "type": "number"
+                }
+            }
+        },
         "internal_modules_health.HealthResponse": {
             "type": "object",
             "properties": {
@@ -9543,6 +10116,312 @@
                 "typeId": {
                     "type": "integer",
                     "example": 4
+                }
+            }
+        },
+        "ola-chat-server_internal_models.EggCategoryType": {
+            "type": "string",
+            "enum": [
+                "nothing",
+                "vip_icon",
+                "ken",
+                "vip_days"
+            ],
+            "x-enum-varnames": [
+                "EggCategoryNothing",
+                "EggCategoryVipIcon",
+                "EggCategoryKen",
+                "EggCategoryVipDays"
+            ]
+        },
+        "ola-chat-server_internal_modules_egg.CategoryInput": {
+            "type": "object",
+            "required": [
+                "label",
+                "type"
+            ],
+            "properties": {
+                "isActive": {
+                    "type": "boolean"
+                },
+                "label": {
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "rewards": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_egg.RewardInput"
+                    }
+                },
+                "sortOrder": {
+                    "type": "integer"
+                },
+                "type": {
+                    "enum": [
+                        "nothing",
+                        "vip_icon",
+                        "ken",
+                        "vip_days"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/ola-chat-server_internal_models.EggCategoryType"
+                        }
+                    ]
+                },
+                "weight": {
+                    "type": "number",
+                    "minimum": 0
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_egg.CategoryView": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "isActive": {
+                    "type": "boolean"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "rewards": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_egg.RewardView"
+                    }
+                },
+                "sortOrder": {
+                    "type": "integer"
+                },
+                "type": {
+                    "$ref": "#/definitions/ola-chat-server_internal_models.EggCategoryType"
+                },
+                "weight": {
+                    "type": "number"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_egg.CreatePackRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "categories": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_egg.CategoryInput"
+                    }
+                },
+                "isEnabled": {
+                    "type": "boolean"
+                },
+                "kenCost": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "sortOrder": {
+                    "type": "integer"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_egg.DrawListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_egg.DrawView"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_egg.DrawView": {
+            "type": "object",
+            "properties": {
+                "categoryType": {
+                    "$ref": "#/definitions/ola-chat-server_internal_models.EggCategoryType"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isSuperLucky": {
+                    "type": "boolean"
+                },
+                "kenAmount": {
+                    "type": "integer"
+                },
+                "kenCost": {
+                    "type": "integer"
+                },
+                "packId": {
+                    "type": "string"
+                },
+                "packName": {
+                    "type": "string"
+                },
+                "rewardLabel": {
+                    "type": "string"
+                },
+                "rewardType": {
+                    "type": "string"
+                },
+                "vipDays": {
+                    "type": "integer"
+                },
+                "vipTypeId": {
+                    "type": "integer"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_egg.PackListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_egg.PackView"
+                    }
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_egg.PackView": {
+            "type": "object",
+            "properties": {
+                "categories": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_egg.CategoryView"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isEnabled": {
+                    "type": "boolean"
+                },
+                "kenCost": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "sortOrder": {
+                    "type": "integer"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_egg.RewardInput": {
+            "type": "object",
+            "required": [
+                "label"
+            ],
+            "properties": {
+                "isActive": {
+                    "type": "boolean"
+                },
+                "isSuperLucky": {
+                    "type": "boolean"
+                },
+                "kenAmount": {
+                    "type": "integer"
+                },
+                "label": {
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "sortOrder": {
+                    "type": "integer"
+                },
+                "vipDays": {
+                    "type": "integer"
+                },
+                "vipTypeId": {
+                    "type": "integer"
+                },
+                "weight": {
+                    "type": "number",
+                    "minimum": 0
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_egg.RewardView": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "isActive": {
+                    "type": "boolean"
+                },
+                "isSuperLucky": {
+                    "type": "boolean"
+                },
+                "kenAmount": {
+                    "type": "integer"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "sortOrder": {
+                    "type": "integer"
+                },
+                "vipDays": {
+                    "type": "integer"
+                },
+                "vipTypeId": {
+                    "type": "integer"
+                },
+                "weight": {
+                    "type": "number"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_egg.SaveConfigRequest": {
+            "type": "object",
+            "properties": {
+                "categories": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_egg.CategoryInput"
+                    }
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_egg.UpdatePackRequest": {
+            "type": "object",
+            "properties": {
+                "isEnabled": {
+                    "type": "boolean"
+                },
+                "kenCost": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "sortOrder": {
+                    "type": "integer"
                 }
             }
         },

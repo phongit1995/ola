@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Button, Empty, Slider, Space, Switch, Tag, Typography } from 'antd'
+import { Button, Empty, InputNumber, Slider, Space, Switch, Tag, Typography } from 'antd'
 import {
   CloseOutlined,
   DeleteOutlined,
@@ -12,8 +12,6 @@ import {
   DragOverlay,
   PointerSensor,
   closestCenter,
-  useDraggable,
-  useDroppable,
   useSensor,
   useSensors,
   type DragEndEvent,
@@ -50,9 +48,10 @@ interface EggPackBuilderProps {
   onRebalanceItem: (categoryId: string, itemId: string, percent: number) => void
 }
 
-type DragData =
-  | { kind: 'palette'; type: EggCategoryType; label: string }
-  | { kind: 'item'; categoryId: string; label: string }
+interface ItemDragData {
+  categoryId: string
+  label: string
+}
 
 function rewardDetail(category: EggCategory, reward: EggReward) {
   if (category.type === 'vip_icon' && reward.vipTypeId != null) {
@@ -75,15 +74,24 @@ function rewardDetail(category: EggCategory, reward: EggReward) {
   )
 }
 
-function PaletteChip({ type, label, disabled }: { type: EggCategoryType; label: string; disabled: boolean }) {
-  const data: DragData = { kind: 'palette', type, label }
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: `palette:${type}`, data, disabled })
+function PaletteChip({
+  type,
+  label,
+  disabled,
+  onAdd,
+}: {
+  type: EggCategoryType
+  label: string
+  disabled: boolean
+  onAdd: (type: EggCategoryType) => void
+}) {
   const color = CATEGORY_COLORS[type]
   return (
-    <div
-      ref={setNodeRef}
-      {...listeners}
-      {...attributes}
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={() => onAdd(type)}
+      title={disabled ? 'Đã có trong gói' : 'Bấm để thêm vào gói'}
       style={{
         display: 'flex',
         alignItems: 'center',
@@ -93,17 +101,17 @@ function PaletteChip({ type, label, disabled }: { type: EggCategoryType; label: 
         border: `1.5px solid ${color}`,
         background: disabled ? '#f5f5f5' : '#fff',
         color: disabled ? '#bfbfbf' : color,
-        cursor: disabled ? 'not-allowed' : 'grab',
+        cursor: disabled ? 'not-allowed' : 'pointer',
         fontWeight: 600,
-        opacity: isDragging ? 0.3 : disabled ? 0.6 : 1,
+        fontSize: 14,
+        opacity: disabled ? 0.6 : 1,
         userSelect: 'none',
-        touchAction: 'none',
       }}
     >
       <span style={{ width: 10, height: 10, borderRadius: '50%', background: color, display: 'inline-block' }} />
       {label}
-      {disabled && ' ✓'}
-    </div>
+      {disabled ? ' ✓' : ' +'}
+    </button>
   )
 }
 
@@ -130,7 +138,7 @@ function SortableItemRow({
   onRebalance,
   onRemove,
 }: ItemRowProps) {
-  const data: DragData = { kind: 'item', categoryId: reward.categoryId, label: reward.label }
+  const data: ItemDragData = { categoryId: reward.categoryId, label: reward.label }
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: reward.id,
     data,
@@ -158,7 +166,14 @@ function SortableItemRow({
       >
         <HolderOutlined />
       </span>
-      <div style={{ flex: '1 1 180px', minWidth: 140 }}>{rewardDetail(category, reward)}</div>
+      <div style={{ flex: '1 1 180px', minWidth: 140, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+        {rewardDetail(category, reward)}
+        {reward.isSuperLucky && (
+          <Tag color="magenta" style={{ margin: 0 }}>
+            ⭐ Siêu may mắn
+          </Tag>
+        )}
+      </div>
       <div style={{ flex: '1 1 150px', minWidth: 130, display: 'flex', alignItems: 'center' }}>
         <Slider
           min={0}
@@ -193,35 +208,27 @@ export function EggPackBuilder({
   onRebalanceCategory,
   onRebalanceItem,
 }: EggPackBuilderProps) {
-  const [active, setActive] = useState<DragData | null>(null)
+  const [activeLabel, setActiveLabel] = useState<string | null>(null)
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
-
-  const { setNodeRef: setDropRef, isOver } = useDroppable({ id: 'dropzone' })
 
   const totalCategoryWeight = sumActiveWeight(categories)
   const usedTypes = new Set(categories.map((c) => c.type))
-  const paletteDragging = active?.kind === 'palette'
 
   function categoryPercent(category: EggCategory): number {
     return category.isActive ? percent(category.weight, totalCategoryWeight) : 0
   }
 
   function onDragStart(event: DragStartEvent) {
-    setActive((event.active.data.current as DragData) ?? null)
+    const data = event.active.data.current as ItemDragData | undefined
+    setActiveLabel(data?.label ?? null)
   }
 
   function onDragEnd(event: DragEndEvent) {
-    const data = event.active.data.current as DragData | undefined
+    const data = event.active.data.current as ItemDragData | undefined
     const over = event.over
-    setActive(null)
-    if (data == null || over == null) return
-    if (data.kind === 'palette') {
-      onAddCategory(data.type)
-      return
-    }
-    if (data.kind === 'item' && event.active.id !== over.id) {
-      onReorderItems(data.categoryId, String(event.active.id), String(over.id))
-    }
+    setActiveLabel(null)
+    if (data == null || over == null || event.active.id === over.id) return
+    onReorderItems(data.categoryId, String(event.active.id), String(over.id))
   }
 
   return (
@@ -230,7 +237,7 @@ export function EggPackBuilder({
       collisionDetection={closestCenter}
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
-      onDragCancel={() => setActive(null)}
+      onDragCancel={() => setActiveLabel(null)}
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <div
@@ -245,30 +252,33 @@ export function EggPackBuilder({
         </div>
 
         <div>
-          <Typography.Text type="secondary">Kéo loại thưởng vào gói:</Typography.Text>
+          <Typography.Text type="secondary">Bấm loại thưởng để thêm vào gói:</Typography.Text>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 8 }}>
             {CATEGORY_TEMPLATES.map((tpl) => (
-              <PaletteChip key={tpl.type} type={tpl.type} label={tpl.label} disabled={usedTypes.has(tpl.type)} />
+              <PaletteChip
+                key={tpl.type}
+                type={tpl.type}
+                label={tpl.label}
+                disabled={usedTypes.has(tpl.type)}
+                onAdd={onAddCategory}
+              />
             ))}
           </div>
         </div>
 
         <div
-          ref={setDropRef}
           style={{
-            border: `2px dashed ${isOver || paletteDragging ? '#faad14' : '#d9d9d9'}`,
-            background: isOver ? '#fffbe6' : 'transparent',
+            border: '2px dashed #d9d9d9',
             borderRadius: 12,
             padding: 16,
             minHeight: 120,
             display: 'flex',
             flexDirection: 'column',
             gap: 14,
-            transition: 'all 0.15s',
           }}
         >
           {categories.length === 0 && (
-            <Empty description="Kéo loại thưởng (Không trúng / VIP / Ken / Ngày VIP) thả vào đây" />
+            <Empty description="Chưa có loại thưởng — bấm Không trúng / VIP / Ken / Ngày VIP ở trên để thêm" />
           )}
 
           {categories.map((category) => {
@@ -305,9 +315,17 @@ export function EggPackBuilder({
                       tooltip={{ formatter: (v) => `${v}%` }}
                       style={{ flex: 1 }}
                     />
-                    <Tag color={color} style={{ margin: 0, minWidth: 56, textAlign: 'center', fontWeight: 700 }}>
-                      {formatPercent(catPct)}
-                    </Tag>
+                    <InputNumber
+                      size="small"
+                      min={0}
+                      max={100}
+                      step={0.01}
+                      addonAfter="%"
+                      value={Math.round(catPct * 100) / 100}
+                      disabled={!category.isActive}
+                      onChange={(value) => onRebalanceCategory(category.id, value ?? 0)}
+                      style={{ width: 110 }}
+                    />
                   </div>
                   <Switch
                     checked={category.isActive}
@@ -366,21 +384,21 @@ export function EggPackBuilder({
       </div>
 
       <DragOverlay>
-        {active ? (
+        {activeLabel ? (
           <div
             style={{
               display: 'inline-flex',
               alignItems: 'center',
               gap: 8,
               padding: '8px 14px',
-              borderRadius: 999,
+              borderRadius: 8,
               border: '1.5px solid #faad14',
               background: '#fff',
               fontWeight: 600,
               boxShadow: '0 4px 12px rgba(0,0,0,0.18)',
             }}
           >
-            {active.label}
+            {activeLabel}
           </div>
         ) : null}
       </DragOverlay>

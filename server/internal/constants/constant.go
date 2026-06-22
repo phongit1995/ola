@@ -71,6 +71,7 @@ const (
 	CacheKeyRoomMsgData         = "ROOM:%s:MSG"
 	CacheKeyRoomJoinTicket      = "ROOM:JOIN_TICKET:%s"
 	CacheKeyVipPackages         = "VIP:PACKAGES:ACTIVE"
+	CacheKeyEggPacks            = "EGG:PACKS:ENABLED"
 )
 
 const (

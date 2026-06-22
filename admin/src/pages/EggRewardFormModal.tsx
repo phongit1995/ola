@@ -1,7 +1,7 @@
-import { useEffect } from 'react'
-import { Form, Input, InputNumber, Modal, Select, Space, Switch } from 'antd'
+import { useEffect, useMemo } from 'react'
+import { Form, Input, InputNumber, Modal, Select, Space, Switch, Typography } from 'antd'
 import { VIP_CATALOG, vipIconUrl, vipName } from '@/lib/vipCatalog'
-import type { EggCategoryType, EggReward } from './egg/mockEgg'
+import { rebalanceWeights, type EggCategoryType, type EggReward } from './egg/mockEgg'
 
 export interface EggItemFormValues {
   label: string
@@ -9,6 +9,7 @@ export interface EggItemFormValues {
   vipTypeId?: number
   kenAmount?: number
   vipDays?: number
+  isSuperLucky: boolean
   isActive: boolean
 }
 
@@ -18,6 +19,7 @@ interface EggRewardFormModalProps {
   categoryLabel: string
   editing: EggReward | null
   initialPercent?: number
+  groupRewards?: EggReward[]
   onClose: () => void
   onSubmit: (values: EggItemFormValues) => void
 }
@@ -28,11 +30,30 @@ export function EggRewardFormModal({
   categoryLabel,
   editing,
   initialPercent,
+  groupRewards = [],
   onClose,
   onSubmit,
 }: EggRewardFormModalProps) {
   const [form] = Form.useForm<EggItemFormValues>()
   const isEdit = editing != null
+
+  const weightWatch = Form.useWatch('weight', form)
+  const labelWatch = Form.useWatch('label', form)
+  const activeWatch = Form.useWatch('isActive', form)
+
+  const previewId = editing?.id ?? '__new__'
+  const preview = useMemo(() => {
+    const target = Number(weightWatch) || 0
+    const others = groupRewards.filter((r) => r.id !== previewId)
+    const list = [
+      ...others.map((r) => ({ id: r.id, label: r.label, weight: r.weight, isActive: r.isActive })),
+      { id: previewId, label: labelWatch?.trim() || 'Phần thưởng này', weight: target, isActive: activeWatch ?? true },
+    ]
+    const next = rebalanceWeights(list, previewId, target)
+    return list
+      .filter((r) => r.isActive)
+      .map((r) => ({ id: r.id, label: r.label, pct: next.get(r.id) ?? r.weight, current: r.id === previewId }))
+  }, [groupRewards, previewId, weightWatch, labelWatch, activeWatch])
 
   useEffect(() => {
     if (!open) return
@@ -42,6 +63,7 @@ export function EggRewardFormModal({
       vipTypeId: editing?.vipTypeId,
       kenAmount: editing?.kenAmount,
       vipDays: editing?.vipDays,
+      isSuperLucky: editing?.isSuperLucky ?? false,
       isActive: editing?.isActive ?? true,
     })
   }, [open, editing, initialPercent, form])
@@ -51,6 +73,7 @@ export function EggRewardFormModal({
     const payload: EggItemFormValues = {
       label: values.label.trim(),
       weight: values.weight,
+      isSuperLucky: values.isSuperLucky,
       isActive: values.isActive,
     }
     if (categoryType === 'vip_icon') payload.vipTypeId = values.vipTypeId
@@ -152,6 +175,41 @@ export function EggRewardFormModal({
             style={{ width: '100%' }}
             placeholder="Ví dụ: 0.01, 0.15, 25"
           />
+        </Form.Item>
+
+        {preview.length > 0 && (
+          <div style={{ background: '#fafafa', borderRadius: 8, padding: '10px 12px', marginBottom: 16 }}>
+            <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+              Xem trước phân bổ trong nhóm sau khi lưu:
+            </Typography.Text>
+            <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {preview.map((p) => (
+                <div
+                  key={p.id}
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    fontWeight: p.current ? 700 : 400,
+                    color: p.current ? '#d46b08' : undefined,
+                  }}
+                >
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 320 }}>
+                    {p.label}
+                    {p.current && ' (đang sửa)'}
+                  </span>
+                  <span>{p.pct.toFixed(2)}%</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <Form.Item
+          name="isSuperLucky"
+          label="Siêu may mắn — khi trúng sẽ hiện chúc mừng 'bạn quá may mắn'"
+          valuePropName="checked"
+        >
+          <Switch />
         </Form.Item>
 
         <Form.Item name="isActive" label="Đang bật" valuePropName="checked">

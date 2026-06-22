@@ -815,6 +815,142 @@ definitions:
         example: true
         type: boolean
     type: object
+  internal_modules_egg.CategoryView:
+    properties:
+      id:
+        type: string
+      isActive:
+        type: boolean
+      label:
+        type: string
+      rewards:
+        items:
+          $ref: '#/definitions/internal_modules_egg.RewardView'
+        type: array
+      sortOrder:
+        type: integer
+      type:
+        $ref: '#/definitions/ola-chat-server_internal_models.EggCategoryType'
+      weight:
+        type: number
+    type: object
+  internal_modules_egg.DrawListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_egg.DrawView'
+        type: array
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  internal_modules_egg.DrawView:
+    properties:
+      categoryType:
+        $ref: '#/definitions/ola-chat-server_internal_models.EggCategoryType'
+      createdAt:
+        type: string
+      id:
+        type: string
+      isSuperLucky:
+        type: boolean
+      kenAmount:
+        type: integer
+      kenCost:
+        type: integer
+      packId:
+        type: string
+      packName:
+        type: string
+      rewardLabel:
+        type: string
+      rewardType:
+        type: string
+      vipDays:
+        type: integer
+      vipTypeId:
+        type: integer
+    type: object
+  internal_modules_egg.OpenPackRequest:
+    properties:
+      idempotencyKey:
+        type: string
+    type: object
+  internal_modules_egg.OpenResult:
+    properties:
+      categoryType:
+        $ref: '#/definitions/ola-chat-server_internal_models.EggCategoryType'
+      drawId:
+        type: string
+      isSuperLucky:
+        type: boolean
+      isWin:
+        type: boolean
+      kenAmount:
+        type: integer
+      kenBalance:
+        type: integer
+      kenCost:
+        type: integer
+      packId:
+        type: string
+      rewardLabel:
+        type: string
+      rewardType:
+        type: string
+      vipDays:
+        type: integer
+      vipTypeId:
+        type: integer
+    type: object
+  internal_modules_egg.PackListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_egg.PackView'
+        type: array
+    type: object
+  internal_modules_egg.PackView:
+    properties:
+      categories:
+        items:
+          $ref: '#/definitions/internal_modules_egg.CategoryView'
+        type: array
+      id:
+        type: string
+      isEnabled:
+        type: boolean
+      kenCost:
+        type: integer
+      name:
+        type: string
+      sortOrder:
+        type: integer
+    type: object
+  internal_modules_egg.RewardView:
+    properties:
+      id:
+        type: string
+      isActive:
+        type: boolean
+      isSuperLucky:
+        type: boolean
+      kenAmount:
+        type: integer
+      label:
+        type: string
+      sortOrder:
+        type: integer
+      vipDays:
+        type: integer
+      vipTypeId:
+        type: integer
+      weight:
+        type: number
+    type: object
   internal_modules_health.HealthResponse:
     properties:
       services:
@@ -2627,6 +2763,210 @@ definitions:
         example: 4
         type: integer
     type: object
+  ola-chat-server_internal_models.EggCategoryType:
+    enum:
+    - nothing
+    - vip_icon
+    - ken
+    - vip_days
+    type: string
+    x-enum-varnames:
+    - EggCategoryNothing
+    - EggCategoryVipIcon
+    - EggCategoryKen
+    - EggCategoryVipDays
+  ola-chat-server_internal_modules_egg.CategoryInput:
+    properties:
+      isActive:
+        type: boolean
+      label:
+        maxLength: 100
+        type: string
+      rewards:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_egg.RewardInput'
+        type: array
+      sortOrder:
+        type: integer
+      type:
+        allOf:
+        - $ref: '#/definitions/ola-chat-server_internal_models.EggCategoryType'
+        enum:
+        - nothing
+        - vip_icon
+        - ken
+        - vip_days
+      weight:
+        minimum: 0
+        type: number
+    required:
+    - label
+    - type
+    type: object
+  ola-chat-server_internal_modules_egg.CategoryView:
+    properties:
+      id:
+        type: string
+      isActive:
+        type: boolean
+      label:
+        type: string
+      rewards:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_egg.RewardView'
+        type: array
+      sortOrder:
+        type: integer
+      type:
+        $ref: '#/definitions/ola-chat-server_internal_models.EggCategoryType'
+      weight:
+        type: number
+    type: object
+  ola-chat-server_internal_modules_egg.CreatePackRequest:
+    properties:
+      categories:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_egg.CategoryInput'
+        type: array
+      isEnabled:
+        type: boolean
+      kenCost:
+        minimum: 0
+        type: integer
+      name:
+        maxLength: 100
+        type: string
+      sortOrder:
+        type: integer
+    required:
+    - name
+    type: object
+  ola-chat-server_internal_modules_egg.DrawListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_egg.DrawView'
+        type: array
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  ola-chat-server_internal_modules_egg.DrawView:
+    properties:
+      categoryType:
+        $ref: '#/definitions/ola-chat-server_internal_models.EggCategoryType'
+      createdAt:
+        type: string
+      id:
+        type: string
+      isSuperLucky:
+        type: boolean
+      kenAmount:
+        type: integer
+      kenCost:
+        type: integer
+      packId:
+        type: string
+      packName:
+        type: string
+      rewardLabel:
+        type: string
+      rewardType:
+        type: string
+      vipDays:
+        type: integer
+      vipTypeId:
+        type: integer
+    type: object
+  ola-chat-server_internal_modules_egg.PackListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_egg.PackView'
+        type: array
+    type: object
+  ola-chat-server_internal_modules_egg.PackView:
+    properties:
+      categories:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_egg.CategoryView'
+        type: array
+      id:
+        type: string
+      isEnabled:
+        type: boolean
+      kenCost:
+        type: integer
+      name:
+        type: string
+      sortOrder:
+        type: integer
+    type: object
+  ola-chat-server_internal_modules_egg.RewardInput:
+    properties:
+      isActive:
+        type: boolean
+      isSuperLucky:
+        type: boolean
+      kenAmount:
+        type: integer
+      label:
+        maxLength: 100
+        type: string
+      sortOrder:
+        type: integer
+      vipDays:
+        type: integer
+      vipTypeId:
+        type: integer
+      weight:
+        minimum: 0
+        type: number
+    required:
+    - label
+    type: object
+  ola-chat-server_internal_modules_egg.RewardView:
+    properties:
+      id:
+        type: string
+      isActive:
+        type: boolean
+      isSuperLucky:
+        type: boolean
+      kenAmount:
+        type: integer
+      label:
+        type: string
+      sortOrder:
+        type: integer
+      vipDays:
+        type: integer
+      vipTypeId:
+        type: integer
+      weight:
+        type: number
+    type: object
+  ola-chat-server_internal_modules_egg.SaveConfigRequest:
+    properties:
+      categories:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_egg.CategoryInput'
+        type: array
+    type: object
+  ola-chat-server_internal_modules_egg.UpdatePackRequest:
+    properties:
+      isEnabled:
+        type: boolean
+      kenCost:
+        type: integer
+      name:
+        type: string
+      sortOrder:
+        type: integer
+    type: object
   ola-chat-server_internal_modules_room.CreateRoomRequest:
     properties:
       description:
@@ -3577,6 +3917,159 @@ paths:
       summary: Refresh admin token
       tags:
       - admin-auth
+  /admin/egg/packs:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_modules_egg.PackListResponse'
+      security:
+      - BearerAuth: []
+      summary: Danh sách gói đập trứng + cấu hình (admin)
+      tags:
+      - admin-egg
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Pack
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ola-chat-server_internal_modules_egg.CreatePackRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_modules_egg.PackView'
+      security:
+      - BearerAuth: []
+      summary: Tạo gói đập trứng (admin)
+      tags:
+      - admin-egg
+  /admin/egg/packs/{id}:
+    delete:
+      parameters:
+      - description: Pack ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Xoá gói đập trứng (admin)
+      tags:
+      - admin-egg
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Pack ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Pack
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ola-chat-server_internal_modules_egg.UpdatePackRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_modules_egg.PackView'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Cập nhật gói đập trứng (admin)
+      tags:
+      - admin-egg
+  /admin/egg/packs/{id}/config:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Pack ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Config
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ola-chat-server_internal_modules_egg.SaveConfigRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_modules_egg.PackView'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Lưu cả cây nhóm + phần thưởng của gói (admin)
+      tags:
+      - admin-egg
+  /admin/egg/users/{userId}/history:
+    get:
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: string
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_modules_egg.DrawListResponse'
+      security:
+      - BearerAuth: []
+      summary: Lịch sử đập trứng của một user (admin)
+      tags:
+      - admin-egg
   /admin/ken/users/{userId}/adjust:
     post:
       consumes:
@@ -4958,6 +5451,78 @@ paths:
       summary: Send typing indicator
       tags:
       - conversations
+  /egg/history:
+    get:
+      parameters:
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_egg.DrawListResponse'
+      security:
+      - BearerAuth: []
+      summary: Lịch sử đập trứng của tôi
+      tags:
+      - egg
+  /egg/packs:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_egg.PackListResponse'
+      security:
+      - BearerAuth: []
+      summary: Danh sách gói đập trứng đang bật
+      tags:
+      - egg
+  /egg/packs/{id}/open:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Pack ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Idempotency
+        in: body
+        name: request
+        schema:
+          $ref: '#/definitions/internal_modules_egg.OpenPackRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_egg.OpenResult'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Đập một quả trứng trong gói
+      tags:
+      - egg
   /health:
     get:
       description: Check the health status of the API and database

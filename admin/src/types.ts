@@ -296,3 +296,90 @@ export interface MeListParams {
   sortBy?: string
   sortDir?: string
 }
+
+export type EggCategoryType = 'nothing' | 'vip_icon' | 'ken' | 'vip_days'
+
+export interface EggReward {
+  id: string
+  label: string
+  weight: number
+  vipTypeId?: number
+  kenAmount?: number
+  vipDays?: number
+  isSuperLucky: boolean
+  isActive: boolean
+  sortOrder: number
+}
+
+export interface EggCategory {
+  id: string
+  type: EggCategoryType
+  label: string
+  weight: number
+  isActive: boolean
+  sortOrder: number
+  rewards: EggReward[]
+}
+
+export interface EggPack {
+  id: string
+  name: string
+  kenCost: number
+  isEnabled: boolean
+  sortOrder: number
+  categories: EggCategory[]
+}
+
+export interface CreateEggPackRequest {
+  name: string
+  kenCost: number
+  isEnabled: boolean
+  sortOrder: number
+  categories?: EggCategoryInput[]
+}
+
+export interface UpdateEggPackRequest {
+  name?: string
+  kenCost?: number
+  isEnabled?: boolean
+  sortOrder?: number
+}
+
+export interface EggRewardInput {
+  label: string
+  weight: number
+  vipTypeId?: number
+  kenAmount?: number
+  vipDays?: number
+  isSuperLucky: boolean
+  isActive: boolean
+  sortOrder: number
+}
+
+export interface EggCategoryInput {
+  type: EggCategoryType
+  label: string
+  weight: number
+  isActive: boolean
+  sortOrder: number
+  rewards: EggRewardInput[]
+}
+
+export interface SaveEggConfigRequest {
+  categories: EggCategoryInput[]
+}
+
+export interface EggDraw {
+  id: string
+  packId: string
+  packName: string
+  kenCost: number
+  categoryType: EggCategoryType
+  rewardType?: EggCategoryType
+  rewardLabel?: string
+  vipTypeId?: number
+  kenAmount?: number
+  vipDays?: number
+  isSuperLucky: boolean
+  createdAt: string
+}

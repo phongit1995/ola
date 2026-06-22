@@ -2,6 +2,7 @@ package admin
 
 import (
 	adminauth "ola-chat-server/internal/modules/admin/auth"
+	adminegg "ola-chat-server/internal/modules/admin/egg"
 	adminken "ola-chat-server/internal/modules/admin/ken"
 	adminme "ola-chat-server/internal/modules/admin/me"
 	adminroom "ola-chat-server/internal/modules/admin/room"
@@ -29,6 +30,9 @@ func Provider(c *dig.Container) error {
 		return err
 	}
 	if err := adminvip.Provider(c); err != nil {
+		return err
+	}
+	if err := adminegg.Provider(c); err != nil {
 		return err
 	}
 	if err := adminken.Provider(c); err != nil {

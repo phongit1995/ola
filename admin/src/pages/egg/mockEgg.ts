@@ -24,6 +24,7 @@ export interface EggReward {
   vipTypeId?: number
   kenAmount?: number
   vipDays?: number
+  isSuperLucky: boolean
   isActive: boolean
   sortOrder: number
 }
@@ -46,33 +47,6 @@ export const CATEGORY_TEMPLATES: CategoryTemplate[] = [
   { type: 'vip_icon', label: 'VIP', hasItems: true },
   { type: 'ken', label: 'Ken', hasItems: true },
   { type: 'vip_days', label: 'Ngày VIP', hasItems: true },
-]
-
-export const MOCK_PACKS: EggPack[] = [
-  { id: 'pk-bronze', name: 'Trứng Đồng', kenCost: 100, isEnabled: true },
-  { id: 'pk-gold', name: 'Trứng Vàng', kenCost: 1000, isEnabled: true },
-]
-
-export const MOCK_CATEGORIES: EggCategory[] = [
-  { id: 'c-bz-no', packId: 'pk-bronze', type: 'nothing', label: 'Không trúng', weight: 70, isActive: true },
-  { id: 'c-bz-vip', packId: 'pk-bronze', type: 'vip_icon', label: 'VIP', weight: 10, isActive: true },
-  { id: 'c-bz-ken', packId: 'pk-bronze', type: 'ken', label: 'Ken', weight: 15, isActive: true },
-  { id: 'c-bz-vd', packId: 'pk-bronze', type: 'vip_days', label: 'Ngày VIP', weight: 5, isActive: true },
-  { id: 'c-gd-no', packId: 'pk-gold', type: 'nothing', label: 'Không trúng', weight: 40, isActive: true },
-  { id: 'c-gd-ken', packId: 'pk-gold', type: 'ken', label: 'Ken', weight: 60, isActive: true },
-]
-
-export const MOCK_REWARDS: EggReward[] = [
-  { id: 'r-vip-1', categoryId: 'c-bz-vip', label: 'Zakumi Đại Đế', weight: 4, vipTypeId: 4, isActive: true, sortOrder: 1 },
-  { id: 'r-vip-2', categoryId: 'c-bz-vip', label: 'Vua Của Các Vị Thần Zeus', weight: 1, vipTypeId: 51, isActive: true, sortOrder: 2 },
-  { id: 'r-ken-1', categoryId: 'c-bz-ken', label: '1000 Ken', weight: 6, kenAmount: 1000, isActive: true, sortOrder: 1 },
-  { id: 'r-ken-2', categoryId: 'c-bz-ken', label: '2000 Ken', weight: 3, kenAmount: 2000, isActive: true, sortOrder: 2 },
-  { id: 'r-ken-3', categoryId: 'c-bz-ken', label: '5000 Ken', weight: 1, kenAmount: 5000, isActive: true, sortOrder: 3 },
-  { id: 'r-vd-1', categoryId: 'c-bz-vd', label: 'VIP 7 ngày', weight: 4, vipDays: 7, isActive: true, sortOrder: 1 },
-  { id: 'r-vd-2', categoryId: 'c-bz-vd', label: 'VIP 30 ngày', weight: 2, vipDays: 30, isActive: true, sortOrder: 2 },
-  { id: 'r-vd-3', categoryId: 'c-bz-vd', label: 'VIP 90 ngày', weight: 1, vipDays: 90, isActive: true, sortOrder: 3 },
-  { id: 'r-gd-ken-1', categoryId: 'c-gd-ken', label: '5000 Ken', weight: 3, kenAmount: 5000, isActive: true, sortOrder: 1 },
-  { id: 'r-gd-ken-2', categoryId: 'c-gd-ken', label: '10000 Ken', weight: 1, kenAmount: 10000, isActive: true, sortOrder: 2 },
 ]
 
 export function newId(prefix: string): string {
