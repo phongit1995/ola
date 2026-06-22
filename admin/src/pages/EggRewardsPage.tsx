@@ -11,7 +11,9 @@ import {
   MOCK_REWARDS,
   categoryTemplate,
   newId,
+  percent,
   rebalanceWeights,
+  sumActiveWeight,
   type EggCategory,
   type EggCategoryType,
   type EggPack,
@@ -37,6 +39,11 @@ export function EggRewardsPage() {
   const packCategoryIds = new Set(packCategories.map((c) => c.id))
   const packRewards = rewards.filter((r) => packCategoryIds.has(r.categoryId))
   const activeCategory = categories.find((c) => c.id === activeCategoryId) ?? null
+  const editingItemPercent = editingItem
+    ? editingItem.isActive
+      ? percent(editingItem.weight, sumActiveWeight(rewards.filter((r) => r.categoryId === editingItem.categoryId)))
+      : editingItem.weight
+    : undefined
 
   function openCreatePack() {
     setEditingPack(null)
@@ -127,14 +134,27 @@ export function EggRewardsPage() {
   }
 
   function submitItem(values: EggItemFormValues) {
+    const targetPercent = values.weight
     if (editingItem) {
-      setRewards((prev) => prev.map((r) => (r.id === editingItem.id ? { ...r, ...values } : r)))
+      const categoryId = editingItem.categoryId
+      setRewards((prev) => {
+        const updated = prev.map((r) => (r.id === editingItem.id ? { ...r, ...values } : r))
+        const catItems = updated.filter((r) => r.categoryId === categoryId)
+        const next = rebalanceWeights(catItems, editingItem.id, targetPercent)
+        return updated.map((r) => (next.has(r.id) ? { ...r, weight: next.get(r.id) ?? r.weight } : r))
+      })
       message.success('Đã cập nhật phần thưởng (mock)')
       return
     }
-    const siblings = rewards.filter((r) => r.categoryId === activeCategoryId)
-    const sortOrder = siblings.reduce((max, r) => Math.max(max, r.sortOrder), 0) + 1
-    setRewards((prev) => [...prev, { id: newId('r'), categoryId: activeCategoryId, sortOrder, ...values }])
+    const id = newId('r')
+    setRewards((prev) => {
+      const siblings = prev.filter((r) => r.categoryId === activeCategoryId)
+      const sortOrder = siblings.reduce((max, r) => Math.max(max, r.sortOrder), 0) + 1
+      const added = [...prev, { id, categoryId: activeCategoryId, sortOrder, ...values }]
+      const catItems = added.filter((r) => r.categoryId === activeCategoryId)
+      const next = rebalanceWeights(catItems, id, targetPercent)
+      return added.map((r) => (next.has(r.id) ? { ...r, weight: next.get(r.id) ?? r.weight } : r))
+    })
     message.success('Đã thêm phần thưởng (mock)')
   }
 
@@ -298,6 +318,7 @@ export function EggRewardsPage() {
           categoryType={activeCategory.type}
           categoryLabel={activeCategory.label}
           editing={editingItem}
+          initialPercent={editingItemPercent}
           onClose={() => setItemModalOpen(false)}
           onSubmit={submitItem}
         />

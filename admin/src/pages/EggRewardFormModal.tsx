@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Form, Input, InputNumber, Modal, Select, Slider, Space, Switch } from 'antd'
+import { Form, Input, InputNumber, Modal, Select, Space, Switch } from 'antd'
 import { VIP_CATALOG, vipIconUrl, vipName } from '@/lib/vipCatalog'
 import type { EggCategoryType, EggReward } from './egg/mockEgg'
 
@@ -17,6 +17,7 @@ interface EggRewardFormModalProps {
   categoryType: EggCategoryType
   categoryLabel: string
   editing: EggReward | null
+  initialPercent?: number
   onClose: () => void
   onSubmit: (values: EggItemFormValues) => void
 }
@@ -26,6 +27,7 @@ export function EggRewardFormModal({
   categoryType,
   categoryLabel,
   editing,
+  initialPercent,
   onClose,
   onSubmit,
 }: EggRewardFormModalProps) {
@@ -36,13 +38,13 @@ export function EggRewardFormModal({
     if (!open) return
     form.setFieldsValue({
       label: editing?.label ?? '',
-      weight: editing?.weight ?? 10,
+      weight: initialPercent ?? editing?.weight ?? 10,
       vipTypeId: editing?.vipTypeId,
       kenAmount: editing?.kenAmount,
       vipDays: editing?.vipDays,
       isActive: editing?.isActive ?? true,
     })
-  }, [open, editing, form])
+  }, [open, editing, initialPercent, form])
 
   async function onOk() {
     const values = await form.validateFields()
@@ -139,9 +141,17 @@ export function EggRewardFormModal({
 
         <Form.Item
           name="weight"
-          label="Mức cơ hội (kéo thanh) — % sẽ tự tính theo các phần thưởng cùng nhóm"
+          label="% trong nhóm — các phần thưởng còn lại sẽ tự cân để tổng nhóm = 100%"
+          rules={[{ required: true, message: 'Vui lòng nhập % trong nhóm' }]}
         >
-          <Slider min={0} max={100} tooltip={{ formatter: (v) => `mức ${v}` }} />
+          <InputNumber
+            min={0}
+            max={100}
+            step={0.01}
+            addonAfter="%"
+            style={{ width: '100%' }}
+            placeholder="Ví dụ: 0.01, 0.15, 25"
+          />
         </Form.Item>
 
         <Form.Item name="isActive" label="Đang bật" valuePropName="checked">
