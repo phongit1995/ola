@@ -56,6 +56,142 @@ definitions:
       token:
         type: string
     type: object
+  internal_modules_admin_ken.AdjustRequest:
+    properties:
+      action:
+        enum:
+        - grant
+        - deduct
+        example: grant
+        type: string
+      amount:
+        example: 500
+        minimum: 1
+        type: integer
+      description:
+        example: Đền bù sự kiện
+        maxLength: 255
+        type: string
+    required:
+    - action
+    - amount
+    type: object
+  internal_modules_admin_ken.AdjustResponse:
+    properties:
+      action:
+        example: grant
+        type: string
+      amount:
+        example: 500
+        type: integer
+      balanceAfter:
+        example: 1500
+        type: integer
+      balanceBefore:
+        example: 1000
+        type: integer
+      direction:
+        example: credit
+        type: string
+      transactionId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      type:
+        example: ADMIN_GRANT
+        type: string
+      userId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+    type: object
+  internal_modules_admin_ken.AdjustSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_ken.AdjustResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_admin_ken.TransactionItem:
+    properties:
+      actorId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      actorType:
+        example: admin
+        type: string
+      amount:
+        example: 500
+        type: integer
+      balanceAfter:
+        example: 1500
+        type: integer
+      balanceBefore:
+        example: 1000
+        type: integer
+      createdAt:
+        example: "2026-06-22T10:00:00Z"
+        type: string
+      description:
+        example: Đền bù sự kiện
+        type: string
+      direction:
+        example: credit
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      refId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      refType:
+        example: vip_purchase
+        type: string
+      type:
+        example: ADMIN_GRANT
+        type: string
+    type: object
+  internal_modules_admin_ken.TransactionListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_admin_ken.TransactionItem'
+        type: array
+      limit:
+        example: 20
+        type: integer
+      offset:
+        example: 0
+        type: integer
+      total:
+        example: 2
+        type: integer
+    type: object
+  internal_modules_admin_ken.TransactionListSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_ken.TransactionListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
   internal_modules_admin_me.AuthorResponse:
     properties:
       avatar:
@@ -707,6 +843,182 @@ definitions:
       timestamp:
         type: string
       traceId:
+        type: string
+    type: object
+  internal_modules_marriage.MarriageStatusResponse:
+    properties:
+      marriedAt:
+        example: "2026-06-22T10:05:00Z"
+        type: string
+      spouse:
+        $ref: '#/definitions/internal_modules_marriage.SpouseInfo'
+    type: object
+  internal_modules_marriage.MarriageStatusSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_marriage.MarriageStatusResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_marriage.MessageResponse:
+    properties:
+      message:
+        example: ok
+        type: string
+    type: object
+  internal_modules_marriage.MessageSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_marriage.MessageResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_marriage.ProposalItem:
+    properties:
+      addressee:
+        $ref: '#/definitions/internal_modules_marriage.UserBrief'
+      createdAt:
+        example: "2026-06-22T10:00:00Z"
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      message:
+        example: Em đồng ý làm vợ anh nhé?
+        type: string
+      proposer:
+        $ref: '#/definitions/internal_modules_marriage.UserBrief'
+      respondedAt:
+        example: "2026-06-22T10:05:00Z"
+        type: string
+      status:
+        example: pending
+        type: string
+    type: object
+  internal_modules_marriage.ProposalListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_marriage.ProposalItem'
+        type: array
+      limit:
+        example: 20
+        type: integer
+      offset:
+        example: 0
+        type: integer
+      total:
+        example: 1
+        type: integer
+    type: object
+  internal_modules_marriage.ProposalListSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_marriage.ProposalListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_marriage.ProposeRequest:
+    properties:
+      addresseeUsername:
+        example: john_doe
+        maxLength: 100
+        minLength: 1
+        type: string
+      message:
+        example: Em đồng ý làm vợ anh nhé?
+        maxLength: 500
+        type: string
+    required:
+    - addresseeUsername
+    type: object
+  internal_modules_marriage.ProposeResponse:
+    properties:
+      addresseeUsername:
+        example: jane_doe
+        type: string
+      proposalId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      status:
+        example: pending
+        type: string
+    type: object
+  internal_modules_marriage.ProposeSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_marriage.ProposeResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_marriage.SpouseInfo:
+    properties:
+      avatar:
+        example: https://example.com/avatar.jpg
+        type: string
+      fullName:
+        example: Jane Doe
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      username:
+        example: jane_doe
+        type: string
+    type: object
+  internal_modules_marriage.UserBrief:
+    properties:
+      avatar:
+        example: https://example.com/avatar.jpg
+        type: string
+      fullName:
+        example: John Doe
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      username:
+        example: john_doe
         type: string
     type: object
   internal_modules_me.AuthorResponse:
@@ -1361,6 +1673,12 @@ definitions:
       username:
         example: john_doe
         type: string
+      vipEndTime:
+        example: "2026-12-31T00:00:00Z"
+        type: string
+      vipUsed:
+        example: gold
+        type: string
     type: object
   internal_modules_room.JoinRoomResponse:
     properties:
@@ -1773,6 +2091,21 @@ definitions:
       traceId:
         type: string
     type: object
+  internal_modules_user.SpouseInfo:
+    properties:
+      avatar:
+        example: https://example.com/avatar.jpg
+        type: string
+      fullName:
+        example: Jane Doe
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      username:
+        example: jane_doe
+        type: string
+    type: object
   internal_modules_user.UpdateProfileRequest:
     properties:
       avatar:
@@ -1805,12 +2138,6 @@ definitions:
         - male
         - female
         example: male
-        type: string
-      marriage:
-        enum:
-        - single
-        - married
-        example: single
         type: string
       phone:
         example: "+84987654321"
@@ -1913,11 +2240,10 @@ definitions:
       lastActiveAt:
         example: "2024-01-15T10:30:00Z"
         type: string
-      marriage:
-        example: single
-        type: string
       relationship:
         $ref: '#/definitions/internal_modules_user.RelationshipInfo'
+      spouse:
+        $ref: '#/definitions/internal_modules_user.SpouseInfo'
       username:
         example: john_doe
         type: string
@@ -3251,6 +3577,84 @@ paths:
       summary: Refresh admin token
       tags:
       - admin-auth
+  /admin/ken/users/{userId}/adjust:
+    post:
+      consumes:
+      - application/json
+      description: Admin tặng (grant) hoặc trừ (deduct) ken; ghi ken_transactions
+        và bắn KEN_UPDATED
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: string
+      - description: Adjust request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_admin_ken.AdjustRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_ken.AdjustSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Cộng/trừ ken cho user (admin)
+      tags:
+      - admin-ken
+  /admin/ken/users/{userId}/transactions:
+    get:
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: string
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_ken.TransactionListSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Lịch sử giao dịch ken của user (admin)
+      tags:
+      - admin-ken
   /admin/me:
     get:
       parameters:
@@ -4571,6 +4975,167 @@ paths:
       summary: Health check
       tags:
       - health
+  /marriage:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_marriage.MarriageStatusSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Trạng thái hôn nhân của tôi
+      tags:
+      - marriage
+  /marriage/divorce:
+    post:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_marriage.MessageSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Ly hôn
+      tags:
+      - marriage
+  /marriage/proposals:
+    get:
+      parameters:
+      - description: incoming | outgoing (default incoming)
+        in: query
+        name: direction
+        type: string
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_marriage.ProposalListSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Danh sách lời cầu hôn
+      tags:
+      - marriage
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Proposal
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_marriage.ProposeRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/internal_modules_marriage.ProposeSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Gửi lời cầu hôn
+      tags:
+      - marriage
+  /marriage/proposals/{id}:
+    delete:
+      parameters:
+      - description: Proposal ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_marriage.MessageSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Huỷ lời cầu hôn của mình
+      tags:
+      - marriage
+  /marriage/proposals/{id}/accept:
+    post:
+      parameters:
+      - description: Proposal ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_marriage.MarriageStatusSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Đồng ý lời cầu hôn
+      tags:
+      - marriage
+  /marriage/proposals/{id}/reject:
+    post:
+      parameters:
+      - description: Proposal ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_marriage.MessageSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Từ chối lời cầu hôn
+      tags:
+      - marriage
   /me:
     get:
       parameters:

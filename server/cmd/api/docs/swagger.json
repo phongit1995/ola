@@ -155,6 +155,127 @@
                 }
             }
         },
+        "/admin/ken/users/{userId}/adjust": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Admin tặng (grant) hoặc trừ (deduct) ken; ghi ken_transactions và bắn KEN_UPDATED",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-ken"
+                ],
+                "summary": "Cộng/trừ ken cho user (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "userId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Adjust request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_ken.AdjustRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_ken.AdjustSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/ken/users/{userId}/transactions": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-ken"
+                ],
+                "summary": "Lịch sử giao dịch ken của user (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "userId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_ken.TransactionListSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/me": {
             "get": {
                 "security": [
@@ -2237,6 +2358,269 @@
                     },
                     "503": {
                         "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/marriage": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "marriage"
+                ],
+                "summary": "Trạng thái hôn nhân của tôi",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_marriage.MarriageStatusSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/marriage/divorce": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "marriage"
+                ],
+                "summary": "Ly hôn",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_marriage.MessageSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/marriage/proposals": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "marriage"
+                ],
+                "summary": "Danh sách lời cầu hôn",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "incoming | outgoing (default incoming)",
+                        "name": "direction",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_marriage.ProposalListSuccessResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "marriage"
+                ],
+                "summary": "Gửi lời cầu hôn",
+                "parameters": [
+                    {
+                        "description": "Proposal",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_marriage.ProposeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_marriage.ProposeSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/marriage/proposals/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "marriage"
+                ],
+                "summary": "Huỷ lời cầu hôn của mình",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Proposal ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_marriage.MessageSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/marriage/proposals/{id}/accept": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "marriage"
+                ],
+                "summary": "Đồng ý lời cầu hôn",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Proposal ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_marriage.MarriageStatusSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/marriage/proposals/{id}/reject": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "marriage"
+                ],
+                "summary": "Từ chối lời cầu hôn",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Proposal ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_marriage.MessageSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
@@ -5420,6 +5804,198 @@
                 }
             }
         },
+        "internal_modules_admin_ken.AdjustRequest": {
+            "type": "object",
+            "required": [
+                "action",
+                "amount"
+            ],
+            "properties": {
+                "action": {
+                    "type": "string",
+                    "enum": [
+                        "grant",
+                        "deduct"
+                    ],
+                    "example": "grant"
+                },
+                "amount": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 500
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "example": "Đền bù sự kiện"
+                }
+            }
+        },
+        "internal_modules_admin_ken.AdjustResponse": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "type": "string",
+                    "example": "grant"
+                },
+                "amount": {
+                    "type": "integer",
+                    "example": 500
+                },
+                "balanceAfter": {
+                    "type": "integer",
+                    "example": 1500
+                },
+                "balanceBefore": {
+                    "type": "integer",
+                    "example": 1000
+                },
+                "direction": {
+                    "type": "string",
+                    "example": "credit"
+                },
+                "transactionId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "ADMIN_GRANT"
+                },
+                "userId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                }
+            }
+        },
+        "internal_modules_admin_ken.AdjustSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_ken.AdjustResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_ken.TransactionItem": {
+            "type": "object",
+            "properties": {
+                "actorId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "actorType": {
+                    "type": "string",
+                    "example": "admin"
+                },
+                "amount": {
+                    "type": "integer",
+                    "example": 500
+                },
+                "balanceAfter": {
+                    "type": "integer",
+                    "example": 1500
+                },
+                "balanceBefore": {
+                    "type": "integer",
+                    "example": 1000
+                },
+                "createdAt": {
+                    "type": "string",
+                    "example": "2026-06-22T10:00:00Z"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "Đền bù sự kiện"
+                },
+                "direction": {
+                    "type": "string",
+                    "example": "credit"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "refId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "refType": {
+                    "type": "string",
+                    "example": "vip_purchase"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "ADMIN_GRANT"
+                }
+            }
+        },
+        "internal_modules_admin_ken.TransactionListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_ken.TransactionItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 20
+                },
+                "offset": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 2
+                }
+            }
+        },
+        "internal_modules_admin_ken.TransactionListSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_ken.TransactionListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
         "internal_modules_admin_me.AuthorResponse": {
             "type": "object",
             "properties": {
@@ -6385,6 +6961,263 @@
                 }
             }
         },
+        "internal_modules_marriage.MarriageStatusResponse": {
+            "type": "object",
+            "properties": {
+                "marriedAt": {
+                    "type": "string",
+                    "example": "2026-06-22T10:05:00Z"
+                },
+                "spouse": {
+                    "$ref": "#/definitions/internal_modules_marriage.SpouseInfo"
+                }
+            }
+        },
+        "internal_modules_marriage.MarriageStatusSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_marriage.MarriageStatusResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_marriage.MessageResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "ok"
+                }
+            }
+        },
+        "internal_modules_marriage.MessageSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_marriage.MessageResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_marriage.ProposalItem": {
+            "type": "object",
+            "properties": {
+                "addressee": {
+                    "$ref": "#/definitions/internal_modules_marriage.UserBrief"
+                },
+                "createdAt": {
+                    "type": "string",
+                    "example": "2026-06-22T10:00:00Z"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Em đồng ý làm vợ anh nhé?"
+                },
+                "proposer": {
+                    "$ref": "#/definitions/internal_modules_marriage.UserBrief"
+                },
+                "respondedAt": {
+                    "type": "string",
+                    "example": "2026-06-22T10:05:00Z"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "pending"
+                }
+            }
+        },
+        "internal_modules_marriage.ProposalListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_marriage.ProposalItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 20
+                },
+                "offset": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "internal_modules_marriage.ProposalListSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_marriage.ProposalListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_marriage.ProposeRequest": {
+            "type": "object",
+            "required": [
+                "addresseeUsername"
+            ],
+            "properties": {
+                "addresseeUsername": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1,
+                    "example": "john_doe"
+                },
+                "message": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "example": "Em đồng ý làm vợ anh nhé?"
+                }
+            }
+        },
+        "internal_modules_marriage.ProposeResponse": {
+            "type": "object",
+            "properties": {
+                "addresseeUsername": {
+                    "type": "string",
+                    "example": "jane_doe"
+                },
+                "proposalId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "pending"
+                }
+            }
+        },
+        "internal_modules_marriage.ProposeSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_marriage.ProposeResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_marriage.SpouseInfo": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string",
+                    "example": "https://example.com/avatar.jpg"
+                },
+                "fullName": {
+                    "type": "string",
+                    "example": "Jane Doe"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "jane_doe"
+                }
+            }
+        },
+        "internal_modules_marriage.UserBrief": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string",
+                    "example": "https://example.com/avatar.jpg"
+                },
+                "fullName": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "john_doe"
+                }
+            }
+        },
         "internal_modules_me.AuthorResponse": {
             "type": "object",
             "properties": {
@@ -7323,6 +8156,14 @@
                 "username": {
                     "type": "string",
                     "example": "john_doe"
+                },
+                "vipEndTime": {
+                    "type": "string",
+                    "example": "2026-12-31T00:00:00Z"
+                },
+                "vipUsed": {
+                    "type": "string",
+                    "example": "gold"
                 }
             }
         },
@@ -7938,6 +8779,27 @@
                 }
             }
         },
+        "internal_modules_user.SpouseInfo": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string",
+                    "example": "https://example.com/avatar.jpg"
+                },
+                "fullName": {
+                    "type": "string",
+                    "example": "Jane Doe"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "jane_doe"
+                }
+            }
+        },
         "internal_modules_user.UpdateProfileRequest": {
             "type": "object",
             "properties": {
@@ -7980,14 +8842,6 @@
                         "female"
                     ],
                     "example": "male"
-                },
-                "marriage": {
-                    "type": "string",
-                    "enum": [
-                        "single",
-                        "married"
-                    ],
-                    "example": "single"
                 },
                 "phone": {
                     "type": "string",
@@ -8130,12 +8984,11 @@
                     "type": "string",
                     "example": "2024-01-15T10:30:00Z"
                 },
-                "marriage": {
-                    "type": "string",
-                    "example": "single"
-                },
                 "relationship": {
                     "$ref": "#/definitions/internal_modules_user.RelationshipInfo"
+                },
+                "spouse": {
+                    "$ref": "#/definitions/internal_modules_user.SpouseInfo"
                 },
                 "username": {
                     "type": "string",
