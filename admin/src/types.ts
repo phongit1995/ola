@@ -96,6 +96,38 @@ export interface UserListParams {
   sortDir?: string
 }
 
+export interface KenTransaction {
+  id: string
+  direction: 'credit' | 'debit'
+  type: string
+  amount: number
+  balanceBefore: number
+  balanceAfter: number
+  description?: string
+  refType?: string
+  refId?: string
+  actorType?: string
+  actorId?: string
+  createdAt: string
+}
+
+export interface KenAdjustRequest {
+  action: 'grant' | 'deduct'
+  amount: number
+  description?: string
+}
+
+export interface KenAdjustResult {
+  transactionId: string
+  userId: string
+  action: string
+  direction: string
+  type: string
+  amount: number
+  balanceBefore: number
+  balanceAfter: number
+}
+
 export interface VipPackage {
   id: string
   name: string

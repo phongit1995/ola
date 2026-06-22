@@ -1,9 +1,11 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Avatar, Button, Modal, Skeleton, Tag, Typography } from 'antd'
-import { CrownOutlined, UserOutlined } from '@ant-design/icons'
+import { CrownOutlined, HistoryOutlined, UserOutlined, WalletOutlined } from '@ant-design/icons'
 import { useUserDetail } from '@/hooks/useUsers'
 import { formatDateTime } from '@/lib/format'
 import { GENDER } from './userMeta'
+import { KenAdjustModal } from './KenAdjustModal'
+import { KenHistoryModal } from './KenHistoryModal'
 
 interface UserDetailModalProps {
   userId: string | null
@@ -58,8 +60,11 @@ function Row({ label, value }: { label: string; value?: ReactNode }) {
 export function UserDetailModal({ userId, open, onClose }: UserDetailModalProps) {
   const { data, isLoading } = useUserDetail(open ? userId : null)
   const gender = data?.gender ? GENDER[data.gender] ?? { label: data.gender, color: 'default' } : null
+  const [adjustOpen, setAdjustOpen] = useState(false)
+  const [historyOpen, setHistoryOpen] = useState(false)
 
   return (
+    <>
     <Modal
       title="Chi tiết người dùng"
       open={open}
@@ -68,6 +73,24 @@ export function UserDetailModal({ userId, open, onClose }: UserDetailModalProps)
       width={560}
       styles={{ body: { maxHeight: '72vh', overflowY: 'auto', paddingRight: 8 } }}
       footer={[
+        <Button
+          key="history"
+          icon={<HistoryOutlined />}
+          disabled={!userId}
+          onClick={() => setHistoryOpen(true)}
+        >
+          Lịch sử Ken
+        </Button>,
+        <Button
+          key="adjust"
+          type="primary"
+          ghost
+          icon={<WalletOutlined />}
+          disabled={!userId}
+          onClick={() => setAdjustOpen(true)}
+        >
+          Tặng / Trừ Ken
+        </Button>,
         <Button key="close" onClick={onClose}>
           Đóng
         </Button>,
@@ -153,5 +176,19 @@ export function UserDetailModal({ userId, open, onClose }: UserDetailModalProps)
         </>
       )}
     </Modal>
+    <KenAdjustModal
+      open={adjustOpen}
+      userId={userId}
+      username={data?.username}
+      currentKen={data?.ken}
+      onClose={() => setAdjustOpen(false)}
+    />
+    <KenHistoryModal
+      open={historyOpen}
+      userId={userId}
+      username={data?.username}
+      onClose={() => setHistoryOpen(false)}
+    />
+    </>
   )
 }

@@ -266,6 +266,25 @@ func (r *Repository) PurchaseShopItem(userID uuid.UUID, item *models.VipShopItem
 			return err
 		}
 
+		if item.KenPrice > 0 {
+			kenTx := models.KenTransaction{
+				UserID:        userID,
+				Direction:     models.KenDirectionDebit,
+				Type:          models.KenTxTypeVipIcon,
+				Amount:        item.KenPrice,
+				BalanceBefore: u.Ken,
+				BalanceAfter:  newKen,
+				Description:   purchase.PackageName,
+				RefType:       "vip_purchase",
+				RefID:         &purchase.ID,
+				ActorType:     models.KenActorUser,
+				ActorID:       &userID,
+			}
+			if err := tx.Create(&kenTx).Error; err != nil {
+				return err
+			}
+		}
+
 		u.Ken = newKen
 		updatedUser = u
 		return nil
@@ -316,6 +335,25 @@ func (r *Repository) Purchase(userID uuid.UUID, pkg *models.VipPackage) (*models
 		}
 		if err := tx.Create(&purchase).Error; err != nil {
 			return err
+		}
+
+		if pkg.KenPrice > 0 {
+			kenTx := models.KenTransaction{
+				UserID:        userID,
+				Direction:     models.KenDirectionDebit,
+				Type:          models.KenTxTypeVipPackage,
+				Amount:        pkg.KenPrice,
+				BalanceBefore: u.Ken,
+				BalanceAfter:  newKen,
+				Description:   pkg.Name,
+				RefType:       "vip_purchase",
+				RefID:         &purchase.ID,
+				ActorType:     models.KenActorUser,
+				ActorID:       &userID,
+			}
+			if err := tx.Create(&kenTx).Error; err != nil {
+				return err
+			}
 		}
 
 		u.Ken = newKen
