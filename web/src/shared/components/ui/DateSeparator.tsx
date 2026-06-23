@@ -2,11 +2,11 @@ import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { createDateFormatter } from '@lib';
 
-interface RoomDateSeparatorProps {
+interface DateSeparatorProps {
   iso: string;
 }
 
-export function RoomDateSeparator({ iso }: RoomDateSeparatorProps) {
+export function DateSeparator({ iso }: DateSeparatorProps) {
   const { i18n } = useTranslation();
   const formatDate = useMemo(() => createDateFormatter(i18n.language), [i18n.language]);
   return (

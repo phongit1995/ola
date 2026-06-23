@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActionButton,
@@ -8,12 +8,14 @@ import {
   ConfirmDialog,
   FullScreenOverlay,
   ListOptionDialog,
+  DateSeparator,
   ScreenHeader,
   SmileyInput,
+  Spinner,
   type SmileyInputHandle,
   type ListOption,
 } from '@components';
-import { colorForName, kulToken, toast } from '@lib';
+import { colorForName, isSameDay, kulToken, toast } from '@lib';
 import moreIcon from '@/assets/icons/chat/ic_more_white.png';
 import likeIcon from '@/assets/icons/chat/smiley_35.png';
 import { useChatStore } from '@/store/chatStore';
@@ -59,6 +61,7 @@ export function ChatConversationView({
   const typingUsers = useChatStore((s) => s.typingUsers);
   const hasMore = useChatStore((s) => s.hasMore);
   const loadingMore = useChatStore((s) => s.loadingMore);
+  const loadingMessages = useChatStore((s) => s.loadingMessages);
   const sendText = useChatStore((s) => s.sendText);
   const sendImage = useChatStore((s) => s.sendImage);
   const sendAudio = useChatStore((s) => s.sendAudio);
@@ -284,34 +287,54 @@ export function ChatConversationView({
         onScroll={handleScroll}
         className="flex flex-1 flex-col gap-0.5 overflow-y-auto bg-[#ECE5DD] px-2 py-3"
       >
-        {bubbles.map((message, index) => (
-          <MessageRow
-            key={message.id}
-            message={message}
-            prev={bubbles[index - 1]}
-            next={bubbles[index + 1]}
-            name={name}
-            color={color}
-            avatar={avatar}
-            isLastOwn={message.id === lastOwnId}
-            seen={conversationSeen}
-            onOpenActions={setActionTarget}
-            onOpenProfile={canViewProfile ? openPeerProfile : undefined}
-            onMention={openMentionProfile}
-            onOpenImage={(img) => openViewer([img])}
-            onResend={resendMessage}
-          />
-        ))}
-
-        {peerTyping && (
-          <div className="mt-1 flex items-end gap-1">
-            <Avatar name={name} color={color} src={avatar} size={32} />
-            <div className="flex items-center gap-1 rounded-2xl rounded-tl-sm bg-white px-3 py-3 shadow-sm">
-              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-black/40" />
-              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-black/40 [animation-delay:150ms]" />
-              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-black/40 [animation-delay:300ms]" />
-            </div>
+        {loadingMessages && messages.length === 0 ? (
+          <div className="flex flex-1 items-center justify-center">
+            <Spinner size={32} />
           </div>
+        ) : (
+          <>
+            {loadingMore && (
+              <div className="flex shrink-0 justify-center py-2">
+                <Spinner size={20} tone="muted" />
+              </div>
+            )}
+            {bubbles.map((message, index) => {
+              const prev = bubbles[index - 1];
+              const showDate =
+                !!message.createdAt && !isSameDay(prev?.createdAt ?? '', message.createdAt);
+              return (
+                <Fragment key={message.id}>
+                  {showDate && <DateSeparator iso={message.createdAt ?? ''} />}
+                  <MessageRow
+                    message={message}
+                    prev={prev}
+                    next={bubbles[index + 1]}
+                    name={name}
+                    color={color}
+                    avatar={avatar}
+                    isLastOwn={message.id === lastOwnId}
+                    seen={conversationSeen}
+                    onOpenActions={setActionTarget}
+                    onOpenProfile={canViewProfile ? openPeerProfile : undefined}
+                    onMention={openMentionProfile}
+                    onOpenImage={(img) => openViewer([img])}
+                    onResend={resendMessage}
+                  />
+                </Fragment>
+              );
+            })}
+
+            {peerTyping && (
+              <div className="mt-1 flex items-end gap-1">
+                <Avatar name={name} color={color} src={avatar} size={32} />
+                <div className="flex items-center gap-1 rounded-2xl rounded-tl-sm bg-white px-3 py-3 shadow-sm">
+                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-black/40" />
+                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-black/40 [animation-delay:150ms]" />
+                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-black/40 [animation-delay:300ms]" />
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
 

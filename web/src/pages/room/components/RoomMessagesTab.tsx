@@ -4,10 +4,16 @@ import type { RoomMessage } from '@app-types';
 import { colorForName, kulToken, toast } from '@lib';
 import { useAuthStore } from '@/store/authStore';
 import { useLongPress } from '@hooks';
-import { AttachmentBar, type AttachTab, Avatar, SmileyInput, type SmileyInputHandle } from '@components';
+import {
+  AttachmentBar,
+  type AttachTab,
+  Avatar,
+  DateSeparator,
+  SmileyInput,
+  type SmileyInputHandle,
+} from '@components';
 import likeIcon from '@/assets/icons/chat/smiley_35.png';
 import { buildRoomFeed } from '../messageGroups';
-import { RoomDateSeparator } from './RoomDateSeparator';
 import { RoomMessageGroup } from './RoomMessageGroup';
 import type { RoomChatStatus } from '@/store/roomChatStore';
 
@@ -102,7 +108,7 @@ export function RoomMessagesTab({
       >
         {feed.map((item) =>
           item.kind === 'date' ? (
-            <RoomDateSeparator key={item.key} iso={item.createdAt} />
+            <DateSeparator key={item.key} iso={item.createdAt} />
           ) : (
             <RoomMessageGroup
               key={item.key}

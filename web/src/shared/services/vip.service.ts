@@ -25,8 +25,8 @@ export class VipService {
     return http.post<BuyVipPackageResult>(API_PATH.vip.buyPackage(packageId));
   }
 
-  static store(): Promise<VipStoreResult> {
-    return http.get<VipStoreResult>(API_PATH.vip.store);
+  static store(params?: { limit?: number; offset?: number }): Promise<VipStoreResult> {
+    return http.get<VipStoreResult>(API_PATH.vip.store, { params });
   }
 
   static setPrivacy(privacy: number): Promise<unknown> {

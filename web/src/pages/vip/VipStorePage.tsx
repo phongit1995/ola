@@ -18,6 +18,7 @@ import { useAuthStore } from '@/store/authStore';
 import { vipName } from './vipCatalog';
 
 const PRIVACY_KEYS = ['privacyPublic', 'privacyFriends', 'privacyPrivate'] as const;
+const VIP_PAGE_SIZE = 100;
 
 interface VipRowProps {
   icon: VipIconInstance;
@@ -52,29 +53,30 @@ export function VipStorePage() {
   const refreshUser = useAuthStore((s) => s.refreshUser);
 
   const [store, setStore] = useState<VipStoreResult | null>(null);
+  const [items, setItems] = useState<VipIconInstance[]>([]);
   const [loadedAt, setLoadedAt] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [busy, setBusy] = useState(false);
   const [privacyOpen, setPrivacyOpen] = useState(false);
   const [menuIcon, setMenuIcon] = useState<VipIconInstance | null>(null);
   const [useTarget, setUseTarget] = useState<VipIconInstance | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<VipIconInstance | null>(null);
 
-  const reload = useCallback(async () => {
-    const res = await VipService.store();
+  const loadPage = useCallback(async (offset: number) => {
+    const res = await VipService.store({ limit: VIP_PAGE_SIZE, offset });
     setStore(res);
     setLoadedAt(Date.now());
+    setItems((prev) => (offset === 0 ? res.items : [...prev, ...res.items]));
+    return res;
   }, []);
+
+  const reload = useCallback(() => loadPage(0), [loadPage]);
 
   useEffect(() => {
     let active = true;
-    VipService.store()
-      .then((res) => {
-        if (active) {
-          setStore(res);
-          setLoadedAt(Date.now());
-        }
-      })
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch bất đồng bộ: setState chạy sau await, không gây cascading render
+    loadPage(0)
       .catch(() => {
         if (active) toast.info(t('common.error'));
       })
@@ -84,11 +86,20 @@ export function VipStorePage() {
     return () => {
       active = false;
     };
-  }, [t]);
+  }, [loadPage, t]);
 
-  const items = store?.items ?? [];
+  const total = store?.total ?? 0;
+  const hasMore = items.length < total;
   const usingIcon = items.find((icon) => icon.isUsing) ?? null;
   const privacy = (store?.privacy ?? 0) as 0 | 1 | 2;
+
+  function handleScroll(event: React.UIEvent<HTMLDivElement>) {
+    if (loadingMore || loading || !hasMore) return;
+    const el = event.currentTarget;
+    if (el.scrollHeight - el.scrollTop - el.clientHeight > 300) return;
+    setLoadingMore(true);
+    void loadPage(items.length).finally(() => setLoadingMore(false));
+  }
   const remainingDays = store?.days ?? null;
   const vipEndTime = store?.vipEndTime ?? null;
 
@@ -207,7 +218,7 @@ export function VipStorePage() {
     <FullScreenOverlay>
       <ScreenHeader title={t('vip.title')} onBack={() => navigate(ROUTES.home)} />
 
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto" onScroll={handleScroll}>
         <div className="bg-white/80">
           <div className="px-4 pt-4 text-xs text-black/54">{t('vip.usingIcon')}</div>
           <div className="mt-1 flex h-[72px] flex-col">
@@ -279,6 +290,11 @@ export function VipStorePage() {
           items.map((icon) => (
             <VipRow key={icon.instanceId} icon={icon} onSelect={() => setMenuIcon(icon)} />
           ))
+        )}
+        {loadingMore && (
+          <div className="flex h-12 items-center justify-center text-sm text-black/54">
+            {t('common.loading')}
+          </div>
         )}
       </div>
 
