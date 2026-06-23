@@ -8,7 +8,7 @@ const VIP_NAMES = [
   "Nhan Vien Ola Cap 2",
   "Nhan Vien Ola Cap 3",
   "Zakumi Đại Đế",
-  "VIP Iphone 5s",
+  "Zakumi Vua Ai Cập",
   "Tử Thần",
   "Emperor Fuleco",
   "Empress Fuleco",
