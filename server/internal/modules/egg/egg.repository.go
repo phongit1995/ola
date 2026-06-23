@@ -1,6 +1,7 @@
 package egg
 
 import (
+	"fmt"
 	"time"
 
 	"ola-chat-server/internal/models"
@@ -298,30 +299,144 @@ type AdminDrawRow struct {
 	Avatar   string `gorm:"column:avatar"`
 }
 
-func (r *Repository) ListAllDraws(userID *uuid.UUID, limit, offset int) ([]AdminDrawRow, int64, error) {
-	count := r.db.Model(&models.EggDraw{})
-	if userID != nil {
-		count = count.Where("user_id = ?", *userID)
+type AdminDrawFilter struct {
+	UserID       *uuid.UUID
+	PackID       *uuid.UUID
+	CategoryType string
+	Outcome      string
+	From         *time.Time
+	To           *time.Time
+}
+
+func adminDrawScope(f AdminDrawFilter) func(*gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		if f.UserID != nil {
+			db = db.Where("egg_draws.user_id = ?", *f.UserID)
+		}
+		if f.PackID != nil {
+			db = db.Where("egg_draws.pack_id = ?", *f.PackID)
+		}
+		if f.CategoryType != "" {
+			db = db.Where("egg_draws.category_type = ?", f.CategoryType)
+		}
+		switch f.Outcome {
+		case "win":
+			db = db.Where("egg_draws.category_type <> ?", models.EggCategoryNothing)
+		case "miss":
+			db = db.Where("egg_draws.category_type = ?", models.EggCategoryNothing)
+		}
+		if f.From != nil {
+			db = db.Where("egg_draws.created_at >= ?", *f.From)
+		}
+		if f.To != nil {
+			db = db.Where("egg_draws.created_at <= ?", *f.To)
+		}
+		return db
 	}
+}
+
+func (r *Repository) ListAllDraws(filter AdminDrawFilter, limit, offset int) ([]AdminDrawRow, int64, error) {
 	var total int64
-	if err := count.Count(&total).Error; err != nil {
+	if err := r.db.Model(&models.EggDraw{}).Scopes(adminDrawScope(filter)).Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
 
 	query := r.db.Table("egg_draws").
 		Select("egg_draws.*, users.username, users.full_name, users.avatar").
 		Joins("LEFT JOIN users ON users.id = egg_draws.user_id").
+		Scopes(adminDrawScope(filter)).
 		Order("egg_draws.created_at DESC").
 		Limit(limit).Offset(offset)
-	if userID != nil {
-		query = query.Where("egg_draws.user_id = ?", *userID)
-	}
 
 	var rows []AdminDrawRow
 	if err := query.Scan(&rows).Error; err != nil {
 		return nil, 0, err
 	}
 	return rows, total, nil
+}
+
+func (r *Repository) StatsOverview(f AdminDrawFilter) (StatsOverview, error) {
+	var o StatsOverview
+	err := r.db.Model(&models.EggDraw{}).Scopes(adminDrawScope(f)).
+		Select(`count(*) as total_draws,
+			count(distinct user_id) as unique_players,
+			coalesce(sum(ken_cost),0) as ken_in,
+			coalesce(sum(ken_amount),0) as ken_out,
+			coalesce(sum(vip_days),0) as vip_days_out,
+			count(vip_type_id) as vip_icons_out,
+			count(*) filter (where category_type <> 'nothing') as win_draws`).
+		Scan(&o).Error
+	return o, err
+}
+
+func (r *Repository) StatsByCategory(f AdminDrawFilter) ([]StatsCategory, error) {
+	var rows []StatsCategory
+	err := r.db.Model(&models.EggDraw{}).Scopes(adminDrawScope(f)).
+		Select("category_type, count(*) as draws").
+		Group("category_type").
+		Order("draws DESC").
+		Scan(&rows).Error
+	return rows, err
+}
+
+func (r *Repository) StatsTopRewards(f AdminDrawFilter, limit int) ([]StatsReward, error) {
+	var rows []StatsReward
+	err := r.db.Model(&models.EggDraw{}).Scopes(adminDrawScope(f)).
+		Where("reward_label IS NOT NULL").
+		Select("category_type, reward_label, count(*) as count").
+		Group("category_type, reward_label").
+		Order("count DESC").
+		Limit(limit).
+		Scan(&rows).Error
+	return rows, err
+}
+
+func (r *Repository) StatsByPack(f AdminDrawFilter) ([]StatsPack, error) {
+	var rows []StatsPack
+	err := r.db.Model(&models.EggDraw{}).Scopes(adminDrawScope(f)).
+		Select(`pack_id, pack_name, count(*) as draws,
+			coalesce(sum(ken_cost),0) as ken_in,
+			coalesce(sum(ken_amount),0) as ken_out`).
+		Group("pack_id, pack_name").
+		Order("ken_in DESC").
+		Scan(&rows).Error
+	return rows, err
+}
+
+func (r *Repository) StatsTimeseries(f AdminDrawFilter, bucket string) ([]StatsTimePoint, error) {
+	trunc, format := "day", "YYYY-MM-DD"
+	if bucket == "month" {
+		trunc, format = "month", "YYYY-MM"
+	}
+	var rows []StatsTimePoint
+	err := r.db.Model(&models.EggDraw{}).Scopes(adminDrawScope(f)).
+		Select(fmt.Sprintf("to_char(date_trunc('%s', created_at), '%s') as date, count(*) as draws, coalesce(sum(ken_cost),0) as ken_in, coalesce(sum(ken_amount),0) as ken_out", trunc, format)).
+		Group(fmt.Sprintf("date_trunc('%s', created_at)", trunc)).
+		Order(fmt.Sprintf("date_trunc('%s', created_at) ASC", trunc)).
+		Scan(&rows).Error
+	return rows, err
+}
+
+type StatsPlayerRow struct {
+	UserID   uuid.UUID `gorm:"column:user_id"`
+	Username string    `gorm:"column:username"`
+	FullName string    `gorm:"column:full_name"`
+	Avatar   string    `gorm:"column:avatar"`
+	Draws    int64     `gorm:"column:draws"`
+	KenSpent int64     `gorm:"column:ken_spent"`
+}
+
+func (r *Repository) StatsTopPlayers(f AdminDrawFilter, limit int) ([]StatsPlayerRow, error) {
+	var rows []StatsPlayerRow
+	err := r.db.Table("egg_draws").
+		Select("egg_draws.user_id, users.username, users.full_name, users.avatar, count(*) as draws, coalesce(sum(egg_draws.ken_cost),0) as ken_spent").
+		Joins("LEFT JOIN users ON users.id = egg_draws.user_id").
+		Scopes(adminDrawScope(f)).
+		Group("egg_draws.user_id, users.username, users.full_name, users.avatar").
+		Order("ken_spent DESC").
+		Limit(limit).
+		Scan(&rows).Error
+	return rows, err
 }
 
 func nilIfEmpty(s string) *string {

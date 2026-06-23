@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"time"
 
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
@@ -394,8 +395,8 @@ func (s *Service) ListHistory(userID uuid.UUID, outcome string, limit, offset in
 	return &DrawListResponse{Items: items, Total: total, Limit: limit, Offset: offset}, nil
 }
 
-func (s *Service) ListAllDraws(userID *uuid.UUID, limit, offset int) (*AdminDrawListResponse, error) {
-	rows, total, err := s.repo.ListAllDraws(userID, limit, offset)
+func (s *Service) ListAllDraws(filter AdminDrawFilter, limit, offset int) (*AdminDrawListResponse, error) {
+	rows, total, err := s.repo.ListAllDraws(filter, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -425,6 +426,74 @@ func (s *Service) ListAllDraws(userID *uuid.UUID, limit, offset int) (*AdminDraw
 		}
 	}
 	return &AdminDrawListResponse{Items: items, Total: total, Limit: limit, Offset: offset}, nil
+}
+
+func (s *Service) Stats(filter AdminDrawFilter) (*StatsResponse, error) {
+	overview, err := s.repo.StatsOverview(filter)
+	if err != nil {
+		return nil, err
+	}
+	if overview.TotalDraws > 0 {
+		overview.WinRate = float64(overview.WinDraws) / float64(overview.TotalDraws) * 100
+	}
+	overview.NetKen = overview.KenIn - overview.KenOut
+
+	byCategory, err := s.repo.StatsByCategory(filter)
+	if err != nil {
+		return nil, err
+	}
+	for i := range byCategory {
+		if overview.TotalDraws > 0 {
+			byCategory[i].Percent = float64(byCategory[i].Draws) / float64(overview.TotalDraws) * 100
+		}
+	}
+
+	topRewards, err := s.repo.StatsTopRewards(filter, 10)
+	if err != nil {
+		return nil, err
+	}
+
+	byPack, err := s.repo.StatsByPack(filter)
+	if err != nil {
+		return nil, err
+	}
+	for i := range byPack {
+		if byPack[i].KenIn > 0 {
+			byPack[i].Rtp = float64(byPack[i].KenOut) / float64(byPack[i].KenIn) * 100
+		}
+	}
+
+	bucket := "day"
+	if filter.From != nil && filter.To != nil && filter.To.Sub(*filter.From) > 90*24*time.Hour {
+		bucket = "month"
+	}
+	timeseries, err := s.repo.StatsTimeseries(filter, bucket)
+	if err != nil {
+		return nil, err
+	}
+
+	playerRows, err := s.repo.StatsTopPlayers(filter, 10)
+	if err != nil {
+		return nil, err
+	}
+	players := make([]StatsPlayer, len(playerRows))
+	for i, p := range playerRows {
+		players[i] = StatsPlayer{
+			User:     DrawUserView{ID: p.UserID, Username: p.Username, FullName: p.FullName, Avatar: p.Avatar},
+			Draws:    p.Draws,
+			KenSpent: p.KenSpent,
+		}
+	}
+
+	return &StatsResponse{
+		Overview:   overview,
+		ByCategory: byCategory,
+		TopRewards: topRewards,
+		ByPack:     byPack,
+		Timeseries: timeseries,
+		TopPlayers: players,
+		Bucket:     bucket,
+	}, nil
 }
 
 func buildPackViews(packs []models.EggPack, cats []models.EggCategory, rewards []models.EggReward) []PackView {

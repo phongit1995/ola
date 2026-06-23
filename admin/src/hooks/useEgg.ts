@@ -3,12 +3,14 @@ import { AdminEggService } from '@/services/adminEgg.service'
 import type {
   CreateEggPackRequest,
   EggDrawListParams,
+  EggStatsParams,
   SaveEggConfigRequest,
   UpdateEggPackRequest,
 } from '@/types'
 
 const EGG_PACKS_KEY = 'admin-egg-packs'
 const EGG_DRAWS_KEY = 'admin-egg-draws'
+const EGG_STATS_KEY = 'admin-egg-stats'
 
 export function useEggDraws(params: EggDrawListParams, enabled = true) {
   return useQuery({
@@ -22,6 +24,14 @@ export function useEggPacks() {
   return useQuery({
     queryKey: [EGG_PACKS_KEY],
     queryFn: () => AdminEggService.listPacks(),
+  })
+}
+
+export function useEggStats(params: EggStatsParams, enabled = true) {
+  return useQuery({
+    queryKey: [EGG_STATS_KEY, params],
+    queryFn: () => AdminEggService.getStats(params),
+    enabled,
   })
 }
 

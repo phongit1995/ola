@@ -80,15 +80,26 @@ export function rebalanceWeights<T extends { id: string; weight: number; isActiv
   const active = rows.filter((r) => r.isActive)
   if (!active.some((r) => r.id === id)) return result
   const target = Math.max(0, Math.min(100, targetPercent))
+  result.set(id, target)
   const others = active.filter((r) => r.id !== id)
-  result.set(id, others.length === 0 ? 100 : target)
-  if (others.length === 0) return result
-  const sumOthers = others.reduce((acc, r) => acc + r.weight, 0)
-  if (sumOthers <= 0) {
-    const each = (100 - target) / others.length
-    others.forEach((r) => result.set(r.id, each))
-  } else {
-    others.forEach((r) => result.set(r.id, (r.weight / sumOthers) * (100 - target)))
+  if (others.length === 0) {
+    result.set(id, 100)
+    return result
+  }
+  others.forEach((r) => result.set(r.id, r.weight))
+  const ranked = [...others].sort((a, b) => b.weight - a.weight)
+  const othersSum = others.reduce((acc, r) => acc + r.weight, 0)
+  let diff = othersSum - (100 - target)
+  if (diff > 1e-9) {
+    for (const r of ranked) {
+      if (diff <= 1e-9) break
+      const take = Math.min(result.get(r.id) ?? 0, diff)
+      result.set(r.id, (result.get(r.id) ?? 0) - take)
+      diff -= take
+    }
+    if (diff > 1e-9) result.set(id, target - diff)
+  } else if (diff < -1e-9) {
+    result.set(ranked[0].id, (result.get(ranked[0].id) ?? 0) - diff)
   }
   return result
 }

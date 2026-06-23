@@ -397,6 +397,72 @@ export interface AdminEggDraw extends EggDraw {
 
 export interface EggDrawListParams {
   userId?: string
+  categoryType?: EggCategoryType
+  outcome?: 'win' | 'miss'
+  from?: string
+  to?: string
   limit?: number
   offset?: number
+}
+
+export interface EggStatsOverview {
+  totalDraws: number
+  uniquePlayers: number
+  kenIn: number
+  kenOut: number
+  vipDaysOut: number
+  vipIconsOut: number
+  winDraws: number
+  winRate: number
+  netKen: number
+}
+
+export interface EggStatsCategory {
+  categoryType: EggCategoryType
+  draws: number
+  percent: number
+}
+
+export interface EggStatsReward {
+  categoryType: EggCategoryType
+  rewardLabel: string
+  count: number
+}
+
+export interface EggStatsPack {
+  packId: string
+  packName: string
+  draws: number
+  kenIn: number
+  kenOut: number
+  rtp: number
+}
+
+export interface EggStatsTimePoint {
+  date: string
+  draws: number
+  kenIn: number
+  kenOut: number
+}
+
+export interface EggStatsPlayer {
+  user: EggDrawUser
+  draws: number
+  kenSpent: number
+}
+
+export interface EggStatsResponse {
+  overview: EggStatsOverview
+  byCategory: EggStatsCategory[]
+  topRewards: EggStatsReward[]
+  byPack: EggStatsPack[]
+  timeseries: EggStatsTimePoint[]
+  topPlayers: EggStatsPlayer[]
+  bucket: 'day' | 'month'
+}
+
+export interface EggStatsParams {
+  packId?: string
+  from?: string
+  to?: string
 }

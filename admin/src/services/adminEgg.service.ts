@@ -5,6 +5,8 @@ import type {
   CreateEggPackRequest,
   EggDrawListParams,
   EggPack,
+  EggStatsParams,
+  EggStatsResponse,
   ListResult,
   MessageResult,
   SaveEggConfigRequest,
@@ -41,6 +43,11 @@ export const AdminEggService = {
     const { data } = await http.get<ApiResponse<ListResult<AdminEggDraw>>>('/admin/egg/draws', {
       params,
     })
+    return data.data
+  },
+
+  async getStats(params: EggStatsParams = {}): Promise<EggStatsResponse> {
+    const { data } = await http.get<ApiResponse<EggStatsResponse>>('/admin/egg/stats', { params })
     return data.data
   },
 }

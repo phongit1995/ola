@@ -141,3 +141,59 @@ type AdminDrawListResponse struct {
 	Limit  int             `json:"limit"`
 	Offset int             `json:"offset"`
 }
+
+type StatsOverview struct {
+	TotalDraws    int64   `json:"totalDraws"`
+	UniquePlayers int64   `json:"uniquePlayers"`
+	KenIn         int64   `json:"kenIn"`
+	KenOut        int64   `json:"kenOut"`
+	VipDaysOut    int64   `json:"vipDaysOut"`
+	VipIconsOut   int64   `json:"vipIconsOut"`
+	WinDraws      int64   `json:"winDraws"`
+	WinRate       float64 `json:"winRate"`
+	NetKen        int64   `json:"netKen"`
+}
+
+type StatsCategory struct {
+	CategoryType models.EggCategoryType `json:"categoryType"`
+	Draws        int64                  `json:"draws"`
+	Percent      float64                `json:"percent"`
+}
+
+type StatsReward struct {
+	CategoryType models.EggCategoryType `json:"categoryType"`
+	RewardLabel  string                 `json:"rewardLabel"`
+	Count        int64                  `json:"count"`
+}
+
+type StatsPack struct {
+	PackID   uuid.UUID `json:"packId"`
+	PackName string    `json:"packName"`
+	Draws    int64     `json:"draws"`
+	KenIn    int64     `json:"kenIn"`
+	KenOut   int64     `json:"kenOut"`
+	Rtp      float64   `json:"rtp"`
+}
+
+type StatsTimePoint struct {
+	Date   string `json:"date"`
+	Draws  int64  `json:"draws"`
+	KenIn  int64  `json:"kenIn"`
+	KenOut int64  `json:"kenOut"`
+}
+
+type StatsPlayer struct {
+	User     DrawUserView `json:"user"`
+	Draws    int64        `json:"draws"`
+	KenSpent int64        `json:"kenSpent"`
+}
+
+type StatsResponse struct {
+	Overview   StatsOverview    `json:"overview"`
+	ByCategory []StatsCategory  `json:"byCategory"`
+	TopRewards []StatsReward    `json:"topRewards"`
+	ByPack     []StatsPack      `json:"byPack"`
+	Timeseries []StatsTimePoint `json:"timeseries"`
+	TopPlayers []StatsPlayer    `json:"topPlayers"`
+	Bucket     string           `json:"bucket"`
+}

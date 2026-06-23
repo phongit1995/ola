@@ -2,6 +2,7 @@ package adminegg
 
 import (
 	"net/http"
+	"time"
 
 	"ola-chat-server/internal/modules/egg"
 	"ola-chat-server/internal/utils"
@@ -131,27 +132,96 @@ func (ctrl *Controller) SaveConfig(c *gin.Context) (interface{}, error) {
 }
 
 // ListDraws godoc
-// @Summary      Lịch sử đập trứng toàn hệ thống, lọc theo user (admin)
+// @Summary      Lịch sử đập trứng toàn hệ thống (admin)
 // @Tags         admin-egg
 // @Produce      json
 // @Security     BearerAuth
 // @Param        userId query string false "Lọc theo user"
+// @Param        categoryType query string false "Lọc theo loại (nothing|vip_icon|ken|vip_days)"
+// @Param        outcome query string false "Lọc trúng/trượt (win|miss)"
+// @Param        from query string false "Từ thời gian (RFC3339)"
+// @Param        to query string false "Đến thời gian (RFC3339)"
 // @Param        limit query int false "Page size"
 // @Param        offset query int false "Offset"
 // @Success      200  {object}  egg.AdminDrawListResponse
 // @Router       /admin/egg/draws [get]
 func (ctrl *Controller) ListDraws(c *gin.Context) (interface{}, error) {
-	var userID *uuid.UUID
+	var filter egg.AdminDrawFilter
 	if raw := c.Query("userId"); raw != "" {
 		parsed, err := uuid.Parse(raw)
 		if err != nil {
 			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid user id")
 		}
-		userID = &parsed
+		filter.UserID = &parsed
+	}
+	if raw := c.Query("categoryType"); raw != "" {
+		switch raw {
+		case "nothing", "vip_icon", "ken", "vip_days":
+			filter.CategoryType = raw
+		default:
+			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid category type")
+		}
+	}
+	if raw := c.Query("outcome"); raw == "win" || raw == "miss" {
+		filter.Outcome = raw
+	}
+	if raw := c.Query("from"); raw != "" {
+		t, err := time.Parse(time.RFC3339, raw)
+		if err != nil {
+			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid from time")
+		}
+		filter.From = &t
+	}
+	if raw := c.Query("to"); raw != "" {
+		t, err := time.Parse(time.RFC3339, raw)
+		if err != nil {
+			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid to time")
+		}
+		filter.To = &t
 	}
 	limit := utils.ParseLimit(c, 50, 100)
 	offset := utils.ParseOffset(c)
-	resp, err := ctrl.service.ListAllDraws(userID, limit, offset)
+	resp, err := ctrl.service.ListAllDraws(filter, limit, offset)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
+// GetStats godoc
+// @Summary      Thống kê đập trứng (admin)
+// @Tags         admin-egg
+// @Produce      json
+// @Security     BearerAuth
+// @Param        packId query string false "Lọc theo gói"
+// @Param        from query string false "Từ thời gian (RFC3339)"
+// @Param        to query string false "Đến thời gian (RFC3339)"
+// @Success      200  {object}  egg.StatsResponse
+// @Router       /admin/egg/stats [get]
+func (ctrl *Controller) GetStats(c *gin.Context) (interface{}, error) {
+	var filter egg.AdminDrawFilter
+	if raw := c.Query("packId"); raw != "" {
+		parsed, err := uuid.Parse(raw)
+		if err != nil {
+			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid pack id")
+		}
+		filter.PackID = &parsed
+	}
+	if raw := c.Query("from"); raw != "" {
+		t, err := time.Parse(time.RFC3339, raw)
+		if err != nil {
+			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid from time")
+		}
+		filter.From = &t
+	}
+	if raw := c.Query("to"); raw != "" {
+		t, err := time.Parse(time.RFC3339, raw)
+		if err != nil {
+			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid to time")
+		}
+		filter.To = &t
+	}
+	resp, err := ctrl.service.Stats(filter)
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}

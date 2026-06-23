@@ -174,15 +174,27 @@ function SortableItemRow({
           </Tag>
         )}
       </div>
-      <div style={{ flex: '1 1 150px', minWidth: 130, display: 'flex', alignItems: 'center' }}>
+      <div style={{ flex: '1 1 220px', minWidth: 200, display: 'flex', alignItems: 'center', gap: 10 }}>
         <Slider
           min={0}
           max={100}
-          value={Math.round(itemPct)}
+          step={0.01}
+          value={Math.round(itemPct * 100) / 100}
           disabled={!reward.isActive}
           onChange={(value) => onRebalance(value)}
           tooltip={{ formatter: (v) => `${v}%` }}
           style={{ flex: 1 }}
+        />
+        <InputNumber
+          size="small"
+          min={0}
+          max={100}
+          step={0.01}
+          addonAfter="%"
+          value={Math.round(itemPct * 100) / 100}
+          disabled={!reward.isActive}
+          onChange={(value) => onRebalance(value ?? 0)}
+          style={{ width: 110 }}
         />
       </div>
       <Tag color={color} style={{ margin: 0 }}>{formatPercent(itemPct)} trong nhóm</Tag>
@@ -309,7 +321,8 @@ export function EggPackBuilder({
                     <Slider
                       min={0}
                       max={100}
-                      value={Math.round(catPct)}
+                      step={0.01}
+                      value={Math.round(catPct * 100) / 100}
                       disabled={!category.isActive}
                       onChange={(value) => onRebalanceCategory(category.id, value)}
                       tooltip={{ formatter: (v) => `${v}%` }}

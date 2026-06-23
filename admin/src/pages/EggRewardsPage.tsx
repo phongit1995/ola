@@ -1,7 +1,14 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { App, Button, Card, Space, Table, Tag, Typography } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
-import { DeleteOutlined, EditOutlined, HistoryOutlined, PlusOutlined } from '@ant-design/icons'
+import {
+  BarChartOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  HistoryOutlined,
+  PlusOutlined,
+} from '@ant-design/icons'
 import { useDeleteEggPack, useEggPacks } from '@/hooks/useEgg'
 import { ApiError } from '@/lib/apiError'
 import type { EggPack } from '@/types'
@@ -10,6 +17,7 @@ import { EggHistoryModal } from './EggHistoryModal'
 
 export function EggRewardsPage() {
   const { message, modal } = App.useApp()
+  const navigate = useNavigate()
   const { data: apiPacks, isFetching } = useEggPacks()
   const deletePack = useDeleteEggPack()
 
@@ -125,6 +133,9 @@ export function EggRewardsPage() {
       title="Gói đập trứng"
       extra={
         <Space>
+          <Button icon={<BarChartOutlined />} onClick={() => navigate('/games/egg/stats')}>
+            Thống kê
+          </Button>
           <Button icon={<HistoryOutlined />} onClick={() => setHistoryOpen(true)}>
             Lịch sử đập
           </Button>

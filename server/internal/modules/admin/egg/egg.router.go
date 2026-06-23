@@ -23,5 +23,6 @@ func (r *Router) Setup(admin *utils.AppGroup) {
 		egg.DELETE("/packs/:id", r.controller.DeletePack)
 		egg.PUT("/packs/:id/config", r.controller.SaveConfig)
 		egg.GET("/draws", r.controller.ListDraws)
+		egg.GET("/stats", r.controller.GetStats)
 	}
 }

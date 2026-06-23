@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Avatar, Button, Input, Modal, Space, Table, Tag, Typography } from 'antd'
+import { Avatar, Button, Input, Modal, Select, Space, Table, Tag, Typography } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import { ReloadOutlined } from '@ant-design/icons'
 import { useEggDraws } from '@/hooks/useEgg'
@@ -14,6 +14,23 @@ const CATEGORY_LABEL: Record<EggCategoryType, string> = {
   vip_days: 'Ngày VIP',
 }
 
+const CATEGORY_OPTIONS = (Object.keys(CATEGORY_LABEL) as EggCategoryType[]).map((type) => ({
+  value: type,
+  label: CATEGORY_LABEL[type],
+}))
+
+const OUTCOME_OPTIONS = [
+  { value: 'win' as const, label: 'Trúng' },
+  { value: 'miss' as const, label: 'Trượt' },
+]
+
+const DATE_INPUT_STYLE = {
+  height: 32,
+  border: '1px solid #d9d9d9',
+  borderRadius: 6,
+  padding: '0 8px',
+}
+
 interface EggHistoryModalProps {
   open: boolean
   onClose: () => void
@@ -25,16 +42,48 @@ function formatTime(iso: string) {
 
 export function EggHistoryModal({ open, onClose }: EggHistoryModalProps) {
   const [userId, setUserId] = useState('')
+  const [categoryType, setCategoryType] = useState<EggCategoryType | undefined>(undefined)
+  const [outcome, setOutcome] = useState<'win' | 'miss' | undefined>(undefined)
+  const [from, setFrom] = useState('')
+  const [to, setTo] = useState('')
   const [page, setPage] = useState(1)
 
   const params = useMemo(
-    () => ({ userId: userId || undefined, limit: PAGE_SIZE, offset: (page - 1) * PAGE_SIZE }),
-    [userId, page],
+    () => ({
+      userId: userId || undefined,
+      categoryType,
+      outcome,
+      from: from ? new Date(`${from}T00:00:00`).toISOString() : undefined,
+      to: to ? new Date(`${to}T23:59:59.999`).toISOString() : undefined,
+      limit: PAGE_SIZE,
+      offset: (page - 1) * PAGE_SIZE,
+    }),
+    [userId, categoryType, outcome, from, to, page],
   )
   const { data, isFetching, refetch } = useEggDraws(params, open)
 
   function applyUserFilter(value: string) {
     setUserId(value.trim())
+    setPage(1)
+  }
+
+  function changeCategory(value?: EggCategoryType) {
+    setCategoryType(value)
+    setPage(1)
+  }
+
+  function changeOutcome(value?: 'win' | 'miss') {
+    setOutcome(value)
+    setPage(1)
+  }
+
+  function changeFrom(value: string) {
+    setFrom(value)
+    setPage(1)
+  }
+
+  function changeTo(value: string) {
+    setTo(value)
     setPage(1)
   }
 
@@ -104,11 +153,41 @@ export function EggHistoryModal({ open, onClose }: EggHistoryModalProps) {
           placeholder="Lọc theo User ID (trống = tất cả)"
           defaultValue={userId}
           onSearch={applyUserFilter}
-          style={{ width: 360 }}
+          style={{ width: 260 }}
         />
-        {userId ? (
-          <Button onClick={() => applyUserFilter('')}>Xem tất cả</Button>
-        ) : null}
+        <Select
+          allowClear
+          placeholder="Loại thưởng"
+          value={categoryType}
+          onChange={changeCategory}
+          options={CATEGORY_OPTIONS}
+          style={{ width: 150 }}
+        />
+        <Select
+          allowClear
+          placeholder="Kết quả"
+          value={outcome}
+          onChange={changeOutcome}
+          options={OUTCOME_OPTIONS}
+          style={{ width: 120 }}
+        />
+        <input
+          type="date"
+          aria-label="Từ ngày"
+          value={from}
+          max={to || undefined}
+          onChange={(e) => changeFrom(e.target.value)}
+          style={DATE_INPUT_STYLE}
+        />
+        <span style={{ color: '#8c8c8c' }}>→</span>
+        <input
+          type="date"
+          aria-label="Đến ngày"
+          value={to}
+          min={from || undefined}
+          onChange={(e) => changeTo(e.target.value)}
+          style={DATE_INPUT_STYLE}
+        />
         <Button icon={<ReloadOutlined />} onClick={() => void refetch()}>
           Tải lại
         </Button>

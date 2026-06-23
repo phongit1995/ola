@@ -54,6 +54,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/vip-packages': 'Quản lý gói VIP',
   '/vip-shop': 'Shop VIP',
   '/games/egg': 'Đập trứng',
+  '/games/egg/stats': 'Thống kê trứng',
   '/me': 'Quản lý Me',
 }
 
@@ -126,7 +127,7 @@ export function AdminLayout() {
           }}
         >
           <Typography.Title level={4} style={{ margin: 0 }}>
-            {PAGE_TITLES[selectedKey] ?? 'Tổng quan'}
+            {PAGE_TITLES[location.pathname] ?? PAGE_TITLES[selectedKey] ?? 'Tổng quan'}
           </Typography.Title>
           <Dropdown
             menu={{
