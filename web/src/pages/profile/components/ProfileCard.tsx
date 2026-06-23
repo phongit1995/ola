@@ -12,7 +12,8 @@ import { Avatar, UserName, VipIcon } from '@components';
 import type { ProfileActions, UserProfile } from '../types';
 import type { RelationshipInfo } from '@app-types';
 import { RelationButtons } from './RelationButtons';
-import { CoverPreviewOverlay } from './CoverPreviewOverlay';
+import { CoverImageEditor } from './CoverImageEditor';
+import { COVER_ASPECT } from '../constants';
 
 interface ProfileCardProps {
   profile: UserProfile;
@@ -60,10 +61,9 @@ export function ProfileCard({ profile, relationship, actions, onPostMe, onUpdate
     setCoverPreview({ url: URL.createObjectURL(file), file });
   }
 
-  async function confirmCover() {
-    if (!coverPreview) return;
+  async function applyCover(file: File) {
     setUploadingCover(true);
-    await actions.changeCover(coverPreview.file);
+    await actions.changeCover(file);
     setUploadingCover(false);
     clearCoverPreview();
   }
@@ -71,7 +71,7 @@ export function ProfileCard({ profile, relationship, actions, onPostMe, onUpdate
   return (
     <div className="mb-2 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.18)]">
       <div
-        className="relative mb-12 h-48 w-full bg-cover bg-center"
+        className="relative mb-12 aspect-video w-full bg-cover bg-center"
         style={
           profile.coverPhoto
             ? { backgroundImage: `url(${profile.coverPhoto})` }
@@ -94,6 +94,7 @@ export function ProfileCard({ profile, relationship, actions, onPostMe, onUpdate
               type="file"
               accept="image/*"
               className="hidden"
+              aria-label={t('profile.changeCover')}
               onChange={onCoverPick}
             />
             {uploadingCover && (
@@ -103,17 +104,18 @@ export function ProfileCard({ profile, relationship, actions, onPostMe, onUpdate
             )}
           </>
         )}
-        <div className="absolute -bottom-12 left-1/2 flex -translate-x-1/2 bg-white p-1 pb-1.5 shadow-[0_1px_3px_rgba(0,0,0,0.3)]">
+        <div className="absolute -bottom-12 left-1/2 flex -translate-x-1/2 bg-white p-px pb-0.5 shadow-[0_1px_3px_rgba(0,0,0,0.3)]">
           <Avatar name={profile.nick} color={profile.color} size={96} src={profile.avatar} rounded={false} />
         </div>
       </div>
 
       {coverPreview && (
-        <CoverPreviewOverlay
-          url={coverPreview.url}
-          uploading={uploadingCover}
+        <CoverImageEditor
+          src={coverPreview.url}
+          aspect={COVER_ASPECT}
+          busy={uploadingCover}
           onCancel={clearCoverPreview}
-          onConfirm={confirmCover}
+          onApply={applyCover}
         />
       )}
 

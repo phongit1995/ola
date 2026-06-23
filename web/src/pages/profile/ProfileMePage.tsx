@@ -11,7 +11,8 @@ import genderIcon from '@/assets/icons/profile/ic_indicate_dynamic_gender.png';
 import birthdayIcon from '@/assets/icons/profile/ic_profile_birthday.png';
 import cameraIcon from '@/assets/icons/profile/ic_action_camera.png';
 import { Avatar, ScreenHeader, FullScreenOverlay, UserName, VipIcon } from '@components';
-import { CoverPreviewOverlay } from './components/CoverPreviewOverlay';
+import { CoverImageEditor } from './components/CoverImageEditor';
+import { COVER_ASPECT } from './constants';
 import { MePostCard } from '../me/components/MePostCard';
 import { MePostInteractions, type MePostSource } from '../me/MePostInteractions';
 import { composedToImages, composedToPayload } from '../me/composer';
@@ -151,12 +152,6 @@ export function ProfileMePage() {
     setCoverPreview({ url: URL.createObjectURL(file), file });
   }
 
-  async function confirmCover() {
-    if (!coverPreview) return;
-    const ok = await uploadCover(coverPreview.file);
-    if (ok) clearCoverPreview();
-  }
-
   if (!user) return null;
 
   const nick = user.fullName || user.username;
@@ -207,19 +202,24 @@ export function ProfileMePage() {
               type="file"
               accept="image/*"
               className="hidden"
+              aria-label={t('profile.changeCover')}
               onChange={pickCover}
             />
-            <div className="absolute -bottom-12 left-1/2 flex -translate-x-1/2 bg-white p-1 pb-1.5 shadow-[0_1px_3px_rgba(0,0,0,0.3)]">
+            <div className="absolute -bottom-12 left-1/2 flex -translate-x-1/2 bg-white p-px pb-0.5 shadow-[0_1px_3px_rgba(0,0,0,0.3)]">
               <Avatar name={nick} color={color} size={96} src={user.avatar} rounded={false} />
             </div>
           </div>
 
           {coverPreview && (
-            <CoverPreviewOverlay
-              url={coverPreview.url}
-              uploading={uploadingCover}
+            <CoverImageEditor
+              src={coverPreview.url}
+              aspect={COVER_ASPECT}
+              busy={uploadingCover}
               onCancel={clearCoverPreview}
-              onConfirm={confirmCover}
+              onApply={async (file) => {
+                const ok = await uploadCover(file);
+                if (ok) clearCoverPreview();
+              }}
             />
           )}
 

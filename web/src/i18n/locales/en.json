@@ -469,6 +469,8 @@
     "coverError": "Couldn't update cover photo",
     "coverConfirm": "Use this photo",
     "coverPreviewTitle": "Preview cover photo",
+    "coverApply": "Apply",
+    "coverZoom": "Zoom",
     "saved": "Changes saved"
   },
   "statusDialog": {

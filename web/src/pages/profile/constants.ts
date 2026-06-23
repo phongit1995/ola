@@ -3,6 +3,8 @@ import type { ProfileSecondary } from './types';
 
 export const DEFAULT_COVER_COLOR = '#33691e';
 
+export const COVER_ASPECT = 16 / 9;
+
 export const INPUT_CLASS =
   'w-full bg-transparent text-sm text-black/87 outline-none placeholder:text-[#e34545]';
 

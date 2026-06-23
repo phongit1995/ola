@@ -469,6 +469,8 @@
     "coverError": "Cập nhật ảnh bìa thất bại",
     "coverConfirm": "Dùng ảnh này",
     "coverPreviewTitle": "Xem trước ảnh bìa",
+    "coverApply": "Áp dụng",
+    "coverZoom": "Thu phóng",
     "saved": "Đã lưu thay đổi"
   },
   "statusDialog": {
