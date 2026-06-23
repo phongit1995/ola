@@ -3,6 +3,7 @@ import { Sprite, type Texture } from 'pixi.js';
 import { useApplication, useTick } from '@pixi/react';
 import { useEggGameStore } from '@/store/eggGameStore';
 import { EggSprite } from './EggSprite';
+import { Fireworks } from './Fireworks';
 import { BG_H, BG_W, NESTS } from './eggGame.constants';
 import { EGG_BACKGROUND_KEY, EGG_RELOAD_KEY, EGG_REST_KEY } from './eggAssets';
 import type { SmashStarter } from './useEggGame';
@@ -51,6 +52,12 @@ export function EggScene({ textures, hint, play }: EggSceneProps) {
 
   const onBroken = useCallback(() => setBrokenCount((c) => c + 1), []);
 
+  const [win, setWin] = useState({ nonce: 0, big: false });
+  const onWin = useCallback(
+    (superLucky: boolean) => setWin((w) => ({ nonce: w.nonce + 1, big: superLucky })),
+    []
+  );
+
   const reloadRef = useRef<Sprite>(null);
   const spinRef = useRef<number | null>(null);
 
@@ -92,9 +99,11 @@ export function EggScene({ textures, hint, play }: EggSceneProps) {
             frameTextures={textures}
             onSmash={play}
             onBroken={onBroken}
+            onWin={onWin}
           />
         ))}
       </pixiContainer>
+      <Fireworks trigger={win.nonce} big={win.big} width={size.w} height={size.h} />
       {reloadTexture && (
         <pixiSprite
           ref={reloadRef}

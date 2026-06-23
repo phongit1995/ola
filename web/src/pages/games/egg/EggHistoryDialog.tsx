@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Dialog, DialogButton, Spinner } from '@components';
+import { Dialog, DialogButton, Spinner, VipIcon } from '@components';
 import { cn, createTimeFormatter } from '@lib';
 import { EggService } from '@services';
 import type { EggDrawHistoryFilter, EggDrawHistoryItem } from '@app-types';
 import { historyIconUrl } from './eggAssets';
+import kenCoinUrl from '@/assets/icons/apps/ken.png';
+import vipBadgeUrl from '@/assets/icons/apps/vip.png';
 
 const PAGE_SIZE = 20;
 const FILTERS: EggDrawHistoryFilter[] = ['all', 'win', 'miss'];
@@ -17,6 +19,8 @@ interface EggHistoryDialogProps {
 interface OutcomeView {
   text: string;
   tone: 'win' | 'miss';
+  vipTypeId?: number;
+  iconUrl?: string;
 }
 
 function useOutcomeLabel() {
@@ -30,15 +34,28 @@ function useOutcomeLabel() {
         return {
           text: t('eggGame.history.superLucky', { reward: item.rewardLabel ?? '' }),
           tone: 'win',
+          vipTypeId: item.vipTypeId,
         };
       }
       if (item.categoryType === 'ken' && item.kenAmount) {
-        return { text: t('eggGame.history.ken', { ken: item.kenAmount }), tone: 'win' };
+        return {
+          text: t('eggGame.history.ken', { ken: item.kenAmount }),
+          tone: 'win',
+          iconUrl: kenCoinUrl,
+        };
       }
       if (item.categoryType === 'vip_days' && item.vipDays) {
-        return { text: t('eggGame.history.vipDays', { days: item.vipDays }), tone: 'win' };
+        return {
+          text: t('eggGame.history.vipDays', { days: item.vipDays }),
+          tone: 'win',
+          iconUrl: vipBadgeUrl,
+        };
       }
-      return { text: item.rewardLabel ?? t('eggGame.history.win'), tone: 'win' };
+      return {
+        text: item.rewardLabel ?? t('eggGame.history.win'),
+        tone: 'win',
+        vipTypeId: item.vipTypeId,
+      };
     },
     [t]
   );
@@ -121,15 +138,26 @@ export function EggHistoryDialog({ open, onClose }: EggHistoryDialogProps) {
               const outcome = outcomeLabel(item);
               return (
                 <li key={item.id} className="flex items-center justify-between gap-3 py-2">
-                  <p
-                    className={
-                      outcome.tone === 'win'
-                        ? 'min-w-0 truncate font-semibold text-[#1f8a3b]'
-                        : 'min-w-0 truncate font-medium text-[#8a8a8c]'
-                    }
-                  >
-                    {outcome.text}
-                  </p>
+                  <div className="flex min-w-0 items-center gap-1.5">
+                    {outcome.vipTypeId != null ? (
+                      <VipIcon typeId={outcome.vipTypeId} className="h-5 w-5" rounded />
+                    ) : outcome.iconUrl ? (
+                      <img
+                        src={outcome.iconUrl}
+                        alt=""
+                        className="h-5 w-5 shrink-0 object-contain"
+                      />
+                    ) : null}
+                    <p
+                      className={
+                        outcome.tone === 'win'
+                          ? 'truncate font-semibold text-[#1f8a3b]'
+                          : 'truncate font-medium text-[#8a8a8c]'
+                      }
+                    >
+                      {outcome.text}
+                    </p>
+                  </div>
                   <div className="shrink-0 text-right">
                     <p className="text-xs text-[#9a9a9c]">{formatTime(item.createdAt)}</p>
                     <p className="text-xs text-[#c0392b]">-{item.kenCost} KEN</p>

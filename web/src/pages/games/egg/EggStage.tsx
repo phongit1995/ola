@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Assets, Container, Sprite, Text, Texture } from 'pixi.js';
+import { Assets, Container, Graphics, Sprite, Text, Texture } from 'pixi.js';
 import { Application, extend } from '@pixi/react';
 import { EggScene } from './EggScene';
 import { EGG_TEXTURE_URLS } from './eggAssets';
 import type { SmashStarter } from './useEggGame';
 
-extend({ Container, Sprite, Text });
+extend({ Container, Graphics, Sprite, Text });
 
 interface EggStageProps {
   hint: string;

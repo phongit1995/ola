@@ -19,6 +19,7 @@ function playSmashSound() {
 
 export interface SmashOutcome {
   hit: boolean;
+  superLucky: boolean;
   finalize: () => void;
 }
 
@@ -84,7 +85,7 @@ export function useEggGame() {
         toast.success(t('eggGame.wonVip', { reward: result.rewardLabel ?? '' }));
       };
 
-      return { hit: result.isWin, finalize };
+      return { hit: result.isWin, superLucky: result.isSuperLucky, finalize };
     })();
   }, [activePack, draw, applyResult, t]);
 
