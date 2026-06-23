@@ -6,7 +6,7 @@ import { EggService } from '@services';
 import type { EggDrawHistoryFilter, EggDrawHistoryItem } from '@app-types';
 import { historyIconUrl } from './eggAssets';
 import kenCoinUrl from '@/assets/icons/apps/ken.png';
-import vipBadgeUrl from '@/assets/icons/apps/vip.png';
+import vipDaysIconUrl from '@/assets/games/egg/day_vip.png';
 
 const PAGE_SIZE = 20;
 const FILTERS: EggDrawHistoryFilter[] = ['all', 'win', 'miss'];
@@ -48,7 +48,7 @@ function useOutcomeLabel() {
         return {
           text: t('eggGame.history.vipDays', { days: item.vipDays }),
           tone: 'win',
-          iconUrl: vipBadgeUrl,
+          iconUrl: vipDaysIconUrl,
         };
       }
       return {
