@@ -9,27 +9,31 @@ import {
   REST_ANCHOR_Y,
   REST_OFFSET_Y,
   REST_SCALE,
+  SMASH_LOOP_FRAMES,
+  SMASH_TAIL_HIT,
+  SMASH_TAIL_MISS,
   TICK_MS,
   type Nest,
 } from './eggGame.constants';
-import type { SmashOutcome } from './useEggGame';
+import type { SmashOutcome, SmashStarter } from './useEggGame';
 
 type Phase = 'idle' | 'smashing' | 'broken';
 
 interface AnimState {
+  stage: 'loop' | 'tail';
   frames: string[];
-  revealAt: number;
   idx: number;
   acc: number;
+  revealAt: number;
+  outcome: SmashOutcome | null;
   finalized: boolean;
-  finalize: () => void;
 }
 
 interface EggSpriteProps {
   nest: Nest;
   restTexture: Texture;
   frameTextures: Record<string, Texture>;
-  onSmash: () => Promise<SmashOutcome | null>;
+  onSmash: SmashStarter;
   onBroken: () => void;
 }
 
@@ -55,9 +59,27 @@ export function EggSprite({ nest, restTexture, frameTextures, onSmash, onBroken 
       while (anim.acc >= TICK_MS) {
         anim.acc -= TICK_MS;
         anim.idx += 1;
+
+        if (anim.stage === 'loop') {
+          if (anim.idx < anim.frames.length) {
+            setFrameKey(anim.frames[anim.idx] ?? null);
+          } else if (anim.outcome) {
+            const tail = anim.outcome.hit ? SMASH_TAIL_HIT : SMASH_TAIL_MISS;
+            anim.stage = 'tail';
+            anim.frames = tail.frames;
+            anim.revealAt = tail.revealAt;
+            anim.idx = 0;
+            setFrameKey(tail.frames[0] ?? null);
+          } else {
+            anim.idx = 0;
+            setFrameKey(anim.frames[0] ?? null);
+          }
+          continue;
+        }
+
         if (anim.idx === anim.revealAt && !anim.finalized) {
           anim.finalized = true;
-          anim.finalize();
+          anim.outcome?.finalize();
         }
         if (anim.idx >= anim.frames.length) {
           const last = anim.frames[anim.frames.length - 1] ?? null;
@@ -77,22 +99,34 @@ export function EggSprite({ nest, restTexture, frameTextures, onSmash, onBroken 
     if (rest) rest.y = baseY + Math.sin(bobRef.current) * 1.5;
   });
 
-  async function handleTap() {
+  function handleTap() {
     if (phase !== 'idle' || animRef.current || pendingRef.current) return;
+    const pending = onSmash();
+    if (!pending) return;
     pendingRef.current = true;
-    const outcome = await onSmash();
-    pendingRef.current = false;
-    if (!outcome || animRef.current) return;
     setPhase('smashing');
-    setFrameKey(outcome.frames[0] ?? null);
+    setFrameKey(SMASH_LOOP_FRAMES[0] ?? null);
     animRef.current = {
-      frames: outcome.frames,
-      revealAt: outcome.revealAt,
+      stage: 'loop',
+      frames: SMASH_LOOP_FRAMES,
       idx: 0,
       acc: 0,
+      revealAt: -1,
+      outcome: null,
       finalized: false,
-      finalize: outcome.finalize,
     };
+    void pending.then((outcome) => {
+      pendingRef.current = false;
+      const anim = animRef.current;
+      if (!anim || anim.stage !== 'loop') return;
+      if (!outcome) {
+        animRef.current = null;
+        setPhase('idle');
+        setFrameKey(null);
+        return;
+      }
+      anim.outcome = outcome;
+    });
   }
 
   const animTexture = frameKey ? frameTextures[frameKey] : null;
@@ -109,7 +143,7 @@ export function EggSprite({ nest, restTexture, frameTextures, onSmash, onBroken 
         y={baseY}
         eventMode="static"
         cursor="pointer"
-        onPointerTap={() => void handleTap()}
+        onPointerTap={handleTap}
       />
       {phase !== 'idle' && animTexture && (
         <pixiSprite

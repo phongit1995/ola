@@ -4,13 +4,13 @@ import { Assets, Container, Sprite, Text, Texture } from 'pixi.js';
 import { Application, extend } from '@pixi/react';
 import { EggScene } from './EggScene';
 import { EGG_TEXTURE_URLS } from './eggAssets';
-import type { SmashOutcome } from './useEggGame';
+import type { SmashStarter } from './useEggGame';
 
 extend({ Container, Sprite, Text });
 
 interface EggStageProps {
   hint: string;
-  play: () => Promise<SmashOutcome | null>;
+  play: SmashStarter;
 }
 
 export function EggStage({ hint, play }: EggStageProps) {

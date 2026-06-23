@@ -13,10 +13,12 @@ import egg7Miss from '@/assets/games/egg/Egg_7_Miss.png';
 import egg8Miss from '@/assets/games/egg/Egg_8_Miss.png';
 import egg9Miss from '@/assets/games/egg/Egg_9_Miss.png';
 import historyUrl from '@/assets/games/egg/ic_history.png';
+import reloadUrl from '@/assets/games/egg/ic_reload.png';
 import smashUrl from '@/assets/sounds/smash.wav';
 
 export const EGG_BACKGROUND_KEY = 'Egg_Background';
 export const EGG_REST_KEY = 'Egg';
+export const EGG_RELOAD_KEY = 'Egg_Reload';
 
 export const EGG_TEXTURE_URLS: Record<string, string> = {
   Egg_Background: bgUrl,
@@ -33,6 +35,7 @@ export const EGG_TEXTURE_URLS: Record<string, string> = {
   Egg_7_Miss: egg7Miss,
   Egg_8_Miss: egg8Miss,
   Egg_9_Miss: egg9Miss,
+  Egg_Reload: reloadUrl,
 };
 
 export const smashSoundUrl = smashUrl;

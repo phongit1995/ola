@@ -1,20 +1,23 @@
-import { useCallback, useEffect, useState } from 'react';
-import { type Texture } from 'pixi.js';
-import { useApplication } from '@pixi/react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Sprite, type Texture } from 'pixi.js';
+import { useApplication, useTick } from '@pixi/react';
 import { useEggGameStore } from '@/store/eggGameStore';
 import { EggSprite } from './EggSprite';
 import { BG_H, BG_W, NESTS } from './eggGame.constants';
-import { EGG_BACKGROUND_KEY, EGG_REST_KEY } from './eggAssets';
-import type { SmashOutcome } from './useEggGame';
+import { EGG_BACKGROUND_KEY, EGG_RELOAD_KEY, EGG_REST_KEY } from './eggAssets';
+import type { SmashStarter } from './useEggGame';
 
 const SOUND_MARGIN = 12;
 const SOUND_STYLE = { fontSize: 24 };
 const HINT_MARGIN = 8;
+const RELOAD_MARGIN = 10;
+const RELOAD_SIZE = 30;
+const RELOAD_SPIN_MS = 400;
 
 interface EggSceneProps {
   textures: Record<string, Texture>;
   hint: string;
-  play: () => Promise<SmashOutcome | null>;
+  play: SmashStarter;
 }
 
 export function EggScene({ textures, hint, play }: EggSceneProps) {
@@ -48,11 +51,33 @@ export function EggScene({ textures, hint, play }: EggSceneProps) {
 
   const onBroken = useCallback(() => setBrokenCount((c) => c + 1), []);
 
+  const reloadRef = useRef<Sprite>(null);
+  const spinRef = useRef<number | null>(null);
+
+  useTick((ticker) => {
+    const sprite = reloadRef.current;
+    if (sprite === null || spinRef.current === null) return;
+    spinRef.current += ticker.deltaMS;
+    const progress = Math.min(1, spinRef.current / RELOAD_SPIN_MS);
+    sprite.rotation = progress * Math.PI * 2;
+    if (progress >= 1) {
+      spinRef.current = null;
+      sprite.rotation = 0;
+    }
+  });
+
+  const handleReload = useCallback(() => {
+    spinRef.current = 0;
+    setBrokenCount(0);
+    setRound((r) => r + 1);
+  }, []);
+
   const muted = useEggGameStore((s) => s.muted);
   const toggleMute = useEggGameStore((s) => s.toggleMute);
 
   const background = textures[EGG_BACKGROUND_KEY];
   const restTexture = textures[EGG_REST_KEY];
+  const reloadTexture = textures[EGG_RELOAD_KEY];
   if (!background || !restTexture) return null;
 
   return (
@@ -70,6 +95,21 @@ export function EggScene({ textures, hint, play }: EggSceneProps) {
           />
         ))}
       </pixiContainer>
+      {reloadTexture && (
+        <pixiSprite
+          ref={reloadRef}
+          texture={reloadTexture}
+          anchor={{ x: 0.5, y: 0.5 }}
+          width={RELOAD_SIZE}
+          height={RELOAD_SIZE}
+          x={size.w - RELOAD_MARGIN - RELOAD_SIZE / 2}
+          y={RELOAD_MARGIN + RELOAD_SIZE / 2}
+          alpha={0.85}
+          eventMode="static"
+          cursor="pointer"
+          onPointerTap={handleReload}
+        />
+      )}
       <pixiText
         text={hint}
         anchor={{ x: 0.5, y: 0 }}
@@ -82,7 +122,7 @@ export function EggScene({ textures, hint, play }: EggSceneProps) {
           fill: '#ffffff',
           align: 'center',
           wordWrap: true,
-          wordWrapWidth: size.w - 40,
+          wordWrapWidth: size.w - 2 * (RELOAD_MARGIN + RELOAD_SIZE) - 16,
           dropShadow: { color: '#000000', blur: 3, distance: 1, alpha: 0.6, angle: 1.57 },
         }}
       />
