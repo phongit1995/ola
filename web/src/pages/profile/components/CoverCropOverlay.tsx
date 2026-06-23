@@ -13,10 +13,19 @@ interface CoverCropOverlayProps {
   onApply: (file: File) => void | Promise<void>;
 }
 
+function RotateIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-6 w-6" fill="currentColor" aria-hidden="true">
+      <path d="M15.55 5.55 11 1v3.07C7.06 4.56 4 7.92 4 12s3.05 7.44 7 7.93v-2.02c-2.84-.48-5-2.94-5-5.91s2.16-5.43 5-5.91V10l4.55-4.45zM19.93 11c-.17-1.39-.72-2.73-1.62-3.89l-1.42 1.42c.54.75.88 1.6 1.02 2.47h2.02zM13 17.9v2.02c1.39-.17 2.74-.71 3.9-1.61l-1.44-1.44c-.75.54-1.59.89-2.46 1.03zm3.89-2.42 1.42 1.41c.9-1.16 1.45-2.5 1.62-3.89h-2.02c-.14.87-.48 1.72-1.02 2.48z" />
+    </svg>
+  );
+}
+
 export function CoverCropOverlay({ src, aspect, busy, onCancel, onApply }: CoverCropOverlayProps) {
   const { t } = useTranslation();
   const [crop, setCrop] = useState<Point>({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
+  const [rotation, setRotation] = useState(0);
   const [area, setArea] = useState<Area | null>(null);
   const [processing, setProcessing] = useState(false);
 
@@ -28,7 +37,7 @@ export function CoverCropOverlay({ src, aspect, busy, onCancel, onApply }: Cover
     if (!area || working) return;
     setProcessing(true);
     try {
-      const file = await getCroppedImageFile(src, area);
+      const file = await getCroppedImageFile(src, area, rotation);
       await onApply(file);
     } catch {
       toast.error(t('profileEdit.coverError'));
@@ -64,6 +73,7 @@ export function CoverCropOverlay({ src, aspect, busy, onCancel, onApply }: Cover
             image={src}
             crop={crop}
             zoom={zoom}
+            rotation={rotation}
             aspect={aspect}
             minZoom={1}
             maxZoom={4}
@@ -71,22 +81,21 @@ export function CoverCropOverlay({ src, aspect, busy, onCancel, onApply }: Cover
             objectFit="contain"
             onCropChange={setCrop}
             onZoomChange={setZoom}
+            onRotationChange={setRotation}
             onCropComplete={onCropComplete}
           />
         </div>
 
-        <footer className="flex h-16 shrink-0 items-center px-6 pb-[max(0px,env(safe-area-inset-bottom))]">
-          <input
-            type="range"
-            min={1}
-            max={4}
-            step={0.01}
-            value={zoom}
-            onChange={(event) => setZoom(Number(event.target.value))}
+        <footer className="flex h-16 shrink-0 items-center justify-center pb-[max(0px,env(safe-area-inset-bottom))]">
+          <button
+            type="button"
+            onClick={() => setRotation((value) => (value + 90) % 360)}
             disabled={working}
-            aria-label={t('profileEdit.coverZoom')}
-            className="w-full accent-ola-primary"
-          />
+            aria-label={t('profileEdit.coverRotate')}
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-white disabled:opacity-50"
+          >
+            <RotateIcon />
+          </button>
         </footer>
       </div>
     </FullScreenOverlay>

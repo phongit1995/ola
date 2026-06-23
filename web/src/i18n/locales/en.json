@@ -471,6 +471,7 @@
     "coverPreviewTitle": "Preview cover photo",
     "coverApply": "Apply",
     "coverZoom": "Zoom",
+    "coverRotate": "Rotate",
     "saved": "Changes saved"
   },
   "statusDialog": {
