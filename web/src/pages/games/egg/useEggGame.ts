@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from '@lib';
 import { useEggGameStore } from '@/store/eggGameStore';
-import { BIG_WIN_KEN, EGG_COST } from './eggGame.constants';
+import { EGG_COST } from './eggGame.constants';
 import { smashSoundUrl } from './eggAssets';
 
 const smashAudio = new Audio(smashSoundUrl);
@@ -34,6 +34,7 @@ export function useEggGame() {
   const packsStatus = useEggGameStore((s) => s.packsStatus);
   const draw = useEggGameStore((s) => s.draw);
   const applyResult = useEggGameStore((s) => s.applyResult);
+  const showWin = useEggGameStore((s) => s.showWin);
   const toggleMute = useEggGameStore((s) => s.toggleMute);
 
   const activePack = packs[0] ?? null;
@@ -45,6 +46,7 @@ export function useEggGame() {
       return null;
     }
     const state = useEggGameStore.getState();
+    if (state.winReward) return null;
     if (state.drawing) return null;
     if (state.ken < activePack.kenCost) {
       toast.info(t('eggGame.outOfKen'));
@@ -66,28 +68,12 @@ export function useEggGame() {
           toast.info(t('eggGame.miss'));
           return;
         }
-        if (result.isSuperLucky) {
-          toast.success(t('eggGame.superLucky', { reward: result.rewardLabel ?? '' }));
-          return;
-        }
-        if (result.categoryType === 'ken' && result.kenAmount) {
-          toast.success(
-            t(result.kenAmount >= BIG_WIN_KEN ? 'eggGame.bigWin' : 'eggGame.win', {
-              ken: result.kenAmount,
-            })
-          );
-          return;
-        }
-        if (result.categoryType === 'vip_days' && result.vipDays) {
-          toast.success(t('eggGame.wonVipDays', { days: result.vipDays }));
-          return;
-        }
-        toast.success(t('eggGame.wonVip', { reward: result.rewardLabel ?? '' }));
+        showWin(result);
       };
 
       return { hit: result.isWin, superLucky: result.isSuperLucky, finalize };
     })();
-  }, [activePack, draw, applyResult, t]);
+  }, [activePack, draw, applyResult, showWin, t]);
 
   return { ken, totalWin, cost, muted, packsStatus, play, toggleMute };
 }

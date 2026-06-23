@@ -15,18 +15,13 @@ interface Particle {
 
 const COLORS = [0xffd54f, 0xff6f61, 0x4fc3f7, 0x81c784, 0xba68c8, 0xfff176, 0xff8a65];
 const GRAVITY = 520;
-const BURSTS_NORMAL = 3;
-const BURSTS_SUPER = 7;
 const PER_BURST = 64;
-const STAGGER = 0.12;
+const VOLLEY_NORMAL = 3;
+const VOLLEY_SUPER = 5;
+const GAP_NORMAL = 0.35;
+const GAP_SUPER = 0.2;
 
 const noopDraw = () => {};
-
-interface PendingBurst {
-  x: number;
-  y: number;
-  delay: number;
-}
 
 function pick<T>(list: T[]): T {
   return list[Math.floor(Math.random() * list.length)] ?? list[0]!;
@@ -51,17 +46,24 @@ function spawnBurst(out: Particle[], cx: number, cy: number) {
   }
 }
 
+function spawnVolley(out: Particle[], width: number, height: number, count: number) {
+  for (let b = 0; b < count; b += 1) {
+    spawnBurst(out, width * (0.16 + Math.random() * 0.68), height * (0.14 + Math.random() * 0.4));
+  }
+}
+
 interface FireworksProps {
-  trigger: number;
+  active: boolean;
   big: boolean;
   width: number;
   height: number;
 }
 
-export function Fireworks({ trigger, big, width, height }: FireworksProps) {
+export function Fireworks({ active, big, width, height }: FireworksProps) {
   const gfxRef = useRef<Graphics>(null);
   const particlesRef = useRef<Particle[]>([]);
-  const pendingRef = useRef<PendingBurst[]>([]);
+  const activeRef = useRef(false);
+  const gapTimerRef = useRef(0);
   const dirtyRef = useRef(false);
   const paramsRef = useRef({ width, height, big });
 
@@ -70,40 +72,29 @@ export function Fireworks({ trigger, big, width, height }: FireworksProps) {
   });
 
   useEffect(() => {
-    if (trigger === 0) return;
+    activeRef.current = active;
+    if (!active) return;
     const { width: w, height: h, big: superLucky } = paramsRef.current;
-    const pending = pendingRef.current;
-    const count = superLucky ? BURSTS_SUPER : BURSTS_NORMAL;
-    for (let b = 0; b < count; b += 1) {
-      pending.push({
-        x: w * (0.16 + Math.random() * 0.68),
-        y: h * (0.14 + Math.random() * 0.4),
-        delay: b * STAGGER,
-      });
-    }
-  }, [trigger]);
+    spawnVolley(particlesRef.current, w, h, superLucky ? VOLLEY_SUPER : VOLLEY_NORMAL);
+    gapTimerRef.current = superLucky ? GAP_SUPER : GAP_NORMAL;
+  }, [active]);
 
   useTick((ticker) => {
     const g = gfxRef.current;
     if (g === null) return;
     const dt = Math.min(0.05, ticker.deltaMS / 1000);
     const particles = particlesRef.current;
-    const pending = pendingRef.current;
+    const { width: w, height: h, big: superLucky } = paramsRef.current;
 
-    if (pending.length > 0) {
-      let keep = 0;
-      for (let i = 0; i < pending.length; i += 1) {
-        const pb = pending[i];
-        if (!pb) continue;
-        pb.delay -= dt;
-        if (pb.delay <= 0) {
-          spawnBurst(particles, pb.x, pb.y);
-        } else {
-          pending[keep] = pb;
-          keep += 1;
+    if (activeRef.current) {
+      if (particles.length > 0) {
+        gapTimerRef.current = superLucky ? GAP_SUPER : GAP_NORMAL;
+      } else {
+        gapTimerRef.current -= dt;
+        if (gapTimerRef.current <= 0) {
+          spawnVolley(particles, w, h, superLucky ? VOLLEY_SUPER : VOLLEY_NORMAL);
         }
       }
-      pending.length = keep;
     }
 
     if (particles.length === 0) {

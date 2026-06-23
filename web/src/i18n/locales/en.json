@@ -777,6 +777,14 @@
         "win": "Won",
         "miss": "Missed"
       }
+    },
+    "winModal": {
+      "title": "Congratulations!",
+      "superTitle": "🍀 So lucky!",
+      "ken": "+{{ken}} KEN",
+      "vipDays": "{{days}} days of VIP",
+      "defaultLabel": "Reward",
+      "ok": "Keep smashing"
     }
   }
 }

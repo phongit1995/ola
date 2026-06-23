@@ -37,10 +37,9 @@ interface EggSpriteProps {
   frameTextures: Record<string, Texture>;
   onSmash: SmashStarter;
   onBroken: () => void;
-  onWin: (superLucky: boolean) => void;
 }
 
-export function EggSprite({ nest, restTexture, frameTextures, onSmash, onBroken, onWin }: EggSpriteProps) {
+export function EggSprite({ nest, restTexture, frameTextures, onSmash, onBroken }: EggSpriteProps) {
   const restRef = useRef<Sprite>(null);
   const animRef = useRef<AnimState | null>(null);
   const pendingRef = useRef(false);
@@ -52,10 +51,8 @@ export function EggSprite({ nest, restTexture, frameTextures, onSmash, onBroken,
   const [hovered, setHovered] = useState(false);
 
   const onBrokenRef = useRef(onBroken);
-  const onWinRef = useRef(onWin);
   useEffect(() => {
     onBrokenRef.current = onBroken;
-    onWinRef.current = onWin;
   });
 
   useTick((ticker) => {
@@ -86,7 +83,6 @@ export function EggSprite({ nest, restTexture, frameTextures, onSmash, onBroken,
         if (anim.idx === anim.revealAt && !anim.finalized) {
           anim.finalized = true;
           anim.outcome?.finalize();
-          if (anim.outcome?.hit) onWinRef.current(anim.outcome.superLucky);
         }
         if (anim.idx >= anim.frames.length) {
           const last = anim.frames[anim.frames.length - 1] ?? null;

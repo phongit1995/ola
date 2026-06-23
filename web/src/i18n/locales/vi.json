@@ -777,6 +777,14 @@
         "win": "Trúng",
         "miss": "Trượt"
       }
+    },
+    "winModal": {
+      "title": "Chúc mừng!",
+      "superTitle": "🍀 Siêu may mắn!",
+      "ken": "+{{ken}} KEN",
+      "vipDays": "{{days}} ngày VIP",
+      "defaultLabel": "Phần thưởng",
+      "ok": "Đập tiếp"
     }
   }
 }
