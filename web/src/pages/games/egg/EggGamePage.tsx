@@ -4,11 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@constants';
 import { formatKen } from '@lib';
 import { FullScreenOverlay } from '@components';
+import { SocketService } from '@services';
 import { useAuthStore } from '@/store/authStore';
 import { useEggGameStore } from '@/store/eggGameStore';
 import { useEggGame } from './useEggGame';
 import { EggStage } from './EggStage';
 import { EggHistoryDialog } from './EggHistoryDialog';
+import { AnimatedKen } from './AnimatedKen';
 import { historyIconUrl } from './eggAssets';
 import { EGG_START_KEN } from './eggGame.constants';
 
@@ -37,6 +39,16 @@ export function EggGamePage() {
     void loadPacks();
   }, [loadPacks]);
 
+  useEffect(() => {
+    const off = SocketService.on<{ ken?: number }>('KEN_UPDATED', (data) => {
+      if (typeof data?.ken === 'number') useEggGameStore.getState().syncKen(data.ken);
+    });
+    return () => {
+      off();
+      useEggGameStore.setState({ suppressKenSync: false });
+    };
+  }, []);
+
   return (
     <FullScreenOverlay>
       <div className="flex h-full w-full flex-col items-center bg-white">
@@ -50,10 +62,7 @@ export function EggGamePage() {
             >
               <BackIcon />
             </button>
-            <span className="flex items-baseline gap-2">
-              <span className="text-xs text-white/70">KEN</span>
-              <b className="min-w-[3ch] text-right text-xl text-[#ffca28]">{formatKen(ken)}</b>
-            </span>
+            <AnimatedKen value={ken} />
             <span className="flex-1" />
             <button
               type="button"

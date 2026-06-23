@@ -13,10 +13,12 @@ interface EggGameState {
   packs: EggPack[];
   packsStatus: EggPacksStatus;
   drawing: boolean;
+  suppressKenSync: boolean;
   init: (ken: number) => void;
   loadPacks: () => Promise<void>;
   draw: (packId: string, idempotencyKey: string) => Promise<EggDrawResult | null>;
   applyResult: (result: EggDrawResult) => void;
+  syncKen: (ken: number) => void;
   toggleMute: () => void;
 }
 
@@ -34,6 +36,7 @@ export const useEggGameStore = create<EggGameState>((set, get) => ({
   packs: [],
   packsStatus: 'idle',
   drawing: false,
+  suppressKenSync: false,
   init: (ken) => {
     if (get().initialized) return;
     set({ ken, initialized: true });
@@ -55,10 +58,11 @@ export const useEggGameStore = create<EggGameState>((set, get) => ({
   },
   draw: async (packId, idempotencyKey) => {
     if (get().drawing) return null;
-    set({ drawing: true });
+    set({ drawing: true, suppressKenSync: true });
     try {
       return await EggService.draw(packId, idempotencyKey);
     } catch {
+      set({ suppressKenSync: false });
       return null;
     } finally {
       set({ drawing: false });
@@ -68,8 +72,11 @@ export const useEggGameStore = create<EggGameState>((set, get) => ({
     set((state) => ({
       ken: result.kenBalance,
       totalWin: result.kenAmount ? state.totalWin + result.kenAmount : state.totalWin,
+      suppressKenSync: false,
     }));
     syncAuthKen(result.kenBalance);
   },
+  syncKen: (ken) =>
+    set((state) => (state.suppressKenSync || ken === state.ken ? state : { ken })),
   toggleMute: () => set((state) => ({ muted: !state.muted })),
 }));
