@@ -369,8 +369,8 @@ func (s *Service) draw(cats []models.EggCategory, rewards []models.EggReward) (D
 	return outcome, true
 }
 
-func (s *Service) ListHistory(userID uuid.UUID, limit, offset int) (*DrawListResponse, error) {
-	draws, total, err := s.repo.ListDraws(userID, limit, offset)
+func (s *Service) ListHistory(userID uuid.UUID, outcome string, limit, offset int) (*DrawListResponse, error) {
+	draws, total, err := s.repo.ListDraws(userID, outcome, limit, offset)
 	if err != nil {
 		return nil, err
 	}

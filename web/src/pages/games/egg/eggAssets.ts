@@ -12,6 +12,7 @@ import egg9 from '@/assets/games/egg/Egg_9.png';
 import egg7Miss from '@/assets/games/egg/Egg_7_Miss.png';
 import egg8Miss from '@/assets/games/egg/Egg_8_Miss.png';
 import egg9Miss from '@/assets/games/egg/Egg_9_Miss.png';
+import historyUrl from '@/assets/games/egg/ic_history.png';
 import smashUrl from '@/assets/sounds/smash.wav';
 
 export const EGG_BACKGROUND_KEY = 'Egg_Background';
@@ -35,3 +36,4 @@ export const EGG_TEXTURE_URLS: Record<string, string> = {
 };
 
 export const smashSoundUrl = smashUrl;
+export const historyIconUrl = historyUrl;

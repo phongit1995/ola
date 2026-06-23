@@ -67,6 +67,7 @@ func (ctrl *Controller) Draw(c *gin.Context) (interface{}, error) {
 // @Tags         egg
 // @Produce      json
 // @Security     BearerAuth
+// @Param        outcome query string false "Filter: win or miss"
 // @Param        limit query int false "Page size"
 // @Param        offset query int false "Offset"
 // @Success      200  {object}  DrawListResponse
@@ -76,9 +77,13 @@ func (ctrl *Controller) ListDraws(c *gin.Context) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+	outcome := c.Query("outcome")
+	if outcome != "win" && outcome != "miss" {
+		outcome = ""
+	}
 	limit := utils.ParseLimit(c, 20, 100)
 	offset := utils.ParseOffset(c)
-	resp, err := ctrl.service.ListHistory(userID, limit, offset)
+	resp, err := ctrl.service.ListHistory(userID, outcome, limit, offset)
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}

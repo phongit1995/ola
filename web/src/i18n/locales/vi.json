@@ -758,6 +758,22 @@
     "wonVipDays": "🎁 Bạn trúng {{days}} ngày VIP!",
     "noPack": "Hiện chưa có gói đập trứng nào.",
     "error": "Có lỗi xảy ra, vui lòng thử lại.",
-    "contactAdmin": "Có lỗi xảy ra, vui lòng liên hệ admin."
+    "contactAdmin": "Có lỗi xảy ra, vui lòng liên hệ admin.",
+    "history": {
+      "title": "Lịch sử",
+      "empty": "Không có lượt nào.",
+      "miss": "💨 Trượt",
+      "win": "🎁 Trúng quà",
+      "ken": "🎁 +{{ken}} KEN",
+      "vipDays": "🎁 {{days}} ngày VIP",
+      "superLucky": "🍀 {{reward}}",
+      "loadMore": "Tải thêm",
+      "close": "Đóng",
+      "filter": {
+        "all": "Tất cả",
+        "win": "Trúng",
+        "miss": "Trượt"
+      }
+    }
   }
 }

@@ -758,6 +758,22 @@
     "wonVipDays": "🎁 You won {{days}} days of VIP!",
     "noPack": "No egg pack available right now.",
     "error": "Something went wrong. Please try again.",
-    "contactAdmin": "Something went wrong. Please contact an admin."
+    "contactAdmin": "Something went wrong. Please contact an admin.",
+    "history": {
+      "title": "History",
+      "empty": "No draws to show.",
+      "miss": "💨 Missed",
+      "win": "🎁 Won a prize",
+      "ken": "🎁 +{{ken}} KEN",
+      "vipDays": "🎁 {{days}} days of VIP",
+      "superLucky": "🍀 {{reward}}",
+      "loadMore": "Load more",
+      "close": "Close",
+      "filter": {
+        "all": "All",
+        "win": "Won",
+        "miss": "Missed"
+      }
+    }
   }
 }

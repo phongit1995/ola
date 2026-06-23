@@ -49,3 +49,27 @@ export interface EggDrawResult {
   kenAmount?: number;
   vipDays?: number;
 }
+
+export interface EggDrawHistoryItem {
+  id: string;
+  packId: string;
+  packName: string;
+  kenCost: number;
+  categoryType: EggCategoryKind;
+  rewardType?: string;
+  rewardLabel?: string;
+  vipTypeId?: number;
+  kenAmount?: number;
+  vipDays?: number;
+  isSuperLucky: boolean;
+  createdAt: string;
+}
+
+export interface EggDrawHistoryResult {
+  items: EggDrawHistoryItem[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export type EggDrawHistoryFilter = 'all' | 'win' | 'miss';

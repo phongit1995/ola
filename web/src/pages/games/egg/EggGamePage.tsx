@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@constants';
@@ -8,6 +8,8 @@ import { useAuthStore } from '@/store/authStore';
 import { useEggGameStore } from '@/store/eggGameStore';
 import { useEggGame } from './useEggGame';
 import { EggStage } from './EggStage';
+import { EggHistoryDialog } from './EggHistoryDialog';
+import { historyIconUrl } from './eggAssets';
 import { EGG_START_KEN } from './eggGame.constants';
 
 function BackIcon() {
@@ -25,6 +27,7 @@ export function EggGamePage() {
   const init = useEggGameStore((s) => s.init);
   const loadPacks = useEggGameStore((s) => s.loadPacks);
   const { ken, totalWin, cost, packsStatus, play } = useEggGame();
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   useEffect(() => {
     init(userKen ?? EGG_START_KEN);
@@ -54,10 +57,11 @@ export function EggGamePage() {
             <span className="flex-1" />
             <button
               type="button"
-              onClick={() => navigate(ROUTES.kenBuy)}
-              className="rounded-full bg-[#ffca28] px-3 py-1.5 text-sm font-bold text-[#5b3b00] shadow-[0_2px_0_#c79400] active:translate-y-0.5 active:shadow-none"
+              onClick={() => setHistoryOpen(true)}
+              className="flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5 text-sm font-semibold hover:bg-white/25"
             >
-              + {t('ken.purchase')}
+              <img src={historyIconUrl} alt="" className="h-4 w-4" />
+              {t('eggGame.history.title')}
             </button>
           </div>
 
@@ -85,6 +89,7 @@ export function EggGamePage() {
           </footer>
         </div>
       </div>
+      <EggHistoryDialog open={historyOpen} onClose={() => setHistoryOpen(false)} />
     </FullScreenOverlay>
   );
 }

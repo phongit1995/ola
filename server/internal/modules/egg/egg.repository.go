@@ -261,13 +261,28 @@ func (r *Repository) ApplyDraw(userID uuid.UUID, pack *models.EggPack, outcome D
 	return &draw, &updatedUser, nil
 }
 
-func (r *Repository) ListDraws(userID uuid.UUID, limit, offset int) ([]models.EggDraw, int64, error) {
+func eggOutcomeScope(outcome string) func(*gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		switch outcome {
+		case "win":
+			return db.Where("category_type <> ?", models.EggCategoryNothing)
+		case "miss":
+			return db.Where("category_type = ?", models.EggCategoryNothing)
+		default:
+			return db
+		}
+	}
+}
+
+func (r *Repository) ListDraws(userID uuid.UUID, outcome string, limit, offset int) ([]models.EggDraw, int64, error) {
 	var draws []models.EggDraw
 	var total int64
-	if err := r.db.Model(&models.EggDraw{}).Where("user_id = ?", userID).Count(&total).Error; err != nil {
+	if err := r.db.Model(&models.EggDraw{}).Where("user_id = ?", userID).
+		Scopes(eggOutcomeScope(outcome)).Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
 	if err := r.db.Where("user_id = ?", userID).
+		Scopes(eggOutcomeScope(outcome)).
 		Order("created_at DESC").
 		Limit(limit).Offset(offset).
 		Find(&draws).Error; err != nil {
