@@ -19,6 +19,8 @@ import type { SmashOutcome, SmashStarter } from './useEggGame';
 
 type Phase = 'idle' | 'smashing' | 'broken';
 
+const HOVER_FRAME = 'Egg_1';
+
 interface AnimState {
   stage: 'loop' | 'tail';
   frames: string[];
@@ -47,6 +49,7 @@ export function EggSprite({ nest, restTexture, frameTextures, onSmash, onBroken,
 
   const [phase, setPhase] = useState<Phase>('idle');
   const [frameKey, setFrameKey] = useState<string | null>(null);
+  const [hovered, setHovered] = useState(false);
 
   const onBrokenRef = useRef(onBroken);
   const onWinRef = useRef(onWin);
@@ -97,7 +100,7 @@ export function EggSprite({ nest, restTexture, frameTextures, onSmash, onBroken,
       }
       return;
     }
-    if (phase !== 'idle') return;
+    if (phase !== 'idle' || hovered) return;
     bobRef.current += 0.04 * ticker.deltaTime;
     const rest = restRef.current;
     if (rest) rest.y = baseY + Math.sin(bobRef.current) * 1.5;
@@ -134,20 +137,24 @@ export function EggSprite({ nest, restTexture, frameTextures, onSmash, onBroken,
   }
 
   const animTexture = frameKey ? frameTextures[frameKey] : null;
+  const hoverTexture = frameTextures[HOVER_FRAME];
+  const idleHover = phase === 'idle' && hovered && hoverTexture != null;
 
   return (
     <pixiContainer>
       <pixiSprite
         ref={restRef}
-        texture={restTexture}
+        texture={idleHover ? hoverTexture : restTexture}
         visible={phase === 'idle'}
-        anchor={{ x: 0.5, y: REST_ANCHOR_Y }}
+        anchor={idleHover ? { x: ANIM_ANCHOR_X, y: ANIM_ANCHOR_Y } : { x: 0.5, y: REST_ANCHOR_Y }}
         scale={REST_SCALE}
         x={nest.x}
-        y={baseY}
+        y={idleHover ? baseY + ANIM_OFFSET_Y : baseY}
         eventMode="static"
         cursor="pointer"
         onPointerTap={handleTap}
+        onPointerOver={() => setHovered(true)}
+        onPointerOut={() => setHovered(false)}
       />
       {phase !== 'idle' && animTexture && (
         <pixiSprite
