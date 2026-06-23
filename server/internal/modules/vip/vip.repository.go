@@ -59,12 +59,20 @@ func (r *Repository) FindInstance(id uuid.UUID) (*models.UserVipIcon, error) {
 	return &item, nil
 }
 
-func (r *Repository) CountTypeOwned(userID uuid.UUID, typeID int16, excludeID uuid.UUID) (int64, error) {
-	var count int64
-	err := r.db.Model(&models.UserVipIcon{}).
+func (r *Repository) FindOneOfTypeExcluding(userID uuid.UUID, typeID int16, excludeID uuid.UUID) (*models.UserVipIcon, error) {
+	var items []models.UserVipIcon
+	err := r.db.
 		Where("user_id = ? AND vip_icon_id = ? AND id <> ?", userID, typeID, excludeID).
-		Count(&count).Error
-	return count, err
+		Order("acquired_at DESC").
+		Limit(1).
+		Find(&items).Error
+	if err != nil {
+		return nil, err
+	}
+	if len(items) == 0 {
+		return nil, nil
+	}
+	return &items[0], nil
 }
 
 func (r *Repository) Create(item *models.UserVipIcon) error {

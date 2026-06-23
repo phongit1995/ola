@@ -85,8 +85,8 @@ func remainingDays(end *time.Time) *int {
 	return &d
 }
 
-func toVipItem(item *models.UserVipIcon, active *int16) VipItem {
-	using := active != nil && *active == item.VipIconID
+func toVipItem(item *models.UserVipIcon, activeInstance *uuid.UUID) VipItem {
+	using := activeInstance != nil && *activeInstance == item.ID
 	return VipItem{
 		InstanceID: item.ID.String(),
 		TypeID:     item.VipIconID,
@@ -145,7 +145,7 @@ func (s *Service) GetStore(viewerID, targetID uuid.UUID, limit, offset int) (*St
 
 	out := make([]VipItem, 0, len(items))
 	for i := range items {
-		out = append(out, toVipItem(&items[i], active))
+		out = append(out, toVipItem(&items[i], target.VipUsedInstanceID))
 	}
 
 	resp := &StoreResponse{
@@ -193,15 +193,26 @@ func (s *Service) Use(userID, instanceID uuid.UUID) error {
 		return ErrVipExpired
 	}
 
+	if u.VipUsedInstanceID != nil && *u.VipUsedInstanceID == item.ID {
+		return nil
+	}
+
 	typeStr := strconv.Itoa(int(item.VipIconID))
 	if u.VipUsed != nil && *u.VipUsed == typeStr {
+		if err := s.repo.UpdateUserFields(userID, map[string]interface{}{
+			"vip_used_instance_id": item.ID,
+		}); err != nil {
+			return err
+		}
+		s.invalidate(userID)
 		return nil
 	}
 
 	newEnd := u.VipEndTime.Add(-24 * time.Hour)
 	if err := s.repo.UpdateUserFields(userID, map[string]interface{}{
-		"vip_used":     typeStr,
-		"vip_end_time": newEnd,
+		"vip_used":             typeStr,
+		"vip_used_instance_id": item.ID,
+		"vip_end_time":         newEnd,
 	}); err != nil {
 		return err
 	}
@@ -260,18 +271,21 @@ func (s *Service) clearActiveIfGone(userID, instanceID uuid.UUID, typeID int16) 
 	if err != nil {
 		return err
 	}
-	active := parseTypeID(u.VipUsed)
-	if active == nil || *active != typeID {
+	if u.VipUsedInstanceID == nil || *u.VipUsedInstanceID != instanceID {
 		return nil
 	}
-	count, err := s.repo.CountTypeOwned(userID, typeID, instanceID)
+	replacement, err := s.repo.FindOneOfTypeExcluding(userID, typeID, instanceID)
 	if err != nil {
 		return err
 	}
-	if count > 0 {
-		return nil
+	fields := map[string]interface{}{}
+	if replacement != nil {
+		fields["vip_used_instance_id"] = replacement.ID
+	} else {
+		fields["vip_used"] = nil
+		fields["vip_used_instance_id"] = nil
 	}
-	if err := s.repo.UpdateUserFields(userID, map[string]interface{}{"vip_used": nil}); err != nil {
+	if err := s.repo.UpdateUserFields(userID, fields); err != nil {
 		return err
 	}
 	s.invalidate(userID)
@@ -311,8 +325,7 @@ func (s *Service) Buy(userID, shopItemID uuid.UUID) (*BuyIconResponse, error) {
 	s.invalidate(userID)
 	s.emitKenUpdate(userID, updatedUser.Ken)
 
-	active := parseTypeID(updatedUser.VipUsed)
-	out := toVipItem(icon, active)
+	out := toVipItem(icon, updatedUser.VipUsedInstanceID)
 	return &BuyIconResponse{Item: out, KenBalance: updatedUser.Ken}, nil
 }
 
