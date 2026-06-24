@@ -13,6 +13,7 @@ interface EggGameState {
   packs: EggPack[];
   packsStatus: EggPacksStatus;
   drawing: boolean;
+  smashing: boolean;
   suppressKenSync: boolean;
   winReward: EggDrawResult | null;
   init: (ken: number) => void;
@@ -20,6 +21,8 @@ interface EggGameState {
   draw: (packId: string, idempotencyKey: string) => Promise<EggDrawResult | null>;
   applyResult: (result: EggDrawResult) => void;
   syncKen: (ken: number) => void;
+  beginSmash: () => void;
+  endSmash: () => void;
   showWin: (result: EggDrawResult) => void;
   closeWin: () => void;
   toggleMute: () => void;
@@ -39,6 +42,7 @@ export const useEggGameStore = create<EggGameState>((set, get) => ({
   packs: [],
   packsStatus: 'idle',
   drawing: false,
+  smashing: false,
   suppressKenSync: false,
   winReward: null,
   init: (ken) => {
@@ -82,6 +86,8 @@ export const useEggGameStore = create<EggGameState>((set, get) => ({
   },
   syncKen: (ken) =>
     set((state) => (state.suppressKenSync || ken === state.ken ? state : { ken })),
+  beginSmash: () => set({ smashing: true }),
+  endSmash: () => set({ smashing: false }),
   showWin: (result) => set({ winReward: result }),
   closeWin: () => set({ winReward: null }),
   toggleMute: () => set((state) => ({ muted: !state.muted })),

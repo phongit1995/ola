@@ -47,17 +47,19 @@ export function useEggGame() {
     }
     const state = useEggGameStore.getState();
     if (state.winReward) return null;
-    if (state.drawing) return null;
+    if (state.smashing || state.drawing) return null;
     if (state.ken < activePack.kenCost) {
       toast.info(t('eggGame.outOfKen'));
       return null;
     }
     if (!state.muted) playSmashSound();
+    state.beginSmash();
 
     const packId = activePack.id;
     return (async (): Promise<SmashOutcome | null> => {
       const result = await draw(packId, crypto.randomUUID());
       if (!result) {
+        useEggGameStore.getState().endSmash();
         toast.error(t('eggGame.error'));
         return null;
       }

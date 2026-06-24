@@ -40,12 +40,13 @@ export function EggGamePage() {
   }, [loadPacks]);
 
   useEffect(() => {
+    useEggGameStore.setState({ smashing: false, winReward: null });
     const off = SocketService.on<{ ken?: number }>('KEN_UPDATED', (data) => {
       if (typeof data?.ken === 'number') useEggGameStore.getState().syncKen(data.ken);
     });
     return () => {
       off();
-      useEggGameStore.setState({ suppressKenSync: false });
+      useEggGameStore.setState({ suppressKenSync: false, smashing: false });
     };
   }, []);
 

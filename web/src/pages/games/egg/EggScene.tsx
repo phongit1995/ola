@@ -51,9 +51,13 @@ export function EggScene({ textures, hint, play }: EggSceneProps) {
     return () => clearTimeout(id);
   }, [brokenCount]);
 
-  const onBroken = useCallback(() => setBrokenCount((c) => c + 1), []);
-
   const winReward = useEggGameStore((s) => s.winReward);
+  const endSmash = useEggGameStore((s) => s.endSmash);
+
+  const onBroken = useCallback(() => {
+    setBrokenCount((c) => c + 1);
+    endSmash();
+  }, [endSmash]);
 
   const reloadRef = useRef<Sprite>(null);
   const spinRef = useRef<number | null>(null);
@@ -74,7 +78,8 @@ export function EggScene({ textures, hint, play }: EggSceneProps) {
     spinRef.current = 0;
     setBrokenCount(0);
     setRound((r) => r + 1);
-  }, []);
+    endSmash();
+  }, [endSmash]);
 
   const muted = useEggGameStore((s) => s.muted);
   const toggleMute = useEggGameStore((s) => s.toggleMute);
