@@ -44,9 +44,6 @@ const NearbyPlacesPage = lazy(() =>
 const EggGamePage = lazy(() =>
   import('@/pages/games/egg/EggGamePage').then((m) => ({ default: m.EggGamePage }))
 );
-const MarriagePage = lazy(() =>
-  import('@/pages/marriage/MarriagePage').then((m) => ({ default: m.MarriagePage }))
-);
 
 export function AppRouter() {
   return (
@@ -162,14 +159,6 @@ export function AppRouter() {
             element={
               <ProtectedRoute>
                 <EggGamePage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path={ROUTES.marriage}
-            element={
-              <ProtectedRoute>
-                <MarriagePage />
               </ProtectedRoute>
             }
           />

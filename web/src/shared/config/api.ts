@@ -82,6 +82,16 @@ export const API_PATH = {
     draw: (id: string) => `/egg/packs/${id}/draws`,
     draws: '/egg/draws',
   },
+  marriage: {
+    status: '/marriage',
+    divorce: '/marriage/divorce',
+    proposals: '/marriage/proposals',
+    proposal: (id: string) => `/marriage/proposals/${id}`,
+    proposalAccept: (id: string) => `/marriage/proposals/${id}/accept`,
+    proposalReject: (id: string) => `/marriage/proposals/${id}/reject`,
+    diary: '/marriage/diary',
+    diaryDetail: (id: string) => `/marriage/diary/${id}`,
+  },
   messages: {
     base: '/messages',
     direct: '/messages/direct',

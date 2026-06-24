@@ -12,8 +12,6 @@ export interface DiaryEntry {
   author: 'me' | 'spouse';
   content: string;
   createdAt: number;
-  likes: number;
-  liked: boolean;
 }
 
 export interface PendingProposal {

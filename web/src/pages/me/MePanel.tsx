@@ -1,7 +1,5 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
-import { ROUTES } from '@constants';
 import { HomeHeader } from '@components/HomeHeader';
 import { DEFAULT_AVATAR_COLOR, toast } from '@lib';
 import editIcon from '@/assets/icons/me/ic_action_edit.png';
@@ -15,10 +13,10 @@ import { MeComposerDialog } from './components/MeComposerDialog';
 import { MeAccountDialog } from './components/MeAccountDialog';
 import { MePostInteractions, type MePostSource } from './MePostInteractions';
 import { useMeFeed } from './useMeFeed';
+import { MarriageView } from '../marriage/MarriageView';
 
 export function MePanel() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const username = useAuthStore((s) => s.user?.username ?? null);
   const meId = useAuthStore((s) => s.user?.id ?? null);
   const displayName = username ?? t('home.guest');
@@ -46,6 +44,11 @@ export function MePanel() {
   const [composerOpen, setComposerOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [marriageOpen, setMarriageOpen] = useState(false);
+
+  if (marriageOpen) {
+    return <MarriageView onBack={() => setMarriageOpen(false)} />;
+  }
 
   const source: MePostSource = {
     posts,
@@ -121,11 +124,14 @@ export function MePanel() {
               <MeLeftDrawer
                 displayName={displayName}
                 onClose={() => setDrawerOpen(false)}
-                onSelect={(key) =>
-                  key === 'marriage'
-                    ? navigate(ROUTES.marriage)
-                    : toast.info(t('me.comingSoon'))
-                }
+                onSelect={(key) => {
+                  if (key === 'marriage') {
+                    setDrawerOpen(false);
+                    setMarriageOpen(true);
+                  } else {
+                    toast.info(t('me.comingSoon'));
+                  }
+                }}
               />
             )}
           </div>

@@ -1,4 +1,12 @@
 import { create } from 'zustand';
+import { colorForName } from '@lib';
+import {
+  MarriageService,
+  type DiaryEntryResult,
+  type MarriageUserBrief,
+  type ProposalItem,
+} from '@services';
+import { useAuthStore } from '@/store/authStore';
 import type {
   DiaryEntry,
   MarriageStatus,
@@ -7,125 +15,149 @@ import type {
   Spouse,
 } from './marriage.types';
 
-const DAY_MS = 86_400_000;
-
 interface MarriageState {
+  loading: boolean;
+  loaded: boolean;
   status: MarriageStatus;
   spouse: Spouse | null;
   marriedSince: number | null;
   diary: DiaryEntry[];
   pendingProposals: PendingProposal[];
   sentProposals: SentProposal[];
-  propose: (nick: string, message: string) => void;
-  cancelSent: (id: string) => void;
-  acceptProposal: (id: string) => void;
-  denyProposal: (id: string) => void;
-  divorce: () => void;
-  writeBox: (content: string) => void;
-  toggleLike: (id: string) => void;
+  load: () => Promise<void>;
+  propose: (addresseeId: string, message: string) => Promise<void>;
+  cancelSent: (id: string) => Promise<void>;
+  acceptProposal: (id: string) => Promise<void>;
+  denyProposal: (id: string) => Promise<void>;
+  divorce: () => Promise<void>;
+  writeBox: (content: string) => Promise<void>;
 }
 
-const SEED_SPOUSE: Spouse = { nick: 'lan_xinh', name: 'Lan', avatarColor: '#ec407a' };
+function mapSpouse(s: MarriageUserBrief): Spouse {
+  return {
+    nick: s.username,
+    name: s.fullName && s.fullName !== '' ? s.fullName : s.username,
+    avatarColor: colorForName(s.username),
+    avatarUrl: s.avatar,
+  };
+}
 
-const SEED_DIARY: DiaryEntry[] = [
-  {
-    id: 'seed-1',
-    author: 'spouse',
-    content: 'Cảm ơn anh vì hôm nay đã nấu cơm cho em 🥰',
-    createdAt: Date.now() - 2 * 3_600_000,
-    likes: 12,
-    liked: true,
-  },
-  {
-    id: 'seed-2',
-    author: 'me',
-    content: 'Kỷ niệm 1 năm mình về chung một nhà ❤️',
-    createdAt: Date.now() - 26 * 3_600_000,
-    likes: 34,
-    liked: false,
-  },
-];
+function mapDiary(items: DiaryEntryResult[], myId: string | undefined): DiaryEntry[] {
+  return items.map((e) => ({
+    id: e.id,
+    author: e.author?.id === myId ? 'me' : 'spouse',
+    content: e.content,
+    createdAt: Date.parse(e.createdAt),
+  }));
+}
 
-const SEED_PENDING: PendingProposal[] = [
-  {
-    id: 'pending-1',
-    fromNick: 'hoa_2k',
-    fromName: 'Hoa',
-    avatarColor: '#7e57c2',
-    message: 'Anh muốn cùng em viết tiếp câu chuyện của hai đứa mình 💍',
-  },
-];
+function mapIncoming(items: ProposalItem[]): PendingProposal[] {
+  return items.flatMap((p) => {
+    if (p.status !== 'pending' || !p.proposer) return [];
+    return [
+      {
+        id: p.id,
+        fromNick: p.proposer.username,
+        fromName: p.proposer.fullName && p.proposer.fullName !== '' ? p.proposer.fullName : p.proposer.username,
+        avatarColor: colorForName(p.proposer.username),
+        message: p.message ?? '',
+      },
+    ];
+  });
+}
 
-const SEED_SENT: SentProposal[] = [
-  {
-    id: 'sent-1',
-    toNick: 'mai_anh',
-    message: 'Làm vợ anh nhé, mình cùng nhau viết Box - Kết Hôn 💖',
-    createdAt: Date.now() - 5 * 3_600_000,
-  },
-];
+function mapOutgoing(items: ProposalItem[]): SentProposal[] {
+  return items.flatMap((p) => {
+    if (p.status !== 'pending' || !p.addressee) return [];
+    return [
+      {
+        id: p.id,
+        toNick: p.addressee.username,
+        message: p.message ?? '',
+        createdAt: Date.parse(p.createdAt),
+      },
+    ];
+  });
+}
 
-export const useMarriageStore = create<MarriageState>((set) => ({
-  status: 'married',
-  spouse: SEED_SPOUSE,
-  marriedSince: Date.now() - 378 * DAY_MS,
-  diary: SEED_DIARY,
-  pendingProposals: SEED_PENDING,
-  sentProposals: SEED_SENT,
-  propose: (nick, message) =>
-    set((state) => ({
-      sentProposals: [
-        { id: crypto.randomUUID(), toNick: nick, message, createdAt: Date.now() },
-        ...state.sentProposals,
-      ],
-    })),
-  cancelSent: (id) =>
-    set((state) => ({
-      sentProposals: state.sentProposals.filter((item) => item.id !== id),
-    })),
-  acceptProposal: (id) =>
-    set((state) => {
-      const proposal = state.pendingProposals.find((item) => item.id === id);
-      if (!proposal) return state;
-      return {
-        status: 'married',
-        spouse: {
-          nick: proposal.fromNick,
-          name: proposal.fromName,
-          avatarColor: proposal.avatarColor,
-        },
-        marriedSince: Date.now(),
-        diary: [],
-        pendingProposals: [],
-        sentProposals: [],
-      };
-    }),
-  denyProposal: (id) =>
-    set((state) => ({
-      pendingProposals: state.pendingProposals.filter((item) => item.id !== id),
-    })),
-  divorce: () =>
-    set({ status: 'single', spouse: null, marriedSince: null, diary: [] }),
-  writeBox: (content) =>
-    set((state) => ({
-      diary: [
-        {
-          id: crypto.randomUUID(),
-          author: 'me',
-          content,
-          createdAt: Date.now(),
-          likes: 0,
-          liked: false,
-        },
-        ...state.diary,
-      ],
-    })),
-  toggleLike: (id) =>
-    set((state) => ({
-      diary: state.diary.map((entry) =>
-        entry.id === id
-          ? { ...entry, liked: !entry.liked, likes: entry.likes + (entry.liked ? -1 : 1) }
-          : entry
-      ),
-    })),
+export const useMarriageStore = create<MarriageState>((set, get) => ({
+  loading: false,
+  loaded: false,
+  status: 'single',
+  spouse: null,
+  marriedSince: null,
+  diary: [],
+  pendingProposals: [],
+  sentProposals: [],
+
+  load: async () => {
+    set({ loading: true });
+    try {
+      const status = await MarriageService.status();
+      if (status.spouse) {
+        const diaryRes = await MarriageService.diary();
+        const myId = useAuthStore.getState().user?.id;
+        set({
+          loading: false,
+          loaded: true,
+          status: 'married',
+          spouse: mapSpouse(status.spouse),
+          marriedSince: status.marriedAt ? Date.parse(status.marriedAt) : null,
+          diary: mapDiary(diaryRes.items, myId),
+          pendingProposals: [],
+          sentProposals: [],
+        });
+      } else {
+        const [incoming, outgoing] = await Promise.all([
+          MarriageService.proposals('incoming'),
+          MarriageService.proposals('outgoing'),
+        ]);
+        set({
+          loading: false,
+          loaded: true,
+          status: 'single',
+          spouse: null,
+          marriedSince: null,
+          diary: [],
+          pendingProposals: mapIncoming(incoming.items),
+          sentProposals: mapOutgoing(outgoing.items),
+        });
+      }
+    } catch (error) {
+      set({ loading: false, loaded: true });
+      throw error;
+    }
+  },
+
+  propose: async (addresseeId, message) => {
+    await MarriageService.propose(addresseeId, message);
+    const outgoing = await MarriageService.proposals('outgoing');
+    set({ sentProposals: mapOutgoing(outgoing.items) });
+  },
+
+  cancelSent: async (id) => {
+    await MarriageService.cancel(id);
+    set((state) => ({ sentProposals: state.sentProposals.filter((item) => item.id !== id) }));
+  },
+
+  acceptProposal: async (id) => {
+    await MarriageService.accept(id);
+    await get().load();
+  },
+
+  denyProposal: async (id) => {
+    await MarriageService.reject(id);
+    set((state) => ({ pendingProposals: state.pendingProposals.filter((item) => item.id !== id) }));
+  },
+
+  divorce: async () => {
+    await MarriageService.divorce();
+    await get().load();
+  },
+
+  writeBox: async (content) => {
+    const entry = await MarriageService.writeDiary(content);
+    const myId = useAuthStore.getState().user?.id;
+    set((state) => ({ diary: [...mapDiary([entry], myId), ...state.diary] }));
+  },
 }));

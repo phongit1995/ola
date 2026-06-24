@@ -23,7 +23,6 @@ export function MarriageBoxView() {
   const diary = useMarriageStore((s) => s.diary);
   const divorce = useMarriageStore((s) => s.divorce);
   const writeBox = useMarriageStore((s) => s.writeBox);
-  const toggleLike = useMarriageStore((s) => s.toggleLike);
 
   const [divorceOpen, setDivorceOpen] = useState(false);
   const [writeOpen, setWriteOpen] = useState(false);
@@ -43,13 +42,28 @@ export function MarriageBoxView() {
     return t('marriage.daysAgo', { n: Math.floor(hours / 24) });
   }
 
-  function save() {
+  async function save() {
     const content = draft.trim();
     if (content.length === 0) return;
-    writeBox(content);
-    setDraft('');
-    setWriteOpen(false);
-    toast.success(t('marriage.saved'));
+    try {
+      await writeBox(content);
+      setDraft('');
+      setWriteOpen(false);
+      toast.success(t('marriage.saved'));
+    } catch {
+      toast.error(t('common.error'));
+    }
+  }
+
+  async function handleDivorce() {
+    try {
+      await divorce();
+      toast.success(t('marriage.divorcedToast'));
+    } catch {
+      toast.error(t('common.error'));
+    } finally {
+      setDivorceOpen(false);
+    }
   }
 
   return (
@@ -108,7 +122,6 @@ export function MarriageBoxView() {
               authorName={entry.author === 'me' ? meName : spouse.name}
               authorColor={entry.author === 'me' ? DEFAULT_AVATAR_COLOR : spouse.avatarColor}
               timeLabel={ago(entry.createdAt)}
-              onLike={() => toggleLike(entry.id)}
             />
           ))}
         </div>
@@ -121,10 +134,7 @@ export function MarriageBoxView() {
         confirmLabel={t('marriage.yes')}
         cancelLabel={t('marriage.no')}
         danger
-        onConfirm={() => {
-          divorce();
-          setDivorceOpen(false);
-        }}
+        onConfirm={() => void handleDivorce()}
         onCancel={() => setDivorceOpen(false)}
       />
 
@@ -134,7 +144,7 @@ export function MarriageBoxView() {
         title={t('marriage.writeTitle')}
         footer={
           <>
-            <DialogButton variant="green" onClick={save}>
+            <DialogButton variant="green" onClick={() => void save()}>
               {t('marriage.send')}
             </DialogButton>
             <DialogButton variant="default" onClick={() => setWriteOpen(false)}>
@@ -160,10 +170,9 @@ interface DiaryCardProps {
   authorName: string;
   authorColor: string;
   timeLabel: string;
-  onLike: () => void;
 }
 
-function DiaryCard({ entry, authorName, authorColor, timeLabel, onLike }: DiaryCardProps) {
+function DiaryCard({ entry, authorName, authorColor, timeLabel }: DiaryCardProps) {
   return (
     <div className="rounded-xl bg-[#fff5f8] p-3">
       <div className="flex items-center gap-2">
@@ -172,13 +181,6 @@ function DiaryCard({ entry, authorName, authorColor, timeLabel, onLike }: DiaryC
           <p className="truncate text-sm font-semibold text-black/80">{authorName}</p>
           <p className="text-xs text-black/45">{timeLabel}</p>
         </div>
-        <button
-          type="button"
-          onClick={onLike}
-          className={`flex items-center gap-1 text-sm ${entry.liked ? 'text-[#ff4d7d]' : 'text-black/40'}`}
-        >
-          {entry.liked ? '❤' : '🤍'} {entry.likes}
-        </button>
       </div>
       <p className="mt-2 whitespace-pre-wrap text-sm text-black/80">{entry.content}</p>
     </div>

@@ -20,20 +20,29 @@ export function MarriageLockedView({ onPropose }: MarriageLockedViewProps) {
   const cancelSent = useMarriageStore((s) => s.cancelSent);
   const [action, setAction] = useState<PendingAction>(null);
 
-  function revoke(id: string) {
-    cancelSent(id);
-    toast.info(t('marriage.revokedToast'));
+  async function revoke(id: string) {
+    try {
+      await cancelSent(id);
+      toast.info(t('marriage.revokedToast'));
+    } catch {
+      toast.error(t('common.error'));
+    }
   }
 
-  function confirm() {
+  async function confirm() {
     if (!action) return;
-    if (action.kind === 'accept') {
-      acceptProposal(action.proposal.id);
-      toast.success(t('marriage.acceptedToast', { nick: action.proposal.fromNick }));
-    } else {
-      denyProposal(action.proposal.id);
-    }
+    const current = action;
     setAction(null);
+    try {
+      if (current.kind === 'accept') {
+        await acceptProposal(current.proposal.id);
+        toast.success(t('marriage.acceptedToast', { nick: current.proposal.fromNick }));
+      } else {
+        await denyProposal(current.proposal.id);
+      }
+    } catch {
+      toast.error(t('common.error'));
+    }
   }
 
   return (
@@ -70,7 +79,7 @@ export function MarriageLockedView({ onPropose }: MarriageLockedViewProps) {
                 </div>
                 <button
                   type="button"
-                  onClick={() => revoke(item.id)}
+                  onClick={() => void revoke(item.id)}
                   className="rounded-full bg-black/10 px-3 py-1.5 text-xs font-semibold text-black/70"
                 >
                   {t('marriage.revoke')}
@@ -128,7 +137,7 @@ export function MarriageLockedView({ onPropose }: MarriageLockedViewProps) {
         confirmLabel={action?.kind === 'deny' ? t('marriage.deny') : t('marriage.accept')}
         cancelLabel={t('marriage.no')}
         danger={action?.kind === 'deny'}
-        onConfirm={confirm}
+        onConfirm={() => void confirm()}
         onCancel={() => setAction(null)}
       />
     </div>
