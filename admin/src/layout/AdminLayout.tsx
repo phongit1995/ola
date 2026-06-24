@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Avatar, Dropdown, Layout, Menu, Typography } from 'antd'
 import {
+  AimOutlined,
   AppstoreOutlined,
   CommentOutlined,
   CrownOutlined,
@@ -35,7 +36,10 @@ const MENU_ITEMS = [
     key: 'games',
     icon: <RocketOutlined />,
     label: 'Trò chơi',
-    children: [{ key: '/games/egg', icon: <GiftOutlined />, label: 'Đập trứng' }],
+    children: [
+      { key: '/games/egg', icon: <GiftOutlined />, label: 'Đập trứng' },
+      { key: '/games/pen', icon: <AimOutlined />, label: 'Sút Pen' },
+    ],
   },
   { key: '/me', icon: <PictureOutlined />, label: 'Me' },
 ]
@@ -55,6 +59,8 @@ const PAGE_TITLES: Record<string, string> = {
   '/vip-shop': 'Shop VIP',
   '/games/egg': 'Đập trứng',
   '/games/egg/stats': 'Thống kê trứng',
+  '/games/pen': 'Sút Pen',
+  '/games/pen/stats': 'Thống kê Pen',
   '/me': 'Quản lý Me',
 }
 

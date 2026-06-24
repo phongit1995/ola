@@ -73,3 +73,57 @@ type CreateShotSuccessResponse = utils.BaseResponse[CreateShotResponse]
 type ShotListSuccessResponse = utils.BaseResponse[ShotListResponse]
 type CatchSuccessResponse = utils.BaseResponse[CatchResult]
 type CancelSuccessResponse = utils.BaseResponse[CancelResponse]
+
+type StatsOverview struct {
+	TotalShots     int64   `json:"totalShots"`
+	SettledShots   int64   `json:"settledShots"`
+	OpenShots      int64   `json:"openShots"`
+	CancelledShots int64   `json:"cancelledShots"`
+	UniqueShooters int64   `json:"uniqueShooters"`
+	UniqueKeepers  int64   `json:"uniqueKeepers"`
+	TotalVolume    int64   `json:"totalVolume"`
+	HouseTake      int64   `json:"houseTake"`
+	TotalPayout    int64   `json:"totalPayout"`
+	SavedCount     int64   `json:"savedCount"`
+	GoalCount      int64   `json:"goalCount"`
+	KeeperWinRate  float64 `json:"keeperWinRate"`
+}
+
+type StatsResult struct {
+	Result  string  `json:"result"`
+	Count   int64   `json:"count"`
+	Percent float64 `json:"percent"`
+}
+
+type StatsStatus struct {
+	Status  string  `json:"status"`
+	Count   int64   `json:"count"`
+	Percent float64 `json:"percent"`
+}
+
+type StatsTimePoint struct {
+	Date      string `json:"date"`
+	Shots     int64  `json:"shots"`
+	Settled   int64  `json:"settled"`
+	Volume    int64  `json:"volume"`
+	HouseTake int64  `json:"houseTake"`
+}
+
+type StatsPlayer struct {
+	User   UserBrief `json:"user"`
+	Shots  int64     `json:"shots"`
+	Staked int64     `json:"staked"`
+	Won    int64     `json:"won"`
+}
+
+type PenStatsResponse struct {
+	Overview   StatsOverview    `json:"overview"`
+	ByResult   []StatsResult    `json:"byResult"`
+	ByStatus   []StatsStatus    `json:"byStatus"`
+	Timeseries []StatsTimePoint `json:"timeseries"`
+	TopPlayers []StatsPlayer    `json:"topPlayers"`
+	Bucket     string           `json:"bucket"`
+}
+
+type AdminShotListSuccessResponse = utils.BaseResponse[ShotListResponse]
+type PenStatsSuccessResponse = utils.BaseResponse[PenStatsResponse]

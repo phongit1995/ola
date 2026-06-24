@@ -5,6 +5,7 @@ import (
 	adminegg "ola-chat-server/internal/modules/admin/egg"
 	adminken "ola-chat-server/internal/modules/admin/ken"
 	adminme "ola-chat-server/internal/modules/admin/me"
+	adminpen "ola-chat-server/internal/modules/admin/pen"
 	adminroom "ola-chat-server/internal/modules/admin/room"
 	adminupload "ola-chat-server/internal/modules/admin/upload"
 	adminuser "ola-chat-server/internal/modules/admin/user"
@@ -21,10 +22,11 @@ type Router struct {
 	vipRouter    *adminvip.Router
 	eggRouter    *adminegg.Router
 	kenRouter    *adminken.Router
+	penRouter    *adminpen.Router
 }
 
-func NewRouter(authRouter *adminauth.Router, userRouter *adminuser.Router, meRouter *adminme.Router, roomRouter *adminroom.Router, uploadRouter *adminupload.Router, vipRouter *adminvip.Router, eggRouter *adminegg.Router, kenRouter *adminken.Router) *Router {
-	return &Router{authRouter: authRouter, userRouter: userRouter, meRouter: meRouter, roomRouter: roomRouter, uploadRouter: uploadRouter, vipRouter: vipRouter, eggRouter: eggRouter, kenRouter: kenRouter}
+func NewRouter(authRouter *adminauth.Router, userRouter *adminuser.Router, meRouter *adminme.Router, roomRouter *adminroom.Router, uploadRouter *adminupload.Router, vipRouter *adminvip.Router, eggRouter *adminegg.Router, kenRouter *adminken.Router, penRouter *adminpen.Router) *Router {
+	return &Router{authRouter: authRouter, userRouter: userRouter, meRouter: meRouter, roomRouter: roomRouter, uploadRouter: uploadRouter, vipRouter: vipRouter, eggRouter: eggRouter, kenRouter: kenRouter, penRouter: penRouter}
 }
 
 func (r *Router) Setup(api *utils.AppGroup) {
@@ -38,5 +40,6 @@ func (r *Router) Setup(api *utils.AppGroup) {
 		r.vipRouter.Setup(admin)
 		r.eggRouter.Setup(admin)
 		r.kenRouter.Setup(admin)
+		r.penRouter.Setup(admin)
 	}
 }

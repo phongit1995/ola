@@ -5,6 +5,7 @@ import (
 	adminegg "ola-chat-server/internal/modules/admin/egg"
 	adminken "ola-chat-server/internal/modules/admin/ken"
 	adminme "ola-chat-server/internal/modules/admin/me"
+	adminpen "ola-chat-server/internal/modules/admin/pen"
 	adminroom "ola-chat-server/internal/modules/admin/room"
 	adminupload "ola-chat-server/internal/modules/admin/upload"
 	adminuser "ola-chat-server/internal/modules/admin/user"
@@ -36,6 +37,9 @@ func Provider(c *dig.Container) error {
 		return err
 	}
 	if err := adminken.Provider(c); err != nil {
+		return err
+	}
+	if err := adminpen.Provider(c); err != nil {
 		return err
 	}
 

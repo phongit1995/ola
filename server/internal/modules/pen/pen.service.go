@@ -170,6 +170,81 @@ func (s *Service) CancelShot(userID, shotID uuid.UUID) (*CancelResponse, error) 
 	}, nil
 }
 
+func (s *Service) ListAllShots(f AdminShotFilter, limit, offset int) (*ShotListResponse, error) {
+	items, total, err := s.repo.ListAllShots(f, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	return buildList(items, total, limit, offset, true), nil
+}
+
+func (s *Service) Stats(f AdminShotFilter) (*PenStatsResponse, error) {
+	overview, err := s.repo.StatsOverview(f)
+	if err != nil {
+		return nil, err
+	}
+	if overview.SettledShots > 0 {
+		overview.KeeperWinRate = float64(overview.SavedCount) / float64(overview.SettledShots) * 100
+	}
+
+	byResult, err := s.repo.StatsByResult(f)
+	if err != nil {
+		return nil, err
+	}
+	for i := range byResult {
+		if overview.SettledShots > 0 {
+			byResult[i].Percent = float64(byResult[i].Count) / float64(overview.SettledShots) * 100
+		}
+	}
+
+	byStatus, err := s.repo.StatsByStatus(f)
+	if err != nil {
+		return nil, err
+	}
+	for i := range byStatus {
+		if overview.TotalShots > 0 {
+			byStatus[i].Percent = float64(byStatus[i].Count) / float64(overview.TotalShots) * 100
+		}
+	}
+
+	bucket := "day"
+	if f.From != nil && f.To != nil && f.To.Sub(*f.From) > 90*24*time.Hour {
+		bucket = "month"
+	}
+	timeseries, err := s.repo.StatsTimeseries(f, bucket)
+	if err != nil {
+		return nil, err
+	}
+
+	playerRows, err := s.repo.StatsTopPlayers(f, 10)
+	if err != nil {
+		return nil, err
+	}
+	players := make([]StatsPlayer, len(playerRows))
+	for i, p := range playerRows {
+		players[i] = StatsPlayer{
+			User: UserBrief{
+				ID:       p.UserID.String(),
+				Username: p.Username,
+				FullName: p.FullName,
+				Avatar:   p.Avatar,
+			},
+			Shots:  p.Shots,
+			Staked: p.Staked,
+			Won:    p.Won,
+		}
+	}
+
+	return &PenStatsResponse{
+		Overview:   overview,
+		ByResult:   byResult,
+		ByStatus:   byStatus,
+		Timeseries: timeseries,
+		TopPlayers: players,
+		Bucket:     bucket,
+	}, nil
+}
+
 func buildList(items []models.PenShot, total int64, limit, offset int, reveal bool) *ShotListResponse {
 	views := make([]ShotView, len(items))
 	for i := range items {

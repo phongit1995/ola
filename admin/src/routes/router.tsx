@@ -7,6 +7,8 @@ import { VipPackagesPage } from '@/pages/VipPackagesPage'
 import { VipShopPage } from '@/pages/VipShopPage'
 import { EggRewardsPage } from '@/pages/EggRewardsPage'
 import { EggStatsPage } from '@/pages/EggStatsPage'
+import { PenShotsPage } from '@/pages/PenShotsPage'
+import { PenStatsPage } from '@/pages/PenStatsPage'
 import { MePage } from '@/pages/MePage'
 import { AdminLayout } from '@/layout/AdminLayout'
 import { RedirectIfAuthed, RequireAuth } from './RequireAuth'
@@ -35,6 +37,8 @@ export const router = createBrowserRouter([
       { path: 'vip-shop', element: <VipShopPage /> },
       { path: 'games/egg', element: <EggRewardsPage /> },
       { path: 'games/egg/stats', element: <EggStatsPage /> },
+      { path: 'games/pen', element: <PenShotsPage /> },
+      { path: 'games/pen/stats', element: <PenStatsPage /> },
       { path: 'me', element: <MePage /> },
     ],
   },

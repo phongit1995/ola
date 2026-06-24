@@ -2,6 +2,7 @@ package pen
 
 import (
 	"bytes"
+	"fmt"
 	"time"
 
 	"ola-chat-server/internal/models"
@@ -375,4 +376,147 @@ func (r *Repository) CancelShot(shooterID, shotID uuid.UUID) (*models.PenShot, i
 		return nil, 0, err
 	}
 	return &out, newKen, nil
+}
+
+type AdminShotFilter struct {
+	ShooterID *uuid.UUID
+	KeeperID  *uuid.UUID
+	Status    string
+	Result    string
+	MinBet    *int
+	MaxBet    *int
+	From      *time.Time
+	To        *time.Time
+}
+
+func adminShotScope(f AdminShotFilter) func(*gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		if f.ShooterID != nil {
+			db = db.Where("pen_shots.shooter_id = ?", *f.ShooterID)
+		}
+		if f.KeeperID != nil {
+			db = db.Where("pen_shots.keeper_id = ?", *f.KeeperID)
+		}
+		if f.Status != "" {
+			db = db.Where("pen_shots.status = ?", f.Status)
+		}
+		if f.Result != "" {
+			db = db.Where("pen_shots.result = ?", f.Result)
+		}
+		if f.MinBet != nil {
+			db = db.Where("pen_shots.bet_amount >= ?", *f.MinBet)
+		}
+		if f.MaxBet != nil {
+			db = db.Where("pen_shots.bet_amount <= ?", *f.MaxBet)
+		}
+		if f.From != nil {
+			db = db.Where("pen_shots.created_at >= ?", *f.From)
+		}
+		if f.To != nil {
+			db = db.Where("pen_shots.created_at <= ?", *f.To)
+		}
+		return db
+	}
+}
+
+func (r *Repository) ListAllShots(f AdminShotFilter, limit, offset int) ([]models.PenShot, int64, error) {
+	q := r.db.Model(&models.PenShot{}).Scopes(adminShotScope(f))
+
+	var total int64
+	if err := q.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	var items []models.PenShot
+	err := q.
+		Preload("Shooter", briefSelect).
+		Preload("Keeper", briefSelect).
+		Order("created_at DESC").
+		Limit(limit).
+		Offset(offset).
+		Find(&items).Error
+	return items, total, err
+}
+
+func (r *Repository) StatsOverview(f AdminShotFilter) (StatsOverview, error) {
+	var o StatsOverview
+	err := r.db.Model(&models.PenShot{}).Scopes(adminShotScope(f)).
+		Select(`count(*) as total_shots,
+			count(*) filter (where status = 'settled') as settled_shots,
+			count(*) filter (where status = 'open') as open_shots,
+			count(*) filter (where status = 'cancelled') as cancelled_shots,
+			count(distinct shooter_id) as unique_shooters,
+			count(distinct keeper_id) as unique_keepers,
+			coalesce(sum(pot) filter (where status = 'settled'),0) as total_volume,
+			coalesce(sum(commission) filter (where status = 'settled'),0) as house_take,
+			coalesce(sum(payout) filter (where status = 'settled'),0) as total_payout,
+			count(*) filter (where result = 'saved') as saved_count,
+			count(*) filter (where result = 'goal') as goal_count`).
+		Scan(&o).Error
+	return o, err
+}
+
+func (r *Repository) StatsByResult(f AdminShotFilter) ([]StatsResult, error) {
+	var rows []StatsResult
+	err := r.db.Model(&models.PenShot{}).Scopes(adminShotScope(f)).
+		Where("result IS NOT NULL").
+		Select("result, count(*) as count").
+		Group("result").
+		Order("count DESC").
+		Scan(&rows).Error
+	return rows, err
+}
+
+func (r *Repository) StatsByStatus(f AdminShotFilter) ([]StatsStatus, error) {
+	var rows []StatsStatus
+	err := r.db.Model(&models.PenShot{}).Scopes(adminShotScope(f)).
+		Select("status, count(*) as count").
+		Group("status").
+		Order("count DESC").
+		Scan(&rows).Error
+	return rows, err
+}
+
+func (r *Repository) StatsTimeseries(f AdminShotFilter, bucket string) ([]StatsTimePoint, error) {
+	trunc, format := "day", "YYYY-MM-DD"
+	if bucket == "month" {
+		trunc, format = "month", "YYYY-MM"
+	}
+	var rows []StatsTimePoint
+	err := r.db.Model(&models.PenShot{}).Scopes(adminShotScope(f)).
+		Select(fmt.Sprintf(`to_char(date_trunc('%s', created_at), '%s') as date,
+			count(*) as shots,
+			count(*) filter (where status = 'settled') as settled,
+			coalesce(sum(pot) filter (where status = 'settled'),0) as volume,
+			coalesce(sum(commission) filter (where status = 'settled'),0) as house_take`, trunc, format)).
+		Group(fmt.Sprintf("date_trunc('%s', created_at)", trunc)).
+		Order(fmt.Sprintf("date_trunc('%s', created_at) ASC", trunc)).
+		Scan(&rows).Error
+	return rows, err
+}
+
+type StatsPlayerRow struct {
+	UserID   uuid.UUID `gorm:"column:user_id"`
+	Username string    `gorm:"column:username"`
+	FullName string    `gorm:"column:full_name"`
+	Avatar   string    `gorm:"column:avatar"`
+	Shots    int64     `gorm:"column:shots"`
+	Staked   int64     `gorm:"column:staked"`
+	Won      int64     `gorm:"column:won"`
+}
+
+func (r *Repository) StatsTopPlayers(f AdminShotFilter, limit int) ([]StatsPlayerRow, error) {
+	var rows []StatsPlayerRow
+	err := r.db.Table("pen_shots").
+		Select(`pen_shots.shooter_id as user_id, users.username, users.full_name, users.avatar,
+			count(*) as shots,
+			coalesce(sum(pen_shots.bet_amount),0) as staked,
+			coalesce(sum(case when pen_shots.winner_id = pen_shots.shooter_id then pen_shots.payout else 0 end),0) as won`).
+		Joins("LEFT JOIN users ON users.id = pen_shots.shooter_id").
+		Scopes(adminShotScope(f)).
+		Group("pen_shots.shooter_id, users.username, users.full_name, users.avatar").
+		Order("staked DESC").
+		Limit(limit).
+		Scan(&rows).Error
+	return rows, err
 }
