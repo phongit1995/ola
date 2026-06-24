@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScreenHeader, FullScreenOverlay, Spinner } from '@components';
-import { toast } from '@lib';
+import { colorForName, toast } from '@lib';
 import composeIcon from '@/assets/icons/chat/ic_action_compose_message.png';
 import { useAuthStore } from '@/store/authStore';
 import { useMeLocalStore } from '@/store/meLocalStore';
@@ -71,6 +71,7 @@ export function ProfilePage({
           actions={actions}
           onPostMe={() => toast.info(t('profile.comingSoon'))}
           onUpdateInfo={() => setEditOpen(true)}
+          onOpenUser={(nick) => onOpenFriend({ name: nick, color: colorForName(nick) })}
         />
         {secondary.media.length > 0 && <ProfileMediaStore media={secondary.media} />}
         {secondary.following.length > 0 && (

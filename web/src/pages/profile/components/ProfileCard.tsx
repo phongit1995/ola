@@ -9,6 +9,7 @@ import marriageIcon from '@/assets/icons/profile/ic_profile_marriage.png';
 import birthdayIcon from '@/assets/icons/profile/ic_profile_birthday.png';
 import noteIcon from '@/assets/icons/profile/ic_profile_note.png';
 import { Avatar, UserName, VipIcon } from '@components';
+import { colorForName } from '@lib';
 import type { ProfileActions, UserProfile } from '../types';
 import type { RelationshipInfo } from '@app-types';
 import { RelationButtons } from './RelationButtons';
@@ -21,9 +22,10 @@ interface ProfileCardProps {
   actions: ProfileActions;
   onPostMe: () => void;
   onUpdateInfo: () => void;
+  onOpenUser?: (nick: string) => void;
 }
 
-function InfoRow({ icon, text, note }: { icon: string; text: string; note?: boolean }) {
+function InfoRow({ icon, text, note }: { icon: string; text: React.ReactNode; note?: boolean }) {
   return (
     <div
       className={`mt-2 ml-4 flex items-center gap-1 text-xs ${
@@ -36,7 +38,14 @@ function InfoRow({ icon, text, note }: { icon: string; text: string; note?: bool
   );
 }
 
-export function ProfileCard({ profile, relationship, actions, onPostMe, onUpdateInfo }: ProfileCardProps) {
+export function ProfileCard({
+  profile,
+  relationship,
+  actions,
+  onPostMe,
+  onUpdateInfo,
+  onOpenUser,
+}: ProfileCardProps) {
   const { t } = useTranslation();
   const coverInputRef = useRef<HTMLInputElement>(null);
   const [uploadingCover, setUploadingCover] = useState(false);
@@ -104,8 +113,23 @@ export function ProfileCard({ profile, relationship, actions, onPostMe, onUpdate
             )}
           </>
         )}
-        <div className="absolute -bottom-12 left-1/2 flex -translate-x-1/2 bg-white p-px pb-0.5 shadow-[0_1px_3px_rgba(0,0,0,0.3)]">
+        <div className="absolute -bottom-12 left-1/2 flex -translate-x-1/2 gap-1 bg-white p-px pb-0.5 shadow-[0_1px_3px_rgba(0,0,0,0.3)]">
           <Avatar name={profile.nick} color={profile.color} size={96} src={profile.avatar} rounded={false} />
+          {profile.spouse ? (
+            <button
+              type="button"
+              onClick={() => profile.spouse && onOpenUser?.(profile.spouse.nick)}
+              className="leading-none"
+            >
+              <Avatar
+                name={profile.spouse.nick}
+                color={colorForName(profile.spouse.nick)}
+                size={96}
+                src={profile.spouse.avatar}
+                rounded={false}
+              />
+            </button>
+          ) : null}
         </div>
       </div>
 
@@ -176,7 +200,25 @@ export function ProfileCard({ profile, relationship, actions, onPostMe, onUpdate
           icon={profile.gender === 'female' ? femaleIcon : maleIcon}
           text={profile.gender === 'female' ? t('profile.genderFemale') : t('profile.genderMale')}
         />
-        <InfoRow icon={marriageIcon} text={profile.marriage} />
+        <InfoRow
+          icon={marriageIcon}
+          text={
+            profile.spouse ? (
+              <span>
+                {t('marriage.marryWithLabel')}{' '}
+                <button
+                  type="button"
+                  onClick={() => profile.spouse && onOpenUser?.(profile.spouse.nick)}
+                  className="text-ola-primary-darker"
+                >
+                  @{profile.spouse.nick}
+                </button>
+              </span>
+            ) : (
+              profile.marriage
+            )
+          }
+        />
         <InfoRow icon={birthdayIcon} text={profile.birthday} />
         <div className="mt-2 ml-4 text-xs text-black/54">{profile.joinDate}</div>
         <InfoRow icon={noteIcon} text={t('profile.viewNote')} note />

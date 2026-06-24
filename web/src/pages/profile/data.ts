@@ -71,6 +71,7 @@ export function buildMockProfile(nick: string, color: string, isSelf = false): U
     bio: 'Sống hết mình với đam mê 🌸 Yêu âm nhạc và những chuyến đi.',
     gender: hashIndex(nick, 2) === 0 ? 'female' : 'male',
     marriage: 'Độc thân',
+    spouse: null,
     birthday: '12/08',
     joinDate: 'Tham gia Ola từ 2014',
     isSelf,

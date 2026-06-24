@@ -13,6 +13,7 @@ import marriageIcon from '@/assets/icons/profile/ic_profile_marriage.png';
 import cameraIcon from '@/assets/icons/profile/ic_action_camera.png';
 import { Avatar, ScreenHeader, FullScreenOverlay, UserName, VipIcon } from '@components';
 import { CoverImageEditor } from './components/CoverImageEditor';
+import { UserProfileView } from './UserProfileView';
 import { COVER_ASPECT } from './constants';
 import { MePostCard } from '../me/components/MePostCard';
 import { MePostInteractions, type MePostSource } from '../me/MePostInteractions';
@@ -31,6 +32,7 @@ export function ProfileMePage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [uploadingCover, setUploadingCover] = useState(false);
   const [coverPreview, setCoverPreview] = useState<{ url: string; file: File } | null>(null);
+  const [spouseTarget, setSpouseTarget] = useState<{ username: string; color: string } | null>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
   const formatTime = useMemo(() => createTimeFormatter(i18n.language), [i18n.language]);
@@ -157,6 +159,10 @@ export function ProfileMePage() {
 
   const nick = user.fullName || user.username;
   const color = colorForName(nick);
+  const spouse = user.spouse;
+  const openSpouse = () => {
+    if (spouse) setSpouseTarget({ username: spouse.username, color: colorForName(spouse.username) });
+  };
   const vipTypeId = activeVipTypeId(user.vipUsed, user.vipEndTime);
   const mePosts = posts
     .map((post) => toMePost(post, formatTime))
@@ -175,6 +181,7 @@ export function ProfileMePage() {
   };
 
   return (
+    <>
     <FullScreenOverlay>
       <ScreenHeader title={nick} onBack={() => navigate(ROUTES.home)} />
 
@@ -206,8 +213,19 @@ export function ProfileMePage() {
               aria-label={t('profile.changeCover')}
               onChange={pickCover}
             />
-            <div className="absolute -bottom-12 left-1/2 flex -translate-x-1/2 bg-white p-px pb-0.5 shadow-[0_1px_3px_rgba(0,0,0,0.3)]">
+            <div className="absolute -bottom-12 left-1/2 flex -translate-x-1/2 gap-1 bg-white p-px pb-0.5 shadow-[0_1px_3px_rgba(0,0,0,0.3)]">
               <Avatar name={nick} color={color} size={96} src={user.avatar} rounded={false} />
+              {spouse ? (
+                <button type="button" onClick={openSpouse} className="leading-none">
+                  <Avatar
+                    name={spouse.fullName || spouse.username}
+                    color={colorForName(spouse.username)}
+                    size={96}
+                    src={spouse.avatar}
+                    rounded={false}
+                  />
+                </button>
+              ) : null}
             </div>
           </div>
 
@@ -275,8 +293,17 @@ export function ProfileMePage() {
             ) : null}
             <div className="mt-2 ml-4 flex items-center gap-1 text-xs text-black/54">
               <img src={marriageIcon} alt="" className="h-4 w-4 object-contain" />
-              {user.spouse ? (
-                <span>{t('marriage.marryWith', { nick: user.spouse.username })}</span>
+              {spouse ? (
+                <span>
+                  {t('marriage.marryWithLabel')}{' '}
+                  <button
+                    type="button"
+                    onClick={openSpouse}
+                    className="text-ola-primary-darker"
+                  >
+                    @{spouse.username}
+                  </button>
+                </span>
               ) : (
                 <span>{t('marriage.single')}</span>
               )}
@@ -304,5 +331,15 @@ export function ProfileMePage() {
         </MePostInteractions>
       </div>
     </FullScreenOverlay>
+    {spouseTarget ? (
+      <UserProfileView
+        key={spouseTarget.username}
+        username={spouseTarget.username}
+        color={spouseTarget.color}
+        onClose={() => setSpouseTarget(null)}
+        onOpenFriend={(friend) => setSpouseTarget({ username: friend.name, color: friend.color })}
+      />
+    ) : null}
+    </>
   );
 }

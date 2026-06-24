@@ -39,6 +39,7 @@ export interface UserProfile {
   bio: string;
   gender: 'male' | 'female';
   marriage: string;
+  spouse: { nick: string; avatar?: string } | null;
   birthday: string;
   joinDate: string;
   isSelf: boolean;

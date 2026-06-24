@@ -36,6 +36,7 @@ export function mapPublicProfile(data: PublicProfile, deps: ProfileMapDeps): Use
     bio: data.bio ?? '',
     gender: data.gender,
     marriage: data.spouse ? deps.marriedWith(data.spouse.username) : deps.singleLabel,
+    spouse: data.spouse ? { nick: data.spouse.username, avatar: data.spouse.avatar } : null,
     birthday: data.dateOfBirth ? formatBirthday(data.dateOfBirth) : '',
     joinDate: `${deps.joinedLabel} ${deps.formatDate(data.createdAt)}`,
     isSelf: data.relationship?.status === 'self',

@@ -770,6 +770,7 @@
     "diaryTitle": "Marriage diary",
     "writeBox": "Write Box",
     "marryWith": "Married to @{{nick}}",
+    "marryWithLabel": "Married to",
     "single": "Single",
     "divorcedToast": "Divorced",
     "divorce": "Divorce",
