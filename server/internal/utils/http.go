@@ -149,22 +149,23 @@ var (
 	}
 
 	errorsNotFound = map[string]bool{
-		"user not found":               true,
-		"admin not found":              true,
-		"room not found":               true,
-		"message not found":            true,
-		"resource not found":           true,
-		"friend request not found":     true,
-		"friendship not found":         true,
-		"block relationship not found": true,
-		"relationship not found":       true,
-		"post not found":               true,
-		"comment not found":            true,
-		"vip icon not found":           true,
-		"vip package not found":        true,
-		"vip shop item not found":      true,
-		"egg pack not found":           true,
-		"pen shot not found":           true,
+		"user not found":                 true,
+		"admin not found":                true,
+		"room not found":                 true,
+		"message not found":              true,
+		"resource not found":             true,
+		"friend request not found":       true,
+		"friendship not found":           true,
+		"block relationship not found":   true,
+		"relationship not found":         true,
+		"post not found":                 true,
+		"comment not found":              true,
+		"vip icon not found":             true,
+		"vip package not found":          true,
+		"vip shop item not found":        true,
+		"egg pack not found":             true,
+		"pen shot not found":             true,
+		"marriage diary entry not found": true,
 	}
 
 	errorsConflict = map[string]bool{
@@ -193,6 +194,8 @@ var (
 		"vip store is private":                  true,
 		"you cannot catch your own pen":         true,
 		"this pen is not yours":                 true,
+		"you must be married to use the diary":  true,
+		"diary entry does not belong to you":    true,
 	}
 )
 
