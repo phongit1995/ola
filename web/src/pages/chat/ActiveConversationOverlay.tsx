@@ -1,5 +1,5 @@
 import { colorForName } from '@lib';
-import { useChatStore } from '@/store/chatStore';
+import { useChatStore } from '@/store/chat/chatStore';
 import { ChatConversationView } from './components/ChatConversationView';
 import { toConversationView } from './chatView';
 

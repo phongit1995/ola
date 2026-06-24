@@ -18,7 +18,7 @@ import {
 import { colorForName, isSameDay, kulToken, toast } from '@lib';
 import moreIcon from '@/assets/icons/chat/ic_more_white.png';
 import likeIcon from '@/assets/icons/chat/smiley_35.png';
-import { useChatStore } from '@/store/chatStore';
+import { useChatStore } from '@/store/chat/chatStore';
 import { useAuthStore } from '@/store/authStore';
 import type { RelationshipStatus } from '@app-types';
 import type { ChatMessage } from '../types';

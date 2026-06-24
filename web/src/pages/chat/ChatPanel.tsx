@@ -13,7 +13,7 @@ import moreIcon from '@/assets/icons/chat/ic_more_white.png';
 import addFriendIcon from '@/assets/icons/chat/ic_add_friend.png';
 import { AuthService, RelationshipService, SocketService } from '@services';
 import { useAuthStore } from '@/store/authStore';
-import { useChatStore } from '@/store/chatStore';
+import { useChatStore } from '@/store/chat/chatStore';
 import { ConversationList } from './components/ConversationList';
 import { ContactList } from './components/ContactList';
 import { BlockedListDialog } from './components/BlockedListDialog';

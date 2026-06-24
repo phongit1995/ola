@@ -2,7 +2,7 @@ import { Suspense, useEffect, useState } from 'react';
 import { SocketService } from '@services';
 import { BottomTabBar, type TabKey } from '@components/BottomTabBar';
 import { useRoomChatStore } from '@/store/roomChatStore';
-import { useChatStore } from '@/store/chatStore';
+import { useChatStore } from '@/store/chat/chatStore';
 import { ActiveConversationOverlay } from '../chat/ActiveConversationOverlay';
 import { ACTIVE_TAB_KEY, PANELS } from './constants';
 

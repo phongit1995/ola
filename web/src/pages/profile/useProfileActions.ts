@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { RelationshipService, UserService } from '@services';
 import { toast } from '@lib';
 import type { RelationshipInfo } from '@app-types';
-import { useChatStore } from '@/store/chatStore';
+import { useChatStore } from '@/store/chat/chatStore';
 import { useAuthStore } from '@/store/authStore';
 import type { ProfileActions, UserProfile } from './types';
 
