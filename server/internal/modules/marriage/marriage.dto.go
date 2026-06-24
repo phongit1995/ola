@@ -3,8 +3,8 @@ package marriage
 import "ola-chat-server/internal/utils"
 
 type ProposeRequest struct {
-	AddresseeUsername string `json:"addresseeUsername" binding:"required,min=1,max=100" example:"john_doe"`
-	Message           string `json:"message" binding:"omitempty,max=500" example:"Em đồng ý làm vợ anh nhé?"`
+	AddresseeID string `json:"addresseeId" binding:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440000"`
+	Message     string `json:"message" binding:"omitempty,max=500" example:"Em đồng ý làm vợ anh nhé?"`
 }
 
 type UserBrief struct {

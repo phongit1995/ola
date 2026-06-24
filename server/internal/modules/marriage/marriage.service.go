@@ -6,6 +6,7 @@ import (
 
 	"ola-chat-server/internal/apperr"
 	"ola-chat-server/internal/models"
+	"ola-chat-server/internal/modules/relationships"
 	"ola-chat-server/internal/modules/user"
 
 	"github.com/google/uuid"
@@ -19,6 +20,7 @@ var (
 	ErrTargetInactive     = errors.New("target user is not available")
 	ErrAlreadyMarried     = errors.New("you are already married")
 	ErrTargetMarried      = errors.New("target user is already married")
+	ErrBlocked            = errors.New("cannot propose to a blocked user")
 	ErrProposalExists     = errors.New("a pending proposal already exists")
 	ErrProposalNotFound   = errors.New("marriage proposal not found")
 	ErrProposalNotPending = errors.New("marriage proposal is no longer pending")
@@ -28,13 +30,15 @@ var (
 
 type Service struct {
 	repo      *Repository
+	relRepo   *relationships.Repository
 	userCache *user.CacheService
 	logger    *zap.SugaredLogger
 }
 
-func NewService(repo *Repository, userCache *user.CacheService, logger *zap.SugaredLogger) *Service {
+func NewService(repo *Repository, relRepo *relationships.Repository, userCache *user.CacheService, logger *zap.SugaredLogger) *Service {
 	return &Service{
 		repo:      repo,
+		relRepo:   relRepo,
 		userCache: userCache,
 		logger:    logger.Named("[marriage_service]"),
 	}
@@ -58,21 +62,38 @@ func (s *Service) Propose(proposerID uuid.UUID, req ProposeRequest) (*ProposeRes
 		return nil, ErrAlreadyMarried
 	}
 
-	addressee, err := s.repo.FindUserByUsername(req.AddresseeUsername)
+	addresseeID, err := uuid.Parse(req.AddresseeID)
+	if err != nil {
+		return nil, ErrUserNotFound
+	}
+	if addresseeID == proposerID {
+		return nil, ErrCannotProposeSelf
+	}
+
+	addressee, err := s.repo.FindUserByID(addresseeID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrUserNotFound
 		}
 		return nil, err
 	}
-	if addressee.ID == proposerID {
-		return nil, ErrCannotProposeSelf
-	}
 	if !addressee.IsActive {
 		return nil, ErrTargetInactive
 	}
 	if addressee.SpouseID != nil {
 		return nil, ErrTargetMarried
+	}
+
+	blockedByMe, err := s.relRepo.IsBlocked(proposerID, addresseeID)
+	if err != nil {
+		return nil, err
+	}
+	blockedByThem, err := s.relRepo.IsBlocked(addresseeID, proposerID)
+	if err != nil {
+		return nil, err
+	}
+	if blockedByMe || blockedByThem {
+		return nil, ErrBlocked
 	}
 
 	exists, err := s.repo.ExistsPending(proposerID, addressee.ID)

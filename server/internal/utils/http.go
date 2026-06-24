@@ -196,6 +196,7 @@ var (
 		"this pen is not yours":                 true,
 		"you must be married to use the diary":  true,
 		"diary entry does not belong to you":    true,
+		"cannot propose to a blocked user":      true,
 	}
 )
 
