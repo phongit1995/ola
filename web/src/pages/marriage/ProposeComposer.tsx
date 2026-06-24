@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Avatar, ScreenHeader } from '@components';
+import { Avatar, ScreenHeader, UserName } from '@components';
 import { colorForName, toast } from '@lib';
 import { UserService } from '@services';
 import type { UserSearchResult } from '@app-types';
-import { HeartAvatar } from './HeartAvatar';
 import { useMarriageStore } from './marriageStore';
 
 const MESSAGE_LIMIT = 500;
@@ -111,23 +110,32 @@ export function ProposeComposer({ onClose }: ProposeComposerProps) {
 
               {selected != null ? (
                 <div className="flex items-center gap-3 rounded-2xl border border-[#ffd0de] bg-white p-3 shadow-[0_2px_10px_rgba(255,77,125,0.12)]">
-                  <HeartAvatar
-                    name={selected.username}
-                    color={colorForName(selected.username)}
-                    size={44}
-                    idKey={selected.id}
-                    src={selected.avatar}
-                  />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-bold text-black/80">
-                      {selected.fullName || selected.username}
-                    </p>
-                    <p className="truncate text-xs text-black/45">@{selected.username}</p>
+                  <span className="h-10 w-10 shrink-0 overflow-hidden rounded">
+                    <Avatar
+                      name={selected.username}
+                      color={colorForName(selected.username)}
+                      src={selected.avatar}
+                      size={40}
+                      rounded={false}
+                    />
+                  </span>
+                  <div className="flex min-w-0 flex-1 flex-col">
+                    <span className="flex min-w-0 items-center gap-1 text-base">
+                      <UserName
+                        name={selected.username}
+                        fullName={selected.fullName || undefined}
+                        className="min-w-0 truncate text-black/87"
+                        fullNameClassName="text-black/54"
+                      />
+                    </span>
+                    {selected.bio ? (
+                      <span className="truncate text-xs text-black/54">{selected.bio}</span>
+                    ) : null}
                   </div>
                   <button
                     type="button"
                     onClick={clearSelected}
-                    className="rounded-full bg-[#fff0f4] px-3 py-1.5 text-xs font-semibold text-[#c2185b] hover:bg-[#ffe0ea]"
+                    className="shrink-0 rounded-full bg-[#fff0f4] px-3 py-1.5 text-xs font-semibold text-[#c2185b] hover:bg-[#ffe0ea]"
                   >
                     {t('marriage.changeReceiver')}
                   </button>
@@ -166,20 +174,34 @@ export function ProposeComposer({ onClose }: ProposeComposerProps) {
                                 onClick={() => pick(user)}
                                 className="flex w-full items-center gap-3 px-3 py-2.5 text-left hover:bg-[#fff0f4] disabled:opacity-50 disabled:hover:bg-transparent"
                               >
-                                <Avatar
-                                  name={user.username}
-                                  color={colorForName(user.username)}
-                                  size={36}
-                                  src={user.avatar}
-                                />
-                                <div className="min-w-0 flex-1">
-                                  <p className="truncate text-sm text-black/80">
-                                    {user.fullName || user.username}
-                                  </p>
-                                  <p className="truncate text-xs text-black/45">@{user.username}</p>
+                                <span className="h-9 w-9 shrink-0 overflow-hidden rounded">
+                                  <Avatar
+                                    name={user.username}
+                                    color={colorForName(user.username)}
+                                    src={user.avatar}
+                                    size={36}
+                                    rounded={false}
+                                  />
+                                </span>
+                                <div className="flex min-w-0 flex-1 flex-col">
+                                  <span className="flex min-w-0 items-center gap-1 text-sm">
+                                    <UserName
+                                      name={user.username}
+                                      fullName={user.fullName || undefined}
+                                      className="min-w-0 truncate text-black/80"
+                                      fullNameClassName="text-black/54"
+                                    />
+                                  </span>
+                                  {user.bio ? (
+                                    <span className="truncate text-xs text-black/45">
+                                      {user.bio}
+                                    </span>
+                                  ) : null}
                                 </div>
                                 {blocked && (
-                                  <span className="text-xs text-black/40">{t('chat.blocked')}</span>
+                                  <span className="shrink-0 text-xs text-black/40">
+                                    {t('chat.blocked')}
+                                  </span>
                                 )}
                               </button>
                             </li>

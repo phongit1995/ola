@@ -192,6 +192,14 @@ func (s *Service) ListMine(userID uuid.UUID, limit, offset int) (*MeListResponse
 	return s.buildList(userID, posts, total, limit, offset)
 }
 
+func (s *Service) ListLiked(userID uuid.UUID, limit, offset int) (*MeListResponse, error) {
+	posts, total, err := s.repo.ListLikedByUser(userID, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	return s.buildList(userID, posts, total, limit, offset)
+}
+
 func (s *Service) ListByUser(viewerID, authorID uuid.UUID, limit, offset int) (*MeListResponse, error) {
 	if viewerID != authorID {
 		blocked, err := s.relRepo.IsBlocked(authorID, viewerID)

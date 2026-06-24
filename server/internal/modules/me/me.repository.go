@@ -80,6 +80,34 @@ func (r *Repository) ListByAuthor(authorID uuid.UUID, visibilities []models.MeVi
 	return r.paginate(db, limit, offset)
 }
 
+const likedVisibilityCond = `(me.visibility = ? OR me.author_id = ? OR (me.visibility = ? AND EXISTS (
+	SELECT 1 FROM relationships rel
+	WHERE rel.status = ?
+	  AND ((rel.requester_id = ? AND rel.addressee_id = me.author_id)
+	    OR (rel.addressee_id = ? AND rel.requester_id = me.author_id))
+)))`
+
+func (r *Repository) ListLikedByUser(userID uuid.UUID, limit, offset int) ([]*models.Me, int64, error) {
+	db := r.db.Model(&models.Me{}).
+		Joins("JOIN me_reactions mr ON mr.post_id = me.id AND mr.user_id = ? AND mr.type = ?", userID, models.MeReactionLike).
+		Where("me.enabled = ?", true).
+		Where(likedVisibilityCond, models.MeVisibilityPublic, userID, models.MeVisibilityFriend, models.RelationshipStatusAccepted, userID, userID)
+
+	var total int64
+	if err := db.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	var posts []*models.Me
+	if err := db.Select("me.*").Preload("Author").
+		Order("mr.created_at DESC").
+		Limit(limit).Offset(offset).
+		Find(&posts).Error; err != nil {
+		return nil, 0, err
+	}
+	return posts, total, nil
+}
+
 type feedRow struct {
 	ID        uuid.UUID `gorm:"column:id"`
 	CreatedAt time.Time `gorm:"column:created_at"`

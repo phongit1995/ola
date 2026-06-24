@@ -21,6 +21,7 @@ func (r *Router) Setup(api *utils.AppGroup) {
 		me.POST("", r.controller.Create)
 		me.GET("", r.controller.Feed)
 		me.GET("/mine", r.controller.ListMine)
+		me.GET("/liked", r.controller.ListLiked)
 		me.GET("/users/:userId", r.controller.ListByUser)
 		me.GET("/:id", r.controller.GetPost)
 		me.PUT("/:id", r.controller.UpdatePost)
