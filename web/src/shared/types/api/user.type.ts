@@ -1,6 +1,4 @@
-import type { Gender } from './auth.type';
-
-export type Marriage = 'single' | 'married';
+import type { Gender, SpouseInfo } from './auth.type';
 
 export type RelationshipStatus =
   | 'self'
@@ -28,7 +26,7 @@ export interface PublicProfile {
   bio?: string;
   gender: Gender;
   dateOfBirth?: string;
-  marriage: Marriage;
+  spouse?: SpouseInfo;
   verified: boolean;
   kisses: number;
   vipUsed?: string | null;

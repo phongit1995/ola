@@ -13,7 +13,7 @@ function formatBirthday(iso: string): string {
 
 export interface ProfileMapDeps {
   seedColor: string;
-  marriedLabel: string;
+  marriedWith: (nick: string) => string;
   singleLabel: string;
   joinedLabel: string;
   formatDate: (iso: string) => string;
@@ -35,7 +35,7 @@ export function mapPublicProfile(data: PublicProfile, deps: ProfileMapDeps): Use
     kisses: data.kisses,
     bio: data.bio ?? '',
     gender: data.gender,
-    marriage: data.marriage === 'married' ? deps.marriedLabel : deps.singleLabel,
+    marriage: data.spouse ? deps.marriedWith(data.spouse.username) : deps.singleLabel,
     birthday: data.dateOfBirth ? formatBirthday(data.dateOfBirth) : '',
     joinDate: `${deps.joinedLabel} ${deps.formatDate(data.createdAt)}`,
     isSelf: data.relationship?.status === 'self',

@@ -1,5 +1,12 @@
 export type Gender = 'male' | 'female';
 
+export interface SpouseInfo {
+  id: string;
+  username: string;
+  fullName?: string;
+  avatar?: string;
+}
+
 export interface AuthUser {
   id: string;
   username: string;
@@ -18,6 +25,7 @@ export interface AuthUser {
   vipEndTime?: string | null;
   followerCount?: number;
   followingCount?: number;
+  spouse?: SpouseInfo;
   createdAt?: string;
 }
 

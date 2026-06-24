@@ -27,7 +27,7 @@ export function useUserProfile(username: string, seedColor: string): ProfileCont
   const mapDeps = useMemo<ProfileMapDeps>(
     () => ({
       seedColor,
-      marriedLabel: t('profile.marriageMarried'),
+      marriedWith: (nick: string) => t('marriage.marryWith', { nick }),
       singleLabel: t('profile.marriageSingle'),
       joinedLabel: t('profile.joinedOla'),
       formatDate,
