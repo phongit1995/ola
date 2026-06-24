@@ -3,6 +3,8 @@ import icFriend from '@/assets/icons/notify/ic_notification_add_friend.png';
 import icMention from '@/assets/icons/notify/ic_notification_mention.png';
 import icLike from '@/assets/icons/notify/ic_notification_like.png';
 import icPhoto from '@/assets/icons/notify/ic_notification_photo.png';
+import icHeart from '@/assets/icons/notify/ic_notification_heart.png';
+import icBrokenHeart from '@/assets/icons/notify/ic_notification_broken_heart.png';
 import iconNotify from '@/assets/icons/apps/notify.png';
 import iconGame from '@/assets/icons/apps/game.png';
 import iconPersonal from '@/assets/icons/apps/personal.png';
@@ -29,6 +31,8 @@ export const TYPE_ICON: Partial<Record<NotificationType, string>> = {
   mention: icMention,
   like: icLike,
   photo: icPhoto,
+  proposal: icHeart,
+  divorce: icBrokenHeart,
 };
 
 export const MOCK_NOTIFICATIONS: NotificationItem[] = [

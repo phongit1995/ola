@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
+import { ROUTES } from '@constants';
 import { HomeHeader } from '@components/HomeHeader';
 import { DEFAULT_AVATAR_COLOR, toast } from '@lib';
 import editIcon from '@/assets/icons/me/ic_action_edit.png';
@@ -16,6 +18,7 @@ import { useMeFeed } from './useMeFeed';
 
 export function MePanel() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const username = useAuthStore((s) => s.user?.username ?? null);
   const meId = useAuthStore((s) => s.user?.id ?? null);
   const displayName = username ?? t('home.guest');
@@ -118,7 +121,11 @@ export function MePanel() {
               <MeLeftDrawer
                 displayName={displayName}
                 onClose={() => setDrawerOpen(false)}
-                onSelect={() => toast.info(t('me.comingSoon'))}
+                onSelect={(key) =>
+                  key === 'marriage'
+                    ? navigate(ROUTES.marriage)
+                    : toast.info(t('me.comingSoon'))
+                }
               />
             )}
           </div>

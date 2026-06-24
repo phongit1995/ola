@@ -7,10 +7,12 @@ import { activeVipTypeId, colorForName, createDateFormatter, createTimeFormatter
 import type { Post, PostReaction } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
 import { useMeLocalStore } from '@/store/meLocalStore';
+import { useMarriageStore } from '@/pages/marriage/marriageStore';
 import genderIcon from '@/assets/icons/profile/ic_indicate_dynamic_gender.png';
 import birthdayIcon from '@/assets/icons/profile/ic_profile_birthday.png';
+import marriageIcon from '@/assets/icons/profile/ic_profile_marriage.png';
 import cameraIcon from '@/assets/icons/profile/ic_action_camera.png';
-import { Avatar, ScreenHeader, FullScreenOverlay, UserName, VipIcon } from '@components';
+import { Avatar, ScreenHeader, FullScreenOverlay, UserName, VipIcon, ConfirmDialog } from '@components';
 import { CoverImageEditor } from './components/CoverImageEditor';
 import { COVER_ASPECT } from './constants';
 import { MePostCard } from '../me/components/MePostCard';
@@ -24,6 +26,10 @@ export function ProfileMePage() {
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
   const refreshUser = useAuthStore((s) => s.refreshUser);
+  const marriageStatus = useMarriageStore((s) => s.status);
+  const spouse = useMarriageStore((s) => s.spouse);
+  const divorce = useMarriageStore((s) => s.divorce);
+  const [divorceOpen, setDivorceOpen] = useState(false);
   const hiddenPostIds = useMeLocalStore((s) => s.hiddenPostIds);
   const hidePost = useMeLocalStore((s) => s.hidePost);
   const blockAuthor = useMeLocalStore((s) => s.blockAuthor);
@@ -272,6 +278,23 @@ export function ProfileMePage() {
                 {t('profile.joinedOla')} {formatDate(user.createdAt)}
               </div>
             ) : null}
+            <div className="mt-2 ml-4 flex items-center gap-1 text-xs text-black/54">
+              <img src={marriageIcon} alt="" className="h-4 w-4 object-contain" />
+              {marriageStatus === 'married' && spouse ? (
+                <>
+                  <span>{t('marriage.marryWith', { nick: spouse.nick })}</span>
+                  <button
+                    type="button"
+                    onClick={() => setDivorceOpen(true)}
+                    className="ml-2 font-medium text-ola-accent underline-offset-2 hover:underline"
+                  >
+                    {t('marriage.divorce')}
+                  </button>
+                </>
+              ) : (
+                <span>{t('marriage.single')}</span>
+              )}
+            </div>
           </div>
         </div>
 
@@ -294,6 +317,21 @@ export function ProfileMePage() {
           }
         </MePostInteractions>
       </div>
+
+      <ConfirmDialog
+        open={divorceOpen}
+        title={t('marriage.confirmTitle')}
+        message={t('marriage.confirmDivorce', { nick: spouse?.nick })}
+        confirmLabel={t('marriage.yes')}
+        cancelLabel={t('marriage.no')}
+        danger
+        onConfirm={() => {
+          divorce();
+          setDivorceOpen(false);
+          toast.success(t('marriage.divorcedToast'));
+        }}
+        onCancel={() => setDivorceOpen(false)}
+      />
     </FullScreenOverlay>
   );
 }

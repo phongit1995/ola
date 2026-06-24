@@ -14,6 +14,7 @@ export const ROUTES = {
   media: '/hinh-anh',
   nearby: '/lan-can',
   eggGame: '/dap-trung',
+  marriage: '/box-ket-hon',
 } as const;
 
 export type RoutePath = (typeof ROUTES)[keyof typeof ROUTES];
