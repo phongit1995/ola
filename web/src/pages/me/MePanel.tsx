@@ -13,6 +13,7 @@ import { MeComposerDialog } from './components/MeComposerDialog';
 import { MeAccountDialog } from './components/MeAccountDialog';
 import { MePostInteractions, type MePostSource } from './MePostInteractions';
 import { useMeFeed } from './useMeFeed';
+import { MeLikedPostsView } from './MeLikedPostsView';
 import { MarriageView } from '../marriage/MarriageView';
 
 export function MePanel() {
@@ -45,9 +46,14 @@ export function MePanel() {
   const [accountOpen, setAccountOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [marriageOpen, setMarriageOpen] = useState(false);
+  const [likedOpen, setLikedOpen] = useState(false);
 
   if (marriageOpen) {
     return <MarriageView onBack={() => setMarriageOpen(false)} />;
+  }
+
+  if (likedOpen) {
+    return <MeLikedPostsView onClose={() => setLikedOpen(false)} />;
   }
 
   const source: MePostSource = {
@@ -128,6 +134,9 @@ export function MePanel() {
                   if (key === 'marriage') {
                     setDrawerOpen(false);
                     setMarriageOpen(true);
+                  } else if (key === 'likes') {
+                    setDrawerOpen(false);
+                    setLikedOpen(true);
                   } else {
                     toast.info(t('me.comingSoon'));
                   }

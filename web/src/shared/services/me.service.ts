@@ -27,6 +27,10 @@ export class MeService {
     return http.get<PostListResult>(API_PATH.me.mine, { params });
   }
 
+  static liked(params: FeedParams = {}): Promise<PostListResult> {
+    return http.get<PostListResult>(API_PATH.me.liked, { params });
+  }
+
   static byUser(userId: string, params: FeedParams = {}): Promise<PostListResult> {
     return http.get<PostListResult>(API_PATH.me.users(userId), { params });
   }
