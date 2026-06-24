@@ -24,7 +24,9 @@
     "test:profile": "node tests/23-profile.test.js",
     "test:follow": "node tests/24-follow.test.js",
     "test:integrity": "node tests/25-relationship-integrity.test.js",
-    "test:admin:auth": "node tests/admin/auth.test.js"
+    "test:pen": "node tests/29-pen.test.js",
+    "test:admin:auth": "node tests/admin/auth.test.js",
+    "test:admin:pen": "node tests/admin/pen.test.js"
   },
   "dependencies": {
     "socket.io-client": "^4.8.1"
