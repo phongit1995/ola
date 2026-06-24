@@ -1,0 +1,75 @@
+package pen
+
+import "ola-chat-server/internal/utils"
+
+type CreateShotRequest struct {
+	BetAmount int    `json:"betAmount" binding:"required" example:"1000"`
+	Side      string `json:"side" binding:"required,oneof=left right" example:"left"`
+}
+
+type CatchRequest struct {
+	Side string `json:"side" binding:"required,oneof=left right" example:"right"`
+}
+
+type UserBrief struct {
+	ID       string `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	Username string `json:"username" example:"john_doe"`
+	FullName string `json:"fullName,omitempty" example:"John Doe"`
+	Avatar   string `json:"avatar,omitempty" example:"https://example.com/avatar.jpg"`
+}
+
+type ShotView struct {
+	ID          string     `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	Shooter     *UserBrief `json:"shooter,omitempty"`
+	Keeper      *UserBrief `json:"keeper,omitempty"`
+	BetAmount   int        `json:"betAmount" example:"1000"`
+	Status      string     `json:"status" example:"open"`
+	ShooterSide string     `json:"shooterSide,omitempty" example:"left"`
+	KeeperSide  string     `json:"keeperSide,omitempty" example:"right"`
+	Result      string     `json:"result,omitempty" example:"goal"`
+	WinnerID    string     `json:"winnerId,omitempty"`
+	Pot         *int       `json:"pot,omitempty"`
+	Commission  *int       `json:"commission,omitempty"`
+	Payout      *int       `json:"payout,omitempty"`
+	CreatedAt   string     `json:"createdAt" example:"2026-06-24T10:00:00Z"`
+	SettledAt   string     `json:"settledAt,omitempty"`
+	CancelledAt string     `json:"cancelledAt,omitempty"`
+}
+
+type ShotListResponse struct {
+	Total  int64      `json:"total" example:"1"`
+	Limit  int        `json:"limit" example:"20"`
+	Offset int        `json:"offset" example:"0"`
+	Items  []ShotView `json:"items"`
+}
+
+type CreateShotResponse struct {
+	Shot       ShotView `json:"shot"`
+	KenBalance int      `json:"kenBalance" example:"11345"`
+}
+
+type CatchResult struct {
+	ShotID      string `json:"shotId"`
+	Result      string `json:"result" example:"saved"`
+	Win         bool   `json:"win" example:"true"`
+	WinnerID    string `json:"winnerId"`
+	BetAmount   int    `json:"betAmount" example:"1000"`
+	Pot         int    `json:"pot" example:"2000"`
+	Commission  int    `json:"commission" example:"100"`
+	Payout      int    `json:"payout" example:"1900"`
+	ShooterSide string `json:"shooterSide" example:"left"`
+	KeeperSide  string `json:"keeperSide" example:"left"`
+	KenBalance  int    `json:"kenBalance" example:"12245"`
+}
+
+type CancelResponse struct {
+	ShotID     string `json:"shotId"`
+	Status     string `json:"status" example:"cancelled"`
+	Refunded   int    `json:"refunded" example:"1000"`
+	KenBalance int    `json:"kenBalance" example:"12345"`
+}
+
+type CreateShotSuccessResponse = utils.BaseResponse[CreateShotResponse]
+type ShotListSuccessResponse = utils.BaseResponse[ShotListResponse]
+type CatchSuccessResponse = utils.BaseResponse[CatchResult]
+type CancelSuccessResponse = utils.BaseResponse[CancelResponse]

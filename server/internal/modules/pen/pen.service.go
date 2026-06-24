@@ -1,0 +1,225 @@
+package pen
+
+import (
+	"errors"
+	"fmt"
+	"time"
+
+	"ola-chat-server/internal/constants"
+	"ola-chat-server/internal/models"
+	"ola-chat-server/internal/modules/user"
+	"ola-chat-server/internal/transport/websocket"
+	"ola-chat-server/internal/utils"
+
+	"github.com/google/uuid"
+	"go.uber.org/zap"
+	"gorm.io/gorm"
+)
+
+var (
+	ErrInsufficientKen = errors.New("insufficient ken balance")
+	ErrShotNotFound    = errors.New("pen shot not found")
+	ErrShotNotOpen     = errors.New("pen shot is no longer open")
+	ErrCannotCatchOwn  = errors.New("you cannot catch your own pen")
+	ErrNotYourShot     = errors.New("this pen is not yours")
+)
+
+type Service struct {
+	repo      *Repository
+	userCache *user.CacheService
+	wsServer  *websocket.Server
+	logger    *zap.SugaredLogger
+}
+
+func NewService(repo *Repository, userCache *user.CacheService, wsServer *websocket.Server, logger *zap.SugaredLogger) *Service {
+	return &Service{
+		repo:      repo,
+		userCache: userCache,
+		wsServer:  wsServer,
+		logger:    logger.Named("[pen_service]"),
+	}
+}
+
+func (s *Service) invalidateUser(userID uuid.UUID) {
+	if err := s.userCache.InvalidateUser(userID); err != nil {
+		s.logger.Warnw("Failed to invalidate user cache after pen change", "user_id", userID, "error", err.Error())
+	}
+}
+
+func (s *Service) emitKenUpdate(userID uuid.UUID, ken int) {
+	if s.wsServer == nil {
+		return
+	}
+	payload := utils.WrapWebSocketMessage(constants.WebSocketEventKenUpdated, map[string]interface{}{
+		"ken": ken,
+	})
+	s.wsServer.EmitToUser(userID.String(), constants.WebSocketMessageEvent, payload)
+}
+
+func (s *Service) emitPenSettled(userID uuid.UUID, data map[string]interface{}) {
+	if s.wsServer == nil {
+		return
+	}
+	payload := utils.WrapWebSocketMessage(constants.WebSocketEventPenSettled, data)
+	s.wsServer.EmitToUser(userID.String(), constants.WebSocketMessageEvent, payload)
+}
+
+func (s *Service) CreateShot(userID uuid.UUID, req CreateShotRequest) (*CreateShotResponse, error) {
+	if req.BetAmount < penMinBet || req.BetAmount > penMaxBet {
+		return nil, fmt.Errorf("bet must be between %d and %d", penMinBet, penMaxBet)
+	}
+
+	shot, newKen, err := s.repo.CreateShot(userID, models.PenSide(req.Side), req.BetAmount)
+	if err != nil {
+		return nil, err
+	}
+
+	s.invalidateUser(userID)
+	s.emitKenUpdate(userID, newKen)
+
+	return &CreateShotResponse{
+		Shot:       toShotView(shot, true),
+		KenBalance: newKen,
+	}, nil
+}
+
+func (s *Service) ListOpenShots(userID uuid.UUID, filter OpenFilter, limit, offset int) (*ShotListResponse, error) {
+	items, total, err := s.repo.ListOpenShots(userID, filter, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	return buildList(items, total, limit, offset, false), nil
+}
+
+func (s *Service) ListMyOpenShots(userID uuid.UUID, limit, offset int) (*ShotListResponse, error) {
+	items, total, err := s.repo.ListMyOpenShots(userID, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	return buildList(items, total, limit, offset, true), nil
+}
+
+func (s *Service) ListHistory(userID uuid.UUID, role, result string, limit, offset int) (*ShotListResponse, error) {
+	items, total, err := s.repo.ListHistory(userID, role, result, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	return buildList(items, total, limit, offset, true), nil
+}
+
+func (s *Service) CatchShot(userID, shotID uuid.UUID, req CatchRequest) (*CatchResult, error) {
+	shot, shooterKen, keeperKen, err := s.repo.CatchShot(userID, shotID, models.PenSide(req.Side), penCommissionPercent)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrShotNotFound
+		}
+		return nil, err
+	}
+
+	s.invalidateUser(shot.ShooterID)
+	s.invalidateUser(userID)
+	s.emitKenUpdate(shot.ShooterID, shooterKen)
+	s.emitKenUpdate(userID, keeperKen)
+
+	settled := map[string]interface{}{
+		"shotId":      shot.ID.String(),
+		"result":      string(*shot.Result),
+		"winnerId":    shot.WinnerID.String(),
+		"betAmount":   shot.BetAmount,
+		"pot":         *shot.Pot,
+		"commission":  *shot.Commission,
+		"payout":      *shot.Payout,
+		"shooterSide": string(shot.ShooterSide),
+		"keeperSide":  string(*shot.KeeperSide),
+	}
+	s.emitPenSettled(shot.ShooterID, settled)
+	s.emitPenSettled(userID, settled)
+
+	return &CatchResult{
+		ShotID:      shot.ID.String(),
+		Result:      string(*shot.Result),
+		Win:         *shot.WinnerID == userID,
+		WinnerID:    shot.WinnerID.String(),
+		BetAmount:   shot.BetAmount,
+		Pot:         *shot.Pot,
+		Commission:  *shot.Commission,
+		Payout:      *shot.Payout,
+		ShooterSide: string(shot.ShooterSide),
+		KeeperSide:  string(*shot.KeeperSide),
+		KenBalance:  keeperKen,
+	}, nil
+}
+
+func (s *Service) CancelShot(userID, shotID uuid.UUID) (*CancelResponse, error) {
+	shot, newKen, err := s.repo.CancelShot(userID, shotID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrShotNotFound
+		}
+		return nil, err
+	}
+
+	s.invalidateUser(userID)
+	s.emitKenUpdate(userID, newKen)
+
+	return &CancelResponse{
+		ShotID:     shot.ID.String(),
+		Status:     string(shot.Status),
+		Refunded:   shot.BetAmount,
+		KenBalance: newKen,
+	}, nil
+}
+
+func buildList(items []models.PenShot, total int64, limit, offset int, reveal bool) *ShotListResponse {
+	views := make([]ShotView, len(items))
+	for i := range items {
+		views[i] = toShotView(&items[i], reveal)
+	}
+	return &ShotListResponse{Total: total, Limit: limit, Offset: offset, Items: views}
+}
+
+func toBrief(u *models.User) *UserBrief {
+	return &UserBrief{
+		ID:       u.ID.String(),
+		Username: u.Username,
+		FullName: u.FullName,
+		Avatar:   u.Avatar,
+	}
+}
+
+func toShotView(s *models.PenShot, reveal bool) ShotView {
+	v := ShotView{
+		ID:        s.ID.String(),
+		BetAmount: s.BetAmount,
+		Status:    string(s.Status),
+		CreatedAt: s.CreatedAt.Format(time.RFC3339),
+	}
+	if s.Shooter != nil {
+		v.Shooter = toBrief(s.Shooter)
+	}
+	if s.Keeper != nil {
+		v.Keeper = toBrief(s.Keeper)
+	}
+	if reveal {
+		v.ShooterSide = string(s.ShooterSide)
+	}
+	if s.KeeperSide != nil {
+		v.KeeperSide = string(*s.KeeperSide)
+	}
+	if s.Result != nil {
+		v.Result = string(*s.Result)
+	}
+	if s.WinnerID != nil {
+		v.WinnerID = s.WinnerID.String()
+	}
+	v.Pot = s.Pot
+	v.Commission = s.Commission
+	v.Payout = s.Payout
+	if s.SettledAt != nil {
+		v.SettledAt = s.SettledAt.Format(time.RFC3339)
+	}
+	if s.CancelledAt != nil {
+		v.CancelledAt = s.CancelledAt.Format(time.RFC3339)
+	}
+	return v
+}

@@ -164,6 +164,7 @@ var (
 		"vip package not found":        true,
 		"vip shop item not found":      true,
 		"egg pack not found":           true,
+		"pen shot not found":           true,
 	}
 
 	errorsConflict = map[string]bool{
@@ -172,6 +173,7 @@ var (
 		"you are already friends":     true,
 		"friend request already sent": true,
 		"vip already in shop":         true,
+		"pen shot is no longer open":  true,
 	}
 
 	errorsForbidden = map[string]bool{
@@ -189,6 +191,8 @@ var (
 		"vip is locked":                         true,
 		"vip does not belong to you":            true,
 		"vip store is private":                  true,
+		"you cannot catch your own pen":         true,
+		"this pen is not yours":                 true,
 	}
 )
 

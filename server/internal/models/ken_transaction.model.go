@@ -24,6 +24,10 @@ const (
 	KenTxTypeGiftReceived KenTxType = "GIFT_RECEIVED"
 	KenTxTypeTransferIn   KenTxType = "TRANSFER_IN"
 	KenTxTypeTransferOut  KenTxType = "TRANSFER_OUT"
+	KenTxTypePenShoot     KenTxType = "PEN_SHOOT"
+	KenTxTypePenCatch     KenTxType = "PEN_CATCH"
+	KenTxTypePenWin       KenTxType = "PEN_WIN"
+	KenTxTypePenRefund    KenTxType = "PEN_REFUND"
 )
 
 type KenActorType string
