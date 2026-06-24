@@ -68,8 +68,11 @@ screens/
 ├── doi-anh-dai-dien/      ← Đổi ảnh đại diện / bìa (picker + crop, dùng chung)
 │   ├── README.md                điểm vào phòng/clan + dialog chọn ảnh + màn crop + upload + CSS
 │   └── images/                  4 icon (camera, hủy, xoay, xong)
-└── modal-dialog/          ← Modal/Dialog kiểu chung (confirm, nhập, progress…)
-    └── README.md                khung 3 phần + màu/size/nút/icon + CSS
+├── modal-dialog/          ← Modal/Dialog kiểu chung (confirm, nhập, progress…)
+│   └── README.md                khung 3 phần + màu/size/nút/icon + CSS
+└── marriage/              ← Box - Kết Hôn (cầu hôn / chấp nhận / ly hôn / box)
+    ├── README.md                composer cầu hôn + gating Box + dialog accept/deny/divorce + CSS
+    └── images/                  icon trái tim + khung tim avatar
 ```
 
 > Mỗi màn = **1 folder riêng** chứa `README.md` + folder `images/` (ảnh chụp của riêng màn đó). Ảnh **dùng chung** (logo, icon…) đặt ở [images/](images/) cấp screens.
@@ -99,6 +102,7 @@ screens/
 | 4a | Kho VIP | [kho-vip/](kho-vip/README.md) | `OlaVipStoreActivity` | 📐 từ code/XML (chưa chụp) |
 | — | Đổi ảnh đại diện / bìa (picker + crop) | [doi-anh-dai-dien/](doi-anh-dai-dien/README.md) | `OlaCropImageActivity` (vào từ `OlaClanMePageActivity`) | 📐 từ code/XML (chưa chụp) |
 | — | Modal / Dialog (kiểu chung) | [modal-dialog/](modal-dialog/README.md) | dùng chung (confirm, nhập, progress, chọn) | 📐 trích từ layout/style |
+| — | Box - Kết Hôn (Marriage) | [marriage/](marriage/README.md) | `MarriageRequestComposerActivity` (+ `me.c` / `OlaUserProfileActivity` / `m.k`) | 📐 từ code/XML (chưa chụp) |
 
 ## Quy ước trong tài liệu
 
