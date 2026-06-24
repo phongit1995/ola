@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Avatar, ScreenHeader, UserName } from '@components';
-import { colorForName, toast } from '@lib';
+import { FullScreenOverlay, PresenceBadge, ScreenHeader, UserName, VipAvatar } from '@components';
+import { toast } from '@lib';
 import { UserService } from '@services';
 import type { UserSearchResult } from '@app-types';
 import { useMarriageStore } from './marriageStore';
@@ -81,8 +81,9 @@ export function ProposeComposer({ onClose }: ProposeComposerProps) {
   }
 
   return (
-    <div className="flex h-full w-full flex-col items-center bg-[#fff0f4]">
-      <div className="flex h-full w-full max-w-[645px] flex-col overflow-hidden bg-[#fff0f4]">
+    <FullScreenOverlay>
+      <div className="flex h-full w-full flex-col bg-white">
+        <div className="flex h-full w-full flex-col overflow-hidden bg-white">
         <ScreenHeader title={t('marriage.composeTitle')} onBack={onClose}>
           <button
             type="button"
@@ -109,15 +110,12 @@ export function ProposeComposer({ onClose }: ProposeComposerProps) {
               </p>
 
               {selected != null ? (
-                <div className="flex items-center gap-3 rounded-2xl border border-[#ffd0de] bg-white p-3 shadow-[0_2px_10px_rgba(255,77,125,0.12)]">
-                  <span className="h-10 w-10 shrink-0 overflow-hidden rounded">
-                    <Avatar
-                      name={selected.username}
-                      color={colorForName(selected.username)}
-                      src={selected.avatar}
-                      size={40}
-                      rounded={false}
-                    />
+                <div className="flex items-center gap-3 rounded-xl border border-black/12 bg-white p-3">
+                  <span className="relative h-10 w-10 shrink-0">
+                    <VipAvatar className="h-10 w-10" />
+                    {selected.isOnline && (
+                      <PresenceBadge className="absolute right-0 bottom-0" />
+                    )}
                   </span>
                   <div className="flex min-w-0 flex-1 flex-col">
                     <span className="flex min-w-0 items-center gap-1 text-base">
@@ -135,7 +133,7 @@ export function ProposeComposer({ onClose }: ProposeComposerProps) {
                   <button
                     type="button"
                     onClick={clearSelected}
-                    className="shrink-0 rounded-full bg-[#fff0f4] px-3 py-1.5 text-xs font-semibold text-[#c2185b] hover:bg-[#ffe0ea]"
+                    className="shrink-0 rounded-full bg-black/[0.06] px-3 py-1.5 text-xs font-semibold text-black/70 hover:bg-black/10"
                   >
                     {t('marriage.changeReceiver')}
                   </button>
@@ -174,14 +172,8 @@ export function ProposeComposer({ onClose }: ProposeComposerProps) {
                                 onClick={() => pick(user)}
                                 className="flex w-full items-center gap-3 px-3 py-2.5 text-left hover:bg-[#fff0f4] disabled:opacity-50 disabled:hover:bg-transparent"
                               >
-                                <span className="h-9 w-9 shrink-0 overflow-hidden rounded">
-                                  <Avatar
-                                    name={user.username}
-                                    color={colorForName(user.username)}
-                                    src={user.avatar}
-                                    size={36}
-                                    rounded={false}
-                                  />
+                                <span className="h-9 w-9 shrink-0">
+                                  <VipAvatar className="h-9 w-9" />
                                 </span>
                                 <div className="flex min-w-0 flex-1 flex-col">
                                   <span className="flex min-w-0 items-center gap-1 text-sm">
@@ -235,6 +227,7 @@ export function ProposeComposer({ onClose }: ProposeComposerProps) {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </FullScreenOverlay>
   );
 }

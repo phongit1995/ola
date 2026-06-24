@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Avatar, ConfirmDialog } from '@components';
-import { colorForName, toast } from '@lib';
+import { ConfirmDialog, VipAvatar } from '@components';
+import { createTimeFormatter, toast } from '@lib';
 import { useMarriageStore } from './marriageStore';
 import type { PendingProposal } from './marriage.types';
 
@@ -12,7 +12,8 @@ interface MarriageLockedViewProps {
 type PendingAction = { proposal: PendingProposal; kind: 'accept' | 'deny' } | null;
 
 export function MarriageLockedView({ onPropose }: MarriageLockedViewProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const formatSentTime = useMemo(() => createTimeFormatter(i18n.language), [i18n.language]);
   const pending = useMarriageStore((s) => s.pendingProposals);
   const sent = useMarriageStore((s) => s.sentProposals);
   const acceptProposal = useMarriageStore((s) => s.acceptProposal);
@@ -67,23 +68,25 @@ export function MarriageLockedView({ onPropose }: MarriageLockedViewProps) {
                 key={item.id}
                 className="flex items-center gap-3 rounded-xl border border-[#ffd0de] bg-[#fff5f8] p-3"
               >
-                <Avatar name={item.toNick} color={colorForName(item.toNick)} size={40} />
+                <VipAvatar className="h-10 w-10" />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold text-black/80">
                     {t('marriage.sentTo', { nick: item.toNick })}
                   </p>
                   <p className="truncate text-xs text-black/55">{item.message}</p>
-                  <span className="mt-1 inline-block rounded-full bg-[#ffe0a3]/60 px-2 py-0.5 text-[10px] font-medium text-[#8a6d3b]">
-                    {t('marriage.awaitingPartner')}
-                  </span>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => void revoke(item.id)}
-                  className="rounded-full bg-black/10 px-3 py-1.5 text-xs font-semibold text-black/70"
-                >
-                  {t('marriage.revoke')}
-                </button>
+                <div className="flex shrink-0 items-center gap-2">
+                  <span className="text-[10px] text-black/45">
+                    {formatSentTime(new Date(item.createdAt).toISOString())}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => void revoke(item.id)}
+                    className="rounded-full bg-black/10 px-3 py-1.5 text-xs font-semibold text-black/70"
+                  >
+                    {t('marriage.revoke')}
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -99,7 +102,7 @@ export function MarriageLockedView({ onPropose }: MarriageLockedViewProps) {
                 key={proposal.id}
                 className="flex items-center gap-3 rounded-xl border border-[#ffd0de] bg-[#fff5f8] p-3"
               >
-                <Avatar name={proposal.fromName} color={proposal.avatarColor} size={40} />
+                <VipAvatar className="h-10 w-10" />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold text-black/80">
                     {t('marriage.proposalFrom', { name: proposal.fromName })}

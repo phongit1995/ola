@@ -1,13 +1,30 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Avatar, ConfirmDialog, Dialog, DialogButton } from '@components';
-import { DEFAULT_AVATAR_COLOR, toast } from '@lib';
+import { Avatar, ConfirmDialog, Dialog, DialogButton, VipAvatar } from '@components';
+import { colorForName, toast } from '@lib';
 import { useAuthStore } from '@/store/authStore';
-import { HeartAvatar } from './HeartAvatar';
 import { useMarriageStore } from './marriageStore';
 import type { DiaryEntry } from './marriage.types';
 
 const DAY_MS = 86_400_000;
+
+function FramedAvatar({
+  name,
+  color,
+  src,
+  size,
+}: {
+  name: string;
+  color: string;
+  src?: string;
+  size: number;
+}) {
+  return (
+    <span className="inline-block border-2 bg-white p-0.5" style={{ borderColor: color }}>
+      <Avatar name={name} color={color} src={src} size={size} rounded={false} />
+    </span>
+  );
+}
 
 function formatDate(ms: number): string {
   const d = new Date(ms);
@@ -18,6 +35,7 @@ function formatDate(ms: number): string {
 export function MarriageBoxView() {
   const { t } = useTranslation();
   const meName = useAuthStore((s) => s.user?.username ?? t('home.guest'));
+  const meAvatar = useAuthStore((s) => s.user?.avatar);
   const spouse = useMarriageStore((s) => s.spouse);
   const marriedSince = useMarriageStore((s) => s.marriedSince);
   const diary = useMarriageStore((s) => s.diary);
@@ -70,18 +88,17 @@ export function MarriageBoxView() {
     <div className="flex flex-col">
       <div className="flex flex-col items-center bg-gradient-to-b from-[#ffe3ec] to-white px-4 pb-5 pt-6">
         <div className="flex items-center gap-3">
-          <HeartAvatar idKey="me" name={meName} color={DEFAULT_AVATAR_COLOR} size={88} />
+          <FramedAvatar name={meName} color={colorForName(meName)} src={meAvatar} size={84} />
           <span className="text-3xl text-[#ff4d7d]">❤</span>
-          <HeartAvatar
-            idKey="spouse"
+          <FramedAvatar
             name={spouse.name}
             color={spouse.avatarColor}
-            size={88}
             src={spouse.avatarUrl}
+            size={84}
           />
         </div>
         <p className="mt-3 text-base font-bold text-[#c2185b]">
-          {meName} <span className="text-[#ff4d7d]">&</span> {spouse.name}
+          @{meName} <span className="text-[#ff4d7d]">&</span> @{spouse.nick}
         </p>
         {marriedSince != null && (
           <p className="text-xs text-black/55">
@@ -120,7 +137,6 @@ export function MarriageBoxView() {
               key={entry.id}
               entry={entry}
               authorName={entry.author === 'me' ? meName : spouse.name}
-              authorColor={entry.author === 'me' ? DEFAULT_AVATAR_COLOR : spouse.avatarColor}
               timeLabel={ago(entry.createdAt)}
             />
           ))}
@@ -168,15 +184,14 @@ export function MarriageBoxView() {
 interface DiaryCardProps {
   entry: DiaryEntry;
   authorName: string;
-  authorColor: string;
   timeLabel: string;
 }
 
-function DiaryCard({ entry, authorName, authorColor, timeLabel }: DiaryCardProps) {
+function DiaryCard({ entry, authorName, timeLabel }: DiaryCardProps) {
   return (
-    <div className="rounded-xl bg-[#fff5f8] p-3">
+    <div className="rounded-xl border border-black/10 bg-white p-3">
       <div className="flex items-center gap-2">
-        <Avatar name={authorName} color={authorColor} size={36} />
+        <VipAvatar className="h-9 w-9" />
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold text-black/80">{authorName}</p>
           <p className="text-xs text-black/45">{timeLabel}</p>
