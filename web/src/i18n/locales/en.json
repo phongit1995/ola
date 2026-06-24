@@ -207,6 +207,8 @@
     "friendRequestPending": "Friend request is pending",
     "friendRequestSent": "Friend request sent",
     "friendRequestSentShort": "Sent",
+    "alreadyFriendShort": "Friends",
+    "blocked": "Blocked",
     "deleteAllDone": "All conversations deleted",
     "addContactSearchPlaceholder": "Search by name or username",
     "addContactHint": "Type a name to find people",

@@ -157,3 +157,18 @@ func (r *Repository) Search(query string, limit int, excludeUserID *uuid.UUID) (
 
 	return users, nil
 }
+
+func (r *Repository) RelationshipsBetween(meID uuid.UUID, otherIDs []uuid.UUID) ([]models.Relationship, error) {
+	if len(otherIDs) == 0 {
+		return nil, nil
+	}
+	var rels []models.Relationship
+	err := r.db.
+		Where("(requester_id = ? AND addressee_id IN ?) OR (addressee_id = ? AND requester_id IN ?)",
+			meID, otherIDs, meID, otherIDs).
+		Find(&rels).Error
+	if err != nil {
+		return nil, err
+	}
+	return rels, nil
+}

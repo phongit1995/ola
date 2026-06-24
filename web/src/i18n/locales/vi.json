@@ -207,6 +207,8 @@
     "friendRequestPending": "Lời mời kết bạn đang chờ",
     "friendRequestSent": "Đã gửi lời mời kết bạn",
     "friendRequestSentShort": "Đã gửi",
+    "alreadyFriendShort": "Đã là bạn",
+    "blocked": "Đã chặn",
     "deleteAllDone": "Đã xoá tất cả cuộc trò chuyện",
     "addContactSearchPlaceholder": "Tìm theo tên hoặc tên đăng nhập",
     "addContactHint": "Nhập tên để tìm mọi người",

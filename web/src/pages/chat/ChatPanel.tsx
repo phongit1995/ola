@@ -294,7 +294,11 @@ export function ChatPanel() {
       {blockedListOpen && (
         <BlockedListDialog open onClose={() => setBlockedListOpen(false)} />
       )}
-      <AddContactDialog open={addContactOpen} onClose={() => setAddContactOpen(false)} />
+      <AddContactDialog
+        open={addContactOpen}
+        onClose={() => setAddContactOpen(false)}
+        onOpenProfile={setProfileTarget}
+      />
       <ChangeAvatarScreen open={avatarOpen} onClose={() => setAvatarOpen(false)} />
       {statusOpen && <StatusEditDialog open onClose={() => setStatusOpen(false)} />}
       {profileTarget != null && (

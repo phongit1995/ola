@@ -204,20 +204,26 @@ func (s *Service) SearchUsers(query string, limit int, currentUserID uuid.UUID) 
 	}
 
 	userIDs := make([]string, len(users))
+	userUUIDs := make([]uuid.UUID, len(users))
 	for i, u := range users {
 		userIDs[i] = u.ID.String()
+		userUUIDs[i] = u.ID
 	}
 	onlineMap := s.presence.GetOnlineUsers(userIDs)
+	relMap := s.relationshipMap(currentUserID, userUUIDs)
 
 	results := make([]UserSearchResult, 0, len(users))
 	for _, user := range users {
+		rel := relMap[user.ID]
 		results = append(results, UserSearchResult{
-			ID:       user.ID.String(),
-			Username: user.Username,
-			FullName: user.FullName,
-			Avatar:   user.Avatar,
-			Bio:      user.Bio,
-			IsOnline: onlineMap[user.ID.String()],
+			ID:           user.ID.String(),
+			Username:     user.Username,
+			FullName:     user.FullName,
+			Avatar:       user.Avatar,
+			Bio:          user.Bio,
+			IsOnline:     onlineMap[user.ID.String()],
+			Relationship: rel.status,
+			RequestID:    rel.requestID,
 		})
 	}
 
@@ -230,6 +236,46 @@ func (s *Service) SearchUsers(query string, limit int, currentUserID uuid.UUID) 
 		Users: results,
 		Total: len(results),
 	}, nil
+}
+
+type searchRelation struct {
+	status    string
+	requestID string
+}
+
+func (s *Service) relationshipMap(meID uuid.UUID, otherIDs []uuid.UUID) map[uuid.UUID]searchRelation {
+	out := map[uuid.UUID]searchRelation{}
+	rels, err := s.repo.RelationshipsBetween(meID, otherIDs)
+	if err != nil {
+		s.logger.Warnw("Failed to load relationships for search", "error", err.Error())
+		return out
+	}
+	for _, rel := range rels {
+		iSent := rel.RequesterID == meID
+		var status string
+		switch rel.Status {
+		case models.RelationshipStatusAccepted:
+			status = RelationshipStatusFriend
+		case models.RelationshipStatusPending:
+			status = RelationshipStatusPendingOutgoing
+			if !iSent {
+				status = RelationshipStatusPendingIncoming
+			}
+		case models.RelationshipStatusBlocked:
+			status = RelationshipStatusBlockedByMe
+			if !iSent {
+				status = RelationshipStatusBlockedByThem
+			}
+		default:
+			continue
+		}
+		other := rel.AddresseeID
+		if !iSent {
+			other = rel.RequesterID
+		}
+		out[other] = searchRelation{status: status, requestID: rel.ID.String()}
+	}
+	return out
 }
 
 func (s *Service) GetPresenceBatch(userIDs []string) *PresenceBatchResponse {

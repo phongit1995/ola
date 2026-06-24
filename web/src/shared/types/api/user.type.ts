@@ -41,6 +41,13 @@ export interface PublicProfile {
   relationship?: RelationshipInfo;
 }
 
+export type SearchRelationship =
+  | 'friend'
+  | 'pending_outgoing'
+  | 'pending_incoming'
+  | 'blocked_by_me'
+  | 'blocked_by_them';
+
 export interface UserSearchResult {
   id: string;
   username: string;
@@ -48,6 +55,8 @@ export interface UserSearchResult {
   avatar?: string;
   bio?: string;
   isOnline: boolean;
+  relationship?: SearchRelationship;
+  requestId?: string;
 }
 
 export interface SearchUsersResult {

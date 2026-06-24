@@ -8,14 +8,16 @@ import type { UserSearchResult } from '@app-types';
 interface AddContactDialogProps {
   open: boolean;
   onClose: () => void;
+  onOpenProfile?: (target: { username: string; color: string }) => void;
 }
 
-export function AddContactDialog({ open, onClose }: AddContactDialogProps) {
+export function AddContactDialog({ open, onClose, onOpenProfile }: AddContactDialogProps) {
   const { t } = useTranslation();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<UserSearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [sentIds, setSentIds] = useState<string[]>([]);
+  const [acceptedIds, setAcceptedIds] = useState<string[]>([]);
   const [busyId, setBusyId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -49,6 +51,48 @@ export function AddContactDialog({ open, onClose }: AddContactDialogProps) {
     }
   }
 
+  async function acceptRequest(user: UserSearchResult) {
+    if (user.requestId == null) return;
+    setBusyId(user.id);
+    try {
+      await RelationshipService.respond(user.requestId, 'accept');
+      setAcceptedIds((ids) => [...ids, user.id]);
+      toast.success(t('chat.requestAccepted'));
+    } catch {
+      toast.error(t('chat.actionError'));
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  function relationButton(user: UserSearchResult) {
+    const busy = busyId === user.id;
+    if (acceptedIds.includes(user.id) || user.relationship === 'friend') {
+      return <ActionButton disabled>{t('chat.alreadyFriendShort')}</ActionButton>;
+    }
+    if (sentIds.includes(user.id) || user.relationship === 'pending_outgoing') {
+      return <ActionButton disabled>{t('chat.friendRequestSentShort')}</ActionButton>;
+    }
+    if (user.relationship === 'pending_incoming') {
+      return (
+        <ActionButton disabled={busy} onClick={() => void acceptRequest(user)}>
+          {t('chat.acceptRequest')}
+        </ActionButton>
+      );
+    }
+    if (user.relationship === 'blocked_by_me') {
+      return <ActionButton disabled>{t('chat.blocked')}</ActionButton>;
+    }
+    if (user.relationship === 'blocked_by_them') {
+      return null;
+    }
+    return (
+      <ActionButton disabled={busy} onClick={() => void sendRequest(user)}>
+        {t('chat.menuMakeFriend')}
+      </ActionButton>
+    );
+  }
+
   const emptyMessage = query.trim() === '' ? t('chat.addContactHint') : t('chat.addContactEmpty');
 
   return (
@@ -66,28 +110,23 @@ export function AddContactDialog({ open, onClose }: AddContactDialogProps) {
       isEmpty={results.length === 0}
       empty={<p className="py-6 text-center text-sm text-black/54">{emptyMessage}</p>}
     >
-      {results.map((user) => {
-        const sent = sentIds.includes(user.id);
-        return (
-          <li key={user.id}>
-            <UserRow
-              name={user.fullName || user.username}
-              username={user.username}
-              avatar={user.avatar}
-              color={colorForName(user.username)}
-              online={user.isOnline}
-              trailing={
-                <ActionButton
-                  disabled={sent || busyId === user.id}
-                  onClick={() => void sendRequest(user)}
-                >
-                  {sent ? t('chat.friendRequestSentShort') : t('chat.menuMakeFriend')}
-                </ActionButton>
-              }
-            />
-          </li>
-        );
-      })}
+      {results.map((user) => (
+        <li key={user.id}>
+          <UserRow
+            name={user.fullName || user.username}
+            username={user.username}
+            avatar={user.avatar}
+            color={colorForName(user.username)}
+            online={user.isOnline}
+            onClick={
+              onOpenProfile != null
+                ? () => onOpenProfile({ username: user.username, color: colorForName(user.username) })
+                : undefined
+            }
+            trailing={relationButton(user)}
+          />
+        </li>
+      ))}
     </UserListDialog>
   );
 }
