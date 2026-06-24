@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Avatar, ConfirmDialog } from '@components';
 import { colorForName } from '@lib';
-import type { SavedAccount } from '@/store/savedAccountsStore';
+import type { SavedAccount } from './savedAccountsStore';
 
 interface SavedAccountGalleryProps {
   accounts: SavedAccount[];

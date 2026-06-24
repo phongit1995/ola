@@ -11,7 +11,7 @@ import { Spinner } from '@components';
 import { AuthService } from '@services';
 import { ApiError, USERNAME_MAX, USERNAME_PATTERN, decodeSecret, toast } from '@lib';
 import { useAuthStore } from '@/store/authStore';
-import { useSavedAccountsStore, type SavedAccount } from '@/store/savedAccountsStore';
+import { useSavedAccountsStore, type SavedAccount } from './savedAccountsStore';
 import { SavedAccountGallery } from './SavedAccountGallery';
 import { APP_VERSION, USERNAME_MIN } from './constants';
 

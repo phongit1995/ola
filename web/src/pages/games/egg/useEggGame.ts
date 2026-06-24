@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from '@lib';
-import { useEggGameStore } from '@/store/eggGameStore';
+import { useEggGameStore } from './eggGameStore';
 import { EGG_COST } from './eggGame.constants';
 import { smashSoundUrl } from './eggAssets';
 

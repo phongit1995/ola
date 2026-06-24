@@ -6,7 +6,7 @@ import { formatKen } from '@lib';
 import { FullScreenOverlay } from '@components';
 import { SocketService } from '@services';
 import { useAuthStore } from '@/store/authStore';
-import { useEggGameStore } from '@/store/eggGameStore';
+import { useEggGameStore } from './eggGameStore';
 import { useEggGame } from './useEggGame';
 import { EggStage } from './EggStage';
 import { EggHistoryDialog } from './EggHistoryDialog';

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Sprite, type Texture } from 'pixi.js';
 import { useApplication, useTick } from '@pixi/react';
-import { useEggGameStore } from '@/store/eggGameStore';
+import { useEggGameStore } from './eggGameStore';
 import { EggSprite } from './EggSprite';
 import { Fireworks } from './Fireworks';
 import { EggWinPanel } from './EggWinPanel';

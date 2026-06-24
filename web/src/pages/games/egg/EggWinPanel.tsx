@@ -3,7 +3,7 @@ import { Assets, Container, Graphics, Texture } from 'pixi.js';
 import { useTick } from '@pixi/react';
 import { useTranslation } from 'react-i18next';
 import { vipIconUrl } from '@lib';
-import { useEggGameStore } from '@/store/eggGameStore';
+import { useEggGameStore } from './eggGameStore';
 import type { EggDrawResult } from '@app-types';
 import kenCoinUrl from '@/assets/icons/apps/ken.png';
 import vipDaysIconUrl from '@/assets/games/egg/day_vip.png';

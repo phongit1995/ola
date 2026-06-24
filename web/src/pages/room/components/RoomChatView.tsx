@@ -5,7 +5,7 @@ import groupMessageIcon from '@/assets/icons/room/ic_notify_new_chat_group_messa
 import filterIcon from '@/assets/icons/room/ic_filter_unselected.png';
 import { useRoomChatStore } from '@/store/roomChatStore';
 import { useAuthStore } from '@/store/authStore';
-import { useRoomFilterStore } from '@/store/roomFilterStore';
+import { useRoomFilterStore } from '../roomFilterStore';
 import { ScreenHeader, FullScreenOverlay } from '@components';
 import type { RoomMember } from '@app-types';
 import { RoomTabBar, type RoomTabItem } from './RoomTabBar';

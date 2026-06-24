@@ -7,7 +7,7 @@ import { RoomChatView } from './components/RoomChatView';
 import { RoomJoiningOverlay } from './components/RoomJoiningOverlay';
 import { RoomList } from './components/RoomList';
 import type { RoomListItem } from './types';
-import { useRoomStore } from '@/store/roomStore';
+import { useRoomStore } from './roomStore';
 import { useRoomChatStore, type ActiveRoom } from '@/store/roomChatStore';
 import { ROOM_CAPACITY, ROOM_COLORS } from './constants';
 

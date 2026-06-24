@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useMeFeedStore } from '@/store/meFeedStore';
+import { useMeFeedStore } from './meFeedStore';
 import { useMeLocalStore } from '@/store/meLocalStore';
 import { createTimeFormatter } from '@lib';
 import { toMePost } from './mappers';
