@@ -169,12 +169,15 @@ var (
 	}
 
 	errorsConflict = map[string]bool{
-		"email already exists":        true,
-		"username already exists":     true,
-		"you are already friends":     true,
-		"friend request already sent": true,
-		"vip already in shop":         true,
-		"pen shot is no longer open":  true,
+		"email already exists":                                           true,
+		"username already exists":                                        true,
+		"you are already friends":                                        true,
+		"friend request already sent":                                    true,
+		"vip already in shop":                                            true,
+		"pen shot is no longer open":                                     true,
+		"you have reached the maximum number of friends":                 true,
+		"this user has reached the maximum number of friends":            true,
+		"you have reached the maximum number of pending friend requests": true,
 	}
 
 	errorsForbidden = map[string]bool{

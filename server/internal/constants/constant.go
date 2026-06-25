@@ -151,6 +151,11 @@ const (
 )
 
 const (
+	MaxFriendsPerUser      = 100
+	MaxPendingSentRequests = 200
+)
+
+const (
 	MessageStatusSent      = "SENT"
 	MessageStatusDelivered = "DELIVERED"
 	MessageStatusRead      = "READ"

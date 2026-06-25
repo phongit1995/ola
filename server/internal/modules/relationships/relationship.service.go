@@ -79,6 +79,20 @@ func lockPair(tx *gorm.DB, a, b uuid.UUID) error {
 	return tx.Exec("SELECT pg_advisory_xact_lock(?)", pairLockKey(a, b)).Error
 }
 
+func checkFriendCap(repo *Repository, userID uuid.UUID, self bool) error {
+	count, err := repo.CountFriends(userID)
+	if err != nil {
+		return err
+	}
+	if count >= constants.MaxFriendsPerUser {
+		if self {
+			return errors.New("you have reached the maximum number of friends")
+		}
+		return errors.New("this user has reached the maximum number of friends")
+	}
+	return nil
+}
+
 type Service struct {
 	repo     *Repository
 	presence *websocket.PresenceService
@@ -103,6 +117,8 @@ func (s *Service) SendFriendRequest(requesterID, addresseeID uuid.UUID) (*Relati
 	}
 
 	var result *RelationshipResponse
+	var autoAcceptedA, autoAcceptedB uuid.UUID
+	var didAutoAccept bool
 	err := s.db.Transaction(func(tx *gorm.DB) error {
 		if err := lockPair(tx, requesterID, addresseeID); err != nil {
 			return err
@@ -131,6 +147,12 @@ func (s *Service) SendFriendRequest(requesterID, addresseeID uuid.UUID) (*Relati
 				if existing.RequesterID == requesterID {
 					return errors.New("friend request already sent")
 				}
+				if err := checkFriendCap(txRepo, requesterID, true); err != nil {
+					return err
+				}
+				if err := checkFriendCap(txRepo, existing.RequesterID, false); err != nil {
+					return err
+				}
 				existing.Status = models.RelationshipStatusAccepted
 				existing.ActionedAt = nowPtr()
 				if err := txRepo.Update(existing); err != nil {
@@ -141,6 +163,8 @@ func (s *Service) SendFriendRequest(requesterID, addresseeID uuid.UUID) (*Relati
 				}
 				s.logger.Infow("Friend request auto-accepted (mutual pending)",
 					"relationship_id", existing.ID, "requester_id", existing.RequesterID, "addressee_id", existing.AddresseeID)
+				autoAcceptedA, autoAcceptedB = existing.RequesterID, existing.AddresseeID
+				didAutoAccept = true
 				result = s.buildRelationshipResponse(reloadOr(txRepo, existing))
 				return nil
 
@@ -149,6 +173,17 @@ func (s *Service) SendFriendRequest(requesterID, addresseeID uuid.UUID) (*Relati
 					return err
 				}
 			}
+		}
+
+		if err := checkFriendCap(txRepo, requesterID, true); err != nil {
+			return err
+		}
+		pendingSent, err := txRepo.CountPendingSent(requesterID)
+		if err != nil {
+			return err
+		}
+		if pendingSent >= constants.MaxPendingSentRequests {
+			return errors.New("you have reached the maximum number of pending friend requests")
 		}
 
 		relationship := &models.Relationship{
@@ -169,6 +204,9 @@ func (s *Service) SendFriendRequest(requesterID, addresseeID uuid.UUID) (*Relati
 	})
 	if err != nil {
 		return nil, err
+	}
+	if didAutoAccept {
+		s.invalidateFriendList(autoAcceptedA, autoAcceptedB)
 	}
 	return result, nil
 }
@@ -206,6 +244,13 @@ func (s *Service) AcceptFriendRequest(relationshipID, userID uuid.UUID) (*Relati
 
 		if relationship.Status != models.RelationshipStatusPending {
 			return fmt.Errorf("cannot accept request with status: %s", relationship.Status)
+		}
+
+		if err := checkFriendCap(txRepo, userID, true); err != nil {
+			return err
+		}
+		if err := checkFriendCap(txRepo, relationship.RequesterID, false); err != nil {
+			return err
 		}
 
 		relationship.Status = models.RelationshipStatusAccepted

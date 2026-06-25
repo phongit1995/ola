@@ -129,6 +129,24 @@ func (r *Repository) GetBlockedUsers(userID uuid.UUID, limit, offset int) ([]mod
 	return relationships, total, err
 }
 
+func (r *Repository) CountFriends(userID uuid.UUID) (int64, error) {
+	var count int64
+	err := r.db.Model(&models.Relationship{}).
+		Where(
+			"(requester_id = ? OR addressee_id = ?) AND status = ?",
+			userID, userID, models.RelationshipStatusAccepted,
+		).Count(&count).Error
+	return count, err
+}
+
+func (r *Repository) CountPendingSent(userID uuid.UUID) (int64, error) {
+	var count int64
+	err := r.db.Model(&models.Relationship{}).
+		Where("requester_id = ? AND status = ?", userID, models.RelationshipStatusPending).
+		Count(&count).Error
+	return count, err
+}
+
 func (r *Repository) CheckRelationshipExists(userID1, userID2 uuid.UUID) (bool, error) {
 	var count int64
 	err := r.db.Model(&models.Relationship{}).Where(
