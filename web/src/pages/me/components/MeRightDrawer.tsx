@@ -20,7 +20,6 @@ export function MeRightDrawer({ onClose, onOpenProfile }: MeRightDrawerProps) {
   const [loading, setLoading] = useState(false);
 
   const viewedProfiles = useMeLocalStore((state) => state.viewedProfiles);
-  const recordViewedProfile = useMeLocalStore((state) => state.recordViewedProfile);
   const clearViewedProfiles = useMeLocalStore((state) => state.clearViewedProfiles);
 
   useEffect(() => {
@@ -51,7 +50,6 @@ export function MeRightDrawer({ onClose, onOpenProfile }: MeRightDrawerProps) {
   }
 
   function openProfile(profile: ViewedProfile) {
-    recordViewedProfile(profile);
     onOpenProfile(profile.username, colorForName(profile.username));
     handleClose();
   }

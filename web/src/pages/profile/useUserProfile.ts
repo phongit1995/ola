@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MeService, UserService } from '@services';
 import { createDateFormatter, createTimeFormatter, toast } from '@lib';
+import { useAuthStore } from '@/store/authStore';
+import { useMeLocalStore } from '@/store/meLocalStore';
 import type { PostReaction, RelationshipInfo } from '@app-types';
 import { applyMeReaction, toMePost } from '../me/mappers';
 import type { MePost } from '../me/types';
@@ -41,6 +43,14 @@ export function useUserProfile(username: string, seedColor: string): ProfileCont
     setRelationship(data.relationship ?? NO_RELATIONSHIP);
     setProfile(mapPublicProfile(data, mapDeps));
     setNotFound(false);
+    if (data.id !== useAuthStore.getState().user?.id) {
+      useMeLocalStore.getState().recordViewedProfile({
+        id: data.id,
+        username: data.username,
+        fullName: data.fullName,
+        avatar: data.avatar,
+      });
+    }
     return data.id;
   }, [username, mapDeps]);
 
