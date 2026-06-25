@@ -1,6 +1,6 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Avatar, ListOptionDialog, VipIcon, type ListOption } from '@components';
+import { Avatar, ListOptionDialog, SearchIcon, VipIcon, type ListOption } from '@components';
 import { vipIconUrl, isVipActive, activeVipTypeId, colorForName } from '@lib';
 import type { AuthUser, Relationship } from '@app-types';
 import type { Contact } from '../types';
@@ -117,9 +117,7 @@ export function ContactList({
     <div className="h-full overflow-y-auto bg-[#f3f3f3]">
       <div className="border-b border-[#b2b2b2] bg-[#d5d5d5] px-4 py-3">
         <div className="flex h-10 items-center gap-1 rounded-[5px] border border-[#b2b2b2] bg-white px-1">
-          <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-black/38" fill="currentColor" aria-hidden="true">
-            <path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 5 1.5-1.5-5-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14z" />
-          </svg>
+          <SearchIcon className="h-4 w-4 shrink-0 text-black/38" />
           <input
             type="search"
             value={query}

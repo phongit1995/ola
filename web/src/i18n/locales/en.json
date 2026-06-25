@@ -403,7 +403,15 @@
     "commentDeleted": "Comment deleted",
     "postSent": "Posted",
     "postError": "Couldn't post",
-    "reactionError": "Couldn't react, try again"
+    "reactionError": "Couldn't react, try again",
+    "openSearch": "Open search",
+    "closeSearch": "Close search",
+    "searchHint": "Search",
+    "recentlyViewed": "RECENTLY VIEWED",
+    "clearHistory": "Clear",
+    "searchHistoryEmpty": "No recently viewed Me yet",
+    "searchEmpty": "No results found",
+    "searchError": "Couldn't search, try again"
   },
   "profile": {
     "makeFriend": "Add friend",

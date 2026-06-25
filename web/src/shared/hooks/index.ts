@@ -1,4 +1,5 @@
 export * from './useCounter';
 export * from './useCaretInsert';
 export * from './useLongPress';
+export * from './useHorizontalSwipe';
 export * from './useVoiceRecorder';

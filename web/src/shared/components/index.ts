@@ -2,6 +2,7 @@ export * from './ui/Avatar';
 export * from './ui/Button';
 export * from './ui/ScreenHeader';
 export * from './ui/Spinner';
+export * from './ui/SearchIcon';
 export * from './ui/DateSeparator';
 export * from './ui/PullToRefresh';
 export * from './ui/FullScreenOverlay';

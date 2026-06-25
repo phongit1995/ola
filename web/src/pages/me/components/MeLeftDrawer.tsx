@@ -17,6 +17,7 @@ interface MeLeftDrawerProps {
   displayName: string;
   onClose: () => void;
   onSelect: (key: string) => void;
+  onOpenAccount: () => void;
 }
 
 interface DrawerItem {
@@ -25,7 +26,7 @@ interface DrawerItem {
   label: string;
 }
 
-export function MeLeftDrawer({ displayName, onClose, onSelect }: MeLeftDrawerProps) {
+export function MeLeftDrawer({ displayName, onClose, onSelect, onOpenAccount }: MeLeftDrawerProps) {
   const { t } = useTranslation();
   const [shown, setShown] = useState(false);
 
@@ -37,6 +38,11 @@ export function MeLeftDrawer({ displayName, onClose, onSelect }: MeLeftDrawerPro
   function handleClose() {
     setShown(false);
     window.setTimeout(onClose, CLOSE_ANIMATION_MS);
+  }
+
+  function openAccount() {
+    onOpenAccount();
+    handleClose();
   }
 
   const items: DrawerItem[] = [
@@ -71,14 +77,19 @@ export function MeLeftDrawer({ displayName, onClose, onSelect }: MeLeftDrawerPro
           shown ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <div className="relative h-28 shrink-0 bg-ola-primary-dark">
-          <div className="absolute inset-x-0 bottom-0 flex items-center gap-2 bg-linear-to-t from-black/70 to-transparent px-2 pb-2 pt-8">
+        <button
+          type="button"
+          aria-label={t('me.viewProfile')}
+          onClick={openAccount}
+          className="relative h-28 shrink-0 bg-ola-primary-dark text-left"
+        >
+          <span className="absolute inset-x-0 bottom-0 flex items-center gap-2 bg-linear-to-t from-black/70 to-transparent px-2 pb-2 pt-8">
             <Avatar name={displayName} color={DEFAULT_AVATAR_COLOR} size={40} />
             <span className="min-w-0 flex-1 truncate text-base font-medium text-white">
               {displayName}
             </span>
-          </div>
-        </div>
+          </span>
+        </button>
         <nav className="min-h-0 flex-1 overflow-y-auto">
           {items.map((item) => (
             <button

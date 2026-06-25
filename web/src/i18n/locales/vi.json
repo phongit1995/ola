@@ -403,7 +403,15 @@
     "commentDeleted": "Đã xoá bình luận",
     "postSent": "Đã đăng bài",
     "postError": "Đăng bài thất bại",
-    "reactionError": "Không thực hiện được, thử lại"
+    "reactionError": "Không thực hiện được, thử lại",
+    "openSearch": "Mở tìm kiếm",
+    "closeSearch": "Đóng tìm kiếm",
+    "searchHint": "Tìm kiếm",
+    "recentlyViewed": "ME ĐÃ XEM",
+    "clearHistory": "Xóa",
+    "searchHistoryEmpty": "Chưa có Me nào đã xem",
+    "searchEmpty": "Không tìm thấy kết quả",
+    "searchError": "Không tìm được, thử lại"
   },
   "profile": {
     "makeFriend": "Kết bạn",

@@ -1,11 +1,23 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+export interface ViewedProfile {
+  id: string;
+  username: string;
+  fullName?: string;
+  avatar?: string;
+}
+
+const MAX_VIEWED_PROFILES = 30;
+
 interface MeLocalState {
   hiddenPostIds: string[];
   blockedAuthorIds: string[];
+  viewedProfiles: ViewedProfile[];
   hidePost: (id: string) => void;
   blockAuthor: (authorId: string) => void;
+  recordViewedProfile: (profile: ViewedProfile) => void;
+  clearViewedProfiles: () => void;
 }
 
 export const useMeLocalStore = create<MeLocalState>()(
@@ -13,6 +25,7 @@ export const useMeLocalStore = create<MeLocalState>()(
     (set) => ({
       hiddenPostIds: [],
       blockedAuthorIds: [],
+      viewedProfiles: [],
       hidePost: (id) =>
         set((state) =>
           state.hiddenPostIds.includes(id)
@@ -25,12 +38,21 @@ export const useMeLocalStore = create<MeLocalState>()(
             ? state
             : { blockedAuthorIds: [...state.blockedAuthorIds, authorId] }
         ),
+      recordViewedProfile: (profile) =>
+        set((state) => ({
+          viewedProfiles: [
+            profile,
+            ...state.viewedProfiles.filter((item) => item.id !== profile.id),
+          ].slice(0, MAX_VIEWED_PROFILES),
+        })),
+      clearViewedProfiles: () => set({ viewedProfiles: [] }),
     }),
     {
       name: 'ola.me.local',
       partialize: (state) => ({
         hiddenPostIds: state.hiddenPostIds,
         blockedAuthorIds: state.blockedAuthorIds,
+        viewedProfiles: state.viewedProfiles,
       }),
     }
   )

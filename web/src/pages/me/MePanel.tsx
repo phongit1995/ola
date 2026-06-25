@@ -5,10 +5,12 @@ import { DEFAULT_AVATAR_COLOR, toast } from '@lib';
 import editIcon from '@/assets/icons/me/ic_action_edit.png';
 import menuIcon from '@/assets/icons/me/ic_more_white.png';
 import { useAuthStore } from '@/store/authStore';
-import { Avatar, PullToRefresh } from '@components';
+import { useHorizontalSwipe } from '@hooks';
+import { PullToRefresh, SearchIcon } from '@components';
 import { MeTabBar } from './components/MeTabBar';
 import { MeFeedList } from './components/MeFeedList';
 import { MeLeftDrawer } from './components/MeLeftDrawer';
+import { MeRightDrawer } from './components/MeRightDrawer';
 import { MeComposerDialog } from './components/MeComposerDialog';
 import { MeAccountDialog } from './components/MeAccountDialog';
 import { MePostInteractions, type MePostSource } from './MePostInteractions';
@@ -45,8 +47,11 @@ export function MePanel() {
   const [composerOpen, setComposerOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const [marriageOpen, setMarriageOpen] = useState(false);
   const [likedOpen, setLikedOpen] = useState(false);
+
+  const swipeHandlers = useHorizontalSwipe({ onSwipeLeft: () => setSearchOpen(true) });
 
   if (marriageOpen) {
     return <MarriageView onBack={() => setMarriageOpen(false)} />;
@@ -86,15 +91,21 @@ export function MePanel() {
             <MeTabBar active={tab} onChange={setTab} />
             <button
               type="button"
-              aria-label={displayName}
-              onClick={() => setAccountOpen(true)}
-              className="shrink-0"
+              aria-label={t('me.openSearch')}
+              onClick={() => setSearchOpen(true)}
+              className="flex h-12 w-10 shrink-0 items-center justify-center"
             >
-              <Avatar name={displayName} color="#33691e" size={32} />
+              <SearchIcon className="h-5 w-5 text-white" />
             </button>
           </HomeHeader>
 
-          <div className="relative min-h-0 flex-1">
+          <div
+            className="relative min-h-0 flex-1"
+            onTouchStart={swipeHandlers.onTouchStart}
+            onTouchMove={swipeHandlers.onTouchMove}
+            onTouchEnd={swipeHandlers.onTouchEnd}
+            onTouchCancel={swipeHandlers.onTouchCancel}
+          >
             <PullToRefresh
               onRefresh={refresh}
               className="absolute inset-0 overflow-y-auto bg-[#f3f3f3]"
@@ -130,6 +141,7 @@ export function MePanel() {
               <MeLeftDrawer
                 displayName={displayName}
                 onClose={() => setDrawerOpen(false)}
+                onOpenAccount={() => setAccountOpen(true)}
                 onSelect={(key) => {
                   if (key === 'marriage') {
                     setDrawerOpen(false);
@@ -141,6 +153,13 @@ export function MePanel() {
                     toast.info(t('me.comingSoon'));
                   }
                 }}
+              />
+            )}
+
+            {searchOpen && (
+              <MeRightDrawer
+                onClose={() => setSearchOpen(false)}
+                onOpenProfile={handlers.onOpenProfile}
               />
             )}
           </div>
