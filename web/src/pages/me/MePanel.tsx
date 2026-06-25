@@ -16,6 +16,7 @@ import { MeAccountDialog } from './components/MeAccountDialog';
 import { MePostInteractions, type MePostSource } from './MePostInteractions';
 import { useMeFeed } from './useMeFeed';
 import { MeLikedPostsView } from './MeLikedPostsView';
+import { MeVisitorsView } from './MeVisitorsView';
 import { MarriageView } from '../marriage/MarriageView';
 
 export function MePanel() {
@@ -106,36 +107,42 @@ export function MePanel() {
             onTouchEnd={swipeHandlers.onTouchEnd}
             onTouchCancel={swipeHandlers.onTouchCancel}
           >
-            <PullToRefresh
-              onRefresh={refresh}
-              className="absolute inset-0 overflow-y-auto bg-[#f3f3f3]"
-            >
-              <MeFeedList
-                posts={posts}
-                loading={loading}
-                loadingMore={loadingMore}
-                hasMore={hasMore}
-                error={error}
-                emptyText={emptyText}
-                onLoadMore={loadMore}
-                onToggleLike={handlers.onToggleLike}
-                onToggleDislike={handlers.onToggleDislike}
-                onOpenProfile={handlers.onOpenProfile}
-                onOpenComments={handlers.onOpenComments}
-                onQuickComment={handlers.onQuickComment}
-                onOpenMenu={handlers.onOpenMenu}
-                onOpenLikers={handlers.onOpenLikers}
-              />
-            </PullToRefresh>
+            {tab === 'visitors' ? (
+              <MeVisitorsView onOpenProfile={handlers.onOpenProfile} />
+            ) : (
+              <>
+                <PullToRefresh
+                  onRefresh={refresh}
+                  className="absolute inset-0 overflow-y-auto bg-[#f3f3f3]"
+                >
+                  <MeFeedList
+                    posts={posts}
+                    loading={loading}
+                    loadingMore={loadingMore}
+                    hasMore={hasMore}
+                    error={error}
+                    emptyText={emptyText}
+                    onLoadMore={loadMore}
+                    onToggleLike={handlers.onToggleLike}
+                    onToggleDislike={handlers.onToggleDislike}
+                    onOpenProfile={handlers.onOpenProfile}
+                    onOpenComments={handlers.onOpenComments}
+                    onQuickComment={handlers.onQuickComment}
+                    onOpenMenu={handlers.onOpenMenu}
+                    onOpenLikers={handlers.onOpenLikers}
+                  />
+                </PullToRefresh>
 
-            <button
-              type="button"
-              aria-label={t('me.composerTitle')}
-              onClick={() => setComposerOpen(true)}
-              className="absolute right-4 bottom-4 flex h-14 w-14 items-center justify-center rounded-full bg-ola-primary shadow-lg transition hover:brightness-105"
-            >
-              <img src={editIcon} alt="" className="h-6 w-6 object-contain" />
-            </button>
+                <button
+                  type="button"
+                  aria-label={t('me.composerTitle')}
+                  onClick={() => setComposerOpen(true)}
+                  className="absolute right-4 bottom-4 flex h-14 w-14 items-center justify-center rounded-full bg-ola-primary shadow-lg transition hover:brightness-105"
+                >
+                  <img src={editIcon} alt="" className="h-6 w-6 object-contain" />
+                </button>
+              </>
+            )}
 
             {drawerOpen && (
               <MeLeftDrawer

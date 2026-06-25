@@ -308,6 +308,8 @@
     "tabFeed": "Newsfeed",
     "tabTagged": "Tagged",
     "tabMentions": "Mentions",
+    "tabVisitors": "Visitors",
+    "visitorsError": "Couldn't load visitors, try again",
     "tabMedia": "Photos",
     "tabFollower": "Followers",
     "postMenu": "Post options",

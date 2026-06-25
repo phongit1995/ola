@@ -27,6 +27,7 @@ export const API_PATH = {
     follow: (id: string) => `/user/${id}/follow`,
     followers: (id: string) => `/user/${id}/followers`,
     following: (id: string) => `/user/${id}/following`,
+    myVisitors: '/user/me/visitors',
   },
   relationships: {
     request: '/relationships/request',

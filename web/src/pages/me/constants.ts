@@ -11,16 +11,16 @@ import type { MeTab } from './types';
 
 export const TAB_FILTER: Record<MeTab, MeFeedFilter | undefined> = {
   feed: undefined,
-  tagged: 'tagged',
-  media: 'media',
   mentions: 'mentions',
+  media: 'media',
+  visitors: undefined,
 };
 
 export const ME_TABS = [
   { key: 'feed', icon: tabOla, iconActive: tabOlaActive, labelKey: 'me.tabFeed' },
-  { key: 'tagged', icon: tabTag, iconActive: tabTagActive, labelKey: 'me.tabTagged' },
+  { key: 'mentions', icon: tabTag, iconActive: tabTagActive, labelKey: 'me.tabMentions' },
   { key: 'media', icon: tabMedia, iconActive: tabMediaActive, labelKey: 'me.tabMedia' },
-  { key: 'mentions', icon: tabFollower, iconActive: tabFollowerActive, labelKey: 'me.tabMentions' },
+  { key: 'visitors', icon: tabFollower, iconActive: tabFollowerActive, labelKey: 'me.tabVisitors' },
 ] as const satisfies ReadonlyArray<{
   key: MeTab;
   icon: string;

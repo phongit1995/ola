@@ -35,6 +35,7 @@ export function useMeFeed() {
   const formatTime = useMemo(() => createTimeFormatter(i18n.language), [i18n.language]);
 
   useEffect(() => {
+    if (tab === 'visitors') return;
     loadFeed(TAB_FILTER[tab]);
   }, [tab, loadFeed]);
 

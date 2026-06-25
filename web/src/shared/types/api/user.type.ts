@@ -95,3 +95,25 @@ export interface FollowListParams {
   limit?: number;
   offset?: number;
 }
+
+export interface VisitorUser {
+  id: string;
+  username: string;
+  fullName?: string;
+  avatar?: string;
+  vipUsed?: string;
+  vipEndTime?: string;
+  viewedAt: string;
+  isOnline: boolean;
+  relationship?: {
+    status: RelationshipStatus;
+    requestId?: string;
+  };
+}
+
+export interface VisitorListResult {
+  users: VisitorUser[];
+  total: number;
+  limit: number;
+  offset: number;
+}

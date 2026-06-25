@@ -23,4 +23,4 @@ export interface MePost {
   pinned: boolean;
 }
 
-export type MeTab = 'feed' | 'tagged' | 'media' | 'mentions';
+export type MeTab = 'feed' | 'mentions' | 'media' | 'visitors';

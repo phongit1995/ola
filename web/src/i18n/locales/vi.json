@@ -308,6 +308,8 @@
     "tabFeed": "Bảng tin",
     "tabTagged": "Có tag",
     "tabMentions": "Nhắc đến",
+    "tabVisitors": "Khách ghé thăm",
+    "visitorsError": "Không tải được danh sách, thử lại",
     "tabMedia": "Ảnh",
     "tabFollower": "Quan tâm",
     "postMenu": "Tuỳ chọn bài đăng",
