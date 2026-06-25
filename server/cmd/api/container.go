@@ -45,6 +45,7 @@ func NewContainer() (*dig.Container, error) {
 		services.NewMinIOService,
 		middleware.NewAuthMiddleware,
 		middleware.NewApiGuardMiddleware,
+		middleware.NewRateLimitMiddleware,
 		CreateServer,
 	}
 

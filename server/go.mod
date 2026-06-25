@@ -7,6 +7,7 @@ require (
 	github.com/gin-contrib/cors v1.7.6
 	github.com/gin-gonic/gin v1.11.0
 	github.com/go-playground/validator/v10 v10.28.0
+	github.com/go-redis/redis_rate/v10 v10.0.1
 	github.com/gocql/gocql v1.7.0
 	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/golang-migrate/migrate/v4 v4.19.1
@@ -23,6 +24,7 @@ require (
 	github.com/swaggo/swag v1.16.6
 	github.com/zishang520/socket.io/adapters/redis/v3 v3.0.3
 	github.com/zishang520/socket.io/servers/socket/v3 v3.0.3
+	github.com/zishang520/socket.io/v3 v3.0.3
 	go.uber.org/dig v1.19.0
 	go.uber.org/zap v1.27.1
 	golang.org/x/crypto v0.52.0
@@ -136,7 +138,6 @@ require (
 	github.com/zishang520/socket.io/parsers/engine/v3 v3.0.3 // indirect
 	github.com/zishang520/socket.io/parsers/socket/v3 v3.0.3 // indirect
 	github.com/zishang520/socket.io/servers/engine/v3 v3.0.3 // indirect
-	github.com/zishang520/socket.io/v3 v3.0.3 // indirect
 	go.opentelemetry.io/otel v1.43.0 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
