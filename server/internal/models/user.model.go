@@ -49,6 +49,7 @@ type User struct {
 	VipStorePrivacy   int16      `gorm:"not null;default:0"`
 	FollowerCount     int        `gorm:"not null;default:0"`
 	FollowingCount    int        `gorm:"not null;default:0"`
+	AntiCount         int        `gorm:"not null;default:0"`
 	SpouseID          *uuid.UUID `gorm:"type:uuid;index"`
 	CoverPhoto        string     `gorm:"type:varchar(500)"`
 	BioImage          *string    `gorm:"type:varchar(500)"`

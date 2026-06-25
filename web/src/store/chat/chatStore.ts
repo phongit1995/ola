@@ -13,7 +13,7 @@ import {
   SocketService,
   UserService,
 } from '@services';
-import type { Conversation, Message, ReactionType, RelationshipInfo } from '@app-types';
+import type { Conversation, Message, PublicProfile, ReactionType, RelationshipInfo } from '@app-types';
 import { upsertConversation } from './chatHelpers';
 import { clearTypingTimers, registerChatRealtime } from './chatRealtime';
 
@@ -36,6 +36,7 @@ export interface ChatState {
   currentConversationId: string | null;
   draftRecipient: DraftRecipient | null;
   peerRelationship: RelationshipInfo | null;
+  peerProfile: PublicProfile | null;
   messages: Message[];
   hasMore: boolean;
   loadingConversations: boolean;
@@ -72,6 +73,7 @@ const initialState = {
   currentConversationId: null as string | null,
   draftRecipient: null as DraftRecipient | null,
   peerRelationship: null as RelationshipInfo | null,
+  peerProfile: null as PublicProfile | null,
   messages: [] as Message[],
   hasMore: false,
   loadingConversations: false,
@@ -110,6 +112,7 @@ export const useChatStore = create<ChatState>((set, get) => {
         currentConversationId: conversationId,
         draftRecipient: null,
         peerRelationship: null,
+        peerProfile: null,
         messages: [],
         typingUsers: [],
         hasMore: false,
@@ -120,7 +123,7 @@ export const useChatStore = create<ChatState>((set, get) => {
         UserService.publicProfile(otherUserId)
           .then((profile) => {
             if (get().currentConversationId === conversationId) {
-              set({ peerRelationship: profile.relationship ?? null });
+              set({ peerRelationship: profile.relationship ?? null, peerProfile: profile });
             }
           })
           .catch(() => {});
@@ -156,6 +159,7 @@ export const useChatStore = create<ChatState>((set, get) => {
           typingUsers: [],
           hasMore: false,
           peerRelationship: null,
+          peerProfile: null,
           draftRecipient: { id: recipientId, name: existing?.name ?? '', avatar: existing?.avatar },
         });
         UserService.publicProfile(recipientId)
@@ -163,6 +167,7 @@ export const useChatStore = create<ChatState>((set, get) => {
             if (get().draftRecipient?.id !== recipientId) return;
             set((state) => ({
               peerRelationship: profile.relationship ?? null,
+              peerProfile: profile,
               draftRecipient:
                 state.draftRecipient != null
                   ? {
@@ -185,6 +190,7 @@ export const useChatStore = create<ChatState>((set, get) => {
         currentConversationId: null,
         draftRecipient: null,
         peerRelationship: null,
+        peerProfile: null,
         messages: [],
         typingUsers: [],
       }),

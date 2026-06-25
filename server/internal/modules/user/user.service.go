@@ -355,6 +355,7 @@ func (s *Service) buildPublicProfile(callerID uuid.UUID, user *models.User) *Use
 		VipEndTime:     formatOptionalTime(user.VipEndTime),
 		FollowerCount:  user.FollowerCount,
 		FollowingCount: user.FollowingCount,
+		AntiCount:      user.AntiCount,
 		IsOnline:       s.presence.IsUserOnline(idStr),
 		LastActiveAt:   s.presence.GetLastActive(idStr),
 		CreatedAt:      user.CreatedAt.Format(time.RFC3339),

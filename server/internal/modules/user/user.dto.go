@@ -93,6 +93,7 @@ type UserPublicProfileResponse struct {
 	VipEndTime     *string           `json:"vipEndTime" example:"2026-12-31T00:00:00Z"`
 	FollowerCount  int               `json:"followerCount" example:"0"`
 	FollowingCount int               `json:"followingCount" example:"0"`
+	AntiCount      int               `json:"antiCount" example:"0"`
 	IsOnline       bool              `json:"isOnline" example:"true"`
 	LastActiveAt   string            `json:"lastActiveAt,omitempty" example:"2024-01-15T10:30:00Z"`
 	CreatedAt      string            `json:"createdAt" example:"2024-01-01T00:00:00Z"`

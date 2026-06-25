@@ -27,6 +27,24 @@ export function isSameDay(a: string, b: string): boolean {
   );
 }
 
+export function yearsSince(iso: string): number {
+  const then = dayjs(iso);
+  if (!then.isValid()) return 0;
+  return Math.max(0, dayjs().diff(then, 'year'));
+}
+
+export function monthsSince(iso: string): number {
+  const then = dayjs(iso);
+  if (!then.isValid()) return 0;
+  return Math.max(0, dayjs().diff(then, 'month'));
+}
+
+export function daysSince(iso: string): number {
+  const then = dayjs(iso);
+  if (!then.isValid()) return 0;
+  return Math.max(0, dayjs().diff(then, 'day'));
+}
+
 export function createDateFormatter(locale: string): (iso: string) => string {
   const lang = resolveLocale(locale);
   return (iso: string) => {

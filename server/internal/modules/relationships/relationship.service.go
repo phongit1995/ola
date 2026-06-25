@@ -64,6 +64,16 @@ func removeFollowTx(tx *gorm.DB, followerID, followeeID uuid.UUID) error {
 		UpdateColumn("following_count", gorm.Expr("following_count - 1")).Error
 }
 
+func addAntiTx(tx *gorm.DB, blockedID uuid.UUID) error {
+	return tx.Model(&models.User{}).Where("id = ?", blockedID).
+		UpdateColumn("anti_count", gorm.Expr("anti_count + 1")).Error
+}
+
+func removeAntiTx(tx *gorm.DB, blockedID uuid.UUID) error {
+	return tx.Model(&models.User{}).Where("id = ? AND anti_count > 0", blockedID).
+		UpdateColumn("anti_count", gorm.Expr("anti_count - 1")).Error
+}
+
 func pairLockKey(a, b uuid.UUID) int64 {
 	lo, hi := a, b
 	if bytes.Compare(a[:], b[:]) > 0 {
@@ -433,6 +443,10 @@ func (s *Service) BlockUser(blockerID, blockedID uuid.UUID) (*RelationshipRespon
 			return err
 		}
 
+		if err := addAntiTx(tx, blockedID); err != nil {
+			return err
+		}
+
 		s.logger.Infow("User blocked successfully",
 			"blocker_id", blockerID,
 			"blocked_id", blockedID,
@@ -448,36 +462,51 @@ func (s *Service) BlockUser(blockerID, blockedID uuid.UUID) (*RelationshipRespon
 }
 
 func (s *Service) UnblockUser(relationshipID, userID uuid.UUID) error {
-	relationship, err := s.repo.FindByID(relationshipID)
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return errors.New("block relationship not found")
+	var blockerID, blockedID uuid.UUID
+	err := s.db.Transaction(func(tx *gorm.DB) error {
+		txRepo := &Repository{db: tx}
+
+		relationship, err := txRepo.FindByID(relationshipID)
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return errors.New("block relationship not found")
+			}
+			return err
 		}
+
+		if relationship.RequesterID != userID {
+			return errors.New("only the blocker can unblock this user")
+		}
+
+		if relationship.Status != models.RelationshipStatusBlocked {
+			return errors.New("can only unblock blocked relationships")
+		}
+
+		if err := txRepo.Delete(relationship); err != nil {
+			s.logger.Errorw("Failed to unblock user",
+				"relationship_id", relationshipID,
+				"error", err.Error(),
+			)
+			return err
+		}
+
+		if err := removeAntiTx(tx, relationship.AddresseeID); err != nil {
+			return err
+		}
+
+		blockerID, blockedID = relationship.RequesterID, relationship.AddresseeID
+		return nil
+	})
+	if err != nil {
 		return err
 	}
 
-	if relationship.RequesterID != userID {
-		return errors.New("only the blocker can unblock this user")
-	}
-
-	if relationship.Status != models.RelationshipStatusBlocked {
-		return errors.New("can only unblock blocked relationships")
-	}
-
-	if err := s.repo.Delete(relationship); err != nil {
-		s.logger.Errorw("Failed to unblock user",
-			"relationship_id", relationshipID,
-			"error", err.Error(),
-		)
-		return err
-	}
-
-	s.invalidateFriendList(relationship.RequesterID, relationship.AddresseeID)
+	s.invalidateFriendList(blockerID, blockedID)
 
 	s.logger.Infow("User unblocked successfully",
 		"relationship_id", relationshipID,
-		"blocker_id", relationship.RequesterID,
-		"blocked_id", relationship.AddresseeID,
+		"blocker_id", blockerID,
+		"blocked_id", blockedID,
 	)
 
 	return nil

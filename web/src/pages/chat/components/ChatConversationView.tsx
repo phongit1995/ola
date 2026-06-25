@@ -15,7 +15,7 @@ import {
   type SmileyInputHandle,
   type ListOption,
 } from '@components';
-import { colorForName, isSameDay, kulToken, toast } from '@lib';
+import { colorForName, hidePeerCard, isPeerCardHidden, isSameDay, kulToken, toast } from '@lib';
 import moreIcon from '@/assets/icons/chat/ic_more_white.png';
 import likeIcon from '@/assets/icons/chat/smiley_35.png';
 import { useChatStore } from '@/store/chat/chatStore';
@@ -27,6 +27,7 @@ import { useLongPress } from '@hooks';
 import { MessageRow } from './MessageRow';
 import { MessageActionSheet } from './MessageActionSheet';
 import { VoicePreviewBar } from './VoicePreviewBar';
+import { PeerProfileCard } from './PeerProfileCard';
 import { UserProfileView } from '../../profile/UserProfileView';
 import { useMediaViewerStore } from '@/store/mediaViewerStore';
 
@@ -72,6 +73,7 @@ export function ChatConversationView({
   const blockPeer = useChatStore((s) => s.blockPeer);
   const unblockPeer = useChatStore((s) => s.unblockPeer);
   const addPeerFriend = useChatStore((s) => s.addPeerFriend);
+  const peerProfile = useChatStore((s) => s.peerProfile);
   const notifyTyping = useChatStore((s) => s.notifyTyping);
   const loadMoreMessages = useChatStore((s) => s.loadMoreMessages);
   const currentConversationId = useChatStore((s) => s.currentConversationId);
@@ -105,6 +107,27 @@ export function ChatConversationView({
   });
 
   const peerTyping = typingUsers.length > 0;
+
+  const peerId = peerProfile?.id ?? '';
+  const [cardHiddenFor, setCardHiddenFor] = useState(() =>
+    peerId !== '' && isPeerCardHidden(peerId) ? peerId : ''
+  );
+  const [trackedPeerId, setTrackedPeerId] = useState(peerId);
+  if (trackedPeerId !== peerId) {
+    setTrackedPeerId(peerId);
+    setCardHiddenFor(peerId !== '' && isPeerCardHidden(peerId) ? peerId : '');
+  }
+  const peerCardHidden = peerId !== '' && cardHiddenFor === peerId;
+
+  const showPeerCard =
+    !blocked &&
+    peerProfile != null &&
+    !peerCardHidden &&
+    !hasMore &&
+    messages.length < 10 &&
+    (blockStatus === 'none' ||
+      blockStatus === 'pending_outgoing' ||
+      blockStatus === 'pending_incoming');
 
   const bubbles = useMemo<ChatMessage[]>(
     () => messages.map((message) => toBubble(message, myId)),
@@ -160,7 +183,7 @@ export function ChatConversationView({
     if (stickToBottomRef.current) {
       scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
     }
-  }, [peerTyping, openTab]);
+  }, [peerTyping, openTab, showPeerCard]);
 
   function handleScroll() {
     const element = scrollRef.current;
@@ -220,6 +243,17 @@ export function ChatConversationView({
 
   function openMentionProfile(nick: string) {
     if (nick !== '') setProfileTarget({ username: nick, color: colorForName(nick) });
+  }
+
+  function showPeerAvatar() {
+    const url = peerProfile?.avatar ?? avatar ?? '';
+    if (url !== '') openViewer([url]);
+  }
+
+  function handleHidePeerCard() {
+    if (peerId === '') return;
+    hidePeerCard(peerId);
+    setCardHiddenFor(peerId);
   }
 
   async function handleBlock() {
@@ -285,7 +319,7 @@ export function ChatConversationView({
       <div
         ref={scrollRef}
         onScroll={handleScroll}
-        className="flex flex-1 flex-col gap-0.5 overflow-y-auto bg-[#ECE5DD] px-2 py-3"
+        className="flex flex-1 flex-col gap-0.5 overflow-x-hidden overflow-y-auto bg-[#ECE5DD] px-2 py-3"
       >
         {loadingMessages && messages.length === 0 ? (
           <div className="flex flex-1 items-center justify-center">
@@ -323,6 +357,19 @@ export function ChatConversationView({
                 </Fragment>
               );
             })}
+
+            {showPeerCard && peerProfile != null && (
+              <PeerProfileCard
+                profile={peerProfile}
+                name={name}
+                color={color}
+                avatar={avatar}
+                onHide={handleHidePeerCard}
+                onBlock={() => setBlockOpen(true)}
+                onAddFriend={() => void handleMakeFriend()}
+                onShowAvatar={showPeerAvatar}
+              />
+            )}
 
             {peerTyping && (
               <div className="mt-1 flex items-end gap-1">
