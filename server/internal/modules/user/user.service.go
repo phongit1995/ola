@@ -224,6 +224,8 @@ func (s *Service) SearchUsers(query string, limit int, currentUserID uuid.UUID) 
 			IsOnline:     onlineMap[user.ID.String()],
 			Relationship: rel.status,
 			RequestID:    rel.requestID,
+			VipUsed:      user.VipUsed,
+			VipEndTime:   formatOptionalTime(user.VipEndTime),
 		})
 	}
 

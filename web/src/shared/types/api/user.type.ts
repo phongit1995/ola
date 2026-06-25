@@ -56,6 +56,8 @@ export interface UserSearchResult {
   isOnline: boolean;
   relationship?: SearchRelationship;
   requestId?: string;
+  vipUsed?: string;
+  vipEndTime?: string;
 }
 
 export interface SearchUsersResult {

@@ -6,6 +6,7 @@ export interface ViewedProfile {
   username: string;
   fullName?: string;
   avatar?: string;
+  vipTypeId?: number | null;
 }
 
 const MAX_VIEWED_PROFILES = 30;

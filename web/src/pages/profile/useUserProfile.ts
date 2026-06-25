@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MeService, UserService } from '@services';
-import { createDateFormatter, createTimeFormatter, toast } from '@lib';
+import { activeVipTypeId, createDateFormatter, createTimeFormatter, toast } from '@lib';
 import { useAuthStore } from '@/store/authStore';
 import { useMeLocalStore } from '@/store/meLocalStore';
 import type { PostReaction, RelationshipInfo } from '@app-types';
@@ -49,6 +49,7 @@ export function useUserProfile(username: string, seedColor: string): ProfileCont
         username: data.username,
         fullName: data.fullName,
         avatar: data.avatar,
+        vipTypeId: activeVipTypeId(data.vipUsed, data.vipEndTime),
       });
     }
     return data.id;

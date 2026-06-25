@@ -57,9 +57,11 @@ type UserSearchResult struct {
 	FullName     string `json:"fullName,omitempty" example:"John Doe"`
 	Avatar       string `json:"avatar,omitempty" example:"https://example.com/avatar.jpg"`
 	Bio          string `json:"bio,omitempty" example:"Software developer"`
-	IsOnline     bool   `json:"isOnline" example:"true"`
-	Relationship string `json:"relationship,omitempty" example:"friend"`
-	RequestID    string `json:"requestId,omitempty" example:"550e8400-e29b-41d4-a716-446655440000"`
+	IsOnline     bool    `json:"isOnline" example:"true"`
+	Relationship string  `json:"relationship,omitempty" example:"friend"`
+	RequestID    string  `json:"requestId,omitempty" example:"550e8400-e29b-41d4-a716-446655440000"`
+	VipUsed      *string `json:"vipUsed,omitempty" example:"gold"`
+	VipEndTime   *string `json:"vipEndTime,omitempty" example:"2026-12-31T00:00:00Z"`
 }
 
 type SearchUsersResponse struct {

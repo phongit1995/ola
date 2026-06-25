@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Avatar, ConfirmDialog, SearchIcon, Spinner } from '@components';
-import { colorForName, toast } from '@lib';
+import { Avatar, ConfirmDialog, SearchIcon, Spinner, VipIcon } from '@components';
+import { activeVipTypeId, colorForName, toast } from '@lib';
 import { UserService } from '@services';
 import { useMeLocalStore, type ViewedProfile } from '@/store/meLocalStore';
-import type { UserSearchResult } from '@app-types';
 import { CLOSE_ANIMATION_MS } from '../constants';
 
 interface MeRightDrawerProps {
@@ -16,7 +15,7 @@ export function MeRightDrawer({ onClose, onOpenProfile }: MeRightDrawerProps) {
   const { t } = useTranslation();
   const [shown, setShown] = useState(false);
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<UserSearchResult[]>([]);
+  const [results, setResults] = useState<ViewedProfile[]>([]);
   const [loading, setLoading] = useState(false);
   const [confirmClear, setConfirmClear] = useState(false);
 
@@ -38,7 +37,17 @@ export function MeRightDrawer({ onClose, onOpenProfile }: MeRightDrawerProps) {
       }
       setLoading(true);
       UserService.search(keyword, 30)
-        .then((result) => setResults(result.users))
+        .then((result) =>
+          setResults(
+            result.users.map((user) => ({
+              id: user.id,
+              username: user.username,
+              fullName: user.fullName,
+              avatar: user.avatar,
+              vipTypeId: activeVipTypeId(user.vipUsed, user.vipEndTime),
+            }))
+          )
+        )
         .catch(() => toast.error(t('me.searchError')))
         .finally(() => setLoading(false));
     }, 350);
@@ -103,24 +112,15 @@ export function MeRightDrawer({ onClose, onOpenProfile }: MeRightDrawerProps) {
             ) : results.length === 0 ? (
               <MeDrawerEmpty message={t('me.searchEmpty')} />
             ) : (
-              results.map((user) => (
-                <MeSearchRow
-                  key={user.id}
-                  profile={{
-                    id: user.id,
-                    username: user.username,
-                    fullName: user.fullName,
-                    avatar: user.avatar,
-                  }}
-                  onOpen={openProfile}
-                />
+              results.map((profile) => (
+                <MeProfileRow key={profile.id} profile={profile} onOpen={openProfile} />
               ))
             )
           ) : viewedProfiles.length === 0 ? (
             <MeDrawerEmpty message={t('me.searchHistoryEmpty')} />
           ) : (
             viewedProfiles.map((profile) => (
-              <MeSearchRow key={profile.id} profile={profile} onOpen={openProfile} />
+              <MeProfileRow key={profile.id} profile={profile} onOpen={openProfile} />
             ))
           )}
         </div>
@@ -152,21 +152,30 @@ function MeDrawerEmpty({ message }: { message: string }) {
   );
 }
 
-interface MeSearchRowProps {
+interface MeProfileRowProps {
   profile: ViewedProfile;
   onOpen: (profile: ViewedProfile) => void;
 }
 
-function MeSearchRow({ profile, onOpen }: MeSearchRowProps) {
-  const name = profile.fullName || profile.username;
+function MeProfileRow({ profile, onOpen }: MeProfileRowProps) {
+  const title = profile.fullName || profile.username;
+  const hasFullName = profile.fullName != null && profile.fullName !== '';
   return (
     <button
       type="button"
       onClick={() => onOpen(profile)}
       className="flex h-12 w-full items-center gap-2 px-2 text-left hover:bg-ola-primary-light"
     >
-      <Avatar name={name} color={colorForName(profile.username)} src={profile.avatar} size={32} />
-      <span className="min-w-0 flex-1 truncate text-base text-black/87">{name}</span>
+      <Avatar name={title} color={colorForName(profile.username)} src={profile.avatar} size={32} />
+      <span className="flex min-w-0 flex-1 flex-col justify-center">
+        <span className="flex min-w-0 items-center gap-1">
+          <VipIcon typeId={profile.vipTypeId} />
+          <span className="min-w-0 truncate text-base text-black/87">{title}</span>
+        </span>
+        {hasFullName && (
+          <span className="min-w-0 truncate text-xs text-black/54">@{profile.username}</span>
+        )}
+      </span>
     </button>
   );
 }
