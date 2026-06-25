@@ -26,21 +26,26 @@ export function EggGamePage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const userKen = useAuthStore((s) => s.user?.ken);
-  const init = useEggGameStore((s) => s.init);
+  const syncKen = useEggGameStore((s) => s.syncKen);
   const loadPacks = useEggGameStore((s) => s.loadPacks);
   const { ken, totalWin, cost, packsStatus, play } = useEggGame();
   const [historyOpen, setHistoryOpen] = useState(false);
-
-  useEffect(() => {
-    init(userKen ?? EGG_START_KEN);
-  }, [init, userKen]);
 
   useEffect(() => {
     void loadPacks();
   }, [loadPacks]);
 
   useEffect(() => {
-    useEggGameStore.setState({ smashing: false, winReward: null });
+    syncKen(userKen ?? EGG_START_KEN);
+  }, [syncKen, userKen]);
+
+  useEffect(() => {
+    useEggGameStore.setState({
+      smashing: false,
+      drawing: false,
+      winReward: null,
+      suppressKenSync: false,
+    });
     const off = SocketService.on<{ ken?: number }>('KEN_UPDATED', (data) => {
       if (typeof data?.ken === 'number') useEggGameStore.getState().syncKen(data.ken);
     });

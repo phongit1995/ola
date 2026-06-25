@@ -75,12 +75,15 @@ export function EggScene({ textures, hint, play }: EggSceneProps) {
   });
 
   const handleReload = useCallback(() => {
+    const { smashing, drawing } = useEggGameStore.getState();
+    if (smashing || drawing) return;
     spinRef.current = 0;
     setBrokenCount(0);
     setRound((r) => r + 1);
     endSmash();
   }, [endSmash]);
 
+  const busy = useEggGameStore((s) => s.smashing || s.drawing);
   const muted = useEggGameStore((s) => s.muted);
   const toggleMute = useEggGameStore((s) => s.toggleMute);
 
@@ -119,9 +122,9 @@ export function EggScene({ textures, hint, play }: EggSceneProps) {
           height={RELOAD_SIZE}
           x={size.w - RELOAD_MARGIN - RELOAD_SIZE / 2}
           y={RELOAD_MARGIN + RELOAD_SIZE / 2}
-          alpha={0.85}
-          eventMode="static"
-          cursor="pointer"
+          alpha={busy ? 0.3 : 0.85}
+          eventMode={busy ? 'none' : 'static'}
+          cursor={busy ? 'default' : 'pointer'}
           onPointerTap={handleReload}
         />
       )}

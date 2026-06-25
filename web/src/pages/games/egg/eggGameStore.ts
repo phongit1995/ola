@@ -9,14 +9,12 @@ interface EggGameState {
   ken: number;
   totalWin: number;
   muted: boolean;
-  initialized: boolean;
   packs: EggPack[];
   packsStatus: EggPacksStatus;
   drawing: boolean;
   smashing: boolean;
   suppressKenSync: boolean;
   winReward: EggDrawResult | null;
-  init: (ken: number) => void;
   loadPacks: () => Promise<void>;
   draw: (packId: string, idempotencyKey: string) => Promise<EggDrawResult | null>;
   applyResult: (result: EggDrawResult) => void;
@@ -38,17 +36,12 @@ export const useEggGameStore = create<EggGameState>((set, get) => ({
   ken: 0,
   totalWin: 0,
   muted: false,
-  initialized: false,
   packs: [],
   packsStatus: 'idle',
   drawing: false,
   smashing: false,
   suppressKenSync: false,
   winReward: null,
-  init: (ken) => {
-    if (get().initialized) return;
-    set({ ken, initialized: true });
-  },
   loadPacks: async () => {
     if (get().packsStatus === 'loading') return;
     set({ packsStatus: 'loading' });
