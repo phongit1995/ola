@@ -417,6 +417,8 @@
     "searchHint": "Search",
     "recentlyViewed": "RECENTLY VIEWED",
     "clearHistory": "Clear",
+    "clearHistoryTitle": "Clear history",
+    "clearHistoryConfirm": "Clear all recently viewed Me?",
     "searchHistoryEmpty": "No recently viewed Me yet",
     "searchEmpty": "No results found",
     "searchError": "Couldn't search, try again"

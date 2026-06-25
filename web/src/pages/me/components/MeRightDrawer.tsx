@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Avatar, SearchIcon, Spinner } from '@components';
+import { Avatar, ConfirmDialog, SearchIcon, Spinner } from '@components';
 import { colorForName, toast } from '@lib';
 import { UserService } from '@services';
 import { useMeLocalStore, type ViewedProfile } from '@/store/meLocalStore';
@@ -18,6 +18,7 @@ export function MeRightDrawer({ onClose, onOpenProfile }: MeRightDrawerProps) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<UserSearchResult[]>([]);
   const [loading, setLoading] = useState(false);
+  const [confirmClear, setConfirmClear] = useState(false);
 
   const viewedProfiles = useMeLocalStore((state) => state.viewedProfiles);
   const clearViewedProfiles = useMeLocalStore((state) => state.clearViewedProfiles);
@@ -87,7 +88,7 @@ export function MeRightDrawer({ onClose, onOpenProfile }: MeRightDrawerProps) {
         {!searching && viewedProfiles.length > 0 && (
           <div className="flex shrink-0 items-center justify-between bg-white px-4 py-2">
             <span className="text-xs text-black/54">{t('me.recentlyViewed')}</span>
-            <button type="button" onClick={clearViewedProfiles} className="text-xs text-black/54">
+            <button type="button" onClick={() => setConfirmClear(true)} className="text-xs text-black/54">
               {t('me.clearHistory')}
             </button>
           </div>
@@ -100,7 +101,7 @@ export function MeRightDrawer({ onClose, onOpenProfile }: MeRightDrawerProps) {
                 <Spinner size={24} />
               </div>
             ) : results.length === 0 ? (
-              <p className="py-6 text-center text-sm text-black/54">{t('me.searchEmpty')}</p>
+              <MeDrawerEmpty message={t('me.searchEmpty')} />
             ) : (
               results.map((user) => (
                 <MeSearchRow
@@ -116,7 +117,7 @@ export function MeRightDrawer({ onClose, onOpenProfile }: MeRightDrawerProps) {
               ))
             )
           ) : viewedProfiles.length === 0 ? (
-            <p className="py-6 text-center text-sm text-black/54">{t('me.searchHistoryEmpty')}</p>
+            <MeDrawerEmpty message={t('me.searchHistoryEmpty')} />
           ) : (
             viewedProfiles.map((profile) => (
               <MeSearchRow key={profile.id} profile={profile} onOpen={openProfile} />
@@ -124,7 +125,30 @@ export function MeRightDrawer({ onClose, onOpenProfile }: MeRightDrawerProps) {
           )}
         </div>
       </div>
+
+      <ConfirmDialog
+        open={confirmClear}
+        title={t('me.clearHistoryTitle')}
+        message={t('me.clearHistoryConfirm')}
+        confirmLabel={t('me.clearHistory')}
+        cancelLabel={t('common.cancel')}
+        danger
+        onConfirm={() => {
+          clearViewedProfiles();
+          setConfirmClear(false);
+        }}
+        onCancel={() => setConfirmClear(false)}
+      />
     </>
+  );
+}
+
+function MeDrawerEmpty({ message }: { message: string }) {
+  return (
+    <div className="flex h-full flex-col items-center justify-center gap-3 px-6 text-center">
+      <SearchIcon className="h-10 w-10 text-black/12" />
+      <p className="text-sm text-black/38">{message}</p>
+    </div>
   );
 }
 

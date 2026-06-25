@@ -417,6 +417,8 @@
     "searchHint": "Tìm kiếm",
     "recentlyViewed": "ME ĐÃ XEM",
     "clearHistory": "Xóa",
+    "clearHistoryTitle": "Xoá lịch sử",
+    "clearHistoryConfirm": "Xoá toàn bộ danh sách Me đã xem?",
     "searchHistoryEmpty": "Chưa có Me nào đã xem",
     "searchEmpty": "Không tìm thấy kết quả",
     "searchError": "Không tìm được, thử lại"
