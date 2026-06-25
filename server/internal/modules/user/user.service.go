@@ -308,6 +308,7 @@ func (s *Service) GetPublicProfile(callerID, targetUserID uuid.UUID) (*UserPubli
 	if err := s.ensureNotBlockedByTarget(callerID, user.ID); err != nil {
 		return nil, err
 	}
+	s.recordProfileView(callerID, user.ID)
 	return s.buildPublicProfile(callerID, user), nil
 }
 
@@ -322,7 +323,70 @@ func (s *Service) GetPublicProfileByUsername(callerID uuid.UUID, username string
 	if err := s.ensureNotBlockedByTarget(callerID, user.ID); err != nil {
 		return nil, err
 	}
+	s.recordProfileView(callerID, user.ID)
 	return s.buildPublicProfile(callerID, user), nil
+}
+
+func (s *Service) recordProfileView(viewerID, ownerID uuid.UUID) {
+	if viewerID == uuid.Nil || viewerID == ownerID {
+		return
+	}
+	go func() {
+		if err := s.repo.RecordProfileView(viewerID, ownerID); err != nil {
+			s.logger.Warnw("Failed to record profile view",
+				"viewer_id", viewerID, "owner_id", ownerID, "error", err.Error())
+		}
+	}()
+}
+
+func (s *Service) GetMyVisitors(meID uuid.UUID, limit, offset int) (*VisitorListResponse, error) {
+	rows, err := s.repo.ListVisitors(meID, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	total, err := s.repo.CountVisitors(meID)
+	if err != nil {
+		return nil, err
+	}
+
+	items := make([]VisitorUser, len(rows))
+	ids := make([]string, len(rows))
+	otherIDs := make([]uuid.UUID, len(rows))
+	for i, row := range rows {
+		ids[i] = row.ID.String()
+		otherIDs[i] = row.ID
+		items[i] = VisitorUser{
+			ID:         row.ID.String(),
+			Username:   row.Username,
+			FullName:   row.FullName,
+			Avatar:     row.Avatar,
+			VipUsed:    row.VipUsed,
+			VipEndTime: formatOptionalTime(row.VipEndTime),
+			ViewedAt:   row.ViewedAt.Format(time.RFC3339),
+		}
+	}
+
+	if len(otherIDs) > 0 {
+		relMap := s.relationshipMap(meID, otherIDs)
+		online := s.presence.GetOnlineUsers(ids)
+		lastActive := s.presence.GetLastActiveBatch(ids)
+		for i, id := range ids {
+			isOnline, _ := utils.ApplyOnlineGrace(online[id], lastActive[id])
+			items[i].IsOnline = isOnline
+			if rel, ok := relMap[otherIDs[i]]; ok {
+				items[i].Relationship = &RelationshipInfo{Status: rel.status, RequestID: rel.requestID}
+			} else {
+				items[i].Relationship = &RelationshipInfo{Status: RelationshipStatusNone}
+			}
+		}
+	}
+
+	return &VisitorListResponse{
+		Users:  items,
+		Total:  total,
+		Limit:  limit,
+		Offset: offset,
+	}, nil
 }
 
 func (s *Service) ensureNotBlockedByTarget(callerID, targetID uuid.UUID) error {

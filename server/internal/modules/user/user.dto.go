@@ -133,6 +133,27 @@ type FollowListQuery struct {
 	Offset int `form:"offset" binding:"omitempty,min=0"`
 }
 
+type VisitorUser struct {
+	ID           string            `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	Username     string            `json:"username" example:"john_doe"`
+	FullName     string            `json:"fullName,omitempty" example:"John Doe"`
+	Avatar       string            `json:"avatar,omitempty" example:"https://example.com/avatar.jpg"`
+	VipUsed      *string           `json:"vipUsed,omitempty" example:"gold"`
+	VipEndTime   *string           `json:"vipEndTime,omitempty" example:"2026-12-31T00:00:00Z"`
+	ViewedAt     string            `json:"viewedAt" example:"2024-01-15T10:30:00Z"`
+	IsOnline     bool              `json:"isOnline" example:"true"`
+	Relationship *RelationshipInfo `json:"relationship,omitempty"`
+}
+
+type VisitorListResponse struct {
+	Users  []VisitorUser `json:"users"`
+	Total  int64         `json:"total" example:"10"`
+	Limit  int           `json:"limit" example:"20"`
+	Offset int           `json:"offset" example:"0"`
+}
+
+type VisitorListSuccessResponse = utils.BaseResponse[VisitorListResponse]
+
 // RelationshipInfo describes the viewer's relationship state with the target user.
 // Status values:
 //

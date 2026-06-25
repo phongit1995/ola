@@ -1,6 +1,8 @@
 package user
 
 import (
+	"time"
+
 	"ola-chat-server/internal/models"
 
 	"github.com/google/uuid"
@@ -171,4 +173,46 @@ func (r *Repository) RelationshipsBetween(meID uuid.UUID, otherIDs []uuid.UUID) 
 		return nil, err
 	}
 	return rels, nil
+}
+
+func (r *Repository) RecordProfileView(viewerID, ownerID uuid.UUID) error {
+	return r.db.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "owner_id"}, {Name: "viewer_id"}},
+		DoUpdates: clause.Assignments(map[string]interface{}{"viewed_at": gorm.Expr("CURRENT_TIMESTAMP")}),
+	}).Create(&models.ProfileView{ViewerID: viewerID, OwnerID: ownerID}).Error
+}
+
+type VisitorRow struct {
+	ID         uuid.UUID
+	Username   string
+	FullName   string
+	Avatar     string
+	VipUsed    *string
+	VipEndTime *time.Time
+	ViewedAt   time.Time
+}
+
+func (r *Repository) ListVisitors(ownerID uuid.UUID, limit, offset int) ([]VisitorRow, error) {
+	var rows []VisitorRow
+	err := r.db.Table("profile_views AS pv").
+		Select("u.id, u.username, u.full_name, u.avatar, u.vip_used, u.vip_end_time, pv.viewed_at").
+		Joins("JOIN users u ON u.id = pv.viewer_id AND u.deleted_at IS NULL").
+		Where("pv.owner_id = ?", ownerID).
+		Order("pv.viewed_at DESC").
+		Limit(limit).
+		Offset(offset).
+		Scan(&rows).Error
+	if err != nil {
+		return nil, err
+	}
+	return rows, nil
+}
+
+func (r *Repository) CountVisitors(ownerID uuid.UUID) (int64, error) {
+	var total int64
+	err := r.db.Model(&models.ProfileView{}).Where("owner_id = ?", ownerID).Count(&total).Error
+	if err != nil {
+		return 0, err
+	}
+	return total, nil
 }

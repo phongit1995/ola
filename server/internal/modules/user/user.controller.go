@@ -226,6 +226,40 @@ func (ctrl *Controller) GetFollowing(c *gin.Context) (interface{}, error) {
 	return result, nil
 }
 
+// GetMyVisitors godoc
+// @Summary      List users who viewed my profile
+// @Description  Paginated list of users who recently viewed the authenticated user's profile, most recent first
+// @Tags         user
+// @Produce      json
+// @Security     BearerAuth
+// @Param        limit query int false "Limit results" default(20)
+// @Param        offset query int false "Offset" default(0)
+// @Success      200  {object}  VisitorListSuccessResponse
+// @Failure      400  {object}  utils.APIError
+// @Failure      401  {object}  utils.APIError
+// @Router       /user/me/visitors [get]
+func (ctrl *Controller) GetMyVisitors(c *gin.Context) (interface{}, error) {
+	meID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+
+	var q FollowListQuery
+	if err := c.ShouldBindQuery(&q); err != nil {
+		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	if q.Limit == 0 {
+		q.Limit = 20
+	}
+
+	result, err := ctrl.service.GetMyVisitors(meID, q.Limit, q.Offset)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+
+	return result, nil
+}
+
 // GetPresenceBatch godoc
 // @Summary      Get presence status for multiple users
 // @Description  Returns online status and last active time for the given user IDs (reads from Redis cache, no DB hit)
