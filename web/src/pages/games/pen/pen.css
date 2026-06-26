@@ -68,12 +68,12 @@
 
 .pen-screen .pen-cur-ball {
   cursor:
-    url('../../../assets/game/pen/ball-cursor.png') 12 12,
+    url('../../../assets/games/pen/ball-cursor.png') 12 12,
     pointer;
 }
 
 .pen-screen .pen-cur-glove {
   cursor:
-    url('../../../assets/game/pen/glove-cursor.png') 12 12,
+    url('../../../assets/games/pen/glove-cursor.png') 12 12,
     pointer;
 }
