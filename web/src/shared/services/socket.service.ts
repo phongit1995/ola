@@ -1,6 +1,6 @@
 import { io, type Socket } from 'socket.io-client';
 import { env } from '@config';
-import { authTokens } from '@lib';
+import { ensureFreshToken } from '@api';
 
 const ENVELOPE_EVENT = 'message';
 const PING_EVENT = 'ping';
@@ -24,9 +24,11 @@ export class SocketService {
   static connect(): Socket {
     if (this.socket) return this.socket;
     const socket = io(env.socketUrl, {
-      auth: { token: authTokens.getAccessToken() ?? '' },
+      auth: (cb) => {
+        void ensureFreshToken().then((token) => cb({ token }));
+      },
       transports: ['websocket'],
-      autoConnect: true,
+      autoConnect: false,
     });
     socket.on(ENVELOPE_EVENT, (envelope: { type?: string; data?: unknown }) => {
       if (envelope?.type == null) return;
@@ -37,10 +39,8 @@ export class SocketService {
     });
     socket.on('connect', () => this.startHeartbeat());
     socket.on('disconnect', () => this.stopHeartbeat());
-    socket.io.on('reconnect_attempt', () => {
-      socket.auth = { token: authTokens.getAccessToken() ?? '' };
-    });
     this.socket = socket;
+    socket.connect();
     return socket;
   }
 

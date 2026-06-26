@@ -55,6 +55,14 @@ function toRecord(value: unknown): Record<string, unknown> | null {
 
 let envelopeHandler: ((envelope: RoomSocketEnvelope) => void) | null = null;
 let connectHandler: (() => void) | null = null;
+let connectTimer: ReturnType<typeof setTimeout> | null = null;
+
+function clearConnectTimer() {
+  if (connectTimer != null) {
+    clearTimeout(connectTimer);
+    connectTimer = null;
+  }
+}
 
 function detach(socket: Socket) {
   if (envelopeHandler) {
@@ -65,6 +73,7 @@ function detach(socket: Socket) {
     socket.off('connect', connectHandler);
     connectHandler = null;
   }
+  clearConnectTimer();
 }
 
 const initialState = {
@@ -174,9 +183,18 @@ export const useRoomChatStore = create<RoomChatState>((set, get) => ({
     } else {
       connectHandler = () => {
         connectHandler = null;
+        clearConnectTimer();
         joinAndLoad();
       };
       socket.once('connect', connectHandler);
+      connectTimer = setTimeout(() => {
+        connectTimer = null;
+        if (connectHandler != null) {
+          socket.off('connect', connectHandler);
+          connectHandler = null;
+        }
+        if (get().activeRoom?.id === roomId) set({ status: 'error' });
+      }, JOIN_ACK_TIMEOUT_MS);
     }
   },
 

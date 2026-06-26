@@ -123,7 +123,7 @@ export function RoomPanel() {
         <RoomChatView onClose={() => setPendingQuit(activeRoom)} />
       )}
       {activeRoom != null && joinStatus !== 'joined' && (
-        <RoomJoiningOverlay name={activeRoom.name} status={joinStatus} onClose={exitRoom} />
+        <RoomJoiningOverlay status={joinStatus} onClose={exitRoom} />
       )}
 
       <ConfirmDialog
