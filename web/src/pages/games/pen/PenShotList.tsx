@@ -113,7 +113,7 @@ export function PenShotList({
                 gapClassName="gap-1"
                 label={t('penGame.select')}
                 onClick={() => onSelect(shot.code)}
-                className="h-7 w-full px-1 text-[10px]"
+                className="pen-cur-glove h-7 w-full px-1 text-[10px]"
               />
             </li>
           ))}

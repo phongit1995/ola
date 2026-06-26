@@ -15,8 +15,6 @@
   --animate-ola-pop-out: ola-pop-out 0.4s ease;
   --animate-ola-fly: ola-fly 1.5s ease-in forwards;
   --animate-ola-ken-bump: ola-ken-bump 0.45s ease;
-  --animate-pen-kick: pen-kick 0.55s ease-in forwards;
-  --animate-pen-shake: pen-shake 1.5s ease-in-out infinite;
   --font-sans:
     Roboto, 'Helvetica Neue', ui-sans-serif, system-ui, -apple-system,
     'Segoe UI', Arial, sans-serif;
@@ -84,62 +82,6 @@
   100% {
     transform: scale(1);
   }
-}
-
-@keyframes pen-kick {
-  0% {
-    transform: translate(-50%, 0) scale(1) rotate(0deg);
-    opacity: 1;
-  }
-  70% {
-    opacity: 1;
-  }
-  100% {
-    transform: translate(-50%, -220px) scale(0.4) rotate(220deg);
-    opacity: 0;
-  }
-}
-
-@keyframes pen-shake {
-  0%,
-  33%,
-  100% {
-    transform: translate(0, 0) rotate(0deg);
-  }
-  6% {
-    transform: translate(-1.5px, 1px) rotate(-8deg);
-  }
-  14% {
-    transform: translate(1.5px, -1px) rotate(8deg);
-  }
-  21% {
-    transform: translate(-1px, -1px) rotate(-5deg);
-  }
-  28% {
-    transform: translate(1px, 1px) rotate(5deg);
-  }
-}
-
-.pen-scroll {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(125, 211, 252, 0.35) transparent;
-}
-
-.pen-scroll::-webkit-scrollbar {
-  width: 6px;
-}
-
-.pen-scroll::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.pen-scroll::-webkit-scrollbar-thumb {
-  background-color: rgba(125, 211, 252, 0.3);
-  border-radius: 9999px;
-}
-
-.pen-scroll::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(125, 211, 252, 0.5);
 }
 
 html,

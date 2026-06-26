@@ -883,7 +883,7 @@
     "minutesAgo": "{{m}} phút trước",
     "columns": {
       "shooter": "NGƯỜI SÚT",
-      "bet": "KÈN CƯỢC",
+      "bet": "KEN CƯỢC",
       "time": "THỜI GIAN"
     },
     "help": "Cách chơi: chọn một lượt đang chờ rồi bấm SÚT. Sút vào sẽ nhân đôi tiền cược.",

@@ -9,6 +9,7 @@ import { PenButton } from './PenButton';
 import { PenShotList } from './PenShotList';
 import { penAssets } from './penAssets';
 import { PEN_SHOTS, PEN_START_KEN, type PenShot } from './penMock';
+import './pen.css';
 
 const KICK_RESULT_MS = 600;
 
@@ -47,7 +48,7 @@ export function PenGamePage() {
   };
 
   return (
-    <FullScreenOverlay className="bg-[#011d42]">
+    <FullScreenOverlay className="pen-screen bg-[#011d42]">
       <div className="flex h-full w-full flex-col items-center">
         <div className="relative flex w-full max-w-[645px] flex-1 flex-col overflow-hidden bg-[#011d42]">
           <img
@@ -115,7 +116,7 @@ export function PenGamePage() {
                 key={kickId}
                 src={penAssets.ballTrail}
                 alt=""
-                className="pointer-events-none absolute bottom-[26%] left-1/2 h-14 w-auto animate-pen-kick object-contain"
+                className="pointer-events-none absolute bottom-[26%] left-1/2 h-14 w-auto pen-kick object-contain"
               />
             )}
             <PenButton
@@ -124,8 +125,8 @@ export function PenGamePage() {
               label={t('penGame.shoot')}
               onClick={handleShoot}
               disabled={kicking}
-              className="h-16 w-[40%] max-w-44 text-2xl tracking-wider"
-              iconClassName="h-11 w-11 animate-pen-shake"
+              className="pen-cur-ball h-16 w-[40%] max-w-44 text-2xl tracking-wider"
+              iconClassName="h-11 w-11 pen-shake"
               gapClassName="gap-3"
             />
           </div>
