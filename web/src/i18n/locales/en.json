@@ -898,6 +898,10 @@
     "directionRight": "RIGHT",
     "kenAmount": "KEN amount",
     "confirm": "CONFIRM",
-    "cancel": "CANCEL"
+    "cancel": "CANCEL",
+    "shotCreated": "Shot created, waiting for someone to catch.",
+    "errChooseDirection": "Please choose a shot direction.",
+    "errBetMin": "Minimum bet is 1,000 KEN.",
+    "errInsufficientKen": "Bet exceeds your current KEN balance."
   }
 }

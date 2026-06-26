@@ -1,34 +1,66 @@
 import { useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
-import { formatVnd } from '@lib';
+import { formatVnd, toast } from '@lib';
+import type { PenSide } from '@app-types';
 import { penAssets, penShootAssets } from './penAssets';
 
-type ShootDirection = 'left' | 'right';
+const DIRECTIONS: PenSide[] = ['left', 'right'];
 
-const DIRECTIONS: ShootDirection[] = ['left', 'right'];
+const QUICK_BETS = [1000, 2000, 5000, 10000, 20000, 50000];
 
 interface PenShootModalProps {
   ken: number;
   amount: number;
+  submitting?: boolean;
   onTopUp: () => void;
-  onConfirm: (direction: ShootDirection | null) => void;
+  onConfirm: (payload: { side: PenSide; betAmount: number }) => void;
   onClose: () => void;
 }
 
 const stretchBg: CSSProperties = { backgroundSize: '100% 100%' };
 
-export function PenShootModal({ ken, amount, onTopUp, onConfirm, onClose }: PenShootModalProps) {
+export function PenShootModal({
+  ken,
+  amount,
+  submitting,
+  onTopUp,
+  onConfirm,
+  onClose,
+}: PenShootModalProps) {
   const { t } = useTranslation();
-  const [direction, setDirection] = useState<ShootDirection | null>(null);
+  const [direction, setDirection] = useState<PenSide | null>(null);
   const [thousands, setThousands] = useState(String(Math.floor(amount / 1000)));
 
+  const betAmount = Number(thousands) * 1000;
+  const overBalance = betAmount > ken;
+
+  const handleConfirm = () => {
+    if (!direction) {
+      toast.error(t('penGame.errChooseDirection'));
+      return;
+    }
+    if (!betAmount || betAmount < 1000) {
+      toast.error(t('penGame.errBetMin'));
+      return;
+    }
+    if (overBalance) {
+      toast.error(t('penGame.errInsufficientKen'));
+      return;
+    }
+    onConfirm({ side: direction, betAmount });
+  };
+
   return (
-    <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/55 px-4">
+    <div
+      onClick={onClose}
+      className="absolute inset-0 z-40 flex items-center justify-center bg-black/55 px-4"
+    >
       <div
+        onClick={(e) => e.stopPropagation()}
         style={{ ...stretchBg, backgroundImage: `url(${penShootAssets.bg})` }}
-        className="relative aspect-[943/1578] w-full max-w-[340px] bg-no-repeat"
+        className="relative aspect-[943/1578] w-full max-w-[380px] bg-no-repeat"
       >
-        <div className="absolute inset-0 flex flex-col items-center px-[8%] pt-[6%] pb-[6%] text-white">
+        <div className="absolute inset-0 flex flex-col items-center px-[8%] pt-[4%] pb-[4%] text-white">
           <div className="flex items-center justify-center gap-2">
             <img src={penShootAssets.ball} alt="" className="h-9 w-auto object-contain" />
             <span className="text-3xl font-extrabold italic tracking-wider drop-shadow">
@@ -46,7 +78,7 @@ export function PenShootModal({ ken, amount, onTopUp, onConfirm, onClose }: PenS
             <img src={penShootAssets.closeIcon} alt="" className="h-4 w-4 object-contain" />
           </button>
 
-          <div className="mt-[5%] flex items-center gap-2 rounded-xl bg-black/30 px-3 py-1.5">
+          <div className="mt-[3%] flex items-center gap-2 rounded-xl bg-black/30 px-3 py-1.5">
             <img src={penAssets.kenIcon} alt="KEN" className="h-6 w-6 shrink-0" />
             <span className="min-w-[68px] text-center text-xl font-bold">{formatVnd(ken)}</span>
             <button
@@ -60,11 +92,11 @@ export function PenShootModal({ ken, amount, onTopUp, onConfirm, onClose }: PenS
             </button>
           </div>
 
-          <p className="mt-[6%] text-base font-semibold text-white/90">
+          <p className="mt-[3%] text-base font-semibold text-white/90">
             {t('penGame.chooseDirection')}
           </p>
 
-          <div className="mt-[6%] grid w-full grid-cols-2 gap-2">
+          <div className="mt-[3%] -mx-[5%] grid w-[110%] grid-cols-2 gap-2">
             {DIRECTIONS.map((dir) => {
               const active = direction === dir;
               const skin = active ? penShootAssets.dir.selected : penShootAssets.dir.unselected;
@@ -83,24 +115,24 @@ export function PenShootModal({ ken, amount, onTopUp, onConfirm, onClose }: PenS
                     src={arrow}
                     alt=""
                     className={`pointer-events-none absolute top-[44%] w-[82%] -translate-y-1/2 object-contain ${
-                      dir === 'left' ? 'left-[1%]' : 'right-[1%]'
+                      dir === 'left' ? 'left-[5%]' : 'right-[5%]'
                     }`}
                   />
                   <img
                     src={penShootAssets.panelBall}
                     alt=""
-                    className={`pointer-events-none absolute top-[44%] w-[33%] -translate-y-1/2 object-contain ${
+                    className={`pointer-events-none absolute top-[48%] w-[33%] -translate-y-1/2 object-contain ${
                       dir === 'left' ? 'right-[5%]' : 'left-[5%]'
                     }`}
                   />
                   <img
                     src={skin.mark}
                     alt=""
-                    className="pointer-events-none absolute bottom-[5%] left-1/2 w-[23%] -translate-x-1/2 object-contain"
+                    className="pointer-events-none absolute bottom-[4%] left-1/2 w-[23%] -translate-x-1/2 translate-y-1/2 object-contain"
                   />
                   <span
                     style={{ ...stretchBg, backgroundImage: `url(${skin.tab})` }}
-                    className="absolute left-1/2 top-[-7%] flex aspect-[1319/430] w-[72%] -translate-x-1/2 items-center justify-center bg-no-repeat text-sm font-extrabold tracking-wider text-white drop-shadow"
+                    className="absolute left-1/2 top-0 flex aspect-[1319/400] w-[50%] -translate-x-1/2 items-center justify-center bg-no-repeat text-sm font-extrabold tracking-wider text-white drop-shadow"
                   >
                     {label}
                   </span>
@@ -109,9 +141,13 @@ export function PenShootModal({ ken, amount, onTopUp, onConfirm, onClose }: PenS
             })}
           </div>
 
-          <p className="mt-[5%] text-base font-semibold text-white/90">{t('penGame.kenAmount')}</p>
+          <p className="mt-[2%] text-base font-semibold text-white/90">{t('penGame.kenAmount')}</p>
 
-          <label className="relative mt-[3%] flex w-[72%] cursor-text items-center justify-center rounded-xl border border-white/15 bg-black/20 px-4 py-2">
+          <label
+            className={`relative mt-[2%] flex w-[72%] cursor-text items-center justify-center rounded-xl border bg-black/20 px-4 py-1.5 ${
+              overBalance ? 'border-[#ff5b5b]' : 'border-white/15'
+            }`}
+          >
             <img
               src={penAssets.kenIcon}
               alt="KEN"
@@ -132,7 +168,29 @@ export function PenShootModal({ ken, amount, onTopUp, onConfirm, onClose }: PenS
             </span>
           </label>
 
-          <div className="mt-auto flex w-full items-center gap-3 pt-[5%]">
+          <div className="mt-[2%] grid w-[88%] grid-cols-3 gap-2">
+            {QUICK_BETS.map((bet) => {
+              const active = betAmount === bet;
+              const disabled = bet > ken;
+              return (
+                <button
+                  key={bet}
+                  type="button"
+                  disabled={disabled}
+                  onClick={() => setThousands(String(bet / 1000))}
+                  className={`rounded-lg border py-1 text-sm font-bold transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-35 ${
+                    active
+                      ? 'border-[#8dffab] bg-[#37c84f]/25 text-white'
+                      : 'border-white/15 bg-black/20 text-white/80'
+                  }`}
+                >
+                  {formatVnd(bet)}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="mt-auto flex w-full items-center gap-3 pt-[3%]">
             <button
               type="button"
               onClick={onClose}
@@ -143,9 +201,10 @@ export function PenShootModal({ ken, amount, onTopUp, onConfirm, onClose }: PenS
             </button>
             <button
               type="button"
-              onClick={() => onConfirm(direction)}
+              onClick={handleConfirm}
+              disabled={submitting || overBalance}
               style={{ ...stretchBg, backgroundImage: `url(${penShootAssets.confirmBtn})` }}
-              className="flex h-12 flex-[3] items-center justify-center bg-no-repeat text-lg font-extrabold tracking-wide drop-shadow transition active:scale-95"
+              className="flex h-12 flex-[3] items-center justify-center bg-no-repeat text-lg font-extrabold tracking-wide drop-shadow transition active:scale-95 disabled:opacity-60"
             >
               {t('penGame.confirm')}
             </button>

@@ -3,7 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@constants';
 import { FullScreenOverlay } from '@components';
-import { formatKen, toast } from '@lib';
+import { formatKen, toApiError, toast } from '@lib';
+import { PenService } from '@services';
+import type { PenSide } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
 import { PenButton } from './PenButton';
 import { PenShotList } from './PenShotList';
@@ -26,24 +28,36 @@ function shuffle(shots: PenShot[]): PenShot[] {
 export function PenGamePage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const userKen = useAuthStore((s) => s.user?.ken);
-  const ken = userKen ?? PEN_START_KEN;
+  const user = useAuthStore((s) => s.user);
+  const setUser = useAuthStore((s) => s.setUser);
+  const ken = user?.ken ?? PEN_START_KEN;
 
   const [shots, setShots] = useState<PenShot[]>(PEN_SHOTS);
   const [kickId, setKickId] = useState(0);
   const [kicking, setKicking] = useState(false);
   const [shootOpen, setShootOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleShoot = () => {
-    if (kicking) return;
-    const scored = Math.random() < 0.5;
+  const playKick = () => {
     setKickId((n) => n + 1);
     setKicking(true);
-    window.setTimeout(() => {
-      setKicking(false);
-      if (scored) toast.success(t('penGame.goal'));
-      else toast.error(t('penGame.saved'));
-    }, KICK_RESULT_MS);
+    window.setTimeout(() => setKicking(false), KICK_RESULT_MS);
+  };
+
+  const handleCreateShot = async ({ side, betAmount }: { side: PenSide; betAmount: number }) => {
+    if (submitting) return;
+    setSubmitting(true);
+    try {
+      const res = await PenService.createShot({ side, betAmount });
+      if (user) setUser({ ...user, ken: res.kenBalance });
+      setShootOpen(false);
+      playKick();
+      toast.success(t('penGame.shotCreated'));
+    } catch (e) {
+      toast.error(toApiError(e).message);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleRefresh = () => {
@@ -163,11 +177,9 @@ export function PenGamePage() {
             <PenShootModal
               ken={ken}
               amount={DEFAULT_BET}
+              submitting={submitting}
               onTopUp={() => navigate(ROUTES.kenBuy)}
-              onConfirm={() => {
-                setShootOpen(false);
-                handleShoot();
-              }}
+              onConfirm={handleCreateShot}
               onClose={() => setShootOpen(false)}
             />
           )}

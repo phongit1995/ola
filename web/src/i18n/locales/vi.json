@@ -898,6 +898,10 @@
     "directionRight": "PHẢI",
     "kenAmount": "Số ken",
     "confirm": "XÁC NHẬN",
-    "cancel": "HỦY"
+    "cancel": "HỦY",
+    "shotCreated": "Đã tạo lượt sút, hãy đợi người chụp.",
+    "errChooseDirection": "Vui lòng chọn hướng sút.",
+    "errBetMin": "Số ken cược tối thiểu là 1.000.",
+    "errInsufficientKen": "Số ken cược vượt quá số dư hiện tại."
   }
 }
