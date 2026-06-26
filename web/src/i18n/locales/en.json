@@ -891,6 +891,7 @@
     "saved": "Saved by the keeper! 🧤 Try again.",
     "selected": "Picked to catch shot {{code}}",
     "refreshed": "Shot list refreshed.",
+    "emptyShots": "No open shots waiting yet.",
     "historyEmpty": "No shot history yet.",
     "close": "Close",
     "chooseDirection": "Choose shot direction",

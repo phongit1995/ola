@@ -255,11 +255,21 @@ func buildList(items []models.PenShot, total int64, limit, offset int, reveal bo
 
 func toBrief(u *models.User) *UserBrief {
 	return &UserBrief{
-		ID:       u.ID.String(),
-		Username: u.Username,
-		FullName: u.FullName,
-		Avatar:   u.Avatar,
+		ID:         u.ID.String(),
+		Username:   u.Username,
+		FullName:   u.FullName,
+		Avatar:     u.Avatar,
+		VipUsed:    u.VipUsed,
+		VipEndTime: formatOptionalTime(u.VipEndTime),
 	}
+}
+
+func formatOptionalTime(t *time.Time) *string {
+	if t == nil {
+		return nil
+	}
+	formatted := t.Format(time.RFC3339)
+	return &formatted
 }
 
 func toShotView(s *models.PenShot, reveal bool) ShotView {

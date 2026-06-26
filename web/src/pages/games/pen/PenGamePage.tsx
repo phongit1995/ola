@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@constants';
@@ -7,23 +7,17 @@ import { formatKen, toApiError, toast } from '@lib';
 import { PenService } from '@services';
 import type { PenSide } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
+import { usePenStore } from '@/store/penStore';
 import { PenButton } from './PenButton';
 import { PenShotList } from './PenShotList';
 import { PenShootModal } from './PenShootModal';
 import { penAssets } from './penAssets';
-import { PEN_SHOTS, PEN_START_KEN, type PenShot } from './penMock';
+import { PEN_START_KEN } from './penMock';
 
 const DEFAULT_BET = 1000;
 import './pen.css';
 
 const KICK_RESULT_MS = 600;
-
-function shuffle(shots: PenShot[]): PenShot[] {
-  return shots
-    .map((shot) => ({ shot, order: Math.random() }))
-    .sort((a, b) => a.order - b.order)
-    .map((entry) => entry.shot);
-}
 
 export function PenGamePage() {
   const { t } = useTranslation();
@@ -32,11 +26,18 @@ export function PenGamePage() {
   const setUser = useAuthStore((s) => s.setUser);
   const ken = user?.ken ?? PEN_START_KEN;
 
-  const [shots, setShots] = useState<PenShot[]>(PEN_SHOTS);
+  const shots = usePenStore((s) => s.shots);
+  const loadingShots = usePenStore((s) => s.loading);
+  const loadShots = usePenStore((s) => s.loadShots);
+
   const [kickId, setKickId] = useState(0);
   const [kicking, setKicking] = useState(false);
   const [shootOpen, setShootOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    void loadShots();
+  }, [loadShots]);
 
   const playKick = () => {
     setKickId((n) => n + 1);
@@ -61,7 +62,7 @@ export function PenGamePage() {
   };
 
   const handleRefresh = () => {
-    setShots(shuffle(shots));
+    void loadShots();
     toast.info(t('penGame.refreshed'));
   };
 
@@ -151,8 +152,11 @@ export function PenGamePage() {
 
           <PenShotList
             shots={shots}
+            loading={loadingShots}
             page={1}
-            onSelect={(code) => toast.success(t('penGame.selected', { code }))}
+            onSelect={(shot) =>
+              toast.success(t('penGame.selected', { code: shot.shooter?.username ?? '' }))
+            }
             className="relative z-10 mx-4 mb-1 min-h-0 flex-1"
           />
 

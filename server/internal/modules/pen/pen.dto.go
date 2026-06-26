@@ -12,10 +12,12 @@ type CatchRequest struct {
 }
 
 type UserBrief struct {
-	ID       string `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	Username string `json:"username" example:"john_doe"`
-	FullName string `json:"fullName,omitempty" example:"John Doe"`
-	Avatar   string `json:"avatar,omitempty" example:"https://example.com/avatar.jpg"`
+	ID         string  `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	Username   string  `json:"username" example:"john_doe"`
+	FullName   string  `json:"fullName,omitempty" example:"John Doe"`
+	Avatar     string  `json:"avatar,omitempty" example:"https://example.com/avatar.jpg"`
+	VipUsed    *string `json:"vipUsed,omitempty" example:"12"`
+	VipEndTime *string `json:"vipEndTime,omitempty" example:"2026-12-31T00:00:00Z"`
 }
 
 type ShotView struct {

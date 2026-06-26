@@ -891,6 +891,7 @@
     "saved": "Bị thủ môn cản phá! 🧤 Thử lại nhé.",
     "selected": "Đã chọn chụp lượt {{code}}",
     "refreshed": "Đã làm mới danh sách lượt sút.",
+    "emptyShots": "Chưa có lượt sút nào đang chờ.",
     "historyEmpty": "Chưa có lịch sử lượt sút.",
     "close": "Đóng",
     "chooseDirection": "Chọn hướng sút",

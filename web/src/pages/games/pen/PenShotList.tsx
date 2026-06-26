@@ -1,14 +1,15 @@
 import { useTranslation } from 'react-i18next';
-import { Avatar } from '@components';
-import { colorForName, formatKen } from '@lib';
+import { Spinner, VipIcon } from '@components';
+import { createTimeFormatter, formatKen } from '@lib';
+import type { PenShotView } from '@app-types';
 import { PenButton } from './PenButton';
 import { penAssets } from './penAssets';
-import type { PenShot } from './penMock';
 
 interface PenShotListProps {
-  shots: PenShot[];
+  shots: PenShotView[];
+  loading?: boolean;
   page: number;
-  onSelect: (code: string) => void;
+  onSelect: (shot: PenShotView) => void;
   className?: string;
 }
 
@@ -43,11 +44,13 @@ function ChevronRight() {
 
 export function PenShotList({
   shots,
+  loading,
   page,
   onSelect,
   className = '',
 }: PenShotListProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const formatTime = createTimeFormatter(i18n.language);
 
   return (
     <section
@@ -78,46 +81,53 @@ export function PenShotList({
           <span />
         </div>
 
-        <ul>
-          {shots.map((shot) => (
-            <li
-              key={shot.id}
-              className={`${ROW_GRID} border-b border-white/5 px-3 py-1.5`}
-              style={{ gridTemplateColumns: GRID_COLS }}
-            >
-              <span className="flex min-w-0 items-center gap-1.5">
-                <Avatar
-                  name={shot.shooter}
-                  color={colorForName(shot.shooter)}
-                  size={22}
-                />
-                <span className="truncate text-sm text-white/85">
-                  @{shot.shooter}
-                </span>
-              </span>
-              <span className="flex items-center gap-1 text-[11px] font-semibold text-[#ffd54f]">
-                <img
-                  src={penAssets.kenIcon}
-                  alt=""
-                  className="h-3.5 w-3.5 shrink-0"
-                />
-                {formatKen(shot.bet)}
-              </span>
-              <span className="whitespace-nowrap text-right text-[10px] text-white/55">
-                {t('penGame.minutesAgo', { m: shot.minutesAgo })}
-              </span>
-              <PenButton
-                bg={penAssets.selectBtn}
-                icon={penAssets.gloveIcon}
-                iconClassName="h-4 w-4"
-                gapClassName="gap-1"
-                label={t('penGame.select')}
-                onClick={() => onSelect(shot.code)}
-                className="pen-cur-glove h-7 w-full px-1 text-[10px]"
-              />
-            </li>
-          ))}
-        </ul>
+        {loading ? (
+          <div className="flex items-center justify-center py-8">
+            <Spinner />
+          </div>
+        ) : shots.length === 0 ? (
+          <div className="px-4 py-8 text-center text-xs text-white/55">
+            {t('penGame.emptyShots')}
+          </div>
+        ) : (
+          <ul>
+            {shots.map((shot) => {
+              const username = shot.shooter?.username ?? '';
+              return (
+                <li
+                  key={shot.id}
+                  className={`${ROW_GRID} border-b border-white/5 px-3 py-1.5`}
+                  style={{ gridTemplateColumns: GRID_COLS }}
+                >
+                  <span className="flex min-w-0 items-center gap-1.5">
+                    <VipIcon typeId={shot.shooter?.vipTypeId} className="h-6 w-6" />
+                    <span className="truncate text-sm text-white/85">@{username}</span>
+                  </span>
+                  <span className="flex items-center gap-1 text-[11px] font-semibold text-[#ffd54f]">
+                    <img
+                      src={penAssets.kenIcon}
+                      alt=""
+                      className="h-3.5 w-3.5 shrink-0"
+                    />
+                    {formatKen(shot.betAmount)}
+                  </span>
+                  <span className="whitespace-nowrap text-right text-[10px] text-white/55">
+                    {formatTime(shot.createdAt)}
+                  </span>
+                  <PenButton
+                    bg={penAssets.selectBtn}
+                    icon={penAssets.gloveIcon}
+                    iconClassName="h-4 w-4"
+                    gapClassName="gap-1"
+                    label={t('penGame.select')}
+                    onClick={() => onSelect(shot)}
+                    className="pen-cur-glove h-7 w-full px-1 text-[10px]"
+                  />
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </div>
     </section>
   );

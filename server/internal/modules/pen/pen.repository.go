@@ -23,7 +23,7 @@ func NewRepository(db *gorm.DB) *Repository {
 }
 
 func briefSelect(tx *gorm.DB) *gorm.DB {
-	return tx.Select("id", "username", "full_name", "avatar")
+	return tx.Select("id", "username", "full_name", "avatar", "vip_used", "vip_end_time")
 }
 
 func orderIDs(a, b uuid.UUID) (uuid.UUID, uuid.UUID) {

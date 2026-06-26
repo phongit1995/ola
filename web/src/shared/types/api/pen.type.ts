@@ -9,6 +9,9 @@ export interface PenUserBrief {
   username: string;
   fullName?: string;
   avatar?: string;
+  vipUsed?: string;
+  vipEndTime?: string;
+  vipTypeId?: number | null;
 }
 
 export interface PenShotView {
