@@ -44,6 +44,9 @@ const NearbyPlacesPage = lazy(() =>
 const EggGamePage = lazy(() =>
   import('@/pages/games/egg/EggGamePage').then((m) => ({ default: m.EggGamePage }))
 );
+const PenGamePage = lazy(() =>
+  import('@/pages/games/pen/PenGamePage').then((m) => ({ default: m.PenGamePage }))
+);
 
 export function AppRouter() {
   return (
@@ -159,6 +162,14 @@ export function AppRouter() {
             element={
               <ProtectedRoute>
                 <EggGamePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path={ROUTES.penGame}
+            element={
+              <ProtectedRoute>
+                <PenGamePage />
               </ProtectedRoute>
             }
           />

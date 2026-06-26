@@ -95,6 +95,7 @@
     "apps": [
       "Notifications",
       "Egg Smash",
+      "Pen Shootout",
       "Game Store",
       "Profile",
       "VIP Store",
@@ -869,5 +870,28 @@
       "defaultLabel": "Reward",
       "ok": "Keep smashing"
     }
+  },
+  "penGame": {
+    "title": "PEN",
+    "shoot": "SHOOT",
+    "select": "SELECT",
+    "refresh": "REFRESH",
+    "history": "HISTORY",
+    "topUp": "Top up KEN",
+    "waitingTitle": "WAITING SHOTS",
+    "page": "Page {{page}}",
+    "minutesAgo": "{{m}} min ago",
+    "columns": {
+      "code": "SHOT",
+      "shooter": "SHOOTER",
+      "bet": "BET",
+      "time": "TIME"
+    },
+    "help": "How to play: pick a waiting shot, then press SHOOT. Score to double your bet.",
+    "goal": "GOAL! 🎉 Your bet is doubled.",
+    "saved": "Saved by the keeper! 🧤 Try again.",
+    "selected": "Picked shot {{code}}",
+    "refreshed": "Shot list refreshed.",
+    "historyEmpty": "No shot history yet."
   }
 }

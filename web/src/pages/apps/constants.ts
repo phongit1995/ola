@@ -16,6 +16,7 @@ import iconMall from '@/assets/icons/apps/mall.png';
 import iconNearby from '@/assets/icons/apps/nearby.png';
 import iconSetting from '@/assets/icons/apps/setting.png';
 import iconEgg from '@/assets/icons/apps/egg.png';
+import iconPen from '@/assets/icons/pen/pen_icon.png';
 import type { NotificationType, NotificationItem } from './NotificationsPage';
 import type { Venue } from './NearbyPlacesPage';
 import type { Album } from './MediaStorePage';
@@ -47,6 +48,7 @@ export const MOCK_NOTIFICATIONS: NotificationItem[] = [
 export const APP_ITEMS: AppItem[] = [
   { icon: iconNotify, route: ROUTES.notifications },
   { icon: iconEgg, route: ROUTES.eggGame },
+  { icon: iconPen, route: ROUTES.penGame },
   { icon: iconGame, subtitleKey: 'home.appGameSubtitle' },
   { icon: iconPersonal, route: ROUTES.profileEdit },
   { icon: iconVip, route: ROUTES.vip },

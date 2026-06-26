@@ -95,6 +95,7 @@
     "apps": [
       "Thông báo",
       "Đập Trứng",
+      "Sút Pen",
       "Kho Game",
       "Cá nhân",
       "Kho VIP",
@@ -869,5 +870,28 @@
       "defaultLabel": "Phần thưởng",
       "ok": "Đập tiếp"
     }
+  },
+  "penGame": {
+    "title": "PEN",
+    "shoot": "SÚT",
+    "select": "CHỌN",
+    "refresh": "LÀM MỚI",
+    "history": "LỊCH SỬ",
+    "topUp": "Nạp KEN",
+    "waitingTitle": "DANH SÁCH LƯỢT SÚT ĐANG CHỜ",
+    "page": "Trang {{page}}",
+    "minutesAgo": "{{m}} phút trước",
+    "columns": {
+      "code": "MÃ LƯỢT",
+      "shooter": "NGƯỜI SÚT",
+      "bet": "KÈN CƯỢC",
+      "time": "THỜI GIAN"
+    },
+    "help": "Cách chơi: chọn một lượt đang chờ rồi bấm SÚT. Sút vào sẽ nhân đôi tiền cược.",
+    "goal": "VÀO RỒI! 🎉 Tiền cược được nhân đôi.",
+    "saved": "Bị thủ môn cản phá! 🧤 Thử lại nhé.",
+    "selected": "Đã chọn lượt {{code}}",
+    "refreshed": "Đã làm mới danh sách lượt sút.",
+    "historyEmpty": "Chưa có lịch sử lượt sút."
   }
 }
