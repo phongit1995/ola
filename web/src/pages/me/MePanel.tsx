@@ -17,6 +17,7 @@ import { MePostInteractions, type MePostSource } from './MePostInteractions';
 import { useMeFeed } from './useMeFeed';
 import { MeLikedPostsView } from './MeLikedPostsView';
 import { MeVisitorsView } from './MeVisitorsView';
+import { MeVisitorsList } from './components/MeVisitorsList';
 import { MarriageView } from '../marriage/MarriageView';
 
 export function MePanel() {
@@ -51,6 +52,7 @@ export function MePanel() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [marriageOpen, setMarriageOpen] = useState(false);
   const [likedOpen, setLikedOpen] = useState(false);
+  const [visitorsOpen, setVisitorsOpen] = useState(false);
 
   const swipeHandlers = useHorizontalSwipe({ onSwipeLeft: () => setSearchOpen(true) });
 
@@ -60,6 +62,10 @@ export function MePanel() {
 
   if (likedOpen) {
     return <MeLikedPostsView onClose={() => setLikedOpen(false)} />;
+  }
+
+  if (visitorsOpen) {
+    return <MeVisitorsView onClose={() => setVisitorsOpen(false)} />;
   }
 
   const source: MePostSource = {
@@ -108,7 +114,10 @@ export function MePanel() {
             onTouchCancel={swipeHandlers.onTouchCancel}
           >
             {tab === 'visitors' ? (
-              <MeVisitorsView onOpenProfile={handlers.onOpenProfile} />
+              <MeVisitorsList
+                onOpenProfile={handlers.onOpenProfile}
+                className="absolute inset-0"
+              />
             ) : (
               <>
                 <PullToRefresh
@@ -156,6 +165,9 @@ export function MePanel() {
                   } else if (key === 'likes') {
                     setDrawerOpen(false);
                     setLikedOpen(true);
+                  } else if (key === 'visitors') {
+                    setDrawerOpen(false);
+                    setVisitorsOpen(true);
                   } else {
                     toast.info(t('me.comingSoon'));
                   }

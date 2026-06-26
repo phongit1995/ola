@@ -5,6 +5,7 @@ import { DEFAULT_AVATAR_COLOR } from '@lib';
 import noteIcon from '@/assets/icons/me/ic_indicate_note.png';
 import boxIcon from '@/assets/icons/me/ic_indicate_box.png';
 import likeIcon from '@/assets/icons/me/ic_section_like.png';
+import visitorIcon from '@/assets/icons/me/ic_action_tab_follower.png';
 import eggIcon from '@/assets/icons/me/ic_indicate_broken_egg.png';
 import androidIcon from '@/assets/icons/me/ic_indicate_android.png';
 import olaIcon from '@/assets/icons/me/ic_indicate_me.png';
@@ -24,6 +25,7 @@ interface DrawerItem {
   key: string;
   icon: string;
   label: string;
+  iconClassName?: string;
 }
 
 export function MeLeftDrawer({ displayName, onClose, onSelect, onOpenAccount }: MeLeftDrawerProps) {
@@ -49,6 +51,12 @@ export function MeLeftDrawer({ displayName, onClose, onSelect, onOpenAccount }: 
     { key: 'diary', icon: noteIcon, label: t('me.drawerDiary') },
     { key: 'marriage', icon: boxIcon, label: t('me.drawerMarriage') },
     { key: 'likes', icon: likeIcon, label: t('me.drawerLikes') },
+    {
+      key: 'visitors',
+      icon: visitorIcon,
+      label: t('me.tabVisitors'),
+      iconClassName: 'brightness-0 opacity-60',
+    },
     { key: 'egg', icon: eggIcon, label: t('me.drawerEgg') },
     { key: 'android', icon: androidIcon, label: '#Android' },
     { key: 'ola', icon: olaIcon, label: '#Ola' },
@@ -99,7 +107,11 @@ export function MeLeftDrawer({ displayName, onClose, onSelect, onOpenAccount }: 
               className="flex h-12 w-full items-center gap-2 px-2 text-left hover:bg-ola-primary-light"
             >
               <span className="flex h-8 w-8 shrink-0 items-center justify-center">
-                <img src={item.icon} alt="" className="h-6 w-6 object-contain" />
+                <img
+                  src={item.icon}
+                  alt=""
+                  className={`h-6 w-6 object-contain ${item.iconClassName ?? ''}`}
+                />
               </span>
               <span className="truncate text-base text-black/87">{item.label}</span>
             </button>
