@@ -13,7 +13,7 @@ interface PenShotListProps {
 }
 
 const ROW_GRID = 'grid items-center gap-1.5';
-const GRID_COLS = '2.7rem minmax(0, 1fr) auto auto 2.5rem';
+const GRID_COLS = '1.9fr 1fr 1.2fr 0.95fr';
 
 function PeopleIcon() {
   return (
@@ -67,57 +67,58 @@ export function PenShotList({
         </button>
       </header>
 
-      <div
-        className={`${ROW_GRID} border-y border-white/10 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-white/45`}
-        style={{ gridTemplateColumns: GRID_COLS }}
-      >
-        <span>{t('penGame.columns.code')}</span>
-        <span>{t('penGame.columns.shooter')}</span>
-        <span className="text-right">{t('penGame.columns.bet')}</span>
-        <span className="text-right">{t('penGame.columns.time')}</span>
-        <span />
-      </div>
+      <div className="pen-scroll min-h-0 flex-1 overflow-x-hidden overflow-y-auto">
+        <div
+          className={`${ROW_GRID} sticky top-0 z-10 border-y border-white/10 bg-[#001c3e] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-white/45`}
+          style={{ gridTemplateColumns: GRID_COLS }}
+        >
+          <span>{t('penGame.columns.shooter')}</span>
+          <span>{t('penGame.columns.bet')}</span>
+          <span className="text-right">{t('penGame.columns.time')}</span>
+          <span />
+        </div>
 
-      <ul className="min-h-0 flex-1 overflow-y-auto">
-        {shots.map((shot) => (
-          <li
-            key={shot.id}
-            className={`${ROW_GRID} border-b border-white/5 px-3 py-1.5`}
-            style={{ gridTemplateColumns: GRID_COLS }}
-          >
-            <span className="text-[11px] font-semibold text-white/85">
-              {shot.code}
-            </span>
-            <span className="flex min-w-0 items-center gap-1.5">
-              <Avatar
-                name={shot.shooter}
-                color={colorForName(shot.shooter)}
-                size={22}
-              />
-              <span className="truncate text-[11px] text-white/80">
-                @{shot.shooter}
+        <ul>
+          {shots.map((shot) => (
+            <li
+              key={shot.id}
+              className={`${ROW_GRID} border-b border-white/5 px-3 py-1.5`}
+              style={{ gridTemplateColumns: GRID_COLS }}
+            >
+              <span className="flex min-w-0 items-center gap-1.5">
+                <Avatar
+                  name={shot.shooter}
+                  color={colorForName(shot.shooter)}
+                  size={22}
+                />
+                <span className="truncate text-sm text-white/85">
+                  @{shot.shooter}
+                </span>
               </span>
-            </span>
-            <span className="flex items-center justify-end gap-1 text-[11px] font-semibold text-[#ffd54f]">
-              {formatKen(shot.bet)}
-              <img
-                src={penAssets.kenIcon}
-                alt=""
-                className="h-3.5 w-3.5 shrink-0"
+              <span className="flex items-center gap-1 text-[11px] font-semibold text-[#ffd54f]">
+                <img
+                  src={penAssets.kenIcon}
+                  alt=""
+                  className="h-3.5 w-3.5 shrink-0"
+                />
+                {formatKen(shot.bet)}
+              </span>
+              <span className="whitespace-nowrap text-right text-[10px] text-white/55">
+                {t('penGame.minutesAgo', { m: shot.minutesAgo })}
+              </span>
+              <PenButton
+                bg={penAssets.selectBtn}
+                icon={penAssets.gloveIcon}
+                iconClassName="h-4 w-4"
+                gapClassName="gap-1"
+                label={t('penGame.select')}
+                onClick={() => onSelect(shot.code)}
+                className="h-7 w-full px-1 text-[10px]"
               />
-            </span>
-            <span className="whitespace-nowrap text-right text-[10px] text-white/55">
-              {t('penGame.minutesAgo', { m: shot.minutesAgo })}
-            </span>
-            <PenButton
-              bg={penAssets.selectBtn}
-              label={t('penGame.select')}
-              onClick={() => onSelect(shot.code)}
-              className="h-7 px-1 text-[10px]"
-            />
-          </li>
-        ))}
-      </ul>
+            </li>
+          ))}
+        </ul>
+      </div>
     </section>
   );
 }

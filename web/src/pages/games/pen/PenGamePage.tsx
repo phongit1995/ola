@@ -107,8 +107,8 @@ export function PenGamePage() {
           </header>
 
           <div
-            className="relative z-10 flex w-full shrink-0 items-end justify-center px-4 pb-2"
-            style={{ aspectRatio: '1024 / 680' }}
+            className="relative z-10 flex w-full shrink-0 items-end justify-end pb-2 pl-4 pr-8"
+            style={{ aspectRatio: '1024 / 650' }}
           >
             {kickId > 0 && (
               <img
@@ -124,8 +124,8 @@ export function PenGamePage() {
               label={t('penGame.shoot')}
               onClick={handleShoot}
               disabled={kicking}
-              className="h-16 w-[44%] max-w-48 text-2xl tracking-wider"
-              iconClassName="h-11 w-11"
+              className="h-16 w-[40%] max-w-44 text-2xl tracking-wider"
+              iconClassName="h-11 w-11 animate-pen-shake"
               gapClassName="gap-3"
             />
           </div>

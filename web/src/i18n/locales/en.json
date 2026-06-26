@@ -874,7 +874,7 @@
   "penGame": {
     "title": "PEN",
     "shoot": "SHOOT",
-    "select": "SELECT",
+    "select": "CATCH",
     "refresh": "REFRESH",
     "history": "HISTORY",
     "topUp": "Top up KEN",
@@ -882,7 +882,6 @@
     "page": "Page {{page}}",
     "minutesAgo": "{{m}} min ago",
     "columns": {
-      "code": "SHOT",
       "shooter": "SHOOTER",
       "bet": "BET",
       "time": "TIME"
@@ -890,7 +889,7 @@
     "help": "How to play: pick a waiting shot, then press SHOOT. Score to double your bet.",
     "goal": "GOAL! 🎉 Your bet is doubled.",
     "saved": "Saved by the keeper! 🧤 Try again.",
-    "selected": "Picked shot {{code}}",
+    "selected": "Picked to catch shot {{code}}",
     "refreshed": "Shot list refreshed.",
     "historyEmpty": "No shot history yet."
   }

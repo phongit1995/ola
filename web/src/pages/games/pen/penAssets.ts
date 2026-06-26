@@ -13,6 +13,7 @@ import helpIconUrl from '@/assets/icons/pen/help.png';
 import plusIconUrl from '@/assets/icons/pen/plus.png';
 import historyIconUrl from '@/assets/icons/pen/history.png';
 import refreshIconUrl from '@/assets/icons/pen/refresh.png';
+import gloveIconUrl from '@/assets/icons/pen/glove.png';
 import kenIconUrl from '@/assets/icons/apps/ken.png';
 
 export const penAssets = {
@@ -31,5 +32,6 @@ export const penAssets = {
   plusIcon: plusIconUrl,
   historyIcon: historyIconUrl,
   refreshIcon: refreshIconUrl,
+  gloveIcon: gloveIconUrl,
   kenIcon: kenIconUrl,
 };
