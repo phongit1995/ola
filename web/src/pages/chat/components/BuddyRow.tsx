@@ -98,6 +98,9 @@ export function BuddyRow({
             <span className="block truncate text-xs text-black/54">{contact.status}</span>
           )}
         </span>
+        {!contact.online && contact.lastActive != null && contact.lastActive !== '' && (
+          <span className="ml-2 shrink-0 text-xs text-black/54">{contact.lastActive}</span>
+        )}
         {contact.statusImage != null && contact.statusImage !== '' && (
           <img
             src={contact.statusImage}
@@ -108,9 +111,6 @@ export function BuddyRow({
             }}
             className="ml-2 h-10 w-10 shrink-0 cursor-pointer rounded border border-black/12 object-cover"
           />
-        )}
-        {!contact.online && contact.lastActive != null && contact.lastActive !== '' && (
-          <span className="ml-2 shrink-0 text-xs text-black/54">{contact.lastActive}</span>
         )}
       </div>
     </li>
