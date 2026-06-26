@@ -65,6 +65,7 @@ export function useEggGame() {
       }
 
       const finalize = () => {
+        useEggGameStore.getState().endSmash();
         applyResult(result);
         if (!result.isWin) {
           toast.info(t('eggGame.miss'));

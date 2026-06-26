@@ -56,8 +56,7 @@ export function EggScene({ textures, hint, play }: EggSceneProps) {
 
   const onBroken = useCallback(() => {
     setBrokenCount((c) => c + 1);
-    endSmash();
-  }, [endSmash]);
+  }, []);
 
   const reloadRef = useRef<Sprite>(null);
   const spinRef = useRef<number | null>(null);
