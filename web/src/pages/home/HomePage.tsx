@@ -1,6 +1,7 @@
 import { Suspense, useEffect, useState } from 'react';
 import { SocketService } from '@services';
 import { BottomTabBar, type TabKey } from '@components/BottomTabBar';
+import { useAuthStore } from '@/store/authStore';
 import { useRoomChatStore } from '@/store/roomChatStore';
 import { useChatStore } from '@/store/chat/chatStore';
 import { ActiveConversationOverlay } from '../chat/ActiveConversationOverlay';
@@ -18,6 +19,7 @@ export function HomePage() {
     state.conversations.reduce((sum, item) => sum + (item.unreadCount ?? 0), 0)
   );
   const ActivePanel = PANELS[tab];
+  const authReady = useAuthStore((state) => state.authReady);
 
   function changeTab(next: TabKey) {
     sessionStorage.setItem(ACTIVE_TAB_KEY, next);
@@ -25,10 +27,14 @@ export function HomePage() {
   }
 
   useEffect(() => {
-    SocketService.connect();
     void useChatStore.getState().loadConversations();
-    return () => SocketService.disconnect();
   }, []);
+
+  useEffect(() => {
+    if (!authReady) return;
+    SocketService.connect();
+    return () => SocketService.disconnect();
+  }, [authReady]);
 
   return (
     <div className="flex h-dvh flex-col bg-white font-sans">
