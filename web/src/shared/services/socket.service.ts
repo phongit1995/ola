@@ -44,6 +44,22 @@ export class SocketService {
     return socket;
   }
 
+  static ready(timeoutMs = 10_000): Promise<Socket> {
+    const socket = this.connect();
+    if (socket.connected) return Promise.resolve(socket);
+    return new Promise<Socket>((resolve, reject) => {
+      const onConnect = () => {
+        clearTimeout(timer);
+        resolve(socket);
+      };
+      const timer = setTimeout(() => {
+        socket.off('connect', onConnect);
+        reject(new Error('socket connect timeout'));
+      }, timeoutMs);
+      socket.once('connect', onConnect);
+    });
+  }
+
   static onSessionReplaced(handler: SessionReplacedHandler): () => void {
     this.sessionReplacedHandler = handler;
     return () => {

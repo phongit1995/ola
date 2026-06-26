@@ -1,25 +1,8 @@
 import { create } from 'zustand';
-import type { Socket } from 'socket.io-client';
-import { useAuthStore } from '@/store/authStore';
-import { activeVipTypeId } from '@lib';
 import { RoomService, SocketService } from '@services';
-import {
-  ROOM_SOCKET_EVENTS,
-  type RoomMember,
-  type RoomMessage,
-  type RoomSocketEnvelope,
-} from '@app-types';
-
-function withVipTypeId(members: RoomMember[]): RoomMember[] {
-  return members.map((member) => ({
-    ...member,
-    vipTypeId: activeVipTypeId(member.vipUsed, member.vipEndTime),
-  }));
-}
-
-function withSenderVip(message: RoomMessage): RoomMessage {
-  return { ...message, senderVipTypeId: activeVipTypeId(message.senderVip, message.senderVipEnd) };
-}
+import { ROOM_SOCKET_EVENTS, type RoomMember, type RoomMessage } from '@app-types';
+import { toRecord, withSenderVip, withVipTypeId } from './roomHelpers';
+import { registerRoomRealtime } from './roomRealtime';
 
 export type RoomChatStatus = 'connecting' | 'joined' | 'error';
 export type RoomTab = 'members' | 'messages';
@@ -32,7 +15,7 @@ export interface ActiveRoom {
 const MESSAGE_PAGE_SIZE = 50;
 const JOIN_ACK_TIMEOUT_MS = 10_000;
 
-interface RoomChatState {
+export interface RoomChatState {
   activeRoom: ActiveRoom | null;
   status: RoomChatStatus;
   activeTab: RoomTab;
@@ -49,33 +32,6 @@ interface RoomChatState {
   sendMessage: (content: string) => Promise<void>;
 }
 
-function toRecord(value: unknown): Record<string, unknown> | null {
-  return typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : null;
-}
-
-let envelopeHandler: ((envelope: RoomSocketEnvelope) => void) | null = null;
-let connectHandler: (() => void) | null = null;
-let connectTimer: ReturnType<typeof setTimeout> | null = null;
-
-function clearConnectTimer() {
-  if (connectTimer != null) {
-    clearTimeout(connectTimer);
-    connectTimer = null;
-  }
-}
-
-function detach(socket: Socket) {
-  if (envelopeHandler) {
-    socket.off(ROOM_SOCKET_EVENTS.message, envelopeHandler);
-    envelopeHandler = null;
-  }
-  if (connectHandler) {
-    socket.off('connect', connectHandler);
-    connectHandler = null;
-  }
-  clearConnectTimer();
-}
-
 const initialState = {
   activeRoom: null as ActiveRoom | null,
   status: 'connecting' as RoomChatStatus,
@@ -88,141 +44,73 @@ const initialState = {
   roomForeground: false,
 };
 
-export const useRoomChatStore = create<RoomChatState>((set, get) => ({
-  ...initialState,
+export const useRoomChatStore = create<RoomChatState>((set, get) => {
+  registerRoomRealtime(set, get);
 
-  open: async (room) => {
-    const roomId = room.id;
-    const socket = SocketService.connect();
-    detach(socket);
-    set({ ...initialState, activeRoom: room });
+  async function joinRoom(roomId: string) {
+    const socket = await SocketService.ready(JOIN_ACK_TIMEOUT_MS);
+    if (get().activeRoom?.id !== roomId) return;
 
-    async function refreshMembers() {
-      try {
-        const result = await RoomService.members(roomId);
-        if (get().activeRoom?.id !== roomId) return;
-        set({ members: withVipTypeId(result.items), memberCount: result.total });
-      } catch {
-        return;
-      }
-    }
-
-    envelopeHandler = (envelope) => {
-      if (get().activeRoom?.id !== roomId || envelope?.type == null) return;
-      switch (envelope.type) {
-        case ROOM_SOCKET_EVENTS.newMessage: {
-          const message = toRecord(toRecord(envelope.data)?.message);
-          if (message?.roomId !== roomId || typeof message.id !== 'string') return;
-          const newMessage = withSenderVip(message as unknown as RoomMessage);
-          const currentUserId = useAuthStore.getState().user?.id;
-          set((state) => {
-            if (state.messages.some((item) => item.id === newMessage.id)) return state;
-            const messages = [...state.messages, newMessage];
-            const isOwn = newMessage.senderId === currentUserId;
-            if (isOwn) return { messages };
-            return {
-              messages,
-              ...(state.roomForeground ? {} : { hasUnread: true }),
-              ...(state.activeTab === 'messages' ? {} : { messagesUnread: true }),
-            };
-          });
-          return;
-        }
-        case ROOM_SOCKET_EVENTS.messageDeleted: {
-          const payload = toRecord(envelope.data);
-          if (payload?.roomId !== roomId || typeof payload.messageId !== 'string') return;
-          const messageId = payload.messageId;
-          set((state) => ({
-            messages: state.messages.filter((item) => item.id !== messageId),
-          }));
-          return;
-        }
-        case ROOM_SOCKET_EVENTS.memberJoined:
-        case ROOM_SOCKET_EVENTS.memberLeft: {
-          const payload = toRecord(envelope.data);
-          if (payload?.roomId !== roomId || typeof payload.memberCount !== 'number') return;
-          set({ memberCount: payload.memberCount });
-          refreshMembers();
-          return;
-        }
-        default:
-          return;
-      }
-    };
-    socket.on(ROOM_SOCKET_EVENTS.message, envelopeHandler);
-
-    async function joinAndLoad() {
-      try {
-        const { ticket } = await RoomService.join(roomId);
-        const ack = toRecord(
-          await socket.timeout(JOIN_ACK_TIMEOUT_MS).emitWithAck(ROOM_SOCKET_EVENTS.join, { roomId, ticket })
-        );
-        if (get().activeRoom?.id !== roomId) return;
-        if (!ack?.ok) {
-          set({ status: 'error' });
-          return;
-        }
-        const [msgs, mem] = await Promise.all([
-          RoomService.messages(roomId, { limit: MESSAGE_PAGE_SIZE }),
-          RoomService.members(roomId),
-        ]);
-        if (get().activeRoom?.id !== roomId) return;
-        set({
-          status: 'joined',
-          messages: [...msgs.items].reverse().map(withSenderVip),
-          members: withVipTypeId(mem.items),
-          memberCount: mem.total,
-        });
-      } catch {
-        if (get().activeRoom?.id === roomId) set({ status: 'error' });
-      }
-    }
-
-    if (socket.connected) {
-      joinAndLoad();
-    } else {
-      connectHandler = () => {
-        connectHandler = null;
-        clearConnectTimer();
-        joinAndLoad();
-      };
-      socket.once('connect', connectHandler);
-      connectTimer = setTimeout(() => {
-        connectTimer = null;
-        if (connectHandler != null) {
-          socket.off('connect', connectHandler);
-          connectHandler = null;
-        }
-        if (get().activeRoom?.id === roomId) set({ status: 'error' });
-      }, JOIN_ACK_TIMEOUT_MS);
-    }
-  },
-
-  close: () => {
-    const room = get().activeRoom;
-    const socket = SocketService.connect();
-    detach(socket);
-    if (room) socket.emit(ROOM_SOCKET_EVENTS.leave, { roomId: room.id });
-    set({ ...initialState });
-  },
-
-  setActiveTab: (tab) =>
-    set(tab === 'messages' ? { activeTab: tab, messagesUnread: false } : { activeTab: tab }),
-
-  setRoomForeground: (foreground) =>
-    set(foreground ? { roomForeground: true, hasUnread: false } : { roomForeground: false }),
-
-  sendMessage: async (content) => {
-    const room = get().activeRoom;
-    if (!room) return;
-    const trimmed = content.trim();
-    if (trimmed === '') return;
-    const message = withSenderVip(await RoomService.sendMessage(room.id, { content: trimmed }));
-    if (get().activeRoom?.id !== room.id) return;
-    set((state) =>
-      state.messages.some((item) => item.id === message.id)
-        ? state
-        : { messages: [...state.messages, message] }
+    const { ticket } = await RoomService.join(roomId);
+    const ack = toRecord(
+      await socket.timeout(JOIN_ACK_TIMEOUT_MS).emitWithAck(ROOM_SOCKET_EVENTS.join, { roomId, ticket })
     );
-  },
-}));
+    if (get().activeRoom?.id !== roomId) return;
+    if (!ack?.ok) {
+      set({ status: 'error' });
+      return;
+    }
+
+    const [msgs, mem] = await Promise.all([
+      RoomService.messages(roomId, { limit: MESSAGE_PAGE_SIZE }),
+      RoomService.members(roomId),
+    ]);
+    if (get().activeRoom?.id !== roomId) return;
+    set({
+      status: 'joined',
+      messages: [...msgs.items].reverse().map(withSenderVip),
+      members: withVipTypeId(mem.items),
+      memberCount: mem.total,
+    });
+  }
+
+  return {
+    ...initialState,
+
+    open: async (room) => {
+      SocketService.connect();
+      set({ ...initialState, activeRoom: room });
+      try {
+        await joinRoom(room.id);
+      } catch {
+        if (get().activeRoom?.id === room.id) set({ status: 'error' });
+      }
+    },
+
+    close: () => {
+      const room = get().activeRoom;
+      if (room) SocketService.connect().emit(ROOM_SOCKET_EVENTS.leave, { roomId: room.id });
+      set({ ...initialState });
+    },
+
+    setActiveTab: (tab) =>
+      set(tab === 'messages' ? { activeTab: tab, messagesUnread: false } : { activeTab: tab }),
+
+    setRoomForeground: (foreground) =>
+      set(foreground ? { roomForeground: true, hasUnread: false } : { roomForeground: false }),
+
+    sendMessage: async (content) => {
+      const room = get().activeRoom;
+      if (!room) return;
+      const trimmed = content.trim();
+      if (trimmed === '') return;
+      const message = withSenderVip(await RoomService.sendMessage(room.id, { content: trimmed }));
+      if (get().activeRoom?.id !== room.id) return;
+      set((state) =>
+        state.messages.some((item) => item.id === message.id)
+          ? state
+          : { messages: [...state.messages, message] }
+      );
+    },
+  };
+});
