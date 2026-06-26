@@ -15,6 +15,23 @@ import historyIconUrl from '@/assets/games/pen/history.png';
 import refreshIconUrl from '@/assets/games/pen/refresh.png';
 import gloveIconUrl from '@/assets/games/pen/glove.png';
 import kenIconUrl from '@/assets/icons/apps/ken.png';
+import shootBgUrl from '@/assets/games/pen/shoot-modal/background-empty.png';
+import shootBallUrl from '@/assets/games/pen/shoot-modal/ball-trail.png';
+import confirmBtnUrl from '@/assets/games/pen/shoot-modal/button-confirm.png';
+import cancelBtnUrl from '@/assets/games/pen/shoot-modal/button-cancel.png';
+import closeBtnUrl from '@/assets/games/pen/shoot-modal/button-close.png';
+import closeIconUrl from '@/assets/games/pen/shoot-modal/close.png';
+import dirSelBgUrl from '@/assets/games/pen/shoot-modal/selected/background-empty.png';
+import dirSelTabUrl from '@/assets/games/pen/shoot-modal/selected/label-tab.png';
+import dirSelArrowLeftUrl from '@/assets/games/pen/shoot-modal/selected/arrow-left.png';
+import dirSelArrowRightUrl from '@/assets/games/pen/shoot-modal/selected/arrow-right.png';
+import dirSelBallUrl from '@/assets/games/pen/shoot-modal/selected/ball.png';
+import dirSelMarkUrl from '@/assets/games/pen/shoot-modal/selected/circle-check.png';
+import dirUnselBgUrl from '@/assets/games/pen/shoot-modal/unselected/background-empty.png';
+import dirUnselTabUrl from '@/assets/games/pen/shoot-modal/unselected/label-tab.png';
+import dirUnselArrowLeftUrl from '@/assets/games/pen/shoot-modal/unselected/arrow-left.png';
+import dirUnselArrowRightUrl from '@/assets/games/pen/shoot-modal/unselected/arrow-right.png';
+import dirUnselMarkUrl from '@/assets/games/pen/shoot-modal/unselected/circle.png';
 
 export const penAssets = {
   scene: sceneUrl,
@@ -34,4 +51,30 @@ export const penAssets = {
   refreshIcon: refreshIconUrl,
   gloveIcon: gloveIconUrl,
   kenIcon: kenIconUrl,
+};
+
+export const penShootAssets = {
+  bg: shootBgUrl,
+  ball: shootBallUrl,
+  panelBall: dirSelBallUrl,
+  confirmBtn: confirmBtnUrl,
+  cancelBtn: cancelBtnUrl,
+  closeBtn: closeBtnUrl,
+  closeIcon: closeIconUrl,
+  dir: {
+    selected: {
+      bg: dirSelBgUrl,
+      tab: dirSelTabUrl,
+      arrowLeft: dirSelArrowLeftUrl,
+      arrowRight: dirSelArrowRightUrl,
+      mark: dirSelMarkUrl,
+    },
+    unselected: {
+      bg: dirUnselBgUrl,
+      tab: dirUnselTabUrl,
+      arrowLeft: dirUnselArrowLeftUrl,
+      arrowRight: dirUnselArrowRightUrl,
+      mark: dirUnselMarkUrl,
+    },
+  },
 };

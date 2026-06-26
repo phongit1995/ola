@@ -7,8 +7,11 @@ import { formatKen, toast } from '@lib';
 import { useAuthStore } from '@/store/authStore';
 import { PenButton } from './PenButton';
 import { PenShotList } from './PenShotList';
+import { PenShootModal } from './PenShootModal';
 import { penAssets } from './penAssets';
 import { PEN_SHOTS, PEN_START_KEN, type PenShot } from './penMock';
+
+const DEFAULT_BET = 1000;
 import './pen.css';
 
 const KICK_RESULT_MS = 600;
@@ -29,6 +32,7 @@ export function PenGamePage() {
   const [shots, setShots] = useState<PenShot[]>(PEN_SHOTS);
   const [kickId, setKickId] = useState(0);
   const [kicking, setKicking] = useState(false);
+  const [shootOpen, setShootOpen] = useState(false);
 
   const handleShoot = () => {
     if (kicking) return;
@@ -123,7 +127,7 @@ export function PenGamePage() {
               bg={penAssets.shootBtn}
               icon={penAssets.ball}
               label={t('penGame.shoot')}
-              onClick={handleShoot}
+              onClick={() => setShootOpen(true)}
               disabled={kicking}
               className="pen-cur-ball h-16 w-[40%] max-w-44 text-2xl tracking-wider"
               iconClassName="h-11 w-11 pen-shake"
@@ -154,6 +158,19 @@ export function PenGamePage() {
               className="h-12 flex-1 text-sm"
             />
           </footer>
+
+          {shootOpen && (
+            <PenShootModal
+              ken={ken}
+              amount={DEFAULT_BET}
+              onTopUp={() => navigate(ROUTES.kenBuy)}
+              onConfirm={() => {
+                setShootOpen(false);
+                handleShoot();
+              }}
+              onClose={() => setShootOpen(false)}
+            />
+          )}
         </div>
       </div>
     </FullScreenOverlay>

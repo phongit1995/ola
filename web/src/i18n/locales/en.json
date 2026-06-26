@@ -891,6 +891,13 @@
     "saved": "Saved by the keeper! 🧤 Try again.",
     "selected": "Picked to catch shot {{code}}",
     "refreshed": "Shot list refreshed.",
-    "historyEmpty": "No shot history yet."
+    "historyEmpty": "No shot history yet.",
+    "close": "Close",
+    "chooseDirection": "Choose shot direction",
+    "directionLeft": "LEFT",
+    "directionRight": "RIGHT",
+    "kenAmount": "KEN amount",
+    "confirm": "CONFIRM",
+    "cancel": "CANCEL"
   }
 }
