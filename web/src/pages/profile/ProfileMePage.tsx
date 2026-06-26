@@ -277,12 +277,12 @@ export function ProfileMePage() {
 
           <div className="pb-4">
             <div className="mt-2 ml-4 flex items-center gap-1 text-xs text-black/54">
-              <img src={genderIcon} alt="" className="h-4 w-4 object-contain" />
+              <img src={genderIcon} alt="" className="h-3.5 w-auto shrink-0 object-contain" />
               {user.gender === 'female' ? t('profile.genderFemale') : t('profile.genderMale')}
             </div>
             {user.dateOfBirth ? (
               <div className="mt-2 ml-4 flex items-center gap-1 text-xs text-black/54">
-                <img src={birthdayIcon} alt="" className="h-4 w-4 object-contain" />
+                <img src={birthdayIcon} alt="" className="h-3.5 w-auto shrink-0 object-contain" />
                 {formatDate(user.dateOfBirth)}
               </div>
             ) : null}
@@ -292,7 +292,7 @@ export function ProfileMePage() {
               </div>
             ) : null}
             <div className="mt-2 ml-4 flex items-center gap-1 text-xs text-black/54">
-              <img src={marriageIcon} alt="" className="h-4 w-4 object-contain" />
+              <img src={marriageIcon} alt="" className="h-3.5 w-auto shrink-0 object-contain" />
               {spouse ? (
                 <span>
                   {t('marriage.marryWithLabel')}{' '}

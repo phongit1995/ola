@@ -32,7 +32,7 @@ function InfoRow({ icon, text, note }: { icon: string; text: React.ReactNode; no
         note ? 'text-ola-primary-darker italic' : 'text-black/54'
       }`}
     >
-      <img src={icon} alt="" className="h-4 w-4 object-contain" />
+      <img src={icon} alt="" className="h-3.5 w-auto shrink-0 object-contain" />
       {text}
     </div>
   );
