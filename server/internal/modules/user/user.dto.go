@@ -52,11 +52,11 @@ type UpdateProfileRequest struct {
 }
 
 type UserSearchResult struct {
-	ID           string `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	Username     string `json:"username" example:"john_doe"`
-	FullName     string `json:"fullName,omitempty" example:"John Doe"`
-	Avatar       string `json:"avatar,omitempty" example:"https://example.com/avatar.jpg"`
-	Bio          string `json:"bio,omitempty" example:"Software developer"`
+	ID           string  `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	Username     string  `json:"username" example:"john_doe"`
+	FullName     string  `json:"fullName,omitempty" example:"John Doe"`
+	Avatar       string  `json:"avatar,omitempty" example:"https://example.com/avatar.jpg"`
+	Bio          string  `json:"bio,omitempty" example:"Software developer"`
 	IsOnline     bool    `json:"isOnline" example:"true"`
 	Relationship string  `json:"relationship,omitempty" example:"friend"`
 	RequestID    string  `json:"requestId,omitempty" example:"550e8400-e29b-41d4-a716-446655440000"`
@@ -146,10 +146,8 @@ type VisitorUser struct {
 }
 
 type VisitorListResponse struct {
-	Users  []VisitorUser `json:"users"`
-	Total  int64         `json:"total" example:"10"`
-	Limit  int           `json:"limit" example:"20"`
-	Offset int           `json:"offset" example:"0"`
+	Users      []VisitorUser `json:"users"`
+	NextCursor string        `json:"nextCursor,omitempty" example:"eyJ0IjoiMjAyNC0wMS0xNVQxMDozMDowMFoifQ"`
 }
 
 type VisitorListSuccessResponse = utils.BaseResponse[VisitorListResponse]

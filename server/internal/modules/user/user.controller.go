@@ -232,8 +232,8 @@ func (ctrl *Controller) GetFollowing(c *gin.Context) (interface{}, error) {
 // @Tags         user
 // @Produce      json
 // @Security     BearerAuth
-// @Param        limit query int false "Limit results" default(20)
-// @Param        offset query int false "Offset" default(0)
+// @Param        limit query int false "Page size" default(20)
+// @Param        cursor query string false "Opaque keyset cursor from previous page's nextCursor"
 // @Success      200  {object}  VisitorListSuccessResponse
 // @Failure      400  {object}  utils.APIError
 // @Failure      401  {object}  utils.APIError
@@ -244,15 +244,10 @@ func (ctrl *Controller) GetMyVisitors(c *gin.Context) (interface{}, error) {
 		return nil, err
 	}
 
-	var q FollowListQuery
-	if err := c.ShouldBindQuery(&q); err != nil {
-		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-	if q.Limit == 0 {
-		q.Limit = 20
-	}
+	limit := utils.ParseLimit(c, 20, 100)
+	cursor := c.Query("cursor")
 
-	result, err := ctrl.service.GetMyVisitors(meID, q.Limit, q.Offset)
+	result, err := ctrl.service.GetMyVisitors(meID, cursor, limit)
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}

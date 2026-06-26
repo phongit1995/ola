@@ -192,27 +192,23 @@ type VisitorRow struct {
 	ViewedAt   time.Time
 }
 
-func (r *Repository) ListVisitors(ownerID uuid.UUID, limit, offset int) ([]VisitorRow, error) {
-	var rows []VisitorRow
-	err := r.db.Table("profile_views AS pv").
+func (r *Repository) ListVisitors(ownerID uuid.UUID, cursorTime *time.Time, cursorID *uuid.UUID, limit int) ([]VisitorRow, bool, error) {
+	q := r.db.Table("profile_views AS pv").
 		Select("u.id, u.username, u.full_name, u.avatar, u.vip_used, u.vip_end_time, pv.viewed_at").
 		Joins("JOIN users u ON u.id = pv.viewer_id AND u.deleted_at IS NULL").
-		Where("pv.owner_id = ?", ownerID).
-		Order("pv.viewed_at DESC").
-		Limit(limit).
-		Offset(offset).
-		Scan(&rows).Error
-	if err != nil {
-		return nil, err
+		Where("pv.owner_id = ?", ownerID)
+	if cursorTime != nil && cursorID != nil {
+		q = q.Where("(pv.viewed_at, pv.viewer_id) < (?, ?)", *cursorTime, *cursorID)
 	}
-	return rows, nil
-}
 
-func (r *Repository) CountVisitors(ownerID uuid.UUID) (int64, error) {
-	var total int64
-	err := r.db.Model(&models.ProfileView{}).Where("owner_id = ?", ownerID).Count(&total).Error
-	if err != nil {
-		return 0, err
+	var rows []VisitorRow
+	if err := q.Order("pv.viewed_at DESC, pv.viewer_id DESC").Limit(limit + 1).Scan(&rows).Error; err != nil {
+		return nil, false, err
 	}
-	return total, nil
+
+	hasMore := len(rows) > limit
+	if hasMore {
+		rows = rows[:limit]
+	}
+	return rows, hasMore, nil
 }

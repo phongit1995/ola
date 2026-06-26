@@ -1086,17 +1086,15 @@ definitions:
     type: object
   internal_modules_marriage.ProposeRequest:
     properties:
-      addresseeUsername:
-        example: john_doe
-        maxLength: 100
-        minLength: 1
+      addresseeId:
+        example: 550e8400-e29b-41d4-a716-446655440000
         type: string
       message:
         example: Em đồng ý làm vợ anh nhé?
         maxLength: 500
         type: string
     required:
-    - addresseeUsername
+    - addresseeId
     type: object
   internal_modules_marriage.ProposeResponse:
     properties:
@@ -1143,6 +1141,118 @@ definitions:
         type: string
     type: object
   internal_modules_marriage.UserBrief:
+    properties:
+      avatar:
+        example: https://example.com/avatar.jpg
+        type: string
+      fullName:
+        example: John Doe
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      username:
+        example: john_doe
+        type: string
+    type: object
+  internal_modules_marriage_diary.CreateDiaryRequest:
+    properties:
+      content:
+        example: "Hôm nay mình đi ăn cùng nhau \U0001F970"
+        maxLength: 2000
+        minLength: 1
+        type: string
+    required:
+    - content
+    type: object
+  internal_modules_marriage_diary.CreateDiarySuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_marriage_diary.DiaryEntryItem'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_marriage_diary.DiaryEntryItem:
+    properties:
+      author:
+        $ref: '#/definitions/internal_modules_marriage_diary.UserBrief'
+      content:
+        example: "Hôm nay mình đi ăn cùng nhau \U0001F970"
+        type: string
+      createdAt:
+        example: "2026-06-24T10:00:00Z"
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+    type: object
+  internal_modules_marriage_diary.DiaryListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_marriage_diary.DiaryEntryItem'
+        type: array
+      limit:
+        example: 20
+        type: integer
+      offset:
+        example: 0
+        type: integer
+      total:
+        example: 1
+        type: integer
+    type: object
+  internal_modules_marriage_diary.DiaryListSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_marriage_diary.DiaryListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_marriage_diary.MessageResponse:
+    properties:
+      message:
+        example: ok
+        type: string
+    type: object
+  internal_modules_marriage_diary.MessageSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_marriage_diary.MessageResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_marriage_diary.UserBrief:
     properties:
       avatar:
         example: https://example.com/avatar.jpg
@@ -1617,6 +1727,227 @@ definitions:
         type: string
     required:
     - content
+    type: object
+  internal_modules_pen.CancelResponse:
+    properties:
+      kenBalance:
+        example: 12345
+        type: integer
+      refunded:
+        example: 1000
+        type: integer
+      shotId:
+        type: string
+      status:
+        example: cancelled
+        type: string
+    type: object
+  internal_modules_pen.CancelSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_pen.CancelResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_pen.CatchRequest:
+    properties:
+      side:
+        enum:
+        - left
+        - right
+        example: right
+        type: string
+    required:
+    - side
+    type: object
+  internal_modules_pen.CatchResult:
+    properties:
+      betAmount:
+        example: 1000
+        type: integer
+      commission:
+        example: 100
+        type: integer
+      keeperSide:
+        example: left
+        type: string
+      kenBalance:
+        example: 12245
+        type: integer
+      payout:
+        example: 1900
+        type: integer
+      pot:
+        example: 2000
+        type: integer
+      result:
+        example: saved
+        type: string
+      shooterSide:
+        example: left
+        type: string
+      shotId:
+        type: string
+      win:
+        example: true
+        type: boolean
+      winnerId:
+        type: string
+    type: object
+  internal_modules_pen.CatchSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_pen.CatchResult'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_pen.CreateShotRequest:
+    properties:
+      betAmount:
+        example: 1000
+        type: integer
+      side:
+        enum:
+        - left
+        - right
+        example: left
+        type: string
+    required:
+    - betAmount
+    - side
+    type: object
+  internal_modules_pen.CreateShotResponse:
+    properties:
+      kenBalance:
+        example: 11345
+        type: integer
+      shot:
+        $ref: '#/definitions/internal_modules_pen.ShotView'
+    type: object
+  internal_modules_pen.CreateShotSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_pen.CreateShotResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_pen.ShotListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_pen.ShotView'
+        type: array
+      limit:
+        example: 20
+        type: integer
+      offset:
+        example: 0
+        type: integer
+      total:
+        example: 1
+        type: integer
+    type: object
+  internal_modules_pen.ShotListSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_pen.ShotListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_pen.ShotView:
+    properties:
+      betAmount:
+        example: 1000
+        type: integer
+      cancelledAt:
+        type: string
+      commission:
+        type: integer
+      createdAt:
+        example: "2026-06-24T10:00:00Z"
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      keeper:
+        $ref: '#/definitions/internal_modules_pen.UserBrief'
+      keeperSide:
+        example: right
+        type: string
+      payout:
+        type: integer
+      pot:
+        type: integer
+      result:
+        example: goal
+        type: string
+      settledAt:
+        type: string
+      shooter:
+        $ref: '#/definitions/internal_modules_pen.UserBrief'
+      shooterSide:
+        example: left
+        type: string
+      status:
+        example: open
+        type: string
+      winnerId:
+        type: string
+    type: object
+  internal_modules_pen.UserBrief:
+    properties:
+      avatar:
+        example: https://example.com/avatar.jpg
+        type: string
+      fullName:
+        example: John Doe
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      username:
+        example: john_doe
+        type: string
     type: object
   internal_modules_relationships.BlockUserRequest:
     properties:
@@ -2334,6 +2665,9 @@ definitions:
     type: object
   internal_modules_user.UserPublicProfileResponse:
     properties:
+      antiCount:
+        example: 0
+        type: integer
       avatar:
         example: https://example.com/avatar.jpg
         type: string
@@ -2427,8 +2761,76 @@ definitions:
       isOnline:
         example: true
         type: boolean
+      relationship:
+        example: friend
+        type: string
+      requestId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
       username:
         example: john_doe
+        type: string
+      vipEndTime:
+        example: "2026-12-31T00:00:00Z"
+        type: string
+      vipUsed:
+        example: gold
+        type: string
+    type: object
+  internal_modules_user.VisitorListResponse:
+    properties:
+      nextCursor:
+        example: eyJ0IjoiMjAyNC0wMS0xNVQxMDozMDowMFoifQ
+        type: string
+      users:
+        items:
+          $ref: '#/definitions/internal_modules_user.VisitorUser'
+        type: array
+    type: object
+  internal_modules_user.VisitorListSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_user.VisitorListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_user.VisitorUser:
+    properties:
+      avatar:
+        example: https://example.com/avatar.jpg
+        type: string
+      fullName:
+        example: John Doe
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      isOnline:
+        example: true
+        type: boolean
+      relationship:
+        $ref: '#/definitions/internal_modules_user.RelationshipInfo'
+      username:
+        example: john_doe
+        type: string
+      viewedAt:
+        example: "2024-01-15T10:30:00Z"
+        type: string
+      vipEndTime:
+        example: "2026-12-31T00:00:00Z"
+        type: string
+      vipUsed:
+        example: gold
         type: string
     type: object
   internal_modules_vip.BuyIconResponse:
@@ -2969,6 +3371,107 @@ definitions:
           $ref: '#/definitions/ola-chat-server_internal_modules_egg.CategoryInput'
         type: array
     type: object
+  ola-chat-server_internal_modules_egg.StatsCategory:
+    properties:
+      categoryType:
+        $ref: '#/definitions/ola-chat-server_internal_models.EggCategoryType'
+      draws:
+        type: integer
+      percent:
+        type: number
+    type: object
+  ola-chat-server_internal_modules_egg.StatsOverview:
+    properties:
+      kenIn:
+        type: integer
+      kenOut:
+        type: integer
+      netKen:
+        type: integer
+      totalDraws:
+        type: integer
+      uniquePlayers:
+        type: integer
+      vipDaysOut:
+        type: integer
+      vipIconsOut:
+        type: integer
+      winDraws:
+        type: integer
+      winRate:
+        type: number
+    type: object
+  ola-chat-server_internal_modules_egg.StatsPack:
+    properties:
+      draws:
+        type: integer
+      kenIn:
+        type: integer
+      kenOut:
+        type: integer
+      packId:
+        type: string
+      packName:
+        type: string
+      rtp:
+        type: number
+    type: object
+  ola-chat-server_internal_modules_egg.StatsPlayer:
+    properties:
+      draws:
+        type: integer
+      kenSpent:
+        type: integer
+      user:
+        $ref: '#/definitions/ola-chat-server_internal_modules_egg.DrawUserView'
+    type: object
+  ola-chat-server_internal_modules_egg.StatsResponse:
+    properties:
+      bucket:
+        type: string
+      byCategory:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_egg.StatsCategory'
+        type: array
+      byPack:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_egg.StatsPack'
+        type: array
+      overview:
+        $ref: '#/definitions/ola-chat-server_internal_modules_egg.StatsOverview'
+      timeseries:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_egg.StatsTimePoint'
+        type: array
+      topPlayers:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_egg.StatsPlayer'
+        type: array
+      topRewards:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_egg.StatsReward'
+        type: array
+    type: object
+  ola-chat-server_internal_modules_egg.StatsReward:
+    properties:
+      categoryType:
+        $ref: '#/definitions/ola-chat-server_internal_models.EggCategoryType'
+      count:
+        type: integer
+      rewardLabel:
+        type: string
+    type: object
+  ola-chat-server_internal_modules_egg.StatsTimePoint:
+    properties:
+      date:
+        type: string
+      draws:
+        type: integer
+      kenIn:
+        type: integer
+      kenOut:
+        type: integer
+    type: object
   ola-chat-server_internal_modules_egg.UpdatePackRequest:
     properties:
       isEnabled:
@@ -2979,6 +3482,203 @@ definitions:
         type: string
       sortOrder:
         type: integer
+    type: object
+  ola-chat-server_internal_modules_pen.AdminShotListSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/ola-chat-server_internal_modules_pen.ShotListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_modules_pen.PenStatsResponse:
+    properties:
+      bucket:
+        type: string
+      byResult:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_pen.StatsResult'
+        type: array
+      byStatus:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_pen.StatsStatus'
+        type: array
+      overview:
+        $ref: '#/definitions/ola-chat-server_internal_modules_pen.StatsOverview'
+      timeseries:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_pen.StatsTimePoint'
+        type: array
+      topPlayers:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_pen.StatsPlayer'
+        type: array
+    type: object
+  ola-chat-server_internal_modules_pen.PenStatsSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/ola-chat-server_internal_modules_pen.PenStatsResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_modules_pen.ShotListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_pen.ShotView'
+        type: array
+      limit:
+        example: 20
+        type: integer
+      offset:
+        example: 0
+        type: integer
+      total:
+        example: 1
+        type: integer
+    type: object
+  ola-chat-server_internal_modules_pen.ShotView:
+    properties:
+      betAmount:
+        example: 1000
+        type: integer
+      cancelledAt:
+        type: string
+      commission:
+        type: integer
+      createdAt:
+        example: "2026-06-24T10:00:00Z"
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      keeper:
+        $ref: '#/definitions/ola-chat-server_internal_modules_pen.UserBrief'
+      keeperSide:
+        example: right
+        type: string
+      payout:
+        type: integer
+      pot:
+        type: integer
+      result:
+        example: goal
+        type: string
+      settledAt:
+        type: string
+      shooter:
+        $ref: '#/definitions/ola-chat-server_internal_modules_pen.UserBrief'
+      shooterSide:
+        example: left
+        type: string
+      status:
+        example: open
+        type: string
+      winnerId:
+        type: string
+    type: object
+  ola-chat-server_internal_modules_pen.StatsOverview:
+    properties:
+      cancelledShots:
+        type: integer
+      goalCount:
+        type: integer
+      houseTake:
+        type: integer
+      keeperWinRate:
+        type: number
+      openShots:
+        type: integer
+      savedCount:
+        type: integer
+      settledShots:
+        type: integer
+      totalPayout:
+        type: integer
+      totalShots:
+        type: integer
+      totalVolume:
+        type: integer
+      uniqueKeepers:
+        type: integer
+      uniqueShooters:
+        type: integer
+    type: object
+  ola-chat-server_internal_modules_pen.StatsPlayer:
+    properties:
+      shots:
+        type: integer
+      staked:
+        type: integer
+      user:
+        $ref: '#/definitions/ola-chat-server_internal_modules_pen.UserBrief'
+      won:
+        type: integer
+    type: object
+  ola-chat-server_internal_modules_pen.StatsResult:
+    properties:
+      count:
+        type: integer
+      percent:
+        type: number
+      result:
+        type: string
+    type: object
+  ola-chat-server_internal_modules_pen.StatsStatus:
+    properties:
+      count:
+        type: integer
+      percent:
+        type: number
+      status:
+        type: string
+    type: object
+  ola-chat-server_internal_modules_pen.StatsTimePoint:
+    properties:
+      date:
+        type: string
+      houseTake:
+        type: integer
+      settled:
+        type: integer
+      shots:
+        type: integer
+      volume:
+        type: integer
+    type: object
+  ola-chat-server_internal_modules_pen.UserBrief:
+    properties:
+      avatar:
+        example: https://example.com/avatar.jpg
+        type: string
+      fullName:
+        example: John Doe
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      username:
+        example: john_doe
+        type: string
     type: object
   ola-chat-server_internal_modules_room.CreateRoomRequest:
     properties:
@@ -3937,6 +4637,22 @@ paths:
         in: query
         name: userId
         type: string
+      - description: Lọc theo loại (nothing|vip_icon|ken|vip_days)
+        in: query
+        name: categoryType
+        type: string
+      - description: Lọc trúng/trượt (win|miss)
+        in: query
+        name: outcome
+        type: string
+      - description: Từ thời gian (RFC3339)
+        in: query
+        name: from
+        type: string
+      - description: Đến thời gian (RFC3339)
+        in: query
+        name: to
+        type: string
       - description: Page size
         in: query
         name: limit
@@ -3954,7 +4670,7 @@ paths:
             $ref: '#/definitions/ola-chat-server_internal_modules_egg.AdminDrawListResponse'
       security:
       - BearerAuth: []
-      summary: Lịch sử đập trứng toàn hệ thống, lọc theo user (admin)
+      summary: Lịch sử đập trứng toàn hệ thống (admin)
       tags:
       - admin-egg
   /admin/egg/packs:
@@ -4080,6 +4796,33 @@ paths:
       security:
       - BearerAuth: []
       summary: Lưu cả cây nhóm + phần thưởng của gói (admin)
+      tags:
+      - admin-egg
+  /admin/egg/stats:
+    get:
+      parameters:
+      - description: Lọc theo gói
+        in: query
+        name: packId
+        type: string
+      - description: Từ thời gian (RFC3339)
+        in: query
+        name: from
+        type: string
+      - description: Đến thời gian (RFC3339)
+        in: query
+        name: to
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_modules_egg.StatsResponse'
+      security:
+      - BearerAuth: []
+      summary: Thống kê đập trứng (admin)
       tags:
       - admin-egg
   /admin/ken/users/{userId}/adjust:
@@ -4318,6 +5061,84 @@ paths:
       summary: Enable/disable a post (admin)
       tags:
       - admin-me
+  /admin/pen/shots:
+    get:
+      parameters:
+      - description: Lọc người sút
+        in: query
+        name: shooterId
+        type: string
+      - description: Lọc người chụp
+        in: query
+        name: keeperId
+        type: string
+      - description: open|settled|cancelled
+        in: query
+        name: status
+        type: string
+      - description: saved|goal
+        in: query
+        name: result
+        type: string
+      - description: Cược tối thiểu
+        in: query
+        name: minBet
+        type: integer
+      - description: Cược tối đa
+        in: query
+        name: maxBet
+        type: integer
+      - description: Từ thời gian (RFC3339)
+        in: query
+        name: from
+        type: string
+      - description: Đến thời gian (RFC3339)
+        in: query
+        name: to
+        type: string
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_modules_pen.AdminShotListSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Danh sách lượt PEN toàn hệ thống (admin)
+      tags:
+      - admin-pen
+  /admin/pen/stats:
+    get:
+      parameters:
+      - description: Từ thời gian (RFC3339)
+        in: query
+        name: from
+        type: string
+      - description: Đến thời gian (RFC3339)
+        in: query
+        name: to
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_modules_pen.PenStatsSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Thống kê PEN (admin)
+      tags:
+      - admin-pen
   /admin/rooms:
     get:
       parameters:
@@ -5466,6 +6287,10 @@ paths:
   /egg/draws:
     get:
       parameters:
+      - description: 'Filter: win or miss'
+        in: query
+        name: outcome
+        type: string
       - description: Page size
         in: query
         name: limit
@@ -5566,6 +6391,91 @@ paths:
       summary: Trạng thái hôn nhân của tôi
       tags:
       - marriage
+  /marriage/diary:
+    get:
+      parameters:
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_marriage_diary.DiaryListSuccessResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Danh sách nhật ký Box - Kết Hôn
+      tags:
+      - marriage-diary
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Diary entry
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_marriage_diary.CreateDiaryRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/internal_modules_marriage_diary.CreateDiarySuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Viết Box - Kết Hôn
+      tags:
+      - marriage-diary
+  /marriage/diary/{id}:
+    delete:
+      parameters:
+      - description: Diary entry ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_marriage_diary.MessageSuccessResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Xoá một bài Box - Kết Hôn
+      tags:
+      - marriage-diary
   /marriage/divorce:
     post:
       produces:
@@ -6051,6 +6961,29 @@ paths:
       summary: Upload post images (max 5)
       tags:
       - me
+  /me/liked:
+    get:
+      parameters:
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_MeListResponse'
+      security:
+      - BearerAuth: []
+      summary: List posts the current user has liked (most recently liked first)
+      tags:
+      - me
   /me/mine:
     get:
       parameters:
@@ -6482,6 +7415,189 @@ paths:
       summary: Send image message
       tags:
       - messages
+  /pen/history:
+    get:
+      parameters:
+      - description: all | shoot | catch (default all)
+        in: query
+        name: role
+        type: string
+      - description: win | lose
+        in: query
+        name: result
+        type: string
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_pen.ShotListSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Lịch sử sút/chụp PEN của tôi
+      tags:
+      - pen
+  /pen/mine:
+    get:
+      parameters:
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_pen.ShotListSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Lượt sút đang chờ của tôi (để huỷ)
+      tags:
+      - pen
+  /pen/shots:
+    get:
+      parameters:
+      - description: Lọc đúng mức cược
+        in: query
+        name: bet
+        type: integer
+      - description: Cược tối thiểu
+        in: query
+        name: minBet
+        type: integer
+      - description: Cược tối đa
+        in: query
+        name: maxBet
+        type: integer
+      - description: newest | bet_desc | bet_asc
+        in: query
+        name: sort
+        type: string
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_pen.ShotListSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Danh sách lượt sút đang chờ (của người khác)
+      tags:
+      - pen
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Shot
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_pen.CreateShotRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/internal_modules_pen.CreateShotSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Tạo lượt sút PEN (đặt cược + chọn hướng)
+      tags:
+      - pen
+  /pen/shots/{id}/cancel:
+    post:
+      parameters:
+      - description: Shot ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_pen.CancelSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Huỷ lượt sút của tôi (hoàn cược)
+      tags:
+      - pen
+  /pen/shots/{id}/catch:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Shot ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Catch
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_pen.CatchRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_pen.CatchSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Chụp một lượt PEN (chọn hướng)
+      tags:
+      - pen
   /relationships/{id}/cancel:
     delete:
       description: Cancel a sent friend request
@@ -7285,6 +8401,40 @@ paths:
       security:
       - BearerAuth: []
       summary: Update user profile
+      tags:
+      - user
+  /user/me/visitors:
+    get:
+      description: Paginated list of users who recently viewed the authenticated user's
+        profile, most recent first
+      parameters:
+      - default: 20
+        description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Opaque keyset cursor from previous page's nextCursor
+        in: query
+        name: cursor
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_user.VisitorListSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: List users who viewed my profile
       tags:
       - user
   /user/presence:

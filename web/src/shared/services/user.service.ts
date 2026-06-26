@@ -10,6 +10,7 @@ import type {
   FollowListResult,
   FollowListParams,
   SearchUsersResult,
+  VisitorListParams,
   VisitorListResult,
 } from '@app-types';
 
@@ -56,7 +57,7 @@ export class UserService {
     return http.get<FollowListResult>(API_PATH.user.following(id), { params });
   }
 
-  static myVisitors(params: FollowListParams = {}): Promise<VisitorListResult> {
+  static myVisitors(params: VisitorListParams = {}): Promise<VisitorListResult> {
     return http.get<VisitorListResult>(API_PATH.user.myVisitors, { params });
   }
 }

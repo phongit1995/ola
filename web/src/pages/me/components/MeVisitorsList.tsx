@@ -37,7 +37,7 @@ function toRow(user: VisitorUser): VisitorRow {
 export function MeVisitorsList({ className, onOpenProfile }: MeVisitorsListProps) {
   const { t, i18n } = useTranslation();
   const [rows, setRows] = useState<VisitorRow[]>([]);
-  const [total, setTotal] = useState(0);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(false);
@@ -50,10 +50,10 @@ export function MeVisitorsList({ className, onOpenProfile }: MeVisitorsListProps
     let active = true;
     (async () => {
       try {
-        const result = await UserService.myVisitors({ limit: VISITOR_PAGE_SIZE, offset: 0 });
+        const result = await UserService.myVisitors({ limit: VISITOR_PAGE_SIZE });
         if (!active) return;
         setRows(result.users.map(toRow));
-        setTotal(result.total);
+        setNextCursor(result.nextCursor);
       } catch (err) {
         console.error('load visitors failed', err);
         if (active) setError(true);
@@ -66,24 +66,24 @@ export function MeVisitorsList({ className, onOpenProfile }: MeVisitorsListProps
     };
   }, []);
 
-  const hasMore = rows.length < total;
+  const hasMore = nextCursor != null;
 
   const loadMore = useCallback(async () => {
-    if (loading || loadingMore) return;
+    if (loading || loadingMore || nextCursor == null) return;
     setLoadingMore(true);
     try {
       const result = await UserService.myVisitors({
         limit: VISITOR_PAGE_SIZE,
-        offset: rows.length,
+        cursor: nextCursor,
       });
       setRows((current) => [...current, ...result.users.map(toRow)]);
-      setTotal(result.total);
+      setNextCursor(result.nextCursor);
     } catch (err) {
       console.error('load more visitors failed', err);
     } finally {
       setLoadingMore(false);
     }
-  }, [rows.length, loading, loadingMore]);
+  }, [nextCursor, loading, loadingMore]);
 
   useEffect(() => {
     const el = sentinelRef.current;

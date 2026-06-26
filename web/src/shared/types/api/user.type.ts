@@ -111,9 +111,12 @@ export interface VisitorUser {
   };
 }
 
+export interface VisitorListParams {
+  limit?: number;
+  cursor?: string;
+}
+
 export interface VisitorListResult {
   users: VisitorUser[];
-  total: number;
-  limit: number;
-  offset: number;
+  nextCursor: string | null;
 }

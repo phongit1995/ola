@@ -2,8 +2,11 @@ package user
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
 	"mime/multipart"
+	"strings"
+
 	"ola-chat-server/internal/apperr"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/relationships"
@@ -339,12 +342,12 @@ func (s *Service) recordProfileView(viewerID, ownerID uuid.UUID) {
 	}()
 }
 
-func (s *Service) GetMyVisitors(meID uuid.UUID, limit, offset int) (*VisitorListResponse, error) {
-	rows, err := s.repo.ListVisitors(meID, limit, offset)
+func (s *Service) GetMyVisitors(meID uuid.UUID, cursor string, limit int) (*VisitorListResponse, error) {
+	cursorTime, cursorID, err := decodeVisitorCursor(cursor)
 	if err != nil {
 		return nil, err
 	}
-	total, err := s.repo.CountVisitors(meID)
+	rows, hasMore, err := s.repo.ListVisitors(meID, cursorTime, cursorID, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -381,12 +384,44 @@ func (s *Service) GetMyVisitors(meID uuid.UUID, limit, offset int) (*VisitorList
 		}
 	}
 
+	var nextCursor string
+	if hasMore && len(rows) > 0 {
+		last := rows[len(rows)-1]
+		nextCursor = encodeVisitorCursor(last.ViewedAt, last.ID)
+	}
+
 	return &VisitorListResponse{
-		Users:  items,
-		Total:  total,
-		Limit:  limit,
-		Offset: offset,
+		Users:      items,
+		NextCursor: nextCursor,
 	}, nil
+}
+
+func encodeVisitorCursor(t time.Time, id uuid.UUID) string {
+	raw := t.UTC().Format(time.RFC3339Nano) + "|" + id.String()
+	return base64.RawURLEncoding.EncodeToString([]byte(raw))
+}
+
+func decodeVisitorCursor(cursor string) (*time.Time, *uuid.UUID, error) {
+	if cursor == "" {
+		return nil, nil, nil
+	}
+	data, err := base64.RawURLEncoding.DecodeString(cursor)
+	if err != nil {
+		return nil, nil, errors.New("invalid cursor")
+	}
+	parts := strings.SplitN(string(data), "|", 2)
+	if len(parts) != 2 {
+		return nil, nil, errors.New("invalid cursor")
+	}
+	t, err := time.Parse(time.RFC3339Nano, parts[0])
+	if err != nil {
+		return nil, nil, errors.New("invalid cursor")
+	}
+	id, err := uuid.Parse(parts[1])
+	if err != nil {
+		return nil, nil, errors.New("invalid cursor")
+	}
+	return &t, &id, nil
 }
 
 func (s *Service) ensureNotBlockedByTarget(callerID, targetID uuid.UUID) error {

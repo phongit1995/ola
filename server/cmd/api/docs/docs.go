@@ -171,12 +171,36 @@ const docTemplate = `{
                 "tags": [
                     "admin-egg"
                 ],
-                "summary": "Lịch sử đập trứng toàn hệ thống, lọc theo user (admin)",
+                "summary": "Lịch sử đập trứng toàn hệ thống (admin)",
                 "parameters": [
                     {
                         "type": "string",
                         "description": "Lọc theo user",
                         "name": "userId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Lọc theo loại (nothing|vip_icon|ken|vip_days)",
+                        "name": "categoryType",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Lọc trúng/trượt (win|miss)",
+                        "name": "outcome",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Từ thời gian (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến thời gian (RFC3339)",
+                        "name": "to",
                         "in": "query"
                     },
                     {
@@ -399,6 +423,50 @@ const docTemplate = `{
                         "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/egg/stats": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-egg"
+                ],
+                "summary": "Thống kê đập trứng (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Lọc theo gói",
+                        "name": "packId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Từ thời gian (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến thời gian (RFC3339)",
+                        "name": "to",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_egg.StatsResponse"
                         }
                     }
                 }
@@ -772,6 +840,130 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_me_MeDetail"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/pen/shots": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-pen"
+                ],
+                "summary": "Danh sách lượt PEN toàn hệ thống (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Lọc người sút",
+                        "name": "shooterId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Lọc người chụp",
+                        "name": "keeperId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "open|settled|cancelled",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "saved|goal",
+                        "name": "result",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Cược tối thiểu",
+                        "name": "minBet",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Cược tối đa",
+                        "name": "maxBet",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Từ thời gian (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến thời gian (RFC3339)",
+                        "name": "to",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_pen.AdminShotListSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/pen/stats": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-pen"
+                ],
+                "summary": "Thống kê PEN (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Từ thời gian (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến thời gian (RFC3339)",
+                        "name": "to",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_pen.PenStatsSuccessResponse"
                         }
                     }
                 }
@@ -2604,6 +2796,12 @@ const docTemplate = `{
                 "summary": "Lịch sử đập trứng của tôi",
                 "parameters": [
                     {
+                        "type": "string",
+                        "description": "Filter: win or miss",
+                        "name": "outcome",
+                        "in": "query"
+                    },
+                    {
                         "type": "integer",
                         "description": "Page size",
                         "name": "limit",
@@ -2751,6 +2949,143 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/internal_modules_marriage.MarriageStatusSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/marriage/diary": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "marriage-diary"
+                ],
+                "summary": "Danh sách nhật ký Box - Kết Hôn",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_marriage_diary.DiaryListSuccessResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "marriage-diary"
+                ],
+                "summary": "Viết Box - Kết Hôn",
+                "parameters": [
+                    {
+                        "description": "Diary entry",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_marriage_diary.CreateDiaryRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_marriage_diary.CreateDiarySuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/marriage/diary/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "marriage-diary"
+                ],
+                "summary": "Xoá một bài Box - Kết Hôn",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Diary entry ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_marriage_diary.MessageSuccessResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     }
                 }
@@ -3106,6 +3441,44 @@ const docTemplate = `{
                         "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_UploadImagesResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/me/liked": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "me"
+                ],
+                "summary": "List posts the current user has liked (most recently liked first)",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_MeListResponse"
                         }
                     }
                 }
@@ -4201,6 +4574,300 @@ const docTemplate = `{
                 }
             }
         },
+        "/pen/history": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "pen"
+                ],
+                "summary": "Lịch sử sút/chụp PEN của tôi",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "all | shoot | catch (default all)",
+                        "name": "role",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "win | lose",
+                        "name": "result",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_pen.ShotListSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/pen/mine": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "pen"
+                ],
+                "summary": "Lượt sút đang chờ của tôi (để huỷ)",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_pen.ShotListSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/pen/shots": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "pen"
+                ],
+                "summary": "Danh sách lượt sút đang chờ (của người khác)",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Lọc đúng mức cược",
+                        "name": "bet",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Cược tối thiểu",
+                        "name": "minBet",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Cược tối đa",
+                        "name": "maxBet",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "newest | bet_desc | bet_asc",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_pen.ShotListSuccessResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "pen"
+                ],
+                "summary": "Tạo lượt sút PEN (đặt cược + chọn hướng)",
+                "parameters": [
+                    {
+                        "description": "Shot",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_pen.CreateShotRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_pen.CreateShotSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/pen/shots/{id}/cancel": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "pen"
+                ],
+                "summary": "Huỷ lượt sút của tôi (hoàn cược)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Shot ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_pen.CancelSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/pen/shots/{id}/catch": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "pen"
+                ],
+                "summary": "Chụp một lượt PEN (chọn hướng)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Shot ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Catch",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_pen.CatchRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_pen.CatchSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/relationships/block": {
             "post": {
                 "security": [
@@ -5142,6 +5809,58 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/me/visitors": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Paginated list of users who recently viewed the authenticated user's profile, most recent first",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "List users who viewed my profile",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Opaque keyset cursor from previous page's nextCursor",
+                        "name": "cursor",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_user.VisitorListSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
@@ -7692,14 +8411,12 @@ const docTemplate = `{
         "internal_modules_marriage.ProposeRequest": {
             "type": "object",
             "required": [
-                "addresseeUsername"
+                "addresseeId"
             ],
             "properties": {
-                "addresseeUsername": {
+                "addresseeId": {
                     "type": "string",
-                    "maxLength": 100,
-                    "minLength": 1,
-                    "example": "john_doe"
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
                 "message": {
                     "type": "string",
@@ -7773,6 +8490,171 @@ const docTemplate = `{
             }
         },
         "internal_modules_marriage.UserBrief": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string",
+                    "example": "https://example.com/avatar.jpg"
+                },
+                "fullName": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "john_doe"
+                }
+            }
+        },
+        "internal_modules_marriage_diary.CreateDiaryRequest": {
+            "type": "object",
+            "required": [
+                "content"
+            ],
+            "properties": {
+                "content": {
+                    "type": "string",
+                    "maxLength": 2000,
+                    "minLength": 1,
+                    "example": "Hôm nay mình đi ăn cùng nhau 🥰"
+                }
+            }
+        },
+        "internal_modules_marriage_diary.CreateDiarySuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_marriage_diary.DiaryEntryItem"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_marriage_diary.DiaryEntryItem": {
+            "type": "object",
+            "properties": {
+                "author": {
+                    "$ref": "#/definitions/internal_modules_marriage_diary.UserBrief"
+                },
+                "content": {
+                    "type": "string",
+                    "example": "Hôm nay mình đi ăn cùng nhau 🥰"
+                },
+                "createdAt": {
+                    "type": "string",
+                    "example": "2026-06-24T10:00:00Z"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                }
+            }
+        },
+        "internal_modules_marriage_diary.DiaryListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_marriage_diary.DiaryEntryItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 20
+                },
+                "offset": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "internal_modules_marriage_diary.DiaryListSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_marriage_diary.DiaryListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_marriage_diary.MessageResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "ok"
+                }
+            }
+        },
+        "internal_modules_marriage_diary.MessageSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_marriage_diary.MessageResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_marriage_diary.UserBrief": {
             "type": "object",
             "properties": {
                 "avatar": {
@@ -8454,6 +9336,327 @@ const docTemplate = `{
                     "maxLength": 4000,
                     "minLength": 1,
                     "example": "Updated message content"
+                }
+            }
+        },
+        "internal_modules_pen.CancelResponse": {
+            "type": "object",
+            "properties": {
+                "kenBalance": {
+                    "type": "integer",
+                    "example": 12345
+                },
+                "refunded": {
+                    "type": "integer",
+                    "example": 1000
+                },
+                "shotId": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "cancelled"
+                }
+            }
+        },
+        "internal_modules_pen.CancelSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_pen.CancelResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_pen.CatchRequest": {
+            "type": "object",
+            "required": [
+                "side"
+            ],
+            "properties": {
+                "side": {
+                    "type": "string",
+                    "enum": [
+                        "left",
+                        "right"
+                    ],
+                    "example": "right"
+                }
+            }
+        },
+        "internal_modules_pen.CatchResult": {
+            "type": "object",
+            "properties": {
+                "betAmount": {
+                    "type": "integer",
+                    "example": 1000
+                },
+                "commission": {
+                    "type": "integer",
+                    "example": 100
+                },
+                "keeperSide": {
+                    "type": "string",
+                    "example": "left"
+                },
+                "kenBalance": {
+                    "type": "integer",
+                    "example": 12245
+                },
+                "payout": {
+                    "type": "integer",
+                    "example": 1900
+                },
+                "pot": {
+                    "type": "integer",
+                    "example": 2000
+                },
+                "result": {
+                    "type": "string",
+                    "example": "saved"
+                },
+                "shooterSide": {
+                    "type": "string",
+                    "example": "left"
+                },
+                "shotId": {
+                    "type": "string"
+                },
+                "win": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "winnerId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_pen.CatchSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_pen.CatchResult"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_pen.CreateShotRequest": {
+            "type": "object",
+            "required": [
+                "betAmount",
+                "side"
+            ],
+            "properties": {
+                "betAmount": {
+                    "type": "integer",
+                    "example": 1000
+                },
+                "side": {
+                    "type": "string",
+                    "enum": [
+                        "left",
+                        "right"
+                    ],
+                    "example": "left"
+                }
+            }
+        },
+        "internal_modules_pen.CreateShotResponse": {
+            "type": "object",
+            "properties": {
+                "kenBalance": {
+                    "type": "integer",
+                    "example": 11345
+                },
+                "shot": {
+                    "$ref": "#/definitions/internal_modules_pen.ShotView"
+                }
+            }
+        },
+        "internal_modules_pen.CreateShotSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_pen.CreateShotResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_pen.ShotListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_pen.ShotView"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 20
+                },
+                "offset": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "internal_modules_pen.ShotListSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_pen.ShotListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_pen.ShotView": {
+            "type": "object",
+            "properties": {
+                "betAmount": {
+                    "type": "integer",
+                    "example": 1000
+                },
+                "cancelledAt": {
+                    "type": "string"
+                },
+                "commission": {
+                    "type": "integer"
+                },
+                "createdAt": {
+                    "type": "string",
+                    "example": "2026-06-24T10:00:00Z"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "keeper": {
+                    "$ref": "#/definitions/internal_modules_pen.UserBrief"
+                },
+                "keeperSide": {
+                    "type": "string",
+                    "example": "right"
+                },
+                "payout": {
+                    "type": "integer"
+                },
+                "pot": {
+                    "type": "integer"
+                },
+                "result": {
+                    "type": "string",
+                    "example": "goal"
+                },
+                "settledAt": {
+                    "type": "string"
+                },
+                "shooter": {
+                    "$ref": "#/definitions/internal_modules_pen.UserBrief"
+                },
+                "shooterSide": {
+                    "type": "string",
+                    "example": "left"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "open"
+                },
+                "winnerId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_pen.UserBrief": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string",
+                    "example": "https://example.com/avatar.jpg"
+                },
+                "fullName": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "john_doe"
                 }
             }
         },
@@ -9503,6 +10706,10 @@ const docTemplate = `{
         "internal_modules_user.UserPublicProfileResponse": {
             "type": "object",
             "properties": {
+                "antiCount": {
+                    "type": "integer",
+                    "example": 0
+                },
                 "avatar": {
                     "type": "string",
                     "example": "https://example.com/avatar.jpg"
@@ -9632,9 +10839,106 @@ const docTemplate = `{
                     "type": "boolean",
                     "example": true
                 },
+                "relationship": {
+                    "type": "string",
+                    "example": "friend"
+                },
+                "requestId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
                 "username": {
                     "type": "string",
                     "example": "john_doe"
+                },
+                "vipEndTime": {
+                    "type": "string",
+                    "example": "2026-12-31T00:00:00Z"
+                },
+                "vipUsed": {
+                    "type": "string",
+                    "example": "gold"
+                }
+            }
+        },
+        "internal_modules_user.VisitorListResponse": {
+            "type": "object",
+            "properties": {
+                "nextCursor": {
+                    "type": "string",
+                    "example": "eyJ0IjoiMjAyNC0wMS0xNVQxMDozMDowMFoifQ"
+                },
+                "users": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_user.VisitorUser"
+                    }
+                }
+            }
+        },
+        "internal_modules_user.VisitorListSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_user.VisitorListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_user.VisitorUser": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string",
+                    "example": "https://example.com/avatar.jpg"
+                },
+                "fullName": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "isOnline": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "relationship": {
+                    "$ref": "#/definitions/internal_modules_user.RelationshipInfo"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "john_doe"
+                },
+                "viewedAt": {
+                    "type": "string",
+                    "example": "2024-01-15T10:30:00Z"
+                },
+                "vipEndTime": {
+                    "type": "string",
+                    "example": "2026-12-31T00:00:00Z"
+                },
+                "vipUsed": {
+                    "type": "string",
+                    "example": "gold"
                 }
             }
         },
@@ -10430,6 +11734,161 @@ const docTemplate = `{
                 }
             }
         },
+        "ola-chat-server_internal_modules_egg.StatsCategory": {
+            "type": "object",
+            "properties": {
+                "categoryType": {
+                    "$ref": "#/definitions/ola-chat-server_internal_models.EggCategoryType"
+                },
+                "draws": {
+                    "type": "integer"
+                },
+                "percent": {
+                    "type": "number"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_egg.StatsOverview": {
+            "type": "object",
+            "properties": {
+                "kenIn": {
+                    "type": "integer"
+                },
+                "kenOut": {
+                    "type": "integer"
+                },
+                "netKen": {
+                    "type": "integer"
+                },
+                "totalDraws": {
+                    "type": "integer"
+                },
+                "uniquePlayers": {
+                    "type": "integer"
+                },
+                "vipDaysOut": {
+                    "type": "integer"
+                },
+                "vipIconsOut": {
+                    "type": "integer"
+                },
+                "winDraws": {
+                    "type": "integer"
+                },
+                "winRate": {
+                    "type": "number"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_egg.StatsPack": {
+            "type": "object",
+            "properties": {
+                "draws": {
+                    "type": "integer"
+                },
+                "kenIn": {
+                    "type": "integer"
+                },
+                "kenOut": {
+                    "type": "integer"
+                },
+                "packId": {
+                    "type": "string"
+                },
+                "packName": {
+                    "type": "string"
+                },
+                "rtp": {
+                    "type": "number"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_egg.StatsPlayer": {
+            "type": "object",
+            "properties": {
+                "draws": {
+                    "type": "integer"
+                },
+                "kenSpent": {
+                    "type": "integer"
+                },
+                "user": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_egg.DrawUserView"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_egg.StatsResponse": {
+            "type": "object",
+            "properties": {
+                "bucket": {
+                    "type": "string"
+                },
+                "byCategory": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_egg.StatsCategory"
+                    }
+                },
+                "byPack": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_egg.StatsPack"
+                    }
+                },
+                "overview": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_egg.StatsOverview"
+                },
+                "timeseries": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_egg.StatsTimePoint"
+                    }
+                },
+                "topPlayers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_egg.StatsPlayer"
+                    }
+                },
+                "topRewards": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_egg.StatsReward"
+                    }
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_egg.StatsReward": {
+            "type": "object",
+            "properties": {
+                "categoryType": {
+                    "$ref": "#/definitions/ola-chat-server_internal_models.EggCategoryType"
+                },
+                "count": {
+                    "type": "integer"
+                },
+                "rewardLabel": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_egg.StatsTimePoint": {
+            "type": "object",
+            "properties": {
+                "date": {
+                    "type": "string"
+                },
+                "draws": {
+                    "type": "integer"
+                },
+                "kenIn": {
+                    "type": "integer"
+                },
+                "kenOut": {
+                    "type": "integer"
+                }
+            }
+        },
         "ola-chat-server_internal_modules_egg.UpdatePackRequest": {
             "type": "object",
             "properties": {
@@ -10444,6 +11903,300 @@ const docTemplate = `{
                 },
                 "sortOrder": {
                     "type": "integer"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_pen.AdminShotListSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_pen.ShotListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_pen.PenStatsResponse": {
+            "type": "object",
+            "properties": {
+                "bucket": {
+                    "type": "string"
+                },
+                "byResult": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_pen.StatsResult"
+                    }
+                },
+                "byStatus": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_pen.StatsStatus"
+                    }
+                },
+                "overview": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_pen.StatsOverview"
+                },
+                "timeseries": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_pen.StatsTimePoint"
+                    }
+                },
+                "topPlayers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_pen.StatsPlayer"
+                    }
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_pen.PenStatsSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_pen.PenStatsResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_pen.ShotListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_pen.ShotView"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 20
+                },
+                "offset": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_pen.ShotView": {
+            "type": "object",
+            "properties": {
+                "betAmount": {
+                    "type": "integer",
+                    "example": 1000
+                },
+                "cancelledAt": {
+                    "type": "string"
+                },
+                "commission": {
+                    "type": "integer"
+                },
+                "createdAt": {
+                    "type": "string",
+                    "example": "2026-06-24T10:00:00Z"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "keeper": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_pen.UserBrief"
+                },
+                "keeperSide": {
+                    "type": "string",
+                    "example": "right"
+                },
+                "payout": {
+                    "type": "integer"
+                },
+                "pot": {
+                    "type": "integer"
+                },
+                "result": {
+                    "type": "string",
+                    "example": "goal"
+                },
+                "settledAt": {
+                    "type": "string"
+                },
+                "shooter": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_pen.UserBrief"
+                },
+                "shooterSide": {
+                    "type": "string",
+                    "example": "left"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "open"
+                },
+                "winnerId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_pen.StatsOverview": {
+            "type": "object",
+            "properties": {
+                "cancelledShots": {
+                    "type": "integer"
+                },
+                "goalCount": {
+                    "type": "integer"
+                },
+                "houseTake": {
+                    "type": "integer"
+                },
+                "keeperWinRate": {
+                    "type": "number"
+                },
+                "openShots": {
+                    "type": "integer"
+                },
+                "savedCount": {
+                    "type": "integer"
+                },
+                "settledShots": {
+                    "type": "integer"
+                },
+                "totalPayout": {
+                    "type": "integer"
+                },
+                "totalShots": {
+                    "type": "integer"
+                },
+                "totalVolume": {
+                    "type": "integer"
+                },
+                "uniqueKeepers": {
+                    "type": "integer"
+                },
+                "uniqueShooters": {
+                    "type": "integer"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_pen.StatsPlayer": {
+            "type": "object",
+            "properties": {
+                "shots": {
+                    "type": "integer"
+                },
+                "staked": {
+                    "type": "integer"
+                },
+                "user": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_pen.UserBrief"
+                },
+                "won": {
+                    "type": "integer"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_pen.StatsResult": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "percent": {
+                    "type": "number"
+                },
+                "result": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_pen.StatsStatus": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "percent": {
+                    "type": "number"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_pen.StatsTimePoint": {
+            "type": "object",
+            "properties": {
+                "date": {
+                    "type": "string"
+                },
+                "houseTake": {
+                    "type": "integer"
+                },
+                "settled": {
+                    "type": "integer"
+                },
+                "shots": {
+                    "type": "integer"
+                },
+                "volume": {
+                    "type": "integer"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_pen.UserBrief": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string",
+                    "example": "https://example.com/avatar.jpg"
+                },
+                "fullName": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "john_doe"
                 }
             }
         },
