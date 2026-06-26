@@ -16,7 +16,7 @@ import iconMall from '@/assets/icons/apps/mall.png';
 import iconNearby from '@/assets/icons/apps/nearby.png';
 import iconSetting from '@/assets/icons/apps/setting.png';
 import iconEgg from '@/assets/icons/apps/egg.png';
-import iconPen from '@/assets/icons/pen/pen_icon.png';
+import iconPen from '@/assets/game/pen/pen_icon.png';
 import type { NotificationType, NotificationItem } from './NotificationsPage';
 import type { Venue } from './NearbyPlacesPage';
 import type { Album } from './MediaStorePage';
