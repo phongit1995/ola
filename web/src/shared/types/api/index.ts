@@ -7,3 +7,4 @@ export * from './user.type';
 export * from './relationship.type';
 export * from './vip.type';
 export * from './egg.type';
+export * from './pen.type';

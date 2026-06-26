@@ -94,6 +94,13 @@ export const API_PATH = {
     diary: '/marriage/diary',
     diaryDetail: (id: string) => `/marriage/diary/${id}`,
   },
+  pen: {
+    shots: '/pen/shots',
+    mine: '/pen/mine',
+    history: '/pen/history',
+    catch: (id: string) => `/pen/shots/${id}/catch`,
+    cancel: (id: string) => `/pen/shots/${id}/cancel`,
+  },
   messages: {
     base: '/messages',
     direct: '/messages/direct',
