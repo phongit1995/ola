@@ -74,6 +74,7 @@ export function ChatConversationView({
   const unblockPeer = useChatStore((s) => s.unblockPeer);
   const addPeerFriend = useChatStore((s) => s.addPeerFriend);
   const peerProfile = useChatStore((s) => s.peerProfile);
+  const peerCardRoll = useChatStore((s) => s.peerCardRoll);
   const notifyTyping = useChatStore((s) => s.notifyTyping);
   const loadMoreMessages = useChatStore((s) => s.loadMoreMessages);
   const currentConversationId = useChatStore((s) => s.currentConversationId);
@@ -119,12 +120,13 @@ export function ChatConversationView({
   }
   const peerCardHidden = peerId !== '' && cardHiddenFor === peerId;
 
+  const sizeAllowsCard = (!hasMore && messages.length < 10) || peerCardRoll;
+
   const showPeerCard =
     !blocked &&
     peerProfile != null &&
     !peerCardHidden &&
-    !hasMore &&
-    messages.length < 10 &&
+    sizeAllowsCard &&
     (blockStatus === 'none' ||
       blockStatus === 'pending_outgoing' ||
       blockStatus === 'pending_incoming');

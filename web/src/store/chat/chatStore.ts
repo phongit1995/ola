@@ -19,6 +19,7 @@ import { clearTypingTimers, registerChatRealtime } from './chatRealtime';
 
 const MESSAGE_PAGE_SIZE = 50;
 const TYPING_THROTTLE = 2000;
+const PEER_CARD_LONG_CHAT_SHOW_RATE = 0.3;
 
 export interface TypingUser {
   userId: string;
@@ -37,6 +38,7 @@ export interface ChatState {
   draftRecipient: DraftRecipient | null;
   peerRelationship: RelationshipInfo | null;
   peerProfile: PublicProfile | null;
+  peerCardRoll: boolean;
   messages: Message[];
   hasMore: boolean;
   loadingConversations: boolean;
@@ -74,6 +76,7 @@ const initialState = {
   draftRecipient: null as DraftRecipient | null,
   peerRelationship: null as RelationshipInfo | null,
   peerProfile: null as PublicProfile | null,
+  peerCardRoll: false,
   messages: [] as Message[],
   hasMore: false,
   loadingConversations: false,
@@ -113,6 +116,7 @@ export const useChatStore = create<ChatState>((set, get) => {
         draftRecipient: null,
         peerRelationship: null,
         peerProfile: null,
+        peerCardRoll: false,
         messages: [],
         typingUsers: [],
         hasMore: false,
@@ -123,7 +127,11 @@ export const useChatStore = create<ChatState>((set, get) => {
         UserService.publicProfile(otherUserId)
           .then((profile) => {
             if (get().currentConversationId === conversationId) {
-              set({ peerRelationship: profile.relationship ?? null, peerProfile: profile });
+              set({
+                peerRelationship: profile.relationship ?? null,
+                peerProfile: profile,
+                peerCardRoll: Math.random() < PEER_CARD_LONG_CHAT_SHOW_RATE,
+              });
             }
           })
           .catch(() => {});
@@ -160,6 +168,7 @@ export const useChatStore = create<ChatState>((set, get) => {
           hasMore: false,
           peerRelationship: null,
           peerProfile: null,
+          peerCardRoll: false,
           draftRecipient: { id: recipientId, name: existing?.name ?? '', avatar: existing?.avatar },
         });
         UserService.publicProfile(recipientId)
@@ -168,6 +177,7 @@ export const useChatStore = create<ChatState>((set, get) => {
             set((state) => ({
               peerRelationship: profile.relationship ?? null,
               peerProfile: profile,
+              peerCardRoll: Math.random() < PEER_CARD_LONG_CHAT_SHOW_RATE,
               draftRecipient:
                 state.draftRecipient != null
                   ? {
@@ -191,6 +201,7 @@ export const useChatStore = create<ChatState>((set, get) => {
         draftRecipient: null,
         peerRelationship: null,
         peerProfile: null,
+        peerCardRoll: false,
         messages: [],
         typingUsers: [],
       }),
