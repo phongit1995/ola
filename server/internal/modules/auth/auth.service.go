@@ -21,7 +21,7 @@ import (
 	"gorm.io/gorm"
 )
 
-var usernameRegex = regexp.MustCompile(`^[a-z0-9_-]+$`)
+var usernameRegex = regexp.MustCompile(`^[a-z0-9][a-z0-9._-]*[a-z0-9]$`)
 
 type Service struct {
 	repo           *Repository
@@ -119,7 +119,7 @@ func (s *Service) RefreshToken(refreshTokenStr, clientIP, userAgent string) (*Re
 func (s *Service) Register(req *RegisterRequest) (*RegisterResponse, error) {
 	req.Username = strings.ToLower(strings.TrimSpace(req.Username))
 	if !usernameRegex.MatchString(req.Username) {
-		return nil, errors.New("username may only contain lowercase letters, numbers, underscore (_) and hyphen (-)")
+		return nil, errors.New("username may only contain lowercase letters, numbers, dot (.), hyphen (-) and underscore (_), and must start and end with a letter or number")
 	}
 
 	s.logger.Debugw("Checking username availability",

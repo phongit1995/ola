@@ -9,7 +9,7 @@ import { SubmitButton } from '@components/form/SubmitButton';
 import { LanguageSwitcher } from '@components/LanguageSwitcher';
 import { Spinner } from '@components';
 import { AuthService } from '@services';
-import { ApiError, USERNAME_MAX, USERNAME_PATTERN, decodeSecret, toast } from '@lib';
+import { ApiError, USERNAME_MAX, decodeSecret, toast } from '@lib';
 import { useAuthStore } from '@/store/authStore';
 import { useSavedAccountsStore, type SavedAccount } from './savedAccountsStore';
 import { SavedAccountGallery } from './SavedAccountGallery';
@@ -72,9 +72,10 @@ export function LoginPage() {
   async function onSubmit(data: LoginForm) {
     setLoading(true);
     setError(null);
+    const username = data.username.trim().toLowerCase();
     try {
-      const { user } = await AuthService.login(data);
-      saveAccount(data.username, data.password);
+      const { user } = await AuthService.login({ username, password: data.password });
+      saveAccount(username, data.password);
       setUser(user);
       navigate(ROUTES.home);
     } catch (err) {
@@ -118,7 +119,6 @@ export function LoginPage() {
             required: t('login.errUsernameRequired'),
             minLength: { value: USERNAME_MIN, message: t('login.errUsernameLength') },
             maxLength: { value: USERNAME_MAX, message: t('login.errUsernameLength') },
-            pattern: { value: USERNAME_PATTERN, message: t('login.errUsernameFormat') },
           })}
           placeholder={t('login.username')}
           type="text"
