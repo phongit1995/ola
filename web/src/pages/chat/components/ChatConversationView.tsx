@@ -72,7 +72,7 @@ export function ChatConversationView({
   const editMessage = useChatStore((s) => s.editMessage);
   const blockPeer = useChatStore((s) => s.blockPeer);
   const unblockPeer = useChatStore((s) => s.unblockPeer);
-  const addPeerFriend = useChatStore((s) => s.addPeerFriend);
+  const friendAction = useChatStore((s) => s.friendAction);
   const peerProfile = useChatStore((s) => s.peerProfile);
   const peerCardRoll = useChatStore((s) => s.peerCardRoll);
   const notifyTyping = useChatStore((s) => s.notifyTyping);
@@ -269,25 +269,33 @@ export function ChatConversationView({
     toast[ok ? 'success' : 'error'](ok ? t('chat.unblockDone', { name }) : t('chat.actionError'));
   }
 
-  async function handleMakeFriend() {
+  async function handleFriendAction() {
     if (blocked) {
       toast.info(t('chat.makeFriendBlocked'));
       return;
     }
-    if (blockStatus === 'friend') {
-      toast.info(t('chat.alreadyFriend'));
+    const result = await friendAction();
+    if (result === 'error') {
+      toast.error(t('chat.actionError'));
       return;
     }
-    if (blockStatus === 'pending_outgoing' || blockStatus === 'pending_incoming') {
-      toast.info(t('chat.friendRequestPending'));
-      return;
-    }
-    const ok = await addPeerFriend();
-    toast[ok ? 'success' : 'error'](ok ? t('chat.friendRequestSent') : t('chat.actionError'));
+    if (result === 'request') toast.success(t('chat.friendRequestSent'));
+    else if (result === 'cancel') toast.success(t('chat.requestCancelled'));
+    else if (result === 'accept') toast.success(t('chat.friendAccepted'));
+    else if (result === 'unfriend') toast.success(t('chat.unfriendDone'));
   }
 
+  const friendLabel =
+    blockStatus === 'pending_outgoing'
+      ? t('chat.cancelRequest')
+      : blockStatus === 'pending_incoming'
+        ? t('chat.acceptRequest')
+        : blockStatus === 'friend'
+          ? t('chat.unfriend')
+          : t('chat.menuMakeFriend');
+
   const menuOptions: ListOption[] = [
-    { key: 'make-friend', label: t('chat.menuMakeFriend'), onSelect: () => void handleMakeFriend() },
+    { key: 'make-friend', label: friendLabel, onSelect: () => void handleFriendAction() },
     {
       key: 'view-me',
       label: t('chat.menuViewMe'),
@@ -368,7 +376,8 @@ export function ChatConversationView({
                 avatar={avatar}
                 onHide={handleHidePeerCard}
                 onBlock={() => setBlockOpen(true)}
-                onAddFriend={() => void handleMakeFriend()}
+                friendLabel={friendLabel}
+                onFriendAction={() => void handleFriendAction()}
                 onShowAvatar={showPeerAvatar}
               />
             )}

@@ -32,6 +32,8 @@ export interface DraftRecipient {
   avatar?: string;
 }
 
+export type FriendActionResult = 'request' | 'cancel' | 'accept' | 'unfriend' | 'none' | 'error';
+
 export interface ChatState {
   conversations: Conversation[];
   currentConversationId: string | null;
@@ -62,7 +64,7 @@ export interface ChatState {
   editMessage: (messageId: string, content: string) => Promise<void>;
   blockPeer: () => Promise<boolean>;
   unblockPeer: () => Promise<boolean>;
-  addPeerFriend: () => Promise<boolean>;
+  friendAction: () => Promise<FriendActionResult>;
   notifyTyping: () => void;
   markRead: (conversationId: string) => Promise<void>;
   reset: () => void;
@@ -454,23 +456,40 @@ export const useChatStore = create<ChatState>((set, get) => {
       }
     },
 
-    addPeerFriend: async () => {
-      const userId = peerUserId();
-      if (userId === '') return false;
+    friendAction: async () => {
+      const current = get().peerRelationship;
+      const status = current?.status ?? 'none';
+      const requestId = current?.requestId ?? '';
+      const base = {
+        isFollowing: current?.isFollowing ?? false,
+        followsMe: current?.followsMe ?? false,
+      };
       try {
-        const relationship = await RelationshipService.sendRequest(userId);
-        const current = get().peerRelationship;
-        set({
-          peerRelationship: {
-            status: 'pending_outgoing',
-            requestId: relationship.id,
-            isFollowing: current?.isFollowing ?? false,
-            followsMe: current?.followsMe ?? false,
-          },
-        });
-        return true;
+        if (status === 'none') {
+          const userId = peerUserId();
+          if (userId === '') return 'none';
+          const relationship = await RelationshipService.sendRequest(userId);
+          set({ peerRelationship: { ...base, status: 'pending_outgoing', requestId: relationship.id } });
+          return 'request';
+        }
+        if (status === 'pending_outgoing' && requestId !== '') {
+          await RelationshipService.cancel(requestId);
+          set({ peerRelationship: { ...base, status: 'none', requestId: undefined } });
+          return 'cancel';
+        }
+        if (status === 'pending_incoming' && requestId !== '') {
+          await RelationshipService.respond(requestId, 'accept');
+          set({ peerRelationship: { ...base, status: 'friend', requestId } });
+          return 'accept';
+        }
+        if (status === 'friend' && requestId !== '') {
+          await RelationshipService.unfriend(requestId);
+          set({ peerRelationship: { ...base, status: 'none', requestId: undefined } });
+          return 'unfriend';
+        }
+        return 'none';
       } catch {
-        return false;
+        return 'error';
       }
     },
 

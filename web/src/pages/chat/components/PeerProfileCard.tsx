@@ -13,7 +13,8 @@ interface PeerProfileCardProps {
   avatar?: string;
   onHide: () => void;
   onBlock: () => void;
-  onAddFriend: () => void;
+  friendLabel: string;
+  onFriendAction: () => void;
   onShowAvatar?: () => void;
 }
 
@@ -24,7 +25,8 @@ export function PeerProfileCard({
   avatar,
   onHide,
   onBlock,
-  onAddFriend,
+  friendLabel,
+  onFriendAction,
   onShowAvatar,
 }: PeerProfileCardProps) {
   const { t } = useTranslation();
@@ -106,10 +108,10 @@ export function PeerProfileCard({
         <div className="flex-1" />
         <button
           type="button"
-          onClick={onAddFriend}
+          onClick={onFriendAction}
           className="rounded-sm border border-ola-primary-dark bg-ola-button px-3 py-1 text-sm text-white"
         >
-          + {t('chat.menuMakeFriend')}
+          {friendLabel}
         </button>
       </div>
     </div>
