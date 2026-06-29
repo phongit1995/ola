@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Spinner, VipIcon } from '@components';
+import { Spinner, VipBadge } from '@components';
 import { createTimeFormatter, formatKen } from '@lib';
 import type { PenShotView } from '@app-types';
 import { PenButton } from './PenButton';
@@ -100,7 +100,7 @@ export function PenShotList({
                   style={{ gridTemplateColumns: GRID_COLS }}
                 >
                   <span className="flex min-w-0 items-center gap-1.5">
-                    <VipIcon typeId={shot.shooter?.vipTypeId} className="h-6 w-6" />
+                    <VipBadge typeId={shot.shooter?.vipTypeId} />
                     <span className="truncate text-sm text-white/85">@{username}</span>
                   </span>
                   <span className="flex items-center gap-1 text-[11px] font-semibold text-[#ffd54f]">

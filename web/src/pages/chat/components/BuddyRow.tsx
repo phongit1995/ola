@@ -1,8 +1,6 @@
 import { useRef } from 'react';
-import { Avatar, PresenceBadge, UserName, VipIcon } from '@components';
-import { vipIconUrl } from '@lib';
+import { Avatar, PresenceBadge, UserName, VipBadge } from '@components';
 import type { Contact } from '../types';
-import vipIcon from '@/assets/icons/apps/vip.png';
 import birthdayIcon from '@/assets/icons/chat/ic_buddy_birthday.png';
 import { DEVICE_ICONS } from '../constants';
 
@@ -26,7 +24,6 @@ export function BuddyRow({
   const timer = useRef<number | undefined>(undefined);
   const longPressed = useRef(false);
   const showVip = contact.online && contact.vip;
-  const vipSrc = contact.vipTypeId != null ? vipIconUrl(contact.vipTypeId) : vipIcon;
   const badge =
     contact.group === 'birthday'
       ? birthdayIcon
@@ -91,7 +88,7 @@ export function BuddyRow({
         </button>
         <span className="ml-4 min-w-0 flex-1">
           <button type="button" onClick={openProfile} className="flex items-center gap-1 text-left">
-            {showVip && <VipIcon src={vipSrc} className="h-6 w-6" />}
+            {showVip && <VipBadge typeId={contact.vipTypeId} />}
             <UserName name={contact.name} fullName={contact.fullName} />
           </button>
           {contact.status != null && contact.status !== '' && (
