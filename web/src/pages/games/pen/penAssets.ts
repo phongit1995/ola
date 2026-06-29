@@ -32,6 +32,17 @@ import dirUnselTabUrl from '@/assets/games/pen/shoot-modal/unselected/label-tab.
 import dirUnselArrowLeftUrl from '@/assets/games/pen/shoot-modal/unselected/arrow-left.png';
 import dirUnselArrowRightUrl from '@/assets/games/pen/shoot-modal/unselected/arrow-right.png';
 import dirUnselMarkUrl from '@/assets/games/pen/shoot-modal/unselected/circle.png';
+import catchGloveLeftUrl from '@/assets/games/pen/catch-modal/glove-left.png';
+import catchGloveRightUrl from '@/assets/games/pen/catch-modal/glove-right.png';
+import catchGloveEffectUrl from '@/assets/games/pen/catch-modal/glove-effect.png';
+import catchSelBgUrl from '@/assets/games/pen/catch-modal/selected/background-empty.png';
+import catchSelTabUrl from '@/assets/games/pen/catch-modal/selected/label-tab.png';
+import catchSelArrowLeftUrl from '@/assets/games/pen/catch-modal/selected/arrow-left.png';
+import catchSelArrowRightUrl from '@/assets/games/pen/catch-modal/selected/arrow-right.png';
+import catchSelMarkUrl from '@/assets/games/pen/catch-modal/selected/circle-check.png';
+import catchUnselTabUrl from '@/assets/games/pen/catch-modal/unselected/label-tab.png';
+import catchUnselArrowLeftUrl from '@/assets/games/pen/catch-modal/unselected/arrow-left.png';
+import catchUnselArrowRightUrl from '@/assets/games/pen/catch-modal/unselected/arrow-right.png';
 
 export const penAssets = {
   scene: sceneUrl,
@@ -75,6 +86,32 @@ export const penShootAssets = {
       arrowLeft: dirUnselArrowLeftUrl,
       arrowRight: dirUnselArrowRightUrl,
       mark: dirUnselMarkUrl,
+    },
+  },
+};
+
+export const penCatchAssets = {
+  bg: shootBgUrl,
+  gloveLeft: catchGloveLeftUrl,
+  gloveRight: catchGloveRightUrl,
+  gloveEffect: catchGloveEffectUrl,
+  confirmBtn: confirmBtnUrl,
+  cancelBtn: cancelBtnUrl,
+  closeBtn: closeBtnUrl,
+  closeIcon: closeIconUrl,
+  dir: {
+    selected: {
+      bg: catchSelBgUrl,
+      tab: catchSelTabUrl,
+      arrowLeft: catchSelArrowLeftUrl,
+      arrowRight: catchSelArrowRightUrl,
+      mark: catchSelMarkUrl,
+    },
+    unselected: {
+      bg: dirUnselBgUrl,
+      tab: catchUnselTabUrl,
+      arrowLeft: catchUnselArrowLeftUrl,
+      arrowRight: catchUnselArrowRightUrl,
     },
   },
 };

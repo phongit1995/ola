@@ -903,6 +903,14 @@
     "shotCreated": "Shot created, waiting for someone to catch.",
     "errChooseDirection": "Please choose a shot direction.",
     "errBetMin": "Minimum bet is 1,000 KEN.",
-    "errInsufficientKen": "Bet exceeds your current KEN balance."
+    "errInsufficientKen": "Bet exceeds your current KEN balance.",
+    "catchTitle": "CATCH",
+    "catchBet": "Bet",
+    "chooseCatchDirection": "Choose catch direction",
+    "catchTimerNote1": "This catch is valid for 10 minutes.",
+    "catchTimerNote2": "When time runs out, the catch is cancelled and the shot returns to the waiting list.",
+    "errChooseCatchDirection": "Please choose a catch direction.",
+    "catchWin": "Great save! 🧤 You won {{payout}} KEN.",
+    "catchLose": "Wrong guess — you lost this round."
   }
 }

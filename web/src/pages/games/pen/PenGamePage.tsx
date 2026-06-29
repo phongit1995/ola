@@ -1,16 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@constants';
 import { FullScreenOverlay } from '@components';
 import { formatKen, toApiError, toast } from '@lib';
 import { PenService } from '@services';
-import type { PenSide } from '@app-types';
+import type { PenSide, PenShotView } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
 import { usePenStore } from '@/store/penStore';
 import { PenButton } from './PenButton';
 import { PenShotList } from './PenShotList';
 import { PenShootModal } from './PenShootModal';
+import { PenCatchModal } from './PenCatchModal';
 import { penAssets } from './penAssets';
 import { PEN_START_KEN } from './penMock';
 
@@ -34,10 +35,14 @@ export function PenGamePage() {
   const [kicking, setKicking] = useState(false);
   const [shootOpen, setShootOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [catchShot, setCatchShot] = useState<PenShotView | null>(null);
+  const [catching, setCatching] = useState(false);
 
   useEffect(() => {
     void loadShots();
   }, [loadShots]);
+
+  const closeCatch = useCallback(() => setCatchShot(null), []);
 
   const playKick = () => {
     setKickId((n) => n + 1);
@@ -58,6 +63,24 @@ export function PenGamePage() {
       toast.error(toApiError(e).message);
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleCatch = async (side: PenSide) => {
+    if (catching || catchShot == null) return;
+    setCatching(true);
+    try {
+      const res = await PenService.catchShot(catchShot.id, { side });
+      if (user) setUser({ ...user, ken: res.kenBalance });
+      setCatchShot(null);
+      playKick();
+      if (res.win) toast.success(t('penGame.catchWin', { payout: formatKen(res.payout) }));
+      else toast.error(t('penGame.catchLose'));
+      void loadShots();
+    } catch (e) {
+      toast.error(toApiError(e).message);
+    } finally {
+      setCatching(false);
     }
   };
 
@@ -154,9 +177,7 @@ export function PenGamePage() {
             shots={shots}
             loading={loadingShots}
             page={1}
-            onSelect={(shot) =>
-              toast.success(t('penGame.selected', { code: shot.shooter?.username ?? '' }))
-            }
+            onSelect={(shot) => setCatchShot(shot)}
             className="relative z-10 mx-4 mb-1 min-h-0 flex-1"
           />
 
@@ -185,6 +206,17 @@ export function PenGamePage() {
               onTopUp={() => navigate(ROUTES.kenBuy)}
               onConfirm={handleCreateShot}
               onClose={() => setShootOpen(false)}
+            />
+          )}
+
+          {catchShot != null && (
+            <PenCatchModal
+              ken={ken}
+              betAmount={catchShot.betAmount}
+              submitting={catching}
+              onTopUp={() => navigate(ROUTES.kenBuy)}
+              onConfirm={handleCatch}
+              onClose={closeCatch}
             />
           )}
         </div>

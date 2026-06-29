@@ -903,6 +903,14 @@
     "shotCreated": "Đã tạo lượt sút, hãy đợi người chụp.",
     "errChooseDirection": "Vui lòng chọn hướng sút.",
     "errBetMin": "Số ken cược tối thiểu là 1.000.",
-    "errInsufficientKen": "Số ken cược vượt quá số dư hiện tại."
+    "errInsufficientKen": "Số ken cược vượt quá số dư hiện tại.",
+    "catchTitle": "CHỤP",
+    "catchBet": "Tiền cược",
+    "chooseCatchDirection": "Chọn hướng chụp",
+    "catchTimerNote1": "Thời gian hiệu lực khi tham gia lượt chụp này là 10 phút",
+    "catchTimerNote2": "Hết thời gian sẽ huỷ lượt chụp này và trả lại về danh sách lượt sút ở màn hình chờ",
+    "errChooseCatchDirection": "Vui lòng chọn hướng chụp.",
+    "catchWin": "Chụp thành công! 🧤 Bạn thắng {{payout}} KEN.",
+    "catchLose": "Tiếc quá, bạn đoán sai hướng. Thua lượt này."
   }
 }

@@ -58,7 +58,7 @@ export function PenShootModal({
       <div
         onClick={(e) => e.stopPropagation()}
         style={{ ...stretchBg, backgroundImage: `url(${penShootAssets.bg})` }}
-        className="relative aspect-[943/1578] w-full max-w-[380px] bg-no-repeat"
+        className="relative aspect-[960/1639] w-full max-w-[380px] bg-no-repeat"
       >
         <div className="absolute inset-0 flex flex-col items-center px-[8%] pt-[4%] pb-[4%] text-white">
           <div className="flex items-center justify-center gap-2">
