@@ -120,7 +120,7 @@ export function RoomMessagesTab({
         )}
       </div>
 
-      <div className="flex shrink-0 items-end gap-2 border-t border-black/12 bg-white px-3 py-2">
+      <div className="flex shrink-0 items-center gap-2 border-t border-black/12 bg-white px-3 py-2">
         <VipAvatar typeId={vipTypeId} className="h-9 w-9" />
         <SmileyInput
           ref={composerRef}
