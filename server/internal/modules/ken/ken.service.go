@@ -2,6 +2,7 @@ package ken
 
 import (
 	"ola-chat-server/internal/constants"
+	"ola-chat-server/internal/modules/relationships"
 	"ola-chat-server/internal/modules/user"
 	"ola-chat-server/internal/transport/websocket"
 	"ola-chat-server/internal/utils"
@@ -12,14 +13,16 @@ import (
 
 type Service struct {
 	repo      *Repository
+	relRepo   *relationships.Repository
 	userCache *user.CacheService
 	wsServer  *websocket.Server
 	logger    *zap.SugaredLogger
 }
 
-func NewService(repo *Repository, userCache *user.CacheService, wsServer *websocket.Server, logger *zap.SugaredLogger) *Service {
+func NewService(repo *Repository, relRepo *relationships.Repository, userCache *user.CacheService, wsServer *websocket.Server, logger *zap.SugaredLogger) *Service {
 	return &Service{
 		repo:      repo,
+		relRepo:   relRepo,
 		userCache: userCache,
 		wsServer:  wsServer,
 		logger:    logger.Named("[ken_service]"),
@@ -49,6 +52,14 @@ func (s *Service) Transfer(fromID uuid.UUID, req TransferRequest) (*TransferResp
 	}
 	if toID == fromID {
 		return nil, ErrSelfTransfer
+	}
+
+	blocked, err := s.relRepo.IsBlockedEither(fromID, toID)
+	if err != nil {
+		return nil, err
+	}
+	if blocked {
+		return nil, ErrBlockedTransfer
 	}
 
 	result, err := s.repo.Transfer(TransferParams{

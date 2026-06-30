@@ -75,7 +75,13 @@ export function TransferKenDialog({ open, onClose, receiver }: TransferKenDialog
       onClose();
     } catch (error) {
       const apiError = toApiError(error);
-      toast.error(apiError.status === 0 ? t('chat.transferKenError') : apiError.message);
+      if (apiError.status === 0) {
+        toast.error(t('chat.transferKenError'));
+      } else if (apiError.status === 403) {
+        toast.error(t('chat.transferKenErrBlocked'));
+      } else {
+        toast.error(apiError.message);
+      }
     } finally {
       setSubmitting(false);
     }

@@ -166,3 +166,13 @@ func (r *Repository) IsBlocked(blockerID, blockedID uuid.UUID) (bool, error) {
 
 	return count > 0, err
 }
+
+func (r *Repository) IsBlockedEither(userID1, userID2 uuid.UUID) (bool, error) {
+	var count int64
+	err := r.db.Model(&models.Relationship{}).Where(
+		"((requester_id = ? AND addressee_id = ?) OR (requester_id = ? AND addressee_id = ?)) AND status = ?",
+		userID1, userID2, userID2, userID1, models.RelationshipStatusBlocked,
+	).Count(&count).Error
+
+	return count > 0, err
+}

@@ -200,6 +200,7 @@
     "transferKenErrNotEnough": "Bạn không đủ KEN để thực hiện giao dịch",
     "transferKenSuccess": "Đã chuyển KEN thành công cho {{name}}",
     "transferKenError": "Chuyển KEN thất bại. Vui lòng thử lại.",
+    "transferKenErrBlocked": "Không thể gửi KEN cho người này",
     "attachRecord": "Ghi âm",
     "attachRecordCancelTip": "Di chuyển ngón tay ra vùng Ghi âm để hủy",
     "voiceReleaseCancel": "Thả ra để huỷ",

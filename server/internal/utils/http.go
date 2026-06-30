@@ -200,6 +200,7 @@ var (
 		"you must be married to use the diary":  true,
 		"diary entry does not belong to you":    true,
 		"cannot propose to a blocked user":      true,
+		"cannot transfer ken to a blocked user": true,
 	}
 )
 

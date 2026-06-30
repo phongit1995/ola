@@ -13,6 +13,7 @@ import (
 
 var (
 	ErrCannotTransfer  = errors.New("cannot transfer ken to this user")
+	ErrBlockedTransfer = errors.New("cannot transfer ken to a blocked user")
 	ErrInsufficientKen = errors.New("insufficient ken balance")
 	ErrSelfTransfer    = errors.New("cannot transfer ken to yourself")
 )

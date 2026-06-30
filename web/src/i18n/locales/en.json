@@ -200,6 +200,7 @@
     "transferKenErrNotEnough": "Not enough KEN for this transaction",
     "transferKenSuccess": "Transferred KEN successfully to {{name}}",
     "transferKenError": "Could not transfer KEN. Please try again.",
+    "transferKenErrBlocked": "You cannot send KEN to this person",
     "attachRecord": "Record",
     "attachRecordCancelTip": "To cancel, drag your finger out of Record",
     "voiceReleaseCancel": "Release to cancel",
