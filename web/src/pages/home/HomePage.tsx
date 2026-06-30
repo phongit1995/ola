@@ -20,6 +20,7 @@ export function HomePage() {
   );
   const ActivePanel = PANELS[tab];
   const authReady = useAuthStore((state) => state.authReady);
+  const ken = useAuthStore((state) => state.user?.ken);
 
   function changeTab(next: TabKey) {
     sessionStorage.setItem(ACTIVE_TAB_KEY, next);
@@ -49,6 +50,7 @@ export function HomePage() {
         onChange={changeTab}
         badges={{ chat: chatUnread }}
         dots={{ room: roomUnread && tab !== 'room' }}
+        ken={ken}
       />
 
       <ActiveConversationOverlay />

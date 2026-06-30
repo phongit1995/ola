@@ -1,4 +1,5 @@
 export * from './ui/AnimatedKen';
+export * from './ui/KenGainFx';
 export * from './ui/Avatar';
 export * from './ui/Button';
 export * from './ui/ScreenHeader';

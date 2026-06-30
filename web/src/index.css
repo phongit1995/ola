@@ -15,6 +15,7 @@
   --animate-ola-pop-out: ola-pop-out 0.4s ease;
   --animate-ola-fly: ola-fly 1.5s ease-in forwards;
   --animate-ola-ken-bump: ola-ken-bump 0.45s ease;
+  --animate-ola-ken-rise: ola-ken-rise 1.4s ease-out forwards;
   --font-sans:
     Roboto, 'Helvetica Neue', ui-sans-serif, system-ui, -apple-system,
     'Segoe UI', Arial, sans-serif;
@@ -81,6 +82,25 @@
   }
   100% {
     transform: scale(1);
+  }
+}
+
+@keyframes ola-ken-rise {
+  0% {
+    transform: translate(-50%, 8px) scale(0.7);
+    opacity: 0;
+  }
+  20% {
+    transform: translate(-50%, -6px) scale(1.12);
+    opacity: 1;
+  }
+  50% {
+    transform: translate(-50%, -22px) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -78px) scale(1);
+    opacity: 0;
   }
 }
 
