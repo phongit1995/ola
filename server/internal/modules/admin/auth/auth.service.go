@@ -98,20 +98,11 @@ func (s *Service) RefreshToken(refreshTokenStr, clientIP string) (*RefreshTokenR
 		return nil, err
 	}
 
-	newRefreshToken, err := s.generateRefreshToken(admin)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := s.repo.UpdateRefreshToken(admin.ID, newRefreshToken); err != nil {
-		return nil, err
-	}
-
 	s.logger.Infow("Admin token refreshed", "admin_id", admin.ID, "ip", clientIP)
 
 	return &RefreshTokenResponse{
 		Token:        newAccessToken,
-		RefreshToken: newRefreshToken,
+		RefreshToken: admin.RefreshToken,
 	}, nil
 }
 
