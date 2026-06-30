@@ -125,7 +125,7 @@ export function PenGamePage({ onClose }: PenGamePageProps) {
   };
 
   return (
-    <FullScreenOverlay className="pen-screen bg-[#011d42]">
+    <FullScreenOverlay z={60} className="pen-screen bg-[#011d42]">
       <div className="flex h-full w-full flex-col items-center">
         <div className="@container relative flex w-full max-w-[645px] flex-1 flex-col overflow-hidden bg-[#011d42]">
           <img

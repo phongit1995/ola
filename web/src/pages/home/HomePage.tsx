@@ -1,6 +1,7 @@
 import { Suspense, useEffect, useState } from 'react';
 import { SocketService } from '@services';
 import { BottomTabBar, type TabKey } from '@components/BottomTabBar';
+import { KenBalanceBadge } from '@components';
 import { useAuthStore } from '@/store/authStore';
 import { useRoomChatStore } from '@/store/roomChatStore';
 import { useChatStore } from '@/store/chat/chatStore';
@@ -41,6 +42,7 @@ export function HomePage() {
   return (
     <div className="flex h-dvh flex-col bg-white font-sans">
       <div className="relative flex min-h-0 flex-1 flex-col">
+        <KenBalanceBadge ken={ken} />
         <Suspense fallback={<div className="flex-1" />}>
           <ActivePanel />
         </Suspense>
@@ -51,7 +53,6 @@ export function HomePage() {
         onChange={changeTab}
         badges={{ chat: chatUnread }}
         dots={{ room: roomUnread && tab !== 'room' }}
-        ken={ken}
       />
 
       <ActiveConversationOverlay />

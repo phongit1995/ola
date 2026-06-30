@@ -9,7 +9,6 @@ import iconRssActive from '@/assets/icons/rss-active.png';
 import iconApps from '@/assets/icons/apps.png';
 import iconAppsActive from '@/assets/icons/apps-active.png';
 import { useTranslation } from 'react-i18next';
-import { KenGainFx } from './ui/KenGainFx';
 
 export type TabKey = 'chat' | 'room' | 'me' | 'rss' | 'apps';
 
@@ -26,14 +25,12 @@ interface BottomTabBarProps {
   onChange: (key: TabKey) => void;
   badges?: Partial<Record<TabKey, number>>;
   dots?: Partial<Record<TabKey, boolean>>;
-  ken?: number;
 }
 
-export function BottomTabBar({ active, onChange, badges, dots, ken }: BottomTabBarProps) {
+export function BottomTabBar({ active, onChange, badges, dots }: BottomTabBarProps) {
   const { t } = useTranslation();
   return (
-    <nav className="relative flex border-t border-[#a0a0a0] bg-white">
-      <KenGainFx ken={ken} />
+    <nav className="flex border-t border-[#a0a0a0] bg-white">
       {TABS.map((tab) => {
         const isActive = tab.key === active;
         const badge = badges?.[tab.key];
