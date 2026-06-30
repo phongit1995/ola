@@ -26,6 +26,7 @@ import { toBubble } from '../chatView';
 import { useLongPress } from '@hooks';
 import { MessageRow } from './MessageRow';
 import { MessageActionSheet } from './MessageActionSheet';
+import { TransferKenDialog } from './TransferKenDialog';
 import { VoicePreviewBar } from './VoicePreviewBar';
 import { PeerProfileCard } from './PeerProfileCard';
 import { UserProfileView } from '../../profile/UserProfileView';
@@ -87,6 +88,7 @@ export function ChatConversationView({
   const [menuOpen, setMenuOpen] = useState(false);
   const [blockOpen, setBlockOpen] = useState(false);
   const [openTab, setOpenTab] = useState<AttachTab | null>(null);
+  const [transferKenOpen, setTransferKenOpen] = useState(false);
   const [pendingAudio, setPendingAudio] = useState<{ blob: Blob; duration: number } | null>(null);
   const [actionTarget, setActionTarget] = useState<ChatMessage | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ChatMessage | null>(null);
@@ -490,7 +492,18 @@ export function ChatConversationView({
           void sendText(kulToken(index));
           setOpenTab(null);
         }}
-        onSend={() => toast.info(t('chat.comingSoon'))}
+        onSend={(payload) => {
+          if (payload.kind === 'ken') {
+            setOpenTab(null);
+            if (peerId === '') {
+              toast.error(t('chat.actionError'));
+              return;
+            }
+            setTransferKenOpen(true);
+            return;
+          }
+          toast.info(t('chat.comingSoon'));
+        }}
         onRecorded={(blob, duration) => {
           setPendingAudio({ blob, duration });
           setOpenTab(null);
@@ -543,6 +556,20 @@ export function ChatConversationView({
         onConfirm={() => void handleBlock()}
         onCancel={() => setBlockOpen(false)}
       />
+
+      {transferKenOpen && peerId !== '' && (
+        <TransferKenDialog
+          open
+          onClose={() => setTransferKenOpen(false)}
+          receiver={{
+            id: peerId,
+            name,
+            fullName: peerProfile?.fullName,
+            avatar: peerProfile?.avatar ?? avatar,
+            color,
+          }}
+        />
+      )}
 
       {profileTarget != null && (
         <UserProfileView

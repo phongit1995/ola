@@ -84,6 +84,9 @@ export const API_PATH = {
     draw: (id: string) => `/egg/packs/${id}/draws`,
     draws: '/egg/draws',
   },
+  ken: {
+    transfer: '/ken/transfer',
+  },
   marriage: {
     status: '/marriage',
     divorce: '/marriage/divorce',

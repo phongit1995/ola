@@ -11,3 +11,4 @@ export * from './vip.service';
 export * from './egg.service';
 export * from './marriage.service';
 export * from './pen.service';
+export * from './ken.service';
