@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
-import { ROUTES } from '@constants';
 import { formatKen } from '@lib';
 import { AnimatedKen, FullScreenOverlay } from '@components';
 import { SocketService } from '@services';
@@ -21,9 +19,12 @@ function BackIcon() {
   );
 }
 
-export function EggGamePage() {
+interface EggGamePageProps {
+  onClose: () => void;
+}
+
+export function EggGamePage({ onClose }: EggGamePageProps) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const userKen = useAuthStore((s) => s.user?.ken);
   const syncKen = useEggGameStore((s) => s.syncKen);
   const loadPacks = useEggGameStore((s) => s.loadPacks);
@@ -61,7 +62,7 @@ export function EggGamePage() {
           <div className="flex shrink-0 items-center gap-2 bg-[#5e3c20] px-2 py-2 text-white">
             <button
               type="button"
-              onClick={() => navigate(ROUTES.home)}
+              onClick={onClose}
               className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-white/15"
               aria-label={t('chat.back')}
             >

@@ -5,6 +5,7 @@ import { useAuthStore } from '@/store/authStore';
 import { useRoomChatStore } from '@/store/roomChatStore';
 import { useChatStore } from '@/store/chat/chatStore';
 import { ActiveConversationOverlay } from '../chat/ActiveConversationOverlay';
+import { GameOverlay } from '../games/GameOverlay';
 import { ACTIVE_TAB_KEY, PANELS } from './constants';
 
 function readStoredTab(): TabKey {
@@ -54,6 +55,7 @@ export function HomePage() {
       />
 
       <ActiveConversationOverlay />
+      <GameOverlay />
     </div>
   );
 }

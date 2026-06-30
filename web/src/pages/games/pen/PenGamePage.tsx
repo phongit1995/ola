@@ -22,7 +22,11 @@ import './pen.css';
 
 const KICK_RESULT_MS = 600;
 
-export function PenGamePage() {
+interface PenGamePageProps {
+  onClose: () => void;
+}
+
+export function PenGamePage({ onClose }: PenGamePageProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
@@ -136,7 +140,7 @@ export function PenGamePage() {
                 bg={penAssets.backBtn}
                 icon={penAssets.backIcon}
                 ariaLabel={t('chat.back')}
-                onClick={() => navigate(ROUTES.home)}
+                onClick={onClose}
                 className="h-9 w-9 shrink-0 @md:h-11 @md:w-11"
                 iconClassName="h-5 w-5 @md:h-7 @md:w-7"
               />

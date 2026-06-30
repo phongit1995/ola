@@ -24,6 +24,7 @@ import type { Album } from './MediaStorePage';
 export interface AppItem {
   icon: string;
   route?: RoutePath;
+  overlay?: 'pen' | 'egg';
   subtitleKey?: 'home.appGameSubtitle' | 'home.appMallSubtitle';
 }
 
@@ -47,8 +48,8 @@ export const MOCK_NOTIFICATIONS: NotificationItem[] = [
 
 export const APP_ITEMS: AppItem[] = [
   { icon: iconNotify, route: ROUTES.notifications },
-  { icon: iconEgg, route: ROUTES.eggGame },
-  { icon: iconPen, route: ROUTES.penGame },
+  { icon: iconEgg, overlay: 'egg' },
+  { icon: iconPen, overlay: 'pen' },
   { icon: iconGame, subtitleKey: 'home.appGameSubtitle' },
   { icon: iconPersonal, route: ROUTES.profileEdit },
   { icon: iconVip, route: ROUTES.vip },

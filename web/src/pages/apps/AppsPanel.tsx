@@ -2,12 +2,20 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { type RoutePath } from '@constants';
 import { HomeHeader } from '@components/HomeHeader';
-import { APP_ITEMS } from './constants';
+import { useGameOverlayStore } from '@/store/gameOverlayStore';
+import { APP_ITEMS, type AppItem } from './constants';
 
 export function AppsPanel() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const openGame = useGameOverlayStore((s) => s.open);
   const titles = t('home.apps', { returnObjects: true });
+
+  function handleOpen(item: AppItem): (() => void) | undefined {
+    if (item.overlay) return () => openGame(item.overlay!);
+    if (item.route) return () => navigate(item.route as RoutePath);
+    return undefined;
+  }
 
   return (
     <>
@@ -25,7 +33,7 @@ export function AppsPanel() {
               <li key={title} className="border-b border-black/12 last:border-b-0">
                 <button
                   type="button"
-                  onClick={item.route ? () => navigate(item.route as RoutePath) : undefined}
+                  onClick={handleOpen(item)}
                   className="flex min-h-[72px] w-full items-center gap-4 bg-white/80 px-4 text-left active:bg-black/5"
                 >
                   <img
