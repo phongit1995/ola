@@ -8,8 +8,8 @@ import { penAssets } from './penAssets';
 import { toAllHistoryRow } from './penHistory';
 import { PenPagination } from './PenHistorySection';
 
-const ROW_GRID = 'grid items-center gap-1.5';
-const GRID_COLS = '1.55fr 1.55fr 0.85fr 0.7fr';
+const ROW_GRID = 'grid items-center gap-1';
+const GRID_COLS = '1.5fr 1.5fr 0.95fr 0.7fr';
 
 function TrophyIcon({ className = 'h-3.5 w-3.5' }: { className?: string }) {
   return (
@@ -46,9 +46,9 @@ export function PenAllHistorySection() {
   return (
     <section className="rounded-2xl border border-[#1e6fe0]/40 bg-[#001026]/50 p-2">
       <div className="pen-scroll overflow-x-auto">
-        <div className="min-w-[420px]">
+        <div className="min-w-0 @md:min-w-[420px]">
           <div
-            className={`${ROW_GRID} border-b border-white/10 px-2 pb-1.5 text-[9px] font-semibold uppercase tracking-wide text-[#5aa0e0]`}
+            className={`${ROW_GRID} border-b border-white/10 px-1.5 pb-1.5 text-[9px] font-semibold uppercase tracking-wide text-[#5aa0e0]`}
             style={{ gridTemplateColumns: GRID_COLS }}
           >
             <span>{t('penGame.hist.colShooter')}</span>
@@ -57,13 +57,13 @@ export function PenAllHistorySection() {
             <span className="text-center">{t('penGame.hist.colTime')}</span>
           </div>
 
-          <div className="min-h-[420px]">
+          <div className="min-h-[340px]">
             {state.loading ? (
-              <div className="flex h-[420px] items-center justify-center">
+              <div className="flex h-[340px] items-center justify-center">
                 <Spinner />
               </div>
             ) : state.items.length === 0 ? (
-              <div className="flex h-[420px] items-center justify-center text-xs text-white/50">
+              <div className="flex h-[340px] items-center justify-center text-xs text-white/50">
                 {t('penGame.hist.emptyAll')}
               </div>
             ) : (
@@ -73,16 +73,16 @@ export function PenAllHistorySection() {
                   return (
                     <li
                       key={row.id}
-                      className={`${ROW_GRID} border-b border-white/5 px-2 py-1.5`}
+                      className={`${ROW_GRID} border-b border-white/5 px-1.5 py-1.5`}
                       style={{ gridTemplateColumns: GRID_COLS }}
                     >
                       <PlayerCell user={row.shooter} won={row.winnerId != null && row.winnerId === row.shooter?.id} />
                       <PlayerCell user={row.keeper} won={row.winnerId != null && row.winnerId === row.keeper?.id} />
-                      <span className="flex items-center gap-1 text-[11px] font-semibold text-[#ffd54f]">
+                      <span className="flex items-center gap-1 whitespace-nowrap text-[11px] font-semibold text-[#ffd54f]">
                         <img src={penAssets.kenIcon} alt="" className="h-3.5 w-3.5 shrink-0" />
                         {formatVnd(row.bet)}
                       </span>
-                      <span className="flex flex-col items-center text-center text-[9px] leading-tight text-white/55">
+                      <span className="flex flex-col items-center whitespace-nowrap text-center text-[9px] leading-tight text-white/55">
                         <span>{row.date}</span>
                         <span>{row.time}</span>
                       </span>

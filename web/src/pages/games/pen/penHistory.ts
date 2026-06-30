@@ -49,7 +49,7 @@ export function toAllHistoryRow(shot: PenShotView): PenAllHistoryRowView {
     keeper: shot.keeper,
     winnerId: shot.winnerId,
     bet: shot.betAmount,
-    date: valid ? `${pad(at.getDate())}/${pad(at.getMonth() + 1)}/${at.getFullYear()}` : '',
+    date: valid ? `${pad(at.getDate())}/${pad(at.getMonth() + 1)}/${pad(at.getFullYear() % 100)}` : '',
     time: valid ? `${pad(at.getHours())}:${pad(at.getMinutes())}` : '',
   };
 }
@@ -68,7 +68,7 @@ export function toHistoryRow(
     opponent: isShoot ? shot.keeper : shot.shooter,
     side: isShoot ? shot.keeperSide : shot.shooterSide,
     bet: shot.betAmount,
-    date: valid ? `${pad(at.getDate())}/${pad(at.getMonth() + 1)}/${at.getFullYear()}` : '',
+    date: valid ? `${pad(at.getDate())}/${pad(at.getMonth() + 1)}/${pad(at.getFullYear() % 100)}` : '',
     time: valid ? `${pad(at.getHours())}:${pad(at.getMinutes())}:${pad(at.getSeconds())}` : '',
     outcome,
     amount: resolveAmount(shot, outcome),

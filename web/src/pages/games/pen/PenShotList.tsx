@@ -3,12 +3,15 @@ import { Spinner, VipBadge } from '@components';
 import { createTimeFormatter, formatKen } from '@lib';
 import type { PenShotView } from '@app-types';
 import { PenButton } from './PenButton';
+import { PenPagination } from './PenHistorySection';
 import { penAssets } from './penAssets';
 
 interface PenShotListProps {
   shots: PenShotView[];
   loading?: boolean;
   page: number;
+  pageCount: number;
+  onPage: (page: number) => void;
   onSelect: (shot: PenShotView) => void;
   className?: string;
 }
@@ -29,23 +32,12 @@ function PeopleIcon() {
   );
 }
 
-function ChevronRight() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className="h-3.5 w-3.5"
-      fill="currentColor"
-      aria-hidden="true"
-    >
-      <path d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z" />
-    </svg>
-  );
-}
-
 export function PenShotList({
   shots,
   loading,
   page,
+  pageCount,
+  onPage,
   onSelect,
   className = '',
 }: PenShotListProps) {
@@ -56,23 +48,16 @@ export function PenShotList({
     <section
       className={`flex min-h-0 flex-col overflow-hidden rounded-2xl border border-white/12 bg-[#001833]/40 ${className}`}
     >
-      <header className="flex items-center justify-between px-3 py-2 text-white">
+      <header className="flex items-center px-3 py-1.5 text-white">
         <span className="flex items-center gap-1.5 text-[11px] font-bold tracking-wide">
           <PeopleIcon />
           {t('penGame.waitingTitle')}
         </span>
-        <button
-          type="button"
-          className="flex items-center gap-0.5 text-[11px] text-white/70"
-        >
-          {t('penGame.page', { page })}
-          <ChevronRight />
-        </button>
       </header>
 
       <div className="pen-scroll min-h-0 flex-1 overflow-x-hidden overflow-y-auto">
         <div
-          className={`${ROW_GRID} sticky top-0 z-10 border-y border-white/10 bg-[#001c3e] px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-white/45`}
+          className={`${ROW_GRID} sticky top-0 z-10 border-y border-white/10 bg-[#001c3e] px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-white/45`}
           style={{ gridTemplateColumns: GRID_COLS }}
         >
           <span>{t('penGame.columns.shooter')}</span>
@@ -96,7 +81,7 @@ export function PenShotList({
               return (
                 <li
                   key={shot.id}
-                  className={`${ROW_GRID} border-b border-white/5 px-3 py-1.5`}
+                  className={`${ROW_GRID} border-b border-white/5 px-3 py-1`}
                   style={{ gridTemplateColumns: GRID_COLS }}
                 >
                   <span className="flex min-w-0 items-center gap-1.5">
@@ -128,6 +113,10 @@ export function PenShotList({
             })}
           </ul>
         )}
+      </div>
+
+      <div className="shrink-0 py-1">
+        <PenPagination page={page} pageCount={pageCount} loading={loading ?? false} onPage={onPage} className="" />
       </div>
     </section>
   );

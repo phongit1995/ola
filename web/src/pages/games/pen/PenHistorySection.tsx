@@ -10,8 +10,8 @@ import type { PenHistorySection as SectionRole } from '@/store/penHistoryStore';
 import { penAssets, penHistoryAssets } from './penAssets';
 import { toHistoryRow, type PenHistoryOutcome, type PenHistoryRowView } from './penHistory';
 
-const ROW_GRID = 'grid items-center gap-1.5';
-const GRID_COLS = '1.6fr 0.9fr 0.8fr 1.85fr';
+const ROW_GRID = 'grid items-center gap-1';
+const GRID_COLS = '1.6fr 1fr 0.8fr 1.7fr';
 const stretchBg: CSSProperties = { backgroundSize: '100% 100%' };
 
 function BanIcon({ className = 'h-4 w-4' }: { className?: string }) {
@@ -92,11 +92,11 @@ function PenHistoryRow({
 }) {
   const { t } = useTranslation();
   return (
-    <li className={`${ROW_GRID} border-b border-white/5 px-2 py-1.5`} style={{ gridTemplateColumns: GRID_COLS }}>
+    <li className={`${ROW_GRID} border-b border-white/5 px-1.5 py-1.5`} style={{ gridTemplateColumns: GRID_COLS }}>
       <span className="flex min-w-0 items-center gap-1.5">
         {row.opponent != null ? (
           <>
-            <VipBadge typeId={row.opponent.vipTypeId} className="h-7 w-7" />
+            <VipBadge typeId={row.opponent.vipTypeId} className="h-6 w-6" />
             <span className="flex min-w-0 flex-col leading-tight">
               <span className="truncate text-xs text-white/90">@{row.opponent.username}</span>
               {row.side != null && <DirectionLabel verb={verb} side={row.side} />}
@@ -112,12 +112,12 @@ function PenHistoryRow({
         )}
       </span>
 
-      <span className="flex items-center gap-1 text-[11px] font-semibold text-[#ffd54f]">
+      <span className="flex items-center gap-1 whitespace-nowrap text-[11px] font-semibold text-[#ffd54f]">
         <img src={penAssets.kenIcon} alt="" className="h-3.5 w-3.5 shrink-0" />
         {formatVnd(row.bet)}
       </span>
 
-      <span className="flex flex-col items-center text-center text-[9px] leading-tight text-white/55">
+      <span className="flex flex-col items-center whitespace-nowrap text-center text-[9px] leading-tight text-white/55">
         <span>{row.date}</span>
         <span>{row.time}</span>
       </span>
@@ -155,14 +155,16 @@ export function PenPagination({
   pageCount,
   loading,
   onPage,
+  className = 'mt-2',
 }: {
   page: number;
   pageCount: number;
   loading: boolean;
   onPage: (page: number) => void;
+  className?: string;
 }) {
   return (
-    <div className="mt-2 flex items-center justify-center gap-2">
+    <div className={`flex items-center justify-center gap-2 ${className}`}>
       <PageNav dir="prev" disabled={loading || page <= 0} onClick={() => onPage(page - 1)} />
       <span
         style={{ ...stretchBg, backgroundImage: `url(${penHistoryAssets.pageCurrent})` }}
@@ -217,9 +219,9 @@ export function PenHistorySection({ section, opponentLabel, userId }: PenHistory
   return (
     <section className="rounded-2xl border border-[#1e6fe0]/40 bg-[#001026]/50 p-2">
       <div className="pen-scroll overflow-x-auto">
-        <div className="min-w-[440px]">
+        <div className="min-w-0 @md:min-w-[440px]">
           <div
-            className={`${ROW_GRID} border-b border-white/10 px-2 pb-1.5 text-[9px] font-semibold uppercase tracking-wide text-[#5aa0e0]`}
+            className={`${ROW_GRID} border-b border-white/10 px-1.5 pb-1.5 text-[9px] font-semibold uppercase tracking-wide text-[#5aa0e0]`}
             style={{ gridTemplateColumns: GRID_COLS }}
           >
             <span>{opponentLabel}</span>

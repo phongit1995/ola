@@ -29,7 +29,7 @@ export function PenHistoryModal({ userId, onClose }: PenHistoryModalProps) {
   return (
     <div
       onClick={onClose}
-      className="absolute inset-0 z-40 flex items-center justify-center bg-black/55 px-4"
+      className="absolute inset-0 z-40 flex items-center justify-center bg-black/55 px-2 @md:px-4"
     >
       <div
         onClick={(e) => e.stopPropagation()}
@@ -71,7 +71,7 @@ export function PenHistoryModal({ userId, onClose }: PenHistoryModalProps) {
           })}
         </div>
 
-        <div className="pen-scroll flex min-h-0 flex-1 flex-col overflow-y-auto px-3 pb-4">
+        <div className="pen-scroll flex min-h-0 flex-1 flex-col overflow-y-auto px-2 pb-4 @md:px-3">
           {tab === 'all' ? (
             <PenAllHistorySection />
           ) : (

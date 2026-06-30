@@ -7,7 +7,7 @@ import { formatKen, toApiError, toast } from '@lib';
 import { PenService } from '@services';
 import type { PenSide, PenShotView } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
-import { usePenStore } from '@/store/penStore';
+import { PEN_SHOTS_PAGE, PEN_SHOTS_PAGE_MOBILE, usePenStore } from '@/store/penStore';
 import { PenButton } from './PenButton';
 import { PenShotList } from './PenShotList';
 import { PenShootModal } from './PenShootModal';
@@ -30,7 +30,12 @@ export function PenGamePage() {
 
   const shots = usePenStore((s) => s.shots);
   const loadingShots = usePenStore((s) => s.loading);
+  const shotsPage = usePenStore((s) => s.page);
+  const shotsTotal = usePenStore((s) => s.total);
+  const shotsPageSize = usePenStore((s) => s.pageSize);
   const loadShots = usePenStore((s) => s.loadShots);
+  const setPageSize = usePenStore((s) => s.setPageSize);
+  const shotsPageCount = Math.max(1, Math.ceil(shotsTotal / (shotsPageSize || PEN_SHOTS_PAGE)));
 
   const [kickId, setKickId] = useState(0);
   const [kicking, setKicking] = useState(false);
@@ -41,8 +46,12 @@ export function PenGamePage() {
   const [catching, setCatching] = useState(false);
 
   useEffect(() => {
-    void loadShots();
-  }, [loadShots]);
+    const mq = window.matchMedia('(min-width: 448px)');
+    const apply = () => setPageSize(mq.matches ? PEN_SHOTS_PAGE : PEN_SHOTS_PAGE_MOBILE);
+    apply();
+    mq.addEventListener('change', apply);
+    return () => mq.removeEventListener('change', apply);
+  }, [setPageSize]);
 
   const closeCatch = useCallback(() => setCatchShot(null), []);
 
@@ -177,7 +186,9 @@ export function PenGamePage() {
           <PenShotList
             shots={shots}
             loading={loadingShots}
-            page={1}
+            page={shotsPage}
+            pageCount={shotsPageCount}
+            onPage={(p) => void loadShots(p)}
             onSelect={(shot) => setCatchShot(shot)}
             className="relative z-10 mx-4 mb-1 min-h-0 flex-1"
           />
