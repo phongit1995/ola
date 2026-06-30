@@ -16,6 +16,7 @@ import { CLOSE_ANIMATION_MS } from '../constants';
 
 interface MeLeftDrawerProps {
   displayName: string;
+  avatarUrl?: string;
   onClose: () => void;
   onSelect: (key: string) => void;
   onOpenAccount: () => void;
@@ -28,7 +29,13 @@ interface DrawerItem {
   iconClassName?: string;
 }
 
-export function MeLeftDrawer({ displayName, onClose, onSelect, onOpenAccount }: MeLeftDrawerProps) {
+export function MeLeftDrawer({
+  displayName,
+  avatarUrl,
+  onClose,
+  onSelect,
+  onOpenAccount,
+}: MeLeftDrawerProps) {
   const { t } = useTranslation();
   const [shown, setShown] = useState(false);
 
@@ -92,7 +99,7 @@ export function MeLeftDrawer({ displayName, onClose, onSelect, onOpenAccount }: 
           className="relative h-28 shrink-0 bg-ola-primary-dark text-left"
         >
           <span className="absolute inset-x-0 bottom-0 flex items-center gap-2 bg-linear-to-t from-black/70 to-transparent px-2 pb-2 pt-8">
-            <Avatar name={displayName} color={DEFAULT_AVATAR_COLOR} size={40} />
+            <Avatar name={displayName} src={avatarUrl} color={DEFAULT_AVATAR_COLOR} size={40} />
             <span className="min-w-0 flex-1 truncate text-base font-medium text-white">
               {displayName}
             </span>

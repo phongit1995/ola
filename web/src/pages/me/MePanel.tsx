@@ -24,6 +24,7 @@ export function MePanel() {
   const { t } = useTranslation();
   const username = useAuthStore((s) => s.user?.username ?? null);
   const meId = useAuthStore((s) => s.user?.id ?? null);
+  const avatarUrl = useAuthStore((s) => s.user?.avatar ?? null);
   const displayName = username ?? t('home.guest');
 
   const {
@@ -156,6 +157,7 @@ export function MePanel() {
             {drawerOpen && (
               <MeLeftDrawer
                 displayName={displayName}
+                avatarUrl={avatarUrl ?? undefined}
                 onClose={() => setDrawerOpen(false)}
                 onOpenAccount={() => setAccountOpen(true)}
                 onSelect={(key) => {
