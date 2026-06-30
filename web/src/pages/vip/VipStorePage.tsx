@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
-import { ROUTES } from '@constants';
 import { toast } from '@lib';
+import { useAppOverlayStore } from '@/store/appOverlayStore';
 import {
   ConfirmDialog,
   FullScreenOverlay,
@@ -47,9 +46,9 @@ function VipRow({ icon, onSelect }: VipRowProps) {
   );
 }
 
-export function VipStorePage() {
+export function VipStorePage({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
+  const pushOverlay = useAppOverlayStore((s) => s.push);
   const refreshUser = useAuthStore((s) => s.refreshUser);
 
   const [store, setStore] = useState<VipStoreResult | null>(null);
@@ -196,7 +195,7 @@ export function VipStorePage() {
       options.push({
         key: 'transfer',
         label: t('vip.actionTransfer'),
-        onSelect: () => navigate(ROUTES.vipBuy, { state: { mode: 'give' } }),
+        onSelect: () => pushOverlay('vipBuy', 'give'),
       });
       options.push({
         key: 'delete',
@@ -216,7 +215,7 @@ export function VipStorePage() {
 
   return (
     <FullScreenOverlay>
-      <ScreenHeader title={t('vip.title')} onBack={() => navigate(ROUTES.home)} />
+      <ScreenHeader title={t('vip.title')} onBack={onClose} />
 
       <div className="flex-1 overflow-y-auto" onScroll={handleScroll}>
         <div className="bg-white/80">
@@ -258,7 +257,7 @@ export function VipStorePage() {
 
           <button
             type="button"
-            onClick={() => navigate(ROUTES.vipBuy, { state: { mode: 'buy' } })}
+            onClick={() => pushOverlay('vipBuy', 'buy')}
             className="flex min-h-12 w-full items-center px-4 text-left text-base text-black/87 active:bg-black/5"
           >
             {t('vip.buyVip')}
@@ -267,7 +266,7 @@ export function VipStorePage() {
 
           <button
             type="button"
-            onClick={() => navigate(ROUTES.vipBuy, { state: { mode: 'extend' } })}
+            onClick={() => pushOverlay('vipBuy', 'extend')}
             className="flex min-h-12 w-full items-center px-4 text-left text-base text-black/87 active:bg-black/5"
           >
             {t('vip.extendVip')}
@@ -303,7 +302,7 @@ export function VipStorePage() {
         <span className="flex-1 text-xl font-bold text-black/87">{durationText}</span>
         <button
           type="button"
-          onClick={() => navigate(ROUTES.vipBuy, { state: { mode: 'extend' } })}
+          onClick={() => pushOverlay('vipBuy', 'extend')}
           className="rounded border border-ola-primary-dark bg-ola-button px-4 py-1.5 text-sm font-medium text-white"
         >
           {t('vip.extendVip')}

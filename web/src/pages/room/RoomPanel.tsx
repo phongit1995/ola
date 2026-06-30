@@ -3,8 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { ConfirmDialog } from '@components';
 import { toast } from '@lib';
 import { HomeHeader } from '@components/HomeHeader';
-import { RoomChatView } from './components/RoomChatView';
-import { RoomJoiningOverlay } from './components/RoomJoiningOverlay';
 import { RoomList } from './components/RoomList';
 import type { RoomListItem } from './types';
 import { useRoomStore } from './roomStore';
@@ -18,7 +16,6 @@ export function RoomPanel() {
   const roomsLoaded = useRoomStore((state) => state.loaded);
   const fetchRooms = useRoomStore((state) => state.fetchRooms);
   const activeRoom = useRoomChatStore((state) => state.activeRoom);
-  const joinStatus = useRoomChatStore((state) => state.status);
   const openRoom = useRoomChatStore((state) => state.open);
   const closeRoom = useRoomChatStore((state) => state.close);
   const [pendingQuit, setPendingQuit] = useState<ActiveRoom | null>(null);
@@ -118,13 +115,6 @@ export function RoomPanel() {
           showQuickJoin={roomsLoaded}
         />
       </main>
-
-      {activeRoom != null && joinStatus === 'joined' && (
-        <RoomChatView onClose={() => setPendingQuit(activeRoom)} />
-      )}
-      {activeRoom != null && joinStatus !== 'joined' && (
-        <RoomJoiningOverlay status={joinStatus} onClose={exitRoom} />
-      )}
 
       <ConfirmDialog
         open={pendingQuit != null}

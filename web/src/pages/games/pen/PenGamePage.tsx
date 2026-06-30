@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
-import { ROUTES } from '@constants';
+import { useAppOverlayStore } from '@/store/appOverlayStore';
 import { AnimatedKen, FullScreenOverlay } from '@components';
 import { formatKen, toApiError, toast } from '@lib';
 import { PenService } from '@services';
@@ -28,7 +27,7 @@ interface PenGamePageProps {
 
 export function PenGamePage({ onClose }: PenGamePageProps) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
+  const openBuyKen = useAppOverlayStore((s) => s.push);
   const user = useAuthStore((s) => s.user);
   const setUser = useAuthStore((s) => s.setUser);
   const ken = user?.ken ?? PEN_START_KEN;
@@ -124,6 +123,11 @@ export function PenGamePage({ onClose }: PenGamePageProps) {
     toast.info(t('penGame.refreshed'));
   };
 
+  const handleTopUp = () => {
+    onClose();
+    openBuyKen('kenBuy');
+  };
+
   return (
     <FullScreenOverlay z={60} className="pen-screen bg-[#011d42]">
       <div className="flex h-full w-full flex-col items-center">
@@ -168,7 +172,7 @@ export function PenGamePage({ onClose }: PenGamePageProps) {
                 bg={penAssets.plusBtn}
                 icon={penAssets.plusIcon}
                 ariaLabel={t('penGame.topUp')}
-                onClick={() => navigate(ROUTES.kenBuy)}
+                onClick={handleTopUp}
                 className="h-8 w-8 shrink-0 @md:h-11 @md:w-11"
                 iconClassName="h-4 w-4 @md:h-5 @md:w-5"
               />
@@ -241,7 +245,7 @@ export function PenGamePage({ onClose }: PenGamePageProps) {
               ken={ken}
               amount={DEFAULT_BET}
               submitting={submitting}
-              onTopUp={() => navigate(ROUTES.kenBuy)}
+              onTopUp={handleTopUp}
               onConfirm={handleCreateShot}
               onClose={() => setShootOpen(false)}
             />
@@ -252,7 +256,7 @@ export function PenGamePage({ onClose }: PenGamePageProps) {
               ken={ken}
               betAmount={catchShot.betAmount}
               submitting={catching}
-              onTopUp={() => navigate(ROUTES.kenBuy)}
+              onTopUp={handleTopUp}
               onConfirm={handleCatch}
               onClose={closeCatch}
             />

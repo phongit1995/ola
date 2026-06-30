@@ -1,7 +1,5 @@
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
-import { ROUTES } from '@constants';
 import { UserService } from '@services';
 import { ApiError, colorForName, toast } from '@lib';
 import type { Gender, UpdateProfileRequest } from '@app-types';
@@ -90,9 +88,8 @@ function GenderSelect({ value, onChange }: { value: Gender; onChange: (gender: G
   );
 }
 
-export function EditProfileMePage() {
+export function EditProfileMePage({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
   const refreshUser = useAuthStore((s) => s.refreshUser);
 
@@ -151,7 +148,7 @@ export function EditProfileMePage() {
       await UserService.updateMe(payload);
       await refreshUser();
       toast.success(t('profileEdit.saved'));
-      navigate(ROUTES.home);
+      onClose();
     } catch (err) {
       const message = err instanceof ApiError ? err.message : t('profileEdit.saveError');
       setError(message);
@@ -166,7 +163,7 @@ export function EditProfileMePage() {
         <button
           type="button"
           aria-label={t('chat.back')}
-          onClick={() => navigate(ROUTES.home)}
+          onClick={() => onClose()}
           className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-white/15"
         >
           <svg viewBox="0 0 24 24" className="h-6 w-6" fill="currentColor" aria-hidden="true">
@@ -232,7 +229,7 @@ export function EditProfileMePage() {
       <div className="flex shrink-0 gap-3 border-t border-black/12 bg-white p-4">
         <button
           type="button"
-          onClick={() => navigate(ROUTES.home)}
+          onClick={() => onClose()}
           disabled={saving}
           className="flex-1 rounded border border-black/12 py-2.5 text-sm font-medium text-black/54 disabled:opacity-60"
         >

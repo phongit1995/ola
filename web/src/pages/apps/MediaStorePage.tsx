@@ -1,6 +1,4 @@
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
-import { ROUTES } from '@constants';
 import { toast } from '@lib';
 import { ScreenHeader, FullScreenOverlay } from '@components';
 import { MOCK_ALBUMS } from './constants';
@@ -71,9 +69,8 @@ function FolderIcon() {
   );
 }
 
-export function MediaStorePage() {
+export function MediaStorePage({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
 
   function comingSoon() {
     toast.info(t('media.comingSoon'));
@@ -81,7 +78,7 @@ export function MediaStorePage() {
 
   return (
     <FullScreenOverlay>
-      <ScreenHeader title={t('media.title')} onBack={() => navigate(ROUTES.home)} />
+      <ScreenHeader title={t('media.title')} onBack={onClose} />
 
       <div className="flex-1 overflow-y-auto bg-white">
         <div className="grid grid-cols-3 gap-x-1 gap-y-2 px-2 pb-4 pt-2">

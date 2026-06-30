@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { ROUTES } from '@constants';
 import { toast, ApiError, formatKen } from '@lib';
 import {
   ScreenHeader,
@@ -113,15 +111,12 @@ function VipPickerDialog({ open, selectedKey, items, onSelect, onClose }: VipPic
   );
 }
 
-export function BuyVipPage() {
+export function BuyVipPage({ mode: initialMode = 'buy', onClose }: { mode?: BuyVipMode; onClose: () => void }) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
-  const location = useLocation();
   const user = useAuthStore((s) => s.user);
   const setUser = useAuthStore((s) => s.setUser);
   const refreshUser = useAuthStore((s) => s.refreshUser);
 
-  const initialMode = (location.state as { mode?: BuyVipMode } | null)?.mode ?? 'buy';
   const [mode, setMode] = useState<BuyVipMode>(initialMode);
   const [selectedVipId, setSelectedVipId] = useState(DEFAULT_VIP_ID);
   const [selectedShopId, setSelectedShopId] = useState('');
@@ -261,7 +256,7 @@ export function BuyVipPage() {
         await refreshUser();
         setConfirmOpen(false);
         toast.success(t('vip.buy.bought', { name: selectedVip?.name ?? '' }));
-        navigate(ROUTES.vip);
+        onClose();
       } catch (error) {
         toast.info(buyErrorText(error));
       } finally {
@@ -282,7 +277,7 @@ export function BuyVipPage() {
         await refreshUser();
         setConfirmOpen(false);
         toast.success(t('vip.buy.extended', { days: result.days }));
-        navigate(ROUTES.vip);
+        onClose();
       } catch (error) {
         toast.info(buyErrorText(error));
       } finally {
@@ -315,7 +310,7 @@ export function BuyVipPage() {
 
   return (
     <FullScreenOverlay>
-      <ScreenHeader title={t(MODE_TITLE[mode])} onBack={() => navigate(ROUTES.vip)} />
+      <ScreenHeader title={t(MODE_TITLE[mode])} onBack={onClose} />
 
       <div className="flex-1 overflow-y-auto bg-[#ececec] pb-6">
         <div className="flex gap-1 bg-white px-2 py-2">

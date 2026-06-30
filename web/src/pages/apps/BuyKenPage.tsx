@@ -1,7 +1,5 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
-import { ROUTES } from '@constants';
 import { toast, formatKen, formatVnd } from '@lib';
 import { ScreenHeader, FullScreenOverlay } from '@components';
 import { useAuthStore } from '@/store/authStore';
@@ -72,9 +70,8 @@ function FakeQrCode({ seed }: { seed: number }) {
   );
 }
 
-export function BuyKenPage() {
+export function BuyKenPage({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
 
   const [amount, setAmount] = useState(MIN_AMOUNT);
@@ -97,7 +94,7 @@ export function BuyKenPage() {
 
   return (
     <FullScreenOverlay>
-      <ScreenHeader title={t('ken.buy.title')} onBack={() => navigate(ROUTES.ken)} />
+      <ScreenHeader title={t('ken.buy.title')} onBack={onClose} />
 
       <div className="flex-1 overflow-y-auto bg-[#ececec] pb-6">
         <div className="m-2 flex items-center rounded-sm border border-black/12 bg-white px-3 py-2.5">

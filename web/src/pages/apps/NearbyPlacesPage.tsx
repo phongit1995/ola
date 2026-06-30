@@ -1,6 +1,4 @@
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
-import { ROUTES } from '@constants';
 import { toast } from '@lib';
 import { ScreenHeader, FullScreenOverlay } from '@components';
 import { MOCK_VENUES } from './constants';
@@ -22,9 +20,8 @@ function ArrowIcon() {
   );
 }
 
-export function NearbyPlacesPage() {
+export function NearbyPlacesPage({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
 
   function comingSoon() {
     toast.info(t('nearby.comingSoon'));
@@ -32,7 +29,7 @@ export function NearbyPlacesPage() {
 
   return (
     <FullScreenOverlay>
-      <ScreenHeader title={t('nearby.title')} onBack={() => navigate(ROUTES.home)} />
+      <ScreenHeader title={t('nearby.title')} onBack={onClose} />
 
       <div className="flex-1 overflow-y-auto bg-white">
         <ul>

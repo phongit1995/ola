@@ -1,19 +1,18 @@
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
-import { type RoutePath } from '@constants';
 import { HomeHeader } from '@components/HomeHeader';
 import { useGameOverlayStore } from '@/store/gameOverlayStore';
+import { useAppOverlayStore } from '@/store/appOverlayStore';
 import { APP_ITEMS, type AppItem } from './constants';
 
 export function AppsPanel() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const openGame = useGameOverlayStore((s) => s.open);
+  const openApp = useAppOverlayStore((s) => s.push);
   const titles = t('home.apps', { returnObjects: true });
 
   function handleOpen(item: AppItem): (() => void) | undefined {
     if (item.overlay) return () => openGame(item.overlay!);
-    if (item.route) return () => navigate(item.route as RoutePath);
+    if (item.app) return () => openApp(item.app!);
     return undefined;
   }
 

@@ -4,6 +4,7 @@ import { authTokens } from '@lib';
 import { UserService } from '@services';
 import type { AuthUser } from '@app-types';
 import { useGameOverlayStore } from './gameOverlayStore';
+import { useAppOverlayStore } from './appOverlayStore';
 
 interface AuthState {
   user: AuthUser | null;
@@ -21,6 +22,7 @@ export const useAuthStore = create<AuthState>()(
       setUser: (user) => set({ user }),
       clearUser: () => {
         useGameOverlayStore.getState().close();
+        useAppOverlayStore.getState().reset();
         set({ user: null });
       },
       refreshUser: async () => {

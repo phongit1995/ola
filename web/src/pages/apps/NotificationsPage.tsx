@@ -1,7 +1,5 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
-import { ROUTES } from '@constants';
 import { toast, colorForName } from '@lib';
 import { ScreenHeader, FullScreenOverlay, Avatar } from '@components';
 import icAddSmall from '@/assets/icons/notify/ic_action_add_small.png';
@@ -44,9 +42,8 @@ function RowButton({ variant, onClick, children }: RowButtonProps) {
   );
 }
 
-export function NotificationsPage() {
+export function NotificationsPage({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
 
   function comingSoon() {
     toast.info(t('notify.comingSoon'));
@@ -54,7 +51,7 @@ export function NotificationsPage() {
 
   return (
     <FullScreenOverlay>
-      <ScreenHeader title={t('notify.title')} onBack={() => navigate(ROUTES.home)} />
+      <ScreenHeader title={t('notify.title')} onBack={onClose} />
 
       <div className="flex-1 overflow-y-auto bg-[#d5d5d5]">
         <ul>

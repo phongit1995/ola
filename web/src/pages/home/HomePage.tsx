@@ -5,8 +5,12 @@ import { KenBalanceBadge } from '@components';
 import { useAuthStore } from '@/store/authStore';
 import { useRoomChatStore } from '@/store/roomChatStore';
 import { useChatStore } from '@/store/chat/chatStore';
+import { useGameOverlayStore } from '@/store/gameOverlayStore';
+import { useAppOverlayStore } from '@/store/appOverlayStore';
 import { ActiveConversationOverlay } from '../chat/ActiveConversationOverlay';
 import { GameOverlay } from '../games/GameOverlay';
+import { RoomChatOverlay } from '../room/RoomChatOverlay';
+import { AppOverlay } from '../apps/AppOverlay';
 import { ACTIVE_TAB_KEY, PANELS } from './constants';
 
 function readStoredTab(): TabKey {
@@ -23,6 +27,13 @@ export function HomePage() {
   const ActivePanel = PANELS[tab];
   const authReady = useAuthStore((state) => state.authReady);
   const ken = useAuthStore((state) => state.user?.ken);
+  const roomActive = useRoomChatStore((state) => state.activeRoom != null);
+  const chatActive = useChatStore(
+    (state) => state.currentConversationId != null || state.draftRecipient != null
+  );
+  const gameActive = useGameOverlayStore((state) => state.active != null);
+  const appActive = useAppOverlayStore((state) => state.stack.length > 0);
+  const overlayActive = roomActive || chatActive || gameActive || appActive;
 
   function changeTab(next: TabKey) {
     sessionStorage.setItem(ACTIVE_TAB_KEY, next);
@@ -42,10 +53,11 @@ export function HomePage() {
   return (
     <div className="flex h-dvh flex-col bg-white font-sans">
       <div className="relative flex min-h-0 flex-1 flex-col">
-        <KenBalanceBadge ken={ken} />
+        {!overlayActive && <KenBalanceBadge ken={ken} />}
         <Suspense fallback={<div className="flex-1" />}>
           <ActivePanel />
         </Suspense>
+        <RoomChatOverlay />
       </div>
 
       <BottomTabBar
@@ -57,6 +69,7 @@ export function HomePage() {
 
       <ActiveConversationOverlay />
       <GameOverlay />
+      <AppOverlay />
     </div>
   );
 }

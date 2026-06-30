@@ -1,10 +1,9 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
-import { ROUTES } from '@constants';
 import { toast, formatKen } from '@lib';
 import { ScreenHeader, FullScreenOverlay } from '@components';
 import { useAuthStore } from '@/store/authStore';
+import { useAppOverlayStore } from '@/store/appOverlayStore';
 
 function KenCoin({ className = 'h-[18px] w-[18px]' }: { className?: string }) {
   return (
@@ -44,9 +43,9 @@ function RowAction({ icon, label, onClick }: RowActionProps) {
   );
 }
 
-export function KenStorePage() {
+export function KenStorePage({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
+  const pushOverlay = useAppOverlayStore((s) => s.push);
   const user = useAuthStore((s) => s.user);
 
   function comingSoon() {
@@ -57,7 +56,7 @@ export function KenStorePage() {
 
   return (
     <FullScreenOverlay>
-      <ScreenHeader title={t('ken.title')} onBack={() => navigate(ROUTES.home)} />
+      <ScreenHeader title={t('ken.title')} onBack={onClose} />
 
       <div className="flex-1 overflow-y-auto bg-[#ececec] pb-4">
         <p className="m-2 rounded-sm border border-black/12 bg-white px-3 py-2.5 text-xs text-[#e34545]">
@@ -73,7 +72,7 @@ export function KenStorePage() {
             </span>
           </div>
 
-          <RowAction icon={<KenCoin />} label={t('ken.purchase')} onClick={() => navigate(ROUTES.kenBuy)} />
+          <RowAction icon={<KenCoin />} label={t('ken.purchase')} onClick={() => pushOverlay('kenBuy')} />
           <div className="mx-2 h-px bg-black/12" />
           <RowAction icon={<KenCoin />} label={t('ken.transfer')} onClick={comingSoon} />
           <div className="mx-2 h-px bg-black/12" />

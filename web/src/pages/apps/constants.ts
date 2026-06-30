@@ -1,4 +1,4 @@
-import { ROUTES, type RoutePath } from '@constants';
+import type { AppOverlayKind } from '@/store/appOverlayStore';
 import icFriend from '@/assets/icons/notify/ic_notification_add_friend.png';
 import icMention from '@/assets/icons/notify/ic_notification_mention.png';
 import icLike from '@/assets/icons/notify/ic_notification_like.png';
@@ -23,7 +23,7 @@ import type { Album } from './MediaStorePage';
 
 export interface AppItem {
   icon: string;
-  route?: RoutePath;
+  app?: AppOverlayKind;
   overlay?: 'pen' | 'egg';
   subtitleKey?: 'home.appGameSubtitle' | 'home.appMallSubtitle';
 }
@@ -47,17 +47,17 @@ export const MOCK_NOTIFICATIONS: NotificationItem[] = [
 ];
 
 export const APP_ITEMS: AppItem[] = [
-  { icon: iconNotify, route: ROUTES.notifications },
+  { icon: iconNotify, app: 'notifications' },
   { icon: iconEgg, overlay: 'egg' },
   { icon: iconPen, overlay: 'pen' },
   { icon: iconGame, subtitleKey: 'home.appGameSubtitle' },
-  { icon: iconPersonal, route: ROUTES.profileEdit },
-  { icon: iconVip, route: ROUTES.vip },
-  { icon: iconKen, route: ROUTES.ken },
+  { icon: iconPersonal, app: 'profile' },
+  { icon: iconVip, app: 'vip' },
+  { icon: iconKen, app: 'ken' },
   { icon: iconAdme },
-  { icon: iconMedia, route: ROUTES.media },
+  { icon: iconMedia, app: 'media' },
   { icon: iconMall, subtitleKey: 'home.appMallSubtitle' },
-  { icon: iconNearby, route: ROUTES.nearby },
+  { icon: iconNearby, app: 'nearby' },
   { icon: iconSetting },
 ];
 
