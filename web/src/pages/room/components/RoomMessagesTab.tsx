@@ -1,16 +1,16 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { RoomMessage } from '@app-types';
-import { colorForName, kulToken, toast } from '@lib';
+import { activeVipTypeId, kulToken, toast } from '@lib';
 import { useAuthStore } from '@/store/authStore';
 import { useLongPress } from '@hooks';
 import {
   AttachmentBar,
   type AttachTab,
-  Avatar,
   DateSeparator,
   SmileyInput,
   type SmileyInputHandle,
+  VipAvatar,
 } from '@components';
 import likeIcon from '@/assets/icons/chat/smiley_35.png';
 import { buildRoomFeed } from '../messageGroups';
@@ -90,7 +90,7 @@ export function RoomMessagesTab({
 
   const canSend = status === 'joined';
   const isTyping = draft.trim() !== '';
-  const myName = me?.username ?? t('home.guest');
+  const vipTypeId = activeVipTypeId(me?.vipUsed, me?.vipEndTime);
   const feed = useMemo(() => buildRoomFeed(messages, currentUserId), [messages, currentUserId]);
 
   return (
@@ -121,11 +121,7 @@ export function RoomMessagesTab({
       </div>
 
       <div className="flex shrink-0 items-end gap-2 border-t border-black/12 bg-white px-3 py-2">
-        {me?.avatar != null && me.avatar !== '' ? (
-          <img src={me.avatar} alt="" className="h-9 w-9 shrink-0 rounded-full object-cover" />
-        ) : (
-          <Avatar name={myName} color={colorForName(myName)} size={36} />
-        )}
+        <VipAvatar typeId={vipTypeId} className="h-9 w-9" />
         <SmileyInput
           ref={composerRef}
           value={draft}
