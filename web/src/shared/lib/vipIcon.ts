@@ -5,6 +5,6 @@ export function vipIconUrl(id: number): string {
 export function parseVipTypeId(vipUsed: string | null | undefined): number | null {
   if (vipUsed == null || vipUsed === '') return null;
   const id = Number(vipUsed);
-  if (!Number.isInteger(id) || id < 1 || id > 120) return null;
+  if (!Number.isInteger(id) || id < 1 || id > 126) return null;
   return id;
 }

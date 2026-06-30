@@ -126,6 +126,12 @@ const VIP_NAMES = [
   'Phượng Hoàng Trí Tuệ',
   'Phượng Hoàng Toàn Năng',
   'Phượng Hoàng Sắc Đẹp',
+  'AnnaBelle',
+  'Búp Bê Ma',
+  'Clown',
+  'Meow',
+  'Zakumi Cao Bồi',
+  'Joker',
 ];
 
 export const VIP_CATALOG: VipCatalogEntry[] = VIP_NAMES.map((name, index) => ({
