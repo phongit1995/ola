@@ -31,10 +31,11 @@ function memberMatchesFilter(member: RoomMember, filters: RoomFilters): boolean 
 }
 
 interface RoomChatViewProps {
+  visible: boolean;
   onClose: () => void;
 }
 
-export function RoomChatView({ onClose }: RoomChatViewProps) {
+export function RoomChatView({ visible, onClose }: RoomChatViewProps) {
   const { t } = useTranslation();
   const name = useRoomChatStore((state) => state.activeRoom?.name ?? '');
   const status = useRoomChatStore((state) => state.status);
@@ -60,9 +61,9 @@ export function RoomChatView({ onClose }: RoomChatViewProps) {
   );
 
   useEffect(() => {
-    setRoomForeground(true);
+    setRoomForeground(visible);
     return () => setRoomForeground(false);
-  }, [setRoomForeground]);
+  }, [setRoomForeground, visible]);
 
   const openProfile = useCallback((username: string, color: string) => {
     setProfileTarget({ username, color });
@@ -101,6 +102,7 @@ export function RoomChatView({ onClose }: RoomChatViewProps) {
         messages={messages}
         status={status}
         active={activeTab === 'messages'}
+        visible={visible}
         hasMore={hasMore}
         loadingMore={loadingMore}
         onSend={sendMessage}

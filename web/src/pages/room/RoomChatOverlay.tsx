@@ -7,7 +7,7 @@ import { RoomJoiningOverlay } from './components/RoomJoiningOverlay';
 import { useRoomChatStore, type ActiveRoom } from '@/store/roomChatStore';
 import { useRoomStore } from './roomStore';
 
-export function RoomChatOverlay() {
+export function RoomChatOverlay({ visible }: { visible: boolean }) {
   const { t } = useTranslation();
   const activeRoom = useRoomChatStore((state) => state.activeRoom);
   const joinStatus = useRoomChatStore((state) => state.status);
@@ -31,9 +31,9 @@ export function RoomChatOverlay() {
   }
 
   return (
-    <>
+    <div className={visible ? '' : 'hidden'}>
       {joinStatus === 'joined' ? (
-        <RoomChatView onClose={() => setPendingQuit(activeRoom)} />
+        <RoomChatView visible={visible} onClose={() => setPendingQuit(activeRoom)} />
       ) : (
         <RoomJoiningOverlay status={joinStatus} onClose={exitRoom} />
       )}
@@ -48,6 +48,6 @@ export function RoomChatOverlay() {
         onConfirm={confirmQuit}
         onCancel={() => setPendingQuit(null)}
       />
-    </>
+    </div>
   );
 }

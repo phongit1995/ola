@@ -22,6 +22,7 @@ interface RoomMessagesTabProps {
   messages: RoomMessage[];
   status: RoomChatStatus;
   active: boolean;
+  visible: boolean;
   hasMore: boolean;
   loadingMore: boolean;
   onSend: (content: string) => Promise<void>;
@@ -34,6 +35,7 @@ export function RoomMessagesTab({
   messages,
   status,
   active,
+  visible,
   hasMore,
   loadingMore,
   onSend,
@@ -69,12 +71,12 @@ export function RoomMessagesTab({
   }, [messages]);
 
   useEffect(() => {
-    if (!active) return;
+    if (!active || !visible) return;
     if (pendingPrependRef.current) return;
     if (stickToBottomRef.current) {
       scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
     }
-  }, [messages, active]);
+  }, [messages, active, visible]);
 
   function handleScroll() {
     const element = scrollRef.current;

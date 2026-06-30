@@ -57,7 +57,7 @@ export function HomePage() {
         <Suspense fallback={<div className="flex-1" />}>
           <ActivePanel />
         </Suspense>
-        {tab === 'room' && <RoomChatOverlay />}
+        <RoomChatOverlay visible={tab === 'room'} />
       </div>
 
       <BottomTabBar
