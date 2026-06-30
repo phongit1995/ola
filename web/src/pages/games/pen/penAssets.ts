@@ -14,6 +14,7 @@ import plusIconUrl from '@/assets/games/pen/plus.webp';
 import historyIconUrl from '@/assets/games/pen/history.webp';
 import refreshIconUrl from '@/assets/games/pen/refresh.webp';
 import gloveIconUrl from '@/assets/games/pen/glove.webp';
+import shotListIconUrl from '@/assets/games/pen/shot-list.webp';
 import kenIconUrl from '@/assets/icons/apps/ken.png';
 import shootBallUrl from '@/assets/games/pen/shoot-modal/ball-trail.webp';
 import confirmBtnUrl from '@/assets/games/pen/shoot-modal/button-confirm.webp';
@@ -67,6 +68,7 @@ export const penAssets = {
   historyIcon: historyIconUrl,
   refreshIcon: refreshIconUrl,
   gloveIcon: gloveIconUrl,
+  shotListIcon: shotListIconUrl,
   kenIcon: kenIconUrl,
 };
 

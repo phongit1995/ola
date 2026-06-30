@@ -19,19 +19,6 @@ interface PenShotListProps {
 const ROW_GRID = 'grid items-center gap-1.5';
 const GRID_COLS = '1.9fr 1fr 1.2fr 0.95fr';
 
-function PeopleIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className="h-3.5 w-3.5"
-      fill="currentColor"
-      aria-hidden="true"
-    >
-      <path d="M16 11a3 3 0 1 0-3-3 3 3 0 0 0 3 3Zm-8 0a3 3 0 1 0-3-3 3 3 0 0 0 3 3Zm0 2c-2.7 0-5 1.3-5 3.5V19h6v-2.5c0-.9.4-1.7 1-2.4A8 8 0 0 0 8 13Zm8 0c-.5 0-1 .05-1.4.13C16 14.1 17 15.4 17 16.5V19h6v-2.5c0-2.2-2.3-3.5-5-3.5Z" />
-    </svg>
-  );
-}
-
 export function PenShotList({
   shots,
   loading,
@@ -50,7 +37,7 @@ export function PenShotList({
     >
       <header className="flex items-center px-3 py-1.5 text-white">
         <span className="flex items-center gap-1.5 text-[11px] font-bold tracking-wide">
-          <PeopleIcon />
+          <img src={penAssets.shotListIcon} alt="" className="h-3.5 w-3.5 object-contain" />
           {t('penGame.waitingTitle')}
         </span>
       </header>
