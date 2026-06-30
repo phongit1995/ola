@@ -98,6 +98,7 @@ export const API_PATH = {
     shots: '/pen/shots',
     mine: '/pen/mine',
     history: '/pen/history',
+    historyAll: '/pen/history/all',
     catch: (id: string) => `/pen/shots/${id}/catch`,
     cancel: (id: string) => `/pen/shots/${id}/cancel`,
   },

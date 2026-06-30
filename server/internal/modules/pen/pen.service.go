@@ -107,6 +107,14 @@ func (s *Service) ListHistory(userID uuid.UUID, role, result string, limit, offs
 	return buildList(items, total, limit, offset, true), nil
 }
 
+func (s *Service) ListAllHistory(limit, offset int) (*ShotListResponse, error) {
+	items, total, err := s.repo.ListAllSettled(limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	return buildList(items, total, limit, offset, true), nil
+}
+
 func (s *Service) CatchShot(userID, shotID uuid.UUID, req CatchRequest) (*CatchResult, error) {
 	shot, shooterKen, keeperKen, err := s.repo.CatchShot(userID, shotID, models.PenSide(req.Side), penCommissionPercent)
 	if err != nil {

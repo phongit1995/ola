@@ -90,7 +90,7 @@ func (r *Repository) ListMyOpenShots(shooterID uuid.UUID, limit, offset int) ([]
 }
 
 func (r *Repository) ListHistory(userID uuid.UUID, role, result string, limit, offset int) ([]models.PenShot, int64, error) {
-	q := r.db.Model(&models.PenShot{}).Where("status <> ?", models.PenStatusOpen)
+	q := r.db.Model(&models.PenShot{})
 	switch role {
 	case "shoot":
 		q = q.Where("shooter_id = ?", userID)
@@ -105,6 +105,25 @@ func (r *Repository) ListHistory(userID uuid.UUID, role, result string, limit, o
 	case "lose":
 		q = q.Where("status = ? AND winner_id IS NOT NULL AND winner_id <> ?", models.PenStatusSettled, userID)
 	}
+
+	var total int64
+	if err := q.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	var items []models.PenShot
+	err := q.
+		Preload("Shooter", briefSelect).
+		Preload("Keeper", briefSelect).
+		Order("created_at DESC").
+		Limit(limit).
+		Offset(offset).
+		Find(&items).Error
+	return items, total, err
+}
+
+func (r *Repository) ListAllSettled(limit, offset int) ([]models.PenShot, int64, error) {
+	q := r.db.Model(&models.PenShot{}).Where("status = ?", models.PenStatusSettled)
 
 	var total int64
 	if err := q.Count(&total).Error; err != nil {

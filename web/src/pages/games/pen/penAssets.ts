@@ -42,6 +42,13 @@ import catchSelMarkUrl from '@/assets/games/pen/catch-modal/selected/circle-chec
 import catchUnselTabUrl from '@/assets/games/pen/catch-modal/unselected/label-tab.webp';
 import catchUnselArrowLeftUrl from '@/assets/games/pen/catch-modal/unselected/arrow-left.webp';
 import catchUnselArrowRightUrl from '@/assets/games/pen/catch-modal/unselected/arrow-right.webp';
+import histTabUrl from '@/assets/games/pen/history-modal/tab.webp';
+import histPageCurrentUrl from '@/assets/games/pen/history-modal/button-page-current.webp';
+import histPageNextUrl from '@/assets/games/pen/history-modal/button-page-next.webp';
+import histResultWinUrl from '@/assets/games/pen/history-modal/result-win.webp';
+import histResultLoseUrl from '@/assets/games/pen/history-modal/result-lose.webp';
+import histClockUrl from '@/assets/games/pen/history-modal/clock.webp';
+import histClockYellowUrl from '@/assets/games/pen/history-modal/clock-yellow.webp';
 
 export const penAssets = {
   scene: sceneUrl,
@@ -86,6 +93,16 @@ export const penShootAssets = {
       mark: dirUnselMarkUrl,
     },
   },
+};
+
+export const penHistoryAssets = {
+  tab: histTabUrl,
+  pageCurrent: histPageCurrentUrl,
+  pageNext: histPageNextUrl,
+  resultWin: histResultWinUrl,
+  resultLose: histResultLoseUrl,
+  clock: histClockUrl,
+  clockYellow: histClockYellowUrl,
 };
 
 export const penCatchAssets = {

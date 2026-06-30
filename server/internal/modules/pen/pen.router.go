@@ -23,5 +23,6 @@ func (r *Router) Setup(api *utils.AppGroup) {
 		p.POST("/shots/:id/catch", r.controller.Catch)
 		p.POST("/shots/:id/cancel", r.controller.Cancel)
 		p.GET("/history", r.controller.History)
+		p.GET("/history/all", r.controller.AllHistory)
 	}
 }

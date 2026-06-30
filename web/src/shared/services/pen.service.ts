@@ -36,4 +36,8 @@ export class PenService {
   static history(params: PenHistoryParams = {}): Promise<PenShotListResult> {
     return http.get<PenShotListResult>(API_PATH.pen.history, { params });
   }
+
+  static allHistory(params: PenPageParams = {}): Promise<PenShotListResult> {
+    return http.get<PenShotListResult>(API_PATH.pen.historyAll, { params });
+  }
 }

@@ -202,3 +202,22 @@ func (ctrl *Controller) History(c *gin.Context) (interface{}, error) {
 	}
 	return resp, nil
 }
+
+// AllHistory godoc
+// @Summary      Lịch sử các lượt đã xử lý của tất cả mọi người
+// @Tags         pen
+// @Produce      json
+// @Security     BearerAuth
+// @Param        limit query int false "Page size"
+// @Param        offset query int false "Offset"
+// @Success      200  {object}  ShotListSuccessResponse
+// @Router       /pen/history/all [get]
+func (ctrl *Controller) AllHistory(c *gin.Context) (interface{}, error) {
+	limit := utils.ParseLimit(c, 20, 100)
+	offset := utils.ParseOffset(c)
+	resp, err := ctrl.service.ListAllHistory(limit, offset)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}

@@ -12,6 +12,7 @@ import { PenButton } from './PenButton';
 import { PenShotList } from './PenShotList';
 import { PenShootModal } from './PenShootModal';
 import { PenCatchModal } from './PenCatchModal';
+import { PenHistoryModal } from './PenHistoryModal';
 import { penAssets } from './penAssets';
 import { PEN_START_KEN } from './penMock';
 
@@ -34,6 +35,7 @@ export function PenGamePage() {
   const [kickId, setKickId] = useState(0);
   const [kicking, setKicking] = useState(false);
   const [shootOpen, setShootOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [catchShot, setCatchShot] = useState<PenShotView | null>(null);
   const [catching, setCatching] = useState(false);
@@ -192,7 +194,7 @@ export function PenGamePage() {
               bg={penAssets.historyBtn}
               icon={penAssets.historyIcon}
               label={t('penGame.history')}
-              onClick={() => toast.info(t('penGame.historyEmpty'))}
+              onClick={() => setHistoryOpen(true)}
               className="h-12 flex-1 text-sm"
             />
           </footer>
@@ -217,6 +219,10 @@ export function PenGamePage() {
               onConfirm={handleCatch}
               onClose={closeCatch}
             />
+          )}
+
+          {historyOpen && (
+            <PenHistoryModal userId={user?.id} onClose={() => setHistoryOpen(false)} />
           )}
         </div>
       </div>
