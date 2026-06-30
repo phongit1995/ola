@@ -129,7 +129,7 @@ func (s *Service) uploadImageFile(ctx context.Context, userID, conversationID uu
 
 	ext := pickExtension(detectedMime, fileHeader.Filename)
 	safeName := fmt.Sprintf("image%s", ext)
-	folder := fmt.Sprintf("%s/%s", constants.UploadFolderMessages, conversationID.String())
+	folder := fmt.Sprintf("%s/%s/%s", constants.UploadFolderMessages, conversationID.String(), time.Now().Format(constants.UploadDateLayout))
 
 	upload, err := s.minio.UploadFile(ctx, &multipartFileReader{Reader: bytes.NewReader(fullData), size: int64(len(fullData))}, safeName, folder)
 	if err != nil {
@@ -257,7 +257,7 @@ func (s *Service) uploadAudioFile(ctx context.Context, userID, conversationID uu
 
 	ext := pickAudioExtension(finalMime, fileHeader.Filename)
 	safeName := fmt.Sprintf("audio%s", ext)
-	folder := fmt.Sprintf("%s/%s", constants.UploadFolderMessages, conversationID.String())
+	folder := fmt.Sprintf("%s/%s/%s", constants.UploadFolderMessages, conversationID.String(), time.Now().Format(constants.UploadDateLayout))
 
 	upload, err := s.minio.UploadFile(ctx, &multipartFileReader{Reader: bytes.NewReader(data), size: int64(len(data))}, safeName, folder)
 	if err != nil {
