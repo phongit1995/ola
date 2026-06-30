@@ -56,6 +56,9 @@ screens/
 ├── kho-ken/               ← Cửa hàng KEN (mở từ tab Ứng dụng, frag m.b)
 │   ├── README.md                số dư KEN + nạp/chuyển/lịch sử + hỗ trợ + CSS
 │   └── images/                  icon (ken, tab, back, quit)
+├── chuyen-ken/            ← Chuyển KEN (OlaTransferKenActivity — 2 bước + PIN)
+│   ├── README.md                flow 2 bước nhập→xác nhận + validate min/max + bubble chat + CSS
+│   └── images/                  icon ken
 ├── hinh-anh/              ← Hình Ảnh / Kho ảnh cloud (OlaCloudAlbumListActivity)
 │   ├── README.md                grid album + chọn nhiều + quyền riêng tư + xoá + CSS
 │   └── images/                  icon (tick, cờ quyền, loại media)
@@ -97,6 +100,7 @@ screens/
 | 4 | Ứng dụng (tab 5) | [ung-dung/](ung-dung/README.md) | `OlaBottomTabActivity` + fragment `m/d` | ✅ chụp thật + 10 icon |
 | 4b | ↳ Thông báo (từ tab Ứng dụng) | [thong-bao/](thong-bao/README.md) | `OlaBottomTabActivity` (frag `m.k`, vị trí 9) | 📐 từ code/XML (chưa chụp) |
 | 4c | ↳ Cửa hàng KEN (từ tab Ứng dụng) | [kho-ken/](kho-ken/README.md) | `OlaBottomTabActivity` (frag `m.b`, vị trí 10) | 📐 từ code/XML (chưa chụp) |
+| 4c′ | ↳ Chuyển KEN (từ Cửa hàng KEN / hội thoại) | [chuyen-ken/](chuyen-ken/README.md) | `transferken.OlaTransferKenActivity` | 📐 từ code/XML (chưa chụp) |
 | 4d | ↳ Hình Ảnh / Kho ảnh (từ tab Ứng dụng) | [hinh-anh/](hinh-anh/README.md) | `cloud.OlaCloudAlbumListActivity` | 📐 từ code/XML (chưa chụp) |
 | 4e | ↳ Lân cận / Địa điểm gần (từ tab Ứng dụng) | [lan-can/](lan-can/README.md) | `OlaBottomTabActivity` (frag `m.i`, vị trí 13) → `checkin.OlaVenueDetailActivity` | 📐 từ code/XML (chưa chụp) |
 | 4a | Kho VIP | [kho-vip/](kho-vip/README.md) | `OlaVipStoreActivity` | 📐 từ code/XML (chưa chụp) |
