@@ -3,14 +3,13 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@constants';
 import { formatKen } from '@lib';
-import { FullScreenOverlay } from '@components';
+import { AnimatedKen, FullScreenOverlay } from '@components';
 import { SocketService } from '@services';
 import { useAuthStore } from '@/store/authStore';
 import { useEggGameStore } from './eggGameStore';
 import { useEggGame } from './useEggGame';
 import { EggStage } from './EggStage';
 import { EggHistoryDialog } from './EggHistoryDialog';
-import { AnimatedKen } from './AnimatedKen';
 import { historyIconUrl } from './eggAssets';
 import { EGG_START_KEN } from './eggGame.constants';
 

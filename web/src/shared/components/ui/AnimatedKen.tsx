@@ -7,9 +7,21 @@ const SETTLE_MS = 700;
 
 interface AnimatedKenProps {
   value: number;
+  className?: string;
+  numberClassName?: string;
+  iconClassName?: string;
+  showIcon?: boolean;
+  bounce?: boolean;
 }
 
-export function AnimatedKen({ value }: AnimatedKenProps) {
+export function AnimatedKen({
+  value,
+  className = '',
+  numberClassName = 'text-xl leading-none text-[#ffca28]',
+  iconClassName = 'h-5 w-5',
+  showIcon = true,
+  bounce = true,
+}: AnimatedKenProps) {
   const [display, setDisplay] = useState(value);
   const [settled, setSettled] = useState(false);
   const [bump, setBump] = useState(0);
@@ -53,13 +65,15 @@ export function AnimatedKen({ value }: AnimatedKenProps) {
     };
   }, [value, settled]);
 
+  const bumpClass = bounce && bump > 0 ? ' animate-ola-ken-bump' : '';
+
   return (
     <span
       key={bump}
-      className={`inline-flex items-center gap-1.5 leading-none${bump > 0 ? ' animate-ola-ken-bump' : ''}`}
+      className={`inline-flex items-center gap-1.5 leading-none ${className}${bumpClass}`}
     >
-      <b className="text-xl leading-none text-[#ffca28]">{formatKen(display)}</b>
-      <img src={kenIconUrl} alt="KEN" className="block h-5 w-5 shrink-0" />
+      <b className={numberClassName}>{formatKen(display)}</b>
+      {showIcon && <img src={kenIconUrl} alt="KEN" className={`block shrink-0 ${iconClassName}`} />}
     </span>
   );
 }

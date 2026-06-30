@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@constants';
-import { FullScreenOverlay } from '@components';
+import { AnimatedKen, FullScreenOverlay } from '@components';
 import { formatKen, toApiError, toast } from '@lib';
 import { PenService } from '@services';
 import type { PenSide, PenShotView } from '@app-types';
@@ -158,7 +158,7 @@ export function PenGamePage() {
                   alt="KEN"
                   className="h-3.5 w-3.5 shrink-0 @md:h-4 @md:w-4"
                 />
-                {formatKen(ken)}
+                <AnimatedKen value={ken} showIcon={false} numberClassName="leading-none" />
               </span>
               <PenButton
                 bg={penAssets.plusBtn}
