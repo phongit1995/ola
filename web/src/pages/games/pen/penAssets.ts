@@ -1,48 +1,47 @@
-import sceneUrl from '@/assets/games/pen/background-empty.png';
-import ballUrl from '@/assets/games/pen/ball.png';
-import ballTrailUrl from '@/assets/games/pen/ball-trail.png';
-import shootBtnUrl from '@/assets/games/pen/button-shoot.png';
-import selectBtnUrl from '@/assets/games/pen/button-select.png';
-import refreshBtnUrl from '@/assets/games/pen/button-refresh.png';
-import historyBtnUrl from '@/assets/games/pen/button-history.png';
-import plusBtnUrl from '@/assets/games/pen/button-plus.png';
-import helpBtnUrl from '@/assets/games/pen/button-help.png';
-import backBtnUrl from '@/assets/games/pen/button-back.png';
-import backIconUrl from '@/assets/games/pen/back.png';
-import helpIconUrl from '@/assets/games/pen/help.png';
-import plusIconUrl from '@/assets/games/pen/plus.png';
-import historyIconUrl from '@/assets/games/pen/history.png';
-import refreshIconUrl from '@/assets/games/pen/refresh.png';
-import gloveIconUrl from '@/assets/games/pen/glove.png';
+import sceneUrl from '@/assets/games/pen/background-empty.webp';
+import ballUrl from '@/assets/games/pen/ball.webp';
+import ballTrailUrl from '@/assets/games/pen/ball-trail.webp';
+import shootBtnUrl from '@/assets/games/pen/button-shoot.webp';
+import selectBtnUrl from '@/assets/games/pen/button-select.webp';
+import refreshBtnUrl from '@/assets/games/pen/button-refresh.webp';
+import historyBtnUrl from '@/assets/games/pen/button-history.webp';
+import plusBtnUrl from '@/assets/games/pen/button-plus.webp';
+import helpBtnUrl from '@/assets/games/pen/button-help.webp';
+import backBtnUrl from '@/assets/games/pen/button-back.webp';
+import backIconUrl from '@/assets/games/pen/back.webp';
+import helpIconUrl from '@/assets/games/pen/help.webp';
+import plusIconUrl from '@/assets/games/pen/plus.webp';
+import historyIconUrl from '@/assets/games/pen/history.webp';
+import refreshIconUrl from '@/assets/games/pen/refresh.webp';
+import gloveIconUrl from '@/assets/games/pen/glove.webp';
 import kenIconUrl from '@/assets/icons/apps/ken.png';
-import shootBgUrl from '@/assets/games/pen/shoot-modal/background-empty.png';
-import shootBallUrl from '@/assets/games/pen/shoot-modal/ball-trail.png';
-import confirmBtnUrl from '@/assets/games/pen/shoot-modal/button-confirm.png';
-import cancelBtnUrl from '@/assets/games/pen/shoot-modal/button-cancel.png';
-import closeBtnUrl from '@/assets/games/pen/shoot-modal/button-close.png';
-import closeIconUrl from '@/assets/games/pen/shoot-modal/close.png';
-import dirSelBgUrl from '@/assets/games/pen/shoot-modal/selected/background-empty.png';
-import dirSelTabUrl from '@/assets/games/pen/shoot-modal/selected/label-tab.png';
-import dirSelArrowLeftUrl from '@/assets/games/pen/shoot-modal/selected/arrow-left.png';
-import dirSelArrowRightUrl from '@/assets/games/pen/shoot-modal/selected/arrow-right.png';
-import dirSelBallUrl from '@/assets/games/pen/shoot-modal/selected/ball.png';
-import dirSelMarkUrl from '@/assets/games/pen/shoot-modal/selected/circle-check.png';
-import dirUnselBgUrl from '@/assets/games/pen/shoot-modal/unselected/background-empty.png';
-import dirUnselTabUrl from '@/assets/games/pen/shoot-modal/unselected/label-tab.png';
-import dirUnselArrowLeftUrl from '@/assets/games/pen/shoot-modal/unselected/arrow-left.png';
-import dirUnselArrowRightUrl from '@/assets/games/pen/shoot-modal/unselected/arrow-right.png';
-import dirUnselMarkUrl from '@/assets/games/pen/shoot-modal/unselected/circle.png';
-import catchGloveLeftUrl from '@/assets/games/pen/catch-modal/glove-left.png';
-import catchGloveRightUrl from '@/assets/games/pen/catch-modal/glove-right.png';
-import catchGloveEffectUrl from '@/assets/games/pen/catch-modal/glove-effect.png';
-import catchSelBgUrl from '@/assets/games/pen/catch-modal/selected/background-empty.png';
-import catchSelTabUrl from '@/assets/games/pen/catch-modal/selected/label-tab.png';
-import catchSelArrowLeftUrl from '@/assets/games/pen/catch-modal/selected/arrow-left.png';
-import catchSelArrowRightUrl from '@/assets/games/pen/catch-modal/selected/arrow-right.png';
-import catchSelMarkUrl from '@/assets/games/pen/catch-modal/selected/circle-check.png';
-import catchUnselTabUrl from '@/assets/games/pen/catch-modal/unselected/label-tab.png';
-import catchUnselArrowLeftUrl from '@/assets/games/pen/catch-modal/unselected/arrow-left.png';
-import catchUnselArrowRightUrl from '@/assets/games/pen/catch-modal/unselected/arrow-right.png';
+import shootBallUrl from '@/assets/games/pen/shoot-modal/ball-trail.webp';
+import confirmBtnUrl from '@/assets/games/pen/shoot-modal/button-confirm.webp';
+import cancelBtnUrl from '@/assets/games/pen/shoot-modal/button-cancel.webp';
+import closeBtnUrl from '@/assets/games/pen/shoot-modal/button-close.webp';
+import closeIconUrl from '@/assets/games/pen/shoot-modal/close.webp';
+import dirSelBgUrl from '@/assets/games/pen/shoot-modal/selected/background-empty.webp';
+import dirSelTabUrl from '@/assets/games/pen/shoot-modal/selected/label-tab.webp';
+import dirSelArrowLeftUrl from '@/assets/games/pen/shoot-modal/selected/arrow-left.webp';
+import dirSelArrowRightUrl from '@/assets/games/pen/shoot-modal/selected/arrow-right.webp';
+import dirSelBallUrl from '@/assets/games/pen/shoot-modal/selected/ball.webp';
+import dirSelMarkUrl from '@/assets/games/pen/shoot-modal/selected/circle-check.webp';
+import dirUnselBgUrl from '@/assets/games/pen/shoot-modal/unselected/background-empty.webp';
+import dirUnselTabUrl from '@/assets/games/pen/shoot-modal/unselected/label-tab.webp';
+import dirUnselArrowLeftUrl from '@/assets/games/pen/shoot-modal/unselected/arrow-left.webp';
+import dirUnselArrowRightUrl from '@/assets/games/pen/shoot-modal/unselected/arrow-right.webp';
+import dirUnselMarkUrl from '@/assets/games/pen/shoot-modal/unselected/circle.webp';
+import catchGloveLeftUrl from '@/assets/games/pen/catch-modal/glove-left.webp';
+import catchGloveRightUrl from '@/assets/games/pen/catch-modal/glove-right.webp';
+import catchGloveEffectUrl from '@/assets/games/pen/catch-modal/glove-effect.webp';
+import catchSelBgUrl from '@/assets/games/pen/catch-modal/selected/background-empty.webp';
+import catchSelTabUrl from '@/assets/games/pen/catch-modal/selected/label-tab.webp';
+import catchSelArrowLeftUrl from '@/assets/games/pen/catch-modal/selected/arrow-left.webp';
+import catchSelArrowRightUrl from '@/assets/games/pen/catch-modal/selected/arrow-right.webp';
+import catchSelMarkUrl from '@/assets/games/pen/catch-modal/selected/circle-check.webp';
+import catchUnselTabUrl from '@/assets/games/pen/catch-modal/unselected/label-tab.webp';
+import catchUnselArrowLeftUrl from '@/assets/games/pen/catch-modal/unselected/arrow-left.webp';
+import catchUnselArrowRightUrl from '@/assets/games/pen/catch-modal/unselected/arrow-right.webp';
 
 export const penAssets = {
   scene: sceneUrl,
@@ -65,7 +64,6 @@ export const penAssets = {
 };
 
 export const penShootAssets = {
-  bg: shootBgUrl,
   ball: shootBallUrl,
   panelBall: dirSelBallUrl,
   confirmBtn: confirmBtnUrl,
@@ -91,7 +89,6 @@ export const penShootAssets = {
 };
 
 export const penCatchAssets = {
-  bg: shootBgUrl,
   gloveLeft: catchGloveLeftUrl,
   gloveRight: catchGloveRightUrl,
   gloveEffect: catchGloveEffectUrl,

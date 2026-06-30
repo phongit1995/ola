@@ -43,8 +43,7 @@ export function PenCatchModal({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        style={{ ...stretchBg, backgroundImage: `url(${penCatchAssets.bg})` }}
-        className="relative aspect-[943/1250] w-full max-w-[380px] bg-no-repeat"
+        className="pen-panel relative aspect-[943/1250] w-full max-w-[380px]"
       >
         <div className="absolute inset-0 flex flex-col items-center px-[8%] pt-[4%] pb-[4%] text-white">
           <div className="flex items-center justify-center gap-2">
