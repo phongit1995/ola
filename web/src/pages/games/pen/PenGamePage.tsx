@@ -92,41 +92,40 @@ export function PenGamePage() {
   return (
     <FullScreenOverlay className="pen-screen bg-[#011d42]">
       <div className="flex h-full w-full flex-col items-center">
-        <div className="relative flex w-full max-w-[645px] flex-1 flex-col overflow-hidden bg-[#011d42]">
+        <div className="@container relative flex w-full max-w-[645px] flex-1 flex-col overflow-hidden bg-[#011d42]">
           <img
             src={penAssets.scene}
             alt=""
             className="pointer-events-none absolute inset-x-0 top-0 w-full"
           />
 
-          <header
-            className="absolute inset-x-0 top-0 z-20 flex w-full items-center justify-between px-3 text-white"
-            style={{ aspectRatio: '1024 / 118' }}
-          >
-            <PenButton
-              bg={penAssets.backBtn}
-              icon={penAssets.backIcon}
-              ariaLabel={t('chat.back')}
-              onClick={() => navigate(ROUTES.home)}
-              className="h-11 w-11 shrink-0"
-              iconClassName="h-7 w-7"
-            />
-            <span className="pointer-events-none absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center gap-1.5">
-              <span className="text-4xl font-extrabold italic tracking-wider drop-shadow">
+          <header className="absolute inset-x-0 top-0 z-20 flex w-full items-center gap-2 px-3 py-2 text-white @md:aspect-[1024/118] @md:py-0">
+            <div className="flex flex-1 justify-start">
+              <PenButton
+                bg={penAssets.backBtn}
+                icon={penAssets.backIcon}
+                ariaLabel={t('chat.back')}
+                onClick={() => navigate(ROUTES.home)}
+                className="h-9 w-9 shrink-0 @md:h-11 @md:w-11"
+                iconClassName="h-5 w-5 @md:h-7 @md:w-7"
+              />
+            </div>
+            <span className="pointer-events-none flex shrink-0 items-center gap-1.5">
+              <span className="text-2xl font-extrabold italic tracking-wider drop-shadow @md:text-4xl">
                 {t('penGame.title')}
               </span>
               <img
                 src={penAssets.ballTrail}
                 alt=""
-                className="h-10 w-auto object-contain"
+                className="h-6 w-auto object-contain @md:h-10"
               />
             </span>
-            <span className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1 rounded-full bg-black/35 px-2 py-1 text-sm font-bold">
+            <div className="flex flex-1 items-center justify-end gap-1.5 @md:gap-2">
+              <span className="inline-flex items-center gap-0.5 whitespace-nowrap rounded-full bg-black/35 px-1.5 py-0.5 text-xs font-bold @md:gap-1 @md:px-2 @md:py-1 @md:text-sm">
                 <img
                   src={penAssets.kenIcon}
                   alt="KEN"
-                  className="h-4 w-4 shrink-0"
+                  className="h-3.5 w-3.5 shrink-0 @md:h-4 @md:w-4"
                 />
                 {formatKen(ken)}
               </span>
@@ -135,18 +134,18 @@ export function PenGamePage() {
                 icon={penAssets.plusIcon}
                 ariaLabel={t('penGame.topUp')}
                 onClick={() => navigate(ROUTES.kenBuy)}
-                className="h-9 w-9"
-                iconClassName="h-4 w-4"
+                className="h-8 w-8 shrink-0 @md:h-11 @md:w-11"
+                iconClassName="h-4 w-4 @md:h-5 @md:w-5"
               />
               <PenButton
                 bg={penAssets.helpBtn}
                 icon={penAssets.helpIcon}
                 ariaLabel={t('penGame.help')}
                 onClick={() => toast.info(t('penGame.help'))}
-                className="h-9 w-9"
-                iconClassName="h-4 w-4"
+                className="h-8 w-8 shrink-0 @md:h-11 @md:w-11"
+                iconClassName="h-4 w-4 @md:h-5 @md:w-5"
               />
-            </span>
+            </div>
           </header>
 
           <div
