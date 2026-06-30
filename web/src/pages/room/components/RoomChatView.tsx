@@ -46,6 +46,9 @@ export function RoomChatView({ onClose }: RoomChatViewProps) {
   const setActiveTab = useRoomChatStore((state) => state.setActiveTab);
   const sendMessage = useRoomChatStore((state) => state.sendMessage);
   const setRoomForeground = useRoomChatStore((state) => state.setRoomForeground);
+  const hasMore = useRoomChatStore((state) => state.hasMore);
+  const loadingMore = useRoomChatStore((state) => state.loadingMore);
+  const loadMoreMessages = useRoomChatStore((state) => state.loadMoreMessages);
   const currentUserId = useAuthStore((state) => state.user?.id) ?? '';
   const [profileTarget, setProfileTarget] = useState<ProfileTarget | null>(null);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -98,7 +101,10 @@ export function RoomChatView({ onClose }: RoomChatViewProps) {
         messages={messages}
         status={status}
         active={activeTab === 'messages'}
+        hasMore={hasMore}
+        loadingMore={loadingMore}
         onSend={sendMessage}
+        onLoadMore={loadMoreMessages}
         onOpenProfile={openProfile}
       />
       <RoomMembersTab

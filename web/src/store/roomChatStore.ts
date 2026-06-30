@@ -25,11 +25,14 @@ export interface RoomChatState {
   hasUnread: boolean;
   messagesUnread: boolean;
   roomForeground: boolean;
+  hasMore: boolean;
+  loadingMore: boolean;
   open: (room: ActiveRoom) => Promise<void>;
   close: () => void;
   setActiveTab: (tab: RoomTab) => void;
   setRoomForeground: (foreground: boolean) => void;
   sendMessage: (content: string) => Promise<void>;
+  loadMoreMessages: () => Promise<void>;
 }
 
 const initialState = {
@@ -42,6 +45,8 @@ const initialState = {
   hasUnread: false,
   messagesUnread: false,
   roomForeground: false,
+  hasMore: false,
+  loadingMore: false,
 };
 
 export const useRoomChatStore = create<RoomChatState>((set, get) => {
@@ -71,6 +76,7 @@ export const useRoomChatStore = create<RoomChatState>((set, get) => {
       messages: [...msgs.items].reverse().map(withSenderVip),
       members: withVipTypeId(mem.items),
       memberCount: mem.total,
+      hasMore: msgs.hasMore,
     });
   }
 
@@ -111,6 +117,31 @@ export const useRoomChatStore = create<RoomChatState>((set, get) => {
           ? state
           : { messages: [...state.messages, message] }
       );
+    },
+
+    loadMoreMessages: async () => {
+      const { activeRoom, messages, hasMore, loadingMore } = get();
+      if (!activeRoom || !hasMore || loadingMore) return;
+      const oldest = messages[0];
+      if (oldest == null) return;
+      set({ loadingMore: true });
+      try {
+        const result = await RoomService.messages(activeRoom.id, {
+          limit: MESSAGE_PAGE_SIZE,
+          before: oldest.id,
+        });
+        if (get().activeRoom?.id !== activeRoom.id) return;
+        const older = [...result.items].reverse().map(withSenderVip);
+        const existingIds = new Set(get().messages.map((item) => item.id));
+        const deduped = older.filter((item) => !existingIds.has(item.id));
+        set({
+          messages: [...deduped, ...get().messages],
+          hasMore: result.hasMore,
+          loadingMore: false,
+        });
+      } catch {
+        if (get().activeRoom?.id === activeRoom.id) set({ loadingMore: false });
+      }
     },
   };
 });

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { RoomMessage } from '@app-types';
 import { activeVipTypeId, kulToken, toast } from '@lib';
@@ -22,7 +22,10 @@ interface RoomMessagesTabProps {
   messages: RoomMessage[];
   status: RoomChatStatus;
   active: boolean;
+  hasMore: boolean;
+  loadingMore: boolean;
   onSend: (content: string) => Promise<void>;
+  onLoadMore: () => void;
   onOpenProfile?: (nick: string, color: string) => void;
 }
 
@@ -31,7 +34,10 @@ export function RoomMessagesTab({
   messages,
   status,
   active,
+  hasMore,
+  loadingMore,
   onSend,
+  onLoadMore,
   onOpenProfile,
 }: RoomMessagesTabProps) {
   const { t } = useTranslation();
@@ -43,6 +49,8 @@ export function RoomMessagesTab({
   const composerRef = useRef<SmileyInputHandle>(null);
   const draftRef = useRef(draft);
   const stickToBottomRef = useRef(true);
+  const pendingPrependRef = useRef(false);
+  const prevScrollHeightRef = useRef(0);
   const suppressLikeClick = useRef(false);
   const likeLongPress = useLongPress(() => {
     suppressLikeClick.current = true;
@@ -53,8 +61,16 @@ export function RoomMessagesTab({
     draftRef.current = draft;
   }, [draft]);
 
+  useLayoutEffect(() => {
+    const element = scrollRef.current;
+    if (element == null || !pendingPrependRef.current) return;
+    element.scrollTop = element.scrollHeight - prevScrollHeightRef.current;
+    pendingPrependRef.current = false;
+  }, [messages]);
+
   useEffect(() => {
     if (!active) return;
+    if (pendingPrependRef.current) return;
     if (stickToBottomRef.current) {
       scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
     }
@@ -65,6 +81,11 @@ export function RoomMessagesTab({
     if (element == null) return;
     const distanceFromBottom = element.scrollHeight - element.scrollTop - element.clientHeight;
     stickToBottomRef.current = distanceFromBottom < 80;
+    if (element.scrollTop < 80 && hasMore && !loadingMore) {
+      prevScrollHeightRef.current = element.scrollHeight;
+      pendingPrependRef.current = true;
+      onLoadMore();
+    }
   }
 
   async function sendText(text: string) {
@@ -106,6 +127,9 @@ export function RoomMessagesTab({
         onScroll={handleScroll}
         className="flex flex-1 flex-col gap-2 overflow-y-auto p-3"
       >
+        {loadingMore && (
+          <div className="shrink-0 py-1 text-center text-xs text-black/40">{t('common.loading')}</div>
+        )}
         {feed.map((item) =>
           item.kind === 'date' ? (
             <DateSeparator key={item.key} iso={item.createdAt} />
