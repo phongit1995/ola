@@ -33,7 +33,7 @@ export function HomePage() {
   );
   const gameActive = useGameOverlayStore((state) => state.active != null);
   const appActive = useAppOverlayStore((state) => state.stack.length > 0);
-  const overlayActive = roomActive || chatActive || gameActive || appActive;
+  const overlayActive = (tab === 'room' && roomActive) || chatActive || gameActive || appActive;
 
   function changeTab(next: TabKey) {
     sessionStorage.setItem(ACTIVE_TAB_KEY, next);
@@ -57,7 +57,7 @@ export function HomePage() {
         <Suspense fallback={<div className="flex-1" />}>
           <ActivePanel />
         </Suspense>
-        <RoomChatOverlay />
+        {tab === 'room' && <RoomChatOverlay />}
       </div>
 
       <BottomTabBar
