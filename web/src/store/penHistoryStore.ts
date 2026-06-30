@@ -1,7 +1,8 @@
 import { create } from 'zustand';
-import { activeVipTypeId, toApiError, toast } from '@lib';
+import { toApiError, toast } from '@lib';
 import { PenService } from '@services';
-import type { PenShotView, PenUserBrief } from '@app-types';
+import type { PenShotView } from '@app-types';
+import { mapPenShot } from './penVip';
 
 export const PEN_HISTORY_PAGE = 10;
 
@@ -26,15 +27,6 @@ function emptySections(): Record<PenHistorySection, PenHistorySectionState> {
   return { shoot: { ...emptySection }, catch: { ...emptySection }, all: { ...emptySection } };
 }
 
-function withVip(user?: PenUserBrief): PenUserBrief | undefined {
-  if (user == null) return user;
-  return { ...user, vipTypeId: activeVipTypeId(user.vipUsed, user.vipEndTime) };
-}
-
-function mapShot(shot: PenShotView): PenShotView {
-  return { ...shot, shooter: withVip(shot.shooter), keeper: withVip(shot.keeper) };
-}
-
 export const usePenHistoryStore = create<PenHistoryState>((set) => ({
   sections: emptySections(),
   load: async (section, page) => {
@@ -50,7 +42,7 @@ export const usePenHistoryStore = create<PenHistoryState>((set) => ({
       set((state) => ({
         sections: {
           ...state.sections,
-          [section]: { items: res.items.map(mapShot), total: res.total, page, loading: false },
+          [section]: { items: res.items.map(mapPenShot), total: res.total, page, loading: false },
         },
       }));
     } catch (e) {

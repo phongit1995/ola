@@ -18,6 +18,16 @@ function pad(value: number): string {
   return String(value).padStart(2, '0');
 }
 
+function formatPenDateTime(iso: string, withSeconds: boolean): { date: string; time: string } {
+  const at = new Date(iso);
+  if (Number.isNaN(at.getTime())) return { date: '', time: '' };
+  const hm = `${pad(at.getHours())}:${pad(at.getMinutes())}`;
+  return {
+    date: `${pad(at.getDate())}/${pad(at.getMonth() + 1)}/${pad(at.getFullYear() % 100)}`,
+    time: withSeconds ? `${hm}:${pad(at.getSeconds())}` : hm,
+  };
+}
+
 function resolveOutcome(shot: PenShotView, userId?: string): PenHistoryOutcome {
   if (shot.status === 'open') return 'pending';
   if (shot.status === 'cancelled') return 'cancelled';
@@ -41,16 +51,15 @@ export interface PenAllHistoryRowView {
 }
 
 export function toAllHistoryRow(shot: PenShotView): PenAllHistoryRowView {
-  const at = new Date(shot.createdAt);
-  const valid = !Number.isNaN(at.getTime());
+  const { date, time } = formatPenDateTime(shot.createdAt, false);
   return {
     id: shot.id,
     shooter: shot.shooter,
     keeper: shot.keeper,
     winnerId: shot.winnerId,
     bet: shot.betAmount,
-    date: valid ? `${pad(at.getDate())}/${pad(at.getMonth() + 1)}/${pad(at.getFullYear() % 100)}` : '',
-    time: valid ? `${pad(at.getHours())}:${pad(at.getMinutes())}` : '',
+    date,
+    time,
   };
 }
 
@@ -61,15 +70,14 @@ export function toHistoryRow(
 ): PenHistoryRowView {
   const isShoot = section === 'shoot';
   const outcome = resolveOutcome(shot, userId);
-  const at = new Date(shot.createdAt);
-  const valid = !Number.isNaN(at.getTime());
+  const { date, time } = formatPenDateTime(shot.createdAt, true);
   return {
     id: shot.id,
     opponent: isShoot ? shot.keeper : shot.shooter,
     side: isShoot ? shot.keeperSide : shot.shooterSide,
     bet: shot.betAmount,
-    date: valid ? `${pad(at.getDate())}/${pad(at.getMonth() + 1)}/${pad(at.getFullYear() % 100)}` : '',
-    time: valid ? `${pad(at.getHours())}:${pad(at.getMinutes())}:${pad(at.getSeconds())}` : '',
+    date,
+    time,
     outcome,
     amount: resolveAmount(shot, outcome),
   };

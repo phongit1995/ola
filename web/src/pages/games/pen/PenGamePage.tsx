@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@constants';
@@ -13,8 +13,9 @@ import { PenShotList } from './PenShotList';
 import { PenShootModal } from './PenShootModal';
 import { PenCatchModal } from './PenCatchModal';
 import { PenHistoryModal } from './PenHistoryModal';
+import { PenWinBurst } from './PenWinBurst';
 import { penAssets } from './penAssets';
-import { PEN_START_KEN } from './penMock';
+import { PEN_START_KEN } from './penConstants';
 
 const DEFAULT_BET = 1000;
 import './pen.css';
@@ -44,6 +45,8 @@ export function PenGamePage() {
   const [submitting, setSubmitting] = useState(false);
   const [catchShot, setCatchShot] = useState<PenShotView | null>(null);
   const [catching, setCatching] = useState(false);
+  const [winFx, setWinFx] = useState<{ id: number; amount: number } | null>(null);
+  const winFxTimer = useRef<number | null>(null);
 
   useEffect(() => {
     const mq = window.matchMedia('(min-width: 448px)');
@@ -55,10 +58,23 @@ export function PenGamePage() {
 
   const closeCatch = useCallback(() => setCatchShot(null), []);
 
+  useEffect(
+    () => () => {
+      if (winFxTimer.current != null) window.clearTimeout(winFxTimer.current);
+    },
+    [],
+  );
+
   const playKick = () => {
     setKickId((n) => n + 1);
     setKicking(true);
     window.setTimeout(() => setKicking(false), KICK_RESULT_MS);
+  };
+
+  const triggerWinFx = (amount: number) => {
+    setWinFx((prev) => ({ id: (prev?.id ?? 0) + 1, amount }));
+    if (winFxTimer.current != null) window.clearTimeout(winFxTimer.current);
+    winFxTimer.current = window.setTimeout(() => setWinFx(null), 1600);
   };
 
   const handleCreateShot = async ({ side, betAmount }: { side: PenSide; betAmount: number }) => {
@@ -85,8 +101,12 @@ export function PenGamePage() {
       if (user) setUser({ ...user, ken: res.kenBalance });
       setCatchShot(null);
       playKick();
-      if (res.win) toast.success(t('penGame.catchWin', { payout: formatKen(res.payout) }));
-      else toast.error(t('penGame.catchLose'));
+      if (res.win) {
+        triggerWinFx(Math.max(0, res.payout - res.betAmount));
+        toast.success(t('penGame.catchWin', { payout: formatKen(res.payout) }));
+      } else {
+        toast.error(t('penGame.catchLose'));
+      }
       void loadShots();
     } catch (e) {
       toast.error(toApiError(e).message);
@@ -209,6 +229,8 @@ export function PenGamePage() {
               className="h-12 flex-1 text-sm"
             />
           </footer>
+
+          {winFx && <PenWinBurst key={winFx.id} amount={winFx.amount} />}
 
           {shootOpen && (
             <PenShootModal

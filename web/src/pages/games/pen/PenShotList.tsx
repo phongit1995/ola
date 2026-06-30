@@ -3,7 +3,7 @@ import { Spinner, VipBadge } from '@components';
 import { createTimeFormatter, formatKen } from '@lib';
 import type { PenShotView } from '@app-types';
 import { PenButton } from './PenButton';
-import { PenPagination } from './PenHistorySection';
+import { PenPagination } from './PenPagination';
 import { penAssets } from './penAssets';
 
 interface PenShotListProps {

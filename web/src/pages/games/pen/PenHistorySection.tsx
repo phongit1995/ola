@@ -1,6 +1,6 @@
-import { useEffect, useState, type CSSProperties } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ConfirmDialog, Spinner, VipBadge } from '@components';
+import { ConfirmDialog, VipBadge } from '@components';
 import { formatVnd, toApiError, toast } from '@lib';
 import { PenService } from '@services';
 import type { PenSide } from '@app-types';
@@ -8,11 +8,11 @@ import { useAuthStore } from '@/store/authStore';
 import { PEN_HISTORY_PAGE, usePenHistoryStore } from '@/store/penHistoryStore';
 import type { PenHistorySection as SectionRole } from '@/store/penHistoryStore';
 import { penAssets, penHistoryAssets } from './penAssets';
+import { PenHistoryTable } from './PenHistoryTable';
 import { toHistoryRow, type PenHistoryOutcome, type PenHistoryRowView } from './penHistory';
 
 const ROW_GRID = 'grid items-center gap-1';
 const GRID_COLS = '1.6fr 1fr 0.8fr 1.7fr';
-const stretchBg: CSSProperties = { backgroundSize: '100% 100%' };
 
 function BanIcon({ className = 'h-4 w-4' }: { className?: string }) {
   return (
@@ -133,50 +133,6 @@ function PenHistoryRow({
   );
 }
 
-function PageNav({ dir, disabled, onClick }: { dir: 'prev' | 'next'; disabled: boolean; onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      disabled={disabled}
-      onClick={onClick}
-      aria-label={dir}
-      style={{ ...stretchBg, backgroundImage: `url(${penHistoryAssets.pageNext})` }}
-      className="flex h-9 w-9 items-center justify-center bg-no-repeat text-white transition active:scale-95 disabled:opacity-30"
-    >
-      <svg viewBox="0 0 24 24" className={`h-3.5 w-3.5 ${dir === 'prev' ? 'rotate-180' : ''}`} fill="currentColor" aria-hidden="true">
-        <path d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z" />
-      </svg>
-    </button>
-  );
-}
-
-export function PenPagination({
-  page,
-  pageCount,
-  loading,
-  onPage,
-  className = 'mt-2',
-}: {
-  page: number;
-  pageCount: number;
-  loading: boolean;
-  onPage: (page: number) => void;
-  className?: string;
-}) {
-  return (
-    <div className={`flex items-center justify-center gap-2 ${className}`}>
-      <PageNav dir="prev" disabled={loading || page <= 0} onClick={() => onPage(page - 1)} />
-      <span
-        style={{ ...stretchBg, backgroundImage: `url(${penHistoryAssets.pageCurrent})` }}
-        className="flex h-9 min-w-16 items-center justify-center bg-no-repeat px-3 text-sm font-extrabold text-white"
-      >
-        {page + 1}
-      </span>
-      <PageNav dir="next" disabled={loading || page >= pageCount - 1} onClick={() => onPage(page + 1)} />
-    </div>
-  );
-}
-
 interface PenHistorySectionProps {
   section: SectionRole;
   opponentLabel: string;
@@ -217,61 +173,48 @@ export function PenHistorySection({ section, opponentLabel, userId }: PenHistory
   };
 
   return (
-    <section className="rounded-2xl border border-[#1e6fe0]/40 bg-[#001026]/50 p-2">
-      <div className="pen-scroll overflow-x-auto">
-        <div className="min-w-0 @md:min-w-[440px]">
-          <div
-            className={`${ROW_GRID} border-b border-white/10 px-1.5 pb-1.5 text-[9px] font-semibold uppercase tracking-wide text-[#5aa0e0]`}
-            style={{ gridTemplateColumns: GRID_COLS }}
-          >
-            <span>{opponentLabel}</span>
-            <span>{t('penGame.hist.colBet')}</span>
-            <span className="text-center">{t('penGame.hist.colTime')}</span>
-            <span className="text-right">{t('penGame.hist.colResult')}</span>
-          </div>
-
-          <div className="min-h-[420px]">
-            {state.loading ? (
-              <div className="flex h-[420px] items-center justify-center">
-                <Spinner />
-              </div>
-            ) : state.items.length === 0 ? (
-              <div className="flex h-[420px] items-center justify-center text-xs text-white/50">
-                {emptyText}
-              </div>
-            ) : (
-              <ul>
-                {state.items.map((shot) => (
-                  <PenHistoryRow
-                    key={shot.id}
-                    row={toHistoryRow(shot, section, userId)}
-                    verb={verb}
-                    onCancel={setCancelId}
-                  />
-                ))}
-              </ul>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <PenPagination
-        page={state.page}
-        pageCount={pageCount}
-        loading={state.loading}
-        onPage={(p) => void load(section, p)}
-      />
-
-      <ConfirmDialog
-        open={cancelId != null}
-        title={t('penGame.hist.cancelTitle')}
-        message={t('penGame.hist.cancelMessage')}
-        confirmLabel={t('penGame.hist.cancelConfirm')}
-        cancelLabel={t('penGame.hist.cancelDismiss')}
-        danger
-        onConfirm={handleCancel}
-        onCancel={() => setCancelId(null)}
-      />
-    </section>
+    <PenHistoryTable
+      rowGrid={ROW_GRID}
+      gridCols={GRID_COLS}
+      minWidthClass="@md:min-w-[440px]"
+      minHeight={420}
+      header={
+        <>
+          <span>{opponentLabel}</span>
+          <span>{t('penGame.hist.colBet')}</span>
+          <span className="text-center">{t('penGame.hist.colTime')}</span>
+          <span className="text-right">{t('penGame.hist.colResult')}</span>
+        </>
+      }
+      loading={state.loading}
+      isEmpty={state.items.length === 0}
+      emptyText={emptyText}
+      page={state.page}
+      pageCount={pageCount}
+      onPage={(p) => void load(section, p)}
+      footer={
+        <ConfirmDialog
+          open={cancelId != null}
+          title={t('penGame.hist.cancelTitle')}
+          message={t('penGame.hist.cancelMessage')}
+          confirmLabel={t('penGame.hist.cancelConfirm')}
+          cancelLabel={t('penGame.hist.cancelDismiss')}
+          danger
+          onConfirm={handleCancel}
+          onCancel={() => setCancelId(null)}
+        />
+      }
+    >
+      <ul>
+        {state.items.map((shot) => (
+          <PenHistoryRow
+            key={shot.id}
+            row={toHistoryRow(shot, section, userId)}
+            verb={verb}
+            onCancel={setCancelId}
+          />
+        ))}
+      </ul>
+    </PenHistoryTable>
   );
 }

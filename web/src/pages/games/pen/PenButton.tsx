@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import { bgImage } from './penUi';
 
 interface PenButtonProps {
   bg: string;
@@ -12,8 +12,6 @@ interface PenButtonProps {
   iconClassName?: string;
   gapClassName?: string;
 }
-
-const stretchBg: CSSProperties = { backgroundSize: '100% 100%' };
 
 export function PenButton({
   bg,
@@ -33,7 +31,7 @@ export function PenButton({
       onClick={onClick}
       disabled={disabled}
       aria-label={ariaLabel ?? label}
-      style={{ ...stretchBg, backgroundImage: `url(${bg})` }}
+      style={bgImage(bg)}
       className={`flex items-center justify-center ${gapClassName} bg-center bg-no-repeat font-bold text-white drop-shadow transition active:scale-95 disabled:opacity-60 ${className}`}
     >
       {icon != null && <img src={icon} alt="" className={`shrink-0 object-contain ${iconClassName}`} />}

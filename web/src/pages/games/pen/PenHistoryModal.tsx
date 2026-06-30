@@ -1,11 +1,10 @@
-import { useEffect, useState, type CSSProperties } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePenHistoryStore, type PenHistorySection as SectionRole } from '@/store/penHistoryStore';
 import { penHistoryAssets, penShootAssets } from './penAssets';
+import { bgImage } from './penUi';
 import { PenHistorySection } from './PenHistorySection';
 import { PenAllHistorySection } from './PenAllHistorySection';
-
-const stretchBg: CSSProperties = { backgroundSize: '100% 100%' };
 
 interface PenHistoryModalProps {
   userId?: string;
@@ -46,7 +45,7 @@ export function PenHistoryModal({ userId, onClose }: PenHistoryModalProps) {
           type="button"
           aria-label={t('penGame.close')}
           onClick={onClose}
-          style={{ ...stretchBg, backgroundImage: `url(${penShootAssets.closeBtn})` }}
+          style={bgImage(penShootAssets.closeBtn)}
           className="absolute right-[4%] top-[3.5%] flex h-9 w-9 items-center justify-center bg-no-repeat transition active:scale-95"
         >
           <img src={penShootAssets.closeIcon} alt="" className="h-4 w-4 object-contain" />
@@ -60,7 +59,7 @@ export function PenHistoryModal({ userId, onClose }: PenHistoryModalProps) {
                 key={item.key}
                 type="button"
                 onClick={() => setTab(item.key)}
-                style={{ ...stretchBg, backgroundImage: `url(${penHistoryAssets.tab})` }}
+                style={bgImage(penHistoryAssets.tab)}
                 className={`flex-1 whitespace-nowrap bg-no-repeat py-2.5 text-sm font-extrabold tracking-wide text-white transition active:scale-95 ${
                   active ? 'drop-shadow-[0_0_6px_rgba(58,160,255,0.6)]' : 'opacity-40 saturate-50'
                 }`}

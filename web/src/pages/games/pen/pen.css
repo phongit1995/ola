@@ -40,6 +40,55 @@
   animation: pen-shake 1.5s ease-in-out infinite;
 }
 
+@keyframes pen-burst-ball {
+  0% {
+    transform: translate(-50%, -50%) scale(0.4) rotate(0deg);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  42% {
+    transform: translate(calc(-50% + var(--dx) * 0.5), calc(-50% + var(--peak)))
+      scale(1) rotate(calc(var(--rot) * 0.45));
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy)))
+      scale(0.85) rotate(var(--rot));
+    opacity: 0;
+  }
+}
+
+@keyframes pen-reward-float {
+  0% {
+    transform: translate(-50%, 0) scale(0.6);
+    opacity: 0;
+  }
+  18% {
+    transform: translate(-50%, -14px) scale(1.18);
+    opacity: 1;
+  }
+  40% {
+    transform: translate(-50%, -32px) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -140px) scale(1);
+    opacity: 0;
+  }
+}
+
+.pen-burst-ball {
+  left: 0;
+  top: 0;
+  animation: pen-burst-ball 1.2s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+}
+
+.pen-reward-float {
+  animation: pen-reward-float 1.45s ease-out forwards;
+}
+
 .pen-scroll {
   scrollbar-width: thin;
   scrollbar-color: rgba(125, 211, 252, 0.35) transparent;

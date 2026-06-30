@@ -1,7 +1,8 @@
 import { create } from 'zustand';
-import { activeVipTypeId, toApiError, toast } from '@lib';
+import { toApiError, toast } from '@lib';
 import { PenService } from '@services';
 import type { PenShotView } from '@app-types';
+import { mapPenShot } from './penVip';
 
 export const PEN_SHOTS_PAGE = 10;
 export const PEN_SHOTS_PAGE_MOBILE = 12;
@@ -14,17 +15,6 @@ interface PenState {
   pageSize: number;
   loadShots: (page?: number) => Promise<void>;
   setPageSize: (size: number) => void;
-}
-
-function withShooterVip(shot: PenShotView): PenShotView {
-  if (shot.shooter == null) return shot;
-  return {
-    ...shot,
-    shooter: {
-      ...shot.shooter,
-      vipTypeId: activeVipTypeId(shot.shooter.vipUsed, shot.shooter.vipEndTime),
-    },
-  };
 }
 
 export const usePenStore = create<PenState>((set, get) => ({
@@ -43,7 +33,7 @@ export const usePenStore = create<PenState>((set, get) => ({
         limit,
         offset: target * limit,
       });
-      set({ shots: res.items.map(withShooterVip), total: res.total, page: target, loading: false });
+      set({ shots: res.items.map(mapPenShot), total: res.total, page: target, loading: false });
     } catch (e) {
       set({ loading: false });
       toast.error(toApiError(e).message);
