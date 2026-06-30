@@ -146,6 +146,7 @@ var (
 		"refresh token has been revoked":      true,
 		"authorization header required":       true,
 		"invalid authorization header format": true,
+		"invalid transfer password":           true,
 	}
 
 	errorsNotFound = map[string]bool{

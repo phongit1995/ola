@@ -35,6 +35,7 @@ export function TransferKenDialog({ open, onClose, receiver }: TransferKenDialog
 
   const [step, setStep] = useState<'input' | 'confirm'>('input');
   const [amountDigits, setAmountDigits] = useState('');
+  const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const amountInputRef = useRef<HTMLInputElement>(null);
 
@@ -66,9 +67,13 @@ export function TransferKenDialog({ open, onClose, receiver }: TransferKenDialog
   }
 
   async function submitTransfer() {
+    if (password.trim() === '') {
+      toast.error(t('chat.transferKenErrPasswordEmpty'));
+      return;
+    }
     setSubmitting(true);
     try {
-      const result = await KenService.transfer({ toUserId: receiver.id, amount });
+      const result = await KenService.transfer({ toUserId: receiver.id, amount, password });
       const current = useAuthStore.getState().user;
       if (current != null) setUser({ ...current, ken: result.kenBalance });
       toast.success(t('chat.transferKenSuccess', { name: receiver.name }));
@@ -77,6 +82,8 @@ export function TransferKenDialog({ open, onClose, receiver }: TransferKenDialog
       const apiError = toApiError(error);
       if (apiError.status === 0) {
         toast.error(t('chat.transferKenError'));
+      } else if (apiError.status === 401) {
+        toast.error(t('chat.transferKenErrPassword'));
       } else if (apiError.status === 403) {
         toast.error(t('chat.transferKenErrBlocked'));
       } else {
@@ -162,6 +169,18 @@ export function TransferKenDialog({ open, onClose, receiver }: TransferKenDialog
             {formatKen(amount)} {t('chat.transferKenUnit')}
           </p>
           <div className="mt-4 h-px bg-black/12" />
+          <span className="mt-4 text-base text-black/87">{t('chat.transferKenPassword')}</span>
+          <input
+            type="password"
+            autoFocus
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' && !submitting) void submitTransfer();
+            }}
+            placeholder={t('chat.transferKenPasswordPlaceholder')}
+            className="mt-1 w-full rounded border border-black/12 px-3 py-2 text-base text-black/87 outline-none focus:border-ola-primary"
+          />
         </div>
       )}
     </Dialog>

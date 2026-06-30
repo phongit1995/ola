@@ -5,6 +5,7 @@ import "ola-chat-server/internal/utils"
 type TransferRequest struct {
 	ToUserID string `json:"toUserId" binding:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440000"`
 	Amount   int    `json:"amount" binding:"required,min=1000,max=10000000" example:"1000"`
+	Password string `json:"password" binding:"required" example:"password123"`
 }
 
 type TransferResponse struct {

@@ -9,6 +9,7 @@ import (
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type Service struct {
@@ -52,6 +53,14 @@ func (s *Service) Transfer(fromID uuid.UUID, req TransferRequest) (*TransferResp
 	}
 	if toID == fromID {
 		return nil, ErrSelfTransfer
+	}
+
+	hash, err := s.repo.GetPasswordHash(fromID)
+	if err != nil {
+		return nil, err
+	}
+	if bcrypt.CompareHashAndPassword([]byte(hash), []byte(req.Password)) != nil {
+		return nil, ErrWrongPassword
 	}
 
 	blocked, err := s.relRepo.IsBlockedEither(fromID, toID)

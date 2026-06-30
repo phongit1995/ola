@@ -16,6 +16,7 @@ var (
 	ErrBlockedTransfer = errors.New("cannot transfer ken to a blocked user")
 	ErrInsufficientKen = errors.New("insufficient ken balance")
 	ErrSelfTransfer    = errors.New("cannot transfer ken to yourself")
+	ErrWrongPassword   = errors.New("invalid transfer password")
 )
 
 type Repository struct {
@@ -36,6 +37,17 @@ type TransferParams struct {
 type TransferResult struct {
 	SenderBalance   int
 	ReceiverBalance int
+}
+
+func (r *Repository) GetPasswordHash(userID uuid.UUID) (string, error) {
+	var user models.User
+	if err := r.db.Select("password").First(&user, "id = ?", userID).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return "", apperr.ErrUserNotFound
+		}
+		return "", err
+	}
+	return user.Password, nil
 }
 
 func (r *Repository) Transfer(p TransferParams) (*TransferResult, error) {
