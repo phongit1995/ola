@@ -67,12 +67,7 @@ function ResultCell({ outcome, amount, onCancel }: { outcome: PenHistoryOutcome;
   }
   const win = outcome === 'win';
   return (
-    <span className="flex items-center justify-end gap-1">
-      <img
-        src={win ? penHistoryAssets.resultWin : penHistoryAssets.resultLose}
-        alt=""
-        className="h-6 w-6 shrink-0 object-contain"
-      />
+    <span className="flex items-center justify-end">
       <span className={`whitespace-nowrap text-[11px] font-bold ${win ? 'text-[#46e06a]' : 'text-[#ff5b5b]'}`}>
         {win ? '+' : '-'}
         {formatVnd(Math.abs(amount))} {t('penGame.hist.ken')}
