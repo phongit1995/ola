@@ -4,6 +4,7 @@ import (
 	"errors"
 	"ola-chat-server/internal/apperr"
 	"ola-chat-server/internal/models"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -81,6 +82,53 @@ func (s *Service) SetStatus(id uuid.UUID, active bool) (*UserDetail, error) {
 		return nil, err
 	}
 	return toDetail(user), nil
+}
+
+func (s *Service) ListVips(id uuid.UUID, limit, offset int) (*VipIconListResponse, error) {
+	user, err := s.repo.FindByID(id)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, apperr.ErrUserNotFound
+		}
+		return nil, err
+	}
+
+	total, err := s.repo.CountVipIcons(id)
+	if err != nil {
+		return nil, err
+	}
+
+	activeSort := int16(-1)
+	if user.VipUsed != nil {
+		if n, convErr := strconv.Atoi(*user.VipUsed); convErr == nil {
+			activeSort = int16(n)
+		}
+	}
+
+	items, err := s.repo.ListVipIcons(id, activeSort, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	out := make([]VipIconItem, 0, len(items))
+	for i := range items {
+		using := user.VipUsedInstanceID != nil && *user.VipUsedInstanceID == items[i].ID
+		out = append(out, VipIconItem{
+			InstanceID: items[i].ID.String(),
+			TypeID:     items[i].VipIconID,
+			IsLocked:   items[i].IsLocked,
+			IsUsing:    using,
+			Source:     items[i].Source,
+			AcquiredAt: items[i].AcquiredAt.UTC().Format(time.RFC3339),
+		})
+	}
+
+	return &VipIconListResponse{
+		Items:  out,
+		Total:  total,
+		Limit:  limit,
+		Offset: offset,
+	}, nil
 }
 
 func (s *Service) Delete(id uuid.UUID) error {

@@ -44,6 +44,22 @@ type UserDetail struct {
 	UpdatedAt      string `json:"updatedAt"`
 }
 
+type VipIconItem struct {
+	InstanceID string `json:"instanceId"`
+	TypeID     int16  `json:"typeId"`
+	IsLocked   bool   `json:"isLocked"`
+	IsUsing    bool   `json:"isUsing"`
+	Source     string `json:"source,omitempty"`
+	AcquiredAt string `json:"acquiredAt,omitempty"`
+}
+
+type VipIconListResponse struct {
+	Items  []VipIconItem `json:"items"`
+	Total  int64         `json:"total"`
+	Limit  int           `json:"limit"`
+	Offset int           `json:"offset"`
+}
+
 type ListFilter struct {
 	Query    string
 	IsActive *bool

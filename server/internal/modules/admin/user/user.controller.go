@@ -102,6 +102,33 @@ func (ctrl *Controller) GetUser(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
+// ListUserVips godoc
+// @Summary      List owned VIP icons
+// @Description  List all VIP icons a user currently owns (admin only)
+// @Tags         admin-user
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id     path  string true  "User ID"
+// @Param        limit  query int    false "Page size (default 60, max 200)"
+// @Param        offset query int    false "Offset (default 0)"
+// @Success      200  {object}  utils.BaseResponse[VipIconListResponse]
+// @Failure      401  {object}  utils.APIError
+// @Failure      403  {object}  utils.APIError
+// @Failure      404  {object}  utils.APIError
+// @Router       /admin/users/{id}/vips [get]
+func (ctrl *Controller) ListUserVips(c *gin.Context) (interface{}, error) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid user id")
+	}
+
+	resp, err := ctrl.service.ListVips(id, utils.ParseLimit(c, 60, 200), utils.ParseOffset(c))
+	if err != nil {
+		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+	}
+	return resp, nil
+}
+
 // UpdateStatus godoc
 // @Summary      Ban/unban user
 // @Description  Enable or disable a user account (admin only)
