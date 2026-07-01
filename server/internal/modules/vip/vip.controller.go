@@ -170,14 +170,15 @@ func (ctrl *Controller) Delete(c *gin.Context) (interface{}, error) {
 }
 
 // Transfer godoc
-// @Summary      Tặng/chuyển một VIP cho người khác (chặn nếu đang khoá)
+// @Summary      Tặng/chuyển một VIP cho người khác (cần mật khẩu; chặn nếu đang dùng hoặc đã khoá)
 // @Tags         vip
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
 // @Param        id path string true "VIP instance ID"
-// @Param        request body TransferRequest true "Receiver"
+// @Param        request body TransferRequest true "Receiver + password"
 // @Success      200  {object}  MessageSuccessResponse
+// @Failure      401  {object}  utils.APIError
 // @Failure      403  {object}  utils.APIError
 // @Router       /vip/icons/{id}/transfer [post]
 func (ctrl *Controller) Transfer(c *gin.Context) (interface{}, error) {
@@ -193,7 +194,7 @@ func (ctrl *Controller) Transfer(c *gin.Context) (interface{}, error) {
 	if err != nil {
 		return nil, utils.NewHTTPError(400, "invalid receiver id")
 	}
-	if err := ctrl.service.Transfer(userID, instanceID, toUserID); err != nil {
+	if err := ctrl.service.Transfer(userID, instanceID, toUserID, req.Password); err != nil {
 		return nil, utils.ServiceError(err)
 	}
 	return MessageResponse{Message: "vip transferred"}, nil

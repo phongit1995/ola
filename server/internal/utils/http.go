@@ -195,6 +195,7 @@ var (
 		"not your comment":                      true,
 		"post is too old to edit":               true,
 		"vip is locked":                         true,
+		"vip is in use":                         true,
 		"vip does not belong to you":            true,
 		"vip store is private":                  true,
 		"you cannot catch your own pen":         true,

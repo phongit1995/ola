@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Avatar, Dialog, DialogButton } from '@components';
+import { Dialog, DialogButton, UserRow } from '@components';
 import { formatKen, toApiError, toast } from '@lib';
 import { KenService } from '@services';
 import { useAuthStore } from '@/store/authStore';
@@ -12,7 +12,7 @@ const KEN_TRANSFER_MAX = 10_000_000;
 interface TransferKenReceiver {
   id: string;
   name: string;
-  fullName?: string;
+  username?: string;
   avatar?: string;
   color: string;
 }
@@ -130,14 +130,13 @@ export function TransferKenDialog({ open, onClose, receiver }: TransferKenDialog
           </div>
           <div className="my-2 h-px bg-black/12" />
           <span className="text-base text-black/87">{t('chat.transferKenReceiver')}</span>
-          <div className="mt-1 flex items-center gap-3 rounded border border-black/12 px-3 py-2">
-            <Avatar name={receiver.name} color={receiver.color} src={receiver.avatar} size={32} />
-            <div className="min-w-0">
-              <p className="truncate text-base text-black/87">{receiver.name}</p>
-              {receiver.fullName != null && receiver.fullName !== '' && (
-                <p className="truncate text-xs text-black/54">{receiver.fullName}</p>
-              )}
-            </div>
+          <div className="mt-1 rounded border border-black/12 px-3">
+            <UserRow
+              name={receiver.name}
+              username={receiver.username}
+              avatar={receiver.avatar}
+              color={receiver.color}
+            />
           </div>
           <span className="mt-4 text-base text-black/87">{t('chat.transferKenAmountLabel')}</span>
           <input
@@ -153,15 +152,12 @@ export function TransferKenDialog({ open, onClose, receiver }: TransferKenDialog
       ) : (
         <div className="flex flex-col gap-1 px-1 py-1">
           <span className="text-base text-black/54">{t('chat.transferKenReceiver')}</span>
-          <div className="mt-2 flex items-center gap-4">
-            <Avatar name={receiver.name} color={receiver.color} src={receiver.avatar} size={48} />
-            <div className="min-w-0">
-              <p className="truncate text-base text-black/87">{receiver.name}</p>
-              {receiver.fullName != null && receiver.fullName !== '' && (
-                <p className="truncate text-xs text-black/54">{receiver.fullName}</p>
-              )}
-            </div>
-          </div>
+          <UserRow
+            name={receiver.name}
+            username={receiver.username}
+            avatar={receiver.avatar}
+            color={receiver.color}
+          />
           <span className="mt-4 text-base text-black/54">
             {t('chat.transferKenConfirmAmountLabel')}
           </span>

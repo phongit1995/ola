@@ -28,6 +28,7 @@ import { useLongPress } from '@hooks';
 import { MessageRow } from './MessageRow';
 import { MessageActionSheet } from './MessageActionSheet';
 import { TransferKenDialog } from './TransferKenDialog';
+import { TradingVipDialog } from './TradingVipDialog';
 import { VoicePreviewBar } from './VoicePreviewBar';
 import { PeerProfileCard } from './PeerProfileCard';
 import { UserProfileView } from '../../profile/UserProfileView';
@@ -92,6 +93,7 @@ export function ChatConversationView({
   const [blockOpen, setBlockOpen] = useState(false);
   const [openTab, setOpenTab] = useState<AttachTab | null>(null);
   const [transferKenOpen, setTransferKenOpen] = useState(false);
+  const [tradingVipOpen, setTradingVipOpen] = useState(false);
   const [pendingAudio, setPendingAudio] = useState<{ blob: Blob; duration: number } | null>(null);
   const [actionTarget, setActionTarget] = useState<ChatMessage | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ChatMessage | null>(null);
@@ -525,6 +527,15 @@ export function ChatConversationView({
             setTransferKenOpen(true);
             return;
           }
+          if (payload.kind === 'vip') {
+            setOpenTab(null);
+            if (peerId === '') {
+              toast.error(t('chat.actionError'));
+              return;
+            }
+            setTradingVipOpen(true);
+            return;
+          }
           toast.info(t('chat.comingSoon'));
         }}
         onRecorded={(blob, duration) => {
@@ -587,10 +598,18 @@ export function ChatConversationView({
           receiver={{
             id: peerId,
             name,
-            fullName: peerProfile?.fullName,
+            username,
             avatar: peerProfile?.avatar ?? avatar,
             color,
           }}
+        />
+      )}
+
+      {tradingVipOpen && (
+        <TradingVipDialog
+          open
+          onClose={() => setTradingVipOpen(false)}
+          receiver={{ id: peerId, name, username, avatar: peerProfile?.avatar ?? avatar, color }}
         />
       )}
 

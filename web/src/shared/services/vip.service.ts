@@ -48,4 +48,8 @@ export class VipService {
   static deleteIcon(instanceId: string): Promise<unknown> {
     return http.del<unknown>(API_PATH.vip.iconDelete(instanceId));
   }
+
+  static transferIcon(instanceId: string, body: { toUserId: string; password: string }): Promise<unknown> {
+    return http.post<unknown>(API_PATH.vip.iconTransfer(instanceId), body);
+  }
 }

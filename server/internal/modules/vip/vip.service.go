@@ -16,6 +16,7 @@ import (
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -23,6 +24,8 @@ var (
 	ErrVipNotFound        = errors.New("vip icon not found")
 	ErrVipNotOwned        = errors.New("vip does not belong to you")
 	ErrVipLocked          = errors.New("vip is locked")
+	ErrVipInUse           = errors.New("vip is in use")
+	ErrWrongPassword      = errors.New("invalid transfer password")
 	ErrVipExpired         = errors.New("vip membership expired")
 	ErrPrivateStore       = errors.New("vip store is private")
 	ErrCannotTransferSelf = errors.New("cannot transfer to yourself")
@@ -241,7 +244,7 @@ func (s *Service) Delete(userID, instanceID uuid.UUID) error {
 	return s.clearActiveIfGone(userID, instanceID, item.VipIconID)
 }
 
-func (s *Service) Transfer(userID, instanceID, toUserID uuid.UUID) error {
+func (s *Service) Transfer(userID, instanceID, toUserID uuid.UUID, password string) error {
 	if toUserID == userID {
 		return ErrCannotTransferSelf
 	}
@@ -253,6 +256,14 @@ func (s *Service) Transfer(userID, instanceID, toUserID uuid.UUID) error {
 		return ErrUserNotFound
 	}
 
+	sender, err := s.repo.GetUser(userID)
+	if err != nil {
+		return err
+	}
+	if bcrypt.CompareHashAndPassword([]byte(sender.Password), []byte(password)) != nil {
+		return ErrWrongPassword
+	}
+
 	item, err := s.ownedInstance(userID, instanceID)
 	if err != nil {
 		return err
@@ -260,10 +271,10 @@ func (s *Service) Transfer(userID, instanceID, toUserID uuid.UUID) error {
 	if item.IsLocked {
 		return ErrVipLocked
 	}
-	if err := s.repo.Transfer(instanceID, toUserID); err != nil {
-		return err
+	if sender.VipUsedInstanceID != nil && *sender.VipUsedInstanceID == instanceID {
+		return ErrVipInUse
 	}
-	return s.clearActiveIfGone(userID, instanceID, item.VipIconID)
+	return s.repo.Transfer(instanceID, toUserID)
 }
 
 func (s *Service) clearActiveIfGone(userID, instanceID uuid.UUID, typeID int16) error {

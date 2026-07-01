@@ -77,6 +77,7 @@ export const API_PATH = {
     iconUse: (id: string) => `/vip/icons/${id}/use`,
     iconLock: (id: string) => `/vip/icons/${id}/lock`,
     iconUnlock: (id: string) => `/vip/icons/${id}/unlock`,
+    iconTransfer: (id: string) => `/vip/icons/${id}/transfer`,
     iconDelete: (id: string) => `/vip/icons/${id}`,
   },
   egg: {
