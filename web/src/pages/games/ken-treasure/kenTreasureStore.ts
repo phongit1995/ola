@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import { KenTreasureService } from '@services';
 import { useAuthStore } from '@/store/authStore';
 
@@ -63,6 +64,23 @@ export const useKenTreasureStore = create<KenTreasureState>((set, get) => ({
   },
   dismiss: () => set({ chestId: null, expiresAt: null, phase: 'idle', result: null }),
 }));
+
+interface KenTreasurePositionState {
+  x: number;
+  y: number;
+  setPosition: (x: number, y: number) => void;
+}
+
+export const useKenTreasurePositionStore = create<KenTreasurePositionState>()(
+  persist(
+    (set) => ({
+      x: 0,
+      y: 0,
+      setPosition: (x, y) => set({ x, y }),
+    }),
+    { name: 'ola.kenTreasure.position' }
+  )
+);
 
 if (import.meta.env.DEV) {
   Object.assign(window, { kenTreasureStore: useKenTreasureStore });

@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import type { CSSProperties, ReactNode } from 'react';
+import type { CSSProperties, PointerEvent as ReactPointerEvent, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { kenTreasureAssets, openingFrames } from './kenTreasureAssets';
-import { useKenTreasureStore } from './kenTreasureStore';
+import { useKenTreasureStore, useKenTreasurePositionStore } from './kenTreasureStore';
 
 const goldTextStyle: CSSProperties = {
   color: '#ffe27a',
@@ -15,6 +15,13 @@ const whiteTextStyle: CSSProperties = {
   WebkitTextStroke: '1px #7a1e00',
   textShadow: '0 2px 3px rgba(0,0,0,.4)',
 };
+
+interface DragState {
+  startX: number;
+  startY: number;
+  baseX: number;
+  baseY: number;
+}
 
 function formatCountdown(ms: number): string {
   const total = Math.max(0, Math.ceil(ms / 1000));
@@ -85,9 +92,50 @@ function ChestPanel({
   children: ReactNode;
 }) {
   const { t } = useTranslation();
+  const setPosition = useKenTreasurePositionStore((s) => s.setPosition);
+  const [offset, setOffset] = useState(() => {
+    const saved = useKenTreasurePositionStore.getState();
+    return { x: saved.x, y: saved.y };
+  });
+  const offsetRef = useRef(offset);
+  const dragRef = useRef<DragState | null>(null);
+
+  function handlePointerDown(e: ReactPointerEvent<HTMLDivElement>) {
+    dragRef.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      baseX: offsetRef.current.x,
+      baseY: offsetRef.current.y,
+    };
+    e.currentTarget.setPointerCapture(e.pointerId);
+  }
+
+  function handlePointerMove(e: ReactPointerEvent<HTMLDivElement>) {
+    const drag = dragRef.current;
+    if (!drag) return;
+    const next = { x: drag.baseX + e.clientX - drag.startX, y: drag.baseY + e.clientY - drag.startY };
+    offsetRef.current = next;
+    setOffset(next);
+  }
+
+  function handlePointerUp(e: ReactPointerEvent<HTMLDivElement>) {
+    if (!dragRef.current) return;
+    dragRef.current = null;
+    e.currentTarget.releasePointerCapture(e.pointerId);
+    setPosition(offsetRef.current.x, offsetRef.current.y);
+  }
+
   return (
-    <div className="absolute bottom-16 right-4 z-[80]">
-      <div className={`relative ${widthClassName} [filter:drop-shadow(0_10px_24px_rgba(0,0,0,.45))]`}>
+    <div
+      className="absolute bottom-16 right-4 z-[80] cursor-grab touch-none select-none active:cursor-grabbing"
+      style={{ transform: `translate(${offset.x}px, ${offset.y}px)` }}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+    >
+      <div
+        className={`relative ${widthClassName} animate-ken-pop-in [filter:drop-shadow(0_10px_24px_rgba(0,0,0,.45))]`}
+      >
         <img src={backgroundSrc} alt="" draggable={false} className="w-full select-none" />
         <img
           src={kenTreasureAssets.crown}
@@ -100,6 +148,7 @@ function ChestPanel({
             type="button"
             aria-label={t('kenTreasure.close')}
             onClick={onClose}
+            onPointerDown={(e) => e.stopPropagation()}
             style={{ backgroundImage: `url(${kenTreasureAssets.buttonClose})` }}
             className="absolute -right-1 top-0 z-20 flex h-5 w-5 items-center justify-center bg-contain bg-center bg-no-repeat transition active:scale-90"
           >
@@ -175,6 +224,7 @@ function ResultView({ onClose }: { onClose: () => void }) {
       <button
         type="button"
         onClick={onClose}
+        onPointerDown={(e) => e.stopPropagation()}
         className="absolute left-1/2 top-[83%] w-[56%] -translate-x-1/2 transition active:scale-95"
       >
         <img src={kenTreasureAssets.resultClose} alt="" draggable={false} className="w-full select-none" />
@@ -248,6 +298,7 @@ export function KenTreasureOverlay() {
           <button
             type="button"
             onClick={openChest}
+            onPointerDown={(e) => e.stopPropagation()}
             style={{ backgroundImage: `url(${kenTreasureAssets.frameOpen})` }}
             className="absolute bottom-[7%] left-1/2 flex aspect-[1214/355] w-[54%] -translate-x-1/2 translate-y-1/2 items-center justify-center bg-contain bg-center bg-no-repeat transition active:scale-95"
           >
