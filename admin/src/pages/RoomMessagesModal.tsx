@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { Avatar, Button, Empty, Modal, Skeleton, Typography } from 'antd'
 import { ReloadOutlined, UserOutlined } from '@ant-design/icons'
 import { useRoomMessages } from '@/hooks/useRooms'
@@ -13,6 +14,13 @@ interface RoomMessagesModalProps {
 export function RoomMessagesModal({ roomId, roomName, open, onClose }: RoomMessagesModalProps) {
   const { data, isLoading, isFetching, refetch } = useRoomMessages(open ? roomId : null)
   const messages = data ? [...data.items].reverse() : []
+  const bottomRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open || !data || data.items.length === 0) return
+    const frame = requestAnimationFrame(() => bottomRef.current?.scrollIntoView())
+    return () => cancelAnimationFrame(frame)
+  }, [open, data])
 
   return (
     <Modal
@@ -78,6 +86,7 @@ export function RoomMessagesModal({ roomId, roomName, open, onClose }: RoomMessa
               </div>
             ))}
           </div>
+          <div ref={bottomRef} />
         </>
       ) : (
         <div style={{ paddingTop: 80 }}>

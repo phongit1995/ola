@@ -82,45 +82,29 @@ export function UserDetailModal({ userId, open, onClose }: UserDetailModalProps)
       centered
       width={560}
       styles={{ body: { maxHeight: '72vh', overflowY: 'auto', paddingRight: 8 } }}
-      footer={[
-        <Button
-          key="me"
-          icon={<FileTextOutlined />}
-          disabled={!userId}
-          onClick={() => setMeOpen(true)}
-        >
-          Bài đăng (Me)
-        </Button>,
-        <Button
-          key="vips"
-          icon={<CrownOutlined />}
-          disabled={!userId}
-          onClick={() => setVipsOpen(true)}
-        >
-          VIP đang có
-        </Button>,
-        <Button
-          key="history"
-          icon={<HistoryOutlined />}
-          disabled={!userId}
-          onClick={() => setHistoryOpen(true)}
-        >
-          Lịch sử Ken
-        </Button>,
-        <Button
-          key="adjust"
-          type="primary"
-          ghost
-          icon={<WalletOutlined />}
-          disabled={!userId}
-          onClick={() => setAdjustOpen(true)}
-        >
-          Tặng / Trừ Ken
-        </Button>,
-        <Button key="close" onClick={onClose}>
-          Đóng
-        </Button>,
-      ]}
+      footer={
+        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', gap: 8 }}>
+          <Button icon={<FileTextOutlined />} disabled={!userId} onClick={() => setMeOpen(true)}>
+            Bài đăng (Me)
+          </Button>
+          <Button icon={<CrownOutlined />} disabled={!userId} onClick={() => setVipsOpen(true)}>
+            VIP đang có
+          </Button>
+          <Button icon={<HistoryOutlined />} disabled={!userId} onClick={() => setHistoryOpen(true)}>
+            Lịch sử Ken
+          </Button>
+          <Button
+            type="primary"
+            ghost
+            icon={<WalletOutlined />}
+            disabled={!userId}
+            onClick={() => setAdjustOpen(true)}
+          >
+            Tặng / Trừ Ken
+          </Button>
+          <Button onClick={onClose}>Đóng</Button>
+        </div>
+      }
     >
       {isLoading || !data ? (
         <Skeleton active avatar paragraph={{ rows: 6 }} />
