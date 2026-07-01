@@ -17,7 +17,6 @@ func NewRouter(controller *Controller, authMiddleware *middleware.AuthMiddleware
 func (r *Router) Setup(api *utils.AppGroup) {
 	chests := api.Group("/ken/chests", r.authMiddleware.RequireAuth())
 	{
-		chests.GET("/active", r.controller.ListActive)
 		chests.POST("/:id/open", r.controller.Open)
 	}
 }

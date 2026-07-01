@@ -16,25 +16,6 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 	return &Controller{service: service, logger: logger.Named("[ken_chest_controller]")}
 }
 
-// ListActive godoc
-// @Summary      Rương ken đang hiệu lực cho tôi
-// @Tags         ken-chest
-// @Produce      json
-// @Security     BearerAuth
-// @Success      200  {object}  ActiveChestListResponse
-// @Router       /ken/chests/active [get]
-func (ctrl *Controller) ListActive(c *gin.Context) (interface{}, error) {
-	userID, err := utils.RequireUserID(c)
-	if err != nil {
-		return nil, err
-	}
-	resp, err := ctrl.service.ListActiveForUser(userID)
-	if err != nil {
-		return nil, utils.ServiceError(err)
-	}
-	return resp, nil
-}
-
 // Open godoc
 // @Summary      Mở rương ken
 // @Tags         ken-chest

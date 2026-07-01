@@ -88,7 +88,6 @@ export const API_PATH = {
     transfer: '/ken/transfer',
   },
   kenTreasure: {
-    active: '/ken/chests/active',
     open: (id: string) => `/ken/chests/${id}/open`,
   },
   marriage: {

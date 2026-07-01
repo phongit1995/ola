@@ -27,13 +27,9 @@ export function HomePage() {
   const ActivePanel = PANELS[tab];
   const authReady = useAuthStore((state) => state.authReady);
   const ken = useAuthStore((state) => state.user?.ken);
-  const roomActive = useRoomChatStore((state) => state.activeRoom != null);
-  const chatActive = useChatStore(
-    (state) => state.currentConversationId != null || state.draftRecipient != null
-  );
   const gameActive = useGameOverlayStore((state) => state.active != null);
   const appActive = useAppOverlayStore((state) => state.stack.length > 0);
-  const overlayActive = (tab === 'room' && roomActive) || chatActive || gameActive || appActive;
+  const hideKenBadge = gameActive || appActive;
 
   function changeTab(next: TabKey) {
     sessionStorage.setItem(ACTIVE_TAB_KEY, next);
@@ -53,7 +49,7 @@ export function HomePage() {
   return (
     <div className="flex h-dvh flex-col bg-white font-sans">
       <div className="relative flex min-h-0 flex-1 flex-col">
-        {!overlayActive && <KenBalanceBadge ken={ken} />}
+        {!hideKenBadge && <KenBalanceBadge ken={ken} />}
         <Suspense fallback={<div className="flex-1" />}>
           <ActivePanel />
         </Suspense>

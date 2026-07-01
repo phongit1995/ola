@@ -2,7 +2,7 @@ import { useState } from 'react'
 import {
   Avatar,
   Descriptions,
-  Drawer,
+  Modal,
   Space,
   Table,
   Tag,
@@ -17,7 +17,7 @@ import type { KenChest, KenChestClaim } from '@/types'
 
 const PAGE_SIZE = 20
 
-interface KenChestDetailDrawerProps {
+interface KenChestDetailModalProps {
   chest: KenChest | null
   open: boolean
   onClose: () => void
@@ -67,7 +67,7 @@ function DetailContent({ chest }: { chest: KenChest }) {
 
   return (
     <>
-      <Descriptions column={1} size="small" bordered style={{ marginBottom: 16 }}>
+      <Descriptions column={2} size="small" bordered style={{ marginBottom: 16 }}>
         <Descriptions.Item label="Chế độ">
           {chest.rewardMode === 'fixed' ? 'Cố định' : 'Ngẫu nhiên'}
         </Descriptions.Item>
@@ -108,10 +108,18 @@ function DetailContent({ chest }: { chest: KenChest }) {
   )
 }
 
-export function KenChestDetailDrawer({ chest, open, onClose }: KenChestDetailDrawerProps) {
+export function KenChestDetailModal({ chest, open, onClose }: KenChestDetailModalProps) {
   return (
-    <Drawer title="Chi tiết rương Ken" open={open} onClose={onClose} width={600} destroyOnHidden>
+    <Modal
+      title="Chi tiết rương Ken"
+      open={open}
+      onCancel={onClose}
+      footer={null}
+      width={720}
+      centered
+      destroyOnHidden
+    >
       {chest && <DetailContent key={chest.id} chest={chest} />}
-    </Drawer>
+    </Modal>
   )
 }

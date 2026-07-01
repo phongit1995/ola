@@ -39,17 +39,6 @@ type ChestListResponse struct {
 	Offset int         `json:"offset"`
 }
 
-type ActiveChestView struct {
-	ID              uuid.UUID `json:"id"`
-	ExpiresAt       time.Time `json:"expiresAt"`
-	DurationSeconds int       `json:"durationSeconds"`
-	Opened          bool      `json:"opened"`
-}
-
-type ActiveChestListResponse struct {
-	Items []ActiveChestView `json:"items"`
-}
-
 type OpenChestResult struct {
 	ChestID    uuid.UUID `json:"chestId"`
 	IsEmpty    bool      `json:"isEmpty"`

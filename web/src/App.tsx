@@ -46,7 +46,6 @@ function GlobalMediaViewer() {
 function App() {
   const { t } = useTranslation();
   const wide = useLayoutStore((s) => s.wide);
-  const userId = useAuthStore((s) => s.user?.id);
 
   useEffect(() => {
     setOnUnauthorized(() => {
@@ -83,11 +82,6 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (!userId) return;
-    void useKenTreasureStore.getState().syncFromActive();
-  }, [userId]);
-
-  useEffect(() => {
     const offAvailable = SocketService.on<{ id: string; expiresAt: string }>(
       'KEN_CHEST_AVAILABLE',
       (data) => {
@@ -98,13 +92,9 @@ function App() {
       const state = useKenTreasureStore.getState();
       if (data?.id && state.chestId === data.id && state.phase === 'closed') state.dismiss();
     });
-    const offReconnect = SocketService.onReconnect(() => {
-      void useKenTreasureStore.getState().syncFromActive();
-    });
     return () => {
       offAvailable();
       offClosed();
-      offReconnect();
     };
   }, []);
 

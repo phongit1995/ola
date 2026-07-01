@@ -196,7 +196,7 @@ function ResultView({ onClose }: { onClose: () => void }) {
       onClose={onClose}
     >
       <div
-        className="absolute left-1/2 top-[8%] w-[74%] -translate-x-1/2 text-center text-xl font-extrabold uppercase leading-none"
+        className="absolute left-1/2 top-[7%] w-[74%] -translate-x-1/2 text-center text-xl font-extrabold uppercase leading-none"
         style={goldTextStyle}
       >
         {t('kenTreasure.resultTitle')}
@@ -227,7 +227,7 @@ function ResultView({ onClose }: { onClose: () => void }) {
             src={kenTreasureAssets.resultKenCoin}
             alt=""
             draggable={false}
-            className="absolute left-[-6%] top-1/2 w-[24%] -translate-y-1/2 select-none"
+            className="absolute left-[6%] top-1/2 w-[24%] -translate-y-1/2 select-none"
           />
           <div
             className="absolute inset-0 flex items-center justify-center pl-[16%] text-xl font-extrabold leading-none"

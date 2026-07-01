@@ -136,23 +136,6 @@ func (s *Service) DeleteChest(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
-func (s *Service) ListActiveForUser(userID uuid.UUID) (*ActiveChestListResponse, error) {
-	rows, err := s.repo.ListActiveForUser(userID, time.Now().UTC())
-	if err != nil {
-		return nil, err
-	}
-	items := make([]ActiveChestView, 0, len(rows))
-	for i := range rows {
-		items = append(items, ActiveChestView{
-			ID:              rows[i].ID,
-			ExpiresAt:       rows[i].ExpiresAt,
-			DurationSeconds: rows[i].DurationSeconds,
-			Opened:          rows[i].Opened,
-		})
-	}
-	return &ActiveChestListResponse{Items: items}, nil
-}
-
 func (s *Service) Open(userID, chestID uuid.UUID) (*OpenChestResult, error) {
 	chest, err := s.repo.FindByID(chestID)
 	if err != nil || chest.Status == models.KenChestStatusDeleted {

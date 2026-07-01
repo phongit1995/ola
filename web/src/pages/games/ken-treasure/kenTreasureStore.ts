@@ -20,7 +20,6 @@ interface KenTreasureState {
   phase: KenTreasurePhase;
   result: KenTreasureResult | null;
   show: (payload: { id: string; expiresAt: string }) => void;
-  syncFromActive: () => Promise<void>;
   open: () => Promise<void>;
   dismiss: () => void;
 }
@@ -39,15 +38,6 @@ export const useKenTreasureStore = create<KenTreasureState>((set, get) => ({
     if (phase !== 'idle' && chestId === id) return;
     if (phase === 'opening' || phase === 'result') return;
     set({ chestId: id, expiresAt, phase: 'closed', result: null });
-  },
-  syncFromActive: async () => {
-    if (get().phase !== 'idle') return;
-    const res = await KenTreasureService.listActive().catch(() => null);
-    if (!res || get().phase !== 'idle') return;
-    const chest = res.items.find((item) => !item.opened);
-    if (chest) {
-      set({ chestId: chest.id, expiresAt: chest.expiresAt, phase: 'closed', result: null });
-    }
   },
   open: async () => {
     const { chestId, phase } = get();

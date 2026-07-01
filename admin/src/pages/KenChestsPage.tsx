@@ -6,7 +6,7 @@ import { ApiError } from '@/lib/apiError'
 import { formatDateTime } from '@/lib/format'
 import { kenChestRewardText } from '@/lib/kenChest'
 import { KenChestFormModal } from './KenChestFormModal'
-import { KenChestDetailDrawer } from './KenChestDetailDrawer'
+import { KenChestDetailModal } from './KenChestDetailModal'
 import type { KenChest } from '@/types'
 
 const PAGE_SIZE = 20
@@ -145,7 +145,7 @@ export function KenChestsPage() {
         }}
       />
       <KenChestFormModal open={formOpen} onClose={() => setFormOpen(false)} />
-      <KenChestDetailDrawer
+      <KenChestDetailModal
         chest={detailChest}
         open={detailChest !== null}
         onClose={() => setDetailChest(null)}

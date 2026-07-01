@@ -24,11 +24,6 @@ type ClaimOutcome struct {
 	KenBalance int
 }
 
-type ActiveChestRow struct {
-	models.KenChest
-	Opened bool `gorm:"column:opened"`
-}
-
 type ClaimRow struct {
 	models.KenChestClaim
 	Username string `gorm:"column:username"`
@@ -66,17 +61,6 @@ func (r *Repository) ListChests(limit, offset int) ([]models.KenChest, int64, er
 		return nil, 0, err
 	}
 	return chests, total, nil
-}
-
-func (r *Repository) ListActiveForUser(userID uuid.UUID, now time.Time) ([]ActiveChestRow, error) {
-	var rows []ActiveChestRow
-	err := r.db.Table("ken_chests").
-		Select("ken_chests.*, (cl.id IS NOT NULL) as opened").
-		Joins("LEFT JOIN ken_chest_claims cl ON cl.chest_id = ken_chests.id AND cl.user_id = ?", userID).
-		Where("ken_chests.status = ? AND ken_chests.expires_at > ? AND ken_chests.deleted_at IS NULL", models.KenChestStatusActive, now).
-		Order("ken_chests.created_at DESC").
-		Scan(&rows).Error
-	return rows, err
 }
 
 func (r *Repository) ListClaims(chestID uuid.UUID, limit, offset int) ([]ClaimRow, int64, error) {
