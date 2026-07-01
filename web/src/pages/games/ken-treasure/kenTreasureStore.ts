@@ -63,3 +63,7 @@ export const useKenTreasureStore = create<KenTreasureState>((set, get) => ({
   },
   dismiss: () => set({ chestId: null, expiresAt: null, phase: 'idle', result: null }),
 }));
+
+if (import.meta.env.DEV) {
+  Object.assign(window, { kenTreasureStore: useKenTreasureStore });
+}

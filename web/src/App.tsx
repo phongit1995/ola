@@ -123,9 +123,9 @@ function App() {
         <ReconnectingBanner />
         <ToastViewport />
         <div id="ola-portal" />
+        <GlobalKenTreasure />
       </div>
       <GlobalMediaViewer />
-      <GlobalKenTreasure />
     </>
   );
 }

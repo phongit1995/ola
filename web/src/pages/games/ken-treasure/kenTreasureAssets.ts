@@ -4,6 +4,7 @@ import buttonCloseUrl from '@/assets/games/ken-treasure/button-close.png';
 import frameTimeUrl from '@/assets/games/ken-treasure/frame-time.png';
 import buttonHourglassUrl from '@/assets/games/ken-treasure/button-hourglass.png';
 import frameOpenUrl from '@/assets/games/ken-treasure/frame-open.png';
+import closeUrl from '@/assets/games/ken-treasure/close.png';
 import chestWithEffectUrl from '@/assets/games/ken-treasure/chest-with-effect.png';
 import chestClosedUrl from '@/assets/games/ken-treasure/chest-closed.png';
 import chestAjarUrl from '@/assets/games/ken-treasure/chest-ajar.png';
@@ -24,7 +25,9 @@ export const kenTreasureAssets = {
   frameTime: frameTimeUrl,
   buttonHourglass: buttonHourglassUrl,
   frameOpen: frameOpenUrl,
+  closeX: closeUrl,
   chestWithEffect: chestWithEffectUrl,
+  chestClosed: chestClosedUrl,
   resultBackground: resultBackgroundUrl,
   resultChestWin: resultChestWinUrl,
   resultChestEmpty: resultChestEmptyUrl,
