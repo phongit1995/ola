@@ -85,6 +85,15 @@ export interface AdminUserDetail extends AdminUserListItem {
   updatedAt?: string
 }
 
+export interface AdminUserVipIcon {
+  instanceId: string
+  typeId: number
+  isLocked: boolean
+  isUsing: boolean
+  source?: string
+  acquiredAt?: string
+}
+
 export interface UserListParams {
   q?: string
   limit?: number

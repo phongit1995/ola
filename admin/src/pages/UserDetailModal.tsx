@@ -13,6 +13,7 @@ import { GENDER } from './userMeta'
 import { KenAdjustModal } from './KenAdjustModal'
 import { KenHistoryModal } from './KenHistoryModal'
 import { UserMeModal } from './UserMeModal'
+import { UserVipIconsModal } from './UserVipIconsModal'
 
 interface UserDetailModalProps {
   userId: string | null
@@ -70,6 +71,7 @@ export function UserDetailModal({ userId, open, onClose }: UserDetailModalProps)
   const [adjustOpen, setAdjustOpen] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
   const [meOpen, setMeOpen] = useState(false)
+  const [vipsOpen, setVipsOpen] = useState(false)
 
   return (
     <>
@@ -88,6 +90,14 @@ export function UserDetailModal({ userId, open, onClose }: UserDetailModalProps)
           onClick={() => setMeOpen(true)}
         >
           Bài đăng (Me)
+        </Button>,
+        <Button
+          key="vips"
+          icon={<CrownOutlined />}
+          disabled={!userId}
+          onClick={() => setVipsOpen(true)}
+        >
+          VIP đang có
         </Button>,
         <Button
           key="history"
@@ -210,6 +220,12 @@ export function UserDetailModal({ userId, open, onClose }: UserDetailModalProps)
       userId={userId}
       username={data?.username}
       onClose={() => setMeOpen(false)}
+    />
+    <UserVipIconsModal
+      open={vipsOpen}
+      userId={userId}
+      username={data?.username}
+      onClose={() => setVipsOpen(false)}
     />
     </>
   )

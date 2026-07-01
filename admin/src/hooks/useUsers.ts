@@ -20,6 +20,14 @@ export function useUserDetail(id: string | null) {
   })
 }
 
+export function useUserVips(id: string | null) {
+  return useQuery({
+    queryKey: [USERS_KEY, 'vips', id],
+    queryFn: () => AdminUserService.listVips(id as string, { limit: 200 }),
+    enabled: id != null,
+  })
+}
+
 export function useUpdateUserStatus() {
   const queryClient = useQueryClient()
   return useMutation({
