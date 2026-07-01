@@ -47,7 +47,7 @@ func (s *Service) CreateAndBroadcast(ctx context.Context, adminID uuid.UUID, req
 		return nil, err
 	}
 
-	now := time.Now()
+	now := time.Now().UTC()
 	active, err := s.repo.HasActiveChest(now)
 	if err != nil {
 		return nil, err
@@ -137,7 +137,7 @@ func (s *Service) DeleteChest(ctx context.Context, id uuid.UUID) error {
 }
 
 func (s *Service) ListActiveForUser(userID uuid.UUID) (*ActiveChestListResponse, error) {
-	rows, err := s.repo.ListActiveForUser(userID, time.Now())
+	rows, err := s.repo.ListActiveForUser(userID, time.Now().UTC())
 	if err != nil {
 		return nil, err
 	}
@@ -163,7 +163,7 @@ func (s *Service) Open(userID, chestID uuid.UUID) (*OpenChestResult, error) {
 		return existing, nil
 	}
 
-	if chest.Status != models.KenChestStatusActive || time.Now().After(chest.ExpiresAt) {
+	if chest.Status != models.KenChestStatusActive || time.Now().UTC().After(chest.ExpiresAt) {
 		return nil, ErrChestExpired
 	}
 
