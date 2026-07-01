@@ -22,6 +22,7 @@ export function ActiveConversationOverlay() {
         color={view.color}
         avatar={view.avatar}
         online={conversation.otherUser?.isOnline ?? false}
+        lastActiveAt={conversation.otherUser?.lastActiveAt}
         blockStatus={peerRelationship?.status ?? null}
         onClose={closeConversation}
       />

@@ -20,11 +20,15 @@ function isBirthdayToday(dateOfBirth?: string): boolean {
   return date.getMonth() === now.getMonth() && date.getDate() === now.getDate();
 }
 
-function formatLastActive(t: TFunction, lastActiveAt?: string): string | undefined {
+export function formatLastActive(
+  t: TFunction,
+  lastActiveAt?: string,
+  now: number = Date.now()
+): string | undefined {
   if (lastActiveAt == null || lastActiveAt === '') return undefined;
   const then = new Date(lastActiveAt);
   if (Number.isNaN(then.getTime())) return undefined;
-  const minutes = Math.floor((Date.now() - then.getTime()) / 60000);
+  const minutes = Math.floor((now - then.getTime()) / 60000);
   if (minutes < 1) return t('chat.lastActiveJustNow');
   if (minutes < 60) return t('chat.lastActiveMinutes', { count: minutes });
   const hours = Math.floor(minutes / 60);

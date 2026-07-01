@@ -23,6 +23,7 @@ import { useAuthStore } from '@/store/authStore';
 import type { RelationshipStatus } from '@app-types';
 import type { ChatMessage } from '../types';
 import { toBubble } from '../chatView';
+import { formatLastActive } from '../friends';
 import { useLongPress } from '@hooks';
 import { MessageRow } from './MessageRow';
 import { MessageActionSheet } from './MessageActionSheet';
@@ -39,6 +40,7 @@ interface ChatConversationViewProps {
   color: string;
   avatar?: string;
   online?: boolean;
+  lastActiveAt?: string;
   blockStatus?: RelationshipStatus | null;
   onClose: () => void;
 }
@@ -50,6 +52,7 @@ export function ChatConversationView({
   color,
   avatar,
   online,
+  lastActiveAt,
   blockStatus,
   onClose,
 }: ChatConversationViewProps) {
@@ -97,6 +100,7 @@ export function ChatConversationView({
   const [profileTarget, setProfileTarget] = useState<{ username: string; color: string } | null>(
     null
   );
+  const [now, setNow] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const composerRef = useRef<SmileyInputHandle>(null);
@@ -110,6 +114,19 @@ export function ChatConversationView({
   });
 
   const peerTyping = typingUsers.length > 0;
+
+  useEffect(() => {
+    const tick = () => setNow(Date.now());
+    const initial = setTimeout(tick, 0);
+    const interval = setInterval(tick, 60_000);
+    return () => {
+      clearTimeout(initial);
+      clearInterval(interval);
+    };
+  }, []);
+
+  const lastActiveText =
+    now != null && !online && !peerTyping ? formatLastActive(t, lastActiveAt, now) : undefined;
 
   const peerId = peerProfile?.id ?? '';
   const [cardHiddenFor, setCardHiddenFor] = useState(() =>
@@ -313,7 +330,13 @@ export function ChatConversationView({
     <FullScreenOverlay z={50}>
       <ScreenHeader
         title={title ?? name}
-        subtitle={peerTyping ? t('chat.typing', { name }) : online ? t('chat.statusActive') : ''}
+        subtitle={
+          peerTyping
+            ? t('chat.typing', { name })
+            : online
+              ? t('chat.statusActive')
+              : lastActiveText ?? ''
+        }
         onBack={onClose}
         left={<Avatar name={name} color={color} src={avatar} size={32} />}
         onTitlePress={canViewProfile ? openPeerProfile : undefined}
