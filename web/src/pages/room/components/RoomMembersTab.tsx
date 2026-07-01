@@ -1,9 +1,9 @@
 import { useTranslation } from 'react-i18next';
 import maleIcon from '@/assets/icons/chat/ic_indicate_male.png';
 import femaleIcon from '@/assets/icons/chat/ic_indicate_female.png';
-import androidIcon from '@/assets/icons/me/ic_indicate_android.png';
+// import androidIcon from '@/assets/icons/me/ic_indicate_android.png';
 import type { RoomMember } from '@app-types';
-import { PresenceBadge, UserName, VipAvatar } from '@components';
+import { UserName, VipAvatar } from '@components';
 import { colorForName } from '@lib';
 import { useMediaViewerStore } from '@/store/mediaViewerStore';
 
@@ -50,11 +50,11 @@ export function RoomMembersTab({ members, active, onOpenProfile }: RoomMembersTa
                   <GenderIcon gender={member.gender} />
                   <span className="relative h-10 w-10 shrink-0">
                     <VipAvatar typeId={member.vipTypeId} className="h-10 w-10" />
-                    <PresenceBadge
+                    {/* <PresenceBadge
                       icon={androidIcon}
                       tone="white"
                       className="absolute -right-0.5 -bottom-0.5"
-                    />
+                    /> */}
                   </span>
                   <div className="flex min-w-0 flex-1 flex-col">
                     <span className="flex min-w-0 items-center gap-1 text-base">
