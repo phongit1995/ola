@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { setOnUnauthorized } from '@api';
-import { ToastViewport } from '@components';
+import { ReconnectingBanner, ToastViewport } from '@components';
 import { authTokens, toast } from '@lib';
 import { SocketService } from '@services';
 import { AppRouter } from '@/routes';
@@ -49,6 +49,14 @@ function App() {
   }, [t]);
 
   useEffect(() => {
+    const reconnectWhenVisible = () => {
+      if (document.visibilityState === 'visible') SocketService.ensureConnected();
+    };
+    document.addEventListener('visibilitychange', reconnectWhenVisible);
+    return () => document.removeEventListener('visibilitychange', reconnectWhenVisible);
+  }, []);
+
+  useEffect(() => {
     return SocketService.on<{ ken?: number }>('KEN_UPDATED', (data) => {
       if (typeof data?.ken !== 'number') return;
       const { user, setUser } = useAuthStore.getState();
@@ -68,6 +76,7 @@ function App() {
         }`}
       >
         <AppRouter />
+        <ReconnectingBanner />
         <ToastViewport />
         <div id="ola-portal" />
       </div>

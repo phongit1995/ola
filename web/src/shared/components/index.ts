@@ -28,6 +28,7 @@ export * from './form/ClearableInput';
 export * from './form/SubmitButton';
 export * from './form/TextField';
 export * from './LanguageSwitcher';
+export * from './ReconnectingBanner';
 export * from './HomeHeader';
 export * from './Placeholder';
 export * from './BottomTabBar';

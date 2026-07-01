@@ -26,6 +26,9 @@
     "errNetwork": "Không kết nối được tới máy chủ. Vui lòng kiểm tra mạng.",
     "sessionReplaced": "Tài khoản của bạn vừa đăng nhập trên thiết bị khác."
   },
+  "connection": {
+    "reconnecting": "Đang kết nối lại…"
+  },
   "login": {
     "username": "Tên đăng nhập",
     "password": "Mật khẩu",

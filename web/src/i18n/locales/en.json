@@ -26,6 +26,9 @@
     "errNetwork": "Unable to connect to the server. Please check your network.",
     "sessionReplaced": "Your account just signed in on another device."
   },
+  "connection": {
+    "reconnecting": "Reconnecting…"
+  },
   "login": {
     "username": "Username",
     "password": "Password",

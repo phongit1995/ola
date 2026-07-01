@@ -118,6 +118,11 @@ export function registerChatRealtime(set: ChatSet, get: ChatGet) {
   if (registered) return;
   registered = true;
 
+  SocketService.onReconnect(() => {
+    void get().loadConversations();
+    void get().syncCurrentConversation();
+  });
+
   SocketService.on<NewMessageEvent>(CHAT_SOCKET_EVENTS.newMessage, (data) =>
     handleNewMessage(get, set, data)
   );

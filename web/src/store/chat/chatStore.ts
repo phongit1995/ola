@@ -48,6 +48,7 @@ export interface ChatState {
   loadingMore: boolean;
   typingUsers: TypingUser[];
   loadConversations: () => Promise<void>;
+  syncCurrentConversation: () => Promise<void>;
   openConversation: (conversationId: string) => Promise<void>;
   startDirect: (recipientId: string) => Promise<Conversation | null>;
   closeConversation: () => void;
@@ -107,6 +108,34 @@ export const useChatStore = create<ChatState>((set, get) => {
         set({ conversations: result.conversations, loadingConversations: false });
       } catch {
         set({ loadingConversations: false });
+      }
+    },
+
+    syncCurrentConversation: async () => {
+      const conversationId = get().currentConversationId;
+      if (conversationId == null) return;
+      try {
+        const result = await MessageService.list(conversationId, { limit: MESSAGE_PAGE_SIZE });
+        if (get().currentConversationId !== conversationId) return;
+        const fetched = [...result.messages].reverse();
+        const savedIds = new Set(fetched.map((item) => item.id));
+        const savedClientMsgIds = new Set(
+          fetched.map((item) => item.clientMsgId).filter((id): id is string => id != null)
+        );
+        const pending = get().messages.filter(
+          (item) =>
+            item.status !== 'sent' &&
+            !savedIds.has(item.id) &&
+            (item.clientMsgId == null || !savedClientMsgIds.has(item.clientMsgId))
+        );
+        set({
+          messages: [...fetched, ...pending],
+          hasMore: result.messages.length >= MESSAGE_PAGE_SIZE,
+        });
+        const conversation = get().conversations.find((item) => item.id === conversationId);
+        if ((conversation?.unreadCount ?? 0) > 0) void get().markRead(conversationId);
+      } catch {
+        return;
       }
     },
 

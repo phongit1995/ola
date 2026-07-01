@@ -80,6 +80,14 @@ export const useRoomChatStore = create<RoomChatState>((set, get) => {
     });
   }
 
+  SocketService.onReconnect(() => {
+    const room = get().activeRoom;
+    if (!room) return;
+    joinRoom(room.id).catch(() => {
+      if (get().activeRoom?.id === room.id) set({ status: 'error' });
+    });
+  });
+
   return {
     ...initialState,
 

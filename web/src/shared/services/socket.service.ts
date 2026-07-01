@@ -8,6 +8,10 @@ const PING_INTERVAL_MS = 60_000;
 const SESSION_REPLACED_EVENT = 'SESSION_REPLACED';
 
 type EnvelopeHandler = (data: unknown) => void;
+type ReconnectHandler = () => void;
+
+export type ConnectionStatus = 'offline' | 'connected' | 'reconnecting';
+type ConnectionStatusListener = () => void;
 
 export interface SessionReplacedData {
   reason?: string;
@@ -20,6 +24,10 @@ export class SocketService {
   private static listeners = new Map<string, Set<EnvelopeHandler>>();
   private static pingTimer: ReturnType<typeof setInterval> | null = null;
   private static sessionReplacedHandler: SessionReplacedHandler | null = null;
+  private static reconnectHandlers = new Set<ReconnectHandler>();
+  private static hasConnected = false;
+  private static status: ConnectionStatus = 'offline';
+  private static statusListeners = new Set<ConnectionStatusListener>();
 
   static connect(): Socket {
     if (this.socket) return this.socket;
@@ -37,11 +45,20 @@ export class SocketService {
     socket.on(SESSION_REPLACED_EVENT, (data: SessionReplacedData) => {
       this.sessionReplacedHandler?.(data ?? {});
     });
-    socket.on('connect', () => this.startHeartbeat());
-    socket.on('disconnect', () => this.stopHeartbeat());
+    socket.on('connect', () => this.handleConnect());
+    socket.on('disconnect', () => this.handleDisconnect());
+    socket.on('connect_error', () => {
+      if (this.hasConnected) this.setStatus('reconnecting');
+    });
     this.socket = socket;
     socket.connect();
     return socket;
+  }
+
+  static ensureConnected(): void {
+    const socket = this.socket;
+    if (!socket) return;
+    if (!socket.connected) socket.connect();
   }
 
   static ready(timeoutMs = 10_000): Promise<Socket> {
@@ -66,6 +83,40 @@ export class SocketService {
       if (this.sessionReplacedHandler === handler) this.sessionReplacedHandler = null;
     };
   }
+
+  static onReconnect(handler: ReconnectHandler): () => void {
+    this.reconnectHandlers.add(handler);
+    return () => {
+      this.reconnectHandlers.delete(handler);
+    };
+  }
+
+  private static handleConnect(): void {
+    this.startHeartbeat();
+    if (this.hasConnected) this.reconnectHandlers.forEach((handler) => handler());
+    this.hasConnected = true;
+    this.setStatus('connected');
+  }
+
+  private static handleDisconnect(): void {
+    this.stopHeartbeat();
+    if (this.hasConnected) this.setStatus('reconnecting');
+  }
+
+  private static setStatus(next: ConnectionStatus): void {
+    if (this.status === next) return;
+    this.status = next;
+    this.statusListeners.forEach((listener) => listener());
+  }
+
+  static subscribeStatus = (listener: ConnectionStatusListener): (() => void) => {
+    SocketService.statusListeners.add(listener);
+    return () => {
+      SocketService.statusListeners.delete(listener);
+    };
+  };
+
+  static getStatus = (): ConnectionStatus => SocketService.status;
 
   private static startHeartbeat(): void {
     this.stopHeartbeat();
@@ -95,6 +146,8 @@ export class SocketService {
 
   static disconnect(): void {
     this.stopHeartbeat();
+    this.hasConnected = false;
+    this.setStatus('offline');
     if (!this.socket) return;
     this.socket.disconnect();
     this.socket = null;
