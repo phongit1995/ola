@@ -17,6 +17,7 @@
   --animate-ola-ken-bump: ola-ken-bump 0.45s ease;
   --animate-hourglass-flip: hourglass-flip 3s ease-in-out infinite;
   --animate-ken-pop-in: ken-pop-in 0.4s ease-out;
+  --animate-ken-fade-in: ken-fade-in 0.25s ease-out;
   --font-sans:
     Roboto, 'Helvetica Neue', ui-sans-serif, system-ui, -apple-system,
     'Segoe UI', Arial, sans-serif;
@@ -112,6 +113,15 @@
   100% {
     opacity: 1;
     transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes ken-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
 

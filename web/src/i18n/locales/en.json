@@ -865,7 +865,8 @@
     "kenSuffix": "KEN",
     "emptyTitle": "EMPTY CHEST",
     "emptyDesc": "Better luck next time",
-    "close": "CLOSE"
+    "close": "CLOSE",
+    "openError": "Failed to open the chest, it may have expired"
   },
   "eggGame": {
     "title": "Egg Smash",

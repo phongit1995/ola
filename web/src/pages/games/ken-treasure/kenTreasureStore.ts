@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { KenTreasureService } from '@services';
+import { toast } from '@lib';
+import i18n from '@/i18n';
 import { useAuthStore } from '@/store/authStore';
 
 export type KenTreasurePhase = 'idle' | 'closed' | 'opening' | 'result';
@@ -60,6 +62,7 @@ export const useKenTreasureStore = create<KenTreasureState>((set, get) => ({
         set({ result: { isEmpty: false, kenAmount: 8888 }, phase: 'result' });
         return;
       }
+      toast.error(i18n.t('kenTreasure.openError'));
       set({ phase: 'closed' });
       return;
     }

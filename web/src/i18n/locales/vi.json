@@ -865,7 +865,8 @@
     "kenSuffix": "KEN",
     "emptyTitle": "RƯƠNG TRỐNG",
     "emptyDesc": "Chúc bạn may mắn lần sau",
-    "close": "ĐÓNG"
+    "close": "ĐÓNG",
+    "openError": "Mở rương thất bại, rương có thể đã hết hạn"
   },
   "eggGame": {
     "title": "Đập Trứng",

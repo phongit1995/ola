@@ -71,12 +71,12 @@ function OpeningChest() {
   }, []);
 
   return (
-    <div className="absolute inset-0 z-[80] flex items-center justify-center bg-black/40">
+    <div className="absolute inset-0 z-[80] flex animate-ken-fade-in items-center justify-center bg-black/40">
       <img
         src={openingFrames[index] ?? kenTreasureAssets.chestWithEffect}
         alt=""
         draggable={false}
-        className="pointer-events-none w-[62%] max-w-[280px] select-none [filter:drop-shadow(0_12px_30px_rgba(0,0,0,.55))]"
+        className="pointer-events-none w-[62%] max-w-[280px] animate-ken-pop-in select-none [filter:drop-shadow(0_12px_30px_rgba(0,0,0,.55))]"
       />
     </div>
   );
@@ -159,7 +159,7 @@ function ChestPanel({
   if (centered) {
     return (
       <div
-        className="absolute inset-0 z-[80] flex items-center justify-center bg-black/40 p-4"
+        className="absolute inset-0 z-[80] flex animate-ken-fade-in items-center justify-center bg-black/40 p-4"
         onClick={(e) => {
           if (e.target === e.currentTarget) onClose?.();
         }}
