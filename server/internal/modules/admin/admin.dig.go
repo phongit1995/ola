@@ -4,6 +4,7 @@ import (
 	adminauth "ola-chat-server/internal/modules/admin/auth"
 	adminegg "ola-chat-server/internal/modules/admin/egg"
 	adminken "ola-chat-server/internal/modules/admin/ken"
+	adminkenchest "ola-chat-server/internal/modules/admin/kenchest"
 	adminme "ola-chat-server/internal/modules/admin/me"
 	adminpen "ola-chat-server/internal/modules/admin/pen"
 	adminroom "ola-chat-server/internal/modules/admin/room"
@@ -15,32 +16,23 @@ import (
 )
 
 func Provider(c *dig.Container) error {
-	if err := adminauth.Provider(c); err != nil {
-		return err
+	modules := []func(*dig.Container) error{
+		adminauth.Provider,
+		adminuser.Provider,
+		adminme.Provider,
+		adminroom.Provider,
+		adminupload.Provider,
+		adminvip.Provider,
+		adminegg.Provider,
+		adminken.Provider,
+		adminkenchest.Provider,
+		adminpen.Provider,
 	}
-	if err := adminuser.Provider(c); err != nil {
-		return err
-	}
-	if err := adminme.Provider(c); err != nil {
-		return err
-	}
-	if err := adminroom.Provider(c); err != nil {
-		return err
-	}
-	if err := adminupload.Provider(c); err != nil {
-		return err
-	}
-	if err := adminvip.Provider(c); err != nil {
-		return err
-	}
-	if err := adminegg.Provider(c); err != nil {
-		return err
-	}
-	if err := adminken.Provider(c); err != nil {
-		return err
-	}
-	if err := adminpen.Provider(c); err != nil {
-		return err
+
+	for _, module := range modules {
+		if err := module(c); err != nil {
+			return err
+		}
 	}
 
 	return c.Provide(NewRouter)

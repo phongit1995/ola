@@ -167,8 +167,16 @@ func (s *Server) SetRoomHandler(svc RoomSocketService) {
 	s.roomSvc = svc
 }
 
+const broadcastRoom = socket.Room("broadcast:online")
+
 func roomChannel(roomID string) socket.Room {
 	return socket.Room("room:" + roomID)
+}
+
+func (s *Server) BroadcastToAll(eventType string, data any) {
+	wrapped := utils.WrapWebSocketMessage(eventType, data)
+	s.io.To(broadcastRoom).Emit(constants.WebSocketMessageEvent, wrapped)
+	s.logger.Infow("📡 Broadcast to all online", "event", eventType)
 }
 
 func (s *Server) EmitToRoom(roomID string, eventType string, data any) {

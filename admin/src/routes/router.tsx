@@ -9,6 +9,7 @@ import { EggRewardsPage } from '@/pages/EggRewardsPage'
 import { EggStatsPage } from '@/pages/EggStatsPage'
 import { PenShotsPage } from '@/pages/PenShotsPage'
 import { PenStatsPage } from '@/pages/PenStatsPage'
+import { KenChestsPage } from '@/pages/KenChestsPage'
 import { MePage } from '@/pages/MePage'
 import { AdminLayout } from '@/layout/AdminLayout'
 import { RedirectIfAuthed, RequireAuth } from './RequireAuth'
@@ -39,6 +40,7 @@ export const router = createBrowserRouter([
       { path: 'games/egg/stats', element: <EggStatsPage /> },
       { path: 'games/pen', element: <PenShotsPage /> },
       { path: 'games/pen/stats', element: <PenStatsPage /> },
+      { path: 'games/ken-treasure', element: <KenChestsPage /> },
       { path: 'me', element: <MePage /> },
     ],
   },

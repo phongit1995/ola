@@ -9,3 +9,4 @@ export * from './vip.type';
 export * from './egg.type';
 export * from './pen.type';
 export * from './ken.type';
+export * from './kenTreasure.type';

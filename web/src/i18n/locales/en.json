@@ -856,6 +856,17 @@
     "yes": "Yes",
     "no": "No"
   },
+  "kenTreasure": {
+    "title": "KEN CHEST",
+    "open": "OPEN",
+    "resultTitle": "CHEST RESULT",
+    "congrats": "CONGRATS!",
+    "youWon": "You received",
+    "kenSuffix": "KEN",
+    "emptyTitle": "EMPTY CHEST",
+    "emptyDesc": "Better luck next time",
+    "close": "CLOSE"
+  },
   "eggGame": {
     "title": "Egg Smash",
     "cost": "Per smash",

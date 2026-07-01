@@ -1,8 +1,6 @@
 package egg
 
 import (
-	"crypto/rand"
-	"encoding/binary"
 	"errors"
 	"fmt"
 	"math"
@@ -555,7 +553,7 @@ func weightedPick(weights []float64) int {
 	if total <= 0 {
 		return -1
 	}
-	target := cryptoFloat() * total
+	target := utils.CryptoFloat() * total
 	acc := 0.0
 	last := -1
 	for i, w := range weights {
@@ -571,11 +569,3 @@ func weightedPick(weights []float64) int {
 	return last
 }
 
-func cryptoFloat() float64 {
-	var b [8]byte
-	if _, err := rand.Read(b[:]); err != nil {
-		return 0
-	}
-	v := binary.BigEndian.Uint64(b[:]) >> 11
-	return float64(v) / float64(1<<53)
-}

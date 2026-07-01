@@ -4,6 +4,7 @@ import (
 	"ola-chat-server/internal/constants"
 	callEvents "ola-chat-server/internal/domain/call"
 	conversationEvents "ola-chat-server/internal/domain/conversation"
+	kenChestEvents "ola-chat-server/internal/domain/kenchest"
 	messageEvents "ola-chat-server/internal/domain/message"
 	roomEvents "ola-chat-server/internal/domain/room"
 	"context"
@@ -14,6 +15,7 @@ type KafkaEventAdapter struct {
 	conversationHandler *conversationEvents.EventHandler
 	callHandler         *callEvents.EventHandler
 	roomHandler         *roomEvents.EventHandler
+	kenChestHandler     *kenChestEvents.EventHandler
 }
 
 func NewKafkaEventAdapter(
@@ -21,12 +23,14 @@ func NewKafkaEventAdapter(
 	conversationHandler *conversationEvents.EventHandler,
 	callHandler *callEvents.EventHandler,
 	roomHandler *roomEvents.EventHandler,
+	kenChestHandler *kenChestEvents.EventHandler,
 ) *KafkaEventAdapter {
 	return &KafkaEventAdapter{
 		messageHandler:      messageHandler,
 		conversationHandler: conversationHandler,
 		callHandler:         callHandler,
 		roomHandler:         roomHandler,
+		kenChestHandler:     kenChestHandler,
 	}
 }
 
@@ -86,6 +90,14 @@ func (a *KafkaEventAdapter) HandleRoomMessageDeleted(ctx context.Context, messag
 	return a.roomHandler.OnMessageDeleted(ctx, message)
 }
 
+func (a *KafkaEventAdapter) HandleKenChestAvailable(ctx context.Context, message []byte) error {
+	return a.kenChestHandler.OnAvailable(ctx, message)
+}
+
+func (a *KafkaEventAdapter) HandleKenChestClosed(ctx context.Context, message []byte) error {
+	return a.kenChestHandler.OnClosed(ctx, message)
+}
+
 func RegisterEventHandlers(consumer *Consumer, adapter *KafkaEventAdapter) {
 	consumer.RegisterHandler(constants.KafkaTopicMessageCreated, adapter.HandleMessageCreated)
 	consumer.RegisterHandler(constants.KafkaTopicMessageDeleted, adapter.HandleMessageDeleted)
@@ -101,4 +113,6 @@ func RegisterEventHandlers(consumer *Consumer, adapter *KafkaEventAdapter) {
 	consumer.RegisterHandler(constants.KafkaTopicCallEnded, adapter.HandleCallEnded)
 	consumer.RegisterHandler(constants.KafkaTopicRoomMessageCreated, adapter.HandleRoomMessageCreated)
 	consumer.RegisterHandler(constants.KafkaTopicRoomMessageDeleted, adapter.HandleRoomMessageDeleted)
+	consumer.RegisterHandler(constants.KafkaTopicKenChestAvailable, adapter.HandleKenChestAvailable)
+	consumer.RegisterHandler(constants.KafkaTopicKenChestClosed, adapter.HandleKenChestClosed)
 }

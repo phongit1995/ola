@@ -167,6 +167,7 @@ var (
 		"egg pack not found":             true,
 		"pen shot not found":             true,
 		"marriage diary entry not found": true,
+		"ken chest not found":            true,
 	}
 
 	errorsConflict = map[string]bool{

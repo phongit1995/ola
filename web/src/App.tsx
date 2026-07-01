@@ -8,10 +8,27 @@ import { AppRouter } from '@/routes';
 import { useAuthStore } from '@/store/authStore';
 import { useLayoutStore } from '@/store/layoutStore';
 import { useMediaViewerStore } from '@/store/mediaViewerStore';
+import { useKenTreasureStore } from '@/pages/games/ken-treasure/kenTreasureStore';
 
 const MediaViewer = lazy(() =>
   import('@/pages/me/components/MediaViewer').then((m) => ({ default: m.MediaViewer })),
 );
+
+const KenTreasureOverlay = lazy(() =>
+  import('@/pages/games/ken-treasure/KenTreasureOverlay').then((m) => ({
+    default: m.KenTreasureOverlay,
+  })),
+);
+
+function GlobalKenTreasure() {
+  const phase = useKenTreasureStore((s) => s.phase);
+  if (phase === 'idle') return null;
+  return (
+    <Suspense fallback={null}>
+      <KenTreasureOverlay />
+    </Suspense>
+  );
+}
 
 function GlobalMediaViewer() {
   const open = useMediaViewerStore((s) => s.open);
@@ -29,6 +46,7 @@ function GlobalMediaViewer() {
 function App() {
   const { t } = useTranslation();
   const wide = useLayoutStore((s) => s.wide);
+  const userId = useAuthStore((s) => s.user?.id);
 
   useEffect(() => {
     setOnUnauthorized(() => {
@@ -65,6 +83,32 @@ function App() {
   }, []);
 
   useEffect(() => {
+    if (!userId) return;
+    void useKenTreasureStore.getState().syncFromActive();
+  }, [userId]);
+
+  useEffect(() => {
+    const offAvailable = SocketService.on<{ id: string; expiresAt: string }>(
+      'KEN_CHEST_AVAILABLE',
+      (data) => {
+        if (data?.id) useKenTreasureStore.getState().show({ id: data.id, expiresAt: data.expiresAt });
+      }
+    );
+    const offClosed = SocketService.on<{ id: string }>('KEN_CHEST_CLOSED', (data) => {
+      const state = useKenTreasureStore.getState();
+      if (data?.id && state.chestId === data.id && state.phase === 'closed') state.dismiss();
+    });
+    const offReconnect = SocketService.onReconnect(() => {
+      void useKenTreasureStore.getState().syncFromActive();
+    });
+    return () => {
+      offAvailable();
+      offClosed();
+      offReconnect();
+    };
+  }, []);
+
+  useEffect(() => {
     useAuthStore.getState().refreshUser();
   }, []);
 
@@ -81,6 +125,7 @@ function App() {
         <div id="ola-portal" />
       </div>
       <GlobalMediaViewer />
+      <GlobalKenTreasure />
     </>
   );
 }

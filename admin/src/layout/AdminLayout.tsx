@@ -39,6 +39,7 @@ const MENU_ITEMS = [
     children: [
       { key: '/games/egg', icon: <GiftOutlined />, label: 'Đập trứng' },
       { key: '/games/pen', icon: <AimOutlined />, label: 'Sút Pen' },
+      { key: '/games/ken-treasure', icon: <GiftOutlined />, label: 'Rương Ken' },
     ],
   },
   { key: '/me', icon: <PictureOutlined />, label: 'Me' },
@@ -61,6 +62,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/games/egg/stats': 'Thống kê trứng',
   '/games/pen': 'Sút Pen',
   '/games/pen/stats': 'Thống kê Pen',
+  '/games/ken-treasure': 'Rương Ken',
   '/me': 'Quản lý Me',
 }
 

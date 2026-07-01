@@ -129,12 +129,15 @@ export function EggPackEditorModal({ open, pack, nextSortOrder, onClose }: EggPa
 
   useEffect(() => {
     if (!open) return
-    const loaded = loadPack(pack)
-    setName(loaded.name)
-    setKenCost(loaded.kenCost)
-    setIsEnabled(loaded.isEnabled)
-    setCategories(loaded.categories)
-    setRewards(loaded.rewards)
+    const applyPack = () => {
+      const loaded = loadPack(pack)
+      setName(loaded.name)
+      setKenCost(loaded.kenCost)
+      setIsEnabled(loaded.isEnabled)
+      setCategories(loaded.categories)
+      setRewards(loaded.rewards)
+    }
+    applyPack()
   }, [open, pack])
 
   const activeCategory = categories.find((c) => c.id === activeCategoryId) ?? null

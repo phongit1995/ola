@@ -3,6 +3,7 @@ package kafka
 import (
 	callEvents "ola-chat-server/internal/domain/call"
 	conversationEvents "ola-chat-server/internal/domain/conversation"
+	kenChestEvents "ola-chat-server/internal/domain/kenchest"
 	messageEvents "ola-chat-server/internal/domain/message"
 	roomEvents "ola-chat-server/internal/domain/room"
 
@@ -27,6 +28,7 @@ func ProvideConsumer(c *dig.Container) error {
 		conversationEvents.Provider,
 		callEvents.Provider,
 		roomEvents.Provider,
+		kenChestEvents.Provider,
 	}
 
 	for _, module := range modules {

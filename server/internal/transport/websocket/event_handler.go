@@ -38,6 +38,7 @@ func (h *EventHandler) RegisterEvents() {
 func (h *EventHandler) handleConnection(client *socket.Socket, userID string) {
 	userRoom := socket.Room("user:" + userID)
 	client.Join(userRoom)
+	client.Join(broadcastRoom)
 
 	selfID := socket.Room(client.Id())
 	h.server.io.To(userRoom).Except(selfID).Emit(constants.WebSocketEventSessionReplaced, map[string]any{

@@ -59,6 +59,47 @@ export interface ListResult<T> {
   offset: number
 }
 
+export type KenChestRewardMode = 'fixed' | 'random'
+
+export interface KenChest {
+  id: string
+  rewardMode: KenChestRewardMode
+  kenAmount?: number
+  kenMin?: number
+  kenMax?: number
+  maxRecipients: number
+  claimedRecipients: number
+  durationSeconds: number
+  status: string
+  startedAt: string
+  expiresAt: string
+  claimsCount: number
+  totalKenGiven: number
+  createdAt: string
+}
+
+export interface CreateKenChestRequest {
+  rewardMode: KenChestRewardMode
+  kenAmount?: number
+  kenMin?: number
+  kenMax?: number
+  maxRecipients: number
+  durationSeconds: number
+}
+
+export interface KenChestClaim {
+  id: string
+  kenAmount: number
+  isEmpty: boolean
+  createdAt: string
+  user: {
+    id: string
+    username: string
+    fullName?: string
+    avatar?: string
+  }
+}
+
 export interface AdminUserListItem {
   id: string
   username: string

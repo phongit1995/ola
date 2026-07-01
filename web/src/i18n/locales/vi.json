@@ -856,6 +856,17 @@
     "yes": "Có",
     "no": "Không"
   },
+  "kenTreasure": {
+    "title": "RƯƠNG KEN",
+    "open": "MỞ",
+    "resultTitle": "KẾT QUẢ MỞ RƯƠNG",
+    "congrats": "CHÚC MỪNG!",
+    "youWon": "Bạn đã mở trúng",
+    "kenSuffix": "KEN",
+    "emptyTitle": "RƯƠNG TRỐNG",
+    "emptyDesc": "Chúc bạn may mắn lần sau",
+    "close": "ĐÓNG"
+  },
   "eggGame": {
     "title": "Đập Trứng",
     "cost": "Mỗi lần đập",
