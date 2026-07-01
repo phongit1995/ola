@@ -56,6 +56,10 @@ export const useKenTreasureStore = create<KenTreasureState>((set, get) => ({
       new Promise((resolve) => setTimeout(resolve, OPEN_ANIM_MS)),
     ]);
     if (!result) {
+      if (import.meta.env.DEV && chestId === 'debug') {
+        set({ result: { isEmpty: false, kenAmount: 8888 }, phase: 'result' });
+        return;
+      }
       set({ phase: 'closed' });
       return;
     }

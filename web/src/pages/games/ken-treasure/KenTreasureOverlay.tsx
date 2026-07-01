@@ -71,23 +71,27 @@ function OpeningChest() {
   }, []);
 
   return (
-    <img
-      src={openingFrames[index] ?? kenTreasureAssets.chestWithEffect}
-      alt=""
-      draggable={false}
-      className="pointer-events-none absolute left-1/2 top-[23%] w-[48%] -translate-x-1/2 select-none"
-    />
+    <div className="absolute inset-0 z-[80] flex items-center justify-center bg-black/40">
+      <img
+        src={openingFrames[index] ?? kenTreasureAssets.chestWithEffect}
+        alt=""
+        draggable={false}
+        className="pointer-events-none w-[62%] max-w-[280px] select-none [filter:drop-shadow(0_12px_30px_rgba(0,0,0,.55))]"
+      />
+    </div>
   );
 }
 
 function ChestPanel({
   backgroundSrc,
   widthClassName,
+  centered,
   onClose,
   children,
 }: {
   backgroundSrc: string;
   widthClassName: string;
+  centered?: boolean;
   onClose?: () => void;
   children: ReactNode;
 }) {
@@ -125,6 +129,46 @@ function ChestPanel({
     setPosition(offsetRef.current.x, offsetRef.current.y);
   }
 
+  const panel = (
+    <div
+      className={`relative ${widthClassName} animate-ken-pop-in [filter:drop-shadow(0_10px_24px_rgba(0,0,0,.45))]`}
+    >
+      <img src={backgroundSrc} alt="" draggable={false} className="w-full select-none" />
+      <img
+        src={kenTreasureAssets.crown}
+        alt=""
+        draggable={false}
+        className="pointer-events-none absolute left-1/2 top-[-9%] w-[24%] -translate-x-1/2 select-none"
+      />
+      {onClose && (
+        <button
+          type="button"
+          aria-label={t('kenTreasure.close')}
+          onClick={onClose}
+          onPointerDown={(e) => e.stopPropagation()}
+          style={{ backgroundImage: `url(${kenTreasureAssets.buttonClose})` }}
+          className="absolute -right-1 top-0 z-20 flex aspect-square w-[13%] items-center justify-center bg-contain bg-center bg-no-repeat transition active:scale-90"
+        >
+          <img src={kenTreasureAssets.closeX} alt="" draggable={false} className="w-1/2 select-none" />
+        </button>
+      )}
+      {children}
+    </div>
+  );
+
+  if (centered) {
+    return (
+      <div
+        className="absolute inset-0 z-[80] flex items-center justify-center bg-black/40 p-4"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) onClose?.();
+        }}
+      >
+        {panel}
+      </div>
+    );
+  }
+
   return (
     <div
       className="absolute bottom-16 right-4 z-[80] cursor-grab touch-none select-none active:cursor-grabbing"
@@ -133,35 +177,7 @@ function ChestPanel({
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
     >
-      <div
-        className={`relative ${widthClassName} animate-ken-pop-in [filter:drop-shadow(0_10px_24px_rgba(0,0,0,.45))]`}
-      >
-        <img src={backgroundSrc} alt="" draggable={false} className="w-full select-none" />
-        <img
-          src={kenTreasureAssets.crown}
-          alt=""
-          draggable={false}
-          className="pointer-events-none absolute left-1/2 top-[-9%] w-[24%] -translate-x-1/2 select-none"
-        />
-        {onClose && (
-          <button
-            type="button"
-            aria-label={t('kenTreasure.close')}
-            onClick={onClose}
-            onPointerDown={(e) => e.stopPropagation()}
-            style={{ backgroundImage: `url(${kenTreasureAssets.buttonClose})` }}
-            className="absolute -right-1 top-0 z-20 flex h-5 w-5 items-center justify-center bg-contain bg-center bg-no-repeat transition active:scale-90"
-          >
-            <img
-              src={kenTreasureAssets.closeX}
-              alt=""
-              draggable={false}
-              className="w-1/2 select-none"
-            />
-          </button>
-        )}
-        {children}
-      </div>
+      {panel}
     </div>
   );
 }
@@ -175,7 +191,8 @@ function ResultView({ onClose }: { onClose: () => void }) {
   return (
     <ChestPanel
       backgroundSrc={kenTreasureAssets.resultBackground}
-      widthClassName="w-[240px]"
+      widthClassName="w-[330px]"
+      centered
       onClose={onClose}
     >
       <div
@@ -189,22 +206,22 @@ function ResultView({ onClose }: { onClose: () => void }) {
         src={isEmpty ? kenTreasureAssets.resultChestEmpty : kenTreasureAssets.resultChestWin}
         alt=""
         draggable={false}
-        className="pointer-events-none absolute left-1/2 top-[23%] w-[54%] -translate-x-1/2 select-none"
+        className="pointer-events-none absolute left-1/2 top-[13%] w-[46%] -translate-x-1/2 select-none"
       />
 
       <div
-        className="absolute left-1/2 top-[52%] w-[80%] -translate-x-1/2 text-center text-3xl font-extrabold uppercase leading-none"
+        className="absolute left-1/2 top-[55%] w-[80%] -translate-x-1/2 text-center text-3xl font-extrabold uppercase leading-none"
         style={goldTextStyle}
       >
         {isEmpty ? t('kenTreasure.emptyTitle') : t('kenTreasure.congrats')}
       </div>
 
-      <div className="absolute left-1/2 top-[61%] w-[80%] -translate-x-1/2 text-center text-sm font-semibold leading-none text-[#5a2b12]">
+      <div className="absolute left-1/2 top-[63%] w-[80%] -translate-x-1/2 text-center text-sm font-semibold leading-none text-[#5a2b12]">
         {isEmpty ? t('kenTreasure.emptyDesc') : t('kenTreasure.youWon')}
       </div>
 
       {!isEmpty && (
-        <div className="absolute left-1/2 top-[67%] w-[78%] -translate-x-1/2">
+        <div className="absolute left-1/2 top-[68%] w-[78%] -translate-x-1/2">
           <img src={kenTreasureAssets.resultKenCount} alt="" draggable={false} className="w-full select-none" />
           <img
             src={kenTreasureAssets.resultKenCoin}
@@ -225,13 +242,10 @@ function ResultView({ onClose }: { onClose: () => void }) {
         type="button"
         onClick={onClose}
         onPointerDown={(e) => e.stopPropagation()}
-        className="absolute left-1/2 top-[83%] w-[56%] -translate-x-1/2 transition active:scale-95"
+        style={{ backgroundImage: `url(${kenTreasureAssets.resultClose})` }}
+        className="absolute bottom-[6%] left-1/2 flex aspect-[1214/355] w-[56%] -translate-x-1/2 translate-y-1/2 items-center justify-center bg-contain bg-center bg-no-repeat transition active:scale-95"
       >
-        <img src={kenTreasureAssets.resultClose} alt="" draggable={false} className="w-full select-none" />
-        <span
-          className="absolute inset-0 flex items-center justify-center text-xl font-extrabold uppercase leading-none"
-          style={whiteTextStyle}
-        >
+        <span className="text-xl font-extrabold uppercase leading-none" style={whiteTextStyle}>
           {t('kenTreasure.close')}
         </span>
       </button>
@@ -250,12 +264,13 @@ export function KenTreasureOverlay() {
 
   if (phase === 'idle') return null;
   if (phase === 'result') return <ResultView onClose={dismiss} />;
+  if (phase === 'opening') return <OpeningChest />;
 
   return (
     <ChestPanel
       backgroundSrc={kenTreasureAssets.frameBackground}
       widthClassName="w-[140px]"
-      onClose={phase === 'closed' ? dismiss : undefined}
+      onClose={dismiss}
     >
       <div
         className="absolute left-1/2 top-[6%] w-[70%] -translate-x-1/2 text-center text-xs font-extrabold uppercase leading-none"
@@ -264,50 +279,42 @@ export function KenTreasureOverlay() {
         {t('kenTreasure.title')}
       </div>
 
-      {phase === 'opening' ? (
-        <OpeningChest />
-      ) : (
-        <img
-          src={kenTreasureAssets.chestClosed}
-          alt=""
-          draggable={false}
-          className="pointer-events-none absolute left-1/2 top-[23%] w-[48%] -translate-x-1/2 select-none"
-        />
-      )}
+      <img
+        src={kenTreasureAssets.chestClosed}
+        alt=""
+        draggable={false}
+        className="pointer-events-none absolute left-1/2 top-[23%] w-[48%] -translate-x-1/2 select-none"
+      />
 
-      {phase === 'closed' && (
-        <>
-          <div className="absolute left-1/2 top-[68%] w-[56%] -translate-x-1/2">
-            <img src={kenTreasureAssets.frameTime} alt="" draggable={false} className="w-full select-none" />
-            <div className="absolute left-[-8%] top-1/2 w-[26%] -translate-y-1/2">
-              <img
-                src={kenTreasureAssets.buttonHourglass}
-                alt=""
-                draggable={false}
-                className="w-full origin-center animate-hourglass-flip select-none"
-              />
-            </div>
-            <div
-              className="absolute inset-0 flex items-center justify-center pl-[10%] text-xs font-extrabold leading-none"
-              style={goldTextStyle}
-            >
-              {formatCountdown(remaining)}
-            </div>
-          </div>
+      <div className="absolute left-1/2 top-[68%] w-[56%] -translate-x-1/2">
+        <img src={kenTreasureAssets.frameTime} alt="" draggable={false} className="w-full select-none" />
+        <div className="absolute left-[-8%] top-1/2 w-[26%] -translate-y-1/2">
+          <img
+            src={kenTreasureAssets.buttonHourglass}
+            alt=""
+            draggable={false}
+            className="w-full origin-center animate-hourglass-flip select-none"
+          />
+        </div>
+        <div
+          className="absolute inset-0 flex items-center justify-center pl-[10%] text-xs font-extrabold leading-none"
+          style={goldTextStyle}
+        >
+          {formatCountdown(remaining)}
+        </div>
+      </div>
 
-          <button
-            type="button"
-            onClick={openChest}
-            onPointerDown={(e) => e.stopPropagation()}
-            style={{ backgroundImage: `url(${kenTreasureAssets.frameOpen})` }}
-            className="absolute bottom-[7%] left-1/2 flex aspect-[1214/355] w-[54%] -translate-x-1/2 translate-y-1/2 items-center justify-center bg-contain bg-center bg-no-repeat transition active:scale-95"
-          >
-            <span className="text-sm font-extrabold uppercase leading-none" style={whiteTextStyle}>
-              {t('kenTreasure.open')}
-            </span>
-          </button>
-        </>
-      )}
+      <button
+        type="button"
+        onClick={openChest}
+        onPointerDown={(e) => e.stopPropagation()}
+        style={{ backgroundImage: `url(${kenTreasureAssets.frameOpen})` }}
+        className="absolute bottom-[7%] left-1/2 flex aspect-[1214/355] w-[54%] -translate-x-1/2 translate-y-1/2 items-center justify-center bg-contain bg-center bg-no-repeat transition active:scale-95"
+      >
+        <span className="text-sm font-extrabold uppercase leading-none" style={whiteTextStyle}>
+          {t('kenTreasure.open')}
+        </span>
+      </button>
     </ChestPanel>
   );
 }
