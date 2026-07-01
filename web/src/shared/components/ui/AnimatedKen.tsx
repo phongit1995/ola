@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import { formatKen } from '@lib';
 import kenIconUrl from '@/assets/icons/apps/ken.png';
 
-const TWEEN_MS = 500;
 const SETTLE_MS = 700;
 
 interface AnimatedKenProps {
@@ -12,6 +11,8 @@ interface AnimatedKenProps {
   iconClassName?: string;
   showIcon?: boolean;
   bounce?: boolean;
+  tweenMs?: number;
+  startDelayMs?: number;
 }
 
 export function AnimatedKen({
@@ -21,6 +22,8 @@ export function AnimatedKen({
   iconClassName = 'h-5 w-5',
   showIcon = true,
   bounce = true,
+  tweenMs = 500,
+  startDelayMs = 0,
 }: AnimatedKenProps) {
   const [display, setDisplay] = useState(value);
   const [settled, setSettled] = useState(false);
@@ -47,14 +50,18 @@ export function AnimatedKen({
         if (rafRef.current) cancelAnimationFrame(rafRef.current);
       };
     }
-    const start = performance.now();
+    const start = performance.now() + startDelayMs;
     let bumped = false;
     const step = (now: number) => {
+      if (now < start) {
+        rafRef.current = requestAnimationFrame(step);
+        return;
+      }
       if (!bumped) {
         bumped = true;
         setBump((b) => b + 1);
       }
-      const progress = Math.min(1, (now - start) / TWEEN_MS);
+      const progress = Math.min(1, (now - start) / tweenMs);
       const eased = 1 - (1 - progress) ** 3;
       setDisplay(Math.round(from + (to - from) * eased));
       if (progress < 1) rafRef.current = requestAnimationFrame(step);
@@ -63,7 +70,7 @@ export function AnimatedKen({
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [value, settled]);
+  }, [value, settled, tweenMs, startDelayMs]);
 
   const bumpClass = bounce && bump > 0 ? ' animate-ola-ken-bump' : '';
 

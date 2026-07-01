@@ -1,14 +1,11 @@
-import { lazy, Suspense, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-import { setOnUnauthorized } from '@api';
+import { lazy, Suspense } from 'react';
 import { ReconnectingBanner, ToastViewport } from '@components';
-import { authTokens, toast, playKenCreditSound } from '@lib';
-import { SocketService } from '@services';
+import { useSoundUnlock, useAuthSessionSync, useReconnectOnVisible } from '@hooks';
 import { AppRouter } from '@/routes';
-import { useAuthStore } from '@/store/authStore';
 import { useLayoutStore } from '@/store/layoutStore';
 import { useMediaViewerStore } from '@/store/mediaViewerStore';
 import { useKenTreasureStore } from '@/pages/games/ken-treasure/kenTreasureStore';
+import { useKenRealtime } from '@/pages/games/ken-treasure/useKenRealtime';
 
 const MediaViewer = lazy(() =>
   import('@/pages/me/components/MediaViewer').then((m) => ({ default: m.MediaViewer })),
@@ -44,65 +41,12 @@ function GlobalMediaViewer() {
 }
 
 function App() {
-  const { t } = useTranslation();
   const wide = useLayoutStore((s) => s.wide);
 
-  useEffect(() => {
-    setOnUnauthorized(() => {
-      SocketService.disconnect();
-      authTokens.clear();
-      useAuthStore.getState().clearUser();
-    });
-    return () => setOnUnauthorized(null);
-  }, []);
-
-  useEffect(() => {
-    return SocketService.onSessionReplaced(() => {
-      SocketService.disconnect();
-      authTokens.clear();
-      useAuthStore.getState().clearUser();
-      toast.info(t('auth.sessionReplaced'));
-    });
-  }, [t]);
-
-  useEffect(() => {
-    const reconnectWhenVisible = () => {
-      if (document.visibilityState === 'visible') SocketService.ensureConnected();
-    };
-    document.addEventListener('visibilitychange', reconnectWhenVisible);
-    return () => document.removeEventListener('visibilitychange', reconnectWhenVisible);
-  }, []);
-
-  useEffect(() => {
-    return SocketService.on<{ ken?: number }>('KEN_UPDATED', (data) => {
-      if (typeof data?.ken !== 'number') return;
-      const { user, setUser } = useAuthStore.getState();
-      if (!user) return;
-      if (data.ken > (user.ken ?? 0)) playKenCreditSound();
-      setUser({ ...user, ken: data.ken });
-    });
-  }, []);
-
-  useEffect(() => {
-    const offAvailable = SocketService.on<{ id: string; expiresAt: string }>(
-      'KEN_CHEST_AVAILABLE',
-      (data) => {
-        if (data?.id) useKenTreasureStore.getState().show({ id: data.id, expiresAt: data.expiresAt });
-      }
-    );
-    const offClosed = SocketService.on<{ id: string }>('KEN_CHEST_CLOSED', (data) => {
-      const state = useKenTreasureStore.getState();
-      if (data?.id && state.chestId === data.id && state.phase === 'closed') state.dismiss();
-    });
-    return () => {
-      offAvailable();
-      offClosed();
-    };
-  }, []);
-
-  useEffect(() => {
-    useAuthStore.getState().refreshUser();
-  }, []);
+  useSoundUnlock();
+  useAuthSessionSync();
+  useReconnectOnVisible();
+  useKenRealtime();
 
   return (
     <>

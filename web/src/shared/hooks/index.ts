@@ -4,3 +4,6 @@ export * from './useLongPress';
 export * from './useHorizontalSwipe';
 export * from './useVoiceRecorder';
 export * from './useConnectionStatus';
+export * from './useSoundUnlock';
+export * from './useReconnectOnVisible';
+export * from './useAuthSessionSync';

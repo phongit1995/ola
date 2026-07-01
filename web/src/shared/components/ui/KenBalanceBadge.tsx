@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { AnimatedKen } from './AnimatedKen';
 
-const SHOW_MS = 2000;
+const SHOW_MS = 3200;
+const TWEEN_MS = 1100;
+const START_DELAY_MS = 450;
 
 interface KenBalanceBadgeProps {
   ken?: number;
@@ -34,6 +36,8 @@ export function KenBalanceBadge({ ken, className = '' }: KenBalanceBadgeProps) {
       <span className="inline-flex items-center gap-1.5 rounded-full border border-ola-primary bg-white/80 px-3.5 py-1.5 shadow-[0_2px_10px_rgba(0,0,0,0.2)] backdrop-blur-sm">
         <AnimatedKen
           value={ken}
+          tweenMs={TWEEN_MS}
+          startDelayMs={START_DELAY_MS}
           numberClassName="text-lg font-extrabold leading-none text-[#f57f17] [text-shadow:0_1px_0_rgba(255,255,255,0.6)]"
           iconClassName="h-6 w-6"
         />
