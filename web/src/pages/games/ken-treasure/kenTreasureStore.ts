@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { KenTreasureService } from '@services';
-import { toast } from '@lib';
+import { toast, playKenChestSound } from '@lib';
 import i18n from '@/i18n';
 import { useAuthStore } from '@/store/authStore';
 
@@ -37,6 +37,7 @@ export const useKenTreasureStore = create<KenTreasureState>((set, get) => ({
     const { phase, chestId } = get();
     if (phase !== 'idle' && chestId === id) return;
     if (phase === 'opening' || phase === 'result') return;
+    playKenChestSound();
     set({ chestId: id, expiresAt, phase: 'closed', result: null });
   },
   open: async () => {

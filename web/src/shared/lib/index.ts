@@ -19,3 +19,4 @@ export * from './number';
 export * from './portal';
 export * from './cropImage';
 export * from './hiddenPeerCards';
+export * from './sound';
