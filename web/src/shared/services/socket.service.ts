@@ -5,6 +5,7 @@ import { ensureFreshToken } from '@api';
 const ENVELOPE_EVENT = 'message';
 const PING_EVENT = 'ping';
 const PING_INTERVAL_MS = 60_000;
+const STALE_SILENCE_MS = 30_000;
 const SESSION_REPLACED_EVENT = 'SESSION_REPLACED';
 
 type EnvelopeHandler = (data: unknown) => void;
@@ -28,6 +29,7 @@ export class SocketService {
   private static hasConnected = false;
   private static status: ConnectionStatus = 'offline';
   private static statusListeners = new Set<ConnectionStatusListener>();
+  private static lastServerPingAt = 0;
 
   static connect(): Socket {
     if (this.socket) return this.socket;
@@ -50,15 +52,29 @@ export class SocketService {
     socket.on('connect_error', () => {
       if (this.hasConnected) this.setStatus('reconnecting');
     });
+    socket.io.on('ping', () => {
+      this.lastServerPingAt = Date.now();
+    });
     this.socket = socket;
     socket.connect();
     return socket;
   }
 
-  static ensureConnected(): void {
+  static ensureAlive(): void {
     const socket = this.socket;
     if (!socket) return;
-    if (!socket.connected) socket.connect();
+    if (!socket.connected) {
+      socket.connect();
+      return;
+    }
+    if (Date.now() - this.lastServerPingAt > STALE_SILENCE_MS) this.forceReconnect();
+  }
+
+  static forceReconnect(): void {
+    const socket = this.socket;
+    if (!socket) return;
+    socket.disconnect();
+    socket.connect();
   }
 
   static ready(timeoutMs = 10_000): Promise<Socket> {
@@ -92,6 +108,7 @@ export class SocketService {
   }
 
   private static handleConnect(): void {
+    this.lastServerPingAt = Date.now();
     this.startHeartbeat();
     if (this.hasConnected) this.reconnectHandlers.forEach((handler) => handler());
     this.hasConnected = true;
