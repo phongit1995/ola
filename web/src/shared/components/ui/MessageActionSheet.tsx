@@ -1,29 +1,23 @@
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { portalRoot } from '@lib';
+import { portalRoot, REACTION_EMOJI, REACTION_ORDER } from '@lib';
 import type { ReactionType } from '@app-types';
-import type { ChatMessage } from '../types';
-import { REACTION_EMOJI, REACTION_ORDER } from '../chatView';
+
+export interface MessageSheetAction {
+  key: string;
+  label: string;
+  destructive?: boolean;
+  onSelect: () => void;
+}
 
 interface MessageActionSheetProps {
-  message: ChatMessage;
-  isOwn: boolean;
+  actions: MessageSheetAction[];
   onReact: (type: ReactionType) => void;
-  onEdit: () => void;
-  onDelete: () => void;
   onClose: () => void;
 }
 
-export function MessageActionSheet({
-  message,
-  isOwn,
-  onReact,
-  onEdit,
-  onDelete,
-  onClose,
-}: MessageActionSheetProps) {
+export function MessageActionSheet({ actions, onReact, onClose }: MessageActionSheetProps) {
   const { t } = useTranslation();
-  const canEdit = isOwn && message.kind === 'text';
 
   return createPortal(
     <div className="fixed inset-0 z-[120] flex flex-col justify-end" onClick={onClose}>
@@ -49,30 +43,21 @@ export function MessageActionSheet({
         </div>
 
         <div className="border-t border-black/8">
-          {canEdit && (
+          {actions.map((action) => (
             <button
+              key={action.key}
               type="button"
               onClick={() => {
-                onEdit();
+                action.onSelect();
                 onClose();
               }}
-              className="flex w-full items-center px-5 py-3 text-left text-base text-black/87"
+              className={`flex w-full items-center px-5 py-3 text-left text-base ${
+                action.destructive ? 'text-ola-error' : 'text-black/87'
+              }`}
             >
-              {t('chat.actionEdit')}
+              {action.label}
             </button>
-          )}
-          {isOwn && (
-            <button
-              type="button"
-              onClick={() => {
-                onDelete();
-                onClose();
-              }}
-              className="flex w-full items-center px-5 py-3 text-left text-base text-ola-error"
-            >
-              {t('chat.actionDelete')}
-            </button>
-          )}
+          ))}
           <button
             type="button"
             onClick={onClose}

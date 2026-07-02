@@ -1,4 +1,4 @@
-import type { RoomMessage } from '@app-types';
+import type { RoomMessage, RoomReactor, RoomReplySnapshot } from '@app-types';
 import { GROUP_GAP_MS } from './constants';
 
 export type BubblePosition = 'single' | 'first' | 'middle' | 'last';
@@ -8,6 +8,8 @@ export interface GroupedMessage {
   content: string;
   createdAt: string;
   position: BubblePosition;
+  replyTo?: RoomReplySnapshot;
+  reactions?: Record<string, RoomReactor[]>;
 }
 
 export interface MessageGroup {
@@ -73,6 +75,8 @@ export function buildRoomFeed(messages: RoomMessage[], currentUserId: string): R
         content: message.content,
         createdAt: message.createdAt,
         position: bubblePosition(count, index),
+        replyTo: message.replyTo,
+        reactions: message.reactions,
       })),
     });
     pending = null;
@@ -91,7 +95,10 @@ export function buildRoomFeed(messages: RoomMessage[], currentUserId: string): R
 
     const gap = Number.isNaN(time) || lastTime === 0 ? 0 : time - lastTime;
     const sameGroup =
-      pending != null && pending.senderId === message.senderId && gap <= GROUP_GAP_MS;
+      pending != null &&
+      pending.senderId === message.senderId &&
+      gap <= GROUP_GAP_MS &&
+      message.replyTo == null;
 
     if (sameGroup && pending != null) {
       pending.raw.push(message);

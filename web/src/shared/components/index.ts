@@ -15,6 +15,7 @@ export * from './ui/AttachmentBar';
 export * from './ui/Dialog';
 export * from './ui/ConfirmDialog';
 export * from './ui/ListOptionDialog';
+export * from './ui/MessageActionSheet';
 export * from './ui/UserListDialog';
 export * from './ui/UserRow';
 export * from './ui/UserName';

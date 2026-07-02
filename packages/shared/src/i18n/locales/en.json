@@ -348,7 +348,13 @@
     "noMembers": "No members online yet",
     "sendError": "Couldn't send message",
     "quitSuccess": "Left the room",
-    "loadError": "Couldn't load rooms"
+    "loadError": "Couldn't load rooms",
+    "actionReply": "Reply",
+    "replyingTo": "Replying to @{{name}}",
+    "replySticker": "[Sticker]",
+    "replyNotFound": "Original message is no longer available",
+    "reactionsTitle": "Reactions",
+    "reactionsEmpty": "No reactions yet."
   },
   "me": {
     "tabFeed": "Newsfeed",

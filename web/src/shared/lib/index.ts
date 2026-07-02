@@ -7,5 +7,6 @@ export * from './richText';
 export * from './portal';
 export * from './cropImage';
 export * from './compressImage';
+export * from './reactions';
 export * from './hiddenPeerCards';
 export * from './sound';

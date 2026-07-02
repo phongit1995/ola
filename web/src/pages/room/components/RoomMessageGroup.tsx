@@ -1,9 +1,11 @@
-import { memo } from 'react';
+import { memo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import mentionIcon from '@/assets/icons/room/ic_tag_people.png';
 import { VipAvatar } from '@components';
-import { colorForName, kulImageForText, renderRichText } from '@lib';
-import type { BubblePosition, MessageGroup } from '../messageGroups';
+import { useLongPress } from '@hooks';
+import { colorForName, kulImageForText, reactionChips, renderRichText } from '@lib';
+import type { RoomReplySnapshot } from '@app-types';
+import type { BubblePosition, GroupedMessage, MessageGroup } from '../messageGroups';
 import { OTHER_CORNERS, OWN_CORNERS } from '../constants';
 
 function clock(iso: string): string {
@@ -14,11 +16,156 @@ function clock(iso: string): string {
 
 interface RoomMessageGroupProps {
   group: MessageGroup;
+  highlightedId?: string | null;
   onOpenProfile?: (nick: string, color: string) => void;
   onQuickMention?: (name: string) => void;
+  onLongPressMessage?: (id: string) => void;
+  onQuoteClick?: (messageId: string) => void;
+  onShowReactions?: (id: string) => void;
 }
 
-function RoomMessageGroupComponent({ group, onOpenProfile, onQuickMention }: RoomMessageGroupProps) {
+interface QuoteBlockProps {
+  replyTo: RoomReplySnapshot;
+  isOwn: boolean;
+  onQuoteClick?: (messageId: string) => void;
+}
+
+function QuoteBlock({ replyTo, isOwn, onQuoteClick }: QuoteBlockProps) {
+  const { t } = useTranslation();
+  const excerpt =
+    kulImageForText(replyTo.excerpt) != null ? t('room.replySticker') : replyTo.excerpt;
+  return (
+    <button
+      type="button"
+      onClick={(event) => {
+        event.stopPropagation();
+        onQuoteClick?.(replyTo.messageId);
+      }}
+      className={`mb-1 block w-full rounded border-l-2 py-0.5 pl-2 pr-1 text-left ${
+        isOwn ? 'border-white/60 bg-white/15' : 'border-[#7cb342] bg-black/5'
+      }`}
+    >
+      <span
+        className={`block truncate text-xs font-semibold ${
+          isOwn ? 'text-white/90' : 'text-black/60'
+        }`}
+      >
+        {replyTo.senderName != null && replyTo.senderName !== '' ? `@${replyTo.senderName}` : ''}
+      </span>
+      <span className={`line-clamp-2 text-xs ${isOwn ? 'text-white/75' : 'text-black/45'}`}>
+        {excerpt}
+      </span>
+    </button>
+  );
+}
+
+interface RoomBubbleProps {
+  message: GroupedMessage;
+  isOwn: boolean;
+  position: BubblePosition;
+  highlighted: boolean;
+  onMention: (nick: string) => void;
+  onLongPressMessage?: (id: string) => void;
+  onQuoteClick?: (messageId: string) => void;
+}
+
+function RoomBubble({
+  message,
+  isOwn,
+  position,
+  highlighted,
+  onMention,
+  onLongPressMessage,
+  onQuoteClick,
+}: RoomBubbleProps) {
+  const suppressClick = useRef(false);
+  const longPress = useLongPress(() => {
+    suppressClick.current = true;
+    onLongPressMessage?.(message.id);
+  });
+
+  const kul = kulImageForText(message.content);
+  const corners = isOwn ? OWN_CORNERS[position] : OTHER_CORNERS[position];
+  const bubbleClass = isOwn
+    ? `w-fit max-w-full break-words bg-[#7cb342] px-3.5 py-2 text-base text-white ${corners}`
+    : `w-fit max-w-full break-words bg-[#f1f8e9] px-3.5 py-2 text-base text-black/87 ${corners}`;
+
+  const body =
+    kul != null ? (
+      <div className={message.replyTo != null ? bubbleClass : undefined}>
+        {message.replyTo != null && (
+          <QuoteBlock replyTo={message.replyTo} isOwn={isOwn} onQuoteClick={onQuoteClick} />
+        )}
+        <img src={kul} alt="" className="h-28 w-auto object-contain" />
+      </div>
+    ) : (
+      <div className={bubbleClass}>
+        {message.replyTo != null && (
+          <QuoteBlock replyTo={message.replyTo} isOwn={isOwn} onQuoteClick={onQuoteClick} />
+        )}
+        {renderRichText(message.content, onMention)}
+      </div>
+    );
+
+  return (
+    <div
+      data-message-id={message.id}
+      {...longPress}
+      onPointerDown={(event) => {
+        suppressClick.current = false;
+        longPress.onPointerDown(event);
+      }}
+      onClick={() => {
+        if (suppressClick.current) suppressClick.current = false;
+      }}
+      className={`w-fit max-w-full touch-pan-y select-none ${
+        highlighted ? 'rounded-2xl ring-2 ring-ola-primary/40' : ''
+      }`}
+    >
+      {body}
+    </div>
+  );
+}
+
+function ReactionChipsRow({
+  message,
+  isOwn,
+  onShowReactions,
+}: {
+  message: GroupedMessage;
+  isOwn: boolean;
+  onShowReactions?: (id: string) => void;
+}) {
+  const chips = reactionChips(message.reactions);
+  if (chips.length === 0) return null;
+  return (
+    <button
+      type="button"
+      onClick={() => onShowReactions?.(message.id)}
+      className={`flex flex-wrap gap-1 ${isOwn ? 'justify-end self-end' : 'self-start'}`}
+    >
+      {chips.map((chip) => (
+        <span
+          key={chip.type}
+          className="flex items-center gap-0.5 rounded-full bg-white px-1.5 py-0.5 text-xs shadow-sm"
+        >
+          <span>{chip.emoji}</span>
+          <span className="text-black/54">{chip.count}</span>
+        </span>
+      ))}
+    </button>
+  );
+}
+
+function RoomMessageGroupComponent({
+  group,
+  highlightedId,
+  onOpenProfile,
+  onQuickMention,
+  onLongPressMessage,
+  onQuoteClick,
+  onShowReactions,
+}: RoomMessageGroupProps) {
   const { t } = useTranslation();
   const onMention = (nick: string) => onOpenProfile?.(nick, colorForName(nick));
   const time = clock(group.messages[0]!.createdAt);
@@ -28,19 +175,20 @@ function RoomMessageGroupComponent({ group, onOpenProfile, onQuickMention }: Roo
       <div className="flex w-full flex-col gap-0.5">
         <span className="text-center text-xs text-black/26">{time}</span>
         <div className="flex max-w-[80%] flex-col items-end gap-0.5 self-end">
-          {group.messages.map((message) => {
-            const kul = kulImageForText(message.content);
-            return kul != null ? (
-              <img key={message.id} src={kul} alt="" className="h-28 w-auto object-contain" />
-            ) : (
-              <div
-                key={message.id}
-                className={`w-fit max-w-full break-words bg-[#7cb342] px-3.5 py-2 text-base text-white ${OWN_CORNERS[message.position]}`}
-              >
-                {renderRichText(message.content, onMention)}
-              </div>
-            );
-          })}
+          {group.messages.map((message) => (
+            <div key={message.id} className="flex w-fit max-w-full flex-col items-end gap-0.5">
+              <RoomBubble
+                message={message}
+                isOwn
+                position={message.position}
+                highlighted={highlightedId === message.id}
+                onMention={onMention}
+                onLongPressMessage={onLongPressMessage}
+                onQuoteClick={onQuoteClick}
+              />
+              <ReactionChipsRow message={message} isOwn onShowReactions={onShowReactions} />
+            </div>
+          ))}
         </div>
       </div>
     );
@@ -49,8 +197,6 @@ function RoomMessageGroupComponent({ group, onOpenProfile, onQuickMention }: Roo
   const lastIndex = group.messages.length - 1;
   const senderColor = colorForName(group.senderName);
   const openSender = () => onOpenProfile?.(group.senderName, senderColor);
-  const bubbleClass = (position: BubblePosition) =>
-    `w-fit max-w-full break-words bg-[#f1f8e9] px-3.5 py-2 text-base text-black/87 ${OTHER_CORNERS[position]}`;
   return (
     <div className="flex w-full flex-col gap-0.5">
       <span className="text-center text-xs text-black/26">{time}</span>
@@ -67,31 +213,40 @@ function RoomMessageGroupComponent({ group, onOpenProfile, onQuickMention }: Roo
         </button>
         <div className="flex w-fit min-w-0 flex-col gap-0.5">
           {group.messages.map((message, index) => {
-            const kul = kulImageForText(message.content);
-            const body =
-              kul != null ? (
-                <img src={kul} alt="" className="h-28 w-auto object-contain" />
-              ) : (
-                <div className={bubbleClass(message.position)}>
-                  {renderRichText(message.content, onMention)}
-                </div>
-              );
-            return index === lastIndex ? (
-              <div key={message.id} className="relative w-fit max-w-full self-start">
-                {body}
-                <button
-                  type="button"
-                  aria-label={t('room.mentionUser', { name: group.senderName })}
-                  title={t('room.mentionUser', { name: group.senderName })}
-                  onClick={() => onQuickMention?.(group.senderName)}
-                  className="absolute bottom-0 left-full ml-1 flex h-7 w-7 items-center justify-center rounded-full hover:bg-black/5 active:bg-black/10"
-                >
-                  <img src={mentionIcon} alt="" className="h-6 w-6" />
-                </button>
-              </div>
-            ) : (
-              <div key={message.id} className="w-fit max-w-full self-start">
-                {body}
+            const bubble = (
+              <RoomBubble
+                message={message}
+                isOwn={false}
+                position={message.position}
+                highlighted={highlightedId === message.id}
+                onMention={onMention}
+                onLongPressMessage={onLongPressMessage}
+                onQuoteClick={onQuoteClick}
+              />
+            );
+            return (
+              <div key={message.id} className="flex w-fit max-w-full flex-col gap-0.5 self-start">
+                {index === lastIndex ? (
+                  <div className="relative w-fit max-w-full">
+                    {bubble}
+                    <button
+                      type="button"
+                      aria-label={t('room.mentionUser', { name: group.senderName })}
+                      title={t('room.mentionUser', { name: group.senderName })}
+                      onClick={() => onQuickMention?.(group.senderName)}
+                      className="absolute bottom-0 left-full ml-1 flex h-7 w-7 items-center justify-center rounded-full hover:bg-black/5 active:bg-black/10"
+                    >
+                      <img src={mentionIcon} alt="" className="h-6 w-6" />
+                    </button>
+                  </div>
+                ) : (
+                  bubble
+                )}
+                <ReactionChipsRow
+                  message={message}
+                  isOwn={false}
+                  onShowReactions={onShowReactions}
+                />
               </div>
             );
           })}

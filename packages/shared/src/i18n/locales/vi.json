@@ -348,7 +348,13 @@
     "noMembers": "Chưa có thành viên nào online",
     "sendError": "Không gửi được tin nhắn",
     "quitSuccess": "Đã thoát phòng",
-    "loadError": "Không tải được danh sách phòng"
+    "loadError": "Không tải được danh sách phòng",
+    "actionReply": "Trả lời",
+    "replyingTo": "Đang trả lời @{{name}}",
+    "replySticker": "[Nhãn dán]",
+    "replyNotFound": "Tin nhắn gốc không còn nữa",
+    "reactionsTitle": "Cảm xúc",
+    "reactionsEmpty": "Chưa có cảm xúc nào."
   },
   "me": {
     "tabFeed": "Bảng tin",

@@ -7,7 +7,7 @@ import { useRoomChatStore } from '@/store/roomChatStore';
 import { useAuthStore } from '@/store/authStore';
 import { useRoomFilterStore } from '../roomFilterStore';
 import { ScreenHeader, FullScreenOverlay } from '@components';
-import type { RoomMember } from '@app-types';
+import type { ReactionType, RoomMember } from '@app-types';
 import { RoomTabBar, type RoomTabItem } from './RoomTabBar';
 import { RoomMessagesTab } from './RoomMessagesTab';
 import { RoomMembersTab } from './RoomMembersTab';
@@ -50,6 +50,15 @@ export function RoomChatView({ visible, onClose }: RoomChatViewProps) {
   const hasMore = useRoomChatStore((state) => state.hasMore);
   const loadingMore = useRoomChatStore((state) => state.loadingMore);
   const loadMoreMessages = useRoomChatStore((state) => state.loadMoreMessages);
+  const replyTarget = useRoomChatStore((state) => state.replyTarget);
+  const setReplyTarget = useRoomChatStore((state) => state.setReplyTarget);
+  const clearReplyTarget = useRoomChatStore((state) => state.clearReplyTarget);
+  const reactToRoomMessage = useRoomChatStore((state) => state.reactToRoomMessage);
+  const deleteRoomMessage = useRoomChatStore((state) => state.deleteRoomMessage);
+  const handleReact = useCallback(
+    (messageId: string, type: ReactionType) => void reactToRoomMessage(messageId, type),
+    [reactToRoomMessage]
+  );
   const currentUserId = useAuthStore((state) => state.user?.id) ?? '';
   const [profileTarget, setProfileTarget] = useState<ProfileTarget | null>(null);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -105,9 +114,14 @@ export function RoomChatView({ visible, onClose }: RoomChatViewProps) {
         visible={visible}
         hasMore={hasMore}
         loadingMore={loadingMore}
+        replyTarget={replyTarget}
         onSend={sendMessage}
         onLoadMore={loadMoreMessages}
         onOpenProfile={openProfile}
+        onSetReplyTarget={setReplyTarget}
+        onClearReplyTarget={clearReplyTarget}
+        onReact={handleReact}
+        onDeleteMessage={deleteRoomMessage}
       />
       <RoomMembersTab
         members={visibleMembers}

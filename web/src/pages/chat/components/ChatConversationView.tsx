@@ -9,6 +9,8 @@ import {
   FullScreenOverlay,
   ListOptionDialog,
   DateSeparator,
+  MessageActionSheet,
+  type MessageSheetAction,
   ScreenHeader,
   SmileyInput,
   Spinner,
@@ -26,7 +28,6 @@ import { toBubble } from '../chatView';
 import { formatLastActive } from '../friends';
 import { useLongPress } from '@hooks';
 import { MessageRow } from './MessageRow';
-import { MessageActionSheet } from './MessageActionSheet';
 import { TransferKenDialog } from './TransferKenDialog';
 import { TradingVipDialog } from './TradingVipDialog';
 import { VoicePreviewBar } from './VoicePreviewBar';
@@ -240,6 +241,23 @@ export function ChatConversationView({
     setEditing({ id: message.id });
     setDraft(message.text ?? '');
     setOpenTab(null);
+  }
+
+  function messageSheetActions(message: ChatMessage): MessageSheetAction[] {
+    const isOwn = message.direction === 'out';
+    const actions: MessageSheetAction[] = [];
+    if (isOwn && message.kind === 'text') {
+      actions.push({ key: 'edit', label: t('chat.actionEdit'), onSelect: () => startEdit(message) });
+    }
+    if (isOwn) {
+      actions.push({
+        key: 'delete',
+        label: t('chat.actionDelete'),
+        destructive: true,
+        onSelect: () => setDeleteTarget(message),
+      });
+    }
+    return actions;
   }
 
   function cancelEdit() {
@@ -563,11 +581,8 @@ export function ChatConversationView({
 
       {actionTarget != null && (
         <MessageActionSheet
-          message={actionTarget}
-          isOwn={actionTarget.direction === 'out'}
+          actions={messageSheetActions(actionTarget)}
           onReact={(type) => void reactToMessage(actionTarget.id, type)}
-          onEdit={() => startEdit(actionTarget)}
-          onDelete={() => setDeleteTarget(actionTarget)}
           onClose={() => setActionTarget(null)}
         />
       )}
