@@ -11,7 +11,7 @@ import { MePostInteractions, type MePostSource } from '../me/MePostInteractions'
 import { ProfileCard } from './components/ProfileCard';
 import { ProfileMediaStore } from './components/ProfileMediaStore';
 import { ProfileFollowing } from './components/ProfileFollowing';
-import { EditProfilePage } from './EditProfilePage';
+import { EditProfileMePage } from './EditProfileMePage';
 import type {
   ProfileActions,
   ProfileFriend,
@@ -117,7 +117,7 @@ export function ProfilePage({
         </button>
       )}
 
-      {editOpen && <EditProfilePage profile={profile} onClose={() => setEditOpen(false)} />}
+      {editOpen && <EditProfileMePage onClose={() => setEditOpen(false)} />}
     </FullScreenOverlay>
   );
 }
