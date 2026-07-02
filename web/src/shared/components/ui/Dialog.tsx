@@ -44,7 +44,7 @@ export function Dialog({
         if (!dismissOnBackdrop) return;
         if (event.target === event.currentTarget && backdropDownRef.current) onClose();
       }}
-      className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4"
+      className="fixed inset-0 z-[110] grid place-items-center bg-black/60 p-4"
     >
       <div
         role="dialog"
