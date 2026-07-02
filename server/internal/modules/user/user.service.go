@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"ola-chat-server/internal/apperr"
+	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/relationships"
 	"ola-chat-server/internal/services"
@@ -753,7 +754,7 @@ func (s *Service) UploadImage(ctx context.Context, userID uuid.UUID, file multip
 		"filename", filename,
 	)
 
-	result, err := s.minioService.UploadFile(ctx, file, filename, "uploads")
+	result, err := s.minioService.UploadFile(ctx, file, filename, constants.UploadFolderAvatar)
 	if err != nil {
 		s.logger.Errorw("Failed to upload image to MinIO",
 			"user_id", userID,

@@ -5,18 +5,18 @@ const (
 	KafkaTopicMessageDeleted         = "CHAT.MESSAGE.DELETED"
 	KafkaTopicMessageUpdated         = "CHAT.MESSAGE.UPDATED"
 	KafkaTopicMessageReactionUpdated = "CHAT.MESSAGE.REACTION_UPDATED"
-	KafkaTopicConversationCreated = "CHAT.CONVERSATION.CREATED"
-	KafkaTopicConversationUpdated = "CHAT.CONVERSATION.UPDATED"
-	KafkaTopicConversationDeleted = "CHAT.CONVERSATION.DELETED"
-	KafkaTopicUserTyping          = "CHAT.USER.TYPING"
-	KafkaTopicCallInvited         = "CHAT.CALL.INVITED"
-	KafkaTopicCallAccepted        = "CHAT.CALL.ACCEPTED"
-	KafkaTopicCallDeclined        = "CHAT.CALL.DECLINED"
-	KafkaTopicCallEnded           = "CHAT.CALL.ENDED"
-	KafkaTopicRoomMessageCreated  = "CHAT.ROOM.MESSAGE.CREATED"
-	KafkaTopicRoomMessageDeleted  = "CHAT.ROOM.MESSAGE.DELETED"
-	KafkaTopicKenChestAvailable   = "CHAT.KEN.CHEST.AVAILABLE"
-	KafkaTopicKenChestClosed      = "CHAT.KEN.CHEST.CLOSED"
+	KafkaTopicConversationCreated    = "CHAT.CONVERSATION.CREATED"
+	KafkaTopicConversationUpdated    = "CHAT.CONVERSATION.UPDATED"
+	KafkaTopicConversationDeleted    = "CHAT.CONVERSATION.DELETED"
+	KafkaTopicUserTyping             = "CHAT.USER.TYPING"
+	KafkaTopicCallInvited            = "CHAT.CALL.INVITED"
+	KafkaTopicCallAccepted           = "CHAT.CALL.ACCEPTED"
+	KafkaTopicCallDeclined           = "CHAT.CALL.DECLINED"
+	KafkaTopicCallEnded              = "CHAT.CALL.ENDED"
+	KafkaTopicRoomMessageCreated     = "CHAT.ROOM.MESSAGE.CREATED"
+	KafkaTopicRoomMessageDeleted     = "CHAT.ROOM.MESSAGE.DELETED"
+	KafkaTopicKenChestAvailable      = "CHAT.KEN.CHEST.AVAILABLE"
+	KafkaTopicKenChestClosed         = "CHAT.KEN.CHEST.CLOSED"
 )
 
 func AllKafkaTopics() []string {
@@ -89,31 +89,31 @@ const (
 )
 
 const (
-	WebSocketEventConnect             = "CONNECT"
-	WebSocketEventDisconnect          = "DISCONNECT"
-	WebSocketEventNewMessage          = "NEW_MESSAGE"
-	WebSocketEventMessageDeleted          = "MESSAGE_DELETED"
-	WebSocketEventMessageUpdated          = "MESSAGE_UPDATED"
-	WebSocketEventMessageReactionUpdated  = "MESSAGE_REACTION_UPDATED"
-	WebSocketEventConversationCreated = "CONVERSATION_CREATED"
-	WebSocketEventConversationUpdated = "CONVERSATION_UPDATED"
-	WebSocketEventConversationDeleted = "CONVERSATION_DELETED"
-	WebSocketEventUserTyping          = "USER_TYPING"
-	WebSocketEventUserStopTyping      = "USER_STOP_TYPING"
-	WebSocketEventIncomingCall        = "INCOMING_CALL"
-	WebSocketEventCallAccepted        = "CALL_ACCEPTED"
-	WebSocketEventCallDeclined        = "CALL_DECLINED"
-	WebSocketEventCallEnded           = "CALL_ENDED"
-	WebSocketEventError               = "ERROR"
-	WebSocketEventNewRoomMessage      = "NEW_ROOM_MESSAGE"
-	WebSocketEventRoomMessageDeleted  = "ROOM_MESSAGE_DELETED"
-	WebSocketEventRoomMemberJoined    = "ROOM_MEMBER_JOINED"
-	WebSocketEventRoomMemberLeft      = "ROOM_MEMBER_LEFT"
-	WebSocketEventSessionReplaced     = "SESSION_REPLACED"
-	WebSocketEventKenUpdated          = "KEN_UPDATED"
-	WebSocketEventPenSettled          = "PEN_SETTLED"
-	WebSocketEventKenChestAvailable   = "KEN_CHEST_AVAILABLE"
-	WebSocketEventKenChestClosed      = "KEN_CHEST_CLOSED"
+	WebSocketEventConnect                = "CONNECT"
+	WebSocketEventDisconnect             = "DISCONNECT"
+	WebSocketEventNewMessage             = "NEW_MESSAGE"
+	WebSocketEventMessageDeleted         = "MESSAGE_DELETED"
+	WebSocketEventMessageUpdated         = "MESSAGE_UPDATED"
+	WebSocketEventMessageReactionUpdated = "MESSAGE_REACTION_UPDATED"
+	WebSocketEventConversationCreated    = "CONVERSATION_CREATED"
+	WebSocketEventConversationUpdated    = "CONVERSATION_UPDATED"
+	WebSocketEventConversationDeleted    = "CONVERSATION_DELETED"
+	WebSocketEventUserTyping             = "USER_TYPING"
+	WebSocketEventUserStopTyping         = "USER_STOP_TYPING"
+	WebSocketEventIncomingCall           = "INCOMING_CALL"
+	WebSocketEventCallAccepted           = "CALL_ACCEPTED"
+	WebSocketEventCallDeclined           = "CALL_DECLINED"
+	WebSocketEventCallEnded              = "CALL_ENDED"
+	WebSocketEventError                  = "ERROR"
+	WebSocketEventNewRoomMessage         = "NEW_ROOM_MESSAGE"
+	WebSocketEventRoomMessageDeleted     = "ROOM_MESSAGE_DELETED"
+	WebSocketEventRoomMemberJoined       = "ROOM_MEMBER_JOINED"
+	WebSocketEventRoomMemberLeft         = "ROOM_MEMBER_LEFT"
+	WebSocketEventSessionReplaced        = "SESSION_REPLACED"
+	WebSocketEventKenUpdated             = "KEN_UPDATED"
+	WebSocketEventPenSettled             = "PEN_SETTLED"
+	WebSocketEventKenChestAvailable      = "KEN_CHEST_AVAILABLE"
+	WebSocketEventKenChestClosed         = "KEN_CHEST_CLOSED"
 )
 
 var CallRingTimeoutSeconds = 30
@@ -123,11 +123,11 @@ const (
 )
 
 const (
-	CacheKeyPresence       = "PRESENCE:%s:ONLINE"
-	PresenceTTLSeconds     = 300
-	CacheKeyLastActive     = "PRESENCE:%s:LAST_ACTIVE"
-	LastActiveTTLSeconds   = 86400
-	OnlineGraceWindowSecs  = 120
+	CacheKeyPresence      = "PRESENCE:%s:ONLINE"
+	PresenceTTLSeconds    = 300
+	CacheKeyLastActive    = "PRESENCE:%s:LAST_ACTIVE"
+	LastActiveTTLSeconds  = 86400
+	OnlineGraceWindowSecs = 120
 )
 
 const (
@@ -209,16 +209,19 @@ const (
 )
 
 const (
-	MaxImageUploadSize             = 2 * 1024 * 1024
-	MaxAudioUploadSize             = 10 * 1024 * 1024
-	MaxAudioDurationSeconds        = 300
-	UploadFolderMessages           = "messages"
-	UploadFolderPosts              = "posts"
-	UploadDateLayout               = "02012006"
-	MaxPostImages                  = 5
-	CacheKeyRateLimitUpload        = "RATE_LIMIT:%s:UPLOAD"
-	RateLimitUploadMaxRequests     = 30
-	RateLimitUploadWindowSeconds   = 60
+	MaxImageUploadSize           = 2 * 1024 * 1024
+	MaxAdminImageUploadSize      = 5 * 1024 * 1024
+	MaxAudioUploadSize           = 10 * 1024 * 1024
+	MaxAudioDurationSeconds      = 300
+	UploadFolderMessages         = "messages"
+	UploadFolderPosts            = "posts"
+	UploadFolderAvatar           = "avatar"
+	UploadFolderAdmin            = "admin"
+	UploadDateLayout             = "02012006"
+	MaxPostImages                = 5
+	CacheKeyRateLimitUpload      = "RATE_LIMIT:%s:UPLOAD"
+	RateLimitUploadMaxRequests   = 30
+	RateLimitUploadWindowSeconds = 60
 )
 
 var AllowedImageMimes = []string{

@@ -344,7 +344,7 @@ func (s *Service) UploadImages(ctx context.Context, userID uuid.UUID, files []*m
 		return nil, errors.New("max 5 images")
 	}
 
-	folder := fmt.Sprintf("%s/%s/%s", constants.UploadFolderPosts, userID.String(), time.Now().Format(constants.UploadDateLayout))
+	folder := fmt.Sprintf("%s/%s", constants.UploadFolderPosts, time.Now().Format(constants.UploadDateLayout))
 	images := make([]UploadedImage, 0, len(files))
 	for _, fileHeader := range files {
 		img, err := s.uploadImage(ctx, folder, fileHeader)

@@ -3,6 +3,7 @@ package adminupload
 import (
 	"net/http"
 
+	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/utils"
 
@@ -40,12 +41,11 @@ func (ctrl *Controller) Upload(c *gin.Context) (interface{}, error) {
 	}
 	defer file.Close()
 
-	const maxFileSize = 5 * 1024 * 1024
-	if header.Size > maxFileSize {
+	if header.Size > constants.MaxAdminImageUploadSize {
 		return nil, utils.NewHTTPError(http.StatusRequestEntityTooLarge, "file size must not exceed 5MB")
 	}
 
-	result, err := ctrl.minio.UploadFile(c.Request.Context(), file, header.Filename, "uploads/admin")
+	result, err := ctrl.minio.UploadFile(c.Request.Context(), file, header.Filename, constants.UploadFolderAdmin)
 	if err != nil {
 		ctrl.logger.Errorw("Admin upload failed", "filename", header.Filename, "error", err)
 		return nil, utils.ServiceError(err)
