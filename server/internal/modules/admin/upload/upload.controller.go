@@ -12,12 +12,12 @@ import (
 )
 
 type Controller struct {
-	minio  *services.MinIOService
+	s3     *services.S3Service
 	logger *zap.SugaredLogger
 }
 
-func NewController(minio *services.MinIOService, logger *zap.SugaredLogger) *Controller {
-	return &Controller{minio: minio, logger: logger.Named("[admin_upload_controller]")}
+func NewController(s3 *services.S3Service, logger *zap.SugaredLogger) *Controller {
+	return &Controller{s3: s3, logger: logger.Named("[admin_upload_controller]")}
 }
 
 type UploadResponse struct {
@@ -45,7 +45,7 @@ func (ctrl *Controller) Upload(c *gin.Context) (interface{}, error) {
 		return nil, utils.NewHTTPError(http.StatusRequestEntityTooLarge, "file size must not exceed 5MB")
 	}
 
-	result, err := ctrl.minio.UploadFile(c.Request.Context(), file, header.Filename, constants.UploadFolderAdmin)
+	result, err := ctrl.s3.UploadFile(c.Request.Context(), file, header.Filename, constants.UploadFolderAdmin)
 	if err != nil {
 		ctrl.logger.Errorw("Admin upload failed", "filename", header.Filename, "error", err)
 		return nil, utils.ServiceError(err)

@@ -55,17 +55,17 @@ type Config struct {
 	KafkaConsumerWorkers   int      `env:"KAFKA_CONSUMER_WORKERS" envDefault:"10" validate:"min=1,max=100"`
 	KafkaMessageTimeoutSec int      `env:"KAFKA_MESSAGE_TIMEOUT_SEC" envDefault:"10" validate:"min=1,max=300"`
 
-	MinIOEndpoint  string `env:"MINIO_ENDPOINT" envDefault:"localhost:9000"`
-	MinIOAccessKey string `env:"MINIO_ACCESS_KEY"`
-	MinIOSecretKey string `env:"MINIO_SECRET_KEY"`
-	MinIOBucket    string `env:"MINIO_BUCKET" envDefault:"chat-uploads"`
-	MinIOUseSSL    bool   `env:"MINIO_USE_SSL" envDefault:"false"`
-	MinIOPublicURL string `env:"MINIO_PUBLIC_URL" envDefault:""`
+	S3Endpoint  string `env:"S3_ENDPOINT" envDefault:"localhost:9000"`
+	S3AccessKey string `env:"S3_ACCESS_KEY"`
+	S3SecretKey string `env:"S3_SECRET_KEY"`
+	S3Bucket    string `env:"S3_BUCKET" envDefault:"chat-uploads"`
+	S3UseSSL    bool   `env:"S3_USE_SSL" envDefault:"false"`
+	S3PublicURL string `env:"S3_PUBLIC_URL" envDefault:""`
 
-	LiveKitURL              string `env:"LIVEKIT_URL" envDefault:""`
-	LiveKitAPIKey           string `env:"LIVEKIT_API_KEY" envDefault:""`
-	LiveKitAPISecret        string `env:"LIVEKIT_API_SECRET" envDefault:""`
-	CallRingTimeoutSeconds  int    `env:"CALL_RING_TIMEOUT_SECONDS" envDefault:"30" validate:"min=2,max=300"`
+	LiveKitURL             string `env:"LIVEKIT_URL" envDefault:""`
+	LiveKitAPIKey          string `env:"LIVEKIT_API_KEY" envDefault:""`
+	LiveKitAPISecret       string `env:"LIVEKIT_API_SECRET" envDefault:""`
+	CallRingTimeoutSeconds int    `env:"CALL_RING_TIMEOUT_SECONDS" envDefault:"30" validate:"min=2,max=300"`
 
 	MessageDeleteWindowSeconds int `env:"MESSAGE_DELETE_WINDOW_SECONDS" envDefault:"7200" validate:"min=0"`
 

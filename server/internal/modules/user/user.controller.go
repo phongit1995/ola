@@ -434,7 +434,7 @@ func (ctrl *Controller) SearchUsers(c *gin.Context) (interface{}, error) {
 
 // Upload godoc
 // @Summary      Upload image
-// @Description  Upload image to MinIO and get URL (does not update user profile)
+// @Description  Upload image to S3 and get URL (does not update user profile)
 // @Tags         upload
 // @Accept       multipart/form-data
 // @Produce      json

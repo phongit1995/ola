@@ -5973,7 +5973,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Upload image to MinIO and get URL (does not update user profile)",
+                "description": "Upload image to S3 and get URL (does not update user profile)",
                 "consumes": [
                     "multipart/form-data"
                 ],

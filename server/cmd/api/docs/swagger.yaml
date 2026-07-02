@@ -8504,7 +8504,7 @@ paths:
     post:
       consumes:
       - multipart/form-data
-      description: Upload image to MinIO and get URL (does not update user profile)
+      description: Upload image to S3 and get URL (does not update user profile)
       parameters:
       - description: Image file (jpg, png, gif, webp)
         in: formData

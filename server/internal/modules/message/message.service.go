@@ -44,13 +44,13 @@ type Service struct {
 	userCache     *userModule.CacheService
 	db            *gorm.DB
 	kafkaProducer *kafka.Producer
-	minio         *services.MinIOService
+	s3            *services.S3Service
 	redis         *services.CacheService
 	cfg           *config.Config
 	logger        *zap.SugaredLogger
 }
 
-func NewService(repo *Repository, cache *CacheService, convRepo *conversation.Repository, convCache *conversation.CacheService, userCache *userModule.CacheService, db *gorm.DB, kafkaProducer *kafka.Producer, minio *services.MinIOService, redis *services.CacheService, cfg *config.Config, logger *zap.SugaredLogger) *Service {
+func NewService(repo *Repository, cache *CacheService, convRepo *conversation.Repository, convCache *conversation.CacheService, userCache *userModule.CacheService, db *gorm.DB, kafkaProducer *kafka.Producer, s3 *services.S3Service, redis *services.CacheService, cfg *config.Config, logger *zap.SugaredLogger) *Service {
 	return &Service{
 		repo:          repo,
 		cache:         cache,
@@ -59,7 +59,7 @@ func NewService(repo *Repository, cache *CacheService, convRepo *conversation.Re
 		userCache:     userCache,
 		db:            db,
 		kafkaProducer: kafkaProducer,
-		minio:         minio,
+		s3:            s3,
 		redis:         redis,
 		cfg:           cfg,
 		logger:        logger.Named("[message_service]"),
@@ -131,7 +131,7 @@ func (s *Service) uploadImageFile(ctx context.Context, userID, conversationID uu
 	safeName := fmt.Sprintf("image%s", ext)
 	folder := fmt.Sprintf("%s/%s/%s", constants.UploadFolderMessages, conversationID.String(), time.Now().Format(constants.UploadDateLayout))
 
-	upload, err := s.minio.UploadFile(ctx, &multipartFileReader{Reader: bytes.NewReader(fullData), size: int64(len(fullData))}, safeName, folder)
+	upload, err := s.s3.UploadFile(ctx, &multipartFileReader{Reader: bytes.NewReader(fullData), size: int64(len(fullData))}, safeName, folder)
 	if err != nil {
 		return nil, fmt.Errorf("failed to upload to storage: %w", err)
 	}
@@ -259,7 +259,7 @@ func (s *Service) uploadAudioFile(ctx context.Context, userID, conversationID uu
 	safeName := fmt.Sprintf("audio%s", ext)
 	folder := fmt.Sprintf("%s/%s/%s", constants.UploadFolderMessages, conversationID.String(), time.Now().Format(constants.UploadDateLayout))
 
-	upload, err := s.minio.UploadFile(ctx, &multipartFileReader{Reader: bytes.NewReader(data), size: int64(len(data))}, safeName, folder)
+	upload, err := s.s3.UploadFile(ctx, &multipartFileReader{Reader: bytes.NewReader(data), size: int64(len(data))}, safeName, folder)
 	if err != nil {
 		return nil, fmt.Errorf("failed to upload to storage: %w", err)
 	}

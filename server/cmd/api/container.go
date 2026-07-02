@@ -44,7 +44,7 @@ func NewContainer() (*dig.Container, error) {
 		db.NewScyllaDB,
 		services.NewCacheService,
 		services.NewJWTService,
-		services.NewMinIOService,
+		services.NewS3Service,
 		middleware.NewAuthMiddleware,
 		middleware.NewApiGuardMiddleware,
 		middleware.NewRateLimitMiddleware,

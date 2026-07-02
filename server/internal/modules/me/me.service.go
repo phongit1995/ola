@@ -33,15 +33,15 @@ import (
 type Service struct {
 	repo    *Repository
 	relRepo *relationships.Repository
-	minio   *services.MinIOService
+	s3      *services.S3Service
 	logger  *zap.SugaredLogger
 }
 
-func NewService(repo *Repository, relRepo *relationships.Repository, minio *services.MinIOService, logger *zap.SugaredLogger) *Service {
+func NewService(repo *Repository, relRepo *relationships.Repository, s3 *services.S3Service, logger *zap.SugaredLogger) *Service {
 	return &Service{
 		repo:    repo,
 		relRepo: relRepo,
-		minio:   minio,
+		s3:      s3,
 		logger:  logger.Named("[post_service]"),
 	}
 }
@@ -389,7 +389,7 @@ func (s *Service) uploadImage(ctx context.Context, folder string, fileHeader *mu
 		return nil, errors.New("failed to decode image")
 	}
 
-	upload, err := s.minio.UploadFile(ctx, &postFileReader{Reader: bytes.NewReader(data)}, "image"+extensionForMime(mimeType), folder)
+	upload, err := s.s3.UploadFile(ctx, &postFileReader{Reader: bytes.NewReader(data)}, "image"+extensionForMime(mimeType), folder)
 	if err != nil {
 		s.logger.Errorw("Failed to upload post image", "error", err)
 		return nil, errors.New("failed to upload image")

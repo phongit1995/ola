@@ -23,30 +23,30 @@ type UploadResult struct {
 	SecureURL string `json:"secure_url"`
 }
 
-type MinIOService struct {
+type S3Service struct {
 	client    *minio.Client
 	bucket    string
 	publicURL string
 	logger    *zap.SugaredLogger
 }
 
-func NewMinIOService(cfg *config.Config, logger *zap.SugaredLogger) (*MinIOService, error) {
-	client, err := minio.New(cfg.MinIOEndpoint, &minio.Options{
-		Creds:  credentials.NewStaticV4(cfg.MinIOAccessKey, cfg.MinIOSecretKey, ""),
-		Secure: cfg.MinIOUseSSL,
+func NewS3Service(cfg *config.Config, logger *zap.SugaredLogger) (*S3Service, error) {
+	client, err := minio.New(cfg.S3Endpoint, &minio.Options{
+		Creds:  credentials.NewStaticV4(cfg.S3AccessKey, cfg.S3SecretKey, ""),
+		Secure: cfg.S3UseSSL,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to initialize MinIO client: %w", err)
+		return nil, fmt.Errorf("failed to initialize S3 client: %w", err)
 	}
 
 	ctx := context.Background()
-	exists, err := client.BucketExists(ctx, cfg.MinIOBucket)
+	exists, err := client.BucketExists(ctx, cfg.S3Bucket)
 	if err != nil {
-		return nil, fmt.Errorf("failed to check MinIO bucket: %w", err)
+		return nil, fmt.Errorf("failed to check S3 bucket: %w", err)
 	}
 	if !exists {
-		if err := client.MakeBucket(ctx, cfg.MinIOBucket, minio.MakeBucketOptions{}); err != nil {
-			return nil, fmt.Errorf("failed to create MinIO bucket: %w", err)
+		if err := client.MakeBucket(ctx, cfg.S3Bucket, minio.MakeBucketOptions{}); err != nil {
+			return nil, fmt.Errorf("failed to create S3 bucket: %w", err)
 		}
 
 		policy := fmt.Sprintf(`{
@@ -57,28 +57,28 @@ func NewMinIOService(cfg *config.Config, logger *zap.SugaredLogger) (*MinIOServi
 				"Action":["s3:GetObject"],
 				"Resource":["arn:aws:s3:::%s/*"]
 			}]
-		}`, cfg.MinIOBucket)
-		if err := client.SetBucketPolicy(ctx, cfg.MinIOBucket, policy); err != nil {
+		}`, cfg.S3Bucket)
+		if err := client.SetBucketPolicy(ctx, cfg.S3Bucket, policy); err != nil {
 			logger.Warnw("Failed to set bucket public policy", "error", err)
 		}
 	}
 
-	publicURL := cfg.MinIOPublicURL
+	publicURL := cfg.S3PublicURL
 	if publicURL == "" {
 		scheme := "http"
-		if cfg.MinIOUseSSL {
+		if cfg.S3UseSSL {
 			scheme = "https"
 		}
-		publicURL = fmt.Sprintf("%s://%s", scheme, cfg.MinIOEndpoint)
+		publicURL = fmt.Sprintf("%s://%s", scheme, cfg.S3Endpoint)
 	}
 
-	logger.Info("MinIO service initialized successfully")
+	logger.Info("S3 service initialized successfully")
 
-	return &MinIOService{
+	return &S3Service{
 		client:    client,
-		bucket:    cfg.MinIOBucket,
+		bucket:    cfg.S3Bucket,
 		publicURL: publicURL,
-		logger:    logger.Named("[minio]"),
+		logger:    logger.Named("[s3]"),
 	}, nil
 }
 
@@ -97,7 +97,7 @@ var allowedExts = map[string]string{
 	".aac":  "audio/aac",
 }
 
-func (s *MinIOService) UploadFile(ctx context.Context, file multipart.File, filename string, folder string) (*UploadResult, error) {
+func (s *S3Service) UploadFile(ctx context.Context, file multipart.File, filename string, folder string) (*UploadResult, error) {
 	ext := strings.ToLower(filepath.Ext(filename))
 	contentType, ok := allowedExts[ext]
 	if !ok {
@@ -111,7 +111,7 @@ func (s *MinIOService) UploadFile(ctx context.Context, file multipart.File, file
 		return nil, fmt.Errorf("failed to determine file size: %w", err)
 	}
 
-	s.logger.Infow("Uploading file to MinIO",
+	s.logger.Infow("Uploading file to S3",
 		"object", objectName,
 		"size", fileSize,
 		"content_type", contentType,
@@ -121,7 +121,7 @@ func (s *MinIOService) UploadFile(ctx context.Context, file multipart.File, file
 		ContentType: contentType,
 	})
 	if err != nil {
-		s.logger.Errorw("Failed to upload to MinIO", "object", objectName, "error", err)
+		s.logger.Errorw("Failed to upload to S3", "object", objectName, "error", err)
 		return nil, fmt.Errorf("failed to upload file: %w", err)
 	}
 

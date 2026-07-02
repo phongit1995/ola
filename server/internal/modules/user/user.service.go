@@ -25,7 +25,7 @@ type Service struct {
 	repo         *Repository
 	relRepo      *relationships.Repository
 	cache        *CacheService
-	minioService *services.MinIOService
+	s3Service    *services.S3Service
 	cacheService *services.CacheService
 	presence     *websocket.PresenceService
 	db           *gorm.DB
@@ -36,7 +36,7 @@ func NewService(
 	repo *Repository,
 	relRepo *relationships.Repository,
 	cache *CacheService,
-	minioService *services.MinIOService,
+	s3Service *services.S3Service,
 	cacheService *services.CacheService,
 	presence *websocket.PresenceService,
 	db *gorm.DB,
@@ -46,7 +46,7 @@ func NewService(
 		repo:         repo,
 		relRepo:      relRepo,
 		cache:        cache,
-		minioService: minioService,
+		s3Service:    s3Service,
 		cacheService: cacheService,
 		presence:     presence,
 		db:           db,
@@ -754,9 +754,9 @@ func (s *Service) UploadImage(ctx context.Context, userID uuid.UUID, file multip
 		"filename", filename,
 	)
 
-	result, err := s.minioService.UploadFile(ctx, file, filename, constants.UploadFolderAvatar)
+	result, err := s.s3Service.UploadFile(ctx, file, filename, constants.UploadFolderAvatar)
 	if err != nil {
-		s.logger.Errorw("Failed to upload image to MinIO",
+		s.logger.Errorw("Failed to upload image to S3",
 			"user_id", userID,
 			"error", err.Error(),
 		)
