@@ -50,11 +50,6 @@ vendor/
 
 dump.rdb
 
-monitoring/loki/data/
-monitoring/grafana/data/
-monitoring/alloy/data/
-.env.monitoring
-
 node_modules/
 tests/api/node_modules/
 

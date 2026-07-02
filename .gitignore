@@ -17,6 +17,5 @@ infra/web/deploy.env
 /.env
 /.env.local
 /.env.chat
-/.env.monitoring
 /.env.production
 /env.production

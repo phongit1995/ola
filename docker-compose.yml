@@ -28,8 +28,6 @@ services:
   api:
     image: ${DOCKERHUB_USERNAME}/ola-chat-server-api${IMAGE_SUFFIX:-}:${API_VERSION:-latest}
     container_name: ola-chat-server-api${CONTAINER_SUFFIX:-}
-    labels:
-      - "logging=enabled"
     restart: unless-stopped
     environment:
       - DB_HOST=${DB_HOST:-postgres}
@@ -68,9 +66,6 @@ services:
       - MINIO_PUBLIC_URL=${MINIO_PUBLIC_URL:-http://localhost:9000}
       - SWAGGER_HOST=${SWAGGER_HOST:-api:8080}
       - SERVICE_NAME=api
-      - LIVEKIT_URL=${LIVEKIT_URL:-}
-      - LIVEKIT_API_KEY=${LIVEKIT_API_KEY:-}
-      - LIVEKIT_API_SECRET=${LIVEKIT_API_SECRET:-}
     depends_on:
       - postgres
       - redis
@@ -84,8 +79,6 @@ services:
   chat:
     image: ${DOCKERHUB_USERNAME}/ola-chat-server-chat${IMAGE_SUFFIX:-}:${CHAT_VERSION:-latest}
     container_name: ola-chat-server-chat${CONTAINER_SUFFIX:-}
-    labels:
-      - "logging=enabled"
     restart: unless-stopped
     environment:
       - REDIS_HOST=${REDIS_HOST:-redis}
@@ -240,63 +233,6 @@ services:
       retries: 5
       start_period: 60s
 
-  loki:
-    image: grafana/loki:2.9.3
-    container_name: loki${CONTAINER_SUFFIX:-}
-    user: "0:0"
-    command: -config.file=/etc/loki/loki-config.yml
-    volumes:
-      - ./infra/monitoring/loki/loki-config.prod.yml:/etc/loki/loki-config.yml
-      - loki_data:/loki
-    networks:
-      - chat-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-
-  grafana:
-    image: grafana/grafana:10.2.3
-    container_name: grafana${CONTAINER_SUFFIX:-}
-    ports:
-      - "${GRAFANA_PORT:-3001}:3000"
-    environment:
-      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin123}
-      - GF_USERS_ALLOW_SIGN_UP=false
-    volumes:
-      - ./infra/monitoring/grafana/provisioning:/etc/grafana/provisioning
-      - ./infra/monitoring/grafana/dashboards:/var/lib/grafana/dashboards
-      - grafana_data:/var/lib/grafana
-    networks:
-      - chat-network
-    depends_on:
-      loki:
-        condition: service_healthy
-    restart: unless-stopped
-
-  alloy:
-    image: grafana/alloy:latest
-    container_name: alloy${CONTAINER_SUFFIX:-}
-    command:
-      - run
-      - /etc/alloy/config.alloy
-      - --server.http.listen-addr=0.0.0.0:12345
-      - --storage.path=/var/lib/alloy/data
-    volumes:
-      - ./infra/monitoring/alloy/config.prod.alloy:/etc/alloy/config.alloy
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - alloy_data:/var/lib/alloy
-    networks:
-      - chat-network
-    depends_on:
-      loki:
-        condition: service_healthy
-    restart: unless-stopped
-
   kafka:
     image: confluentinc/cp-kafka:7.5.0
     container_name: ola-chat-server-kafka${CONTAINER_SUFFIX:-}
@@ -326,39 +262,11 @@ services:
       retries: 5
       start_period: 30s
 
-  livekit:
-    image: livekit/livekit-server:latest
-    container_name: ola-chat-server-livekit${CONTAINER_SUFFIX:-}
-    restart: unless-stopped
-    command: --config /etc/livekit.yaml
-    environment:
-      LIVEKIT_API_SECRET: ${LIVEKIT_API_SECRET}
-    labels:
-      - dockflare.enable=${LIVEKIT_DOCKFLARE_ENABLE:-true}
-      - dockflare.hostname=${LIVEKIT_DOMAIN:-livekit.ola-server.click}
-      - dockflare.service=http://${LIVEKIT_EXTERNAL_HOST:-103.161.171.169}:${LIVEKIT_PORT:-7880}
-    ports:
-      - "${LIVEKIT_PORT:-7880}:7880"
-      - "${LIVEKIT_TCP_PORT:-7881}:7881"
-      - "${LIVEKIT_UDP_PORT:-7882}:7882/udp"
-    volumes:
-      - ./infra/livekit/livekit.prod.yaml:/etc/livekit.yaml:ro
-    networks:
-      - chat-network
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-
 volumes:
   postgres_data:
   redis_data:
   scylla_data:
   kafka_data:
-  loki_data:
-  grafana_data:
-  alloy_data:
   minio_data:
 
 networks:
