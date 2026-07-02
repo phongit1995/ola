@@ -325,7 +325,6 @@
     "warningVipTitle": "Subscribe to a VIP account",
     "warningVipBody": "VIP members can join crowded rooms anytime",
     "buyVip": "Buy VIP",
-    "quit": "Quit room",
     "quitTitle": "Quit room",
     "quitMessage": "Do you want to quit room \"{{name}}\"?",
     "roomFull": "Chat room is full. Subscribe to a VIP account to join",

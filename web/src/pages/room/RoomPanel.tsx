@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ConfirmDialog } from '@components';
-import { toast } from '@lib';
 import { HomeHeader } from '@components/HomeHeader';
 import { RoomList } from './components/RoomList';
 import type { RoomListItem } from './types';
 import { useRoomStore } from './roomStore';
-import { useRoomChatStore, type ActiveRoom } from '@/store/roomChatStore';
+import { useRoomChatStore } from '@/store/roomChatStore';
 import { ROOM_CAPACITY, ROOM_COLORS } from './constants';
 
 export function RoomPanel() {
@@ -17,8 +16,6 @@ export function RoomPanel() {
   const fetchRooms = useRoomStore((state) => state.fetchRooms);
   const activeRoom = useRoomChatStore((state) => state.activeRoom);
   const openRoom = useRoomChatStore((state) => state.open);
-  const closeRoom = useRoomChatStore((state) => state.close);
-  const [pendingQuit, setPendingQuit] = useState<ActiveRoom | null>(null);
   const [fullRoom, setFullRoom] = useState<RoomListItem | null>(null);
 
   useEffect(() => {
@@ -44,19 +41,6 @@ export function RoomPanel() {
       return;
     }
     openRoom({ id: room.id, name: room.title });
-  }
-
-  function exitRoom() {
-    closeRoom();
-    fetchRooms();
-  }
-
-  function confirmQuit() {
-    if (pendingQuit != null && activeRoom?.id === pendingQuit.id) {
-      exitRoom();
-      toast.success(t('room.quitSuccess'));
-    }
-    setPendingQuit(null);
   }
 
   function refresh() {
@@ -109,23 +93,12 @@ export function RoomPanel() {
           rooms={rooms}
           joinedRoomId={activeRoom?.id ?? null}
           onEnter={enterRoom}
-          onQuit={(room) => setPendingQuit({ id: room.id, name: room.title })}
           onAroundYou={aroundYou}
           onQuickJoin={quickJoin}
           showQuickJoin={roomsLoaded}
         />
       </main>
 
-      <ConfirmDialog
-        open={pendingQuit != null}
-        danger
-        title={t('room.quitTitle')}
-        message={t('room.quitMessage', { name: pendingQuit?.name ?? '' })}
-        confirmLabel={t('dialog.yes')}
-        cancelLabel={t('dialog.no')}
-        onConfirm={confirmQuit}
-        onCancel={() => setPendingQuit(null)}
-      />
       <ConfirmDialog
         open={fullRoom != null}
         title={fullRoom?.title ?? ''}

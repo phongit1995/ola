@@ -8,7 +8,6 @@ interface RoomListProps {
   rooms: RoomListItem[];
   joinedRoomId: string | null;
   onEnter: (room: RoomListItem) => void;
-  onQuit: (room: RoomListItem) => void;
   onAroundYou: () => void;
   onQuickJoin: () => void;
   showQuickJoin: boolean;
@@ -56,7 +55,6 @@ export function RoomList({
   rooms,
   joinedRoomId,
   onEnter,
-  onQuit,
   onQuickJoin,
   showQuickJoin,
 }: RoomListProps) {
@@ -107,7 +105,6 @@ export function RoomList({
           room={room}
           joined={room.id === joinedRoomId}
           onEnter={onEnter}
-          onQuit={onQuit}
         />
       ))}
     </ul>

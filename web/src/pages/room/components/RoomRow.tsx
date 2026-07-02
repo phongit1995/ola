@@ -1,4 +1,3 @@
-import { useTranslation } from 'react-i18next';
 import membersIcon from '@/assets/icons/room/ic_indicate_privacy_friends.png';
 import type { RoomListItem } from '../types';
 
@@ -22,14 +21,12 @@ interface RoomRowProps {
   room: RoomListItem;
   joined: boolean;
   onEnter: (room: RoomListItem) => void;
-  onQuit: (room: RoomListItem) => void;
 }
 
-export function RoomRow({ room, joined, onEnter, onQuit }: RoomRowProps) {
-  const { t } = useTranslation();
+export function RoomRow({ room, joined, onEnter }: RoomRowProps) {
   return (
     <li
-      className={`group flex items-center gap-2 border-b border-black/12 px-4 py-3 ${
+      className={`flex items-center gap-2 border-b border-black/12 px-4 py-3 ${
         joined ? 'bg-ola-primary-light' : 'bg-white/80'
       }`}
     >
@@ -57,17 +54,7 @@ export function RoomRow({ room, joined, onEnter, onQuit }: RoomRowProps) {
           <span className="mt-1 block truncate text-sm text-black/54">{room.subtitle}</span>
         </span>
       </button>
-      {joined ? (
-        <button
-          type="button"
-          onClick={() => onQuit(room)}
-          className="shrink-0 rounded-sm border border-black/12 px-2 py-1 text-xs text-[#dd4b39] opacity-0 transition group-hover:opacity-100 focus:opacity-100"
-        >
-          {t('room.quit')}
-        </button>
-      ) : (
-        <MembersBadge members={room.members} />
-      )}
+      <MembersBadge members={room.members} />
     </li>
   );
 }

@@ -325,7 +325,6 @@
     "warningVipTitle": "Đăng ký tài khoản VIP",
     "warningVipBody": "Thành viên VIP có thể vào phòng đông bất cứ lúc nào",
     "buyVip": "Mua VIP",
-    "quit": "Rời phòng",
     "quitTitle": "Rời phòng",
     "quitMessage": "Bạn muốn rời phòng \"{{name}}\"?",
     "roomFull": "Phòng chat đã đầy. Để vào ngay, bạn cần có VIP",
