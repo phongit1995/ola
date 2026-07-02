@@ -1,0 +1,130 @@
+name: Build Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Image tag (latest, v1.2.3, ...)'
+        required: false
+        default: 'latest'
+        type: string
+      target:
+        description: 'Thành phần cần build'
+        required: false
+        default: 'all'
+        type: choice
+        options: [all, web, admin, server]
+
+concurrency:
+  group: build-production
+  cancel-in-progress: false
+
+env:
+  IMAGE_TAG: ${{ inputs.tag || 'latest' }}
+  WEB_API_URL: https://api.olachat.net/api/v1
+  WEB_SOCKET_URL: https://api.olachat.net
+
+jobs:
+  build-web:
+    if: ${{ inputs.target == 'web' || inputs.target == 'all' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Prepare web/.env (Vite bake VITE_*)
+        run: |
+          {
+            echo "VITE_API_URL=${{ env.WEB_API_URL }}"
+            echo "VITE_SOCKET_URL=${{ env.WEB_SOCKET_URL }}"
+            echo "VITE_API_GUARD_SECRET=${{ secrets.VITE_API_GUARD_SECRET }}"
+            echo "VITE_GEOAPIFY_KEY=${{ secrets.VITE_GEOAPIFY_KEY }}"
+          } > web/.env
+      - name: Build & push ola-web
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: infra/web/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/ola-web:${{ env.IMAGE_TAG }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/ola-web:sha-${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  build-admin:
+    if: ${{ inputs.target == 'admin' || inputs.target == 'all' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Prepare admin/.env (Vite bake VITE_*)
+        run: |
+          {
+            echo "VITE_API_URL=${{ env.WEB_API_URL }}"
+            echo "VITE_API_GUARD_SECRET=${{ secrets.VITE_API_GUARD_SECRET }}"
+          } > admin/.env
+      - name: Build & push ola-admin
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: infra/admin/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/ola-admin:${{ env.IMAGE_TAG }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/ola-admin:sha-${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  build-server:
+    if: ${{ inputs.target == 'server' || inputs.target == 'all' }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [api, chat, migrate]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build & push ola-chat-server-${{ matrix.service }}
+        uses: docker/build-push-action@v6
+        with:
+          context: ./server
+          file: ./infra/docker/${{ matrix.service }}.Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/ola-chat-server-${{ matrix.service }}:${{ env.IMAGE_TAG }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/ola-chat-server-${{ matrix.service }}:sha-${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  notify:
+    needs: [build-web, build-admin, build-server]
+    if: ${{ always() && needs.build-web.result != 'failure' && needs.build-admin.result != 'failure' && needs.build-server.result != 'failure' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Thông báo Discord
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: success
+          title: "✅ Build PRODUCTION thành công"
+          description: |
+            **Tag:** `${{ inputs.tag }}`
+            **Thành phần:** ${{ inputs.target }}
+            **Commit:** [`${{ github.sha }}`](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})
+          username: GitHub Actions
+          nofail: true
