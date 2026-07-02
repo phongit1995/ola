@@ -1,8 +1,8 @@
 package room
 
 import (
-	"ola-chat-server/internal/utils"
 	"net/http"
+	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -158,6 +158,41 @@ func (ctrl *Controller) DeleteRoomMessage(c *gin.Context) (interface{}, error) {
 		return nil, utils.ServiceError(err)
 	}
 	return map[string]string{"message": "message deleted"}, nil
+}
+
+// ToggleRoomMessageReaction godoc
+// @Summary      Toggle reaction on a room message (one reaction per user, new type replaces old)
+// @Tags         room
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "Room ID"
+// @Param        messageId path string true "Message ID"
+// @Param        request body ToggleRoomReactionRequest true "Reaction"
+// @Success      200  {object}  utils.BaseResponse[RoomMessageResponse]
+// @Router       /rooms/{id}/messages/{messageId}/reactions [post]
+func (ctrl *Controller) ToggleRoomMessageReaction(c *gin.Context) (interface{}, error) {
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+	id, err := utils.ParseUUIDParam(c, "id", "invalid room id")
+	if err != nil {
+		return nil, err
+	}
+	messageID := c.Param("messageId")
+	if messageID == "" {
+		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid message id")
+	}
+	req, err := utils.BindJSON[ToggleRoomReactionRequest](c)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := ctrl.service.ToggleReaction(c.Request.Context(), userID, id, messageID, req.Type)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
 }
 
 // RoomMessages godoc

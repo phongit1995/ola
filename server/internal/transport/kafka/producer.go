@@ -99,6 +99,10 @@ func (p *Producer) PublishRoomMessageDeleted(ctx context.Context, event *roomEve
 	return p.publishKeyed(ctx, constants.KafkaTopicRoomMessageDeleted, event.RoomID, event)
 }
 
+func (p *Producer) PublishRoomMessageReactionUpdated(ctx context.Context, event *roomEvents.RoomMessageReactionUpdatedEvent) error {
+	return p.publishKeyed(ctx, constants.KafkaTopicRoomMessageReactionUpdated, event.RoomID, event)
+}
+
 func (p *Producer) PublishKenChestAvailable(ctx context.Context, event *kenChestEvents.ChestAvailableEvent) error {
 	return p.publishKeyed(ctx, constants.KafkaTopicKenChestAvailable, event.ID, event)
 }

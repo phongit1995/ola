@@ -1,13 +1,13 @@
 package kafka
 
 import (
+	"context"
 	"ola-chat-server/internal/constants"
 	callEvents "ola-chat-server/internal/domain/call"
 	conversationEvents "ola-chat-server/internal/domain/conversation"
 	kenChestEvents "ola-chat-server/internal/domain/kenchest"
 	messageEvents "ola-chat-server/internal/domain/message"
 	roomEvents "ola-chat-server/internal/domain/room"
-	"context"
 )
 
 type KafkaEventAdapter struct {
@@ -90,6 +90,10 @@ func (a *KafkaEventAdapter) HandleRoomMessageDeleted(ctx context.Context, messag
 	return a.roomHandler.OnMessageDeleted(ctx, message)
 }
 
+func (a *KafkaEventAdapter) HandleRoomMessageReactionUpdated(ctx context.Context, message []byte) error {
+	return a.roomHandler.OnReactionUpdated(ctx, message)
+}
+
 func (a *KafkaEventAdapter) HandleKenChestAvailable(ctx context.Context, message []byte) error {
 	return a.kenChestHandler.OnAvailable(ctx, message)
 }
@@ -113,6 +117,7 @@ func RegisterEventHandlers(consumer *Consumer, adapter *KafkaEventAdapter) {
 	consumer.RegisterHandler(constants.KafkaTopicCallEnded, adapter.HandleCallEnded)
 	consumer.RegisterHandler(constants.KafkaTopicRoomMessageCreated, adapter.HandleRoomMessageCreated)
 	consumer.RegisterHandler(constants.KafkaTopicRoomMessageDeleted, adapter.HandleRoomMessageDeleted)
+	consumer.RegisterHandler(constants.KafkaTopicRoomMessageReactionUpdated, adapter.HandleRoomMessageReactionUpdated)
 	consumer.RegisterHandler(constants.KafkaTopicKenChestAvailable, adapter.HandleKenChestAvailable)
 	consumer.RegisterHandler(constants.KafkaTopicKenChestClosed, adapter.HandleKenChestClosed)
 }

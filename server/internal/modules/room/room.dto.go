@@ -66,28 +66,49 @@ type JoinRoomResponse struct {
 }
 
 type SendRoomMessageRequest struct {
-	Content string `json:"content" binding:"required,min=1,max=5000" example:"Xin chào cả phòng!"`
+	Content   string `json:"content" binding:"required,min=1,max=5000" example:"Xin chào cả phòng!"`
+	ReplyToID string `json:"replyToId" binding:"omitempty,uuid"`
+}
+
+type ToggleRoomReactionRequest struct {
+	Type string `json:"type" binding:"required"`
+}
+
+type RoomReplySnapshot struct {
+	MessageID  string `json:"messageId"`
+	SenderID   string `json:"senderId"`
+	SenderName string `json:"senderName,omitempty"`
+	Excerpt    string `json:"excerpt"`
+}
+
+type RoomReactor struct {
+	UserID   string `json:"userId"`
+	Username string `json:"username"`
 }
 
 type RoomMessageResponse struct {
-	ID           string  `json:"id"`
-	RoomID       string  `json:"roomId"`
-	SenderID     string  `json:"senderId"`
-	SenderName   string  `json:"senderName,omitempty"`
-	SenderAvatar string  `json:"senderAvatar,omitempty"`
-	SenderGender string  `json:"senderGender,omitempty"`
-	SenderVip    *string `json:"senderVip,omitempty"`
-	SenderVipEnd *string `json:"senderVipEnd,omitempty"`
-	Content      string  `json:"content"`
-	CreatedAt    string  `json:"createdAt"`
+	ID           string                   `json:"id"`
+	RoomID       string                   `json:"roomId"`
+	SenderID     string                   `json:"senderId"`
+	SenderName   string                   `json:"senderName,omitempty"`
+	SenderAvatar string                   `json:"senderAvatar,omitempty"`
+	SenderGender string                   `json:"senderGender,omitempty"`
+	SenderVip    *string                  `json:"senderVip,omitempty"`
+	SenderVipEnd *string                  `json:"senderVipEnd,omitempty"`
+	Content      string                   `json:"content"`
+	CreatedAt    string                   `json:"createdAt"`
+	ReplyTo      *RoomReplySnapshot       `json:"replyTo,omitempty"`
+	Reactions    map[string][]RoomReactor `json:"reactions,omitempty"`
 }
 
 type storedRoomMessage struct {
-	ID        string `json:"id"`
-	RoomID    string `json:"roomId"`
-	SenderID  string `json:"senderId"`
-	Content   string `json:"content"`
-	CreatedAt string `json:"createdAt"`
+	ID        string                   `json:"id"`
+	RoomID    string                   `json:"roomId"`
+	SenderID  string                   `json:"senderId"`
+	Content   string                   `json:"content"`
+	CreatedAt string                   `json:"createdAt"`
+	ReplyTo   *RoomReplySnapshot       `json:"replyTo,omitempty"`
+	Reactions map[string][]RoomReactor `json:"reactions,omitempty"`
 }
 
 type RoomMessagesListResponse struct {

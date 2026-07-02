@@ -6,17 +6,30 @@ type RoomBrief struct {
 	ImageURL string `json:"imageUrl,omitempty"`
 }
 
+type RoomReplySnapshot struct {
+	MessageID  string `json:"messageId"`
+	SenderID   string `json:"senderId"`
+	SenderName string `json:"senderName,omitempty"`
+	Excerpt    string `json:"excerpt"`
+}
+
+type RoomReactor struct {
+	UserID   string `json:"userId"`
+	Username string `json:"username"`
+}
+
 type RoomMessageData struct {
-	ID           string  `json:"id"`
-	RoomID       string  `json:"roomId"`
-	SenderID     string  `json:"senderId"`
-	SenderName   string  `json:"senderName,omitempty"`
-	SenderAvatar string  `json:"senderAvatar,omitempty"`
-	SenderGender string  `json:"senderGender,omitempty"`
-	SenderVip    *string `json:"senderVip,omitempty"`
-	SenderVipEnd *string `json:"senderVipEnd,omitempty"`
-	Content      string  `json:"content"`
-	CreatedAt    string  `json:"createdAt"`
+	ID           string             `json:"id"`
+	RoomID       string             `json:"roomId"`
+	SenderID     string             `json:"senderId"`
+	SenderName   string             `json:"senderName,omitempty"`
+	SenderAvatar string             `json:"senderAvatar,omitempty"`
+	SenderGender string             `json:"senderGender,omitempty"`
+	SenderVip    *string            `json:"senderVip,omitempty"`
+	SenderVipEnd *string            `json:"senderVipEnd,omitempty"`
+	Content      string             `json:"content"`
+	CreatedAt    string             `json:"createdAt"`
+	ReplyTo      *RoomReplySnapshot `json:"replyTo,omitempty"`
 }
 
 type RoomMessageCreatedEvent struct {
@@ -27,4 +40,13 @@ type RoomMessageCreatedEvent struct {
 type RoomMessageDeletedEvent struct {
 	RoomID    string `json:"roomId"`
 	MessageID string `json:"messageId"`
+}
+
+type RoomMessageReactionUpdatedEvent struct {
+	RoomID      string                   `json:"roomId"`
+	MessageID   string                   `json:"messageId"`
+	Reactions   map[string][]RoomReactor `json:"reactions"`
+	ActorUserID string                   `json:"actorUserId"`
+	Type        string                   `json:"type"`
+	Action      string                   `json:"action"`
 }

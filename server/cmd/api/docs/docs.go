@@ -472,6 +472,204 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/ken/chests": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-ken-chest"
+                ],
+                "summary": "Lịch sử rương ken (admin)",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_kenchest.ChestListResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-ken-chest"
+                ],
+                "summary": "Tạo \u0026 phát rương ken cho toàn bộ user online (admin)",
+                "parameters": [
+                    {
+                        "description": "Chest",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_kenchest.CreateChestRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_kenchest.ChestView"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/ken/chests/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-ken-chest"
+                ],
+                "summary": "Chi tiết rương ken (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Chest ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_kenchest.ChestView"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-ken-chest"
+                ],
+                "summary": "Huỷ rương ken (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Chest ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/ken/chests/{id}/claims": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-ken-chest"
+                ],
+                "summary": "Danh sách người đã mở 1 rương ken (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Chest ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_kenchest.ClaimListResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/ken/users/{userId}/adjust": {
             "post": {
                 "security": [
@@ -1449,6 +1647,70 @@ const docTemplate = `{
                         "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/users/{id}/vips": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "List all VIP icons a user currently owns (admin only)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-user"
+                ],
+                "summary": "List owned VIP icons",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size (default 60, max 200)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset (default 0)",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_user_VipIconListResponse"
                         }
                     },
                     "401": {
@@ -2930,6 +3192,108 @@ const docTemplate = `{
                 }
             }
         },
+        "/ken/chests/{id}/open": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ken-chest"
+                ],
+                "summary": "Mở rương ken",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Chest ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_kenchest.OpenChestResult"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/ken/transfer": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Chuyển ken từ user hiện tại sang user khác; ghi 2 ken_transactions (TRANSFER_OUT/IN) và bắn KEN_UPDATED cho cả 2 phía",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ken"
+                ],
+                "summary": "Tặng/chuyển ken cho user khác",
+                "parameters": [
+                    {
+                        "description": "Transfer request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_ken.TransferRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_ken.TransferSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/marriage": {
             "get": {
                 "security": [
@@ -3359,7 +3723,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Set to 'tagged' (posts with any @mention), 'mentions' (posts mentioning viewer) or 'media' (posts with images)",
+                        "description": "Set to 'tagged' (posts with any @mention), 'mentions' (posts mentioning viewer), 'media' (posts with images) or 'following' (own posts + posts from users the viewer follows)",
                         "name": "filter",
                         "in": "query"
                     }
@@ -4624,6 +4988,44 @@ const docTemplate = `{
                 }
             }
         },
+        "/pen/history/all": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "pen"
+                ],
+                "summary": "Lịch sử các lượt đã xử lý của tất cả mọi người",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_pen.ShotListSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/pen/mine": {
             "get": {
                 "security": [
@@ -5634,6 +6036,58 @@ const docTemplate = `{
                 }
             }
         },
+        "/rooms/{id}/messages/{messageId}/reactions": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "room"
+                ],
+                "summary": "Toggle reaction on a room message (one reaction per user, new type replaces old)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Room ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Message ID",
+                        "name": "messageId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Reaction",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_room.ToggleRoomReactionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_RoomMessageResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/sessions": {
             "get": {
                 "security": [
@@ -6535,7 +6989,7 @@ const docTemplate = `{
                 "tags": [
                     "vip"
                 ],
-                "summary": "Tặng/chuyển một VIP cho người khác (chặn nếu đang khoá)",
+                "summary": "Tặng/chuyển một VIP cho người khác (cần mật khẩu; chặn nếu đang dùng hoặc đã khoá)",
                 "parameters": [
                     {
                         "type": "string",
@@ -6545,7 +6999,7 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Receiver",
+                        "description": "Receiver + password",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -6559,6 +7013,12 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/internal_modules_vip.MessageSuccessResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     },
                     "403": {
@@ -7451,6 +7911,49 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_modules_admin_user.VipIconItem": {
+            "type": "object",
+            "properties": {
+                "acquiredAt": {
+                    "type": "string"
+                },
+                "instanceId": {
+                    "type": "string"
+                },
+                "isLocked": {
+                    "type": "boolean"
+                },
+                "isUsing": {
+                    "type": "boolean"
+                },
+                "source": {
+                    "type": "string"
+                },
+                "typeId": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_user.VipIconListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_user.VipIconItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
         "internal_modules_auth.AuthResponse": {
             "type": "object",
             "properties": {
@@ -8252,6 +8755,90 @@ const docTemplate = `{
                 },
                 "traceId": {
                     "type": "string"
+                }
+            }
+        },
+        "internal_modules_ken.TransferRequest": {
+            "type": "object",
+            "required": [
+                "amount",
+                "password",
+                "toUserId"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "integer",
+                    "maximum": 10000000,
+                    "minimum": 1000,
+                    "example": 1000
+                },
+                "password": {
+                    "type": "string",
+                    "example": "password123"
+                },
+                "toUserId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                }
+            }
+        },
+        "internal_modules_ken.TransferResponse": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "integer",
+                    "example": 1000
+                },
+                "kenBalance": {
+                    "type": "integer",
+                    "example": 8000
+                },
+                "toUserId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                }
+            }
+        },
+        "internal_modules_ken.TransferSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_ken.TransferResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_kenchest.OpenChestResult": {
+            "type": "object",
+            "properties": {
+                "chestId": {
+                    "type": "string"
+                },
+                "isEmpty": {
+                    "type": "boolean"
+                },
+                "kenAmount": {
+                    "type": "integer"
+                },
+                "kenBalance": {
+                    "type": "integer"
                 }
             }
         },
@@ -9657,6 +10244,14 @@ const docTemplate = `{
                 "username": {
                     "type": "string",
                     "example": "john_doe"
+                },
+                "vipEndTime": {
+                    "type": "string",
+                    "example": "2026-12-31T00:00:00Z"
+                },
+                "vipUsed": {
+                    "type": "string",
+                    "example": "12"
                 }
             }
         },
@@ -10034,6 +10629,18 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "reactions": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/definitions/internal_modules_room.RoomReactor"
+                        }
+                    }
+                },
+                "replyTo": {
+                    "$ref": "#/definitions/internal_modules_room.RoomReplySnapshot"
+                },
                 "roomId": {
                     "type": "string"
                 },
@@ -10070,6 +10677,34 @@ const docTemplate = `{
                     }
                 },
                 "nextBefore": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_room.RoomReactor": {
+            "type": "object",
+            "properties": {
+                "userId": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_room.RoomReplySnapshot": {
+            "type": "object",
+            "properties": {
+                "excerpt": {
+                    "type": "string"
+                },
+                "messageId": {
+                    "type": "string"
+                },
+                "senderId": {
+                    "type": "string"
+                },
+                "senderName": {
                     "type": "string"
                 }
             }
@@ -10120,6 +10755,20 @@ const docTemplate = `{
                     "maxLength": 5000,
                     "minLength": 1,
                     "example": "Xin chào cả phòng!"
+                },
+                "replyToId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_room.ToggleRoomReactionRequest": {
+            "type": "object",
+            "required": [
+                "type"
+            ],
+            "properties": {
+                "type": {
+                    "type": "string"
                 }
             }
         },
@@ -11387,9 +12036,13 @@ const docTemplate = `{
         "internal_modules_vip.TransferRequest": {
             "type": "object",
             "required": [
+                "password",
                 "toUserId"
             ],
             "properties": {
+                "password": {
+                    "type": "string"
+                },
                 "toUserId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440000"
@@ -11906,6 +12559,161 @@ const docTemplate = `{
                 }
             }
         },
+        "ola-chat-server_internal_modules_kenchest.ChestListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_kenchest.ChestView"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_kenchest.ChestView": {
+            "type": "object",
+            "properties": {
+                "claimedRecipients": {
+                    "type": "integer"
+                },
+                "claimsCount": {
+                    "type": "integer"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "durationSeconds": {
+                    "type": "integer"
+                },
+                "expiresAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "kenAmount": {
+                    "type": "integer"
+                },
+                "kenMax": {
+                    "type": "integer"
+                },
+                "kenMin": {
+                    "type": "integer"
+                },
+                "maxRecipients": {
+                    "type": "integer"
+                },
+                "rewardMode": {
+                    "type": "string"
+                },
+                "startedAt": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "totalKenGiven": {
+                    "type": "integer"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_kenchest.ClaimListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_kenchest.ClaimView"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_kenchest.ClaimUserView": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "fullName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_kenchest.ClaimView": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isEmpty": {
+                    "type": "boolean"
+                },
+                "kenAmount": {
+                    "type": "integer"
+                },
+                "user": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_kenchest.ClaimUserView"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_kenchest.CreateChestRequest": {
+            "type": "object",
+            "required": [
+                "maxRecipients",
+                "rewardMode"
+            ],
+            "properties": {
+                "durationSeconds": {
+                    "type": "integer"
+                },
+                "kenAmount": {
+                    "type": "integer"
+                },
+                "kenMax": {
+                    "type": "integer"
+                },
+                "kenMin": {
+                    "type": "integer"
+                },
+                "maxRecipients": {
+                    "type": "integer"
+                },
+                "rewardMode": {
+                    "type": "string",
+                    "enum": [
+                        "fixed",
+                        "random"
+                    ]
+                }
+            }
+        },
         "ola-chat-server_internal_modules_pen.AdminShotListSuccessResponse": {
             "type": "object",
             "properties": {
@@ -12197,6 +13005,14 @@ const docTemplate = `{
                 "username": {
                     "type": "string",
                     "example": "john_doe"
+                },
+                "vipEndTime": {
+                    "type": "string",
+                    "example": "2026-12-31T00:00:00Z"
+                },
+                "vipUsed": {
+                    "type": "string",
+                    "example": "12"
                 }
             }
         },
@@ -12265,6 +13081,18 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "reactions": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_room.RoomReactor"
+                        }
+                    }
+                },
+                "replyTo": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_room.RoomReplySnapshot"
+                },
                 "roomId": {
                     "type": "string"
                 },
@@ -12301,6 +13129,34 @@ const docTemplate = `{
                     }
                 },
                 "nextBefore": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_room.RoomReactor": {
+            "type": "object",
+            "properties": {
+                "userId": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_room.RoomReplySnapshot": {
+            "type": "object",
+            "properties": {
+                "excerpt": {
+                    "type": "string"
+                },
+                "messageId": {
+                    "type": "string"
+                },
+                "senderId": {
+                    "type": "string"
+                },
+                "senderName": {
                     "type": "string"
                 }
             }
@@ -12422,7 +13278,7 @@ const docTemplate = `{
                 },
                 "vipTypeId": {
                     "type": "integer",
-                    "maximum": 120,
+                    "maximum": 126,
                     "minimum": 1,
                     "example": 4
                 }
@@ -12999,6 +13855,32 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "$ref": "#/definitions/internal_modules_admin_user.UserDetail"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_user_VipIconListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_user.VipIconListResponse"
                 },
                 "error": {
                     "type": "string"
