@@ -58,7 +58,7 @@ services:
       - WS_READ_BUFFER_SIZE=${WS_READ_BUFFER_SIZE:-1024}
       - WS_WRITE_BUFFER_SIZE=${WS_WRITE_BUFFER_SIZE:-1024}
       - KAFKA_BROKERS=${KAFKA_BROKERS:-kafka:9092}
-      - S3_ENDPOINT=${S3_ENDPOINT:-minio:9000}
+      - S3_ENDPOINT=${S3_ENDPOINT:-s3:9000}
       - S3_ACCESS_KEY=${S3_ACCESS_KEY:-minioadmin}
       - S3_SECRET_KEY=${S3_SECRET_KEY:-minioadmin123}
       - S3_BUCKET=${S3_BUCKET:-chat-uploads}
@@ -72,7 +72,7 @@ services:
       - scylladb
       - kafka
       - migrate
-      - minio
+      - s3
     networks:
       - chat-network
 
@@ -151,9 +151,9 @@ services:
     networks:
       - chat-network
 
-  minio:
+  s3:
     image: minio/minio:latest
-    container_name: ola-chat-server-minio${CONTAINER_SUFFIX:-}
+    container_name: ola-chat-server-s3${CONTAINER_SUFFIX:-}
     restart: unless-stopped
     command: server /data --console-address ":9001"
     labels:
