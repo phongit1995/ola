@@ -94,6 +94,17 @@ if [ -n "${TARGETS[migrate]:-}" ]; then
   log "Migrations applied"
 fi
 
+STORAGE_SVC="s3"
+if docker compose --env-file "$ENV_FILE" config --services 2>/dev/null | grep -qx "$STORAGE_SVC"; then
+  OLD_STORAGE="ola-chat-server-minio${CONTAINER_SUFFIX}"
+  if docker container inspect "$OLD_STORAGE" >/dev/null 2>&1; then
+    log "Removing old storage container: $OLD_STORAGE (data ở volume minio_data giữ nguyên)"
+    docker rm -f "$OLD_STORAGE" >/dev/null 2>&1 || true
+  fi
+  log "Ensuring storage service '$STORAGE_SVC' is up..."
+  docker compose --env-file "$ENV_FILE" up -d --no-deps "$STORAGE_SVC"
+fi
+
 if [ ${#RESTART_SVCS[@]} -gt 0 ]; then
   log "Recreating services: ${RESTART_SVCS[*]}"
   docker compose --env-file "$ENV_FILE" up -d --no-deps --remove-orphans "${RESTART_SVCS[@]}"
