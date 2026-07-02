@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FullScreenOverlay, ScreenHeader, Spinner } from '@components';
 import { createTimeFormatter, toast } from '@lib';
@@ -9,7 +9,7 @@ import { useMeLocalStore } from '@/store/meLocalStore';
 import { MePostCard } from './components/MePostCard';
 import { MePostInteractions, type MePostSource } from './MePostInteractions';
 import { composedToImages, composedToPayload } from './composer';
-import { toMePost } from './mappers';
+import { applyPostReaction, toMePost } from './mappers';
 import type { ComposedPost } from './components/MeComposerDialog';
 
 interface MeLikedPostsViewProps {
@@ -24,6 +24,7 @@ export function MeLikedPostsView({ onClose }: MeLikedPostsViewProps) {
   const blockAuthor = useMeLocalStore((s) => s.blockAuthor);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const reactingRef = useRef<Set<string>>(new Set());
 
   const formatTime = useMemo(() => createTimeFormatter(i18n.language), [i18n.language]);
 
@@ -47,15 +48,27 @@ export function MeLikedPostsView({ onClose }: MeLikedPostsViewProps) {
   const toggleReaction = useCallback(
     async (id: string, type: PostReaction) => {
       const post = posts.find((item) => item.id === id);
-      if (post == null) return;
+      if (post == null || reactingRef.current.has(id)) return;
       const isActive = post.myReaction === type;
+      reactingRef.current.add(id);
+      setPosts((current) =>
+        current.map((item) => (item.id === id ? applyPostReaction(item, isActive ? null : type) : item))
+      );
       try {
         const updated = isActive
           ? await MeService.removeReaction(id)
           : await MeService.react(id, type);
-        setPosts((current) => current.map((item) => (item.id === id ? updated : item)));
+        setPosts((current) => {
+          const next = current.map((item) => (item.id === id ? updated : item));
+          return updated.myReaction === 'like' ? next : next.filter((item) => item.id !== id);
+        });
       } catch {
+        setPosts((current) =>
+          current.map((item) => (item.id === id ? applyPostReaction(item, post.myReaction) : item))
+        );
         toast.error(t('me.reactionError'));
+      } finally {
+        reactingRef.current.delete(id);
       }
     },
     [posts, t]

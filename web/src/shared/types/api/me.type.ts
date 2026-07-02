@@ -1,3 +1,5 @@
+import type { RelationshipStatus } from './user.type';
+
 export type PostVisibility = 'public' | 'friend' | 'private';
 
 export type PostReaction = 'like' | 'dislike';
@@ -27,6 +29,7 @@ export interface PostAuthor {
   avatar?: string;
   isFriend?: boolean;
   isSelf?: boolean;
+  relationship?: { status: RelationshipStatus; requestId?: string };
 }
 
 export interface Post {

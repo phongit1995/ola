@@ -10,6 +10,8 @@ export interface ViewedProfile {
 }
 
 const MAX_VIEWED_PROFILES = 30;
+const MAX_HIDDEN_POSTS = 500;
+const MAX_BLOCKED_AUTHORS = 500;
 
 interface MeLocalState {
   hiddenPostIds: string[];
@@ -31,13 +33,13 @@ export const useMeLocalStore = create<MeLocalState>()(
         set((state) =>
           state.hiddenPostIds.includes(id)
             ? state
-            : { hiddenPostIds: [...state.hiddenPostIds, id] }
+            : { hiddenPostIds: [...state.hiddenPostIds, id].slice(-MAX_HIDDEN_POSTS) }
         ),
       blockAuthor: (authorId) =>
         set((state) =>
           state.blockedAuthorIds.includes(authorId)
             ? state
-            : { blockedAuthorIds: [...state.blockedAuthorIds, authorId] }
+            : { blockedAuthorIds: [...state.blockedAuthorIds, authorId].slice(-MAX_BLOCKED_AUTHORS) }
         ),
       recordViewedProfile: (profile) =>
         set((state) => ({

@@ -18,6 +18,7 @@ export function MeLikersDialog({ postId, onClose, onOpenProfile }: MeLikersDialo
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [reachedEnd, setReachedEnd] = useState(false);
   const [error, setError] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -30,6 +31,7 @@ export function MeLikersDialog({ postId, onClose, onOpenProfile }: MeLikersDialo
         if (!active) return;
         setLikers(result.items);
         setTotal(result.total);
+        if (result.items.length < PAGE_SIZE) setReachedEnd(true);
       } catch (err) {
         console.error('load likers failed', err);
         if (active) setError(true);
@@ -42,7 +44,7 @@ export function MeLikersDialog({ postId, onClose, onOpenProfile }: MeLikersDialo
     };
   }, [postId]);
 
-  const hasMore = likers.length < total;
+  const hasMore = !reachedEnd && likers.length < total;
 
   const loadMore = useCallback(async () => {
     if (loading || loadingMore) return;
@@ -51,6 +53,7 @@ export function MeLikersDialog({ postId, onClose, onOpenProfile }: MeLikersDialo
       const result = await MeService.likers(postId, { limit: PAGE_SIZE, offset: likers.length });
       setLikers((current) => [...current, ...result.items]);
       setTotal(result.total);
+      if (result.items.length < PAGE_SIZE) setReachedEnd(true);
     } catch (err) {
       console.error('load more likers failed', err);
     } finally {
@@ -109,47 +112,53 @@ export function MeLikersDialog({ postId, onClose, onOpenProfile }: MeLikersDialo
         )}
         {!loading &&
           !error &&
-          likers.map((user) => (
-            <div
-              key={user.id}
-              className="flex items-center gap-3 border-b border-black/12 px-2 py-3 last:border-b-0"
-            >
-              <button
-                type="button"
-                onClick={() => openProfile(user.username)}
-                className="flex min-w-0 flex-1 items-center gap-3 text-left"
+          likers.map((user) => {
+            const isSelf = user.isSelf === true || user.relationship?.status === 'self';
+            const isFriend = user.isFriend === true || user.relationship?.status === 'friend';
+            const sent =
+              requested[user.id] === true || user.relationship?.status === 'pending_outgoing';
+            return (
+              <div
+                key={user.id}
+                className="flex items-center gap-3 border-b border-black/12 px-2 py-3 last:border-b-0"
               >
-                <Avatar
-                  name={user.username}
-                  color={colorForName(user.username)}
-                  size={72}
-                  src={user.avatar}
-                  rounded={false}
-                />
-                <span className="min-w-0 flex-1 truncate text-base font-medium text-black/87">
-                  {user.fullName != null && user.fullName !== '' ? user.fullName : user.username}
-                </span>
-              </button>
-              {user.isSelf !== true &&
-                (user.isFriend === true ? (
-                  <span className="shrink-0 rounded bg-black/8 px-3 py-1.5 text-sm font-medium text-black/45">
-                    {t('me.alreadyFriend')}
+                <button
+                  type="button"
+                  onClick={() => openProfile(user.username)}
+                  className="flex min-w-0 flex-1 items-center gap-3 text-left"
+                >
+                  <Avatar
+                    name={user.username}
+                    color={colorForName(user.username)}
+                    size={72}
+                    src={user.avatar}
+                    rounded={false}
+                  />
+                  <span className="min-w-0 flex-1 truncate text-base font-medium text-black/87">
+                    {user.fullName != null && user.fullName !== '' ? user.fullName : user.username}
                   </span>
-                ) : requested[user.id] === true ? (
-                  <span className="shrink-0 rounded bg-black/8 px-3 py-1.5 text-sm font-medium text-black/45">
-                    {t('me.friendRequestSent')}
-                  </span>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => void addFriend(user)}
-                    className="shrink-0 rounded bg-ola-primary px-3 py-1.5 text-sm font-medium text-white"
-                  >
-                    {t('me.makeFriend')}
-                  </button>
-                ))}
-            </div>
-          ))}
+                </button>
+                {!isSelf &&
+                  (isFriend ? (
+                    <span className="shrink-0 rounded bg-black/8 px-3 py-1.5 text-sm font-medium text-black/45">
+                      {t('me.alreadyFriend')}
+                    </span>
+                  ) : sent ? (
+                    <span className="shrink-0 rounded bg-black/8 px-3 py-1.5 text-sm font-medium text-black/45">
+                      {t('me.friendRequestSent')}
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => void addFriend(user)}
+                      className="shrink-0 rounded bg-ola-primary px-3 py-1.5 text-sm font-medium text-white"
+                    >
+                      {t('me.makeFriend')}
+                    </button>
+                  ))}
+              </div>
+            );
+          })}
         <div ref={sentinelRef} className="h-1" />
         {loadingMore && (
           <div className="flex justify-center py-3">

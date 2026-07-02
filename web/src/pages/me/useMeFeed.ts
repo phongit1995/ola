@@ -22,6 +22,7 @@ export function useMeFeed() {
   const loadMoreFeed = useMeFeedStore((state) => state.loadMore);
   const toggleReaction = useMeFeedStore((state) => state.toggleReaction);
   const createPost = useMeFeedStore((state) => state.createPost);
+  const prependPost = useMeFeedStore((state) => state.prependPost);
   const updatePost = useMeFeedStore((state) => state.updatePost);
   const removePost = useMeFeedStore((state) => state.removePost);
   const togglePin = useMeFeedStore((state) => state.togglePin);
@@ -75,10 +76,14 @@ export function useMeFeed() {
         draft.imageUrls
       );
       if (created == null) return false;
-      setTab('feed');
+      if (tab === 'feed') {
+        prependPost(created);
+      } else {
+        setTab('feed');
+      }
       return true;
     },
-    [createPost]
+    [createPost, prependPost, tab]
   );
 
   const editPost = useCallback(

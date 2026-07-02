@@ -3,6 +3,7 @@ import { MeService } from '@services';
 import { toast } from '@lib';
 import type { CreatePostRequest, MeFeedFilter, Post, PostReaction } from '@app-types';
 import i18n from '@/i18n';
+import { applyPostReaction } from './mappers';
 
 interface MeFeedState {
   posts: Post[];
@@ -17,6 +18,7 @@ interface MeFeedState {
   loadMore: (filter?: MeFeedFilter) => Promise<void>;
   toggleReaction: (id: string, type: PostReaction) => Promise<void>;
   createPost: (payload: CreatePostRequest, files: File[], imageUrls: string[]) => Promise<Post | null>;
+  prependPost: (post: Post) => void;
   updatePost: (id: string, payload: CreatePostRequest, files: File[], imageUrls: string[]) => Promise<Post | null>;
   removePost: (id: string) => Promise<boolean>;
   togglePin: (id: string, pinned: boolean) => Promise<void>;
@@ -30,24 +32,16 @@ function replacePost(posts: Post[], updated: Post): Post[] {
 }
 
 function applyPin(posts: Post[], updated: Post): Post[] {
+  if (!updated.isPinned) {
+    return posts.map((post) => (post.id === updated.id ? updated : post));
+  }
   const authorId = updated.author?.id;
-  return posts.map((post) => {
-    if (post.id === updated.id) return updated;
-    if (updated.isPinned && authorId != null && post.author?.id === authorId) {
-      return { ...post, isPinned: false };
-    }
-    return post;
-  });
-}
-
-function applyReaction(post: Post, next: PostReaction | null): Post {
-  let likeCount = post.likeCount;
-  let dislikeCount = post.dislikeCount;
-  if (post.myReaction === 'like') likeCount -= 1;
-  if (post.myReaction === 'dislike') dislikeCount -= 1;
-  if (next === 'like') likeCount += 1;
-  if (next === 'dislike') dislikeCount += 1;
-  return { ...post, likeCount, dislikeCount, myReaction: next };
+  const others = posts
+    .filter((post) => post.id !== updated.id)
+    .map((post) =>
+      authorId != null && post.author?.id === authorId ? { ...post, isPinned: false } : post
+    );
+  return [updated, ...others];
 }
 
 let feedRequestId = 0;
@@ -110,7 +104,7 @@ export const useMeFeedStore = create<MeFeedState>((set, get) => ({
     if (post == null || get().reacting.has(id)) return;
 
     const active = post.myReaction === type;
-    const optimistic = applyReaction(post, active ? null : type);
+    const optimistic = applyPostReaction(post, active ? null : type);
     set((state) => ({
       posts: replacePost(state.posts, optimistic),
       reacting: new Set(state.reacting).add(id),
@@ -123,7 +117,11 @@ export const useMeFeedStore = create<MeFeedState>((set, get) => ({
       set((state) => ({ posts: replacePost(state.posts, updated) }));
     } catch (error) {
       console.error('toggle reaction failed', error);
-      set((state) => ({ posts: replacePost(state.posts, post) }));
+      set((state) => ({
+        posts: state.posts.map((item) =>
+          item.id === id ? applyPostReaction(item, post.myReaction) : item
+        ),
+      }));
       toast.error(i18n.t('me.reactionError'));
     } finally {
       set((state) => {
@@ -139,7 +137,6 @@ export const useMeFeedStore = create<MeFeedState>((set, get) => ({
       const urlImages = imageUrls.map((url) => ({ url }));
       const images = [...uploaded, ...urlImages];
       const created = await MeService.create({ ...payload, images });
-      set((state) => ({ posts: [created, ...state.posts] }));
       toast.success(i18n.t('me.postSent'));
       return created;
     } catch (error) {
@@ -147,6 +144,9 @@ export const useMeFeedStore = create<MeFeedState>((set, get) => ({
       toast.error(i18n.t('me.postError'));
       return null;
     }
+  },
+  prependPost: (post) => {
+    set((state) => ({ posts: [post, ...state.posts] }));
   },
   updatePost: async (id, payload, files, imageUrls) => {
     try {
