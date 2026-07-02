@@ -13,6 +13,7 @@
     "./types": "./src/types/index.ts",
     "./services": "./src/services/index.ts",
     "./stores/authStore": "./src/stores/authStore.ts",
+    "./stores/savedAccountsStore": "./src/stores/savedAccountsStore.ts",
     "./stores/toastStore": "./src/stores/toastStore.ts",
     "./stores/roomChatStore": "./src/stores/roomChatStore.ts",
     "./stores/roomHelpers": "./src/stores/roomHelpers.ts",
