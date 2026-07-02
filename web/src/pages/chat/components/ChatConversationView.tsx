@@ -15,7 +15,7 @@ import {
   type SmileyInputHandle,
   type ListOption,
 } from '@components';
-import { colorForName, hidePeerCard, isPeerCardHidden, isSameDay, kulToken, toast } from '@lib';
+import { colorForName, compressImageForUpload, hidePeerCard, isPeerCardHidden, isSameDay, kulToken, toast } from '@lib';
 import moreIcon from '@/assets/icons/chat/ic_more_white.png';
 import likeIcon from '@/assets/icons/chat/smiley_35.png';
 import { useChatStore } from '@/store/chat/chatStore';
@@ -247,12 +247,18 @@ export function ChatConversationView({
     setDraft('');
   }
 
-  function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(event.target.files ?? []);
     event.target.value = '';
-    if (files.length > 0) {
-      files.forEach((file) => void sendImage(file));
-      setOpenTab(null);
+    if (files.length === 0) return;
+    setOpenTab(null);
+    for (const file of files) {
+      try {
+        const prepared = await compressImageForUpload(file);
+        await sendImage(prepared);
+      } catch {
+        toast.error(t('chat.imageError'));
+      }
     }
   }
 

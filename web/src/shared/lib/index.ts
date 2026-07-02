@@ -6,5 +6,6 @@ export * from './SmileyText';
 export * from './richText';
 export * from './portal';
 export * from './cropImage';
+export * from './compressImage';
 export * from './hiddenPeerCards';
 export * from './sound';
