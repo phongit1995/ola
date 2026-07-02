@@ -9,9 +9,16 @@ interface UserProfileViewProps {
   color: string;
   onClose: () => void;
   onOpenFriend: (friend: ProfileFriend) => void;
+  z?: 40 | 50 | 60;
 }
 
-export function UserProfileView({ username, color, onClose, onOpenFriend }: UserProfileViewProps) {
+export function UserProfileView({
+  username,
+  color,
+  onClose,
+  onOpenFriend,
+  z = 40,
+}: UserProfileViewProps) {
   const { t } = useTranslation();
   const { profile, loading, notFound, relationship, actions, secondary, postActions } =
     useUserProfile(username, color);
@@ -26,12 +33,13 @@ export function UserProfileView({ username, color, onClose, onOpenFriend }: User
         postActions={postActions}
         onClose={onClose}
         onOpenFriend={onOpenFriend}
+        z={z}
       />
     );
   }
 
   return (
-    <FullScreenOverlay>
+    <FullScreenOverlay z={z}>
       <ScreenHeader title={username} onBack={onClose} />
       <div className="flex flex-1 items-center justify-center px-6 text-center">
         {loading ? (

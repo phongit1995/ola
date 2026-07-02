@@ -28,6 +28,7 @@ interface ProfilePageProps {
   postActions: ProfilePostActions;
   onClose: () => void;
   onOpenFriend: (friend: ProfileFriend) => void;
+  z?: 40 | 50 | 60;
 }
 
 export function ProfilePage({
@@ -38,6 +39,7 @@ export function ProfilePage({
   postActions,
   onClose,
   onOpenFriend,
+  z = 40,
 }: ProfilePageProps) {
   const { t } = useTranslation();
   const meId = useAuthStore((s) => s.user?.id ?? null);
@@ -61,7 +63,7 @@ export function ProfilePage({
   };
 
   return (
-    <FullScreenOverlay>
+    <FullScreenOverlay z={z}>
       <ScreenHeader title={profile.nick} onBack={onClose} />
 
       <div className="flex-1 overflow-y-auto">

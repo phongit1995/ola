@@ -284,6 +284,7 @@ export function MePostInteractions({ source, children }: MePostInteractionsProps
       {profileTarget != null && (
         <UserProfileView
           key={profileTarget.username}
+          z={commentPost != null ? 50 : 40}
           username={profileTarget.username}
           color={profileTarget.color}
           onClose={() => setProfileTarget(null)}
