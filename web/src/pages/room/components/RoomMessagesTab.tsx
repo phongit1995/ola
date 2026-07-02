@@ -199,10 +199,7 @@ export function RoomMessagesTab({
           tabs={['smiley', 'kul']}
           openTab={openTab}
           onToggleTab={(tab) => setOpenTab((current) => (current === tab ? null : tab))}
-          onPickEmoji={(code) => {
-            composerRef.current?.insertCode(code, true);
-            composerRef.current?.focus();
-          }}
+          onPickEmoji={(code) => composerRef.current?.insertCode(code, true)}
           onBackspace={() => composerRef.current?.backspace()}
           onPickImage={() => undefined}
           onSendKul={(index) => {

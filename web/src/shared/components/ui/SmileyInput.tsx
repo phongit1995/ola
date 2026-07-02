@@ -144,21 +144,24 @@ export const SmileyInput = forwardRef<SmileyInputHandle, SmileyInputProps>(funct
     emit();
   }
 
+  function focusEditor() {
+    const el = editorRef.current;
+    if (el == null) return;
+    el.focus();
+    const saved = savedRange.current;
+    if (saved == null || !el.contains(saved.commonAncestorContainer)) return;
+    const selection = window.getSelection();
+    selection?.removeAllRanges();
+    selection?.addRange(saved);
+  }
+
   useImperativeHandle(ref, () => ({
-    focus: () => {
-      const el = editorRef.current;
-      if (el == null) return;
-      el.focus();
-      const saved = savedRange.current;
-      if (saved == null || !el.contains(saved.commonAncestorContainer)) return;
-      const selection = window.getSelection();
-      selection?.removeAllRanges();
-      selection?.addRange(saved);
-    },
+    focus: focusEditor,
     insertCode: (code: string, trailingSpace = false) => {
       const src = smileyImageForCode(code);
       insertNode(src == null ? document.createTextNode(code) : makeSmileyImg(code, src));
       if (trailingSpace) insertNode(document.createTextNode(' '));
+      focusEditor();
     },
     insertText: (text: string) => insertNode(document.createTextNode(text)),
     backspace: () => {
