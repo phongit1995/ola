@@ -2,6 +2,7 @@ import { http } from '../api';
 import { API_PATH } from '../config';
 import type {
   MessageResult,
+  ReactionType,
   Room,
   RoomJoinTicket,
   RoomListResult,
@@ -42,6 +43,10 @@ export class RoomService {
 
   static deleteMessage(id: string, messageId: string): Promise<MessageResult> {
     return http.del<MessageResult>(API_PATH.rooms.message(id, messageId));
+  }
+
+  static toggleMessageReaction(id: string, messageId: string, type: ReactionType): Promise<RoomMessage> {
+    return http.post<RoomMessage>(API_PATH.rooms.messageReactions(id, messageId), { type });
   }
 }
 

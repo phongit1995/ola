@@ -1,7 +1,7 @@
 import type { StoreApi } from 'zustand';
 import { RoomService, SocketService } from '../services';
 import { useAuthStore } from './authStore';
-import { ROOM_SOCKET_EVENTS, type RoomMessage } from '../types';
+import { ROOM_SOCKET_EVENTS, type RoomMessage, type RoomReactor } from '../types';
 import { playRoomTagSound } from '../platform/sound';
 import { messageMentionsUser, toRecord, withSenderVip, withVipTypeId } from './roomHelpers';
 import type { RoomChatState } from './roomChatStore';
@@ -52,6 +52,19 @@ function handleMessageDeleted(get: RoomGet, set: RoomSet, data: unknown) {
   set((state) => ({ messages: state.messages.filter((item) => item.id !== messageId) }));
 }
 
+function handleReactionUpdated(get: RoomGet, set: RoomSet, data: unknown) {
+  const payload = toRecord(data);
+  const roomId = get().activeRoom?.id;
+  if (roomId == null || payload?.roomId !== roomId || typeof payload.messageId !== 'string') return;
+  const messageId = payload.messageId;
+  const reactions = (toRecord(payload.reactions) ?? {}) as Record<string, RoomReactor[]>;
+  set((state) => ({
+    messages: state.messages.map((item) =>
+      item.id === messageId ? { ...item, reactions } : item
+    ),
+  }));
+}
+
 function handleMemberCountChange(get: RoomGet, set: RoomSet, data: unknown) {
   const payload = toRecord(data);
   const roomId = get().activeRoom?.id;
@@ -66,6 +79,7 @@ export function registerRoomRealtime(set: RoomSet, get: RoomGet) {
 
   SocketService.on(ROOM_SOCKET_EVENTS.newMessage, (data) => handleNewMessage(get, set, data));
   SocketService.on(ROOM_SOCKET_EVENTS.messageDeleted, (data) => handleMessageDeleted(get, set, data));
+  SocketService.on(ROOM_SOCKET_EVENTS.reactionUpdated, (data) => handleReactionUpdated(get, set, data));
   SocketService.on(ROOM_SOCKET_EVENTS.memberJoined, (data) => handleMemberCountChange(get, set, data));
   SocketService.on(ROOM_SOCKET_EVENTS.memberLeft, (data) => handleMemberCountChange(get, set, data));
 }

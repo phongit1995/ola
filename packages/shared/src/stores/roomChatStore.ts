@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { RoomService, SocketService } from '../services';
-import { ROOM_SOCKET_EVENTS, type RoomMember, type RoomMessage } from '../types';
+import { ROOM_SOCKET_EVENTS, type ReactionType, type RoomMember, type RoomMessage } from '../types';
 import { toRecord, withSenderVip, withVipTypeId } from './roomHelpers';
 import { registerRoomRealtime } from './roomRealtime';
 
@@ -27,12 +27,17 @@ export interface RoomChatState {
   roomForeground: boolean;
   hasMore: boolean;
   loadingMore: boolean;
+  replyTarget: RoomMessage | null;
   open: (room: ActiveRoom) => Promise<void>;
   close: () => void;
   setActiveTab: (tab: RoomTab) => void;
   setRoomForeground: (foreground: boolean) => void;
   sendMessage: (content: string) => Promise<void>;
   loadMoreMessages: () => Promise<void>;
+  setReplyTarget: (message: RoomMessage) => void;
+  clearReplyTarget: () => void;
+  reactToRoomMessage: (messageId: string, type: ReactionType) => Promise<void>;
+  deleteRoomMessage: (messageId: string) => Promise<void>;
 }
 
 const initialState = {
@@ -47,6 +52,7 @@ const initialState = {
   roomForeground: false,
   hasMore: false,
   loadingMore: false,
+  replyTarget: null as RoomMessage | null,
 };
 
 export const useRoomChatStore = create<RoomChatState>((set, get) => {
@@ -118,13 +124,51 @@ export const useRoomChatStore = create<RoomChatState>((set, get) => {
       if (!room) return;
       const trimmed = content.trim();
       if (trimmed === '') return;
-      const message = withSenderVip(await RoomService.sendMessage(room.id, { content: trimmed }));
-      if (get().activeRoom?.id !== room.id) return;
-      set((state) =>
-        state.messages.some((item) => item.id === message.id)
-          ? state
-          : { messages: [...state.messages, message] }
+      const reply = get().replyTarget;
+      const message = withSenderVip(
+        await RoomService.sendMessage(room.id, {
+          content: trimmed,
+          ...(reply != null ? { replyToId: reply.id } : {}),
+        })
       );
+      if (get().activeRoom?.id !== room.id) return;
+      set((state) => ({
+        replyTarget: state.replyTarget?.id === reply?.id ? null : state.replyTarget,
+        ...(state.messages.some((item) => item.id === message.id)
+          ? {}
+          : { messages: [...state.messages, message] }),
+      }));
+    },
+
+    setReplyTarget: (message) => set({ replyTarget: message }),
+
+    clearReplyTarget: () => set({ replyTarget: null }),
+
+    reactToRoomMessage: async (messageId, type) => {
+      const room = get().activeRoom;
+      if (!room) return;
+      try {
+        const updated = await RoomService.toggleMessageReaction(room.id, messageId, type);
+        if (get().activeRoom?.id !== room.id) return;
+        set((state) => ({
+          messages: state.messages.map((item) =>
+            item.id === messageId ? { ...item, reactions: updated.reactions } : item
+          ),
+        }));
+      } catch {
+        return;
+      }
+    },
+
+    deleteRoomMessage: async (messageId) => {
+      const room = get().activeRoom;
+      if (!room) return;
+      await RoomService.deleteMessage(room.id, messageId);
+      if (get().activeRoom?.id !== room.id) return;
+      set((state) => ({
+        messages: state.messages.filter((item) => item.id !== messageId),
+        replyTarget: state.replyTarget?.id === messageId ? null : state.replyTarget,
+      }));
     },
 
     loadMoreMessages: async () => {

@@ -13,6 +13,7 @@ export const API_PATH = {
     members: (id: string) => `/rooms/${id}/members`,
     messages: (id: string) => `/rooms/${id}/messages`,
     message: (id: string, messageId: string) => `/rooms/${id}/messages/${messageId}`,
+    messageReactions: (id: string, messageId: string) => `/rooms/${id}/messages/${messageId}/reactions`,
   },
   adminRooms: {
     base: '/admin/rooms',

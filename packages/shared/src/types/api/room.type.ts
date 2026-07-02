@@ -29,6 +29,18 @@ export interface RoomMember {
   vipTypeId?: number | null;
 }
 
+export interface RoomReplySnapshot {
+  messageId: string;
+  senderId: string;
+  senderName?: string;
+  excerpt: string;
+}
+
+export interface RoomReactor {
+  userId: string;
+  username: string;
+}
+
 export interface RoomMessage {
   id: string;
   roomId: string;
@@ -41,6 +53,8 @@ export interface RoomMessage {
   senderVipTypeId?: number | null;
   content: string;
   createdAt: string;
+  replyTo?: RoomReplySnapshot;
+  reactions?: Record<string, RoomReactor[]>;
 }
 
 export interface RoomListResult {
@@ -89,6 +103,7 @@ export interface UpdateRoomRequest {
 
 export interface SendRoomMessageRequest {
   content: string;
+  replyToId?: string;
 }
 
 export const ROOM_SOCKET_EVENTS = {
@@ -97,6 +112,7 @@ export const ROOM_SOCKET_EVENTS = {
   leave: 'ROOM:LEAVE',
   newMessage: 'NEW_ROOM_MESSAGE',
   messageDeleted: 'ROOM_MESSAGE_DELETED',
+  reactionUpdated: 'ROOM_MESSAGE_REACTION_UPDATED',
   memberJoined: 'ROOM_MEMBER_JOINED',
   memberLeft: 'ROOM_MEMBER_LEFT',
 } as const;
@@ -135,6 +151,12 @@ export interface NewRoomMessageEvent {
 export interface RoomMessageDeletedEvent {
   roomId: string;
   messageId: string;
+}
+
+export interface RoomMessageReactionUpdatedEvent {
+  roomId: string;
+  messageId: string;
+  reactions: Record<string, RoomReactor[]>;
 }
 
 export interface RoomMemberPresenceEvent {
