@@ -1,4 +1,5 @@
 export * from '@ola/shared/lib';
+export * from './textInsert';
 export * from './chatSmiley';
 export * from './kul';
 export * from './SmileyText';

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { parseMessageMetadata, randomUuid, releaseUploadPreviewUrl, uploadPreviewUrl, type UploadFile } from '../../lib';
+import { blobWithType, parseMessageMetadata, randomUuid, releaseUploadPreviewUrl, uploadPreviewUrl, type UploadFile } from '../../lib';
 import {
   buildOptimisticMessage,
   markById,
@@ -378,7 +378,8 @@ export const useChatStore = create<ChatState>((set, get) => {
           const meta = parseMessageMetadata(target.metadata);
           const blob = await (await fetch(meta.url ?? '')).blob();
           if (target.type === 'image') {
-            saved = await MessageService.sendImage(conversationId, blob, clientMsgId, 'image');
+            const imageBlob = blobWithType(blob, 'image/jpeg');
+            saved = await MessageService.sendImage(conversationId, imageBlob, clientMsgId, 'image');
           } else {
             saved = await MessageService.sendAudio(conversationId, blob, meta.duration ?? 0, clientMsgId);
           }

@@ -6,7 +6,6 @@ export * from './toast';
 export * from './avatarColor';
 export * from './secret';
 export * from './datetime';
-export * from './textInsert';
 export * from './vipIcon';
 export * from './vip';
 export * from './messageMetadata';

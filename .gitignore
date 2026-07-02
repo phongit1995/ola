@@ -17,5 +17,9 @@ infra/web/deploy.env
 /.env
 /.env.local
 /.env.chat
+
+# Env local của web/mobile (CI tự ghi lúc build)
+web/.env
+mobile/.env
 node_modules/
 .DS_Store

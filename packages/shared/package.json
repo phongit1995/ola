@@ -23,7 +23,9 @@
     "./stores/chat/messageHelpers": "./src/stores/chat/messageHelpers.ts",
     "./i18n": "./src/i18n/index.ts",
     "./i18n/locales/vi.json": "./src/i18n/locales/vi.json",
-    "./i18n/locales/en.json": "./src/i18n/locales/en.json"
+    "./i18n/locales/en.json": "./src/i18n/locales/en.json",
+    "./stores/meFeedStore": "./src/stores/meFeedStore.ts",
+    "./stores/postHelpers": "./src/stores/postHelpers.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

@@ -17,10 +17,11 @@ export function appendUploadFile(
   filename?: string
 ): void {
   if (typeof Blob !== 'undefined' && file instanceof Blob) {
+    const append = form.append.bind(form) as (name: string, value: Blob, fileName?: string) => void;
     if (filename != null) {
-      form.append(field, file, filename);
+      append(field, file, filename);
     } else {
-      form.append(field, file);
+      append(field, file);
     }
     return;
   }
@@ -30,6 +31,12 @@ export function appendUploadFile(
     name: filename ?? native.name,
     type: native.type,
   } as unknown as Blob);
+}
+
+export function blobWithType(blob: Blob, type: string): Blob {
+  if (blob.type !== '') return blob;
+  const BlobCtor = Blob as unknown as new (parts: Blob[], options: { type: string }) => Blob;
+  return new BlobCtor([blob], { type });
 }
 
 interface ObjectUrlApi {
