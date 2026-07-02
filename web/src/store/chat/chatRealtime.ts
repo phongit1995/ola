@@ -1,5 +1,6 @@
 import type { StoreApi } from 'zustand';
 import { SocketService } from '@services';
+import { playMessageSound } from '@lib';
 import {
   CHAT_SOCKET_EVENTS,
   type Conversation,
@@ -25,6 +26,8 @@ function handleNewMessage(get: ChatGet, set: ChatSet, event: NewMessageEvent) {
   const myId = currentUserId();
   const fromMe = message.senderId === myId;
   const isCurrent = message.conversationId === get().currentConversationId;
+
+  if (!fromMe && !isCurrent) playMessageSound();
 
   if (isCurrent) {
     set((state) => {

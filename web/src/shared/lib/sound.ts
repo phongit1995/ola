@@ -1,5 +1,7 @@
 import kenChestUrl from '@/assets/sounds/ken-chest.mp3';
 import kenCreditUrl from '@/assets/sounds/ken-credit.mp3';
+import messageUrl from '@/assets/sounds/message.mp3';
+import roomTagUrl from '@/assets/sounds/room-tag.mp3';
 
 const unlockableSounds: HTMLAudioElement[] = [];
 
@@ -19,6 +21,8 @@ function createSoundPlayer(url: string) {
 
 export const playKenChestSound = createSoundPlayer(kenChestUrl);
 export const playKenCreditSound = createSoundPlayer(kenCreditUrl);
+export const playMessageSound = createSoundPlayer(messageUrl);
+export const playRoomTagSound = createSoundPlayer(roomTagUrl);
 
 let soundsUnlocked = false;
 

@@ -2,7 +2,8 @@ import type { StoreApi } from 'zustand';
 import { RoomService, SocketService } from '@services';
 import { useAuthStore } from '@/store/authStore';
 import { ROOM_SOCKET_EVENTS, type RoomMessage } from '@app-types';
-import { toRecord, withSenderVip, withVipTypeId } from './roomHelpers';
+import { playRoomTagSound } from '@lib';
+import { messageMentionsUser, toRecord, withSenderVip, withVipTypeId } from './roomHelpers';
 import type { RoomChatState } from './roomChatStore';
 
 type RoomSet = StoreApi<RoomChatState>['setState'];
@@ -25,17 +26,22 @@ function handleNewMessage(get: RoomGet, set: RoomSet, data: unknown) {
   const roomId = get().activeRoom?.id;
   if (roomId == null || message?.roomId !== roomId || typeof message.id !== 'string') return;
   const incoming = withSenderVip(message as unknown as RoomMessage);
-  const currentUserId = useAuthStore.getState().user?.id;
+  const me = useAuthStore.getState().user;
+  const isNew = !get().messages.some((item) => item.id === incoming.id);
+  const fromMe = incoming.senderId === me?.id;
   set((state) => {
     if (state.messages.some((item) => item.id === incoming.id)) return state;
     const messages = [...state.messages, incoming];
-    if (incoming.senderId === currentUserId) return { messages };
+    if (fromMe) return { messages };
     return {
       messages,
       ...(state.roomForeground ? {} : { hasUnread: true }),
       ...(state.activeTab === 'messages' ? {} : { messagesUnread: true }),
     };
   });
+  if (isNew && !fromMe && messageMentionsUser(incoming.content, me)) {
+    playRoomTagSound();
+  }
 }
 
 function handleMessageDeleted(get: RoomGet, set: RoomSet, data: unknown) {
