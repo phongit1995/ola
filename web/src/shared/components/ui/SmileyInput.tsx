@@ -10,7 +10,7 @@ import { smileyImageForCode, splitSmileys } from '@lib';
 
 export interface SmileyInputHandle {
   focus: () => void;
-  insertCode: (code: string) => void;
+  insertCode: (code: string, trailingSpace?: boolean) => void;
   insertText: (text: string) => void;
   backspace: () => void;
 }
@@ -72,6 +72,7 @@ export const SmileyInput = forwardRef<SmileyInputHandle, SmileyInputProps>(funct
   const editorRef = useRef<HTMLDivElement>(null);
   const lastEmitted = useRef<string | null>(null);
   const composing = useRef(false);
+  const savedRange = useRef<Range | null>(null);
 
   useEffect(() => {
     const el = editorRef.current;
@@ -79,6 +80,18 @@ export const SmileyInput = forwardRef<SmileyInputHandle, SmileyInputProps>(funct
     fillFromValue(el, value);
     lastEmitted.current = value;
   }, [value]);
+
+  useEffect(() => {
+    function rememberSelection() {
+      const el = editorRef.current;
+      const selection = window.getSelection();
+      if (el == null || selection == null || selection.rangeCount === 0) return;
+      const range = selection.getRangeAt(0);
+      if (el.contains(range.commonAncestorContainer)) savedRange.current = range.cloneRange();
+    }
+    document.addEventListener('selectionchange', rememberSelection);
+    return () => document.removeEventListener('selectionchange', rememberSelection);
+  }, []);
 
   function emit() {
     const el = editorRef.current;
@@ -90,19 +103,41 @@ export const SmileyInput = forwardRef<SmileyInputHandle, SmileyInputProps>(funct
     onChange(next);
   }
 
+  function rangeAtEnd(el: HTMLElement): Range {
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    range.collapse(false);
+    return range;
+  }
+
+  function caretRange(el: HTMLElement): Range | null {
+    const selection = window.getSelection();
+    if (selection != null && selection.rangeCount > 0 && el.contains(selection.anchorNode)) {
+      return selection.getRangeAt(0);
+    }
+    const saved = savedRange.current;
+    if (saved != null && el.contains(saved.commonAncestorContainer)) return saved;
+    return null;
+  }
+
   function insertNode(node: Node) {
     const el = editorRef.current;
     if (el == null) return;
-    el.focus();
-    const selection = window.getSelection();
-    if (selection == null || selection.rangeCount === 0 || !el.contains(selection.anchorNode)) {
-      el.appendChild(node);
-    } else {
-      const range = selection.getRangeAt(0);
+    const range = caretRange(el) ?? rangeAtEnd(el);
+    try {
       range.deleteContents();
       range.insertNode(node);
       range.setStartAfter(node);
       range.collapse(true);
+    } catch {
+      el.appendChild(node);
+      savedRange.current = rangeAtEnd(el);
+      emit();
+      return;
+    }
+    savedRange.current = range.cloneRange();
+    const selection = window.getSelection();
+    if (selection != null && el.ownerDocument.activeElement === el) {
       selection.removeAllRanges();
       selection.addRange(range);
     }
@@ -111,9 +146,10 @@ export const SmileyInput = forwardRef<SmileyInputHandle, SmileyInputProps>(funct
 
   useImperativeHandle(ref, () => ({
     focus: () => editorRef.current?.focus(),
-    insertCode: (code: string) => {
+    insertCode: (code: string, trailingSpace = false) => {
       const src = smileyImageForCode(code);
       insertNode(src == null ? document.createTextNode(code) : makeSmileyImg(code, src));
+      if (trailingSpace) insertNode(document.createTextNode(' '));
     },
     insertText: (text: string) => insertNode(document.createTextNode(text)),
     backspace: () => {
@@ -129,8 +165,8 @@ export const SmileyInput = forwardRef<SmileyInputHandle, SmileyInputProps>(funct
       } else {
         el.removeChild(last);
       }
+      savedRange.current = rangeAtEnd(el);
       emit();
-      el.focus();
     },
   }));
 

@@ -66,8 +66,10 @@ function SmileyPanel({ onPick, onBackspace }: { onPick: (code: string) => void; 
         <span className="mr-1 h-4 w-px bg-black/12" />
         <button
           type="button"
+          onMouseDown={(event) => event.preventDefault()}
           onClick={onBackspace}
           aria-label="backspace"
+          title="backspace"
           className="flex h-full w-12 items-center justify-center"
         >
           <img src={backspaceIcon} alt="" className="h-5 w-5 object-contain" />

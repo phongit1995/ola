@@ -12,6 +12,7 @@ export function SmileyGrid({ onPick }: SmileyGridProps) {
           key={index}
           type="button"
           aria-label={smiley.code}
+          onMouseDown={(event) => event.preventDefault()}
           onClick={() => onPick(smiley.code)}
           className="flex h-9 items-center justify-center rounded hover:bg-gray-100"
         >
