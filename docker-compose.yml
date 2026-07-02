@@ -72,7 +72,6 @@ services:
       - scylladb
       - kafka
       - migrate
-      - s3
     networks:
       - chat-network
 
@@ -155,6 +154,7 @@ services:
     image: minio/minio:latest
     container_name: ola-chat-server-s3${CONTAINER_SUFFIX:-}
     restart: unless-stopped
+    profiles: ["dev-storage"]
     command: server /data --console-address ":9001"
     labels:
       - dockflare.enable=${S3_DOCKFLARE_ENABLE:-false}
