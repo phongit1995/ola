@@ -297,7 +297,10 @@ export function ChatPanel() {
       <AddContactDialog
         open={addContactOpen}
         onClose={() => setAddContactOpen(false)}
-        onOpenProfile={setProfileTarget}
+        onOpenProfile={(target) => {
+          setAddContactOpen(false);
+          setProfileTarget(target);
+        }}
       />
       <ChangeAvatarScreen open={avatarOpen} onClose={() => setAvatarOpen(false)} />
       {statusOpen && <StatusEditDialog open onClose={() => setStatusOpen(false)} />}
