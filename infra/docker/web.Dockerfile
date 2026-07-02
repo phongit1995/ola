@@ -12,10 +12,8 @@ RUN pnpm install --frozen-lockfile --filter web... --filter web
 
 ARG VITE_API_BASE_URL
 ARG VITE_WS_URL
-ARG VITE_LIVEKIT_URL
 ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
 ENV VITE_WS_URL=${VITE_WS_URL}
-ENV VITE_LIVEKIT_URL=${VITE_LIVEKIT_URL}
 
 RUN pnpm --filter web build
 
