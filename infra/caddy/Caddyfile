@@ -1,0 +1,27 @@
+# Caddyfile — reverse proxy + auto HTTPS cho production Ola (thay Cloudflare).
+# Cài Caddy trên host, đặt file này ở /etc/caddy/Caddyfile rồi: systemctl reload caddy
+# Caddy tự xin/gia hạn SSL Let's Encrypt và tự xử WebSocket.
+
+olachat.net {
+	encode gzip
+	request_body {
+		max_size 50MB
+	}
+	reverse_proxy localhost:5081
+}
+
+api.olachat.net {
+	encode gzip
+	request_body {
+		max_size 50MB
+	}
+	reverse_proxy localhost:5241
+}
+
+admin.olachat.net {
+	encode gzip
+	request_body {
+		max_size 50MB
+	}
+	reverse_proxy localhost:5083
+}

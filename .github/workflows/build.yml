@@ -33,8 +33,8 @@ concurrency:
 env:
   IMAGE_TAG: ${{ inputs.tag || 'latest' }}
   SUFFIX: ${{ inputs.environment == 'dev' && '-dev' || '' }}
-  WEB_API_URL: ${{ inputs.environment == 'dev' && 'https://api-dev.olachat.net/api/v1' || 'https://chat.ola-server.click/api/v1' }}
-  WEB_SOCKET_URL: ${{ inputs.environment == 'dev' && 'https://api-dev.olachat.net' || 'https://chat.ola-server.click' }}
+  WEB_API_URL: ${{ inputs.environment == 'dev' && 'https://api-dev.olachat.net/api/v1' || 'https://api.olachat.net/api/v1' }}
+  WEB_SOCKET_URL: ${{ inputs.environment == 'dev' && 'https://api-dev.olachat.net' || 'https://api.olachat.net' }}
 
 jobs:
   build-web:
