@@ -1,26 +1,18 @@
 import tabOla from '@/assets/icons/me/ic_action_tab_ola.png';
 import tabOlaActive from '@/assets/icons/me/ic_action_tab_ola_selected.png';
-import tabTag from '@/assets/icons/me/ic_action_tab_tag.png';
-import tabTagActive from '@/assets/icons/me/ic_action_tab_tag_selected.png';
-import tabMedia from '@/assets/icons/me/ic_action_tab_media.png';
-import tabMediaActive from '@/assets/icons/me/ic_action_tab_media_selected.png';
 import tabFollower from '@/assets/icons/me/ic_action_tab_follower.png';
 import tabFollowerActive from '@/assets/icons/me/ic_action_tab_follower_selected.png';
 import type { MeFeedFilter, PostVisibility } from '@app-types';
 import type { MeTab } from './types';
 
 export const TAB_FILTER: Record<MeTab, MeFeedFilter | undefined> = {
-  feed: undefined,
-  mentions: 'mentions',
-  media: 'media',
-  visitors: undefined,
+  community: undefined,
+  personal: 'following',
 };
 
 export const ME_TABS = [
-  { key: 'feed', icon: tabOla, iconActive: tabOlaActive, labelKey: 'me.tabFeed' },
-  { key: 'mentions', icon: tabTag, iconActive: tabTagActive, labelKey: 'me.tabMentions' },
-  { key: 'media', icon: tabMedia, iconActive: tabMediaActive, labelKey: 'me.tabMedia' },
-  { key: 'visitors', icon: tabFollower, iconActive: tabFollowerActive, labelKey: 'me.tabVisitors' },
+  { key: 'community', icon: tabOla, iconActive: tabOlaActive, labelKey: 'me.tabCommunity' },
+  { key: 'personal', icon: tabFollower, iconActive: tabFollowerActive, labelKey: 'me.tabPersonal' },
 ] as const satisfies ReadonlyArray<{
   key: MeTab;
   icon: string;

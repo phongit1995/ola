@@ -141,11 +141,21 @@ func (r *Repository) FeedPage(viewerID uuid.UUID, filter string, cursorTime *tim
 		" AND ((rel.requester_id = @viewer AND rel.addressee_id = m.author_id)" +
 		" OR (rel.addressee_id = @viewer AND rel.requester_id = m.author_id)))"
 
-	query := "SELECT id, created_at FROM (" +
-		branch("m.visibility = 'public'") + " UNION " +
-		branch("m.author_id = @viewer") + " UNION " +
-		branch(friendCond) +
-		") u ORDER BY created_at DESC, id DESC LIMIT @lim"
+	followeeCond := "m.author_id IN (SELECT f.followee_id FROM follows f WHERE f.follower_id = @viewer)"
+	var query string
+	if filter == "following" {
+		query = "SELECT id, created_at FROM (" +
+			branch("m.author_id = @viewer") + " UNION " +
+			branch("m.visibility = 'public' AND "+followeeCond) + " UNION " +
+			branch(friendCond+" AND "+followeeCond) +
+			") u ORDER BY created_at DESC, id DESC LIMIT @lim"
+	} else {
+		query = "SELECT id, created_at FROM (" +
+			branch("m.visibility = 'public'") + " UNION " +
+			branch("m.author_id = @viewer") + " UNION " +
+			branch(friendCond) +
+			") u ORDER BY created_at DESC, id DESC LIMIT @lim"
+	}
 
 	args := map[string]interface{}{"viewer": viewerID, "lim": limit + 1}
 	if filter == "mentions" {

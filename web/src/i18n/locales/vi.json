@@ -351,6 +351,8 @@
   },
   "me": {
     "tabFeed": "Bảng tin",
+    "tabCommunity": "Me cộng đồng",
+    "tabPersonal": "Cá nhân",
     "tabTagged": "Có tag",
     "tabMentions": "Nhắc đến",
     "tabVisitors": "Khách ghé thăm",

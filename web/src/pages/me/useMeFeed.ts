@@ -10,7 +10,7 @@ import type { MeTab } from './types';
 
 export function useMeFeed() {
   const { i18n } = useTranslation();
-  const [tab, setTab] = useState<MeTab>('feed');
+  const [tab, setTab] = useState<MeTab>('community');
 
   const rawPosts = useMeFeedStore((state) => state.posts);
   const loading = useMeFeedStore((state) => state.loading);
@@ -36,7 +36,6 @@ export function useMeFeed() {
   const formatTime = useMemo(() => createTimeFormatter(i18n.language), [i18n.language]);
 
   useEffect(() => {
-    if (tab === 'visitors') return;
     loadFeed(TAB_FILTER[tab]);
   }, [tab, loadFeed]);
 
@@ -76,14 +75,10 @@ export function useMeFeed() {
         draft.imageUrls
       );
       if (created == null) return false;
-      if (tab === 'feed') {
-        prependPost(created);
-      } else {
-        setTab('feed');
-      }
+      prependPost(created);
       return true;
     },
-    [createPost, prependPost, tab]
+    [createPost, prependPost]
   );
 
   const editPost = useCallback(
