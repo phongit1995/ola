@@ -1,5 +1,5 @@
 import 'i18next';
-import type vi from './locales/vi.json';
+import type vi from '@ola/shared/i18n/locales/vi.json';
 
 declare module 'i18next' {
   interface CustomTypeOptions {

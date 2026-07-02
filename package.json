@@ -1,0 +1,13 @@
+{
+  "name": "ola",
+  "private": true,
+  "packageManager": "pnpm@11.1.2",
+  "scripts": {
+    "web:dev": "pnpm -C web dev",
+    "web:build": "pnpm -C web build",
+    "web:lint": "pnpm -C web lint",
+    "mobile:start": "pnpm -C mobile start",
+    "mobile:android": "pnpm -C mobile android",
+    "mobile:ios": "pnpm -C mobile ios"
+  }
+}

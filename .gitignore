@@ -17,3 +17,5 @@ infra/web/deploy.env
 /.env
 /.env.local
 /.env.chat
+node_modules/
+.DS_Store
