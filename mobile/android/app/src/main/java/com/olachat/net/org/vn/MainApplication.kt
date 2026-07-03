@@ -1,4 +1,4 @@
-package com.olamobile
+package com.olachat.net.org.vn
 
 import android.app.Application
 import com.facebook.react.PackageList

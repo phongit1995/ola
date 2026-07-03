@@ -1,4 +1,4 @@
-package com.olamobile
+package com.olachat.net.org.vn
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
