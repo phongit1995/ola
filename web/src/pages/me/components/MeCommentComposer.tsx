@@ -45,7 +45,7 @@ export function MeCommentComposer({ submitting, onSubmit, autoFocus = false }: M
       )}
 
       <div className="flex shrink-0 items-end gap-2 border-t border-black/12 bg-white px-3 py-2">
-        <Avatar name={myName} color={colorForName(myName)} size={36} />
+        <Avatar name={myName} src={me?.avatar} color={colorForName(myName)} size={36} />
         <SmileyInput
           ref={composerRef}
           value={draft}
