@@ -108,7 +108,7 @@ function MePostCardComponent({
           onClick={() => onOpenProfile?.(post.author, post.color)}
           className="flex min-w-0 flex-1 items-start gap-4 text-left"
         >
-          <Avatar name={post.author} color={post.color} />
+          <Avatar name={post.author} src={post.avatar ?? undefined} color={post.color} />
           <span className="min-w-0 flex-1">
             <span className="flex items-center gap-1">
               <UserName
