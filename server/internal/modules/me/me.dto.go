@@ -111,6 +111,23 @@ type CommentResponse struct {
 	CreatedAt string          `json:"createdAt"`
 }
 
+type MeNotificationResponse struct {
+	ID        string          `json:"id"`
+	Type      string          `json:"type"`
+	Actor     *AuthorResponse `json:"actor,omitempty"`
+	PostID    string          `json:"postId"`
+	CommentID string          `json:"commentId,omitempty"`
+	Preview   string          `json:"preview,omitempty"`
+	IsRead    bool            `json:"isRead"`
+	CreatedAt string          `json:"createdAt"`
+}
+
+type MeNotificationListResponse struct {
+	Items       []MeNotificationResponse `json:"items"`
+	UnreadCount int64                    `json:"unreadCount"`
+	NextCursor  string                   `json:"nextCursor,omitempty"`
+}
+
 type CommentListResponse struct {
 	Items  []CommentResponse `json:"items"`
 	Total  int64             `json:"total"`

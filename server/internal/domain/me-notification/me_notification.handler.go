@@ -1,0 +1,50 @@
+package menotification
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+
+	"ola-chat-server/internal/constants"
+	"ola-chat-server/internal/transport/websocket"
+	"ola-chat-server/internal/utils"
+
+	"go.uber.org/zap"
+)
+
+type EventHandler struct {
+	wsServer *websocket.Server
+	logger   *zap.SugaredLogger
+}
+
+func NewEventHandler(wsServer *websocket.Server, logger *zap.SugaredLogger) *EventHandler {
+	return &EventHandler{
+		wsServer: wsServer,
+		logger:   logger.Named("[me_notification_events]"),
+	}
+}
+
+func (h *EventHandler) OnCreated(ctx context.Context, message []byte) error {
+	var event Event
+	if err := json.Unmarshal(message, &event); err != nil {
+		h.logger.Errorw("Failed to unmarshal MeNotification", "error", err)
+		return err
+	}
+	if event.RecipientID == "" {
+		return errors.New("recipient id is required")
+	}
+
+	var notification map[string]interface{}
+	if err := json.Unmarshal(event.Notification, &notification); err != nil {
+		h.logger.Errorw("Failed to unmarshal MeNotification body", "error", err)
+		return err
+	}
+
+	wrapped := utils.WrapWebSocketMessage(constants.WebSocketEventMeNotification, map[string]interface{}{
+		"notification": notification,
+		"unreadCount":  event.UnreadCount,
+	})
+	h.wsServer.EmitToUser(event.RecipientID, constants.WebSocketMessageEvent, wrapped)
+	h.logger.Infow("✅ ME_NOTIFICATION emitted", "recipient_id", event.RecipientID, "unread_count", event.UnreadCount)
+	return nil
+}

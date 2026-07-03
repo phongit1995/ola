@@ -1,20 +1,28 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { RoomMessage } from '@app-types';
-import { activeVipTypeId, kulToken, toast } from '@lib';
-import { useAuthStore } from '@/store/authStore';
+import type { ReactionType, RoomMessage } from '@app-types';
+import { kulImageForText, kulToken, toast } from '@lib';
 import { useLongPress } from '@hooks';
 import {
   AttachmentBar,
   type AttachTab,
+  ConfirmDialog,
   DateSeparator,
+  MessageActionSheet,
+  type MessageSheetAction,
   SmileyInput,
   type SmileyInputHandle,
-  VipAvatar,
 } from '@components';
 import likeIcon from '@/assets/icons/chat/smiley_35.png';
+import replyActionIcon from '@/assets/icons/me/ic_action_reply_gray.png';
+import deleteActionIcon from '@/assets/icons/chat/ic_menu_delete.png';
+import smileyIcon from '@/assets/icons/chat/ic_smiley.png';
+import smileyIconActive from '@/assets/icons/chat/ic_smiley_selected.png';
+import kulIcon from '@/assets/icons/chat/ic_kul.png';
+import kulIconActive from '@/assets/icons/chat/ic_kul_selected.png';
 import { buildRoomFeed } from '../messageGroups';
 import { RoomMessageGroup } from './RoomMessageGroup';
+import { RoomReactionsDialog } from './RoomReactionsDialog';
 import type { RoomChatStatus } from '@/store/roomChatStore';
 
 interface RoomMessagesTabProps {
@@ -25,9 +33,14 @@ interface RoomMessagesTabProps {
   visible: boolean;
   hasMore: boolean;
   loadingMore: boolean;
+  replyTarget: RoomMessage | null;
   onSend: (content: string) => Promise<void>;
   onLoadMore: () => void;
   onOpenProfile?: (nick: string, color: string) => void;
+  onSetReplyTarget: (message: RoomMessage) => void;
+  onClearReplyTarget: () => void;
+  onReact: (messageId: string, type: ReactionType) => void;
+  onDeleteMessage: (messageId: string) => Promise<void>;
 }
 
 export function RoomMessagesTab({
@@ -38,15 +51,26 @@ export function RoomMessagesTab({
   visible,
   hasMore,
   loadingMore,
+  replyTarget,
   onSend,
   onLoadMore,
   onOpenProfile,
+  onSetReplyTarget,
+  onClearReplyTarget,
+  onReact,
+  onDeleteMessage,
 }: RoomMessagesTabProps) {
   const { t } = useTranslation();
-  const me = useAuthStore((state) => state.user);
 
   const [draft, setDraft] = useState('');
   const [openTab, setOpenTab] = useState<AttachTab | null>(null);
+  const [actionTarget, setActionTarget] = useState<{
+    message: RoomMessage;
+    anchor: DOMRect | null;
+  } | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<RoomMessage | null>(null);
+  const [reactionsTargetId, setReactionsTargetId] = useState<string | null>(null);
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const composerRef = useRef<SmileyInputHandle>(null);
   const draftRef = useRef(draft);
@@ -54,10 +78,19 @@ export function RoomMessagesTab({
   const pendingPrependRef = useRef(false);
   const prevScrollHeightRef = useRef(0);
   const suppressLikeClick = useRef(false);
+  const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const likeLongPress = useLongPress(() => {
     suppressLikeClick.current = true;
     void sendText('(Y)');
   });
+
+  const messageById = useMemo(() => new Map(messages.map((item) => [item.id, item])), [messages]);
+
+  useEffect(() => {
+    return () => {
+      if (highlightTimerRef.current != null) clearTimeout(highlightTimerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     draftRef.current = draft;
@@ -111,10 +144,67 @@ export function RoomMessagesTab({
     composerRef.current?.focus();
   }, []);
 
+  const handleLongPressMessage = useCallback(
+    (id: string, anchor: DOMRect | null) => {
+      const message = messageById.get(id);
+      if (message != null) setActionTarget({ message, anchor });
+    },
+    [messageById]
+  );
+
+  const showReactions = useCallback((id: string) => setReactionsTargetId(id), []);
+
+  const scrollToMessage = useCallback(
+    (id: string) => {
+      const element = scrollRef.current?.querySelector(`[data-message-id="${CSS.escape(id)}"]`);
+      if (element == null) {
+        toast.error(t('room.replyNotFound'));
+        return;
+      }
+      stickToBottomRef.current = false;
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setHighlightedId(id);
+      if (highlightTimerRef.current != null) clearTimeout(highlightTimerRef.current);
+      highlightTimerRef.current = setTimeout(() => setHighlightedId(null), 1500);
+    },
+    [t]
+  );
+
+  function sheetActions(message: RoomMessage): MessageSheetAction[] {
+    const actions: MessageSheetAction[] = [];
+    if (message.senderId !== currentUserId) {
+      actions.push({
+        key: 'reply',
+        label: t('room.actionReply'),
+        icon: replyActionIcon,
+        onSelect: () => {
+          onSetReplyTarget(message);
+          composerRef.current?.focus();
+        },
+      });
+    } else {
+      actions.push({
+        key: 'delete',
+        label: t('chat.actionDelete'),
+        icon: deleteActionIcon,
+        destructive: true,
+        onSelect: () => setDeleteTarget(message),
+      });
+    }
+    return actions;
+  }
+
+  function replyExcerpt(message: RoomMessage): string {
+    return kulImageForText(message.content) != null ? t('room.replySticker') : message.content;
+  }
+
   const canSend = status === 'joined';
   const isTyping = draft.trim() !== '';
-  const vipTypeId = activeVipTypeId(me?.vipUsed, me?.vipEndTime);
   const feed = useMemo(() => buildRoomFeed(messages, currentUserId), [messages, currentUserId]);
+
+  function toggleTab(tab: AttachTab) {
+    setOpenTab((current) => (current === tab ? null : tab));
+  }
 
   return (
     <div className={`flex flex-1 flex-col overflow-hidden ${active ? '' : 'hidden'}`}>
@@ -139,15 +229,56 @@ export function RoomMessagesTab({
             <RoomMessageGroup
               key={item.key}
               group={item}
+              highlightedId={highlightedId}
               onOpenProfile={onOpenProfile}
               onQuickMention={insertMention}
+              onLongPressMessage={handleLongPressMessage}
+              onQuoteClick={scrollToMessage}
+              onShowReactions={showReactions}
             />
           )
         )}
       </div>
 
-      <div className="flex shrink-0 items-center gap-2 border-t border-black/12 bg-white px-3 py-2">
-        <VipAvatar typeId={vipTypeId} className="h-9 w-9" />
+      {replyTarget != null && (
+        <div className="flex shrink-0 items-center gap-2 border-t border-black/12 bg-black/3 px-3 py-1.5">
+          <span className="h-8 w-0.5 shrink-0 rounded bg-ola-primary" />
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-xs font-semibold text-ola-primary">
+              {t('room.replyingTo', { name: replyTarget.senderName ?? '' })}
+            </span>
+            <span className="block truncate text-xs text-black/54">
+              {replyExcerpt(replyTarget)}
+            </span>
+          </span>
+          <button
+            type="button"
+            aria-label={t('dialog.cancel')}
+            onClick={onClearReplyTarget}
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-lg text-black/54 hover:bg-black/5"
+          >
+            ×
+          </button>
+        </div>
+      )}
+
+      <div className="flex shrink-0 items-center gap-1 border-t border-black/12 bg-white px-2 py-2">
+        <button
+          type="button"
+          aria-label={t('chat.attachTabSmiley')}
+          onClick={() => toggleTab('smiley')}
+          className={`flex h-9 w-9 shrink-0 select-none items-center justify-center ${openTab === 'smiley' ? 'opacity-100' : 'opacity-60'}`}
+        >
+          <img src={openTab === 'smiley' ? smileyIconActive : smileyIcon} alt="" className="h-6 w-6 object-contain" />
+        </button>
+        <button
+          type="button"
+          aria-label={t('chat.attachTabKul')}
+          onClick={() => toggleTab('kul')}
+          className={`flex h-9 w-9 shrink-0 select-none items-center justify-center ${openTab === 'kul' ? 'opacity-100' : 'opacity-60'}`}
+        >
+          <img src={openTab === 'kul' ? kulIconActive : kulIcon} alt="" className="h-6 w-6 object-contain" />
+        </button>
         <SmileyInput
           ref={composerRef}
           value={draft}
@@ -196,9 +327,10 @@ export function RoomMessagesTab({
 
       {canSend && (
         <AttachmentBar
+          showTabBar={false}
           tabs={['smiley', 'kul']}
           openTab={openTab}
-          onToggleTab={(tab) => setOpenTab((current) => (current === tab ? null : tab))}
+          onToggleTab={toggleTab}
           onPickEmoji={(code) => composerRef.current?.insertCode(code, true)}
           onBackspace={() => composerRef.current?.backspace()}
           onPickImage={() => undefined}
@@ -209,6 +341,41 @@ export function RoomMessagesTab({
           onSend={() => undefined}
         />
       )}
+
+      {actionTarget != null && (
+        <MessageActionSheet
+          actions={sheetActions(actionTarget.message)}
+          anchor={actionTarget.anchor}
+          showReactions={actionTarget.message.senderId !== currentUserId}
+          onReact={(type) => onReact(actionTarget.message.id, type)}
+          onClose={() => setActionTarget(null)}
+        />
+      )}
+
+      <RoomReactionsDialog
+        open={reactionsTargetId != null}
+        reactions={
+          reactionsTargetId != null ? messageById.get(reactionsTargetId)?.reactions : undefined
+        }
+        onClose={() => setReactionsTargetId(null)}
+      />
+
+      <ConfirmDialog
+        open={deleteTarget != null}
+        danger
+        title={t('chat.deleteTitle')}
+        message={t('chat.deleteConfirm')}
+        confirmLabel={t('dialog.delete')}
+        cancelLabel={t('dialog.cancel')}
+        onConfirm={() => {
+          const target = deleteTarget;
+          setDeleteTarget(null);
+          if (target != null) {
+            onDeleteMessage(target.id).catch(() => toast.error(t('common.error')));
+          }
+        }}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }

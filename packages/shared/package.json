@@ -1,0 +1,41 @@
+{
+  "name": "@ola/shared",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./platform": "./src/platform/index.ts",
+    "./api": "./src/api/index.ts",
+    "./config": "./src/config/index.ts",
+    "./constants": "./src/constants/index.ts",
+    "./lib": "./src/lib/index.ts",
+    "./types": "./src/types/index.ts",
+    "./services": "./src/services/index.ts",
+    "./i18n": "./src/i18n/index.ts",
+    "./i18n/locales/*.json": "./src/i18n/locales/*.json",
+    "./stores/*": "./src/stores/*.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@noble/hashes": "^2.0.1"
+  },
+  "peerDependencies": {
+    "axios": ">=1.17.0",
+    "dayjs": ">=1.11.0",
+    "i18next": ">=26.0.0",
+    "react": ">=19.0.0",
+    "react-i18next": ">=17.0.0",
+    "socket.io-client": ">=4.8.0",
+    "zustand": ">=5.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.3.0",
+    "typescript": "~6.0.2",
+    "typescript-eslint": "^8.59.2"
+  }
+}

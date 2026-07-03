@@ -24,6 +24,13 @@ export const AdminAuthService = {
     return data.data
   },
 
+  async changePassword(payload: {
+    currentPassword: string
+    newPassword: string
+  }): Promise<void> {
+    await http.post<ApiResponse<{ message: string }>>('/auth/change-password', payload)
+  },
+
   logout(): void {
     adminTokens.clear()
   },

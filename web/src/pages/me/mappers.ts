@@ -2,15 +2,7 @@ import { colorForName } from '@lib';
 import type { Post, PostReaction } from '@app-types';
 import type { MePost } from './types';
 
-export function applyPostReaction(post: Post, next: PostReaction | null): Post {
-  let likeCount = post.likeCount;
-  let dislikeCount = post.dislikeCount;
-  if (post.myReaction === 'like') likeCount -= 1;
-  if (post.myReaction === 'dislike') dislikeCount -= 1;
-  if (next === 'like') likeCount += 1;
-  if (next === 'dislike') dislikeCount += 1;
-  return { ...post, likeCount, dislikeCount, myReaction: next };
-}
+export { applyPostReaction } from '@ola/shared/stores/postHelpers';
 
 export function applyMeReaction(post: MePost, type: PostReaction): MePost {
   if (type === 'like') {
@@ -43,6 +35,7 @@ export function toMePost(post: Post, formatTime: (iso: string) => string): MePos
     authorId: post.author?.id ?? '',
     author,
     fullName: post.author?.fullName ?? '',
+    avatar: post.author?.avatar ?? null,
     color: colorForName(author),
     time: formatTime(post.createdAt),
     createdAt: post.createdAt,

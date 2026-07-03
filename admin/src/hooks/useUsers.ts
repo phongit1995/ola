@@ -39,6 +39,17 @@ export function useUpdateUserStatus() {
   })
 }
 
+export function useUpdateUsername() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, username }: { id: string; username: string }) =>
+      AdminUserService.updateUsername(id, username),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: [USERS_KEY] })
+    },
+  })
+}
+
 export function useDeleteUser() {
   const queryClient = useQueryClient()
   return useMutation({

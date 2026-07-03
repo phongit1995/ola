@@ -34,13 +34,13 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@api': path.resolve(__dirname, './src/shared/api'),
+      '@api': path.resolve(__dirname, '../packages/shared/src/api'),
       '@config': path.resolve(__dirname, './src/shared/config'),
       '@constants': path.resolve(__dirname, './src/shared/constants'),
       '@lib': path.resolve(__dirname, './src/shared/lib'),
       '@hooks': path.resolve(__dirname, './src/shared/hooks'),
-      '@services': path.resolve(__dirname, './src/shared/services'),
-      '@app-types': path.resolve(__dirname, './src/shared/types'),
+      '@services': path.resolve(__dirname, '../packages/shared/src/services'),
+      '@app-types': path.resolve(__dirname, '../packages/shared/src/types'),
       '@components': path.resolve(__dirname, './src/shared/components'),
       '@': path.resolve(__dirname, './src'),
     },

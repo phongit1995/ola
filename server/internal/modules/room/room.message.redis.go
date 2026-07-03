@@ -1,12 +1,12 @@
 package room
 
 import (
-	"ola-chat-server/internal/config"
-	"ola-chat-server/internal/constants"
-	"ola-chat-server/internal/services"
 	"context"
 	"encoding/json"
 	"fmt"
+	"ola-chat-server/internal/config"
+	"ola-chat-server/internal/constants"
+	"ola-chat-server/internal/services"
 	"strconv"
 	"time"
 
@@ -129,6 +129,11 @@ func (r *RedisMessageRepository) Get(ctx context.Context, roomID, msgID string) 
 		return nil, nil
 	}
 	return data, err
+}
+
+func (r *RedisMessageRepository) Update(ctx context.Context, roomID, msgID string, data []byte) error {
+	client := r.cache.GetClient()
+	return client.HSet(ctx, r.dataKey(roomID), msgID, data).Err()
 }
 
 func (r *RedisMessageRepository) Delete(ctx context.Context, roomID, msgID string) error {

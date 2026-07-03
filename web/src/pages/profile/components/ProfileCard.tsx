@@ -26,6 +26,7 @@ interface ProfileCardProps {
 }
 
 function InfoRow({ icon, text, note }: { icon: string; text: React.ReactNode; note?: boolean }) {
+  if (text == null || text === '') return null;
   return (
     <div
       className={`mt-2 ml-4 flex items-center gap-1 text-xs ${

@@ -476,6 +476,79 @@ func (r *Repository) DeleteComment(postID, commentID uuid.UUID) error {
 	})
 }
 
+func (r *Repository) CreateMeNotification(n *models.MeNotification) (*models.MeNotification, error) {
+	if n.Type == models.MeNotificationLike {
+		res := r.db.Model(&models.MeNotification{}).
+			Where("recipient_id = ? AND actor_id = ? AND post_id = ? AND type = ?",
+				n.RecipientID, n.ActorID, n.PostID, models.MeNotificationLike).
+			Updates(map[string]interface{}{
+				"is_read":    false,
+				"created_at": time.Now(),
+				"updated_at": time.Now(),
+			})
+		if res.Error != nil {
+			return nil, res.Error
+		}
+		if res.RowsAffected == 0 {
+			if err := r.db.Create(n).Error; err != nil {
+				return nil, err
+			}
+		}
+		var row models.MeNotification
+		if err := r.db.Preload("Actor").
+			Where("recipient_id = ? AND actor_id = ? AND post_id = ? AND type = ?",
+				n.RecipientID, n.ActorID, n.PostID, models.MeNotificationLike).
+			First(&row).Error; err != nil {
+			return nil, err
+		}
+		return &row, nil
+	}
+
+	if err := r.db.Create(n).Error; err != nil {
+		return nil, err
+	}
+	var row models.MeNotification
+	if err := r.db.Preload("Actor").First(&row, "id = ?", n.ID).Error; err != nil {
+		return nil, err
+	}
+	return &row, nil
+}
+
+func (r *Repository) ListMeNotificationsPage(recipientID uuid.UUID, cursorTime *time.Time, cursorID *uuid.UUID, limit int) ([]*models.MeNotification, bool, error) {
+	db := r.db.Model(&models.MeNotification{}).Where("recipient_id = ?", recipientID)
+	if cursorTime != nil && cursorID != nil {
+		db = db.Where("(created_at, id) < (?, ?)", *cursorTime, *cursorID)
+	}
+
+	var items []*models.MeNotification
+	if err := db.Preload("Actor").
+		Order("created_at DESC").Order("id DESC").
+		Limit(limit + 1).
+		Find(&items).Error; err != nil {
+		return nil, false, err
+	}
+
+	hasMore := len(items) > limit
+	if hasMore {
+		items = items[:limit]
+	}
+	return items, hasMore, nil
+}
+
+func (r *Repository) CountUnreadMeNotifications(recipientID uuid.UUID) (int64, error) {
+	var count int64
+	err := r.db.Model(&models.MeNotification{}).
+		Where("recipient_id = ? AND is_read = ?", recipientID, false).
+		Count(&count).Error
+	return count, err
+}
+
+func (r *Repository) MarkAllMeNotificationsRead(recipientID uuid.UUID) error {
+	return r.db.Model(&models.MeNotification{}).
+		Where("recipient_id = ? AND is_read = ?", recipientID, false).
+		Update("is_read", true).Error
+}
+
 func (r *Repository) applyCounts(tx *gorm.DB, postID uuid.UUID, likeDelta, dislikeDelta int) error {
 	updates := map[string]interface{}{}
 	if likeDelta != 0 {

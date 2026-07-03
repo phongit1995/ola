@@ -13,5 +13,3 @@ export const PHONE_PATTERN = /^[0-9+\-() ]{6,20}$/;
 export const NO_RELATIONSHIP: RelationshipInfo = { status: 'none', isFollowing: false, followsMe: false };
 
 export const EMPTY_SECONDARY: ProfileSecondary = { media: [], following: [], posts: [], loading: false };
-
-export const MOCK_RELATIONSHIP: RelationshipInfo = { status: 'none', isFollowing: false, followsMe: false };

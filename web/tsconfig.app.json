@@ -30,13 +30,13 @@
     /* Path alias */
     "paths": {
       "@/*": ["./src/*"],
-      "@api": ["./src/shared/api"],
+      "@api": ["../packages/shared/src/api"],
       "@config": ["./src/shared/config"],
       "@constants": ["./src/shared/constants"],
       "@lib": ["./src/shared/lib"],
       "@hooks": ["./src/shared/hooks"],
-      "@services": ["./src/shared/services"],
-      "@app-types": ["./src/shared/types"],
+      "@services": ["../packages/shared/src/services"],
+      "@app-types": ["../packages/shared/src/types"],
       "@components": ["./src/shared/components"],
       "@components/*": ["./src/shared/components/*"]
     }

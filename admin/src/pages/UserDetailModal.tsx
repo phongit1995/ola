@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react'
 import { Avatar, Button, Modal, Skeleton, Tag, Typography } from 'antd'
 import {
   CrownOutlined,
+  EditOutlined,
   FileTextOutlined,
   HistoryOutlined,
   UserOutlined,
@@ -14,6 +15,7 @@ import { KenAdjustModal } from './KenAdjustModal'
 import { KenHistoryModal } from './KenHistoryModal'
 import { UserMeModal } from './UserMeModal'
 import { UserVipIconsModal } from './UserVipIconsModal'
+import { EditUsernameModal } from './EditUsernameModal'
 
 interface UserDetailModalProps {
   userId: string | null
@@ -72,6 +74,7 @@ export function UserDetailModal({ userId, open, onClose }: UserDetailModalProps)
   const [historyOpen, setHistoryOpen] = useState(false)
   const [meOpen, setMeOpen] = useState(false)
   const [vipsOpen, setVipsOpen] = useState(false)
+  const [usernameOpen, setUsernameOpen] = useState(false)
 
   return (
     <>
@@ -127,7 +130,15 @@ export function UserDetailModal({ userId, open, onClose }: UserDetailModalProps)
                 {data.fullName || data.username}
                 {data.isVip && <CrownOutlined style={{ color: '#faad14', marginLeft: 8 }} />}
               </div>
-              <div style={{ color: '#6b7785', marginBottom: 6 }}>@{data.username}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#6b7785', marginBottom: 6 }}>
+                <span>@{data.username}</span>
+                <Button
+                  type="text"
+                  size="small"
+                  icon={<EditOutlined />}
+                  onClick={() => setUsernameOpen(true)}
+                />
+              </div>
               <div>
                 {data.isActive ? (
                   <Tag color="green">Hoạt động</Tag>
@@ -210,6 +221,12 @@ export function UserDetailModal({ userId, open, onClose }: UserDetailModalProps)
       userId={userId}
       username={data?.username}
       onClose={() => setVipsOpen(false)}
+    />
+    <EditUsernameModal
+      open={usernameOpen}
+      userId={userId}
+      currentUsername={data?.username}
+      onClose={() => setUsernameOpen(false)}
     />
     </>
   )

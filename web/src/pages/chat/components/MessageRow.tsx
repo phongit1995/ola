@@ -2,10 +2,10 @@ import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Avatar } from '@components';
 import { useLongPress } from '@hooks';
+import { reactionChips } from '@lib';
 import sentIcon from '@/assets/icons/chat/ic_message_sent.png';
 import resendIcon from '@/assets/icons/chat/btn_resend_d.png';
 import type { ChatMessage } from '../types';
-import { reactionChips } from '../chatView';
 import { ChatMessageBubble } from './ChatMessageBubble';
 
 interface MessageRowProps {

@@ -1,0 +1,7 @@
+packages:
+  - web
+  - admin
+  - mobile
+  - packages/*
+
+nodeLinker: hoisted

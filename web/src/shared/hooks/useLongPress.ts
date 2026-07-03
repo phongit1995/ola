@@ -3,9 +3,10 @@ import { useRef, type PointerEvent as ReactPointerEvent, type MouseEvent as Reac
 const LONG_PRESS_MS = 450;
 const MOVE_THRESHOLD = 10;
 
-export function useLongPress(onLongPress: () => void) {
+export function useLongPress(onLongPress: (anchor: DOMRect | null) => void) {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const origin = useRef<{ x: number; y: number } | null>(null);
+  const target = useRef<HTMLElement | null>(null);
 
   function clear() {
     if (timer.current != null) {
@@ -13,15 +14,17 @@ export function useLongPress(onLongPress: () => void) {
       timer.current = null;
     }
     origin.current = null;
+    target.current = null;
   }
 
   return {
     onPointerDown: (event: ReactPointerEvent) => {
       clear();
       origin.current = { x: event.clientX, y: event.clientY };
+      target.current = event.currentTarget as HTMLElement;
       timer.current = setTimeout(() => {
         timer.current = null;
-        onLongPress();
+        onLongPress(target.current?.getBoundingClientRect() ?? null);
       }, LONG_PRESS_MS);
     },
     onPointerMove: (event: ReactPointerEvent) => {
@@ -38,8 +41,9 @@ export function useLongPress(onLongPress: () => void) {
     onPointerLeave: clear,
     onContextMenu: (event: ReactMouseEvent) => {
       event.preventDefault();
+      const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
       clear();
-      onLongPress();
+      onLongPress(rect);
     },
   };
 }

@@ -1,0 +1,23 @@
+import { AUTH_ROUTES, ROOT_ROUTES, TAB_ROUTES } from './routes';
+
+export type AuthStackParamList = {
+  [AUTH_ROUTES.Login]: undefined;
+  [AUTH_ROUTES.Register]: undefined;
+  [AUTH_ROUTES.ForgotPassword]: undefined;
+  [AUTH_ROUTES.Terms]: undefined;
+};
+
+export type MainTabParamList = {
+  [TAB_ROUTES.Chat]: undefined;
+  [TAB_ROUTES.Room]: undefined;
+  [TAB_ROUTES.Me]: undefined;
+  [TAB_ROUTES.Rss]: undefined;
+  [TAB_ROUTES.Apps]: undefined;
+};
+
+export type RootStackParamList = {
+  [ROOT_ROUTES.MainTabs]: undefined;
+  [ROOT_ROUTES.ChatDetail]: { conversationId: string };
+  [ROOT_ROUTES.RoomChat]: { roomId: string; roomName: string };
+  [ROOT_ROUTES.ProfileView]: { userId: string };
+};

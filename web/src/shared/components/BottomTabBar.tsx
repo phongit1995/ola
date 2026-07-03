@@ -4,8 +4,8 @@ import iconRoom from '@/assets/icons/room.png';
 import iconRoomActive from '@/assets/icons/room-active.png';
 import iconMe from '@/assets/icons/me.png';
 import iconMeActive from '@/assets/icons/me-active.png';
-import iconRss from '@/assets/icons/rss.png';
-import iconRssActive from '@/assets/icons/rss-active.png';
+// import iconRss from '@/assets/icons/rss.png';
+// import iconRssActive from '@/assets/icons/rss-active.png';
 import iconApps from '@/assets/icons/apps.png';
 import iconAppsActive from '@/assets/icons/apps-active.png';
 import { useTranslation } from 'react-i18next';
@@ -16,7 +16,7 @@ const TABS = [
   { key: 'chat', labelKey: 'home.tabChat', icon: iconMessage, iconActive: iconMessageActive },
   { key: 'room', labelKey: 'home.tabRoom', icon: iconRoom, iconActive: iconRoomActive },
   { key: 'me', labelKey: 'home.tabMe', icon: iconMe, iconActive: iconMeActive },
-  { key: 'rss', labelKey: 'home.tabRss', icon: iconRss, iconActive: iconRssActive },
+  // { key: 'rss', labelKey: 'home.tabRss', icon: iconRss, iconActive: iconRssActive },
   { key: 'apps', labelKey: 'home.tabApps', icon: iconApps, iconActive: iconAppsActive },
 ] as const;
 

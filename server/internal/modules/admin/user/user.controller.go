@@ -162,6 +162,40 @@ func (ctrl *Controller) UpdateStatus(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
+// UpdateUsername godoc
+// @Summary      Update username
+// @Description  Change a user's username (admin only)
+// @Tags         admin-user
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id      path string                true "User ID"
+// @Param        request body UpdateUsernameRequest true "Username Request"
+// @Success      200  {object}  utils.BaseResponse[UserDetail]
+// @Failure      400  {object}  utils.APIError
+// @Failure      401  {object}  utils.APIError
+// @Failure      403  {object}  utils.APIError
+// @Failure      404  {object}  utils.APIError
+// @Failure      409  {object}  utils.APIError
+// @Router       /admin/users/{id}/username [patch]
+func (ctrl *Controller) UpdateUsername(c *gin.Context) (interface{}, error) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid user id")
+	}
+
+	var req UpdateUsernameRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	resp, err := ctrl.service.UpdateUsername(id, req.Username)
+	if err != nil {
+		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+	}
+	return resp, nil
+}
+
 // DeleteUser godoc
 // @Summary      Delete user
 // @Description  Soft-delete a user account (admin only)

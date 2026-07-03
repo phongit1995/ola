@@ -82,6 +82,20 @@ func (r *Repository) FindByID(id uuid.UUID) (*models.User, error) {
 	return &user, nil
 }
 
+func (r *Repository) UsernameTaken(username string, exclude uuid.UUID) (bool, error) {
+	var count int64
+	err := r.db.Model(&models.User{}).
+		Where("LOWER(username) = LOWER(?) AND id <> ?", username, exclude).
+		Count(&count).Error
+	return count > 0, err
+}
+
+func (r *Repository) SetUsername(id uuid.UUID, username string) error {
+	return r.db.Model(&models.User{}).
+		Where("id = ?", id).
+		Update("username", username).Error
+}
+
 func (r *Repository) SetActive(id uuid.UUID, active bool) error {
 	return r.db.Model(&models.User{}).
 		Where("id = ?", id).

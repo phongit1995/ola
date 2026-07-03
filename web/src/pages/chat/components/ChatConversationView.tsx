@@ -9,13 +9,15 @@ import {
   FullScreenOverlay,
   ListOptionDialog,
   DateSeparator,
+  MessageActionSheet,
+  type MessageSheetAction,
   ScreenHeader,
   SmileyInput,
   Spinner,
   type SmileyInputHandle,
   type ListOption,
 } from '@components';
-import { colorForName, hidePeerCard, isPeerCardHidden, isSameDay, kulToken, toast } from '@lib';
+import { colorForName, compressImageForUpload, hidePeerCard, isPeerCardHidden, isSameDay, kulToken, toast } from '@lib';
 import moreIcon from '@/assets/icons/chat/ic_more_white.png';
 import likeIcon from '@/assets/icons/chat/smiley_35.png';
 import { useChatStore } from '@/store/chat/chatStore';
@@ -26,7 +28,6 @@ import { toBubble } from '../chatView';
 import { formatLastActive } from '../friends';
 import { useLongPress } from '@hooks';
 import { MessageRow } from './MessageRow';
-import { MessageActionSheet } from './MessageActionSheet';
 import { TransferKenDialog } from './TransferKenDialog';
 import { TradingVipDialog } from './TradingVipDialog';
 import { VoicePreviewBar } from './VoicePreviewBar';
@@ -242,17 +243,40 @@ export function ChatConversationView({
     setOpenTab(null);
   }
 
+  function messageSheetActions(message: ChatMessage): MessageSheetAction[] {
+    const isOwn = message.direction === 'out';
+    const actions: MessageSheetAction[] = [];
+    if (isOwn && message.kind === 'text') {
+      actions.push({ key: 'edit', label: t('chat.actionEdit'), onSelect: () => startEdit(message) });
+    }
+    if (isOwn) {
+      actions.push({
+        key: 'delete',
+        label: t('chat.actionDelete'),
+        destructive: true,
+        onSelect: () => setDeleteTarget(message),
+      });
+    }
+    return actions;
+  }
+
   function cancelEdit() {
     setEditing(null);
     setDraft('');
   }
 
-  function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(event.target.files ?? []);
     event.target.value = '';
-    if (files.length > 0) {
-      files.forEach((file) => void sendImage(file));
-      setOpenTab(null);
+    if (files.length === 0) return;
+    setOpenTab(null);
+    for (const file of files) {
+      try {
+        const prepared = await compressImageForUpload(file);
+        await sendImage(prepared);
+      } catch {
+        toast.error(t('chat.imageError'));
+      }
     }
   }
 
@@ -557,11 +581,8 @@ export function ChatConversationView({
 
       {actionTarget != null && (
         <MessageActionSheet
-          message={actionTarget}
-          isOwn={actionTarget.direction === 'out'}
+          actions={messageSheetActions(actionTarget)}
           onReact={(type) => void reactToMessage(actionTarget.id, type)}
-          onEdit={() => startEdit(actionTarget)}
-          onDelete={() => setDeleteTarget(actionTarget)}
           onClose={() => setActionTarget(null)}
         />
       )}

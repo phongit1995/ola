@@ -7,6 +7,7 @@ import {
   CommentOutlined,
   CrownOutlined,
   GiftOutlined,
+  LockOutlined,
   LogoutOutlined,
   RocketOutlined,
   SmileOutlined,
@@ -15,6 +16,7 @@ import {
   UserOutlined,
 } from '@ant-design/icons'
 import { AdminAuthService } from '@/services/adminAuth.service'
+import { ChangePasswordModal } from '@/pages/ChangePasswordModal'
 import { useAuthStore } from '@/store/authStore'
 
 const { Sider, Header, Content } = Layout
@@ -70,6 +72,7 @@ export function AdminLayout() {
   const navigate = useNavigate()
   const location = useLocation()
   const [collapsed, setCollapsed] = useState(false)
+  const [passwordOpen, setPasswordOpen] = useState(false)
   const admin = useAuthStore((s) => s.admin)
   const clear = useAuthStore((s) => s.clear)
 
@@ -141,6 +144,12 @@ export function AdminLayout() {
             menu={{
               items: [
                 {
+                  key: 'change-password',
+                  icon: <LockOutlined />,
+                  label: 'Đổi mật khẩu',
+                  onClick: () => setPasswordOpen(true),
+                },
+                {
                   key: 'logout',
                   icon: <LogoutOutlined />,
                   label: 'Đăng xuất',
@@ -166,6 +175,8 @@ export function AdminLayout() {
           <Outlet />
         </Content>
       </Layout>
+
+      <ChangePasswordModal open={passwordOpen} onClose={() => setPasswordOpen(false)} />
     </Layout>
   )
 }

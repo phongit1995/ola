@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { UserService } from '@services';
 import { ApiError, colorForName, toast } from '@lib';
@@ -6,8 +6,10 @@ import type { Gender, UpdateProfileRequest } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
 import maleIcon from '@/assets/icons/chat/ic_indicate_male.png';
 import femaleIcon from '@/assets/icons/chat/ic_indicate_female.png';
+import cameraIcon from '@/assets/icons/profile/ic_action_camera.png';
 import { Avatar } from '@components';
-import { INPUT_CLASS, PHONE_PATTERN } from './constants';
+import { CoverImageEditor } from './components/CoverImageEditor';
+import { COVER_ASPECT, INPUT_CLASS, PHONE_PATTERN } from './constants';
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -45,7 +47,7 @@ function AvatarPicker({ avatar, nick, uploading, onPick }: AvatarPickerProps) {
         className="relative"
       >
         {avatar ? (
-          <img src={avatar} alt="" className="h-24 w-24 rounded-full object-cover" />
+          <img src={avatar} alt="" className="h-24 w-24 rounded-full object-cover ring-4 ring-white" />
         ) : (
           <Avatar name={nick} color={colorForName(nick)} size={96} />
         )}
@@ -95,17 +97,56 @@ export function EditProfileMePage({ onClose }: { onClose: () => void }) {
 
   const [avatar, setAvatar] = useState(user?.avatar ?? '');
   const [fullName, setFullName] = useState(user?.fullName ?? '');
-  const [bio, setBio] = useState(user?.bio ?? '');
   const [phone, setPhone] = useState(user?.phone ?? '');
   const [gender, setGender] = useState<Gender>(user?.gender ?? 'male');
   const [dateOfBirth, setDateOfBirth] = useState(user?.dateOfBirth ?? '');
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [uploadingCover, setUploadingCover] = useState(false);
+  const [coverPreview, setCoverPreview] = useState<{ url: string; file: File } | null>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+
+  const clearCoverPreview = useCallback(() => {
+    setCoverPreview((prev) => {
+      if (prev) URL.revokeObjectURL(prev.url);
+      return null;
+    });
+  }, []);
+
+  useEffect(() => clearCoverPreview, [clearCoverPreview]);
+
+  const uploadCover = useCallback(
+    async (file: File) => {
+      setUploadingCover(true);
+      try {
+        const { url } = await UserService.uploadAvatar(file);
+        await UserService.updateMe({ coverPhoto: url });
+        await refreshUser();
+        toast.success(t('profileEdit.coverUpdated'));
+        return true;
+      } catch {
+        toast.error(t('profileEdit.coverError'));
+        return false;
+      } finally {
+        setUploadingCover(false);
+      }
+    },
+    [refreshUser, t]
+  );
+
+  function pickCover(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+    clearCoverPreview();
+    setCoverPreview({ url: URL.createObjectURL(file), file });
+  }
 
   if (!user) return null;
 
   const nick = user.fullName || user.username;
+  const cover = user.coverPhoto ?? '';
 
   function validate(): string | null {
     if (!fullName.trim()) return t('profileEdit.fullnameRequired');
@@ -139,7 +180,6 @@ export function EditProfileMePage({ onClose }: { onClose: () => void }) {
     const payload: UpdateProfileRequest = {
       avatar,
       fullName: fullName.trim(),
-      bio: bio.trim(),
       phone: phone.trim(),
       gender,
       dateOfBirth,
@@ -173,57 +213,91 @@ export function EditProfileMePage({ onClose }: { onClose: () => void }) {
         <span className="flex-1 truncate text-base font-medium">{t('profileEdit.title')}</span>
       </header>
 
-      <div className="flex-1 overflow-y-auto p-4">
-        {error ? (
-          <div className="mb-4 rounded bg-[#e34545]/10 px-3 py-2 text-sm text-[#e34545]">{error}</div>
-        ) : null}
-
-        <AvatarPicker avatar={avatar} nick={nick} uploading={uploading} onPick={uploadAvatar} />
-
-        <Field label={t('profileEdit.fullnameLabel')}>
+      <div className="flex-1 overflow-y-auto">
+        <div
+          className="relative h-44 w-full bg-ola-primary-light bg-cover bg-center"
+          style={cover ? { backgroundImage: `url(${cover})` } : undefined}
+        >
+          <button
+            type="button"
+            onClick={() => coverInputRef.current?.click()}
+            disabled={uploadingCover}
+            aria-label={t('profile.changeCover')}
+            className="absolute right-2 bottom-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/40 disabled:opacity-60"
+          >
+            <img src={cameraIcon} alt="" className="h-5 w-5 object-contain brightness-0 invert" />
+          </button>
+          {uploadingCover && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/30 text-sm text-white">
+              {t('common.loading')}
+            </div>
+          )}
           <input
-            className={INPUT_CLASS}
-            value={fullName}
-            onChange={(event) => setFullName(event.target.value)}
-            placeholder={t('profileEdit.fullnameHint')}
-            maxLength={100}
+            ref={coverInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            aria-label={t('profile.changeCover')}
+            onChange={pickCover}
           />
-        </Field>
+        </div>
 
-        <Field label={t('profileEdit.bioLabel')}>
-          <textarea
-            className={`${INPUT_CLASS} resize-none`}
-            value={bio}
-            onChange={(event) => setBio(event.target.value)}
-            placeholder={t('profileEdit.bioHint')}
-            maxLength={500}
-            rows={2}
+        {coverPreview && (
+          <CoverImageEditor
+            src={coverPreview.url}
+            aspect={COVER_ASPECT}
+            busy={uploadingCover}
+            onCancel={clearCoverPreview}
+            onApply={async (file) => {
+              const ok = await uploadCover(file);
+              if (ok) clearCoverPreview();
+            }}
           />
-        </Field>
+        )}
 
-        <Field label={t('profileEdit.phoneLabel')}>
-          <input
-            className={INPUT_CLASS}
-            value={phone}
-            inputMode="tel"
-            onChange={(event) => setPhone(event.target.value)}
-            placeholder={t('profileEdit.phoneHint')}
-            maxLength={20}
-          />
-        </Field>
+        <div className="p-4">
+          {error ? (
+            <div className="mb-4 rounded bg-[#e34545]/10 px-3 py-2 text-sm text-[#e34545]">{error}</div>
+          ) : null}
 
-        <Field label={t('profileEdit.genderLabel')}>
-          <GenderSelect value={gender} onChange={setGender} />
-        </Field>
+          <div className="-mt-12">
+            <AvatarPicker avatar={avatar} nick={nick} uploading={uploading} onPick={uploadAvatar} />
+          </div>
 
-        <Field label={t('profileEdit.birthdayLabel')}>
-          <input
-            type="date"
-            className={INPUT_CLASS}
-            value={dateOfBirth}
-            onChange={(event) => setDateOfBirth(event.target.value)}
-          />
-        </Field>
+          <Field label={t('profileEdit.fullnameLabel')}>
+            <input
+              className={INPUT_CLASS}
+              value={fullName}
+              onChange={(event) => setFullName(event.target.value)}
+              placeholder={t('profileEdit.fullnameHint')}
+              maxLength={100}
+            />
+          </Field>
+
+          <Field label={t('profileEdit.phoneLabel')}>
+            <input
+              className={INPUT_CLASS}
+              value={phone}
+              inputMode="tel"
+              onChange={(event) => setPhone(event.target.value)}
+              placeholder={t('profileEdit.phoneHint')}
+              maxLength={20}
+            />
+          </Field>
+
+          <Field label={t('profileEdit.genderLabel')}>
+            <GenderSelect value={gender} onChange={setGender} />
+          </Field>
+
+          <Field label={t('profileEdit.birthdayLabel')}>
+            <input
+              type="date"
+              className={INPUT_CLASS}
+              value={dateOfBirth}
+              onChange={(event) => setDateOfBirth(event.target.value)}
+            />
+          </Field>
+        </div>
       </div>
 
       <div className="flex shrink-0 gap-3 border-t border-black/12 bg-white p-4">

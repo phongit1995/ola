@@ -4,10 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"ola-chat-server/internal/constants"
 	roomEvents "ola-chat-server/internal/domain/room"
 	"ola-chat-server/internal/models"
 	userModule "ola-chat-server/internal/modules/user"
+	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/transport/kafka"
 	"ola-chat-server/internal/transport/websocket"
 	"time"
@@ -23,16 +25,18 @@ type Service struct {
 	userCache *userModule.CacheService
 	wsServer  *websocket.Server
 	producer  *kafka.Producer
+	cache     *services.CacheService
 	logger    *zap.SugaredLogger
 }
 
-func NewService(repo *Repository, redisMsg *RedisMessageRepository, userCache *userModule.CacheService, wsServer *websocket.Server, producer *kafka.Producer, logger *zap.SugaredLogger) *Service {
+func NewService(repo *Repository, redisMsg *RedisMessageRepository, userCache *userModule.CacheService, wsServer *websocket.Server, producer *kafka.Producer, cache *services.CacheService, logger *zap.SugaredLogger) *Service {
 	return &Service{
 		repo:      repo,
 		redisMsg:  redisMsg,
 		userCache: userCache,
 		wsServer:  wsServer,
 		producer:  producer,
+		cache:     cache,
 		logger:    logger.Named("[room_service]"),
 	}
 }
@@ -214,12 +218,15 @@ func (s *Service) SendMessage(ctx context.Context, userID, roomID uuid.UUID, req
 	createdAt := time.Now().UTC()
 	createdAtStr := createdAt.Format(time.RFC3339)
 
+	replyTo := s.resolveReplySnapshot(ctx, roomID.String(), req.ReplyToID)
+
 	stored := storedRoomMessage{
 		ID:        msgID,
 		RoomID:    roomID.String(),
 		SenderID:  userID.String(),
 		Content:   req.Content,
 		CreatedAt: createdAtStr,
+		ReplyTo:   replyTo,
 	}
 	data, err := json.Marshal(stored)
 	if err != nil {
@@ -240,6 +247,7 @@ func (s *Service) SendMessage(ctx context.Context, userID, roomID uuid.UUID, req
 		SenderVipEnd: senderVipEnd,
 		Content:      req.Content,
 		CreatedAt:    createdAtStr,
+		ReplyTo:      replyTo,
 	}
 
 	event := &roomEvents.RoomMessageCreatedEvent{
@@ -255,6 +263,7 @@ func (s *Service) SendMessage(ctx context.Context, userID, roomID uuid.UUID, req
 			SenderVipEnd: msg.SenderVipEnd,
 			Content:      msg.Content,
 			CreatedAt:    msg.CreatedAt,
+			ReplyTo:      toEventReplySnapshot(replyTo),
 		},
 	}
 	if err := s.producer.PublishRoomMessageCreated(ctx, event); err != nil {
@@ -348,6 +357,8 @@ func (s *Service) fetchMessages(ctx context.Context, roomID uuid.UUID, limit int
 			SenderID:  m.SenderID,
 			Content:   m.Content,
 			CreatedAt: m.CreatedAt,
+			ReplyTo:   m.ReplyTo,
+			Reactions: m.Reactions,
 		}
 		if uid, err := uuid.Parse(m.SenderID); err == nil {
 			item.SenderName, item.SenderAvatar, item.SenderGender, item.SenderVip, item.SenderVipEnd = senderFields(users[uid])
@@ -360,6 +371,223 @@ func (s *Service) fetchMessages(ctx context.Context, roomID uuid.UUID, limit int
 		resp.NextBefore = items[len(items)-1].ID
 	}
 	return resp, nil
+}
+
+func (s *Service) ToggleReaction(ctx context.Context, userID, roomID uuid.UUID, messageID, reactionType string) (*RoomMessageResponse, error) {
+	if !isAllowedRoomReactionType(reactionType) {
+		return nil, fmt.Errorf("invalid reaction type: %s", reactionType)
+	}
+	if _, err := uuid.Parse(messageID); err != nil {
+		return nil, errors.New("invalid message id")
+	}
+
+	room, err := s.getRoom(roomID)
+	if err != nil {
+		return nil, err
+	}
+	if !room.Enabled {
+		return nil, errors.New("room is disabled")
+	}
+
+	isMember, err := s.wsServer.GetRoomPresence().IsMember(ctx, roomID.String(), userID.String())
+	if err != nil {
+		return nil, err
+	}
+	if !isMember {
+		return nil, errors.New("not a room member")
+	}
+
+	rateKey := fmt.Sprintf(constants.CacheKeyRateLimitReaction, userID.String())
+	if err := s.checkRateLimit(rateKey, constants.RateLimitReactionWindowSeconds, constants.RateLimitReactionMaxRequests); err != nil {
+		return nil, err
+	}
+
+	lockKey := fmt.Sprintf(constants.CacheKeyReactionLock, messageID)
+	acquired, lockErr := s.cache.SetNX(lockKey, "1", time.Duration(constants.ReactionLockTTLSeconds)*time.Second)
+	if lockErr != nil {
+		s.logger.Warnw("Room reaction lock SetNX failed", "message_id", messageID, "error", lockErr)
+	}
+	if !acquired {
+		time.Sleep(time.Duration(constants.ReactionLockRetryMs) * time.Millisecond)
+		acquired, lockErr = s.cache.SetNX(lockKey, "1", time.Duration(constants.ReactionLockTTLSeconds)*time.Second)
+		if lockErr != nil {
+			s.logger.Warnw("Room reaction lock SetNX retry failed", "message_id", messageID, "error", lockErr)
+		}
+		if !acquired {
+			return nil, errors.New("reaction in progress, please retry")
+		}
+	}
+	defer s.cache.Delete(lockKey)
+
+	data, err := s.redisMsg.Get(ctx, roomID.String(), messageID)
+	if err != nil {
+		return nil, err
+	}
+	if data == nil {
+		return nil, errors.New("message not found")
+	}
+	var stored storedRoomMessage
+	if err := json.Unmarshal(data, &stored); err != nil {
+		return nil, err
+	}
+
+	actor, _ := s.userCache.GetUserCache(userID, true)
+	actorUsername := ""
+	if actor != nil {
+		actorUsername = actor.Username
+	}
+
+	if stored.Reactions == nil {
+		stored.Reactions = map[string][]RoomReactor{}
+	}
+	action := applyRoomReactionReplace(stored.Reactions, reactionType, RoomReactor{UserID: userID.String(), Username: actorUsername})
+	if len(stored.Reactions) == 0 {
+		stored.Reactions = nil
+	}
+
+	updated, err := json.Marshal(stored)
+	if err != nil {
+		return nil, err
+	}
+	if err := s.redisMsg.Update(ctx, roomID.String(), messageID, updated); err != nil {
+		return nil, err
+	}
+
+	if err := s.producer.PublishRoomMessageReactionUpdated(ctx, &roomEvents.RoomMessageReactionUpdatedEvent{
+		RoomID:      roomID.String(),
+		MessageID:   messageID,
+		Reactions:   toEventReactions(stored.Reactions),
+		ActorUserID: userID.String(),
+		Type:        reactionType,
+		Action:      action,
+	}); err != nil {
+		s.logger.Errorw("Failed to publish room reaction updated", "room_id", roomID, "message_id", messageID, "error", err)
+	}
+
+	item := RoomMessageResponse{
+		ID:        stored.ID,
+		RoomID:    stored.RoomID,
+		SenderID:  stored.SenderID,
+		Content:   stored.Content,
+		CreatedAt: stored.CreatedAt,
+		ReplyTo:   stored.ReplyTo,
+		Reactions: stored.Reactions,
+	}
+	if senderUUID, err := uuid.Parse(stored.SenderID); err == nil {
+		msgSender, _ := s.userCache.GetUserCache(senderUUID, true)
+		item.SenderName, item.SenderAvatar, item.SenderGender, item.SenderVip, item.SenderVipEnd = senderFields(msgSender)
+	}
+	return &item, nil
+}
+
+func (s *Service) resolveReplySnapshot(ctx context.Context, roomID, replyToID string) *RoomReplySnapshot {
+	if replyToID == "" {
+		return nil
+	}
+	data, err := s.redisMsg.Get(ctx, roomID, replyToID)
+	if err != nil || data == nil {
+		return nil
+	}
+	var orig storedRoomMessage
+	if err := json.Unmarshal(data, &orig); err != nil {
+		return nil
+	}
+	snapshot := &RoomReplySnapshot{
+		MessageID: orig.ID,
+		SenderID:  orig.SenderID,
+		Excerpt:   truncateRunes(orig.Content, constants.RoomReplyExcerptMaxRunes),
+	}
+	if senderUUID, err := uuid.Parse(orig.SenderID); err == nil {
+		if sender, _ := s.userCache.GetUserCache(senderUUID, true); sender != nil {
+			snapshot.SenderName = sender.Username
+		}
+	}
+	return snapshot
+}
+
+func (s *Service) checkRateLimit(key string, windowSecs, maxReqs int) error {
+	count, err := s.cache.Increment(key)
+	if err != nil {
+		s.logger.Errorw("Rate limit Redis failure, failing closed", "key", key, "error", err)
+		return errors.New("too many requests")
+	}
+	if count == 1 {
+		if expErr := s.cache.SetExpire(key, time.Duration(windowSecs)*time.Second); expErr != nil {
+			s.logger.Warnw("Failed to set rate limit expiry, deleting key to prevent permanent block", "key", key, "error", expErr)
+			s.cache.Delete(key)
+		}
+	}
+	if count > int64(maxReqs) {
+		return errors.New("too many requests")
+	}
+	return nil
+}
+
+func applyRoomReactionReplace(reactions map[string][]RoomReactor, reactionType string, reactor RoomReactor) string {
+	hadSameType := false
+	for t, users := range reactions {
+		filtered := make([]RoomReactor, 0, len(users))
+		for _, u := range users {
+			if u.UserID == reactor.UserID {
+				if t == reactionType {
+					hadSameType = true
+				}
+				continue
+			}
+			filtered = append(filtered, u)
+		}
+		if len(filtered) == 0 {
+			delete(reactions, t)
+		} else {
+			reactions[t] = filtered
+		}
+	}
+	if hadSameType {
+		return constants.ReactionActionRemoved
+	}
+	reactions[reactionType] = append(reactions[reactionType], reactor)
+	return constants.ReactionActionAdded
+}
+
+func isAllowedRoomReactionType(t string) bool {
+	for _, v := range constants.AllowedReactionTypes {
+		if v == t {
+			return true
+		}
+	}
+	return false
+}
+
+func truncateRunes(content string, maxRunes int) string {
+	runes := []rune(content)
+	if len(runes) <= maxRunes {
+		return content
+	}
+	return string(runes[:maxRunes])
+}
+
+func toEventReplySnapshot(snapshot *RoomReplySnapshot) *roomEvents.RoomReplySnapshot {
+	if snapshot == nil {
+		return nil
+	}
+	return &roomEvents.RoomReplySnapshot{
+		MessageID:  snapshot.MessageID,
+		SenderID:   snapshot.SenderID,
+		SenderName: snapshot.SenderName,
+		Excerpt:    snapshot.Excerpt,
+	}
+}
+
+func toEventReactions(reactions map[string][]RoomReactor) map[string][]roomEvents.RoomReactor {
+	out := map[string][]roomEvents.RoomReactor{}
+	for t, users := range reactions {
+		converted := make([]roomEvents.RoomReactor, 0, len(users))
+		for _, u := range users {
+			converted = append(converted, roomEvents.RoomReactor{UserID: u.UserID, Username: u.Username})
+		}
+		out[t] = converted
+	}
+	return out
 }
 
 func (s *Service) RoomEnabled(roomID string) (bool, error) {

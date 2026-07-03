@@ -40,6 +40,14 @@ export const AdminUserService = {
     return data.data
   },
 
+  async updateUsername(id: string, username: string): Promise<AdminUserDetail> {
+    const { data } = await http.patch<ApiResponse<AdminUserDetail>>(
+      `/admin/users/${id}/username`,
+      { username },
+    )
+    return data.data
+  },
+
   async remove(id: string): Promise<MessageResult> {
     const { data } = await http.delete<ApiResponse<MessageResult>>(`/admin/users/${id}`)
     return data.data

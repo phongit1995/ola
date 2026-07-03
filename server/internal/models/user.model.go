@@ -39,7 +39,7 @@ type User struct {
 	Phone             string     `gorm:"type:varchar(20)"`
 	FullName          string     `gorm:"type:varchar(100)"`
 	Gender            string     `gorm:"type:varchar(10);not null;default:'male'"`
-	Bio               string     `gorm:"type:text;default:'hello ola!!!'"`
+	Bio               string     `gorm:"type:text"`
 	DateOfBirth       *time.Time `gorm:"type:date"`
 	CustomInfo        JSONB      `gorm:"type:jsonb"`
 	Ken               int        `gorm:"not null;default:0"`

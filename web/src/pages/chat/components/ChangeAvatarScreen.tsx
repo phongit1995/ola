@@ -5,6 +5,7 @@ import { MeService, UserService } from '@services';
 import { colorForName, toast } from '@lib';
 import { useAuthStore } from '@/store/authStore';
 import { MIN_SOURCE_WIDTH } from '../constants';
+import { CoverCropOverlay } from '../../profile/components/CoverCropOverlay';
 
 interface ChangeAvatarScreenProps {
   open: boolean;
@@ -41,8 +42,10 @@ export function ChangeAvatarScreen({ open, onClose }: ChangeAvatarScreenProps) {
   const user = useAuthStore((s) => s.user);
   const refreshUser = useAuthStore((s) => s.refreshUser);
   const previewRef = useRef<string | null>(null);
+  const rawRef = useRef<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [rawSrc, setRawSrc] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [postToMe, setPostToMe] = useState(false);
@@ -55,13 +58,24 @@ export function ChangeAvatarScreen({ open, onClose }: ChangeAvatarScreenProps) {
     setFile(next);
   }
 
-  useEffect(() => () => {
-    if (previewRef.current) URL.revokeObjectURL(previewRef.current);
-  }, []);
+  function clearRaw() {
+    if (rawRef.current) URL.revokeObjectURL(rawRef.current);
+    rawRef.current = null;
+    setRawSrc(null);
+  }
+
+  useEffect(
+    () => () => {
+      if (previewRef.current) URL.revokeObjectURL(previewRef.current);
+      if (rawRef.current) URL.revokeObjectURL(rawRef.current);
+    },
+    []
+  );
 
   function close() {
     if (saving) return;
     setPicked(null);
+    clearRaw();
     setPostToMe(false);
     onClose();
   }
@@ -73,8 +87,8 @@ export function ChangeAvatarScreen({ open, onClose }: ChangeAvatarScreenProps) {
     const url = URL.createObjectURL(picked);
     try {
       const size = await readImageSize(url);
-      URL.revokeObjectURL(url);
       if (Math.min(size.width, size.height) < MIN_SOURCE_WIDTH) {
+        URL.revokeObjectURL(url);
         toast.error(t('avatar.tooSmall'));
         return;
       }
@@ -83,7 +97,9 @@ export function ChangeAvatarScreen({ open, onClose }: ChangeAvatarScreenProps) {
       toast.error(t('avatar.error'));
       return;
     }
-    setPicked(picked);
+    clearRaw();
+    rawRef.current = url;
+    setRawSrc(url);
   }
 
   async function save() {
@@ -111,6 +127,20 @@ export function ChangeAvatarScreen({ open, onClose }: ChangeAvatarScreenProps) {
   }
 
   if (!open || !user) return null;
+
+  if (rawSrc != null) {
+    return (
+      <CoverCropOverlay
+        src={rawSrc}
+        aspect={1}
+        onCancel={clearRaw}
+        onApply={(cropped) => {
+          setPicked(cropped);
+          clearRaw();
+        }}
+      />
+    );
+  }
 
   const nick = user.fullName || user.username;
   const shownAvatar = preview ?? user.avatar ?? '';

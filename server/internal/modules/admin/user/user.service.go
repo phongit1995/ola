@@ -2,9 +2,14 @@ package adminuser
 
 import (
 	"errors"
+	"fmt"
 	"ola-chat-server/internal/apperr"
+	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
+	"ola-chat-server/internal/services"
+	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -12,13 +17,21 @@ import (
 	"gorm.io/gorm"
 )
 
+const (
+	usernameMinLen = 2
+	usernameMaxLen = 20
+)
+
+var usernameRegex = regexp.MustCompile(`^[a-z0-9][a-z0-9._-]*[a-z0-9]$`)
+
 type Service struct {
 	repo   *Repository
+	cache  *services.CacheService
 	logger *zap.SugaredLogger
 }
 
-func NewService(repo *Repository, logger *zap.SugaredLogger) *Service {
-	return &Service{repo: repo, logger: logger.Named("[admin_user_service]")}
+func NewService(repo *Repository, cache *services.CacheService, logger *zap.SugaredLogger) *Service {
+	return &Service{repo: repo, cache: cache, logger: logger.Named("[admin_user_service]")}
 }
 
 func (s *Service) List(f ListFilter) (*ListUsersResponse, error) {
@@ -76,6 +89,47 @@ func (s *Service) SetStatus(id uuid.UUID, active bool) (*UserDetail, error) {
 	}
 
 	s.logger.Infow("Admin updated user status", "user_id", id, "is_active", active)
+
+	user, err := s.repo.FindByID(id)
+	if err != nil {
+		return nil, err
+	}
+	return toDetail(user), nil
+}
+
+func (s *Service) UpdateUsername(id uuid.UUID, username string) (*UserDetail, error) {
+	username = strings.ToLower(strings.TrimSpace(username))
+	if len(username) < usernameMinLen || len(username) > usernameMaxLen {
+		return nil, fmt.Errorf("username must be between %d and %d characters", usernameMinLen, usernameMaxLen)
+	}
+	if !usernameRegex.MatchString(username) {
+		return nil, errors.New("username may only contain lowercase letters, numbers, dot (.), hyphen (-) and underscore (_), and must start and end with a letter or number")
+	}
+
+	if _, err := s.repo.FindByID(id); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, apperr.ErrUserNotFound
+		}
+		return nil, err
+	}
+
+	taken, err := s.repo.UsernameTaken(username, id)
+	if err != nil {
+		return nil, err
+	}
+	if taken {
+		return nil, errors.New("username already exists")
+	}
+
+	if err := s.repo.SetUsername(id, username); err != nil {
+		return nil, err
+	}
+
+	if err := s.cache.Delete(fmt.Sprintf(constants.CacheKeyUserProfile, id.String())); err != nil {
+		s.logger.Warnw("Failed to invalidate user profile cache", "user_id", id, "error", err.Error())
+	}
+
+	s.logger.Infow("Admin updated username", "user_id", id, "username", username)
 
 	user, err := s.repo.FindByID(id)
 	if err != nil {

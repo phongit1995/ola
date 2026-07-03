@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"image"
@@ -21,9 +22,12 @@ import (
 
 	"ola-chat-server/internal/apperr"
 	"ola-chat-server/internal/constants"
+	meNotificationEvents "ola-chat-server/internal/domain/me-notification"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/relationships"
 	"ola-chat-server/internal/services"
+	"ola-chat-server/internal/transport/kafka"
+	"ola-chat-server/internal/utils"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -31,18 +35,20 @@ import (
 )
 
 type Service struct {
-	repo    *Repository
-	relRepo *relationships.Repository
-	s3      *services.S3Service
-	logger  *zap.SugaredLogger
+	repo          *Repository
+	relRepo       *relationships.Repository
+	s3            *services.S3Service
+	kafkaProducer *kafka.Producer
+	logger        *zap.SugaredLogger
 }
 
-func NewService(repo *Repository, relRepo *relationships.Repository, s3 *services.S3Service, logger *zap.SugaredLogger) *Service {
+func NewService(repo *Repository, relRepo *relationships.Repository, s3 *services.S3Service, kafkaProducer *kafka.Producer, logger *zap.SugaredLogger) *Service {
 	return &Service{
-		repo:    repo,
-		relRepo: relRepo,
-		s3:      s3,
-		logger:  logger.Named("[post_service]"),
+		repo:          repo,
+		relRepo:       relRepo,
+		s3:            s3,
+		kafkaProducer: kafkaProducer,
+		logger:        logger.Named("[post_service]"),
 	}
 }
 
@@ -79,6 +85,8 @@ func (s *Service) Create(userID uuid.UUID, req *CreateMeRequest) (*MeResponse, e
 		return nil, err
 	}
 
+	s.notifyMentions(userID, post.ID, post.Mentions, excerptText(content))
+
 	created, err := s.repo.GetByID(post.ID)
 	if err != nil {
 		return nil, err
@@ -95,6 +103,8 @@ func (s *Service) Update(userID, postID uuid.UUID, req *UpdateMeRequest) (*MeRes
 	if time.Since(post.CreatedAt) > editWindow {
 		return nil, errEditExpired
 	}
+
+	oldMentions := post.Mentions
 
 	if req.Content != nil {
 		post.Content = strings.TrimSpace(*req.Content)
@@ -122,6 +132,8 @@ func (s *Service) Update(userID, postID uuid.UUID, req *UpdateMeRequest) (*MeRes
 	if err := s.repo.UpdateEditable(post); err != nil {
 		return nil, err
 	}
+
+	s.notifyMentions(userID, postID, addedMentions(oldMentions, post.Mentions), excerptText(post.Content))
 
 	updated, err := s.repo.GetByID(postID)
 	if err != nil {
@@ -250,7 +262,8 @@ func (s *Service) Likers(viewerID, postID uuid.UUID, limit, offset int) (*LikerL
 }
 
 func (s *Service) React(userID, postID uuid.UUID, reactionType string) (*MeResponse, error) {
-	if _, err := s.viewablePost(userID, postID); err != nil {
+	post, err := s.viewablePost(userID, postID)
+	if err != nil {
 		return nil, err
 	}
 
@@ -262,6 +275,9 @@ func (s *Service) React(userID, postID uuid.UUID, reactionType string) (*MeRespo
 	updated, current, err := s.repo.React(postID, userID, t)
 	if err != nil {
 		return nil, err
+	}
+	if current != nil && *current == models.MeReactionLike {
+		s.createMeNotification(post.AuthorID, userID, models.MeNotificationLike, postID, nil, "")
 	}
 	resp := toMeResponse(updated, current)
 	return &resp, nil
@@ -281,7 +297,8 @@ func (s *Service) RemoveReaction(userID, postID uuid.UUID) (*MeResponse, error) 
 }
 
 func (s *Service) AddComment(viewerID, postID uuid.UUID, req *CreateCommentRequest) (*CommentResponse, error) {
-	if _, err := s.viewablePost(viewerID, postID); err != nil {
+	post, err := s.viewablePost(viewerID, postID)
+	if err != nil {
 		return nil, err
 	}
 
@@ -294,8 +311,97 @@ func (s *Service) AddComment(viewerID, postID uuid.UUID, req *CreateCommentReque
 	if err != nil {
 		return nil, err
 	}
+	commentID := created.ID
+	s.createMeNotification(post.AuthorID, viewerID, models.MeNotificationComment, postID, &commentID, excerptText(created.Content))
 	resp := toCommentResponse(created)
 	return &resp, nil
+}
+
+func (s *Service) ListNotifications(recipientID uuid.UUID, cursor string, limit int) (*MeNotificationListResponse, error) {
+	cursorTime, cursorID, err := decodeFeedCursor(cursor)
+	if err != nil {
+		return nil, err
+	}
+
+	items, hasMore, err := s.repo.ListMeNotificationsPage(recipientID, cursorTime, cursorID, limit)
+	if err != nil {
+		return nil, err
+	}
+	unread, err := s.repo.CountUnreadMeNotifications(recipientID)
+	if err != nil {
+		return nil, err
+	}
+
+	out := make([]MeNotificationResponse, 0, len(items))
+	for _, it := range items {
+		out = append(out, toMeNotificationResponse(it))
+	}
+
+	var nextCursor string
+	if hasMore && len(items) > 0 {
+		last := items[len(items)-1]
+		nextCursor = encodeFeedCursor(last.CreatedAt, last.ID)
+	}
+
+	return &MeNotificationListResponse{
+		Items:       out,
+		UnreadCount: unread,
+		NextCursor:  nextCursor,
+	}, nil
+}
+
+func (s *Service) UnreadNotificationCount(recipientID uuid.UUID) (int64, error) {
+	return s.repo.CountUnreadMeNotifications(recipientID)
+}
+
+func (s *Service) MarkAllNotificationsRead(recipientID uuid.UUID) error {
+	return s.repo.MarkAllMeNotificationsRead(recipientID)
+}
+
+func (s *Service) createMeNotification(recipientID, actorID uuid.UUID, ntype string, postID uuid.UUID, commentID *uuid.UUID, preview string) {
+	if recipientID == actorID {
+		return
+	}
+	utils.SafeGo(s.logger, func() {
+		n := &models.MeNotification{
+			RecipientID: recipientID,
+			ActorID:     actorID,
+			Type:        ntype,
+			PostID:      postID,
+			CommentID:   commentID,
+			Preview:     preview,
+		}
+		created, err := s.repo.CreateMeNotification(n)
+		if err != nil {
+			s.logger.Warnw("Failed to create me notification", "recipient_id", recipientID, "type", ntype, "error", err.Error())
+			return
+		}
+		s.publishMeNotification(recipientID, created)
+	})
+}
+
+func (s *Service) publishMeNotification(recipientID uuid.UUID, notif *models.MeNotification) {
+	if s.kafkaProducer == nil {
+		return
+	}
+	unread, err := s.repo.CountUnreadMeNotifications(recipientID)
+	if err != nil {
+		s.logger.Warnw("Failed to count unread me notifications", "recipient_id", recipientID, "error", err.Error())
+		return
+	}
+	notifBytes, err := json.Marshal(toMeNotificationResponse(notif))
+	if err != nil {
+		s.logger.Warnw("Failed to marshal me notification", "recipient_id", recipientID, "error", err.Error())
+		return
+	}
+	event := &meNotificationEvents.Event{
+		RecipientID:  recipientID.String(),
+		Notification: notifBytes,
+		UnreadCount:  unread,
+	}
+	utils.PublishAsync(s.logger, "me notification", func(ctx context.Context) error {
+		return s.kafkaProducer.PublishMeNotification(ctx, event)
+	})
 }
 
 func (s *Service) ListComments(viewerID, postID uuid.UUID, limit, offset int) (*CommentListResponse, error) {
@@ -546,20 +652,44 @@ func (s *Service) myReaction(userID, postID uuid.UUID) *models.MeReactionType {
 	return &reaction.Type
 }
 
-var mentionPattern = regexp.MustCompile(`@([A-Za-z0-9_]+)`)
+var mentionPattern = regexp.MustCompile(`@([A-Za-z0-9][A-Za-z0-9._-]*[A-Za-z0-9])`)
 
 func parseMentionUsernames(content string) []string {
 	matches := mentionPattern.FindAllStringSubmatch(content, -1)
 	seen := make(map[string]bool, len(matches))
 	names := make([]string, 0, len(matches))
 	for _, match := range matches {
-		name := match[1]
+		name := strings.ToLower(match[1])
 		if !seen[name] {
 			seen[name] = true
 			names = append(names, name)
 		}
 	}
 	return names
+}
+
+func (s *Service) notifyMentions(authorID, postID uuid.UUID, mentions models.MentionIDs, preview string) {
+	for _, idStr := range mentions {
+		mentionedID, err := uuid.Parse(idStr)
+		if err != nil {
+			continue
+		}
+		s.createMeNotification(mentionedID, authorID, models.MeNotificationMention, postID, nil, preview)
+	}
+}
+
+func addedMentions(old, current models.MentionIDs) models.MentionIDs {
+	existing := make(map[string]bool, len(old))
+	for _, id := range old {
+		existing[id] = true
+	}
+	added := make(models.MentionIDs, 0, len(current))
+	for _, id := range current {
+		if !existing[id] {
+			added = append(added, id)
+		}
+	}
+	return added
 }
 
 func (s *Service) resolveMentions(content string) models.MentionIDs {
@@ -674,6 +804,31 @@ func toAuthorResponse(u *models.User) *AuthorResponse {
 		FullName: u.FullName,
 		Avatar:   u.Avatar,
 	}
+}
+
+func toMeNotificationResponse(n *models.MeNotification) MeNotificationResponse {
+	resp := MeNotificationResponse{
+		ID:        n.ID.String(),
+		Type:      n.Type,
+		Actor:     toAuthorResponse(n.Actor),
+		PostID:    n.PostID.String(),
+		Preview:   n.Preview,
+		IsRead:    n.IsRead,
+		CreatedAt: n.CreatedAt.UTC().Format(time.RFC3339),
+	}
+	if n.CommentID != nil {
+		resp.CommentID = n.CommentID.String()
+	}
+	return resp
+}
+
+func excerptText(s string) string {
+	s = strings.TrimSpace(s)
+	runes := []rune(s)
+	if len(runes) <= 120 {
+		return s
+	}
+	return string(runes[:120]) + "…"
 }
 
 func toCommentResponse(comment *models.MeComment) CommentResponse {
