@@ -74,3 +74,7 @@ type ListFilter struct {
 type UpdateStatusRequest struct {
 	IsActive *bool `json:"isActive" binding:"required" example:"false"`
 }
+
+type UpdateUsernameRequest struct {
+	Username string `json:"username" binding:"required" example:"john_doe"`
+}
