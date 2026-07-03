@@ -4,6 +4,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import type { AuthStackParamList, MainTabParamList, RootStackParamList } from './types';
+import { AUTH_ROUTES, ROOT_ROUTES, TAB_ROUTES } from './routes';
 import { LoginScreen } from '../screens/auth/LoginScreen';
 import { RegisterScreen } from '../screens/auth/RegisterScreen';
 import { ForgotPasswordScreen } from '../screens/auth/ForgotPasswordScreen';
@@ -23,10 +24,10 @@ const RootStack = createNativeStackNavigator<RootStackParamList>();
 function AuthNavigator() {
   return (
     <AuthStack.Navigator screenOptions={{ headerShown: false }}>
-      <AuthStack.Screen name="Login" component={LoginScreen} />
-      <AuthStack.Screen name="Register" component={RegisterScreen} />
-      <AuthStack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
-      <AuthStack.Screen name="Terms" component={TermsScreen} />
+      <AuthStack.Screen name={AUTH_ROUTES.Login} component={LoginScreen} />
+      <AuthStack.Screen name={AUTH_ROUTES.Register} component={RegisterScreen} />
+      <AuthStack.Screen name={AUTH_ROUTES.ForgotPassword} component={ForgotPasswordScreen} />
+      <AuthStack.Screen name={AUTH_ROUTES.Terms} component={TermsScreen} />
     </AuthStack.Navigator>
   );
 }
@@ -57,27 +58,27 @@ function MainTabs() {
       }}
     >
       <Tabs.Screen
-        name="ChatTab"
+        name={TAB_ROUTES.Chat}
         component={ChatListScreen}
         options={{ title: t('home.tabChat'), tabBarIcon: tabIcon('chat') }}
       />
       <Tabs.Screen
-        name="RoomTab"
+        name={TAB_ROUTES.Room}
         component={RoomListScreen}
         options={{ title: t('home.tabRoom'), tabBarIcon: tabIcon('room') }}
       />
       <Tabs.Screen
-        name="MeTab"
+        name={TAB_ROUTES.Me}
         component={MeFeedScreen}
         options={{ title: t('home.tabMe'), tabBarIcon: tabIcon('me') }}
       />
       <Tabs.Screen
-        name="RssTab"
+        name={TAB_ROUTES.Rss}
         component={RssTabScreen}
         options={{ title: t('home.tabRss'), tabBarIcon: tabIcon('rss') }}
       />
       <Tabs.Screen
-        name="AppsTab"
+        name={TAB_ROUTES.Apps}
         component={AppsTabScreen}
         options={{ title: t('home.tabApps'), tabBarIcon: tabIcon('apps') }}
       />
@@ -103,9 +104,9 @@ export function RootNavigator() {
 
   return (
     <RootStack.Navigator screenOptions={{ headerShown: false }}>
-      <RootStack.Screen name="MainTabs" component={MainTabs} />
-      <RootStack.Screen name="ChatDetail" component={ChatDetailScreen} />
-      <RootStack.Screen name="RoomChat" component={RoomChatScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.MainTabs} component={MainTabs} />
+      <RootStack.Screen name={ROOT_ROUTES.ChatDetail} component={ChatDetailScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.RoomChat} component={RoomChatScreen} />
     </RootStack.Navigator>
   );
 }

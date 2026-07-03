@@ -24,6 +24,7 @@ import { ClearableInput } from '../../components/ClearableInput';
 import { LanguageSwitcher } from '../../components/LanguageSwitcher';
 import { SavedAccountGallery } from './SavedAccountGallery';
 import type { AuthStackParamList } from '../../navigation/types';
+import { AUTH_ROUTES } from '../../navigation/routes';
 import { APP_VERSION, USERNAME_MIN } from './constants';
 
 interface LoginForm {
@@ -31,7 +32,7 @@ interface LoginForm {
   password: string;
 }
 
-type Props = NativeStackScreenProps<AuthStackParamList, 'Login'>;
+type Props = NativeStackScreenProps<AuthStackParamList, typeof AUTH_ROUTES.Login>;
 
 export function LoginScreen({ navigation }: Props) {
   const { t } = useTranslation();
@@ -198,14 +199,14 @@ export function LoginScreen({ navigation }: Props) {
 
         <Pressable
           className="w-full max-w-md py-3"
-          onPress={() => navigation.navigate('ForgotPassword')}
+          onPress={() => navigation.navigate(AUTH_ROUTES.ForgotPassword)}
         >
           <Text className="text-right text-sm text-white">{t('login.forgot')}</Text>
         </Pressable>
 
         <Pressable
           className="mt-1 h-12 w-full max-w-md items-center justify-center"
-          onPress={() => navigation.navigate('Register')}
+          onPress={() => navigation.navigate(AUTH_ROUTES.Register)}
         >
           <Text className="text-xl text-white/70">{t('login.createAccount')}</Text>
         </Pressable>

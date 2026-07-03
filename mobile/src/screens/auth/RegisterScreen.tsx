@@ -18,6 +18,7 @@ import { PASSWORD_MAX, PASSWORD_MIN } from '@ola/shared/constants';
 import { LanguageSwitcher } from '../../components/LanguageSwitcher';
 import { TextField } from '../../components/TextField';
 import type { AuthStackParamList } from '../../navigation/types';
+import { AUTH_ROUTES } from '../../navigation/routes';
 import { REGISTER_USERNAME_MIN } from './constants';
 
 interface RegisterForm {
@@ -27,7 +28,7 @@ interface RegisterForm {
   agree: boolean;
 }
 
-type Props = NativeStackScreenProps<AuthStackParamList, 'Register'>;
+type Props = NativeStackScreenProps<AuthStackParamList, typeof AUTH_ROUTES.Register>;
 
 export function RegisterScreen({ navigation }: Props) {
   const { t } = useTranslation();
@@ -51,7 +52,7 @@ export function RegisterScreen({ navigation }: Props) {
     try {
       await AuthService.register({ username: data.username, password: data.password });
       setSuccess(true);
-      setTimeout(() => navigation.navigate('Login'), 800);
+      setTimeout(() => navigation.navigate(AUTH_ROUTES.Login), 800);
     } catch (err) {
       setSubmitError(resolveAuthError(err, t));
     } finally {
@@ -69,7 +70,7 @@ export function RegisterScreen({ navigation }: Props) {
         keyboardShouldPersistTaps="handled"
       >
         <View className="h-12 w-full flex-row items-center">
-          <Pressable className="-ml-2 px-2" onPress={() => navigation.navigate('Login')}>
+          <Pressable className="-ml-2 px-2" onPress={() => navigation.navigate(AUTH_ROUTES.Login)}>
             <Text className="text-base text-white">{t('common.cancel')}</Text>
           </Pressable>
           <Text className="flex-1 text-center text-base font-medium text-white">
@@ -171,7 +172,7 @@ export function RegisterScreen({ navigation }: Props) {
                       terms: (
                         <Text
                           className="font-medium text-white underline"
-                          onPress={() => navigation.navigate('Terms')}
+                          onPress={() => navigation.navigate(AUTH_ROUTES.Terms)}
                         />
                       ),
                     }}
@@ -208,7 +209,7 @@ export function RegisterScreen({ navigation }: Props) {
 
         <Pressable
           className="h-12 w-full max-w-md items-center justify-center"
-          onPress={() => navigation.navigate('Login')}
+          onPress={() => navigation.navigate(AUTH_ROUTES.Login)}
         >
           <Text className="text-xl text-white/70">{t('register.hasAccount')}</Text>
         </Pressable>

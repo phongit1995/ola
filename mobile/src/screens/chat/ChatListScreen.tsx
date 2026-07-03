@@ -8,6 +8,7 @@ import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import { createTimeFormatter, formatDateDMY, isSameDay } from '@ola/shared/lib';
 import type { Conversation } from '@ola/shared/types';
 import type { RootStackParamList } from '../../navigation/types';
+import { ROOT_ROUTES } from '../../navigation/routes';
 import { Avatar } from '../../components/Avatar';
 
 function conversationTitle(conversation: Conversation): string {
@@ -115,7 +116,7 @@ export function ChatListScreen() {
             <ConversationRow
               conversation={item}
               timeLabel={timeLabelOf(item)}
-              onPress={() => navigation.navigate('ChatDetail', { conversationId: item.id })}
+              onPress={() => navigation.navigate(ROOT_ROUTES.ChatDetail, { conversationId: item.id })}
             />
           )}
         />

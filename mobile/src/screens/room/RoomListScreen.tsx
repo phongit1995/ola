@@ -7,6 +7,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RoomService } from '@ola/shared/services';
 import type { Room } from '@ola/shared/types';
 import type { RootStackParamList } from '../../navigation/types';
+import { ROOT_ROUTES } from '../../navigation/routes';
 import { Avatar } from '../../components/Avatar';
 
 export function RoomListScreen() {
@@ -55,7 +56,7 @@ export function RoomListScreen() {
             <Pressable
               className="flex-row items-center gap-3 bg-white px-4 py-3 active:bg-neutral-100"
               onPress={() =>
-                navigation.navigate('RoomChat', { roomId: item.id, roomName: item.name })
+                navigation.navigate(ROOT_ROUTES.RoomChat, { roomId: item.id, roomName: item.name })
               }
             >
               <Avatar name={item.name} uri={item.imageUrl} />
