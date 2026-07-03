@@ -9,6 +9,7 @@ import { authTokens } from '@ola/shared/lib';
 import { SocketService } from '@ola/shared/services';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { RootNavigator } from './navigation/RootNavigator';
+import { checkForOtaUpdate } from './services/otaUpdate';
 
 function clearSession() {
   authTokens.clear();
@@ -18,6 +19,7 @@ function clearSession() {
 
 export default function App() {
   useEffect(() => {
+    if (!__DEV__) void checkForOtaUpdate();
     setOnUnauthorized(clearSession);
     const unsubscribeSession = SocketService.onSessionReplaced(() => clearSession());
     const appStateSubscription = AppState.addEventListener('change', (state) => {
