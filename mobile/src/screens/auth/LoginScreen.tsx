@@ -11,6 +11,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AuthService } from '@ola/shared/services';
 import { ApiError, USERNAME_MAX, decodeSecret } from '@ola/shared/lib';
@@ -36,6 +37,7 @@ type Props = NativeStackScreenProps<AuthStackParamList, typeof AUTH_ROUTES.Login
 
 export function LoginScreen({ navigation }: Props) {
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
   const setUser = useAuthStore((s) => s.setUser);
   const accounts = useSavedAccountsStore((s) => s.accounts);
   const saveAccount = useSavedAccountsStore((s) => s.saveAccount);
@@ -98,6 +100,7 @@ export function LoginScreen({ navigation }: Props) {
   return (
     <KeyboardAvoidingView
       className="flex-1 bg-ola-primary"
+      style={{ paddingTop: insets.top + 8 }}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView
