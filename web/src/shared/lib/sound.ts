@@ -30,12 +30,20 @@ export function unlockSounds() {
   if (soundsUnlocked) return;
   soundsUnlocked = true;
   unlockableSounds.forEach((audio) => {
+    const previousVolume = audio.volume;
+    audio.muted = true;
+    audio.volume = 0;
     audio
       .play()
       .then(() => {
         audio.pause();
         audio.currentTime = 0;
+        audio.muted = false;
+        audio.volume = previousVolume;
       })
-      .catch(() => {});
+      .catch(() => {
+        audio.muted = false;
+        audio.volume = previousVolume;
+      });
   });
 }
