@@ -12,7 +12,6 @@ import { MeFeedList } from './components/MeFeedList';
 import { MeLeftDrawer } from './components/MeLeftDrawer';
 import { MeRightDrawer } from './components/MeRightDrawer';
 import { MeComposerDialog } from './components/MeComposerDialog';
-import { MeAccountDialog } from './components/MeAccountDialog';
 import { MePostInteractions, type MePostSource } from './MePostInteractions';
 import { useMeFeed } from './useMeFeed';
 import { MeLikedPostsView } from './MeLikedPostsView';
@@ -28,6 +27,7 @@ export function MePanel() {
   const username = useAuthStore((s) => s.user?.username ?? null);
   const meId = useAuthStore((s) => s.user?.id ?? null);
   const avatarUrl = useAuthStore((s) => s.user?.avatar ?? null);
+  const coverUrl = useAuthStore((s) => s.user?.coverPhoto ?? null);
   const displayName = username ?? t('home.guest');
 
   const {
@@ -51,7 +51,6 @@ export function MePanel() {
   } = useMeFeed();
 
   const [composerOpen, setComposerOpen] = useState(false);
-  const [accountOpen, setAccountOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [marriageOpen, setMarriageOpen] = useState(false);
@@ -178,8 +177,9 @@ export function MePanel() {
               <MeLeftDrawer
                 displayName={displayName}
                 avatarUrl={avatarUrl ?? undefined}
+                coverUrl={coverUrl ?? undefined}
                 onClose={() => setDrawerOpen(false)}
-                onOpenAccount={() => setAccountOpen(true)}
+                onViewProfile={() => handlers.onOpenProfile(displayName, DEFAULT_AVATAR_COLOR)}
                 onSelect={(key) => {
                   if (key === 'marriage') {
                     setDrawerOpen(false);
@@ -209,13 +209,6 @@ export function MePanel() {
             open={composerOpen}
             onClose={() => setComposerOpen(false)}
             onPost={addPost}
-          />
-
-          <MeAccountDialog
-            open={accountOpen}
-            displayName={displayName}
-            onClose={() => setAccountOpen(false)}
-            onViewProfile={() => handlers.onOpenProfile(displayName, DEFAULT_AVATAR_COLOR)}
           />
         </>
       )}

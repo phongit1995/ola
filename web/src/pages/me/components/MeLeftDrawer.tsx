@@ -17,9 +17,10 @@ import { CLOSE_ANIMATION_MS } from '../constants';
 interface MeLeftDrawerProps {
   displayName: string;
   avatarUrl?: string;
+  coverUrl?: string;
   onClose: () => void;
   onSelect: (key: string) => void;
-  onOpenAccount: () => void;
+  onViewProfile: () => void;
 }
 
 interface DrawerItem {
@@ -32,9 +33,10 @@ interface DrawerItem {
 export function MeLeftDrawer({
   displayName,
   avatarUrl,
+  coverUrl,
   onClose,
   onSelect,
-  onOpenAccount,
+  onViewProfile,
 }: MeLeftDrawerProps) {
   const { t } = useTranslation();
   const [shown, setShown] = useState(false);
@@ -49,8 +51,8 @@ export function MeLeftDrawer({
     window.setTimeout(onClose, CLOSE_ANIMATION_MS);
   }
 
-  function openAccount() {
-    onOpenAccount();
+  function viewProfile() {
+    onViewProfile();
     handleClose();
   }
 
@@ -95,8 +97,9 @@ export function MeLeftDrawer({
         <button
           type="button"
           aria-label={t('me.viewProfile')}
-          onClick={openAccount}
-          className="relative h-28 shrink-0 bg-ola-primary-dark text-left"
+          onClick={viewProfile}
+          style={coverUrl ? { backgroundImage: `url(${coverUrl})` } : undefined}
+          className="relative h-28 shrink-0 bg-ola-primary-dark bg-cover bg-center text-left"
         >
           <span className="absolute inset-x-0 bottom-0 flex items-center gap-2 bg-linear-to-t from-black/70 to-transparent px-2 pb-2 pt-8">
             <Avatar name={displayName} src={avatarUrl} color={DEFAULT_AVATAR_COLOR} size={40} />
