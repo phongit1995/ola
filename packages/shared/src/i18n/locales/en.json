@@ -21,6 +21,18 @@
     "save": "Save",
     "saving": "Saving…"
   },
+  "cover": {
+    "cancel": "Cancel",
+    "success": "Cover picture was changed",
+    "error": "Cannot change cover picture at this time. Please try again later",
+    "tooSmall": "Image is too small, please choose a larger one",
+    "title": "Change cover picture",
+    "changeHint": "Tap the photo to choose a new one",
+    "postToMe": "Post to Me",
+    "postContent": "Changed cover picture",
+    "save": "Save",
+    "saving": "Saving…"
+  },
   "auth": {
     "errGeneric": "Something went wrong, please try again.",
     "errNetwork": "Unable to connect to the server. Please check your network.",
@@ -257,6 +269,7 @@
     "addContactEmpty": "No users found",
     "searchError": "Search failed, please try again",
     "menuChangeAvatar": "Change avatar",
+    "menuChangeCover": "Change cover picture",
     "menuLogout": "Log out",
     "menuLogoutAll": "Log out everywhere",
     "menuBuyVip": "Subscribe VIP",

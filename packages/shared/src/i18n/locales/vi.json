@@ -21,6 +21,18 @@
     "save": "Lưu",
     "saving": "Đang lưu…"
   },
+  "cover": {
+    "cancel": "Huỷ",
+    "success": "Đã đổi ảnh bìa",
+    "error": "Không thể đổi ảnh bìa vào lúc này. Vui lòng thử lại sau",
+    "tooSmall": "Ảnh quá nhỏ, vui lòng chọn ảnh lớn hơn",
+    "title": "Đổi ảnh bìa",
+    "changeHint": "Chạm vào ảnh để chọn ảnh mới",
+    "postToMe": "Đăng lên Me",
+    "postContent": "Đổi ảnh bìa mới",
+    "save": "Lưu",
+    "saving": "Đang lưu…"
+  },
   "auth": {
     "errGeneric": "Đã có lỗi xảy ra, vui lòng thử lại.",
     "errNetwork": "Không kết nối được tới máy chủ. Vui lòng kiểm tra mạng.",
@@ -257,6 +269,7 @@
     "addContactEmpty": "Không tìm thấy người dùng",
     "searchError": "Tìm kiếm thất bại, vui lòng thử lại",
     "menuChangeAvatar": "Đổi hình đại diện",
+    "menuChangeCover": "Đổi ảnh bìa",
     "menuLogout": "Đăng xuất",
     "menuLogoutAll": "Đăng xuất mọi nơi",
     "menuBuyVip": "Đăng ký VIP",

@@ -21,6 +21,7 @@ import { AddContactDialog } from './components/AddContactDialog';
 import { ComposeButton } from './components/ComposeButton';
 import { ComposeDialog } from './components/ComposeDialog';
 import { ChangeAvatarScreen } from './components/ChangeAvatarScreen';
+import { ChangeCoverScreen } from './components/ChangeCoverScreen';
 import { StatusEditDialog } from './components/StatusEditDialog';
 import { UserProfileView } from '../profile/UserProfileView';
 import { SuggestedFriendsScreen } from './components/SuggestedFriendsScreen';
@@ -61,6 +62,7 @@ export function ChatPanel() {
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [logoutAll, setLogoutAll] = useState(false);
   const [avatarOpen, setAvatarOpen] = useState(false);
+  const [coverOpen, setCoverOpen] = useState(false);
   const [statusOpen, setStatusOpen] = useState(false);
   const [suggestedOpen, setSuggestedOpen] = useState(false);
   const [requestsOpen, setRequestsOpen] = useState(false);
@@ -149,6 +151,7 @@ export function ChatPanel() {
   const contactsMenu: ListOption[] = [
     { key: 'buy-vip', label: t('chat.menuBuyVip'), onSelect: () => openApp('vip') },
     { key: 'change-avatar', label: t('chat.menuChangeAvatar'), onSelect: () => setAvatarOpen(true) },
+    { key: 'change-cover', label: t('chat.menuChangeCover'), onSelect: () => setCoverOpen(true) },
     { key: 'logout', label: t('chat.menuLogout'), onSelect: () => { setLogoutAll(false); setLogoutOpen(true); } },
     { key: 'logout-all', label: t('chat.menuLogoutAll'), onSelect: () => { setLogoutAll(true); setLogoutOpen(true); } },
   ];
@@ -305,6 +308,7 @@ export function ChatPanel() {
         }}
       />
       <ChangeAvatarScreen open={avatarOpen} onClose={() => setAvatarOpen(false)} />
+      <ChangeCoverScreen open={coverOpen} onClose={() => setCoverOpen(false)} />
       {statusOpen && <StatusEditDialog open onClose={() => setStatusOpen(false)} />}
       {profileTarget != null && (
         <UserProfileView
