@@ -3,13 +3,16 @@ import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { USERNAME_MAX, USERNAME_PATTERN } from '@ola/shared/lib';
 import type { AuthStackParamList } from '../../navigation/types';
+import { AUTH_ROUTES } from '../../navigation/routes';
+import { FORGOT_USERNAME_MIN } from './constants';
 
 interface ForgotForm {
   username: string;
 }
 
-type Props = NativeStackScreenProps<AuthStackParamList, 'ForgotPassword'>;
+type Props = NativeStackScreenProps<AuthStackParamList, typeof AUTH_ROUTES.ForgotPassword>;
 
 export function ForgotPasswordScreen({ navigation }: Props) {
   const { t } = useTranslation();
@@ -49,7 +52,12 @@ export function ForgotPasswordScreen({ navigation }: Props) {
           <Controller
             control={control}
             name="username"
-            rules={{ required: t('forgot.errUsernameRequired') }}
+            rules={{
+              required: t('forgot.errUsernameRequired'),
+              minLength: { value: FORGOT_USERNAME_MIN, message: t('forgot.errUsernameRequired') },
+              maxLength: { value: USERNAME_MAX, message: t('forgot.errUsernameRequired') },
+              pattern: { value: USERNAME_PATTERN, message: t('forgot.errUsernameFormat') },
+            }}
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
                 className="h-12 rounded-sm bg-white px-4 text-base text-neutral-900"
