@@ -17,6 +17,8 @@ import type {
   FeedCursorParams,
   PostReaction,
   UploadImagesResult,
+  MeNotificationListResult,
+  MeNotificationUnreadResult,
 } from '../types';
 
 export class MeService {
@@ -89,5 +91,17 @@ export class MeService {
 
   static deleteComment(id: string, commentId: string): Promise<MessageResult> {
     return http.del<MessageResult>(API_PATH.me.comment(id, commentId));
+  }
+
+  static notifications(params: FeedCursorParams = {}): Promise<MeNotificationListResult> {
+    return http.get<MeNotificationListResult>(API_PATH.me.notifications, { params });
+  }
+
+  static notificationsUnreadCount(): Promise<MeNotificationUnreadResult> {
+    return http.get<MeNotificationUnreadResult>(API_PATH.me.notificationsUnread);
+  }
+
+  static markNotificationsRead(): Promise<MessageResult> {
+    return http.post<MessageResult>(API_PATH.me.notificationsReadAll, {});
   }
 }

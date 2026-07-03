@@ -6,16 +6,18 @@ import (
 	callEvents "ola-chat-server/internal/domain/call"
 	conversationEvents "ola-chat-server/internal/domain/conversation"
 	kenChestEvents "ola-chat-server/internal/domain/kenchest"
+	meNotificationEvents "ola-chat-server/internal/domain/me-notification"
 	messageEvents "ola-chat-server/internal/domain/message"
 	roomEvents "ola-chat-server/internal/domain/room"
 )
 
 type KafkaEventAdapter struct {
-	messageHandler      *messageEvents.EventHandler
-	conversationHandler *conversationEvents.EventHandler
-	callHandler         *callEvents.EventHandler
-	roomHandler         *roomEvents.EventHandler
-	kenChestHandler     *kenChestEvents.EventHandler
+	messageHandler        *messageEvents.EventHandler
+	conversationHandler   *conversationEvents.EventHandler
+	callHandler           *callEvents.EventHandler
+	roomHandler           *roomEvents.EventHandler
+	kenChestHandler       *kenChestEvents.EventHandler
+	meNotificationHandler *meNotificationEvents.EventHandler
 }
 
 func NewKafkaEventAdapter(
@@ -24,13 +26,15 @@ func NewKafkaEventAdapter(
 	callHandler *callEvents.EventHandler,
 	roomHandler *roomEvents.EventHandler,
 	kenChestHandler *kenChestEvents.EventHandler,
+	meNotificationHandler *meNotificationEvents.EventHandler,
 ) *KafkaEventAdapter {
 	return &KafkaEventAdapter{
-		messageHandler:      messageHandler,
-		conversationHandler: conversationHandler,
-		callHandler:         callHandler,
-		roomHandler:         roomHandler,
-		kenChestHandler:     kenChestHandler,
+		messageHandler:        messageHandler,
+		conversationHandler:   conversationHandler,
+		callHandler:           callHandler,
+		roomHandler:           roomHandler,
+		kenChestHandler:       kenChestHandler,
+		meNotificationHandler: meNotificationHandler,
 	}
 }
 
@@ -102,6 +106,10 @@ func (a *KafkaEventAdapter) HandleKenChestClosed(ctx context.Context, message []
 	return a.kenChestHandler.OnClosed(ctx, message)
 }
 
+func (a *KafkaEventAdapter) HandleMeNotification(ctx context.Context, message []byte) error {
+	return a.meNotificationHandler.OnCreated(ctx, message)
+}
+
 func RegisterEventHandlers(consumer *Consumer, adapter *KafkaEventAdapter) {
 	consumer.RegisterHandler(constants.KafkaTopicMessageCreated, adapter.HandleMessageCreated)
 	consumer.RegisterHandler(constants.KafkaTopicMessageDeleted, adapter.HandleMessageDeleted)
@@ -120,4 +128,5 @@ func RegisterEventHandlers(consumer *Consumer, adapter *KafkaEventAdapter) {
 	consumer.RegisterHandler(constants.KafkaTopicRoomMessageReactionUpdated, adapter.HandleRoomMessageReactionUpdated)
 	consumer.RegisterHandler(constants.KafkaTopicKenChestAvailable, adapter.HandleKenChestAvailable)
 	consumer.RegisterHandler(constants.KafkaTopicKenChestClosed, adapter.HandleKenChestClosed)
+	consumer.RegisterHandler(constants.KafkaTopicMeNotification, adapter.HandleMeNotification)
 }

@@ -54,6 +54,9 @@ export const API_PATH = {
     likers: (id: string) => `/me/${id}/likers`,
     comments: (id: string) => `/me/${id}/comments`,
     comment: (id: string, commentId: string) => `/me/${id}/comments/${commentId}`,
+    notifications: '/me/notifications',
+    notificationsUnread: '/me/notifications/unread-count',
+    notificationsReadAll: '/me/notifications/read-all',
   },
   conversations: {
     base: '/conversations',

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { HomeHeader } from '@components/HomeHeader';
 import { DEFAULT_AVATAR_COLOR, toast } from '@lib';
@@ -6,7 +6,7 @@ import editIcon from '@/assets/icons/me/ic_action_edit.png';
 import menuIcon from '@/assets/icons/me/ic_more_white.png';
 import { useAuthStore } from '@/store/authStore';
 import { useHorizontalSwipe } from '@hooks';
-import { PullToRefresh, SearchIcon } from '@components';
+import { PullToRefresh } from '@components';
 import { MeTabBar } from './components/MeTabBar';
 import { MeFeedList } from './components/MeFeedList';
 import { MeLeftDrawer } from './components/MeLeftDrawer';
@@ -17,7 +17,11 @@ import { MePostInteractions, type MePostSource } from './MePostInteractions';
 import { useMeFeed } from './useMeFeed';
 import { MeLikedPostsView } from './MeLikedPostsView';
 import { MeVisitorsView } from './MeVisitorsView';
+import { MeNotificationsView } from './MeNotificationsView';
 import { MarriageView } from '../marriage/MarriageView';
+import { useMeNotificationStore } from '@ola/shared/stores/meNotificationStore';
+import bellIcon from '@/assets/icons/me/ic_action_notification.png';
+import searchIcon from '@/assets/icons/me/ic_action_search.png';
 
 export function MePanel() {
   const { t } = useTranslation();
@@ -53,6 +57,13 @@ export function MePanel() {
   const [marriageOpen, setMarriageOpen] = useState(false);
   const [likedOpen, setLikedOpen] = useState(false);
   const [visitorsOpen, setVisitorsOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const unreadCount = useMeNotificationStore((s) => s.unreadCount);
+  const refreshUnread = useMeNotificationStore((s) => s.refreshUnread);
+
+  useEffect(() => {
+    void refreshUnread();
+  }, [refreshUnread]);
 
   const swipeHandlers = useHorizontalSwipe({ onSwipeLeft: () => setSearchOpen(true) });
 
@@ -66,6 +77,10 @@ export function MePanel() {
 
   if (visitorsOpen) {
     return <MeVisitorsView onClose={() => setVisitorsOpen(false)} />;
+  }
+
+  if (notifOpen) {
+    return <MeNotificationsView onClose={() => setNotifOpen(false)} />;
   }
 
   const source: MePostSource = {
@@ -98,11 +113,26 @@ export function MePanel() {
             <MeTabBar active={tab} onChange={setTab} />
             <button
               type="button"
+              aria-label={t('me.notifTitle')}
+              onClick={() => setNotifOpen(true)}
+              className="flex h-12 w-10 shrink-0 items-center justify-center"
+            >
+              <span className="relative">
+                <img src={bellIcon} alt="" className="h-6 w-6 object-contain brightness-0 invert" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 right-0 flex h-4 min-w-4 items-center justify-center rounded-full border-2 border-white bg-ola-accent px-1 text-[10px] font-bold text-white">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
+              </span>
+            </button>
+            <button
+              type="button"
               aria-label={t('me.openSearch')}
               onClick={() => setSearchOpen(true)}
               className="flex h-12 w-10 shrink-0 items-center justify-center"
             >
-              <SearchIcon className="h-5 w-5 text-white" />
+              <img src={searchIcon} alt="" className="h-6 w-6 object-contain brightness-0 invert" />
             </button>
           </HomeHeader>
 

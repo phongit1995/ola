@@ -465,3 +465,63 @@ func (ctrl *Controller) Likers(c *gin.Context) (interface{}, error) {
 	}
 	return resp, nil
 }
+
+// ListNotifications godoc
+// @Summary      List my ME notifications (like/comment on my posts)
+// @Tags         me
+// @Produce      json
+// @Security     BearerAuth
+// @Param        limit query int false "Page size"
+// @Param        cursor query string false "Opaque keyset cursor from previous page's nextCursor"
+// @Success      200  {object}  utils.BaseResponse[MeNotificationListResponse]
+// @Router       /me/notifications [get]
+func (ctrl *Controller) ListNotifications(c *gin.Context) (interface{}, error) {
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+	limit := utils.ParseLimit(c, 20, 100)
+	cursor := c.Query("cursor")
+	resp, err := ctrl.service.ListNotifications(userID, cursor, limit)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
+// UnreadNotificationCount godoc
+// @Summary      Count my unread ME notifications
+// @Tags         me
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200  {object}  utils.BaseResponse[map[string]int64]
+// @Router       /me/notifications/unread-count [get]
+func (ctrl *Controller) UnreadNotificationCount(c *gin.Context) (interface{}, error) {
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+	count, err := ctrl.service.UnreadNotificationCount(userID)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return map[string]int64{"count": count}, nil
+}
+
+// ReadAllNotifications godoc
+// @Summary      Mark all my ME notifications as read
+// @Tags         me
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200  {object}  map[string]string
+// @Router       /me/notifications/read-all [post]
+func (ctrl *Controller) ReadAllNotifications(c *gin.Context) (interface{}, error) {
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+	if err := ctrl.service.MarkAllNotificationsRead(userID); err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return map[string]string{"message": "all notifications marked read"}, nil
+}

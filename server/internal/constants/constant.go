@@ -18,6 +18,7 @@ const (
 	KafkaTopicRoomMessageReactionUpdated = "CHAT.ROOM.MESSAGE.REACTION_UPDATED"
 	KafkaTopicKenChestAvailable          = "CHAT.KEN.CHEST.AVAILABLE"
 	KafkaTopicKenChestClosed             = "CHAT.KEN.CHEST.CLOSED"
+	KafkaTopicMeNotification             = "CHAT.ME.NOTIFICATION"
 )
 
 func AllKafkaTopics() []string {
@@ -39,6 +40,7 @@ func AllKafkaTopics() []string {
 		KafkaTopicRoomMessageReactionUpdated,
 		KafkaTopicKenChestAvailable,
 		KafkaTopicKenChestClosed,
+		KafkaTopicMeNotification,
 	}
 }
 
@@ -118,6 +120,7 @@ const (
 	WebSocketEventPenSettled                 = "PEN_SETTLED"
 	WebSocketEventKenChestAvailable          = "KEN_CHEST_AVAILABLE"
 	WebSocketEventKenChestClosed             = "KEN_CHEST_CLOSED"
+	WebSocketEventMeNotification             = "ME_NOTIFICATION"
 )
 
 var CallRingTimeoutSeconds = 30

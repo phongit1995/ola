@@ -120,6 +120,29 @@ export interface CreateCommentRequest {
   content: string;
 }
 
+export type MeNotificationType = 'like' | 'comment' | 'mention';
+
+export interface MeNotification {
+  id: string;
+  type: MeNotificationType;
+  actor?: PostAuthor;
+  postId: string;
+  commentId?: string;
+  preview?: string;
+  isRead: boolean;
+  createdAt: string;
+}
+
+export interface MeNotificationListResult {
+  items: MeNotification[];
+  unreadCount: number;
+  nextCursor: string | null;
+}
+
+export interface MeNotificationUnreadResult {
+  count: number;
+}
+
 export interface FeedParams {
   limit?: number;
   offset?: number;

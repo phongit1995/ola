@@ -12,21 +12,9 @@
     "./lib": "./src/lib/index.ts",
     "./types": "./src/types/index.ts",
     "./services": "./src/services/index.ts",
-    "./stores/authStore": "./src/stores/authStore.ts",
-    "./stores/savedAccountsStore": "./src/stores/savedAccountsStore.ts",
-    "./stores/toastStore": "./src/stores/toastStore.ts",
-    "./stores/roomChatStore": "./src/stores/roomChatStore.ts",
-    "./stores/roomHelpers": "./src/stores/roomHelpers.ts",
-    "./stores/roomRealtime": "./src/stores/roomRealtime.ts",
-    "./stores/chat/chatStore": "./src/stores/chat/chatStore.ts",
-    "./stores/chat/chatHelpers": "./src/stores/chat/chatHelpers.ts",
-    "./stores/chat/chatRealtime": "./src/stores/chat/chatRealtime.ts",
-    "./stores/chat/messageHelpers": "./src/stores/chat/messageHelpers.ts",
     "./i18n": "./src/i18n/index.ts",
-    "./i18n/locales/vi.json": "./src/i18n/locales/vi.json",
-    "./i18n/locales/en.json": "./src/i18n/locales/en.json",
-    "./stores/meFeedStore": "./src/stores/meFeedStore.ts",
-    "./stores/postHelpers": "./src/stores/postHelpers.ts"
+    "./i18n/locales/*.json": "./src/i18n/locales/*.json",
+    "./stores/*": "./src/stores/*.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

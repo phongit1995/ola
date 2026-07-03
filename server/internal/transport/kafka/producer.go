@@ -9,6 +9,7 @@ import (
 	callEvents "ola-chat-server/internal/domain/call"
 	conversationEvents "ola-chat-server/internal/domain/conversation"
 	kenChestEvents "ola-chat-server/internal/domain/kenchest"
+	meNotificationEvents "ola-chat-server/internal/domain/me-notification"
 	messageEvents "ola-chat-server/internal/domain/message"
 	roomEvents "ola-chat-server/internal/domain/room"
 	"time"
@@ -109,6 +110,10 @@ func (p *Producer) PublishKenChestAvailable(ctx context.Context, event *kenChest
 
 func (p *Producer) PublishKenChestClosed(ctx context.Context, event *kenChestEvents.ChestClosedEvent) error {
 	return p.publishKeyed(ctx, constants.KafkaTopicKenChestClosed, event.ID, event)
+}
+
+func (p *Producer) PublishMeNotification(ctx context.Context, event *meNotificationEvents.Event) error {
+	return p.publishKeyed(ctx, constants.KafkaTopicMeNotification, event.RecipientID, event)
 }
 
 func (p *Producer) PublishToDLQ(ctx context.Context, originalTopic string, key string, payload []byte, reason string) error {
