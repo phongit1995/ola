@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ReactionType, RoomMessage } from '@app-types';
-import { activeVipTypeId, kulImageForText, kulToken, toast } from '@lib';
-import { useAuthStore } from '@/store/authStore';
+import { kulImageForText, kulToken, toast } from '@lib';
 import { useLongPress } from '@hooks';
 import {
   AttachmentBar,
@@ -13,9 +12,12 @@ import {
   type MessageSheetAction,
   SmileyInput,
   type SmileyInputHandle,
-  VipAvatar,
 } from '@components';
 import likeIcon from '@/assets/icons/chat/smiley_35.png';
+import smileyIcon from '@/assets/icons/chat/ic_smiley.png';
+import smileyIconActive from '@/assets/icons/chat/ic_smiley_selected.png';
+import kulIcon from '@/assets/icons/chat/ic_kul.png';
+import kulIconActive from '@/assets/icons/chat/ic_kul_selected.png';
 import { buildRoomFeed } from '../messageGroups';
 import { RoomMessageGroup } from './RoomMessageGroup';
 import { RoomReactionsDialog } from './RoomReactionsDialog';
@@ -57,7 +59,6 @@ export function RoomMessagesTab({
   onDeleteMessage,
 }: RoomMessagesTabProps) {
   const { t } = useTranslation();
-  const me = useAuthStore((state) => state.user);
 
   const [draft, setDraft] = useState('');
   const [openTab, setOpenTab] = useState<AttachTab | null>(null);
@@ -189,8 +190,11 @@ export function RoomMessagesTab({
 
   const canSend = status === 'joined';
   const isTyping = draft.trim() !== '';
-  const vipTypeId = activeVipTypeId(me?.vipUsed, me?.vipEndTime);
   const feed = useMemo(() => buildRoomFeed(messages, currentUserId), [messages, currentUserId]);
+
+  function toggleTab(tab: AttachTab) {
+    setOpenTab((current) => (current === tab ? null : tab));
+  }
 
   return (
     <div className={`flex flex-1 flex-col overflow-hidden ${active ? '' : 'hidden'}`}>
@@ -248,8 +252,23 @@ export function RoomMessagesTab({
         </div>
       )}
 
-      <div className="flex shrink-0 items-center gap-2 border-t border-black/12 bg-white px-3 py-2">
-        <VipAvatar typeId={vipTypeId} className="h-9 w-9" />
+      <div className="flex shrink-0 items-center gap-1 border-t border-black/12 bg-white px-2 py-2">
+        <button
+          type="button"
+          aria-label={t('chat.attachTabSmiley')}
+          onClick={() => toggleTab('smiley')}
+          className={`flex h-9 w-9 shrink-0 select-none items-center justify-center ${openTab === 'smiley' ? 'opacity-100' : 'opacity-60'}`}
+        >
+          <img src={openTab === 'smiley' ? smileyIconActive : smileyIcon} alt="" className="h-6 w-6 object-contain" />
+        </button>
+        <button
+          type="button"
+          aria-label={t('chat.attachTabKul')}
+          onClick={() => toggleTab('kul')}
+          className={`flex h-9 w-9 shrink-0 select-none items-center justify-center ${openTab === 'kul' ? 'opacity-100' : 'opacity-60'}`}
+        >
+          <img src={openTab === 'kul' ? kulIconActive : kulIcon} alt="" className="h-6 w-6 object-contain" />
+        </button>
         <SmileyInput
           ref={composerRef}
           value={draft}
@@ -298,9 +317,10 @@ export function RoomMessagesTab({
 
       {canSend && (
         <AttachmentBar
+          showTabBar={false}
           tabs={['smiley', 'kul']}
           openTab={openTab}
-          onToggleTab={(tab) => setOpenTab((current) => (current === tab ? null : tab))}
+          onToggleTab={toggleTab}
           onPickEmoji={(code) => composerRef.current?.insertCode(code, true)}
           onBackspace={() => composerRef.current?.backspace()}
           onPickImage={() => undefined}

@@ -35,7 +35,7 @@ export interface AttachSendPayload {
 
 const ALL_TABS: AttachTab[] = ['smiley', 'kul', 'camera', 'photo', 'voice', 'more'];
 
-const TAB_ICONS: Record<AttachTab, { icon: string; iconActive: string }> = {
+const ATTACH_TAB_ICONS: Record<AttachTab, { icon: string; iconActive: string }> = {
   smiley: { icon: smileyIcon, iconActive: smileyIconActive },
   kul: { icon: kulIcon, iconActive: kulIconActive },
   camera: { icon: cameraIcon, iconActive: cameraIconActive },
@@ -54,6 +54,7 @@ interface AttachmentBarProps {
   onSend: (payload: AttachSendPayload) => void;
   onRecorded?: (blob: Blob, duration: number) => void;
   tabs?: AttachTab[];
+  showTabBar?: boolean;
 }
 
 function SmileyPanel({ onPick, onBackspace }: { onPick: (code: string) => void; onBackspace: () => void }) {
@@ -292,6 +293,7 @@ export function AttachmentBar({
   onSend,
   onRecorded,
   tabs = ALL_TABS,
+  showTabBar = true,
 }: AttachmentBarProps) {
   const { t } = useTranslation();
   const suppressPhotoClick = useRef(false);
@@ -309,10 +311,13 @@ export function AttachmentBar({
     more: t('chat.attachTabMore'),
   };
 
+  if (!showTabBar && openTab == null) return null;
+
   return (
-    <div className="shrink-0 border-t border-black/12 bg-white">
-      <div className="flex">
-        {tabs.map((tab) => {
+    <div className={`shrink-0 bg-white ${showTabBar ? 'border-t border-black/12' : ''}`}>
+      {showTabBar && (
+        <div className="flex">
+          {tabs.map((tab) => {
           const isActive = tab === openTab;
           const isPhoto = tab === 'photo';
           return (
@@ -340,11 +345,12 @@ export function AttachmentBar({
                 isActive ? 'opacity-100' : 'opacity-60'
               }`}
             >
-              <img src={isActive ? TAB_ICONS[tab].iconActive : TAB_ICONS[tab].icon} alt="" className="h-6 w-6 object-contain" />
+              <img src={isActive ? ATTACH_TAB_ICONS[tab].iconActive : ATTACH_TAB_ICONS[tab].icon} alt="" className="h-6 w-6 object-contain" />
             </button>
           );
         })}
-      </div>
+        </div>
+      )}
 
       {openTab != null && (
         <div className="h-52 overflow-y-auto border-t border-black/12">
