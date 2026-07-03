@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -14,6 +14,7 @@ import addFriendIcon from '@/assets/icons/chat/ic_add_friend.png';
 import { AuthService, RelationshipService, SocketService } from '@services';
 import { useAuthStore } from '@/store/authStore';
 import { useChatStore } from '@/store/chat/chatStore';
+import { useFriendsStore } from '@/store/friendsStore';
 import { ConversationList } from './components/ConversationList';
 import { ContactList } from './components/ContactList';
 import { BlockedListDialog } from './components/BlockedListDialog';
@@ -29,7 +30,6 @@ import { FriendRequestsScreen } from './components/FriendRequestsScreen';
 import { useMediaViewerStore } from '@/store/mediaViewerStore';
 import { useAppOverlayStore } from '@/store/appOverlayStore';
 import { mapFriendsToContacts } from './friends';
-import type { Contact } from './types';
 import type { Relationship } from '@app-types';
 
 interface ProfileTarget {
@@ -68,38 +68,28 @@ export function ChatPanel() {
   const [requestsOpen, setRequestsOpen] = useState(false);
   const openViewer = useMediaViewerStore((s) => s.openViewer);
   const openApp = useAppOverlayStore((s) => s.push);
-  const [friends, setFriends] = useState<Contact[]>([]);
-  const [requests, setRequests] = useState<Relationship[]>([]);
-  const [requestsLoading, setRequestsLoading] = useState(true);
+  const friendsRaw = useFriendsStore((s) => s.friends);
+  const requests = useFriendsStore((s) => s.requests);
+  const requestsLoading = useFriendsStore((s) => s.requestsLoading);
+  const friends = useMemo(() => mapFriendsToContacts(friendsRaw, t), [friendsRaw, t]);
   const [profileTarget, setProfileTarget] = useState<ProfileTarget | null>(null);
-  const friendsLoadedRef = useRef(false);
 
   useEffect(() => {
-    if (sub !== 'contacts' || friendsLoadedRef.current) return;
-    friendsLoadedRef.current = true;
-    RelationshipService.friends()
-      .then((res) => setFriends(mapFriendsToContacts(res.friends, t)))
-      .catch(() => {
-        friendsLoadedRef.current = false;
-        toast.error(t('chat.loadFriendsError'));
+    if (sub !== 'contacts') return;
+    const store = useFriendsStore.getState();
+    if (!store.loaded && !store.loading) {
+      store.loadFriends().then((ok) => {
+        if (!ok) toast.error(t('chat.loadFriendsError'));
       });
-    RelationshipService.pending()
-      .then((res) => setRequests(res.relationships))
-      .catch(() => undefined)
-      .finally(() => setRequestsLoading(false));
+    }
+    store.loadRequests();
   }, [sub, t]);
-
-  function reloadFriends() {
-    RelationshipService.friends()
-      .then((res) => setFriends(mapFriendsToContacts(res.friends, t)))
-      .catch(() => undefined);
-  }
 
   async function acceptRequest(relationship: Relationship) {
     try {
       await RelationshipService.respond(relationship.id, 'accept');
-      setRequests((prev) => prev.filter((item) => item.id !== relationship.id));
-      reloadFriends();
+      useFriendsStore.getState().removeRequest(relationship.id);
+      void useFriendsStore.getState().loadFriends();
       toast.success(t('chat.requestAccepted'));
     } catch {
       toast.error(t('chat.requestActionError'));
@@ -109,7 +99,7 @@ export function ChatPanel() {
   async function declineRequest(relationship: Relationship) {
     try {
       await RelationshipService.respond(relationship.id, 'reject');
-      setRequests((prev) => prev.filter((item) => item.id !== relationship.id));
+      useFriendsStore.getState().removeRequest(relationship.id);
     } catch {
       toast.error(t('chat.requestActionError'));
     }
@@ -133,6 +123,7 @@ export function ChatPanel() {
       toast.error(t('chat.logoutError'));
     } finally {
       SocketService.disconnect();
+      useFriendsStore.getState().reset();
       clearUser();
       navigate(ROUTES.login);
     }

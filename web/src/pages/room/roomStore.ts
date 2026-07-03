@@ -10,7 +10,7 @@ interface RoomState {
   loading: boolean;
   error: string | null;
   loaded: boolean;
-  fetchRooms: (params?: BrowseRoomsParams) => Promise<void>;
+  fetchRooms: (params?: BrowseRoomsParams, options?: { silent?: boolean }) => Promise<void>;
   reset: () => void;
 }
 
@@ -24,8 +24,9 @@ const initialState = {
 
 export const useRoomStore = create<RoomState>((set) => ({
   ...initialState,
-  fetchRooms: async (params) => {
-    set({ loading: true, error: null });
+  fetchRooms: async (params, options) => {
+    const silent = options?.silent ?? false;
+    if (!silent) set({ loading: true, error: null });
     try {
       const result = await RoomService.browse(params);
       set({ rooms: result.items, total: result.total, loading: false, loaded: true });
@@ -34,7 +35,7 @@ export const useRoomStore = create<RoomState>((set) => ({
         error: err instanceof Error ? err.message : i18n.t('room.loadError'),
         loading: false,
       });
-      toast.error(i18n.t('room.loadError'));
+      if (!silent) toast.error(i18n.t('room.loadError'));
     }
   },
   reset: () => set({ ...initialState }),

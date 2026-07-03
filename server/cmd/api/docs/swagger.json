@@ -1667,6 +1667,82 @@
                 }
             }
         },
+        "/admin/users/{id}/username": {
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Change a user's username (admin only)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-user"
+                ],
+                "summary": "Update username",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Username Request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_user.UpdateUsernameRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_user_UserDetail"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/users/{id}/vips": {
             "get": {
                 "security": [
@@ -3347,7 +3423,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_modules_marriage_diary.DiaryListSuccessResponse"
+                            "$ref": "#/definitions/internal_modules_marriage-diary.DiaryListSuccessResponse"
                         }
                     },
                     "403": {
@@ -3381,7 +3457,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_modules_marriage_diary.CreateDiaryRequest"
+                            "$ref": "#/definitions/internal_modules_marriage-diary.CreateDiaryRequest"
                         }
                     }
                 ],
@@ -3389,7 +3465,7 @@
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/internal_modules_marriage_diary.CreateDiarySuccessResponse"
+                            "$ref": "#/definitions/internal_modules_marriage-diary.CreateDiarySuccessResponse"
                         }
                     },
                     "400": {
@@ -3434,7 +3510,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_modules_marriage_diary.MessageSuccessResponse"
+                            "$ref": "#/definitions/internal_modules_marriage-diary.MessageSuccessResponse"
                         }
                     },
                     "403": {
@@ -3878,6 +3954,95 @@
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_MeListResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/me/notifications": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "me"
+                ],
+                "summary": "List my ME notifications (like/comment on my posts)",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Opaque keyset cursor from previous page's nextCursor",
+                        "name": "cursor",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_MeNotificationListResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/me/notifications/read-all": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "me"
+                ],
+                "summary": "Mark all my ME notifications as read",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/me/notifications/unread-count": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "me"
+                ],
+                "summary": "Count my unread ME notifications",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-map_string_int64"
                         }
                     }
                 }
@@ -6175,6 +6340,86 @@
                 }
             }
         },
+        "/user-settings": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get the authenticated user's settings (returns defaults if not set yet)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user-settings"
+                ],
+                "summary": "Get user settings",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_user-setting.UserSettingsResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Partially update the authenticated user's settings (upsert)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user-settings"
+                ],
+                "summary": "Update user settings",
+                "parameters": [
+                    {
+                        "description": "Update Settings Request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_user-setting.UpdateSettingsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_user-setting.UserSettingsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/user/me": {
             "get": {
                 "security": [
@@ -7805,6 +8050,18 @@
                 }
             }
         },
+        "internal_modules_admin_user.UpdateUsernameRequest": {
+            "type": "object",
+            "required": [
+                "username"
+            ],
+            "properties": {
+                "username": {
+                    "type": "string",
+                    "example": "john_doe"
+                }
+            }
+        },
         "internal_modules_admin_user.UserDetail": {
             "type": "object",
             "properties": {
@@ -8839,6 +9096,171 @@
                 }
             }
         },
+        "internal_modules_marriage-diary.CreateDiaryRequest": {
+            "type": "object",
+            "required": [
+                "content"
+            ],
+            "properties": {
+                "content": {
+                    "type": "string",
+                    "maxLength": 2000,
+                    "minLength": 1,
+                    "example": "Hôm nay mình đi ăn cùng nhau 🥰"
+                }
+            }
+        },
+        "internal_modules_marriage-diary.CreateDiarySuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_marriage-diary.DiaryEntryItem"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_marriage-diary.DiaryEntryItem": {
+            "type": "object",
+            "properties": {
+                "author": {
+                    "$ref": "#/definitions/internal_modules_marriage-diary.UserBrief"
+                },
+                "content": {
+                    "type": "string",
+                    "example": "Hôm nay mình đi ăn cùng nhau 🥰"
+                },
+                "createdAt": {
+                    "type": "string",
+                    "example": "2026-06-24T10:00:00Z"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                }
+            }
+        },
+        "internal_modules_marriage-diary.DiaryListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_marriage-diary.DiaryEntryItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 20
+                },
+                "offset": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "internal_modules_marriage-diary.DiaryListSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_marriage-diary.DiaryListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_marriage-diary.MessageResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "ok"
+                }
+            }
+        },
+        "internal_modules_marriage-diary.MessageSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_marriage-diary.MessageResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_marriage-diary.UserBrief": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string",
+                    "example": "https://example.com/avatar.jpg"
+                },
+                "fullName": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "john_doe"
+                }
+            }
+        },
         "internal_modules_marriage.MarriageStatusResponse": {
             "type": "object",
             "properties": {
@@ -9074,171 +9496,6 @@
             }
         },
         "internal_modules_marriage.UserBrief": {
-            "type": "object",
-            "properties": {
-                "avatar": {
-                    "type": "string",
-                    "example": "https://example.com/avatar.jpg"
-                },
-                "fullName": {
-                    "type": "string",
-                    "example": "John Doe"
-                },
-                "id": {
-                    "type": "string",
-                    "example": "550e8400-e29b-41d4-a716-446655440000"
-                },
-                "username": {
-                    "type": "string",
-                    "example": "john_doe"
-                }
-            }
-        },
-        "internal_modules_marriage_diary.CreateDiaryRequest": {
-            "type": "object",
-            "required": [
-                "content"
-            ],
-            "properties": {
-                "content": {
-                    "type": "string",
-                    "maxLength": 2000,
-                    "minLength": 1,
-                    "example": "Hôm nay mình đi ăn cùng nhau 🥰"
-                }
-            }
-        },
-        "internal_modules_marriage_diary.CreateDiarySuccessResponse": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "$ref": "#/definitions/internal_modules_marriage_diary.DiaryEntryItem"
-                },
-                "error": {
-                    "type": "string"
-                },
-                "path": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "integer"
-                },
-                "success": {
-                    "type": "boolean"
-                },
-                "timestamp": {
-                    "type": "string"
-                },
-                "traceId": {
-                    "type": "string"
-                }
-            }
-        },
-        "internal_modules_marriage_diary.DiaryEntryItem": {
-            "type": "object",
-            "properties": {
-                "author": {
-                    "$ref": "#/definitions/internal_modules_marriage_diary.UserBrief"
-                },
-                "content": {
-                    "type": "string",
-                    "example": "Hôm nay mình đi ăn cùng nhau 🥰"
-                },
-                "createdAt": {
-                    "type": "string",
-                    "example": "2026-06-24T10:00:00Z"
-                },
-                "id": {
-                    "type": "string",
-                    "example": "550e8400-e29b-41d4-a716-446655440000"
-                }
-            }
-        },
-        "internal_modules_marriage_diary.DiaryListResponse": {
-            "type": "object",
-            "properties": {
-                "items": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/internal_modules_marriage_diary.DiaryEntryItem"
-                    }
-                },
-                "limit": {
-                    "type": "integer",
-                    "example": 20
-                },
-                "offset": {
-                    "type": "integer",
-                    "example": 0
-                },
-                "total": {
-                    "type": "integer",
-                    "example": 1
-                }
-            }
-        },
-        "internal_modules_marriage_diary.DiaryListSuccessResponse": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "$ref": "#/definitions/internal_modules_marriage_diary.DiaryListResponse"
-                },
-                "error": {
-                    "type": "string"
-                },
-                "path": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "integer"
-                },
-                "success": {
-                    "type": "boolean"
-                },
-                "timestamp": {
-                    "type": "string"
-                },
-                "traceId": {
-                    "type": "string"
-                }
-            }
-        },
-        "internal_modules_marriage_diary.MessageResponse": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string",
-                    "example": "ok"
-                }
-            }
-        },
-        "internal_modules_marriage_diary.MessageSuccessResponse": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "$ref": "#/definitions/internal_modules_marriage_diary.MessageResponse"
-                },
-                "error": {
-                    "type": "string"
-                },
-                "path": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "integer"
-                },
-                "success": {
-                    "type": "boolean"
-                },
-                "timestamp": {
-                    "type": "string"
-                },
-                "traceId": {
-                    "type": "string"
-                }
-            }
-        },
-        "internal_modules_marriage_diary.UserBrief": {
             "type": "object",
             "properties": {
                 "avatar": {
@@ -9519,6 +9776,52 @@
                 },
                 "total": {
                     "type": "integer"
+                }
+            }
+        },
+        "internal_modules_me.MeNotificationListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_me.MeNotificationResponse"
+                    }
+                },
+                "nextCursor": {
+                    "type": "string"
+                },
+                "unreadCount": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_me.MeNotificationResponse": {
+            "type": "object",
+            "properties": {
+                "actor": {
+                    "$ref": "#/definitions/internal_modules_me.AuthorResponse"
+                },
+                "commentId": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isRead": {
+                    "type": "boolean"
+                },
+                "postId": {
+                    "type": "string"
+                },
+                "preview": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
                 }
             }
         },
@@ -10925,6 +11228,116 @@
                 }
             }
         },
+        "internal_modules_user-setting.UpdateSettingsRequest": {
+            "type": "object",
+            "properties": {
+                "commentPrivacy": {
+                    "type": "string",
+                    "enum": [
+                        "all",
+                        "friends"
+                    ],
+                    "example": "all"
+                },
+                "fontSize": {
+                    "type": "string",
+                    "enum": [
+                        "small",
+                        "medium",
+                        "large"
+                    ],
+                    "example": "medium"
+                },
+                "meVisibility": {
+                    "type": "string",
+                    "enum": [
+                        "all",
+                        "friends",
+                        "private"
+                    ],
+                    "example": "all"
+                },
+                "messagePrivacy": {
+                    "type": "string",
+                    "enum": [
+                        "all",
+                        "friends",
+                        "nobody"
+                    ],
+                    "example": "all"
+                },
+                "notifMessage": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "notifSound": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "notifVibrate": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "showBirthday": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "showOnline": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "wallpaperUrl": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "example": ""
+                }
+            }
+        },
+        "internal_modules_user-setting.UserSettingsResponse": {
+            "type": "object",
+            "properties": {
+                "commentPrivacy": {
+                    "type": "string",
+                    "example": "all"
+                },
+                "fontSize": {
+                    "type": "string",
+                    "example": "medium"
+                },
+                "meVisibility": {
+                    "type": "string",
+                    "example": "all"
+                },
+                "messagePrivacy": {
+                    "type": "string",
+                    "example": "all"
+                },
+                "notifMessage": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "notifSound": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "notifVibrate": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "showBirthday": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "showOnline": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "wallpaperUrl": {
+                    "type": "string",
+                    "example": ""
+                }
+            }
+        },
         "internal_modules_user.FollowListResponse": {
             "type": "object",
             "properties": {
@@ -12073,6 +12486,13 @@
                     "type": "integer",
                     "example": 4
                 }
+            }
+        },
+        "map_string_int64": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "integer",
+                "format": "int64"
             }
         },
         "ola-chat-server_internal_models.EggCategoryType": {
@@ -14055,6 +14475,32 @@
                 }
             }
         },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_me_MeNotificationListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_me.MeNotificationListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
         "ola-chat-server_internal_utils.BaseResponse-internal_modules_me_MeResponse": {
             "type": "object",
             "properties": {
@@ -14242,6 +14688,32 @@
             "properties": {
                 "data": {
                     "$ref": "#/definitions/internal_modules_room.RoomResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-map_string_int64": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/map_string_int64"
                 },
                 "error": {
                     "type": "string"

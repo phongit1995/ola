@@ -1,0 +1,69 @@
+name: Mobile Android
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Env build (dev = api-dev, production = api prod)'
+        required: true
+        default: 'dev'
+        type: choice
+        options: [dev, production]
+
+concurrency:
+  group: mobile-android-${{ github.ref }}-${{ inputs.environment }}
+  cancel-in-progress: true
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: gradle
+
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Chọn env file
+        working-directory: mobile
+        run: |
+          if [ "${{ inputs.environment }}" = "production" ]; then
+            cp env.production .env
+          else
+            cp env.development .env
+          fi
+          echo "== .env dùng để build =="
+          cat .env
+
+      - name: Build release APK
+        working-directory: mobile/android
+        run: |
+          chmod +x ./gradlew
+          ./gradlew assembleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a
+
+      - name: Gom APK
+        run: |
+          mkdir -p artifacts
+          cp mobile/android/app/build/outputs/apk/release/app-release.apk \
+            "artifacts/ola-${{ inputs.environment }}-${{ github.run_number }}.apk"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ola-android-${{ inputs.environment }}
+          path: artifacts/*.apk
+          if-no-files-found: error
+          retention-days: 14

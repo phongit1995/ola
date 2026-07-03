@@ -1,4 +1,4 @@
-package marriage_diary
+package usersetting
 
 import "go.uber.org/dig"
 
@@ -10,8 +10,8 @@ func Provider(c *dig.Container) error {
 		NewRouter,
 	}
 
-	for _, p := range providers {
-		if err := c.Provide(p); err != nil {
+	for _, provider := range providers {
+		if err := c.Provide(provider); err != nil {
 			return err
 		}
 	}

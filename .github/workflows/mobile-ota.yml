@@ -1,0 +1,75 @@
+name: Mobile OTA Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      app_version:
+        description: 'App version native mà bundle này áp (phải khớp versionName APK đã cài, vd 1.0)'
+        required: true
+        type: string
+      notes:
+        description: 'Ghi chú thay đổi'
+        required: true
+        type: string
+
+concurrency:
+  group: mobile-ota-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release-ota:
+    runs-on: ubuntu-latest
+    env:
+      OTA_REPO: ducphanvanntq/ola
+      GH_TOKEN: ${{ secrets.OTA_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Android JS bundle
+        working-directory: mobile
+        run: |
+          mkdir -p android/output
+          pnpm exec react-native bundle \
+            --platform android \
+            --dev false \
+            --minify true \
+            --entry-file index.js \
+            --bundle-output android/output/index.android.bundle \
+            --assets-dest android/output
+
+      - name: Zip bundle
+        working-directory: mobile/android/output
+        run: zip -r ../../android-bundle.zip . -x "*.DS_Store"
+
+      - name: Tính tag mới
+        id: tag
+        run: |
+          LATEST=$(gh release view --repo "$OTA_REPO" --json tagName -q .tagName 2>/dev/null || echo "v0")
+          NUM=${LATEST#v}
+          [ -z "$NUM" ] && NUM=0
+          echo "tag=v$((NUM + 1))" >> "$GITHUB_OUTPUT"
+
+      - name: Tạo OTA release
+        working-directory: mobile
+        env:
+          APP_VERSION: ${{ inputs.app_version }}
+          NOTES: ${{ inputs.notes }}
+        run: |
+          BODY=$(node -e "console.log(JSON.stringify({ app_version: process.env.APP_VERSION, notes: process.env.NOTES }))")
+          gh release create "${{ steps.tag.outputs.tag }}" \
+            --repo "$OTA_REPO" \
+            --title "${{ steps.tag.outputs.tag }}" \
+            --notes "$BODY" \
+            android-bundle.zip

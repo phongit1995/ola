@@ -2,8 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Avatar, Spinner } from '@components';
 import { colorForName } from '@lib';
-import { RelationshipService } from '@services';
-import type { Friend } from '@app-types';
+import { useFriendsStore } from '@/store/friendsStore';
 
 interface ComposerTagPanelProps {
   onMention: (username: string) => void;
@@ -11,23 +10,13 @@ interface ComposerTagPanelProps {
 
 export function ComposerTagPanel({ onMention }: ComposerTagPanelProps) {
   const { t } = useTranslation();
-  const [friends, setFriends] = useState<Friend[]>([]);
-  const [loading, setLoading] = useState(true);
+  const friends = useFriendsStore((s) => s.friends);
+  const loading = useFriendsStore((s) => s.loading);
+  const loaded = useFriendsStore((s) => s.loaded);
   const [query, setQuery] = useState('');
 
   useEffect(() => {
-    let active = true;
-    RelationshipService.friends({ limit: 200 })
-      .then((res) => {
-        if (active) setFriends(res.friends);
-      })
-      .catch(() => undefined)
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-    return () => {
-      active = false;
-    };
+    useFriendsStore.getState().ensureFriends();
   }, []);
 
   const keyword = query.trim().toLowerCase();
@@ -49,7 +38,7 @@ export function ComposerTagPanel({ onMention }: ComposerTagPanelProps) {
         className="w-full border-b border-black/8 px-3 py-2 text-sm outline-none"
       />
       <div className="max-h-44 overflow-y-auto">
-        {loading ? (
+        {loading || !loaded ? (
           <div className="flex justify-center py-4">
             <Spinner />
           </div>

@@ -15,7 +15,7 @@ import (
 	"ola-chat-server/internal/modules/ken"
 	"ola-chat-server/internal/modules/kenchest"
 	"ola-chat-server/internal/modules/marriage"
-	"ola-chat-server/internal/modules/marriage_diary"
+	marriagediary "ola-chat-server/internal/modules/marriage-diary"
 	"ola-chat-server/internal/modules/me"
 	"ola-chat-server/internal/modules/message"
 	"ola-chat-server/internal/modules/pen"
@@ -23,6 +23,7 @@ import (
 	"ola-chat-server/internal/modules/room"
 	"ola-chat-server/internal/modules/session"
 	"ola-chat-server/internal/modules/user"
+	usersetting "ola-chat-server/internal/modules/user-setting"
 	"ola-chat-server/internal/modules/vip"
 	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/transport/kafka"
@@ -67,6 +68,7 @@ func NewContainer() (*dig.Container, error) {
 		room.Provider,
 		health.Provider,
 		user.Provider,
+		usersetting.Provider,
 		relationships.Provider,
 		conversation.Provider,
 		message.Provider,
@@ -77,7 +79,7 @@ func NewContainer() (*dig.Container, error) {
 		egg.Provider,
 		kenchest.Provider,
 		marriage.Provider,
-		marriage_diary.Provider,
+		marriagediary.Provider,
 		pen.Provider,
 	}
 

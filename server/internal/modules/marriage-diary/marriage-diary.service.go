@@ -1,4 +1,4 @@
-package marriage_diary
+package marriagediary
 
 import (
 	"errors"

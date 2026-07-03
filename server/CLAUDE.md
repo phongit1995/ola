@@ -629,6 +629,9 @@ docker-compose down -v
 ### Consistent Naming
 
 - Files: `{module}.{type}.go` (e.g., `user.service.go`)
+- **Multi-word package folders (modules, domain) & their files use kebab-case** (hyphen): e.g. `internal/modules/user-setting/user-setting.service.go`, `internal/modules/marriage-diary/marriage-diary.router.go`, `internal/domain/me-notification/me-notification.handler.go`.
+  - Go package identifiers cannot contain a hyphen, so the `package` clause stays a bare word (e.g. `package usersetting`, `package marriagediary`, `package menotification`). Import the hyphenated path with an explicit alias: `marriagediary "ola-chat-server/internal/modules/marriage-diary"`, then reference as `marriagediary.Router`.
+  - Exceptions (kept snake_case on purpose): `internal/models/*.model.go` mirror snake_case DB tables (`user_setting.model.go`), and `internal/middleware` / `internal/transport` files.
 - Types: PascalCase (e.g., `UserService`)
 - Functions: PascalCase for exported, camelCase for private
 - Constants: UPPER_SNAKE_CASE

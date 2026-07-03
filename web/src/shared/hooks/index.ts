@@ -7,3 +7,4 @@ export * from './useConnectionStatus';
 export * from './useSoundUnlock';
 export * from './useReconnectOnVisible';
 export * from './useAuthSessionSync';
+export * from './useSettingsSync';
