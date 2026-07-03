@@ -362,20 +362,22 @@ func (s *Service) createMeNotification(recipientID, actorID uuid.UUID, ntype str
 	if recipientID == actorID {
 		return
 	}
-	n := &models.MeNotification{
-		RecipientID: recipientID,
-		ActorID:     actorID,
-		Type:        ntype,
-		PostID:      postID,
-		CommentID:   commentID,
-		Preview:     preview,
-	}
-	created, err := s.repo.CreateMeNotification(n)
-	if err != nil {
-		s.logger.Warnw("Failed to create me notification", "recipient_id", recipientID, "type", ntype, "error", err.Error())
-		return
-	}
-	s.publishMeNotification(recipientID, created)
+	utils.SafeGo(s.logger, func() {
+		n := &models.MeNotification{
+			RecipientID: recipientID,
+			ActorID:     actorID,
+			Type:        ntype,
+			PostID:      postID,
+			CommentID:   commentID,
+			Preview:     preview,
+		}
+		created, err := s.repo.CreateMeNotification(n)
+		if err != nil {
+			s.logger.Warnw("Failed to create me notification", "recipient_id", recipientID, "type", ntype, "error", err.Error())
+			return
+		}
+		s.publishMeNotification(recipientID, created)
+	})
 }
 
 func (s *Service) publishMeNotification(recipientID uuid.UUID, notif *models.MeNotification) {
@@ -667,18 +669,13 @@ func parseMentionUsernames(content string) []string {
 }
 
 func (s *Service) notifyMentions(authorID, postID uuid.UUID, mentions models.MentionIDs, preview string) {
-	if len(mentions) == 0 {
-		return
-	}
-	utils.SafeGo(s.logger, func() {
-		for _, idStr := range mentions {
-			mentionedID, err := uuid.Parse(idStr)
-			if err != nil {
-				continue
-			}
-			s.createMeNotification(mentionedID, authorID, models.MeNotificationMention, postID, nil, preview)
+	for _, idStr := range mentions {
+		mentionedID, err := uuid.Parse(idStr)
+		if err != nil {
+			continue
 		}
-	})
+		s.createMeNotification(mentionedID, authorID, models.MeNotificationMention, postID, nil, preview)
+	}
 }
 
 func addedMentions(old, current models.MentionIDs) models.MentionIDs {
