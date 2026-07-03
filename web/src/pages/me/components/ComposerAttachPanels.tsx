@@ -1,7 +1,7 @@
-import { Avatar, ComposerSmileyPanel } from '@components';
-import { SUGGESTED_FRIENDS } from '../../chat/data';
+import { ComposerSmileyPanel } from '@components';
 import { KUL_STICKERS, kulCode } from '../stickers';
 import { ComposerCheckInPanel, type ComposedCheckIn } from './ComposerCheckInPanel';
+import { ComposerTagPanel } from './ComposerTagPanel';
 
 type AttachPanel = 'tag' | 'checkin' | 'sticker' | 'smiley' | null;
 
@@ -21,21 +21,7 @@ export function ComposerAttachPanels({
   onSmiley,
 }: ComposerAttachPanelsProps) {
   if (panel === 'tag') {
-    return (
-      <div className="mt-2 max-h-44 overflow-y-auto rounded-md border border-black/12">
-        {SUGGESTED_FRIENDS.map((contact) => (
-          <button
-            key={contact.name}
-            type="button"
-            onClick={() => onMention(contact.name)}
-            className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-ola-primary-light"
-          >
-            <Avatar name={contact.name} color={contact.color} size={28} />
-            <span className="text-black/87">@{contact.name}</span>
-          </button>
-        ))}
-      </div>
-    );
+    return <ComposerTagPanel onMention={onMention} />;
   }
 
   if (panel === 'checkin') {

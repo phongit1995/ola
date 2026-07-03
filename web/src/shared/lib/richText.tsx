@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { SmileyText } from './SmileyText';
 
-const POST_TOKEN_PATTERN = /(@[A-Za-z0-9_]+|#[A-Za-z0-9_.]+)/g;
+const POST_TOKEN_PATTERN = /(@[A-Za-z0-9][A-Za-z0-9._-]*[A-Za-z0-9]|#[A-Za-z0-9_.]+)/g;
 
 export function renderRichText(content: string, onMention: (nick: string) => void): ReactNode[] {
   return content.split(POST_TOKEN_PATTERN).map((part, index) => {

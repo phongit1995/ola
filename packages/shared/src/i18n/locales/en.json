@@ -432,6 +432,8 @@
     "makeFriendError": "Couldn't send request",
     "composerTitle": "Post Me",
     "composerHint": "What's on your mind?",
+    "tagSearchHint": "Search friends to tag",
+    "tagEmpty": "No friends found",
     "post": "Post",
     "addPhoto": "Add photo",
     "download": "Download",

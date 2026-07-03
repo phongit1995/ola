@@ -101,7 +101,7 @@ export function MeComposerDialog({
   }
 
   function insertMention(nick: string) {
-    composerRef.current?.insertText(` @${nick}`);
+    composerRef.current?.insertText(` @${nick} `);
   }
 
   function insertSmiley(code: string) {

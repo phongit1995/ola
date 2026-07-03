@@ -644,14 +644,14 @@ func (s *Service) myReaction(userID, postID uuid.UUID) *models.MeReactionType {
 	return &reaction.Type
 }
 
-var mentionPattern = regexp.MustCompile(`@([A-Za-z0-9_]+)`)
+var mentionPattern = regexp.MustCompile(`@([A-Za-z0-9][A-Za-z0-9._-]*[A-Za-z0-9])`)
 
 func parseMentionUsernames(content string) []string {
 	matches := mentionPattern.FindAllStringSubmatch(content, -1)
 	seen := make(map[string]bool, len(matches))
 	names := make([]string, 0, len(matches))
 	for _, match := range matches {
-		name := match[1]
+		name := strings.ToLower(match[1])
 		if !seen[name] {
 			seen[name] = true
 			names = append(names, name)
