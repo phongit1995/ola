@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Dialog } from '@components';
-import { REACTION_EMOJI, REACTION_ORDER } from '@lib';
+import { REACTION_IMAGE, REACTION_ORDER } from '@lib';
 import type { RoomReactor } from '@app-types';
 
 interface RoomReactionsDialogProps {
@@ -23,7 +23,7 @@ export function RoomReactionsDialog({ open, reactions, onClose }: RoomReactionsD
         <ul className="max-h-72 divide-y divide-black/8 overflow-y-auto">
           {rows.map(({ type, reactor }) => (
             <li key={`${type}-${reactor.userId}`} className="flex items-center gap-3 py-2">
-              <span className="text-xl">{REACTION_EMOJI[type] ?? '❓'}</span>
+              <img src={REACTION_IMAGE[type]} alt={type} className="h-6 w-6 object-contain" />
               <span className="min-w-0 flex-1 truncate text-base text-black/87">
                 @{reactor.username}
               </span>
