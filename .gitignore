@@ -21,5 +21,12 @@ infra/web/deploy.env
 # Env local của web/mobile (CI tự ghi lúc build)
 web/.env
 mobile/.env
+
+# Token OTA local — KHÔNG commit
+mobile/.ota-token
+
+# Artifact build OTA local
+mobile/android-bundle.zip
+mobile/android/output/
 node_modules/
 .DS_Store
