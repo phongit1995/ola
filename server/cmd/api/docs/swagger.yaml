@@ -366,6 +366,14 @@ definitions:
     required:
     - isActive
     type: object
+  internal_modules_admin_user.UpdateUsernameRequest:
+    properties:
+      username:
+        example: john_doe
+        type: string
+    required:
+    - username
+    type: object
   internal_modules_admin_user.UserDetail:
     properties:
       avatar:
@@ -1067,6 +1075,118 @@ definitions:
       kenBalance:
         type: integer
     type: object
+  internal_modules_marriage-diary.CreateDiaryRequest:
+    properties:
+      content:
+        example: "Hôm nay mình đi ăn cùng nhau \U0001F970"
+        maxLength: 2000
+        minLength: 1
+        type: string
+    required:
+    - content
+    type: object
+  internal_modules_marriage-diary.CreateDiarySuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_marriage-diary.DiaryEntryItem'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_marriage-diary.DiaryEntryItem:
+    properties:
+      author:
+        $ref: '#/definitions/internal_modules_marriage-diary.UserBrief'
+      content:
+        example: "Hôm nay mình đi ăn cùng nhau \U0001F970"
+        type: string
+      createdAt:
+        example: "2026-06-24T10:00:00Z"
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+    type: object
+  internal_modules_marriage-diary.DiaryListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_marriage-diary.DiaryEntryItem'
+        type: array
+      limit:
+        example: 20
+        type: integer
+      offset:
+        example: 0
+        type: integer
+      total:
+        example: 1
+        type: integer
+    type: object
+  internal_modules_marriage-diary.DiaryListSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_marriage-diary.DiaryListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_marriage-diary.MessageResponse:
+    properties:
+      message:
+        example: ok
+        type: string
+    type: object
+  internal_modules_marriage-diary.MessageSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_marriage-diary.MessageResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_marriage-diary.UserBrief:
+    properties:
+      avatar:
+        example: https://example.com/avatar.jpg
+        type: string
+      fullName:
+        example: John Doe
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      username:
+        example: john_doe
+        type: string
+    type: object
   internal_modules_marriage.MarriageStatusResponse:
     properties:
       marriedAt:
@@ -1227,118 +1347,6 @@ definitions:
         type: string
     type: object
   internal_modules_marriage.UserBrief:
-    properties:
-      avatar:
-        example: https://example.com/avatar.jpg
-        type: string
-      fullName:
-        example: John Doe
-        type: string
-      id:
-        example: 550e8400-e29b-41d4-a716-446655440000
-        type: string
-      username:
-        example: john_doe
-        type: string
-    type: object
-  internal_modules_marriage_diary.CreateDiaryRequest:
-    properties:
-      content:
-        example: "Hôm nay mình đi ăn cùng nhau \U0001F970"
-        maxLength: 2000
-        minLength: 1
-        type: string
-    required:
-    - content
-    type: object
-  internal_modules_marriage_diary.CreateDiarySuccessResponse:
-    properties:
-      data:
-        $ref: '#/definitions/internal_modules_marriage_diary.DiaryEntryItem'
-      error:
-        type: string
-      path:
-        type: string
-      status:
-        type: integer
-      success:
-        type: boolean
-      timestamp:
-        type: string
-      traceId:
-        type: string
-    type: object
-  internal_modules_marriage_diary.DiaryEntryItem:
-    properties:
-      author:
-        $ref: '#/definitions/internal_modules_marriage_diary.UserBrief'
-      content:
-        example: "Hôm nay mình đi ăn cùng nhau \U0001F970"
-        type: string
-      createdAt:
-        example: "2026-06-24T10:00:00Z"
-        type: string
-      id:
-        example: 550e8400-e29b-41d4-a716-446655440000
-        type: string
-    type: object
-  internal_modules_marriage_diary.DiaryListResponse:
-    properties:
-      items:
-        items:
-          $ref: '#/definitions/internal_modules_marriage_diary.DiaryEntryItem'
-        type: array
-      limit:
-        example: 20
-        type: integer
-      offset:
-        example: 0
-        type: integer
-      total:
-        example: 1
-        type: integer
-    type: object
-  internal_modules_marriage_diary.DiaryListSuccessResponse:
-    properties:
-      data:
-        $ref: '#/definitions/internal_modules_marriage_diary.DiaryListResponse'
-      error:
-        type: string
-      path:
-        type: string
-      status:
-        type: integer
-      success:
-        type: boolean
-      timestamp:
-        type: string
-      traceId:
-        type: string
-    type: object
-  internal_modules_marriage_diary.MessageResponse:
-    properties:
-      message:
-        example: ok
-        type: string
-    type: object
-  internal_modules_marriage_diary.MessageSuccessResponse:
-    properties:
-      data:
-        $ref: '#/definitions/internal_modules_marriage_diary.MessageResponse'
-      error:
-        type: string
-      path:
-        type: string
-      status:
-        type: integer
-      success:
-        type: boolean
-      timestamp:
-        type: string
-      traceId:
-        type: string
-    type: object
-  internal_modules_marriage_diary.UserBrief:
     properties:
       avatar:
         example: https://example.com/avatar.jpg
@@ -1531,6 +1539,36 @@ definitions:
         type: integer
       total:
         type: integer
+    type: object
+  internal_modules_me.MeNotificationListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_me.MeNotificationResponse'
+        type: array
+      nextCursor:
+        type: string
+      unreadCount:
+        type: integer
+    type: object
+  internal_modules_me.MeNotificationResponse:
+    properties:
+      actor:
+        $ref: '#/definitions/internal_modules_me.AuthorResponse'
+      commentId:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: string
+      isRead:
+        type: boolean
+      postId:
+        type: string
+      preview:
+        type: string
+      type:
+        type: string
     type: object
   internal_modules_me.MeResponse:
     properties:
@@ -2497,6 +2535,88 @@ definitions:
         example: web
         type: string
     type: object
+  internal_modules_user-setting.UpdateSettingsRequest:
+    properties:
+      commentPrivacy:
+        enum:
+        - all
+        - friends
+        example: all
+        type: string
+      fontSize:
+        enum:
+        - small
+        - medium
+        - large
+        example: medium
+        type: string
+      meVisibility:
+        enum:
+        - all
+        - friends
+        - private
+        example: all
+        type: string
+      messagePrivacy:
+        enum:
+        - all
+        - friends
+        - nobody
+        example: all
+        type: string
+      notifMessage:
+        example: true
+        type: boolean
+      notifSound:
+        example: true
+        type: boolean
+      notifVibrate:
+        example: true
+        type: boolean
+      showBirthday:
+        example: true
+        type: boolean
+      showOnline:
+        example: true
+        type: boolean
+      wallpaperUrl:
+        example: ""
+        maxLength: 500
+        type: string
+    type: object
+  internal_modules_user-setting.UserSettingsResponse:
+    properties:
+      commentPrivacy:
+        example: all
+        type: string
+      fontSize:
+        example: medium
+        type: string
+      meVisibility:
+        example: all
+        type: string
+      messagePrivacy:
+        example: all
+        type: string
+      notifMessage:
+        example: true
+        type: boolean
+      notifSound:
+        example: true
+        type: boolean
+      notifVibrate:
+        example: true
+        type: boolean
+      showBirthday:
+        example: true
+        type: boolean
+      showOnline:
+        example: true
+        type: boolean
+      wallpaperUrl:
+        example: ""
+        type: string
+    type: object
   internal_modules_user.FollowListResponse:
     properties:
       limit:
@@ -3294,6 +3414,11 @@ definitions:
       typeId:
         example: 4
         type: integer
+    type: object
+  map_string_int64:
+    additionalProperties:
+      format: int64
+      type: integer
     type: object
   ola-chat-server_internal_models.EggCategoryType:
     enum:
@@ -4625,6 +4750,23 @@ definitions:
       traceId:
         type: string
     type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_me_MeNotificationListResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_me.MeNotificationListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
   ola-chat-server_internal_utils.BaseResponse-internal_modules_me_MeResponse:
     properties:
       data:
@@ -4748,6 +4890,23 @@ definitions:
     properties:
       data:
         $ref: '#/definitions/internal_modules_room.RoomResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-map_string_int64:
+    properties:
+      data:
+        $ref: '#/definitions/map_string_int64'
       error:
         type: string
       path:
@@ -5860,6 +6019,55 @@ paths:
       summary: Ban/unban user
       tags:
       - admin-user
+  /admin/users/{id}/username:
+    patch:
+      consumes:
+      - application/json
+      description: Change a user's username (admin only)
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Username Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_admin_user.UpdateUsernameRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_user_UserDetail'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Update username
+      tags:
+      - admin-user
   /admin/users/{id}/vips:
     get:
       description: List all VIP icons a user currently owns (admin only)
@@ -6917,7 +7125,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_modules_marriage_diary.DiaryListSuccessResponse'
+            $ref: '#/definitions/internal_modules_marriage-diary.DiaryListSuccessResponse'
         "403":
           description: Forbidden
           schema:
@@ -6936,14 +7144,14 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/internal_modules_marriage_diary.CreateDiaryRequest'
+          $ref: '#/definitions/internal_modules_marriage-diary.CreateDiaryRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/internal_modules_marriage_diary.CreateDiarySuccessResponse'
+            $ref: '#/definitions/internal_modules_marriage-diary.CreateDiarySuccessResponse'
         "400":
           description: Bad Request
           schema:
@@ -6971,7 +7179,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_modules_marriage_diary.MessageSuccessResponse'
+            $ref: '#/definitions/internal_modules_marriage-diary.MessageSuccessResponse'
         "403":
           description: Forbidden
           schema:
@@ -7515,6 +7723,59 @@ paths:
       security:
       - BearerAuth: []
       summary: List my own posts (public + private)
+      tags:
+      - me
+  /me/notifications:
+    get:
+      parameters:
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Opaque keyset cursor from previous page's nextCursor
+        in: query
+        name: cursor
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_MeNotificationListResponse'
+      security:
+      - BearerAuth: []
+      summary: List my ME notifications (like/comment on my posts)
+      tags:
+      - me
+  /me/notifications/read-all:
+    post:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Mark all my ME notifications as read
+      tags:
+      - me
+  /me/notifications/unread-count:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-map_string_int64'
+      security:
+      - BearerAuth: []
+      summary: Count my unread ME notifications
       tags:
       - me
   /me/users/{userId}:
@@ -8703,6 +8964,57 @@ paths:
       summary: Revoke all other sessions
       tags:
       - sessions
+  /user-settings:
+    get:
+      description: Get the authenticated user's settings (returns defaults if not
+        set yet)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_user-setting.UserSettingsResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Get user settings
+      tags:
+      - user-settings
+    put:
+      consumes:
+      - application/json
+      description: Partially update the authenticated user's settings (upsert)
+      parameters:
+      - description: Update Settings Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_user-setting.UpdateSettingsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_user-setting.UserSettingsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Update user settings
+      tags:
+      - user-settings
   /user/{id}:
     get:
       description: Get public profile by user ID (UUID) or username, including online
