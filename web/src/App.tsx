@@ -1,6 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { ReconnectingBanner, ToastViewport } from '@components';
-import { useSoundUnlock, useAuthSessionSync, useReconnectOnVisible } from '@hooks';
+import { useSoundUnlock, useAuthSessionSync, useReconnectOnVisible, useSettingsSync } from '@hooks';
 import { AppRouter } from '@/routes';
 import { useLayoutStore } from '@/store/layoutStore';
 import { useMediaViewerStore } from '@/store/mediaViewerStore';
@@ -46,6 +46,7 @@ function App() {
 
   useSoundUnlock();
   useAuthSessionSync();
+  useSettingsSync();
   useReconnectOnVisible();
   useKenRealtime();
   useMeNotificationRealtime();
