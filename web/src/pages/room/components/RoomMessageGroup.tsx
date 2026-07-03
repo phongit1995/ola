@@ -19,7 +19,7 @@ interface RoomMessageGroupProps {
   highlightedId?: string | null;
   onOpenProfile?: (nick: string, color: string) => void;
   onQuickMention?: (name: string) => void;
-  onLongPressMessage?: (id: string) => void;
+  onLongPressMessage?: (id: string, anchor: DOMRect | null) => void;
   onQuoteClick?: (messageId: string) => void;
   onShowReactions?: (id: string) => void;
 }
@@ -65,7 +65,7 @@ interface RoomBubbleProps {
   position: BubblePosition;
   highlighted: boolean;
   onMention: (nick: string) => void;
-  onLongPressMessage?: (id: string) => void;
+  onLongPressMessage?: (id: string, anchor: DOMRect | null) => void;
   onQuoteClick?: (messageId: string) => void;
 }
 
@@ -79,9 +79,9 @@ function RoomBubble({
   onQuoteClick,
 }: RoomBubbleProps) {
   const suppressClick = useRef(false);
-  const longPress = useLongPress(() => {
+  const longPress = useLongPress((anchor) => {
     suppressClick.current = true;
-    onLongPressMessage?.(message.id);
+    onLongPressMessage?.(message.id, anchor);
   });
 
   const kul = kulImageForText(message.content);
@@ -143,12 +143,12 @@ function ReactionChipsRow({
     <button
       type="button"
       onClick={() => onShowReactions?.(message.id)}
-      className={`flex flex-wrap gap-1 ${isOwn ? 'justify-end self-end' : 'self-start'}`}
+      className={`relative z-10 -mt-2 flex flex-wrap gap-1 ${isOwn ? 'justify-end self-end' : 'self-start'}`}
     >
       {chips.map((chip) => (
         <span
           key={chip.type}
-          className="flex items-center gap-0.5 rounded-full bg-white px-1.5 py-0.5 text-xs shadow-sm"
+          className="flex items-center gap-0.5 rounded-full bg-white px-1 py-px text-[10px] shadow-sm ring-1 ring-black/5"
         >
           <span>{chip.emoji}</span>
           <span className="text-black/54">{chip.count}</span>

@@ -14,6 +14,8 @@ import {
   type SmileyInputHandle,
 } from '@components';
 import likeIcon from '@/assets/icons/chat/smiley_35.png';
+import replyActionIcon from '@/assets/icons/me/ic_action_reply_gray.png';
+import deleteActionIcon from '@/assets/icons/chat/ic_menu_delete.png';
 import smileyIcon from '@/assets/icons/chat/ic_smiley.png';
 import smileyIconActive from '@/assets/icons/chat/ic_smiley_selected.png';
 import kulIcon from '@/assets/icons/chat/ic_kul.png';
@@ -62,7 +64,10 @@ export function RoomMessagesTab({
 
   const [draft, setDraft] = useState('');
   const [openTab, setOpenTab] = useState<AttachTab | null>(null);
-  const [actionTarget, setActionTarget] = useState<RoomMessage | null>(null);
+  const [actionTarget, setActionTarget] = useState<{
+    message: RoomMessage;
+    anchor: DOMRect | null;
+  } | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<RoomMessage | null>(null);
   const [reactionsTargetId, setReactionsTargetId] = useState<string | null>(null);
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
@@ -140,7 +145,10 @@ export function RoomMessagesTab({
   }, []);
 
   const handleLongPressMessage = useCallback(
-    (id: string) => setActionTarget(messageById.get(id) ?? null),
+    (id: string, anchor: DOMRect | null) => {
+      const message = messageById.get(id);
+      if (message != null) setActionTarget({ message, anchor });
+    },
     [messageById]
   );
 
@@ -168,6 +176,7 @@ export function RoomMessagesTab({
       actions.push({
         key: 'reply',
         label: t('room.actionReply'),
+        icon: replyActionIcon,
         onSelect: () => {
           onSetReplyTarget(message);
           composerRef.current?.focus();
@@ -177,6 +186,7 @@ export function RoomMessagesTab({
       actions.push({
         key: 'delete',
         label: t('chat.actionDelete'),
+        icon: deleteActionIcon,
         destructive: true,
         onSelect: () => setDeleteTarget(message),
       });
@@ -334,8 +344,10 @@ export function RoomMessagesTab({
 
       {actionTarget != null && (
         <MessageActionSheet
-          actions={sheetActions(actionTarget)}
-          onReact={(type) => onReact(actionTarget.id, type)}
+          actions={sheetActions(actionTarget.message)}
+          anchor={actionTarget.anchor}
+          showReactions={actionTarget.message.senderId !== currentUserId}
+          onReact={(type) => onReact(actionTarget.message.id, type)}
           onClose={() => setActionTarget(null)}
         />
       )}

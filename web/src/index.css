@@ -13,6 +13,7 @@
   --animate-blink: blink 1s steps(1, end) infinite;
   --animate-ola-pop: ola-pop 0.4s ease;
   --animate-ola-pop-out: ola-pop-out 0.4s ease;
+  --animate-ola-menu-in: ola-menu-in 0.14s ease-out;
   --animate-ola-fly: ola-fly 1.5s ease-in forwards;
   --animate-ola-ken-bump: ola-ken-bump 0.45s ease;
   --animate-hourglass-flip: hourglass-flip 3s ease-in-out infinite;
@@ -31,6 +32,17 @@
   50.01%,
   100% {
     opacity: 0;
+  }
+}
+
+@keyframes ola-menu-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 
