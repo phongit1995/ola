@@ -19,7 +19,7 @@ export function RoomPanel() {
   const [fullRoom, setFullRoom] = useState<RoomListItem | null>(null);
 
   useEffect(() => {
-    fetchRooms();
+    void fetchRooms(undefined, { silent: useRoomStore.getState().loaded });
   }, [fetchRooms]);
 
   const rooms = useMemo<RoomListItem[]>(
