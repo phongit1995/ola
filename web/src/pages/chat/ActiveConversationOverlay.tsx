@@ -2,6 +2,7 @@ import { colorForName } from '@lib';
 import { useChatStore } from '@/store/chat/chatStore';
 import { ChatConversationView } from './components/ChatConversationView';
 import { toConversationView } from './chatView';
+import { useFocusPresence } from './usePresence';
 
 export function ActiveConversationOverlay() {
   const currentConversationId = useChatStore((s) => s.currentConversationId);
@@ -11,8 +12,14 @@ export function ActiveConversationOverlay() {
   const peerRelationship = useChatStore((s) => s.peerRelationship);
   const closeConversation = useChatStore((s) => s.closeConversation);
 
+  const conversation =
+    currentConversationId != null
+      ? conversations.find((item) => item.id === currentConversationId) ?? null
+      : null;
+  const peerId = conversation?.otherUser?.id ?? draftRecipient?.id ?? null;
+  const live = useFocusPresence(peerId);
+
   if (currentConversationId != null) {
-    const conversation = conversations.find((item) => item.id === currentConversationId) ?? null;
     if (conversation == null) return null;
     const view = toConversationView(conversation);
     return (
@@ -22,8 +29,8 @@ export function ActiveConversationOverlay() {
         title={view.title}
         color={view.color}
         avatar={view.avatar}
-        online={peerProfile?.isOnline ?? conversation.otherUser?.isOnline ?? false}
-        lastActiveAt={peerProfile?.lastActiveAt ?? conversation.otherUser?.lastActiveAt}
+        online={live?.isOnline ?? peerProfile?.isOnline ?? conversation.otherUser?.isOnline ?? false}
+        lastActiveAt={live?.lastActiveAt ?? peerProfile?.lastActiveAt ?? conversation.otherUser?.lastActiveAt}
         blockStatus={peerRelationship?.status ?? null}
         onClose={closeConversation}
       />
@@ -36,7 +43,8 @@ export function ActiveConversationOverlay() {
         name={draftRecipient.name}
         color={colorForName(draftRecipient.name)}
         avatar={draftRecipient.avatar}
-        online={false}
+        online={live?.isOnline ?? peerProfile?.isOnline ?? false}
+        lastActiveAt={live?.lastActiveAt ?? peerProfile?.lastActiveAt}
         blockStatus={peerRelationship?.status ?? null}
         onClose={closeConversation}
       />

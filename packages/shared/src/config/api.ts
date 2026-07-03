@@ -24,6 +24,7 @@ export const API_PATH = {
     me: '/user/me',
     search: '/user/search',
     upload: '/user/upload',
+    presence: '/user/presence',
     detail: (id: string) => `/user/${id}`,
     kiss: (id: string) => `/user/${id}/kiss`,
     follow: (id: string) => `/user/${id}/follow`,
