@@ -12,6 +12,7 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import DeviceInfo from 'react-native-device-info';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AuthService } from '@ola/shared/services';
 import { ApiError, USERNAME_MAX, decodeSecret } from '@ola/shared/lib';
@@ -26,7 +27,9 @@ import { LanguageSwitcher } from '../../components/LanguageSwitcher';
 import { SavedAccountGallery } from './SavedAccountGallery';
 import type { AuthStackParamList } from '../../navigation/types';
 import { AUTH_ROUTES } from '../../navigation/routes';
-import { APP_VERSION, USERNAME_MIN } from './constants';
+import { USERNAME_MIN } from './constants';
+
+const APP_VERSION = `${DeviceInfo.getVersion()} (${DeviceInfo.getBuildNumber()})`;
 
 interface LoginForm {
   username: string;
