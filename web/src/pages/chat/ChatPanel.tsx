@@ -26,6 +26,7 @@ import { UserProfileView } from '../profile/UserProfileView';
 import { SuggestedFriendsScreen } from './components/SuggestedFriendsScreen';
 import { FriendRequestsScreen } from './components/FriendRequestsScreen';
 import { useMediaViewerStore } from '@/store/mediaViewerStore';
+import { useAppOverlayStore } from '@/store/appOverlayStore';
 import { mapFriendsToContacts } from './friends';
 import type { Contact } from './types';
 import type { Relationship } from '@app-types';
@@ -64,6 +65,7 @@ export function ChatPanel() {
   const [suggestedOpen, setSuggestedOpen] = useState(false);
   const [requestsOpen, setRequestsOpen] = useState(false);
   const openViewer = useMediaViewerStore((s) => s.openViewer);
+  const openApp = useAppOverlayStore((s) => s.push);
   const [friends, setFriends] = useState<Contact[]>([]);
   const [requests, setRequests] = useState<Relationship[]>([]);
   const [requestsLoading, setRequestsLoading] = useState(true);
@@ -145,7 +147,7 @@ export function ChatPanel() {
   ];
 
   const contactsMenu: ListOption[] = [
-    { key: 'buy-vip', label: t('chat.menuBuyVip'), onSelect: () => comingSoon() },
+    { key: 'buy-vip', label: t('chat.menuBuyVip'), onSelect: () => openApp('vip') },
     { key: 'change-avatar', label: t('chat.menuChangeAvatar'), onSelect: () => setAvatarOpen(true) },
     { key: 'logout', label: t('chat.menuLogout'), onSelect: () => { setLogoutAll(false); setLogoutOpen(true); } },
     { key: 'logout-all', label: t('chat.menuLogoutAll'), onSelect: () => { setLogoutAll(true); setLogoutOpen(true); } },
