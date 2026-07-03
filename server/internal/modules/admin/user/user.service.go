@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	usernameMinLen = 4
+	usernameMinLen = 2
 	usernameMaxLen = 20
 )
 

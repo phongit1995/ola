@@ -49,7 +49,7 @@
     "createAccount": "Tạo tài khoản Ola",
     "version": "Phiên bản",
     "errUsernameRequired": "Vui lòng nhập tên đăng nhập.",
-    "errUsernameLength": "Tên đăng nhập phải từ 4–20 ký tự.",
+    "errUsernameLength": "Tên đăng nhập phải từ 2–20 ký tự.",
     "errUsernameFormat": "Tên đăng nhập gồm chữ thường, số, dấu chấm, gạch ngang và gạch dưới; phải bắt đầu và kết thúc bằng chữ hoặc số.",
     "errPasswordRequired": "Vui lòng nhập mật khẩu.",
     "errPasswordLength": "Mật khẩu phải từ 6–20 ký tự.",

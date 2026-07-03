@@ -62,7 +62,7 @@ export function EditUsernameModal({ open, userId, currentUsername, onClose }: Ed
           normalize={(value: string) => value.toLowerCase()}
           rules={[
             { required: true, message: 'Vui lòng nhập username' },
-            { min: 4, max: 20, message: 'Username phải từ 4 đến 20 ký tự' },
+            { min: 2, max: 20, message: 'Username phải từ 2 đến 20 ký tự' },
             {
               pattern: USERNAME_PATTERN,
               message:

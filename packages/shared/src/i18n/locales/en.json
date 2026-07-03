@@ -49,7 +49,7 @@
     "createAccount": "Create an Ola account",
     "version": "Version",
     "errUsernameRequired": "Please enter your username.",
-    "errUsernameLength": "Username must be 4–20 characters.",
+    "errUsernameLength": "Username must be 2–20 characters.",
     "errUsernameFormat": "Username can contain lowercase letters, numbers, dot, hyphen and underscore, but must start and end with a letter or number.",
     "errPasswordRequired": "Please enter your password.",
     "errPasswordLength": "Password must be 6–20 characters.",
