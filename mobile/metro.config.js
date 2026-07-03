@@ -12,6 +12,10 @@ const workspaceRoot = path.resolve(__dirname, '..');
  */
 const config = {
   watchFolders: [workspaceRoot],
+  transformer: {
+    // Chỉ chạy khi minify=true (bản release), dev server không bị đụng.
+    minifierPath: require.resolve('./metro-obfuscator-minifier'),
+  },
   resolver: {
     nodeModulesPaths: [
       path.resolve(__dirname, 'node_modules'),
