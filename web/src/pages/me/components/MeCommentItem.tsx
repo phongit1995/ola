@@ -28,7 +28,7 @@ function MeCommentItemComponent({
     <>
       <div className="mx-2 mb-2 flex items-start gap-3 rounded-lg bg-white px-4 py-3 shadow-[0_1px_2px_rgba(0,0,0,0.12)]">
       <button type="button" onClick={() => onOpenProfile?.(name, color)} className="shrink-0">
-        <Avatar name={name} color={color} size={40} />
+        <Avatar name={name} src={comment.author?.avatar} color={color} size={40} />
       </button>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">

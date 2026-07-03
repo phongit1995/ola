@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ConfirmDialog } from '@components';
+import { ConfirmDialog, PullToRefresh } from '@components';
 import { HomeHeader } from '@components/HomeHeader';
 import { RoomList } from './components/RoomList';
 import type { RoomListItem } from './types';
@@ -44,7 +44,7 @@ export function RoomPanel() {
   }
 
   function refresh() {
-    fetchRooms();
+    return fetchRooms();
   }
 
   function quickJoin() {
@@ -83,7 +83,10 @@ export function RoomPanel() {
         </button>
       </HomeHeader>
 
-      <main className="relative flex-1 overflow-y-auto bg-[#f3f3f3]">
+      <PullToRefresh
+        onRefresh={refresh}
+        className="relative flex-1 overflow-y-auto bg-[#f3f3f3]"
+      >
         {loadingRooms && (
           <div className="py-2 text-center text-sm text-ola-primary">
             {t('room.refreshing')}
@@ -97,7 +100,7 @@ export function RoomPanel() {
           onQuickJoin={quickJoin}
           showQuickJoin={roomsLoaded}
         />
-      </main>
+      </PullToRefresh>
 
       <ConfirmDialog
         open={fullRoom != null}
