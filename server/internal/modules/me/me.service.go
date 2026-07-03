@@ -85,6 +85,8 @@ func (s *Service) Create(userID uuid.UUID, req *CreateMeRequest) (*MeResponse, e
 		return nil, err
 	}
 
+	s.notifyMentions(userID, post.ID, post.Mentions, excerptText(content))
+
 	created, err := s.repo.GetByID(post.ID)
 	if err != nil {
 		return nil, err
@@ -101,6 +103,8 @@ func (s *Service) Update(userID, postID uuid.UUID, req *UpdateMeRequest) (*MeRes
 	if time.Since(post.CreatedAt) > editWindow {
 		return nil, errEditExpired
 	}
+
+	oldMentions := post.Mentions
 
 	if req.Content != nil {
 		post.Content = strings.TrimSpace(*req.Content)
@@ -128,6 +132,8 @@ func (s *Service) Update(userID, postID uuid.UUID, req *UpdateMeRequest) (*MeRes
 	if err := s.repo.UpdateEditable(post); err != nil {
 		return nil, err
 	}
+
+	s.notifyMentions(userID, postID, addedMentions(oldMentions, post.Mentions), excerptText(post.Content))
 
 	updated, err := s.repo.GetByID(postID)
 	if err != nil {
@@ -658,6 +664,35 @@ func parseMentionUsernames(content string) []string {
 		}
 	}
 	return names
+}
+
+func (s *Service) notifyMentions(authorID, postID uuid.UUID, mentions models.MentionIDs, preview string) {
+	if len(mentions) == 0 {
+		return
+	}
+	utils.SafeGo(s.logger, func() {
+		for _, idStr := range mentions {
+			mentionedID, err := uuid.Parse(idStr)
+			if err != nil {
+				continue
+			}
+			s.createMeNotification(mentionedID, authorID, models.MeNotificationMention, postID, nil, preview)
+		}
+	})
+}
+
+func addedMentions(old, current models.MentionIDs) models.MentionIDs {
+	existing := make(map[string]bool, len(old))
+	for _, id := range old {
+		existing[id] = true
+	}
+	added := make(models.MentionIDs, 0, len(current))
+	for _, id := range current {
+		if !existing[id] {
+			added = append(added, id)
+		}
+	}
+	return added
 }
 
 func (s *Service) resolveMentions(content string) models.MentionIDs {
