@@ -198,6 +198,38 @@ func (ctrl *Controller) UpdateUsername(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
+// ResetPassword godoc
+// @Summary      Reset user password
+// @Description  Set a new password for a user (admin only)
+// @Tags         admin-user
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id      path string               true "User ID"
+// @Param        request body ResetPasswordRequest true "Password Request"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  utils.APIError
+// @Failure      401  {object}  utils.APIError
+// @Failure      403  {object}  utils.APIError
+// @Failure      404  {object}  utils.APIError
+// @Router       /admin/users/{id}/password [patch]
+func (ctrl *Controller) ResetPassword(c *gin.Context) (interface{}, error) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid user id")
+	}
+
+	var req ResetPasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	if err := ctrl.service.ResetPassword(id, req.Password); err != nil {
+		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+	}
+	return map[string]string{"message": "password updated"}, nil
+}
+
 // DeleteUser godoc
 // @Summary      Delete user
 // @Description  Soft-delete a user account (admin only)

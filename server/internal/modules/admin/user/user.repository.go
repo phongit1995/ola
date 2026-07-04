@@ -108,6 +108,12 @@ func (r *Repository) SetUsername(id uuid.UUID, username string) error {
 		Update("username", username).Error
 }
 
+func (r *Repository) UpdatePassword(id uuid.UUID, hashedPassword string) error {
+	return r.db.Model(&models.User{}).
+		Where("id = ?", id).
+		Update("password", hashedPassword).Error
+}
+
 func (r *Repository) SetActive(id uuid.UUID, active bool) error {
 	return r.db.Model(&models.User{}).
 		Where("id = ?", id).
