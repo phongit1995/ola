@@ -130,12 +130,19 @@ export function MeLikersDialog({ postId, onClose, onOpenProfile }: MeLikersDialo
                   <Avatar
                     name={user.username}
                     color={colorForName(user.username)}
-                    size={72}
+                    size={44}
                     src={user.avatar}
                     rounded={false}
                   />
-                  <span className="min-w-0 flex-1 truncate text-base font-medium text-black/87">
-                    {user.fullName != null && user.fullName !== '' ? user.fullName : user.username}
+                  <span className="flex min-w-0 flex-1 flex-col">
+                    <span className="truncate text-base font-medium text-black/87">
+                      {user.fullName != null && user.fullName !== ''
+                        ? user.fullName
+                        : user.username}
+                    </span>
+                    {user.fullName != null && user.fullName !== '' && (
+                      <span className="truncate text-sm text-black/45">@{user.username}</span>
+                    )}
                   </span>
                 </button>
                 {!isSelf &&

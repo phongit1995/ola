@@ -3,6 +3,7 @@ export * from './textInsert';
 export * from './chatSmiley';
 export * from './kul';
 export * from './SmileyText';
+export * from './urlText';
 export * from './richText';
 export * from './portal';
 export * from './cropImage';
