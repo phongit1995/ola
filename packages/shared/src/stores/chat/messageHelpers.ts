@@ -2,6 +2,7 @@ import type { StoreApi } from 'zustand';
 import { useAuthStore } from '../authStore';
 import type { Message, MessageType } from '../../types';
 import type { ChatState } from './chatStore';
+import { applyOutgoingToConversations } from './chatHelpers';
 
 type ChatSet = StoreApi<ChatState>['setState'];
 
@@ -60,7 +61,10 @@ export async function runOptimisticSend(
   onSuccess?: () => void
 ): Promise<void> {
   const clientMsgId = optimistic.clientMsgId ?? optimistic.id;
-  set((state) => ({ messages: [...state.messages, optimistic] }));
+  set((state) => ({
+    messages: [...state.messages, optimistic],
+    conversations: applyOutgoingToConversations(state.conversations, optimistic),
+  }));
   try {
     const saved = await send(clientMsgId);
     set((state) => ({

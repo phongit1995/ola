@@ -23,6 +23,24 @@ export function moveToTop(list: Conversation[], id: string): Conversation[] {
   return [item, ...next];
 }
 
+export function applyOutgoingToConversations(list: Conversation[], message: Message): Conversation[] {
+  if (!list.some((item) => item.id === message.conversationId)) return list;
+  const patched = list.map((item) =>
+    item.id === message.conversationId
+      ? {
+          ...item,
+          lastMessageText: previewOf(message),
+          lastMessageAt: message.createdAt,
+          lastMessageSenderId: message.senderId,
+          lastMessageSenderName: message.senderName,
+          isLastMessageFromMe: true,
+          seen: false,
+        }
+      : item
+  );
+  return moveToTop(patched, message.conversationId);
+}
+
 export function upsertConversation(list: Conversation[], conversation: Conversation): Conversation[] {
   const index = list.findIndex((item) => item.id === conversation.id);
   if (index < 0) return [conversation, ...list];
