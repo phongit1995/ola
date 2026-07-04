@@ -1,72 +1,45 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Image, Pressable, RefreshControl, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, Pressable, RefreshControl, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
 import { useMeFeedStore } from '@ola/shared/stores/meFeedStore';
+import { useMeNotificationStore } from '@ola/shared/stores/meNotificationStore';
 import { useAuthStore } from '@ola/shared/stores/authStore';
+import { useToastStore } from '@ola/shared/stores/toastStore';
 import { AuthService, SocketService } from '@ola/shared/services';
 import { createTimeFormatter, formatDateDMY, isSameDay } from '@ola/shared/lib';
-import type { Post } from '@ola/shared/types';
-import { Alert } from 'react-native';
-import { Avatar } from '../../components/Avatar';
+import type { MeFeedFilter, Post, PostReaction } from '@ola/shared/types';
+import { MePostCard } from './MePostCard';
+import { MeComposerModal } from './MeComposerModal';
+import { MeLeftDrawer } from './MeLeftDrawer';
 
-function PostCard({
-  post,
-  timeLabel,
-  onToggleLike,
-}: {
-  post: Post;
-  timeLabel: string;
-  onToggleLike: () => void;
-}) {
-  const authorName = post.author?.fullName ?? post.author?.username ?? '';
-  const liked = post.myReaction === 'like';
-  return (
-    <View className="mb-2 bg-white px-4 py-3">
-      <View className="flex-row items-center gap-3">
-        <Avatar name={authorName} uri={post.author?.avatar} size={40} />
-        <View className="flex-1">
-          <Text className="text-base font-semibold text-neutral-900" numberOfLines={1}>
-            {authorName}
-          </Text>
-          <Text className="text-xs text-neutral-400">{timeLabel}</Text>
-        </View>
-        {post.isPinned && <Text className="text-xs">📌</Text>}
-      </View>
-      {post.content != null && post.content !== '' && (
-        <Text className="mt-2 text-base text-neutral-900">{post.content}</Text>
-      )}
-      {post.images.length > 0 && (
-        <View className="mt-2 flex-row flex-wrap gap-1">
-          {post.images.slice(0, 4).map((image) => (
-            <Image
-              key={image.url}
-              source={{ uri: image.url }}
-              className={post.images.length === 1 ? 'h-64 w-full rounded-lg' : 'h-36 w-[48%] rounded-lg'}
-              resizeMode="cover"
-            />
-          ))}
-        </View>
-      )}
-      {post.checkIn != null && (
-        <Text className="mt-1 text-xs text-neutral-500">📍 {post.checkIn.name}</Text>
-      )}
-      <View className="mt-2 flex-row items-center gap-6 border-t border-neutral-100 pt-2">
-        <Pressable className="flex-row items-center gap-1" onPress={onToggleLike}>
-          <Text className="text-base">{liked ? '❤️' : '🤍'}</Text>
-          <Text className="text-sm text-neutral-500">{post.likeCount}</Text>
-        </Pressable>
-        <View className="flex-row items-center gap-1">
-          <Text className="text-base">💬</Text>
-          <Text className="text-sm text-neutral-500">{post.commentCount}</Text>
-        </View>
-      </View>
-    </View>
-  );
-}
+type MeTab = 'community' | 'personal';
+
+const TAB_FILTER: Record<MeTab, MeFeedFilter | undefined> = {
+  community: undefined,
+  personal: 'following',
+};
+
+const menuIcon = require('../../assets/icons/me/ic_more_white.png');
+const bellIcon = require('../../assets/icons/me/ic_action_notification.png');
+const searchIcon = require('../../assets/icons/me/ic_action_search.png');
+const editIcon = require('../../assets/icons/me/ic_action_edit.png');
+const tabOla = require('../../assets/icons/me/ic_action_tab_ola.png');
+const tabOlaActive = require('../../assets/icons/me/ic_action_tab_ola_selected.png');
+const tabFollower = require('../../assets/icons/me/ic_action_tab_follower.png');
+const tabFollowerActive = require('../../assets/icons/me/ic_action_tab_follower_selected.png');
+
+const ME_TABS = [
+  { key: 'community' as const, icon: tabOla, iconActive: tabOlaActive },
+  { key: 'personal' as const, icon: tabFollower, iconActive: tabFollowerActive },
+];
 
 export function MeFeedScreen() {
   const { t, i18n } = useTranslation();
+  const insets = useSafeAreaInsets();
+  const pushToast = useToastStore((s) => s.push);
+
   const posts = useMeFeedStore((s) => s.posts);
   const loading = useMeFeedStore((s) => s.loading);
   const loadingMore = useMeFeedStore((s) => s.loadingMore);
@@ -76,10 +49,24 @@ export function MeFeedScreen() {
   const refreshFeed = useMeFeedStore((s) => s.refreshFeed);
   const loadMore = useMeFeedStore((s) => s.loadMore);
   const toggleReaction = useMeFeedStore((s) => s.toggleReaction);
+  const unreadCount = useMeNotificationStore((s) => s.unreadCount);
+  const refreshUnread = useMeNotificationStore((s) => s.refreshUnread);
+  const username = useAuthStore((s) => s.user?.username ?? null);
+  const avatarUrl = useAuthStore((s) => s.user?.avatar ?? null);
+  const coverUrl = useAuthStore((s) => s.user?.coverPhoto ?? null);
+  const displayName = username ?? t('home.guest');
+
+  const [tab, setTab] = useState<MeTab>('community');
+  const [composerOpen, setComposerOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
-    void loadFeed();
-  }, [loadFeed]);
+    void loadFeed(TAB_FILTER[tab]);
+  }, [tab, loadFeed]);
+
+  useEffect(() => {
+    void refreshUnread();
+  }, [refreshUnread]);
 
   const timeFormatter = useMemo(() => createTimeFormatter(i18n.language), [i18n.language]);
 
@@ -90,58 +77,150 @@ export function MeFeedScreen() {
       : formatDateDMY(post.createdAt);
   }
 
+  function confirmLogout() {
+    Alert.alert(t('home.logout'), '', [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('home.logout'),
+        style: 'destructive',
+        onPress: () => {
+          void AuthService.logout().finally(() => {
+            SocketService.disconnect();
+            useAuthStore.getState().clearUser();
+          });
+        },
+      },
+    ]);
+  }
+
+  const comingSoon = () => pushToast('info', t('me.comingSoon'));
+  const handleReaction = (id: string, type: PostReaction) => void toggleReaction(id, type);
+
   return (
-    <View className="flex-1 bg-neutral-100">
-      <View className="h-12 flex-row items-center border-b border-neutral-200 bg-ola-primary px-4">
-        <Text className="flex-1 text-lg font-semibold text-white">{t('home.tabMe')}</Text>
-        <Pressable
-          className="px-2 py-1"
-          onPress={() =>
-            Alert.alert(t('home.logout'), '', [
-              { text: t('common.cancel'), style: 'cancel' },
-              {
-                text: t('home.logout'),
-                style: 'destructive',
-                onPress: () => {
-                  void AuthService.logout().finally(() => {
-                    SocketService.disconnect();
-                    useAuthStore.getState().clearUser();
-                  });
-                },
-              },
-            ])
-          }
-        >
-          <Text className="text-sm text-white">{t('home.logout')}</Text>
+    <View className="flex-1 bg-[#f3f3f3]">
+      <View className="flex-row items-center bg-ola-primary px-1" style={{ paddingTop: insets.top }}>
+        <Pressable onPress={() => setDrawerOpen(true)} className="h-12 w-10 items-center justify-center">
+          <Image source={menuIcon} style={{ width: 20, height: 20 }} resizeMode="contain" />
+        </Pressable>
+        <View className="flex-1 flex-row items-center justify-center gap-8">
+          {ME_TABS.map((item) => {
+            const active = item.key === tab;
+            return (
+              <Pressable
+                key={item.key}
+                onPress={() => setTab(item.key)}
+                className="h-12 w-12 items-center justify-center"
+                style={{ opacity: active ? 1 : 0.6 }}
+              >
+                <Image
+                  source={active ? item.iconActive : item.icon}
+                  style={{ width: 24, height: 24 }}
+                  resizeMode="contain"
+                />
+              </Pressable>
+            );
+          })}
+        </View>
+        <Pressable onPress={comingSoon} className="h-12 w-10 items-center justify-center">
+          <View>
+            <Image source={bellIcon} style={{ width: 24, height: 24, tintColor: '#ffffff' }} resizeMode="contain" />
+            {unreadCount > 0 && (
+              <View
+                className="absolute h-4 min-w-4 items-center justify-center rounded-full bg-ola-accent px-1"
+                style={{ top: -4, right: -2, borderWidth: 2, borderColor: '#ffffff' }}
+              >
+                <Text className="text-[10px] font-bold text-white">
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </Text>
+              </View>
+            )}
+          </View>
+        </Pressable>
+        <Pressable onPress={comingSoon} className="h-12 w-10 items-center justify-center">
+          <Image source={searchIcon} style={{ width: 24, height: 24, tintColor: '#ffffff' }} resizeMode="contain" />
         </Pressable>
       </View>
+
       {loading && posts.length === 0 ? (
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator color="#7cb342" size="large" />
         </View>
       ) : error && posts.length === 0 ? (
         <View className="flex-1 items-center justify-center px-8">
-          <Text className="text-center text-sm text-neutral-500">{t('common.error')}</Text>
+          <Text className="text-center text-sm" style={{ color: 'rgba(0,0,0,0.54)' }}>
+            {t('common.error')}
+          </Text>
+        </View>
+      ) : posts.length === 0 ? (
+        <View className="flex-1 items-center justify-center px-8">
+          <Text className="text-center text-sm" style={{ color: 'rgba(0,0,0,0.54)' }}>
+            {t('me.empty')}
+          </Text>
         </View>
       ) : (
         <FlashList
           data={posts}
           keyExtractor={(item) => item.id}
+          contentContainerClassName="py-2"
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={() => void refreshFeed()} />
+            <RefreshControl refreshing={refreshing} onRefresh={() => void refreshFeed(TAB_FILTER[tab])} />
           }
-          onEndReached={() => void loadMore()}
+          onEndReached={() => void loadMore(TAB_FILTER[tab])}
           onEndReachedThreshold={0.4}
           ListFooterComponent={
             loadingMore ? <ActivityIndicator className="my-4" color="#7cb342" /> : null
           }
           renderItem={({ item }) => (
-            <PostCard
+            <MePostCard
               post={item}
               timeLabel={timeLabelOf(item)}
-              onToggleLike={() => void toggleReaction(item.id, 'like')}
+              onToggleLike={(id) => handleReaction(id, 'like')}
+              onToggleDislike={(id) => handleReaction(id, 'dislike')}
+              onOpenProfile={comingSoon}
+              onOpenComments={comingSoon}
+              onOpenMenu={comingSoon}
+              onOpenLikers={comingSoon}
             />
           )}
+        />
+      )}
+
+      <Pressable
+        onPress={() => setComposerOpen(true)}
+        className="absolute h-14 w-14 items-center justify-center rounded-full bg-ola-primary"
+        style={{
+          right: 16,
+          bottom: 16,
+          elevation: 4,
+          shadowColor: '#000',
+          shadowOpacity: 0.3,
+          shadowRadius: 4,
+          shadowOffset: { width: 0, height: 2 },
+        }}
+      >
+        <Image source={editIcon} style={{ width: 24, height: 24 }} resizeMode="contain" />
+      </Pressable>
+
+      <MeComposerModal visible={composerOpen} onClose={() => setComposerOpen(false)} />
+
+      {drawerOpen && (
+        <MeLeftDrawer
+          displayName={displayName}
+          avatarUrl={avatarUrl ?? undefined}
+          coverUrl={coverUrl ?? undefined}
+          onClose={() => setDrawerOpen(false)}
+          onViewProfile={() => {
+            setDrawerOpen(false);
+            comingSoon();
+          }}
+          onSelect={() => {
+            setDrawerOpen(false);
+            comingSoon();
+          }}
+          onLogout={() => {
+            setDrawerOpen(false);
+            confirmLogout();
+          }}
         />
       )}
     </View>
