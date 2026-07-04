@@ -1,6 +1,15 @@
 import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, Linking, Pressable, Text, View, type TextLayoutEventData, type NativeSyntheticEvent } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSequence,
+  withTiming,
+  withDelay,
+  runOnJS,
+  type SharedValue,
+} from 'react-native-reanimated';
 import { colorForName } from '@ola/shared/lib';
 import type { Post, PostCheckIn } from '@ola/shared/types';
 import { renderRichText } from '../../lib/richText';
@@ -12,6 +21,7 @@ const dislikeIcon = require('../../assets/icons/me/ic_dislike_gray.png');
 const dislikeIconActive = require('../../assets/icons/me/ic_dislike_black.png');
 const likeIcon = require('../../assets/icons/me/ic_like_gray.png');
 const likeIconActive = require('../../assets/icons/me/ic_like_selected.png');
+const likeStickerFly = require('../../assets/icons/me/sticker_like.png');
 const checkInIcon = require('../../assets/icons/me/ic_check_in.png');
 
 function formatLikeCount(count: number): string {
@@ -183,6 +193,46 @@ function MePostCardComponent({
   const photos = post.images.map((image) => image.url);
   const sticker = post.sticker != null && post.sticker !== '' ? post.sticker : null;
 
+  const likeScale = useSharedValue(1);
+  const dislikeScale = useSharedValue(1);
+  const flyProgress = useSharedValue(0);
+  const [flying, setFlying] = useState(false);
+
+  function pop(shared: SharedValue<number>, peak: number) {
+    shared.value = withSequence(
+      withTiming(peak, { duration: 100 }),
+      withDelay(200, withTiming(1, { duration: 100 }))
+    );
+  }
+
+  function handleLike() {
+    const becomingLiked = !liked;
+    pop(likeScale, becomingLiked ? 1.5 : 0.8);
+    if (becomingLiked) {
+      setFlying(true);
+      flyProgress.value = 0;
+      flyProgress.value = withTiming(1, { duration: 1500 }, (finished) => {
+        if (finished) runOnJS(setFlying)(false);
+      });
+    }
+    onToggleLike(post.id);
+  }
+
+  function handleDislike() {
+    pop(dislikeScale, disliked ? 0.8 : 1.5);
+    onToggleDislike(post.id);
+  }
+
+  const likeIconStyle = useAnimatedStyle(() => ({ transform: [{ scale: likeScale.value }] }));
+  const dislikeIconStyle = useAnimatedStyle(() => ({ transform: [{ scale: dislikeScale.value }] }));
+  const flyStyle = useAnimatedStyle(() => ({
+    opacity: 0.7 * (1 - flyProgress.value),
+    transform: [
+      { translateY: -288 * flyProgress.value },
+      { scale: 0.5 + 0.5 * flyProgress.value },
+    ],
+  }));
+
   function onTextLayout(event: NativeSyntheticEvent<TextLayoutEventData>) {
     if (!clamped && event.nativeEvent.lines.length > 5) setClamped(true);
   }
@@ -280,12 +330,12 @@ function MePostCardComponent({
           <Text className="text-sm" style={{ color: 'rgba(0,0,0,0.26)' }}>{t('me.comment')}</Text>
         </Pressable>
         <Pressable
-          onPress={() => onToggleDislike(post.id)}
+          onPress={handleDislike}
           className="h-7 flex-1 flex-row items-center justify-center gap-1"
         >
-          <Image
+          <Animated.Image
             source={disliked ? dislikeIconActive : dislikeIcon}
-            style={{ width: 26, height: 26 }}
+            style={[{ width: 26, height: 26 }, dislikeIconStyle]}
             resizeMode="contain"
           />
           <Text className="text-sm" style={{ color: disliked ? 'rgba(0,0,0,0.87)' : 'rgba(0,0,0,0.26)' }}>
@@ -293,12 +343,12 @@ function MePostCardComponent({
           </Text>
         </Pressable>
         <Pressable
-          onPress={() => onToggleLike(post.id)}
+          onPress={handleLike}
           className="h-7 flex-1 flex-row items-center justify-center gap-1"
         >
-          <Image
+          <Animated.Image
             source={liked ? likeIconActive : likeIcon}
-            style={{ width: 26, height: 26 }}
+            style={[{ width: 26, height: 26 }, likeIconStyle]}
             resizeMode="contain"
           />
           <Text className="text-sm" style={{ color: liked ? '#7cb342' : 'rgba(0,0,0,0.26)' }}>
@@ -306,6 +356,16 @@ function MePostCardComponent({
           </Text>
         </Pressable>
       </View>
+
+      {flying && (
+        <View pointerEvents="none" style={{ position: 'absolute', right: 12, bottom: 30 }}>
+          <Animated.Image
+            source={likeStickerFly}
+            style={[{ width: 96, height: 96 }, flyStyle]}
+            resizeMode="contain"
+          />
+        </View>
+      )}
     </View>
   );
 }
