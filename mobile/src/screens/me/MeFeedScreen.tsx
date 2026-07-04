@@ -13,9 +13,11 @@ import type { MeFeedFilter, Post, PostReaction } from '@ola/shared/types';
 import { MePostCard } from './MePostCard';
 import { MeComposerModal } from './MeComposerModal';
 import { MeLeftDrawer } from './MeLeftDrawer';
+import { MeRightDrawer } from './MeRightDrawer';
 import { MeCommentSheet } from './MeCommentSheet';
 import { MeLikersDialog } from './MeLikersDialog';
 import { MeNotificationsScreen } from './MeNotificationsScreen';
+import { UserProfileScreen } from '../profile/UserProfileScreen';
 
 type MeTab = 'community' | 'personal';
 
@@ -66,6 +68,9 @@ export function MeFeedScreen() {
   const [commentPostId, setCommentPostId] = useState<string | null>(null);
   const [likersPostId, setLikersPostId] = useState<string | null>(null);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [profileUsername, setProfileUsername] = useState<string | null>(null);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const openProfile = (nick: string) => setProfileUsername(nick);
   const commentPost = commentPostId != null ? posts.find((p) => p.id === commentPostId) ?? null : null;
 
   useEffect(() => {
@@ -144,7 +149,7 @@ export function MeFeedScreen() {
             )}
           </View>
         </Pressable>
-        <Pressable onPress={comingSoon} className="h-12 w-10 items-center justify-center">
+        <Pressable onPress={() => setSearchOpen(true)} className="h-12 w-10 items-center justify-center">
           <Image source={searchIcon} style={{ width: 24, height: 24, tintColor: '#ffffff' }} resizeMode="contain" />
         </Pressable>
       </View>
@@ -184,7 +189,7 @@ export function MeFeedScreen() {
               timeLabel={timeLabelOf(item)}
               onToggleLike={(id) => handleReaction(id, 'like')}
               onToggleDislike={(id) => handleReaction(id, 'dislike')}
-              onOpenProfile={comingSoon}
+              onOpenProfile={openProfile}
               onOpenComments={(id) => setCommentPostId(id)}
               onOpenMenu={comingSoon}
               onOpenLikers={(id) => setLikersPostId(id)}
@@ -218,7 +223,7 @@ export function MeFeedScreen() {
           onClose={() => setCommentPostId(null)}
           onToggleLike={(id) => handleReaction(id, 'like')}
           onToggleDislike={(id) => handleReaction(id, 'dislike')}
-          onOpenProfile={comingSoon}
+          onOpenProfile={openProfile}
           onOpenLikers={(id) => setLikersPostId(id)}
           onCommentDelta={adjustCommentCount}
         />
@@ -228,12 +233,16 @@ export function MeFeedScreen() {
         <MeLikersDialog
           postId={likersPostId}
           onClose={() => setLikersPostId(null)}
-          onOpenProfile={comingSoon}
+          onOpenProfile={openProfile}
         />
       )}
 
       {notifOpen && (
-        <MeNotificationsScreen language={i18n.language} onClose={() => setNotifOpen(false)} />
+        <MeNotificationsScreen
+          language={i18n.language}
+          onClose={() => setNotifOpen(false)}
+          onOpenProfile={openProfile}
+        />
       )}
 
       {drawerOpen && (
@@ -244,7 +253,7 @@ export function MeFeedScreen() {
           onClose={() => setDrawerOpen(false)}
           onViewProfile={() => {
             setDrawerOpen(false);
-            comingSoon();
+            openProfile(displayName);
           }}
           onSelect={() => {
             setDrawerOpen(false);
@@ -254,6 +263,20 @@ export function MeFeedScreen() {
             setDrawerOpen(false);
             confirmLogout();
           }}
+        />
+      )}
+
+      {searchOpen && (
+        <MeRightDrawer onClose={() => setSearchOpen(false)} onOpenProfile={openProfile} />
+      )}
+
+      {profileUsername != null && (
+        <UserProfileScreen
+          key={profileUsername}
+          username={profileUsername}
+          language={i18n.language}
+          onClose={() => setProfileUsername(null)}
+          onOpenProfile={openProfile}
         />
       )}
     </View>

@@ -26,9 +26,10 @@ const TYPE_ICON: Record<MeNotificationType, number> = {
 interface MeNotificationsScreenProps {
   language: string;
   onClose: () => void;
+  onOpenProfile: (nick: string, color: string) => void;
 }
 
-export function MeNotificationsScreen({ language, onClose }: MeNotificationsScreenProps) {
+export function MeNotificationsScreen({ language, onClose, onOpenProfile }: MeNotificationsScreenProps) {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const push = useToastStore((s) => s.push);
@@ -151,7 +152,8 @@ export function MeNotificationsScreen({ language, onClose }: MeNotificationsScre
             onClose={() => setOpenPost(null)}
             onToggleLike={(id) => toggleReaction(id, 'like')}
             onToggleDislike={(id) => toggleReaction(id, 'dislike')}
-            onOpenProfile={() => push('info', t('me.comingSoon'))}
+            onOpenProfile={onOpenProfile}
+            onOpenLikers={() => push('info', t('me.comingSoon'))}
             onCommentDelta={adjustCommentCount}
           />
         )}
