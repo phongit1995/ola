@@ -5,6 +5,7 @@ import {
   EditOutlined,
   FileTextOutlined,
   HistoryOutlined,
+  LockOutlined,
   UserOutlined,
   WalletOutlined,
 } from '@ant-design/icons'
@@ -16,6 +17,7 @@ import { KenHistoryModal } from './KenHistoryModal'
 import { UserMeModal } from './UserMeModal'
 import { UserVipIconsModal } from './UserVipIconsModal'
 import { EditUsernameModal } from './EditUsernameModal'
+import { ResetPasswordModal } from './ResetPasswordModal'
 
 interface UserDetailModalProps {
   userId: string | null
@@ -75,6 +77,7 @@ export function UserDetailModal({ userId, open, onClose }: UserDetailModalProps)
   const [meOpen, setMeOpen] = useState(false)
   const [vipsOpen, setVipsOpen] = useState(false)
   const [usernameOpen, setUsernameOpen] = useState(false)
+  const [passwordOpen, setPasswordOpen] = useState(false)
 
   return (
     <>
@@ -95,6 +98,9 @@ export function UserDetailModal({ userId, open, onClose }: UserDetailModalProps)
           </Button>
           <Button icon={<HistoryOutlined />} disabled={!userId} onClick={() => setHistoryOpen(true)}>
             Lịch sử Ken
+          </Button>
+          <Button icon={<LockOutlined />} disabled={!userId} onClick={() => setPasswordOpen(true)}>
+            Đổi mật khẩu
           </Button>
           <Button
             type="primary"
@@ -227,6 +233,12 @@ export function UserDetailModal({ userId, open, onClose }: UserDetailModalProps)
       userId={userId}
       currentUsername={data?.username}
       onClose={() => setUsernameOpen(false)}
+    />
+    <ResetPasswordModal
+      open={passwordOpen}
+      userId={userId}
+      username={data?.username}
+      onClose={() => setPasswordOpen(false)}
     />
     </>
   )

@@ -48,6 +48,14 @@ export const AdminUserService = {
     return data.data
   },
 
+  async resetPassword(id: string, password: string): Promise<MessageResult> {
+    const { data } = await http.patch<ApiResponse<MessageResult>>(
+      `/admin/users/${id}/password`,
+      { password },
+    )
+    return data.data
+  },
+
   async remove(id: string): Promise<MessageResult> {
     const { data } = await http.delete<ApiResponse<MessageResult>>(`/admin/users/${id}`)
     return data.data

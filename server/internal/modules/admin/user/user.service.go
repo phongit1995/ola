@@ -14,12 +14,15 @@ import (
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
 const (
 	usernameMinLen = 2
 	usernameMaxLen = 20
+	passwordMinLen = 6
+	passwordMaxLen = 20
 )
 
 var usernameRegex = regexp.MustCompile(`^[a-z0-9][a-z0-9._-]*[a-z0-9]$`)
@@ -107,7 +110,7 @@ func (s *Service) UpdateUsername(id uuid.UUID, username string) (*UserDetail, er
 		return nil, errors.New("username may only contain lowercase letters, numbers, dot (.), hyphen (-) and underscore (_), and must start and end with a letter or number")
 	}
 
-	if _, err := s.repo.FindByID(id); err != nil {
+	if _, err := s.repo.FindByIDUnscoped(id); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, apperr.ErrUserNotFound
 		}
@@ -123,6 +126,9 @@ func (s *Service) UpdateUsername(id uuid.UUID, username string) (*UserDetail, er
 	}
 
 	if err := s.repo.SetUsername(id, username); err != nil {
+		if strings.Contains(err.Error(), "users_username_key") {
+			return nil, errors.New("username already exists")
+		}
 		return nil, err
 	}
 
@@ -132,11 +138,36 @@ func (s *Service) UpdateUsername(id uuid.UUID, username string) (*UserDetail, er
 
 	s.logger.Infow("Admin updated username", "user_id", id, "username", username)
 
-	user, err := s.repo.FindByID(id)
+	user, err := s.repo.FindByIDUnscoped(id)
 	if err != nil {
 		return nil, err
 	}
 	return toDetail(user), nil
+}
+
+func (s *Service) ResetPassword(id uuid.UUID, password string) error {
+	if len(password) < passwordMinLen || len(password) > passwordMaxLen {
+		return fmt.Errorf("password must be between %d and %d characters", passwordMinLen, passwordMaxLen)
+	}
+
+	if _, err := s.repo.FindByID(id); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return apperr.ErrUserNotFound
+		}
+		return err
+	}
+
+	hashed, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	if err := s.repo.UpdatePassword(id, string(hashed)); err != nil {
+		return err
+	}
+
+	s.logger.Infow("Admin reset user password", "user_id", id)
+	return nil
 }
 
 func (s *Service) ListVips(id uuid.UUID, limit, offset int) (*VipIconListResponse, error) {

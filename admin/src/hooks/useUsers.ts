@@ -50,6 +50,13 @@ export function useUpdateUsername() {
   })
 }
 
+export function useResetPassword() {
+  return useMutation({
+    mutationFn: ({ id, password }: { id: string; password: string }) =>
+      AdminUserService.resetPassword(id, password),
+  })
+}
+
 export function useDeleteUser() {
   const queryClient = useQueryClient()
   return useMutation({

@@ -81,3 +81,7 @@ type UpdateStatusRequest struct {
 type UpdateUsernameRequest struct {
 	Username string `json:"username" binding:"required" example:"john_doe"`
 }
+
+type ResetPasswordRequest struct {
+	Password string `json:"password" binding:"required" example:"newpass123"`
+}
