@@ -219,13 +219,16 @@ func replyAck(ack socket.Ack, data any, errMsg string) {
 }
 
 func (h *EventHandler) handleDisconnect(client *socket.Socket, userID string) {
-	if h.server.roomPresence != nil {
-		ctx := context.Background()
-		data := client.Data().(*SocketData)
-		for roomID := range data.JoinedRooms {
-			h.leaveRoom(ctx, client, userID, roomID)
-		}
-	}
+	// Giữ chỗ trong phòng ~1h khi disconnect (đăng xuất / mất kết nối): KHÔNG xoá presence
+	// phòng lúc disconnect, để TTL RoomPresenceTTLSeconds tự dọn. Chỉ room:leave mới xoá ngay.
+	// Mở lại đoạn dưới nếu muốn rời khỏi tất cả phòng ngay khi socket disconnect.
+	// if h.server.roomPresence != nil {
+	// 	ctx := context.Background()
+	// 	data := client.Data().(*SocketData)
+	// 	for roomID := range data.JoinedRooms {
+	// 		h.leaveRoom(ctx, client, userID, roomID)
+	// 	}
+	// }
 
 	isLastConnection, err := h.presenceService.RemoveConnection(userID)
 	if err != nil {

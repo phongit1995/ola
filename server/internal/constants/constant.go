@@ -83,7 +83,9 @@ const (
 )
 
 const (
-	RoomPresenceTTLSeconds   = 300
+	// RoomPresenceTTLSeconds: giữ chỗ trong phòng khi disconnect/đăng xuất (chỉ room:leave mới xoá ngay).
+	// 43200 = 12h. Đổi về 300 (5 phút) nếu muốn rớt khỏi phòng nhanh như trước.
+	RoomPresenceTTLSeconds   = 43200
 	RoomJoinTicketTTLSeconds = 5
 	RoomReplyExcerptMaxRunes = 120
 )

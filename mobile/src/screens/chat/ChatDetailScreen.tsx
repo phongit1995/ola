@@ -64,6 +64,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   );
   const listRef = useRef<FlashListRef<Message>>(null);
   const stickToBottomRef = useRef(true);
+  const inputRef = useRef<TextInput>(null);
 
   useEffect(() => {
     void openConversation(conversationId);
@@ -235,6 +236,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         style={{ borderTopWidth: 1, borderTopColor: DIVIDER }}
       >
         <TextInput
+          ref={inputRef}
           className="max-h-32 min-h-9 flex-1 px-2 py-1.5 text-base"
           style={{ color: 'rgba(0,0,0,0.87)', textAlignVertical: 'center' }}
           placeholder={t('chat.messageInputPlaceholder', { name: title })}
@@ -249,7 +251,10 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         />
         {isTyping ? (
           <Pressable
-            onPress={() => void send(draft)}
+            onPress={() => {
+              void send(draft);
+              requestAnimationFrame(() => inputRef.current?.focus());
+            }}
             className="h-9 items-center justify-center rounded-full bg-ola-primary px-4 active:opacity-90"
           >
             <Text className="text-sm font-semibold text-white">{t('chat.send')}</Text>

@@ -80,6 +80,7 @@ export function RoomMessagesTab({
   const stickToBottomRef = useRef(true);
   const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const selectionRef = useRef<{ start: number; end: number }>({ start: 0, end: 0 });
+  const inputRef = useRef<TextInput>(null);
 
   function applyDraft(next: string, caret: number) {
     selectionRef.current = { start: caret, end: caret };
@@ -293,6 +294,7 @@ export function RoomMessagesTab({
           />
         </Pressable>
         <TextInput
+          ref={inputRef}
           className="max-h-28 min-h-9 flex-1 rounded-2xl px-3 py-2 text-base"
           style={{
             color: 'rgba(0,0,0,0.87)',
@@ -315,7 +317,10 @@ export function RoomMessagesTab({
         />
         {isTyping ? (
           <Pressable
-            onPress={() => void sendText(draft)}
+            onPress={() => {
+              void sendText(draft);
+              requestAnimationFrame(() => inputRef.current?.focus());
+            }}
             disabled={!canSend}
             className="h-9 items-center justify-center rounded-full bg-ola-primary px-4 active:opacity-90"
           >
