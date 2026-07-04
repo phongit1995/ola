@@ -72,6 +72,7 @@
     "errUsernameMin": "Username must be at least 6 characters.",
     "errUsernameMax": "Username must be at most 20 characters.",
     "errUsernameFormat": "Username can contain lowercase letters, numbers, dot, hyphen and underscore, but must start and end with a letter or number.",
+    "errUsernameTaken": "Username already exists.",
     "errPasswordRequired": "Please enter a password.",
     "errPasswordMin": "Password must be at least 6 characters.",
     "errPasswordMax": "Password must be at most 20 characters.",

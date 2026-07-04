@@ -126,8 +126,15 @@ func (s *Service) Register(req *RegisterRequest) (*RegisterResponse, error) {
 		"username", req.Username,
 	)
 
-	_, err := s.repo.FindByUsername(req.Username)
-	if err == nil {
+	exists, err := s.repo.UsernameExists(req.Username)
+	if err != nil {
+		s.logger.Errorw("Failed to check username availability",
+			"username", req.Username,
+			"error", err.Error(),
+		)
+		return nil, err
+	}
+	if exists {
 		s.logger.Warnw("Username already exists",
 			"username", req.Username,
 		)
@@ -154,6 +161,9 @@ func (s *Service) Register(req *RegisterRequest) (*RegisterResponse, error) {
 	)
 
 	if err := s.repo.Create(user); err != nil {
+		if strings.Contains(err.Error(), "users_username_key") {
+			return nil, errors.New("username already exists")
+		}
 		s.logger.Errorw("Failed to create user",
 			"error", err.Error(),
 		)

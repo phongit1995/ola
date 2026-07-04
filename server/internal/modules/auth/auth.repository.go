@@ -24,6 +24,17 @@ func (r *Repository) FindByUsername(username string) (*models.User, error) {
 	return &user, nil
 }
 
+func (r *Repository) UsernameExists(username string) (bool, error) {
+	var count int64
+	err := r.db.Unscoped().Model(&models.User{}).
+		Where("LOWER(username) = LOWER(?)", username).
+		Count(&count).Error
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
+}
+
 func (r *Repository) Create(user *models.User) error {
 	return r.db.Create(user).Error
 }

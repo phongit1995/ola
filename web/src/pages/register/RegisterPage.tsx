@@ -9,7 +9,7 @@ import { SubmitButton } from '@components/form/SubmitButton';
 import { LanguageSwitcher } from '@components/LanguageSwitcher';
 import { Spinner } from '@components';
 import { AuthService } from '@services';
-import { resolveAuthError, USERNAME_MAX, USERNAME_PATTERN, toast } from '@lib';
+import { ApiError, resolveAuthError, USERNAME_MAX, USERNAME_PATTERN, toast } from '@lib';
 import { USERNAME_MIN } from './constants';
 
 interface RegisterForm {
@@ -30,6 +30,7 @@ export function RegisterPage() {
     handleSubmit,
     watch,
     setValue,
+    setError,
     getValues,
     formState: { errors },
   } = useForm<RegisterForm>({
@@ -49,6 +50,13 @@ export function RegisterPage() {
       toast.success(t('register.success'));
       navigate(ROUTES.login);
     } catch (err) {
+      if (err instanceof ApiError && err.status === 409) {
+        const message = t('register.errUsernameTaken');
+        setError('username', { message });
+        setSubmitError(message);
+        toast.error(message);
+        return;
+      }
       const message = resolveAuthError(err, t);
       setSubmitError(message);
       toast.error(message);
