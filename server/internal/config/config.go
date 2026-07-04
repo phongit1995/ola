@@ -41,8 +41,9 @@ type Config struct {
 	ScyllaKeyspace    string `env:"SCYLLA_KEYSPACE"`
 	ScyllaConsistency string `env:"SCYLLA_CONSISTENCY" envDefault:"QUORUM" validate:"omitempty,oneof=ANY ONE TWO THREE QUORUM ALL LOCAL_QUORUM EACH_QUORUM LOCAL_ONE"`
 
-	JWTSecret string `env:"JWT_SECRET"`
-	JWTExpiry string `env:"JWT_EXPIRY" envDefault:"15m"`
+	JWTSecret          string `env:"JWT_SECRET"`
+	JWTExpiry          string `env:"JWT_EXPIRY" envDefault:"15m"`
+	RefreshTokenExpiry string `env:"REFRESH_TOKEN_EXPIRY" envDefault:"720h"`
 
 	APIGuardSecret string `env:"API_GUARD_SECRET"`
 
