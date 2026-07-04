@@ -12,6 +12,7 @@ type UserListItem struct {
 	IsActive    bool   `json:"isActive"`
 	CreatedAt   string `json:"createdAt"`
 	LastLoginAt string `json:"lastLoginAt,omitempty"`
+	DeletedAt   string `json:"deletedAt,omitempty"`
 }
 
 type ListUsersResponse struct {
@@ -42,6 +43,7 @@ type UserDetail struct {
 	LastLoginAt    string `json:"lastLoginAt,omitempty"`
 	CreatedAt      string `json:"createdAt"`
 	UpdatedAt      string `json:"updatedAt"`
+	DeletedAt      string `json:"deletedAt,omitempty"`
 }
 
 type VipIconItem struct {
@@ -61,14 +63,15 @@ type VipIconListResponse struct {
 }
 
 type ListFilter struct {
-	Query    string
-	IsActive *bool
-	Gender   string
-	Vip      *bool
-	SortBy   string
-	SortDir  string
-	Limit    int
-	Offset   int
+	Query          string
+	IsActive       *bool
+	Gender         string
+	Vip            *bool
+	IncludeDeleted bool
+	SortBy         string
+	SortDir        string
+	Limit          int
+	Offset         int
 }
 
 type UpdateStatusRequest struct {

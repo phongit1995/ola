@@ -18,6 +18,9 @@ func NewRepository(db *gorm.DB) *Repository {
 
 func (r *Repository) List(f ListFilter) ([]*models.User, int64, error) {
 	db := r.db.Model(&models.User{})
+	if f.IncludeDeleted {
+		db = db.Unscoped()
+	}
 	if f.Query != "" {
 		like := "%" + f.Query + "%"
 		db = db.Where("username ILIKE ? OR full_name ILIKE ? OR email ILIKE ?", like, like, like)
@@ -76,6 +79,15 @@ func orderClause(sortBy, sortDir string) string {
 func (r *Repository) FindByID(id uuid.UUID) (*models.User, error) {
 	var user models.User
 	err := r.db.First(&user, "id = ?", id).Error
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (r *Repository) FindByIDUnscoped(id uuid.UUID) (*models.User, error) {
+	var user models.User
+	err := r.db.Unscoped().First(&user, "id = ?", id).Error
 	if err != nil {
 		return nil, err
 	}

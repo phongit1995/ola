@@ -28,6 +28,7 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 // @Param        isActive query bool   false "Filter by status (true=active, false=banned)"
 // @Param        gender   query string false "Filter by gender (male, female, other)"
 // @Param        vip      query bool   false "Filter VIP (true=vip, false=non-vip)"
+// @Param        includeDeleted query bool false "Include soft-deleted users (default true; pass false to hide)"
 // @Param        sortBy   query string false "Sort field (createdAt, lastLoginAt, followerCount, username)"
 // @Param        sortDir  query string false "Sort direction (asc, desc)"
 // @Param        limit    query int    false "Page size (default 20, max 100)"
@@ -38,14 +39,15 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 // @Router       /admin/users [get]
 func (ctrl *Controller) ListUsers(c *gin.Context) (interface{}, error) {
 	filter := ListFilter{
-		Query:    c.Query("q"),
-		IsActive: parseBoolQuery(c, "isActive"),
-		Gender:   parseGenderQuery(c.Query("gender")),
-		Vip:      parseBoolQuery(c, "vip"),
-		SortBy:   c.Query("sortBy"),
-		SortDir:  c.Query("sortDir"),
-		Limit:    utils.ParseLimit(c, 20, 100),
-		Offset:   utils.ParseOffset(c),
+		Query:          c.Query("q"),
+		IsActive:       parseBoolQuery(c, "isActive"),
+		Gender:         parseGenderQuery(c.Query("gender")),
+		Vip:            parseBoolQuery(c, "vip"),
+		IncludeDeleted: c.Query("includeDeleted") != "false",
+		SortBy:         c.Query("sortBy"),
+		SortDir:        c.Query("sortDir"),
+		Limit:          utils.ParseLimit(c, 20, 100),
+		Offset:         utils.ParseOffset(c),
 	}
 
 	resp, err := ctrl.service.List(filter)
