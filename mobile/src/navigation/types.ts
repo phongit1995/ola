@@ -19,5 +19,6 @@ export type RootStackParamList = {
   [ROOT_ROUTES.MainTabs]: undefined;
   [ROOT_ROUTES.ChatDetail]: { conversationId: string };
   [ROOT_ROUTES.RoomChat]: { roomId: string; roomName: string };
-  [ROOT_ROUTES.ProfileView]: { userId: string };
+  [ROOT_ROUTES.ProfileView]: { userId: string; color?: string };
+  [ROOT_ROUTES.EditProfile]: undefined;
 };

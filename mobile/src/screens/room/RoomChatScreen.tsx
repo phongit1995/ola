@@ -8,6 +8,7 @@ import { useAuthStore } from '@ola/shared/stores/authStore';
 import { memberMatchesFilter, useRoomFilterStore } from '@ola/shared/stores/roomFilterStore';
 import type { ReactionType } from '@ola/shared/types';
 import type { RootStackParamList } from '../../navigation/types';
+import { ROOT_ROUTES } from '../../navigation/routes';
 import { RoomMessagesTab } from './RoomMessagesTab';
 import { RoomMembersTab } from './RoomMembersTab';
 import { RoomFilterDialog } from './RoomFilterDialog';
@@ -128,7 +129,14 @@ export function RoomChatScreen({ navigation, route }: Props) {
     (messageId: string, type: ReactionType) => void reactToRoomMessage(messageId, type),
     [reactToRoomMessage]
   );
-  const openUser = useCallback((_userId: string) => undefined, []);
+  const openUser = useCallback(
+    (userId: string) => navigation.navigate(ROOT_ROUTES.ProfileView, { userId }),
+    [navigation]
+  );
+  const openProfileByNick = useCallback(
+    (nick: string, color: string) => navigation.navigate(ROOT_ROUTES.ProfileView, { userId: nick, color }),
+    [navigation]
+  );
 
   return (
     <KeyboardAvoidingView
@@ -192,6 +200,7 @@ export function RoomChatScreen({ navigation, route }: Props) {
           onSend={sendMessage}
           onLoadMore={loadMoreMessages}
           onOpenUser={openUser}
+          onOpenProfile={openProfileByNick}
           onSetReplyTarget={setReplyTarget}
           onClearReplyTarget={clearReplyTarget}
           onReact={handleReact}

@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Alert, Image, Pressable, RefreshControl, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useMeFeedStore } from '@ola/shared/stores/meFeedStore';
 import { useMeNotificationStore } from '@ola/shared/stores/meNotificationStore';
 import { useAuthStore } from '@ola/shared/stores/authStore';
@@ -14,10 +16,14 @@ import { MePostCard } from './MePostCard';
 import { MeComposerModal } from './MeComposerModal';
 import { MeLeftDrawer } from './MeLeftDrawer';
 import { MeRightDrawer } from './MeRightDrawer';
+import { MeVisitorsScreen } from './MeVisitorsScreen';
+import { MeLikedPostsScreen } from './MeLikedPostsScreen';
 import { MeCommentSheet } from './MeCommentSheet';
 import { MeLikersDialog } from './MeLikersDialog';
 import { MeNotificationsScreen } from './MeNotificationsScreen';
 import { UserProfileScreen } from '../profile/UserProfileScreen';
+import type { RootStackParamList } from '../../navigation/types';
+import { ROOT_ROUTES } from '../../navigation/routes';
 
 type MeTab = 'community' | 'personal';
 
@@ -43,6 +49,7 @@ const ME_TABS = [
 export function MeFeedScreen() {
   const { t, i18n } = useTranslation();
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const pushToast = useToastStore((s) => s.push);
 
   const posts = useMeFeedStore((s) => s.posts);
@@ -70,6 +77,8 @@ export function MeFeedScreen() {
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileUsername, setProfileUsername] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [visitorsOpen, setVisitorsOpen] = useState(false);
+  const [likedOpen, setLikedOpen] = useState(false);
   const openProfile = (nick: string) => setProfileUsername(nick);
   const commentPost = commentPostId != null ? posts.find((p) => p.id === commentPostId) ?? null : null;
 
@@ -255,9 +264,11 @@ export function MeFeedScreen() {
             setDrawerOpen(false);
             openProfile(displayName);
           }}
-          onSelect={() => {
+          onSelect={(key) => {
             setDrawerOpen(false);
-            comingSoon();
+            if (key === 'likes') setLikedOpen(true);
+            else if (key === 'visitors') setVisitorsOpen(true);
+            else comingSoon();
           }}
           onLogout={() => {
             setDrawerOpen(false);
@@ -270,6 +281,22 @@ export function MeFeedScreen() {
         <MeRightDrawer onClose={() => setSearchOpen(false)} onOpenProfile={openProfile} />
       )}
 
+      {visitorsOpen && (
+        <MeVisitorsScreen
+          language={i18n.language}
+          onClose={() => setVisitorsOpen(false)}
+          onOpenProfile={openProfile}
+        />
+      )}
+
+      {likedOpen && (
+        <MeLikedPostsScreen
+          language={i18n.language}
+          onClose={() => setLikedOpen(false)}
+          onOpenProfile={openProfile}
+        />
+      )}
+
       {profileUsername != null && (
         <UserProfileScreen
           key={profileUsername}
@@ -277,6 +304,7 @@ export function MeFeedScreen() {
           language={i18n.language}
           onClose={() => setProfileUsername(null)}
           onOpenProfile={openProfile}
+          onEditProfile={() => navigation.navigate(ROOT_ROUTES.EditProfile)}
         />
       )}
     </View>

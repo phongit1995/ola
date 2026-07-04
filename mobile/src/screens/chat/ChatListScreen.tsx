@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
@@ -11,6 +11,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -21,9 +22,11 @@ import { ROOT_ROUTES } from '../../navigation/routes';
 import { Avatar } from '../../components/Avatar';
 import { kulImageForText } from '../../lib/kul';
 import { renderRichText } from '../../lib/richText';
+import { ContactsPane } from './ContactsPane';
 
 const sentIcon = require('../../assets/icons/chat/ic_message_sent.png');
 const kulIcon = require('../../assets/icons/chat/ic_kul.png');
+const moreIcon = require('../../assets/icons/chat/ic_more_white.png');
 
 const SWIPE_MAX = 88;
 const SWIPE_TRIGGER = 56;
@@ -114,13 +117,13 @@ function ConversationRow({ conversation, onPress, onDelete }: RowProps) {
       <Animated.View style={{ transform: [{ translateX }] }} {...panResponder.panHandlers}>
         <Pressable
           onPress={onPress}
-          className="flex-row items-center gap-3 px-4"
+          className="flex-row items-center gap-4 px-4"
           style={{ minHeight: 72, backgroundColor: unread ? '#f1f8e9' : '#ffffff' }}
         >
           <View className="shrink-0">
             <Avatar name={name} uri={avatarUri} />
             {online && (
-              <View className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full bg-ola-primary" style={{ borderWidth: 2, borderColor: '#fff' }} />
+              <View className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-ola-primary" style={{ borderWidth: 2, borderColor: '#fff' }} />
             )}
           </View>
           <View className="min-w-0 flex-1">
@@ -184,13 +187,51 @@ function ConversationRow({ conversation, onPress, onDelete }: RowProps) {
   );
 }
 
+type ChatSub = 'messages' | 'contacts';
+
+function HeaderTab({
+  label,
+  active,
+  badge = 0,
+  onPress,
+}: {
+  label: string;
+  active: boolean;
+  badge?: number;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable onPress={onPress} className="h-full flex-1 items-center justify-center">
+      <View className="relative flex-row items-center">
+        <Text
+          className={`text-base font-medium ${active ? 'text-white' : 'text-white/70'}`}
+        >
+          {label}
+        </Text>
+        {badge > 0 && (
+          <View
+            className="absolute -right-5 -top-1 h-4 min-w-4 items-center justify-center rounded-full bg-ola-accent px-1"
+            style={{ borderWidth: 2, borderColor: '#7cb342' }}
+          >
+            <Text className="text-[10px] font-bold text-white">{badge > 99 ? '99+' : badge}</Text>
+          </View>
+        )}
+      </View>
+      {active && <View className="absolute bottom-0 left-0 right-0 h-0.5 bg-white" />}
+    </Pressable>
+  );
+}
+
 export function ChatListScreen() {
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const conversations = useChatStore((s) => s.conversations);
   const loading = useChatStore((s) => s.loadingConversations);
   const loadConversations = useChatStore((s) => s.loadConversations);
   const hideConversation = useChatStore((s) => s.hideConversation);
+
+  const [sub, setSub] = useState<ChatSub>('messages');
 
   useEffect(() => {
     void loadConversations();
@@ -201,12 +242,32 @@ export function ChatListScreen() {
     [navigation]
   );
 
+  const totalUnread = conversations.reduce((sum, item) => sum + (item.unreadCount ?? 0), 0);
+
   return (
     <View className="flex-1 bg-white">
-      <View className="h-12 items-center justify-center bg-ola-primary">
-        <Text className="text-lg font-semibold text-white">{t('home.tabChat')}</Text>
+      <View className="bg-ola-primary" style={{ paddingTop: insets.top }}>
+        <View className="h-12 flex-row items-stretch">
+          <HeaderTab
+            label={t('home.subMessages')}
+            active={sub === 'messages'}
+            badge={totalUnread}
+            onPress={() => setSub('messages')}
+          />
+          <HeaderTab
+            label={t('home.subContacts')}
+            active={sub === 'contacts'}
+            onPress={() => setSub('contacts')}
+          />
+          <Pressable className="w-11 items-center justify-center" onPress={() => undefined}>
+            <Image source={moreIcon} style={{ width: 20, height: 20, tintColor: '#fff' }} resizeMode="contain" />
+          </Pressable>
+        </View>
       </View>
-      {loading && conversations.length === 0 ? (
+
+      {sub === 'contacts' ? (
+        <ContactsPane />
+      ) : loading && conversations.length === 0 ? (
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator color="#7cb342" size="large" />
         </View>

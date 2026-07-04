@@ -1,10 +1,12 @@
-import { Image, Pressable, Text, View } from 'react-native';
+import { useRef } from 'react';
+import { ActivityIndicator, Image, Pressable, Text, View } from 'react-native';
 import { formatDuration, parseMessageMetadata } from '@ola/shared/lib';
 import type { Message } from '@ola/shared/types';
 import { Avatar } from '../../components/Avatar';
 import { kulImageForText } from '../../lib/kul';
 import { reactionChips } from '../../lib/reactions';
 import { renderRichText } from '../../lib/richText';
+import type { AnchorRect } from '../room/MessageActionSheet';
 
 const sentIcon = require('../../assets/icons/chat/ic_message_sent.png');
 const resendIcon = require('../../assets/icons/chat/btn_resend_d.png');
@@ -16,10 +18,11 @@ interface ChatMessageRowProps {
   lastInGroup: boolean;
   showTime: boolean;
   isLastOwn: boolean;
+  seen: boolean;
   peerName: string;
   peerAvatar?: string;
   timeLabel: string;
-  onLongPress: () => void;
+  onLongPress: (anchor: AnchorRect) => void;
   onResend: (id: string) => void;
   onOpenImage: (url: string) => void;
 }
@@ -42,7 +45,7 @@ function ChatBubble({
   const kul = message.type === 'text' ? kulImageForText(message.content) : null;
 
   if (kul != null) {
-    return <Image source={kul} style={{ width: 112, height: 112 }} resizeMode="contain" />;
+    return <Image source={kul} style={{ width: 120, height: 120 }} resizeMode="contain" />;
   }
 
   if (message.type === 'image' && meta.url != null && meta.url !== '') {
@@ -91,6 +94,7 @@ export function ChatMessageRow({
   lastInGroup,
   showTime,
   isLastOwn,
+  seen,
   peerName,
   peerAvatar,
   timeLabel,
@@ -99,7 +103,14 @@ export function ChatMessageRow({
   onOpenImage,
 }: ChatMessageRowProps) {
   const chips = reactionChips(message.reactions);
+  const bubbleRef = useRef<View>(null);
   const showAvatar = !fromMe && firstInGroup;
+
+  function handleLongPress() {
+    bubbleRef.current?.measureInWindow((x, y, width, height) => {
+      onLongPress({ x, y, width, height });
+    });
+  }
   const pending = message.status === 'sending' || message.status === 'uploading';
   const failed = message.status === 'failed';
 
@@ -122,14 +133,7 @@ export function ChatMessageRow({
             className="flex-row items-center gap-2"
             style={{ flexDirection: fromMe ? 'row-reverse' : 'row' }}
           >
-            <Pressable
-              onLongPress={onLongPress}
-              delayLongPress={300}
-              onPress={() => {
-                if (failed) onResend(message.id);
-              }}
-              style={pending ? { opacity: 0.6 } : undefined}
-            >
+            <Pressable ref={bubbleRef} onLongPress={handleLongPress} delayLongPress={300}>
               <ChatBubble
                 message={message}
                 fromMe={fromMe}
@@ -176,10 +180,19 @@ export function ChatMessageRow({
           )}
 
           {fromMe && isLastOwn && !pending && !failed && (
-            <Image source={sentIcon} style={{ width: 16, height: 16, marginTop: 4, opacity: 0.6 }} resizeMode="contain" />
+            seen ? (
+              <View style={{ marginTop: 4 }}>
+                <Avatar name={peerName} uri={peerAvatar} size={16} />
+              </View>
+            ) : (
+              <Image source={sentIcon} style={{ width: 16, height: 16, marginTop: 4, opacity: 0.6 }} resizeMode="contain" />
+            )
           )}
         </View>
 
+        {fromMe && pending && (
+          <ActivityIndicator size="small" color="rgba(0,0,0,0.2)" style={{ alignSelf: 'center' }} />
+        )}
         {fromMe && failed && (
           <Pressable onPress={() => onResend(message.id)} className="self-center">
             <Image source={resendIcon} style={{ width: 20, height: 20 }} resizeMode="contain" />

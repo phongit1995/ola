@@ -276,7 +276,7 @@ function MePostCardComponent({
           onPress={() => onOpenComments?.(post.id)}
           className="h-7 flex-1 flex-row items-center justify-center gap-1"
         >
-          <Image source={replyIcon} style={{ width: 22, height: 22 }} resizeMode="contain" />
+          <Image source={replyIcon} style={{ width: 26, height: 26 }} resizeMode="contain" />
           <Text className="text-sm" style={{ color: 'rgba(0,0,0,0.26)' }}>{t('me.comment')}</Text>
         </Pressable>
         <Pressable
@@ -285,7 +285,7 @@ function MePostCardComponent({
         >
           <Image
             source={disliked ? dislikeIconActive : dislikeIcon}
-            style={{ width: 22, height: 22 }}
+            style={{ width: 26, height: 26 }}
             resizeMode="contain"
           />
           <Text className="text-sm" style={{ color: disliked ? 'rgba(0,0,0,0.87)' : 'rgba(0,0,0,0.26)' }}>
@@ -298,7 +298,7 @@ function MePostCardComponent({
         >
           <Image
             source={liked ? likeIconActive : likeIcon}
-            style={{ width: 22, height: 22 }}
+            style={{ width: 26, height: 26 }}
             resizeMode="contain"
           />
           <Text className="text-sm" style={{ color: liked ? '#7cb342' : 'rgba(0,0,0,0.26)' }}>

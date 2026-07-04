@@ -96,7 +96,10 @@ export function ChatConversationView({
   const [transferKenOpen, setTransferKenOpen] = useState(false);
   const [tradingVipOpen, setTradingVipOpen] = useState(false);
   const [pendingAudio, setPendingAudio] = useState<{ blob: Blob; duration: number } | null>(null);
-  const [actionTarget, setActionTarget] = useState<ChatMessage | null>(null);
+  const [actionTarget, setActionTarget] = useState<{
+    message: ChatMessage;
+    anchor: DOMRect | null;
+  } | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ChatMessage | null>(null);
   const [editing, setEditing] = useState<{ id: string } | null>(null);
   const openViewer = useMediaViewerStore((s) => s.openViewer);
@@ -409,7 +412,7 @@ export function ChatConversationView({
                     avatar={avatar}
                     isLastOwn={message.id === lastOwnId}
                     seen={conversationSeen}
-                    onOpenActions={setActionTarget}
+                    onOpenActions={(message, anchor) => setActionTarget({ message, anchor })}
                     onOpenProfile={canViewProfile ? openPeerProfile : undefined}
                     onMention={openMentionProfile}
                     onOpenImage={(img) => openViewer([img])}
@@ -581,8 +584,10 @@ export function ChatConversationView({
 
       {actionTarget != null && (
         <MessageActionSheet
-          actions={messageSheetActions(actionTarget)}
-          onReact={(type) => void reactToMessage(actionTarget.id, type)}
+          actions={messageSheetActions(actionTarget.message)}
+          anchor={actionTarget.anchor}
+          showReactions={actionTarget.message.direction !== 'out'}
+          onReact={(type) => void reactToMessage(actionTarget.message.id, type)}
           onClose={() => setActionTarget(null)}
         />
       )}

@@ -7,6 +7,7 @@ import {
   Modal,
   Pressable,
   ScrollView,
+  StyleSheet,
   Text,
   View,
 } from 'react-native';
@@ -29,6 +30,7 @@ import { VipAvatar } from '../../components/VipAvatar';
 import { MePostCard } from '../me/MePostCard';
 import { MeCommentSheet } from '../me/MeCommentSheet';
 import { MeLikersDialog } from '../me/MeLikersDialog';
+import type { MessageSheetAction } from '../room/MessageActionSheet';
 
 const checkedIcon = require('../../assets/icons/profile/ic_checked.png');
 const kissIcon = require('../../assets/icons/profile/sticker_kiss.png');
@@ -44,12 +46,15 @@ const followingActiveIcon = require('../../assets/icons/profile/ic_state_followi
 const postMeIcon = require('../../assets/icons/profile/ic_post_me_gray.png');
 const moreIcon = require('../../assets/icons/profile/ic_more_horizon_black_disable.png');
 const editIcon = require('../../assets/icons/profile/ic_edit_profile_gray.png');
+const composeIcon = require('../../assets/icons/chat/ic_action_compose_message.png');
 
 interface UserProfileScreenProps {
   username: string;
   language: string;
   onClose: () => void;
   onOpenProfile: (nick: string, color: string) => void;
+  onMessage?: (userId: string) => void;
+  onEditProfile?: () => void;
 }
 
 function RelationButton({
@@ -87,7 +92,7 @@ function InfoRow({ icon, text }: { icon: number; text: string }) {
   );
 }
 
-export function UserProfileScreen({ username, language, onClose, onOpenProfile }: UserProfileScreenProps) {
+export function UserProfileScreen({ username, language, onClose, onOpenProfile, onMessage, onEditProfile }: UserProfileScreenProps) {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const push = useToastStore((s) => s.push);
@@ -103,6 +108,8 @@ export function UserProfileScreen({ username, language, onClose, onOpenProfile }
   const [kisses, setKisses] = useState(0);
   const [commentPostId, setCommentPostId] = useState<string | null>(null);
   const [likersPostId, setLikersPostId] = useState<string | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
 
   const formatDate = useMemo(() => createDateFormatter(language), [language]);
   const formatTime = useMemo(() => createTimeFormatter(language), [language]);
@@ -168,16 +175,40 @@ export function UserProfileScreen({ username, language, onClose, onOpenProfile }
       });
   }
 
-  function friendAction() {
-    if (profile == null) return;
-    const status = profile.relationship?.status;
-    if (status === 'none' || status == null) {
-      RelationshipService.sendRequest(profile.id)
-        .then(() => push('success', t('me.friendRequestSent')))
-        .catch(() => push('error', t('me.makeFriendError')));
-    } else {
-      comingSoon();
+  const reload = useCallback(async () => {
+    try {
+      const data = await UserService.publicProfile(username);
+      setProfile(data);
+      setFollowing(data.relationship?.isFollowing ?? false);
+      setFans(data.followerCount);
+    } catch {
+      /* ignore */
     }
+  }, [username]);
+
+  function runAndReload(op: Promise<unknown>) {
+    setBusy(true);
+    op.then(() => reload())
+      .catch(() => push('error', t('profile.actionError')))
+      .finally(() => setBusy(false));
+  }
+
+  function friendAction() {
+    if (profile == null || busy) return;
+    const status = profile.relationship?.status;
+    const requestId = profile.relationship?.requestId;
+    if (status === 'none' || status == null) runAndReload(RelationshipService.sendRequest(profile.id));
+    else if (status === 'pending_outgoing' && requestId) runAndReload(RelationshipService.cancel(requestId));
+    else if (status === 'pending_incoming' && requestId) runAndReload(RelationshipService.respond(requestId, 'accept'));
+    else if (status === 'friend' && requestId) runAndReload(RelationshipService.unfriend(requestId));
+  }
+
+  function blockAction() {
+    if (profile == null || busy) return;
+    const status = profile.relationship?.status;
+    const requestId = profile.relationship?.requestId;
+    if (status === 'blocked_by_me' && requestId) runAndReload(RelationshipService.unblock(requestId));
+    else runAndReload(RelationshipService.block(profile.id));
   }
 
   const toggleReaction = useCallback(
@@ -229,6 +260,23 @@ export function UserProfileScreen({ username, language, onClose, onOpenProfile }
     ? `${t('marriage.marryWithLabel')} @${profile.spouse.username}`
     : t('profile.marriageSingle');
 
+  const menuActions: MessageSheetAction[] = isSelf
+    ? [
+        { key: 'avatar', label: t('profile.changeAvatar'), onSelect: comingSoon },
+        { key: 'cover', label: t('profile.changeCover'), onSelect: comingSoon },
+        { key: 'privacy', label: t('profile.changePrivacy'), onSelect: comingSoon },
+      ]
+    : [
+        {
+          key: 'block',
+          label: profile?.relationship?.status === 'blocked_by_me' ? t('profile.unblock') : t('profile.block'),
+          destructive: true,
+          onSelect: blockAction,
+        },
+        { key: 'copy', label: t('profile.copyNick'), onSelect: comingSoon },
+        { key: 'report', label: t('profile.report'), onSelect: comingSoon },
+      ];
+
   return (
     <Modal visible transparent animationType="slide" onRequestClose={onClose}>
       <View className="flex-1 bg-[#f3f3f3]">
@@ -277,7 +325,7 @@ export function UserProfileScreen({ username, language, onClose, onOpenProfile }
 
               <View className="flex-row px-2 py-2">
                 {isSelf ? (
-                  <RelationButton icon={editIcon} label={t('profile.updateInfo')} onPress={comingSoon} />
+                  <RelationButton icon={editIcon} label={t('profile.updateInfo')} onPress={onEditProfile ?? comingSoon} />
                 ) : (
                   <>
                     <RelationButton icon={isFriend ? friendsActiveIcon : addFriendIcon} label={friendLabel} active={isFriend || friendStatus === 'pending_outgoing'} onPress={friendAction} />
@@ -285,7 +333,7 @@ export function UserProfileScreen({ username, language, onClose, onOpenProfile }
                   </>
                 )}
                 <RelationButton icon={postMeIcon} label={t('profile.postMe')} onPress={comingSoon} />
-                <RelationButton icon={moreIcon} label={t('profile.more')} onPress={comingSoon} />
+                <RelationButton icon={moreIcon} label={t('profile.more')} onPress={() => setMenuOpen(true)} />
               </View>
 
               <View className="mx-4" style={{ height: 1, backgroundColor: 'rgba(0,0,0,0.12)' }} />
@@ -367,6 +415,44 @@ export function UserProfileScreen({ username, language, onClose, onOpenProfile }
             onClose={() => setLikersPostId(null)}
             onOpenProfile={onOpenProfile}
           />
+        )}
+
+        {profile != null && !isSelf && onMessage != null && (
+          <Pressable
+            onPress={() => onMessage(profile.id)}
+            className="absolute h-14 w-14 items-center justify-center rounded-full bg-ola-primary"
+            style={{ right: 16, bottom: 16, elevation: 4, shadowColor: '#000', shadowOpacity: 0.3, shadowRadius: 4, shadowOffset: { width: 0, height: 2 } }}
+          >
+            <Image source={composeIcon} style={{ width: 24, height: 24, tintColor: '#fff' }} resizeMode="contain" />
+          </Pressable>
+        )}
+
+        {menuOpen && (
+          <View style={StyleSheet.absoluteFill}>
+            <Pressable style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.4)' }]} onPress={() => setMenuOpen(false)} />
+            <View
+              className="absolute bottom-0 left-0 right-0 rounded-t-2xl bg-white"
+              style={{ paddingBottom: Math.max(insets.bottom, 8) }}
+            >
+              {menuActions.map((action) => (
+                <Pressable
+                  key={action.key}
+                  onPress={() => {
+                    setMenuOpen(false);
+                    action.onSelect();
+                  }}
+                  className="flex-row items-center gap-3 px-5 py-3 active:bg-neutral-100"
+                >
+                  <Text className="text-base" style={{ color: action.destructive ? '#e34545' : 'rgba(0,0,0,0.87)' }}>
+                    {action.label}
+                  </Text>
+                </Pressable>
+              ))}
+              <Pressable onPress={() => setMenuOpen(false)} className="items-center px-5 py-3 active:bg-neutral-100">
+                <Text className="text-base font-medium" style={{ color: 'rgba(0,0,0,0.54)' }}>{t('dialog.cancel')}</Text>
+              </Pressable>
+            </View>
+          </View>
         )}
       </View>
     </Modal>

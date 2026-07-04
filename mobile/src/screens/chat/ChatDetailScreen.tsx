@@ -17,21 +17,20 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import { currentUserId } from '@ola/shared/stores/chat/chatHelpers';
-import { createTimeFormatter } from '@ola/shared/lib';
+import { createDateFormatter, createTimeFormatter, isSameDay } from '@ola/shared/lib';
 import type { Message, ReactionType } from '@ola/shared/types';
 import type { RootStackParamList } from '../../navigation/types';
+import { ROOT_ROUTES } from '../../navigation/routes';
 import { Avatar } from '../../components/Avatar';
 import { kulToken } from '../../lib/kul';
 import { ChatMessageRow } from './ChatMessageRow';
-import { SmileyKulPanel } from '../room/SmileyKulPanel';
-import { MessageActionSheet, type MessageSheetAction } from '../room/MessageActionSheet';
+import { AttachmentBar, type AttachTab } from './AttachmentBar';
+import { formatLastActive } from './contacts';
+import { MessageActionSheet, type AnchorRect, type MessageSheetAction } from '../room/MessageActionSheet';
 
 const backIcon = require('../../assets/icons/ic_back.png');
 const likeIcon = require('../../assets/icons/chat/smiley/smiley_35.png');
-const smileyIcon = require('../../assets/icons/chat/ic_smiley.png');
-const smileyIconActive = require('../../assets/icons/chat/ic_smiley_selected.png');
-const kulIcon = require('../../assets/icons/chat/ic_kul.png');
-const kulIconActive = require('../../assets/icons/chat/ic_kul_selected.png');
+const moreIcon = require('../../assets/icons/chat/ic_more_white.png');
 const deleteActionIcon = require('../../assets/icons/chat/ic_menu_delete.png');
 
 const CHAT_BG = '#ECE5DD';
@@ -59,8 +58,10 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   const notifyTyping = useChatStore((s) => s.notifyTyping);
 
   const [draft, setDraft] = useState('');
-  const [openTab, setOpenTab] = useState<'smiley' | 'kul' | null>(null);
-  const [actionTarget, setActionTarget] = useState<Message | null>(null);
+  const [openTab, setOpenTab] = useState<AttachTab | null>(null);
+  const [actionTarget, setActionTarget] = useState<{ message: Message; anchor: AnchorRect } | null>(
+    null
+  );
   const listRef = useRef<FlashListRef<Message>>(null);
   const stickToBottomRef = useRef(true);
 
@@ -78,6 +79,15 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   const peerAvatar = conversation?.otherUser?.avatar;
   const myId = currentUserId();
   const timeFormatter = useMemo(() => createTimeFormatter(i18n.language), [i18n.language]);
+  const dateFormatter = useMemo(() => createDateFormatter(i18n.language), [i18n.language]);
+
+  const peerOnline = conversation?.otherUser?.isOnline === true;
+  const subtitle =
+    typingUsers.length > 0
+      ? t('chat.typing', { name: typingUsers[0]?.username ?? '' })
+      : peerOnline
+        ? t('chat.statusActive')
+        : formatLastActive(t, conversation?.otherUser?.lastActiveAt) ?? '';
 
   const lastOwnId = useMemo(() => {
     for (let i = messages.length - 1; i >= 0; i -= 1) {
@@ -109,6 +119,14 @@ export function ChatDetailScreen({ navigation, route }: Props) {
 
   const isTyping = draft.trim() !== '';
 
+  const openPeerProfile = () => {
+    const peer = conversation?.otherUser;
+    const identifier = peer?.id ?? peer?.username;
+    if (identifier != null && identifier !== '') {
+      navigation.navigate(ROOT_ROUTES.ProfileView, { userId: identifier });
+    }
+  };
+
   function sheetActions(message: Message): MessageSheetAction[] {
     if (message.senderId !== myId) return [];
     return [
@@ -136,19 +154,22 @@ export function ChatDetailScreen({ navigation, route }: Props) {
           >
             <Image source={backIcon} style={{ width: 24, height: 24 }} resizeMode="contain" />
           </Pressable>
-          <Avatar name={title} uri={peerAvatar} size={32} />
-          <View className="flex-1">
-            <Text className="text-sm font-bold text-white" numberOfLines={1}>
-              {title}
-            </Text>
-            {typingUsers.length > 0 ? (
-              <Text className="text-xs text-white/70">
-                {t('chat.typing', { name: typingUsers[0]?.username ?? '' })}
+          <Pressable className="flex-1 flex-row items-center gap-2" onPress={openPeerProfile}>
+            <Avatar name={title} uri={peerAvatar} size={32} />
+            <View className="flex-1">
+              <Text className="text-sm font-bold text-white" numberOfLines={1}>
+                {title}
               </Text>
-            ) : conversation?.otherUser?.isOnline === true ? (
-              <Text className="text-xs text-white/70">{t('chat.online')}</Text>
-            ) : null}
-          </View>
+              {subtitle !== '' && (
+                <Text className="text-xs text-white/70" numberOfLines={1}>
+                  {subtitle}
+                </Text>
+              )}
+            </View>
+          </Pressable>
+          <Pressable className="h-9 w-9 items-center justify-center rounded-full active:bg-white/15" onPress={() => undefined}>
+            <Image source={moreIcon} style={{ width: 20, height: 20, tintColor: '#fff' }} resizeMode="contain" />
+          </Pressable>
         </View>
       </View>
 
@@ -173,55 +194,49 @@ export function ChatDetailScreen({ navigation, route }: Props) {
             const lastInGroup = next == null || next.senderId !== item.senderId;
             const showTime =
               lastInGroup || timeFormatter(next!.createdAt) !== timeFormatter(item.createdAt);
+            const showDate =
+              item.createdAt != null &&
+              (prev == null || !isSameDay(prev.createdAt, item.createdAt));
             return (
-              <ChatMessageRow
-                message={item}
-                fromMe={fromMe}
-                firstInGroup={firstInGroup}
-                lastInGroup={lastInGroup}
-                showTime={showTime}
-                isLastOwn={item.id === lastOwnId}
-                peerName={title}
-                peerAvatar={peerAvatar}
-                timeLabel={timeFormatter(item.createdAt)}
-                onLongPress={() => setActionTarget(item)}
-                onResend={(id) => void resendMessage(id)}
-                onOpenImage={() => undefined}
-              />
+              <>
+                {showDate && (
+                  <View className="items-center py-1">
+                    <Text
+                      className="overflow-hidden rounded-full px-3 py-0.5 text-xs text-white"
+                      style={{ backgroundColor: 'rgba(0,0,0,0.35)' }}
+                    >
+                      {dateFormatter(item.createdAt)}
+                    </Text>
+                  </View>
+                )}
+                <ChatMessageRow
+                  message={item}
+                  fromMe={fromMe}
+                  firstInGroup={firstInGroup}
+                  lastInGroup={lastInGroup}
+                  showTime={showTime}
+                  isLastOwn={item.id === lastOwnId}
+                  seen={conversation?.seen ?? false}
+                  peerName={title}
+                  peerAvatar={peerAvatar}
+                  timeLabel={timeFormatter(item.createdAt)}
+                  onLongPress={(anchor) => setActionTarget({ message: item, anchor })}
+                  onResend={(id) => void resendMessage(id)}
+                  onOpenImage={() => undefined}
+                />
+              </>
             );
           }}
         />
       )}
 
       <View
-        className="flex-row items-center gap-1 bg-white px-2 py-2"
+        className="flex-row items-end gap-1 bg-white px-2 py-1.5"
         style={{ borderTopWidth: 1, borderTopColor: DIVIDER }}
       >
-        <Pressable
-          onPress={() => setOpenTab((c) => (c === 'smiley' ? null : 'smiley'))}
-          className="h-9 w-9 items-center justify-center"
-          style={{ opacity: openTab === 'smiley' ? 1 : 0.6 }}
-        >
-          <Image
-            source={openTab === 'smiley' ? smileyIconActive : smileyIcon}
-            style={{ width: 24, height: 24 }}
-            resizeMode="contain"
-          />
-        </Pressable>
-        <Pressable
-          onPress={() => setOpenTab((c) => (c === 'kul' ? null : 'kul'))}
-          className="h-9 w-9 items-center justify-center"
-          style={{ opacity: openTab === 'kul' ? 1 : 0.6 }}
-        >
-          <Image
-            source={openTab === 'kul' ? kulIconActive : kulIcon}
-            style={{ width: 24, height: 24 }}
-            resizeMode="contain"
-          />
-        </Pressable>
         <TextInput
-          className="max-h-28 min-h-9 flex-1 rounded-2xl px-3 py-2 text-base"
-          style={{ color: 'rgba(0,0,0,0.87)', borderWidth: 1, borderColor: DIVIDER, textAlignVertical: 'center' }}
+          className="max-h-32 min-h-9 flex-1 px-2 py-1.5 text-base"
+          style={{ color: 'rgba(0,0,0,0.87)', textAlignVertical: 'center' }}
           placeholder={t('chat.messageInputPlaceholder', { name: title })}
           placeholderTextColor="rgba(0,0,0,0.38)"
           multiline
@@ -250,20 +265,21 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         )}
       </View>
 
-      {openTab != null && (
-        <SmileyKulPanel
-          tab={openTab}
-          onPickEmoji={(code) => setDraft((c) => c + code)}
-          onSendKul={(index) => void send(kulToken(index))}
-        />
-      )}
+      <AttachmentBar
+        openTab={openTab}
+        onToggleTab={(tab) => setOpenTab((c) => (c === tab ? null : tab))}
+        onPickEmoji={(code) => setDraft((c) => c + code)}
+        onBackspace={() => setDraft((c) => c.slice(0, -1))}
+        onSendKul={(index) => void send(kulToken(index))}
+      />
 
       <MessageActionSheet
         visible={actionTarget != null}
-        actions={actionTarget != null ? sheetActions(actionTarget) : []}
-        showReactions={actionTarget != null}
+        anchor={actionTarget?.anchor ?? null}
+        actions={actionTarget != null ? sheetActions(actionTarget.message) : []}
+        showReactions={actionTarget != null && actionTarget.message.senderId !== myId}
         onReact={(type: ReactionType) => {
-          if (actionTarget != null) void reactToMessage(actionTarget.id, type);
+          if (actionTarget != null) void reactToMessage(actionTarget.message.id, type);
         }}
         onClose={() => setActionTarget(null)}
       />
