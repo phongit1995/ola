@@ -1,20 +1,23 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Image, KeyboardAvoidingView, Platform, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useRoomChatStore, type RoomTab } from '@ola/shared/stores/roomChatStore';
 import { useAuthStore } from '@ola/shared/stores/authStore';
+import { memberMatchesFilter, useRoomFilterStore } from '@ola/shared/stores/roomFilterStore';
 import type { ReactionType } from '@ola/shared/types';
 import type { RootStackParamList } from '../../navigation/types';
 import { RoomMessagesTab } from './RoomMessagesTab';
 import { RoomMembersTab } from './RoomMembersTab';
+import { RoomFilterDialog } from './RoomFilterDialog';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'RoomChat'>;
 
 const membersIcon = require('../../assets/icons/room/ic_add_friend.png');
 const messagesIcon = require('../../assets/icons/room/ic_notify_new_chat_group_message.png');
 const backIcon = require('../../assets/icons/ic_back.png');
+const filterIcon = require('../../assets/icons/room/ic_filter_unselected.png');
 
 function DashedLine() {
   return (
@@ -103,6 +106,13 @@ export function RoomChatScreen({ navigation, route }: Props) {
   const reactToRoomMessage = useRoomChatStore((s) => s.reactToRoomMessage);
   const deleteRoomMessage = useRoomChatStore((s) => s.deleteRoomMessage);
   const currentUserId = useAuthStore((s) => s.user?.id) ?? '';
+  const filters = useRoomFilterStore((s) => s.filters);
+  const setFilters = useRoomFilterStore((s) => s.setFilters);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const visibleMembers = useMemo(
+    () => members.filter((member) => memberMatchesFilter(member, filters)),
+    [members, filters]
+  );
 
   useEffect(() => {
     void open({ id: roomId, name: roomName });
@@ -136,6 +146,14 @@ export function RoomChatScreen({ navigation, route }: Props) {
           <Text className="px-12 text-center text-sm font-bold text-white" numberOfLines={1}>
             {roomName}
           </Text>
+          {activeTab === 'members' && (
+            <Pressable
+              className="absolute right-0 h-9 w-9 items-center justify-center rounded-full active:bg-white/15"
+              onPress={() => setFilterOpen(true)}
+            >
+              <Image source={filterIcon} style={{ width: 20, height: 20, tintColor: '#ffffff' }} resizeMode="contain" />
+            </Pressable>
+          )}
         </View>
       </View>
       <DashedLine />
@@ -161,7 +179,7 @@ export function RoomChatScreen({ navigation, route }: Props) {
           <ActivityIndicator color="#7cb342" size="large" />
         </View>
       ) : activeTab === 'members' ? (
-        <RoomMembersTab members={members} onOpenUser={openUser} />
+        <RoomMembersTab members={visibleMembers} onOpenUser={openUser} />
       ) : (
         <RoomMessagesTab
           currentUserId={currentUserId}
@@ -180,6 +198,16 @@ export function RoomChatScreen({ navigation, route }: Props) {
           onDeleteMessage={deleteRoomMessage}
         />
       )}
+
+      <RoomFilterDialog
+        visible={filterOpen}
+        value={filters}
+        onApply={(value) => {
+          setFilters(value);
+          setFilterOpen(false);
+        }}
+        onClose={() => setFilterOpen(false)}
+      />
     </KeyboardAvoidingView>
   );
 }

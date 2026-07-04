@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Image, Pressable, Text, View } from 'react-native';
+import { Image, Modal, Pressable, Text, View } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import type { RoomMember } from '@ola/shared/types';
 import { VipAvatar } from '../../components/VipAvatar';
@@ -26,14 +27,17 @@ function GenderIcon({ gender }: { gender: RoomMember['gender'] }) {
 function MemberRow({
   member,
   onOpenUser,
+  onViewImage,
 }: {
   member: RoomMember;
   onOpenUser?: (userId: string) => void;
+  onViewImage: (uri: string) => void;
 }) {
   const subName =
     member.fullName != null && member.fullName !== '' && member.fullName !== member.username
       ? member.fullName
       : null;
+  const bioImage = member.bioImage != null && member.bioImage !== '' ? member.bioImage : null;
   return (
     <Pressable
       onPress={() => onOpenUser?.(member.userId)}
@@ -59,12 +63,29 @@ function MemberRow({
           </Text>
         )}
       </View>
+      {bioImage != null && (
+        <Pressable onPress={() => onViewImage(bioImage)} hitSlop={4}>
+          <Image
+            source={{ uri: bioImage }}
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 4,
+              borderWidth: 1,
+              borderColor: 'rgba(0,0,0,0.12)',
+            }}
+            resizeMode="cover"
+          />
+        </Pressable>
+      )}
     </Pressable>
   );
 }
 
 export function RoomMembersTab({ members, onOpenUser }: RoomMembersTabProps) {
   const { t } = useTranslation();
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+
   if (members.length === 0) {
     return (
       <View className="flex-1 items-center justify-center bg-white px-8">
@@ -79,8 +100,29 @@ export function RoomMembersTab({ members, onOpenUser }: RoomMembersTabProps) {
       <FlashList
         data={members}
         keyExtractor={(item) => item.userId}
-        renderItem={({ item }) => <MemberRow member={item} onOpenUser={onOpenUser} />}
+        renderItem={({ item }) => (
+          <MemberRow member={item} onOpenUser={onOpenUser} onViewImage={setPreviewImage} />
+        )}
       />
+      <Modal
+        visible={previewImage != null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setPreviewImage(null)}
+      >
+        <Pressable
+          className="flex-1 items-center justify-center bg-black/90 px-4"
+          onPress={() => setPreviewImage(null)}
+        >
+          {previewImage != null && (
+            <Image
+              source={{ uri: previewImage }}
+              style={{ width: '100%', height: '80%' }}
+              resizeMode="contain"
+            />
+          )}
+        </Pressable>
+      </Modal>
     </View>
   );
 }

@@ -1,14 +1,15 @@
-import { Image, Pressable, ScrollView, View } from 'react-native';
+import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { SMILEY_PANEL } from '../../lib/chatSmiley';
 import { KUL_IMAGES } from '../../lib/kul';
 
 interface SmileyKulPanelProps {
   tab: 'smiley' | 'kul';
   onPickEmoji: (code: string) => void;
+  onBackspace?: () => void;
   onSendKul: (index: number) => void;
 }
 
-export function SmileyKulPanel({ tab, onPickEmoji, onSendKul }: SmileyKulPanelProps) {
+export function SmileyKulPanel({ tab, onPickEmoji, onBackspace, onSendKul }: SmileyKulPanelProps) {
   return (
     <View
       className="bg-white"
@@ -37,6 +38,17 @@ export function SmileyKulPanel({ tab, onPickEmoji, onSendKul }: SmileyKulPanelPr
               </Pressable>
             ))}
       </ScrollView>
+      {tab === 'smiley' && onBackspace != null && (
+        <Pressable
+          onPress={onBackspace}
+          className="absolute bottom-2 right-2 h-9 w-11 items-center justify-center rounded-full"
+          style={{ backgroundColor: 'rgba(0,0,0,0.06)' }}
+        >
+          <Text className="text-base" style={{ color: 'rgba(0,0,0,0.54)' }}>
+            ⌫
+          </Text>
+        </Pressable>
+      )}
     </View>
   );
 }

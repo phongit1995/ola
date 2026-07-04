@@ -29,6 +29,14 @@ export interface RoomMember {
   vipTypeId?: number | null;
 }
 
+export interface RoomFilters {
+  showAll: boolean;
+  media: boolean;
+  female: boolean;
+  male: boolean;
+  flexible: boolean;
+}
+
 export interface RoomReplySnapshot {
   messageId: string;
   senderId: string;

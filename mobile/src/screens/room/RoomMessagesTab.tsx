@@ -12,7 +12,9 @@ import {
 import { FlashList, type FlashListRef } from '@shopify/flash-list';
 import type { ReactionType, RoomMessage } from '@ola/shared/types';
 import { createTimeFormatter } from '@ola/shared/lib';
+import { useToastStore } from '@ola/shared/stores/toastStore';
 import { kulImageForText, kulToken } from '../../lib/kul';
+import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { buildRoomFeed, type RoomFeedItem } from './messageGroups';
 import { RoomMessageGroup } from './RoomMessageGroup';
 import { SmileyKulPanel } from './SmileyKulPanel';
@@ -64,14 +66,43 @@ export function RoomMessagesTab({
   onDeleteMessage,
 }: RoomMessagesTabProps) {
   const { t } = useTranslation();
+  const pushToast = useToastStore((s) => s.push);
   const [draft, setDraft] = useState('');
   const [openTab, setOpenTab] = useState<'smiley' | 'kul' | null>(null);
   const [actionTarget, setActionTarget] = useState<RoomMessage | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<RoomMessage | null>(null);
   const [reactionsTargetId, setReactionsTargetId] = useState<string | null>(null);
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  const [pendingSelection, setPendingSelection] = useState<{ start: number; end: number } | null>(
+    null
+  );
   const listRef = useRef<FlashListRef<RoomFeedItem>>(null);
   const stickToBottomRef = useRef(true);
   const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const selectionRef = useRef<{ start: number; end: number }>({ start: 0, end: 0 });
+
+  function applyDraft(next: string, caret: number) {
+    selectionRef.current = { start: caret, end: caret };
+    setDraft(next);
+    setPendingSelection({ start: caret, end: caret });
+  }
+
+  function insertAtCursor(text: string) {
+    const start = Math.max(0, Math.min(selectionRef.current.start, draft.length));
+    const end = Math.max(start, Math.min(selectionRef.current.end, draft.length));
+    applyDraft(draft.slice(0, start) + text + draft.slice(end), start + text.length);
+  }
+
+  function backspaceAtCursor() {
+    const start = Math.max(0, Math.min(selectionRef.current.start, draft.length));
+    const end = Math.max(start, Math.min(selectionRef.current.end, draft.length));
+    if (start === end) {
+      if (start === 0) return;
+      applyDraft(draft.slice(0, start - 1) + draft.slice(end), start - 1);
+    } else {
+      applyDraft(draft.slice(0, start) + draft.slice(end), start);
+    }
+  }
 
   const canSend = status === 'joined';
   const timeFormatter = useMemo(() => createTimeFormatter(language), [language]);
@@ -88,12 +119,13 @@ export function RoomMessagesTab({
     const trimmed = text.trim();
     if (trimmed === '' || !canSend) return;
     stickToBottomRef.current = true;
-    setDraft('');
+    applyDraft('', 0);
     setOpenTab(null);
     try {
       await onSend(trimmed);
     } catch {
-      setDraft(trimmed);
+      applyDraft(trimmed, trimmed.length);
+      pushToast('error', t('room.sendError'));
     }
   }
 
@@ -112,14 +144,17 @@ export function RoomMessagesTab({
       const index = feed.findIndex(
         (item) => item.kind === 'group' && item.messages.some((message) => message.id === id)
       );
-      if (index < 0) return;
+      if (index < 0) {
+        pushToast('error', t('room.replyNotFound'));
+        return;
+      }
       stickToBottomRef.current = false;
       listRef.current?.scrollToIndex({ index, animated: true, viewPosition: 0.5 });
       setHighlightedId(id);
       if (highlightTimerRef.current != null) clearTimeout(highlightTimerRef.current);
       highlightTimerRef.current = setTimeout(() => setHighlightedId(null), 1500);
     },
-    [feed]
+    [feed, pushToast, t]
   );
 
   function sheetActions(message: RoomMessage): MessageSheetAction[] {
@@ -139,9 +174,7 @@ export function RoomMessagesTab({
         label: t('chat.actionDelete'),
         icon: deleteActionIcon,
         destructive: true,
-        onSelect: () => {
-          void onDeleteMessage(message.id);
-        },
+        onSelect: () => setDeleteTarget(message),
       },
     ];
   }
@@ -272,6 +305,11 @@ export function RoomMessagesTab({
           multiline
           editable={canSend}
           value={draft}
+          selection={pendingSelection ?? undefined}
+          onSelectionChange={(event) => {
+            selectionRef.current = event.nativeEvent.selection;
+            if (pendingSelection != null) setPendingSelection(null);
+          }}
           onChangeText={setDraft}
           onFocus={() => setOpenTab(null)}
         />
@@ -298,7 +336,8 @@ export function RoomMessagesTab({
       {openTab != null && canSend && (
         <SmileyKulPanel
           tab={openTab}
-          onPickEmoji={(code) => setDraft((current) => current + code)}
+          onPickEmoji={(code) => insertAtCursor(code)}
+          onBackspace={backspaceAtCursor}
           onSendKul={(index) => {
             void sendText(kulToken(index));
           }}
@@ -321,6 +360,23 @@ export function RoomMessagesTab({
           reactionsTargetId != null ? messageById.get(reactionsTargetId)?.reactions : undefined
         }
         onClose={() => setReactionsTargetId(null)}
+      />
+
+      <ConfirmDialog
+        visible={deleteTarget != null}
+        danger
+        title={t('chat.deleteTitle')}
+        message={t('chat.deleteConfirm')}
+        confirmLabel={t('dialog.delete')}
+        cancelLabel={t('dialog.cancel')}
+        onConfirm={() => {
+          const target = deleteTarget;
+          setDeleteTarget(null);
+          if (target != null) {
+            onDeleteMessage(target.id).catch(() => pushToast('error', t('common.error')));
+          }
+        }}
+        onCancel={() => setDeleteTarget(null)}
       />
     </View>
   );

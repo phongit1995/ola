@@ -9,6 +9,7 @@ import { authTokens } from '@ola/shared/lib';
 import { SocketService } from '@ola/shared/services';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { RootNavigator } from './navigation/RootNavigator';
+import { ToastHost } from './components/ToastHost';
 import { checkForOtaUpdate } from './services/otaUpdate';
 
 function clearSession() {
@@ -40,6 +41,7 @@ export default function App() {
         <NavigationContainer>
           <RootNavigator />
         </NavigationContainer>
+        <ToastHost />
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
