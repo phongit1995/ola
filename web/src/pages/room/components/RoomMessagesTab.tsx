@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ReactionType, RoomMessage } from '@app-types';
-import { kulImageForText, kulToken, toast } from '@lib';
+import { compressImageForUpload, ImageTooLargeError, kulImageForText, kulToken, toast } from '@lib';
 import { useLongPress } from '@hooks';
 import {
   AttachmentBar,
@@ -15,11 +15,13 @@ import {
 } from '@components';
 import likeIcon from '@/assets/icons/chat/smiley_35.png';
 import replyActionIcon from '@/assets/icons/me/ic_action_reply_gray.png';
+import copyActionIcon from '@/assets/icons/chat/ic_menu_copy.svg';
 import deleteActionIcon from '@/assets/icons/chat/ic_menu_delete.png';
 import smileyIcon from '@/assets/icons/chat/ic_smiley.png';
 import smileyIconActive from '@/assets/icons/chat/ic_smiley_selected.png';
 import kulIcon from '@/assets/icons/chat/ic_kul.png';
 import kulIconActive from '@/assets/icons/chat/ic_kul_selected.png';
+import photoIcon from '@/assets/icons/chat/ic_local.png';
 import { buildRoomFeed } from '../messageGroups';
 import { RoomMessageGroup } from './RoomMessageGroup';
 import { RoomReactionsDialog } from './RoomReactionsDialog';
@@ -35,6 +37,7 @@ interface RoomMessagesTabProps {
   loadingMore: boolean;
   replyTarget: RoomMessage | null;
   onSend: (content: string) => Promise<void>;
+  onSendImage: (file: File) => Promise<void>;
   onLoadMore: () => void;
   onOpenProfile?: (nick: string, color: string) => void;
   onSetReplyTarget: (message: RoomMessage) => void;
@@ -53,6 +56,7 @@ export function RoomMessagesTab({
   loadingMore,
   replyTarget,
   onSend,
+  onSendImage,
   onLoadMore,
   onOpenProfile,
   onSetReplyTarget,
@@ -71,7 +75,10 @@ export function RoomMessagesTab({
   const [deleteTarget, setDeleteTarget] = useState<RoomMessage | null>(null);
   const [reactionsTargetId, setReactionsTargetId] = useState<string | null>(null);
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  const [pendingImages, setPendingImages] = useState<{ id: string; file: File; url: string }[]>([]);
+  const [sendingImages, setSendingImages] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const composerRef = useRef<SmileyInputHandle>(null);
   const draftRef = useRef(draft);
   const stickToBottomRef = useRef(true);
@@ -79,6 +86,17 @@ export function RoomMessagesTab({
   const prevScrollHeightRef = useRef(0);
   const suppressLikeClick = useRef(false);
   const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const imageIdRef = useRef(0);
+  const pendingImagesRef = useRef(pendingImages);
+  useEffect(() => {
+    pendingImagesRef.current = pendingImages;
+  }, [pendingImages]);
+  useEffect(
+    () => () => {
+      pendingImagesRef.current.forEach((image) => URL.revokeObjectURL(image.url));
+    },
+    []
+  );
   const likeLongPress = useLongPress(() => {
     suppressLikeClick.current = true;
     void sendText('(Y)');
@@ -137,6 +155,65 @@ export function RoomMessagesTab({
     }
   }
 
+  async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(event.target.files ?? []);
+    event.target.value = '';
+    if (files.length === 0 || status !== 'joined') return;
+    setOpenTab(null);
+    for (const file of files) {
+      try {
+        const prepared = await compressImageForUpload(file);
+        const url = URL.createObjectURL(prepared);
+        imageIdRef.current += 1;
+        const id = String(imageIdRef.current);
+        setPendingImages((current) => [...current, { id, file: prepared, url }]);
+      } catch (error) {
+        toast.error(error instanceof ImageTooLargeError ? t('chat.imageTooLarge') : t('room.sendError'));
+      }
+    }
+  }
+
+  function removePendingImage(id: string) {
+    setPendingImages((current) => {
+      const target = current.find((image) => image.id === id);
+      if (target != null) URL.revokeObjectURL(target.url);
+      return current.filter((image) => image.id !== id);
+    });
+  }
+
+  function clearPendingImages() {
+    setPendingImages((current) => {
+      current.forEach((image) => URL.revokeObjectURL(image.url));
+      return [];
+    });
+  }
+
+  async function sendPendingImages() {
+    const images = pendingImages;
+    if (images.length === 0) return;
+    setSendingImages(true);
+    stickToBottomRef.current = true;
+    for (const image of images) {
+      try {
+        await onSendImage(image.file);
+      } catch {
+        toast.error(t('room.sendError'));
+      }
+      URL.revokeObjectURL(image.url);
+    }
+    setPendingImages([]);
+    setSendingImages(false);
+  }
+
+  async function handleSend() {
+    if (!canSend || sendingImages) return;
+    if (pendingImages.length > 0) {
+      await sendPendingImages();
+      return;
+    }
+    if (draft.trim() !== '') void sendText(draft);
+  }
+
   const insertMention = useCallback((name: string) => {
     const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const alreadyTagged = new RegExp(`@${escaped}(?![\\p{L}\\p{N}_])`, 'iu');
@@ -170,8 +247,31 @@ export function RoomMessagesTab({
     [t]
   );
 
+  async function copyMessage(content: string) {
+    try {
+      await navigator.clipboard.writeText(content);
+      toast.success(t('room.copied'));
+    } catch {
+      toast.error(t('common.error'));
+    }
+  }
+
+  function isCopyableText(message: RoomMessage): boolean {
+    return (
+      message.type !== 'image' &&
+      kulImageForText(message.content) == null &&
+      message.content.trim() !== ''
+    );
+  }
+
   function sheetActions(message: RoomMessage): MessageSheetAction[] {
     const actions: MessageSheetAction[] = [];
+    const copyAction: MessageSheetAction = {
+      key: 'copy',
+      label: t('room.actionCopy'),
+      icon: copyActionIcon,
+      onSelect: () => void copyMessage(message.content),
+    };
     if (message.senderId !== currentUserId) {
       actions.push({
         key: 'reply',
@@ -182,7 +282,9 @@ export function RoomMessagesTab({
           composerRef.current?.focus();
         },
       });
+      if (isCopyableText(message)) actions.push(copyAction);
     } else {
+      if (isCopyableText(message)) actions.push(copyAction);
       actions.push({
         key: 'delete',
         label: t('chat.actionDelete'),
@@ -195,6 +297,7 @@ export function RoomMessagesTab({
   }
 
   function replyExcerpt(message: RoomMessage): string {
+    if (message.type === 'image') return t('room.replyImage');
     return kulImageForText(message.content) != null ? t('room.replySticker') : message.content;
   }
 
@@ -243,6 +346,9 @@ export function RoomMessagesTab({
       {replyTarget != null && (
         <div className="flex shrink-0 items-center gap-2 border-t border-black/12 bg-black/3 px-3 py-1.5">
           <span className="h-8 w-0.5 shrink-0 rounded bg-ola-primary" />
+          {replyTarget.type === 'image' && replyTarget.imageUrl != null && replyTarget.imageUrl !== '' && (
+            <img src={replyTarget.imageUrl} alt="" className="h-8 w-8 shrink-0 rounded object-cover" />
+          )}
           <span className="min-w-0 flex-1">
             <span className="block truncate text-xs font-semibold text-ola-primary">
               {t('room.replyingTo', { name: replyTarget.senderName ?? '' })}
@@ -279,24 +385,60 @@ export function RoomMessagesTab({
         >
           <img src={openTab === 'kul' ? kulIconActive : kulIcon} alt="" className="h-6 w-6 object-contain" />
         </button>
-        <SmileyInput
-          ref={composerRef}
-          value={draft}
-          onChange={setDraft}
-          onEnter={() => sendText(draft)}
-          onFocus={() => setOpenTab(null)}
+        <button
+          type="button"
+          aria-label={t('chat.attachPickImage')}
+          onClick={() => fileInputRef.current?.click()}
           disabled={!canSend}
-          placeholder={t('room.chatInputHint')}
-          multiline
-          className={`max-h-28 min-h-9 flex-1 overflow-y-auto rounded-2xl border border-black/12 px-3 py-2 text-base text-black/87 focus:border-ola-primary ${
-            canSend ? '' : 'opacity-50'
-          }`}
-        />
-        {isTyping ? (
+          className="flex h-9 w-9 shrink-0 select-none items-center justify-center opacity-60 disabled:opacity-40"
+        >
+          <img src={photoIcon} alt="" className="h-6 w-6 object-contain" />
+        </button>
+        {pendingImages.length > 0 ? (
+          <div className="flex min-h-9 flex-1 items-center gap-2 overflow-x-auto py-1">
+            {pendingImages.map((image) => (
+              <div key={image.id} className="relative shrink-0">
+                <img src={image.url} alt="" className="h-11 w-11 rounded-lg object-cover" />
+                <button
+                  type="button"
+                  aria-label={t('dialog.cancel')}
+                  onClick={() => removePendingImage(image.id)}
+                  disabled={sendingImages}
+                  className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-xs leading-none text-white disabled:opacity-40"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={clearPendingImages}
+              disabled={sendingImages}
+              className="ml-1 h-9 shrink-0 rounded-full border border-black/12 px-3 text-sm font-medium text-black/54 hover:bg-black/5 disabled:opacity-40"
+            >
+              {t('dialog.cancel')}
+            </button>
+          </div>
+        ) : (
+          <SmileyInput
+            ref={composerRef}
+            value={draft}
+            onChange={setDraft}
+            onEnter={() => void handleSend()}
+            onFocus={() => setOpenTab(null)}
+            disabled={!canSend}
+            placeholder={t('room.chatInputHint')}
+            multiline
+            className={`max-h-28 min-h-9 flex-1 overflow-y-auto rounded-2xl border border-black/12 px-3 py-2 text-base text-black/87 focus:border-ola-primary ${
+              canSend ? '' : 'opacity-50'
+            }`}
+          />
+        )}
+        {isTyping || pendingImages.length > 0 ? (
           <button
             type="button"
-            onClick={() => sendText(draft)}
-            disabled={!canSend}
+            onClick={() => void handleSend()}
+            disabled={!canSend || sendingImages}
             className="h-9 shrink-0 rounded-full bg-ola-primary px-4 text-sm font-semibold text-white shadow-sm transition active:scale-95 disabled:opacity-40"
           >
             {t('chat.send')}
@@ -325,6 +467,15 @@ export function RoomMessagesTab({
         )}
       </div>
 
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        multiple
+        className="hidden"
+        onChange={handleFileChange}
+      />
+
       {canSend && (
         <AttachmentBar
           showTabBar={false}
@@ -333,7 +484,7 @@ export function RoomMessagesTab({
           onToggleTab={toggleTab}
           onPickEmoji={(code) => composerRef.current?.insertCode(code, true)}
           onBackspace={() => composerRef.current?.backspace()}
-          onPickImage={() => undefined}
+          onPickImage={() => fileInputRef.current?.click()}
           onSendKul={(index) => {
             void sendText(kulToken(index));
             setOpenTab(null);

@@ -42,6 +42,8 @@ export interface RoomReplySnapshot {
   senderId: string;
   senderName?: string;
   excerpt: string;
+  type?: 'text' | 'image';
+  imageUrl?: string;
 }
 
 export interface RoomReactor {
@@ -60,6 +62,8 @@ export interface RoomMessage {
   senderVipEnd?: string | null;
   senderVipTypeId?: number | null;
   content: string;
+  type?: 'text' | 'image';
+  imageUrl?: string;
   createdAt: string;
   replyTo?: RoomReplySnapshot;
   reactions?: Record<string, RoomReactor[]>;

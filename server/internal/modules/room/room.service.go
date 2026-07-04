@@ -1,10 +1,18 @@
 package room
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"image"
+	_ "image/gif"
+	_ "image/jpeg"
+	_ "image/png"
+	"io"
+	"mime/multipart"
+	"net/http"
 	"ola-chat-server/internal/constants"
 	roomEvents "ola-chat-server/internal/domain/room"
 	"ola-chat-server/internal/models"
@@ -12,11 +20,22 @@ import (
 	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/transport/kafka"
 	"ola-chat-server/internal/transport/websocket"
+	"path/filepath"
+	"strings"
 	"time"
+
+	_ "golang.org/x/image/webp"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
+)
+
+var (
+	ErrRoomFileTooLarge     = errors.New("file too large")
+	ErrRoomUploadRateLimit  = errors.New("upload rate limit exceeded")
+	ErrRoomUnsupportedImage = errors.New("unsupported image type")
+	ErrRoomDecodeImage      = errors.New("failed to decode image")
 )
 
 type Service struct {
@@ -26,10 +45,11 @@ type Service struct {
 	wsServer  *websocket.Server
 	producer  *kafka.Producer
 	cache     *services.CacheService
+	s3        *services.S3Service
 	logger    *zap.SugaredLogger
 }
 
-func NewService(repo *Repository, redisMsg *RedisMessageRepository, userCache *userModule.CacheService, wsServer *websocket.Server, producer *kafka.Producer, cache *services.CacheService, logger *zap.SugaredLogger) *Service {
+func NewService(repo *Repository, redisMsg *RedisMessageRepository, userCache *userModule.CacheService, wsServer *websocket.Server, producer *kafka.Producer, cache *services.CacheService, s3 *services.S3Service, logger *zap.SugaredLogger) *Service {
 	return &Service{
 		repo:      repo,
 		redisMsg:  redisMsg,
@@ -37,6 +57,7 @@ func NewService(repo *Repository, redisMsg *RedisMessageRepository, userCache *u
 		wsServer:  wsServer,
 		producer:  producer,
 		cache:     cache,
+		s3:        s3,
 		logger:    logger.Named("[room_service]"),
 	}
 }
@@ -224,6 +245,7 @@ func (s *Service) SendMessage(ctx context.Context, userID, roomID uuid.UUID, req
 		ID:        msgID,
 		RoomID:    roomID.String(),
 		SenderID:  userID.String(),
+		Type:      constants.MessageTypeText,
 		Content:   req.Content,
 		CreatedAt: createdAtStr,
 		ReplyTo:   replyTo,
@@ -245,6 +267,7 @@ func (s *Service) SendMessage(ctx context.Context, userID, roomID uuid.UUID, req
 		SenderGender: senderGender,
 		SenderVip:    senderVip,
 		SenderVipEnd: senderVipEnd,
+		Type:         constants.MessageTypeText,
 		Content:      req.Content,
 		CreatedAt:    createdAtStr,
 		ReplyTo:      replyTo,
@@ -261,7 +284,9 @@ func (s *Service) SendMessage(ctx context.Context, userID, roomID uuid.UUID, req
 			SenderGender: msg.SenderGender,
 			SenderVip:    msg.SenderVip,
 			SenderVipEnd: msg.SenderVipEnd,
+			Type:         msg.Type,
 			Content:      msg.Content,
+			ImageURL:     msg.ImageURL,
 			CreatedAt:    msg.CreatedAt,
 			ReplyTo:      toEventReplySnapshot(replyTo),
 		},
@@ -271,6 +296,169 @@ func (s *Service) SendMessage(ctx context.Context, userID, roomID uuid.UUID, req
 	}
 	return &msg, nil
 }
+
+func (s *Service) SendImageMessage(ctx context.Context, userID, roomID uuid.UUID, fileHeader *multipart.FileHeader, clientMsgID string) (*RoomMessageResponse, error) {
+	room, err := s.getRoom(roomID)
+	if err != nil {
+		return nil, err
+	}
+	if !room.Enabled {
+		return nil, errors.New("room is disabled")
+	}
+
+	isMember, err := s.wsServer.GetRoomPresence().IsMember(ctx, roomID.String(), userID.String())
+	if err != nil {
+		return nil, err
+	}
+	if !isMember {
+		return nil, errors.New("not a room member")
+	}
+
+	imageURL, err := s.uploadRoomImage(ctx, userID, roomID, fileHeader)
+	if err != nil {
+		return nil, err
+	}
+
+	sender, _ := s.userCache.GetUserCache(userID, true)
+	senderName, senderAvatar, senderGender, senderVip, senderVipEnd := senderFields(sender)
+	msgID := uuid.New().String()
+	createdAt := time.Now().UTC()
+	createdAtStr := createdAt.Format(time.RFC3339)
+
+	stored := storedRoomMessage{
+		ID:        msgID,
+		RoomID:    roomID.String(),
+		SenderID:  userID.String(),
+		Type:      constants.MessageTypeImage,
+		Content:   "",
+		ImageURL:  imageURL,
+		CreatedAt: createdAtStr,
+	}
+	data, err := json.Marshal(stored)
+	if err != nil {
+		return nil, err
+	}
+	if err := s.redisMsg.Append(ctx, roomID.String(), msgID, createdAt, data); err != nil {
+		return nil, err
+	}
+
+	msg := RoomMessageResponse{
+		ID:           msgID,
+		RoomID:       roomID.String(),
+		SenderID:     userID.String(),
+		SenderName:   senderName,
+		SenderAvatar: senderAvatar,
+		SenderGender: senderGender,
+		SenderVip:    senderVip,
+		SenderVipEnd: senderVipEnd,
+		Type:         constants.MessageTypeImage,
+		Content:      "",
+		ImageURL:     imageURL,
+		CreatedAt:    createdAtStr,
+	}
+
+	event := &roomEvents.RoomMessageCreatedEvent{
+		Room: &roomEvents.RoomBrief{ID: room.ID.String(), Name: room.Name, ImageURL: room.ImageURL},
+		Message: &roomEvents.RoomMessageData{
+			ID:           msg.ID,
+			RoomID:       msg.RoomID,
+			SenderID:     msg.SenderID,
+			SenderName:   msg.SenderName,
+			SenderAvatar: msg.SenderAvatar,
+			SenderGender: msg.SenderGender,
+			SenderVip:    msg.SenderVip,
+			SenderVipEnd: msg.SenderVipEnd,
+			Type:         msg.Type,
+			Content:      msg.Content,
+			ImageURL:     msg.ImageURL,
+			CreatedAt:    msg.CreatedAt,
+		},
+	}
+	if err := s.producer.PublishRoomMessageCreated(ctx, event); err != nil {
+		s.logger.Errorw("Failed to publish room image message created", "room_id", roomID, "message_id", msgID, "error", err)
+	}
+	return &msg, nil
+}
+
+func (s *Service) uploadRoomImage(ctx context.Context, userID, roomID uuid.UUID, fileHeader *multipart.FileHeader) (string, error) {
+	if fileHeader.Size > constants.MaxImageUploadSize {
+		return "", ErrRoomFileTooLarge
+	}
+
+	rateKey := fmt.Sprintf(constants.CacheKeyRateLimitUpload, userID.String())
+	if err := s.checkRateLimit(rateKey, constants.RateLimitUploadWindowSeconds, constants.RateLimitUploadMaxRequests); err != nil {
+		return "", ErrRoomUploadRateLimit
+	}
+
+	file, err := fileHeader.Open()
+	if err != nil {
+		return "", fmt.Errorf("failed to open file: %w", err)
+	}
+	defer file.Close()
+
+	head := make([]byte, 512)
+	n, _ := io.ReadFull(file, head)
+	head = head[:n]
+	detectedMime := http.DetectContentType(head)
+	if !isAllowedRoomImageMime(detectedMime) {
+		return "", fmt.Errorf("%w: %s", ErrRoomUnsupportedImage, detectedMime)
+	}
+
+	rest, err := io.ReadAll(file)
+	if err != nil {
+		return "", fmt.Errorf("failed to read file: %w", err)
+	}
+	fullData := append(head, rest...)
+	if int64(len(fullData)) > constants.MaxImageUploadSize {
+		return "", ErrRoomFileTooLarge
+	}
+
+	if _, _, err := image.DecodeConfig(bytes.NewReader(fullData)); err != nil {
+		return "", fmt.Errorf("%w: %v", ErrRoomDecodeImage, err)
+	}
+
+	ext := pickRoomImageExtension(detectedMime, fileHeader.Filename)
+	safeName := fmt.Sprintf("image%s", ext)
+	folder := fmt.Sprintf("%s/rooms/%s", constants.UploadFolderMessages, time.Now().Format(constants.UploadDateLayoutDay))
+
+	upload, err := s.s3.UploadFile(ctx, &roomFileReader{Reader: bytes.NewReader(fullData), size: int64(len(fullData))}, safeName, folder)
+	if err != nil {
+		return "", fmt.Errorf("failed to upload to storage: %w", err)
+	}
+	return upload.URL, nil
+}
+
+func isAllowedRoomImageMime(mime string) bool {
+	for _, m := range constants.AllowedImageMimes {
+		if strings.EqualFold(m, mime) {
+			return true
+		}
+	}
+	return false
+}
+
+func pickRoomImageExtension(mime, originalName string) string {
+	switch strings.ToLower(mime) {
+	case "image/jpeg":
+		return ".jpg"
+	case "image/png":
+		return ".png"
+	case "image/gif":
+		return ".gif"
+	case "image/webp":
+		return ".webp"
+	}
+	return strings.ToLower(filepath.Ext(originalName))
+}
+
+type roomFileReader struct {
+	*bytes.Reader
+	size int64
+}
+
+func (r *roomFileReader) Close() error { return nil }
+
+var _ multipart.File = (*roomFileReader)(nil)
 
 func (s *Service) DeleteMessage(ctx context.Context, userID, roomID uuid.UUID, messageID string) error {
 	if _, err := s.getRoom(roomID); err != nil {
@@ -355,7 +543,9 @@ func (s *Service) fetchMessages(ctx context.Context, roomID uuid.UUID, limit int
 			ID:        m.ID,
 			RoomID:    m.RoomID,
 			SenderID:  m.SenderID,
+			Type:      m.Type,
 			Content:   m.Content,
+			ImageURL:  m.ImageURL,
 			CreatedAt: m.CreatedAt,
 			ReplyTo:   m.ReplyTo,
 			Reactions: m.Reactions,
@@ -496,6 +686,8 @@ func (s *Service) resolveReplySnapshot(ctx context.Context, roomID, replyToID st
 		MessageID: orig.ID,
 		SenderID:  orig.SenderID,
 		Excerpt:   truncateRunes(orig.Content, constants.RoomReplyExcerptMaxRunes),
+		Type:      orig.Type,
+		ImageURL:  orig.ImageURL,
 	}
 	if senderUUID, err := uuid.Parse(orig.SenderID); err == nil {
 		if sender, _ := s.userCache.GetUserCache(senderUUID, true); sender != nil {
@@ -575,6 +767,8 @@ func toEventReplySnapshot(snapshot *RoomReplySnapshot) *roomEvents.RoomReplySnap
 		SenderID:   snapshot.SenderID,
 		SenderName: snapshot.SenderName,
 		Excerpt:    snapshot.Excerpt,
+		Type:       snapshot.Type,
+		ImageURL:   snapshot.ImageURL,
 	}
 }
 

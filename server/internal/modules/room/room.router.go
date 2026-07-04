@@ -24,6 +24,7 @@ func (r *Router) Setup(api *utils.AppGroup) {
 		rooms.GET("/:id/members", r.controller.RoomMembers)
 		rooms.GET("/:id/messages", r.controller.RoomMessages)
 		rooms.POST("/:id/messages", r.rateLimit.LimitPolicy(middleware.PolicyRoomMessage), r.controller.SendRoomMessage)
+		rooms.POST("/:id/messages/images", r.rateLimit.LimitPolicy(middleware.PolicyRoomMessage), r.controller.SendRoomImageMessage)
 		rooms.DELETE("/:id/messages/:messageId", r.controller.DeleteRoomMessage)
 		rooms.POST("/:id/messages/:messageId/reactions", r.controller.ToggleRoomMessageReaction)
 	}

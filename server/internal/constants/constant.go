@@ -73,7 +73,7 @@ const (
 	CacheKeyPasswordResetToken  = "PASSWORD:%s:RESET_TOKEN"
 	CacheKeyConversationPattern = "USER:*:CONVERSATIONS"
 	CacheKeyLastRead            = "LAST_READ:%s:%s"
-	CacheKeyRoomMembers         = "ROOM:%s:MEMBERS"
+	CacheKeyRoomMembers         = "ROOM:%s:MEMBERS:Z"
 	CacheKeyRoomUserConn        = "ROOM:%s:USER:%s:CONN"
 	CacheKeyRoomMsgIndex        = "ROOM:%s:MSG_INDEX"
 	CacheKeyRoomMsgData         = "ROOM:%s:MSG"
@@ -225,6 +225,7 @@ const (
 	UploadFolderAvatar           = "avatar"
 	UploadFolderAdmin            = "admin"
 	UploadDateLayout             = "02012006"
+	UploadDateLayoutDay          = "2006-01-02"
 	MaxPostImages                = 5
 	CacheKeyRateLimitUpload      = "RATE_LIMIT:%s:UPLOAD"
 	RateLimitUploadMaxRequests   = 30

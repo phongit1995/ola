@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { RoomService, SocketService } from '../services';
+import type { UploadFile } from '../lib/upload';
 import { ROOM_SOCKET_EVENTS, type ReactionType, type RoomMember, type RoomMessage } from '../types';
 import { toRecord, withSenderVip, withVipTypeId } from './roomHelpers';
 import { registerRoomRealtime } from './roomRealtime';
@@ -30,9 +31,11 @@ export interface RoomChatState {
   replyTarget: RoomMessage | null;
   open: (room: ActiveRoom) => Promise<void>;
   close: () => void;
+  reset: () => void;
   setActiveTab: (tab: RoomTab) => void;
   setRoomForeground: (foreground: boolean) => void;
   sendMessage: (content: string) => Promise<void>;
+  sendImage: (file: UploadFile) => Promise<void>;
   loadMoreMessages: () => Promise<void>;
   setReplyTarget: (message: RoomMessage) => void;
   clearReplyTarget: () => void;
@@ -113,6 +116,8 @@ export const useRoomChatStore = create<RoomChatState>((set, get) => {
       set({ ...initialState });
     },
 
+    reset: () => set({ ...initialState }),
+
     setActiveTab: (tab) =>
       set(tab === 'messages' ? { activeTab: tab, messagesUnread: false } : { activeTab: tab }),
 
@@ -134,6 +139,18 @@ export const useRoomChatStore = create<RoomChatState>((set, get) => {
       if (get().activeRoom?.id !== room.id) return;
       set((state) => ({
         replyTarget: state.replyTarget?.id === reply?.id ? null : state.replyTarget,
+        ...(state.messages.some((item) => item.id === message.id)
+          ? {}
+          : { messages: [...state.messages, message] }),
+      }));
+    },
+
+    sendImage: async (file) => {
+      const room = get().activeRoom;
+      if (!room) return;
+      const message = withSenderVip(await RoomService.sendImage(room.id, file));
+      if (get().activeRoom?.id !== room.id) return;
+      set((state) => ({
         ...(state.messages.some((item) => item.id === message.id)
           ? {}
           : { messages: [...state.messages, message] }),

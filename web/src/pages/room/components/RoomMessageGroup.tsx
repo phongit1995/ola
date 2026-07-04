@@ -1,9 +1,11 @@
 import { memo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import mentionIcon from '@/assets/icons/room/ic_tag_people.png';
+import photoIcon from '@/assets/icons/chat/ic_local.png';
 import { VipAvatar } from '@components';
 import { useLongPress } from '@hooks';
 import { colorForName, kulImageForText, reactionChips, renderRichText } from '@lib';
+import { useMediaViewerStore } from '@/store/mediaViewerStore';
 import type { RoomReplySnapshot } from '@app-types';
 import type { BubblePosition, GroupedMessage, MessageGroup } from '../messageGroups';
 import { OTHER_CORNERS, OWN_CORNERS } from '../constants';
@@ -32,8 +34,12 @@ interface QuoteBlockProps {
 
 function QuoteBlock({ replyTo, isOwn, onQuoteClick }: QuoteBlockProps) {
   const { t } = useTranslation();
-  const excerpt =
-    kulImageForText(replyTo.excerpt) != null ? t('room.replySticker') : replyTo.excerpt;
+  const isImage = replyTo.type === 'image';
+  const excerpt = isImage
+    ? t('room.replyImage')
+    : kulImageForText(replyTo.excerpt) != null
+      ? t('room.replySticker')
+      : replyTo.excerpt;
   return (
     <button
       type="button"
@@ -52,8 +58,11 @@ function QuoteBlock({ replyTo, isOwn, onQuoteClick }: QuoteBlockProps) {
       >
         {replyTo.senderName != null && replyTo.senderName !== '' ? `@${replyTo.senderName}` : ''}
       </span>
-      <span className={`line-clamp-2 text-xs ${isOwn ? 'text-white/75' : 'text-black/45'}`}>
-        {excerpt}
+      <span
+        className={`flex items-center gap-1 text-xs ${isOwn ? 'text-white/75' : 'text-black/45'}`}
+      >
+        {isImage && <img src={photoIcon} alt="" className="h-3.5 w-3.5 shrink-0 object-contain" />}
+        <span className="line-clamp-2">{excerpt}</span>
       </span>
     </button>
   );
@@ -84,29 +93,36 @@ function RoomBubble({
     onLongPressMessage?.(message.id, anchor);
   });
 
+  const openViewer = useMediaViewerStore((state) => state.openViewer);
   const kul = kulImageForText(message.content);
+  const isImage = message.type === 'image' && message.imageUrl != null && message.imageUrl !== '';
   const corners = isOwn ? OWN_CORNERS[position] : OTHER_CORNERS[position];
   const bubbleClass = isOwn
     ? `w-fit max-w-full break-words bg-[#7cb342] px-3.5 py-2 text-base text-white ${corners}`
     : `w-fit max-w-full break-words bg-[#f1f8e9] px-3.5 py-2 text-base text-black/87 ${corners}`;
 
-  const content =
-    kul != null ? (
-      <img src={kul} alt="" className="h-28 w-auto object-contain" />
-    ) : (
-      renderRichText(message.content, onMention)
-    );
-  const body =
-    kul != null && message.replyTo == null ? (
-      content
-    ) : (
-      <div className={bubbleClass}>
-        {message.replyTo != null && (
-          <QuoteBlock replyTo={message.replyTo} isOwn={isOwn} onQuoteClick={onQuoteClick} />
-        )}
-        {content}
-      </div>
-    );
+  const content = isImage ? (
+    <img
+      src={message.imageUrl}
+      alt=""
+      className="max-h-44 w-auto max-w-52 rounded-lg object-cover"
+    />
+  ) : kul != null ? (
+    <img src={kul} alt="" className="h-28 w-auto object-contain" />
+  ) : (
+    renderRichText(message.content, onMention)
+  );
+  const bare = (isImage || kul != null) && message.replyTo == null;
+  const body = bare ? (
+    content
+  ) : (
+    <div className={bubbleClass}>
+      {message.replyTo != null && (
+        <QuoteBlock replyTo={message.replyTo} isOwn={isOwn} onQuoteClick={onQuoteClick} />
+      )}
+      {content}
+    </div>
+  );
 
   return (
     <div
@@ -117,7 +133,11 @@ function RoomBubble({
         longPress.onPointerDown(event);
       }}
       onClick={() => {
-        if (suppressClick.current) suppressClick.current = false;
+        if (suppressClick.current) {
+          suppressClick.current = false;
+          return;
+        }
+        if (isImage) openViewer([message.imageUrl!]);
       }}
       className={`w-fit max-w-full touch-pan-y select-none ${
         highlighted ? 'rounded-2xl ring-2 ring-ola-primary/40' : ''
@@ -178,7 +198,7 @@ function RoomMessageGroupComponent({
 
   return (
     <div className="flex w-full flex-col gap-0.5">
-      <span className="text-center text-xs text-black/26">{time}</span>
+      {group.showTime && <span className="text-center text-xs text-black/26">{time}</span>}
       {isOwn ? (
         <span className="mr-12 flex max-w-[80%] items-center gap-1 self-end text-sm text-black/54">
           <span className="truncate">{senderName}</span>

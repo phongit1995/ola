@@ -54,6 +54,7 @@ func (s *Service) List(f ListFilter) (*ListUsersResponse, error) {
 			IsActive:    u.IsActive,
 			CreatedAt:   u.CreatedAt.UTC().Format(time.RFC3339),
 			LastLoginAt: formatTime(u.LastLoginAt),
+			DeletedAt:   formatDeletedAt(u.DeletedAt),
 		})
 	}
 
@@ -66,7 +67,7 @@ func (s *Service) List(f ListFilter) (*ListUsersResponse, error) {
 }
 
 func (s *Service) GetByID(id uuid.UUID) (*UserDetail, error) {
-	user, err := s.repo.FindByID(id)
+	user, err := s.repo.FindByIDUnscoped(id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, apperr.ErrUserNotFound
@@ -222,6 +223,7 @@ func toDetail(u *models.User) *UserDetail {
 		LastLoginAt:    formatTime(u.LastLoginAt),
 		CreatedAt:      u.CreatedAt.UTC().Format(time.RFC3339),
 		UpdatedAt:      u.UpdatedAt.UTC().Format(time.RFC3339),
+		DeletedAt:      formatDeletedAt(u.DeletedAt),
 	}
 	if u.VipUsed != nil {
 		d.VipUsed = *u.VipUsed
@@ -238,6 +240,13 @@ func formatTime(t *time.Time) string {
 		return ""
 	}
 	return t.UTC().Format(time.RFC3339)
+}
+
+func formatDeletedAt(d gorm.DeletedAt) string {
+	if !d.Valid {
+		return ""
+	}
+	return d.Time.UTC().Format(time.RFC3339)
 }
 
 func formatDate(t *time.Time) string {

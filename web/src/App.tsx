@@ -55,7 +55,7 @@ function App() {
     <>
       <div
         className={`relative mx-auto flex h-dvh w-full flex-col overflow-hidden bg-white shadow-2xl [transform:translateZ(0)] ${
-          wide ? 'max-w-none' : 'max-w-[645px]'
+          wide ? 'max-w-none' : 'max-w-[580px]'
         }`}
       >
         <AppRouter />
