@@ -17,7 +17,7 @@ interface MessageRowProps {
   avatar?: string;
   isLastOwn: boolean;
   seen: boolean;
-  onOpenActions: (message: ChatMessage) => void;
+  onOpenActions: (message: ChatMessage, anchor: DOMRect | null) => void;
   onOpenProfile?: () => void;
   onMention?: (nick: string) => void;
   onOpenImage: (url: string) => void;
@@ -35,9 +35,9 @@ export function MessageRow({ message, prev, next, name, color, avatar, isLastOwn
   const chips = reactionChips(message.reactions);
   const suppressClick = useRef(false);
 
-  const longPress = useLongPress(() => {
+  const longPress = useLongPress((anchor) => {
     suppressClick.current = true;
-    if (canAct) onOpenActions(message);
+    if (canAct) onOpenActions(message, anchor);
   });
 
   function handleBubbleClick() {

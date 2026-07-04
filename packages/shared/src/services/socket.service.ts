@@ -37,7 +37,7 @@ export class SocketService {
       auth: (cb) => {
         void ensureFreshToken().then((token) => cb({ token }));
       },
-      transports: ['websocket'],
+      transports: env.socketTransports,
       autoConnect: false,
     });
     socket.on(ENVELOPE_EVENT, (envelope: { type?: string; data?: unknown }) => {

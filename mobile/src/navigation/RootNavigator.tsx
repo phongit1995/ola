@@ -14,6 +14,8 @@ import { ChatDetailScreen } from '../screens/chat/ChatDetailScreen';
 import { RoomListScreen } from '../screens/room/RoomListScreen';
 import { RoomChatScreen } from '../screens/room/RoomChatScreen';
 import { MeFeedScreen } from '../screens/me/MeFeedScreen';
+import { ProfileViewScreen } from '../screens/profile/ProfileViewScreen';
+import { EditProfileScreen } from '../screens/profile/EditProfileScreen';
 import { ScreenPlaceholder } from '../components/ScreenPlaceholder';
 import { TAB_ICONS } from '../assets/tabIcons';
 
@@ -107,6 +109,8 @@ export function RootNavigator() {
       <RootStack.Screen name={ROOT_ROUTES.MainTabs} component={MainTabs} />
       <RootStack.Screen name={ROOT_ROUTES.ChatDetail} component={ChatDetailScreen} />
       <RootStack.Screen name={ROOT_ROUTES.RoomChat} component={RoomChatScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.ProfileView} component={ProfileViewScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.EditProfile} component={EditProfileScreen} />
     </RootStack.Navigator>
   );
 }

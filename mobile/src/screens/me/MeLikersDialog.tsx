@@ -1,0 +1,149 @@
+import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { ActivityIndicator, FlatList, Modal, Pressable, Text, View } from 'react-native';
+import { colorForName } from '@ola/shared/lib';
+import { MeService, RelationshipService } from '@ola/shared/services';
+import { useToastStore } from '@ola/shared/stores/toastStore';
+import type { PostAuthor } from '@ola/shared/types';
+import { Avatar } from '../../components/Avatar';
+
+const PAGE_SIZE = 30;
+
+interface MeLikersDialogProps {
+  postId: string;
+  onClose: () => void;
+  onOpenProfile?: (nick: string, color: string) => void;
+}
+
+export function MeLikersDialog({ postId, onClose, onOpenProfile }: MeLikersDialogProps) {
+  const { t } = useTranslation();
+  const push = useToastStore((s) => s.push);
+  const [likers, setLikers] = useState<PostAuthor[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [reachedEnd, setReachedEnd] = useState(false);
+  const [error, setError] = useState(false);
+  const [requested, setRequested] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const result = await MeService.likers(postId, { limit: PAGE_SIZE, offset: 0 });
+        if (!active) return;
+        setLikers(result.items);
+        setTotal(result.total);
+        if (result.items.length < PAGE_SIZE) setReachedEnd(true);
+      } catch {
+        if (active) setError(true);
+      } finally {
+        if (active) setLoading(false);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [postId]);
+
+  const hasMore = !reachedEnd && likers.length < total;
+
+  const loadMore = useCallback(async () => {
+    if (loading || loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    try {
+      const result = await MeService.likers(postId, { limit: PAGE_SIZE, offset: likers.length });
+      setLikers((current) => [...current, ...result.items]);
+      setTotal(result.total);
+      if (result.items.length < PAGE_SIZE) setReachedEnd(true);
+    } catch {
+      return;
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [postId, likers.length, loading, loadingMore, hasMore]);
+
+  function openProfile(name: string) {
+    onOpenProfile?.(name, colorForName(name));
+    onClose();
+  }
+
+  async function addFriend(user: PostAuthor) {
+    try {
+      await RelationshipService.sendRequest(user.id);
+      setRequested((current) => ({ ...current, [user.id]: true }));
+      push('success', t('me.friendRequestSent'));
+    } catch {
+      push('error', t('me.makeFriendError'));
+    }
+  }
+
+  return (
+    <Modal visible transparent animationType="fade" onRequestClose={onClose}>
+      <Pressable className="flex-1 items-center justify-center bg-black/40 px-8" onPress={onClose}>
+        <Pressable className="w-full max-w-md rounded-2xl bg-white p-4" onPress={() => undefined}>
+          <Text className="mb-2 text-base font-semibold" style={{ color: 'rgba(0,0,0,0.87)' }}>
+            {total > 0 ? t('me.likersCount', { count: total }) : t('me.likersTitle')}
+          </Text>
+          {loading ? (
+            <ActivityIndicator className="py-6" color="#7cb342" />
+          ) : error ? (
+            <Text className="py-6 text-center text-sm" style={{ color: '#e53935' }}>
+              {t('me.likersError')}
+            </Text>
+          ) : likers.length === 0 ? (
+            <Text className="py-6 text-center text-sm" style={{ color: 'rgba(0,0,0,0.54)' }}>
+              {t('me.likersEmpty')}
+            </Text>
+          ) : (
+            <FlatList
+              data={likers}
+              keyExtractor={(item) => item.id}
+              style={{ maxHeight: 360 }}
+              onEndReached={() => void loadMore()}
+              onEndReachedThreshold={0.3}
+              ListFooterComponent={loadingMore ? <ActivityIndicator className="py-3" color="#7cb342" /> : null}
+              renderItem={({ item }) => {
+                const isSelf = item.isSelf === true || item.relationship?.status === 'self';
+                const isFriend = item.isFriend === true || item.relationship?.status === 'friend';
+                const sent =
+                  requested[item.id] === true || item.relationship?.status === 'pending_outgoing';
+                const title = item.fullName != null && item.fullName !== '' ? item.fullName : item.username;
+                return (
+                  <View
+                    className="flex-row items-center gap-3 py-3"
+                    style={{ borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.12)' }}
+                  >
+                    <Pressable
+                      onPress={() => openProfile(item.username)}
+                      className="min-w-0 flex-1 flex-row items-center gap-3"
+                    >
+                      <Avatar name={item.username} uri={item.avatar ?? undefined} size={48} />
+                      <Text numberOfLines={1} className="min-w-0 flex-1 text-base font-medium" style={{ color: 'rgba(0,0,0,0.87)' }}>
+                        {title}
+                      </Text>
+                    </Pressable>
+                    {!isSelf &&
+                      (isFriend ? (
+                        <View className="rounded px-3 py-1.5" style={{ backgroundColor: 'rgba(0,0,0,0.08)' }}>
+                          <Text className="text-sm font-medium" style={{ color: 'rgba(0,0,0,0.45)' }}>{t('me.alreadyFriend')}</Text>
+                        </View>
+                      ) : sent ? (
+                        <View className="rounded px-3 py-1.5" style={{ backgroundColor: 'rgba(0,0,0,0.08)' }}>
+                          <Text className="text-sm font-medium" style={{ color: 'rgba(0,0,0,0.45)' }}>{t('me.friendRequestSent')}</Text>
+                        </View>
+                      ) : (
+                        <Pressable onPress={() => void addFriend(item)} className="rounded bg-ola-primary px-3 py-1.5">
+                          <Text className="text-sm font-medium text-white">{t('me.makeFriend')}</Text>
+                        </Pressable>
+                      ))}
+                  </View>
+                );
+              }}
+            />
+          )}
+        </Pressable>
+      </Pressable>
+    </Modal>
+  );
+}

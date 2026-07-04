@@ -1,8 +1,11 @@
+export type SocketTransport = 'websocket' | 'polling';
+
 export interface SharedEnv {
   apiUrl: string;
   apiTimeout: number;
   apiGuardSecret: string;
   socketUrl: string;
+  socketTransports?: SocketTransport[];
   geoapifyKey: string;
   isDev: boolean;
 }
@@ -36,6 +39,9 @@ export const env = {
   },
   get socketUrl(): string {
     return requireEnv().socketUrl;
+  },
+  get socketTransports(): SocketTransport[] {
+    return requireEnv().socketTransports ?? ['websocket'];
   },
   get geoapifyKey(): string {
     return requireEnv().geoapifyKey;

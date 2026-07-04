@@ -1,57 +1,84 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
-import { FlashList } from '@shopify/flash-list';
+import { ActivityIndicator, Image, KeyboardAvoidingView, Platform, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useRoomChatStore } from '@ola/shared/stores/roomChatStore';
-import { createTimeFormatter } from '@ola/shared/lib';
-import type { RoomMember, RoomMessage } from '@ola/shared/types';
+import { useRoomChatStore, type RoomTab } from '@ola/shared/stores/roomChatStore';
+import { useAuthStore } from '@ola/shared/stores/authStore';
+import { memberMatchesFilter, useRoomFilterStore } from '@ola/shared/stores/roomFilterStore';
+import type { ReactionType } from '@ola/shared/types';
 import type { RootStackParamList } from '../../navigation/types';
-import { Avatar } from '../../components/Avatar';
+import { ROOT_ROUTES } from '../../navigation/routes';
+import { RoomMessagesTab } from './RoomMessagesTab';
+import { RoomMembersTab } from './RoomMembersTab';
+import { RoomFilterDialog } from './RoomFilterDialog';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'RoomChat'>;
 
-function RoomMessageRow({ message, timeLabel }: { message: RoomMessage; timeLabel: string }) {
+const membersIcon = require('../../assets/icons/room/ic_add_friend.png');
+const messagesIcon = require('../../assets/icons/room/ic_notify_new_chat_group_message.png');
+const backIcon = require('../../assets/icons/ic_back.png');
+const filterIcon = require('../../assets/icons/room/ic_filter_unselected.png');
+
+function DashedLine() {
   return (
-    <View className="flex-row gap-2 px-3 py-1.5">
-      <Avatar name={message.senderName ?? ''} uri={message.senderAvatar} size={32} />
-      <View className="flex-1">
-        <View className="flex-row items-center gap-2">
-          <Text className="text-sm font-semibold text-ola-primary-dark">
-            {message.senderName ?? ''}
-          </Text>
-          <Text className="text-[10px] text-neutral-400">{timeLabel}</Text>
-        </View>
-        <Text className="text-base text-neutral-900">{message.content}</Text>
-      </View>
+    <View style={{ height: 1, flexDirection: 'row', overflow: 'hidden', backgroundColor: '#eceff1' }}>
+      {Array.from({ length: 48 }).map((_, index) => (
+        <View
+          key={index}
+          style={{ width: 4, height: 1, marginRight: 12, backgroundColor: 'rgba(0,0,0,0.3)' }}
+        />
+      ))}
     </View>
   );
 }
 
-function MemberRow({ member }: { member: RoomMember }) {
+function memberCountText(count: number): string {
+  return count >= 200 ? '200+' : String(count);
+}
+
+function memberCountColor(count: number): string {
+  return count >= 200 ? '#ff4081' : '#ffffff';
+}
+
+function TabButton({
+  label,
+  count,
+  icon,
+  active,
+  indicator,
+  onPress,
+}: {
+  label: string;
+  count?: number;
+  icon: number;
+  active: boolean;
+  indicator?: boolean;
+  onPress: () => void;
+}) {
   return (
-    <View className="flex-row items-center gap-3 px-4 py-2">
-      <Avatar name={member.fullName ?? member.username} uri={member.avatar} size={40} />
-      <View className="flex-1">
-        <Text className="text-base text-neutral-900" numberOfLines={1}>
-          {member.fullName ?? member.username}
-        </Text>
-        {member.bio != null && member.bio !== '' && (
-          <Text className="text-xs text-neutral-500" numberOfLines={1}>
-            {member.bio}
-          </Text>
+    <Pressable
+      onPress={onPress}
+      className="flex-1 flex-row items-center justify-center gap-1.5"
+      style={{ opacity: active ? 1 : 0.6 }}
+    >
+      <Text className="text-sm font-medium text-white">
+        {label}
+        {count != null && (
+          <Text style={{ color: memberCountColor(count) }}> ({memberCountText(count)})</Text>
+        )}
+      </Text>
+      <View>
+        <Image source={icon} style={{ width: 20, height: 20, tintColor: '#ffffff' }} resizeMode="contain" />
+        {indicator && (
+          <View
+            className="absolute h-2.5 w-2.5 rounded-full bg-ola-accent"
+            style={{ top: -4, right: -4, borderWidth: 2, borderColor: '#7cb342' }}
+          />
         )}
       </View>
-    </View>
+      {active && <View className="absolute bottom-0 left-0 right-0 h-0.5 bg-white" />}
+    </Pressable>
   );
 }
 
@@ -65,14 +92,28 @@ export function RoomChatScreen({ navigation, route }: Props) {
   const messages = useRoomChatStore((s) => s.messages);
   const members = useRoomChatStore((s) => s.members);
   const memberCount = useRoomChatStore((s) => s.memberCount);
+  const messagesUnread = useRoomChatStore((s) => s.messagesUnread);
+  const hasMore = useRoomChatStore((s) => s.hasMore);
+  const loadingMore = useRoomChatStore((s) => s.loadingMore);
+  const replyTarget = useRoomChatStore((s) => s.replyTarget);
   const open = useRoomChatStore((s) => s.open);
   const close = useRoomChatStore((s) => s.close);
   const setActiveTab = useRoomChatStore((s) => s.setActiveTab);
   const setRoomForeground = useRoomChatStore((s) => s.setRoomForeground);
   const sendMessage = useRoomChatStore((s) => s.sendMessage);
   const loadMoreMessages = useRoomChatStore((s) => s.loadMoreMessages);
-
-  const [draft, setDraft] = useState('');
+  const setReplyTarget = useRoomChatStore((s) => s.setReplyTarget);
+  const clearReplyTarget = useRoomChatStore((s) => s.clearReplyTarget);
+  const reactToRoomMessage = useRoomChatStore((s) => s.reactToRoomMessage);
+  const deleteRoomMessage = useRoomChatStore((s) => s.deleteRoomMessage);
+  const currentUserId = useAuthStore((s) => s.user?.id) ?? '';
+  const filters = useRoomFilterStore((s) => s.filters);
+  const setFilters = useRoomFilterStore((s) => s.setFilters);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const visibleMembers = useMemo(
+    () => members.filter((member) => memberMatchesFilter(member, filters)),
+    [members, filters]
+  );
 
   useEffect(() => {
     void open({ id: roomId, name: roomName });
@@ -83,99 +124,99 @@ export function RoomChatScreen({ navigation, route }: Props) {
     };
   }, [roomId, roomName, open, close, setRoomForeground]);
 
-  const timeFormatter = useMemo(() => createTimeFormatter(i18n.language), [i18n.language]);
-  const invertedMessages = useMemo(() => [...messages].reverse(), [messages]);
-
-  function handleSend() {
-    const content = draft.trim();
-    if (content === '') return;
-    setDraft('');
-    void sendMessage(content);
-  }
+  const onSelectTab = useCallback((tab: RoomTab) => setActiveTab(tab), [setActiveTab]);
+  const handleReact = useCallback(
+    (messageId: string, type: ReactionType) => void reactToRoomMessage(messageId, type),
+    [reactToRoomMessage]
+  );
+  const openUser = useCallback(
+    (userId: string) => navigation.navigate(ROOT_ROUTES.ProfileView, { userId }),
+    [navigation]
+  );
+  const openProfileByNick = useCallback(
+    (nick: string, color: string) => navigation.navigate(ROOT_ROUTES.ProfileView, { userId: nick, color }),
+    [navigation]
+  );
 
   return (
     <KeyboardAvoidingView
       className="flex-1 bg-white"
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <View
-        className="border-b border-neutral-200 bg-ola-primary px-2 pb-2"
-        style={{ paddingTop: insets.top + 8 }}
-      >
-        <View className="flex-row items-center gap-2">
-          <Pressable className="px-2 py-1" onPress={() => navigation.goBack()}>
-            <Text className="text-xl text-white">‹</Text>
+      <View className="bg-ola-primary px-2 pb-2" style={{ paddingTop: insets.top + 8 }}>
+        <View className="h-9 flex-row items-center justify-center">
+          <Pressable
+            className="absolute left-0 h-9 w-9 items-center justify-center rounded-full active:bg-white/15"
+            onPress={() => navigation.goBack()}
+          >
+            <Image source={backIcon} style={{ width: 24, height: 24 }} resizeMode="contain" />
           </Pressable>
-          <Text className="flex-1 text-base font-semibold text-white" numberOfLines={1}>
+          <Text className="px-12 text-center text-sm font-bold text-white" numberOfLines={1}>
             {roomName}
           </Text>
+          {activeTab === 'members' && (
+            <Pressable
+              className="absolute right-0 h-9 w-9 items-center justify-center rounded-full active:bg-white/15"
+              onPress={() => setFilterOpen(true)}
+            >
+              <Image source={filterIcon} style={{ width: 20, height: 20, tintColor: '#ffffff' }} resizeMode="contain" />
+            </Pressable>
+          )}
         </View>
-        <View className="mt-1 flex-row">
-          <Pressable
-            className={`flex-1 items-center border-b-2 pb-1 ${activeTab === 'members' ? 'border-white' : 'border-transparent'}`}
-            onPress={() => setActiveTab('members')}
-          >
-            <Text className="text-sm font-semibold text-white">
-              {`${t('room.tabMembers')} (${memberCount})`}
-            </Text>
-          </Pressable>
-          <Pressable
-            className={`flex-1 items-center border-b-2 pb-1 ${activeTab === 'messages' ? 'border-white' : 'border-transparent'}`}
-            onPress={() => setActiveTab('messages')}
-          >
-            <Text className="text-sm font-semibold text-white">{t('room.tabMessages')}</Text>
-          </Pressable>
-        </View>
+      </View>
+      <DashedLine />
+      <View className="h-11 flex-row items-stretch bg-ola-primary">
+          <TabButton
+            label={t('room.tabMembers')}
+            count={memberCount}
+            icon={membersIcon}
+            active={activeTab === 'members'}
+            onPress={() => onSelectTab('members')}
+          />
+          <TabButton
+            label={t('room.tabMessages')}
+            icon={messagesIcon}
+            active={activeTab === 'messages'}
+            indicator={messagesUnread && activeTab !== 'messages'}
+            onPress={() => onSelectTab('messages')}
+          />
       </View>
 
       {status === 'connecting' ? (
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator color="#7cb342" size="large" />
         </View>
-      ) : status === 'error' ? (
-        <View className="flex-1 items-center justify-center px-8">
-          <Text className="text-center text-sm text-neutral-500">{t('common.error')}</Text>
-        </View>
       ) : activeTab === 'members' ? (
-        <FlashList
-          data={members}
-          keyExtractor={(item) => item.userId}
-          renderItem={({ item }) => <MemberRow member={item} />}
-        />
+        <RoomMembersTab members={visibleMembers} onOpenUser={openUser} />
       ) : (
-        <FlashList
-          data={invertedMessages}
-          inverted
-          keyExtractor={(item) => item.id}
-          onEndReached={() => void loadMoreMessages()}
-          onEndReachedThreshold={0.3}
-          renderItem={({ item }) => (
-            <RoomMessageRow message={item} timeLabel={timeFormatter(item.createdAt)} />
-          )}
+        <RoomMessagesTab
+          currentUserId={currentUserId}
+          language={i18n.language}
+          messages={messages}
+          status={status}
+          hasMore={hasMore}
+          loadingMore={loadingMore}
+          replyTarget={replyTarget}
+          onSend={sendMessage}
+          onLoadMore={loadMoreMessages}
+          onOpenUser={openUser}
+          onOpenProfile={openProfileByNick}
+          onSetReplyTarget={setReplyTarget}
+          onClearReplyTarget={clearReplyTarget}
+          onReact={handleReact}
+          onDeleteMessage={deleteRoomMessage}
         />
       )}
 
-      {status === 'joined' && activeTab === 'messages' && (
-        <View
-          className="flex-row items-end gap-2 border-t border-neutral-200 px-3 py-2"
-          style={{ paddingBottom: Math.max(insets.bottom, 8) }}
-        >
-          <TextInput
-            className="max-h-24 flex-1 rounded-2xl bg-neutral-100 px-4 py-2 text-base text-neutral-900"
-            placeholder={t('chat.messageInputPlaceholder')}
-            placeholderTextColor="#9ca3af"
-            multiline
-            value={draft}
-            onChangeText={setDraft}
-          />
-          <Pressable
-            className="h-10 items-center justify-center rounded-full bg-ola-primary px-4 active:opacity-80"
-            onPress={handleSend}
-          >
-            <Text className="font-semibold text-white">➤</Text>
-          </Pressable>
-        </View>
-      )}
+      <RoomFilterDialog
+        visible={filterOpen}
+        value={filters}
+        onApply={(value) => {
+          setFilters(value);
+          setFilterOpen(false);
+        }}
+        onClose={() => setFilterOpen(false)}
+      />
     </KeyboardAvoidingView>
   );
 }

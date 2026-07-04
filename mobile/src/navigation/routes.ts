@@ -18,4 +18,5 @@ export const ROOT_ROUTES = {
   ChatDetail: 'ChatDetail',
   RoomChat: 'RoomChat',
   ProfileView: 'ProfileView',
+  EditProfile: 'EditProfile',
 } as const;

@@ -151,6 +151,7 @@ export const useChatStore = create<ChatState>((set, get) => {
         messages: [],
         typingUsers: [],
         hasMore: false,
+        loadingMore: false,
         loadingMessages: true,
       });
       const otherUserId = conversation?.otherUser?.id;
@@ -417,7 +418,7 @@ export const useChatStore = create<ChatState>((set, get) => {
       try {
         await MessageService.remove(conversationId, messageId);
       } catch {
-        set({ messages: snapshot });
+        if (get().currentConversationId === conversationId) set({ messages: snapshot });
       }
     },
 
@@ -449,7 +450,7 @@ export const useChatStore = create<ChatState>((set, get) => {
           ),
         }));
       } catch {
-        set({ messages: snapshot });
+        if (get().currentConversationId === conversationId) set({ messages: snapshot });
       }
     },
 

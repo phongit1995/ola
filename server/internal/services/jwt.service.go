@@ -86,12 +86,17 @@ func (s *JWTService) GenerateRefreshTokenWithSession(userID, sessionID uuid.UUID
 }
 
 func (s *JWTService) GenerateRefreshTokenWithClaims(data interface{}) (string, error) {
+	expiry, err := time.ParseDuration(s.cfg.RefreshTokenExpiry)
+	if err != nil {
+		expiry = 30 * 24 * time.Hour
+	}
+
 	now := time.Now()
 	claims := TokenClaims{
 		Data: data,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ID:        uuid.NewString(),
-			ExpiresAt: jwt.NewNumericDate(now.Add(7 * 24 * time.Hour)),
+			ExpiresAt: jwt.NewNumericDate(now.Add(expiry)),
 			IssuedAt:  jwt.NewNumericDate(now),
 			NotBefore: jwt.NewNumericDate(now),
 		},
