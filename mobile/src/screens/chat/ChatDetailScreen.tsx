@@ -1,45 +1,53 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
-  Alert,
+  Image,
   KeyboardAvoidingView,
-  Modal,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
   Platform,
   Pressable,
   Text,
   TextInput,
   View,
 } from 'react-native';
-import { FlashList } from '@shopify/flash-list';
+import { FlashList, type FlashListRef } from '@shopify/flash-list';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import { currentUserId } from '@ola/shared/stores/chat/chatHelpers';
+import { createTimeFormatter } from '@ola/shared/lib';
 import type { Message, ReactionType } from '@ola/shared/types';
 import type { RootStackParamList } from '../../navigation/types';
 import { Avatar } from '../../components/Avatar';
-import { MessageBubble } from './MessageBubble';
+import { kulToken } from '../../lib/kul';
+import { ChatMessageRow } from './ChatMessageRow';
+import { SmileyKulPanel } from '../room/SmileyKulPanel';
+import { MessageActionSheet, type MessageSheetAction } from '../room/MessageActionSheet';
 
-const REACTIONS: Array<{ type: ReactionType; emoji: string }> = [
-  { type: 'LIKE', emoji: '👍' },
-  { type: 'LOVE', emoji: '❤️' },
-  { type: 'HAHA', emoji: '😆' },
-  { type: 'WOW', emoji: '😮' },
-  { type: 'SAD', emoji: '😢' },
-  { type: 'ANGRY', emoji: '😡' },
-];
+const backIcon = require('../../assets/icons/ic_back.png');
+const likeIcon = require('../../assets/icons/chat/smiley/smiley_35.png');
+const smileyIcon = require('../../assets/icons/chat/ic_smiley.png');
+const smileyIconActive = require('../../assets/icons/chat/ic_smiley_selected.png');
+const kulIcon = require('../../assets/icons/chat/ic_kul.png');
+const kulIconActive = require('../../assets/icons/chat/ic_kul_selected.png');
+const deleteActionIcon = require('../../assets/icons/chat/ic_menu_delete.png');
+
+const CHAT_BG = '#ECE5DD';
+const DIVIDER = 'rgba(0,0,0,0.12)';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ChatDetail'>;
 
 export function ChatDetailScreen({ navigation, route }: Props) {
   const { conversationId } = route.params;
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const insets = useSafeAreaInsets();
 
   const conversations = useChatStore((s) => s.conversations);
   const messages = useChatStore((s) => s.messages);
   const loadingMessages = useChatStore((s) => s.loadingMessages);
+  const hasMore = useChatStore((s) => s.hasMore);
   const typingUsers = useChatStore((s) => s.typingUsers);
   const openConversation = useChatStore((s) => s.openConversation);
   const closeConversation = useChatStore((s) => s.closeConversation);
@@ -51,7 +59,10 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   const notifyTyping = useChatStore((s) => s.notifyTyping);
 
   const [draft, setDraft] = useState('');
+  const [openTab, setOpenTab] = useState<'smiley' | 'kul' | null>(null);
   const [actionTarget, setActionTarget] = useState<Message | null>(null);
+  const listRef = useRef<FlashListRef<Message>>(null);
+  const stickToBottomRef = useRef(true);
 
   useEffect(() => {
     void openConversation(conversationId);
@@ -64,56 +75,80 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     conversation?.otherUser?.username ??
     conversation?.name ??
     '';
+  const peerAvatar = conversation?.otherUser?.avatar;
   const myId = currentUserId();
+  const timeFormatter = useMemo(() => createTimeFormatter(i18n.language), [i18n.language]);
 
-  const inverted = useMemo(() => [...messages].reverse(), [messages]);
-
-  function handleSend() {
-    const content = draft.trim();
-    if (content === '') return;
-    setDraft('');
-    void sendText(content);
-  }
-
-  function handleBubblePress(message: Message) {
-    if (message.status === 'failed') {
-      void resendMessage(message.id);
+  const lastOwnId = useMemo(() => {
+    for (let i = messages.length - 1; i >= 0; i -= 1) {
+      if (messages[i]!.senderId === myId) return messages[i]!.id;
     }
+    return null;
+  }, [messages, myId]);
+
+  const scrollToEnd = useCallback(() => {
+    if (stickToBottomRef.current) {
+      requestAnimationFrame(() => listRef.current?.scrollToEnd({ animated: false }));
+    }
+  }, []);
+
+  function handleScroll(event: NativeSyntheticEvent<NativeScrollEvent>) {
+    const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
+    stickToBottomRef.current = contentSize.height - contentOffset.y - layoutMeasurement.height < 80;
+    if (contentOffset.y < 80 && hasMore) void loadMoreMessages();
   }
 
-  function handleDelete(message: Message) {
-    setActionTarget(null);
-    Alert.alert(t('chat.deleteTitle'), '', [
-      { text: t('common.cancel'), style: 'cancel' },
+  async function send(text: string) {
+    const trimmed = text.trim();
+    if (trimmed === '') return;
+    stickToBottomRef.current = true;
+    setDraft('');
+    setOpenTab(null);
+    await sendText(trimmed);
+  }
+
+  const isTyping = draft.trim() !== '';
+
+  function sheetActions(message: Message): MessageSheetAction[] {
+    if (message.senderId !== myId) return [];
+    return [
       {
-        text: t('common.delete'),
-        style: 'destructive',
-        onPress: () => void deleteMessage(message.id),
+        key: 'delete',
+        label: t('chat.actionDelete'),
+        icon: deleteActionIcon,
+        destructive: true,
+        onSelect: () => void deleteMessage(message.id),
       },
-    ]);
+    ];
   }
 
   return (
     <KeyboardAvoidingView
-      className="flex-1 bg-white"
+      className="flex-1"
+      style={{ backgroundColor: CHAT_BG }}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={0}
     >
-      <View
-        className="flex-row items-center gap-3 border-b border-neutral-200 bg-ola-primary px-2 pb-2"
-        style={{ paddingTop: insets.top + 8 }}
-      >
-        <Pressable className="px-2 py-1" onPress={() => navigation.goBack()}>
-          <Text className="text-xl text-white">‹</Text>
-        </Pressable>
-        <Avatar name={title} uri={conversation?.otherUser?.avatar} size={36} />
-        <View className="flex-1">
-          <Text className="text-base font-semibold text-white" numberOfLines={1}>
-            {title}
-          </Text>
-          {conversation?.otherUser?.isOnline === true && (
-            <Text className="text-xs text-white/80">{t('chat.online')}</Text>
-          )}
+      <View className="bg-ola-primary px-2 pb-2" style={{ paddingTop: insets.top + 8 }}>
+        <View className="h-9 flex-row items-center gap-2">
+          <Pressable
+            className="h-9 w-9 items-center justify-center rounded-full active:bg-white/15"
+            onPress={() => navigation.goBack()}
+          >
+            <Image source={backIcon} style={{ width: 24, height: 24 }} resizeMode="contain" />
+          </Pressable>
+          <Avatar name={title} uri={peerAvatar} size={32} />
+          <View className="flex-1">
+            <Text className="text-sm font-bold text-white" numberOfLines={1}>
+              {title}
+            </Text>
+            {typingUsers.length > 0 ? (
+              <Text className="text-xs text-white/70">
+                {t('chat.typing', { name: typingUsers[0]?.username ?? '' })}
+              </Text>
+            ) : conversation?.otherUser?.isOnline === true ? (
+              <Text className="text-xs text-white/70">{t('chat.online')}</Text>
+            ) : null}
+          </View>
         </View>
       </View>
 
@@ -123,88 +158,115 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         </View>
       ) : (
         <FlashList
-          data={inverted}
-          inverted
+          ref={listRef}
+          data={messages}
           keyExtractor={(item) => item.clientMsgId ?? item.id}
-          onEndReached={() => void loadMoreMessages()}
-          onEndReachedThreshold={0.3}
-          renderItem={({ item }) => (
-            <MessageBubble
-              message={item}
-              fromMe={item.senderId === myId}
-              onPress={() => handleBubblePress(item)}
-              onLongPress={() => setActionTarget(item)}
-            />
-          )}
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
+          contentContainerStyle={{ paddingVertical: 12 }}
+          onContentSizeChange={scrollToEnd}
+          renderItem={({ item, index }) => {
+            const prev = messages[index - 1];
+            const next = messages[index + 1];
+            const fromMe = item.senderId === myId;
+            const firstInGroup = prev == null || prev.senderId !== item.senderId;
+            const lastInGroup = next == null || next.senderId !== item.senderId;
+            const showTime =
+              lastInGroup || timeFormatter(next!.createdAt) !== timeFormatter(item.createdAt);
+            return (
+              <ChatMessageRow
+                message={item}
+                fromMe={fromMe}
+                firstInGroup={firstInGroup}
+                lastInGroup={lastInGroup}
+                showTime={showTime}
+                isLastOwn={item.id === lastOwnId}
+                peerName={title}
+                peerAvatar={peerAvatar}
+                timeLabel={timeFormatter(item.createdAt)}
+                onLongPress={() => setActionTarget(item)}
+                onResend={(id) => void resendMessage(id)}
+                onOpenImage={() => undefined}
+              />
+            );
+          }}
         />
       )}
 
-      {typingUsers.length > 0 && (
-        <Text className="px-4 pb-1 text-xs italic text-neutral-400">
-          {t('chat.typing', { name: typingUsers[0]?.username ?? '' })}
-        </Text>
-      )}
-
       <View
-        className="flex-row items-end gap-2 border-t border-neutral-200 px-3 py-2"
-        style={{ paddingBottom: Math.max(insets.bottom, 8) }}
+        className="flex-row items-center gap-1 bg-white px-2 py-2"
+        style={{ borderTopWidth: 1, borderTopColor: DIVIDER }}
       >
+        <Pressable
+          onPress={() => setOpenTab((c) => (c === 'smiley' ? null : 'smiley'))}
+          className="h-9 w-9 items-center justify-center"
+          style={{ opacity: openTab === 'smiley' ? 1 : 0.6 }}
+        >
+          <Image
+            source={openTab === 'smiley' ? smileyIconActive : smileyIcon}
+            style={{ width: 24, height: 24 }}
+            resizeMode="contain"
+          />
+        </Pressable>
+        <Pressable
+          onPress={() => setOpenTab((c) => (c === 'kul' ? null : 'kul'))}
+          className="h-9 w-9 items-center justify-center"
+          style={{ opacity: openTab === 'kul' ? 1 : 0.6 }}
+        >
+          <Image
+            source={openTab === 'kul' ? kulIconActive : kulIcon}
+            style={{ width: 24, height: 24 }}
+            resizeMode="contain"
+          />
+        </Pressable>
         <TextInput
-          className="max-h-24 flex-1 rounded-2xl bg-neutral-100 px-4 py-2 text-base text-neutral-900"
-          placeholder={t('chat.messageInputPlaceholder')}
-          placeholderTextColor="#9ca3af"
+          className="max-h-28 min-h-9 flex-1 rounded-2xl px-3 py-2 text-base"
+          style={{ color: 'rgba(0,0,0,0.87)', borderWidth: 1, borderColor: DIVIDER, textAlignVertical: 'center' }}
+          placeholder={t('chat.messageInputPlaceholder', { name: title })}
+          placeholderTextColor="rgba(0,0,0,0.38)"
           multiline
           value={draft}
           onChangeText={(text) => {
             setDraft(text);
             notifyTyping();
           }}
+          onFocus={() => setOpenTab(null)}
         />
-        <Pressable
-          className="h-10 items-center justify-center rounded-full bg-ola-primary px-4 active:opacity-80"
-          onPress={handleSend}
-        >
-          <Text className="font-semibold text-white">➤</Text>
-        </Pressable>
+        {isTyping ? (
+          <Pressable
+            onPress={() => void send(draft)}
+            className="h-9 items-center justify-center rounded-full bg-ola-primary px-4 active:opacity-90"
+          >
+            <Text className="text-sm font-semibold text-white">{t('chat.send')}</Text>
+          </Pressable>
+        ) : (
+          <Pressable
+            onPress={() => void send('(y)')}
+            onLongPress={() => void send('(Y)')}
+            className="h-9 w-9 items-center justify-center"
+          >
+            <Image source={likeIcon} style={{ width: 28, height: 28 }} resizeMode="contain" />
+          </Pressable>
+        )}
       </View>
 
-      <Modal
-        transparent
+      {openTab != null && (
+        <SmileyKulPanel
+          tab={openTab}
+          onPickEmoji={(code) => setDraft((c) => c + code)}
+          onSendKul={(index) => void send(kulToken(index))}
+        />
+      )}
+
+      <MessageActionSheet
         visible={actionTarget != null}
-        animationType="fade"
-        onRequestClose={() => setActionTarget(null)}
-      >
-        <Pressable
-          className="flex-1 items-center justify-center bg-black/40"
-          onPress={() => setActionTarget(null)}
-        >
-          <View className="w-72 rounded-2xl bg-white p-4">
-            <View className="flex-row justify-between">
-              {REACTIONS.map((reaction) => (
-                <Pressable
-                  key={reaction.type}
-                  className="h-10 w-10 items-center justify-center rounded-full active:bg-neutral-100"
-                  onPress={() => {
-                    const target = actionTarget;
-                    setActionTarget(null);
-                    if (target != null) void reactToMessage(target.id, reaction.type);
-                  }}
-                >
-                  <Text className="text-xl">{reaction.emoji}</Text>
-                </Pressable>
-              ))}
-            </View>
-            {actionTarget != null && actionTarget.senderId === myId && (
-              <Pressable
-                className="mt-3 h-10 items-center justify-center rounded-lg bg-neutral-100 active:bg-neutral-200"
-                onPress={() => handleDelete(actionTarget)}
-              >
-                <Text className="text-sm font-semibold text-ola-error">{t('common.delete')}</Text>
-              </Pressable>
-            )}
-          </View>
-        </Pressable>
-      </Modal>
+        actions={actionTarget != null ? sheetActions(actionTarget) : []}
+        showReactions={actionTarget != null}
+        onReact={(type: ReactionType) => {
+          if (actionTarget != null) void reactToMessage(actionTarget.id, type);
+        }}
+        onClose={() => setActionTarget(null)}
+      />
     </KeyboardAvoidingView>
   );
 }

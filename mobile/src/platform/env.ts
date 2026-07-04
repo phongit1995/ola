@@ -8,6 +8,7 @@ export const mobileEnv: SharedEnv = {
   apiTimeout: Number(Config.API_TIMEOUT ?? 10000),
   apiGuardSecret: Config.API_GUARD_SECRET ?? '',
   socketUrl: Config.SOCKET_URL ?? deriveSocketUrl(apiUrl),
+  socketTransports: ['polling', 'websocket'],
   geoapifyKey: Config.GEOAPIFY_KEY ?? '',
   isDev: __DEV__,
 };
