@@ -226,6 +226,7 @@
     "voiceMicDenied": "Microphone access is needed to record.",
     "voiceRecordError": "Could not record audio. Please try again.",
     "imageError": "Could not send the photo. Please try again.",
+    "imageTooLarge": "Image is too large (max 2MB).",
     "voiceDiscard": "Discard recording",
     "attachCameraOpening": "Camera is opening…",
     "attachHoldForCam": "Hold for phone cam",
@@ -365,6 +366,7 @@
     "actionReply": "Reply",
     "replyingTo": "Replying to @{{name}}",
     "replySticker": "[Sticker]",
+    "replyImage": "[Photo]",
     "replyNotFound": "Original message is no longer available",
     "reactionsTitle": "Reactions",
     "reactionsEmpty": "No reactions yet."

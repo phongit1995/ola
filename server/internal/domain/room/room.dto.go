@@ -11,6 +11,8 @@ type RoomReplySnapshot struct {
 	SenderID   string `json:"senderId"`
 	SenderName string `json:"senderName,omitempty"`
 	Excerpt    string `json:"excerpt"`
+	Type       string `json:"type,omitempty"`
+	ImageURL   string `json:"imageUrl,omitempty"`
 }
 
 type RoomReactor struct {
@@ -27,7 +29,9 @@ type RoomMessageData struct {
 	SenderGender string             `json:"senderGender,omitempty"`
 	SenderVip    *string            `json:"senderVip,omitempty"`
 	SenderVipEnd *string            `json:"senderVipEnd,omitempty"`
+	Type         string             `json:"type,omitempty"`
 	Content      string             `json:"content"`
+	ImageURL     string             `json:"imageUrl,omitempty"`
 	CreatedAt    string             `json:"createdAt"`
 	ReplyTo      *RoomReplySnapshot `json:"replyTo,omitempty"`
 }

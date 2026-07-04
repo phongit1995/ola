@@ -6,6 +6,8 @@ export type BubblePosition = 'single' | 'first' | 'middle' | 'last';
 export interface GroupedMessage {
   id: string;
   content: string;
+  type?: 'text' | 'image';
+  imageUrl?: string;
   createdAt: string;
   position: BubblePosition;
   replyTo?: RoomReplySnapshot;
@@ -53,7 +55,20 @@ interface PendingGroup {
   raw: RoomMessage[];
 }
 
+function resolveReplySnapshot(
+  reply: RoomReplySnapshot | undefined,
+  byId: Map<string, RoomMessage>
+): RoomReplySnapshot | undefined {
+  if (reply == null || reply.type === 'image') return reply;
+  const original = byId.get(reply.messageId);
+  if (original?.type === 'image') {
+    return { ...reply, type: 'image', imageUrl: reply.imageUrl ?? original.imageUrl };
+  }
+  return reply;
+}
+
 export function buildRoomFeed(messages: RoomMessage[], currentUserId: string): RoomFeedItem[] {
+  const byId = new Map(messages.map((message) => [message.id, message]));
   const items: RoomFeedItem[] = [];
   let pending: PendingGroup | null = null;
   let lastDay = '';
@@ -73,9 +88,11 @@ export function buildRoomFeed(messages: RoomMessage[], currentUserId: string): R
       messages: pending.raw.map((message, index) => ({
         id: message.id,
         content: message.content,
+        type: message.type,
+        imageUrl: message.imageUrl,
         createdAt: message.createdAt,
         position: bubblePosition(count, index),
-        replyTo: message.replyTo,
+        replyTo: resolveReplySnapshot(message.replyTo, byId),
         reactions: message.reactions,
       })),
     });

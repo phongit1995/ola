@@ -226,6 +226,7 @@
     "voiceMicDenied": "Cần quyền micro để ghi âm.",
     "voiceRecordError": "Không ghi âm được. Vui lòng thử lại.",
     "imageError": "Không gửi được ảnh. Vui lòng thử lại.",
+    "imageTooLarge": "Ảnh quá lớn (tối đa 2MB).",
     "voiceDiscard": "Huỷ ghi âm",
     "attachCameraOpening": "Đang mở máy ảnh…",
     "attachHoldForCam": "Giữ để chụp/quay",
@@ -365,6 +366,7 @@
     "actionReply": "Trả lời",
     "replyingTo": "Đang trả lời @{{name}}",
     "replySticker": "[Nhãn dán]",
+    "replyImage": "[Ảnh]",
     "replyNotFound": "Tin nhắn gốc không còn nữa",
     "reactionsTitle": "Cảm xúc",
     "reactionsEmpty": "Chưa có cảm xúc nào."

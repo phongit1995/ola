@@ -55,6 +55,7 @@ export function RoomChatView({ visible, onClose }: RoomChatViewProps) {
   const clearReplyTarget = useRoomChatStore((state) => state.clearReplyTarget);
   const reactToRoomMessage = useRoomChatStore((state) => state.reactToRoomMessage);
   const deleteRoomMessage = useRoomChatStore((state) => state.deleteRoomMessage);
+  const sendImage = useRoomChatStore((state) => state.sendImage);
   const handleReact = useCallback(
     (messageId: string, type: ReactionType) => void reactToRoomMessage(messageId, type),
     [reactToRoomMessage]
@@ -116,6 +117,7 @@ export function RoomChatView({ visible, onClose }: RoomChatViewProps) {
         loadingMore={loadingMore}
         replyTarget={replyTarget}
         onSend={sendMessage}
+        onSendImage={sendImage}
         onLoadMore={loadMoreMessages}
         onOpenProfile={openProfile}
         onSetReplyTarget={setReplyTarget}

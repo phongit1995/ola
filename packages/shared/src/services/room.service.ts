@@ -1,5 +1,6 @@
 import { http } from '../api';
 import { API_PATH } from '../config';
+import { appendUploadFile, type UploadFile } from '../lib/upload';
 import type {
   MessageResult,
   ReactionType,
@@ -39,6 +40,13 @@ export class RoomService {
 
   static sendMessage(id: string, payload: SendRoomMessageRequest): Promise<RoomMessage> {
     return http.post<RoomMessage>(API_PATH.rooms.messages(id), payload);
+  }
+
+  static sendImage(id: string, file: UploadFile, clientMsgId?: string, filename?: string): Promise<RoomMessage> {
+    const form = new FormData();
+    appendUploadFile(form, 'file', file, filename);
+    if (clientMsgId != null) form.append('clientMsgId', clientMsgId);
+    return http.postForm<RoomMessage>(API_PATH.rooms.messagesImages(id), form);
   }
 
   static deleteMessage(id: string, messageId: string): Promise<MessageResult> {

@@ -1,12 +1,25 @@
 package room
 
 import (
+	"errors"
 	"net/http"
 	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
+
+func roomImageHTTPStatus(err error) int {
+	switch {
+	case errors.Is(err, ErrRoomFileTooLarge):
+		return http.StatusRequestEntityTooLarge
+	case errors.Is(err, ErrRoomUploadRateLimit):
+		return http.StatusTooManyRequests
+	case errors.Is(err, ErrRoomUnsupportedImage), errors.Is(err, ErrRoomDecodeImage):
+		return http.StatusBadRequest
+	}
+	return utils.HTTPStatusFromError(err)
+}
 
 type Controller struct {
 	service *Service
@@ -128,6 +141,51 @@ func (ctrl *Controller) SendRoomMessage(c *gin.Context) (interface{}, error) {
 	resp, err := ctrl.service.SendMessage(c.Request.Context(), userID, id, req)
 	if err != nil {
 		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
+// SendRoomImageMessage godoc
+// @Summary      Send an image message to a room (must have joined via socket)
+// @Description  Upload an image and create a message of type=image in one call (≤2MB jpeg/png/gif/webp)
+// @Tags         room
+// @Accept       multipart/form-data
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "Room ID"
+// @Param        file formData file true "Image file"
+// @Param        clientMsgId formData string false "Idempotency key"
+// @Success      201  {object}  utils.BaseResponse[RoomMessageResponse]
+// @Failure      400  {object}  utils.APIError
+// @Failure      401  {object}  utils.APIError
+// @Failure      403  {object}  utils.APIError
+// @Failure      413  {object}  utils.APIError
+// @Failure      429  {object}  utils.APIError
+// @Router       /rooms/{id}/messages/images [post]
+func (ctrl *Controller) SendRoomImageMessage(c *gin.Context) (interface{}, error) {
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+	id, err := utils.ParseUUIDParam(c, "id", "invalid room id")
+	if err != nil {
+		return nil, err
+	}
+	fileHeader, err := c.FormFile("file")
+	if err != nil {
+		return nil, utils.NewHTTPError(http.StatusBadRequest, "missing file")
+	}
+	clientMsgID := c.PostForm("clientMsgId")
+
+	resp, err := ctrl.service.SendImageMessage(c.Request.Context(), userID, id, fileHeader, clientMsgID)
+	if err != nil {
+		ctrl.logger.Errorw("Failed to send room image message", "error", err)
+		status := roomImageHTTPStatus(err)
+		msg := err.Error()
+		if status == http.StatusInternalServerError {
+			msg = "failed to send image message"
+		}
+		return nil, utils.NewHTTPError(status, msg)
 	}
 	return resp, nil
 }

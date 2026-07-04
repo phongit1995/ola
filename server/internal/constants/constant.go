@@ -225,6 +225,7 @@ const (
 	UploadFolderAvatar           = "avatar"
 	UploadFolderAdmin            = "admin"
 	UploadDateLayout             = "02012006"
+	UploadDateLayoutDay          = "2006-01-02"
 	MaxPostImages                = 5
 	CacheKeyRateLimitUpload      = "RATE_LIMIT:%s:UPLOAD"
 	RateLimitUploadMaxRequests   = 30

@@ -17,7 +17,7 @@ import {
   type SmileyInputHandle,
   type ListOption,
 } from '@components';
-import { colorForName, compressImageForUpload, hidePeerCard, isPeerCardHidden, isSameDay, kulToken, toast } from '@lib';
+import { colorForName, compressImageForUpload, hidePeerCard, ImageTooLargeError, isPeerCardHidden, isSameDay, kulToken, toast } from '@lib';
 import moreIcon from '@/assets/icons/chat/ic_more_white.png';
 import likeIcon from '@/assets/icons/chat/smiley_35.png';
 import { useChatStore } from '@/store/chat/chatStore';
@@ -277,8 +277,8 @@ export function ChatConversationView({
       try {
         const prepared = await compressImageForUpload(file);
         await sendImage(prepared);
-      } catch {
-        toast.error(t('chat.imageError'));
+      } catch (error) {
+        toast.error(error instanceof ImageTooLargeError ? t('chat.imageTooLarge') : t('chat.imageError'));
       }
     }
   }

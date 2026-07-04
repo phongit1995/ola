@@ -1,7 +1,17 @@
 const MAX_UPLOAD_BYTES = 2 * 1024 * 1024;
 const MAX_DIMENSION = 1920;
+const MIN_DIMENSION = 320;
+const DIMENSION_STEP = 0.8;
+const MAX_DOWNSCALE_ROUNDS = 12;
 const QUALITY_STEPS = [0.9, 0.8, 0.7, 0.6, 0.5];
 const PASSTHROUGH_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+
+export class ImageTooLargeError extends Error {
+  constructor() {
+    super('image exceeds max upload size');
+    this.name = 'ImageTooLargeError';
+  }
+}
 
 function needsCompression(file: File): boolean {
   if (file.type === 'image/gif') return false;
@@ -34,25 +44,53 @@ function toJpegName(name: string): string {
   return `${base === '' ? 'image' : base}.jpg`;
 }
 
-export async function compressImageForUpload(file: File): Promise<File> {
-  if (!needsCompression(file)) return file;
-
-  const image = await loadImageFromFile(file);
-  const scale = Math.min(1, MAX_DIMENSION / Math.max(image.naturalWidth, image.naturalHeight));
-
+async function encodeAtDimensions(
+  image: HTMLImageElement,
+  width: number,
+  height: number
+): Promise<Blob | null> {
   const canvas = document.createElement('canvas');
-  canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
-  canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+  canvas.width = width;
+  canvas.height = height;
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('canvas unavailable');
-  ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+  ctx.drawImage(image, 0, 0, width, height);
 
   let output: Blob | null = null;
   for (const quality of QUALITY_STEPS) {
     output = await canvasToJpeg(canvas, quality);
-    if (output != null && output.size <= MAX_UPLOAD_BYTES) break;
+    if (output != null && output.size <= MAX_UPLOAD_BYTES) return output;
   }
-  if (output == null) throw new Error('compress failed');
+  return output;
+}
 
-  return new File([output], toJpegName(file.name), { type: 'image/jpeg' });
+export async function compressImageForUpload(file: File): Promise<File> {
+  if (!needsCompression(file)) {
+    if (file.size > MAX_UPLOAD_BYTES) throw new ImageTooLargeError();
+    return file;
+  }
+
+  const image = await loadImageFromFile(file);
+  const initialScale = Math.min(
+    1,
+    MAX_DIMENSION / Math.max(image.naturalWidth, image.naturalHeight)
+  );
+  let width = Math.max(1, Math.round(image.naturalWidth * initialScale));
+  let height = Math.max(1, Math.round(image.naturalHeight * initialScale));
+
+  let smallest: Blob | null = null;
+  for (let round = 0; round < MAX_DOWNSCALE_ROUNDS; round += 1) {
+    const encoded = await encodeAtDimensions(image, width, height);
+    if (encoded != null && (smallest == null || encoded.size < smallest.size)) smallest = encoded;
+    if (encoded != null && encoded.size <= MAX_UPLOAD_BYTES) {
+      return new File([encoded], toJpegName(file.name), { type: 'image/jpeg' });
+    }
+    if (width <= MIN_DIMENSION && height <= MIN_DIMENSION) break;
+    width = Math.max(MIN_DIMENSION, Math.round(width * DIMENSION_STEP));
+    height = Math.max(MIN_DIMENSION, Math.round(height * DIMENSION_STEP));
+  }
+
+  if (smallest == null) throw new Error('compress failed');
+  if (smallest.size > MAX_UPLOAD_BYTES) throw new ImageTooLargeError();
+  return new File([smallest], toJpegName(file.name), { type: 'image/jpeg' });
 }

@@ -12,6 +12,7 @@ export const API_PATH = {
     join: (id: string) => `/rooms/${id}/join`,
     members: (id: string) => `/rooms/${id}/members`,
     messages: (id: string) => `/rooms/${id}/messages`,
+    messagesImages: (id: string) => `/rooms/${id}/messages/images`,
     message: (id: string, messageId: string) => `/rooms/${id}/messages/${messageId}`,
     messageReactions: (id: string, messageId: string) => `/rooms/${id}/messages/${messageId}/reactions`,
   },
