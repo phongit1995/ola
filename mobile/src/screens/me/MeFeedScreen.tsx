@@ -13,6 +13,9 @@ import type { MeFeedFilter, Post, PostReaction } from '@ola/shared/types';
 import { MePostCard } from './MePostCard';
 import { MeComposerModal } from './MeComposerModal';
 import { MeLeftDrawer } from './MeLeftDrawer';
+import { MeCommentSheet } from './MeCommentSheet';
+import { MeLikersDialog } from './MeLikersDialog';
+import { MeNotificationsScreen } from './MeNotificationsScreen';
 
 type MeTab = 'community' | 'personal';
 
@@ -49,6 +52,7 @@ export function MeFeedScreen() {
   const refreshFeed = useMeFeedStore((s) => s.refreshFeed);
   const loadMore = useMeFeedStore((s) => s.loadMore);
   const toggleReaction = useMeFeedStore((s) => s.toggleReaction);
+  const adjustCommentCount = useMeFeedStore((s) => s.adjustCommentCount);
   const unreadCount = useMeNotificationStore((s) => s.unreadCount);
   const refreshUnread = useMeNotificationStore((s) => s.refreshUnread);
   const username = useAuthStore((s) => s.user?.username ?? null);
@@ -59,6 +63,10 @@ export function MeFeedScreen() {
   const [tab, setTab] = useState<MeTab>('community');
   const [composerOpen, setComposerOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [commentPostId, setCommentPostId] = useState<string | null>(null);
+  const [likersPostId, setLikersPostId] = useState<string | null>(null);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const commentPost = commentPostId != null ? posts.find((p) => p.id === commentPostId) ?? null : null;
 
   useEffect(() => {
     void loadFeed(TAB_FILTER[tab]);
@@ -121,7 +129,7 @@ export function MeFeedScreen() {
             );
           })}
         </View>
-        <Pressable onPress={comingSoon} className="h-12 w-10 items-center justify-center">
+        <Pressable onPress={() => setNotifOpen(true)} className="h-12 w-10 items-center justify-center">
           <View>
             <Image source={bellIcon} style={{ width: 24, height: 24, tintColor: '#ffffff' }} resizeMode="contain" />
             {unreadCount > 0 && (
@@ -177,9 +185,9 @@ export function MeFeedScreen() {
               onToggleLike={(id) => handleReaction(id, 'like')}
               onToggleDislike={(id) => handleReaction(id, 'dislike')}
               onOpenProfile={comingSoon}
-              onOpenComments={comingSoon}
+              onOpenComments={(id) => setCommentPostId(id)}
               onOpenMenu={comingSoon}
-              onOpenLikers={comingSoon}
+              onOpenLikers={(id) => setLikersPostId(id)}
             />
           )}
         />
@@ -202,6 +210,31 @@ export function MeFeedScreen() {
       </Pressable>
 
       <MeComposerModal visible={composerOpen} onClose={() => setComposerOpen(false)} />
+
+      {commentPost != null && (
+        <MeCommentSheet
+          post={commentPost}
+          language={i18n.language}
+          onClose={() => setCommentPostId(null)}
+          onToggleLike={(id) => handleReaction(id, 'like')}
+          onToggleDislike={(id) => handleReaction(id, 'dislike')}
+          onOpenProfile={comingSoon}
+          onOpenLikers={(id) => setLikersPostId(id)}
+          onCommentDelta={adjustCommentCount}
+        />
+      )}
+
+      {likersPostId != null && (
+        <MeLikersDialog
+          postId={likersPostId}
+          onClose={() => setLikersPostId(null)}
+          onOpenProfile={comingSoon}
+        />
+      )}
+
+      {notifOpen && (
+        <MeNotificationsScreen language={i18n.language} onClose={() => setNotifOpen(false)} />
+      )}
 
       {drawerOpen && (
         <MeLeftDrawer
