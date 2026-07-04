@@ -30,6 +30,7 @@ export interface RoomChatState {
   replyTarget: RoomMessage | null;
   open: (room: ActiveRoom) => Promise<void>;
   close: () => void;
+  reset: () => void;
   setActiveTab: (tab: RoomTab) => void;
   setRoomForeground: (foreground: boolean) => void;
   sendMessage: (content: string) => Promise<void>;
@@ -112,6 +113,8 @@ export const useRoomChatStore = create<RoomChatState>((set, get) => {
       if (room) SocketService.connect().emit(ROOM_SOCKET_EVENTS.leave, { roomId: room.id });
       set({ ...initialState });
     },
+
+    reset: () => set({ ...initialState }),
 
     setActiveTab: (tab) =>
       set(tab === 'messages' ? { activeTab: tab, messagesUnread: false } : { activeTab: tab }),
