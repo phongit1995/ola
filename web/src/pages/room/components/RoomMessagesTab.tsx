@@ -15,6 +15,7 @@ import {
 } from '@components';
 import likeIcon from '@/assets/icons/chat/smiley_35.png';
 import replyActionIcon from '@/assets/icons/me/ic_action_reply_gray.png';
+import copyActionIcon from '@/assets/icons/chat/ic_menu_copy.svg';
 import deleteActionIcon from '@/assets/icons/chat/ic_menu_delete.png';
 import smileyIcon from '@/assets/icons/chat/ic_smiley.png';
 import smileyIconActive from '@/assets/icons/chat/ic_smiley_selected.png';
@@ -246,8 +247,31 @@ export function RoomMessagesTab({
     [t]
   );
 
+  async function copyMessage(content: string) {
+    try {
+      await navigator.clipboard.writeText(content);
+      toast.success(t('room.copied'));
+    } catch {
+      toast.error(t('common.error'));
+    }
+  }
+
+  function isCopyableText(message: RoomMessage): boolean {
+    return (
+      message.type !== 'image' &&
+      kulImageForText(message.content) == null &&
+      message.content.trim() !== ''
+    );
+  }
+
   function sheetActions(message: RoomMessage): MessageSheetAction[] {
     const actions: MessageSheetAction[] = [];
+    const copyAction: MessageSheetAction = {
+      key: 'copy',
+      label: t('room.actionCopy'),
+      icon: copyActionIcon,
+      onSelect: () => void copyMessage(message.content),
+    };
     if (message.senderId !== currentUserId) {
       actions.push({
         key: 'reply',
@@ -258,7 +282,9 @@ export function RoomMessagesTab({
           composerRef.current?.focus();
         },
       });
+      if (isCopyableText(message)) actions.push(copyAction);
     } else {
+      if (isCopyableText(message)) actions.push(copyAction);
       actions.push({
         key: 'delete',
         label: t('chat.actionDelete'),

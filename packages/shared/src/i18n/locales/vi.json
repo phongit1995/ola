@@ -364,6 +364,8 @@
     "quitSuccess": "Đã thoát phòng",
     "loadError": "Không tải được danh sách phòng",
     "actionReply": "Trả lời",
+    "actionCopy": "Sao chép",
+    "copied": "Đã sao chép",
     "replyingTo": "Đang trả lời @{{name}}",
     "replySticker": "[Nhãn dán]",
     "replyImage": "[Ảnh]",

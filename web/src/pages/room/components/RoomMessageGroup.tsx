@@ -105,7 +105,7 @@ function RoomBubble({
     <img
       src={message.imageUrl}
       alt=""
-      className="max-h-64 w-auto max-w-full rounded-lg object-cover"
+      className="max-h-44 w-auto max-w-52 rounded-lg object-cover"
     />
   ) : kul != null ? (
     <img src={kul} alt="" className="h-28 w-auto object-contain" />
@@ -198,7 +198,7 @@ function RoomMessageGroupComponent({
 
   return (
     <div className="flex w-full flex-col gap-0.5">
-      <span className="text-center text-xs text-black/26">{time}</span>
+      {group.showTime && <span className="text-center text-xs text-black/26">{time}</span>}
       {isOwn ? (
         <span className="mr-12 flex max-w-[80%] items-center gap-1 self-end text-sm text-black/54">
           <span className="truncate">{senderName}</span>

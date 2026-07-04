@@ -364,6 +364,8 @@
     "quitSuccess": "Left the room",
     "loadError": "Couldn't load rooms",
     "actionReply": "Reply",
+    "actionCopy": "Copy",
+    "copied": "Copied",
     "replyingTo": "Replying to @{{name}}",
     "replySticker": "[Sticker]",
     "replyImage": "[Photo]",

@@ -22,6 +22,7 @@ export interface MessageGroup {
   senderName: string;
   senderAvatar?: string;
   senderVipTypeId?: number | null;
+  showTime: boolean;
   messages: GroupedMessage[];
 }
 
@@ -73,10 +74,19 @@ export function buildRoomFeed(messages: RoomMessage[], currentUserId: string): R
   let pending: PendingGroup | null = null;
   let lastDay = '';
   let lastTime = 0;
+  let lastShownMinute = -1;
+
+  const minuteBucket = (iso: string): number => {
+    const value = new Date(iso).getTime();
+    return Number.isNaN(value) ? -1 : Math.floor(value / 60000);
+  };
 
   const flush = () => {
     if (pending == null) return;
     const count = pending.raw.length;
+    const bucket = minuteBucket(pending.raw[0]!.createdAt);
+    const showTime = bucket !== lastShownMinute;
+    if (showTime) lastShownMinute = bucket;
     items.push({
       kind: 'group',
       key: pending.raw[0]!.id,
@@ -85,6 +95,7 @@ export function buildRoomFeed(messages: RoomMessage[], currentUserId: string): R
       senderName: pending.senderName,
       senderAvatar: pending.senderAvatar,
       senderVipTypeId: pending.senderVipTypeId,
+      showTime,
       messages: pending.raw.map((message, index) => ({
         id: message.id,
         content: message.content,
@@ -108,6 +119,7 @@ export function buildRoomFeed(messages: RoomMessage[], currentUserId: string): R
       items.push({ kind: 'date', key: `date-${day}-${message.id}`, createdAt: message.createdAt });
       lastDay = day;
       lastTime = 0;
+      lastShownMinute = -1;
     }
 
     const gap = Number.isNaN(time) || lastTime === 0 ? 0 : time - lastTime;
