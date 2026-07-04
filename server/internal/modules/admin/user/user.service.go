@@ -107,7 +107,7 @@ func (s *Service) UpdateUsername(id uuid.UUID, username string) (*UserDetail, er
 		return nil, errors.New("username may only contain lowercase letters, numbers, dot (.), hyphen (-) and underscore (_), and must start and end with a letter or number")
 	}
 
-	if _, err := s.repo.FindByID(id); err != nil {
+	if _, err := s.repo.FindByIDUnscoped(id); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, apperr.ErrUserNotFound
 		}
@@ -123,6 +123,9 @@ func (s *Service) UpdateUsername(id uuid.UUID, username string) (*UserDetail, er
 	}
 
 	if err := s.repo.SetUsername(id, username); err != nil {
+		if strings.Contains(err.Error(), "users_username_key") {
+			return nil, errors.New("username already exists")
+		}
 		return nil, err
 	}
 
@@ -132,7 +135,7 @@ func (s *Service) UpdateUsername(id uuid.UUID, username string) (*UserDetail, er
 
 	s.logger.Infow("Admin updated username", "user_id", id, "username", username)
 
-	user, err := s.repo.FindByID(id)
+	user, err := s.repo.FindByIDUnscoped(id)
 	if err != nil {
 		return nil, err
 	}
