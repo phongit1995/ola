@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ConfirmDialog } from '@components';
 import type { Conversation } from '@app-types';
-import { Avatar } from '@components';
+import { Avatar, PresenceBadge } from '@components';
 import { SmileyText } from '@lib';
 import sentIcon from '@/assets/icons/chat/ic_message_sent.png';
 import kulIcon from '@/assets/icons/chat/ic_kul.png';
@@ -137,7 +137,10 @@ function ConversationRow({ view, onSelect, onRequestDelete }: ConversationRowPro
           onClick={handleSelect}
           className="flex min-w-0 flex-1 items-center gap-4 text-left"
         >
-          <Avatar name={view.name} color={view.color} src={view.avatar} />
+          <span className="relative shrink-0">
+            <Avatar name={view.name} color={view.color} src={view.avatar} />
+            {view.online && <PresenceBadge className="absolute right-0 bottom-0" />}
+          </span>
           <span className="min-w-0 flex-1">
             <span className="flex items-center justify-between gap-2">
               <span className={`truncate text-base text-black/87 ${unread ? 'font-bold' : ''}`}>

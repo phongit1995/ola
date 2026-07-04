@@ -24,6 +24,7 @@ export interface ConversationView {
   isGroup: boolean;
   time: string;
   unread: number;
+  online: boolean;
 }
 
 export function formatClock(iso?: string): string {
@@ -68,6 +69,7 @@ export function toConversationView(conversation: Conversation): ConversationView
     isGroup: conversation.type === 'group',
     time: formatClock(conversation.lastMessageAt),
     unread: conversation.unreadCount,
+    online: conversation.type === 'direct' ? (conversation.otherUser?.isOnline ?? false) : false,
   };
 }
 

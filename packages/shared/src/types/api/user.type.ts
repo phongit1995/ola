@@ -120,3 +120,13 @@ export interface VisitorListResult {
   users: VisitorUser[];
   nextCursor: string | null;
 }
+
+export interface UserPresence {
+  userId: string;
+  isOnline: boolean;
+  lastActiveAt?: string;
+}
+
+export interface PresenceBatchResult {
+  users: UserPresence[];
+}

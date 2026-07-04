@@ -1,7 +1,7 @@
 import { type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { portalRoot, REACTION_EMOJI, REACTION_ORDER } from '@lib';
+import { portalRoot, REACTION_IMAGE, REACTION_ORDER } from '@lib';
 import type { ReactionType } from '@app-types';
 
 export interface MessageSheetAction {
@@ -40,9 +40,9 @@ function ReactionBar({ onReact, onClose }: Pick<MessageActionSheetProps, 'onReac
             onReact(type);
             onClose();
           }}
-          className="flex h-9 w-9 items-center justify-center rounded-full text-[22px] transition-transform duration-150 hover:-translate-y-1 hover:scale-[1.3] active:scale-110"
+          className="flex h-9 w-9 items-center justify-center rounded-full transition-transform duration-150 hover:-translate-y-1 hover:scale-[1.3] active:scale-110"
         >
-          {REACTION_EMOJI[type]}
+          <img src={REACTION_IMAGE[type]} alt={type} className="h-6 w-6 object-contain" />
         </button>
       ))}
     </div>

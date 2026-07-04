@@ -148,10 +148,12 @@ function ReactionChipsRow({
       {chips.map((chip) => (
         <span
           key={chip.type}
-          className="flex items-center gap-0.5 rounded-full bg-white px-1 py-px text-[10px] shadow-sm ring-1 ring-black/5"
+          className="flex items-center gap-1 rounded-full bg-white py-0.5 pl-1 pr-1.5 shadow-[0_1px_3px_rgba(0,0,0,0.12)] ring-1 ring-black/5"
         >
-          <span>{chip.emoji}</span>
-          <span className="text-black/54">{chip.count}</span>
+          <img src={chip.image} alt={chip.type} className="h-4 w-4 object-contain" />
+          <span className="text-[11px] font-medium leading-none text-black/55 tabular-nums">
+            {chip.count}
+          </span>
         </span>
       ))}
     </button>

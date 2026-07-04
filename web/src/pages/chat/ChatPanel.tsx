@@ -15,6 +15,7 @@ import { AuthService, RelationshipService, SocketService } from '@services';
 import { useAuthStore } from '@/store/authStore';
 import { useChatStore } from '@/store/chat/chatStore';
 import { useFriendsStore } from '@/store/friendsStore';
+import { usePresenceStore } from '@/store/presenceStore';
 import { ConversationList } from './components/ConversationList';
 import { ContactList } from './components/ContactList';
 import { BlockedListDialog } from './components/BlockedListDialog';
@@ -30,6 +31,11 @@ import { FriendRequestsScreen } from './components/FriendRequestsScreen';
 import { useMediaViewerStore } from '@/store/mediaViewerStore';
 import { useAppOverlayStore } from '@/store/appOverlayStore';
 import { mapFriendsToContacts } from './friends';
+import {
+  useConversationsWithPresence,
+  useFriendsWithPresence,
+  usePresenceListPolling,
+} from './usePresence';
 import type { Relationship } from '@app-types';
 
 interface ProfileTarget {
@@ -45,7 +51,7 @@ export function ChatPanel() {
   const clearUser = useAuthStore((s) => s.clearUser);
   const user = useAuthStore((s) => s.user);
 
-  const conversations = useChatStore((s) => s.conversations);
+  const conversations = useConversationsWithPresence();
   const loadingConversations = useChatStore((s) => s.loadingConversations);
   const openConversation = useChatStore((s) => s.openConversation);
   const hideConversation = useChatStore((s) => s.hideConversation);
@@ -68,11 +74,13 @@ export function ChatPanel() {
   const [requestsOpen, setRequestsOpen] = useState(false);
   const openViewer = useMediaViewerStore((s) => s.openViewer);
   const openApp = useAppOverlayStore((s) => s.push);
-  const friendsRaw = useFriendsStore((s) => s.friends);
   const requests = useFriendsStore((s) => s.requests);
   const requestsLoading = useFriendsStore((s) => s.requestsLoading);
+  const friendsRaw = useFriendsWithPresence();
   const friends = useMemo(() => mapFriendsToContacts(friendsRaw, t), [friendsRaw, t]);
   const [profileTarget, setProfileTarget] = useState<ProfileTarget | null>(null);
+
+  usePresenceListPolling();
 
   useEffect(() => {
     if (sub !== 'contacts') return;
@@ -124,6 +132,7 @@ export function ChatPanel() {
     } finally {
       SocketService.disconnect();
       useFriendsStore.getState().reset();
+      usePresenceStore.getState().reset();
       clearUser();
       navigate(ROUTES.login);
     }
