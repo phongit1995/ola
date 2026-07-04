@@ -73,7 +73,7 @@ const (
 	CacheKeyPasswordResetToken  = "PASSWORD:%s:RESET_TOKEN"
 	CacheKeyConversationPattern = "USER:*:CONVERSATIONS"
 	CacheKeyLastRead            = "LAST_READ:%s:%s"
-	CacheKeyRoomMembers         = "ROOM:%s:MEMBERS"
+	CacheKeyRoomMembers         = "ROOM:%s:MEMBERS:Z"
 	CacheKeyRoomUserConn        = "ROOM:%s:USER:%s:CONN"
 	CacheKeyRoomMsgIndex        = "ROOM:%s:MSG_INDEX"
 	CacheKeyRoomMsgData         = "ROOM:%s:MSG"

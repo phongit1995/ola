@@ -25,12 +25,13 @@ var roomJoinScript = redis.NewScript(`
 	local userID = ARGV[1]
 	local ttl = tonumber(ARGV[2])
 	local maxMembers = tonumber(ARGV[3])
-	if redis.call('SISMEMBER', setKey, userID) == 0 and maxMembers > 0 then
-		if redis.call('SCARD', setKey) >= maxMembers then
+	local score = tonumber(ARGV[4])
+	if redis.call('ZSCORE', setKey, userID) == false and maxMembers > 0 then
+		if redis.call('ZCARD', setKey) >= maxMembers then
 			return -1
 		end
 	end
-	local added = redis.call('SADD', setKey, userID)
+	local added = redis.call('ZADD', setKey, 'NX', score, userID)
 	redis.call('SET', connKey, 1, 'EX', ttl)
 	redis.call('EXPIRE', setKey, ttl)
 	return added
@@ -59,7 +60,7 @@ func (s *RoomPresenceService) connKey(roomID, userID string) string {
 func (s *RoomPresenceService) Join(ctx context.Context, roomID, userID string, maxMembers int) (added bool, full bool, err error) {
 	res, err := roomJoinScript.Run(ctx, s.cache.GetClient(),
 		[]string{s.setKey(roomID), s.connKey(roomID, userID)},
-		userID, constants.RoomPresenceTTLSeconds, maxMembers,
+		userID, constants.RoomPresenceTTLSeconds, maxMembers, time.Now().UnixMilli(),
 	).Int()
 	if err != nil {
 		return false, false, err
@@ -111,7 +112,7 @@ func (s *RoomPresenceService) ConsumeJoinTicket(ctx context.Context, ticket, roo
 func (s *RoomPresenceService) Leave(ctx context.Context, roomID, userID string) (bool, error) {
 	client := s.cache.GetClient()
 	pipe := client.Pipeline()
-	removed := pipe.SRem(ctx, s.setKey(roomID), userID)
+	removed := pipe.ZRem(ctx, s.setKey(roomID), userID)
 	pipe.Del(ctx, s.connKey(roomID, userID))
 	if _, err := pipe.Exec(ctx); err != nil {
 		return false, err
@@ -130,7 +131,7 @@ func (s *RoomPresenceService) OnlineMembers(ctx context.Context, roomID string) 
 	client := s.cache.GetClient()
 	setKey := s.setKey(roomID)
 
-	ids, err := client.SMembers(ctx, setKey).Result()
+	ids, err := client.ZRange(ctx, setKey, 0, -1).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -158,7 +159,7 @@ func (s *RoomPresenceService) OnlineMembers(ctx context.Context, roomID string) 
 	}
 
 	if len(stale) > 0 {
-		if err := client.SRem(ctx, setKey, stale...).Err(); err != nil {
+		if err := client.ZRem(ctx, setKey, stale...).Err(); err != nil {
 			s.logger.Warnw("Failed to prune stale room members", "room_id", roomID, "error", err)
 		}
 	}
@@ -195,7 +196,7 @@ func (s *RoomPresenceService) MemberCounts(ctx context.Context, roomIDs []string
 	membersPipe := client.Pipeline()
 	membersCmds := make([]*redis.StringSliceCmd, len(roomIDs))
 	for i, roomID := range roomIDs {
-		membersCmds[i] = membersPipe.SMembers(ctx, s.setKey(roomID))
+		membersCmds[i] = membersPipe.ZRange(ctx, s.setKey(roomID), 0, -1)
 	}
 	if _, err := membersPipe.Exec(ctx); err != nil {
 		s.logger.Warnw("Failed to fetch room member sets", "error", err)
@@ -235,7 +236,7 @@ func (s *RoomPresenceService) MemberCounts(ctx context.Context, roomIDs []string
 	if len(stale) > 0 {
 		prunePipe := client.Pipeline()
 		for roomIdx, ids := range stale {
-			prunePipe.SRem(ctx, s.setKey(roomIDs[roomIdx]), ids...)
+			prunePipe.ZRem(ctx, s.setKey(roomIDs[roomIdx]), ids...)
 		}
 		if _, err := prunePipe.Exec(ctx); err != nil {
 			s.logger.Warnw("Failed to prune stale room members", "error", err)

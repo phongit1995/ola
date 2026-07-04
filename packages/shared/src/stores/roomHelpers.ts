@@ -6,10 +6,13 @@ export function toRecord(value: unknown): Record<string, unknown> | null {
 }
 
 export function withVipTypeId(members: RoomMember[]): RoomMember[] {
-  return members.map((member) => ({
+  const resolved = members.map((member) => ({
     ...member,
     vipTypeId: activeVipTypeId(member.vipUsed, member.vipEndTime),
   }));
+  const vip = resolved.filter((member) => member.vipTypeId != null);
+  const rest = resolved.filter((member) => member.vipTypeId == null);
+  return [...vip, ...rest];
 }
 
 export function withSenderVip(message: RoomMessage): RoomMessage {
