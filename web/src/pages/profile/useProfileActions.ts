@@ -42,6 +42,21 @@ export function useProfileActions({
     [setProfile, refreshUser, t]
   );
 
+  const changeAvatar = useCallback(
+    async (file: File) => {
+      try {
+        const { url } = await UserService.uploadAvatar(file);
+        await UserService.updateMe({ avatar: url });
+        setProfile((p) => (p ? { ...p, avatar: url } : p));
+        await refreshUser();
+        toast.success(t('profileEdit.avatarUpdated'));
+      } catch {
+        toast.error(t('profileEdit.avatarError'));
+      }
+    },
+    [setProfile, refreshUser, t]
+  );
+
   const kiss = useCallback(() => {
     if (userId === '') return;
     setProfile((p) => (p ? { ...p, kisses: p.kisses + 1 } : p));
@@ -104,8 +119,8 @@ export function useProfileActions({
   }, [userId]);
 
   const actions = useMemo<ProfileActions>(
-    () => ({ kiss, toggleFollow, friendAction, blockAction, message, changeCover }),
-    [kiss, toggleFollow, friendAction, blockAction, message, changeCover]
+    () => ({ kiss, toggleFollow, friendAction, blockAction, message, changeCover, changeAvatar }),
+    [kiss, toggleFollow, friendAction, blockAction, message, changeCover, changeAvatar]
   );
 
   return { actions, busy };

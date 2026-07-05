@@ -22,6 +22,7 @@ export interface ProfileActions {
   blockAction: () => void;
   message: () => void;
   changeCover: (file: File) => Promise<void>;
+  changeAvatar: (file: File) => Promise<void>;
 }
 
 export interface UserProfile {

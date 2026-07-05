@@ -11,16 +11,8 @@ import { Avatar } from '@components';
 import { CoverImageEditor } from './components/CoverImageEditor';
 import { CoverCropOverlay } from './components/CoverCropOverlay';
 import { ChangePasswordDialog } from './components/ChangePasswordDialog';
+import { readImageSize } from './imageSize';
 import { AVATAR_ASPECT, COVER_ASPECT, INPUT_CLASS, MIN_AVATAR_SOURCE, PHONE_PATTERN } from './constants';
-
-function readImageSize(url: string): Promise<{ width: number; height: number }> {
-  return new Promise((resolve, reject) => {
-    const probe = new Image();
-    probe.onload = () => resolve({ width: probe.naturalWidth, height: probe.naturalHeight });
-    probe.onerror = () => reject(new Error('decode failed'));
-    probe.src = url;
-  });
-}
 
 function LockIcon({ className = 'h-4 w-4' }: { className?: string }) {
   return (
