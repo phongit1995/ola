@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatKen } from '@lib';
 import { FullScreenOverlay } from '@components';
@@ -26,6 +26,14 @@ import {
 } from './spinWheelAssets';
 
 const TEXT_SHADOW = { textShadow: '0 2px 4px rgba(0,0,0,0.45)' };
+
+const TITLE_STYLE: CSSProperties = {
+  color: '#ffffff',
+  WebkitTextStroke: '3px #6b4a1c',
+  paintOrder: 'stroke fill',
+  textShadow: '0 3px 4px rgba(0,0,0,0.35)',
+  letterSpacing: '0.02em',
+};
 
 interface SpinWheelGamePageProps {
   onClose: () => void;
@@ -62,52 +70,54 @@ export function SpinWheelGamePage({ onClose }: SpinWheelGamePageProps) {
   return (
     <FullScreenOverlay z={60}>
       <div
-        className="h-full w-full overflow-y-auto bg-cover bg-center"
+        className="h-full w-full overflow-x-hidden overflow-y-auto bg-cover bg-center"
         style={{ backgroundImage: `url(${backgroundUrl})` }}
       >
-        <div className="mx-auto w-full max-w-[480px] pb-8">
-          <header className="relative w-full">
-            <img src={titleBannerUrl} alt="" className="block w-full" />
-            <div className="absolute inset-x-0 top-0 bottom-[16%] flex items-center justify-center">
-              <span
-                className="px-14 text-center text-xl font-extrabold text-white"
-                style={TEXT_SHADOW}
-              >
-                {t('wheelGame.title')}
-              </span>
-              <button
-                type="button"
-                onClick={onClose}
-                aria-label={t('wheelGame.close')}
-                className="absolute right-4 top-1/2 h-8 w-8 -translate-y-1/2 active:scale-95"
-              >
-                <img src={closeButtonUrl} alt="" className="h-full w-full" />
-              </button>
-            </div>
-          </header>
+        <header
+          className="relative flex w-full items-center justify-center"
+          style={{
+            backgroundImage: `url(${titleBannerUrl})`,
+            backgroundSize: '100% 100%',
+            aspectRatio: '1906 / 360',
+          }}
+        >
+          <span className="px-14 text-center text-2xl font-extrabold text-white" style={TITLE_STYLE}>
+            {t('wheelGame.title')}
+          </span>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label={t('wheelGame.close')}
+            className="absolute right-4 top-1/2 h-8 w-8 -translate-y-1/2 active:scale-95"
+          >
+            <img src={closeButtonUrl} alt="" className="h-full w-full" />
+          </button>
+        </header>
 
-          <div className="flex flex-col items-center px-4">
-            <div className="mt-4 flex items-center">
-              <div className="relative w-[220px]">
-                <img src={kenBarUrl} alt="" className="w-full" />
-                <div className="absolute inset-0 flex items-center gap-1.5 pl-3">
-                  <img src={coinUrl} alt="" className="h-6 w-6 shrink-0" />
-                  <span className="text-sm font-extrabold text-white" style={TEXT_SHADOW}>
-                    {formatKen(ken)} KEN
-                  </span>
-                </div>
-              </div>
+        <div className="flex flex-col items-center px-4 pb-8">
+            <div
+              className="relative mt-4 flex w-[240px] max-w-full items-center gap-1.5 pl-3 pr-12"
+              style={{
+                backgroundImage: `url(${kenBarUrl})`,
+                backgroundSize: '100% 100%',
+                aspectRatio: '2014 / 521',
+              }}
+            >
+              <img src={coinUrl} alt="" className="h-6 w-6 shrink-0" />
+              <span className="truncate text-sm font-extrabold text-white" style={TEXT_SHADOW}>
+                {formatKen(ken)} KEN
+              </span>
               <button
                 type="button"
                 onClick={() => openApp('ken')}
                 aria-label={t('wheelGame.buyKen')}
-                className="relative -ml-3 h-11 w-11 active:scale-95"
+                className="absolute right-1 top-1/2 h-9 w-9 -translate-y-1/2 active:scale-95"
               >
                 <img src={plusFrameUrl} alt="" className="absolute inset-0 h-full w-full" />
                 <img
                   src={plusIconUrl}
                   alt=""
-                  className="absolute left-1/2 top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2"
+                  className="absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2"
                 />
               </button>
             </div>
@@ -124,7 +134,7 @@ export function SpinWheelGamePage({ onClose }: SpinWheelGamePageProps) {
               type="button"
               disabled={!canSpin}
               onClick={() => useSpinWheelStore.getState().spin()}
-              className="relative mt-6 w-[260px] active:scale-95 disabled:opacity-60"
+              className="relative mt-6 w-[260px] max-w-full active:scale-95 disabled:opacity-60"
             >
               <img src={spinButtonUrl} alt="" className="w-full" />
               <span
@@ -135,7 +145,7 @@ export function SpinWheelGamePage({ onClose }: SpinWheelGamePageProps) {
               </span>
             </button>
 
-            <div className="relative mt-3 w-[250px]">
+            <div className="relative mt-3 w-[250px] max-w-full">
               <img src={spinCountNoteUrl} alt="" className="w-full" />
               <span
                 className="absolute inset-0 flex items-center justify-center pl-6 pr-4 text-center text-xs font-semibold text-white"
@@ -145,11 +155,11 @@ export function SpinWheelGamePage({ onClose }: SpinWheelGamePageProps) {
               </span>
             </div>
 
-            <div className="mt-4 flex gap-3">
+            <div className="mt-4 flex w-full max-w-[300px] gap-3">
               <button
                 type="button"
                 onClick={() => useSpinWheelStore.getState().toggleMute()}
-                className="relative h-11 w-[135px] active:scale-95"
+                className="relative h-11 flex-1 active:scale-95"
               >
                 <img src={bottomButtonFrameUrl} alt="" className="absolute inset-0 h-full w-full" />
                 <span
@@ -163,7 +173,7 @@ export function SpinWheelGamePage({ onClose }: SpinWheelGamePageProps) {
               <button
                 type="button"
                 onClick={() => setHistoryOpen(true)}
-                className="relative h-11 w-[135px] active:scale-95"
+                className="relative h-11 flex-1 active:scale-95"
               >
                 <img src={bottomButtonFrameUrl} alt="" className="absolute inset-0 h-full w-full" />
                 <span
@@ -176,7 +186,6 @@ export function SpinWheelGamePage({ onClose }: SpinWheelGamePageProps) {
               </button>
             </div>
           </div>
-        </div>
       </div>
 
       {result != null && (
