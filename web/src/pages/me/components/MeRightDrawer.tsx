@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useDebouncedCallback } from 'use-debounce';
 import { useTranslation } from 'react-i18next';
 import { Avatar, ConfirmDialog, SearchIcon, Spinner, VipIcon } from '@components';
 import { activeVipTypeId, colorForName, toast } from '@lib';
@@ -27,32 +28,33 @@ export function MeRightDrawer({ onClose, onOpenProfile }: MeRightDrawerProps) {
     return () => cancelAnimationFrame(id);
   }, []);
 
-  useEffect(() => {
-    const keyword = query.trim();
-    const timer = setTimeout(() => {
-      if (keyword === '') {
-        setResults([]);
-        setLoading(false);
-        return;
-      }
-      setLoading(true);
-      UserService.search(keyword, 30)
-        .then((result) =>
-          setResults(
-            result.users.map((user) => ({
-              id: user.id,
-              username: user.username,
-              fullName: user.fullName,
-              avatar: user.avatar,
-              vipTypeId: activeVipTypeId(user.vipUsed, user.vipEndTime),
-            }))
-          )
+  const runSearch = useDebouncedCallback((value: string) => {
+    if (value === '') {
+      setResults([]);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    UserService.search(value, 30)
+      .then((result) =>
+        setResults(
+          result.users.map((user) => ({
+            id: user.id,
+            username: user.username,
+            fullName: user.fullName,
+            avatar: user.avatar,
+            vipTypeId: activeVipTypeId(user.vipUsed, user.vipEndTime),
+          }))
         )
-        .catch(() => toast.error(t('me.searchError')))
-        .finally(() => setLoading(false));
-    }, 350);
-    return () => clearTimeout(timer);
-  }, [query, t]);
+      )
+      .catch(() => toast.error(t('me.searchError')))
+      .finally(() => setLoading(false));
+  }, 350);
+
+  function handleQueryChange(value: string) {
+    setQuery(value);
+    runSearch(value.trim());
+  }
 
   function handleClose() {
     setShown(false);
@@ -87,7 +89,7 @@ export function MeRightDrawer({ onClose, onOpenProfile }: MeRightDrawerProps) {
             <input
               type="search"
               value={query}
-              onChange={(event) => setQuery(event.target.value)}
+              onChange={(event) => handleQueryChange(event.target.value)}
               placeholder={t('me.searchHint')}
               className="w-full bg-transparent text-base text-black/87 outline-none placeholder:text-black/26"
             />

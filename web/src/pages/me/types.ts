@@ -22,6 +22,7 @@ export interface MePost {
   disliked: boolean;
   mention: boolean;
   pinned: boolean;
+  topLikers: { name: string; avatar: string | null; color: string }[];
 }
 
 export type MeTab = 'community' | 'personal';

@@ -7,6 +7,9 @@ const PenGamePage = lazy(() =>
 const EggGamePage = lazy(() =>
   import('./egg/EggGamePage').then((m) => ({ default: m.EggGamePage }))
 );
+const SpinWheelGamePage = lazy(() =>
+  import('./spin-wheel/SpinWheelGamePage').then((m) => ({ default: m.SpinWheelGamePage }))
+);
 
 export function GameOverlay() {
   const active = useGameOverlayStore((s) => s.active);
@@ -16,7 +19,13 @@ export function GameOverlay() {
 
   return (
     <Suspense fallback={null}>
-      {active === 'pen' ? <PenGamePage onClose={close} /> : <EggGamePage onClose={close} />}
+      {active === 'pen' ? (
+        <PenGamePage onClose={close} />
+      ) : active === 'egg' ? (
+        <EggGamePage onClose={close} />
+      ) : (
+        <SpinWheelGamePage onClose={close} />
+      )}
     </Suspense>
   );
 }

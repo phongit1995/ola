@@ -18,5 +18,6 @@ func (r *Router) Setup(api *utils.AppGroup) {
 	ken := api.Group("/ken", r.authMiddleware.RequireAuth())
 	{
 		ken.POST("/transfer", r.controller.Transfer)
+		ken.GET("/transactions", r.controller.History)
 	}
 }

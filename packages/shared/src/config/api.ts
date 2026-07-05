@@ -48,6 +48,7 @@ export const API_PATH = {
   me: {
     base: '/me',
     mine: '/me/mine',
+    photos: '/me/photos',
     liked: '/me/liked',
     users: (userId: string) => `/me/users/${userId}`,
     detail: (id: string) => `/me/${id}`,
@@ -79,8 +80,10 @@ export const API_PATH = {
     storePrivacy: '/vip/store/privacy',
     iconCatalog: '/vip/icons/catalog',
     buy: '/vip/buy',
+    gift: '/vip/gift',
     packages: '/vip/packages',
     buyPackage: (id: string) => `/vip/packages/${id}/buy`,
+    giftPackage: (id: string) => `/vip/packages/${id}/gift`,
     iconUse: (id: string) => `/vip/icons/${id}/use`,
     iconLock: (id: string) => `/vip/icons/${id}/lock`,
     iconUnlock: (id: string) => `/vip/icons/${id}/unlock`,
@@ -94,6 +97,7 @@ export const API_PATH = {
   },
   ken: {
     transfer: '/ken/transfer',
+    transactions: '/ken/transactions',
   },
   kenTreasure: {
     open: (id: string) => `/ken/chests/${id}/open`,

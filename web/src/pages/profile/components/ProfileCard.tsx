@@ -9,12 +9,15 @@ import marriageIcon from '@/assets/icons/profile/ic_profile_marriage.png';
 import birthdayIcon from '@/assets/icons/profile/ic_profile_birthday.png';
 import noteIcon from '@/assets/icons/profile/ic_profile_note.png';
 import { Avatar, UserName, VipIcon } from '@components';
-import { colorForName } from '@lib';
+import { colorForName, toast } from '@lib';
+import { useMediaViewerStore } from '@/store/mediaViewerStore';
 import type { ProfileActions, UserProfile } from '../types';
 import type { RelationshipInfo } from '@app-types';
 import { RelationButtons } from './RelationButtons';
 import { CoverImageEditor } from './CoverImageEditor';
-import { COVER_ASPECT } from '../constants';
+import { CoverCropOverlay } from './CoverCropOverlay';
+import { readImageSize } from '../imageSize';
+import { AVATAR_ASPECT, COVER_ASPECT, MIN_AVATAR_SOURCE } from '../constants';
 
 interface ProfileCardProps {
   profile: UserProfile;
@@ -48,11 +51,16 @@ export function ProfileCard({
   onOpenUser,
 }: ProfileCardProps) {
   const { t } = useTranslation();
+  const openViewer = useMediaViewerStore((s) => s.openViewer);
   const coverInputRef = useRef<HTMLInputElement>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
   const [uploadingCover, setUploadingCover] = useState(false);
   const [coverPreview, setCoverPreview] = useState<{ url: string; file: File } | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [avatarCropSrc, setAvatarCropSrc] = useState<string | null>(null);
 
   const triggerCover = () => coverInputRef.current?.click();
+  const triggerAvatar = () => avatarInputRef.current?.click();
 
   const clearCoverPreview = useCallback(() => {
     setCoverPreview((prev) => {
@@ -61,7 +69,15 @@ export function ProfileCard({
     });
   }, []);
 
+  const clearAvatarCrop = useCallback(() => {
+    setAvatarCropSrc((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+  }, []);
+
   useEffect(() => clearCoverPreview, [clearCoverPreview]);
+  useEffect(() => clearAvatarCrop, [clearAvatarCrop]);
 
   function onCoverPick(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -78,6 +94,34 @@ export function ProfileCard({
     clearCoverPreview();
   }
 
+  async function onAvatarPick(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    try {
+      const size = await readImageSize(url);
+      if (Math.min(size.width, size.height) < MIN_AVATAR_SOURCE) {
+        URL.revokeObjectURL(url);
+        toast.error(t('avatar.tooSmall'));
+        return;
+      }
+    } catch {
+      URL.revokeObjectURL(url);
+      toast.error(t('avatar.error'));
+      return;
+    }
+    clearAvatarCrop();
+    setAvatarCropSrc(url);
+  }
+
+  async function applyAvatar(file: File) {
+    setUploadingAvatar(true);
+    await actions.changeAvatar(file);
+    setUploadingAvatar(false);
+    clearAvatarCrop();
+  }
+
   return (
     <div className="mb-2 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.18)]">
       <div
@@ -88,6 +132,14 @@ export function ProfileCard({
             : { backgroundColor: profile.coverColor }
         }
       >
+        {profile.coverPhoto && (
+          <button
+            type="button"
+            aria-label={t('profile.viewImage')}
+            onClick={() => openViewer([profile.coverPhoto!])}
+            className="absolute inset-0 cursor-zoom-in"
+          />
+        )}
         {profile.isSelf && (
           <>
             <button
@@ -115,7 +167,18 @@ export function ProfileCard({
           </>
         )}
         <div className="absolute -bottom-12 left-1/2 flex -translate-x-1/2 gap-1 bg-white p-px pb-0.5 shadow-[0_1px_3px_rgba(0,0,0,0.3)]">
-          <Avatar name={profile.nick} color={profile.color} size={96} src={profile.avatar} rounded={false} />
+          {profile.avatar ? (
+            <button
+              type="button"
+              aria-label={t('profile.viewImage')}
+              onClick={() => openViewer([profile.avatar!])}
+              className="leading-none"
+            >
+              <Avatar name={profile.nick} color={profile.color} size={96} src={profile.avatar} rounded={false} />
+            </button>
+          ) : (
+            <Avatar name={profile.nick} color={profile.color} size={96} src={profile.avatar} rounded={false} />
+          )}
           {profile.spouse ? (
             <button
               type="button"
@@ -144,6 +207,27 @@ export function ProfileCard({
         />
       )}
 
+      {profile.isSelf && (
+        <input
+          ref={avatarInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          aria-label={t('profile.changeAvatar')}
+          onChange={onAvatarPick}
+        />
+      )}
+
+      {avatarCropSrc && (
+        <CoverCropOverlay
+          src={avatarCropSrc}
+          aspect={AVATAR_ASPECT}
+          busy={uploadingAvatar}
+          onCancel={clearAvatarCrop}
+          onApply={applyAvatar}
+        />
+      )}
+
       <div className="flex items-center justify-center gap-1 p-2">
         <UserName
           name={`@${profile.username}`}
@@ -162,6 +246,7 @@ export function ProfileCard({
         onPostMe={onPostMe}
         onUpdateInfo={onUpdateInfo}
         onChangeCover={triggerCover}
+        onChangeAvatar={triggerAvatar}
         relationship={relationship}
         actions={actions}
       />

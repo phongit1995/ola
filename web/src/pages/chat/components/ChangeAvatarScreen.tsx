@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Avatar, Dialog, DialogButton } from '@components';
 import { MeService, UserService } from '@services';
-import { colorForName, toast } from '@lib';
+import { colorForName, compressImageForUpload, toast } from '@lib';
 import { useAuthStore } from '@/store/authStore';
 import { MIN_SOURCE_WIDTH } from '../constants';
 import { CoverCropOverlay } from '../../profile/components/CoverCropOverlay';
@@ -106,7 +106,7 @@ export function ChangeAvatarScreen({ open, onClose }: ChangeAvatarScreenProps) {
     if (!file || saving) return;
     setSaving(true);
     try {
-      const uploaded = await UserService.uploadAvatar(file);
+      const uploaded = await UserService.uploadAvatar(await compressImageForUpload(file));
       await UserService.updateMe({ avatar: uploaded.url });
       if (postToMe) {
         await MeService.create({

@@ -171,7 +171,7 @@ export function PenHistorySection({ section, opponentLabel, userId }: PenHistory
     <PenHistoryTable
       rowGrid={ROW_GRID}
       gridCols={GRID_COLS}
-      minWidthClass="@md:min-w-[440px]"
+      minWidthClass=""
       minHeight={420}
       header={
         <>

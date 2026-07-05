@@ -1,8 +1,10 @@
-import { Empty, Modal, Skeleton, Tag, Tooltip } from 'antd'
-import { CrownFilled, LockFilled } from '@ant-design/icons'
+import { useState } from 'react'
+import { Button, Empty, Modal, Skeleton, Tag, Tooltip } from 'antd'
+import { CrownFilled, GiftOutlined, LockFilled } from '@ant-design/icons'
 import { useUserVips } from '@/hooks/useUsers'
 import { formatDateTime } from '@/lib/format'
 import { vipIconUrl, vipName } from '@/lib/vipCatalog'
+import { GrantVipModal } from './GrantVipModal'
 import type { AdminUserVipIcon } from '@/types'
 
 interface UserVipIconsModalProps {
@@ -80,10 +82,31 @@ function VipCard({ item }: { item: AdminUserVipIcon }) {
 export function UserVipIconsModal({ open, userId, username, onClose }: UserVipIconsModalProps) {
   const { data, isLoading } = useUserVips(open ? userId : null)
   const items = data?.items ?? []
+  const [grantOpen, setGrantOpen] = useState(false)
 
   return (
     <Modal
-      title={`VIP đang có${username ? ` — @${username}` : ''}${data ? ` (${data.total})` : ''}`}
+      title={
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 12,
+            paddingRight: 32,
+          }}
+        >
+          <span>{`VIP đang có${username ? ` — @${username}` : ''}${data ? ` (${data.total})` : ''}`}</span>
+          <Button
+            size="small"
+            type="primary"
+            icon={<GiftOutlined />}
+            onClick={() => setGrantOpen(true)}
+          >
+            Tặng VIP
+          </Button>
+        </div>
+      }
       open={open}
       onCancel={onClose}
       footer={null}
@@ -109,6 +132,12 @@ export function UserVipIconsModal({ open, userId, username, onClose }: UserVipIc
           ))}
         </div>
       )}
+      <GrantVipModal
+        open={grantOpen}
+        userId={userId}
+        username={username}
+        onClose={() => setGrantOpen(false)}
+      />
     </Modal>
   )
 }

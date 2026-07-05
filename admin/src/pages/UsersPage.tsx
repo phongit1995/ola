@@ -23,6 +23,7 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { useDeleteUser, useUpdateUserStatus, useUsers } from '@/hooks/useUsers'
 import { formatDateTime } from '@/lib/format'
 import { ApiError } from '@/lib/apiError'
+import { GrantVipModal } from './GrantVipModal'
 import { UserDetailModal } from './UserDetailModal'
 import { GENDER } from './userMeta'
 import type { AdminUserListItem } from '@/types'
@@ -50,6 +51,7 @@ export function UsersPage() {
 
   const [detailId, setDetailId] = useState<string | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [vipUser, setVipUser] = useState<{ id: string; username: string } | null>(null)
 
   function resetPage<T>(setter: (v: T) => void) {
     return (v: T) => {
@@ -185,11 +187,18 @@ export function UsersPage() {
     {
       title: 'Thao tác',
       key: 'actions',
-      width: 240,
+      width: 340,
       render: (_, user) => (
         <Space>
           <Button size="small" icon={<EyeOutlined />} onClick={() => openDetail(user.id)}>
             Chi tiết
+          </Button>
+          <Button
+            size="small"
+            icon={<CrownOutlined />}
+            onClick={() => setVipUser({ id: user.id, username: user.username })}
+          >
+            Tặng VIP
           </Button>
           <Button size="small" onClick={() => toggleStatus(user)}>
             {user.isActive ? 'Khoá' : 'Mở khoá'}
@@ -287,6 +296,12 @@ export function UsersPage() {
         userId={detailId}
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
+      />
+      <GrantVipModal
+        open={vipUser != null}
+        userId={vipUser?.id ?? null}
+        username={vipUser?.username}
+        onClose={() => setVipUser(null)}
       />
     </Card>
   )

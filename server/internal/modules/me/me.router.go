@@ -21,6 +21,7 @@ func (r *Router) Setup(api *utils.AppGroup) {
 		me.POST("", r.controller.Create)
 		me.GET("", r.controller.Feed)
 		me.GET("/mine", r.controller.ListMine)
+		me.GET("/photos", r.controller.ListMyPhotos)
 		me.GET("/liked", r.controller.ListLiked)
 		me.GET("/notifications", r.controller.ListNotifications)
 		me.GET("/notifications/unread-count", r.controller.UnreadNotificationCount)

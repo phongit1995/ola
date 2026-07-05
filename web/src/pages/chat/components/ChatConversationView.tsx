@@ -86,7 +86,9 @@ export function ChatConversationView({
   const currentConversationId = useChatStore((s) => s.currentConversationId);
   const conversationSeen = useChatStore((s) => {
     const conversation = s.conversations.find((item) => item.id === s.currentConversationId);
-    return conversation != null && conversation.isLastMessageFromMe && conversation.seen;
+    if (conversation == null) return false;
+    if (!conversation.isLastMessageFromMe) return true;
+    return conversation.seen;
   });
 
   const [draft, setDraft] = useState('');

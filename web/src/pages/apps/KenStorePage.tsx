@@ -4,6 +4,8 @@ import { toast, formatKen } from '@lib';
 import { ScreenHeader, FullScreenOverlay } from '@components';
 import { useAuthStore } from '@/store/authStore';
 import { useAppOverlayStore } from '@/store/appOverlayStore';
+import { KenHistorySection } from './KenHistorySection';
+import { KEN_LOW_THRESHOLD } from './constants';
 
 function KenCoin({ className = 'h-[18px] w-[18px]' }: { className?: string }) {
   return (
@@ -52,16 +54,20 @@ export function KenStorePage({ onClose }: { onClose: () => void }) {
     toast.info(t('ken.comingSoon'));
   }
 
-  const balanceText = `${formatKen(user?.ken ?? 0)} KEN`;
+  const ken = user?.ken ?? 0;
+  const showLowKenWarning = ken > 0 && ken < KEN_LOW_THRESHOLD;
+  const balanceText = `${formatKen(ken)} KEN`;
 
   return (
     <FullScreenOverlay>
       <ScreenHeader title={t('ken.title')} onBack={onClose} />
 
-      <div className="flex-1 overflow-y-auto bg-[#ececec] pb-4">
-        <p className="m-2 rounded-sm border border-black/12 bg-white px-3 py-2.5 text-xs text-[#e34545]">
-          {t('ken.lowWarning')}
-        </p>
+      <div className="flex-1 overflow-y-auto bg-[#ececec] pt-2 pb-4">
+        {showLowKenWarning && (
+          <p className="mx-2 mb-2 rounded-sm border border-black/12 bg-white px-3 py-2.5 text-xs text-[#e34545]">
+            {t('ken.lowWarning')}
+          </p>
+        )}
 
         <div className="mx-2 rounded-sm border border-black/12 bg-white p-2">
           <div className="flex items-center px-1 py-1.5">
@@ -75,22 +81,16 @@ export function KenStorePage({ onClose }: { onClose: () => void }) {
           <RowAction icon={<KenCoin />} label={t('ken.purchase')} onClick={() => pushOverlay('kenBuy')} />
           <div className="mx-2 h-px bg-black/12" />
           <RowAction icon={<KenCoin />} label={t('ken.transfer')} onClick={comingSoon} />
-          <div className="mx-2 h-px bg-black/12" />
-          <RowAction
-            icon={
-              <svg viewBox="0 0 24 24" className="h-[18px] w-[18px] text-black/54" fill="currentColor" aria-hidden="true">
-                <path d="M13 3a9 9 0 0 0-9 9H1l4 4 4-4H6a7 7 0 1 1 7 7 6.9 6.9 0 0 1-4.9-2L6.7 18.4A9 9 0 1 0 13 3zm-1 5v5l4.3 2.5.7-1.2-3.5-2.1V8z" />
-              </svg>
-            }
-            label={t('ken.history')}
-            onClick={comingSoon}
-          />
         </div>
 
+        <KenHistorySection />
+      </div>
+
+      <div className="border-t border-black/12 bg-white p-2">
         <button
           type="button"
           onClick={comingSoon}
-          className="mx-2 mt-2 flex h-9 w-[calc(100%-1rem)] items-center justify-center rounded-sm border border-ola-primary-dark bg-[#9ccc65] text-sm text-white"
+          className="flex h-9 w-full items-center justify-center rounded-sm border border-ola-primary-dark bg-[#9ccc65] text-sm text-white"
         >
           {t('ken.support')}
         </button>

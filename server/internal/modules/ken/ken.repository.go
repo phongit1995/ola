@@ -39,6 +39,51 @@ type TransferResult struct {
 	ReceiverBalance int
 }
 
+var visibleKenTxTypes = []models.KenTxType{
+	models.KenTxTypeTransferIn,
+	models.KenTxTypeTransferOut,
+	models.KenTxTypeAdminGrant,
+	models.KenTxTypeAdminDeduct,
+	models.KenTxTypeVipPackage,
+	models.KenTxTypeVipIcon,
+}
+
+func (r *Repository) ListTransactions(userID uuid.UUID, direction string, limit, offset int) ([]models.KenTransaction, int64, error) {
+	var items []models.KenTransaction
+	var total int64
+
+	countQ := r.db.Model(&models.KenTransaction{}).Where("user_id = ?", userID).Where("type IN ?", visibleKenTxTypes)
+	listQ := r.db.Where("user_id = ?", userID).Where("type IN ?", visibleKenTxTypes)
+	if direction != "" {
+		countQ = countQ.Where("direction = ?", direction)
+		listQ = listQ.Where("direction = ?", direction)
+	}
+
+	if err := countQ.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+	err := listQ.Order("created_at DESC").Limit(limit).Offset(offset).Find(&items).Error
+	return items, total, err
+}
+
+func (r *Repository) FindUsernames(ids []uuid.UUID) (map[uuid.UUID]string, error) {
+	names := make(map[uuid.UUID]string, len(ids))
+	if len(ids) == 0 {
+		return names, nil
+	}
+	var rows []struct {
+		ID       uuid.UUID
+		Username string
+	}
+	if err := r.db.Unscoped().Model(&models.User{}).Select("id", "username").Where("id IN ?", ids).Find(&rows).Error; err != nil {
+		return nil, err
+	}
+	for _, row := range rows {
+		names[row.ID] = row.Username
+	}
+	return names, nil
+}
+
 func (r *Repository) GetPasswordHash(userID uuid.UUID) (string, error) {
 	var user models.User
 	if err := r.db.Select("password").First(&user, "id = ?", userID).Error; err != nil {

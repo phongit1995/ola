@@ -8,6 +8,7 @@ import type {
   PostCommentListResult,
   PostLikerListResult,
   PostListResult,
+  MePhotoListResult,
   MeFeedResult,
   CreatePostRequest,
   UpdatePostRequest,
@@ -28,6 +29,10 @@ export class MeService {
 
   static mine(params: FeedParams = {}): Promise<PostListResult> {
     return http.get<PostListResult>(API_PATH.me.mine, { params });
+  }
+
+  static photos(params: FeedParams = {}): Promise<MePhotoListResult> {
+    return http.get<MePhotoListResult>(API_PATH.me.photos, { params });
   }
 
   static liked(params: FeedParams = {}): Promise<PostListResult> {

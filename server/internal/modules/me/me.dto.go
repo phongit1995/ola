@@ -87,6 +87,22 @@ type MeListResponse struct {
 	Offset int          `json:"offset"`
 }
 
+type MePhotoResponse struct {
+	URL       string `json:"url"`
+	Width     int    `json:"width"`
+	Height    int    `json:"height"`
+	MimeType  string `json:"mimeType,omitempty"`
+	PostID    string `json:"postId"`
+	CreatedAt string `json:"createdAt"`
+}
+
+type MePhotoListResponse struct {
+	Items  []MePhotoResponse `json:"items"`
+	Total  int64             `json:"total"`
+	Limit  int               `json:"limit"`
+	Offset int               `json:"offset"`
+}
+
 type MeFeedResponse struct {
 	Items      []MeResponse `json:"items"`
 	NextCursor string       `json:"nextCursor,omitempty"`

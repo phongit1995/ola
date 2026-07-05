@@ -139,7 +139,7 @@ export function PenGamePage({ onClose }: PenGamePageProps) {
           />
 
           <header className="absolute inset-x-0 top-0 z-20 flex w-full items-center gap-2 px-3 py-2 text-white @md:aspect-[1024/118] @md:py-0">
-            <div className="flex flex-1 justify-start">
+            <div className="flex shrink-0 justify-start">
               <PenButton
                 bg={penAssets.backBtn}
                 icon={penAssets.backIcon}
@@ -149,17 +149,17 @@ export function PenGamePage({ onClose }: PenGamePageProps) {
                 iconClassName="h-5 w-5 @md:h-7 @md:w-7"
               />
             </div>
-            <span className="pointer-events-none flex shrink-0 items-center gap-1.5">
-              <span className="text-2xl font-extrabold italic tracking-wider drop-shadow @md:text-4xl">
-                {t('penGame.title')}
-              </span>
-              <img
-                src={penAssets.ballTrail}
-                alt=""
-                className="h-6 w-auto object-contain @md:h-10"
-              />
-            </span>
             <div className="flex flex-1 items-center justify-end gap-1.5 @md:gap-2">
+              <span className="pointer-events-none flex shrink-0 items-center gap-1.5">
+                <span className="text-2xl font-extrabold italic tracking-wider drop-shadow @md:text-4xl">
+                  {t('penGame.title')}
+                </span>
+                <img
+                  src={penAssets.ballTrail}
+                  alt=""
+                  className="h-6 w-auto shrink-0 object-contain @md:h-10"
+                />
+              </span>
               <span className="inline-flex items-center gap-0.5 whitespace-nowrap rounded-full bg-black/35 px-1.5 py-0.5 text-xs font-bold @md:gap-1 @md:px-2 @md:py-1 @md:text-sm">
                 <img
                   src={penAssets.kenIcon}

@@ -47,7 +47,7 @@ export function PenAllHistorySection() {
     <PenHistoryTable
       rowGrid={ROW_GRID}
       gridCols={GRID_COLS}
-      minWidthClass="@md:min-w-[420px]"
+      minWidthClass=""
       minHeight={340}
       header={
         <>

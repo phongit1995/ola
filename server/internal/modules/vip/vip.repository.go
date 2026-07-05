@@ -303,6 +303,181 @@ func (r *Repository) PurchaseShopItem(userID uuid.UUID, item *models.VipShopItem
 	return &icon, &updatedUser, nil
 }
 
+func (r *Repository) GiftShopItem(fromID uuid.UUID, receiver *models.User, item *models.VipShopItem) (*models.UserVipIcon, *models.User, error) {
+	var icon models.UserVipIcon
+	var giver models.User
+
+	err := r.db.Transaction(func(tx *gorm.DB) error {
+		lockOrder := []uuid.UUID{fromID, receiver.ID}
+		if lockOrder[0].String() > lockOrder[1].String() {
+			lockOrder[0], lockOrder[1] = lockOrder[1], lockOrder[0]
+		}
+		locked := make(map[uuid.UUID]*models.User, 2)
+		for _, id := range lockOrder {
+			var u models.User
+			if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&u, "id = ?", id).Error; err != nil {
+				return err
+			}
+			locked[id] = &u
+		}
+		from := locked[fromID]
+		to := locked[receiver.ID]
+
+		if from.Ken < item.KenPrice {
+			return ErrInsufficientKen
+		}
+		giverAfter := from.Ken - item.KenPrice
+
+		if err := tx.Model(&models.User{}).Where("id = ?", fromID).Update("ken", giverAfter).Error; err != nil {
+			return err
+		}
+
+		icon = models.UserVipIcon{
+			UserID:     to.ID,
+			VipIconID:  item.VipTypeID,
+			Source:     "gift",
+			AcquiredAt: time.Now(),
+		}
+		if err := tx.Create(&icon).Error; err != nil {
+			return err
+		}
+
+		endAfter := time.Now()
+		if to.VipEndTime != nil {
+			endAfter = *to.VipEndTime
+		}
+		purchase := models.VipPurchase{
+			UserID:          to.ID,
+			PackageName:     fmt.Sprintf("VIP #%d", item.VipTypeID),
+			Days:            0,
+			KenPrice:        0,
+			KenBalanceAfter: to.Ken,
+			VipEndTimeAfter: endAfter,
+			Source:          "gift",
+		}
+		if err := tx.Create(&purchase).Error; err != nil {
+			return err
+		}
+
+		if item.KenPrice > 0 {
+			kenTx := models.KenTransaction{
+				UserID:        fromID,
+				Direction:     models.KenDirectionDebit,
+				Type:          models.KenTxTypeVipIcon,
+				Amount:        item.KenPrice,
+				BalanceBefore: from.Ken,
+				BalanceAfter:  giverAfter,
+				Description:   fmt.Sprintf("Tặng %s cho @%s", purchase.PackageName, to.Username),
+				RefType:       "vip_purchase",
+				RefID:         &purchase.ID,
+				ActorType:     models.KenActorUser,
+				ActorID:       &fromID,
+			}
+			if err := tx.Create(&kenTx).Error; err != nil {
+				return err
+			}
+		}
+
+		from.Ken = giverAfter
+		giver = *from
+		return nil
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+	return &icon, &giver, nil
+}
+
+func (r *Repository) FindByUsername(username string) (*models.User, error) {
+	var u models.User
+	if err := r.db.Where("LOWER(username) = LOWER(?)", username).First(&u).Error; err != nil {
+		return nil, err
+	}
+	return &u, nil
+}
+
+func (r *Repository) GiftPackage(fromID uuid.UUID, receiver *models.User, pkg *models.VipPackage) (*models.VipPurchase, *models.User, error) {
+	var purchase models.VipPurchase
+	var giver models.User
+
+	err := r.db.Transaction(func(tx *gorm.DB) error {
+		lockOrder := []uuid.UUID{fromID, receiver.ID}
+		if lockOrder[0].String() > lockOrder[1].String() {
+			lockOrder[0], lockOrder[1] = lockOrder[1], lockOrder[0]
+		}
+		locked := make(map[uuid.UUID]*models.User, 2)
+		for _, id := range lockOrder {
+			var u models.User
+			if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&u, "id = ?", id).Error; err != nil {
+				return err
+			}
+			locked[id] = &u
+		}
+		from := locked[fromID]
+		to := locked[receiver.ID]
+
+		if from.Ken < pkg.KenPrice {
+			return ErrInsufficientKen
+		}
+
+		base := time.Now()
+		if to.VipEndTime != nil && to.VipEndTime.After(base) {
+			base = *to.VipEndTime
+		}
+		newEnd := base.Add(time.Duration(pkg.Days) * 24 * time.Hour)
+		giverAfter := from.Ken - pkg.KenPrice
+
+		if err := tx.Model(&models.User{}).Where("id = ?", fromID).Update("ken", giverAfter).Error; err != nil {
+			return err
+		}
+		if err := tx.Model(&models.User{}).Where("id = ?", to.ID).Update("vip_end_time", newEnd).Error; err != nil {
+			return err
+		}
+
+		pkgID := pkg.ID
+		purchase = models.VipPurchase{
+			UserID:          to.ID,
+			PackageID:       &pkgID,
+			PackageName:     pkg.Name,
+			Days:            pkg.Days,
+			KenPrice:        0,
+			KenBalanceAfter: to.Ken,
+			VipEndTimeAfter: newEnd,
+			Source:          "gift",
+		}
+		if err := tx.Create(&purchase).Error; err != nil {
+			return err
+		}
+
+		if pkg.KenPrice > 0 {
+			kenTx := models.KenTransaction{
+				UserID:        fromID,
+				Direction:     models.KenDirectionDebit,
+				Type:          models.KenTxTypeVipPackage,
+				Amount:        pkg.KenPrice,
+				BalanceBefore: from.Ken,
+				BalanceAfter:  giverAfter,
+				Description:   fmt.Sprintf("Tặng %s cho @%s", pkg.Name, to.Username),
+				RefType:       "vip_purchase",
+				RefID:         &purchase.ID,
+				ActorType:     models.KenActorUser,
+				ActorID:       &fromID,
+			}
+			if err := tx.Create(&kenTx).Error; err != nil {
+				return err
+			}
+		}
+
+		from.Ken = giverAfter
+		giver = *from
+		return nil
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+	return &purchase, &giver, nil
+}
+
 func (r *Repository) Purchase(userID uuid.UUID, pkg *models.VipPackage) (*models.VipPurchase, *models.User, error) {
 	var purchase models.VipPurchase
 	var updatedUser models.User

@@ -17,14 +17,14 @@ import iconNearby from '@/assets/icons/apps/nearby.png';
 import iconSetting from '@/assets/icons/apps/setting.png';
 import iconEgg from '@/assets/icons/apps/egg.png';
 import iconPen from '@/assets/games/pen/pen_icon.webp';
+// import iconWheel from '@/assets/games/spin-wheel/wheel.png';
 import type { NotificationType, NotificationItem } from './NotificationsPage';
 import type { Venue } from './NearbyPlacesPage';
-import type { Album } from './MediaStorePage';
 
 export interface AppItem {
   icon: string;
   app?: AppOverlayKind;
-  overlay?: 'pen' | 'egg';
+  overlay?: 'pen' | 'egg' | 'wheel';
   subtitleKey?: 'home.appGameSubtitle' | 'home.appMallSubtitle';
 }
 
@@ -50,6 +50,8 @@ export const APP_ITEMS: AppItem[] = [
   { icon: iconNotify, app: 'notifications' },
   { icon: iconEgg, overlay: 'egg' },
   { icon: iconPen, overlay: 'pen' },
+  // TODO(Vòng Quay May Mắn): game đang mock client-side (random + KEN/lượt cục bộ), CHƯA nối backend /wheel — thay logic trong spinWheelStore.spin() bằng service khi có API. Ẩn khỏi menu tới khi có API, mở lại 2 dòng dưới + import iconWheel.
+  // { icon: iconWheel, overlay: 'wheel' },
   { icon: iconGame, subtitleKey: 'home.appGameSubtitle' },
   { icon: iconPersonal, app: 'profile' },
   { icon: iconVip, app: 'vip' },
@@ -69,15 +71,7 @@ export const MOCK_VENUES: Venue[] = [
   { id: '5', name: 'Phố đi bộ Bùi Viện', distance: '1,8 km', visits: 980, address: 'Bùi Viện, Q.1', cover: 'linear-gradient(135deg,#ba68c8,#6a1b9a)' },
 ];
 
-export const MOCK_ALBUMS: Album[] = [
-  { id: '1', name: 'Ảnh của tôi', count: 128, privacy: 'public', kind: 'photo', cover: 'linear-gradient(135deg,#90caf9,#1976d2)' },
-  { id: '2', name: 'Du lịch', count: 54, privacy: 'public', kind: 'photo', cover: 'linear-gradient(135deg,#a5d6a7,#388e3c)' },
-  { id: '3', name: 'Video', count: 12, privacy: 'friends', kind: 'video', cover: 'linear-gradient(135deg,#ffcc80,#f57c00)' },
-  { id: '4', name: 'Riêng tư', count: 7, privacy: 'private', kind: 'photo', cover: 'linear-gradient(135deg,#ce93d8,#7b1fa2)' },
-  { id: '5', name: 'Ghi âm', count: 31, privacy: 'friends', kind: 'sound', cover: 'linear-gradient(135deg,#ef9a9a,#c62828)' },
-  { id: '6', name: 'Kỷ niệm', count: 203, privacy: 'public', kind: 'photo', cover: 'linear-gradient(135deg,#b0bec5,#546e7a)' },
-];
-
+export const KEN_LOW_THRESHOLD = 10_000;
 export const MIN_AMOUNT = 10_000;
 export const STEP_AMOUNT = 1_000;
 export const PRESET_AMOUNTS = [10_000, 20_000, 50_000, 100_000, 200_000, 500_000];

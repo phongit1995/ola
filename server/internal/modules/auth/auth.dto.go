@@ -40,6 +40,8 @@ type UserResponse struct {
 	FullName       string                 `json:"fullName,omitempty" example:"John Doe"`
 	Gender         string                 `json:"gender" example:"male"`
 	Bio            string                 `json:"bio,omitempty" example:"hello ola!!!"`
+	BioImage       *string                `json:"bioImage,omitempty" example:"https://example.com/bio.jpg"`
+	CoverPhoto     string                 `json:"coverPhoto,omitempty" example:"https://example.com/cover.jpg"`
 	DateOfBirth    string                 `json:"dateOfBirth,omitempty" example:"1990-01-01"`
 	CustomInfo     map[string]interface{} `json:"customInfo,omitempty" swaggertype:"object" example:"{\"theme\":\"dark\",\"language\":\"en\"}"`
 	Ken            int                    `json:"ken" example:"0"`

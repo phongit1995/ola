@@ -5,6 +5,10 @@ export const DEFAULT_COVER_COLOR = '#33691e';
 
 export const COVER_ASPECT = 16 / 9;
 
+export const AVATAR_ASPECT = 1;
+
+export const MIN_AVATAR_SOURCE = 100;
+
 export const INPUT_CLASS =
   'w-full bg-transparent text-sm text-black/87 outline-none placeholder:text-[#e34545]';
 

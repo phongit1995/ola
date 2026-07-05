@@ -157,43 +157,45 @@ func (r *Repository) ApplyDraw(userID uuid.UUID, pack *models.EggPack, outcome D
 		finalKen := afterCost
 
 		var costTxID *uuid.UUID
-		if pack.KenCost > 0 {
-			costTx := models.KenTransaction{
-				UserID:        userID,
-				Direction:     models.KenDirectionDebit,
-				Type:          models.KenTxTypeEggOpen,
-				Amount:        pack.KenCost,
-				BalanceBefore: before,
-				BalanceAfter:  afterCost,
-				Description:   pack.Name,
-				RefType:       "egg_draw",
-				ActorType:     models.KenActorUser,
-				ActorID:       &userID,
-			}
-			if err := tx.Create(&costTx).Error; err != nil {
-				return err
-			}
-			costTxID = &costTx.ID
-		}
+		// TODO(ken): tạm tắt ghi ken_transactions cho game EGG — mở lại sau.
+		// if pack.KenCost > 0 {
+		// 	costTx := models.KenTransaction{
+		// 		UserID:        userID,
+		// 		Direction:     models.KenDirectionDebit,
+		// 		Type:          models.KenTxTypeEggOpen,
+		// 		Amount:        pack.KenCost,
+		// 		BalanceBefore: before,
+		// 		BalanceAfter:  afterCost,
+		// 		Description:   pack.Name,
+		// 		RefType:       "egg_draw",
+		// 		ActorType:     models.KenActorUser,
+		// 		ActorID:       &userID,
+		// 	}
+		// 	if err := tx.Create(&costTx).Error; err != nil {
+		// 		return err
+		// 	}
+		// 	costTxID = &costTx.ID
+		// }
 
 		newEnd := u.VipEndTime
 		switch outcome.CategoryType {
 		case models.EggCategoryKen:
 			if outcome.KenAmount != nil && *outcome.KenAmount > 0 {
-				rewardTx := models.KenTransaction{
-					UserID:        userID,
-					Direction:     models.KenDirectionCredit,
-					Type:          models.KenTxTypeReward,
-					Amount:        *outcome.KenAmount,
-					BalanceBefore: finalKen,
-					BalanceAfter:  finalKen + *outcome.KenAmount,
-					Description:   outcome.RewardLabel,
-					RefType:       "egg_draw",
-					ActorType:     models.KenActorSystem,
-				}
-				if err := tx.Create(&rewardTx).Error; err != nil {
-					return err
-				}
+				// TODO(ken): tạm tắt ghi ken_transactions cho game EGG — mở lại sau.
+				// rewardTx := models.KenTransaction{
+				// 	UserID:        userID,
+				// 	Direction:     models.KenDirectionCredit,
+				// 	Type:          models.KenTxTypeReward,
+				// 	Amount:        *outcome.KenAmount,
+				// 	BalanceBefore: finalKen,
+				// 	BalanceAfter:  finalKen + *outcome.KenAmount,
+				// 	Description:   outcome.RewardLabel,
+				// 	RefType:       "egg_draw",
+				// 	ActorType:     models.KenActorSystem,
+				// }
+				// if err := tx.Create(&rewardTx).Error; err != nil {
+				// 	return err
+				// }
 				finalKen += *outcome.KenAmount
 			}
 		case models.EggCategoryVipIcon:

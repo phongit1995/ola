@@ -85,3 +85,7 @@ type UpdateUsernameRequest struct {
 type ResetPasswordRequest struct {
 	Password string `json:"password" binding:"required" example:"newpass123"`
 }
+
+type GrantVipRequest struct {
+	VipTypeID int16 `json:"vipTypeId" binding:"required,min=1,max=126" example:"4"`
+}

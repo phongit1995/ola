@@ -4,6 +4,7 @@ import type {
   AdminUserDetail,
   AdminUserListItem,
   AdminUserVipIcon,
+  GrantVipRequest,
   ListParams,
   ListResult,
   MessageResult,
@@ -28,6 +29,14 @@ export const AdminUserService = {
     const { data } = await http.get<ApiResponse<ListResult<AdminUserVipIcon>>>(
       `/admin/users/${id}/vips`,
       { params },
+    )
+    return data.data
+  },
+
+  async grantVip(id: string, payload: GrantVipRequest): Promise<AdminUserVipIcon> {
+    const { data } = await http.post<ApiResponse<AdminUserVipIcon>>(
+      `/admin/users/${id}/vips`,
+      payload,
     )
     return data.data
   },

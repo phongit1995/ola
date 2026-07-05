@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { UserService } from '@services';
-import { ApiError, colorForName, toast } from '@lib';
+import { ApiError, colorForName, compressImageForUpload, toast } from '@lib';
 import type { Gender, UpdateProfileRequest } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
 import maleIcon from '@/assets/icons/chat/ic_indicate_male.png';
@@ -9,7 +9,18 @@ import femaleIcon from '@/assets/icons/chat/ic_indicate_female.png';
 import cameraIcon from '@/assets/icons/profile/ic_action_camera.png';
 import { Avatar } from '@components';
 import { CoverImageEditor } from './components/CoverImageEditor';
-import { COVER_ASPECT, INPUT_CLASS, PHONE_PATTERN } from './constants';
+import { CoverCropOverlay } from './components/CoverCropOverlay';
+import { ChangePasswordDialog } from './components/ChangePasswordDialog';
+import { readImageSize } from './imageSize';
+import { AVATAR_ASPECT, COVER_ASPECT, INPUT_CLASS, MIN_AVATAR_SOURCE, PHONE_PATTERN } from './constants';
+
+function LockIcon({ className = 'h-4 w-4' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden="true">
+      <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z" />
+    </svg>
+  );
+}
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -31,11 +42,36 @@ interface AvatarPickerProps {
 function AvatarPicker({ avatar, nick, uploading, onPick }: AvatarPickerProps) {
   const { t } = useTranslation();
   const inputRef = useRef<HTMLInputElement>(null);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
 
-  function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
+  const clearCrop = useCallback(() => {
+    setCropSrc((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+  }, []);
+
+  useEffect(() => clearCrop, [clearCrop]);
+
+  async function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     event.target.value = '';
-    if (file) onPick(file);
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    try {
+      const size = await readImageSize(url);
+      if (Math.min(size.width, size.height) < MIN_AVATAR_SOURCE) {
+        URL.revokeObjectURL(url);
+        toast.error(t('avatar.tooSmall'));
+        return;
+      }
+    } catch {
+      URL.revokeObjectURL(url);
+      toast.error(t('avatar.error'));
+      return;
+    }
+    clearCrop();
+    setCropSrc(url);
   }
 
   return (
@@ -59,6 +95,17 @@ function AvatarPicker({ avatar, nick, uploading, onPick }: AvatarPickerProps) {
       </button>
       {uploading ? <span className="mt-2 text-xs text-black/54">{t('common.loading')}</span> : null}
       <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleChange} />
+      {cropSrc && (
+        <CoverCropOverlay
+          src={cropSrc}
+          aspect={AVATAR_ASPECT}
+          onCancel={clearCrop}
+          onApply={(cropped) => {
+            onPick(cropped);
+            clearCrop();
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -105,6 +152,7 @@ export function EditProfileMePage({ onClose }: { onClose: () => void }) {
   const [error, setError] = useState<string | null>(null);
   const [uploadingCover, setUploadingCover] = useState(false);
   const [coverPreview, setCoverPreview] = useState<{ url: string; file: File } | null>(null);
+  const [passwordOpen, setPasswordOpen] = useState(false);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
   const clearCoverPreview = useCallback(() => {
@@ -120,7 +168,7 @@ export function EditProfileMePage({ onClose }: { onClose: () => void }) {
     async (file: File) => {
       setUploadingCover(true);
       try {
-        const { url } = await UserService.uploadAvatar(file);
+        const { url } = await UserService.uploadAvatar(await compressImageForUpload(file));
         await UserService.updateMe({ coverPhoto: url });
         await refreshUser();
         toast.success(t('profileEdit.coverUpdated'));
@@ -158,7 +206,7 @@ export function EditProfileMePage({ onClose }: { onClose: () => void }) {
     if (uploading) return;
     setUploading(true);
     try {
-      const result = await UserService.uploadAvatar(file);
+      const result = await UserService.uploadAvatar(await compressImageForUpload(file));
       setAvatar(result.url);
       toast.success(t('profileEdit.avatarUpdated'));
     } catch {
@@ -211,6 +259,14 @@ export function EditProfileMePage({ onClose }: { onClose: () => void }) {
           </svg>
         </button>
         <span className="flex-1 truncate text-base font-medium">{t('profileEdit.title')}</span>
+        <button
+          type="button"
+          onClick={() => setPasswordOpen(true)}
+          className="flex h-8 shrink-0 items-center gap-1 rounded-full bg-white/15 px-2.5 text-xs font-medium hover:bg-white/25"
+        >
+          <LockIcon />
+          <span>{t('changePassword.title')}</span>
+        </button>
       </header>
 
       <div className="flex-1 overflow-y-auto">
@@ -318,6 +374,8 @@ export function EditProfileMePage({ onClose }: { onClose: () => void }) {
           {saving ? t('profileEdit.saving') : t('profileEdit.save')}
         </button>
       </div>
+
+      <ChangePasswordDialog open={passwordOpen} onClose={() => setPasswordOpen(false)} />
     </div>
   );
 }

@@ -1,5 +1,7 @@
 import { create } from 'zustand';
+import i18n from 'i18next';
 import { MeService } from '../services';
+import { toast } from '../lib';
 import type { MeNotification } from '../types';
 
 const PAGE_SIZE = 30;
@@ -52,6 +54,7 @@ export const useMeNotificationStore = create<MeNotificationState>((set, get) => 
       });
     } catch {
       set({ loading: false });
+      toast.error(i18n.t('me.notifLoadError'));
     }
   },
   loadMore: async () => {
@@ -69,6 +72,7 @@ export const useMeNotificationStore = create<MeNotificationState>((set, get) => 
       });
     } catch {
       set({ loadingMore: false });
+      toast.error(i18n.t('me.notifLoadError'));
     }
   },
   markAllRead: async () => {

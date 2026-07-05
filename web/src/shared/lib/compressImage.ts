@@ -5,6 +5,8 @@ const DIMENSION_STEP = 0.8;
 const MAX_DOWNSCALE_ROUNDS = 12;
 const QUALITY_STEPS = [0.9, 0.8, 0.7, 0.6, 0.5];
 const PASSTHROUGH_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const HEIC_TYPES = ['image/heic', 'image/heif'];
+const HEIC_CONVERT_QUALITY = 0.92;
 
 export class ImageTooLargeError extends Error {
   constructor() {
@@ -44,6 +46,19 @@ function toJpegName(name: string): string {
   return `${base === '' ? 'image' : base}.jpg`;
 }
 
+function isHeic(file: File): boolean {
+  if (HEIC_TYPES.includes(file.type)) return true;
+  return /\.hei[cf]$/i.test(file.name);
+}
+
+async function convertHeicToJpeg(file: File): Promise<File> {
+  const { default: heic2any } = await import('heic2any');
+  const converted = await heic2any({ blob: file, toType: 'image/jpeg', quality: HEIC_CONVERT_QUALITY });
+  const blob = Array.isArray(converted) ? converted[0] : converted;
+  if (blob == null) throw new Error('heic decode failed');
+  return new File([blob], toJpegName(file.name), { type: 'image/jpeg' });
+}
+
 async function encodeAtDimensions(
   image: HTMLImageElement,
   width: number,
@@ -65,12 +80,14 @@ async function encodeAtDimensions(
 }
 
 export async function compressImageForUpload(file: File): Promise<File> {
-  if (!needsCompression(file)) {
-    if (file.size > MAX_UPLOAD_BYTES) throw new ImageTooLargeError();
-    return file;
+  const source = isHeic(file) ? await convertHeicToJpeg(file) : file;
+
+  if (!needsCompression(source)) {
+    if (source.size > MAX_UPLOAD_BYTES) throw new ImageTooLargeError();
+    return source;
   }
 
-  const image = await loadImageFromFile(file);
+  const image = await loadImageFromFile(source);
   const initialScale = Math.min(
     1,
     MAX_DIMENSION / Math.max(image.naturalWidth, image.naturalHeight)
@@ -83,7 +100,7 @@ export async function compressImageForUpload(file: File): Promise<File> {
     const encoded = await encodeAtDimensions(image, width, height);
     if (encoded != null && (smallest == null || encoded.size < smallest.size)) smallest = encoded;
     if (encoded != null && encoded.size <= MAX_UPLOAD_BYTES) {
-      return new File([encoded], toJpegName(file.name), { type: 'image/jpeg' });
+      return new File([encoded], toJpegName(source.name), { type: 'image/jpeg' });
     }
     if (width <= MIN_DIMENSION && height <= MIN_DIMENSION) break;
     width = Math.max(MIN_DIMENSION, Math.round(width * DIMENSION_STEP));
@@ -92,5 +109,5 @@ export async function compressImageForUpload(file: File): Promise<File> {
 
   if (smallest == null) throw new Error('compress failed');
   if (smallest.size > MAX_UPLOAD_BYTES) throw new ImageTooLargeError();
-  return new File([smallest], toJpegName(file.name), { type: 'image/jpeg' });
+  return new File([smallest], toJpegName(source.name), { type: 'image/jpeg' });
 }

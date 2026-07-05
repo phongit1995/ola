@@ -18,6 +18,7 @@ interface RelationButtonsProps {
   onPostMe: () => void;
   onUpdateInfo: () => void;
   onChangeCover: () => void;
+  onChangeAvatar: () => void;
   relationship: RelationshipInfo;
   actions: ProfileActions;
 }
@@ -53,6 +54,7 @@ export function RelationButtons({
   onPostMe,
   onUpdateInfo,
   onChangeCover,
+  onChangeAvatar,
   relationship,
   actions,
 }: RelationButtonsProps) {
@@ -85,7 +87,7 @@ export function RelationButtons({
   ];
 
   const selfMenu: ListOption[] = [
-    { key: 'avatar', label: t('profile.changeAvatar'), onSelect: comingSoon },
+    { key: 'avatar', label: t('profile.changeAvatar'), onSelect: onChangeAvatar },
     { key: 'cover', label: t('profile.changeCover'), onSelect: onChangeCover },
     { key: 'privacy', label: t('profile.changePrivacy'), onSelect: comingSoon },
   ];

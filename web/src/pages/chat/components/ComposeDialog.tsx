@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useDebouncedCallback } from 'use-debounce';
 import { useTranslation } from 'react-i18next';
 import { UserListDialog, UserRow } from '@components';
 import { UserService } from '@services';
@@ -18,21 +19,23 @@ export function ComposeDialog({ open, onClose, onStart }: ComposeDialogProps) {
   const [query, setQuery] = useState('');
   const keyword = query.trim();
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (keyword === '') {
-        setResults([]);
-        setSearching(false);
-        return;
-      }
-      setSearching(true);
-      UserService.search(keyword, 30)
-        .then((result) => setResults(result.users))
-        .catch(() => toast.error(t('chat.searchError')))
-        .finally(() => setSearching(false));
-    }, 350);
-    return () => clearTimeout(timer);
-  }, [keyword, t]);
+  const runSearch = useDebouncedCallback((value: string) => {
+    if (value === '') {
+      setResults([]);
+      setSearching(false);
+      return;
+    }
+    setSearching(true);
+    UserService.search(value, 30)
+      .then((result) => setResults(result.users))
+      .catch(() => toast.error(t('chat.searchError')))
+      .finally(() => setSearching(false));
+  }, 350);
+
+  function handleQueryChange(value: string) {
+    setQuery(value);
+    runSearch(value.trim());
+  }
 
   const emptyMessage = keyword === '' ? t('chat.addContactHint') : t('chat.composeSearchEmpty');
 
@@ -41,7 +44,11 @@ export function ComposeDialog({ open, onClose, onStart }: ComposeDialogProps) {
       open={open}
       onClose={onClose}
       title={t('chat.composeTitle')}
-      search={{ value: query, onChange: setQuery, placeholder: t('chat.composeSearchPlaceholder') }}
+      search={{
+        value: query,
+        onChange: handleQueryChange,
+        placeholder: t('chat.composeSearchPlaceholder'),
+      }}
       loading={searching}
       loadingText={t('common.loading')}
       isEmpty={results.length === 0}

@@ -58,6 +58,22 @@ export interface PostListResult {
   offset: number;
 }
 
+export interface MePhoto {
+  url: string;
+  width: number;
+  height: number;
+  mimeType?: string;
+  postId: string;
+  createdAt: string;
+}
+
+export interface MePhotoListResult {
+  items: MePhoto[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
 export interface MeFeedResult {
   items: Post[];
   nextCursor: string | null;

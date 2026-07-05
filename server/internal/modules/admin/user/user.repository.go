@@ -141,3 +141,7 @@ func (r *Repository) ListVipIcons(userID uuid.UUID, activeTypeID int16, limit, o
 		Find(&items).Error
 	return items, err
 }
+
+func (r *Repository) CreateVipIcon(icon *models.UserVipIcon) error {
+	return r.db.Create(icon).Error
+}

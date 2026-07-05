@@ -135,23 +135,24 @@ func (r *Repository) ApplyClaim(userID uuid.UUID, chest *models.KenChest, rolled
 			isEmpty = false
 			finalKen = before + amount
 
-			chestID := chest.ID
-			ktx := models.KenTransaction{
-				UserID:        userID,
-				Direction:     models.KenDirectionCredit,
-				Type:          models.KenTxTypeKenChest,
-				Amount:        amount,
-				BalanceBefore: before,
-				BalanceAfter:  finalKen,
-				Description:   "Rương Ken",
-				RefType:       "ken_chest",
-				RefID:         &chestID,
-				ActorType:     models.KenActorSystem,
-			}
-			if err := tx.Create(&ktx).Error; err != nil {
-				return err
-			}
-			kenTxID = &ktx.ID
+			// TODO(ken): tạm tắt ghi ken_transactions cho game Rương Ken — mở lại sau.
+			// chestID := chest.ID
+			// ktx := models.KenTransaction{
+			// 	UserID:        userID,
+			// 	Direction:     models.KenDirectionCredit,
+			// 	Type:          models.KenTxTypeKenChest,
+			// 	Amount:        amount,
+			// 	BalanceBefore: before,
+			// 	BalanceAfter:  finalKen,
+			// 	Description:   "Rương Ken",
+			// 	RefType:       "ken_chest",
+			// 	RefID:         &chestID,
+			// 	ActorType:     models.KenActorSystem,
+			// }
+			// if err := tx.Create(&ktx).Error; err != nil {
+			// 	return err
+			// }
+			// kenTxID = &ktx.ID
 			if err := tx.Model(&models.User{}).Where("id = ?", userID).Update("ken", finalKen).Error; err != nil {
 				return err
 			}
