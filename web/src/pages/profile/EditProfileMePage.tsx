@@ -9,8 +9,18 @@ import femaleIcon from '@/assets/icons/chat/ic_indicate_female.png';
 import cameraIcon from '@/assets/icons/profile/ic_action_camera.png';
 import { Avatar } from '@components';
 import { CoverImageEditor } from './components/CoverImageEditor';
+import { CoverCropOverlay } from './components/CoverCropOverlay';
 import { ChangePasswordDialog } from './components/ChangePasswordDialog';
-import { COVER_ASPECT, INPUT_CLASS, PHONE_PATTERN } from './constants';
+import { AVATAR_ASPECT, COVER_ASPECT, INPUT_CLASS, MIN_AVATAR_SOURCE, PHONE_PATTERN } from './constants';
+
+function readImageSize(url: string): Promise<{ width: number; height: number }> {
+  return new Promise((resolve, reject) => {
+    const probe = new Image();
+    probe.onload = () => resolve({ width: probe.naturalWidth, height: probe.naturalHeight });
+    probe.onerror = () => reject(new Error('decode failed'));
+    probe.src = url;
+  });
+}
 
 function LockIcon({ className = 'h-4 w-4' }: { className?: string }) {
   return (
@@ -40,11 +50,36 @@ interface AvatarPickerProps {
 function AvatarPicker({ avatar, nick, uploading, onPick }: AvatarPickerProps) {
   const { t } = useTranslation();
   const inputRef = useRef<HTMLInputElement>(null);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
 
-  function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
+  const clearCrop = useCallback(() => {
+    setCropSrc((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+  }, []);
+
+  useEffect(() => clearCrop, [clearCrop]);
+
+  async function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     event.target.value = '';
-    if (file) onPick(file);
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    try {
+      const size = await readImageSize(url);
+      if (Math.min(size.width, size.height) < MIN_AVATAR_SOURCE) {
+        URL.revokeObjectURL(url);
+        toast.error(t('avatar.tooSmall'));
+        return;
+      }
+    } catch {
+      URL.revokeObjectURL(url);
+      toast.error(t('avatar.error'));
+      return;
+    }
+    clearCrop();
+    setCropSrc(url);
   }
 
   return (
@@ -68,6 +103,17 @@ function AvatarPicker({ avatar, nick, uploading, onPick }: AvatarPickerProps) {
       </button>
       {uploading ? <span className="mt-2 text-xs text-black/54">{t('common.loading')}</span> : null}
       <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleChange} />
+      {cropSrc && (
+        <CoverCropOverlay
+          src={cropSrc}
+          aspect={AVATAR_ASPECT}
+          onCancel={clearCrop}
+          onApply={(cropped) => {
+            onPick(cropped);
+            clearCrop();
+          }}
+        />
+      )}
     </div>
   );
 }
