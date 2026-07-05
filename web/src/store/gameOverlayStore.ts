@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type GameOverlayKind = 'pen' | 'egg';
+export type GameOverlayKind = 'pen' | 'egg' | 'wheel';
 
 interface GameOverlayState {
   active: GameOverlayKind | null;

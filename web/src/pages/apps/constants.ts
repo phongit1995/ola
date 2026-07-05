@@ -17,13 +17,14 @@ import iconNearby from '@/assets/icons/apps/nearby.png';
 import iconSetting from '@/assets/icons/apps/setting.png';
 import iconEgg from '@/assets/icons/apps/egg.png';
 import iconPen from '@/assets/games/pen/pen_icon.webp';
+import iconWheel from '@/assets/games/spin-wheel/wheel.png';
 import type { NotificationType, NotificationItem } from './NotificationsPage';
 import type { Venue } from './NearbyPlacesPage';
 
 export interface AppItem {
   icon: string;
   app?: AppOverlayKind;
-  overlay?: 'pen' | 'egg';
+  overlay?: 'pen' | 'egg' | 'wheel';
   subtitleKey?: 'home.appGameSubtitle' | 'home.appMallSubtitle';
 }
 
@@ -49,6 +50,7 @@ export const APP_ITEMS: AppItem[] = [
   { icon: iconNotify, app: 'notifications' },
   { icon: iconEgg, overlay: 'egg' },
   { icon: iconPen, overlay: 'pen' },
+  { icon: iconWheel, overlay: 'wheel' },
   { icon: iconGame, subtitleKey: 'home.appGameSubtitle' },
   { icon: iconPersonal, app: 'profile' },
   { icon: iconVip, app: 'vip' },

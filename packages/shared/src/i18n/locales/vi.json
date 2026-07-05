@@ -112,6 +112,7 @@
       "Thông báo",
       "Đập Trứng",
       "Sút Pen",
+      "Vòng Quay May Mắn",
       "Kho Game",
       "Cá nhân",
       "Kho VIP",
@@ -970,6 +971,22 @@
     "emptyDesc": "Chúc bạn may mắn lần sau",
     "close": "ĐÓNG",
     "openError": "Mở rương thất bại, rương có thể đã hết hạn"
+  },
+  "wheelGame": {
+    "title": "Vòng Quay May Mắn",
+    "spin": "Quay ngay",
+    "spinsLeft": "Hôm nay bạn còn {{n}} lượt quay",
+    "sound": "Âm thanh",
+    "history": "Lịch sử",
+    "buyKen": "Nạp KEN",
+    "close": "Đóng",
+    "rewardTitle": "Chúc mừng bạn nhận được",
+    "missTitle": "Chúc bạn may mắn lần sau!",
+    "miss": "Tạch rồi!",
+    "doll": "Búp Bê Ma",
+    "vipDays": "{{n}} Ngày VIP",
+    "historyTitle": "Lịch sử quay",
+    "historyEmpty": "Chưa có lượt quay nào"
   },
   "eggGame": {
     "title": "Đập Trứng",

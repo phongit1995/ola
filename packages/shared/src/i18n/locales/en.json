@@ -112,6 +112,7 @@
       "Notifications",
       "Egg Smash",
       "Pen Shootout",
+      "Lucky Spin",
       "Game Store",
       "Profile",
       "VIP Store",
@@ -970,6 +971,22 @@
     "emptyDesc": "Better luck next time",
     "close": "CLOSE",
     "openError": "Failed to open the chest, it may have expired"
+  },
+  "wheelGame": {
+    "title": "Lucky Spin",
+    "spin": "Spin now",
+    "spinsLeft": "You have {{n}} spins left today",
+    "sound": "Sound",
+    "history": "History",
+    "buyKen": "Top up KEN",
+    "close": "Close",
+    "rewardTitle": "Congratulations, you won",
+    "missTitle": "Better luck next time!",
+    "miss": "No luck!",
+    "doll": "Ghost Doll",
+    "vipDays": "{{n}} VIP Days",
+    "historyTitle": "Spin History",
+    "historyEmpty": "No spins yet"
   },
   "eggGame": {
     "title": "Egg Smash",
