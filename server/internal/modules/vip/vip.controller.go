@@ -293,6 +293,46 @@ func (ctrl *Controller) BuyPackage(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
+func (ctrl *Controller) GiftPackage(c *gin.Context) (interface{}, error) {
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+	packageID, err := utils.ParseUUIDParam(c, "id", "invalid package id")
+	if err != nil {
+		return nil, err
+	}
+	req, err := utils.BindJSON[GiftPackageRequest](c)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := ctrl.service.GiftPackage(userID, packageID, req.ToUsername)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
+func (ctrl *Controller) GiftIcon(c *gin.Context) (interface{}, error) {
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+	req, err := utils.BindJSON[GiftIconRequest](c)
+	if err != nil {
+		return nil, err
+	}
+	shopItemID, err := uuid.Parse(req.ShopItemID)
+	if err != nil {
+		return nil, utils.NewHTTPError(400, "invalid shop item id")
+	}
+	resp, err := ctrl.service.GiftIcon(userID, shopItemID, req.ToUsername)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
 // GetHistory godoc
 // @Summary      Lịch sử mua gói VIP của tôi
 // @Tags         vip

@@ -48,6 +48,20 @@ export interface BuyVipPackageResult {
   vipEndTime: string;
 }
 
+export interface GiftVipPackageResult {
+  receiverUsername: string;
+  days: number;
+  kenSpent: number;
+  kenBalance: number;
+  vipEndTime: string;
+}
+
+export interface GiftVipIconResult {
+  receiverUsername: string;
+  kenSpent: number;
+  kenBalance: number;
+}
+
 export interface VipStoreResult {
   userId: string;
   activeTypeId: number | null;

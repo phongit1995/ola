@@ -4,11 +4,13 @@ import (
 	"errors"
 	"math"
 	"strconv"
+	"strings"
 	"time"
 
 	"ola-chat-server/internal/apperr"
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
+	"ola-chat-server/internal/modules/relationships"
 	"ola-chat-server/internal/modules/user"
 	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/transport/websocket"
@@ -32,21 +34,26 @@ var (
 	ErrUserNotFound       = apperr.ErrUserNotFound
 	ErrPackageNotFound    = errors.New("vip package not found")
 	ErrInsufficientKen    = errors.New("insufficient ken balance")
+	ErrReceiverNotFound   = errors.New("receiver not found")
+	ErrCannotGiftSelf     = errors.New("cannot gift to yourself")
 	ErrShopItemNotFound   = errors.New("vip shop item not found")
 	ErrShopTypeExists     = errors.New("vip already in shop")
+	ErrBlockedGift        = errors.New("cannot gift to blocked user")
 )
 
 type Service struct {
 	repo      *Repository
+	relRepo   *relationships.Repository
 	userCache *user.CacheService
 	cache     *services.CacheService
 	wsServer  *websocket.Server
 	logger    *zap.SugaredLogger
 }
 
-func NewService(repo *Repository, userCache *user.CacheService, cache *services.CacheService, wsServer *websocket.Server, logger *zap.SugaredLogger) *Service {
+func NewService(repo *Repository, relRepo *relationships.Repository, userCache *user.CacheService, cache *services.CacheService, wsServer *websocket.Server, logger *zap.SugaredLogger) *Service {
 	return &Service{
 		repo:      repo,
+		relRepo:   relRepo,
 		userCache: userCache,
 		cache:     cache,
 		wsServer:  wsServer,
@@ -508,6 +515,94 @@ func (s *Service) BuyPackage(userID, packageID uuid.UUID) (*BuyPackageResponse, 
 		KenSpent:    purchase.KenPrice,
 		KenBalance:  updatedUser.Ken,
 		VipEndTime:  purchase.VipEndTimeAfter.Format(time.RFC3339),
+	}, nil
+}
+
+func (s *Service) GiftPackage(fromID, packageID uuid.UUID, toUsername string) (*GiftPackageResponse, error) {
+	pkg, err := s.repo.FindActivePackage(packageID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrPackageNotFound
+		}
+		return nil, err
+	}
+
+	receiver, err := s.repo.FindByUsername(strings.TrimSpace(toUsername))
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrReceiverNotFound
+		}
+		return nil, err
+	}
+	if receiver.ID == fromID {
+		return nil, ErrCannotGiftSelf
+	}
+	blocked, err := s.relRepo.IsBlockedEither(fromID, receiver.ID)
+	if err != nil {
+		return nil, err
+	}
+	if blocked {
+		return nil, ErrBlockedGift
+	}
+
+	purchase, giver, err := s.repo.GiftPackage(fromID, receiver, pkg)
+	if err != nil {
+		return nil, err
+	}
+
+	s.invalidate(fromID)
+	s.invalidate(receiver.ID)
+	s.emitKenUpdate(fromID, giver.Ken)
+
+	return &GiftPackageResponse{
+		ReceiverUsername: receiver.Username,
+		Days:             pkg.Days,
+		KenSpent:         pkg.KenPrice,
+		KenBalance:       giver.Ken,
+		VipEndTime:       purchase.VipEndTimeAfter.Format(time.RFC3339),
+	}, nil
+}
+
+func (s *Service) GiftIcon(fromID, shopItemID uuid.UUID, toUsername string) (*GiftIconResponse, error) {
+	item, err := s.repo.FindActiveShopItem(shopItemID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrShopItemNotFound
+		}
+		return nil, err
+	}
+
+	receiver, err := s.repo.FindByUsername(strings.TrimSpace(toUsername))
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrReceiverNotFound
+		}
+		return nil, err
+	}
+	if receiver.ID == fromID {
+		return nil, ErrCannotGiftSelf
+	}
+	blocked, err := s.relRepo.IsBlockedEither(fromID, receiver.ID)
+	if err != nil {
+		return nil, err
+	}
+	if blocked {
+		return nil, ErrBlockedGift
+	}
+
+	_, giver, err := s.repo.GiftShopItem(fromID, receiver, item)
+	if err != nil {
+		return nil, err
+	}
+
+	s.invalidate(fromID)
+	s.invalidate(receiver.ID)
+	s.emitKenUpdate(fromID, giver.Ken)
+
+	return &GiftIconResponse{
+		ReceiverUsername: receiver.Username,
+		KenSpent:         item.KenPrice,
+		KenBalance:       giver.Ken,
 	}, nil
 }
 

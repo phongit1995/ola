@@ -70,6 +70,29 @@ type BuyPackageResponse struct {
 	VipEndTime  string `json:"vipEndTime" example:"2026-12-31T00:00:00Z"`
 }
 
+type GiftPackageRequest struct {
+	ToUsername string `json:"toUsername" binding:"required" example:"minhanh"`
+}
+
+type GiftPackageResponse struct {
+	ReceiverUsername string `json:"receiverUsername" example:"minhanh"`
+	Days             int    `json:"days" example:"30"`
+	KenSpent         int    `json:"kenSpent" example:"250"`
+	KenBalance       int    `json:"kenBalance" example:"1750"`
+	VipEndTime       string `json:"vipEndTime" example:"2026-12-31T00:00:00Z"`
+}
+
+type GiftIconRequest struct {
+	ShopItemID string `json:"shopItemId" binding:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440000"`
+	ToUsername string `json:"toUsername" binding:"required" example:"minhanh"`
+}
+
+type GiftIconResponse struct {
+	ReceiverUsername string `json:"receiverUsername" example:"minhanh"`
+	KenSpent         int    `json:"kenSpent" example:"250"`
+	KenBalance       int    `json:"kenBalance" example:"1750"`
+}
+
 type PurchaseHistoryItem struct {
 	ID              string `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
 	PackageName     string `json:"packageName" example:"Gói 30 ngày"`
@@ -152,6 +175,8 @@ type MessageSuccessResponse = utils.BaseResponse[MessageResponse]
 type PackageListSuccessResponse = utils.BaseResponse[PackageListResponse]
 type PackageItemSuccessResponse = utils.BaseResponse[PackageItem]
 type BuyPackageSuccessResponse = utils.BaseResponse[BuyPackageResponse]
+type GiftPackageSuccessResponse = utils.BaseResponse[GiftPackageResponse]
+type GiftIconSuccessResponse = utils.BaseResponse[GiftIconResponse]
 type HistoryListSuccessResponse = utils.BaseResponse[HistoryListResponse]
 type ShopCatalogSuccessResponse = utils.BaseResponse[ShopCatalogResponse]
 type BuyIconSuccessResponse = utils.BaseResponse[BuyIconResponse]

@@ -3,6 +3,8 @@ import { API_PATH } from '../config';
 import type {
   BuyVipIconResult,
   BuyVipPackageResult,
+  GiftVipIconResult,
+  GiftVipPackageResult,
   VipIconCatalogResult,
   VipPackageListResult,
   VipStoreResult,
@@ -17,12 +19,20 @@ export class VipService {
     return http.post<BuyVipIconResult>(API_PATH.vip.buy, { shopItemId });
   }
 
+  static giftIcon(shopItemId: string, toUsername: string): Promise<GiftVipIconResult> {
+    return http.post<GiftVipIconResult>(API_PATH.vip.gift, { shopItemId, toUsername });
+  }
+
   static listPackages(): Promise<VipPackageListResult> {
     return http.get<VipPackageListResult>(API_PATH.vip.packages);
   }
 
   static buyPackage(packageId: string): Promise<BuyVipPackageResult> {
     return http.post<BuyVipPackageResult>(API_PATH.vip.buyPackage(packageId));
+  }
+
+  static giftPackage(packageId: string, toUsername: string): Promise<GiftVipPackageResult> {
+    return http.post<GiftVipPackageResult>(API_PATH.vip.giftPackage(packageId), { toUsername });
   }
 
   static store(params?: { limit?: number; offset?: number }): Promise<VipStoreResult> {
