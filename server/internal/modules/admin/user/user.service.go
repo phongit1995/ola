@@ -199,14 +199,7 @@ func (s *Service) ListVips(id uuid.UUID, limit, offset int) (*VipIconListRespons
 	out := make([]VipIconItem, 0, len(items))
 	for i := range items {
 		using := user.VipUsedInstanceID != nil && *user.VipUsedInstanceID == items[i].ID
-		out = append(out, VipIconItem{
-			InstanceID: items[i].ID.String(),
-			TypeID:     items[i].VipIconID,
-			IsLocked:   items[i].IsLocked,
-			IsUsing:    using,
-			Source:     items[i].Source,
-			AcquiredAt: items[i].AcquiredAt.UTC().Format(time.RFC3339),
-		})
+		out = append(out, toVipIconItem(items[i], using))
 	}
 
 	return &VipIconListResponse{
@@ -215,6 +208,34 @@ func (s *Service) ListVips(id uuid.UUID, limit, offset int) (*VipIconListRespons
 		Limit:  limit,
 		Offset: offset,
 	}, nil
+}
+
+func (s *Service) GrantVip(id uuid.UUID, typeID int16) (*VipIconItem, error) {
+	if _, err := s.repo.FindByID(id); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, apperr.ErrUserNotFound
+		}
+		return nil, err
+	}
+
+	icon := &models.UserVipIcon{
+		UserID:     id,
+		VipIconID:  typeID,
+		Source:     "admin",
+		AcquiredAt: time.Now(),
+	}
+	if err := s.repo.CreateVipIcon(icon); err != nil {
+		return nil, err
+	}
+
+	if err := s.cache.Delete(fmt.Sprintf(constants.CacheKeyUserProfile, id.String())); err != nil {
+		s.logger.Warnw("Failed to invalidate user profile cache", "user_id", id, "error", err.Error())
+	}
+
+	s.logger.Infow("Admin granted vip icon", "user_id", id, "vip_type_id", typeID)
+
+	item := toVipIconItem(*icon, false)
+	return &item, nil
 }
 
 func (s *Service) Delete(id uuid.UUID) error {
@@ -260,6 +281,17 @@ func toDetail(u *models.User) *UserDetail {
 		d.VipUsed = *u.VipUsed
 	}
 	return d
+}
+
+func toVipIconItem(icon models.UserVipIcon, isUsing bool) VipIconItem {
+	return VipIconItem{
+		InstanceID: icon.ID.String(),
+		TypeID:     icon.VipIconID,
+		IsLocked:   icon.IsLocked,
+		IsUsing:    isUsing,
+		Source:     icon.Source,
+		AcquiredAt: icon.AcquiredAt.UTC().Format(time.RFC3339),
+	}
 }
 
 func isVip(u *models.User) bool {

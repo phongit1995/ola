@@ -131,6 +131,39 @@ func (ctrl *Controller) ListUserVips(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
+// GrantVip godoc
+// @Summary      Grant VIP icon
+// @Description  Grant a VIP icon to a user's collection (admin only)
+// @Tags         admin-user
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id      path string          true "User ID"
+// @Param        request body GrantVipRequest true "VIP grant request"
+// @Success      200  {object}  utils.BaseResponse[VipIconItem]
+// @Failure      400  {object}  utils.APIError
+// @Failure      401  {object}  utils.APIError
+// @Failure      403  {object}  utils.APIError
+// @Failure      404  {object}  utils.APIError
+// @Router       /admin/users/{id}/vips [post]
+func (ctrl *Controller) GrantVip(c *gin.Context) (interface{}, error) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid user id")
+	}
+
+	var req GrantVipRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	resp, err := ctrl.service.GrantVip(id, req.VipTypeID)
+	if err != nil {
+		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+	}
+	return resp, nil
+}
+
 // UpdateStatus godoc
 // @Summary      Ban/unban user
 // @Description  Enable or disable a user account (admin only)
