@@ -4,6 +4,7 @@ import { FullScreenOverlay, ScreenHeader, Avatar, Spinner } from '@components';
 import { colorForName, createTimeFormatter, toast } from '@lib';
 import { MeService } from '@services';
 import { useMeNotificationStore } from '@ola/shared/stores/meNotificationStore';
+import { useMeFeedStore } from '@ola/shared/stores/meFeedStore';
 import type { MeNotification, MeNotificationType, PostReaction } from '@app-types';
 import likeIcon from '@/assets/icons/notify/ic_notification_like.png';
 import commentIcon from '@/assets/icons/notify/ic_notification_comment.png';
@@ -71,13 +72,15 @@ export function MeNotificationsView({ onClose }: MeNotificationsViewProps) {
         ? await MeService.removeReaction(id)
         : await MeService.react(id, type);
       setOpenPost(toMePost(updated, formatTime));
+      useMeFeedStore.getState().syncPost(updated);
     } catch {
       setOpenPost(openPost);
     }
   }
 
-  function adjustCommentCount(_postId: string, delta: number) {
+  function adjustCommentCount(postId: string, delta: number) {
     setOpenPost((prev) => (prev == null ? prev : { ...prev, comments: prev.comments + delta }));
+    useMeFeedStore.getState().adjustCommentCount(postId, delta);
   }
 
   return (

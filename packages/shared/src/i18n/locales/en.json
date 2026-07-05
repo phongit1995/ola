@@ -490,6 +490,7 @@
     "notifComment": "commented on your status",
     "notifMention": "mentioned you in a status",
     "notifEmpty": "No notifications",
+    "notifLoadError": "Couldn't load notifications, please try again.",
     "openSearch": "Open search",
     "closeSearch": "Close search",
     "searchHint": "Search",

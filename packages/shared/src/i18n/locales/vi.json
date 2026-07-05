@@ -490,6 +490,7 @@
     "notifComment": "đã bình luận về trạng thái của bạn",
     "notifMention": "đã nhắc đến bạn trong một trạng thái",
     "notifEmpty": "Không có thông báo",
+    "notifLoadError": "Không tải được thông báo, vui lòng thử lại.",
     "openSearch": "Mở tìm kiếm",
     "closeSearch": "Đóng tìm kiếm",
     "searchHint": "Tìm kiếm",

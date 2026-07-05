@@ -33,6 +33,19 @@ function formatLikeCount(count: number): string {
   return count > 9 ? '9+' : String(count);
 }
 
+function LikerStack({ likers }: { likers: MePost['topLikers'] }) {
+  if (likers.length === 0) return null;
+  return (
+    <span className="flex -space-x-1.5">
+      {likers.map((liker, index) => (
+        <span key={index} className="inline-flex overflow-hidden rounded-full ring-2 ring-white">
+          <Avatar name={liker.name} src={liker.avatar ?? undefined} color={liker.color} size={18} />
+        </span>
+      ))}
+    </span>
+  );
+}
+
 function PinIcon({ className, title }: { className?: string; title?: string }) {
   return (
     <svg viewBox="0 0 24 24" className={className} fill="currentColor" role="img" aria-label={title}>
@@ -175,12 +188,18 @@ function MePostCardComponent({
             <button
               type="button"
               onClick={() => onOpenLikers(post.id)}
-              className="ml-2 cursor-pointer hover:text-black/87 hover:underline"
+              className="ml-2 flex cursor-pointer items-center gap-1 hover:text-black/87"
             >
-              {t('me.likeCount', { value: formatLikeCount(post.likes) })}
+              <LikerStack likers={post.topLikers} />
+              <span className="hover:underline">
+                {t('me.likeCount', { value: formatLikeCount(post.likes) })}
+              </span>
             </button>
           ) : (
-            <span className="ml-2">{t('me.likeCount', { value: formatLikeCount(post.likes) })}</span>
+            <span className="ml-2 flex items-center gap-1">
+              <LikerStack likers={post.topLikers} />
+              <span>{t('me.likeCount', { value: formatLikeCount(post.likes) })}</span>
+            </span>
           ))}
       </div>
 

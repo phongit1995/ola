@@ -50,5 +50,10 @@ export function toMePost(post: Post, formatTime: (iso: string) => string): MePos
     disliked: post.myReaction === 'dislike',
     mention: (post.mentions?.length ?? 0) > 0,
     pinned: post.isPinned,
+    topLikers: (post.topLikers ?? []).map((liker) => ({
+      name: liker.fullName || liker.username,
+      avatar: liker.avatar ?? null,
+      color: colorForName(liker.username),
+    })),
   };
 }

@@ -23,6 +23,7 @@ interface MeFeedState {
   removePost: (id: string) => Promise<boolean>;
   togglePin: (id: string, pinned: boolean) => Promise<void>;
   adjustCommentCount: (id: string, delta: number) => void;
+  syncPost: (post: Post) => void;
 }
 
 const FEED_PAGE_SIZE = 30;
@@ -193,5 +194,8 @@ export const useMeFeedStore = create<MeFeedState>((set, get) => ({
           : post
       ),
     }));
+  },
+  syncPost: (post) => {
+    set((state) => ({ posts: replacePost(state.posts, post) }));
   },
 }));
