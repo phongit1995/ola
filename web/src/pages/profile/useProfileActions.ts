@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import { useTranslation } from 'react-i18next';
 import { RelationshipService, UserService } from '@services';
-import { toast } from '@lib';
+import { compressImageForUpload, toast } from '@lib';
 import type { RelationshipInfo } from '@app-types';
 import { useChatStore } from '@/store/chat/chatStore';
 import { useAuthStore } from '@/store/authStore';
@@ -30,7 +30,7 @@ export function useProfileActions({
   const changeCover = useCallback(
     async (file: File) => {
       try {
-        const { url } = await UserService.uploadAvatar(file);
+        const { url } = await UserService.uploadAvatar(await compressImageForUpload(file));
         await UserService.updateMe({ coverPhoto: url });
         setProfile((p) => (p ? { ...p, coverPhoto: url } : p));
         await refreshUser();
@@ -45,7 +45,7 @@ export function useProfileActions({
   const changeAvatar = useCallback(
     async (file: File) => {
       try {
-        const { url } = await UserService.uploadAvatar(file);
+        const { url } = await UserService.uploadAvatar(await compressImageForUpload(file));
         await UserService.updateMe({ avatar: url });
         setProfile((p) => (p ? { ...p, avatar: url } : p));
         await refreshUser();

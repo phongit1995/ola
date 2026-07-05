@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { UserService } from '@services';
-import { ApiError, colorForName, toast } from '@lib';
+import { ApiError, colorForName, compressImageForUpload, toast } from '@lib';
 import type { Gender, UpdateProfileRequest } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
 import maleIcon from '@/assets/icons/chat/ic_indicate_male.png';
@@ -168,7 +168,7 @@ export function EditProfileMePage({ onClose }: { onClose: () => void }) {
     async (file: File) => {
       setUploadingCover(true);
       try {
-        const { url } = await UserService.uploadAvatar(file);
+        const { url } = await UserService.uploadAvatar(await compressImageForUpload(file));
         await UserService.updateMe({ coverPhoto: url });
         await refreshUser();
         toast.success(t('profileEdit.coverUpdated'));
@@ -206,7 +206,7 @@ export function EditProfileMePage({ onClose }: { onClose: () => void }) {
     if (uploading) return;
     setUploading(true);
     try {
-      const result = await UserService.uploadAvatar(file);
+      const result = await UserService.uploadAvatar(await compressImageForUpload(file));
       setAvatar(result.url);
       toast.success(t('profileEdit.avatarUpdated'));
     } catch {

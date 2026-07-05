@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dialog, DialogButton } from '@components';
 import { MeService, UserService } from '@services';
-import { toast } from '@lib';
+import { compressImageForUpload, toast } from '@lib';
 import { useAuthStore } from '@/store/authStore';
 import { MIN_SOURCE_WIDTH } from '../constants';
 import { COVER_ASPECT } from '../../profile/constants';
@@ -99,7 +99,7 @@ export function ChangeCoverScreen({ open, onClose }: ChangeCoverScreenProps) {
     if (!file || saving) return;
     setSaving(true);
     try {
-      const uploaded = await UserService.uploadAvatar(file);
+      const uploaded = await UserService.uploadAvatar(await compressImageForUpload(file));
       await UserService.updateMe({ coverPhoto: uploaded.url });
       if (postToMe) {
         await MeService.create({
