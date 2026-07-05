@@ -11,7 +11,7 @@ import {
   type PenDirLayout,
 } from './penModalParts';
 
-const QUICK_BETS = [1000, 2000, 5000, 10000, 20000, 50000];
+const QUICK_BETS = [1000, 2000, 5000, 10000, 20000, 50000, 100000, 200000, 500000];
 
 const SHOOT_DIR_LAYOUT: PenDirLayout = {
   buttonAspect: 'aspect-[1116/1332]',
@@ -88,12 +88,12 @@ export function PenShootModal({
       <p className="mt-[2%] text-base font-semibold text-white/90">{t('penGame.kenAmount')}</p>
 
       <label
-        className={`relative mt-[2%] flex w-[72%] cursor-text items-center justify-center rounded-xl border bg-black/20 px-4 py-1.5 ${
+        className={`mt-[2%] flex w-[72%] cursor-text items-center gap-2 rounded-xl border bg-black/20 px-4 py-1.5 ${
           overBalance ? 'border-[#ff5b5b]' : 'border-white/15'
         }`}
       >
-        <img src={penAssets.kenIcon} alt="KEN" className="absolute left-4 h-7 w-7 shrink-0" />
-        <span className="flex items-baseline font-bold text-white">
+        <img src={penAssets.kenIcon} alt="KEN" className="h-7 w-7 shrink-0" />
+        <span className="flex min-w-0 flex-1 items-baseline justify-center font-bold text-white">
           <input
             type="text"
             inputMode="numeric"
