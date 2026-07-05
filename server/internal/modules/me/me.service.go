@@ -204,6 +204,26 @@ func (s *Service) ListMine(userID uuid.UUID, limit, offset int) (*MeListResponse
 	return s.buildList(userID, posts, total, limit, offset)
 }
 
+func (s *Service) ListMyPhotos(userID uuid.UUID, limit, offset int) (*MePhotoListResponse, error) {
+	all := []models.MeVisibility{models.MeVisibilityPublic, models.MeVisibilityFriend, models.MeVisibilityPrivate}
+	rows, total, err := s.repo.ListPhotosByAuthor(userID, all, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	items := make([]MePhotoResponse, 0, len(rows))
+	for _, row := range rows {
+		items = append(items, MePhotoResponse{
+			URL:       row.URL,
+			Width:     row.Width,
+			Height:    row.Height,
+			MimeType:  row.MimeType,
+			PostID:    row.PostID.String(),
+			CreatedAt: row.CreatedAt.UTC().Format(time.RFC3339),
+		})
+	}
+	return &MePhotoListResponse{Items: items, Total: total, Limit: limit, Offset: offset}, nil
+}
+
 func (s *Service) ListLiked(userID uuid.UUID, limit, offset int) (*MeListResponse, error) {
 	posts, total, err := s.repo.ListLikedByUser(userID, limit, offset)
 	if err != nil {

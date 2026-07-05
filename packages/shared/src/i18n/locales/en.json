@@ -888,6 +888,7 @@
   },
   "media": {
     "title": "Photos",
+    "count": "{{count}} photos",
     "empty": "You haven't shared any photos yet.",
     "comingSoon": "Feature coming soon"
   },

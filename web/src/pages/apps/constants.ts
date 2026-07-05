@@ -19,7 +19,6 @@ import iconEgg from '@/assets/icons/apps/egg.png';
 import iconPen from '@/assets/games/pen/pen_icon.webp';
 import type { NotificationType, NotificationItem } from './NotificationsPage';
 import type { Venue } from './NearbyPlacesPage';
-import type { Album } from './MediaStorePage';
 
 export interface AppItem {
   icon: string;
@@ -67,15 +66,6 @@ export const MOCK_VENUES: Venue[] = [
   { id: '3', name: 'Công viên 23/9', distance: '1,2 km', visits: 560, address: 'Phạm Ngũ Lão, Q.1', cover: 'linear-gradient(135deg,#aed581,#558b2f)' },
   { id: '4', name: 'Nhà thờ Đức Bà', distance: '1,5 km', visits: 2104, address: '1 Công xã Paris, Q.1', cover: 'linear-gradient(135deg,#ffb74d,#e65100)' },
   { id: '5', name: 'Phố đi bộ Bùi Viện', distance: '1,8 km', visits: 980, address: 'Bùi Viện, Q.1', cover: 'linear-gradient(135deg,#ba68c8,#6a1b9a)' },
-];
-
-export const MOCK_ALBUMS: Album[] = [
-  { id: '1', name: 'Ảnh của tôi', count: 128, privacy: 'public', kind: 'photo', cover: 'linear-gradient(135deg,#90caf9,#1976d2)' },
-  { id: '2', name: 'Du lịch', count: 54, privacy: 'public', kind: 'photo', cover: 'linear-gradient(135deg,#a5d6a7,#388e3c)' },
-  { id: '3', name: 'Video', count: 12, privacy: 'friends', kind: 'video', cover: 'linear-gradient(135deg,#ffcc80,#f57c00)' },
-  { id: '4', name: 'Riêng tư', count: 7, privacy: 'private', kind: 'photo', cover: 'linear-gradient(135deg,#ce93d8,#7b1fa2)' },
-  { id: '5', name: 'Ghi âm', count: 31, privacy: 'friends', kind: 'sound', cover: 'linear-gradient(135deg,#ef9a9a,#c62828)' },
-  { id: '6', name: 'Kỷ niệm', count: 203, privacy: 'public', kind: 'photo', cover: 'linear-gradient(135deg,#b0bec5,#546e7a)' },
 ];
 
 export const KEN_LOW_THRESHOLD = 10_000;

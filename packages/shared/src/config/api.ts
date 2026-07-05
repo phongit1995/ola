@@ -48,6 +48,7 @@ export const API_PATH = {
   me: {
     base: '/me',
     mine: '/me/mine',
+    photos: '/me/photos',
     liked: '/me/liked',
     users: (userId: string) => `/me/users/${userId}`,
     detail: (id: string) => `/me/${id}`,

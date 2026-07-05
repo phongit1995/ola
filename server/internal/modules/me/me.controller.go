@@ -122,6 +122,29 @@ func (ctrl *Controller) ListMine(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
+// ListMyPhotos godoc
+// @Summary      List all images from my own posts (newest first)
+// @Tags         me
+// @Produce      json
+// @Security     BearerAuth
+// @Param        limit query int false "Page size"
+// @Param        offset query int false "Offset"
+// @Success      200  {object}  utils.BaseResponse[MePhotoListResponse]
+// @Router       /me/photos [get]
+func (ctrl *Controller) ListMyPhotos(c *gin.Context) (interface{}, error) {
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+	limit := utils.ParseLimit(c, 50, 100)
+	offset := utils.ParseOffset(c)
+	resp, err := ctrl.service.ListMyPhotos(userID, limit, offset)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
 // ListLiked godoc
 // @Summary      List posts the current user has liked (most recently liked first)
 // @Tags         me

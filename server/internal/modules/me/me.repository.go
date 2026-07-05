@@ -80,6 +80,44 @@ func (r *Repository) ListByAuthor(authorID uuid.UUID, visibilities []models.MeVi
 	return r.paginate(db, limit, offset)
 }
 
+type PhotoRow struct {
+	URL       string
+	Width     int
+	Height    int
+	MimeType  string
+	PostID    uuid.UUID
+	CreatedAt time.Time
+}
+
+func (r *Repository) ListPhotosByAuthor(authorID uuid.UUID, visibilities []models.MeVisibility, limit, offset int) ([]PhotoRow, int64, error) {
+	where := "m.author_id = ? AND m.enabled = ? AND m.visibility IN ? AND m.deleted_at IS NULL"
+
+	var total int64
+	if err := r.db.Table("me AS m").
+		Where(where, authorID, true, visibilities).
+		Select("COALESCE(SUM(jsonb_array_length(m.images)), 0)").
+		Scan(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	var rows []PhotoRow
+	err := r.db.Table("me AS m").
+		Joins("CROSS JOIN LATERAL jsonb_array_elements(COALESCE(m.images, '[]'::jsonb)) WITH ORDINALITY AS elem(value, ord)").
+		Where(where, authorID, true, visibilities).
+		Select("elem.value->>'url' AS url, " +
+			"COALESCE(NULLIF(elem.value->>'width', '')::int, 0) AS width, " +
+			"COALESCE(NULLIF(elem.value->>'height', '')::int, 0) AS height, " +
+			"COALESCE(elem.value->>'mimeType', '') AS mime_type, " +
+			"m.id AS post_id, m.created_at AS created_at").
+		Order("m.created_at DESC, m.id DESC, elem.ord ASC").
+		Limit(limit).Offset(offset).
+		Scan(&rows).Error
+	if err != nil {
+		return nil, 0, err
+	}
+	return rows, total, nil
+}
+
 const likedVisibilityCond = `(me.visibility = ? OR me.author_id = ? OR (me.visibility = ? AND EXISTS (
 	SELECT 1 FROM relationships rel
 	WHERE rel.status = ?

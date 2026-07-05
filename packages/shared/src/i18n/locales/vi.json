@@ -888,6 +888,7 @@
   },
   "media": {
     "title": "Kho ảnh",
+    "count": "{{count}} ảnh",
     "empty": "Bạn chưa có ảnh nào.",
     "comingSoon": "Tính năng đang được phát triển"
   },
