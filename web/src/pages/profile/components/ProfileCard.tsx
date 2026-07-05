@@ -10,6 +10,7 @@ import birthdayIcon from '@/assets/icons/profile/ic_profile_birthday.png';
 import noteIcon from '@/assets/icons/profile/ic_profile_note.png';
 import { Avatar, UserName, VipIcon } from '@components';
 import { colorForName } from '@lib';
+import { useMediaViewerStore } from '@/store/mediaViewerStore';
 import type { ProfileActions, UserProfile } from '../types';
 import type { RelationshipInfo } from '@app-types';
 import { RelationButtons } from './RelationButtons';
@@ -48,6 +49,7 @@ export function ProfileCard({
   onOpenUser,
 }: ProfileCardProps) {
   const { t } = useTranslation();
+  const openViewer = useMediaViewerStore((s) => s.openViewer);
   const coverInputRef = useRef<HTMLInputElement>(null);
   const [uploadingCover, setUploadingCover] = useState(false);
   const [coverPreview, setCoverPreview] = useState<{ url: string; file: File } | null>(null);
@@ -88,6 +90,14 @@ export function ProfileCard({
             : { backgroundColor: profile.coverColor }
         }
       >
+        {profile.coverPhoto && (
+          <button
+            type="button"
+            aria-label={t('profile.viewImage')}
+            onClick={() => openViewer([profile.coverPhoto!])}
+            className="absolute inset-0 cursor-zoom-in"
+          />
+        )}
         {profile.isSelf && (
           <>
             <button
@@ -115,7 +125,18 @@ export function ProfileCard({
           </>
         )}
         <div className="absolute -bottom-12 left-1/2 flex -translate-x-1/2 gap-1 bg-white p-px pb-0.5 shadow-[0_1px_3px_rgba(0,0,0,0.3)]">
-          <Avatar name={profile.nick} color={profile.color} size={96} src={profile.avatar} rounded={false} />
+          {profile.avatar ? (
+            <button
+              type="button"
+              aria-label={t('profile.viewImage')}
+              onClick={() => openViewer([profile.avatar!])}
+              className="leading-none"
+            >
+              <Avatar name={profile.nick} color={profile.color} size={96} src={profile.avatar} rounded={false} />
+            </button>
+          ) : (
+            <Avatar name={profile.nick} color={profile.color} size={96} src={profile.avatar} rounded={false} />
+          )}
           {profile.spouse ? (
             <button
               type="button"
