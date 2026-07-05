@@ -304,6 +304,8 @@ func (s *Service) buildAuthResponse(user *models.User, token, refreshToken strin
 		FullName:       user.FullName,
 		Gender:         user.Gender,
 		Bio:            user.Bio,
+		BioImage:       user.BioImage,
+		CoverPhoto:     user.CoverPhoto,
 		CustomInfo:     user.CustomInfo,
 		Ken:            user.Ken,
 		VipUsed:        user.VipUsed,
