@@ -21,6 +21,7 @@ import smileyIcon from '@/assets/icons/chat/ic_smiley.png';
 import smileyIconActive from '@/assets/icons/chat/ic_smiley_selected.png';
 import kulIcon from '@/assets/icons/chat/ic_kul.png';
 import kulIconActive from '@/assets/icons/chat/ic_kul_selected.png';
+import emojiTabIcon from '@/assets/icons/emoji/10_smiley_colon_dash_D.png';
 import photoIcon from '@/assets/icons/chat/ic_local.png';
 import { buildRoomFeed } from '../messageGroups';
 import { RoomMessageGroup } from './RoomMessageGroup';
@@ -379,6 +380,14 @@ export function RoomMessagesTab({
         </button>
         <button
           type="button"
+          aria-label={t('chat.attachTabEmoji')}
+          onClick={() => toggleTab('emoji')}
+          className={`flex h-9 w-9 shrink-0 select-none items-center justify-center ${openTab === 'emoji' ? 'opacity-100' : 'opacity-60'}`}
+        >
+          <img src={emojiTabIcon} alt="" className="h-6 w-6 object-contain" />
+        </button>
+        <button
+          type="button"
           aria-label={t('chat.attachTabKul')}
           onClick={() => toggleTab('kul')}
           className={`flex h-9 w-9 shrink-0 select-none items-center justify-center ${openTab === 'kul' ? 'opacity-100' : 'opacity-60'}`}
@@ -479,7 +488,7 @@ export function RoomMessagesTab({
       {canSend && (
         <AttachmentBar
           showTabBar={false}
-          tabs={['smiley', 'kul']}
+          tabs={['smiley', 'emoji', 'kul']}
           openTab={openTab}
           onToggleTab={toggleTab}
           onPickEmoji={(code) => composerRef.current?.insertCode(code, true)}

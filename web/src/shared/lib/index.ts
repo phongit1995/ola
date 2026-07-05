@@ -2,6 +2,7 @@ export * from '@ola/shared/lib';
 export * from './textInsert';
 export * from './chatSmiley';
 export * from './kul';
+export * from './emoji';
 export * from './SmileyText';
 export * from './urlText';
 export * from './richText';
