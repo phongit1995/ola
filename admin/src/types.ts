@@ -135,6 +135,10 @@ export interface AdminUserVipIcon {
   acquiredAt?: string
 }
 
+export interface GrantVipRequest {
+  vipTypeId: number
+}
+
 export interface UserListParams {
   q?: string
   limit?: number

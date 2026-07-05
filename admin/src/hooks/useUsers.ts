@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AdminUserService } from '@/services/adminUser.service'
-import type { UserListParams } from '@/types'
+import type { GrantVipRequest, UserListParams } from '@/types'
 
 const USERS_KEY = 'admin-users'
 
@@ -54,6 +54,17 @@ export function useResetPassword() {
   return useMutation({
     mutationFn: ({ id, password }: { id: string; password: string }) =>
       AdminUserService.resetPassword(id, password),
+  })
+}
+
+export function useGrantVip() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: GrantVipRequest }) =>
+      AdminUserService.grantVip(id, payload),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: [USERS_KEY] })
+    },
   })
 }
 
