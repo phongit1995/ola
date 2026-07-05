@@ -78,6 +78,7 @@ export const MOCK_ALBUMS: Album[] = [
   { id: '6', name: 'Kỷ niệm', count: 203, privacy: 'public', kind: 'photo', cover: 'linear-gradient(135deg,#b0bec5,#546e7a)' },
 ];
 
+export const KEN_LOW_THRESHOLD = 10_000;
 export const MIN_AMOUNT = 10_000;
 export const STEP_AMOUNT = 1_000;
 export const PRESET_AMOUNTS = [10_000, 20_000, 50_000, 100_000, 200_000, 500_000];

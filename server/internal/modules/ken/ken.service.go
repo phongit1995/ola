@@ -1,7 +1,10 @@
 package ken
 
 import (
+	"time"
+
 	"ola-chat-server/internal/constants"
+	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/relationships"
 	"ola-chat-server/internal/modules/user"
 	"ola-chat-server/internal/transport/websocket"
@@ -43,6 +46,51 @@ func (s *Service) emitKenUpdate(userID uuid.UUID, ken int) {
 func (s *Service) invalidate(userID uuid.UUID) {
 	if err := s.userCache.InvalidateUser(userID); err != nil {
 		s.logger.Warnw("Failed to invalidate user cache after ken transfer", "user_id", userID, "error", err.Error())
+	}
+}
+
+func (s *Service) History(userID uuid.UUID, direction string, limit, offset int) (*KenHistoryResponse, error) {
+	items, total, err := s.repo.ListTransactions(userID, direction, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	counterpartyIDs := make([]uuid.UUID, 0)
+	for i := range items {
+		if items[i].RefType == "user" && items[i].RefID != nil {
+			counterpartyIDs = append(counterpartyIDs, *items[i].RefID)
+		}
+	}
+	names, err := s.repo.FindUsernames(counterpartyIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	out := make([]KenTransactionItem, 0, len(items))
+	for i := range items {
+		item := toKenTransactionItem(&items[i])
+		if items[i].RefType == "user" && items[i].RefID != nil {
+			item.CounterpartyID = items[i].RefID.String()
+			item.CounterpartyName = names[*items[i].RefID]
+		}
+		out = append(out, item)
+	}
+	return &KenHistoryResponse{
+		Total:  int(total),
+		Limit:  limit,
+		Offset: offset,
+		Items:  out,
+	}, nil
+}
+
+func toKenTransactionItem(t *models.KenTransaction) KenTransactionItem {
+	return KenTransactionItem{
+		ID:           t.ID.String(),
+		Direction:    string(t.Direction),
+		Type:         string(t.Type),
+		Amount:       t.Amount,
+		BalanceAfter: t.BalanceAfter,
+		Description:  t.Description,
+		CreatedAt:    t.CreatedAt.UTC().Format(time.RFC3339),
 	}
 }
 

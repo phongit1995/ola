@@ -839,6 +839,37 @@
     "history": "Transaction history",
     "support": "Customer support",
     "comingSoon": "Feature coming soon",
+    "historyScreen": {
+      "tabAll": "All",
+      "tabCredit": "Received",
+      "tabDebit": "Spent",
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "empty": "No transactions yet",
+      "loadMore": "Load more",
+      "balanceLabel": "Balance",
+      "fromUser": "From @{{name}}",
+      "toUser": "To @{{name}}",
+      "types": {
+        "VIP_PACKAGE": "VIP package",
+        "VIP_ICON": "VIP icon",
+        "ADMIN_GRANT": "KEN granted",
+        "ADMIN_DEDUCT": "KEN deducted",
+        "REWARD": "Reward",
+        "EGG_OPEN": "Egg smash",
+        "TOPUP": "Top up",
+        "REFUND": "Refund",
+        "GIFT_SENT": "Gift sent",
+        "GIFT_RECEIVED": "Gift received",
+        "TRANSFER_IN": "KEN received",
+        "TRANSFER_OUT": "KEN sent",
+        "PEN_SHOOT": "Pen shot",
+        "PEN_CATCH": "Pen catch",
+        "PEN_WIN": "Pen win",
+        "PEN_REFUND": "Pen refund",
+        "KEN_CHEST": "KEN chest"
+      }
+    },
     "buy": {
       "title": "Buy KEN",
       "balance": "Current balance",
@@ -857,6 +888,7 @@
   },
   "media": {
     "title": "Photos",
+    "empty": "You haven't shared any photos yet.",
     "comingSoon": "Feature coming soon"
   },
   "nearby": {

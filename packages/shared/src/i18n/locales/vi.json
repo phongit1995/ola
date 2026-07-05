@@ -839,6 +839,37 @@
     "history": "Lịch sử giao dịch",
     "support": "Hỗ trợ khách hàng",
     "comingSoon": "Tính năng đang được phát triển",
+    "historyScreen": {
+      "tabAll": "Tất cả",
+      "tabCredit": "Nhận",
+      "tabDebit": "Chi",
+      "today": "Hôm nay",
+      "yesterday": "Hôm qua",
+      "empty": "Chưa có giao dịch nào",
+      "loadMore": "Tải thêm",
+      "balanceLabel": "Số dư",
+      "fromUser": "Từ @{{name}}",
+      "toUser": "Đến @{{name}}",
+      "types": {
+        "VIP_PACKAGE": "Mua gói VIP",
+        "VIP_ICON": "Mua icon VIP",
+        "ADMIN_GRANT": "Được cộng KEN",
+        "ADMIN_DEDUCT": "Bị trừ KEN",
+        "REWARD": "Phần thưởng",
+        "EGG_OPEN": "Đập trứng",
+        "TOPUP": "Nạp KEN",
+        "REFUND": "Hoàn KEN",
+        "GIFT_SENT": "Tặng quà",
+        "GIFT_RECEIVED": "Nhận quà",
+        "TRANSFER_IN": "Nhận chuyển KEN",
+        "TRANSFER_OUT": "Chuyển KEN đi",
+        "PEN_SHOOT": "Sút Pen",
+        "PEN_CATCH": "Bắt Pen",
+        "PEN_WIN": "Thắng Pen",
+        "PEN_REFUND": "Hoàn Pen",
+        "KEN_CHEST": "Rương KEN"
+      }
+    },
     "buy": {
       "title": "Nạp KEN",
       "balance": "Số dư hiện tại",
@@ -857,6 +888,7 @@
   },
   "media": {
     "title": "Kho ảnh",
+    "empty": "Bạn chưa có ảnh nào.",
     "comingSoon": "Tính năng đang được phát triển"
   },
   "nearby": {

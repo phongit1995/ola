@@ -94,6 +94,7 @@ export const API_PATH = {
   },
   ken: {
     transfer: '/ken/transfer',
+    transactions: '/ken/transactions',
   },
   kenTreasure: {
     open: (id: string) => `/ken/chests/${id}/open`,
