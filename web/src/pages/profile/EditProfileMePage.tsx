@@ -9,7 +9,16 @@ import femaleIcon from '@/assets/icons/chat/ic_indicate_female.png';
 import cameraIcon from '@/assets/icons/profile/ic_action_camera.png';
 import { Avatar } from '@components';
 import { CoverImageEditor } from './components/CoverImageEditor';
+import { ChangePasswordDialog } from './components/ChangePasswordDialog';
 import { COVER_ASPECT, INPUT_CLASS, PHONE_PATTERN } from './constants';
+
+function LockIcon({ className = 'h-4 w-4' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden="true">
+      <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z" />
+    </svg>
+  );
+}
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -105,6 +114,7 @@ export function EditProfileMePage({ onClose }: { onClose: () => void }) {
   const [error, setError] = useState<string | null>(null);
   const [uploadingCover, setUploadingCover] = useState(false);
   const [coverPreview, setCoverPreview] = useState<{ url: string; file: File } | null>(null);
+  const [passwordOpen, setPasswordOpen] = useState(false);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
   const clearCoverPreview = useCallback(() => {
@@ -211,6 +221,14 @@ export function EditProfileMePage({ onClose }: { onClose: () => void }) {
           </svg>
         </button>
         <span className="flex-1 truncate text-base font-medium">{t('profileEdit.title')}</span>
+        <button
+          type="button"
+          onClick={() => setPasswordOpen(true)}
+          className="flex h-8 shrink-0 items-center gap-1 rounded-full bg-white/15 px-2.5 text-xs font-medium hover:bg-white/25"
+        >
+          <LockIcon />
+          <span>{t('changePassword.title')}</span>
+        </button>
       </header>
 
       <div className="flex-1 overflow-y-auto">
@@ -318,6 +336,8 @@ export function EditProfileMePage({ onClose }: { onClose: () => void }) {
           {saving ? t('profileEdit.saving') : t('profileEdit.save')}
         </button>
       </div>
+
+      <ChangePasswordDialog open={passwordOpen} onClose={() => setPasswordOpen(false)} />
     </div>
   );
 }

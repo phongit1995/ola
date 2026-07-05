@@ -573,6 +573,26 @@
     "coverRotate": "Rotate",
     "saved": "Changes saved"
   },
+  "changePassword": {
+    "title": "Change password",
+    "currentLabel": "Current password",
+    "currentPlaceholder": "Enter current password",
+    "newLabel": "New password",
+    "newPlaceholder": "Enter new password",
+    "confirmLabel": "Confirm new password",
+    "confirmPlaceholder": "Re-enter new password",
+    "submit": "Change password",
+    "success": "Password changed successfully",
+    "errCurrentRequired": "Please enter your current password.",
+    "errNewRequired": "Please enter a new password.",
+    "errNewMin": "Password must be at least {{min}} characters.",
+    "errNewMax": "Password must not exceed {{max}} characters.",
+    "errConfirmRequired": "Please confirm your new password.",
+    "errConfirmMismatch": "Passwords do not match.",
+    "errSameAsOld": "New password must differ from the current one.",
+    "errCurrentWrong": "Current password is incorrect.",
+    "errGeneric": "Could not change password, please try again."
+  },
   "statusDialog": {
     "title": "Update status",
     "save": "Save",

@@ -573,6 +573,26 @@
     "coverRotate": "Xoay",
     "saved": "Đã lưu thay đổi"
   },
+  "changePassword": {
+    "title": "Đổi mật khẩu",
+    "currentLabel": "Mật khẩu hiện tại",
+    "currentPlaceholder": "Nhập mật khẩu hiện tại",
+    "newLabel": "Mật khẩu mới",
+    "newPlaceholder": "Nhập mật khẩu mới",
+    "confirmLabel": "Nhập lại mật khẩu mới",
+    "confirmPlaceholder": "Nhập lại mật khẩu mới",
+    "submit": "Đổi mật khẩu",
+    "success": "Đổi mật khẩu thành công",
+    "errCurrentRequired": "Vui lòng nhập mật khẩu hiện tại.",
+    "errNewRequired": "Vui lòng nhập mật khẩu mới.",
+    "errNewMin": "Mật khẩu phải có ít nhất {{min}} ký tự.",
+    "errNewMax": "Mật khẩu không được quá {{max}} ký tự.",
+    "errConfirmRequired": "Vui lòng nhập lại mật khẩu mới.",
+    "errConfirmMismatch": "Mật khẩu nhập lại không khớp.",
+    "errSameAsOld": "Mật khẩu mới phải khác mật khẩu hiện tại.",
+    "errCurrentWrong": "Mật khẩu hiện tại không đúng.",
+    "errGeneric": "Không thể đổi mật khẩu, vui lòng thử lại."
+  },
   "statusDialog": {
     "title": "Cập nhật trạng thái",
     "save": "Lưu",
