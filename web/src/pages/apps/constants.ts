@@ -17,7 +17,7 @@ import iconNearby from '@/assets/icons/apps/nearby.png';
 import iconSetting from '@/assets/icons/apps/setting.png';
 import iconEgg from '@/assets/icons/apps/egg.png';
 import iconPen from '@/assets/games/pen/pen_icon.webp';
-import iconWheel from '@/assets/games/spin-wheel/wheel.png';
+// import iconWheel from '@/assets/games/spin-wheel/wheel.png';
 import type { NotificationType, NotificationItem } from './NotificationsPage';
 import type { Venue } from './NearbyPlacesPage';
 
@@ -50,8 +50,8 @@ export const APP_ITEMS: AppItem[] = [
   { icon: iconNotify, app: 'notifications' },
   { icon: iconEgg, overlay: 'egg' },
   { icon: iconPen, overlay: 'pen' },
-  // TODO(Vòng Quay May Mắn): game đang mock client-side (random + KEN/lượt cục bộ), CHƯA nối backend /wheel — thay logic trong spinWheelStore.spin() bằng service khi có API
-  { icon: iconWheel, overlay: 'wheel' },
+  // TODO(Vòng Quay May Mắn): game đang mock client-side (random + KEN/lượt cục bộ), CHƯA nối backend /wheel — thay logic trong spinWheelStore.spin() bằng service khi có API. Ẩn khỏi menu tới khi có API, mở lại 2 dòng dưới + import iconWheel.
+  // { icon: iconWheel, overlay: 'wheel' },
   { icon: iconGame, subtitleKey: 'home.appGameSubtitle' },
   { icon: iconPersonal, app: 'profile' },
   { icon: iconVip, app: 'vip' },
