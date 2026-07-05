@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useDebouncedCallback } from 'use-debounce';
 import { useTranslation } from 'react-i18next';
 import { ActionButton, UserListDialog, UserRow } from '@components';
 import { colorForName, toast } from '@lib';
@@ -20,23 +21,23 @@ export function AddContactDialog({ open, onClose, onOpenProfile }: AddContactDia
   const [acceptedIds, setAcceptedIds] = useState<string[]>([]);
   const [busyId, setBusyId] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!open) return;
-    const keyword = query.trim();
-    const timer = setTimeout(() => {
-      if (keyword === '') {
-        setResults([]);
-        setLoading(false);
-        return;
-      }
-      setLoading(true);
-      UserService.search(keyword, 30)
-        .then((result) => setResults(result.users))
-        .catch(() => toast.error(t('chat.searchError')))
-        .finally(() => setLoading(false));
-    }, 350);
-    return () => clearTimeout(timer);
-  }, [query, open, t]);
+  const runSearch = useDebouncedCallback((value: string) => {
+    if (value === '') {
+      setResults([]);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    UserService.search(value, 30)
+      .then((result) => setResults(result.users))
+      .catch(() => toast.error(t('chat.searchError')))
+      .finally(() => setLoading(false));
+  }, 350);
+
+  function handleQueryChange(value: string) {
+    setQuery(value);
+    runSearch(value.trim());
+  }
 
   async function sendRequest(user: UserSearchResult) {
     setBusyId(user.id);
@@ -102,7 +103,7 @@ export function AddContactDialog({ open, onClose, onOpenProfile }: AddContactDia
       title={t('chat.menuAddContact')}
       search={{
         value: query,
-        onChange: setQuery,
+        onChange: handleQueryChange,
         placeholder: t('chat.addContactSearchPlaceholder'),
       }}
       loading={loading}

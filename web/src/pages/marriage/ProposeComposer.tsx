@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useDebouncedCallback } from 'use-debounce';
 import { useTranslation } from 'react-i18next';
 import { FullScreenOverlay, PresenceBadge, ScreenHeader, UserName, VipAvatar } from '@components';
 import { toast } from '@lib';
@@ -26,23 +27,24 @@ export function ProposeComposer({ onClose }: ProposeComposerProps) {
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
 
-  useEffect(() => {
+  const runSearch = useDebouncedCallback((value: string) => {
     if (selected != null) return;
-    const keyword = query.trim();
-    const timer = setTimeout(() => {
-      if (keyword === '') {
-        setResults([]);
-        setSearching(false);
-        return;
-      }
-      setSearching(true);
-      UserService.search(keyword, 20)
-        .then((result) => setResults(result.users))
-        .catch(() => setResults([]))
-        .finally(() => setSearching(false));
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [query, selected]);
+    if (value === '') {
+      setResults([]);
+      setSearching(false);
+      return;
+    }
+    setSearching(true);
+    UserService.search(value, 20)
+      .then((result) => setResults(result.users))
+      .catch(() => setResults([]))
+      .finally(() => setSearching(false));
+  }, 300);
+
+  function handleQueryChange(value: string) {
+    setQuery(value);
+    runSearch(value.trim());
+  }
 
   function pick(user: UserSearchResult) {
     setSelected(user);
@@ -153,7 +155,7 @@ export function ProposeComposer({ onClose }: ProposeComposerProps) {
                   </span>
                   <input
                     value={query}
-                    onChange={(event) => setQuery(event.target.value)}
+                    onChange={(event) => handleQueryChange(event.target.value)}
                     placeholder={t('marriage.searchPlaceholder')}
                     className="w-full rounded-2xl border border-[#ffd0de] bg-white py-3 pl-10 pr-3 text-sm outline-none transition-colors focus:border-[#ff4d7d] focus:shadow-[0_0_0_3px_rgba(255,77,125,0.15)]"
                   />
