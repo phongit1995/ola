@@ -18,7 +18,8 @@ import { COVER_ASPECT } from './constants';
 import { MePostCard } from '../me/components/MePostCard';
 import { MePostInteractions, type MePostSource } from '../me/MePostInteractions';
 import { composedToImages, composedToPayload } from '../me/composer';
-import { toMePost } from '../me/mappers';
+import { applyPostReaction, toMePost } from '../me/mappers';
+import { reconcileTopLikers } from '@ola/shared/stores/postHelpers';
 import type { ComposedPost } from '../me/components/MeComposerDialog';
 
 export function ProfileMePage() {
@@ -53,18 +54,24 @@ export function ProfileMePage() {
   const toggleReaction = useCallback(
     async (id: string, type: PostReaction) => {
       const post = posts.find((item) => item.id === id);
-      if (post == null) return;
+      if (post == null || user == null) return;
       const isActive = post.myReaction === type;
+      const self = { id: user.id, username: user.username, fullName: user.fullName, avatar: user.avatar };
+      const optimistic = applyPostReaction(post, isActive ? null : type, self);
+      setPosts((current) => current.map((item) => (item.id === id ? optimistic : item)));
       try {
         const updated = isActive
           ? await MeService.removeReaction(id)
           : await MeService.react(id, type);
-        setPosts((current) => current.map((item) => (item.id === id ? updated : item)));
+        setPosts((current) =>
+          current.map((item) => (item.id === id ? reconcileTopLikers(updated, item) : item))
+        );
       } catch {
+        setPosts((current) => current.map((item) => (item.id === id ? post : item)));
         toast.error(t('me.reactionError'));
       }
     },
-    [posts, t]
+    [posts, user, t]
   );
 
   const adjustCommentCount = useCallback((id: string, delta: number) => {

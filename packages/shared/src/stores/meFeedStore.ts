@@ -3,7 +3,8 @@ import { MeService } from '../services';
 import { toast, type UploadFile } from '../lib';
 import type { CreatePostRequest, MeFeedFilter, Post, PostReaction } from '../types';
 import i18n from 'i18next';
-import { applyPostReaction } from './postHelpers';
+import { applyPostReaction, reconcileTopLikers } from './postHelpers';
+import { selfLiker } from './selfLiker';
 
 interface MeFeedState {
   posts: Post[];
@@ -105,7 +106,8 @@ export const useMeFeedStore = create<MeFeedState>((set, get) => ({
     if (post == null || get().reacting.has(id)) return;
 
     const active = post.myReaction === type;
-    const optimistic = applyPostReaction(post, active ? null : type);
+    const self = selfLiker();
+    const optimistic = applyPostReaction(post, active ? null : type, self);
     set((state) => ({
       posts: replacePost(state.posts, optimistic),
       reacting: new Set(state.reacting).add(id),
@@ -115,12 +117,16 @@ export const useMeFeedStore = create<MeFeedState>((set, get) => ({
       const updated = active
         ? await MeService.removeReaction(id)
         : await MeService.react(id, type);
-      set((state) => ({ posts: replacePost(state.posts, updated) }));
+      set((state) => ({
+        posts: state.posts.map((item) =>
+          item.id === id ? reconcileTopLikers(updated, item) : item
+        ),
+      }));
     } catch (error) {
       console.error('toggle reaction failed', error);
       set((state) => ({
         posts: state.posts.map((item) =>
-          item.id === id ? applyPostReaction(item, post.myReaction) : item
+          item.id === id ? applyPostReaction(item, post.myReaction, self) : item
         ),
       }));
       toast.error(i18n.t('me.reactionError'));
@@ -196,6 +202,8 @@ export const useMeFeedStore = create<MeFeedState>((set, get) => ({
     }));
   },
   syncPost: (post) => {
-    set((state) => ({ posts: replacePost(state.posts, post) }));
+    set((state) => ({
+      posts: state.posts.map((item) => (item.id === post.id ? reconcileTopLikers(post, item) : item)),
+    }));
   },
 }));

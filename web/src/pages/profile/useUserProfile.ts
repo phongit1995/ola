@@ -5,7 +5,7 @@ import { activeVipTypeId, createDateFormatter, createTimeFormatter, toast } from
 import { useAuthStore } from '@/store/authStore';
 import { useMeLocalStore } from '@/store/meLocalStore';
 import type { PostReaction, RelationshipInfo } from '@app-types';
-import { applyMeReaction, toMePost } from '../me/mappers';
+import { applyMeReaction, meSelfLiker, reconcileMeLikers, toMePost } from '../me/mappers';
 import type { MePost } from '../me/types';
 import type { ComposedPost } from '../me/components/MeComposerDialog';
 import { composedToImages, composedToPayload } from '../me/composer';
@@ -90,13 +90,14 @@ export function useUserProfile(username: string, seedColor: string): ProfileCont
       const current = postsRef.current.find((p) => p.id === id);
       if (current == null) return;
       const wasActive = type === 'like' ? current.liked : current.disliked;
-      setPost(id, (p) => applyMeReaction(p, type));
+      const self = meSelfLiker();
+      setPost(id, (p) => applyMeReaction(p, type, self));
       try {
         const updated = wasActive
           ? await MeService.removeReaction(id)
           : await MeService.react(id, type);
         const mapped = toMePost(updated, formatTime);
-        setPost(id, (p) => ({ ...mapped, color: p.color }));
+        setPost(id, (p) => ({ ...reconcileMeLikers(mapped, p), color: p.color }));
       } catch {
         setPost(id, () => current);
         toast.error(t('me.reactionError'));
