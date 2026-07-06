@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from '@lib';
+import { useSettingsStore } from '@/store/settingsStore';
 import { useEggGameStore } from './eggGameStore';
 import { EGG_COST } from './eggGame.constants';
 import { smashSoundUrl } from './eggAssets';
@@ -52,7 +53,7 @@ export function useEggGame() {
       toast.info(t('eggGame.outOfKen'));
       return null;
     }
-    if (!state.muted) playSmashSound();
+    if (!state.muted && useSettingsStore.getState().settings.soundGame) playSmashSound();
     state.beginSmash();
 
     const packId = activePack.id;
