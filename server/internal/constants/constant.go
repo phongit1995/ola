@@ -80,6 +80,7 @@ const (
 	CacheKeyRoomJoinTicket      = "ROOM:JOIN_TICKET:%s"
 	CacheKeyVipPackages         = "VIP:PACKAGES:ACTIVE"
 	CacheKeyEggPacks            = "EGG:PACKS:ENABLED"
+	CacheKeyUserSettings        = "USER:%s:SETTINGS"
 )
 
 const (
@@ -156,6 +157,7 @@ const (
 	CacheTTLClientMsgIDDedup    = 300
 	CacheTTLLastRead            = 31536000
 	CacheTTLVipPackages         = 3600
+	CacheTTLUserSettings        = 2592000
 )
 
 const (

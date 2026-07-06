@@ -29,6 +29,17 @@ func (r *Repository) GetSettings(userID uuid.UUID) (*models.UserSetting, error) 
 	return &settings, nil
 }
 
+func (r *Repository) CreateIfAbsent(settings *models.UserSetting) (bool, error) {
+	res := r.db.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "user_id"}},
+		DoNothing: true,
+	}).Create(settings)
+	if res.Error != nil {
+		return false, res.Error
+	}
+	return res.RowsAffected > 0, nil
+}
+
 func (r *Repository) UpsertSettings(settings *models.UserSetting) error {
 	return r.db.Clauses(clause.OnConflict{
 		Columns: []clause.Column{{Name: "user_id"}},

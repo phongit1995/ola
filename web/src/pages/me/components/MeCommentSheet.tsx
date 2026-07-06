@@ -91,17 +91,20 @@ export function MeCommentSheet({
             )}
             {!loading &&
               !error &&
-              comments.map((comment) => (
-                <MeCommentItem
-                  key={comment.id}
-                  comment={comment}
-                  time={formatTime(comment.createdAt)}
-                  canDelete={me != null && comment.author?.id === me.id}
-                  onDelete={remove}
-                  onReply={setReplyTarget}
-                  onOpenProfile={onOpenProfile}
-                />
-              ))}
+              comments.map((comment) => {
+                const isOwn = me != null && comment.author?.id === me.id;
+                return (
+                  <MeCommentItem
+                    key={comment.id}
+                    comment={comment}
+                    time={formatTime(comment.createdAt)}
+                    canDelete={isOwn}
+                    onDelete={remove}
+                    onReply={isOwn ? undefined : setReplyTarget}
+                    onOpenProfile={onOpenProfile}
+                  />
+                );
+              })}
           </div>
         </div>
 
