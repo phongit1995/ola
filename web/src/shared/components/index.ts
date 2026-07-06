@@ -9,6 +9,7 @@ export * from './ui/DateSeparator';
 export * from './ui/PullToRefresh';
 export * from './ui/FullScreenOverlay';
 export * from './ui/SmileyGrid';
+export * from './ui/EmojiGrid';
 export * from './ui/SmileyInput';
 export * from './ui/ComposerSmileyPanel';
 export * from './ui/SmileyGroupPanel';

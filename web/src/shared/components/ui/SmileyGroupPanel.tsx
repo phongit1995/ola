@@ -4,8 +4,9 @@ import smileyTabIcon from '@/assets/icons/chat/ic_tab_smiley.png';
 import emojiTabIcon from '@/assets/icons/chat/ic_tab_emoji.png';
 import kulTabIcon from '@/assets/icons/chat/ic_tab_kul.png';
 import backspaceIcon from '@/assets/icons/chat/ic_backspace_selected.png';
-import { EMOJI_IMAGES, emojiToken, KUL_IMAGES } from '@lib';
+import { KUL_IMAGES } from '@lib';
 import { SmileyGrid } from './SmileyGrid';
+import { EmojiGrid } from './EmojiGrid';
 
 function InsertPanel({ onBackspace, children }: { onBackspace?: () => void; children: ReactNode }) {
   return (
@@ -41,19 +42,7 @@ export function SmileyPanel({ onPick, onBackspace }: { onPick: (code: string) =>
 export function EmojiPanel({ onPick, onBackspace }: { onPick: (token: string) => void; onBackspace?: () => void }) {
   return (
     <InsertPanel onBackspace={onBackspace}>
-      <div className="grid grid-cols-8 gap-1 p-2">
-        {EMOJI_IMAGES.map((image, index) => (
-          <button
-            key={index}
-            type="button"
-            onMouseDown={(event) => event.preventDefault()}
-            onClick={() => onPick(emojiToken(index + 1))}
-            className="flex h-9 items-center justify-center rounded hover:bg-gray-100"
-          >
-            <img src={image} alt="" className="h-[22px] w-auto object-contain" />
-          </button>
-        ))}
-      </div>
+      <EmojiGrid onPick={onPick} />
     </InsertPanel>
   );
 }
