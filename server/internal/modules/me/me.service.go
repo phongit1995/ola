@@ -300,6 +300,7 @@ func (s *Service) React(userID, postID uuid.UUID, reactionType string) (*MeRespo
 		s.createMeNotification(post.AuthorID, userID, models.MeNotificationLike, postID, nil, "")
 	}
 	resp := toMeResponse(updated, current)
+	s.attachTopLikers(&resp, postID)
 	return &resp, nil
 }
 
@@ -313,7 +314,24 @@ func (s *Service) RemoveReaction(userID, postID uuid.UUID) (*MeResponse, error) 
 		return nil, err
 	}
 	resp := toMeResponse(updated, nil)
+	s.attachTopLikers(&resp, postID)
 	return &resp, nil
+}
+
+func (s *Service) attachTopLikers(resp *MeResponse, postID uuid.UUID) {
+	topLikers, err := s.repo.TopLikersByPosts([]uuid.UUID{postID}, 3)
+	if err != nil {
+		return
+	}
+	likers, ok := topLikers[postID]
+	if !ok {
+		return
+	}
+	tl := make([]AuthorResponse, 0, len(likers))
+	for _, u := range likers {
+		tl = append(tl, *toAuthorResponse(u))
+	}
+	resp.TopLikers = tl
 }
 
 func (s *Service) AddComment(viewerID, postID uuid.UUID, req *CreateCommentRequest) (*CommentResponse, error) {
