@@ -9,6 +9,7 @@ interface MeCommentItemProps {
   time: string;
   canDelete: boolean;
   onDelete: (id: string) => void;
+  onReply?: (comment: PostComment) => void;
   onOpenProfile?: (nick: string, color: string) => void;
 }
 
@@ -17,6 +18,7 @@ function MeCommentItemComponent({
   time,
   canDelete,
   onDelete,
+  onReply,
   onOpenProfile,
 }: MeCommentItemProps) {
   const { t } = useTranslation();
@@ -44,6 +46,15 @@ function MeCommentItemComponent({
         <p className="mt-1 text-sm leading-relaxed whitespace-pre-wrap break-words text-black/87">
           {renderRichText(comment.content, (nick) => onOpenProfile?.(nick, colorForName(nick)))}
         </p>
+        {onReply != null && (
+          <button
+            type="button"
+            onClick={() => onReply(comment)}
+            className="mt-1 text-xs font-medium text-black/45 hover:text-ola-primary"
+          >
+            {t('me.reply')}
+          </button>
+        )}
       </div>
       {canDelete && (
         <button

@@ -15,6 +15,7 @@ export function useMeComments(postId: string, options: UseMeCommentsOptions = {}
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [replyTarget, setReplyTarget] = useState<PostComment | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -42,9 +43,13 @@ export function useMeComments(postId: string, options: UseMeCommentsOptions = {}
       if (text === '' || submitting) return false;
       setSubmitting(true);
       try {
-        const created = await MeService.addComment(postId, { content: text });
+        const created = await MeService.addComment(postId, {
+          content: text,
+          parentId: replyTarget?.id,
+        });
         setComments((current) => [...current, created]);
         setTotal((value) => value + 1);
+        setReplyTarget(null);
         onDelta?.(1);
         toast.success(i18n.t('me.commentSent'));
         return true;
@@ -56,7 +61,7 @@ export function useMeComments(postId: string, options: UseMeCommentsOptions = {}
         setSubmitting(false);
       }
     },
-    [postId, submitting, onDelta]
+    [postId, submitting, onDelta, replyTarget]
   );
 
   const remove = useCallback(
@@ -78,5 +83,5 @@ export function useMeComments(postId: string, options: UseMeCommentsOptions = {}
     [postId, comments, onDelta]
   );
 
-  return { comments, total, loading, error, submitting, add, remove };
+  return { comments, total, loading, error, submitting, add, remove, replyTarget, setReplyTarget };
 }

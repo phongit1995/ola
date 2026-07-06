@@ -35,9 +35,12 @@ export function MeCommentSheet({
   const me = useAuthStore((state) => state.user);
   const [shown, setShown] = useState(false);
 
-  const { comments, total, loading, error, submitting, add, remove } = useMeComments(post.id, {
-    onDelta: (delta) => onCommentDelta(post.id, delta),
-  });
+  const { comments, total, loading, error, submitting, add, remove, replyTarget, setReplyTarget } =
+    useMeComments(post.id, {
+      onDelta: (delta) => onCommentDelta(post.id, delta),
+    });
+
+  const replyingToUsername = replyTarget != null ? replyTarget.author?.username ?? null : null;
 
   const formatTime = useMemo(() => createTimeFormatter(i18n.language), [i18n.language]);
 
@@ -95,13 +98,22 @@ export function MeCommentSheet({
                   time={formatTime(comment.createdAt)}
                   canDelete={me != null && comment.author?.id === me.id}
                   onDelete={remove}
+                  onReply={setReplyTarget}
                   onOpenProfile={onOpenProfile}
                 />
               ))}
           </div>
         </div>
 
-        <MeCommentComposer submitting={submitting} onSubmit={add} autoFocus={autoFocusInput} />
+        <MeCommentComposer
+          key={replyTarget?.id ?? 'root'}
+          submitting={submitting}
+          onSubmit={add}
+          autoFocus={autoFocusInput}
+          initialDraft={replyingToUsername != null ? `@${replyingToUsername} ` : ''}
+          replyingTo={replyingToUsername}
+          onCancelReply={() => setReplyTarget(null)}
+        />
       </div>
     </FullScreenOverlay>
   );
