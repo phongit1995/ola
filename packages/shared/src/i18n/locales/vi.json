@@ -418,7 +418,8 @@
     "replyImage": "[Ảnh]",
     "replyNotFound": "Tin nhắn gốc không còn nữa",
     "reactionsTitle": "Cảm xúc",
-    "reactionsEmpty": "Chưa có cảm xúc nào."
+    "reactionsEmpty": "Chưa có cảm xúc nào.",
+    "reactionNotice": "đã thả cảm xúc về tin của bạn"
   },
   "me": {
     "tabFeed": "Bảng tin",

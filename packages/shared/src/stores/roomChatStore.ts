@@ -1,7 +1,13 @@
 import { create } from 'zustand';
 import { RoomService, SocketService } from '../services';
 import type { UploadFile } from '../lib/upload';
-import { ROOM_SOCKET_EVENTS, type ReactionType, type RoomMember, type RoomMessage } from '../types';
+import {
+  ROOM_SOCKET_EVENTS,
+  type ReactionType,
+  type RoomMember,
+  type RoomMessage,
+  type RoomReactionNotice,
+} from '../types';
 import { toRecord, withSenderVip, withVipTypeId } from './roomHelpers';
 import { registerRoomRealtime } from './roomRealtime';
 
@@ -29,6 +35,7 @@ export interface RoomChatState {
   hasMore: boolean;
   loadingMore: boolean;
   replyTarget: RoomMessage | null;
+  reactionNotice: RoomReactionNotice | null;
   open: (room: ActiveRoom) => Promise<void>;
   close: () => void;
   reset: () => void;
@@ -39,6 +46,7 @@ export interface RoomChatState {
   loadMoreMessages: () => Promise<void>;
   setReplyTarget: (message: RoomMessage) => void;
   clearReplyTarget: () => void;
+  clearReactionNotice: (seq: number) => void;
   reactToRoomMessage: (messageId: string, type: ReactionType) => Promise<void>;
   deleteRoomMessage: (messageId: string) => Promise<void>;
 }
@@ -56,6 +64,7 @@ const initialState = {
   hasMore: false,
   loadingMore: false,
   replyTarget: null as RoomMessage | null,
+  reactionNotice: null as RoomReactionNotice | null,
 };
 
 export const useRoomChatStore = create<RoomChatState>((set, get) => {
@@ -160,6 +169,9 @@ export const useRoomChatStore = create<RoomChatState>((set, get) => {
     setReplyTarget: (message) => set({ replyTarget: message }),
 
     clearReplyTarget: () => set({ replyTarget: null }),
+
+    clearReactionNotice: (seq) =>
+      set((state) => (state.reactionNotice?.seq === seq ? { reactionNotice: null } : {})),
 
     reactToRoomMessage: async (messageId, type) => {
       const room = get().activeRoom;

@@ -22,6 +22,7 @@ import photoIcon from '@/assets/icons/chat/ic_local.png';
 import { buildRoomFeed } from '../messageGroups';
 import { RoomMessageGroup } from './RoomMessageGroup';
 import { RoomReactionsDialog } from './RoomReactionsDialog';
+import { RoomReactionNotice } from './RoomReactionNotice';
 import { useAttachPanel } from './useAttachPanel';
 import type { RoomChatStatus } from '@/store/roomChatStore';
 
@@ -305,7 +306,8 @@ export function RoomMessagesTab({
   const feed = useMemo(() => buildRoomFeed(messages, currentUserId), [messages, currentUserId]);
 
   return (
-    <div className={`flex flex-1 flex-col overflow-hidden ${active ? '' : 'hidden'}`}>
+    <div className={`relative flex flex-1 flex-col overflow-hidden ${active ? '' : 'hidden'}`}>
+      <RoomReactionNotice />
       {status !== 'joined' && (
         <div className="bg-black/5 py-1.5 text-center text-sm text-black/54">
           {status === 'connecting' ? t('room.connecting') : t('room.joinError')}
