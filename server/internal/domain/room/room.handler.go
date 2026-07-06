@@ -57,9 +57,13 @@ func (h *EventHandler) OnReactionUpdated(ctx context.Context, message []byte) er
 		reactions = map[string][]RoomReactor{}
 	}
 	h.wsServer.EmitToRoom(event.RoomID, constants.WebSocketEventRoomMessageReactionUpdated, map[string]any{
-		"roomId":    event.RoomID,
-		"messageId": event.MessageID,
-		"reactions": utils.MustToJSONMap(reactions),
+		"roomId":        event.RoomID,
+		"messageId":     event.MessageID,
+		"reactions":     utils.MustToJSONMap(reactions),
+		"actorUserId":   event.ActorUserID,
+		"actorUsername": event.ActorUsername,
+		"type":          event.Type,
+		"action":        event.Action,
 	})
 	h.logger.Infow("✅ ROOM_MESSAGE_REACTION_UPDATED broadcast", "room_id", event.RoomID, "message_id", event.MessageID)
 	return nil

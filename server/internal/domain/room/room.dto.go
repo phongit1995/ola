@@ -47,10 +47,11 @@ type RoomMessageDeletedEvent struct {
 }
 
 type RoomMessageReactionUpdatedEvent struct {
-	RoomID      string                   `json:"roomId"`
-	MessageID   string                   `json:"messageId"`
-	Reactions   map[string][]RoomReactor `json:"reactions"`
-	ActorUserID string                   `json:"actorUserId"`
-	Type        string                   `json:"type"`
-	Action      string                   `json:"action"`
+	RoomID        string                   `json:"roomId"`
+	MessageID     string                   `json:"messageId"`
+	Reactions     map[string][]RoomReactor `json:"reactions"`
+	ActorUserID   string                   `json:"actorUserId"`
+	ActorUsername string                   `json:"actorUsername"`
+	Type          string                   `json:"type"`
+	Action        string                   `json:"action"`
 }

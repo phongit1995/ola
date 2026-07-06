@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import smileyIcon from '@/assets/icons/chat/ic_smiley.png';
 import { useAuthStore } from '@/store/authStore';
 import { Avatar, ComposerSmileyPanel, SmileyInput, type SmileyInputHandle } from '@components';
+import { useOutsideClick } from '@hooks';
 import { colorForName } from '@lib';
 
 interface MeCommentComposerProps {
@@ -17,13 +18,16 @@ export function MeCommentComposer({ submitting, onSubmit, autoFocus = false }: M
   const [draft, setDraft] = useState('');
   const [smileyOpen, setSmileyOpen] = useState(false);
   const composerRef = useRef<SmileyInputHandle>(null);
+  const areaRef = useRef<HTMLDivElement>(null);
+
+  useOutsideClick(areaRef, smileyOpen, () => setSmileyOpen(false));
 
   useEffect(() => {
     if (autoFocus) composerRef.current?.focus();
   }, [autoFocus]);
 
   function insertSmiley(code: string) {
-    composerRef.current?.insertCode(code);
+    composerRef.current?.insertCode(code, true);
   }
 
   async function submit() {
@@ -37,7 +41,7 @@ export function MeCommentComposer({ submitting, onSubmit, autoFocus = false }: M
   const myName = me?.username ?? t('home.guest');
 
   return (
-    <>
+    <div ref={areaRef}>
       {smileyOpen && (
         <div className="border-t border-black/12 bg-white px-2">
           <ComposerSmileyPanel onPick={insertSmiley} />
@@ -72,6 +76,6 @@ export function MeCommentComposer({ submitting, onSubmit, autoFocus = false }: M
           {t('me.commentSend')}
         </button>
       </div>
-    </>
+    </div>
   );
 }

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dialog, DialogButton, SmileyInput, type SmileyInputHandle } from '@components';
+import { useOutsideClick } from '@hooks';
 import { ATTACH_BUTTONS, MAX_IMAGES, PRIVACY_OPTIONS, type AttachButtonKey } from '../constants';
 import { type ComposedCheckIn } from './ComposerCheckInPanel';
 import { ComposerPreview } from './ComposerPreview';
@@ -48,6 +49,9 @@ export function MeComposerDialog({
   const [submitting, setSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const composerRef = useRef<SmileyInputHandle>(null);
+  const attachAreaRef = useRef<HTMLDivElement>(null);
+
+  useOutsideClick(attachAreaRef, panel != null, () => setPanel(null));
 
   function reset() {
     setContent('');
@@ -105,7 +109,7 @@ export function MeComposerDialog({
   }
 
   function insertSmiley(code: string) {
-    composerRef.current?.insertCode(code);
+    composerRef.current?.insertCode(code, true);
   }
 
   function handleAttach(key: AttachButtonKey) {
@@ -189,36 +193,38 @@ export function MeComposerDialog({
         onRemovePhoto={removePhoto}
       />
 
-      <div className="mt-3 flex justify-around border-t border-black/12 pt-2">
-        {ATTACH_BUTTONS.map((button) => (
-          <button
-            key={button.key}
-            type="button"
-            aria-label={t(button.labelKey)}
-            onClick={() => handleAttach(button.key)}
-            className={`flex flex-col items-center gap-0.5 text-xs ${
-              panel === button.key ? 'text-ola-primary' : 'text-black/54'
-            }`}
-          >
-            <span className="text-2xl leading-none">{button.glyph}</span>
-            {t(button.labelKey)}
-          </button>
-        ))}
-      </div>
+      <div ref={attachAreaRef}>
+        <div className="mt-3 flex justify-around border-t border-black/12 pt-2">
+          {ATTACH_BUTTONS.map((button) => (
+            <button
+              key={button.key}
+              type="button"
+              aria-label={t(button.labelKey)}
+              onClick={() => handleAttach(button.key)}
+              className={`flex flex-col items-center gap-0.5 text-xs ${
+                panel === button.key ? 'text-ola-primary' : 'text-black/54'
+              }`}
+            >
+              <span className="text-2xl leading-none">{button.glyph}</span>
+              {t(button.labelKey)}
+            </button>
+          ))}
+        </div>
 
-      <ComposerAttachPanels
-        panel={panel}
-        onMention={insertMention}
-        onSticker={(code) => {
-          setSticker(code);
-          setPanel(null);
-        }}
-        onCheckIn={(value) => {
-          setCheckIn(value);
-          setPanel(null);
-        }}
-        onSmiley={insertSmiley}
-      />
+        <ComposerAttachPanels
+          panel={panel}
+          onMention={insertMention}
+          onSticker={(code) => {
+            setSticker(code);
+            setPanel(null);
+          }}
+          onCheckIn={(value) => {
+            setCheckIn(value);
+            setPanel(null);
+          }}
+          onSmiley={insertSmiley}
+        />
+      </div>
 
       <input
         ref={fileInputRef}

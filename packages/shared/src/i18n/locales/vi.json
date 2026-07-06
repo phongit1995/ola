@@ -125,6 +125,51 @@
     "appGameSubtitle": "Trò chơi HAY NHẤT dành cho bạn",
     "appMallSubtitle": "Kho Video vô cùng phong phú và đa dạng"
   },
+  "settings": {
+    "title": "Cài đặt",
+    "facebookJoin": "Tham gia cùng chúng tôi trên Facebook",
+    "facebookLike": "Thích",
+    "groups": {
+      "general": "Tổng quát",
+      "display": "Hiển thị",
+      "chat": "Cửa sổ Chat",
+      "rss": "RSS",
+      "about": "Thông tin Ola"
+    },
+    "values": {
+      "on": "Bật",
+      "ola": "Ola",
+      "vietnamese": "Tiếng Việt",
+      "circle": "Tròn",
+      "default": "Mặc định",
+      "floating": "Cửa sổ nổi",
+      "balloon": "Bong bóng chat",
+      "flying": "Bay vào"
+    },
+    "rows": {
+      "sound": { "title": "Âm báo", "subtitle": "Bật tắt âm thanh thông báo" },
+      "soundType": { "title": "Kiểu âm báo", "subtitle": "Âm thanh báo tin nhắn" },
+      "vibrate": { "title": "Thông báo rung", "subtitle": "Rung khi có sự kiện mới" },
+      "led": { "title": "Thông báo đèn", "subtitle": "Nhấp nháy đèn LED" },
+      "language": { "title": "Ngôn ngữ", "subtitle": "Ngôn ngữ hiển thị" },
+      "passcode": { "title": "Mật khẩu", "subtitle": "Mật khẩu để mở Ola" },
+      "newMe": { "title": "Thông báo khi có Me mới" },
+      "avatar": { "title": "Ảnh đại diện", "subtitle": "Kiểu khung avatar" },
+      "wallpaper": { "title": "Hình nền Ola" },
+      "quickBrowser": { "title": "Trình duyệt nhanh", "subtitle": "Mở link trong Ola" },
+      "video": { "title": "Hiển thị video" },
+      "typing": { "title": "Gợi ý khi nhập liệu", "subtitle": "Gợi ý nick/clan khi gõ @ #" },
+      "popup": { "title": "Thông báo tin nhắn" },
+      "quickReply": { "title": "Trả lời nhanh", "subtitle": "Câu trả lời soạn sẵn" },
+      "effect": { "title": "Hiệu ứng tin nhắn" },
+      "rssHistory": { "title": "Ghi nhớ trang đã xem" },
+      "fontSize": { "title": "Cỡ chữ", "subtitle": "Cỡ chữ khi đọc RSS" },
+      "rating": { "title": "Đánh giá", "subtitle": "Đánh giá Ola trên Google Play" },
+      "beta": { "title": "Ola Beta", "subtitle": "Tham gia bản thử nghiệm" },
+      "version": { "title": "Phiên bản: 5.10.19", "subtitle": "Giao thức 5.10.19 · Hỗ trợ 1900588883 · © 2007-2016 MicroGame Corp." },
+      "logoutAll": { "title": "Đăng xuất mọi nơi", "subtitle": "Bạn sẽ không nhận được tin nhắn từ bạn bè" }
+    }
+  },
   "dialog": {
     "accept": "Đồng ý",
     "cancel": "Huỷ",
@@ -373,7 +418,8 @@
     "replyImage": "[Ảnh]",
     "replyNotFound": "Tin nhắn gốc không còn nữa",
     "reactionsTitle": "Cảm xúc",
-    "reactionsEmpty": "Chưa có cảm xúc nào."
+    "reactionsEmpty": "Chưa có cảm xúc nào.",
+    "reactionNotice": "đã thả cảm xúc về tin của bạn"
   },
   "me": {
     "tabFeed": "Bảng tin",

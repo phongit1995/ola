@@ -8,7 +8,8 @@ export type AppOverlayKind =
   | 'ken'
   | 'kenBuy'
   | 'media'
-  | 'nearby';
+  | 'nearby'
+  | 'settings';
 
 export type VipBuyMode = 'give' | 'buy' | 'extend';
 

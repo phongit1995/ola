@@ -51,6 +51,12 @@ export interface RoomReactor {
   username: string;
 }
 
+export interface RoomReactionNotice {
+  seq: number;
+  username: string;
+  type: string;
+}
+
 export interface RoomMessage {
   id: string;
   roomId: string;
@@ -169,6 +175,10 @@ export interface RoomMessageReactionUpdatedEvent {
   roomId: string;
   messageId: string;
   reactions: Record<string, RoomReactor[]>;
+  actorUserId: string;
+  actorUsername: string;
+  type: string;
+  action: string;
 }
 
 export interface RoomMemberPresenceEvent {

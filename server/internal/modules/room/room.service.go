@@ -644,12 +644,13 @@ func (s *Service) ToggleReaction(ctx context.Context, userID, roomID uuid.UUID, 
 	}
 
 	if err := s.producer.PublishRoomMessageReactionUpdated(ctx, &roomEvents.RoomMessageReactionUpdatedEvent{
-		RoomID:      roomID.String(),
-		MessageID:   messageID,
-		Reactions:   toEventReactions(stored.Reactions),
-		ActorUserID: userID.String(),
-		Type:        reactionType,
-		Action:      action,
+		RoomID:        roomID.String(),
+		MessageID:     messageID,
+		Reactions:     toEventReactions(stored.Reactions),
+		ActorUserID:   userID.String(),
+		ActorUsername: actorUsername,
+		Type:          reactionType,
+		Action:        action,
 	}); err != nil {
 		s.logger.Errorw("Failed to publish room reaction updated", "room_id", roomID, "message_id", messageID, "error", err)
 	}

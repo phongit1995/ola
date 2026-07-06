@@ -19,6 +19,7 @@
   --animate-hourglass-flip: hourglass-flip 3s ease-in-out infinite;
   --animate-ken-pop-in: ken-pop-in 0.4s ease-out;
   --animate-ken-fade-in: ken-fade-in 0.25s ease-out;
+  --animate-reaction-notice: reaction-notice 2s ease-out forwards;
   --font-sans:
     Roboto, 'Helvetica Neue', ui-sans-serif, system-ui, -apple-system,
     'Segoe UI', Arial, sans-serif;
@@ -134,6 +135,25 @@
   }
   to {
     opacity: 1;
+  }
+}
+
+@keyframes reaction-notice {
+  0% {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  80% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-12px);
   }
 }
 

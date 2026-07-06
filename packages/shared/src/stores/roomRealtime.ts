@@ -58,10 +58,29 @@ function handleReactionUpdated(get: RoomGet, set: RoomSet, data: unknown) {
   if (roomId == null || payload?.roomId !== roomId || typeof payload.messageId !== 'string') return;
   const messageId = payload.messageId;
   const reactions = (toRecord(payload.reactions) ?? {}) as Record<string, RoomReactor[]>;
+  const me = useAuthStore.getState().user;
+  const target = get().messages.find((item) => item.id === messageId);
+  const actorUserId = typeof payload.actorUserId === 'string' ? payload.actorUserId : '';
+  const actorUsername = typeof payload.actorUsername === 'string' ? payload.actorUsername : '';
+  const reactionType = typeof payload.type === 'string' ? payload.type : '';
+  const notifyOwnMessageReaction =
+    payload.action === 'added' &&
+    target?.senderId === me?.id &&
+    actorUserId !== me?.id &&
+    actorUsername !== '';
   set((state) => ({
     messages: state.messages.map((item) =>
       item.id === messageId ? { ...item, reactions } : item
     ),
+    ...(notifyOwnMessageReaction
+      ? {
+          reactionNotice: {
+            seq: (state.reactionNotice?.seq ?? 0) + 1,
+            username: actorUsername,
+            type: reactionType,
+          },
+        }
+      : {}),
   }));
 }
 

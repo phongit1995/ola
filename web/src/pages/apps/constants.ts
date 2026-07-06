@@ -60,7 +60,7 @@ export const APP_ITEMS: AppItem[] = [
   { icon: iconMedia, app: 'media' },
   { icon: iconMall, subtitleKey: 'home.appMallSubtitle' },
   { icon: iconNearby, app: 'nearby' },
-  { icon: iconSetting },
+  { icon: iconSetting, app: 'settings' },
 ];
 
 export const MOCK_VENUES: Venue[] = [
