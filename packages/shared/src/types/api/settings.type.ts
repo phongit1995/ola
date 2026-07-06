@@ -1,5 +1,5 @@
-export type MessagePrivacy = 'all' | 'friends' | 'nobody';
-export type MeVisibility = 'all' | 'friends' | 'private';
+export type MessagePrivacy = 'all' | 'friends';
+export type MeVisibility = 'all' | 'friends';
 export type CommentPrivacy = 'all' | 'friends';
 export type FontSize = 'small' | 'medium' | 'large';
 
@@ -7,11 +7,12 @@ export interface UserSettings {
   messagePrivacy: MessagePrivacy;
   meVisibility: MeVisibility;
   commentPrivacy: CommentPrivacy;
-  showOnline: boolean;
   showBirthday: boolean;
+  showInterested: boolean;
   notifMessage: boolean;
   notifSound: boolean;
-  notifVibrate: boolean;
+  soundGame: boolean;
+  soundKen: boolean;
   fontSize: FontSize;
   wallpaperUrl: string;
 }
@@ -22,11 +23,12 @@ export const DEFAULT_USER_SETTINGS: UserSettings = {
   messagePrivacy: 'all',
   meVisibility: 'all',
   commentPrivacy: 'all',
-  showOnline: true,
   showBirthday: true,
+  showInterested: true,
   notifMessage: true,
   notifSound: true,
-  notifVibrate: true,
+  soundGame: true,
+  soundKen: true,
   fontSize: 'medium',
   wallpaperUrl: '',
 };

@@ -25,11 +25,12 @@ func defaultUserSettings(userID uuid.UUID) *models.UserSetting {
 		MessagePrivacy: models.SettingMessagePrivacyAll,
 		MeVisibility:   models.SettingMeVisibilityAll,
 		CommentPrivacy: models.SettingCommentPrivacyAll,
-		ShowOnline:     true,
 		ShowBirthday:   true,
+		ShowInterested: true,
 		NotifMessage:   true,
 		NotifSound:     true,
-		NotifVibrate:   true,
+		SoundGame:      true,
+		SoundKen:       true,
 		FontSize:       models.SettingFontSizeMedium,
 		WallpaperURL:   "",
 	}
@@ -40,11 +41,12 @@ func toUserSettingsResponse(setting *models.UserSetting) *UserSettingsResponse {
 		MessagePrivacy: setting.MessagePrivacy,
 		MeVisibility:   setting.MeVisibility,
 		CommentPrivacy: setting.CommentPrivacy,
-		ShowOnline:     setting.ShowOnline,
 		ShowBirthday:   setting.ShowBirthday,
+		ShowInterested: setting.ShowInterested,
 		NotifMessage:   setting.NotifMessage,
 		NotifSound:     setting.NotifSound,
-		NotifVibrate:   setting.NotifVibrate,
+		SoundGame:      setting.SoundGame,
+		SoundKen:       setting.SoundKen,
 		FontSize:       setting.FontSize,
 		WallpaperURL:   setting.WallpaperURL,
 	}
@@ -79,11 +81,11 @@ func (s *Service) UpdateSettings(userID uuid.UUID, req *UpdateSettingsRequest) (
 	if req.CommentPrivacy != nil {
 		setting.CommentPrivacy = *req.CommentPrivacy
 	}
-	if req.ShowOnline != nil {
-		setting.ShowOnline = *req.ShowOnline
-	}
 	if req.ShowBirthday != nil {
 		setting.ShowBirthday = *req.ShowBirthday
+	}
+	if req.ShowInterested != nil {
+		setting.ShowInterested = *req.ShowInterested
 	}
 	if req.NotifMessage != nil {
 		setting.NotifMessage = *req.NotifMessage
@@ -91,8 +93,11 @@ func (s *Service) UpdateSettings(userID uuid.UUID, req *UpdateSettingsRequest) (
 	if req.NotifSound != nil {
 		setting.NotifSound = *req.NotifSound
 	}
-	if req.NotifVibrate != nil {
-		setting.NotifVibrate = *req.NotifVibrate
+	if req.SoundGame != nil {
+		setting.SoundGame = *req.SoundGame
+	}
+	if req.SoundKen != nil {
+		setting.SoundKen = *req.SoundKen
 	}
 	if req.FontSize != nil {
 		setting.FontSize = *req.FontSize
