@@ -1,9 +1,14 @@
-import { useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
+import { useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import smileyIcon from '@/assets/icons/chat/ic_smiley.png';
 import smileyIconActive from '@/assets/icons/chat/ic_smiley_selected.png';
+import emojiIcon from '@/assets/icons/emoji/10_smiley_colon_dash_D.png';
 import kulIcon from '@/assets/icons/chat/ic_kul.png';
 import kulIconActive from '@/assets/icons/chat/ic_kul_selected.png';
+import smileyTabIcon from '@/assets/icons/chat/ic_tab_smiley.png';
+import emojiTabIcon from '@/assets/icons/chat/ic_tab_emoji.png';
+import kulTabIcon from '@/assets/icons/chat/ic_tab_kul.png';
+import backspaceIcon from '@/assets/icons/chat/ic_backspace_selected.png';
 import cameraIcon from '@/assets/icons/chat/ic_camera.png';
 import cameraIconActive from '@/assets/icons/chat/ic_camera_selected.png';
 import photoIcon from '@/assets/icons/chat/ic_local.png';
@@ -12,18 +17,19 @@ import voiceIcon from '@/assets/icons/chat/ic_voice.png';
 import voiceIconActive from '@/assets/icons/chat/ic_voice_selected.png';
 import moreIcon from '@/assets/icons/chat/ic_more.png';
 import moreIconActive from '@/assets/icons/chat/ic_more_selected.png';
-import backspaceIcon from '@/assets/icons/chat/ic_backspace_selected.png';
 import openGridIcon from '@/assets/icons/chat/ic_open_grid_view.png';
 import localPhotoIcon from '@/assets/icons/chat/ic_local_photo_storage.png';
 import cloudPhotoIcon from '@/assets/icons/chat/ic_cloud_photo_storage.png';
 import switchCameraIcon from '@/assets/icons/chat/ic_action_switch_camera.png';
 import snapTimerIcon from '@/assets/icons/chat/ic_snap_timer.png';
 import expandCameraIcon from '@/assets/icons/chat/ic_action_expand_selected.png';
-import { formatDurationMs, KUL_IMAGES, toast } from '@lib';
+import { EMOJI_IMAGES, emojiToken, formatDurationMs, KUL_IMAGES, toast } from '@lib';
 import { useLongPress, useVoiceRecorder } from '@hooks';
 import { SmileyGrid } from './SmileyGrid';
 
-export type AttachTab = 'smiley' | 'kul' | 'camera' | 'photo' | 'voice' | 'more';
+export type AttachTab = 'smiley' | 'emoji' | 'kul' | 'camera' | 'photo' | 'voice' | 'more';
+
+export type AttachBarVariant = 'full' | 'compact';
 
 export interface AttachSendPayload {
   kind: 'location' | 'ken' | 'vip' | 'voice';
@@ -33,10 +39,11 @@ export interface AttachSendPayload {
   voiceDuration?: string;
 }
 
-const ALL_TABS: AttachTab[] = ['smiley', 'kul', 'camera', 'photo', 'voice', 'more'];
+const ALL_TABS: AttachTab[] = ['smiley', 'emoji', 'kul', 'camera', 'photo', 'voice', 'more'];
 
 const ATTACH_TAB_ICONS: Record<AttachTab, { icon: string; iconActive: string }> = {
   smiley: { icon: smileyIcon, iconActive: smileyIconActive },
+  emoji: { icon: emojiIcon, iconActive: emojiIcon },
   kul: { icon: kulIcon, iconActive: kulIconActive },
   camera: { icon: cameraIcon, iconActive: cameraIconActive },
   photo: { icon: photoIcon, iconActive: photoIconActive },
@@ -44,39 +51,74 @@ const ATTACH_TAB_ICONS: Record<AttachTab, { icon: string; iconActive: string }> 
   more: { icon: moreIcon, iconActive: moreIconActive },
 };
 
+const COMPACT_TAB_ICONS: Partial<Record<AttachTab, string>> = {
+  smiley: smileyTabIcon,
+  emoji: emojiTabIcon,
+  kul: kulTabIcon,
+};
+
 interface AttachmentBarProps {
   openTab: AttachTab | null;
   onToggleTab: (tab: AttachTab) => void;
   onPickEmoji: (emoji: string) => void;
-  onBackspace: () => void;
+  onBackspace?: () => void;
   onPickImage: () => void;
   onSendKul: (index: number) => void;
   onSend: (payload: AttachSendPayload) => void;
   onRecorded?: (blob: Blob, duration: number) => void;
   tabs?: AttachTab[];
   showTabBar?: boolean;
+  variant?: AttachBarVariant;
 }
 
-function SmileyPanel({ onPick, onBackspace }: { onPick: (code: string) => void; onBackspace: () => void }) {
+function InsertPanel({ onBackspace, children }: { onBackspace?: () => void; children: ReactNode }) {
   return (
     <div className="flex h-full flex-col">
-      <div className="flex-1 overflow-y-auto">
-        <SmileyGrid onPick={onPick} />
-      </div>
-      <div className="flex h-8 shrink-0 items-center justify-end gap-1 border-t border-black/12 bg-white px-2">
-        <span className="mr-1 h-4 w-px bg-black/12" />
-        <button
-          type="button"
-          onMouseDown={(event) => event.preventDefault()}
-          onClick={onBackspace}
-          aria-label="backspace"
-          title="backspace"
-          className="flex h-full w-12 items-center justify-center"
-        >
-          <img src={backspaceIcon} alt="" className="h-5 w-5 object-contain" />
-        </button>
-      </div>
+      <div className="flex-1 overflow-y-auto">{children}</div>
+      {onBackspace != null && (
+        <div className="flex h-8 shrink-0 items-center justify-end gap-1 border-t border-black/12 bg-white px-2">
+          <span className="mr-1 h-4 w-px bg-black/12" />
+          <button
+            type="button"
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={onBackspace}
+            aria-label="backspace"
+            title="backspace"
+            className="flex h-full w-12 items-center justify-center"
+          >
+            <img src={backspaceIcon} alt="" className="h-5 w-5 object-contain" />
+          </button>
+        </div>
+      )}
     </div>
+  );
+}
+
+function SmileyPanel({ onPick, onBackspace }: { onPick: (code: string) => void; onBackspace?: () => void }) {
+  return (
+    <InsertPanel onBackspace={onBackspace}>
+      <SmileyGrid onPick={onPick} />
+    </InsertPanel>
+  );
+}
+
+function EmojiPanel({ onPick, onBackspace }: { onPick: (token: string) => void; onBackspace?: () => void }) {
+  return (
+    <InsertPanel onBackspace={onBackspace}>
+      <div className="grid grid-cols-8 gap-1 p-2">
+        {EMOJI_IMAGES.map((image, index) => (
+          <button
+            key={index}
+            type="button"
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() => onPick(emojiToken(index + 1))}
+            className="flex h-9 items-center justify-center rounded hover:bg-gray-100"
+          >
+            <img src={image} alt="" className="h-[22px] w-auto object-contain" />
+          </button>
+        ))}
+      </div>
+    </InsertPanel>
   );
 }
 
@@ -294,8 +336,10 @@ export function AttachmentBar({
   onRecorded,
   tabs = ALL_TABS,
   showTabBar = true,
+  variant = 'full',
 }: AttachmentBarProps) {
   const { t } = useTranslation();
+  const isCompact = variant === 'compact';
   const suppressPhotoClick = useRef(false);
   const photoLongPress = useLongPress(() => {
     suppressPhotoClick.current = true;
@@ -304,6 +348,7 @@ export function AttachmentBar({
 
   const tabLabels: Record<AttachTab, string> = {
     smiley: t('chat.attachTabSmiley'),
+    emoji: t('chat.attachTabEmoji'),
     kul: t('chat.attachTabKul'),
     camera: t('chat.attachTabCamera'),
     photo: t('chat.attachTabPhoto'),
@@ -341,11 +386,34 @@ export function AttachmentBar({
                 }
                 onToggleTab(tab);
               }}
-              className={`flex h-11 flex-1 select-none items-center justify-center ${
-                isActive ? 'opacity-100' : 'opacity-60'
-              }`}
+              className={
+                isCompact
+                  ? `relative flex h-11 flex-1 select-none items-center justify-center transition-colors ${
+                      isActive ? 'bg-ola-primary/10' : 'hover:bg-black/5'
+                    }`
+                  : `flex h-11 flex-1 select-none items-center justify-center ${
+                      isActive ? 'opacity-100' : 'opacity-60'
+                    }`
+              }
             >
-              <img src={isActive ? ATTACH_TAB_ICONS[tab].iconActive : ATTACH_TAB_ICONS[tab].icon} alt="" className="h-6 w-6 object-contain" />
+              <img
+                src={
+                  isCompact
+                    ? COMPACT_TAB_ICONS[tab] ?? ATTACH_TAB_ICONS[tab].icon
+                    : isActive
+                      ? ATTACH_TAB_ICONS[tab].iconActive
+                      : ATTACH_TAB_ICONS[tab].icon
+                }
+                alt=""
+                className={
+                  isCompact
+                    ? `h-6 w-6 object-contain transition-opacity ${isActive ? 'opacity-100' : 'opacity-60'}`
+                    : 'h-6 w-6 object-contain'
+                }
+              />
+              {isCompact && isActive && (
+                <span className="absolute inset-x-0 bottom-0 h-0.5 bg-ola-primary" />
+              )}
             </button>
           );
         })}
@@ -355,6 +423,7 @@ export function AttachmentBar({
       {openTab != null && (
         <div className="h-52 overflow-y-auto border-t border-black/12">
           {openTab === 'smiley' && <SmileyPanel onPick={onPickEmoji} onBackspace={onBackspace} />}
+          {openTab === 'emoji' && <EmojiPanel onPick={onPickEmoji} onBackspace={onBackspace} />}
           {openTab === 'kul' && <KulPanel onSendKul={onSendKul} />}
           {openTab === 'camera' && <CameraPanel onCapture={onPickImage} />}
           {openTab === 'photo' && <PhotoPanel onPickImage={onPickImage} />}

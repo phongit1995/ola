@@ -44,7 +44,12 @@ export function mapPublicProfile(data: PublicProfile, deps: ProfileMapDeps): Use
 }
 
 export function mapFollowing(users: FollowUser[]): ProfileFriend[] {
-  return users.map((user) => ({ name: user.username, color: colorForName(user.username) }));
+  return users.map((user) => ({
+    name: user.username,
+    fullName: user.fullName,
+    avatar: user.avatar,
+    color: colorForName(user.username),
+  }));
 }
 
 export function mapPosts(posts: Post[], formatTime: (iso: string) => string): MePost[] {

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Avatar, Spinner, VipIcon } from '@components';
+import { Avatar, Spinner, UserName, VipIcon } from '@components';
 import { activeVipTypeId, colorForName, createTimeFormatter, toast } from '@lib';
 import { RelationshipService, UserService } from '@services';
 import type { RelationshipStatus, VisitorUser } from '@app-types';
@@ -146,9 +146,11 @@ export function MeVisitorsList({ className, onOpenProfile }: MeVisitorsListProps
                 <button type="button" onClick={openProfile} className="min-w-0 text-left">
                   <span className="flex min-w-0 items-center gap-1">
                     <VipIcon typeId={row.vipTypeId} />
-                    <span className="min-w-0 truncate text-base font-medium text-black/87">
-                      {title}
-                    </span>
+                    <UserName
+                      name={`@${row.username}`}
+                      fullName={row.fullName}
+                      className="min-w-0 truncate text-base font-medium text-black/87"
+                    />
                   </span>
                   <span className="block truncate text-xs text-black/45">
                     {formatTime(row.viewedAt)}

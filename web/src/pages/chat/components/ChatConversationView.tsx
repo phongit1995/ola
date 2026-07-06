@@ -537,6 +537,7 @@ export function ChatConversationView({
       </form>
 
       <AttachmentBar
+        tabs={['smiley', 'kul', 'camera', 'photo', 'voice', 'more']}
         openTab={openTab}
         onToggleTab={(tab) => setOpenTab((current) => (current === tab ? null : tab))}
         onPickEmoji={(emoji) => composerRef.current?.insertCode(emoji, true)}

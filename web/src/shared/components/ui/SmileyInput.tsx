@@ -6,11 +6,11 @@ import {
   type ClipboardEvent as ReactClipboardEvent,
   type KeyboardEvent as ReactKeyboardEvent,
 } from 'react';
-import { smileyImageForCode, splitSmileys } from '@lib';
+import { isEmojiToken, smileyImageForCode, smileyImgClass, splitSmileys, type SmileyVariant } from '@lib';
 
 export interface SmileyInputHandle {
   focus: () => void;
-  insertCode: (code: string, trailingSpace?: boolean) => void;
+  insertCode: (code: string, trailingSpace?: boolean, focusAfter?: boolean) => void;
   insertText: (text: string) => void;
   backspace: () => void;
 }
@@ -26,14 +26,16 @@ interface SmileyInputProps {
   className?: string;
 }
 
-const SMILEY_IMG_CLASS = 'inline-block h-[1.25em] w-auto align-text-bottom';
+function variantForCode(code: string): SmileyVariant {
+  return isEmojiToken(code) ? 'emoji' : 'smiley';
+}
 
 function makeSmileyImg(code: string, src: string): HTMLImageElement {
   const img = document.createElement('img');
   img.src = src;
   img.alt = code;
   img.dataset.code = code;
-  img.className = SMILEY_IMG_CLASS;
+  img.className = smileyImgClass(variantForCode(code));
   img.contentEditable = 'false';
   return img;
 }
@@ -157,11 +159,11 @@ export const SmileyInput = forwardRef<SmileyInputHandle, SmileyInputProps>(funct
 
   useImperativeHandle(ref, () => ({
     focus: focusEditor,
-    insertCode: (code: string, trailingSpace = false) => {
+    insertCode: (code: string, trailingSpace = false, focusAfter = true) => {
       const src = smileyImageForCode(code);
       insertNode(src == null ? document.createTextNode(code) : makeSmileyImg(code, src));
       if (trailingSpace) insertNode(document.createTextNode(' '));
-      focusEditor();
+      if (focusAfter) focusEditor();
     },
     insertText: (text: string) => insertNode(document.createTextNode(text)),
     backspace: () => {

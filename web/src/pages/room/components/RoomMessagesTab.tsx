@@ -5,7 +5,6 @@ import { compressImageForUpload, ImageTooLargeError, kulImageForText, kulToken, 
 import { useLongPress } from '@hooks';
 import {
   AttachmentBar,
-  type AttachTab,
   ConfirmDialog,
   DateSeparator,
   MessageActionSheet,
@@ -19,12 +18,11 @@ import copyActionIcon from '@/assets/icons/chat/ic_menu_copy.svg';
 import deleteActionIcon from '@/assets/icons/chat/ic_menu_delete.png';
 import smileyIcon from '@/assets/icons/chat/ic_smiley.png';
 import smileyIconActive from '@/assets/icons/chat/ic_smiley_selected.png';
-import kulIcon from '@/assets/icons/chat/ic_kul.png';
-import kulIconActive from '@/assets/icons/chat/ic_kul_selected.png';
 import photoIcon from '@/assets/icons/chat/ic_local.png';
 import { buildRoomFeed } from '../messageGroups';
 import { RoomMessageGroup } from './RoomMessageGroup';
 import { RoomReactionsDialog } from './RoomReactionsDialog';
+import { useAttachPanel } from './useAttachPanel';
 import type { RoomChatStatus } from '@/store/roomChatStore';
 
 interface RoomMessagesTabProps {
@@ -67,7 +65,13 @@ export function RoomMessagesTab({
   const { t } = useTranslation();
 
   const [draft, setDraft] = useState('');
-  const [openTab, setOpenTab] = useState<AttachTab | null>(null);
+  const {
+    openTab,
+    areaRef: composerAreaRef,
+    toggle: toggleTab,
+    toggleLast: openAttachPanel,
+    close: closeAttachPanel,
+  } = useAttachPanel();
   const [actionTarget, setActionTarget] = useState<{
     message: RoomMessage;
     anchor: DOMRect | null;
@@ -146,7 +150,7 @@ export function RoomMessagesTab({
     if (trimmed === '' || status !== 'joined') return;
     stickToBottomRef.current = true;
     setDraft('');
-    setOpenTab(null);
+    closeAttachPanel();
     try {
       await onSend(trimmed);
     } catch {
@@ -159,7 +163,7 @@ export function RoomMessagesTab({
     const files = Array.from(event.target.files ?? []);
     event.target.value = '';
     if (files.length === 0 || status !== 'joined') return;
-    setOpenTab(null);
+    closeAttachPanel();
     for (const file of files) {
       try {
         const prepared = await compressImageForUpload(file);
@@ -305,10 +309,6 @@ export function RoomMessagesTab({
   const isTyping = draft.trim() !== '';
   const feed = useMemo(() => buildRoomFeed(messages, currentUserId), [messages, currentUserId]);
 
-  function toggleTab(tab: AttachTab) {
-    setOpenTab((current) => (current === tab ? null : tab));
-  }
-
   return (
     <div className={`flex flex-1 flex-col overflow-hidden ${active ? '' : 'hidden'}`}>
       {status !== 'joined' && (
@@ -368,22 +368,15 @@ export function RoomMessagesTab({
         </div>
       )}
 
+      <div ref={composerAreaRef} className="shrink-0">
       <div className="flex shrink-0 items-center gap-1 border-t border-black/12 bg-white px-2 py-2">
         <button
           type="button"
           aria-label={t('chat.attachTabSmiley')}
-          onClick={() => toggleTab('smiley')}
-          className={`flex h-9 w-9 shrink-0 select-none items-center justify-center ${openTab === 'smiley' ? 'opacity-100' : 'opacity-60'}`}
+          onClick={openAttachPanel}
+          className={`flex h-9 w-9 shrink-0 select-none items-center justify-center ${openTab != null ? 'opacity-100' : 'opacity-60'}`}
         >
-          <img src={openTab === 'smiley' ? smileyIconActive : smileyIcon} alt="" className="h-6 w-6 object-contain" />
-        </button>
-        <button
-          type="button"
-          aria-label={t('chat.attachTabKul')}
-          onClick={() => toggleTab('kul')}
-          className={`flex h-9 w-9 shrink-0 select-none items-center justify-center ${openTab === 'kul' ? 'opacity-100' : 'opacity-60'}`}
-        >
-          <img src={openTab === 'kul' ? kulIconActive : kulIcon} alt="" className="h-6 w-6 object-contain" />
+          <img src={openTab != null ? smileyIconActive : smileyIcon} alt="" className="h-6 w-6 object-contain" />
         </button>
         <button
           type="button"
@@ -425,7 +418,7 @@ export function RoomMessagesTab({
             value={draft}
             onChange={setDraft}
             onEnter={() => void handleSend()}
-            onFocus={() => setOpenTab(null)}
+            onFocus={() => closeAttachPanel()}
             disabled={!canSend}
             placeholder={t('room.chatInputHint')}
             multiline
@@ -437,6 +430,7 @@ export function RoomMessagesTab({
         {isTyping || pendingImages.length > 0 ? (
           <button
             type="button"
+            onPointerDown={(event) => event.preventDefault()}
             onClick={() => void handleSend()}
             disabled={!canSend || sendingImages}
             className="h-9 shrink-0 rounded-full bg-ola-primary px-4 text-sm font-semibold text-white shadow-sm transition active:scale-95 disabled:opacity-40"
@@ -478,20 +472,21 @@ export function RoomMessagesTab({
 
       {canSend && (
         <AttachmentBar
-          showTabBar={false}
-          tabs={['smiley', 'kul']}
+          variant="compact"
+          showTabBar={openTab != null}
+          tabs={['smiley', 'emoji', 'kul']}
           openTab={openTab}
           onToggleTab={toggleTab}
-          onPickEmoji={(code) => composerRef.current?.insertCode(code, true)}
-          onBackspace={() => composerRef.current?.backspace()}
+          onPickEmoji={(code) => composerRef.current?.insertCode(code, true, false)}
           onPickImage={() => fileInputRef.current?.click()}
           onSendKul={(index) => {
             void sendText(kulToken(index));
-            setOpenTab(null);
+            closeAttachPanel();
           }}
           onSend={() => undefined}
         />
       )}
+      </div>
 
       {actionTarget != null && (
         <MessageActionSheet

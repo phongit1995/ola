@@ -9,7 +9,7 @@ import type { MeNotification, MeNotificationType, PostReaction } from '@app-type
 import likeIcon from '@/assets/icons/notify/ic_notification_like.png';
 import commentIcon from '@/assets/icons/notify/ic_notification_comment.png';
 import mentionIcon from '@/assets/icons/notify/ic_notification_mention.png';
-import { toMePost, applyMeReaction } from './mappers';
+import { toMePost, applyMeReaction, meSelfLiker, reconcileMeLikers } from './mappers';
 import type { MePost } from './types';
 import { MeCommentSheet } from './components/MeCommentSheet';
 import { UserProfileView } from '../profile/UserProfileView';
@@ -64,14 +64,14 @@ export function MeNotificationsView({ onClose }: MeNotificationsViewProps) {
 
   async function toggleReaction(id: string, type: PostReaction) {
     if (openPost == null) return;
-    const optimistic = applyMeReaction(openPost, type);
+    const optimistic = applyMeReaction(openPost, type, meSelfLiker());
     setOpenPost(optimistic);
     const wasActive = type === 'like' ? openPost.liked : openPost.disliked;
     try {
       const updated = wasActive
         ? await MeService.removeReaction(id)
         : await MeService.react(id, type);
-      setOpenPost(toMePost(updated, formatTime));
+      setOpenPost(reconcileMeLikers(toMePost(updated, formatTime), optimistic));
       useMeFeedStore.getState().syncPost(updated);
     } catch {
       setOpenPost(openPost);

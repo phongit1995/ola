@@ -12,6 +12,7 @@ interface UserRowProps {
   online?: boolean;
   deviceIcon?: string;
   layout?: 'stacked' | 'inline';
+  rounded?: boolean;
   onClick?: () => void;
   trailing?: ReactNode;
 }
@@ -25,13 +26,14 @@ export function UserRow({
   online = false,
   deviceIcon,
   layout = 'stacked',
+  rounded = true,
   onClick,
   trailing,
 }: UserRowProps) {
   const content = (
     <>
       <span className="relative shrink-0">
-        <Avatar name={name} color={color} src={avatar} size={40} />
+        <Avatar name={name} color={color} src={avatar} size={40} rounded={rounded} />
         {online && <PresenceBadge icon={deviceIcon} className="absolute right-0 bottom-0" />}
       </span>
       {layout === 'inline' ? (

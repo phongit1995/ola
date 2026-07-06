@@ -9,6 +9,8 @@ import { useMeLocalStore } from '@/store/meLocalStore';
 import { MePostCard } from './components/MePostCard';
 import { MePostInteractions, type MePostSource } from './MePostInteractions';
 import { composedToImages, composedToPayload } from './composer';
+import { selfLiker } from '@ola/shared/stores/selfLiker';
+import { reconcileTopLikers } from '@ola/shared/stores/postHelpers';
 import { applyPostReaction, toMePost } from './mappers';
 import type { ComposedPost } from './components/MeComposerDialog';
 
@@ -50,21 +52,24 @@ export function MeLikedPostsView({ onClose }: MeLikedPostsViewProps) {
       const post = posts.find((item) => item.id === id);
       if (post == null || reactingRef.current.has(id)) return;
       const isActive = post.myReaction === type;
+      const self = selfLiker();
       reactingRef.current.add(id);
       setPosts((current) =>
-        current.map((item) => (item.id === id ? applyPostReaction(item, isActive ? null : type) : item))
+        current.map((item) => (item.id === id ? applyPostReaction(item, isActive ? null : type, self) : item))
       );
       try {
         const updated = isActive
           ? await MeService.removeReaction(id)
           : await MeService.react(id, type);
         setPosts((current) => {
-          const next = current.map((item) => (item.id === id ? updated : item));
+          const next = current.map((item) =>
+            item.id === id ? reconcileTopLikers(updated, item) : item
+          );
           return updated.myReaction === 'like' ? next : next.filter((item) => item.id !== id);
         });
       } catch {
         setPosts((current) =>
-          current.map((item) => (item.id === id ? applyPostReaction(item, post.myReaction) : item))
+          current.map((item) => (item.id === id ? applyPostReaction(item, post.myReaction, self) : item))
         );
         toast.error(t('me.reactionError'));
       } finally {

@@ -1,4 +1,4 @@
-import { splitSmileys } from './chatSmiley';
+import { smileyImgClass, splitSmileys } from './chatSmiley';
 
 export function SmileyText({ text }: { text: string }) {
   return (
@@ -9,7 +9,7 @@ export function SmileyText({ text }: { text: string }) {
             key={index}
             src={segment.src}
             alt={segment.code}
-            className="inline-block h-[1.25em] w-auto align-text-bottom"
+            className={smileyImgClass(segment.variant)}
           />
         ) : (
           <span key={index}>{segment.value}</span>
