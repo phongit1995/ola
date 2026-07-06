@@ -62,6 +62,26 @@ type VipIconListResponse struct {
 	Offset int           `json:"offset"`
 }
 
+type SessionItem struct {
+	ID           string `json:"id"`
+	DeviceName   string `json:"deviceName,omitempty"`
+	Platform     string `json:"platform,omitempty"`
+	AppVersion   string `json:"appVersion,omitempty"`
+	IPAddress    string `json:"ipAddress,omitempty"`
+	UserAgent    string `json:"userAgent,omitempty"`
+	IsActive     bool   `json:"isActive"`
+	LastActiveAt string `json:"lastActiveAt,omitempty"`
+	CreatedAt    string `json:"createdAt"`
+	RevokedAt    string `json:"revokedAt,omitempty"`
+}
+
+type SessionListResponse struct {
+	Items  []SessionItem `json:"items"`
+	Total  int64         `json:"total"`
+	Limit  int           `json:"limit"`
+	Offset int           `json:"offset"`
+}
+
 type ListFilter struct {
 	Query          string
 	IsActive       *bool

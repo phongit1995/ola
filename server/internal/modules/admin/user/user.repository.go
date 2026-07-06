@@ -145,3 +145,20 @@ func (r *Repository) ListVipIcons(userID uuid.UUID, activeTypeID int16, limit, o
 func (r *Repository) CreateVipIcon(icon *models.UserVipIcon) error {
 	return r.db.Create(icon).Error
 }
+
+func (r *Repository) CountSessions(userID uuid.UUID) (int64, error) {
+	var count int64
+	err := r.db.Model(&models.UserSession{}).Where("user_id = ?", userID).Count(&count).Error
+	return count, err
+}
+
+func (r *Repository) ListSessions(userID uuid.UUID, limit, offset int) ([]models.UserSession, error) {
+	var sessions []models.UserSession
+	err := r.db.
+		Where("user_id = ?", userID).
+		Order("last_active_at DESC").
+		Limit(limit).
+		Offset(offset).
+		Find(&sessions).Error
+	return sessions, err
+}

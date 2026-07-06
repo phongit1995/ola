@@ -131,6 +131,33 @@ func (ctrl *Controller) ListUserVips(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
+// ListUserSessions godoc
+// @Summary      List user login sessions
+// @Description  List a user's login sessions/devices, including revoked ones (admin only)
+// @Tags         admin-user
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id     path  string true  "User ID"
+// @Param        limit  query int    false "Page size (default 20, max 100)"
+// @Param        offset query int    false "Offset (default 0)"
+// @Success      200  {object}  utils.BaseResponse[SessionListResponse]
+// @Failure      401  {object}  utils.APIError
+// @Failure      403  {object}  utils.APIError
+// @Failure      404  {object}  utils.APIError
+// @Router       /admin/users/{id}/sessions [get]
+func (ctrl *Controller) ListUserSessions(c *gin.Context) (interface{}, error) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid user id")
+	}
+
+	resp, err := ctrl.service.ListSessions(id, utils.ParseLimit(c, 20, 100), utils.ParseOffset(c))
+	if err != nil {
+		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+	}
+	return resp, nil
+}
+
 // GrantVip godoc
 // @Summary      Grant VIP icon
 // @Description  Grant a VIP icon to a user's collection (admin only)

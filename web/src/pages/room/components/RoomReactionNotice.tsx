@@ -4,7 +4,7 @@ import { useRoomChatStore } from '@/store/roomChatStore';
 import { REACTION_IMAGE } from '@lib';
 import type { ReactionType } from '@app-types';
 
-const NOTICE_DURATION_MS = 2000;
+const NOTICE_DURATION_MS = 2500;
 
 export function RoomReactionNotice() {
   const { t } = useTranslation();

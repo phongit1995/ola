@@ -126,6 +126,19 @@ export interface AdminUserDetail extends AdminUserListItem {
   updatedAt?: string
 }
 
+export interface AdminUserSession {
+  id: string
+  deviceName?: string
+  platform?: string
+  appVersion?: string
+  ipAddress?: string
+  userAgent?: string
+  isActive: boolean
+  lastActiveAt?: string
+  createdAt: string
+  revokedAt?: string
+}
+
 export interface AdminUserVipIcon {
   instanceId: string
   typeId: number

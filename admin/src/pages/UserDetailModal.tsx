@@ -16,6 +16,7 @@ import { KenAdjustModal } from './KenAdjustModal'
 import { KenHistoryModal } from './KenHistoryModal'
 import { UserMeModal } from './UserMeModal'
 import { UserVipIconsModal } from './UserVipIconsModal'
+import { UserSessionsModal } from './UserSessionsModal'
 import { EditUsernameModal } from './EditUsernameModal'
 import { ResetPasswordModal } from './ResetPasswordModal'
 
@@ -74,6 +75,7 @@ export function UserDetailModal({ userId, open, onClose }: UserDetailModalProps)
   const gender = data?.gender ? GENDER[data.gender] ?? { label: data.gender, color: 'default' } : null
   const [adjustOpen, setAdjustOpen] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
+  const [sessionsOpen, setSessionsOpen] = useState(false)
   const [meOpen, setMeOpen] = useState(false)
   const [vipsOpen, setVipsOpen] = useState(false)
   const [usernameOpen, setUsernameOpen] = useState(false)
@@ -98,6 +100,9 @@ export function UserDetailModal({ userId, open, onClose }: UserDetailModalProps)
           </Button>
           <Button icon={<HistoryOutlined />} disabled={!userId} onClick={() => setHistoryOpen(true)}>
             Lịch sử Ken
+          </Button>
+          <Button icon={<HistoryOutlined />} disabled={!userId} onClick={() => setSessionsOpen(true)}>
+            Lịch sử đăng nhập
           </Button>
           <Button icon={<LockOutlined />} disabled={!userId} onClick={() => setPasswordOpen(true)}>
             Đổi mật khẩu
@@ -227,6 +232,12 @@ export function UserDetailModal({ userId, open, onClose }: UserDetailModalProps)
       userId={userId}
       username={data?.username}
       onClose={() => setVipsOpen(false)}
+    />
+    <UserSessionsModal
+      open={sessionsOpen}
+      userId={userId}
+      username={data?.username}
+      onClose={() => setSessionsOpen(false)}
     />
     <EditUsernameModal
       open={usernameOpen}

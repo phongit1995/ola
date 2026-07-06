@@ -3,6 +3,7 @@ import type {
   ApiResponse,
   AdminUserDetail,
   AdminUserListItem,
+  AdminUserSession,
   AdminUserVipIcon,
   GrantVipRequest,
   ListParams,
@@ -28,6 +29,14 @@ export const AdminUserService = {
   async listVips(id: string, params: ListParams = {}): Promise<ListResult<AdminUserVipIcon>> {
     const { data } = await http.get<ApiResponse<ListResult<AdminUserVipIcon>>>(
       `/admin/users/${id}/vips`,
+      { params },
+    )
+    return data.data
+  },
+
+  async listSessions(id: string, params: ListParams = {}): Promise<ListResult<AdminUserSession>> {
+    const { data } = await http.get<ApiResponse<ListResult<AdminUserSession>>>(
+      `/admin/users/${id}/sessions`,
       { params },
     )
     return data.data
