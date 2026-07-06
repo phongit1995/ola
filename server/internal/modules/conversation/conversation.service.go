@@ -6,7 +6,9 @@ import (
 	"ola-chat-server/internal/constants"
 	conversationEvents "ola-chat-server/internal/domain/conversation"
 	"ola-chat-server/internal/models"
+	"ola-chat-server/internal/modules/relationships"
 	userModule "ola-chat-server/internal/modules/user"
+	usersetting "ola-chat-server/internal/modules/user-setting"
 	"ola-chat-server/internal/transport/kafka"
 	"ola-chat-server/internal/transport/websocket"
 	"ola-chat-server/internal/utils"
@@ -19,32 +21,38 @@ import (
 )
 
 type Service struct {
-	repo          *Repository
-	cache         *CacheService
-	userCache     *userModule.CacheService
-	db            *gorm.DB
-	kafkaProducer *kafka.Producer
-	presence      *websocket.PresenceService
-	logger        *zap.SugaredLogger
+	repo           *Repository
+	cache          *CacheService
+	userCache      *userModule.CacheService
+	userSettingSvc *usersetting.Service
+	relRepo        *relationships.Repository
+	db             *gorm.DB
+	kafkaProducer  *kafka.Producer
+	presence       *websocket.PresenceService
+	logger         *zap.SugaredLogger
 }
 
 func NewService(
 	repo *Repository,
 	cache *CacheService,
 	userCache *userModule.CacheService,
+	userSettingSvc *usersetting.Service,
+	relRepo *relationships.Repository,
 	db *gorm.DB,
 	kafkaProducer *kafka.Producer,
 	presence *websocket.PresenceService,
 	logger *zap.SugaredLogger,
 ) *Service {
 	return &Service{
-		repo:          repo,
-		cache:         cache,
-		userCache:     userCache,
-		db:            db,
-		kafkaProducer: kafkaProducer,
-		presence:      presence,
-		logger:        logger.Named("[conversation_service]"),
+		repo:           repo,
+		cache:          cache,
+		userCache:      userCache,
+		userSettingSvc: userSettingSvc,
+		relRepo:        relRepo,
+		db:             db,
+		kafkaProducer:  kafkaProducer,
+		presence:       presence,
+		logger:         logger.Named("[conversation_service]"),
 	}
 }
 
@@ -231,6 +239,16 @@ func (s *Service) CreateDirectConversation(user1ID, user2ID uuid.UUID) (*Convers
 	userA, userB := user1ID, user2ID
 	if user1ID.String() > user2ID.String() {
 		userA, userB = user2ID, user1ID
+	}
+
+	existingID, err := s.repo.GetDirectConversationID(userA, userB)
+	if err != nil {
+		return nil, err
+	}
+	if existingID == nil {
+		if err := BlockIfPrivateFromStranger(s.userSettingSvc, s.relRepo, user1ID, user2ID); err != nil {
+			return nil, err
+		}
 	}
 
 	now := time.Now()

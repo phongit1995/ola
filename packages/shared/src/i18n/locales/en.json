@@ -221,6 +221,7 @@
     "stickerPreview": "Sticker",
     "blockedByMe": "You blocked this person. Unblock to send messages.",
     "blockedByThem": "You can't message this person.",
+    "sendErrFriendsOnly": "This user only accepts messages from friends.",
     "attachPickImage": "Choose a photo",
     "actionEdit": "Edit message",
     "actionDelete": "Delete message",

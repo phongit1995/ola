@@ -1,10 +1,13 @@
 package message
 
 import (
-	"ola-chat-server/internal/utils"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
+
+	"ola-chat-server/internal/modules/conversation"
+	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -106,6 +109,9 @@ func (ctrl *Controller) SendDirectMessage(c *gin.Context) (interface{}, error) {
 
 	message, err := ctrl.service.SendDirectMessage(userID, recipientID, req.Type, req.Content, req.Metadata, req.ClientMsgID)
 	if err != nil {
+		if errors.Is(err, conversation.ErrNotAllowedToMessage) {
+			return nil, utils.NewHTTPError(http.StatusForbidden, err.Error())
+		}
 		ctrl.logger.Errorw("Failed to send direct message", "error", err)
 		return nil, utils.NewHTTPError(http.StatusInternalServerError, "failed to send message")
 	}
