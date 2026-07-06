@@ -14,6 +14,9 @@ const MediaStorePage = lazy(() =>
 const NearbyPlacesPage = lazy(() =>
   import('./NearbyPlacesPage').then((m) => ({ default: m.NearbyPlacesPage }))
 );
+const SettingsPage = lazy(() =>
+  import('../settings/SettingsPage').then((m) => ({ default: m.SettingsPage }))
+);
 const EditProfileMePage = lazy(() =>
   import('../profile/EditProfileMePage').then((m) => ({ default: m.EditProfileMePage }))
 );
@@ -40,6 +43,8 @@ function renderEntry(entry: AppOverlayEntry, onClose: () => void) {
       return <MediaStorePage onClose={onClose} />;
     case 'nearby':
       return <NearbyPlacesPage onClose={onClose} />;
+    case 'settings':
+      return <SettingsPage onClose={onClose} />;
     default:
       return null;
   }
