@@ -42,12 +42,6 @@ export function MeCommentComposer({ submitting, onSubmit, autoFocus = false }: M
 
   return (
     <div ref={areaRef}>
-      {smileyOpen && (
-        <div className="border-t border-black/12 bg-white px-2">
-          <ComposerSmileyPanel onPick={insertSmiley} />
-        </div>
-      )}
-
       <div className="flex shrink-0 items-end gap-2 border-t border-black/12 bg-white px-3 py-2">
         <Avatar name={myName} src={me?.avatar} color={colorForName(myName)} size={36} />
         <SmileyInput
@@ -76,6 +70,12 @@ export function MeCommentComposer({ submitting, onSubmit, autoFocus = false }: M
           {t('me.commentSend')}
         </button>
       </div>
+
+      {smileyOpen && (
+        <div className="border-t border-black/12 bg-white px-2">
+          <ComposerSmileyPanel onPick={insertSmiley} />
+        </div>
+      )}
     </div>
   );
 }
