@@ -4,11 +4,11 @@ import type { ReactionType, RoomMessage } from '@app-types';
 import { compressImageForUpload, ImageTooLargeError, kulImageForText, kulToken, toast } from '@lib';
 import { useLongPress } from '@hooks';
 import {
-  AttachmentBar,
   ConfirmDialog,
   DateSeparator,
   MessageActionSheet,
   type MessageSheetAction,
+  SmileyGroupPanel,
   SmileyInput,
   type SmileyInputHandle,
 } from '@components';
@@ -65,13 +65,8 @@ export function RoomMessagesTab({
   const { t } = useTranslation();
 
   const [draft, setDraft] = useState('');
-  const {
-    openTab,
-    areaRef: composerAreaRef,
-    toggle: toggleTab,
-    toggleLast: openAttachPanel,
-    close: closeAttachPanel,
-  } = useAttachPanel();
+  const { open: attachOpen, areaRef: composerAreaRef, toggle: toggleAttachPanel, close: closeAttachPanel } =
+    useAttachPanel();
   const [actionTarget, setActionTarget] = useState<{
     message: RoomMessage;
     anchor: DOMRect | null;
@@ -373,10 +368,10 @@ export function RoomMessagesTab({
         <button
           type="button"
           aria-label={t('chat.attachTabSmiley')}
-          onClick={openAttachPanel}
-          className={`flex h-9 w-9 shrink-0 select-none items-center justify-center ${openTab != null ? 'opacity-100' : 'opacity-60'}`}
+          onClick={toggleAttachPanel}
+          className={`flex h-9 w-9 shrink-0 select-none items-center justify-center ${attachOpen ? 'opacity-100' : 'opacity-60'}`}
         >
-          <img src={openTab != null ? smileyIconActive : smileyIcon} alt="" className="h-6 w-6 object-contain" />
+          <img src={attachOpen ? smileyIconActive : smileyIcon} alt="" className="h-6 w-6 object-contain" />
         </button>
         <button
           type="button"
@@ -471,20 +466,15 @@ export function RoomMessagesTab({
       />
 
       {canSend && (
-        <AttachmentBar
-          variant="compact"
-          showTabBar={openTab != null}
-          tabs={['smiley', 'emoji', 'kul']}
-          openTab={openTab}
-          onToggleTab={toggleTab}
-          onPickEmoji={(code) => composerRef.current?.insertCode(code, true, false)}
-          onPickImage={() => fileInputRef.current?.click()}
-          onSendKul={(index) => {
-            void sendText(kulToken(index));
-            closeAttachPanel();
-          }}
-          onSend={() => undefined}
-        />
+        <div className={`h-52 shrink-0 border-t border-black/12 bg-white ${attachOpen ? '' : 'hidden'}`}>
+          <SmileyGroupPanel
+            onPick={(code) => composerRef.current?.insertCode(code, true, false)}
+            onSendKul={(index) => {
+              void sendText(kulToken(index));
+              closeAttachPanel();
+            }}
+          />
+        </div>
       )}
       </div>
 

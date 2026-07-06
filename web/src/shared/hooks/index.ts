@@ -1,6 +1,7 @@
 export * from './useCounter';
 export * from './useCaretInsert';
 export * from './useLongPress';
+export * from './useOutsideClick';
 export * from './useHorizontalSwipe';
 export * from './useVoiceRecorder';
 export * from './useConnectionStatus';

@@ -17,7 +17,7 @@ import {
   type SmileyInputHandle,
   type ListOption,
 } from '@components';
-import { colorForName, compressImageForUpload, hidePeerCard, ImageTooLargeError, isPeerCardHidden, isSameDay, kulToken, toast } from '@lib';
+import { colorForName, compressImageForUpload, ImageTooLargeError, isSameDay, kulToken, toast } from '@lib';
 import moreIcon from '@/assets/icons/chat/ic_more_white.png';
 import likeIcon from '@/assets/icons/chat/smiley_35.png';
 import { useChatStore } from '@/store/chat/chatStore';
@@ -26,7 +26,8 @@ import type { RelationshipStatus } from '@app-types';
 import type { ChatMessage } from '../types';
 import { toBubble } from '../chatView';
 import { formatLastActive } from '../friends';
-import { useLongPress } from '@hooks';
+import { usePeerCard } from '../usePeerCard';
+import { useLongPress, useOutsideClick } from '@hooks';
 import { MessageRow } from './MessageRow';
 import { TransferKenDialog } from './TransferKenDialog';
 import { TradingVipDialog } from './TradingVipDialog';
@@ -111,6 +112,7 @@ export function ChatConversationView({
   const [now, setNow] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const composerAreaRef = useRef<HTMLDivElement>(null);
   const composerRef = useRef<SmileyInputHandle>(null);
   const lastBubbleIdRef = useRef<string | null>(null);
   const prependAnchorRef = useRef<number | null>(null);
@@ -120,6 +122,8 @@ export function ChatConversationView({
     suppressLikeClick.current = true;
     void sendText('(Y)');
   });
+
+  useOutsideClick(composerAreaRef, openTab != null, () => setOpenTab(null));
 
   const peerTyping = typingUsers.length > 0;
 
@@ -137,31 +141,27 @@ export function ChatConversationView({
     now != null && !online && !peerTyping ? formatLastActive(t, lastActiveAt, now) : undefined;
 
   const peerId = peerProfile?.id ?? '';
-  const [cardHiddenFor, setCardHiddenFor] = useState(() =>
-    peerId !== '' && isPeerCardHidden(peerId) ? peerId : ''
-  );
-  const [trackedPeerId, setTrackedPeerId] = useState(peerId);
-  if (trackedPeerId !== peerId) {
-    setTrackedPeerId(peerId);
-    setCardHiddenFor(peerId !== '' && isPeerCardHidden(peerId) ? peerId : '');
-  }
-  const peerCardHidden = peerId !== '' && cardHiddenFor === peerId;
-
-  const sizeAllowsCard = (!hasMore && messages.length < 10) || peerCardRoll;
-
-  const showPeerCard =
-    !blocked &&
-    peerProfile != null &&
-    !peerCardHidden &&
-    sizeAllowsCard &&
-    (blockStatus === 'none' ||
-      blockStatus === 'pending_outgoing' ||
-      blockStatus === 'pending_incoming');
 
   const bubbles = useMemo<ChatMessage[]>(
     () => messages.map((message) => toBubble(message, myId)),
     [messages, myId]
   );
+
+  const {
+    anchorId: peerCardAnchorId,
+    visible: peerCardVisible,
+    hide: hidePeerCardNow,
+  } = usePeerCard({
+    peerId,
+    hasProfile: peerProfile != null,
+    blocked,
+    blockStatus,
+    hasMore,
+    messageCount: messages.length,
+    messagesReady: !loadingMessages,
+    peerCardRoll,
+    lastMessageId: bubbles.at(-1)?.id,
+  });
 
   const lastOwnId = useMemo(() => {
     for (let index = bubbles.length - 1; index >= 0; index -= 1) {
@@ -212,7 +212,7 @@ export function ChatConversationView({
     if (stickToBottomRef.current) {
       scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
     }
-  }, [peerTyping, openTab, showPeerCard]);
+  }, [peerTyping, openTab, peerCardVisible]);
 
   function handleScroll() {
     const element = scrollRef.current;
@@ -302,12 +302,6 @@ export function ChatConversationView({
     if (url !== '') openViewer([url]);
   }
 
-  function handleHidePeerCard() {
-    if (peerId === '') return;
-    hidePeerCard(peerId);
-    setCardHiddenFor(peerId);
-  }
-
   async function handleBlock() {
     setBlockOpen(false);
     const ok = await blockPeer();
@@ -357,6 +351,21 @@ export function ChatConversationView({
     { key: 'chat-group', label: t('chat.menuChatGroup'), onSelect: () => toast.info(t('chat.comingSoon')) },
   ];
 
+  const peerCardEl =
+    peerCardVisible && peerProfile != null ? (
+      <PeerProfileCard
+        profile={peerProfile}
+        name={name}
+        color={color}
+        avatar={avatar}
+        onHide={hidePeerCardNow}
+        onBlock={() => setBlockOpen(true)}
+        friendLabel={friendLabel}
+        onFriendAction={() => void handleFriendAction()}
+        onShowAvatar={showPeerAvatar}
+      />
+    ) : null;
+
   return (
     <FullScreenOverlay z={50}>
       <ScreenHeader
@@ -398,6 +407,7 @@ export function ChatConversationView({
                 <Spinner size={20} tone="muted" />
               </div>
             )}
+            {peerCardAnchorId === '' && peerCardEl}
             {bubbles.map((message, index) => {
               const prev = bubbles[index - 1];
               const showDate =
@@ -420,23 +430,10 @@ export function ChatConversationView({
                     onOpenImage={(img) => openViewer([img])}
                     onResend={resendMessage}
                   />
+                  {message.id === peerCardAnchorId && peerCardEl}
                 </Fragment>
               );
             })}
-
-            {showPeerCard && peerProfile != null && (
-              <PeerProfileCard
-                profile={peerProfile}
-                name={name}
-                color={color}
-                avatar={avatar}
-                onHide={handleHidePeerCard}
-                onBlock={() => setBlockOpen(true)}
-                friendLabel={friendLabel}
-                onFriendAction={() => void handleFriendAction()}
-                onShowAvatar={showPeerAvatar}
-              />
-            )}
 
             {peerTyping && (
               <div className="mt-1 flex items-end gap-1">
@@ -489,6 +486,7 @@ export function ChatConversationView({
         />
       )}
 
+      <div ref={composerAreaRef} className="shrink-0">
       <form
         onSubmit={(event) => {
           event.preventDefault();
@@ -537,10 +535,11 @@ export function ChatConversationView({
       </form>
 
       <AttachmentBar
-        tabs={['smiley', 'kul', 'camera', 'photo', 'voice', 'more']}
+        tabs={['smiley', 'camera', 'photo', 'voice', 'more']}
+        groupSmileyTabs
         openTab={openTab}
         onToggleTab={(tab) => setOpenTab((current) => (current === tab ? null : tab))}
-        onPickEmoji={(emoji) => composerRef.current?.insertCode(emoji, true)}
+        onPickEmoji={(emoji) => composerRef.current?.insertCode(emoji, true, false)}
         onBackspace={() => composerRef.current?.backspace()}
         onPickImage={() => fileInputRef.current?.click()}
         onSendKul={(index) => {
@@ -582,6 +581,7 @@ export function ChatConversationView({
         className="hidden"
         onChange={handleFileChange}
       />
+      </div>
        </>
       )}
 

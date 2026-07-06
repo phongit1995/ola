@@ -1,4 +1,4 @@
-import { useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
+import { useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import smileyIcon from '@/assets/icons/chat/ic_smiley.png';
 import smileyIconActive from '@/assets/icons/chat/ic_smiley_selected.png';
@@ -8,7 +8,6 @@ import kulIconActive from '@/assets/icons/chat/ic_kul_selected.png';
 import smileyTabIcon from '@/assets/icons/chat/ic_tab_smiley.png';
 import emojiTabIcon from '@/assets/icons/chat/ic_tab_emoji.png';
 import kulTabIcon from '@/assets/icons/chat/ic_tab_kul.png';
-import backspaceIcon from '@/assets/icons/chat/ic_backspace_selected.png';
 import cameraIcon from '@/assets/icons/chat/ic_camera.png';
 import cameraIconActive from '@/assets/icons/chat/ic_camera_selected.png';
 import photoIcon from '@/assets/icons/chat/ic_local.png';
@@ -23,9 +22,9 @@ import cloudPhotoIcon from '@/assets/icons/chat/ic_cloud_photo_storage.png';
 import switchCameraIcon from '@/assets/icons/chat/ic_action_switch_camera.png';
 import snapTimerIcon from '@/assets/icons/chat/ic_snap_timer.png';
 import expandCameraIcon from '@/assets/icons/chat/ic_action_expand_selected.png';
-import { EMOJI_IMAGES, emojiToken, formatDurationMs, KUL_IMAGES, toast } from '@lib';
+import { formatDurationMs, toast } from '@lib';
 import { useLongPress, useVoiceRecorder } from '@hooks';
-import { SmileyGrid } from './SmileyGrid';
+import { EmojiPanel, KulPanel, SmileyGroupPanel, SmileyPanel } from './SmileyGroupPanel';
 
 export type AttachTab = 'smiley' | 'emoji' | 'kul' | 'camera' | 'photo' | 'voice' | 'more';
 
@@ -69,74 +68,7 @@ interface AttachmentBarProps {
   tabs?: AttachTab[];
   showTabBar?: boolean;
   variant?: AttachBarVariant;
-}
-
-function InsertPanel({ onBackspace, children }: { onBackspace?: () => void; children: ReactNode }) {
-  return (
-    <div className="flex h-full flex-col">
-      <div className="flex-1 overflow-y-auto">{children}</div>
-      {onBackspace != null && (
-        <div className="flex h-8 shrink-0 items-center justify-end gap-1 border-t border-black/12 bg-white px-2">
-          <span className="mr-1 h-4 w-px bg-black/12" />
-          <button
-            type="button"
-            onMouseDown={(event) => event.preventDefault()}
-            onClick={onBackspace}
-            aria-label="backspace"
-            title="backspace"
-            className="flex h-full w-12 items-center justify-center"
-          >
-            <img src={backspaceIcon} alt="" className="h-5 w-5 object-contain" />
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function SmileyPanel({ onPick, onBackspace }: { onPick: (code: string) => void; onBackspace?: () => void }) {
-  return (
-    <InsertPanel onBackspace={onBackspace}>
-      <SmileyGrid onPick={onPick} />
-    </InsertPanel>
-  );
-}
-
-function EmojiPanel({ onPick, onBackspace }: { onPick: (token: string) => void; onBackspace?: () => void }) {
-  return (
-    <InsertPanel onBackspace={onBackspace}>
-      <div className="grid grid-cols-8 gap-1 p-2">
-        {EMOJI_IMAGES.map((image, index) => (
-          <button
-            key={index}
-            type="button"
-            onMouseDown={(event) => event.preventDefault()}
-            onClick={() => onPick(emojiToken(index + 1))}
-            className="flex h-9 items-center justify-center rounded hover:bg-gray-100"
-          >
-            <img src={image} alt="" className="h-[22px] w-auto object-contain" />
-          </button>
-        ))}
-      </div>
-    </InsertPanel>
-  );
-}
-
-function KulPanel({ onSendKul }: { onSendKul: (index: number) => void }) {
-  return (
-    <div className="grid grid-cols-6 gap-1 p-2">
-      {KUL_IMAGES.map((image, index) => (
-        <button
-          key={index}
-          type="button"
-          onClick={() => onSendKul(index + 1)}
-          className="flex aspect-square items-center justify-center rounded-lg hover:bg-gray-100"
-        >
-          <img src={image} alt="" className="max-h-full max-w-full object-contain" />
-        </button>
-      ))}
-    </div>
-  );
+  groupSmileyTabs?: boolean;
 }
 
 function CameraPanel({ onCapture }: { onCapture: () => void }) {
@@ -337,6 +269,7 @@ export function AttachmentBar({
   tabs = ALL_TABS,
   showTabBar = true,
   variant = 'full',
+  groupSmileyTabs = false,
 }: AttachmentBarProps) {
   const { t } = useTranslation();
   const isCompact = variant === 'compact';
@@ -422,7 +355,12 @@ export function AttachmentBar({
 
       {openTab != null && (
         <div className="h-52 overflow-y-auto border-t border-black/12">
-          {openTab === 'smiley' && <SmileyPanel onPick={onPickEmoji} onBackspace={onBackspace} />}
+          {openTab === 'smiley' &&
+            (groupSmileyTabs ? (
+              <SmileyGroupPanel onPick={onPickEmoji} onSendKul={onSendKul} onBackspace={onBackspace} />
+            ) : (
+              <SmileyPanel onPick={onPickEmoji} onBackspace={onBackspace} />
+            ))}
           {openTab === 'emoji' && <EmojiPanel onPick={onPickEmoji} onBackspace={onBackspace} />}
           {openTab === 'kul' && <KulPanel onSendKul={onSendKul} />}
           {openTab === 'camera' && <CameraPanel onCapture={onPickImage} />}

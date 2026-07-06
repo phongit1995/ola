@@ -11,6 +11,7 @@ export * from './ui/FullScreenOverlay';
 export * from './ui/SmileyGrid';
 export * from './ui/SmileyInput';
 export * from './ui/ComposerSmileyPanel';
+export * from './ui/SmileyGroupPanel';
 export * from './ui/AttachmentBar';
 export * from './ui/Dialog';
 export * from './ui/ConfirmDialog';
