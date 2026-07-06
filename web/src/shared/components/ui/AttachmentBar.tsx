@@ -412,7 +412,7 @@ export function AttachmentBar({
                 }
               />
               {isCompact && isActive && (
-                <span className="absolute inset-x-4 bottom-0 h-0.5 rounded-full bg-ola-primary" />
+                <span className="absolute inset-x-0 bottom-0 h-0.5 bg-ola-primary" />
               )}
             </button>
           );

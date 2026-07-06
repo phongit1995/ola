@@ -10,7 +10,7 @@ import { isEmojiToken, smileyImageForCode, smileyImgClass, splitSmileys, type Sm
 
 export interface SmileyInputHandle {
   focus: () => void;
-  insertCode: (code: string, trailingSpace?: boolean) => void;
+  insertCode: (code: string, trailingSpace?: boolean, focusAfter?: boolean) => void;
   insertText: (text: string) => void;
   backspace: () => void;
 }
@@ -159,11 +159,11 @@ export const SmileyInput = forwardRef<SmileyInputHandle, SmileyInputProps>(funct
 
   useImperativeHandle(ref, () => ({
     focus: focusEditor,
-    insertCode: (code: string, trailingSpace = false) => {
+    insertCode: (code: string, trailingSpace = false, focusAfter = true) => {
       const src = smileyImageForCode(code);
       insertNode(src == null ? document.createTextNode(code) : makeSmileyImg(code, src));
       if (trailingSpace) insertNode(document.createTextNode(' '));
-      focusEditor();
+      if (focusAfter) focusEditor();
     },
     insertText: (text: string) => insertNode(document.createTextNode(text)),
     backspace: () => {
