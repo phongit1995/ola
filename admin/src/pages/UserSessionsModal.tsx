@@ -36,15 +36,22 @@ export function UserSessionsModal({ open, userId, username, onClose }: UserSessi
     {
       title: 'Thiết bị',
       dataIndex: 'deviceName',
+      width: 240,
       render: (v: string | undefined, r) => (
-        <span>
-          {v || '—'}
+        <div style={{ maxWidth: 220 }}>
+          <Typography.Text style={{ display: 'block' }} ellipsis={{ tooltip: v }}>
+            {v || '—'}
+          </Typography.Text>
           {r.userAgent && (
-            <Typography.Text type="secondary" style={{ display: 'block', fontSize: 11 }} ellipsis>
+            <Typography.Text
+              type="secondary"
+              style={{ display: 'block', fontSize: 11 }}
+              ellipsis={{ tooltip: r.userAgent }}
+            >
               {r.userAgent}
             </Typography.Text>
           )}
-        </span>
+        </div>
       ),
     },
     {
