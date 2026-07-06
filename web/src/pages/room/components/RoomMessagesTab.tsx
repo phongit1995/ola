@@ -146,6 +146,7 @@ export function RoomMessagesTab({
     if (trimmed === '' || status !== 'joined') return;
     stickToBottomRef.current = true;
     setDraft('');
+    composerRef.current?.reset();
     closeAttachPanel();
     try {
       await onSend(trimmed);
