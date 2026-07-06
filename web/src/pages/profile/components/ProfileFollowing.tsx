@@ -32,7 +32,7 @@ export function ProfileFollowing({ following, onSelect }: ProfileFollowingProps)
                 </span>
               )}
               <span className="absolute inset-x-0 bottom-0 truncate bg-linear-to-t from-black/70 to-transparent px-1 py-1 text-center text-xs text-white">
-                {friend.name}
+                @{friend.name}
               </span>
             </button>
           ))}

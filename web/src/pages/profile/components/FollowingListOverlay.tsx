@@ -18,7 +18,7 @@ export function FollowingListOverlay({ following, onSelect, onClose }: Following
         {following.map((friend) => (
           <div key={friend.name} className="border-b border-black/8 px-4">
             <UserRow
-              name={friend.name}
+              name={`@${friend.name}`}
               fullName={friend.fullName}
               avatar={friend.avatar}
               color={friend.color}
