@@ -1,14 +1,12 @@
-import { useState, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FullScreenOverlay, ScreenHeader } from '@components';
+import { toast } from '@lib';
+import type { UserSettings } from '@app-types';
+import { useSettingsStore } from '@/store/settingsStore';
 import iconPrivacy from '@/assets/icons/settings/icon-privacy.webp';
 import iconNotification from '@/assets/icons/settings/icon-notification.webp';
 import iconAppearance from '@/assets/icons/settings/icon-appearance.webp';
-
-type MessagePrivacy = 'all' | 'friends';
-type MeVisibility = 'all' | 'friends';
-type CommentPrivacy = 'all' | 'friends';
-type FontSize = 'small' | 'medium' | 'large';
 
 function SectionIcon({ src }: { src: string }) {
   return <img src={src} alt="" className="h-5 w-auto object-contain" />;
@@ -100,28 +98,52 @@ function SettingsCard({
 
 export function SettingsPage({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();
+  const settings = useSettingsStore((s) => s.settings);
+  const update = useSettingsStore((s) => s.update);
+  const [draft, setDraft] = useState(settings);
+  const [saving, setSaving] = useState(false);
 
-  const [messagePrivacy, setMessagePrivacy] = useState<MessagePrivacy>('all');
-  const [meVisibility, setMeVisibility] = useState<MeVisibility>('all');
-  const [commentPrivacy, setCommentPrivacy] = useState<CommentPrivacy>('all');
-  const [showBirthday, setShowBirthday] = useState(true);
-  const [showInterested, setShowInterested] = useState(true);
-  const [notifMessage, setNotifMessage] = useState(true);
-  const [notifSound, setNotifSound] = useState(true);
-  const [soundGame, setSoundGame] = useState(true);
-  const [soundKen, setSoundKen] = useState(true);
-  const [fontSize, setFontSize] = useState<FontSize>('medium');
+  const dirty = useMemo(
+    () => (Object.keys(draft) as (keyof UserSettings)[]).some((key) => draft[key] !== settings[key]),
+    [draft, settings]
+  );
+
+  function setField<K extends keyof UserSettings>(key: K, value: UserSettings[K]) {
+    setDraft((current) => ({ ...current, [key]: value }));
+  }
+
+  async function handleSave() {
+    if (!dirty || saving) return;
+    setSaving(true);
+    const ok = await update(draft);
+    setSaving(false);
+    if (ok) {
+      setDraft(useSettingsStore.getState().settings);
+      toast.success(t('settings.saved'));
+    } else {
+      toast.error(t('settings.saveError'));
+    }
+  }
 
   return (
     <FullScreenOverlay>
-      <ScreenHeader title={t('settings.title')} align="center" onBack={onClose} />
+      <ScreenHeader title={t('settings.title')} align="center" onBack={onClose}>
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={!dirty || saving}
+          className="rounded-full px-3 py-1 text-sm font-semibold text-white transition-opacity disabled:opacity-40"
+        >
+          {saving ? t('common.loading') : t('settings.save')}
+        </button>
+      </ScreenHeader>
 
       <div className="flex-1 space-y-4 overflow-y-auto bg-[#eef0f2] px-4 py-4">
         <SettingsCard icon={<SectionIcon src={iconPrivacy} />} index={1} title={t('settings.privacyTitle')}>
           <SettingRow label={t('settings.whoCanMessage')}>
             <Segmented
-              value={messagePrivacy}
-              onChange={setMessagePrivacy}
+              value={draft.messagePrivacy}
+              onChange={(v) => setField('messagePrivacy', v)}
               options={[
                 { value: 'friends', label: t('settings.optFriends') },
                 { value: 'all', label: t('settings.optAll') },
@@ -130,8 +152,8 @@ export function SettingsPage({ onClose }: { onClose: () => void }) {
           </SettingRow>
           <SettingRow label={t('settings.whoCanViewMe')}>
             <Segmented
-              value={meVisibility}
-              onChange={setMeVisibility}
+              value={draft.meVisibility}
+              onChange={(v) => setField('meVisibility', v)}
               options={[
                 { value: 'friends', label: t('settings.optFriends') },
                 { value: 'all', label: t('settings.optAll') },
@@ -140,8 +162,8 @@ export function SettingsPage({ onClose }: { onClose: () => void }) {
           </SettingRow>
           <SettingRow label={t('settings.whoCanComment')}>
             <Segmented
-              value={commentPrivacy}
-              onChange={setCommentPrivacy}
+              value={draft.commentPrivacy}
+              onChange={(v) => setField('commentPrivacy', v)}
               options={[
                 { value: 'all', label: t('settings.optAll') },
                 { value: 'friends', label: t('settings.optFriends') },
@@ -149,33 +171,33 @@ export function SettingsPage({ onClose }: { onClose: () => void }) {
             />
           </SettingRow>
           <SettingRow label={t('settings.showBirthday')}>
-            <ToggleSwitch on={showBirthday} onChange={() => setShowBirthday((v) => !v)} />
+            <ToggleSwitch on={draft.showBirthday} onChange={() => setField('showBirthday', !draft.showBirthday)} />
           </SettingRow>
           <SettingRow label={t('settings.showInterested')}>
-            <ToggleSwitch on={showInterested} onChange={() => setShowInterested((v) => !v)} />
+            <ToggleSwitch on={draft.showInterested} onChange={() => setField('showInterested', !draft.showInterested)} />
           </SettingRow>
         </SettingsCard>
 
         <SettingsCard icon={<SectionIcon src={iconNotification} />} index={2} title={t('settings.notificationTitle')}>
           <SettingRow label={t('settings.notifMessage')}>
-            <ToggleSwitch on={notifMessage} onChange={() => setNotifMessage((v) => !v)} />
+            <ToggleSwitch on={draft.notifMessage} onChange={() => setField('notifMessage', !draft.notifMessage)} />
           </SettingRow>
           <SettingRow label={t('settings.notifSound')}>
-            <ToggleSwitch on={notifSound} onChange={() => setNotifSound((v) => !v)} />
+            <ToggleSwitch on={draft.notifSound} onChange={() => setField('notifSound', !draft.notifSound)} />
           </SettingRow>
           <SettingRow label={t('settings.soundGame')}>
-            <ToggleSwitch on={soundGame} onChange={() => setSoundGame((v) => !v)} />
+            <ToggleSwitch on={draft.soundGame} onChange={() => setField('soundGame', !draft.soundGame)} />
           </SettingRow>
           <SettingRow label={t('settings.soundKen')}>
-            <ToggleSwitch on={soundKen} onChange={() => setSoundKen((v) => !v)} />
+            <ToggleSwitch on={draft.soundKen} onChange={() => setField('soundKen', !draft.soundKen)} />
           </SettingRow>
         </SettingsCard>
 
         <SettingsCard icon={<SectionIcon src={iconAppearance} />} index={3} title={t('settings.appearanceTitle')}>
           <SettingRow label={t('settings.fontSize')}>
             <Segmented
-              value={fontSize}
-              onChange={setFontSize}
+              value={draft.fontSize}
+              onChange={(v) => setField('fontSize', v)}
               options={[
                 { value: 'small', label: t('settings.fontSmall') },
                 { value: 'medium', label: t('settings.fontMedium') },
