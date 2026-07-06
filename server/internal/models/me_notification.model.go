@@ -5,6 +5,7 @@ import "github.com/google/uuid"
 const (
 	MeNotificationLike    = "like"
 	MeNotificationComment = "comment"
+	MeNotificationReply   = "reply"
 	MeNotificationMention = "mention"
 )
 
