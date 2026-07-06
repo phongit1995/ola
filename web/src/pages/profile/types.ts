@@ -12,6 +12,8 @@ export interface ProfilePostActions {
 
 export interface ProfileFriend {
   name: string;
+  fullName?: string;
+  avatar?: string;
   color: string;
 }
 
