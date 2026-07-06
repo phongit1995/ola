@@ -72,7 +72,7 @@ export function MeCommentComposer({ submitting, onSubmit, autoFocus = false }: M
       </div>
 
       {smileyOpen && (
-        <div className="border-t border-black/12 bg-white px-2">
+        <div className="border-t border-black/12 bg-white">
           <ComposerSmileyPanel onPick={insertSmiley} />
         </div>
       )}

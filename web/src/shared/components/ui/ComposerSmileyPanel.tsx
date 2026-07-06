@@ -17,7 +17,7 @@ export function ComposerSmileyPanel({ onPick }: ComposerSmileyPanelProps) {
     { key: 'emoji' as const, label: t('chat.attachTabEmoji'), icon: emojiTabIcon },
   ];
   return (
-    <div className="mt-2 overflow-hidden rounded-md border border-black/12">
+    <div>
       <div className="flex border-b border-black/12">
         {tabs.map((tab) => {
           const isActive = tab.key === sub;
