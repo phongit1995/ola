@@ -92,6 +92,21 @@ func (s *Service) RevokeForUser(userID, sessionID uuid.UUID) (bool, error) {
 	return found, nil
 }
 
+func (s *Service) RevokeAllForUser(userID uuid.UUID) (int, error) {
+	ids, err := s.repo.ListActiveIDsForUser(userID)
+	if err != nil {
+		return 0, err
+	}
+	for _, id := range ids {
+		s.markRevoked(id)
+	}
+	revoked, err := s.repo.RevokeAllForUser(userID)
+	if err != nil {
+		return 0, err
+	}
+	return int(revoked), nil
+}
+
 func (s *Service) RevokeOthers(userID, keepID uuid.UUID) (int, error) {
 	ids, err := s.repo.ListActiveIDsExcept(userID, keepID)
 	if err != nil {

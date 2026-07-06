@@ -1,12 +1,17 @@
 package adminuser
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"ola-chat-server/internal/apperr"
 	"ola-chat-server/internal/constants"
+	userBanEvents "ola-chat-server/internal/domain/user-ban"
 	"ola-chat-server/internal/models"
+	"ola-chat-server/internal/modules/session"
 	"ola-chat-server/internal/services"
+	"ola-chat-server/internal/transport/kafka"
+	"ola-chat-server/internal/utils"
 	"regexp"
 	"strconv"
 	"strings"
@@ -28,13 +33,21 @@ const (
 var usernameRegex = regexp.MustCompile(`^[a-z0-9][a-z0-9._-]*[a-z0-9]$`)
 
 type Service struct {
-	repo   *Repository
-	cache  *services.CacheService
-	logger *zap.SugaredLogger
+	repo           *Repository
+	cache          *services.CacheService
+	sessionService *session.Service
+	producer       *kafka.Producer
+	logger         *zap.SugaredLogger
 }
 
-func NewService(repo *Repository, cache *services.CacheService, logger *zap.SugaredLogger) *Service {
-	return &Service{repo: repo, cache: cache, logger: logger.Named("[admin_user_service]")}
+func NewService(repo *Repository, cache *services.CacheService, sessionService *session.Service, producer *kafka.Producer, logger *zap.SugaredLogger) *Service {
+	return &Service{
+		repo:           repo,
+		cache:          cache,
+		sessionService: sessionService,
+		producer:       producer,
+		logger:         logger.Named("[admin_user_service]"),
+	}
 }
 
 func (s *Service) List(f ListFilter) (*ListUsersResponse, error) {
@@ -90,6 +103,18 @@ func (s *Service) SetStatus(id uuid.UUID, active bool) (*UserDetail, error) {
 
 	if err := s.repo.SetActive(id, active); err != nil {
 		return nil, err
+	}
+
+	if !active {
+		if n, err := s.sessionService.RevokeAllForUser(id); err != nil {
+			s.logger.Warnw("Failed to revoke sessions on ban", "user_id", id, "error", err.Error())
+		} else {
+			s.logger.Infow("Revoked sessions on ban", "user_id", id, "count", n)
+		}
+		event := &userBanEvents.Event{UserID: id.String()}
+		utils.PublishAsync(s.logger, "user banned", func(ctx context.Context) error {
+			return s.producer.PublishUserBanned(ctx, event)
+		})
 	}
 
 	s.logger.Infow("Admin updated user status", "user_id", id, "is_active", active)

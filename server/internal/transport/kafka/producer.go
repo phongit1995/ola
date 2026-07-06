@@ -12,6 +12,7 @@ import (
 	meNotificationEvents "ola-chat-server/internal/domain/me-notification"
 	messageEvents "ola-chat-server/internal/domain/message"
 	roomEvents "ola-chat-server/internal/domain/room"
+	userBanEvents "ola-chat-server/internal/domain/user-ban"
 	"time"
 
 	"github.com/segmentio/kafka-go"
@@ -114,6 +115,10 @@ func (p *Producer) PublishKenChestClosed(ctx context.Context, event *kenChestEve
 
 func (p *Producer) PublishMeNotification(ctx context.Context, event *meNotificationEvents.Event) error {
 	return p.publishKeyed(ctx, constants.KafkaTopicMeNotification, event.RecipientID, event)
+}
+
+func (p *Producer) PublishUserBanned(ctx context.Context, event *userBanEvents.Event) error {
+	return p.publishKeyed(ctx, constants.KafkaTopicUserBanned, event.UserID, event)
 }
 
 func (p *Producer) PublishToDLQ(ctx context.Context, originalTopic string, key string, payload []byte, reason string) error {

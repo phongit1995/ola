@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
 	redisClient "github.com/zishang520/socket.io/adapters/redis/v3"
 	"github.com/zishang520/socket.io/adapters/redis/v3/adapter"
@@ -28,6 +29,7 @@ type Server struct {
 	presenceService *PresenceService
 	roomPresence    *RoomPresenceService
 	roomSvc         RoomSocketService
+	cache           *services.CacheService
 	logger          *zap.SugaredLogger
 	redisClient     *redis.Client
 }
@@ -40,6 +42,7 @@ type SocketData struct {
 func NewServer(
 	cfg *config.Config,
 	jwtService *services.JWTService,
+	cache *services.CacheService,
 	redisAdapter *RedisAdapter,
 	presenceService *PresenceService,
 	roomPresence *RoomPresenceService,
@@ -68,6 +71,7 @@ func NewServer(
 		redisAdapter:    redisAdapter,
 		presenceService: presenceService,
 		roomPresence:    roomPresence,
+		cache:           cache,
 		logger:          logger.Named("[websocket]"),
 		redisClient:     rdb,
 	}
@@ -105,6 +109,15 @@ func NewServer(
 			return
 		}
 
+		if sid, sidErr := jwtService.GetSessionIDFromToken(token); sidErr == nil && sid != uuid.Nil {
+			revokedKey := fmt.Sprintf(constants.CacheKeySessionRevoked, sid.String())
+			if revoked, _ := server.cache.Exists(revokedKey); revoked {
+				server.logger.Warnw("WebSocket rejected: session revoked", "user_id", userID, "session_id", sid)
+				next(socket.NewExtendedError("session revoked", nil))
+				return
+			}
+		}
+
 		data := &SocketData{UserID: userID.String(), JoinedRooms: make(map[string]bool)}
 		s.SetData(data)
 
@@ -136,6 +149,13 @@ func (s *Server) EmitToUser(userID string, event string, data any) {
 		"event", event,
 		"room", room,
 	)
+}
+
+func (s *Server) DisconnectUser(userID string) {
+	room := socket.Room("user:" + userID)
+	s.io.To(room).Emit(constants.WebSocketEventForceLogout, map[string]any{"reason": "banned"})
+	s.io.To(room).DisconnectSockets(true)
+	s.logger.Infow("🔌 Force-disconnected user sockets", "user_id", userID)
 }
 
 func (s *Server) EmitToUsers(userIDs []string, event string, data any) {
