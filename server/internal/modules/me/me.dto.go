@@ -116,15 +116,24 @@ type LikerListResponse struct {
 }
 
 type CreateCommentRequest struct {
-	Content string `json:"content" binding:"required,min=1,max=2000" example:"Bài viết hay quá!"`
+	Content  string  `json:"content" binding:"required,min=1,max=2000" example:"Bài viết hay quá!"`
+	ParentID *string `json:"parentId" binding:"omitempty,uuid" example:"550e8400-e29b-41d4-a716-446655440000"`
+}
+
+type CommentReplySnapshot struct {
+	CommentID  string `json:"commentId"`
+	AuthorName string `json:"authorName"`
+	Excerpt    string `json:"excerpt"`
 }
 
 type CommentResponse struct {
-	ID        string          `json:"id"`
-	PostID    string          `json:"postId"`
-	Content   string          `json:"content"`
-	Author    *AuthorResponse `json:"author,omitempty"`
-	CreatedAt string          `json:"createdAt"`
+	ID        string                `json:"id"`
+	PostID    string                `json:"postId"`
+	ParentID  string                `json:"parentId,omitempty"`
+	Content   string                `json:"content"`
+	Author    *AuthorResponse       `json:"author,omitempty"`
+	ReplyTo   *CommentReplySnapshot `json:"replyTo,omitempty"`
+	CreatedAt string                `json:"createdAt"`
 }
 
 type MeNotificationResponse struct {

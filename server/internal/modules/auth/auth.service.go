@@ -116,7 +116,7 @@ func (s *Service) RefreshToken(refreshTokenStr, clientIP, userAgent string) (*Re
 	}, nil
 }
 
-func (s *Service) Register(req *RegisterRequest) (*RegisterResponse, error) {
+func (s *Service) Register(req *RegisterRequest, clientIP string) (*RegisterResponse, error) {
 	req.Username = strings.ToLower(strings.TrimSpace(req.Username))
 	if !usernameRegex.MatchString(req.Username) {
 		return nil, errors.New("username may only contain lowercase letters, numbers, dot (.), hyphen (-) and underscore (_), and must start and end with a letter or number")
@@ -152,8 +152,9 @@ func (s *Service) Register(req *RegisterRequest) (*RegisterResponse, error) {
 	}
 
 	user := &models.User{
-		Username: req.Username,
-		Password: string(hashedPassword),
+		Username:    req.Username,
+		Password:    string(hashedPassword),
+		LastLoginIP: clientIP,
 	}
 
 	s.logger.Debugw("Creating user in database",

@@ -238,6 +238,37 @@ func (s *Service) GrantVip(id uuid.UUID, typeID int16) (*VipIconItem, error) {
 	return &item, nil
 }
 
+func (s *Service) ListSessions(id uuid.UUID, limit, offset int) (*SessionListResponse, error) {
+	if _, err := s.repo.FindByIDUnscoped(id); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, apperr.ErrUserNotFound
+		}
+		return nil, err
+	}
+
+	total, err := s.repo.CountSessions(id)
+	if err != nil {
+		return nil, err
+	}
+
+	sessions, err := s.repo.ListSessions(id, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	items := make([]SessionItem, 0, len(sessions))
+	for i := range sessions {
+		items = append(items, toSessionItem(sessions[i]))
+	}
+
+	return &SessionListResponse{
+		Items:  items,
+		Total:  total,
+		Limit:  limit,
+		Offset: offset,
+	}, nil
+}
+
 func (s *Service) Delete(id uuid.UUID) error {
 	if _, err := s.repo.FindByID(id); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -291,6 +322,21 @@ func toVipIconItem(icon models.UserVipIcon, isUsing bool) VipIconItem {
 		IsUsing:    isUsing,
 		Source:     icon.Source,
 		AcquiredAt: icon.AcquiredAt.UTC().Format(time.RFC3339),
+	}
+}
+
+func toSessionItem(sess models.UserSession) SessionItem {
+	return SessionItem{
+		ID:           sess.ID.String(),
+		DeviceName:   sess.DeviceName,
+		Platform:     sess.Platform,
+		AppVersion:   sess.AppVersion,
+		IPAddress:    sess.IPAddress,
+		UserAgent:    sess.UserAgent,
+		IsActive:     sess.RevokedAt == nil,
+		LastActiveAt: sess.LastActiveAt.UTC().Format(time.RFC3339),
+		CreatedAt:    sess.CreatedAt.UTC().Format(time.RFC3339),
+		RevokedAt:    formatTime(sess.RevokedAt),
 	}
 }
 

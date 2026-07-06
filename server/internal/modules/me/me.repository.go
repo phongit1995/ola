@@ -485,6 +485,17 @@ func (r *Repository) GetCommentByID(id uuid.UUID) (*models.MeComment, error) {
 	return &comment, nil
 }
 
+func (r *Repository) GetCommentsByIDs(ids []uuid.UUID) ([]*models.MeComment, error) {
+	if len(ids) == 0 {
+		return []*models.MeComment{}, nil
+	}
+	var comments []*models.MeComment
+	if err := r.db.Preload("Author").Where("id IN ?", ids).Find(&comments).Error; err != nil {
+		return nil, err
+	}
+	return comments, nil
+}
+
 func (r *Repository) ListComments(postID uuid.UUID, limit, offset int) ([]*models.MeComment, int64, error) {
 	db := r.db.Model(&models.MeComment{}).Where("post_id = ?", postID)
 

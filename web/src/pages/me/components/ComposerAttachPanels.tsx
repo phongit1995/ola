@@ -46,7 +46,11 @@ export function ComposerAttachPanels({
   }
 
   if (panel === 'smiley') {
-    return <ComposerSmileyPanel onPick={onSmiley} />;
+    return (
+      <div className="mt-2 overflow-hidden rounded-md border border-black/12">
+        <ComposerSmileyPanel onPick={onSmiley} />
+      </div>
+    );
   }
 
   return null;

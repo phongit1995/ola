@@ -1,197 +1,222 @@
-import { useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FullScreenOverlay, ScreenHeader } from '@components';
+import { toast } from '@lib';
+import type { UserSettings } from '@app-types';
+import { useSettingsStore } from '@/store/settingsStore';
+import iconPrivacy from '@/assets/icons/settings/icon-privacy.webp';
+import iconNotification from '@/assets/icons/settings/icon-notification.webp';
+import iconAppearance from '@/assets/icons/settings/icon-appearance.webp';
 
-interface SettingRow {
-  id: string;
-  kind: 'toggle' | 'value' | 'action';
-  title: string;
-  subtitle?: string;
-  value?: string;
-  danger?: boolean;
+function SectionIcon({ src }: { src: string }) {
+  return <img src={src} alt="" className="h-5 w-auto object-contain" />;
 }
 
-interface SettingGroup {
-  id: string;
-  title: string;
-  rows: SettingRow[];
-}
-
-const TOGGLE_DEFAULTS: Record<string, boolean> = {
-  led: true,
-  newMe: true,
-  quickBrowser: true,
-  typing: true,
-  quickReply: false,
-  rssHistory: true,
-};
-
-const GROUP_IDS = ['general', 'display', 'chat', 'rss', 'about'];
-
-function ChevronRight() {
+function ImageIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4 text-black/26" fill="currentColor" aria-hidden="true">
-      <path d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z" />
+    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden="true">
+      <path d="M21 5v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2ZM5 19h14l-4.5-6-3.5 4.5-2.5-3L5 19Zm3.5-8.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z" />
     </svg>
   );
 }
 
-function GroupChevron({ open }: { open: boolean }) {
+function ToggleSwitch({ on, onChange }: { on: boolean; onChange: () => void }) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      className={`h-4 w-4 text-[#e79200] transition-transform ${open ? 'rotate-90' : ''}`}
-      fill="currentColor"
-      aria-hidden="true"
-    >
-      <path d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z" />
-    </svg>
-  );
-}
-
-function ToggleSwitch({ on }: { on: boolean }) {
-  return (
-    <span
-      className={`relative h-6 w-10 shrink-0 rounded-full transition-colors ${on ? 'bg-ola-primary' : 'bg-black/20'}`}
+    <button
+      type="button"
+      role="switch"
+      aria-checked={on}
+      onClick={onChange}
+      className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${on ? 'bg-ola-primary' : 'bg-black/20'}`}
     >
       <span
-        className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${on ? 'left-4.5' : 'left-0.5'}`}
+        className={`absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition-all ${on ? 'left-5.5' : 'left-0.5'}`}
       />
-    </span>
+    </button>
   );
 }
 
-function RowTrailing({ row, on }: { row: SettingRow; on: boolean }) {
-  if (row.kind === 'toggle') return <ToggleSwitch on={on} />;
-  if (row.kind === 'value') return <span className="text-xs text-[#28a1ee]">{row.value}</span>;
+function Segmented<T extends string>({
+  value,
+  options,
+  onChange,
+}: {
+  value: T;
+  options: { value: T; label: string }[];
+  onChange: (value: T) => void;
+}) {
   return (
-    <span className="flex items-center gap-1">
-      {row.value != null && <span className="text-xs text-[#28a1ee]">{row.value}</span>}
-      <ChevronRight />
-    </span>
+    <div className="inline-flex shrink-0 rounded-lg border border-black/10 bg-white p-0.5">
+      {options.map((option) => (
+        <button
+          key={option.value}
+          type="button"
+          onClick={() => onChange(option.value)}
+          className={`rounded-md px-2.5 py-1 text-[13px] leading-tight transition-colors ${
+            value === option.value ? 'bg-ola-primary font-semibold text-white' : 'text-black/70'
+          }`}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function SettingRow({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="flex items-center justify-between gap-3 border-b border-black/6 px-4 py-3 last:border-b-0">
+      <span className="min-w-0 flex-1 text-sm text-black/80">{label}</span>
+      {children}
+    </div>
+  );
+}
+
+function SettingsCard({
+  icon,
+  index,
+  title,
+  children,
+}: {
+  icon: ReactNode;
+  index: number;
+  title: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
+      <header className="flex items-center gap-2 border-b border-black/6 bg-ola-primary/5 px-4 py-3 text-ola-primary">
+        {icon}
+        <h2 className="text-base font-bold">
+          {index}. {title}
+        </h2>
+      </header>
+      <div>{children}</div>
+    </section>
   );
 }
 
 export function SettingsPage({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(
-    Object.fromEntries(GROUP_IDS.map((id) => [id, true]))
+  const settings = useSettingsStore((s) => s.settings);
+  const update = useSettingsStore((s) => s.update);
+  const [draft, setDraft] = useState(settings);
+  const [saving, setSaving] = useState(false);
+
+  const dirty = useMemo(
+    () => (Object.keys(draft) as (keyof UserSettings)[]).some((key) => draft[key] !== settings[key]),
+    [draft, settings]
   );
-  const [toggles, setToggles] = useState<Record<string, boolean>>(TOGGLE_DEFAULTS);
 
-  const toggleGroup = (id: string) => setOpenGroups((prev) => ({ ...prev, [id]: !prev[id] }));
-  const toggleRow = (id: string) => setToggles((prev) => ({ ...prev, [id]: !prev[id] }));
+  function setField<K extends keyof UserSettings>(key: K, value: UserSettings[K]) {
+    setDraft((current) => ({ ...current, [key]: value }));
+  }
 
-  const groups: SettingGroup[] = [
-    {
-      id: 'general',
-      title: t('settings.groups.general'),
-      rows: [
-        { id: 'sound', kind: 'value', title: t('settings.rows.sound.title'), subtitle: t('settings.rows.sound.subtitle'), value: t('settings.values.on') },
-        { id: 'soundType', kind: 'value', title: t('settings.rows.soundType.title'), subtitle: t('settings.rows.soundType.subtitle'), value: t('settings.values.ola') },
-        { id: 'vibrate', kind: 'value', title: t('settings.rows.vibrate.title'), subtitle: t('settings.rows.vibrate.subtitle'), value: t('settings.values.on') },
-        { id: 'led', kind: 'toggle', title: t('settings.rows.led.title'), subtitle: t('settings.rows.led.subtitle') },
-        { id: 'language', kind: 'value', title: t('settings.rows.language.title'), subtitle: t('settings.rows.language.subtitle'), value: t('settings.values.vietnamese') },
-        { id: 'passcode', kind: 'action', title: t('settings.rows.passcode.title'), subtitle: t('settings.rows.passcode.subtitle') },
-      ],
-    },
-    {
-      id: 'display',
-      title: t('settings.groups.display'),
-      rows: [
-        { id: 'newMe', kind: 'toggle', title: t('settings.rows.newMe.title') },
-        { id: 'avatar', kind: 'value', title: t('settings.rows.avatar.title'), subtitle: t('settings.rows.avatar.subtitle'), value: t('settings.values.circle') },
-        { id: 'wallpaper', kind: 'value', title: t('settings.rows.wallpaper.title'), value: t('settings.values.default') },
-        { id: 'quickBrowser', kind: 'toggle', title: t('settings.rows.quickBrowser.title'), subtitle: t('settings.rows.quickBrowser.subtitle') },
-        { id: 'video', kind: 'value', title: t('settings.rows.video.title'), value: t('settings.values.floating') },
-        { id: 'typing', kind: 'toggle', title: t('settings.rows.typing.title'), subtitle: t('settings.rows.typing.subtitle') },
-      ],
-    },
-    {
-      id: 'chat',
-      title: t('settings.groups.chat'),
-      rows: [
-        { id: 'popup', kind: 'value', title: t('settings.rows.popup.title'), value: t('settings.values.balloon') },
-        { id: 'quickReply', kind: 'toggle', title: t('settings.rows.quickReply.title'), subtitle: t('settings.rows.quickReply.subtitle') },
-        { id: 'effect', kind: 'value', title: t('settings.rows.effect.title'), value: t('settings.values.flying') },
-      ],
-    },
-    {
-      id: 'rss',
-      title: t('settings.groups.rss'),
-      rows: [
-        { id: 'rssHistory', kind: 'toggle', title: t('settings.rows.rssHistory.title') },
-        { id: 'fontSize', kind: 'action', title: t('settings.rows.fontSize.title'), subtitle: t('settings.rows.fontSize.subtitle'), value: '5' },
-      ],
-    },
-    {
-      id: 'about',
-      title: t('settings.groups.about'),
-      rows: [
-        { id: 'rating', kind: 'action', title: t('settings.rows.rating.title'), subtitle: t('settings.rows.rating.subtitle') },
-        { id: 'beta', kind: 'action', title: t('settings.rows.beta.title'), subtitle: t('settings.rows.beta.subtitle') },
-        { id: 'version', kind: 'action', title: t('settings.rows.version.title'), subtitle: t('settings.rows.version.subtitle') },
-        { id: 'logoutAll', kind: 'action', title: t('settings.rows.logoutAll.title'), subtitle: t('settings.rows.logoutAll.subtitle'), danger: true },
-      ],
-    },
-  ];
+  async function handleSave() {
+    if (!dirty || saving) return;
+    setSaving(true);
+    const ok = await update(draft);
+    setSaving(false);
+    if (ok) {
+      setDraft(useSettingsStore.getState().settings);
+      toast.success(t('settings.saved'));
+    } else {
+      toast.error(t('settings.saveError'));
+    }
+  }
 
   return (
     <FullScreenOverlay>
-      <ScreenHeader title={t('settings.title')} align="center" onBack={onClose} />
+      <ScreenHeader title={t('settings.title')} align="center" onBack={onClose}>
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={!dirty || saving}
+          className="rounded-full px-3 py-1 text-sm font-semibold text-white transition-opacity disabled:opacity-40"
+        >
+          {saving ? t('common.loading') : t('settings.save')}
+        </button>
+      </ScreenHeader>
 
-      <div className="flex-1 overflow-y-auto bg-[#eceff1] px-4 pb-6">
-        {groups.map((group) => {
-          const open = openGroups[group.id] ?? false;
-          return (
-            <div key={group.id} className="mt-4">
-              <button
-                type="button"
-                onClick={() => toggleGroup(group.id)}
-                className="flex h-12 w-full items-center justify-between bg-white px-3 text-left"
-              >
-                <span className="text-xs font-bold text-[#e79200]">{group.title}</span>
-                <GroupChevron open={open} />
-              </button>
-              {open && (
-                <div>
-                  {group.rows.map((row) => {
-                    const on = toggles[row.id] ?? false;
-                    const handlePress = row.kind === 'toggle' ? () => toggleRow(row.id) : undefined;
-                    return (
-                      <button
-                        key={row.id}
-                        type="button"
-                        onClick={handlePress}
-                        disabled={row.kind === 'value'}
-                        className="flex w-full items-center gap-2 border-b border-black/8 bg-white px-3 py-2.5 text-left disabled:opacity-100"
-                      >
-                        <span className="min-w-0 flex-1">
-                          <span
-                            className={`block truncate text-sm ${row.danger ? 'text-ola-error' : 'text-black/87'}`}
-                          >
-                            {row.title}
-                          </span>
-                          {row.subtitle != null && (
-                            <span className="mt-0.5 block text-xs text-[#8f8f8f]">{row.subtitle}</span>
-                          )}
-                        </span>
-                        <RowTrailing row={row} on={on} />
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+      <div className="flex-1 space-y-4 overflow-y-auto bg-[#eef0f2] px-4 py-4">
+        <SettingsCard icon={<SectionIcon src={iconPrivacy} />} index={1} title={t('settings.privacyTitle')}>
+          <SettingRow label={t('settings.whoCanMessage')}>
+            <Segmented
+              value={draft.messagePrivacy}
+              onChange={(v) => setField('messagePrivacy', v)}
+              options={[
+                { value: 'friends', label: t('settings.optFriends') },
+                { value: 'all', label: t('settings.optAll') },
+              ]}
+            />
+          </SettingRow>
+          <SettingRow label={t('settings.whoCanViewMe')}>
+            <Segmented
+              value={draft.meVisibility}
+              onChange={(v) => setField('meVisibility', v)}
+              options={[
+                { value: 'friends', label: t('settings.optFriends') },
+                { value: 'all', label: t('settings.optAll') },
+              ]}
+            />
+          </SettingRow>
+          <SettingRow label={t('settings.whoCanComment')}>
+            <Segmented
+              value={draft.commentPrivacy}
+              onChange={(v) => setField('commentPrivacy', v)}
+              options={[
+                { value: 'all', label: t('settings.optAll') },
+                { value: 'friends', label: t('settings.optFriends') },
+              ]}
+            />
+          </SettingRow>
+          <SettingRow label={t('settings.showBirthday')}>
+            <ToggleSwitch on={draft.showBirthday} onChange={() => setField('showBirthday', !draft.showBirthday)} />
+          </SettingRow>
+          <SettingRow label={t('settings.showInterested')}>
+            <ToggleSwitch on={draft.showInterested} onChange={() => setField('showInterested', !draft.showInterested)} />
+          </SettingRow>
+        </SettingsCard>
 
-      <div className="flex h-16 shrink-0 items-center gap-4 border-t border-black/12 bg-white px-4">
-        <span className="flex-1 text-sm text-black/87">{t('settings.facebookJoin')}</span>
-        <span className="rounded bg-[#1877f2] px-3 py-1 text-xs font-bold text-white">
-          {t('settings.facebookLike')}
-        </span>
+        <SettingsCard icon={<SectionIcon src={iconNotification} />} index={2} title={t('settings.notificationTitle')}>
+          <SettingRow label={t('settings.notifMessage')}>
+            <ToggleSwitch on={draft.notifMessage} onChange={() => setField('notifMessage', !draft.notifMessage)} />
+          </SettingRow>
+          <SettingRow label={t('settings.notifSound')}>
+            <ToggleSwitch on={draft.notifSound} onChange={() => setField('notifSound', !draft.notifSound)} />
+          </SettingRow>
+          <SettingRow label={t('settings.soundGame')}>
+            <ToggleSwitch on={draft.soundGame} onChange={() => setField('soundGame', !draft.soundGame)} />
+          </SettingRow>
+          <SettingRow label={t('settings.soundKen')}>
+            <ToggleSwitch on={draft.soundKen} onChange={() => setField('soundKen', !draft.soundKen)} />
+          </SettingRow>
+        </SettingsCard>
+
+        <SettingsCard icon={<SectionIcon src={iconAppearance} />} index={3} title={t('settings.appearanceTitle')}>
+          <SettingRow label={t('settings.fontSize')}>
+            <Segmented
+              value={draft.fontSize}
+              onChange={(v) => setField('fontSize', v)}
+              options={[
+                { value: 'small', label: t('settings.fontSmall') },
+                { value: 'medium', label: t('settings.fontMedium') },
+                { value: 'large', label: t('settings.fontLarge') },
+              ]}
+            />
+          </SettingRow>
+          <SettingRow label={t('settings.wallpaper')}>
+            <button
+              type="button"
+              className="flex shrink-0 items-center gap-1.5 rounded-lg border border-ola-primary px-3 py-1.5 text-[13px] font-semibold text-ola-primary"
+            >
+              <ImageIcon />
+              {t('settings.upload')}
+            </button>
+          </SettingRow>
+        </SettingsCard>
+
+        <p className="pt-2 pb-4 text-center text-xs text-black/40">{t('settings.appVersion')}</p>
       </div>
     </FullScreenOverlay>
   );

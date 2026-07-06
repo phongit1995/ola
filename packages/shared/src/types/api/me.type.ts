@@ -79,11 +79,19 @@ export interface MeFeedResult {
   nextCursor: string | null;
 }
 
+export interface CommentReplySnapshot {
+  commentId: string;
+  authorName: string;
+  excerpt: string;
+}
+
 export interface PostComment {
   id: string;
   postId: string;
+  parentId?: string | null;
   content: string;
   author?: PostAuthor;
+  replyTo?: CommentReplySnapshot | null;
   createdAt: string;
 }
 
@@ -134,9 +142,10 @@ export interface ReactRequest {
 
 export interface CreateCommentRequest {
   content: string;
+  parentId?: string;
 }
 
-export type MeNotificationType = 'like' | 'comment' | 'mention';
+export type MeNotificationType = 'like' | 'comment' | 'reply' | 'mention';
 
 export interface MeNotification {
   id: string;

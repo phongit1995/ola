@@ -13,6 +13,7 @@ export interface SmileyInputHandle {
   insertCode: (code: string, trailingSpace?: boolean, focusAfter?: boolean) => void;
   insertText: (text: string) => void;
   backspace: () => void;
+  reset: () => void;
 }
 
 interface SmileyInputProps {
@@ -78,7 +79,9 @@ export const SmileyInput = forwardRef<SmileyInputHandle, SmileyInputProps>(funct
 
   useEffect(() => {
     const el = editorRef.current;
-    if (el == null || composing.current || value === lastEmitted.current) return;
+    if (el == null || value === lastEmitted.current) return;
+    if (composing.current && value !== '') return;
+    composing.current = false;
     fillFromValue(el, value);
     lastEmitted.current = value;
   }, [value]);
@@ -181,6 +184,20 @@ export const SmileyInput = forwardRef<SmileyInputHandle, SmileyInputProps>(funct
       }
       savedRange.current = rangeAtEnd(el);
       emit();
+    },
+    reset: () => {
+      const el = editorRef.current;
+      if (el == null) return;
+      const wasComposing = composing.current;
+      composing.current = false;
+      fillFromValue(el, '');
+      lastEmitted.current = '';
+      savedRange.current = null;
+      if (wasComposing && el.ownerDocument.activeElement === el) {
+        el.blur();
+        el.focus();
+        savedRange.current = rangeAtEnd(el);
+      }
     },
   }));
 

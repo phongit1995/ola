@@ -1,15 +1,30 @@
 import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ConfirmDialog, Avatar } from '@components';
+import { ConfirmDialog, Avatar, Dialog } from '@components';
 import { colorForName, renderRichText } from '@lib';
+import replyIcon from '@/assets/icons/me/ic_action_reply_gray.png';
+import likeIcon from '@/assets/icons/me/ic_like_gray.png';
+import likeIconActive from '@/assets/icons/me/ic_like_selected.png';
 import type { PostComment } from '@app-types';
+import { meSelfLiker } from '../mappers';
+
+type MeLiker = NonNullable<ReturnType<typeof meSelfLiker>>;
 
 interface MeCommentItemProps {
   comment: PostComment;
   time: string;
   canDelete: boolean;
   onDelete: (id: string) => void;
+  onReply?: (comment: PostComment) => void;
   onOpenProfile?: (nick: string, color: string) => void;
+}
+
+function TrashIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden="true">
+      <path d="M9 3h6l1 2h4v2H4V5h4l1-2ZM6 9h12l-1 11a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1L6 9Z" />
+    </svg>
+  );
 }
 
 function MeCommentItemComponent({
@@ -17,44 +32,113 @@ function MeCommentItemComponent({
   time,
   canDelete,
   onDelete,
+  onReply,
   onOpenProfile,
 }: MeCommentItemProps) {
   const { t } = useTranslation();
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [likersOpen, setLikersOpen] = useState(false);
+  const [likers, setLikers] = useState<MeLiker[]>([]);
+  const self = meSelfLiker();
+  const liked = self != null && likers.some((liker) => liker.name === self.name);
   const name = comment.author?.username ?? '';
   const color = colorForName(name);
 
+  function toggleLike() {
+    if (self == null) return;
+    setLikers((prev) =>
+      prev.some((liker) => liker.name === self.name)
+        ? prev.filter((liker) => liker.name !== self.name)
+        : [self, ...prev]
+    );
+  }
+
   return (
     <>
-      <div className="mx-2 mb-2 flex items-start gap-3 rounded-lg bg-white px-4 py-3 shadow-[0_1px_2px_rgba(0,0,0,0.12)]">
-      <button type="button" onClick={() => onOpenProfile?.(name, color)} className="shrink-0">
-        <Avatar name={name} src={comment.author?.avatar} color={color} size={40} />
-      </button>
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => onOpenProfile?.(name, color)}
-            className="truncate text-sm font-medium text-black/87 hover:underline"
-          >
-            {name}
+      <div className="mx-2 mb-2 rounded-xl bg-white px-3 py-2.5 shadow-[0_1px_2px_rgba(0,0,0,0.10)]">
+        <div className="flex items-start gap-2.5">
+          <button type="button" onClick={() => onOpenProfile?.(name, color)} className="shrink-0">
+            <Avatar name={name} src={comment.author?.avatar} color={color} size={36} />
           </button>
-          <span className="shrink-0 text-xs text-black/40">{time}</span>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => onOpenProfile?.(name, color)}
+                className="truncate text-sm font-semibold text-black/87 hover:underline"
+              >
+                {name}
+              </button>
+              <span className="shrink-0 text-xs text-black/40">{time}</span>
+              {canDelete && (
+                <button
+                  type="button"
+                  aria-label={t('me.deleteComment')}
+                  onClick={() => setConfirmOpen(true)}
+                  className="ml-auto shrink-0 text-black/25 transition-colors hover:text-ola-error"
+                >
+                  <TrashIcon />
+                </button>
+              )}
+            </div>
+            <p className="mt-0.5 text-sm leading-relaxed whitespace-pre-wrap break-words text-black/87">
+              {renderRichText(comment.content, (nick) => onOpenProfile?.(nick, colorForName(nick)))}
+            </p>
+            <div className="mt-1.5 flex items-center gap-4">
+              {onReply != null && (
+                <button
+                  type="button"
+                  onClick={() => onReply(comment)}
+                  className="flex items-center gap-1 text-xs font-medium text-black/45 transition-colors hover:text-ola-primary"
+                >
+                  <img src={replyIcon} alt="" className="h-5 w-5 object-contain" />
+                  {t('me.reply')}
+                </button>
+              )}
+              <div className="ml-auto flex items-center gap-1.5">
+                {likers.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setLikersOpen(true)}
+                    className="flex items-center gap-1"
+                  >
+                    <span className="flex -space-x-1.5">
+                      {likers.slice(0, 3).map((liker, index) => (
+                        <span
+                          key={index}
+                          className="inline-flex overflow-hidden rounded-full ring-2 ring-white"
+                        >
+                          <Avatar
+                            name={liker.name}
+                            src={liker.avatar ?? undefined}
+                            color={liker.color}
+                            size={18}
+                          />
+                        </span>
+                      ))}
+                    </span>
+                    <span className="text-xs font-medium tabular-nums text-black/55">
+                      {likers.length}
+                    </span>
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={toggleLike}
+                  aria-pressed={liked}
+                  aria-label={liked ? t('me.liked') : t('me.like')}
+                  className="flex items-center"
+                >
+                  <img
+                    src={liked ? likeIconActive : likeIcon}
+                    alt=""
+                    className="h-6 w-6 object-contain"
+                  />
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-        <p className="mt-1 text-sm leading-relaxed whitespace-pre-wrap break-words text-black/87">
-          {renderRichText(comment.content, (nick) => onOpenProfile?.(nick, colorForName(nick)))}
-        </p>
-      </div>
-      {canDelete && (
-        <button
-          type="button"
-          aria-label={t('me.deleteComment')}
-          onClick={() => setConfirmOpen(true)}
-          className="shrink-0 px-1 text-xs text-black/40 hover:text-ola-error"
-        >
-          {t('common.clear')}
-        </button>
-      )}
       </div>
       <ConfirmDialog
         open={confirmOpen}
@@ -69,6 +153,29 @@ function MeCommentItemComponent({
         }}
         onCancel={() => setConfirmOpen(false)}
       />
+      <Dialog
+        open={likersOpen}
+        onClose={() => setLikersOpen(false)}
+        title={t('me.likersCount', { count: likers.length })}
+      >
+        <div className="max-h-80 overflow-y-auto">
+          {likers.map((liker, index) => (
+            <div
+              key={index}
+              className="flex items-center gap-3 border-b border-black/12 px-2 py-3 last:border-b-0"
+            >
+              <Avatar
+                name={liker.name}
+                src={liker.avatar ?? undefined}
+                color={liker.color}
+                size={44}
+                rounded={false}
+              />
+              <span className="truncate text-base font-medium text-black/87">{liker.name}</span>
+            </div>
+          ))}
+        </div>
+      </Dialog>
     </>
   );
 }

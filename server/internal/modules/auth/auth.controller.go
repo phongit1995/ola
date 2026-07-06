@@ -47,7 +47,7 @@ func (ctrl *Controller) Register(c *gin.Context) (interface{}, error) {
 		"ip", c.ClientIP(),
 	)
 
-	resp, err := ctrl.service.Register(&req)
+	resp, err := ctrl.service.Register(&req, c.ClientIP())
 	if err != nil {
 		ctrl.logger.Warnw("Registration failed",
 			"username", req.Username,

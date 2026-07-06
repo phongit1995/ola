@@ -235,6 +235,7 @@ export function ChatConversationView({
       void sendText(trimmed);
     }
     setDraft('');
+    composerRef.current?.reset();
   }
 
   function handleDraftChange(value: string) {

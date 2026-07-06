@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AdminUserService } from '@/services/adminUser.service'
-import type { GrantVipRequest, UserListParams } from '@/types'
+import type { GrantVipRequest, ListParams, UserListParams } from '@/types'
 
 const USERS_KEY = 'admin-users'
 
@@ -25,6 +25,15 @@ export function useUserVips(id: string | null) {
     queryKey: [USERS_KEY, 'vips', id],
     queryFn: () => AdminUserService.listVips(id as string, { limit: 200 }),
     enabled: id != null,
+  })
+}
+
+export function useUserSessions(id: string | null, params: ListParams) {
+  return useQuery({
+    queryKey: [USERS_KEY, 'sessions', id, params],
+    queryFn: () => AdminUserService.listSessions(id as string, params),
+    enabled: id != null,
+    placeholderData: (prev) => prev,
   })
 }
 

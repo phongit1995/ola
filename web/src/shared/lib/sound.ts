@@ -2,14 +2,17 @@ import kenChestUrl from '@/assets/sounds/ken-chest.mp3';
 import kenCreditUrl from '@/assets/sounds/ken-credit.mp3';
 import messageUrl from '@/assets/sounds/message.mp3';
 import roomTagUrl from '@/assets/sounds/room-tag.mp3';
+import type { UserSettings } from '@app-types';
+import { useSettingsStore } from '@/store/settingsStore';
 
 const unlockableSounds: HTMLAudioElement[] = [];
 
-function createSoundPlayer(url: string) {
+function createSoundPlayer(url: string, gate?: keyof UserSettings) {
   const base = new Audio(url);
   base.preload = 'auto';
   unlockableSounds.push(base);
   return () => {
+    if (gate != null && !useSettingsStore.getState().settings[gate]) return;
     try {
       const clone = base.cloneNode() as HTMLAudioElement;
       void clone.play().catch(() => {});
@@ -19,10 +22,10 @@ function createSoundPlayer(url: string) {
   };
 }
 
-export const playKenChestSound = createSoundPlayer(kenChestUrl);
-export const playKenCreditSound = createSoundPlayer(kenCreditUrl);
-export const playMessageSound = createSoundPlayer(messageUrl);
-export const playRoomTagSound = createSoundPlayer(roomTagUrl);
+export const playKenChestSound = createSoundPlayer(kenChestUrl, 'soundGame');
+export const playKenCreditSound = createSoundPlayer(kenCreditUrl, 'soundKen');
+export const playMessageSound = createSoundPlayer(messageUrl, 'notifSound');
+export const playRoomTagSound = createSoundPlayer(roomTagUrl, 'notifSound');
 
 let soundsUnlocked = false;
 

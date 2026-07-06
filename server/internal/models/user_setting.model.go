@@ -9,11 +9,9 @@ import (
 const (
 	SettingMessagePrivacyAll     = "all"
 	SettingMessagePrivacyFriends = "friends"
-	SettingMessagePrivacyNobody  = "nobody"
 
 	SettingMeVisibilityAll     = "all"
 	SettingMeVisibilityFriends = "friends"
-	SettingMeVisibilityPrivate = "private"
 
 	SettingCommentPrivacyAll     = "all"
 	SettingCommentPrivacyFriends = "friends"
@@ -28,11 +26,12 @@ type UserSetting struct {
 	MessagePrivacy string    `gorm:"type:varchar(20);not null"`
 	MeVisibility   string    `gorm:"type:varchar(20);not null"`
 	CommentPrivacy string    `gorm:"type:varchar(20);not null"`
-	ShowOnline     bool      `gorm:"not null"`
 	ShowBirthday   bool      `gorm:"not null"`
+	ShowInterested bool      `gorm:"not null"`
 	NotifMessage   bool      `gorm:"not null"`
 	NotifSound     bool      `gorm:"not null"`
-	NotifVibrate   bool      `gorm:"not null"`
+	SoundGame      bool      `gorm:"not null"`
+	SoundKen       bool      `gorm:"not null"`
 	FontSize       string    `gorm:"type:varchar(20);not null"`
 	WallpaperURL   string    `gorm:"type:text;not null"`
 	CreatedAt      time.Time `gorm:"not null;default:CURRENT_TIMESTAMP"`

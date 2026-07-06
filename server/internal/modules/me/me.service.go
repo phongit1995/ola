@@ -340,18 +340,44 @@ func (s *Service) AddComment(viewerID, postID uuid.UUID, req *CreateCommentReque
 		return nil, err
 	}
 
+	var parent *models.MeComment
+	if req.ParentID != nil {
+		parentID, parseErr := uuid.Parse(*req.ParentID)
+		if parseErr != nil {
+			return nil, errors.New("comment not found")
+		}
+		parent, err = s.repo.GetCommentByID(parentID)
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return nil, errors.New("comment not found")
+			}
+			return nil, err
+		}
+		if parent.PostID != postID {
+			return nil, errors.New("comment not found")
+		}
+	}
+
 	comment := &models.MeComment{
 		PostID:   postID,
 		AuthorID: viewerID,
 		Content:  strings.TrimSpace(req.Content),
+	}
+	if parent != nil {
+		comment.ParentID = &parent.ID
 	}
 	created, err := s.repo.CreateComment(comment)
 	if err != nil {
 		return nil, err
 	}
 	commentID := created.ID
-	s.createMeNotification(post.AuthorID, viewerID, models.MeNotificationComment, postID, &commentID, excerptText(created.Content))
+	if parent != nil {
+		s.createMeNotification(parent.AuthorID, viewerID, models.MeNotificationReply, postID, &commentID, excerptText(created.Content))
+	} else {
+		s.createMeNotification(post.AuthorID, viewerID, models.MeNotificationComment, postID, &commentID, excerptText(created.Content))
+	}
 	resp := toCommentResponse(created)
+	resp.ReplyTo = replySnapshotFrom(parent)
 	return &resp, nil
 }
 
@@ -451,9 +477,31 @@ func (s *Service) ListComments(viewerID, postID uuid.UUID, limit, offset int) (*
 	if err != nil {
 		return nil, err
 	}
+
+	parentIDs := make([]uuid.UUID, 0)
+	for _, c := range comments {
+		if c.ParentID != nil {
+			parentIDs = append(parentIDs, *c.ParentID)
+		}
+	}
+	parentByID := make(map[uuid.UUID]*models.MeComment)
+	if len(parentIDs) > 0 {
+		parents, perr := s.repo.GetCommentsByIDs(parentIDs)
+		if perr != nil {
+			return nil, perr
+		}
+		for _, p := range parents {
+			parentByID[p.ID] = p
+		}
+	}
+
 	items := make([]CommentResponse, 0, len(comments))
 	for _, c := range comments {
-		items = append(items, toCommentResponse(c))
+		resp := toCommentResponse(c)
+		if c.ParentID != nil {
+			resp.ReplyTo = replySnapshotFrom(parentByID[*c.ParentID])
+		}
+		items = append(items, resp)
 	}
 	return &CommentListResponse{Items: items, Total: total, Limit: limit, Offset: offset}, nil
 }
@@ -870,12 +918,37 @@ func excerptText(s string) string {
 }
 
 func toCommentResponse(comment *models.MeComment) CommentResponse {
-	return CommentResponse{
+	resp := CommentResponse{
 		ID:        comment.ID.String(),
 		PostID:    comment.PostID.String(),
 		Content:   comment.Content,
 		Author:    toAuthorResponse(comment.Author),
 		CreatedAt: comment.CreatedAt.UTC().Format(time.RFC3339),
+	}
+	if comment.ParentID != nil {
+		resp.ParentID = comment.ParentID.String()
+	}
+	return resp
+}
+
+func commentAuthorName(comment *models.MeComment) string {
+	if comment == nil || comment.Author == nil {
+		return ""
+	}
+	if comment.Author.FullName != "" {
+		return comment.Author.FullName
+	}
+	return comment.Author.Username
+}
+
+func replySnapshotFrom(parent *models.MeComment) *CommentReplySnapshot {
+	if parent == nil {
+		return nil
+	}
+	return &CommentReplySnapshot{
+		CommentID:  parent.ID.String(),
+		AuthorName: commentAuthorName(parent),
+		Excerpt:    excerptText(parent.Content),
 	}
 }
 
