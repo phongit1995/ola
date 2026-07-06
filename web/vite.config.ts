@@ -33,6 +33,7 @@ export default defineConfig({
     obfuscatorPlugin,
   ],
   resolve: {
+    dedupe: ['react', 'react-dom'],
     alias: {
       '@api': path.resolve(__dirname, '../packages/shared/src/api'),
       '@config': path.resolve(__dirname, './src/shared/config'),

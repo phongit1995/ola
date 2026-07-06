@@ -19,9 +19,6 @@ import copyActionIcon from '@/assets/icons/chat/ic_menu_copy.svg';
 import deleteActionIcon from '@/assets/icons/chat/ic_menu_delete.png';
 import smileyIcon from '@/assets/icons/chat/ic_smiley.png';
 import smileyIconActive from '@/assets/icons/chat/ic_smiley_selected.png';
-import kulIcon from '@/assets/icons/chat/ic_kul.png';
-import kulIconActive from '@/assets/icons/chat/ic_kul_selected.png';
-import emojiTabIcon from '@/assets/icons/emoji/10_smiley_colon_dash_D.png';
 import photoIcon from '@/assets/icons/chat/ic_local.png';
 import { buildRoomFeed } from '../messageGroups';
 import { RoomMessageGroup } from './RoomMessageGroup';
@@ -69,6 +66,7 @@ export function RoomMessagesTab({
 
   const [draft, setDraft] = useState('');
   const [openTab, setOpenTab] = useState<AttachTab | null>(null);
+  const [lastTab, setLastTab] = useState<AttachTab>('smiley');
   const [actionTarget, setActionTarget] = useState<{
     message: RoomMessage;
     anchor: DOMRect | null;
@@ -114,6 +112,10 @@ export function RoomMessagesTab({
   useEffect(() => {
     draftRef.current = draft;
   }, [draft]);
+
+  useEffect(() => {
+    if (openTab != null) setLastTab(openTab);
+  }, [openTab]);
 
   useLayoutEffect(() => {
     const element = scrollRef.current;
@@ -373,26 +375,10 @@ export function RoomMessagesTab({
         <button
           type="button"
           aria-label={t('chat.attachTabSmiley')}
-          onClick={() => toggleTab('smiley')}
-          className={`flex h-9 w-9 shrink-0 select-none items-center justify-center ${openTab === 'smiley' ? 'opacity-100' : 'opacity-60'}`}
+          onClick={() => setOpenTab((current) => (current == null ? lastTab : null))}
+          className={`flex h-9 w-9 shrink-0 select-none items-center justify-center ${openTab != null ? 'opacity-100' : 'opacity-60'}`}
         >
-          <img src={openTab === 'smiley' ? smileyIconActive : smileyIcon} alt="" className="h-6 w-6 object-contain" />
-        </button>
-        <button
-          type="button"
-          aria-label={t('chat.attachTabEmoji')}
-          onClick={() => toggleTab('emoji')}
-          className={`flex h-9 w-9 shrink-0 select-none items-center justify-center ${openTab === 'emoji' ? 'opacity-100' : 'opacity-60'}`}
-        >
-          <img src={emojiTabIcon} alt="" className="h-6 w-6 object-contain" />
-        </button>
-        <button
-          type="button"
-          aria-label={t('chat.attachTabKul')}
-          onClick={() => toggleTab('kul')}
-          className={`flex h-9 w-9 shrink-0 select-none items-center justify-center ${openTab === 'kul' ? 'opacity-100' : 'opacity-60'}`}
-        >
-          <img src={openTab === 'kul' ? kulIconActive : kulIcon} alt="" className="h-6 w-6 object-contain" />
+          <img src={openTab != null ? smileyIconActive : smileyIcon} alt="" className="h-6 w-6 object-contain" />
         </button>
         <button
           type="button"
@@ -487,12 +473,12 @@ export function RoomMessagesTab({
 
       {canSend && (
         <AttachmentBar
-          showTabBar={false}
+          variant="compact"
+          showTabBar={openTab != null}
           tabs={['smiley', 'emoji', 'kul']}
           openTab={openTab}
           onToggleTab={toggleTab}
           onPickEmoji={(code) => composerRef.current?.insertCode(code, true)}
-          onBackspace={() => composerRef.current?.backspace()}
           onPickImage={() => fileInputRef.current?.click()}
           onSendKul={(index) => {
             void sendText(kulToken(index));

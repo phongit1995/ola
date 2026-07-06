@@ -540,7 +540,6 @@ export function ChatConversationView({
         openTab={openTab}
         onToggleTab={(tab) => setOpenTab((current) => (current === tab ? null : tab))}
         onPickEmoji={(emoji) => composerRef.current?.insertCode(emoji, true)}
-        onBackspace={() => composerRef.current?.backspace()}
         onPickImage={() => fileInputRef.current?.click()}
         onSendKul={(index) => {
           void sendText(kulToken(index));
