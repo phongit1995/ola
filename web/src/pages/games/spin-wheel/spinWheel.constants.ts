@@ -57,5 +57,5 @@ export function segmentIndexById(id: string): number {
 
 export const SPIN_START_KEN = 100_000;
 export const SPIN_START_TURNS = 5;
-export const SPIN_TURNS = 6;
-export const SPIN_DURATION_MS = 4200;
+export const SPIN_TURNS = 5;
+export const SPIN_DURATION_MS = 5200;

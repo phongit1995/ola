@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import { useEffect, useRef, type CSSProperties } from 'react';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { formatKen } from '@lib';
@@ -23,6 +23,28 @@ const VIEWBOX = 100;
 const CENTER = VIEWBOX / 2;
 const SLICE_RADIUS = 48;
 const LABEL_RADIUS = 31;
+
+const POINTER_MAX_TICK_DEG = 11;
+const DIVIDER_PHASE_OFFSET = SEGMENT_ANGLE / 2;
+
+function wheelAngleFromTransform(transform: string): number {
+  if (!transform || transform === 'none') return 0;
+  const open = transform.indexOf('(');
+  const close = transform.indexOf(')');
+  if (open < 0 || close < 0) return 0;
+  const parts = transform.slice(open + 1, close).split(',');
+  const a = Number(parts[0]);
+  const b = Number(parts[1]);
+  if (Number.isNaN(a) || Number.isNaN(b)) return 0;
+  return (Math.atan2(b, a) * 180) / Math.PI;
+}
+
+function pointerTickDeg(wheelAngle: number): number {
+  const phase =
+    (((wheelAngle - DIVIDER_PHASE_OFFSET) % SEGMENT_ANGLE) + SEGMENT_ANGLE) % SEGMENT_ANGLE;
+  const t = phase / SEGMENT_ANGLE;
+  return -POINTER_MAX_TICK_DEG * t * t;
+}
 
 function polar(angleDeg: number, radius: number) {
   const radians = ((angleDeg - 90) * Math.PI) / 180;
@@ -104,23 +126,47 @@ interface SpinWheelProps {
 
 export function SpinWheel({ rotation, spinning, onSettle }: SpinWheelProps) {
   const { t } = useTranslation();
+  const wheelRef = useRef<HTMLDivElement>(null);
+  const pointerRef = useRef<HTMLImageElement>(null);
+
+  useEffect(() => {
+    const pointer = pointerRef.current;
+    if (!spinning) {
+      if (pointer) pointer.style.rotate = '0deg';
+      return;
+    }
+    let frame = 0;
+    const step = () => {
+      const wheel = wheelRef.current;
+      if (wheel && pointer) {
+        const angle = wheelAngleFromTransform(getComputedStyle(wheel).transform);
+        pointer.style.rotate = `${pointerTickDeg(angle)}deg`;
+      }
+      frame = requestAnimationFrame(step);
+    };
+    frame = requestAnimationFrame(step);
+    return () => {
+      cancelAnimationFrame(frame);
+      if (pointer) pointer.style.rotate = '0deg';
+    };
+  }, [spinning]);
 
   return (
     <div className="relative" style={{ width: 'min(84vw, 360px)', aspectRatio: '1 / 1' }}>
       <img
+        ref={pointerRef}
         src={pointerUrl}
         alt=""
-        className={`absolute left-1/2 top-[-5%] z-20 w-[13%] -translate-x-1/2 origin-top drop-shadow-md ${
-          spinning ? 'animate-wheel-pointer-tick' : ''
-        }`}
+        className="absolute left-1/2 top-[-5%] z-20 w-[13%] -translate-x-1/2 origin-[50%_36%] drop-shadow-md"
       />
       <div
+        ref={wheelRef}
         className="absolute inset-0"
         style={{
           transform: `rotate(${rotation}deg)`,
           willChange: 'transform',
           transition: spinning
-            ? `transform ${SPIN_DURATION_MS}ms cubic-bezier(0.16, 0.72, 0.12, 1)`
+            ? `transform ${SPIN_DURATION_MS}ms cubic-bezier(0.3, 0, 0.08, 1)`
             : 'none',
         }}
         onTransitionEnd={(event) => {

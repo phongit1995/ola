@@ -20,7 +20,6 @@
   --animate-ken-pop-in: ken-pop-in 0.4s ease-out;
   --animate-ken-fade-in: ken-fade-in 0.25s ease-out;
   --animate-reaction-notice: reaction-notice 2.5s ease-out forwards;
-  --animate-wheel-pointer-tick: wheel-pointer-tick 0.16s linear infinite;
   --font-sans:
     Roboto, 'Helvetica Neue', ui-sans-serif, system-ui, -apple-system,
     'Segoe UI', Arial, sans-serif;
@@ -190,21 +189,6 @@
   100% {
     opacity: 0;
     transform: translateY(-12px);
-  }
-}
-
-@keyframes wheel-pointer-tick {
-  0% {
-    transform: translateX(-50%) rotate(0deg);
-  }
-  18% {
-    transform: translateX(-50%) rotate(-9deg);
-  }
-  45% {
-    transform: translateX(-50%) rotate(0deg);
-  }
-  100% {
-    transform: translateX(-50%) rotate(0deg);
   }
 }
 
