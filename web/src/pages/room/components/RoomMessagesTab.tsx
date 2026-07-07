@@ -1,26 +1,20 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ReactionType, RoomMessage } from '@app-types';
-import { compressImageForUpload, ImageTooLargeError, kulImageForText, kulToken, toast } from '@lib';
-import { useAttachPanel, useLongPress, useStickyScroll } from '@hooks';
+import { kulImageForText, toast } from '@lib';
+import { useStickyScroll } from '@hooks';
 import {
   ConfirmDialog,
   DateSeparator,
   MessageActionSheet,
   type MessageSheetAction,
-  SmileyGroupPanel,
-  SmileyInput,
-  type SmileyInputHandle,
 } from '@components';
-import likeIcon from '@/assets/icons/chat/smiley_35.png';
 import replyActionIcon from '@/assets/icons/me/ic_action_reply_gray.png';
 import copyActionIcon from '@/assets/icons/chat/ic_menu_copy.svg';
 import deleteActionIcon from '@/assets/icons/chat/ic_menu_delete.png';
-import smileyIcon from '@/assets/icons/chat/ic_smiley.png';
-import smileyIconActive from '@/assets/icons/chat/ic_smiley_selected.png';
-import photoIcon from '@/assets/icons/chat/ic_local.png';
 import { buildRoomFeed } from '../messageGroups';
 import { RoomMessageGroup } from './RoomMessageGroup';
+import { RoomComposerBar, type RoomComposerHandle } from './RoomComposerBar';
 import { RoomReactionsDialog } from './RoomReactionsDialog';
 import { RoomReactionNotice } from './RoomReactionNotice';
 import type { RoomChatStatus } from '@/store/roomChatStore';
@@ -66,9 +60,6 @@ export function RoomMessagesTab({
 }: RoomMessagesTabProps) {
   const { t } = useTranslation();
 
-  const [draft, setDraft] = useState('');
-  const { open: attachOpen, areaRef: composerAreaRef, toggle: toggleAttachPanel, close: closeAttachPanel } =
-    useAttachPanel();
   const [actionTarget, setActionTarget] = useState<{
     message: RoomMessage;
     anchor: DOMRect | null;
@@ -76,27 +67,8 @@ export function RoomMessagesTab({
   const [deleteTarget, setDeleteTarget] = useState<RoomMessage | null>(null);
   const [reactionsTargetId, setReactionsTargetId] = useState<string | null>(null);
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
-  const [pendingImages, setPendingImages] = useState<{ id: string; file: File; url: string }[]>([]);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const composerRef = useRef<SmileyInputHandle>(null);
-  const draftRef = useRef(draft);
-  const suppressLikeClick = useRef(false);
+  const composerRef = useRef<RoomComposerHandle>(null);
   const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const imageIdRef = useRef(0);
-  const pendingImagesRef = useRef(pendingImages);
-  useEffect(() => {
-    pendingImagesRef.current = pendingImages;
-  }, [pendingImages]);
-  useEffect(
-    () => () => {
-      pendingImagesRef.current.forEach((image) => URL.revokeObjectURL(image.url));
-    },
-    []
-  );
-  const likeLongPress = useLongPress(() => {
-    suppressLikeClick.current = true;
-    void sendText('(Y)');
-  });
 
   const messageById = useMemo(() => new Map(messages.map((item) => [item.id, item])), [messages]);
   const { scrollRef, handleScroll, pin, unpin, scrollToBottomIfPinned } = useStickyScroll({
@@ -116,88 +88,14 @@ export function RoomMessagesTab({
   }, []);
 
   useEffect(() => {
-    draftRef.current = draft;
-  }, [draft]);
-
-  useEffect(() => {
     scrollToBottomIfPinned();
   }, [active, visible, scrollToBottomIfPinned]);
 
-  async function sendText(text: string) {
-    const trimmed = text.trim();
-    if (trimmed === '' || status !== 'joined') return;
-    pin();
-    setDraft('');
-    composerRef.current?.reset();
-    closeAttachPanel();
-    try {
-      await onSend(trimmed);
-    } catch {
-      setDraft(trimmed);
-      toast.error(t('room.sendError'));
-    }
-  }
+  const quickMention = useCallback((name: string) => composerRef.current?.insertMention(name), []);
 
-  async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(event.target.files ?? []);
-    event.target.value = '';
-    if (files.length === 0 || status !== 'joined') return;
-    closeAttachPanel();
-    for (const file of files) {
-      try {
-        const prepared = await compressImageForUpload(file);
-        const url = URL.createObjectURL(prepared);
-        imageIdRef.current += 1;
-        const id = String(imageIdRef.current);
-        setPendingImages((current) => [...current, { id, file: prepared, url }]);
-      } catch (error) {
-        toast.error(error instanceof ImageTooLargeError ? t('chat.imageTooLarge') : t('room.sendError'));
-      }
-    }
-  }
-
-  function removePendingImage(id: string) {
-    setPendingImages((current) => {
-      const target = current.find((image) => image.id === id);
-      if (target != null) URL.revokeObjectURL(target.url);
-      return current.filter((image) => image.id !== id);
-    });
-  }
-
-  function clearPendingImages() {
-    setPendingImages((current) => {
-      current.forEach((image) => URL.revokeObjectURL(image.url));
-      return [];
-    });
-  }
-
-  async function sendPendingImages() {
-    const images = pendingImages;
-    if (images.length === 0) return;
-    pin();
-    setPendingImages([]);
-    closeAttachPanel();
-    for (const image of images) {
-      await onSendImage(image.file);
-      URL.revokeObjectURL(image.url);
-    }
-  }
-
-  async function handleSend() {
-    if (!canSend) return;
-    if (pendingImages.length > 0) {
-      await sendPendingImages();
-      return;
-    }
-    if (draft.trim() !== '') void sendText(draft);
-  }
-
-  const insertMention = useCallback((name: string) => {
-    const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const alreadyTagged = new RegExp(`@${escaped}(?![\\p{L}\\p{N}_])`, 'iu');
-    if (!alreadyTagged.test(draftRef.current)) composerRef.current?.insertText(`@${name} `);
-    composerRef.current?.focus();
-  }, []);
+  useEffect(() => {
+    if (replyTarget != null) composerRef.current?.focus();
+  }, [replyTarget]);
 
   const handleLongPressMessage = useCallback(
     (id: string, anchor: DOMRect | null) => {
@@ -255,10 +153,7 @@ export function RoomMessagesTab({
         key: 'reply',
         label: t('room.actionReply'),
         icon: replyActionIcon,
-        onSelect: () => {
-          onSetReplyTarget(message);
-          composerRef.current?.focus();
-        },
+        onSelect: () => onSetReplyTarget(message),
       });
       if (isCopyableText(message)) actions.push(copyAction);
     } else {
@@ -279,8 +174,6 @@ export function RoomMessagesTab({
     return kulImageForText(message.content) != null ? t('room.replySticker') : message.content;
   }
 
-  const canSend = status === 'joined';
-  const isTyping = draft.trim() !== '';
   const feed = useMemo(() => buildRoomFeed(messages, currentUserId), [messages, currentUserId]);
 
   return (
@@ -309,7 +202,7 @@ export function RoomMessagesTab({
               group={item}
               highlightedId={highlightedId}
               onOpenProfile={onOpenProfile}
-              onQuickMention={insertMention}
+              onQuickMention={quickMention}
               onLongPressMessage={handleLongPressMessage}
               onQuoteClick={scrollToMessage}
               onShowReactions={showReactions}
@@ -344,118 +237,13 @@ export function RoomMessagesTab({
         </div>
       )}
 
-      <div ref={composerAreaRef} className="shrink-0">
-      <div className="flex shrink-0 items-center gap-1 border-t border-black/12 bg-white px-2 py-2">
-        <button
-          type="button"
-          aria-label={t('chat.attachTabSmiley')}
-          onClick={toggleAttachPanel}
-          className={`flex h-9 w-9 shrink-0 select-none items-center justify-center ${attachOpen ? 'opacity-100' : 'opacity-60'}`}
-        >
-          <img src={attachOpen ? smileyIconActive : smileyIcon} alt="" className="h-6 w-6 object-contain" />
-        </button>
-        <button
-          type="button"
-          aria-label={t('chat.attachPickImage')}
-          onClick={() => fileInputRef.current?.click()}
-          disabled={!canSend}
-          className="flex h-9 w-9 shrink-0 select-none items-center justify-center opacity-60 disabled:opacity-40"
-        >
-          <img src={photoIcon} alt="" className="h-6 w-6 object-contain" />
-        </button>
-        {pendingImages.length > 0 ? (
-          <div className="flex min-h-9 flex-1 items-center gap-2 overflow-x-auto py-1">
-            {pendingImages.map((image) => (
-              <div key={image.id} className="relative shrink-0">
-                <img src={image.url} alt="" className="h-11 w-11 rounded-lg object-cover" />
-                <button
-                  type="button"
-                  aria-label={t('dialog.cancel')}
-                  onClick={() => removePendingImage(image.id)}
-                  className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-xs leading-none text-white"
-                >
-                  ×
-                </button>
-              </div>
-            ))}
-            <button
-              type="button"
-              onClick={clearPendingImages}
-              className="ml-1 h-9 shrink-0 rounded-full border border-black/12 px-3 text-sm font-medium text-black/54 hover:bg-black/5"
-            >
-              {t('dialog.cancel')}
-            </button>
-          </div>
-        ) : (
-          <SmileyInput
-            ref={composerRef}
-            value={draft}
-            onChange={setDraft}
-            onEnter={() => void handleSend()}
-            onFocus={() => closeAttachPanel()}
-            disabled={!canSend}
-            placeholder={t('room.chatInputHint')}
-            multiline
-            className={`max-h-28 min-h-9 flex-1 overflow-y-auto rounded-2xl border border-black/12 px-3 py-2 text-base text-black/87 focus:border-ola-primary ${
-              canSend ? '' : 'opacity-50'
-            }`}
-          />
-        )}
-        {isTyping || pendingImages.length > 0 ? (
-          <button
-            type="button"
-            onPointerDown={(event) => event.preventDefault()}
-            onClick={() => void handleSend()}
-            disabled={!canSend}
-            className="h-9 shrink-0 rounded-full bg-ola-primary px-4 text-sm font-semibold text-white shadow-sm transition active:scale-95 disabled:opacity-40"
-          >
-            {t('chat.send')}
-          </button>
-        ) : (
-          <button
-            type="button"
-            aria-label={t('chat.like')}
-            disabled={!canSend}
-            {...likeLongPress}
-            onPointerDown={(event) => {
-              suppressLikeClick.current = false;
-              likeLongPress.onPointerDown(event);
-            }}
-            onClick={() => {
-              if (suppressLikeClick.current) {
-                suppressLikeClick.current = false;
-                return;
-              }
-              void sendText('(y)');
-            }}
-            className="flex h-9 w-9 shrink-0 select-none items-center justify-center disabled:opacity-40"
-          >
-            <img src={likeIcon} alt="" className="h-7 w-7 object-contain" />
-          </button>
-        )}
-      </div>
-
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        multiple
-        className="hidden"
-        onChange={handleFileChange}
+      <RoomComposerBar
+        ref={composerRef}
+        disabled={status !== 'joined'}
+        onBeforeSend={pin}
+        onSendText={onSend}
+        onSendImage={onSendImage}
       />
-
-      {canSend && (
-        <div className={`h-52 shrink-0 border-t border-black/12 bg-white ${attachOpen ? '' : 'hidden'}`}>
-          <SmileyGroupPanel
-            onPick={(code) => composerRef.current?.insertCode(code, true, false)}
-            onSendKul={(index) => {
-              void sendText(kulToken(index));
-              closeAttachPanel();
-            }}
-          />
-        </div>
-      )}
-      </div>
 
       {actionTarget != null && (
         <MessageActionSheet
