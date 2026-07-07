@@ -56,12 +56,13 @@ func NewService(repo *Repository, relRepo *relationships.Repository, userSetting
 }
 
 var (
-	errMaxImages     = errors.New("max 5 images")
-	errEmptyPost     = errors.New("post must have content or images")
-	errPostNotFound  = errors.New("post not found")
-	errNotYourPost   = errors.New("not your post")
-	errEditExpired   = errors.New("post is too old to edit")
-	errMeFriendsOnly = errors.New("this profile is visible to friends only")
+	errMaxImages            = errors.New("max 5 images")
+	errEmptyPost            = errors.New("post must have content or images")
+	errPostNotFound         = errors.New("post not found")
+	errNotYourPost          = errors.New("not your post")
+	errEditExpired          = errors.New("post is too old to edit")
+	errMeFriendsOnly        = errors.New("this profile is visible to friends only")
+	errMeCommentFriendsOnly = errors.New("only friends can comment on this post")
 )
 
 const editWindow = time.Hour
@@ -349,6 +350,16 @@ func (s *Service) AddComment(viewerID, postID uuid.UUID, req *CreateCommentReque
 	post, err := s.viewablePost(viewerID, postID)
 	if err != nil {
 		return nil, err
+	}
+
+	if viewerID != post.AuthorID {
+		settings, err := s.userSettingSvc.GetSettings(post.AuthorID)
+		if err != nil {
+			return nil, err
+		}
+		if settings.CommentPrivacy == models.SettingCommentPrivacyFriends && !s.isFriend(viewerID, post.AuthorID) {
+			return nil, errMeCommentFriendsOnly
+		}
 	}
 
 	var parent *models.MeComment

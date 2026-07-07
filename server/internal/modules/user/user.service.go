@@ -443,6 +443,17 @@ func (s *Service) ensureNotBlockedByTarget(callerID, targetID uuid.UUID) error {
 	return nil
 }
 
+func (s *Service) canSeeBirthday(callerID, ownerID uuid.UUID) bool {
+	if callerID == ownerID {
+		return true
+	}
+	settings, err := s.userSettingSvc.GetSettings(ownerID)
+	if err != nil {
+		return true
+	}
+	return settings.ShowBirthday
+}
+
 func (s *Service) buildPublicProfile(callerID uuid.UUID, user *models.User) *UserPublicProfileResponse {
 	idStr := user.ID.String()
 
@@ -468,7 +479,7 @@ func (s *Service) buildPublicProfile(callerID uuid.UUID, user *models.User) *Use
 		Relationship:   s.resolveRelationship(callerID, user.ID),
 	}
 
-	if user.DateOfBirth != nil {
+	if user.DateOfBirth != nil && s.canSeeBirthday(callerID, user.ID) {
 		response.DateOfBirth = user.DateOfBirth.Format("2006-01-02")
 	}
 

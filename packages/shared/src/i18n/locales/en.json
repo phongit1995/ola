@@ -553,6 +553,7 @@
     "empty": "Me page has no content",
     "viewProfile": "View profile",
     "commentSendError": "Couldn't send comment",
+    "commentErrFriendsOnly": "Only friends can comment on this post.",
     "commentDeleteError": "Couldn't delete comment",
     "commentSent": "Comment sent",
     "commentDeleted": "Comment deleted",

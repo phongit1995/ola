@@ -350,6 +350,9 @@ func (ctrl *Controller) AddComment(c *gin.Context) (interface{}, error) {
 	}
 	resp, err := ctrl.service.AddComment(userID, id, req)
 	if err != nil {
+		if errors.Is(err, errMeCommentFriendsOnly) {
+			return nil, utils.NewHTTPError(http.StatusForbidden, err.Error())
+		}
 		return nil, utils.ServiceError(err)
 	}
 	return resp, nil
