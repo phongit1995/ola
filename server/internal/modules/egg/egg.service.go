@@ -69,13 +69,16 @@ func (s *Service) invalidateUser(userID uuid.UUID) {
 	}
 }
 
-func (s *Service) listPacks(enabledOnly bool) ([]PackView, error) {
+func (s *Service) listPacks(enabledOnly, includeConfig bool) ([]PackView, error) {
 	packs, err := s.repo.ListPacks(enabledOnly)
 	if err != nil {
 		return nil, err
 	}
 	if len(packs) == 0 {
 		return []PackView{}, nil
+	}
+	if !includeConfig {
+		return buildPackViews(packs, nil, nil, false), nil
 	}
 	packIDs := make([]uuid.UUID, len(packs))
 	for i, p := range packs {
@@ -93,11 +96,11 @@ func (s *Service) listPacks(enabledOnly bool) ([]PackView, error) {
 	if err != nil {
 		return nil, err
 	}
-	return buildPackViews(packs, cats, rewards), nil
+	return buildPackViews(packs, cats, rewards, true), nil
 }
 
 func (s *Service) ListPacksForUser() (*PackListResponse, error) {
-	views, err := s.listPacks(true)
+	views, err := s.listPacks(true, false)
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +108,7 @@ func (s *Service) ListPacksForUser() (*PackListResponse, error) {
 }
 
 func (s *Service) ListAllPacks() (*PackListResponse, error) {
-	views, err := s.listPacks(false)
+	views, err := s.listPacks(false, true)
 	if err != nil {
 		return nil, err
 	}
@@ -260,7 +263,7 @@ func (s *Service) getPackView(packID uuid.UUID) (*PackView, error) {
 	if err != nil {
 		return nil, err
 	}
-	views := buildPackViews([]models.EggPack{*pack}, cats, rewards)
+	views := buildPackViews([]models.EggPack{*pack}, cats, rewards, true)
 	return &views[0], nil
 }
 
@@ -494,7 +497,7 @@ func (s *Service) Stats(filter AdminDrawFilter) (*StatsResponse, error) {
 	}, nil
 }
 
-func buildPackViews(packs []models.EggPack, cats []models.EggCategory, rewards []models.EggReward) []PackView {
+func buildPackViews(packs []models.EggPack, cats []models.EggCategory, rewards []models.EggReward, includeConfig bool) []PackView {
 	rewardsByCat := map[uuid.UUID][]RewardView{}
 	for _, rw := range rewards {
 		rewardsByCat[rw.CategoryID] = append(rewardsByCat[rw.CategoryID], RewardView{
@@ -527,9 +530,12 @@ func buildPackViews(packs []models.EggPack, cats []models.EggCategory, rewards [
 	}
 	views := make([]PackView, len(packs))
 	for i, p := range packs {
-		list := catsByPack[p.ID]
-		if list == nil {
-			list = []CategoryView{}
+		var list []CategoryView
+		if includeConfig {
+			list = catsByPack[p.ID]
+			if list == nil {
+				list = []CategoryView{}
+			}
 		}
 		views[i] = PackView{
 			ID:         p.ID,

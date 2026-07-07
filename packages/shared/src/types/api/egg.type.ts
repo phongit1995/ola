@@ -28,7 +28,7 @@ export interface EggPack {
   kenCost: number;
   isEnabled: boolean;
   sortOrder: number;
-  categories: EggCategory[];
+  categories?: EggCategory[];
 }
 
 export interface EggPackListResult {
