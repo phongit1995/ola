@@ -9,3 +9,5 @@ export * from './useSoundUnlock';
 export * from './useReconnectOnVisible';
 export * from './useAuthSessionSync';
 export * from './useSettingsSync';
+export * from './useAttachPanel';
+export * from './useStickyScroll';

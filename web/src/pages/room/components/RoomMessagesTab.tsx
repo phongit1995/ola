@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ReactionType, RoomMessage } from '@app-types';
 import { compressImageForUpload, ImageTooLargeError, kulImageForText, kulToken, toast } from '@lib';
-import { useLongPress } from '@hooks';
+import { useAttachPanel, useLongPress, useStickyScroll } from '@hooks';
 import {
   ConfirmDialog,
   DateSeparator,
@@ -23,7 +23,6 @@ import { buildRoomFeed } from '../messageGroups';
 import { RoomMessageGroup } from './RoomMessageGroup';
 import { RoomReactionsDialog } from './RoomReactionsDialog';
 import { RoomReactionNotice } from './RoomReactionNotice';
-import { useAttachPanel } from './useAttachPanel';
 import type { RoomChatStatus } from '@/store/roomChatStore';
 
 interface RoomMessagesTabProps {
@@ -78,13 +77,9 @@ export function RoomMessagesTab({
   const [reactionsTargetId, setReactionsTargetId] = useState<string | null>(null);
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const [pendingImages, setPendingImages] = useState<{ id: string; file: File; url: string }[]>([]);
-  const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const composerRef = useRef<SmileyInputHandle>(null);
   const draftRef = useRef(draft);
-  const stickToBottomRef = useRef(true);
-  const pendingPrependRef = useRef(false);
-  const prevScrollHeightRef = useRef(0);
   const suppressLikeClick = useRef(false);
   const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const imageIdRef = useRef(0);
@@ -104,6 +99,15 @@ export function RoomMessagesTab({
   });
 
   const messageById = useMemo(() => new Map(messages.map((item) => [item.id, item])), [messages]);
+  const { scrollRef, handleScroll, pin, unpin, scrollToBottomIfPinned } = useStickyScroll({
+    count: messages.length,
+    lastId: messages[messages.length - 1]?.id ?? null,
+    hasMore,
+    loadingMore,
+    onLoadMore,
+    enabled: active && visible,
+    loadMoreAtTop: 80,
+  });
 
   useEffect(() => {
     return () => {
@@ -115,49 +119,14 @@ export function RoomMessagesTab({
     draftRef.current = draft;
   }, [draft]);
 
-  useLayoutEffect(() => {
-    const element = scrollRef.current;
-    if (element == null || !pendingPrependRef.current) return;
-    element.scrollTop = element.scrollHeight - prevScrollHeightRef.current;
-    pendingPrependRef.current = false;
-  }, [messages]);
-
   useEffect(() => {
-    if (!active || !visible) return;
-    if (pendingPrependRef.current) return;
-    if (stickToBottomRef.current) {
-      scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
-    }
-  }, [messages, active, visible]);
-
-  useEffect(() => {
-    const element = scrollRef.current;
-    if (element == null) return;
-    function scrollToBottomIfPinned() {
-      const target = scrollRef.current;
-      if (target == null || pendingPrependRef.current || !stickToBottomRef.current) return;
-      target.scrollTop = target.scrollHeight;
-    }
-    element.addEventListener('load', scrollToBottomIfPinned, true);
-    return () => element.removeEventListener('load', scrollToBottomIfPinned, true);
-  }, []);
-
-  function handleScroll() {
-    const element = scrollRef.current;
-    if (element == null) return;
-    const distanceFromBottom = element.scrollHeight - element.scrollTop - element.clientHeight;
-    stickToBottomRef.current = distanceFromBottom < 80;
-    if (element.scrollTop < 80 && hasMore && !loadingMore) {
-      prevScrollHeightRef.current = element.scrollHeight;
-      pendingPrependRef.current = true;
-      onLoadMore();
-    }
-  }
+    scrollToBottomIfPinned();
+  }, [active, visible, scrollToBottomIfPinned]);
 
   async function sendText(text: string) {
     const trimmed = text.trim();
     if (trimmed === '' || status !== 'joined') return;
-    stickToBottomRef.current = true;
+    pin();
     setDraft('');
     composerRef.current?.reset();
     closeAttachPanel();
@@ -205,7 +174,7 @@ export function RoomMessagesTab({
   async function sendPendingImages() {
     const images = pendingImages;
     if (images.length === 0) return;
-    stickToBottomRef.current = true;
+    pin();
     setPendingImages([]);
     closeAttachPanel();
     for (const image of images) {
@@ -247,13 +216,13 @@ export function RoomMessagesTab({
         toast.error(t('room.replyNotFound'));
         return;
       }
-      stickToBottomRef.current = false;
+      unpin();
       element.scrollIntoView({ behavior: 'smooth', block: 'center' });
       setHighlightedId(id);
       if (highlightTimerRef.current != null) clearTimeout(highlightTimerRef.current);
       highlightTimerRef.current = setTimeout(() => setHighlightedId(null), 1500);
     },
-    [t]
+    [t, unpin, scrollRef]
   );
 
   async function copyMessage(content: string) {
