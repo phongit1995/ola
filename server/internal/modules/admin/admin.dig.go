@@ -11,6 +11,7 @@ import (
 	adminupload "ola-chat-server/internal/modules/admin/upload"
 	adminuser "ola-chat-server/internal/modules/admin/user"
 	adminvip "ola-chat-server/internal/modules/admin/vip"
+	adminwheel "ola-chat-server/internal/modules/admin/wheel"
 
 	"go.uber.org/dig"
 )
@@ -24,6 +25,7 @@ func Provider(c *dig.Container) error {
 		adminupload.Provider,
 		adminvip.Provider,
 		adminegg.Provider,
+		adminwheel.Provider,
 		adminken.Provider,
 		adminkenchest.Provider,
 		adminpen.Provider,

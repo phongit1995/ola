@@ -22,6 +22,7 @@ import (
 	"ola-chat-server/internal/modules/user"
 	usersetting "ola-chat-server/internal/modules/user-setting"
 	"ola-chat-server/internal/modules/vip"
+	"ola-chat-server/internal/modules/wheel"
 	"ola-chat-server/internal/transport/websocket"
 	"ola-chat-server/internal/utils"
 
@@ -54,6 +55,7 @@ func CreateServer(
 	vipRouter *vip.Router,
 	kenRouter *ken.Router,
 	eggRouter *egg.Router,
+	wheelRouter *wheel.Router,
 	kenChestRouter *kenchest.Router,
 	marriageRouter *marriage.Router,
 	marriageDiaryRouter *marriagediary.Router,
@@ -106,6 +108,7 @@ func CreateServer(
 		vipRouter.Setup(api)
 		kenRouter.Setup(api)
 		eggRouter.Setup(api)
+		wheelRouter.Setup(api)
 		kenChestRouter.Setup(api)
 		marriageRouter.Setup(api)
 		marriageDiaryRouter.Setup(api)
