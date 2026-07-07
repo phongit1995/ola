@@ -85,7 +85,12 @@ export function useMeComments(postId: string, options: UseMeCommentsOptions = {}
         setComments((current) =>
           current.map((item) =>
             item.id === commentId
-              ? { ...item, liked: updated.liked, likeCount: updated.likeCount }
+              ? {
+                  ...item,
+                  liked: updated.liked,
+                  likeCount: updated.likeCount,
+                  topLikers: updated.topLikers ?? [],
+                }
               : item
           )
         );

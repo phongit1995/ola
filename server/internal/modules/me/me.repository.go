@@ -583,6 +583,62 @@ func (r *Repository) GetUserCommentLikes(userID uuid.UUID, commentIDs []uuid.UUI
 	return result, nil
 }
 
+const topCommentLikersQuery = `
+SELECT c.id AS post_id, u.id AS id, u.username AS username, u.full_name AS full_name, u.avatar AS avatar
+FROM me_comments c
+CROSS JOIN LATERAL (
+    SELECT l.user_id, l.created_at
+    FROM me_comment_likes l
+    WHERE l.comment_id = c.id
+    ORDER BY l.created_at DESC
+    LIMIT ?
+) tl
+JOIN users u ON u.id = tl.user_id
+WHERE c.id IN ?
+ORDER BY c.id, tl.created_at DESC`
+
+func (r *Repository) TopCommentLikersByComments(commentIDs []uuid.UUID, perComment int) (map[uuid.UUID][]*models.User, error) {
+	result := make(map[uuid.UUID][]*models.User)
+	if len(commentIDs) == 0 {
+		return result, nil
+	}
+
+	var rows []topLikerRow
+	if err := r.db.Raw(topCommentLikersQuery, perComment, commentIDs).Scan(&rows).Error; err != nil {
+		return nil, err
+	}
+
+	for i := range rows {
+		row := rows[i]
+		u := &models.User{Username: row.Username, FullName: row.FullName, Avatar: row.Avatar}
+		u.ID = row.ID
+		result[row.PostID] = append(result[row.PostID], u)
+	}
+	return result, nil
+}
+
+func (r *Repository) ListCommentLikers(viewerID, commentID uuid.UUID, limit, offset int) ([]LikerRow, int64, error) {
+	base := r.db.Model(&models.User{}).
+		Joins("JOIN me_comment_likes ON me_comment_likes.user_id = users.id").
+		Where("me_comment_likes.comment_id = ?", commentID)
+
+	var total int64
+	if err := base.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	var rows []LikerRow
+	if err := base.
+		Select("users.id, users.username, users.full_name, users.avatar, "+likerFriendExists,
+			models.RelationshipStatusAccepted, viewerID, viewerID).
+		Order("me_comment_likes.created_at DESC").
+		Limit(limit).Offset(offset).
+		Scan(&rows).Error; err != nil {
+		return nil, 0, err
+	}
+	return rows, total, nil
+}
+
 func (r *Repository) CreateMeNotification(n *models.MeNotification) (*models.MeNotification, error) {
 	if n.Type == models.MeNotificationLike {
 		res := r.db.Model(&models.MeNotification{}).

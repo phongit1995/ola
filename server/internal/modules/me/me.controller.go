@@ -443,6 +443,39 @@ func (ctrl *Controller) LikeComment(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
+// CommentLikers godoc
+// @Summary      List users who liked a comment
+// @Tags         me
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "Post ID"
+// @Param        commentId path string true "Comment ID"
+// @Param        limit query int false "Page size"
+// @Param        offset query int false "Offset"
+// @Success      200  {object}  utils.BaseResponse[LikerListResponse]
+// @Router       /me/{id}/comments/{commentId}/likers [get]
+func (ctrl *Controller) CommentLikers(c *gin.Context) (interface{}, error) {
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+	id, err := parseID(c)
+	if err != nil {
+		return nil, err
+	}
+	commentID, err := utils.ParseUUIDParam(c, "commentId", "invalid comment id")
+	if err != nil {
+		return nil, err
+	}
+	limit := utils.ParseLimit(c, 20, 100)
+	offset := utils.ParseOffset(c)
+	resp, err := ctrl.service.CommentLikers(userID, id, commentID, limit, offset)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
 // React godoc
 // @Summary      Like or dislike a post (same reaction again removes it)
 // @Tags         me

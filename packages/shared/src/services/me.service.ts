@@ -102,6 +102,14 @@ export class MeService {
     return http.post<PostComment>(API_PATH.me.commentLike(id, commentId), {});
   }
 
+  static commentLikers(
+    id: string,
+    commentId: string,
+    params: FeedParams = {}
+  ): Promise<PostLikerListResult> {
+    return http.get<PostLikerListResult>(API_PATH.me.commentLikers(id, commentId), { params });
+  }
+
   static notifications(params: FeedCursorParams = {}): Promise<MeNotificationListResult> {
     return http.get<MeNotificationListResult>(API_PATH.me.notifications, { params });
   }

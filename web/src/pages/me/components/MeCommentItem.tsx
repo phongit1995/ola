@@ -5,7 +5,29 @@ import { colorForName, renderRichText } from '@lib';
 import replyIcon from '@/assets/icons/me/ic_action_reply_gray.png';
 import likeIcon from '@/assets/icons/me/ic_like_gray.png';
 import likeIconActive from '@/assets/icons/me/ic_like_selected.png';
-import type { PostComment } from '@app-types';
+import type { PostAuthor, PostComment } from '@app-types';
+import { MeLikersDialog } from './MeLikersDialog';
+
+function CommentLikerStack({ likers }: { likers: PostAuthor[] }) {
+  if (likers.length === 0) return null;
+  return (
+    <span className="flex -space-x-1.5">
+      {likers.slice(0, 3).map((liker) => (
+        <span
+          key={liker.id}
+          className="inline-flex overflow-hidden rounded-full ring-2 ring-white"
+        >
+          <Avatar
+            name={liker.fullName != null && liker.fullName !== '' ? liker.fullName : liker.username}
+            src={liker.avatar}
+            color={colorForName(liker.username)}
+            size={18}
+          />
+        </span>
+      ))}
+    </span>
+  );
+}
 
 interface MeCommentItemProps {
   comment: PostComment;
@@ -36,7 +58,9 @@ function MeCommentItemComponent({
 }: MeCommentItemProps) {
   const { t } = useTranslation();
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [likersOpen, setLikersOpen] = useState(false);
   const liked = comment.liked;
+  const likers = comment.topLikers ?? [];
   const name = comment.author?.username ?? '';
   const color = colorForName(name);
 
@@ -82,24 +106,33 @@ function MeCommentItemComponent({
                   {t('me.reply')}
                 </button>
               )}
-              <button
-                type="button"
-                onClick={() => onToggleLike(comment.id)}
-                aria-pressed={liked}
-                aria-label={liked ? t('me.liked') : t('me.like')}
-                className="ml-auto flex items-center gap-1.5"
-              >
+              <div className="ml-auto flex items-center gap-1.5">
                 {comment.likeCount > 0 && (
-                  <span className="text-xs font-medium tabular-nums text-black/55">
-                    {comment.likeCount}
-                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setLikersOpen(true)}
+                    className="flex items-center gap-1"
+                  >
+                    <CommentLikerStack likers={likers} />
+                    <span className="text-xs font-medium tabular-nums text-black/55">
+                      {comment.likeCount}
+                    </span>
+                  </button>
                 )}
-                <img
-                  src={liked ? likeIconActive : likeIcon}
-                  alt=""
-                  className="h-6 w-6 object-contain"
-                />
-              </button>
+                <button
+                  type="button"
+                  onClick={() => onToggleLike(comment.id)}
+                  aria-pressed={liked}
+                  aria-label={liked ? t('me.liked') : t('me.like')}
+                  className="flex items-center"
+                >
+                  <img
+                    src={liked ? likeIconActive : likeIcon}
+                    alt=""
+                    className="h-6 w-6 object-contain"
+                  />
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -117,6 +150,14 @@ function MeCommentItemComponent({
         }}
         onCancel={() => setConfirmOpen(false)}
       />
+      {likersOpen && (
+        <MeLikersDialog
+          postId={comment.postId}
+          commentId={comment.id}
+          onClose={() => setLikersOpen(false)}
+          onOpenProfile={onOpenProfile}
+        />
+      )}
     </>
   );
 }

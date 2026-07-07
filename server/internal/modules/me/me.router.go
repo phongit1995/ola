@@ -39,5 +39,6 @@ func (r *Router) Setup(api *utils.AppGroup) {
 		me.GET("/:id/comments", r.controller.ListComments)
 		me.DELETE("/:id/comments/:commentId", r.controller.DeleteComment)
 		me.POST("/:id/comments/:commentId/like", r.controller.LikeComment)
+		me.GET("/:id/comments/:commentId/likers", r.controller.CommentLikers)
 	}
 }

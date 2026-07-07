@@ -525,17 +525,58 @@ func (s *Service) ListComments(viewerID, postID uuid.UUID, limit, offset int) (*
 	if err != nil {
 		return nil, err
 	}
+	topLikers, err := s.repo.TopCommentLikersByComments(commentIDs, 3)
+	if err != nil {
+		return nil, err
+	}
 
 	items := make([]CommentResponse, 0, len(comments))
 	for _, c := range comments {
 		resp := toCommentResponse(c)
 		resp.Liked = likedByViewer[c.ID]
+		if likers, ok := topLikers[c.ID]; ok {
+			resp.TopLikers = toAuthorResponses(likers)
+		}
 		if c.ParentID != nil {
 			resp.ReplyTo = replySnapshotFrom(parentByID[*c.ParentID])
 		}
 		items = append(items, resp)
 	}
 	return &CommentListResponse{Items: items, Total: total, Limit: limit, Offset: offset}, nil
+}
+
+func (s *Service) CommentLikers(viewerID, postID, commentID uuid.UUID, limit, offset int) (*LikerListResponse, error) {
+	if _, err := s.viewablePost(viewerID, postID); err != nil {
+		return nil, err
+	}
+
+	comment, err := s.repo.GetCommentByID(commentID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("comment not found")
+		}
+		return nil, err
+	}
+	if comment.PostID != postID {
+		return nil, errors.New("comment not found")
+	}
+
+	rows, total, err := s.repo.ListCommentLikers(viewerID, commentID, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	items := make([]AuthorResponse, 0, len(rows))
+	for _, row := range rows {
+		items = append(items, AuthorResponse{
+			ID:       row.ID.String(),
+			Username: row.Username,
+			FullName: row.FullName,
+			Avatar:   row.Avatar,
+			IsFriend: row.IsFriend,
+			IsSelf:   row.ID == viewerID,
+		})
+	}
+	return &LikerListResponse{Items: items, Total: total, Limit: limit, Offset: offset}, nil
 }
 
 func (s *Service) ToggleCommentLike(viewerID, postID, commentID uuid.UUID) (*CommentResponse, error) {
@@ -562,6 +603,9 @@ func (s *Service) ToggleCommentLike(viewerID, postID, commentID uuid.UUID) (*Com
 	resp := toCommentResponse(comment)
 	resp.LikeCount = likeCount
 	resp.Liked = liked
+	if topLikers, err := s.repo.TopCommentLikersByComments([]uuid.UUID{commentID}, 3); err == nil {
+		resp.TopLikers = toAuthorResponses(topLikers[commentID])
+	}
 	return &resp, nil
 }
 
@@ -946,6 +990,14 @@ func toAuthorResponse(u *models.User) *AuthorResponse {
 		FullName: u.FullName,
 		Avatar:   u.Avatar,
 	}
+}
+
+func toAuthorResponses(users []*models.User) []AuthorResponse {
+	list := make([]AuthorResponse, 0, len(users))
+	for _, u := range users {
+		list = append(list, *toAuthorResponse(u))
+	}
+	return list
 }
 
 func toMeNotificationResponse(n *models.MeNotification) MeNotificationResponse {

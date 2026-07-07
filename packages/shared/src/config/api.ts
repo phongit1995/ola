@@ -59,6 +59,8 @@ export const API_PATH = {
     comments: (id: string) => `/me/${id}/comments`,
     comment: (id: string, commentId: string) => `/me/${id}/comments/${commentId}`,
     commentLike: (id: string, commentId: string) => `/me/${id}/comments/${commentId}/like`,
+    commentLikers: (id: string, commentId: string) =>
+      `/me/${id}/comments/${commentId}/likers`,
     notifications: '/me/notifications',
     notificationsUnread: '/me/notifications/unread-count',
     notificationsReadAll: '/me/notifications/read-all',
