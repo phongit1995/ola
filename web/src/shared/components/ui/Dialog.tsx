@@ -1,5 +1,6 @@
 import { useEffect, useRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslation } from 'react-i18next';
 import { cn, portalRoot } from '@lib';
 
 interface DialogProps {
@@ -7,6 +8,7 @@ interface DialogProps {
   onClose: () => void;
   title?: ReactNode;
   icon?: ReactNode;
+  showClose?: boolean;
   dismissOnBackdrop?: boolean;
   children: ReactNode;
   footer?: ReactNode;
@@ -17,10 +19,12 @@ export function Dialog({
   onClose,
   title,
   icon,
+  showClose = false,
   dismissOnBackdrop = true,
   children,
   footer,
 }: DialogProps) {
+  const { t } = useTranslation();
   const backdropDownRef = useRef(false);
 
   useEffect(() => {
@@ -59,9 +63,28 @@ export function Dialog({
                 {icon}
               </span>
             )}
-            <span className="truncate text-xl font-bold text-[#3a3839]">
+            <span className="min-w-0 flex-1 truncate text-xl font-bold text-[#3a3839]">
               {title}
             </span>
+            {showClose && (
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label={t('dialog.close')}
+                className="-mr-1 flex h-8 w-8 shrink-0 items-center justify-center rounded text-[#3a3839] hover:bg-black/10"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  className="h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  aria-hidden="true"
+                >
+                  <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
+                </svg>
+              </button>
+            )}
           </div>
         )}
         <div className="m-2 min-h-[50px] text-sm leading-relaxed text-[#616163]">

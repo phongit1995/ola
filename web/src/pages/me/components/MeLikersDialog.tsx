@@ -96,6 +96,7 @@ export function MeLikersDialog({ postId, onClose, onOpenProfile }: MeLikersDialo
     <Dialog
       open
       onClose={onClose}
+      showClose
       title={total > 0 ? t('me.likersCount', { count: total }) : t('me.likersTitle')}
     >
       <div ref={scrollRef} className="max-h-80 min-h-15 overflow-y-auto">
