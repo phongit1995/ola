@@ -11,6 +11,7 @@ import (
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/relationships"
+	usersetting "ola-chat-server/internal/modules/user-setting"
 	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/transport/websocket"
 	"ola-chat-server/internal/utils"
@@ -22,19 +23,21 @@ import (
 )
 
 type Service struct {
-	repo         *Repository
-	relRepo      *relationships.Repository
-	cache        *CacheService
-	s3Service    *services.S3Service
-	cacheService *services.CacheService
-	presence     *websocket.PresenceService
-	db           *gorm.DB
-	logger       *zap.SugaredLogger
+	repo           *Repository
+	relRepo        *relationships.Repository
+	userSettingSvc *usersetting.Service
+	cache          *CacheService
+	s3Service      *services.S3Service
+	cacheService   *services.CacheService
+	presence       *websocket.PresenceService
+	db             *gorm.DB
+	logger         *zap.SugaredLogger
 }
 
 func NewService(
 	repo *Repository,
 	relRepo *relationships.Repository,
+	userSettingSvc *usersetting.Service,
 	cache *CacheService,
 	s3Service *services.S3Service,
 	cacheService *services.CacheService,
@@ -43,14 +46,15 @@ func NewService(
 	logger *zap.SugaredLogger,
 ) *Service {
 	return &Service{
-		repo:         repo,
-		relRepo:      relRepo,
-		cache:        cache,
-		s3Service:    s3Service,
-		cacheService: cacheService,
-		presence:     presence,
-		db:           db,
-		logger:       logger.Named("[user_service]"),
+		repo:           repo,
+		relRepo:        relRepo,
+		userSettingSvc: userSettingSvc,
+		cache:          cache,
+		s3Service:      s3Service,
+		cacheService:   cacheService,
+		presence:       presence,
+		db:             db,
+		logger:         logger.Named("[user_service]"),
 	}
 }
 
@@ -565,6 +569,15 @@ func (s *Service) Unfollow(followerID, followeeID uuid.UUID) (*FollowResponse, e
 func (s *Service) ListFollowers(callerID, userID uuid.UUID, limit, offset int) (*FollowListResponse, error) {
 	if err := s.ensureNotBlockedByTarget(callerID, userID); err != nil {
 		return nil, err
+	}
+	if callerID != userID {
+		settings, err := s.userSettingSvc.GetSettings(userID)
+		if err != nil {
+			return nil, err
+		}
+		if !settings.ShowInterested {
+			return s.buildFollowList(nil, 0, limit, offset), nil
+		}
 	}
 	users, total, err := s.repo.ListFollowers(userID, limit, offset)
 	if err != nil {

@@ -1,6 +1,7 @@
 package me
 
 import (
+	"errors"
 	"net/http"
 
 	"ola-chat-server/internal/utils"
@@ -191,6 +192,9 @@ func (ctrl *Controller) ListByUser(c *gin.Context) (interface{}, error) {
 	offset := utils.ParseOffset(c)
 	resp, err := ctrl.service.ListByUser(userID, authorID, limit, offset)
 	if err != nil {
+		if errors.Is(err, errMeFriendsOnly) {
+			return nil, utils.NewHTTPError(http.StatusForbidden, err.Error())
+		}
 		return nil, utils.ServiceError(err)
 	}
 	return resp, nil
