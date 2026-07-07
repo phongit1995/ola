@@ -273,7 +273,7 @@ function RoomMessageGroupComponent({
             const withQuickMention = !isOwn && index === lastIndex;
             return (
               <div
-                key={message.id}
+                key={message.key}
                 className={`flex w-fit max-w-full flex-col gap-0.5 ${
                   isOwn ? 'items-end' : 'self-start'
                 }`}

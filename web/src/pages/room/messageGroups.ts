@@ -5,6 +5,7 @@ export type BubblePosition = 'single' | 'first' | 'middle' | 'last';
 
 export interface GroupedMessage {
   id: string;
+  key: string;
   content: string;
   type?: 'text' | 'image';
   imageUrl?: string;
@@ -34,6 +35,10 @@ export interface DateSeparator {
 }
 
 export type RoomFeedItem = MessageGroup | DateSeparator;
+
+function renderKey(message: RoomMessage): string {
+  return message.clientMsgId ?? message.id;
+}
 
 function dayKey(iso: string): string {
   const date = new Date(iso);
@@ -90,7 +95,7 @@ export function buildRoomFeed(messages: RoomMessage[], currentUserId: string): R
     if (showTime) lastShownMinute = bucket;
     items.push({
       kind: 'group',
-      key: pending.raw[0]!.id,
+      key: renderKey(pending.raw[0]!),
       isOwn: pending.isOwn,
       senderId: pending.senderId,
       senderName: pending.senderName,
@@ -99,6 +104,7 @@ export function buildRoomFeed(messages: RoomMessage[], currentUserId: string): R
       showTime,
       messages: pending.raw.map((message, index) => ({
         id: message.id,
+        key: renderKey(message),
         content: message.content,
         type: message.type,
         imageUrl: message.imageUrl,
