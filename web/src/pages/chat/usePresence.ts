@@ -28,6 +28,12 @@ function lastActiveMs(value?: string): number {
   return Number.isNaN(ms) ? 0 : ms;
 }
 
+function byOnlineThenRecent(a: Friend, b: Friend): number {
+  if (a.isOnline !== b.isOnline) return a.isOnline ? -1 : 1;
+  if (a.isOnline) return 0;
+  return lastActiveMs(b.lastActiveAt) - lastActiveMs(a.lastActiveAt);
+}
+
 export function useFriendsWithPresence(): Friend[] {
   const friends = useFriendsStore((s) => s.friends);
   const presence = usePresenceStore((s) => s.presence);
@@ -39,11 +45,7 @@ export function useFriendsWithPresence(): Friend[] {
           if (live == null) return friend;
           return { ...friend, isOnline: live.isOnline, lastActiveAt: live.lastActiveAt };
         })
-        .sort((a, b) => {
-          if (a.isOnline !== b.isOnline) return a.isOnline ? -1 : 1;
-          if (a.isOnline) return 0;
-          return lastActiveMs(b.lastActiveAt) - lastActiveMs(a.lastActiveAt);
-        }),
+        .sort(byOnlineThenRecent),
     [friends, presence]
   );
 }
