@@ -6,6 +6,8 @@ import {
   resultCloseFrameUrl,
   resultCloseMarkUrl,
   resultPopupFrameUrl,
+  rewardMissUrl,
+  rewardVipDaysUrl,
 } from './spinWheelAssets';
 
 interface SpinResultDialogProps {
@@ -54,15 +56,23 @@ export function SpinResultDialog({ segment, onClose }: SpinResultDialogProps) {
             </>
           )}
           {segment.kind === 'vip' && (
-            <span className="text-3xl font-extrabold text-[#e0348b]">
-              {t('wheelGame.vipDays', { n: segment.vipDays ?? 0 })}
-            </span>
+            <>
+              <img src={rewardVipDaysUrl} alt="" className="h-32 w-32 drop-shadow" />
+              <span className="mt-2 text-2xl font-extrabold text-[#e0348b]">
+                {t('wheelGame.vipDays', { n: segment.vipDays ?? 0 })}
+              </span>
+            </>
           )}
           {segment.kind === 'item' && (
             <span className="text-3xl font-extrabold text-[#e0348b]">{t('wheelGame.doll')}</span>
           )}
           {isMiss && (
-            <span className="text-2xl font-extrabold text-[#e0348b]">{t('wheelGame.miss')}</span>
+            <>
+              <img src={rewardMissUrl} alt="" className="h-32 w-32 drop-shadow" />
+              <span className="mt-2 text-2xl font-extrabold text-[#e0348b]">
+                {t('wheelGame.miss')}
+              </span>
+            </>
           )}
         </div>
       </div>
