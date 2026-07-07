@@ -154,10 +154,11 @@ export const SmileyInput = forwardRef<SmileyInputHandle, SmileyInputProps>(funct
     if (el == null) return;
     el.focus();
     const saved = savedRange.current;
-    if (saved == null || !el.contains(saved.commonAncestorContainer)) return;
+    const range = saved != null && el.contains(saved.commonAncestorContainer) ? saved : rangeAtEnd(el);
+    savedRange.current = range;
     const selection = window.getSelection();
     selection?.removeAllRanges();
-    selection?.addRange(saved);
+    selection?.addRange(range);
   }
 
   useImperativeHandle(ref, () => ({
