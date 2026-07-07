@@ -11,6 +11,7 @@ export * from './conversation.service';
 export * from './message.service';
 export * from './vip.service';
 export * from './egg.service';
+export * from './wheel.service';
 export * from './marriage.service';
 export * from './pen.service';
 export * from './ken.service';

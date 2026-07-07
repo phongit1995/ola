@@ -95,6 +95,10 @@ export const API_PATH = {
     draw: (id: string) => `/egg/packs/${id}/draws`,
     draws: '/egg/draws',
   },
+  wheel: {
+    config: '/wheel',
+    spins: '/wheel/spins',
+  },
   ken: {
     transfer: '/ken/transfer',
     transactions: '/ken/transactions',
