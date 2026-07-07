@@ -37,6 +37,7 @@ interface RoomMessagesTabProps {
   replyTarget: RoomMessage | null;
   onSend: (content: string) => Promise<void>;
   onSendImage: (file: File) => Promise<void>;
+  onResendImage: (id: string) => void;
   onLoadMore: () => void;
   onOpenProfile?: (nick: string, color: string) => void;
   onSetReplyTarget: (message: RoomMessage) => void;
@@ -56,6 +57,7 @@ export function RoomMessagesTab({
   replyTarget,
   onSend,
   onSendImage,
+  onResendImage,
   onLoadMore,
   onOpenProfile,
   onSetReplyTarget,
@@ -76,7 +78,6 @@ export function RoomMessagesTab({
   const [reactionsTargetId, setReactionsTargetId] = useState<string | null>(null);
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const [pendingImages, setPendingImages] = useState<{ id: string; file: File; url: string }[]>([]);
-  const [sendingImages, setSendingImages] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const composerRef = useRef<SmileyInputHandle>(null);
@@ -128,6 +129,18 @@ export function RoomMessagesTab({
       scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
     }
   }, [messages, active, visible]);
+
+  useEffect(() => {
+    const element = scrollRef.current;
+    if (element == null) return;
+    function scrollToBottomIfPinned() {
+      const target = scrollRef.current;
+      if (target == null || pendingPrependRef.current || !stickToBottomRef.current) return;
+      target.scrollTop = target.scrollHeight;
+    }
+    element.addEventListener('load', scrollToBottomIfPinned, true);
+    return () => element.removeEventListener('load', scrollToBottomIfPinned, true);
+  }, []);
 
   function handleScroll() {
     const element = scrollRef.current;
@@ -192,22 +205,17 @@ export function RoomMessagesTab({
   async function sendPendingImages() {
     const images = pendingImages;
     if (images.length === 0) return;
-    setSendingImages(true);
     stickToBottomRef.current = true;
+    setPendingImages([]);
+    closeAttachPanel();
     for (const image of images) {
-      try {
-        await onSendImage(image.file);
-      } catch {
-        toast.error(t('room.sendError'));
-      }
+      await onSendImage(image.file);
       URL.revokeObjectURL(image.url);
     }
-    setPendingImages([]);
-    setSendingImages(false);
   }
 
   async function handleSend() {
-    if (!canSend || sendingImages) return;
+    if (!canSend) return;
     if (pendingImages.length > 0) {
       await sendPendingImages();
       return;
@@ -336,6 +344,7 @@ export function RoomMessagesTab({
               onLongPressMessage={handleLongPressMessage}
               onQuoteClick={scrollToMessage}
               onShowReactions={showReactions}
+              onResendImage={onResendImage}
             />
           )
         )}
@@ -394,8 +403,7 @@ export function RoomMessagesTab({
                   type="button"
                   aria-label={t('dialog.cancel')}
                   onClick={() => removePendingImage(image.id)}
-                  disabled={sendingImages}
-                  className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-xs leading-none text-white disabled:opacity-40"
+                  className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-xs leading-none text-white"
                 >
                   ×
                 </button>
@@ -404,8 +412,7 @@ export function RoomMessagesTab({
             <button
               type="button"
               onClick={clearPendingImages}
-              disabled={sendingImages}
-              className="ml-1 h-9 shrink-0 rounded-full border border-black/12 px-3 text-sm font-medium text-black/54 hover:bg-black/5 disabled:opacity-40"
+              className="ml-1 h-9 shrink-0 rounded-full border border-black/12 px-3 text-sm font-medium text-black/54 hover:bg-black/5"
             >
               {t('dialog.cancel')}
             </button>
@@ -430,7 +437,7 @@ export function RoomMessagesTab({
             type="button"
             onPointerDown={(event) => event.preventDefault()}
             onClick={() => void handleSend()}
-            disabled={!canSend || sendingImages}
+            disabled={!canSend}
             className="h-9 shrink-0 rounded-full bg-ola-primary px-4 text-sm font-semibold text-white shadow-sm transition active:scale-95 disabled:opacity-40"
           >
             {t('chat.send')}

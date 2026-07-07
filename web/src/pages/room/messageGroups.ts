@@ -1,4 +1,4 @@
-import type { RoomMessage, RoomReactor, RoomReplySnapshot } from '@app-types';
+import type { RoomMessage, RoomMessageStatus, RoomReactor, RoomReplySnapshot } from '@app-types';
 import { GROUP_GAP_MS } from './constants';
 
 export type BubblePosition = 'single' | 'first' | 'middle' | 'last';
@@ -12,6 +12,7 @@ export interface GroupedMessage {
   position: BubblePosition;
   replyTo?: RoomReplySnapshot;
   reactions?: Record<string, RoomReactor[]>;
+  status?: RoomMessageStatus;
 }
 
 export interface MessageGroup {
@@ -105,6 +106,7 @@ export function buildRoomFeed(messages: RoomMessage[], currentUserId: string): R
         position: bubblePosition(count, index),
         replyTo: resolveReplySnapshot(message.replyTo, byId),
         reactions: message.reactions,
+        status: message.status,
       })),
     });
     pending = null;

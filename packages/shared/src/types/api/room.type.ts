@@ -73,7 +73,11 @@ export interface RoomMessage {
   createdAt: string;
   replyTo?: RoomReplySnapshot;
   reactions?: Record<string, RoomReactor[]>;
+  clientMsgId?: string;
+  status?: RoomMessageStatus;
 }
+
+export type RoomMessageStatus = 'uploading' | 'sent' | 'failed';
 
 export interface RoomListResult {
   items: Room[];

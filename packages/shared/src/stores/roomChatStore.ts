@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { RoomService, SocketService } from '../services';
+import { randomUuid, releaseUploadPreviewUrl, uploadPreviewUrl } from '../lib';
 import type { UploadFile } from '../lib/upload';
 import {
   ROOM_SOCKET_EVENTS,
@@ -8,7 +9,14 @@ import {
   type RoomMessage,
   type RoomReactionNotice,
 } from '../types';
-import { toRecord, withSenderVip, withVipTypeId } from './roomHelpers';
+import {
+  buildOptimisticRoomImage,
+  markRoomMessageByClientMsgId,
+  reconcileRoomServerMessage,
+  withSenderVip,
+  toRecord,
+  withVipTypeId,
+} from './roomHelpers';
 import { registerRoomRealtime } from './roomRealtime';
 
 export type RoomChatStatus = 'connecting' | 'joined' | 'error';
@@ -43,6 +51,7 @@ export interface RoomChatState {
   setRoomForeground: (foreground: boolean) => void;
   sendMessage: (content: string) => Promise<void>;
   sendImage: (file: UploadFile) => Promise<void>;
+  resendRoomImage: (messageId: string) => Promise<void>;
   loadMoreMessages: () => Promise<void>;
   setReplyTarget: (message: RoomMessage) => void;
   clearReplyTarget: () => void;
@@ -69,6 +78,31 @@ const initialState = {
 
 export const useRoomChatStore = create<RoomChatState>((set, get) => {
   registerRoomRealtime(set, get);
+
+  async function finalizeImageSend(
+    roomId: string,
+    clientMsgId: string,
+    previewUrl: string,
+    upload: () => Promise<RoomMessage>
+  ) {
+    try {
+      const saved = withSenderVip(await upload());
+      if (get().activeRoom?.id !== roomId) {
+        releaseUploadPreviewUrl(previewUrl);
+        return;
+      }
+      set((state) => ({ messages: reconcileRoomServerMessage(state.messages, saved) }));
+      releaseUploadPreviewUrl(previewUrl);
+    } catch {
+      if (get().activeRoom?.id !== roomId) {
+        releaseUploadPreviewUrl(previewUrl);
+        return;
+      }
+      set((state) => ({
+        messages: markRoomMessageByClientMsgId(state.messages, clientMsgId, { status: 'failed' }),
+      }));
+    }
+  }
 
   async function joinRoom(roomId: string) {
     const socket = await SocketService.ready(JOIN_ACK_TIMEOUT_MS);
@@ -157,13 +191,33 @@ export const useRoomChatStore = create<RoomChatState>((set, get) => {
     sendImage: async (file) => {
       const room = get().activeRoom;
       if (!room) return;
-      const message = withSenderVip(await RoomService.sendImage(room.id, file));
-      if (get().activeRoom?.id !== room.id) return;
+      const clientMsgId = randomUuid();
+      const previewUrl = uploadPreviewUrl(file);
       set((state) => ({
-        ...(state.messages.some((item) => item.id === message.id)
-          ? {}
-          : { messages: [...state.messages, message] }),
+        messages: [...state.messages, buildOptimisticRoomImage(room.id, clientMsgId, previewUrl)],
       }));
+      await finalizeImageSend(room.id, clientMsgId, previewUrl, () =>
+        RoomService.sendImage(room.id, file, clientMsgId)
+      );
+    },
+
+    resendRoomImage: async (messageId) => {
+      const room = get().activeRoom;
+      if (!room) return;
+      const target = get().messages.find((item) => item.id === messageId);
+      if (target == null || target.status !== 'failed' || target.imageUrl == null) return;
+      const clientMsgId = target.clientMsgId ?? randomUuid();
+      const previewUrl = target.imageUrl;
+      set((state) => ({
+        messages: markRoomMessageByClientMsgId(state.messages, clientMsgId, {
+          clientMsgId,
+          status: 'uploading',
+        }),
+      }));
+      await finalizeImageSend(room.id, clientMsgId, previewUrl, async () => {
+        const blob = await (await fetch(previewUrl)).blob();
+        return RoomService.sendImage(room.id, blob, clientMsgId, 'image');
+      });
     },
 
     setReplyTarget: (message) => set({ replyTarget: message }),
