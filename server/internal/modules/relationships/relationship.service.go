@@ -1,15 +1,16 @@
 package relationships
 
 import (
+	"bytes"
+	"errors"
+	"fmt"
+	"hash/fnv"
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/transport/websocket"
 	"ola-chat-server/internal/utils"
-	"bytes"
-	"errors"
-	"fmt"
-	"hash/fnv"
+	"sort"
 	"time"
 
 	"github.com/google/uuid"
@@ -568,6 +569,12 @@ func (s *Service) GetFriends(userID uuid.UUID) (*FriendListResponse, error) {
 			friends[i].IsOnline = isOnline
 			friends[i].LastActiveAt = lastActiveStr
 		}
+		sort.SliceStable(friends, func(i, j int) bool {
+			if friends[i].IsOnline != friends[j].IsOnline {
+				return friends[i].IsOnline
+			}
+			return friends[i].LastActiveAt > friends[j].LastActiveAt
+		})
 	}
 
 	return &FriendListResponse{
