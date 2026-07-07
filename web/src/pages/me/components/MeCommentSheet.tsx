@@ -35,7 +35,7 @@ export function MeCommentSheet({
   const me = useAuthStore((state) => state.user);
   const [shown, setShown] = useState(false);
 
-  const { comments, total, loading, error, submitting, add, remove, replyTarget, setReplyTarget } =
+  const { comments, total, loading, error, submitting, add, remove, like, replyTarget, setReplyTarget } =
     useMeComments(post.id, {
       onDelta: (delta) => onCommentDelta(post.id, delta),
     });
@@ -101,6 +101,7 @@ export function MeCommentSheet({
                     canDelete={isOwn}
                     onDelete={remove}
                     onReply={isOwn ? undefined : setReplyTarget}
+                    onToggleLike={like}
                     onOpenProfile={onOpenProfile}
                   />
                 );

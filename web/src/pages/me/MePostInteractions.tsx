@@ -1,6 +1,6 @@
 import { useCallback, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { toast } from '@lib';
+import { toApiError, toast } from '@lib';
 import { MeService } from '@services';
 import { ConfirmDialog, ListOptionDialog, type ListOption } from '@components';
 import type { PostReaction } from '@app-types';
@@ -180,7 +180,11 @@ export function MePostInteractions({ source, children }: MePostInteractionsProps
         adjustCommentCount(postId, 1);
         toast.success(t('me.commentSent'));
         return true;
-      } catch {
+      } catch (err) {
+        if (toApiError(err).status === 403) {
+          toast.error(t('me.commentErrFriendsOnly'));
+          return false;
+        }
         toast.error(t('me.commentSendError'));
         return false;
       }

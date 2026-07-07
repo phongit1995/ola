@@ -556,6 +556,7 @@
     "commentSendError": "Không gửi được bình luận",
     "commentErrFriendsOnly": "Chỉ bạn bè mới bình luận được bài này.",
     "commentDeleteError": "Không xoá được bình luận",
+    "commentLikeError": "Không thích được bình luận",
     "commentSent": "Đã gửi bình luận",
     "commentDeleted": "Đã xoá bình luận",
     "postSent": "Đã đăng bài",

@@ -525,6 +525,64 @@ func (r *Repository) DeleteComment(postID, commentID uuid.UUID) error {
 	})
 }
 
+func (r *Repository) ToggleCommentLike(commentID, userID uuid.UUID) (bool, int, error) {
+	var liked bool
+	var likeCount int
+	err := r.db.Transaction(func(tx *gorm.DB) error {
+		var existing models.MeCommentLike
+		errFind := tx.First(&existing, "comment_id = ? AND user_id = ?", commentID, userID).Error
+
+		delta := 0
+		switch {
+		case errors.Is(errFind, gorm.ErrRecordNotFound):
+			if err := tx.Create(&models.MeCommentLike{CommentID: commentID, UserID: userID}).Error; err != nil {
+				return err
+			}
+			delta = 1
+			liked = true
+		case errFind != nil:
+			return errFind
+		default:
+			if err := tx.Delete(&existing).Error; err != nil {
+				return err
+			}
+			delta = -1
+			liked = false
+		}
+
+		if err := tx.Model(&models.MeComment{}).Where("id = ?", commentID).
+			Update("like_count", gorm.Expr("like_count + ?", delta)).Error; err != nil {
+			return err
+		}
+
+		var c models.MeComment
+		if err := tx.Select("like_count").First(&c, "id = ?", commentID).Error; err != nil {
+			return err
+		}
+		likeCount = c.LikeCount
+		return nil
+	})
+	if err != nil {
+		return false, 0, err
+	}
+	return liked, likeCount, nil
+}
+
+func (r *Repository) GetUserCommentLikes(userID uuid.UUID, commentIDs []uuid.UUID) (map[uuid.UUID]bool, error) {
+	result := make(map[uuid.UUID]bool)
+	if len(commentIDs) == 0 {
+		return result, nil
+	}
+	var likes []models.MeCommentLike
+	if err := r.db.Where("user_id = ? AND comment_id IN ?", userID, commentIDs).Find(&likes).Error; err != nil {
+		return nil, err
+	}
+	for _, l := range likes {
+		result[l.CommentID] = true
+	}
+	return result, nil
+}
+
 func (r *Repository) CreateMeNotification(n *models.MeNotification) (*models.MeNotification, error) {
 	if n.Type == models.MeNotificationLike {
 		res := r.db.Model(&models.MeNotification{}).

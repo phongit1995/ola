@@ -68,6 +68,38 @@ export function useMeComments(postId: string, options: UseMeCommentsOptions = {}
     [postId, submitting, onDelta, replyTarget]
   );
 
+  const like = useCallback(
+    async (commentId: string) => {
+      const target = comments.find((item) => item.id === commentId);
+      if (target == null) return;
+      const optimistic: PostComment = {
+        ...target,
+        liked: !target.liked,
+        likeCount: Math.max(0, target.likeCount + (target.liked ? -1 : 1)),
+      };
+      setComments((current) =>
+        current.map((item) => (item.id === commentId ? optimistic : item))
+      );
+      try {
+        const updated = await MeService.likeComment(postId, commentId);
+        setComments((current) =>
+          current.map((item) =>
+            item.id === commentId
+              ? { ...item, liked: updated.liked, likeCount: updated.likeCount }
+              : item
+          )
+        );
+      } catch (err) {
+        console.error('like comment failed', err);
+        setComments((current) =>
+          current.map((item) => (item.id === commentId ? target : item))
+        );
+        toast.error(i18n.t('me.commentLikeError'));
+      }
+    },
+    [postId, comments]
+  );
+
   const remove = useCallback(
     async (commentId: string) => {
       const snapshot = comments;
@@ -87,5 +119,5 @@ export function useMeComments(postId: string, options: UseMeCommentsOptions = {}
     [postId, comments, onDelta]
   );
 
-  return { comments, total, loading, error, submitting, add, remove, replyTarget, setReplyTarget };
+  return { comments, total, loading, error, submitting, add, remove, like, replyTarget, setReplyTarget };
 }

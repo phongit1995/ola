@@ -38,5 +38,6 @@ func (r *Router) Setup(api *utils.AppGroup) {
 		me.POST("/:id/comments", r.controller.AddComment)
 		me.GET("/:id/comments", r.controller.ListComments)
 		me.DELETE("/:id/comments/:commentId", r.controller.DeleteComment)
+		me.POST("/:id/comments/:commentId/like", r.controller.LikeComment)
 	}
 }

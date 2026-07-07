@@ -98,6 +98,10 @@ export class MeService {
     return http.del<MessageResult>(API_PATH.me.comment(id, commentId));
   }
 
+  static likeComment(id: string, commentId: string): Promise<PostComment> {
+    return http.post<PostComment>(API_PATH.me.commentLike(id, commentId), {});
+  }
+
   static notifications(params: FeedCursorParams = {}): Promise<MeNotificationListResult> {
     return http.get<MeNotificationListResult>(API_PATH.me.notifications, { params });
   }

@@ -414,6 +414,35 @@ func (ctrl *Controller) DeleteComment(c *gin.Context) (interface{}, error) {
 	return map[string]string{"message": "comment deleted"}, nil
 }
 
+// LikeComment godoc
+// @Summary      Toggle like on a comment (same call again removes it)
+// @Tags         me
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "Post ID"
+// @Param        commentId path string true "Comment ID"
+// @Success      200  {object}  utils.BaseResponse[CommentResponse]
+// @Router       /me/{id}/comments/{commentId}/like [post]
+func (ctrl *Controller) LikeComment(c *gin.Context) (interface{}, error) {
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+	id, err := parseID(c)
+	if err != nil {
+		return nil, err
+	}
+	commentID, err := utils.ParseUUIDParam(c, "commentId", "invalid comment id")
+	if err != nil {
+		return nil, err
+	}
+	resp, err := ctrl.service.ToggleCommentLike(userID, id, commentID)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
 // React godoc
 // @Summary      Like or dislike a post (same reaction again removes it)
 // @Tags         me

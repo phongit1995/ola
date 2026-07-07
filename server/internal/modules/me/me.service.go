@@ -517,15 +517,52 @@ func (s *Service) ListComments(viewerID, postID uuid.UUID, limit, offset int) (*
 		}
 	}
 
+	commentIDs := make([]uuid.UUID, 0, len(comments))
+	for _, c := range comments {
+		commentIDs = append(commentIDs, c.ID)
+	}
+	likedByViewer, err := s.repo.GetUserCommentLikes(viewerID, commentIDs)
+	if err != nil {
+		return nil, err
+	}
+
 	items := make([]CommentResponse, 0, len(comments))
 	for _, c := range comments {
 		resp := toCommentResponse(c)
+		resp.Liked = likedByViewer[c.ID]
 		if c.ParentID != nil {
 			resp.ReplyTo = replySnapshotFrom(parentByID[*c.ParentID])
 		}
 		items = append(items, resp)
 	}
 	return &CommentListResponse{Items: items, Total: total, Limit: limit, Offset: offset}, nil
+}
+
+func (s *Service) ToggleCommentLike(viewerID, postID, commentID uuid.UUID) (*CommentResponse, error) {
+	if _, err := s.viewablePost(viewerID, postID); err != nil {
+		return nil, err
+	}
+
+	comment, err := s.repo.GetCommentByID(commentID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("comment not found")
+		}
+		return nil, err
+	}
+	if comment.PostID != postID {
+		return nil, errors.New("comment not found")
+	}
+
+	liked, likeCount, err := s.repo.ToggleCommentLike(commentID, viewerID)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := toCommentResponse(comment)
+	resp.LikeCount = likeCount
+	resp.Liked = liked
+	return &resp, nil
 }
 
 func (s *Service) DeleteComment(viewerID, postID, commentID uuid.UUID) error {
@@ -942,6 +979,7 @@ func toCommentResponse(comment *models.MeComment) CommentResponse {
 		PostID:    comment.PostID.String(),
 		Content:   comment.Content,
 		Author:    toAuthorResponse(comment.Author),
+		LikeCount: comment.LikeCount,
 		CreatedAt: comment.CreatedAt.UTC().Format(time.RFC3339),
 	}
 	if comment.ParentID != nil {

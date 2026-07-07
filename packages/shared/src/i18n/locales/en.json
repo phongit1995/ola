@@ -556,6 +556,7 @@
     "commentSendError": "Couldn't send comment",
     "commentErrFriendsOnly": "Only friends can comment on this post.",
     "commentDeleteError": "Couldn't delete comment",
+    "commentLikeError": "Couldn't like comment",
     "commentSent": "Comment sent",
     "commentDeleted": "Comment deleted",
     "postSent": "Posted",

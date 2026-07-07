@@ -1,14 +1,11 @@
 import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ConfirmDialog, Avatar, Dialog } from '@components';
+import { ConfirmDialog, Avatar } from '@components';
 import { colorForName, renderRichText } from '@lib';
 import replyIcon from '@/assets/icons/me/ic_action_reply_gray.png';
 import likeIcon from '@/assets/icons/me/ic_like_gray.png';
 import likeIconActive from '@/assets/icons/me/ic_like_selected.png';
 import type { PostComment } from '@app-types';
-import { meSelfLiker } from '../mappers';
-
-type MeLiker = NonNullable<ReturnType<typeof meSelfLiker>>;
 
 interface MeCommentItemProps {
   comment: PostComment;
@@ -16,6 +13,7 @@ interface MeCommentItemProps {
   canDelete: boolean;
   onDelete: (id: string) => void;
   onReply?: (comment: PostComment) => void;
+  onToggleLike: (id: string) => void;
   onOpenProfile?: (nick: string, color: string) => void;
 }
 
@@ -33,25 +31,14 @@ function MeCommentItemComponent({
   canDelete,
   onDelete,
   onReply,
+  onToggleLike,
   onOpenProfile,
 }: MeCommentItemProps) {
   const { t } = useTranslation();
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [likersOpen, setLikersOpen] = useState(false);
-  const [likers, setLikers] = useState<MeLiker[]>([]);
-  const self = meSelfLiker();
-  const liked = self != null && likers.some((liker) => liker.name === self.name);
+  const liked = comment.liked;
   const name = comment.author?.username ?? '';
   const color = colorForName(name);
-
-  function toggleLike() {
-    if (self == null) return;
-    setLikers((prev) =>
-      prev.some((liker) => liker.name === self.name)
-        ? prev.filter((liker) => liker.name !== self.name)
-        : [self, ...prev]
-    );
-  }
 
   return (
     <>
@@ -95,47 +82,24 @@ function MeCommentItemComponent({
                   {t('me.reply')}
                 </button>
               )}
-              <div className="ml-auto flex items-center gap-1.5">
-                {likers.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => setLikersOpen(true)}
-                    className="flex items-center gap-1"
-                  >
-                    <span className="flex -space-x-1.5">
-                      {likers.slice(0, 3).map((liker, index) => (
-                        <span
-                          key={index}
-                          className="inline-flex overflow-hidden rounded-full ring-2 ring-white"
-                        >
-                          <Avatar
-                            name={liker.name}
-                            src={liker.avatar ?? undefined}
-                            color={liker.color}
-                            size={18}
-                          />
-                        </span>
-                      ))}
-                    </span>
-                    <span className="text-xs font-medium tabular-nums text-black/55">
-                      {likers.length}
-                    </span>
-                  </button>
+              <button
+                type="button"
+                onClick={() => onToggleLike(comment.id)}
+                aria-pressed={liked}
+                aria-label={liked ? t('me.liked') : t('me.like')}
+                className="ml-auto flex items-center gap-1.5"
+              >
+                {comment.likeCount > 0 && (
+                  <span className="text-xs font-medium tabular-nums text-black/55">
+                    {comment.likeCount}
+                  </span>
                 )}
-                <button
-                  type="button"
-                  onClick={toggleLike}
-                  aria-pressed={liked}
-                  aria-label={liked ? t('me.liked') : t('me.like')}
-                  className="flex items-center"
-                >
-                  <img
-                    src={liked ? likeIconActive : likeIcon}
-                    alt=""
-                    className="h-6 w-6 object-contain"
-                  />
-                </button>
-              </div>
+                <img
+                  src={liked ? likeIconActive : likeIcon}
+                  alt=""
+                  className="h-6 w-6 object-contain"
+                />
+              </button>
             </div>
           </div>
         </div>
@@ -153,29 +117,6 @@ function MeCommentItemComponent({
         }}
         onCancel={() => setConfirmOpen(false)}
       />
-      <Dialog
-        open={likersOpen}
-        onClose={() => setLikersOpen(false)}
-        title={t('me.likersCount', { count: likers.length })}
-      >
-        <div className="max-h-80 overflow-y-auto">
-          {likers.map((liker, index) => (
-            <div
-              key={index}
-              className="flex items-center gap-3 border-b border-black/12 px-2 py-3 last:border-b-0"
-            >
-              <Avatar
-                name={liker.name}
-                src={liker.avatar ?? undefined}
-                color={liker.color}
-                size={44}
-                rounded={false}
-              />
-              <span className="truncate text-base font-medium text-black/87">{liker.name}</span>
-            </div>
-          ))}
-        </div>
-      </Dialog>
     </>
   );
 }
