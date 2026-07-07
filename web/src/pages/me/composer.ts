@@ -1,4 +1,5 @@
 import { MeService } from '@services';
+import { compressImagesForUpload } from '@lib';
 import type { PostImage } from '@app-types';
 import type { ComposedPost } from './components/MeComposerDialog';
 
@@ -38,7 +39,8 @@ export async function composedToImages(
   draft: ComposedPost,
   order: 'createdFirst' | 'existingFirst'
 ): Promise<PostImage[]> {
-  const uploaded = draft.files.length > 0 ? (await MeService.uploadImages(draft.files)).images : [];
+  const prepared = await compressImagesForUpload(draft.files);
+  const uploaded = prepared.length > 0 ? (await MeService.uploadImages(prepared)).images : [];
   const existing: PostImage[] = draft.imageUrls.map((url) => ({ url }));
   return order === 'createdFirst' ? [...uploaded, ...existing] : [...existing, ...uploaded];
 }

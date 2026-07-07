@@ -111,3 +111,7 @@ export async function compressImageForUpload(file: File): Promise<File> {
   if (smallest.size > MAX_UPLOAD_BYTES) throw new ImageTooLargeError();
   return new File([smallest], toJpegName(source.name), { type: 'image/jpeg' });
 }
+
+export function compressImagesForUpload(files: File[]): Promise<File[]> {
+  return Promise.all(files.map((file) => compressImageForUpload(file)));
+}
