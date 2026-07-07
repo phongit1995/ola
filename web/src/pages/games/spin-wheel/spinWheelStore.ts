@@ -17,7 +17,7 @@ interface SpinWheelState {
   history: SpinSegment[];
   reset: (ken: number, turns: number) => void;
   syncKen: (ken: number) => void;
-  spin: () => void;
+  spin: (targetIndex?: number) => void;
   settle: () => void;
   closeResult: () => void;
   toggleMute: () => void;
@@ -55,10 +55,11 @@ export const useSpinWheelStore = create<SpinWheelState>((set, get) => ({
   ...initialState,
   reset: (ken, turns) => set({ ...initialState, ken, turnsLeft: turns }),
   syncKen: (ken) => set((state) => (state.spinning ? state : { ken })),
-  spin: () => {
+  spin: (targetIndex) => {
     const state = get();
     if (state.spinning || state.turnsLeft <= 0) return;
-    const index = pickWinningIndex();
+    const index =
+      typeof targetIndex === 'number' && targetIndex >= 0 ? targetIndex : pickWinningIndex();
     set({
       spinning: true,
       pendingIndex: index,

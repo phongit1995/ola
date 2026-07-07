@@ -22,6 +22,10 @@ export const SPIN_SEGMENTS: SpinSegment[] = [
 export const SEGMENT_COUNT = SPIN_SEGMENTS.length;
 export const SEGMENT_ANGLE = 360 / SEGMENT_COUNT;
 
+export function segmentIndexById(id: string): number {
+  return SPIN_SEGMENTS.findIndex((segment) => segment.id === id);
+}
+
 export const SPIN_START_KEN = 100_000;
 export const SPIN_START_TURNS = 5;
 export const SPIN_TURNS = 6;
