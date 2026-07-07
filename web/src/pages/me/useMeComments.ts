@@ -1,8 +1,21 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { MeService } from '@services';
-import type { PostComment } from '@app-types';
+import type { PostAuthor, PostComment } from '@app-types';
 import { toApiError, toast } from '@lib';
+import { useAuthStore } from '@/store/authStore';
 import i18n from '@/i18n';
+
+function selfLiker(): PostAuthor | null {
+  const user = useAuthStore.getState().user;
+  if (user == null) return null;
+  return {
+    id: user.id,
+    username: user.username,
+    fullName: user.fullName,
+    avatar: user.avatar ?? undefined,
+    isSelf: true,
+  };
+}
 
 interface UseMeCommentsOptions {
   onDelta?: (delta: number) => void;
@@ -16,6 +29,12 @@ export function useMeComments(postId: string, options: UseMeCommentsOptions = {}
   const [error, setError] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [replyTarget, setReplyTarget] = useState<PostComment | null>(null);
+  const commentsRef = useRef<PostComment[]>([]);
+  const pendingLikes = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    commentsRef.current = comments;
+  }, [comments]);
 
   useEffect(() => {
     let active = true;
@@ -70,16 +89,30 @@ export function useMeComments(postId: string, options: UseMeCommentsOptions = {}
 
   const like = useCallback(
     async (commentId: string) => {
-      const target = comments.find((item) => item.id === commentId);
+      if (pendingLikes.current.has(commentId)) return;
+      const target = commentsRef.current.find((item) => item.id === commentId);
       if (target == null) return;
+      pendingLikes.current.add(commentId);
+
+      const self = selfLiker();
+      const nextLiked = !target.liked;
+      const currentLikers = target.topLikers ?? [];
+      const nextLikers =
+        self == null
+          ? currentLikers
+          : nextLiked
+            ? [self, ...currentLikers.filter((liker) => liker.id !== self.id)].slice(0, 3)
+            : currentLikers.filter((liker) => liker.id !== self.id);
       const optimistic: PostComment = {
         ...target,
-        liked: !target.liked,
+        liked: nextLiked,
         likeCount: Math.max(0, target.likeCount + (target.liked ? -1 : 1)),
+        topLikers: nextLikers,
       };
       setComments((current) =>
         current.map((item) => (item.id === commentId ? optimistic : item))
       );
+
       try {
         const updated = await MeService.likeComment(postId, commentId);
         setComments((current) =>
@@ -100,14 +133,16 @@ export function useMeComments(postId: string, options: UseMeCommentsOptions = {}
           current.map((item) => (item.id === commentId ? target : item))
         );
         toast.error(i18n.t('me.commentLikeError'));
+      } finally {
+        pendingLikes.current.delete(commentId);
       }
     },
-    [postId, comments]
+    [postId]
   );
 
   const remove = useCallback(
     async (commentId: string) => {
-      const snapshot = comments;
+      const snapshot = commentsRef.current;
       setComments((current) => current.filter((item) => item.id !== commentId));
       setTotal((value) => Math.max(0, value - 1));
       try {
@@ -121,7 +156,7 @@ export function useMeComments(postId: string, options: UseMeCommentsOptions = {}
         toast.error(i18n.t('me.commentDeleteError'));
       }
     },
-    [postId, comments, onDelta]
+    [postId, onDelta]
   );
 
   return { comments, total, loading, error, submitting, add, remove, like, replyTarget, setReplyTarget };

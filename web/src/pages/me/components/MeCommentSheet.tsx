@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/store/authStore';
 import { MePostCard } from './MePostCard';
@@ -35,10 +35,13 @@ export function MeCommentSheet({
   const me = useAuthStore((state) => state.user);
   const [shown, setShown] = useState(false);
 
+  const handleCommentDelta = useCallback(
+    (delta: number) => onCommentDelta(post.id, delta),
+    [onCommentDelta, post.id]
+  );
+
   const { comments, total, loading, error, submitting, add, remove, like, replyTarget, setReplyTarget } =
-    useMeComments(post.id, {
-      onDelta: (delta) => onCommentDelta(post.id, delta),
-    });
+    useMeComments(post.id, { onDelta: handleCommentDelta });
 
   const replyingToUsername = replyTarget != null ? replyTarget.author?.username ?? null : null;
 
