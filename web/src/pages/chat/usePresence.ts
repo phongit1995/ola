@@ -22,16 +22,28 @@ export function useConversationsWithPresence(): Conversation[] {
   );
 }
 
+function lastActiveMs(value?: string): number {
+  if (value == null || value === '') return 0;
+  const ms = Date.parse(value);
+  return Number.isNaN(ms) ? 0 : ms;
+}
+
 export function useFriendsWithPresence(): Friend[] {
   const friends = useFriendsStore((s) => s.friends);
   const presence = usePresenceStore((s) => s.presence);
   return useMemo(
     () =>
-      friends.map((friend) => {
-        const live = presence.get(friend.id);
-        if (live == null) return friend;
-        return { ...friend, isOnline: live.isOnline, lastActiveAt: live.lastActiveAt };
-      }),
+      friends
+        .map((friend) => {
+          const live = presence.get(friend.id);
+          if (live == null) return friend;
+          return { ...friend, isOnline: live.isOnline, lastActiveAt: live.lastActiveAt };
+        })
+        .sort((a, b) => {
+          if (a.isOnline !== b.isOnline) return a.isOnline ? -1 : 1;
+          if (a.isOnline) return 0;
+          return lastActiveMs(b.lastActiveAt) - lastActiveMs(a.lastActiveAt);
+        }),
     [friends, presence]
   );
 }
