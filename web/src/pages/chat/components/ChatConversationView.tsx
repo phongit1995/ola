@@ -381,7 +381,7 @@ export function ChatConversationView({
               const showDate =
                 !!message.createdAt && !isSameDay(prev?.createdAt ?? '', message.createdAt);
               return (
-                <Fragment key={message.id}>
+                <Fragment key={message.key}>
                   {showDate && <DateSeparator iso={message.createdAt ?? ''} />}
                   <MessageRow
                     message={message}
