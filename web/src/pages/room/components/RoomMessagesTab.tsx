@@ -12,12 +12,14 @@ import {
 import replyActionIcon from '@/assets/icons/me/ic_action_reply_gray.png';
 import copyActionIcon from '@/assets/icons/chat/ic_menu_copy.svg';
 import deleteActionIcon from '@/assets/icons/chat/ic_menu_delete.png';
+import blockActionIcon from '@/assets/icons/chat/ic_menu_block.svg';
 import { buildRoomFeed } from '../messageGroups';
 import { RoomMessageGroup } from './RoomMessageGroup';
 import { RoomComposerBar, type RoomComposerHandle } from './RoomComposerBar';
 import { RoomReactionsDialog } from './RoomReactionsDialog';
 import { RoomReactionNotice } from './RoomReactionNotice';
 import type { RoomChatStatus } from '@/store/roomChatStore';
+import { useRoomFilterStore } from '../roomFilterStore';
 
 interface RoomMessagesTabProps {
   currentUserId: string;
@@ -59,12 +61,15 @@ export function RoomMessagesTab({
   onDeleteMessage,
 }: RoomMessagesTabProps) {
   const { t } = useTranslation();
+  const blockedUserIds = useRoomFilterStore((s) => s.blockedUserIds);
+  const blockUser = useRoomFilterStore((s) => s.blockUser);
 
   const [actionTarget, setActionTarget] = useState<{
     message: RoomMessage;
     anchor: DOMRect | null;
   } | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<RoomMessage | null>(null);
+  const [blockTarget, setBlockTarget] = useState<RoomMessage | null>(null);
   const [reactionsTargetId, setReactionsTargetId] = useState<string | null>(null);
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const composerRef = useRef<RoomComposerHandle>(null);
@@ -156,6 +161,13 @@ export function RoomMessagesTab({
         onSelect: () => onSetReplyTarget(message),
       });
       if (isCopyableText(message)) actions.push(copyAction);
+      actions.push({
+        key: 'block',
+        label: t('room.actionBlock'),
+        icon: blockActionIcon,
+        destructive: true,
+        onSelect: () => setBlockTarget(message),
+      });
     } else {
       if (isCopyableText(message)) actions.push(copyAction);
       actions.push({
@@ -174,7 +186,12 @@ export function RoomMessagesTab({
     return kulImageForText(message.content) != null ? t('room.replySticker') : message.content;
   }
 
-  const feed = useMemo(() => buildRoomFeed(messages, currentUserId), [messages, currentUserId]);
+  const feed = useMemo(() => {
+    const blocked = new Set(blockedUserIds);
+    const visible =
+      blocked.size === 0 ? messages : messages.filter((item) => !blocked.has(item.senderId));
+    return buildRoomFeed(visible, currentUserId);
+  }, [messages, currentUserId, blockedUserIds]);
 
   return (
     <div className={`relative flex flex-1 flex-col overflow-hidden ${active ? '' : 'hidden'}`}>
@@ -278,6 +295,24 @@ export function RoomMessagesTab({
           }
         }}
         onCancel={() => setDeleteTarget(null)}
+      />
+
+      <ConfirmDialog
+        open={blockTarget != null}
+        danger
+        title={t('room.blockTitle')}
+        message={t('room.blockConfirm', { name: blockTarget?.senderName ?? '' })}
+        confirmLabel={t('room.actionBlock')}
+        cancelLabel={t('dialog.cancel')}
+        onConfirm={() => {
+          const target = blockTarget;
+          setBlockTarget(null);
+          if (target != null) {
+            blockUser(target.senderId);
+            toast.success(t('room.blockSuccess'));
+          }
+        }}
+        onCancel={() => setBlockTarget(null)}
       />
     </div>
   );
