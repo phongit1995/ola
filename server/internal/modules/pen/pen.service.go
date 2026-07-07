@@ -253,6 +253,54 @@ func (s *Service) Stats(f AdminShotFilter) (*PenStatsResponse, error) {
 	}, nil
 }
 
+const leaderboardLimit = 20
+
+var gmt7 = time.FixedZone("GMT+7", 7*60*60)
+
+func leaderboardRange(period string) (time.Time, time.Time) {
+	now := time.Now().In(gmt7)
+	var start time.Time
+	if period == "week" {
+		daysFromMonday := (int(now.Weekday()) + 6) % 7
+		day := now.AddDate(0, 0, -daysFromMonday)
+		start = time.Date(day.Year(), day.Month(), day.Day(), 0, 0, 0, 0, gmt7)
+	} else {
+		start = time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, gmt7)
+	}
+	return start.UTC(), now.UTC()
+}
+
+func (s *Service) Leaderboard(period string) (*LeaderboardResponse, error) {
+	from, to := leaderboardRange(period)
+	rows, err := s.repo.Leaderboard(from, to, leaderboardLimit)
+	if err != nil {
+		return nil, err
+	}
+	items := make([]LeaderboardEntry, len(rows))
+	for i, row := range rows {
+		items[i] = LeaderboardEntry{
+			Rank: i + 1,
+			User: UserBrief{
+				ID:         row.UserID.String(),
+				Username:   row.Username,
+				FullName:   row.FullName,
+				Avatar:     row.Avatar,
+				VipUsed:    row.VipUsed,
+				VipEndTime: formatOptionalTime(row.VipEndTime),
+			},
+			Profit: row.Profit,
+			Plays:  row.Plays,
+			Wins:   row.Wins,
+		}
+	}
+	return &LeaderboardResponse{
+		Period: period,
+		From:   from.Format(time.RFC3339),
+		To:     to.Format(time.RFC3339),
+		Items:  items,
+	}, nil
+}
+
 func buildList(items []models.PenShot, total int64, limit, offset int, reveal bool) *ShotListResponse {
 	views := make([]ShotView, len(items))
 	for i := range items {

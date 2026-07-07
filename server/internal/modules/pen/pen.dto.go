@@ -129,3 +129,20 @@ type PenStatsResponse struct {
 
 type AdminShotListSuccessResponse = utils.BaseResponse[ShotListResponse]
 type PenStatsSuccessResponse = utils.BaseResponse[PenStatsResponse]
+
+type LeaderboardEntry struct {
+	Rank   int       `json:"rank" example:"1"`
+	User   UserBrief `json:"user"`
+	Profit int64     `json:"profit" example:"19000"`
+	Plays  int64     `json:"plays" example:"25"`
+	Wins   int64     `json:"wins" example:"18"`
+}
+
+type LeaderboardResponse struct {
+	Period string             `json:"period" example:"day"`
+	From   string             `json:"from" example:"2026-07-06T17:00:00Z"`
+	To     string             `json:"to" example:"2026-07-07T09:00:00Z"`
+	Items  []LeaderboardEntry `json:"items"`
+}
+
+type LeaderboardSuccessResponse = utils.BaseResponse[LeaderboardResponse]

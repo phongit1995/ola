@@ -203,6 +203,29 @@ func (ctrl *Controller) History(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
+// Leaderboard godoc
+// @Summary      Top người chơi PEN lời nhiều nhất (ngày/tuần, GMT+7)
+// @Tags         pen
+// @Produce      json
+// @Security     BearerAuth
+// @Param        period query string false "day | week (default day)"
+// @Success      200  {object}  LeaderboardSuccessResponse
+// @Router       /pen/leaderboard [get]
+func (ctrl *Controller) Leaderboard(c *gin.Context) (interface{}, error) {
+	if _, err := utils.RequireUserID(c); err != nil {
+		return nil, err
+	}
+	period := c.Query("period")
+	if period != "week" {
+		period = "day"
+	}
+	resp, err := ctrl.service.Leaderboard(period)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
 // AllHistory godoc
 // @Summary      Lịch sử các lượt đã xử lý của tất cả mọi người
 // @Tags         pen
