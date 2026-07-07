@@ -103,6 +103,7 @@ type RoomMessageResponse struct {
 	CreatedAt    string                   `json:"createdAt"`
 	ReplyTo      *RoomReplySnapshot       `json:"replyTo,omitempty"`
 	Reactions    map[string][]RoomReactor `json:"reactions,omitempty"`
+	ClientMsgID  string                   `json:"clientMsgId,omitempty"`
 }
 
 type storedRoomMessage struct {

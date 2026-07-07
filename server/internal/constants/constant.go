@@ -228,6 +228,7 @@ const (
 	MaxAudioUploadSize           = 10 * 1024 * 1024
 	MaxAudioDurationSeconds      = 300
 	UploadFolderMessages         = "messages"
+	UploadFolderRooms            = "rooms"
 	UploadFolderPosts            = "posts"
 	UploadFolderAvatar           = "avatar"
 	UploadFolderAdmin            = "admin"
