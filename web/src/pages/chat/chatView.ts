@@ -79,6 +79,7 @@ export function toBubble(message: Message, myId: string): ChatMessage {
   const meta = isImage || isAudio ? parseMessageMetadata(message.metadata) : {};
   return {
     id: message.id,
+    key: message.clientMsgId ?? message.id,
     direction: message.senderId === myId ? 'out' : 'in',
     kind: isImage ? 'image' : isAudio ? 'voice' : 'text',
     text: isImage || isAudio ? undefined : message.content,

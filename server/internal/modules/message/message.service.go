@@ -19,7 +19,9 @@ import (
 	messageEvents "ola-chat-server/internal/domain/message"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/conversation"
+	"ola-chat-server/internal/modules/relationships"
 	userModule "ola-chat-server/internal/modules/user"
+	usersetting "ola-chat-server/internal/modules/user-setting"
 	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/transport/kafka"
 	"ola-chat-server/internal/utils"
@@ -37,32 +39,36 @@ import (
 )
 
 type Service struct {
-	repo          *Repository
-	cache         *CacheService
-	convRepo      *conversation.Repository
-	convCache     *conversation.CacheService
-	userCache     *userModule.CacheService
-	db            *gorm.DB
-	kafkaProducer *kafka.Producer
-	s3            *services.S3Service
-	redis         *services.CacheService
-	cfg           *config.Config
-	logger        *zap.SugaredLogger
+	repo           *Repository
+	cache          *CacheService
+	convRepo       *conversation.Repository
+	convCache      *conversation.CacheService
+	userCache      *userModule.CacheService
+	userSettingSvc *usersetting.Service
+	relRepo        *relationships.Repository
+	db             *gorm.DB
+	kafkaProducer  *kafka.Producer
+	s3             *services.S3Service
+	redis          *services.CacheService
+	cfg            *config.Config
+	logger         *zap.SugaredLogger
 }
 
-func NewService(repo *Repository, cache *CacheService, convRepo *conversation.Repository, convCache *conversation.CacheService, userCache *userModule.CacheService, db *gorm.DB, kafkaProducer *kafka.Producer, s3 *services.S3Service, redis *services.CacheService, cfg *config.Config, logger *zap.SugaredLogger) *Service {
+func NewService(repo *Repository, cache *CacheService, convRepo *conversation.Repository, convCache *conversation.CacheService, userCache *userModule.CacheService, userSettingSvc *usersetting.Service, relRepo *relationships.Repository, db *gorm.DB, kafkaProducer *kafka.Producer, s3 *services.S3Service, redis *services.CacheService, cfg *config.Config, logger *zap.SugaredLogger) *Service {
 	return &Service{
-		repo:          repo,
-		cache:         cache,
-		convRepo:      convRepo,
-		convCache:     convCache,
-		userCache:     userCache,
-		db:            db,
-		kafkaProducer: kafkaProducer,
-		s3:            s3,
-		redis:         redis,
-		cfg:           cfg,
-		logger:        logger.Named("[message_service]"),
+		repo:           repo,
+		cache:          cache,
+		convRepo:       convRepo,
+		convCache:      convCache,
+		userCache:      userCache,
+		userSettingSvc: userSettingSvc,
+		relRepo:        relRepo,
+		db:             db,
+		kafkaProducer:  kafkaProducer,
+		s3:             s3,
+		redis:          redis,
+		cfg:            cfg,
+		logger:         logger.Named("[message_service]"),
 	}
 }
 
@@ -493,6 +499,16 @@ func (s *Service) SendDirectMessage(senderID, recipientID uuid.UUID, messageType
 	userA, userB := senderID, recipientID
 	if senderID.String() > recipientID.String() {
 		userA, userB = recipientID, senderID
+	}
+
+	existingID, err := s.convRepo.GetDirectConversationID(userA, userB)
+	if err != nil {
+		return nil, err
+	}
+	if existingID == nil {
+		if err := conversation.BlockIfPrivateFromStranger(s.userSettingSvc, s.relRepo, senderID, recipientID); err != nil {
+			return nil, err
+		}
 	}
 
 	conversationID, isNew, err := s.convRepo.GetOrCreateDirectConversation(userA, userB)

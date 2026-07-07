@@ -34,6 +34,7 @@ type RoomMessageData struct {
 	ImageURL     string             `json:"imageUrl,omitempty"`
 	CreatedAt    string             `json:"createdAt"`
 	ReplyTo      *RoomReplySnapshot `json:"replyTo,omitempty"`
+	ClientMsgID  string             `json:"clientMsgId,omitempty"`
 }
 
 type RoomMessageCreatedEvent struct {

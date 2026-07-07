@@ -9,6 +9,7 @@ import (
 	meNotificationEvents "ola-chat-server/internal/domain/me-notification"
 	messageEvents "ola-chat-server/internal/domain/message"
 	roomEvents "ola-chat-server/internal/domain/room"
+	userBanEvents "ola-chat-server/internal/domain/user-ban"
 )
 
 type KafkaEventAdapter struct {
@@ -18,6 +19,7 @@ type KafkaEventAdapter struct {
 	roomHandler           *roomEvents.EventHandler
 	kenChestHandler       *kenChestEvents.EventHandler
 	meNotificationHandler *meNotificationEvents.EventHandler
+	userBanHandler        *userBanEvents.EventHandler
 }
 
 func NewKafkaEventAdapter(
@@ -27,6 +29,7 @@ func NewKafkaEventAdapter(
 	roomHandler *roomEvents.EventHandler,
 	kenChestHandler *kenChestEvents.EventHandler,
 	meNotificationHandler *meNotificationEvents.EventHandler,
+	userBanHandler *userBanEvents.EventHandler,
 ) *KafkaEventAdapter {
 	return &KafkaEventAdapter{
 		messageHandler:        messageHandler,
@@ -35,6 +38,7 @@ func NewKafkaEventAdapter(
 		roomHandler:           roomHandler,
 		kenChestHandler:       kenChestHandler,
 		meNotificationHandler: meNotificationHandler,
+		userBanHandler:        userBanHandler,
 	}
 }
 
@@ -110,6 +114,10 @@ func (a *KafkaEventAdapter) HandleMeNotification(ctx context.Context, message []
 	return a.meNotificationHandler.OnCreated(ctx, message)
 }
 
+func (a *KafkaEventAdapter) HandleUserBanned(ctx context.Context, message []byte) error {
+	return a.userBanHandler.OnBanned(ctx, message)
+}
+
 func RegisterEventHandlers(consumer *Consumer, adapter *KafkaEventAdapter) {
 	consumer.RegisterHandler(constants.KafkaTopicMessageCreated, adapter.HandleMessageCreated)
 	consumer.RegisterHandler(constants.KafkaTopicMessageDeleted, adapter.HandleMessageDeleted)
@@ -129,4 +137,5 @@ func RegisterEventHandlers(consumer *Consumer, adapter *KafkaEventAdapter) {
 	consumer.RegisterHandler(constants.KafkaTopicKenChestAvailable, adapter.HandleKenChestAvailable)
 	consumer.RegisterHandler(constants.KafkaTopicKenChestClosed, adapter.HandleKenChestClosed)
 	consumer.RegisterHandler(constants.KafkaTopicMeNotification, adapter.HandleMeNotification)
+	consumer.RegisterHandler(constants.KafkaTopicUserBanned, adapter.HandleUserBanned)
 }

@@ -2,7 +2,8 @@ import { memo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import mentionIcon from '@/assets/icons/room/ic_tag_people.png';
 import photoIcon from '@/assets/icons/chat/ic_local.png';
-import { VipAvatar } from '@components';
+import resendIcon from '@/assets/icons/chat/btn_resend_d.png';
+import { Spinner, VipAvatar } from '@components';
 import { useLongPress } from '@hooks';
 import { colorForName, kulImageForText, reactionChips, renderRichText } from '@lib';
 import { useMediaViewerStore } from '@/store/mediaViewerStore';
@@ -24,6 +25,7 @@ interface RoomMessageGroupProps {
   onLongPressMessage?: (id: string, anchor: DOMRect | null) => void;
   onQuoteClick?: (messageId: string) => void;
   onShowReactions?: (id: string) => void;
+  onResendImage?: (id: string) => void;
 }
 
 interface QuoteBlockProps {
@@ -76,6 +78,7 @@ interface RoomBubbleProps {
   onMention: (nick: string) => void;
   onLongPressMessage?: (id: string, anchor: DOMRect | null) => void;
   onQuoteClick?: (messageId: string) => void;
+  onResendImage?: (id: string) => void;
 }
 
 function RoomBubble({
@@ -86,9 +89,14 @@ function RoomBubble({
   onMention,
   onLongPressMessage,
   onQuoteClick,
+  onResendImage,
 }: RoomBubbleProps) {
+  const { t } = useTranslation();
+  const uploading = message.status === 'uploading';
+  const failed = message.status === 'failed';
   const suppressClick = useRef(false);
   const longPress = useLongPress((anchor) => {
+    if (uploading || failed) return;
     suppressClick.current = true;
     onLongPressMessage?.(message.id, anchor);
   });
@@ -102,11 +110,32 @@ function RoomBubble({
     : `w-fit max-w-full break-words bg-[#f1f8e9] px-3.5 py-2 text-base text-black/87 ${corners}`;
 
   const content = isImage ? (
-    <img
-      src={message.imageUrl}
-      alt=""
-      className="max-h-44 w-auto max-w-52 rounded-lg object-cover"
-    />
+    <span className="relative block">
+      <img
+        src={message.imageUrl}
+        alt=""
+        className={`max-h-44 w-auto max-w-52 rounded-lg object-cover ${uploading || failed ? 'opacity-60' : ''}`}
+      />
+      {uploading && (
+        <span className="absolute inset-0 flex items-center justify-center">
+          <Spinner size={22} />
+        </span>
+      )}
+      {failed && (
+        <button
+          type="button"
+          aria-label={t('chat.resend')}
+          title={t('chat.resend')}
+          onClick={(event) => {
+            event.stopPropagation();
+            onResendImage?.(message.id);
+          }}
+          className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/40"
+        >
+          <img src={resendIcon} alt="" className="h-7 w-7 object-contain" />
+        </button>
+      )}
+    </span>
   ) : kul != null ? (
     <img src={kul} alt="" className="h-28 w-auto object-contain" />
   ) : (
@@ -137,7 +166,7 @@ function RoomBubble({
           suppressClick.current = false;
           return;
         }
-        if (isImage) openViewer([message.imageUrl!]);
+        if (isImage && !uploading && !failed) openViewer([message.imageUrl!]);
       }}
       className={`w-fit max-w-full touch-pan-y select-none ${
         highlighted ? 'rounded-2xl ring-2 ring-ola-primary/40' : ''
@@ -188,6 +217,7 @@ function RoomMessageGroupComponent({
   onLongPressMessage,
   onQuoteClick,
   onShowReactions,
+  onResendImage,
 }: RoomMessageGroupProps) {
   const { t } = useTranslation();
   const { isOwn, senderName } = group;
@@ -237,12 +267,13 @@ function RoomMessageGroupComponent({
                 onMention={onMention}
                 onLongPressMessage={onLongPressMessage}
                 onQuoteClick={onQuoteClick}
+                onResendImage={onResendImage}
               />
             );
             const withQuickMention = !isOwn && index === lastIndex;
             return (
               <div
-                key={message.id}
+                key={message.key}
                 className={`flex w-fit max-w-full flex-col gap-0.5 ${
                   isOwn ? 'items-end' : 'self-start'
                 }`}

@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActionButton,
@@ -27,7 +27,7 @@ import type { ChatMessage } from '../types';
 import { toBubble } from '../chatView';
 import { formatLastActive } from '../friends';
 import { usePeerCard } from '../usePeerCard';
-import { useLongPress, useOutsideClick } from '@hooks';
+import { useLongPress, useOutsideClick, useStickyScroll } from '@hooks';
 import { MessageRow } from './MessageRow';
 import { TransferKenDialog } from './TransferKenDialog';
 import { TradingVipDialog } from './TradingVipDialog';
@@ -110,13 +110,9 @@ export function ChatConversationView({
     null
   );
   const [now, setNow] = useState<number | null>(null);
-  const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const composerAreaRef = useRef<HTMLDivElement>(null);
   const composerRef = useRef<SmileyInputHandle>(null);
-  const lastBubbleIdRef = useRef<string | null>(null);
-  const prependAnchorRef = useRef<number | null>(null);
-  const stickToBottomRef = useRef(true);
   const suppressLikeClick = useRef(false);
   const likeLongPress = useLongPress(() => {
     suppressLikeClick.current = true;
@@ -146,6 +142,15 @@ export function ChatConversationView({
     () => messages.map((message) => toBubble(message, myId)),
     [messages, myId]
   );
+
+  const { scrollRef, handleScroll, pin, scrollToBottomIfPinned } = useStickyScroll({
+    count: bubbles.length,
+    lastId: bubbles[bubbles.length - 1]?.id ?? null,
+    hasMore,
+    loadingMore,
+    onLoadMore: loadMoreMessages,
+    loadMoreAtTop: 0,
+  });
 
   const {
     anchorId: peerCardAnchorId,
@@ -180,50 +185,12 @@ export function ChatConversationView({
   }
 
   useEffect(() => {
-    stickToBottomRef.current = true;
-    lastBubbleIdRef.current = null;
-  }, [currentConversationId]);
-
-  useLayoutEffect(() => {
-    const element = scrollRef.current;
-    if (element == null) return;
-    const lastId = bubbles[bubbles.length - 1]?.id ?? null;
-    if (prependAnchorRef.current != null) {
-      element.scrollTop = element.scrollHeight - prependAnchorRef.current;
-      prependAnchorRef.current = null;
-    } else if (lastId !== lastBubbleIdRef.current && stickToBottomRef.current) {
-      element.scrollTop = element.scrollHeight;
-    }
-    lastBubbleIdRef.current = lastId;
-  }, [bubbles]);
+    pin();
+  }, [currentConversationId, pin]);
 
   useEffect(() => {
-    const element = scrollRef.current;
-    if (element == null) return;
-    function scrollToBottomIfPinned() {
-      const target = scrollRef.current;
-      if (target != null && stickToBottomRef.current) target.scrollTop = target.scrollHeight;
-    }
-    element.addEventListener('load', scrollToBottomIfPinned, true);
-    return () => element.removeEventListener('load', scrollToBottomIfPinned, true);
-  }, []);
-
-  useEffect(() => {
-    if (stickToBottomRef.current) {
-      scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
-    }
-  }, [peerTyping, openTab, peerCardVisible]);
-
-  function handleScroll() {
-    const element = scrollRef.current;
-    if (element == null) return;
-    const distanceFromBottom = element.scrollHeight - element.scrollTop - element.clientHeight;
-    stickToBottomRef.current = distanceFromBottom < 80;
-    if (element.scrollTop <= 0 && hasMore && !loadingMore) {
-      prependAnchorRef.current = element.scrollHeight;
-      void loadMoreMessages();
-    }
-  }
+    scrollToBottomIfPinned();
+  }, [peerTyping, openTab, peerCardVisible, scrollToBottomIfPinned]);
 
   function submitComposer() {
     const trimmed = draft.trim();
@@ -414,7 +381,7 @@ export function ChatConversationView({
               const showDate =
                 !!message.createdAt && !isSameDay(prev?.createdAt ?? '', message.createdAt);
               return (
-                <Fragment key={message.id}>
+                <Fragment key={message.key}>
                   {showDate && <DateSeparator iso={message.createdAt ?? ''} />}
                   <MessageRow
                     message={message}

@@ -1,10 +1,11 @@
-import type { RoomMessage, RoomReactor, RoomReplySnapshot } from '@app-types';
+import type { RoomMessage, RoomMessageStatus, RoomReactor, RoomReplySnapshot } from '@app-types';
 import { GROUP_GAP_MS } from './constants';
 
 export type BubblePosition = 'single' | 'first' | 'middle' | 'last';
 
 export interface GroupedMessage {
   id: string;
+  key: string;
   content: string;
   type?: 'text' | 'image';
   imageUrl?: string;
@@ -12,6 +13,7 @@ export interface GroupedMessage {
   position: BubblePosition;
   replyTo?: RoomReplySnapshot;
   reactions?: Record<string, RoomReactor[]>;
+  status?: RoomMessageStatus;
 }
 
 export interface MessageGroup {
@@ -33,6 +35,10 @@ export interface DateSeparator {
 }
 
 export type RoomFeedItem = MessageGroup | DateSeparator;
+
+function renderKey(message: RoomMessage): string {
+  return message.clientMsgId ?? message.id;
+}
 
 function dayKey(iso: string): string {
   const date = new Date(iso);
@@ -89,7 +95,7 @@ export function buildRoomFeed(messages: RoomMessage[], currentUserId: string): R
     if (showTime) lastShownMinute = bucket;
     items.push({
       kind: 'group',
-      key: pending.raw[0]!.id,
+      key: renderKey(pending.raw[0]!),
       isOwn: pending.isOwn,
       senderId: pending.senderId,
       senderName: pending.senderName,
@@ -98,6 +104,7 @@ export function buildRoomFeed(messages: RoomMessage[], currentUserId: string): R
       showTime,
       messages: pending.raw.map((message, index) => ({
         id: message.id,
+        key: renderKey(message),
         content: message.content,
         type: message.type,
         imageUrl: message.imageUrl,
@@ -105,6 +112,7 @@ export function buildRoomFeed(messages: RoomMessage[], currentUserId: string): R
         position: bubblePosition(count, index),
         replyTo: resolveReplySnapshot(message.replyTo, byId),
         reactions: message.reactions,
+        status: message.status,
       })),
     });
     pending = null;

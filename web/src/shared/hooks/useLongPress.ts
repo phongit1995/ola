@@ -39,6 +39,7 @@ export function useLongPress(onLongPress: (anchor: DOMRect | null) => void) {
     },
     onPointerUp: clear,
     onPointerLeave: clear,
+    onPointerCancel: clear,
     onContextMenu: (event: ReactMouseEvent) => {
       event.preventDefault();
       const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();

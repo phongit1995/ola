@@ -58,6 +58,7 @@ export interface StrangerCard {
 
 export interface ChatMessage {
   id: string;
+  key: string;
   direction: 'in' | 'out';
   kind: ChatMessageKind;
   time: string;

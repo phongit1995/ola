@@ -2,8 +2,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMeFeedStore } from './meFeedStore';
 import { useMeLocalStore } from '@/store/meLocalStore';
-import { createTimeFormatter } from '@lib';
+import { compressImagesForUpload, createTimeFormatter, toast } from '@lib';
 import { toMePost } from './mappers';
+import { composedToPayload } from './composer';
 import { TAB_FILTER } from './constants';
 import type { ComposedPost } from './components/MeComposerDialog';
 import type { MeTab } from './types';
@@ -55,57 +56,34 @@ export function useMeFeed() {
 
   const addPost = useCallback(
     async (draft: ComposedPost): Promise<boolean> => {
-      const created = await createPost(
-        {
-          content: draft.content,
-          checkIn: draft.checkIn
-            ? {
-                name: draft.checkIn.name,
-                address: draft.checkIn.address,
-                lat: draft.checkIn.lat,
-                lng: draft.checkIn.lng,
-                action: draft.checkIn.action,
-                actionIcon: draft.checkIn.actionIcon,
-              }
-            : undefined,
-          sticker: draft.sticker ?? undefined,
-          visibility: draft.visibility,
-        },
-        draft.files,
-        draft.imageUrls
-      );
+      let files: File[];
+      try {
+        files = await compressImagesForUpload(draft.files);
+      } catch {
+        toast.error(i18n.t('me.postError'));
+        return false;
+      }
+      const created = await createPost(composedToPayload(draft), files, draft.imageUrls);
       if (created == null) return false;
       prependPost(created);
       return true;
     },
-    [createPost, prependPost]
+    [createPost, prependPost, i18n]
   );
 
   const editPost = useCallback(
     async (id: string, draft: ComposedPost): Promise<boolean> => {
-      const updated = await updatePost(
-        id,
-        {
-          content: draft.content,
-          checkIn: draft.checkIn
-            ? {
-                name: draft.checkIn.name,
-                address: draft.checkIn.address,
-                lat: draft.checkIn.lat,
-                lng: draft.checkIn.lng,
-                action: draft.checkIn.action,
-                actionIcon: draft.checkIn.actionIcon,
-              }
-            : undefined,
-          sticker: draft.sticker ?? undefined,
-          visibility: draft.visibility,
-        },
-        draft.files,
-        draft.imageUrls
-      );
+      let files: File[];
+      try {
+        files = await compressImagesForUpload(draft.files);
+      } catch {
+        toast.error(i18n.t('me.editError'));
+        return false;
+      }
+      const updated = await updatePost(id, composedToPayload(draft), files, draft.imageUrls);
       return updated != null;
     },
-    [updatePost]
+    [updatePost, i18n]
   );
 
   const deletePost = useCallback((id: string) => removePost(id), [removePost]);

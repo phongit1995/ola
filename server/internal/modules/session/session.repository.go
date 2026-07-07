@@ -61,6 +61,21 @@ func (r *Repository) RevokeAllExcept(userID, keepID uuid.UUID) (int64, error) {
 	return res.RowsAffected, res.Error
 }
 
+func (r *Repository) ListActiveIDsForUser(userID uuid.UUID) ([]uuid.UUID, error) {
+	var ids []uuid.UUID
+	err := r.db.Model(&models.UserSession{}).
+		Where("user_id = ? AND revoked_at IS NULL", userID).
+		Pluck("id", &ids).Error
+	return ids, err
+}
+
+func (r *Repository) RevokeAllForUser(userID uuid.UUID) (int64, error) {
+	res := r.db.Model(&models.UserSession{}).
+		Where("user_id = ? AND revoked_at IS NULL", userID).
+		Update("revoked_at", gorm.Expr("NOW()"))
+	return res.RowsAffected, res.Error
+}
+
 func (r *Repository) RotateRefreshToken(sessionID uuid.UUID, oldToken, newToken string) (bool, error) {
 	res := r.db.Model(&models.UserSession{}).
 		Where("id = ? AND refresh_token = ? AND revoked_at IS NULL", sessionID, oldToken).

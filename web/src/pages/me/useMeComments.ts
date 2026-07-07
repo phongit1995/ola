@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { MeService } from '@services';
 import type { PostComment } from '@app-types';
-import { toast } from '@lib';
+import { toApiError, toast } from '@lib';
 import i18n from '@/i18n';
 
 interface UseMeCommentsOptions {
@@ -54,6 +54,10 @@ export function useMeComments(postId: string, options: UseMeCommentsOptions = {}
         toast.success(i18n.t('me.commentSent'));
         return true;
       } catch (err) {
+        if (toApiError(err).status === 403) {
+          toast.error(i18n.t('me.commentErrFriendsOnly'));
+          return false;
+        }
         console.error('add comment failed', err);
         toast.error(i18n.t('me.commentSendError'));
         return false;

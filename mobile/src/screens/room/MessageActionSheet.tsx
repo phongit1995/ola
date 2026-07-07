@@ -100,6 +100,7 @@ function AnchoredPopup({
   onClose,
 }: MessageActionSheetProps & { anchor: AnchorRect }) {
   const { width: winW, height: winH } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const refWidth = Math.min(BAR_WIDTH, winW - POPUP_MARGIN * 2);
   const height = popupHeight(actions.length, showReactions);
   const alignRight = anchor.x + anchor.width / 2 > winW / 2;
@@ -107,7 +108,8 @@ function AnchoredPopup({
   const spaceBelow = winH - (anchor.y + anchor.height) - POPUP_MARGIN;
   const placeBelow = spaceBelow >= height + POPUP_GAP || spaceBelow >= anchor.y - POPUP_MARGIN;
   const rawTop = placeBelow ? anchor.y + anchor.height + POPUP_GAP : anchor.y - POPUP_GAP - height;
-  const top = clamp(rawTop, POPUP_MARGIN, winH - POPUP_MARGIN - height);
+  const minTop = Math.max(POPUP_MARGIN, insets.top);
+  const top = clamp(rawTop, minTop, winH - Math.max(POPUP_MARGIN, insets.bottom) - height);
 
   const left = alignRight
     ? winW -
@@ -229,6 +231,7 @@ export function MessageActionSheet({ anchor, ...props }: MessageActionSheetProps
     <Modal
       visible={props.visible}
       transparent
+      statusBarTranslucent
       animationType={anchor != null ? 'fade' : 'slide'}
       onRequestClose={props.onClose}
     >

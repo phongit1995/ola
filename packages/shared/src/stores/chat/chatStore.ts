@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { blobWithType, parseMessageMetadata, randomUuid, releaseUploadPreviewUrl, uploadPreviewUrl, type UploadFile } from '../../lib';
+import i18n from 'i18next';
+import { blobWithType, parseMessageMetadata, randomUuid, releaseUploadPreviewUrl, toApiError, toast, uploadPreviewUrl, type UploadFile } from '../../lib';
 import {
   buildOptimisticMessage,
   markById,
@@ -309,7 +310,8 @@ export const useChatStore = create<ChatState>((set, get) => {
         if (conversation != null && conversation.id !== '') {
           await get().openConversation(conversation.id);
         }
-      } catch {
+      } catch (error) {
+        if (toApiError(error).status === 403) toast.error(i18n.t('chat.sendErrFriendsOnly'));
         return;
       }
     },

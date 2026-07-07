@@ -3,7 +3,13 @@ import { RoomService, SocketService } from '../services';
 import { useAuthStore } from './authStore';
 import { ROOM_SOCKET_EVENTS, type RoomMessage, type RoomReactor } from '../types';
 import { playRoomTagSound } from '../platform/sound';
-import { messageMentionsUser, toRecord, withSenderVip, withVipTypeId } from './roomHelpers';
+import {
+  messageMentionsUser,
+  reconcileRoomServerMessage,
+  toRecord,
+  withSenderVip,
+  withVipTypeId,
+} from './roomHelpers';
 import type { RoomChatState } from './roomChatStore';
 
 type RoomSet = StoreApi<RoomChatState>['setState'];
@@ -27,12 +33,14 @@ function handleNewMessage(get: RoomGet, set: RoomSet, data: unknown) {
   if (roomId == null || message?.roomId !== roomId || typeof message.id !== 'string') return;
   const incoming = withSenderVip(message as unknown as RoomMessage);
   const me = useAuthStore.getState().user;
-  const isNew = !get().messages.some((item) => item.id === incoming.id);
+  const matchesIncoming = (item: RoomMessage) =>
+    item.id === incoming.id ||
+    (incoming.clientMsgId != null && item.clientMsgId === incoming.clientMsgId);
+  const isNew = !get().messages.some(matchesIncoming);
   const fromMe = incoming.senderId === me?.id;
   set((state) => {
-    if (state.messages.some((item) => item.id === incoming.id)) return state;
-    const messages = [...state.messages, incoming];
-    if (fromMe) return { messages };
+    const messages = reconcileRoomServerMessage(state.messages, incoming);
+    if (fromMe || !isNew) return { messages };
     return {
       messages,
       ...(state.roomForeground ? {} : { hasUnread: true }),

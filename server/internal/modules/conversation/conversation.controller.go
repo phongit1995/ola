@@ -1,8 +1,10 @@
 package conversation
 
 import (
-	"ola-chat-server/internal/utils"
+	"errors"
 	"net/http"
+
+	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -52,6 +54,9 @@ func (ctrl *Controller) CreateDirectConversation(c *gin.Context) (interface{}, e
 
 	conversation, err := ctrl.service.CreateDirectConversation(userID, recipientID)
 	if err != nil {
+		if errors.Is(err, ErrNotAllowedToMessage) {
+			return nil, utils.NewHTTPError(http.StatusForbidden, err.Error())
+		}
 		ctrl.logger.Errorw("Failed to create direct conversation", "error", err)
 		return nil, utils.NewHTTPError(http.StatusInternalServerError, "failed to create conversation")
 	}

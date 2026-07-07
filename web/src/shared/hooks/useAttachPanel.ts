@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { useOutsideClick } from '@hooks';
+import { useOutsideClick } from './useOutsideClick';
 
 export function useAttachPanel() {
   const [open, setOpen] = useState(false);

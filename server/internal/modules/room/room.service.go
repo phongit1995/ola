@@ -355,6 +355,7 @@ func (s *Service) SendImageMessage(ctx context.Context, userID, roomID uuid.UUID
 		Content:      "",
 		ImageURL:     imageURL,
 		CreatedAt:    createdAtStr,
+		ClientMsgID:  clientMsgID,
 	}
 
 	event := &roomEvents.RoomMessageCreatedEvent{
@@ -372,6 +373,7 @@ func (s *Service) SendImageMessage(ctx context.Context, userID, roomID uuid.UUID
 			Content:      msg.Content,
 			ImageURL:     msg.ImageURL,
 			CreatedAt:    msg.CreatedAt,
+			ClientMsgID:  clientMsgID,
 		},
 	}
 	if err := s.producer.PublishRoomMessageCreated(ctx, event); err != nil {
@@ -419,7 +421,7 @@ func (s *Service) uploadRoomImage(ctx context.Context, userID, roomID uuid.UUID,
 
 	ext := pickRoomImageExtension(detectedMime, fileHeader.Filename)
 	safeName := fmt.Sprintf("image%s", ext)
-	folder := fmt.Sprintf("%s/rooms/%s", constants.UploadFolderMessages, time.Now().Format(constants.UploadDateLayoutDay))
+	folder := fmt.Sprintf("%s/%s", constants.UploadFolderRooms, time.Now().Format(constants.UploadDateLayoutDay))
 
 	upload, err := s.s3.UploadFile(ctx, &roomFileReader{Reader: bytes.NewReader(fullData), size: int64(len(fullData))}, safeName, folder)
 	if err != nil {

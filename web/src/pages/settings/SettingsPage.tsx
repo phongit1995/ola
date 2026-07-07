@@ -165,8 +165,8 @@ export function SettingsPage({ onClose }: { onClose: () => void }) {
               value={draft.commentPrivacy}
               onChange={(v) => setField('commentPrivacy', v)}
               options={[
-                { value: 'all', label: t('settings.optAll') },
                 { value: 'friends', label: t('settings.optFriends') },
+                { value: 'all', label: t('settings.optAll') },
               ]}
             />
           </SettingRow>

@@ -25,6 +25,7 @@ import (
 	meNotificationEvents "ola-chat-server/internal/domain/me-notification"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/relationships"
+	usersetting "ola-chat-server/internal/modules/user-setting"
 	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/transport/kafka"
 	"ola-chat-server/internal/utils"
@@ -35,29 +36,33 @@ import (
 )
 
 type Service struct {
-	repo          *Repository
-	relRepo       *relationships.Repository
-	s3            *services.S3Service
-	kafkaProducer *kafka.Producer
-	logger        *zap.SugaredLogger
+	repo           *Repository
+	relRepo        *relationships.Repository
+	userSettingSvc *usersetting.Service
+	s3             *services.S3Service
+	kafkaProducer  *kafka.Producer
+	logger         *zap.SugaredLogger
 }
 
-func NewService(repo *Repository, relRepo *relationships.Repository, s3 *services.S3Service, kafkaProducer *kafka.Producer, logger *zap.SugaredLogger) *Service {
+func NewService(repo *Repository, relRepo *relationships.Repository, userSettingSvc *usersetting.Service, s3 *services.S3Service, kafkaProducer *kafka.Producer, logger *zap.SugaredLogger) *Service {
 	return &Service{
-		repo:          repo,
-		relRepo:       relRepo,
-		s3:            s3,
-		kafkaProducer: kafkaProducer,
-		logger:        logger.Named("[post_service]"),
+		repo:           repo,
+		relRepo:        relRepo,
+		userSettingSvc: userSettingSvc,
+		s3:             s3,
+		kafkaProducer:  kafkaProducer,
+		logger:         logger.Named("[post_service]"),
 	}
 }
 
 var (
-	errMaxImages    = errors.New("max 5 images")
-	errEmptyPost    = errors.New("post must have content or images")
-	errPostNotFound = errors.New("post not found")
-	errNotYourPost  = errors.New("not your post")
-	errEditExpired  = errors.New("post is too old to edit")
+	errMaxImages            = errors.New("max 5 images")
+	errEmptyPost            = errors.New("post must have content or images")
+	errPostNotFound         = errors.New("post not found")
+	errNotYourPost          = errors.New("not your post")
+	errEditExpired          = errors.New("post is too old to edit")
+	errMeFriendsOnly        = errors.New("this profile is visible to friends only")
+	errMeCommentFriendsOnly = errors.New("only friends can comment on this post")
 )
 
 const editWindow = time.Hour
@@ -233,6 +238,7 @@ func (s *Service) ListLiked(userID uuid.UUID, limit, offset int) (*MeListRespons
 }
 
 func (s *Service) ListByUser(viewerID, authorID uuid.UUID, limit, offset int) (*MeListResponse, error) {
+	scopes := []models.MeVisibility{models.MeVisibilityPublic, models.MeVisibilityFriend, models.MeVisibilityPrivate}
 	if viewerID != authorID {
 		blocked, err := s.relRepo.IsBlocked(authorID, viewerID)
 		if err != nil {
@@ -241,22 +247,28 @@ func (s *Service) ListByUser(viewerID, authorID uuid.UUID, limit, offset int) (*
 		if blocked {
 			return nil, apperr.ErrUserNotFound
 		}
+		friends, err := s.relRepo.AreFriends(viewerID, authorID)
+		if err != nil {
+			return nil, err
+		}
+		if friends {
+			scopes = []models.MeVisibility{models.MeVisibilityPublic, models.MeVisibilityFriend}
+		} else {
+			settings, err := s.userSettingSvc.GetSettings(authorID)
+			if err != nil {
+				return nil, err
+			}
+			if settings.MeVisibility == models.SettingMeVisibilityFriends {
+				return nil, errMeFriendsOnly
+			}
+			scopes = []models.MeVisibility{models.MeVisibilityPublic}
+		}
 	}
-	posts, total, err := s.repo.ListByAuthor(authorID, s.visibleScopes(viewerID, authorID), limit, offset)
+	posts, total, err := s.repo.ListByAuthor(authorID, scopes, limit, offset)
 	if err != nil {
 		return nil, err
 	}
 	return s.buildList(viewerID, posts, total, limit, offset)
-}
-
-func (s *Service) visibleScopes(viewerID, authorID uuid.UUID) []models.MeVisibility {
-	if viewerID == authorID {
-		return []models.MeVisibility{models.MeVisibilityPublic, models.MeVisibilityFriend, models.MeVisibilityPrivate}
-	}
-	if s.isFriend(viewerID, authorID) {
-		return []models.MeVisibility{models.MeVisibilityPublic, models.MeVisibilityFriend}
-	}
-	return []models.MeVisibility{models.MeVisibilityPublic}
 }
 
 func (s *Service) Likers(viewerID, postID uuid.UUID, limit, offset int) (*LikerListResponse, error) {
@@ -338,6 +350,16 @@ func (s *Service) AddComment(viewerID, postID uuid.UUID, req *CreateCommentReque
 	post, err := s.viewablePost(viewerID, postID)
 	if err != nil {
 		return nil, err
+	}
+
+	if viewerID != post.AuthorID {
+		settings, err := s.userSettingSvc.GetSettings(post.AuthorID)
+		if err != nil {
+			return nil, err
+		}
+		if settings.CommentPrivacy == models.SettingCommentPrivacyFriends && !s.isFriend(viewerID, post.AuthorID) {
+			return nil, errMeCommentFriendsOnly
+		}
 	}
 
 	var parent *models.MeComment
@@ -695,11 +717,8 @@ func parseVisibility(value string) models.MeVisibility {
 }
 
 func (s *Service) isFriend(a, b uuid.UUID) bool {
-	rel, err := s.relRepo.FindByUsers(a, b)
-	if err != nil {
-		return false
-	}
-	return rel.Status == models.RelationshipStatusAccepted
+	friends, _ := s.relRepo.AreFriends(a, b)
+	return friends
 }
 
 func encodeFeedCursor(t time.Time, id uuid.UUID) string {
