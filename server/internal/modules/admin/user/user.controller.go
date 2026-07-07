@@ -40,6 +40,7 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 func (ctrl *Controller) ListUsers(c *gin.Context) (interface{}, error) {
 	filter := ListFilter{
 		Query:          c.Query("q"),
+		IP:             c.Query("ip"),
 		IsActive:       parseBoolQuery(c, "isActive"),
 		Gender:         parseGenderQuery(c.Query("gender")),
 		Vip:            parseBoolQuery(c, "vip"),

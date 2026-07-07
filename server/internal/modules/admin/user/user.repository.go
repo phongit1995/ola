@@ -25,6 +25,9 @@ func (r *Repository) List(f ListFilter) ([]*models.User, int64, error) {
 		like := "%" + f.Query + "%"
 		db = db.Where("username ILIKE ? OR full_name ILIKE ? OR email ILIKE ?", like, like, like)
 	}
+	if f.IP != "" {
+		db = db.Where("last_login_ip ILIKE ?", f.IP+"%")
+	}
 	if f.IsActive != nil {
 		db = db.Where("is_active = ?", *f.IsActive)
 	}

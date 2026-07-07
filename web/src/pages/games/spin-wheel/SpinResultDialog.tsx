@@ -1,7 +1,12 @@
 import { useTranslation } from 'react-i18next';
 import { formatKen } from '@lib';
 import type { SpinSegment } from './spinWheel.constants';
-import { closeButtonUrl, coinUrl, resultPopupFrameUrl } from './spinWheelAssets';
+import {
+  coinUrl,
+  resultCloseFrameUrl,
+  resultCloseMarkUrl,
+  resultPopupFrameUrl,
+} from './spinWheelAssets';
 
 interface SpinResultDialogProps {
   segment: SpinSegment;
@@ -27,9 +32,14 @@ export function SpinResultDialog({ segment, onClose }: SpinResultDialogProps) {
           type="button"
           onClick={onClose}
           aria-label={t('wheelGame.close')}
-          className="absolute right-[1%] top-[7%] z-10 h-9 w-9 active:scale-95"
+          className="absolute right-[1%] top-[4%] z-10 h-11 w-11 active:scale-95"
         >
-          <img src={closeButtonUrl} alt="" className="h-full w-full" />
+          <img src={resultCloseFrameUrl} alt="" className="absolute inset-0 h-full w-full" />
+          <img
+            src={resultCloseMarkUrl}
+            alt=""
+            className="absolute left-1/2 top-1/2 w-[42%] -translate-x-1/2 -translate-y-1/2"
+          />
         </button>
         <div className="absolute inset-x-0 top-[19%] px-10 text-center text-xl font-extrabold uppercase leading-tight text-[#e0348b]">
           {isMiss ? t('wheelGame.missTitle') : t('wheelGame.rewardTitle')}
@@ -37,7 +47,7 @@ export function SpinResultDialog({ segment, onClose }: SpinResultDialogProps) {
         <div className="absolute inset-x-0 top-[40%] flex flex-col items-center px-8">
           {segment.kind === 'ken' && (
             <>
-              <img src={coinUrl} alt="" className="h-24 w-24 drop-shadow" />
+              <img src={coinUrl} alt="" className="h-32 w-32 drop-shadow" />
               <span className="mt-2 text-2xl font-extrabold text-[#e0348b]">
                 {formatKen(segment.kenAmount ?? 0)} KEN
               </span>

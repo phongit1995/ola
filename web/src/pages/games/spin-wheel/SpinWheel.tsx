@@ -16,6 +16,7 @@ import {
   rewardVipDaysUrl,
   spinCoinUrl,
   wheelCenterUrl,
+  wheelLogoUrl,
   wheelOuterRingUrl,
 } from './spinWheelAssets';
 
@@ -279,6 +280,11 @@ export function SpinWheel({ rotation, spinning, onSettle }: SpinWheelProps) {
         src={wheelCenterUrl}
         alt=""
         className="absolute left-1/2 top-1/2 z-10 w-[26%] -translate-x-1/2 -translate-y-1/2"
+      />
+      <img
+        src={wheelLogoUrl}
+        alt=""
+        className="absolute left-1/2 top-1/2 z-10 w-[17%] -translate-x-1/2 -translate-y-1/2 drop-shadow-md"
       />
     </div>
   );

@@ -84,6 +84,7 @@ type SessionListResponse struct {
 
 type ListFilter struct {
 	Query          string
+	IP             string
 	IsActive       *bool
 	Gender         string
 	Vip            *bool

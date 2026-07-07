@@ -40,8 +40,10 @@ const SORT_OPTIONS = [
 export function UsersPage() {
   const { message, modal } = App.useApp()
   const [search, setSearch] = useState('')
+  const [ipSearch, setIpSearch] = useState('')
   const [page, setPage] = useState(1)
   const q = useDebounce(search.trim())
+  const ip = useDebounce(ipSearch.trim())
 
   const [status, setStatus] = useState<'all' | 'active' | 'banned'>('all')
   const [gender, setGender] = useState<string>('all')
@@ -59,10 +61,16 @@ export function UsersPage() {
   }
 
   const hasActiveFilter =
-    search !== '' || status !== 'all' || gender !== 'all' || vip !== 'all' || sort !== 'newest'
+    search !== '' ||
+    ipSearch !== '' ||
+    status !== 'all' ||
+    gender !== 'all' ||
+    vip !== 'all' ||
+    sort !== 'newest'
 
   function clearFilters() {
     setSearch('')
+    setIpSearch('')
     setStatus('all')
     setGender('all')
     setVip('all')
@@ -74,6 +82,7 @@ export function UsersPage() {
 
   const { data, isFetching } = useUsers({
     q: q || undefined,
+    ip: ip || undefined,
     isActive: status === 'all' ? undefined : status === 'active',
     gender: gender === 'all' ? undefined : gender,
     vip: vip === 'all' ? undefined : vip === 'vip',
@@ -225,6 +234,16 @@ export function UsersPage() {
             setPage(1)
           }}
           style={{ width: 280 }}
+        />
+        <Input.Search
+          allowClear
+          placeholder="Tìm theo IP đăng nhập..."
+          value={ipSearch}
+          onChange={(e) => {
+            setIpSearch(e.target.value)
+            setPage(1)
+          }}
+          style={{ width: 220 }}
         />
         <Select
           value={status}

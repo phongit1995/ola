@@ -154,6 +154,7 @@ export interface GrantVipRequest {
 
 export interface UserListParams {
   q?: string
+  ip?: string
   limit?: number
   offset?: number
   isActive?: boolean
