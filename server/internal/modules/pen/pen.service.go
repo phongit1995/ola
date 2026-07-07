@@ -289,8 +289,6 @@ func (s *Service) Leaderboard(period string) (*LeaderboardResponse, error) {
 				VipEndTime: formatOptionalTime(row.VipEndTime),
 			},
 			Profit: row.Profit,
-			Plays:  row.Plays,
-			Wins:   row.Wins,
 		}
 	}
 	return &LeaderboardResponse{

@@ -532,8 +532,6 @@ type LeaderboardRow struct {
 	VipUsed    *string    `gorm:"column:vip_used"`
 	VipEndTime *time.Time `gorm:"column:vip_end_time"`
 	Profit     int64      `gorm:"column:profit"`
-	Plays      int64      `gorm:"column:plays"`
-	Wins       int64      `gorm:"column:wins"`
 }
 
 func (r *Repository) Leaderboard(from, to time.Time, limit int) ([]LeaderboardRow, error) {
@@ -541,15 +539,13 @@ func (r *Repository) Leaderboard(from, to time.Time, limit int) ([]LeaderboardRo
 	toStr := to.UTC().Format("2006-01-02 15:04:05")
 	sub := `
 		SELECT shooter_id AS uid,
-			(CASE WHEN winner_id = shooter_id THEN payout ELSE 0 END) - bet_amount AS net,
-			(CASE WHEN winner_id = shooter_id THEN 1 ELSE 0 END) AS win
+			(CASE WHEN winner_id = shooter_id THEN payout ELSE 0 END) - bet_amount AS net
 		FROM pen_shots
 		WHERE status = 'settled' AND deleted_at IS NULL
 			AND settled_at >= ?::timestamp AND settled_at < ?::timestamp
 		UNION ALL
 		SELECT keeper_id AS uid,
-			(CASE WHEN winner_id = keeper_id THEN payout ELSE 0 END) - bet_amount AS net,
-			(CASE WHEN winner_id = keeper_id THEN 1 ELSE 0 END) AS win
+			(CASE WHEN winner_id = keeper_id THEN payout ELSE 0 END) - bet_amount AS net
 		FROM pen_shots
 		WHERE status = 'settled' AND keeper_id IS NOT NULL AND deleted_at IS NULL
 			AND settled_at >= ?::timestamp AND settled_at < ?::timestamp`
@@ -557,9 +553,7 @@ func (r *Repository) Leaderboard(from, to time.Time, limit int) ([]LeaderboardRo
 	var rows []LeaderboardRow
 	err := r.db.Table("(?) as t", gorm.Expr(sub, fromStr, toStr, fromStr, toStr)).
 		Select(`t.uid as user_id, users.username, users.full_name, users.avatar, users.vip_used, users.vip_end_time,
-			coalesce(sum(t.net),0) as profit,
-			count(*) as plays,
-			coalesce(sum(t.win),0) as wins`).
+			coalesce(sum(t.net),0) as profit`).
 		Joins("JOIN users ON users.id = t.uid").
 		Group("t.uid, users.username, users.full_name, users.avatar, users.vip_used, users.vip_end_time").
 		Having("coalesce(sum(t.net),0) > 0").

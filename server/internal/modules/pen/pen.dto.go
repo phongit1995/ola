@@ -134,8 +134,6 @@ type LeaderboardEntry struct {
 	Rank   int       `json:"rank" example:"1"`
 	User   UserBrief `json:"user"`
 	Profit int64     `json:"profit" example:"19000"`
-	Plays  int64     `json:"plays" example:"25"`
-	Wins   int64     `json:"wins" example:"18"`
 }
 
 type LeaderboardResponse struct {
