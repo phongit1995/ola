@@ -517,15 +517,17 @@ func (s *Service) ListComments(viewerID, postID uuid.UUID, limit, offset int) (*
 		}
 	}
 
-	commentIDs := make([]uuid.UUID, 0, len(comments))
+	likedCommentIDs := make([]uuid.UUID, 0, len(comments))
 	for _, c := range comments {
-		commentIDs = append(commentIDs, c.ID)
+		if c.LikeCount > 0 {
+			likedCommentIDs = append(likedCommentIDs, c.ID)
+		}
 	}
-	likedByViewer, err := s.repo.GetUserCommentLikes(viewerID, commentIDs)
+	likedByViewer, err := s.repo.GetUserCommentLikes(viewerID, likedCommentIDs)
 	if err != nil {
 		return nil, err
 	}
-	topLikers, err := s.repo.TopCommentLikersByComments(commentIDs, 3)
+	topLikers, err := s.repo.TopCommentLikersByComments(likedCommentIDs, 3)
 	if err != nil {
 		return nil, err
 	}

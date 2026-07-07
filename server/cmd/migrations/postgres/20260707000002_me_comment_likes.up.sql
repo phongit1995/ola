@@ -16,3 +16,5 @@ ALTER TABLE ONLY public.me_comment_likes
     ADD CONSTRAINT fk_me_comment_likes_user FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
 
 CREATE INDEX IF NOT EXISTS idx_me_comment_likes_user ON public.me_comment_likes USING btree (user_id);
+
+CREATE INDEX IF NOT EXISTS idx_me_comment_likes_comment_created ON public.me_comment_likes USING btree (comment_id, created_at DESC);
