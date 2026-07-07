@@ -1055,7 +1055,7 @@
   "wheelGame": {
     "title": "Lucky Spin",
     "spin": "Spin now",
-    "spinsLeft": "You have {{n}} spins left today",
+    "spinsLeft": "You have <b>{{n}}</b> spins left today",
     "sound": "Sound",
     "history": "History",
     "buyKen": "Top up KEN",
@@ -1065,6 +1065,7 @@
     "miss": "No luck!",
     "doll": "Ghost Doll",
     "vipDays": "{{n}} VIP Days",
+    "vipDaysShort": "{{n}} Days",
     "historyTitle": "Spin History",
     "historyEmpty": "No spins yet"
   },

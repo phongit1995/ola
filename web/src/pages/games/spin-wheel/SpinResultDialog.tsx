@@ -14,7 +14,7 @@ export function SpinResultDialog({ segment, onClose }: SpinResultDialogProps) {
 
   return (
     <div
-      className="fixed inset-0 z-[70] flex items-center justify-center bg-black/55 px-6"
+      className="font-game fixed inset-0 z-[70] flex items-center justify-center bg-black/55 px-6"
       onClick={onClose}
     >
       <div

@@ -18,7 +18,7 @@ import iconNearby from '@/assets/icons/apps/nearby.png';
 import iconSetting from '@/assets/icons/apps/setting.png';
 import iconEgg from '@/assets/icons/apps/egg.png';
 import iconPen from '@/assets/games/pen/pen_icon.webp';
-import iconWheel from '@/assets/games/spin-wheel/wheel.png';
+import iconWheel from '@/assets/games/spin-wheel/wheel.webp';
 import type { NotificationType, NotificationItem } from './NotificationsPage';
 import type { Venue } from './NearbyPlacesPage';
 

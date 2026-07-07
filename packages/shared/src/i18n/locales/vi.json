@@ -1055,7 +1055,7 @@
   "wheelGame": {
     "title": "Vòng Quay May Mắn",
     "spin": "Quay ngay",
-    "spinsLeft": "Hôm nay bạn còn {{n}} lượt quay",
+    "spinsLeft": "Hôm nay bạn còn <b>{{n}}</b> lượt quay",
     "sound": "Âm thanh",
     "history": "Lịch sử",
     "buyKen": "Nạp KEN",
@@ -1065,6 +1065,7 @@
     "miss": "Tạch rồi!",
     "doll": "Búp Bê Ma",
     "vipDays": "{{n}} Ngày VIP",
+    "vipDaysShort": "{{n}} Ngày",
     "historyTitle": "Lịch sử quay",
     "historyEmpty": "Chưa có lượt quay nào"
   },

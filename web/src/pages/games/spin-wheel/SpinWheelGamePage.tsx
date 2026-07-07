@@ -1,5 +1,5 @@
 import { useEffect, useState, type CSSProperties } from 'react';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import { formatKen } from '@lib';
 import { FullScreenOverlay } from '@components';
 import { useAuthStore } from '@/store/authStore';
@@ -35,6 +35,22 @@ const TITLE_STYLE: CSSProperties = {
   letterSpacing: '0.02em',
 };
 
+const SPIN_TEXT_STYLE: CSSProperties = {
+  color: '#fffdf0',
+  WebkitTextStroke: '4px #4f6e16',
+  paintOrder: 'stroke fill',
+  textShadow: '0 5px 0 #9a6b16, 0 6px 6px rgba(0,0,0,0.3)',
+  letterSpacing: '0.08em',
+};
+
+const CHIP_TEXT_STYLE: CSSProperties = {
+  color: '#fffdf0',
+  WebkitTextStroke: '1.5px #5a3a12',
+  paintOrder: 'stroke fill',
+  textShadow: '0 2px 0 #7a4e18, 0 3px 4px rgba(0,0,0,0.35)',
+  letterSpacing: '0.03em',
+};
+
 interface SpinWheelGamePageProps {
   onClose: () => void;
 }
@@ -65,16 +81,16 @@ export function SpinWheelGamePage({ onClose }: SpinWheelGamePageProps) {
     }
   }, [userKen]);
 
-  const canSpin = !spinning && turnsLeft > 0;
+  const canSpin = !spinning;
 
   return (
     <FullScreenOverlay z={60}>
       <div
-        className="h-full w-full overflow-x-hidden overflow-y-auto bg-cover bg-center"
+        className="font-game flex h-full w-full flex-col overflow-x-hidden bg-cover bg-center"
         style={{ backgroundImage: `url(${backgroundUrl})` }}
       >
         <header
-          className="relative flex w-full items-center justify-center"
+          className="relative flex w-full shrink-0 items-center justify-center"
           style={{
             backgroundImage: `url(${titleBannerUrl})`,
             backgroundSize: '100% 100%',
@@ -94,68 +110,63 @@ export function SpinWheelGamePage({ onClose }: SpinWheelGamePageProps) {
           </button>
         </header>
 
-        <div className="flex flex-col items-center px-4 pb-8">
+        <div className="flex min-h-0 flex-1 flex-col items-center justify-evenly overflow-y-auto px-4 py-4">
             <div
-              className="relative mt-4 flex w-[240px] max-w-full items-center gap-1.5 pl-3 pr-12"
+              className="flex w-65 max-w-full items-center gap-2 px-2.5"
               style={{
                 backgroundImage: `url(${kenBarUrl})`,
                 backgroundSize: '100% 100%',
                 aspectRatio: '2014 / 521',
               }}
             >
-              <img src={coinUrl} alt="" className="h-6 w-6 shrink-0" />
-              <span className="truncate text-sm font-extrabold text-white" style={TEXT_SHADOW}>
+              <img src={coinUrl} alt="" className="h-11 w-11 shrink-0" />
+              <span className="min-w-0 flex-1 truncate text-lg font-extrabold" style={CHIP_TEXT_STYLE}>
                 {formatKen(ken)} KEN
               </span>
               <button
                 type="button"
                 onClick={() => openApp('ken')}
                 aria-label={t('wheelGame.buyKen')}
-                className="absolute right-1 top-1/2 h-9 w-9 -translate-y-1/2 active:scale-95"
+                className="flex h-11 w-11 shrink-0 items-center justify-center bg-size-[100%_100%] bg-center bg-no-repeat active:scale-95"
+                style={{ backgroundImage: `url(${plusFrameUrl})` }}
               >
-                <img src={plusFrameUrl} alt="" className="absolute inset-0 h-full w-full" />
-                <img
-                  src={plusIconUrl}
-                  alt=""
-                  className="absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2"
-                />
+                <img src={plusIconUrl} alt="" className="h-5 w-5" />
               </button>
             </div>
 
-            <div className="mt-5">
-              <SpinWheel
-                rotation={rotation}
-                spinning={spinning}
-                onSettle={() => useSpinWheelStore.getState().settle()}
-              />
-            </div>
+            <SpinWheel
+              rotation={rotation}
+              spinning={spinning}
+              onSettle={() => useSpinWheelStore.getState().settle()}
+            />
 
             <button
               type="button"
               disabled={!canSpin}
               onClick={() => useSpinWheelStore.getState().spin()}
-              className="relative mt-6 w-[260px] max-w-full active:scale-95 disabled:opacity-60"
+              className="relative w-65 max-w-full active:scale-95 disabled:opacity-60"
             >
               <img src={spinButtonUrl} alt="" className="w-full" />
               <span
-                className="absolute inset-0 flex items-center justify-center text-2xl font-extrabold uppercase text-white"
-                style={TEXT_SHADOW}
+                className="absolute inset-0 flex items-center justify-center text-3xl font-extrabold uppercase"
+                style={SPIN_TEXT_STYLE}
               >
                 {t('wheelGame.spin')}
               </span>
             </button>
 
-            <div className="relative mt-3 w-[250px] max-w-full">
-              <img src={spinCountNoteUrl} alt="" className="w-full" />
-              <span
-                className="absolute inset-0 flex items-center justify-center pl-6 pr-4 text-center text-xs font-semibold text-white"
-                style={TEXT_SHADOW}
-              >
-                {t('wheelGame.spinsLeft', { n: turnsLeft })}
+            <div className="flex items-center justify-center gap-1.5">
+              <img src={spinCountNoteUrl} alt="" className="h-6 w-auto shrink-0" />
+              <span className="text-sm font-bold text-white" style={TEXT_SHADOW}>
+                <Trans
+                  i18nKey="wheelGame.spinsLeft"
+                  values={{ n: turnsLeft }}
+                  components={{ b: <span className="mx-0.5 text-base font-extrabold text-[#ffe14d]" /> }}
+                />
               </span>
             </div>
 
-            <div className="mt-4 flex w-full max-w-[300px] gap-3">
+            <div className="flex w-full max-w-75 gap-3">
               <button
                 type="button"
                 onClick={() => useSpinWheelStore.getState().toggleMute()}
@@ -163,8 +174,8 @@ export function SpinWheelGamePage({ onClose }: SpinWheelGamePageProps) {
               >
                 <img src={bottomButtonFrameUrl} alt="" className="absolute inset-0 h-full w-full" />
                 <span
-                  className="absolute inset-0 flex items-center justify-center gap-1.5 text-sm font-bold text-white"
-                  style={TEXT_SHADOW}
+                  className="absolute inset-0 flex items-center justify-center gap-1.5 text-sm font-bold"
+                  style={CHIP_TEXT_STYLE}
                 >
                   <img src={muted ? soundOffUrl : soundOnUrl} alt="" className="h-5 w-5" />
                   {t('wheelGame.sound')}
@@ -177,8 +188,8 @@ export function SpinWheelGamePage({ onClose }: SpinWheelGamePageProps) {
               >
                 <img src={bottomButtonFrameUrl} alt="" className="absolute inset-0 h-full w-full" />
                 <span
-                  className="absolute inset-0 flex items-center justify-center gap-1.5 text-sm font-bold text-white"
-                  style={TEXT_SHADOW}
+                  className="absolute inset-0 flex items-center justify-center gap-1.5 text-sm font-bold"
+                  style={CHIP_TEXT_STYLE}
                 >
                   <img src={historyIconUrl} alt="" className="h-5 w-5" />
                   {t('wheelGame.history')}

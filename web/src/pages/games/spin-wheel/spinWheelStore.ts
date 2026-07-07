@@ -57,14 +57,13 @@ export const useSpinWheelStore = create<SpinWheelState>((set, get) => ({
   syncKen: (ken) => set((state) => (state.spinning ? state : { ken })),
   spin: (targetIndex) => {
     const state = get();
-    if (state.spinning || state.turnsLeft <= 0) return;
+    if (state.spinning) return;
     const index =
       typeof targetIndex === 'number' && targetIndex >= 0 ? targetIndex : pickWinningIndex();
     set({
       spinning: true,
       pendingIndex: index,
       rotation: rotationForIndex(state.rotation, index),
-      turnsLeft: state.turnsLeft - 1,
     });
   },
   settle: () => {
