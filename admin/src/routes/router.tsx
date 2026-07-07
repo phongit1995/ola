@@ -7,6 +7,8 @@ import { VipPackagesPage } from '@/pages/VipPackagesPage'
 import { VipShopPage } from '@/pages/VipShopPage'
 import { EggRewardsPage } from '@/pages/EggRewardsPage'
 import { EggStatsPage } from '@/pages/EggStatsPage'
+import { WheelRewardsPage } from '@/pages/WheelRewardsPage'
+import { WheelStatsPage } from '@/pages/WheelStatsPage'
 import { PenShotsPage } from '@/pages/PenShotsPage'
 import { PenStatsPage } from '@/pages/PenStatsPage'
 import { KenChestsPage } from '@/pages/KenChestsPage'
@@ -38,6 +40,8 @@ export const router = createBrowserRouter([
       { path: 'vip-shop', element: <VipShopPage /> },
       { path: 'games/egg', element: <EggRewardsPage /> },
       { path: 'games/egg/stats', element: <EggStatsPage /> },
+      { path: 'games/wheel', element: <WheelRewardsPage /> },
+      { path: 'games/wheel/stats', element: <WheelStatsPage /> },
       { path: 'games/pen', element: <PenShotsPage /> },
       { path: 'games/pen/stats', element: <PenStatsPage /> },
       { path: 'games/ken-treasure', element: <KenChestsPage /> },
