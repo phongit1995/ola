@@ -1194,6 +1194,8 @@
     "errChooseCatchDirection": "Please choose a catch direction.",
     "catchWin": "Great save! 🧤 You won {{payout}} KEN.",
     "catchLose": "Wrong guess — you lost this round.",
+    "shotWon": "Goal! ⚽ Your shot won {{payout}} KEN.",
+    "shotLost": "Your shot was caught. You lost this round.",
     "leaderboard": {
       "title": "TOP PLAYERS",
       "short": "TOP",

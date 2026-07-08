@@ -2,9 +2,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAppOverlayStore } from '@/store/appOverlayStore';
 import { AnimatedKen, FullScreenOverlay } from '@components';
-import { formatKen, toApiError, toast } from '@lib';
-import { PenService } from '@services';
-import type { PenSide, PenShotView } from '@app-types';
+import { formatKen, playKenShotFailSound, toApiError, toast } from '@lib';
+import { PenService, SocketService } from '@services';
+import type { PenSettledEvent, PenSide, PenShotView } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
 import { PEN_SHOTS_PAGE, PEN_SHOTS_PAGE_MOBILE, usePenStore } from '@/store/penStore';
 import { PenButton } from './PenButton';
@@ -83,6 +83,37 @@ export function PenGamePage({ onClose }: PenGamePageProps) {
     winFxTimer.current = window.setTimeout(() => setWinFx(null), 1600);
   };
 
+  const onShotSettled = useRef<(e: PenSettledEvent) => void>(() => {});
+  useEffect(() => {
+    onShotSettled.current = (e) => {
+      if (user == null || e.shooterId !== user.id) return;
+      void loadShots();
+      if (e.winnerId === user.id) {
+        triggerWinFx(Math.max(0, e.payout - e.betAmount));
+        toast.success(t('penGame.shotWon', { payout: formatKen(e.payout) }));
+      } else {
+        playKenShotFailSound();
+        toast.error(t('penGame.shotLost'));
+      }
+    };
+  });
+
+  useEffect(() => {
+    const offKen = SocketService.on<{ ken?: number }>('KEN_UPDATED', (data) => {
+      const current = useAuthStore.getState().user;
+      if (current && typeof data?.ken === 'number') {
+        useAuthStore.getState().setUser({ ...current, ken: data.ken });
+      }
+    });
+    const offSettled = SocketService.on<PenSettledEvent>('PEN_SETTLED', (data) => {
+      if (data) onShotSettled.current(data);
+    });
+    return () => {
+      offKen();
+      offSettled();
+    };
+  }, []);
+
   const handleCreateShot = async ({ side, betAmount }: { side: PenSide; betAmount: number }) => {
     if (submitting) return;
     setSubmitting(true);
@@ -111,6 +142,7 @@ export function PenGamePage({ onClose }: PenGamePageProps) {
         triggerWinFx(Math.max(0, res.payout - res.betAmount));
         toast.success(t('penGame.catchWin', { payout: formatKen(res.payout) }));
       } else {
+        playKenShotFailSound();
         toast.error(t('penGame.catchLose'));
       }
       void loadShots();

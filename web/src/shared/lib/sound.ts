@@ -1,5 +1,6 @@
 import kenChestUrl from '@/assets/sounds/ken-chest.mp3';
 import kenCreditUrl from '@/assets/sounds/ken-credit.mp3';
+import kenShotFailUrl from '@/assets/sounds/ken-shot-fail.mp3';
 import messageUrl from '@/assets/sounds/message.mp3';
 import roomTagUrl from '@/assets/sounds/room-tag.mp3';
 import type { UserSettings } from '@app-types';
@@ -23,6 +24,7 @@ function createSoundPlayer(url: string, gate?: keyof UserSettings) {
 }
 
 export const playKenChestSound = createSoundPlayer(kenChestUrl, 'soundGame');
+export const playKenShotFailSound = createSoundPlayer(kenShotFailUrl, 'soundGame');
 export const playKenCreditSound = createSoundPlayer(kenCreditUrl, 'soundKen');
 export const playMessageSound = createSoundPlayer(messageUrl, 'notifSound');
 export const playRoomTagSound = createSoundPlayer(roomTagUrl, 'notifSound');

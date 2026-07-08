@@ -74,6 +74,20 @@ export interface CancelResponse {
   kenBalance: number;
 }
 
+export interface PenSettledEvent {
+  shotId: string;
+  result: PenResult;
+  winnerId: string;
+  shooterId: string;
+  keeperId: string;
+  betAmount: number;
+  pot: number;
+  commission: number;
+  payout: number;
+  shooterSide: PenSide;
+  keeperSide: PenSide;
+}
+
 export type PenOpenSort = 'newest' | 'bet_desc' | 'bet_asc';
 
 export interface PenOpenParams {
