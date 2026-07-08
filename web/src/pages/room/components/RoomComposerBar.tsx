@@ -85,6 +85,8 @@ export const RoomComposerBar = forwardRef<RoomComposerHandle, RoomComposerBarPro
     async function addImageFiles(files: File[]) {
       if (files.length === 0 || disabled) return;
       closeAttachPanel();
+      setDraft('');
+      composerRef.current?.reset();
       for (const file of files) {
         try {
           const prepared = await compressImageForUpload(file);
