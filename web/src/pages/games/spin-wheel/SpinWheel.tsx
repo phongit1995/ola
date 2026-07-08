@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import { useEffect, useRef, type CSSProperties } from 'react';
 import { VipIcon } from '@components';
 import type { WheelPlayerSegment } from '@app-types';
 import {
@@ -15,6 +15,26 @@ const CENTER = VIEWBOX / 2;
 const SLICE_RADIUS = 48;
 const LABEL_RADIUS = 31;
 const DIVIDER_INNER_RADIUS = 12;
+const POINTER_MAX_TICK_DEG = 15;
+
+function wheelAngleFromTransform(transform: string): number {
+  if (!transform || transform === 'none') return 0;
+  const open = transform.indexOf('(');
+  const close = transform.indexOf(')');
+  if (open < 0 || close < 0) return 0;
+  const parts = transform.slice(open + 1, close).split(',');
+  const a = Number(parts[0]);
+  const b = Number(parts[1]);
+  if (Number.isNaN(a) || Number.isNaN(b)) return 0;
+  return (Math.atan2(b, a) * 180) / Math.PI;
+}
+
+function pointerTickDeg(wheelAngle: number, angle: number): number {
+  if (angle <= 0) return 0;
+  const phase = (((wheelAngle - angle / 2) % angle) + angle) % angle;
+  const t = phase / angle;
+  return -POINTER_MAX_TICK_DEG * t * t;
+}
 
 function polar(angleDeg: number, radius: number) {
   const radians = ((angleDeg - 90) * Math.PI) / 180;
@@ -87,17 +107,41 @@ interface SpinWheelProps {
 export function SpinWheel({ segments, rotation, spinning, onSettle }: SpinWheelProps) {
   const count = segments.length;
   const angle = segmentAngle(count);
+  const wheelRef = useRef<HTMLDivElement>(null);
+  const pointerRef = useRef<HTMLImageElement>(null);
+
+  useEffect(() => {
+    const pointer = pointerRef.current;
+    if (!spinning) {
+      if (pointer) pointer.style.rotate = '0deg';
+      return;
+    }
+    let frame = 0;
+    const step = () => {
+      const wheel = wheelRef.current;
+      if (wheel && pointer) {
+        const wheelAngle = wheelAngleFromTransform(getComputedStyle(wheel).transform);
+        pointer.style.rotate = `${pointerTickDeg(wheelAngle, angle)}deg`;
+      }
+      frame = requestAnimationFrame(step);
+    };
+    frame = requestAnimationFrame(step);
+    return () => {
+      cancelAnimationFrame(frame);
+      if (pointer) pointer.style.rotate = '0deg';
+    };
+  }, [spinning, angle]);
 
   return (
     <div className="relative" style={{ width: 'min(84vw, 360px)', aspectRatio: '1 / 1' }}>
       <img
+        ref={pointerRef}
         src={pointerUrl}
         alt=""
-        className={`absolute left-1/2 top-[-5%] z-20 w-[13%] -translate-x-1/2 origin-top drop-shadow-md ${
-          spinning ? 'animate-wheel-pointer-tick' : ''
-        }`}
+        className="absolute left-1/2 top-[-5%] z-20 w-[13%] -translate-x-1/2 origin-[50%_36%] drop-shadow-md"
       />
       <div
+        ref={wheelRef}
         className="absolute inset-0"
         style={{
           transform: `rotate(${rotation}deg)`,

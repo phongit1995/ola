@@ -2,7 +2,8 @@ import { useTranslation } from 'react-i18next';
 import { VipIcon } from '@components';
 import type { WheelSpinResult } from '@app-types';
 import {
-  closeButtonUrl,
+  resultCloseFrameUrl,
+  resultCloseMarkUrl,
   resultPopupFrameUrl,
   rewardMissUrl,
   rewardVipDaysUrl,
@@ -36,9 +37,14 @@ export function SpinResultDialog({ result, onClose }: SpinResultDialogProps) {
           type="button"
           onClick={onClose}
           aria-label={t('wheelGame.close')}
-          className="absolute right-[1%] top-[7%] z-10 h-9 w-9 active:scale-95"
+          className="absolute right-[1%] top-[4%] z-10 h-11 w-11 active:scale-95"
         >
-          <img src={closeButtonUrl} alt="" className="h-full w-full" />
+          <img src={resultCloseFrameUrl} alt="" className="absolute inset-0 h-full w-full" />
+          <img
+            src={resultCloseMarkUrl}
+            alt=""
+            className="absolute left-1/2 top-1/2 w-[42%] -translate-x-1/2 -translate-y-1/2"
+          />
         </button>
         <div className="absolute inset-x-0 top-[19%] px-10 text-center text-xl font-extrabold uppercase leading-tight text-[#e0348b]">
           {result.isWin ? t('wheelGame.rewardTitle') : t('wheelGame.missTitle')}
@@ -67,7 +73,7 @@ export function SpinResultDialog({ result, onClose }: SpinResultDialogProps) {
               ) : (
                 <img src={rewardVipDaysUrl} alt="" className="h-24 w-24 drop-shadow" />
               )}
-              <span className="text-xl font-extrabold text-[#e0348b]">
+              <span className="text-base font-extrabold text-[#e0348b]">
                 {result.rewardLabel ?? t('wheelGame.rewardTitle')}
               </span>
             </>
