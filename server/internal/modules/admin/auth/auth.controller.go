@@ -72,6 +72,36 @@ func (ctrl *Controller) Refresh(c *gin.Context) (interface{}, error) {
 	return utils.NewHandlerResult(resp, http.StatusOK), nil
 }
 
+// ChangePassword godoc
+// @Summary      Change admin password
+// @Description  Change the authenticated admin's password; revokes existing sessions
+// @Tags         admin-auth
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        request body ChangePasswordRequest true "Change Password Request"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  utils.APIError
+// @Failure      401  {object}  utils.APIError
+// @Router       /admin/auth/change-password [post]
+func (ctrl *Controller) ChangePassword(c *gin.Context) (interface{}, error) {
+	adminID, ok := middleware.GetAdminID(c)
+	if !ok {
+		return nil, utils.NewHTTPError(http.StatusUnauthorized, "unauthorized")
+	}
+
+	var req ChangePasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	if err := ctrl.service.ChangePassword(adminID, &req); err != nil {
+		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+	}
+
+	return map[string]string{"message": "password changed successfully"}, nil
+}
+
 // Me godoc
 // @Summary      Current admin profile
 // @Description  Return the authenticated admin's profile

@@ -179,7 +179,11 @@ export function AdminLayout() {
         </Content>
       </Layout>
 
-      <ChangePasswordModal open={passwordOpen} onClose={() => setPasswordOpen(false)} />
+      <ChangePasswordModal
+        open={passwordOpen}
+        onClose={() => setPasswordOpen(false)}
+        onChanged={logout}
+      />
     </Layout>
   )
 }

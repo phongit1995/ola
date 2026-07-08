@@ -9,6 +9,11 @@ type RefreshTokenRequest struct {
 	RefreshToken string `json:"refreshToken" binding:"required" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."`
 }
 
+type ChangePasswordRequest struct {
+	CurrentPassword string `json:"currentPassword" binding:"required" example:"admin@123"`
+	NewPassword     string `json:"newPassword" binding:"required,min=6" example:"newpass@456"`
+}
+
 type AdminDTO struct {
 	ID       string `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
 	Username string `json:"username" example:"admin"`

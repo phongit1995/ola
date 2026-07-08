@@ -106,6 +106,37 @@ func (s *Service) RefreshToken(refreshTokenStr, clientIP string) (*RefreshTokenR
 	}, nil
 }
 
+func (s *Service) ChangePassword(adminID uuid.UUID, req *ChangePasswordRequest) error {
+	admin, err := s.repo.FindByID(adminID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return errors.New("admin not found")
+		}
+		return err
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(admin.Password), []byte(req.CurrentPassword)); err != nil {
+		s.logger.Warnw("Admin change password: wrong current password", "admin_id", adminID)
+		return errors.New("current password is incorrect")
+	}
+
+	if req.CurrentPassword == req.NewPassword {
+		return errors.New("new password must be different from current password")
+	}
+
+	hash, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	if err := s.repo.UpdatePassword(adminID, string(hash)); err != nil {
+		return err
+	}
+
+	s.logger.Infow("Admin changed password", "admin_id", adminID)
+	return nil
+}
+
 func (s *Service) GetByID(adminID uuid.UUID) (*AdminDTO, error) {
 	admin, err := s.repo.FindByID(adminID)
 	if err != nil {
