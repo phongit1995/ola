@@ -41,16 +41,18 @@ type Service struct {
 	userSettingSvc *usersetting.Service
 	s3             *services.S3Service
 	kafkaProducer  *kafka.Producer
+	cache          *services.CacheService
 	logger         *zap.SugaredLogger
 }
 
-func NewService(repo *Repository, relRepo *relationships.Repository, userSettingSvc *usersetting.Service, s3 *services.S3Service, kafkaProducer *kafka.Producer, logger *zap.SugaredLogger) *Service {
+func NewService(repo *Repository, relRepo *relationships.Repository, userSettingSvc *usersetting.Service, s3 *services.S3Service, kafkaProducer *kafka.Producer, cache *services.CacheService, logger *zap.SugaredLogger) *Service {
 	return &Service{
 		repo:           repo,
 		relRepo:        relRepo,
 		userSettingSvc: userSettingSvc,
 		s3:             s3,
 		kafkaProducer:  kafkaProducer,
+		cache:          cache,
 		logger:         logger.Named("[post_service]"),
 	}
 }
@@ -304,10 +306,17 @@ func (s *Service) React(userID, postID uuid.UUID, reactionType string) (*MeRespo
 		return nil, errors.New("invalid reaction type")
 	}
 
+	release, err := s.acquireLikeGuard(userID.String(), postID.String())
+	if err != nil {
+		return nil, err
+	}
+	defer release()
+
 	updated, current, err := s.repo.React(postID, userID, t)
 	if err != nil {
 		return nil, err
 	}
+	s.invalidateTopLikers(constants.CacheKeyMePostTopLikers, postID)
 	if current != nil && *current == models.MeReactionLike {
 		s.createMeNotification(post.AuthorID, userID, models.MeNotificationLike, postID, nil, "")
 	}
@@ -321,29 +330,32 @@ func (s *Service) RemoveReaction(userID, postID uuid.UUID) (*MeResponse, error) 
 		return nil, err
 	}
 
+	release, err := s.acquireLikeGuard(userID.String(), postID.String())
+	if err != nil {
+		return nil, err
+	}
+	defer release()
+
 	updated, err := s.repo.RemoveReaction(postID, userID)
 	if err != nil {
 		return nil, err
 	}
+	s.invalidateTopLikers(constants.CacheKeyMePostTopLikers, postID)
 	resp := toMeResponse(updated, nil)
 	s.attachTopLikers(&resp, postID)
 	return &resp, nil
 }
 
 func (s *Service) attachTopLikers(resp *MeResponse, postID uuid.UUID) {
-	topLikers, err := s.repo.TopLikersByPosts([]uuid.UUID{postID}, 3)
+	topLikers, err := s.topLikersCached(constants.CacheKeyMePostTopLikers, []uuid.UUID{postID}, func(ids []uuid.UUID) (map[uuid.UUID][]*models.User, error) {
+		return s.repo.TopLikersByPosts(ids, 3)
+	})
 	if err != nil {
 		return
 	}
-	likers, ok := topLikers[postID]
-	if !ok {
-		return
+	if likers, ok := topLikers[postID]; ok {
+		resp.TopLikers = likers
 	}
-	tl := make([]AuthorResponse, 0, len(likers))
-	for _, u := range likers {
-		tl = append(tl, *toAuthorResponse(u))
-	}
-	resp.TopLikers = tl
 }
 
 func (s *Service) AddComment(viewerID, postID uuid.UUID, req *CreateCommentRequest) (*CommentResponse, error) {
@@ -527,7 +539,9 @@ func (s *Service) ListComments(viewerID, postID uuid.UUID, limit, offset int) (*
 	if err != nil {
 		return nil, err
 	}
-	topLikers, err := s.repo.TopCommentLikersByComments(likedCommentIDs, 3)
+	topLikers, err := s.topLikersCached(constants.CacheKeyMeCommentTopLikers, likedCommentIDs, func(ids []uuid.UUID) (map[uuid.UUID][]*models.User, error) {
+		return s.repo.TopCommentLikersByComments(ids, 3)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -537,7 +551,7 @@ func (s *Service) ListComments(viewerID, postID uuid.UUID, limit, offset int) (*
 		resp := toCommentResponse(c)
 		resp.Liked = likedByViewer[c.ID]
 		if likers, ok := topLikers[c.ID]; ok {
-			resp.TopLikers = toAuthorResponses(likers)
+			resp.TopLikers = likers
 		}
 		if c.ParentID != nil {
 			resp.ReplyTo = replySnapshotFrom(parentByID[*c.ParentID])
@@ -597,16 +611,26 @@ func (s *Service) ToggleCommentLike(viewerID, postID, commentID uuid.UUID) (*Com
 		return nil, errors.New("comment not found")
 	}
 
+	release, err := s.acquireLikeGuard(viewerID.String(), commentID.String())
+	if err != nil {
+		return nil, err
+	}
+	defer release()
+
 	liked, likeCount, err := s.repo.ToggleCommentLike(commentID, viewerID)
 	if err != nil {
 		return nil, err
 	}
+	s.invalidateTopLikers(constants.CacheKeyMeCommentTopLikers, commentID)
 
 	resp := toCommentResponse(comment)
 	resp.LikeCount = likeCount
 	resp.Liked = liked
-	if topLikers, err := s.repo.TopCommentLikersByComments([]uuid.UUID{commentID}, 3); err == nil {
-		resp.TopLikers = toAuthorResponses(topLikers[commentID])
+	topLikers, err := s.topLikersCached(constants.CacheKeyMeCommentTopLikers, []uuid.UUID{commentID}, func(ids []uuid.UUID) (map[uuid.UUID][]*models.User, error) {
+		return s.repo.TopCommentLikersByComments(ids, 3)
+	})
+	if err == nil {
+		resp.TopLikers = topLikers[commentID]
 	}
 	return &resp, nil
 }
@@ -714,7 +738,9 @@ func (s *Service) enrich(viewerID uuid.UUID, posts []*models.Me) ([]MeResponse, 
 		return nil, err
 	}
 
-	topLikers, err := s.repo.TopLikersByPosts(ids, 3)
+	topLikers, err := s.topLikersCached(constants.CacheKeyMePostTopLikers, ids, func(missIDs []uuid.UUID) (map[uuid.UUID][]*models.User, error) {
+		return s.repo.TopLikersByPosts(missIDs, 3)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -728,11 +754,7 @@ func (s *Service) enrich(viewerID uuid.UUID, posts []*models.Me) ([]MeResponse, 
 		}
 		resp := toMeResponse(p, mr)
 		if likers, ok := topLikers[p.ID]; ok {
-			tl := make([]AuthorResponse, 0, len(likers))
-			for _, u := range likers {
-				tl = append(tl, *toAuthorResponse(u))
-			}
-			resp.TopLikers = tl
+			resp.TopLikers = likers
 		}
 		items = append(items, resp)
 	}
@@ -1000,6 +1022,126 @@ func toAuthorResponses(users []*models.User) []AuthorResponse {
 		list = append(list, *toAuthorResponse(u))
 	}
 	return list
+}
+
+var (
+	errLikeRateLimited = errors.New("too many requests, please slow down")
+	errLikeInProgress  = errors.New("like in progress, please retry")
+)
+
+func (s *Service) topLikersCached(keyFmt string, ids []uuid.UUID, compute func([]uuid.UUID) (map[uuid.UUID][]*models.User, error)) (map[uuid.UUID][]AuthorResponse, error) {
+	result := make(map[uuid.UUID][]AuthorResponse, len(ids))
+	if len(ids) == 0 {
+		return result, nil
+	}
+
+	if s.cache == nil {
+		computed, err := compute(ids)
+		if err != nil {
+			return nil, err
+		}
+		for _, id := range ids {
+			result[id] = toAuthorResponses(computed[id])
+		}
+		return result, nil
+	}
+
+	keys := make([]string, len(ids))
+	for i, id := range ids {
+		keys[i] = fmt.Sprintf(keyFmt, id.String())
+	}
+
+	missIDs := make([]uuid.UUID, 0, len(ids))
+	values, mgetErr := s.cache.GetClient().MGet(s.cache.GetContext(), keys...).Result()
+	if mgetErr != nil {
+		s.logger.Warnw("me top-likers MGET failed, recomputing", "error", mgetErr.Error())
+		missIDs = ids
+	} else {
+		for i, id := range ids {
+			raw, ok := values[i].(string)
+			if !ok {
+				missIDs = append(missIDs, id)
+				continue
+			}
+			var cached []AuthorResponse
+			if err := json.Unmarshal([]byte(raw), &cached); err != nil {
+				missIDs = append(missIDs, id)
+				continue
+			}
+			result[id] = cached
+		}
+	}
+
+	if len(missIDs) == 0 {
+		return result, nil
+	}
+
+	computed, err := compute(missIDs)
+	if err != nil {
+		return nil, err
+	}
+	ttl := time.Duration(constants.MeTopLikersTTLSeconds) * time.Second
+	for _, id := range missIDs {
+		likers := toAuthorResponses(computed[id])
+		result[id] = likers
+		if setErr := s.cache.Set(fmt.Sprintf(keyFmt, id.String()), likers, ttl); setErr != nil {
+			s.logger.Warnw("me top-likers cache set failed", "id", id.String(), "error", setErr.Error())
+		}
+	}
+	return result, nil
+}
+
+func (s *Service) invalidateTopLikers(keyFmt string, id uuid.UUID) {
+	if s.cache == nil {
+		return
+	}
+	s.cache.Delete(fmt.Sprintf(keyFmt, id.String()))
+}
+
+func (s *Service) checkLikeRateLimit(userID string) bool {
+	if s.cache == nil {
+		return true
+	}
+	key := fmt.Sprintf(constants.CacheKeyRateLimitMeLike, userID)
+	count, err := s.cache.Increment(key)
+	if err != nil {
+		s.logger.Warnw("me like rate-limit redis error, allowing", "key", key, "error", err.Error())
+		return true
+	}
+	if count == 1 {
+		if expErr := s.cache.SetExpire(key, time.Duration(constants.RateLimitReactionWindowSeconds)*time.Second); expErr != nil {
+			s.cache.Delete(key)
+		}
+	}
+	return count <= int64(constants.RateLimitReactionMaxRequests)
+}
+
+func (s *Service) acquireLikeGuard(userID, entityID string) (func(), error) {
+	if s.cache == nil {
+		return func() {}, nil
+	}
+	if !s.checkLikeRateLimit(userID) {
+		return nil, errLikeRateLimited
+	}
+	lockKey := fmt.Sprintf(constants.CacheKeyMeLikeLock, entityID)
+	ttl := time.Duration(constants.ReactionLockTTLSeconds) * time.Second
+	acquired, err := s.cache.SetNX(lockKey, "1", ttl)
+	if err != nil {
+		s.logger.Warnw("me like lock error, proceeding", "key", lockKey, "error", err.Error())
+		return func() {}, nil
+	}
+	if !acquired {
+		time.Sleep(time.Duration(constants.ReactionLockRetryMs) * time.Millisecond)
+		acquired, err = s.cache.SetNX(lockKey, "1", ttl)
+		if err != nil {
+			s.logger.Warnw("me like lock retry error, proceeding", "key", lockKey, "error", err.Error())
+			return func() {}, nil
+		}
+		if !acquired {
+			return nil, errLikeInProgress
+		}
+	}
+	return func() { s.cache.Delete(lockKey) }, nil
 }
 
 func toMeNotificationResponse(n *models.MeNotification) MeNotificationResponse {
