@@ -5,7 +5,7 @@ import kenBarUrl from '@/assets/games/spin-wheel/ken-bar.webp';
 import plusFrameUrl from '@/assets/games/spin-wheel/plus-frame.webp';
 import plusIconUrl from '@/assets/games/spin-wheel/plus-icon.webp';
 import wheelCenterUrl from '@/assets/games/spin-wheel/wheel-center.webp';
-import wheelLogoUrl from '@/assets/games/spin-wheel/logo.png';
+import wheelLogoUrl from '@/assets/games/spin-wheel/logo.webp';
 import wheelOuterRingUrl from '@/assets/games/spin-wheel/wheel-outer-ring.webp';
 import pointerUrl from '@/assets/games/spin-wheel/pointer.webp';
 import spinCoinUrl from '@/assets/games/spin-wheel/coin.webp';

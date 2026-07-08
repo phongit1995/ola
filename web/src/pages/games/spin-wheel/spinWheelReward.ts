@@ -1,5 +1,5 @@
 import { formatKen } from '@lib';
-import type { WheelSegmentKind } from '@app-types';
+import type { WheelPlayerSegment, WheelSegmentKind } from '@app-types';
 import {
   rewardKenRandomUrl,
   rewardMissUrl,
@@ -7,6 +7,12 @@ import {
   rewardVipRandomUrl,
   spinCoinUrl,
 } from './spinWheelAssets';
+
+export interface RewardVisual {
+  icon: string | null;
+  vipTypeId: number | null;
+  iconClass: string;
+}
 
 export function formatRewardKen(amount: number): string {
   if (amount >= 10000) {
@@ -41,4 +47,23 @@ export function rewardKindIcon(kind: WheelSegmentKind): string {
     default:
       return rewardVipDaysUrl;
   }
+}
+
+function rewardIconClass(kind: WheelSegmentKind): string {
+  if (kind === 'ken_fixed') return 'w-[44%]';
+  if (kind === 'ken_random') return 'w-[54%]';
+  if (kind === 'vip_random') return 'w-[60%]';
+  if (kind === 'miss') return 'w-[52%]';
+  return 'w-[58%]';
+}
+
+export function rewardVisual(segment: WheelPlayerSegment): RewardVisual {
+  if (isVipItemKind(segment.kind) && typeof segment.vipTypeId === 'number') {
+    return { icon: null, vipTypeId: segment.vipTypeId, iconClass: '' };
+  }
+  return {
+    icon: rewardKindIcon(segment.kind),
+    vipTypeId: null,
+    iconClass: rewardIconClass(segment.kind),
+  };
 }
