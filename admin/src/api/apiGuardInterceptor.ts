@@ -9,11 +9,11 @@ function toHex(buffer: ArrayBuffer): string {
     .join('')
 }
 
-async function hmacSha256Hex(secret: string, value: string): Promise<string> {
+async function signHex(secret: string, value: string): Promise<string> {
   const key = await crypto.subtle.importKey(
     'raw',
     encoder.encode(secret),
-    { name: 'HMAC', hash: 'SHA-256' },
+    { name: 'HMAC', hash: 'SHA-512' },
     false,
     ['sign'],
   )
@@ -38,7 +38,7 @@ export function registerApiGuardInterceptor(http: AxiosInstance): void {
     const path = resolveRequestPath(config)
 
     const canonical = [timestamp, nonce, method, path].join('\n')
-    const signature = await hmacSha256Hex(env.apiGuardSecret, canonical)
+    const signature = await signHex(env.apiGuardSecret, canonical)
 
     config.headers.set('X-Timestamp', timestamp)
     config.headers.set('X-Nonce', nonce)
