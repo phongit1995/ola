@@ -38,6 +38,7 @@ export interface WheelSpinResult {
   kenCost: number;
   isFree: boolean;
   kenBalance: number;
+  kenBalanceAfterCost: number;
   freeAvailable: boolean;
   rewardLabel?: string;
   kenAmount?: number;

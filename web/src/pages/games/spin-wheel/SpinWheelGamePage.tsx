@@ -1,7 +1,7 @@
 import { useEffect, useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
-import { formatKen, toast } from '@lib';
-import { FullScreenOverlay, Spinner } from '@components';
+import { toast } from '@lib';
+import { AnimatedKen, FullScreenOverlay, Spinner } from '@components';
 import { SocketService } from '@services';
 import { useAuthStore } from '@/store/authStore';
 import { useAppOverlayStore } from '@/store/appOverlayStore';
@@ -143,12 +143,13 @@ export function SpinWheelGamePage({ onClose }: SpinWheelGamePageProps) {
             }}
           >
             <img src={coinUrl} alt="" className="h-11 w-11 shrink-0" />
-            <span
-              className="min-w-0 flex-1 truncate text-center text-xl font-extrabold"
-              style={CHIP_TEXT_STYLE}
-            >
-              {formatKen(ken)}
-            </span>
+            <AnimatedKen
+              value={ken}
+              showIcon={false}
+              className="min-w-0 flex-1 justify-center"
+              numberClassName="truncate text-xl font-extrabold"
+              numberStyle={CHIP_TEXT_STYLE}
+            />
             <button
               type="button"
               onClick={() => openApp('ken')}

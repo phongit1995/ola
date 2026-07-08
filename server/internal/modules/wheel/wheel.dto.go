@@ -121,21 +121,22 @@ type PlayerConfigResponse struct {
 }
 
 type SpinResult struct {
-	SpinID        uuid.UUID               `json:"spinId"`
-	WheelID       uuid.UUID               `json:"wheelId"`
-	SegmentIndex  int                     `json:"segmentIndex"`
-	SegmentID     uuid.UUID               `json:"segmentId"`
-	SegmentKind   models.WheelSegmentKind `json:"segmentKind"`
-	IsWin         bool                    `json:"isWin"`
-	IsSuperLucky  bool                    `json:"isSuperLucky"`
-	KenCost       int                     `json:"kenCost"`
-	IsFree        bool                    `json:"isFree"`
-	KenBalance    int                     `json:"kenBalance"`
-	FreeAvailable bool                    `json:"freeAvailable"`
-	RewardLabel   *string                 `json:"rewardLabel,omitempty"`
-	KenAmount     *int                    `json:"kenAmount,omitempty"`
-	VipDays       *int                    `json:"vipDays,omitempty"`
-	VipTypeID     *int16                  `json:"vipTypeId,omitempty"`
+	SpinID              uuid.UUID               `json:"spinId"`
+	WheelID             uuid.UUID               `json:"wheelId"`
+	SegmentIndex        int                     `json:"segmentIndex"`
+	SegmentID           uuid.UUID               `json:"segmentId"`
+	SegmentKind         models.WheelSegmentKind `json:"segmentKind"`
+	IsWin               bool                    `json:"isWin"`
+	IsSuperLucky        bool                    `json:"isSuperLucky"`
+	KenCost             int                     `json:"kenCost"`
+	IsFree              bool                    `json:"isFree"`
+	KenBalance          int                     `json:"kenBalance"`
+	KenBalanceAfterCost int                     `json:"kenBalanceAfterCost"`
+	FreeAvailable       bool                    `json:"freeAvailable"`
+	RewardLabel         *string                 `json:"rewardLabel,omitempty"`
+	KenAmount           *int                    `json:"kenAmount,omitempty"`
+	VipDays             *int                    `json:"vipDays,omitempty"`
+	VipTypeID           *int16                  `json:"vipTypeId,omitempty"`
 }
 
 type SpinView struct {
