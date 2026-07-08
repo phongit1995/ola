@@ -143,8 +143,11 @@ export function SpinWheelGamePage({ onClose }: SpinWheelGamePageProps) {
             }}
           >
             <img src={coinUrl} alt="" className="h-11 w-11 shrink-0" />
-            <span className="min-w-0 flex-1 truncate text-xl font-extrabold" style={CHIP_TEXT_STYLE}>
-              {formatKen(ken)} KEN
+            <span
+              className="min-w-0 flex-1 truncate text-center text-xl font-extrabold"
+              style={CHIP_TEXT_STYLE}
+            >
+              {formatKen(ken)}
             </span>
             <button
               type="button"
