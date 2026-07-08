@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { EggService } from '@services';
 import type { EggDrawResult, EggPack } from '@app-types';
-import { useAuthStore } from '@/store/authStore';
+import { syncAuthKen } from '@/store/authKen';
 
 export type EggPacksStatus = 'idle' | 'loading' | 'ready' | 'error';
 
@@ -24,12 +24,6 @@ interface EggGameState {
   showWin: (result: EggDrawResult) => void;
   closeWin: () => void;
   toggleMute: () => void;
-}
-
-function syncAuthKen(ken: number) {
-  useAuthStore.setState((state) =>
-    state.user ? { user: { ...state.user, ken } } : state
-  );
 }
 
 export const useEggGameStore = create<EggGameState>((set, get) => ({

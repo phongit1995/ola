@@ -1,24 +1,3 @@
-export type SpinRewardKind = 'ken' | 'vip' | 'item' | 'miss';
-
-export interface SpinSegment {
-  id: string;
-  kind: SpinRewardKind;
-  kenAmount?: number;
-  vipDays?: number;
-  weight: number;
-}
-
-export const SPIN_SEGMENTS: SpinSegment[] = [
-  { id: 'ken-2000', kind: 'ken', kenAmount: 2000, weight: 22 },
-  { id: 'ken-5000', kind: 'ken', kenAmount: 5000, weight: 15 },
-  { id: 'ken-10000', kind: 'ken', kenAmount: 10000, weight: 5 },
-  { id: 'ken-20000', kind: 'ken', kenAmount: 20000, weight: 1 },
-  { id: 'item-doll', kind: 'item', weight: 6 },
-  { id: 'vip-1', kind: 'vip', vipDays: 1, weight: 8 },
-  { id: 'vip-2', kind: 'vip', vipDays: 2, weight: 3 },
-  { id: 'miss', kind: 'miss', weight: 40 },
-];
-
 export interface SegmentTheme {
   light: string;
   dark: string;
@@ -26,36 +5,81 @@ export interface SegmentTheme {
   shadow: string;
 }
 
-export const SEGMENT_THEMES: SegmentTheme[] = [
-  { light: '#ff9a24', dark: '#f06416', stroke: '#81460e', shadow: '#4d2600' },
-  { light: '#ffe24a', dark: '#f6b91d', stroke: '#a5670a', shadow: '#5e3a00' },
-  { light: '#b9e33a', dark: '#76b92b', stroke: '#3f6a12', shadow: '#24400a' },
-  { light: '#42d2dd', dark: '#1ba6c4', stroke: '#0b6478', shadow: '#063947' },
-  { light: '#3d8be5', dark: '#1757b5', stroke: '#123a72', shadow: '#0a2450' },
-  { light: '#a46ceb', dark: '#733cc9', stroke: '#4a238b', shadow: '#2a1250' },
-  { light: '#c558d8', dark: '#9c37b0', stroke: '#5e1f6c', shadow: '#380f42' },
-  { light: '#ff7aa5', dark: '#e94e82', stroke: '#9c3154', shadow: '#5e1a32' },
+export const SEGMENT_PALETTE = [
+  '#ff8a34',
+  '#2cb8d0',
+  '#ffc93c',
+  '#8b5cf6',
+  '#a0d22b',
+  '#f06ba0',
+  '#2e7dd1',
+  '#ff6b6b',
+  '#34c759',
+  '#c558d8',
+  '#ffd93c',
+  '#26c6da',
+  '#7ac943',
+  '#ec407a',
+  '#5b7cf0',
+  '#ff9a8b',
+  '#2cc7b0',
+  '#b06bf0',
+  '#f4a62a',
+  '#4dd0e1',
 ];
 
-const FALLBACK_THEME: SegmentTheme = {
-  light: '#ff9a24',
-  dark: '#f06416',
-  stroke: '#81460e',
-  shadow: '#4d2600',
-};
+function hexToRgb(hex: string): [number, number, number] {
+  const value = hex.replace('#', '');
+  const full =
+    value.length === 3
+      ? value
+          .split('')
+          .map((c) => c + c)
+          .join('')
+      : value;
+  const int = parseInt(full, 16);
+  return [(int >> 16) & 255, (int >> 8) & 255, int & 255];
+}
 
-export const SEGMENT_COUNT = SPIN_SEGMENTS.length;
-export const SEGMENT_ANGLE = 360 / SEGMENT_COUNT;
+function toHex(channel: number): string {
+  return Math.max(0, Math.min(255, Math.round(channel))).toString(16).padStart(2, '0');
+}
+
+function mix(hex: string, target: number, amount: number): string {
+  const [r, g, b] = hexToRgb(hex);
+  const blend = (channel: number) => channel + (target - channel) * amount;
+  return `#${toHex(blend(r))}${toHex(blend(g))}${toHex(blend(b))}`;
+}
+
+export function themeFromColor(hex: string): SegmentTheme {
+  return {
+    light: mix(hex, 255, 0.2),
+    dark: mix(hex, 0, 0.18),
+    stroke: mix(hex, 0, 0.55),
+    shadow: mix(hex, 0, 0.72),
+  };
+}
+
+export function segmentColor(index: number): string {
+  return SEGMENT_PALETTE[index % SEGMENT_PALETTE.length] ?? SEGMENT_PALETTE[0]!;
+}
 
 export function segmentTheme(index: number): SegmentTheme {
-  return SEGMENT_THEMES[index % SEGMENT_THEMES.length] ?? FALLBACK_THEME;
+  return themeFromColor(segmentColor(index));
 }
 
-export function segmentIndexById(id: string): number {
-  return SPIN_SEGMENTS.findIndex((segment) => segment.id === id);
+export function segmentAngle(count: number): number {
+  return count > 0 ? 360 / count : 360;
 }
 
-export const SPIN_START_KEN = 100_000;
-export const SPIN_START_TURNS = 5;
-export const SPIN_TURNS = 5;
-export const SPIN_DURATION_MS = 5200;
+export function rotationForIndex(current: number, index: number, count: number): number {
+  const angle = segmentAngle(count);
+  const landing = (360 - index * angle) % 360;
+  const currentAngle = ((current % 360) + 360) % 360;
+  const delta = (landing - currentAngle + 360) % 360;
+  return current + SPIN_TURNS * 360 + delta;
+}
+
+export const SPIN_TURNS = 6;
+export const SPIN_DURATION_MS = 4200;
+export const SPIN_START_KEN = 0;

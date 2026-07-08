@@ -29,7 +29,6 @@ function loadWheel(wheel: Wheel | null): LoadedWheel {
     id: s.id,
     kind: s.kind,
     label: s.label,
-    color: s.color,
     weight: s.weight,
     kenAmount: s.kenAmount,
     kenMin: s.kenMin,
@@ -94,7 +93,6 @@ function toConfigRequest(segments: WheelSegment[]): SaveWheelConfigRequest {
       return {
         kind: seg.kind,
         label: seg.label,
-        color: seg.color,
         weight: seg.isActive ? round4((seg.weight / activeTotal) * 100) : 0,
         kenAmount: seg.kenAmount,
         kenMin: seg.kenMin,

@@ -21,7 +21,6 @@ type OptionInput struct {
 type SegmentInput struct {
 	Kind         models.WheelSegmentKind `json:"kind" binding:"required,oneof=miss ken_fixed ken_random vip_days vip_item vip_random"`
 	Label        string                  `json:"label" binding:"required,max=100"`
-	Color        string                  `json:"color" binding:"max=9"`
 	Weight       float64                 `json:"weight" binding:"gte=0"`
 	KenAmount    *int                    `json:"kenAmount"`
 	KenMin       *int                    `json:"kenMin"`
@@ -74,7 +73,6 @@ type SegmentView struct {
 	ID           uuid.UUID               `json:"id"`
 	Kind         models.WheelSegmentKind `json:"kind"`
 	Label        string                  `json:"label"`
-	Color        string                  `json:"color"`
 	Weight       float64                 `json:"weight"`
 	KenAmount    *int                    `json:"kenAmount,omitempty"`
 	KenMin       *int                    `json:"kenMin,omitempty"`
@@ -105,7 +103,6 @@ type PlayerSegmentView struct {
 	ID        uuid.UUID               `json:"id"`
 	Kind      models.WheelSegmentKind `json:"kind"`
 	Label     string                  `json:"label"`
-	Color     string                  `json:"color"`
 	KenAmount *int                    `json:"kenAmount,omitempty"`
 	KenMin    *int                    `json:"kenMin,omitempty"`
 	KenMax    *int                    `json:"kenMax,omitempty"`

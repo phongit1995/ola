@@ -1059,7 +1059,11 @@
   "wheelGame": {
     "title": "Vòng Quay May Mắn",
     "spin": "Quay ngay",
-    "spinsLeft": "Hôm nay bạn còn <b>{{n}}</b> lượt quay",
+    "freeToday": "Miễn phí hôm nay",
+    "spinCost": "Quay: {{n}} KEN",
+    "outOfKen": "Bạn không đủ KEN để quay",
+    "error": "Có lỗi xảy ra, vui lòng thử lại",
+    "loading": "Đang tải...",
     "sound": "Âm thanh",
     "history": "Lịch sử",
     "buyKen": "Nạp KEN",
@@ -1071,7 +1075,13 @@
     "vipDays": "{{n}} Ngày VIP",
     "vipDaysShort": "{{n}} Ngày",
     "historyTitle": "Lịch sử quay",
-    "historyEmpty": "Chưa có lượt quay nào"
+    "historyEmpty": "Chưa có lượt quay nào",
+    "historyLoadMore": "Xem thêm",
+    "historyFilter": {
+      "all": "Tất cả",
+      "win": "Trúng thưởng",
+      "miss": "Trượt"
+    }
   },
   "eggGame": {
     "title": "Đập Trứng",

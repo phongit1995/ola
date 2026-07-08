@@ -1059,7 +1059,11 @@
   "wheelGame": {
     "title": "Lucky Spin",
     "spin": "Spin now",
-    "spinsLeft": "You have <b>{{n}}</b> spins left today",
+    "freeToday": "Free today",
+    "spinCost": "Spin: {{n}} KEN",
+    "outOfKen": "You don't have enough KEN to spin",
+    "error": "Something went wrong, please try again",
+    "loading": "Loading...",
     "sound": "Sound",
     "history": "History",
     "buyKen": "Top up KEN",
@@ -1071,7 +1075,13 @@
     "vipDays": "{{n}} VIP Days",
     "vipDaysShort": "{{n}} Days",
     "historyTitle": "Spin History",
-    "historyEmpty": "No spins yet"
+    "historyEmpty": "No spins yet",
+    "historyLoadMore": "Load more",
+    "historyFilter": {
+      "all": "All",
+      "win": "Won",
+      "miss": "Missed"
+    }
   },
   "eggGame": {
     "title": "Egg Smash",

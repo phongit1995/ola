@@ -1,7 +1,6 @@
 import {
   Button,
   Card,
-  ColorPicker,
   Input,
   InputNumber,
   Select,
@@ -56,7 +55,6 @@ export function WheelBuilder({ segments, onChange }: WheelBuilderProps) {
         id: newId('seg'),
         kind,
         label: meta.label,
-        color: meta.color,
         weight: 10,
         isSuperLucky: false,
         isActive: true,
@@ -137,7 +135,7 @@ export function WheelBuilder({ segments, onChange }: WheelBuilderProps) {
               key={seg.id}
               size="small"
               styles={{ body: { padding: 12 } }}
-              style={{ borderLeft: `4px solid ${seg.color || meta.color}` }}
+              style={{ borderLeft: `4px solid ${meta.color}` }}
             >
               <Space wrap align="center" style={{ width: '100%', justifyContent: 'space-between' }}>
                 <Space wrap align="center">
@@ -157,11 +155,6 @@ export function WheelBuilder({ segments, onChange }: WheelBuilderProps) {
                     maxLength={100}
                     placeholder="Nhãn hiển thị"
                     onChange={(e) => updateSeg(seg.id, { label: e.target.value })}
-                  />
-                  <ColorPicker
-                    size="small"
-                    value={seg.color || meta.color}
-                    onChangeComplete={(value) => updateSeg(seg.id, { color: value.toHexString() })}
                   />
                 </Space>
                 <Space align="center">

@@ -35,7 +35,6 @@ type WheelSegment struct {
 	WheelID      uuid.UUID        `gorm:"type:uuid;not null;index" json:"wheelId"`
 	Kind         WheelSegmentKind `gorm:"type:varchar(20);not null" json:"kind"`
 	Label        string           `gorm:"type:varchar(100);not null" json:"label"`
-	Color        string           `gorm:"type:varchar(9);not null;default:''" json:"color"`
 	Weight       float64          `gorm:"type:numeric(10,4);not null;default:0" json:"weight"`
 	KenAmount    *int             `gorm:"column:ken_amount" json:"kenAmount,omitempty"`
 	KenMin       *int             `gorm:"column:ken_min" json:"kenMin,omitempty"`

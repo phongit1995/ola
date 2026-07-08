@@ -1,83 +1,95 @@
 import { create } from 'zustand';
-import {
-  SEGMENT_ANGLE,
-  SPIN_SEGMENTS,
-  SPIN_TURNS,
-  type SpinSegment,
-} from './spinWheel.constants';
+import { WheelService } from '@services';
+import type { WheelConfig, WheelPlayerSegment, WheelSpinResult } from '@app-types';
+import { syncAuthKen } from '@/store/authKen';
+import { rotationForIndex } from './spinWheel.constants';
+
+export type WheelConfigStatus = 'idle' | 'loading' | 'ready' | 'error';
 
 interface SpinWheelState {
   ken: number;
-  turnsLeft: number;
   muted: boolean;
+  config: WheelConfig | null;
+  configStatus: WheelConfigStatus;
   rotation: number;
   spinning: boolean;
-  pendingIndex: number | null;
-  result: SpinSegment | null;
-  history: SpinSegment[];
-  reset: (ken: number, turns: number) => void;
-  syncKen: (ken: number) => void;
-  spin: (targetIndex?: number) => void;
+  suppressKenSync: boolean;
+  result: WheelSpinResult | null;
+  pendingResult: WheelSpinResult | null;
+  loadConfig: () => Promise<void>;
+  spin: () => Promise<boolean>;
   settle: () => void;
+  syncKen: (ken: number) => void;
   closeResult: () => void;
   toggleMute: () => void;
 }
 
-const initialState = {
-  ken: 0,
-  turnsLeft: 0,
-  muted: false,
-  rotation: 0,
-  spinning: false,
-  pendingIndex: null as number | null,
-  result: null as SpinSegment | null,
-  history: [] as SpinSegment[],
-};
-
-function pickWinningIndex(): number {
-  const total = SPIN_SEGMENTS.reduce((sum, segment) => sum + segment.weight, 0);
-  let threshold = Math.random() * total;
-  for (let index = 0; index < SPIN_SEGMENTS.length; index += 1) {
-    threshold -= SPIN_SEGMENTS[index]!.weight;
-    if (threshold < 0) return index;
-  }
-  return SPIN_SEGMENTS.length - 1;
-}
-
-function rotationForIndex(current: number, index: number): number {
-  const landing = (360 - index * SEGMENT_ANGLE) % 360;
-  const currentAngle = ((current % 360) + 360) % 360;
-  const delta = (landing - currentAngle + 360) % 360;
-  return current + SPIN_TURNS * 360 + delta;
+function sortedSegments(segments: WheelPlayerSegment[]): WheelPlayerSegment[] {
+  return [...segments].sort((a, b) => a.sortOrder - b.sortOrder);
 }
 
 export const useSpinWheelStore = create<SpinWheelState>((set, get) => ({
-  ...initialState,
-  reset: (ken, turns) => set({ ...initialState, ken, turnsLeft: turns }),
-  syncKen: (ken) => set((state) => (state.spinning ? state : { ken })),
-  spin: (targetIndex) => {
+  ken: 0,
+  muted: false,
+  config: null,
+  configStatus: 'idle',
+  rotation: 0,
+  spinning: false,
+  suppressKenSync: false,
+  result: null,
+  pendingResult: null,
+  loadConfig: async () => {
+    if (get().configStatus === 'loading') return;
+    set({ configStatus: 'loading' });
+    try {
+      const config = await WheelService.getConfig();
+      if (!config || config.segments.length === 0) {
+        set({ config: null, configStatus: 'error' });
+        return;
+      }
+      set({
+        config: { ...config, segments: sortedSegments(config.segments) },
+        configStatus: 'ready',
+      });
+    } catch {
+      set({ config: null, configStatus: 'error' });
+    }
+  },
+  spin: async () => {
     const state = get();
-    if (state.spinning) return;
-    const index =
-      typeof targetIndex === 'number' && targetIndex >= 0 ? targetIndex : pickWinningIndex();
-    set({
-      spinning: true,
-      pendingIndex: index,
-      rotation: rotationForIndex(state.rotation, index),
-    });
+    if (state.spinning || !state.config) return false;
+    const count = state.config.segments.length;
+    set({ spinning: true, suppressKenSync: true });
+    try {
+      const result = await WheelService.spin(crypto.randomUUID());
+      set((current) => ({
+        pendingResult: result,
+        rotation: rotationForIndex(current.rotation, result.segmentIndex, count),
+      }));
+      return true;
+    } catch {
+      set({ spinning: false, suppressKenSync: false });
+      return false;
+    }
   },
   settle: () => {
     const state = get();
-    if (state.pendingIndex == null) return;
-    const segment = SPIN_SEGMENTS[state.pendingIndex]!;
-    set({
+    const result = state.pendingResult;
+    if (!result) return;
+    set((current) => ({
       spinning: false,
-      pendingIndex: null,
-      result: segment,
-      ken: segment.kind === 'ken' ? state.ken + (segment.kenAmount ?? 0) : state.ken,
-      history: [segment, ...state.history].slice(0, 50),
-    });
+      suppressKenSync: false,
+      pendingResult: null,
+      result,
+      ken: result.kenBalance,
+      config: current.config
+        ? { ...current.config, freeAvailable: result.freeAvailable }
+        : current.config,
+    }));
+    syncAuthKen(result.kenBalance);
   },
+  syncKen: (ken) =>
+    set((state) => (state.suppressKenSync || ken === state.ken ? state : { ken })),
   closeResult: () => set({ result: null }),
   toggleMute: () => set((state) => ({ muted: !state.muted })),
 }));

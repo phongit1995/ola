@@ -558,7 +558,6 @@ export interface WheelSegment {
   id: string
   kind: WheelSegmentKind
   label: string
-  color: string
   weight: number
   kenAmount?: number
   kenMin?: number
@@ -594,7 +593,6 @@ export interface WheelSegmentOptionInput {
 export interface WheelSegmentInput {
   kind: WheelSegmentKind
   label: string
-  color: string
   weight: number
   kenAmount?: number
   kenMin?: number

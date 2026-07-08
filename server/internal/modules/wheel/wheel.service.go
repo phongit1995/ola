@@ -136,7 +136,6 @@ func (s *Service) PlayerConfig(userID uuid.UUID) (*PlayerConfigResponse, error) 
 			ID:        seg.ID,
 			Kind:      seg.Kind,
 			Label:     seg.Label,
-			Color:     seg.Color,
 			KenAmount: seg.KenAmount,
 			KenMin:    seg.KenMin,
 			KenMax:    seg.KenMax,
@@ -170,7 +169,6 @@ func buildConfigModels(input []SegmentInput) ([]models.WheelSegment, map[int][]m
 		segs[i] = models.WheelSegment{
 			Kind:         seg.Kind,
 			Label:        seg.Label,
-			Color:        seg.Color,
 			Weight:       seg.Weight,
 			KenAmount:    seg.KenAmount,
 			KenMin:       seg.KenMin,
@@ -624,7 +622,6 @@ func buildWheelViews(wheels []models.Wheel, segs []models.WheelSegment, options 
 			ID:           seg.ID,
 			Kind:         seg.Kind,
 			Label:        seg.Label,
-			Color:        seg.Color,
 			Weight:       seg.Weight,
 			KenAmount:    seg.KenAmount,
 			KenMin:       seg.KenMin,

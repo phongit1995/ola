@@ -10,7 +10,6 @@ export interface WheelPlayerSegment {
   id: string;
   kind: WheelSegmentKind;
   label: string;
-  color: string;
   kenAmount?: number;
   kenMin?: number;
   kenMax?: number;

@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware';
 import { KenTreasureService } from '@services';
 import { toast, playKenChestSound } from '@lib';
 import i18n from '@/i18n';
-import { useAuthStore } from '@/store/authStore';
+import { syncAuthKen } from '@/store/authKen';
 
 export type KenTreasurePhase = 'idle' | 'closed' | 'opening' | 'result';
 
@@ -22,10 +22,6 @@ interface KenTreasureState {
   show: (payload: { id: string; expiresAt: string }) => void;
   open: () => Promise<void>;
   dismiss: () => void;
-}
-
-function syncAuthKen(ken: number) {
-  useAuthStore.setState((state) => (state.user ? { user: { ...state.user, ken } } : state));
 }
 
 export const useKenTreasureStore = create<KenTreasureState>((set, get) => ({

@@ -1,51 +1,20 @@
-import { useEffect, useRef, type CSSProperties } from 'react';
-import type { TFunction } from 'i18next';
-import { useTranslation } from 'react-i18next';
-import { formatKen } from '@lib';
+import type { CSSProperties } from 'react';
+import { VipIcon } from '@components';
+import type { WheelPlayerSegment } from '@app-types';
 import {
-  SEGMENT_ANGLE,
   SPIN_DURATION_MS,
-  SPIN_SEGMENTS,
+  segmentAngle,
   segmentTheme,
   type SegmentTheme,
-  type SpinSegment,
 } from './spinWheel.constants';
-import {
-  pointerUrl,
-  rewardMissUrl,
-  rewardVipDaysUrl,
-  spinCoinUrl,
-  wheelCenterUrl,
-  wheelLogoUrl,
-  wheelOuterRingUrl,
-} from './spinWheelAssets';
+import { pointerUrl, wheelCenterUrl, wheelOuterRingUrl } from './spinWheelAssets';
+import { isKenKind, isVipItemKind, rewardKindIcon } from './spinWheelReward';
 
 const VIEWBOX = 100;
 const CENTER = VIEWBOX / 2;
 const SLICE_RADIUS = 48;
 const LABEL_RADIUS = 31;
-
-const POINTER_MAX_TICK_DEG = 11;
-const DIVIDER_PHASE_OFFSET = SEGMENT_ANGLE / 2;
-
-function wheelAngleFromTransform(transform: string): number {
-  if (!transform || transform === 'none') return 0;
-  const open = transform.indexOf('(');
-  const close = transform.indexOf(')');
-  if (open < 0 || close < 0) return 0;
-  const parts = transform.slice(open + 1, close).split(',');
-  const a = Number(parts[0]);
-  const b = Number(parts[1]);
-  if (Number.isNaN(a) || Number.isNaN(b)) return 0;
-  return (Math.atan2(b, a) * 180) / Math.PI;
-}
-
-function pointerTickDeg(wheelAngle: number): number {
-  const phase =
-    (((wheelAngle - DIVIDER_PHASE_OFFSET) % SEGMENT_ANGLE) + SEGMENT_ANGLE) % SEGMENT_ANGLE;
-  const t = phase / SEGMENT_ANGLE;
-  return -POINTER_MAX_TICK_DEG * t * t;
-}
+const DIVIDER_INNER_RADIUS = 12;
 
 function polar(angleDeg: number, radius: number) {
   const radians = ((angleDeg - 90) * Math.PI) / 180;
@@ -55,24 +24,22 @@ function polar(angleDeg: number, radius: number) {
   };
 }
 
-function slicePath(index: number): string {
-  const half = SEGMENT_ANGLE / 2;
-  const start = polar(index * SEGMENT_ANGLE - half, SLICE_RADIUS);
-  const end = polar(index * SEGMENT_ANGLE + half, SLICE_RADIUS);
+function slicePath(index: number, angle: number): string {
+  const half = angle / 2;
+  const start = polar(index * angle - half, SLICE_RADIUS);
+  const end = polar(index * angle + half, SLICE_RADIUS);
   return `M ${CENTER} ${CENTER} L ${start.x} ${start.y} A ${SLICE_RADIUS} ${SLICE_RADIUS} 0 0 1 ${end.x} ${end.y} Z`;
 }
 
-const DIVIDER_INNER_RADIUS = 12;
-
-function dividerLine(index: number) {
-  const angle = index * SEGMENT_ANGLE - SEGMENT_ANGLE / 2;
-  const inner = polar(angle, DIVIDER_INNER_RADIUS);
-  const outer = polar(angle, SLICE_RADIUS);
+function dividerLine(index: number, angle: number) {
+  const boundary = index * angle - angle / 2;
+  const inner = polar(boundary, DIVIDER_INNER_RADIUS);
+  const outer = polar(boundary, SLICE_RADIUS);
   return { x1: inner.x, y1: inner.y, x2: outer.x, y2: outer.y };
 }
 
-function labelStyle(index: number): CSSProperties {
-  const point = polar(index * SEGMENT_ANGLE, LABEL_RADIUS);
+function labelStyle(index: number, angle: number): CSSProperties {
+  const point = polar(index * angle, LABEL_RADIUS);
   return {
     left: `${point.x}%`,
     top: `${point.y}%`,
@@ -89,85 +56,52 @@ function textStyle(theme: SegmentTheme): CSSProperties {
   };
 }
 
-interface RewardContent {
+interface RewardVisual {
   icon: string | null;
+  vipTypeId: number | null;
   iconClass: string;
-  primary: string;
-  secondary: string | null;
 }
 
-function rewardContent(segment: SpinSegment, t: TFunction): RewardContent {
-  if (segment.kind === 'ken') {
-    return {
-      icon: spinCoinUrl,
-      iconClass: 'w-[44%]',
-      primary: formatKen(segment.kenAmount ?? 0),
-      secondary: 'KEN',
-    };
+function rewardIconClass(kind: WheelPlayerSegment['kind']): string {
+  if (isKenKind(kind)) return 'w-[44%]';
+  if (kind === 'miss') return 'w-[52%]';
+  return 'w-[58%]';
+}
+
+function rewardVisual(segment: WheelPlayerSegment): RewardVisual {
+  if (isVipItemKind(segment.kind) && typeof segment.vipTypeId === 'number') {
+    return { icon: null, vipTypeId: segment.vipTypeId, iconClass: '' };
   }
-  if (segment.kind === 'vip') {
-    return {
-      icon: rewardVipDaysUrl,
-      iconClass: 'w-[58%]',
-      primary: t('wheelGame.vipDaysShort', { n: segment.vipDays ?? 0 }),
-      secondary: 'VIP',
-    };
-  }
-  if (segment.kind === 'miss') {
-    return { icon: rewardMissUrl, iconClass: 'w-[52%]', primary: t('wheelGame.miss'), secondary: null };
-  }
-  return { icon: null, iconClass: '', primary: t('wheelGame.doll'), secondary: null };
+  return { icon: rewardKindIcon(segment.kind), vipTypeId: null, iconClass: rewardIconClass(segment.kind) };
 }
 
 interface SpinWheelProps {
+  segments: WheelPlayerSegment[];
   rotation: number;
   spinning: boolean;
   onSettle: () => void;
 }
 
-export function SpinWheel({ rotation, spinning, onSettle }: SpinWheelProps) {
-  const { t } = useTranslation();
-  const wheelRef = useRef<HTMLDivElement>(null);
-  const pointerRef = useRef<HTMLImageElement>(null);
-
-  useEffect(() => {
-    const pointer = pointerRef.current;
-    if (!spinning) {
-      if (pointer) pointer.style.rotate = '0deg';
-      return;
-    }
-    let frame = 0;
-    const step = () => {
-      const wheel = wheelRef.current;
-      if (wheel && pointer) {
-        const angle = wheelAngleFromTransform(getComputedStyle(wheel).transform);
-        pointer.style.rotate = `${pointerTickDeg(angle)}deg`;
-      }
-      frame = requestAnimationFrame(step);
-    };
-    frame = requestAnimationFrame(step);
-    return () => {
-      cancelAnimationFrame(frame);
-      if (pointer) pointer.style.rotate = '0deg';
-    };
-  }, [spinning]);
+export function SpinWheel({ segments, rotation, spinning, onSettle }: SpinWheelProps) {
+  const count = segments.length;
+  const angle = segmentAngle(count);
 
   return (
     <div className="relative" style={{ width: 'min(84vw, 360px)', aspectRatio: '1 / 1' }}>
       <img
-        ref={pointerRef}
         src={pointerUrl}
         alt=""
-        className="absolute left-1/2 top-[-5%] z-20 w-[13%] -translate-x-1/2 origin-[50%_36%] drop-shadow-md"
+        className={`absolute left-1/2 top-[-5%] z-20 w-[13%] -translate-x-1/2 origin-top drop-shadow-md ${
+          spinning ? 'animate-wheel-pointer-tick' : ''
+        }`}
       />
       <div
-        ref={wheelRef}
         className="absolute inset-0"
         style={{
           transform: `rotate(${rotation}deg)`,
           willChange: 'transform',
           transition: spinning
-            ? `transform ${SPIN_DURATION_MS}ms cubic-bezier(0.3, 0, 0.08, 1)`
+            ? `transform ${SPIN_DURATION_MS}ms cubic-bezier(0.16, 0.72, 0.12, 1)`
             : 'none',
         }}
         onTransitionEnd={(event) => {
@@ -176,7 +110,7 @@ export function SpinWheel({ rotation, spinning, onSettle }: SpinWheelProps) {
       >
         <svg viewBox={`0 0 ${VIEWBOX} ${VIEWBOX}`} className="absolute inset-0 h-full w-full">
           <defs>
-            {SPIN_SEGMENTS.map((segment, index) => {
+            {segments.map((segment, index) => {
               const theme = segmentTheme(index);
               return (
                 <radialGradient
@@ -209,17 +143,13 @@ export function SpinWheel({ rotation, spinning, onSettle }: SpinWheelProps) {
               <stop offset="0.42" stopColor="#ffffff" stopOpacity="0" />
             </linearGradient>
           </defs>
-          {SPIN_SEGMENTS.map((segment, index) => (
-            <path
-              key={segment.id}
-              d={slicePath(index)}
-              fill={`url(#wheel-grad-${index})`}
-            />
+          {segments.map((segment, index) => (
+            <path key={segment.id} d={slicePath(index, angle)} fill={`url(#wheel-grad-${index})`} />
           ))}
           <circle cx={CENTER} cy={CENTER} r={SLICE_RADIUS} fill="url(#wheel-shade)" />
           <circle cx={CENTER} cy={CENTER} r={SLICE_RADIUS} fill="url(#wheel-gloss)" />
-          {SPIN_SEGMENTS.map((segment, index) => {
-            const line = dividerLine(index);
+          {segments.map((segment, index) => {
+            const line = dividerLine(index, angle);
             return (
               <line
                 key={segment.id}
@@ -234,8 +164,8 @@ export function SpinWheel({ rotation, spinning, onSettle }: SpinWheelProps) {
               />
             );
           })}
-          {SPIN_SEGMENTS.map((segment, index) => {
-            const line = dividerLine(index);
+          {segments.map((segment, index) => {
+            const line = dividerLine(index, angle);
             return (
               <line
                 key={segment.id}
@@ -251,26 +181,23 @@ export function SpinWheel({ rotation, spinning, onSettle }: SpinWheelProps) {
             );
           })}
         </svg>
-        {SPIN_SEGMENTS.map((segment, index) => {
+        {segments.map((segment, index) => {
           const theme = segmentTheme(index);
-          const content = rewardContent(segment, t);
+          const visual = rewardVisual(segment);
           return (
             <div
               key={segment.id}
               className="absolute flex w-[26%] flex-col items-center leading-[0.9]"
-              style={labelStyle(index)}
+              style={labelStyle(index, angle)}
             >
-              {content.icon != null && (
-                <img src={content.icon} alt="" className={`${content.iconClass} drop-shadow-md`} />
-              )}
-              <span className="mt-0.5 block text-[13px] font-extrabold" style={textStyle(theme)}>
-                {content.primary}
+              {visual.vipTypeId != null ? (
+                <VipIcon typeId={visual.vipTypeId} className="h-8 w-8" rounded />
+              ) : visual.icon != null ? (
+                <img src={visual.icon} alt="" className={`${visual.iconClass} drop-shadow-md`} />
+              ) : null}
+              <span className="mt-0.5 block text-[12px] font-extrabold" style={textStyle(theme)}>
+                {segment.label}
               </span>
-              {content.secondary != null && (
-                <span className="block text-[10px] font-extrabold" style={textStyle(theme)}>
-                  {content.secondary}
-                </span>
-              )}
             </div>
           );
         })}
@@ -280,11 +207,6 @@ export function SpinWheel({ rotation, spinning, onSettle }: SpinWheelProps) {
         src={wheelCenterUrl}
         alt=""
         className="absolute left-1/2 top-1/2 z-10 w-[26%] -translate-x-1/2 -translate-y-1/2"
-      />
-      <img
-        src={wheelLogoUrl}
-        alt=""
-        className="absolute left-1/2 top-1/2 z-10 w-[17%] -translate-x-1/2 -translate-y-1/2 drop-shadow-md"
       />
     </div>
   );
