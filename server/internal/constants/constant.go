@@ -55,6 +55,8 @@ const (
 	CacheKeyUserSession         = "USER:%s:SESSION"
 	CacheKeyUserRefreshToken    = "USER:%s:REFRESH_TOKEN"
 	CacheKeyTokenBlacklist      = "JWT_BLACKLIST:%s"
+	CacheKeyRegisterDone        = "REGISTER_DONE:%s"
+	CacheKeyRegisterThrottle    = "REGISTER_THROTTLE:%s"
 	CacheKeySessionRevoked      = "SESSION_REVOKED:%s"
 	CacheKeyConversation        = "CONVERSATION:%s:DETAIL"
 	CacheKeyConversationList    = "USER:%s:CONVERSATIONS"

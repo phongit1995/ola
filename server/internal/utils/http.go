@@ -205,6 +205,10 @@ var (
 		"cannot propose to a blocked user":      true,
 		"cannot transfer ken to a blocked user": true,
 	}
+
+	errorsTooManyRequests = map[string]bool{
+		"RATE_LIMITED": true,
+	}
 )
 
 func matchKnownError(msg string, table map[string]bool) bool {
@@ -240,6 +244,10 @@ func HTTPStatusFromError(err error) int {
 
 	if matchKnownError(msg, errorsForbidden) {
 		return http.StatusForbidden
+	}
+
+	if matchKnownError(msg, errorsTooManyRequests) {
+		return http.StatusTooManyRequests
 	}
 
 	return http.StatusBadRequest
