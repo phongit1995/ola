@@ -8,7 +8,7 @@ import {
   type SegmentTheme,
 } from './spinWheel.constants';
 import { pointerUrl, wheelCenterUrl, wheelOuterRingUrl } from './spinWheelAssets';
-import { isKenKind, isVipItemKind, rewardKindIcon } from './spinWheelReward';
+import { isVipItemKind, rewardKindIcon } from './spinWheelReward';
 
 const VIEWBOX = 100;
 const CENTER = VIEWBOX / 2;
@@ -63,7 +63,9 @@ interface RewardVisual {
 }
 
 function rewardIconClass(kind: WheelPlayerSegment['kind']): string {
-  if (isKenKind(kind)) return 'w-[44%]';
+  if (kind === 'ken_fixed') return 'w-[44%]';
+  if (kind === 'ken_random') return 'w-[54%]';
+  if (kind === 'vip_random') return 'w-[60%]';
   if (kind === 'miss') return 'w-[52%]';
   return 'w-[58%]';
 }
@@ -191,7 +193,7 @@ export function SpinWheel({ segments, rotation, spinning, onSettle }: SpinWheelP
               style={labelStyle(index, angle)}
             >
               {visual.vipTypeId != null ? (
-                <VipIcon typeId={visual.vipTypeId} className="h-8 w-8" rounded />
+                <VipIcon typeId={visual.vipTypeId} className="h-auto w-[56%] drop-shadow-md" rounded />
               ) : visual.icon != null ? (
                 <img src={visual.icon} alt="" className={`${visual.iconClass} drop-shadow-md`} />
               ) : null}

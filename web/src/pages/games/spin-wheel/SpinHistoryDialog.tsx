@@ -5,7 +5,7 @@ import { cn, createTimeFormatter, formatKen } from '@lib';
 import { WheelService } from '@services';
 import type { WheelSpinHistoryFilter, WheelSpinHistoryItem } from '@app-types';
 import { historyIconUrl, rewardVipDaysUrl, spinCoinUrl } from './spinWheelAssets';
-import { isKenKind, isVipDaysKind } from './spinWheelReward';
+import { formatRewardKen, isKenKind, isVipDaysKind } from './spinWheelReward';
 
 const PAGE_SIZE = 20;
 const FILTERS: WheelSpinHistoryFilter[] = ['all', 'win', 'miss'];
@@ -31,7 +31,7 @@ function useOutcomeLabel() {
       }
       if (isKenKind(item.segmentKind)) {
         return {
-          text: `${formatKen(item.kenAmount ?? 0)} KEN`,
+          text: `${formatRewardKen(item.kenAmount ?? 0)} KEN`,
           tone: 'win',
           iconUrl: spinCoinUrl,
         };

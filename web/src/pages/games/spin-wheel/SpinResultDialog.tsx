@@ -1,5 +1,4 @@
 import { useTranslation } from 'react-i18next';
-import { formatKen } from '@lib';
 import { VipIcon } from '@components';
 import type { WheelSpinResult } from '@app-types';
 import {
@@ -9,7 +8,7 @@ import {
   rewardVipDaysUrl,
   spinCoinUrl,
 } from './spinWheelAssets';
-import { isKenKind, isVipDaysKind, isVipItemKind } from './spinWheelReward';
+import { formatRewardKen, isKenKind, isVipDaysKind, isVipItemKind } from './spinWheelReward';
 
 interface SpinResultDialogProps {
   result: WheelSpinResult;
@@ -44,12 +43,12 @@ export function SpinResultDialog({ result, onClose }: SpinResultDialogProps) {
         <div className="absolute inset-x-0 top-[19%] px-10 text-center text-xl font-extrabold uppercase leading-tight text-[#e0348b]">
           {result.isWin ? t('wheelGame.rewardTitle') : t('wheelGame.missTitle')}
         </div>
-        <div className="absolute inset-x-0 top-[40%] flex flex-col items-center gap-2 px-8">
+        <div className="absolute inset-x-0 top-[45%] flex flex-col items-center gap-2 px-8">
           {isKen && (
             <>
               <img src={spinCoinUrl} alt="" className="h-24 w-24 drop-shadow" />
               <span className="text-2xl font-extrabold text-[#e0348b]">
-                {formatKen(result.kenAmount ?? 0)} KEN
+                {formatRewardKen(result.kenAmount ?? 0)} KEN
               </span>
             </>
           )}

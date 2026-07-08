@@ -1,5 +1,20 @@
+import { formatKen } from '@lib';
 import type { WheelSegmentKind } from '@app-types';
-import { rewardMissUrl, rewardVipDaysUrl, spinCoinUrl } from './spinWheelAssets';
+import {
+  rewardKenRandomUrl,
+  rewardMissUrl,
+  rewardVipDaysUrl,
+  rewardVipRandomUrl,
+  spinCoinUrl,
+} from './spinWheelAssets';
+
+export function formatRewardKen(amount: number): string {
+  if (amount >= 10000) {
+    const k = amount / 1000;
+    return `${Number.isInteger(k) ? k : k.toFixed(1)}K`;
+  }
+  return formatKen(amount);
+}
 
 export function isKenKind(kind: WheelSegmentKind): boolean {
   return kind === 'ken_fixed' || kind === 'ken_random';
@@ -14,7 +29,16 @@ export function isVipItemKind(kind: WheelSegmentKind): boolean {
 }
 
 export function rewardKindIcon(kind: WheelSegmentKind): string {
-  if (isKenKind(kind)) return spinCoinUrl;
-  if (kind === 'miss') return rewardMissUrl;
-  return rewardVipDaysUrl;
+  switch (kind) {
+    case 'ken_fixed':
+      return spinCoinUrl;
+    case 'ken_random':
+      return rewardKenRandomUrl;
+    case 'vip_random':
+      return rewardVipRandomUrl;
+    case 'miss':
+      return rewardMissUrl;
+    default:
+      return rewardVipDaysUrl;
+  }
 }

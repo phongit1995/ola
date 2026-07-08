@@ -10,6 +10,8 @@ import wheelOuterRingUrl from '@/assets/games/spin-wheel/wheel-outer-ring.webp';
 import pointerUrl from '@/assets/games/spin-wheel/pointer.webp';
 import spinCoinUrl from '@/assets/games/spin-wheel/coin.webp';
 import rewardVipDaysUrl from '@/assets/games/spin-wheel/reward-vip-days.webp';
+import rewardKenRandomUrl from '@/assets/games/spin-wheel/reward-ken-random.webp';
+import rewardVipRandomUrl from '@/assets/games/spin-wheel/reward-vip-random.webp';
 import rewardMissUrl from '@/assets/games/spin-wheel/reward-miss.webp';
 import spinButtonUrl from '@/assets/games/spin-wheel/spin-button.webp';
 import spinCountNoteUrl from '@/assets/games/spin-wheel/spin-count-note.webp';
@@ -35,6 +37,8 @@ export {
   pointerUrl,
   spinCoinUrl,
   rewardVipDaysUrl,
+  rewardKenRandomUrl,
+  rewardVipRandomUrl,
   rewardMissUrl,
   spinButtonUrl,
   spinCountNoteUrl,
