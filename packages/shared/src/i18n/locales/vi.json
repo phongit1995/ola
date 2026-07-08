@@ -1193,6 +1193,7 @@
     "catchLose": "Tiếc quá, bạn đoán sai hướng. Thua lượt này.",
     "leaderboard": {
       "title": "TOP NGƯỜI CHƠI",
+      "short": "BXH",
       "topDay": "TOP NGÀY",
       "topWeek": "TOP TUẦN",
       "colRank": "STT",

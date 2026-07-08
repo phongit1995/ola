@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { toApiError, toast } from '@lib';
 import { PenService } from '@services';
 import type { PenLeaderboardEntry, PenLeaderboardPeriod } from '@app-types';
+import { withPenVip } from './penVip';
 
 export const PEN_LEADERBOARD_PAGE = 10;
 
@@ -35,7 +36,8 @@ export const usePenLeaderboardStore = create<PenLeaderboardState>((set, get) => 
     set({ loading: true });
     try {
       const res = await PenService.leaderboard(period);
-      set((state) => ({ cache: { ...state.cache, [period]: res.items }, loading: false }));
+      const items = res.items.map((e) => ({ ...e, user: withPenVip(e.user) ?? e.user }));
+      set((state) => ({ cache: { ...state.cache, [period]: items }, loading: false }));
     } catch (e) {
       set({ loading: false });
       toast.error(toApiError(e).message);

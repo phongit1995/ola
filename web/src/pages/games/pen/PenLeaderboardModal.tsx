@@ -48,22 +48,24 @@ export function PenLeaderboardModal({ onClose }: PenLeaderboardModalProps) {
         onClick={(e) => e.stopPropagation()}
         className="pen-panel relative flex max-h-[92%] w-full flex-col @md:w-[80%]"
       >
-        <div className="flex shrink-0 items-center justify-center gap-2 px-12 pb-2 pt-4 text-white">
-          <img src={penLeaderboardAssets.cup} alt="" className="h-8 w-auto object-contain" />
-          <span className="text-2xl font-extrabold italic tracking-wider drop-shadow @md:text-3xl">
-            {t('penGame.leaderboard.title')}
+        <div className="flex shrink-0 items-center gap-2 px-3 pb-4 pt-5 text-white">
+          <span className="h-9 w-9 shrink-0" />
+          <span className="flex min-w-0 flex-1 items-center justify-center gap-2">
+            <img src={penLeaderboardAssets.cup} alt="" className="h-8 w-auto shrink-0 object-contain" />
+            <span className="whitespace-nowrap text-xl font-extrabold italic tracking-wider drop-shadow @md:text-2xl">
+              {t('penGame.leaderboard.title')}
+            </span>
           </span>
+          <button
+            type="button"
+            aria-label={t('penGame.close')}
+            onClick={onClose}
+            style={bgImage(penShootAssets.closeBtn)}
+            className="flex h-9 w-9 shrink-0 items-center justify-center bg-no-repeat transition active:scale-95"
+          >
+            <img src={penShootAssets.closeIcon} alt="" className="h-4 w-4 object-contain" />
+          </button>
         </div>
-
-        <button
-          type="button"
-          aria-label={t('penGame.close')}
-          onClick={onClose}
-          style={bgImage(penShootAssets.closeBtn)}
-          className="absolute right-[4%] top-[3.5%] flex h-9 w-9 items-center justify-center bg-no-repeat transition active:scale-95"
-        >
-          <img src={penShootAssets.closeIcon} alt="" className="h-4 w-4 object-contain" />
-        </button>
 
         <div className="flex shrink-0 gap-2 px-3 pb-2 pt-2">
           {tabs.map((item) => {
@@ -93,7 +95,7 @@ export function PenLeaderboardModal({ onClose }: PenLeaderboardModalProps) {
           <span className="text-right">{t('penGame.leaderboard.colKenWon')}</span>
         </div>
 
-        <div className="pen-scroll flex min-h-0 flex-1 flex-col overflow-y-auto">
+        <div className="pen-scroll flex h-112.5 flex-col overflow-y-auto">
           {loading && rows.length === 0 ? (
             <div className="flex flex-1 items-center justify-center py-10">
               <Spinner />

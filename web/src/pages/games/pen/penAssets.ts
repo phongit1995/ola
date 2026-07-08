@@ -50,7 +50,7 @@ import histClockUrl from '@/assets/games/pen/history-modal/clock.webp';
 import histClockYellowUrl from '@/assets/games/pen/history-modal/clock-yellow.webp';
 import lbCupUrl from '@/assets/games/pen/leaderboard/cup.webp';
 import lbTabUrl from '@/assets/games/pen/leaderboard/tab.webp';
-import lbOpenBtnUrl from '@/assets/games/pen/leaderboard/button-open.webp';
+import lbFrameUrl from '@/assets/games/pen/leaderboard/frame.webp';
 import lbMedal1Url from '@/assets/games/pen/leaderboard/medal-1.webp';
 import lbMedal2Url from '@/assets/games/pen/leaderboard/medal-2.webp';
 import lbMedal3Url from '@/assets/games/pen/leaderboard/medal-3.webp';
@@ -74,7 +74,6 @@ export const penAssets = {
   gloveIcon: gloveIconUrl,
   shotListIcon: shotListIconUrl,
   kenIcon: kenIconUrl,
-  leaderboardBtn: lbOpenBtnUrl,
 };
 
 export const penShootAssets = {
@@ -111,7 +110,7 @@ export const penHistoryAssets = {
 };
 
 export const penLeaderboardAssets = {
-  openBtn: lbOpenBtnUrl,
+  frame: lbFrameUrl,
   cup: lbCupUrl,
   tab: lbTabUrl,
   medals: [lbMedal1Url, lbMedal2Url, lbMedal3Url] as const,

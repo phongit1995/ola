@@ -14,7 +14,8 @@ import { PenCatchModal } from './PenCatchModal';
 import { PenHistoryModal } from './PenHistoryModal';
 import { PenLeaderboardModal } from './PenLeaderboardModal';
 import { PenWinBurst } from './PenWinBurst';
-import { penAssets } from './penAssets';
+import { penAssets, penLeaderboardAssets } from './penAssets';
+import { bgImage } from './penUi';
 import { PEN_START_KEN } from './penConstants';
 
 const DEFAULT_BET = 1000;
@@ -193,13 +194,17 @@ export function PenGamePage({ onClose }: PenGamePageProps) {
             type="button"
             aria-label={t('penGame.leaderboard.title')}
             onClick={() => setLeaderboardOpen(true)}
-            className="absolute right-3 top-[13%] z-30 transition active:scale-95 @md:top-[16%]"
+            style={bgImage(penLeaderboardAssets.frame)}
+            className="absolute right-3 top-11 z-30 flex h-9 items-center gap-1 bg-no-repeat pl-1.5 pr-4 drop-shadow transition active:scale-95 @md:top-16 @md:h-11 @md:pr-5"
           >
             <img
-              src={penAssets.leaderboardBtn}
+              src={penLeaderboardAssets.cup}
               alt=""
-              className="h-8 w-auto object-contain drop-shadow @md:h-10"
+              className="h-5 w-auto object-contain @md:h-6"
             />
+            <span className="text-base font-extrabold italic tracking-wider text-white drop-shadow @md:text-xl">
+              {t('penGame.leaderboard.short')}
+            </span>
           </button>
 
           <div

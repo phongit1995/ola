@@ -1193,6 +1193,7 @@
     "catchLose": "Wrong guess — you lost this round.",
     "leaderboard": {
       "title": "TOP PLAYERS",
+      "short": "TOP",
       "topDay": "TOP DAY",
       "topWeek": "TOP WEEK",
       "colRank": "#",
