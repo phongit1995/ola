@@ -67,6 +67,8 @@ func CreateServer(
 	wsServer.SetRoomHandler(roomService)
 
 	r := gin.Default()
+	r.ForwardedByClientIP = false
+	_ = r.SetTrustedProxies(nil)
 
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     cfg.CORSAllowedOrigins,
