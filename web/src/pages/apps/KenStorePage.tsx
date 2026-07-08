@@ -1,9 +1,10 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast, formatKen } from '@lib';
 import { ScreenHeader, FullScreenOverlay } from '@components';
 import { useAuthStore } from '@/store/authStore';
 import { useAppOverlayStore } from '@/store/appOverlayStore';
+import { TransferKenDialog } from '@/pages/chat/components/TransferKenDialog';
 import { KenHistorySection } from './KenHistorySection';
 import { KEN_LOW_THRESHOLD } from './constants';
 
@@ -49,6 +50,7 @@ export function KenStorePage({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();
   const pushOverlay = useAppOverlayStore((s) => s.push);
   const user = useAuthStore((s) => s.user);
+  const [transferOpen, setTransferOpen] = useState(false);
 
   function comingSoon() {
     toast.info(t('ken.comingSoon'));
@@ -80,7 +82,7 @@ export function KenStorePage({ onClose }: { onClose: () => void }) {
 
           <RowAction icon={<KenCoin />} label={t('ken.purchase')} onClick={() => pushOverlay('kenBuy')} />
           <div className="mx-2 h-px bg-black/12" />
-          <RowAction icon={<KenCoin />} label={t('ken.transfer')} onClick={comingSoon} />
+          <RowAction icon={<KenCoin />} label={t('ken.transfer')} onClick={() => setTransferOpen(true)} />
         </div>
 
         <KenHistorySection />
@@ -95,6 +97,8 @@ export function KenStorePage({ onClose }: { onClose: () => void }) {
           {t('ken.support')}
         </button>
       </div>
+
+      {transferOpen && <TransferKenDialog open onClose={() => setTransferOpen(false)} />}
     </FullScreenOverlay>
   );
 }
