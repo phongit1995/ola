@@ -18,9 +18,14 @@ function fileNameFromUrl(url: string): string {
   }
 }
 
+function withCacheBuster(url: string): string {
+  const separator = url.includes('?') ? '&' : '?';
+  return `${url}${separator}_dl=${Date.now()}`;
+}
+
 async function downloadImage(url: string) {
   try {
-    const res = await fetch(url, { mode: 'cors' });
+    const res = await fetch(withCacheBuster(url), { mode: 'cors', cache: 'no-store' });
     if (!res.ok) throw new Error('fetch failed');
     const blob = await res.blob();
     const objectUrl = URL.createObjectURL(blob);
