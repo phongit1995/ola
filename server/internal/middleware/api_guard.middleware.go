@@ -17,10 +17,9 @@ import (
 )
 
 const (
-	headerTimestamp   = "X-Timestamp"
-	headerNonce       = "X-Nonce"
-	headerSignature   = "X-Signature"
-	headerAdminBypass = "admin"
+	headerTimestamp = "X-Timestamp"
+	headerNonce     = "X-Nonce"
+	headerSignature = "X-Signature"
 
 	signingMaxSkew = 10 * time.Second
 
@@ -63,10 +62,6 @@ func NewApiGuardMiddleware(cfg *config.Config, logger *zap.SugaredLogger) *ApiGu
 func (m *ApiGuardMiddleware) Verify() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if !m.enabled {
-			c.Next()
-			return
-		}
-		if c.GetHeader(headerAdminBypass) == "admin" {
 			c.Next()
 			return
 		}

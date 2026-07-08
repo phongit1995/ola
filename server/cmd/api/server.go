@@ -78,13 +78,15 @@ func CreateServer(
 		MaxAge:           12 * 3600,
 	}))
 
-	r.GET("/swagger", func(c *gin.Context) {
-		c.Redirect(301, "/swagger/index.html")
-	})
+	if cfg.Env != gin.ReleaseMode {
+		r.GET("/swagger", func(c *gin.Context) {
+			c.Redirect(301, "/swagger/index.html")
+		})
 
-	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler,
-		ginSwagger.URL("/swagger/doc.json"),
-		ginSwagger.DefaultModelsExpandDepth(-1)))
+		r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler,
+			ginSwagger.URL("/swagger/doc.json"),
+			ginSwagger.DefaultModelsExpandDepth(-1)))
+	}
 
 	r.Any("/socket.io/*any", func(c *gin.Context) {
 		wsServer.ServeHTTP(c.Writer, c.Request)

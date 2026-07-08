@@ -20,4 +20,5 @@ var (
 	PolicyChatMessage = RateLimitPolicy{Name: "chat_message", Limit: perWindow(3, 2*time.Second)}
 	PolicyRoomMessage = RateLimitPolicy{Name: "room_message", Limit: perWindow(3, 2*time.Second)}
 	PolicyLogin       = RateLimitPolicy{Name: "login", Limit: perWindow(10, time.Minute)}
+	PolicyAdminLogin  = RateLimitPolicy{Name: "admin_login", Limit: perWindow(5, time.Minute)}
 )
