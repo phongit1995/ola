@@ -282,15 +282,12 @@ func (r *Repository) ListLikers(viewerID, postID uuid.UUID, limit, offset int) (
 }
 
 type topLikerRow struct {
-	PostID   uuid.UUID `gorm:"column:post_id"`
-	ID       uuid.UUID `gorm:"column:id"`
-	Username string    `gorm:"column:username"`
-	FullName string    `gorm:"column:full_name"`
-	Avatar   string    `gorm:"column:avatar"`
+	EntityID uuid.UUID `gorm:"column:entity_id"`
+	UserID   uuid.UUID `gorm:"column:user_id"`
 }
 
 const topLikersQuery = `
-SELECT p.id AS post_id, u.id AS id, u.username AS username, u.full_name AS full_name, u.avatar AS avatar
+SELECT p.id AS entity_id, tl.user_id AS user_id
 FROM me p
 CROSS JOIN LATERAL (
     SELECT r.user_id, r.created_at
@@ -299,12 +296,11 @@ CROSS JOIN LATERAL (
     ORDER BY r.created_at DESC
     LIMIT ?
 ) tl
-JOIN users u ON u.id = tl.user_id
 WHERE p.id IN ?
 ORDER BY p.id, tl.created_at DESC`
 
-func (r *Repository) TopLikersByPosts(postIDs []uuid.UUID, perPost int) (map[uuid.UUID][]*models.User, error) {
-	result := make(map[uuid.UUID][]*models.User)
+func (r *Repository) TopLikerIDsByPosts(postIDs []uuid.UUID, perPost int) (map[uuid.UUID][]uuid.UUID, error) {
+	result := make(map[uuid.UUID][]uuid.UUID)
 	if len(postIDs) == 0 {
 		return result, nil
 	}
@@ -314,11 +310,8 @@ func (r *Repository) TopLikersByPosts(postIDs []uuid.UUID, perPost int) (map[uui
 		return nil, err
 	}
 
-	for i := range rows {
-		row := rows[i]
-		u := &models.User{Username: row.Username, FullName: row.FullName, Avatar: row.Avatar}
-		u.ID = row.ID
-		result[row.PostID] = append(result[row.PostID], u)
+	for _, row := range rows {
+		result[row.EntityID] = append(result[row.EntityID], row.UserID)
 	}
 	return result, nil
 }
@@ -584,7 +577,7 @@ func (r *Repository) GetUserCommentLikes(userID uuid.UUID, commentIDs []uuid.UUI
 }
 
 const topCommentLikersQuery = `
-SELECT c.id AS post_id, u.id AS id, u.username AS username, u.full_name AS full_name, u.avatar AS avatar
+SELECT c.id AS entity_id, tl.user_id AS user_id
 FROM me_comments c
 CROSS JOIN LATERAL (
     SELECT l.user_id, l.created_at
@@ -593,12 +586,11 @@ CROSS JOIN LATERAL (
     ORDER BY l.created_at DESC
     LIMIT ?
 ) tl
-JOIN users u ON u.id = tl.user_id
 WHERE c.id IN ?
 ORDER BY c.id, tl.created_at DESC`
 
-func (r *Repository) TopCommentLikersByComments(commentIDs []uuid.UUID, perComment int) (map[uuid.UUID][]*models.User, error) {
-	result := make(map[uuid.UUID][]*models.User)
+func (r *Repository) TopCommentLikerIDsByComments(commentIDs []uuid.UUID, perComment int) (map[uuid.UUID][]uuid.UUID, error) {
+	result := make(map[uuid.UUID][]uuid.UUID)
 	if len(commentIDs) == 0 {
 		return result, nil
 	}
@@ -608,11 +600,8 @@ func (r *Repository) TopCommentLikersByComments(commentIDs []uuid.UUID, perComme
 		return nil, err
 	}
 
-	for i := range rows {
-		row := rows[i]
-		u := &models.User{Username: row.Username, FullName: row.FullName, Avatar: row.Avatar}
-		u.ID = row.ID
-		result[row.PostID] = append(result[row.PostID], u)
+	for _, row := range rows {
+		result[row.EntityID] = append(result[row.EntityID], row.UserID)
 	}
 	return result, nil
 }
