@@ -21,6 +21,7 @@ interface SmileyInputProps {
   onChange: (value: string) => void;
   onEnter?: () => void;
   onFocus?: () => void;
+  onImagePaste?: (files: File[]) => void;
   placeholder?: string;
   disabled?: boolean;
   multiline?: boolean;
@@ -69,7 +70,7 @@ function serialize(root: HTMLElement): string {
 }
 
 export const SmileyInput = forwardRef<SmileyInputHandle, SmileyInputProps>(function SmileyInput(
-  { value, onChange, onEnter, onFocus, placeholder, disabled = false, multiline = false, className = '' },
+  { value, onChange, onEnter, onFocus, onImagePaste, placeholder, disabled = false, multiline = false, className = '' },
   ref
 ) {
   const editorRef = useRef<HTMLDivElement>(null);
@@ -219,6 +220,11 @@ export const SmileyInput = forwardRef<SmileyInputHandle, SmileyInputProps>(funct
 
   function onPaste(event: ReactClipboardEvent<HTMLDivElement>) {
     event.preventDefault();
+    const images = Array.from(event.clipboardData.files).filter((file) => file.type.startsWith('image/'));
+    if (images.length > 0 && onImagePaste != null) {
+      onImagePaste(images);
+      return;
+    }
     const text = event.clipboardData.getData('text/plain');
     if (text !== '') insertNode(document.createTextNode(text));
   }
