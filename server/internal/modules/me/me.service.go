@@ -729,8 +729,12 @@ func (s *Service) buildList(viewerID uuid.UUID, posts []*models.Me, total int64,
 
 func (s *Service) enrich(viewerID uuid.UUID, posts []*models.Me) ([]MeResponse, error) {
 	ids := make([]uuid.UUID, 0, len(posts))
+	likedPostIDs := make([]uuid.UUID, 0, len(posts))
 	for _, p := range posts {
 		ids = append(ids, p.ID)
+		if p.LikeCount > 0 {
+			likedPostIDs = append(likedPostIDs, p.ID)
+		}
 	}
 
 	reactions, err := s.repo.GetUserReactions(viewerID, ids)
@@ -738,7 +742,7 @@ func (s *Service) enrich(viewerID uuid.UUID, posts []*models.Me) ([]MeResponse, 
 		return nil, err
 	}
 
-	topLikers, err := s.topLikersCached(constants.CacheKeyMePostTopLikers, ids, func(missIDs []uuid.UUID) (map[uuid.UUID][]*models.User, error) {
+	topLikers, err := s.topLikersCached(constants.CacheKeyMePostTopLikers, likedPostIDs, func(missIDs []uuid.UUID) (map[uuid.UUID][]*models.User, error) {
 		return s.repo.TopLikersByPosts(missIDs, 3)
 	})
 	if err != nil {
@@ -1084,6 +1088,9 @@ func (s *Service) topLikersCached(keyFmt string, ids []uuid.UUID, compute func([
 	for _, id := range missIDs {
 		likers := toAuthorResponses(computed[id])
 		result[id] = likers
+		if len(likers) == 0 {
+			continue
+		}
 		if setErr := s.cache.Set(fmt.Sprintf(keyFmt, id.String()), likers, ttl); setErr != nil {
 			s.logger.Warnw("me top-likers cache set failed", "id", id.String(), "error", setErr.Error())
 		}

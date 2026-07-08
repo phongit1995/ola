@@ -286,7 +286,7 @@ const (
 
 	CacheKeyMePostTopLikers    = "ME:POST:%s:TOP_LIKERS"
 	CacheKeyMeCommentTopLikers = "ME:COMMENT:%s:TOP_LIKERS"
-	MeTopLikersTTLSeconds      = 600
+	MeTopLikersTTLSeconds      = 86400
 	CacheKeyMeLikeLock         = "LOCK:ME_LIKE:%s"
 	CacheKeyRateLimitMeLike    = "RATE_LIMIT:%s:ME_LIKE"
 
