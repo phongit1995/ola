@@ -1190,6 +1190,15 @@
     "catchTimerNote2": "Hết thời gian sẽ huỷ lượt chụp này và trả lại về danh sách lượt sút ở màn hình chờ",
     "errChooseCatchDirection": "Vui lòng chọn hướng chụp.",
     "catchWin": "Chụp thành công! 🧤 Bạn thắng {{payout}} KEN.",
-    "catchLose": "Tiếc quá, bạn đoán sai hướng. Thua lượt này."
+    "catchLose": "Tiếc quá, bạn đoán sai hướng. Thua lượt này.",
+    "leaderboard": {
+      "title": "TOP NGƯỜI CHƠI",
+      "topDay": "TOP NGÀY",
+      "topWeek": "TOP TUẦN",
+      "colRank": "STT",
+      "colPlayer": "NGƯỜI CHƠI",
+      "colKenWon": "KEN ĐÃ THẮNG",
+      "empty": "Chưa có ai trên bảng xếp hạng."
+    }
   }
 }

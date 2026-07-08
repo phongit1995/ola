@@ -10,6 +10,8 @@ import type {
   PenOpenParams,
   PenPageParams,
   PenHistoryParams,
+  PenLeaderboardPeriod,
+  PenLeaderboardResult,
 } from '../types';
 
 export class PenService {
@@ -39,5 +41,9 @@ export class PenService {
 
   static allHistory(params: PenPageParams = {}): Promise<PenShotListResult> {
     return http.get<PenShotListResult>(API_PATH.pen.historyAll, { params });
+  }
+
+  static leaderboard(period: PenLeaderboardPeriod = 'day'): Promise<PenLeaderboardResult> {
+    return http.get<PenLeaderboardResult>(API_PATH.pen.leaderboard, { params: { period } });
   }
 }

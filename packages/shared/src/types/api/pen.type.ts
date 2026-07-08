@@ -100,3 +100,18 @@ export interface PenHistoryParams {
   limit?: number;
   offset?: number;
 }
+
+export type PenLeaderboardPeriod = 'day' | 'week';
+
+export interface PenLeaderboardEntry {
+  rank: number;
+  user: PenUserBrief;
+  profit: number;
+}
+
+export interface PenLeaderboardResult {
+  period: PenLeaderboardPeriod;
+  from: string;
+  to: string;
+  items: PenLeaderboardEntry[];
+}

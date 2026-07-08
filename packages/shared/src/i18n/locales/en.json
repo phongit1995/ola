@@ -1190,6 +1190,15 @@
     "catchTimerNote2": "When time runs out, the catch is cancelled and the shot returns to the waiting list.",
     "errChooseCatchDirection": "Please choose a catch direction.",
     "catchWin": "Great save! 🧤 You won {{payout}} KEN.",
-    "catchLose": "Wrong guess — you lost this round."
+    "catchLose": "Wrong guess — you lost this round.",
+    "leaderboard": {
+      "title": "TOP PLAYERS",
+      "topDay": "TOP DAY",
+      "topWeek": "TOP WEEK",
+      "colRank": "#",
+      "colPlayer": "PLAYER",
+      "colKenWon": "KEN WON",
+      "empty": "No one on the leaderboard yet."
+    }
   }
 }

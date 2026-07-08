@@ -18,6 +18,8 @@ import (
 )
 
 func main() {
+	time.Local = time.UTC
+
 	c, err := NewContainer()
 	if err != nil {
 		log.Fatalf("❌ Failed to initialize container: %v", err)
