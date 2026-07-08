@@ -1,12 +1,12 @@
 import type { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 import { hmac } from '@noble/hashes/hmac.js';
-import { sha256 } from '@noble/hashes/sha2.js';
+import { sha512 } from '@noble/hashes/sha2.js';
 import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js';
 import { env } from '../../config';
 import { randomUuid } from '../../lib/randomUuid';
 
-function hmacSha256Hex(secret: string, value: string): string {
-  return bytesToHex(hmac(sha256, utf8ToBytes(secret), utf8ToBytes(value)));
+function signHex(secret: string, value: string): string {
+  return bytesToHex(hmac(sha512, utf8ToBytes(secret), utf8ToBytes(value)));
 }
 
 function stripQuery(url: string): string {
@@ -39,7 +39,7 @@ export function registerApiGuardInterceptor(http: AxiosInstance): void {
     const path = resolveRequestPath(config);
 
     const canonical = [timestamp, nonce, method, path].join('\n');
-    const signature = hmacSha256Hex(env.apiGuardSecret, canonical);
+    const signature = signHex(env.apiGuardSecret, canonical);
 
     config.headers.set('X-Timestamp', timestamp);
     config.headers.set('X-Nonce', nonce);

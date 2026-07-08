@@ -40,6 +40,7 @@ const MENU_ITEMS = [
     label: 'Trò chơi',
     children: [
       { key: '/games/egg', icon: <GiftOutlined />, label: 'Đập trứng' },
+      { key: '/games/wheel', icon: <AppstoreOutlined />, label: 'Vòng quay' },
       { key: '/games/pen', icon: <AimOutlined />, label: 'Sút Pen' },
       { key: '/games/ken-treasure', icon: <GiftOutlined />, label: 'Rương Ken' },
     ],
@@ -62,6 +63,8 @@ const PAGE_TITLES: Record<string, string> = {
   '/vip-shop': 'Shop VIP',
   '/games/egg': 'Đập trứng',
   '/games/egg/stats': 'Thống kê trứng',
+  '/games/wheel': 'Vòng quay may mắn',
+  '/games/wheel/stats': 'Thống kê vòng quay',
   '/games/pen': 'Sút Pen',
   '/games/pen/stats': 'Thống kê Pen',
   '/games/ken-treasure': 'Rương Ken',
@@ -176,7 +179,11 @@ export function AdminLayout() {
         </Content>
       </Layout>
 
-      <ChangePasswordModal open={passwordOpen} onClose={() => setPasswordOpen(false)} />
+      <ChangePasswordModal
+        open={passwordOpen}
+        onClose={() => setPasswordOpen(false)}
+        onChanged={logout}
+      />
     </Layout>
   )
 }

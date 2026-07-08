@@ -92,6 +92,9 @@ export interface PostComment {
   content: string;
   author?: PostAuthor;
   replyTo?: CommentReplySnapshot | null;
+  likeCount: number;
+  liked: boolean;
+  topLikers?: PostAuthor[];
   createdAt: string;
 }
 

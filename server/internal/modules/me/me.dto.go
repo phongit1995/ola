@@ -133,6 +133,9 @@ type CommentResponse struct {
 	Content   string                `json:"content"`
 	Author    *AuthorResponse       `json:"author,omitempty"`
 	ReplyTo   *CommentReplySnapshot `json:"replyTo,omitempty"`
+	LikeCount int                   `json:"likeCount"`
+	Liked     bool                  `json:"liked"`
+	TopLikers []AuthorResponse      `json:"topLikers,omitempty"`
 	CreatedAt string                `json:"createdAt"`
 }
 

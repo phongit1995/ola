@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"crypto/hmac"
-	"crypto/sha256"
+	"crypto/sha512"
 	"encoding/hex"
 	"net/http"
 	"strconv"
@@ -28,8 +28,8 @@ const (
 	statusSignature     = http.StatusLocked // 423 — single code for any signing failure
 )
 
-func hmacSha256Hex(secret, value string) string {
-	mac := hmac.New(sha256.New, []byte(secret))
+func signHex(secret, value string) string {
+	mac := hmac.New(sha512.New, []byte(secret))
 	mac.Write([]byte(value))
 	return hex.EncodeToString(mac.Sum(nil))
 }
@@ -115,7 +115,7 @@ func (m *ApiGuardMiddleware) valid(c *gin.Context, path string) bool {
 		path,
 	}, "\n")
 
-	if !safeEqualHex(hmacSha256Hex(secret, canonical), signature) {
+	if !safeEqualHex(signHex(secret, canonical), signature) {
 		m.logger.Debugw("signature mismatch", "path", path)
 		return false
 	}

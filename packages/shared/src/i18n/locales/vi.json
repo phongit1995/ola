@@ -108,20 +108,21 @@
     "logout": "Đăng xuất",
     "guest": "khách",
     "composeAria": "Soạn tin nhắn",
-    "apps": [
-      "Thông báo",
-      "Đập Trứng",
-      "Sút Pen",
-      "Kho Game",
-      "Cá nhân",
-      "Kho VIP",
-      "KEN",
-      "Đăng Q.Cáo",
-      "Hình Ảnh",
-      "Ola Mall",
-      "Lân cận",
-      "Cài đặt"
-    ],
+    "apps": {
+      "notifications": "Thông báo",
+      "egg": "Đập Trứng",
+      "pen": "Sút Pen",
+      "wheel": "Vòng Quay May Mắn",
+      "gameStore": "Kho Game",
+      "profile": "Cá nhân",
+      "vip": "Kho VIP",
+      "ken": "KEN",
+      "advertise": "Đăng Q.Cáo",
+      "photos": "Hình Ảnh",
+      "mall": "Ola Mall",
+      "nearby": "Lân cận",
+      "settings": "Cài đặt"
+    },
     "appGameSubtitle": "Trò chơi HAY NHẤT dành cho bạn",
     "appMallSubtitle": "Kho Video vô cùng phong phú và đa dạng"
   },
@@ -274,6 +275,9 @@
     "transferKenConfirmTitle": "Xác nhận",
     "transferKenBalance": "Đang có",
     "transferKenReceiver": "Người nhận",
+    "transferKenReceiverHint": "Nhập nick người nhận",
+    "transferKenChangeReceiver": "Đổi",
+    "transferKenWarning": "Nghiêm cấm mua bán vật phẩm trong Ola",
     "transferKenAmountLabel": "Lượng KEN cần chuyển",
     "transferKenAmountPlaceholder": "Nhập số KEN cần chuyển",
     "transferKenConfirmAmountLabel": "Số KEN cần chuyển",
@@ -439,6 +443,10 @@
     "loadError": "Không tải được danh sách phòng",
     "actionReply": "Trả lời",
     "actionCopy": "Sao chép",
+    "actionBlock": "Chặn",
+    "blockTitle": "Chặn người dùng",
+    "blockConfirm": "Chặn @{{name}}? Bạn sẽ không thấy tin nhắn của người này trong bất kỳ phòng nào nữa.",
+    "blockSuccess": "Đã chặn người dùng",
     "copied": "Đã sao chép",
     "replyingTo": "Đang trả lời @{{name}}",
     "replySticker": "[Nhãn dán]",
@@ -555,6 +563,7 @@
     "commentSendError": "Không gửi được bình luận",
     "commentErrFriendsOnly": "Chỉ bạn bè mới bình luận được bài này.",
     "commentDeleteError": "Không xoá được bình luận",
+    "commentLikeError": "Không thích được bình luận",
     "commentSent": "Đã gửi bình luận",
     "commentDeleted": "Đã xoá bình luận",
     "postSent": "Đã đăng bài",
@@ -1053,7 +1062,11 @@
   "wheelGame": {
     "title": "Vòng Quay May Mắn",
     "spin": "Quay ngay",
-    "spinsLeft": "Hôm nay bạn còn {{n}} lượt quay",
+    "freeToday": "Miễn phí hôm nay",
+    "spinCost": "Quay: {{n}} KEN",
+    "outOfKen": "Bạn không đủ KEN để quay",
+    "error": "Có lỗi xảy ra, vui lòng thử lại",
+    "loading": "Đang tải...",
     "sound": "Âm thanh",
     "history": "Lịch sử",
     "buyKen": "Nạp KEN",
@@ -1063,8 +1076,15 @@
     "miss": "Tạch rồi!",
     "doll": "Búp Bê Ma",
     "vipDays": "{{n}} Ngày VIP",
+    "vipDaysShort": "{{n}} Ngày",
     "historyTitle": "Lịch sử quay",
-    "historyEmpty": "Chưa có lượt quay nào"
+    "historyEmpty": "Chưa có lượt quay nào",
+    "historyLoadMore": "Xem thêm",
+    "historyFilter": {
+      "all": "Tất cả",
+      "win": "Trúng thưởng",
+      "miss": "Trượt"
+    }
   },
   "eggGame": {
     "title": "Đập Trứng",
@@ -1173,6 +1193,16 @@
     "catchTimerNote2": "Hết thời gian sẽ huỷ lượt chụp này và trả lại về danh sách lượt sút ở màn hình chờ",
     "errChooseCatchDirection": "Vui lòng chọn hướng chụp.",
     "catchWin": "Chụp thành công! 🧤 Bạn thắng {{payout}} KEN.",
-    "catchLose": "Tiếc quá, bạn đoán sai hướng. Thua lượt này."
+    "catchLose": "Tiếc quá, bạn đoán sai hướng. Thua lượt này.",
+    "leaderboard": {
+      "title": "TOP NGƯỜI CHƠI",
+      "short": "BXH",
+      "topDay": "TOP NGÀY",
+      "topWeek": "TOP TUẦN",
+      "colRank": "STT",
+      "colPlayer": "NGƯỜI CHƠI",
+      "colKenWon": "KEN ĐÃ THẮNG",
+      "empty": "Chưa có ai trên bảng xếp hạng."
+    }
   }
 }

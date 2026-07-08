@@ -28,7 +28,7 @@ export const AdminAuthService = {
     currentPassword: string
     newPassword: string
   }): Promise<void> {
-    await http.post<ApiResponse<{ message: string }>>('/auth/change-password', payload)
+    await http.post<ApiResponse<{ message: string }>>('/admin/auth/change-password', payload)
   },
 
   logout(): void {

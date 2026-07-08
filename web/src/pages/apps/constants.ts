@@ -1,3 +1,4 @@
+import type { ParseKeys } from 'i18next';
 import type { AppOverlayKind } from '@/store/appOverlayStore';
 import icFriend from '@/assets/icons/notify/ic_notification_add_friend.png';
 import icMention from '@/assets/icons/notify/ic_notification_mention.png';
@@ -17,12 +18,13 @@ import iconNearby from '@/assets/icons/apps/nearby.png';
 import iconSetting from '@/assets/icons/apps/setting.png';
 import iconEgg from '@/assets/icons/apps/egg.png';
 import iconPen from '@/assets/games/pen/pen_icon.webp';
-// import iconWheel from '@/assets/games/spin-wheel/wheel.png';
+import iconWheel from '@/assets/games/spin-wheel/wheel.webp';
 import type { NotificationType, NotificationItem } from './NotificationsPage';
 import type { Venue } from './NearbyPlacesPage';
 
 export interface AppItem {
   icon: string;
+  titleKey: ParseKeys;
   app?: AppOverlayKind;
   overlay?: 'pen' | 'egg' | 'wheel';
   subtitleKey?: 'home.appGameSubtitle' | 'home.appMallSubtitle';
@@ -47,20 +49,19 @@ export const MOCK_NOTIFICATIONS: NotificationItem[] = [
 ];
 
 export const APP_ITEMS: AppItem[] = [
-  { icon: iconNotify, app: 'notifications' },
-  { icon: iconEgg, overlay: 'egg' },
-  { icon: iconPen, overlay: 'pen' },
-  // TODO(Vòng Quay May Mắn): game đang mock client-side (random + KEN/lượt cục bộ), CHƯA nối backend /wheel — thay logic trong spinWheelStore.spin() bằng service khi có API. Ẩn khỏi menu tới khi có API, mở lại 2 dòng dưới + import iconWheel.
-  // { icon: iconWheel, overlay: 'wheel' },
-  { icon: iconGame, subtitleKey: 'home.appGameSubtitle' },
-  { icon: iconPersonal, app: 'profile' },
-  { icon: iconVip, app: 'vip' },
-  { icon: iconKen, app: 'ken' },
-  { icon: iconAdme },
-  { icon: iconMedia, app: 'media' },
-  { icon: iconMall, subtitleKey: 'home.appMallSubtitle' },
-  { icon: iconNearby, app: 'nearby' },
-  { icon: iconSetting, app: 'settings' },
+  { icon: iconNotify, titleKey: 'home.apps.notifications', app: 'notifications' },
+  { icon: iconEgg, titleKey: 'home.apps.egg', overlay: 'egg' },
+  { icon: iconPen, titleKey: 'home.apps.pen', overlay: 'pen' },
+  { icon: iconWheel, titleKey: 'home.apps.wheel', overlay: 'wheel' },
+  { icon: iconGame, titleKey: 'home.apps.gameStore', subtitleKey: 'home.appGameSubtitle' },
+  { icon: iconPersonal, titleKey: 'home.apps.profile', app: 'profile' },
+  { icon: iconVip, titleKey: 'home.apps.vip', app: 'vip' },
+  { icon: iconKen, titleKey: 'home.apps.ken', app: 'ken' },
+  { icon: iconAdme, titleKey: 'home.apps.advertise' },
+  { icon: iconMedia, titleKey: 'home.apps.photos', app: 'media' },
+  { icon: iconMall, titleKey: 'home.apps.mall', subtitleKey: 'home.appMallSubtitle' },
+  { icon: iconNearby, titleKey: 'home.apps.nearby', app: 'nearby' },
+  { icon: iconSetting, titleKey: 'home.apps.settings', app: 'settings' },
 ];
 
 export const MOCK_VENUES: Venue[] = [

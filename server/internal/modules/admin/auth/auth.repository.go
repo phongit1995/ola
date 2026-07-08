@@ -42,3 +42,12 @@ func (r *Repository) UpdateLoginInfo(id uuid.UUID, ip, refreshToken string) erro
 			"refresh_token": refreshToken,
 		}).Error
 }
+
+func (r *Repository) UpdatePassword(id uuid.UUID, passwordHash string) error {
+	return r.db.Model(&models.AdminUser{}).
+		Where("id = ?", id).
+		Updates(map[string]interface{}{
+			"password":      passwordHash,
+			"refresh_token": "",
+		}).Error
+}

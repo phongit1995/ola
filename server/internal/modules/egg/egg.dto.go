@@ -79,7 +79,7 @@ type PackView struct {
 	KenCost    int            `json:"kenCost"`
 	IsEnabled  bool           `json:"isEnabled"`
 	SortOrder  int            `json:"sortOrder"`
-	Categories []CategoryView `json:"categories"`
+	Categories []CategoryView `json:"categories,omitempty"`
 }
 
 type PackListResponse struct {

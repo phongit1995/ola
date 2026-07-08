@@ -108,20 +108,21 @@
     "logout": "Log out",
     "guest": "guest",
     "composeAria": "Compose message",
-    "apps": [
-      "Notifications",
-      "Egg Smash",
-      "Pen Shootout",
-      "Game Store",
-      "Profile",
-      "VIP Store",
-      "KEN",
-      "Advertise",
-      "Photos",
-      "Ola Mall",
-      "Nearby",
-      "Settings"
-    ],
+    "apps": {
+      "notifications": "Notifications",
+      "egg": "Egg Smash",
+      "pen": "Pen Shootout",
+      "wheel": "Lucky Wheel",
+      "gameStore": "Game Store",
+      "profile": "Profile",
+      "vip": "VIP Store",
+      "ken": "KEN",
+      "advertise": "Advertise",
+      "photos": "Photos",
+      "mall": "Ola Mall",
+      "nearby": "Nearby",
+      "settings": "Settings"
+    },
     "appGameSubtitle": "The BEST games for you",
     "appMallSubtitle": "Diverse video clips collected by editors"
   },
@@ -274,6 +275,9 @@
     "transferKenConfirmTitle": "Confirmation",
     "transferKenBalance": "Balance",
     "transferKenReceiver": "Receiver",
+    "transferKenReceiverHint": "Enter recipient username",
+    "transferKenChangeReceiver": "Change",
+    "transferKenWarning": "Trading items within Ola is strictly prohibited",
     "transferKenAmountLabel": "Transferred KEN amount",
     "transferKenAmountPlaceholder": "Enter KEN amount",
     "transferKenConfirmAmountLabel": "Transferred KEN amount",
@@ -439,6 +443,10 @@
     "loadError": "Couldn't load rooms",
     "actionReply": "Reply",
     "actionCopy": "Copy",
+    "actionBlock": "Block",
+    "blockTitle": "Block user",
+    "blockConfirm": "Block @{{name}}? You won't see this person's messages in any room anymore.",
+    "blockSuccess": "User blocked",
     "copied": "Copied",
     "replyingTo": "Replying to @{{name}}",
     "replySticker": "[Sticker]",
@@ -555,6 +563,7 @@
     "commentSendError": "Couldn't send comment",
     "commentErrFriendsOnly": "Only friends can comment on this post.",
     "commentDeleteError": "Couldn't delete comment",
+    "commentLikeError": "Couldn't like comment",
     "commentSent": "Comment sent",
     "commentDeleted": "Comment deleted",
     "postSent": "Posted",
@@ -1053,7 +1062,11 @@
   "wheelGame": {
     "title": "Lucky Spin",
     "spin": "Spin now",
-    "spinsLeft": "You have {{n}} spins left today",
+    "freeToday": "Free today",
+    "spinCost": "Spin: {{n}} KEN",
+    "outOfKen": "You don't have enough KEN to spin",
+    "error": "Something went wrong, please try again",
+    "loading": "Loading...",
     "sound": "Sound",
     "history": "History",
     "buyKen": "Top up KEN",
@@ -1063,8 +1076,15 @@
     "miss": "No luck!",
     "doll": "Ghost Doll",
     "vipDays": "{{n}} VIP Days",
+    "vipDaysShort": "{{n}} Days",
     "historyTitle": "Spin History",
-    "historyEmpty": "No spins yet"
+    "historyEmpty": "No spins yet",
+    "historyLoadMore": "Load more",
+    "historyFilter": {
+      "all": "All",
+      "win": "Won",
+      "miss": "Missed"
+    }
   },
   "eggGame": {
     "title": "Egg Smash",
@@ -1173,6 +1193,16 @@
     "catchTimerNote2": "When time runs out, the catch is cancelled and the shot returns to the waiting list.",
     "errChooseCatchDirection": "Please choose a catch direction.",
     "catchWin": "Great save! 🧤 You won {{payout}} KEN.",
-    "catchLose": "Wrong guess — you lost this round."
+    "catchLose": "Wrong guess — you lost this round.",
+    "leaderboard": {
+      "title": "TOP PLAYERS",
+      "short": "TOP",
+      "topDay": "TOP DAY",
+      "topWeek": "TOP WEEK",
+      "colRank": "#",
+      "colPlayer": "PLAYER",
+      "colKenWon": "KEN WON",
+      "empty": "No one on the leaderboard yet."
+    }
   }
 }

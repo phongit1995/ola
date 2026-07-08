@@ -25,6 +25,7 @@ import (
 	"ola-chat-server/internal/modules/user"
 	usersetting "ola-chat-server/internal/modules/user-setting"
 	"ola-chat-server/internal/modules/vip"
+	"ola-chat-server/internal/modules/wheel"
 	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/transport/kafka"
 	"ola-chat-server/internal/transport/websocket"
@@ -77,6 +78,7 @@ func NewContainer() (*dig.Container, error) {
 		vip.Provider,
 		ken.Provider,
 		egg.Provider,
+		wheel.Provider,
 		kenchest.Provider,
 		marriage.Provider,
 		marriagediary.Provider,

@@ -284,6 +284,12 @@ const (
 	ReactionLockTTLSeconds            = 3
 	ReactionLockRetryMs               = 150
 
+	CacheKeyMePostTopLikers    = "ME:POST:%s:TOP_LIKERS"
+	CacheKeyMeCommentTopLikers = "ME:COMMENT:%s:TOP_LIKERS"
+	MeTopLikersTTLSeconds      = 86400
+	CacheKeyMeLikeLock         = "LOCK:ME_LIKE:%s"
+	CacheKeyRateLimitMeLike    = "RATE_LIMIT:%s:ME_LIKE"
+
 	ReactionActionAdded   = "added"
 	ReactionActionRemoved = "removed"
 )

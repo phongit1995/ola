@@ -58,6 +58,9 @@ export const API_PATH = {
     likers: (id: string) => `/me/${id}/likers`,
     comments: (id: string) => `/me/${id}/comments`,
     comment: (id: string, commentId: string) => `/me/${id}/comments/${commentId}`,
+    commentLike: (id: string, commentId: string) => `/me/${id}/comments/${commentId}/like`,
+    commentLikers: (id: string, commentId: string) =>
+      `/me/${id}/comments/${commentId}/likers`,
     notifications: '/me/notifications',
     notificationsUnread: '/me/notifications/unread-count',
     notificationsReadAll: '/me/notifications/read-all',
@@ -95,6 +98,10 @@ export const API_PATH = {
     draw: (id: string) => `/egg/packs/${id}/draws`,
     draws: '/egg/draws',
   },
+  wheel: {
+    config: '/wheel',
+    spins: '/wheel/spins',
+  },
   ken: {
     transfer: '/ken/transfer',
     transactions: '/ken/transactions',
@@ -117,6 +124,7 @@ export const API_PATH = {
     mine: '/pen/mine',
     history: '/pen/history',
     historyAll: '/pen/history/all',
+    leaderboard: '/pen/leaderboard',
     catch: (id: string) => `/pen/shots/${id}/catch`,
     cancel: (id: string) => `/pen/shots/${id}/cancel`,
   },

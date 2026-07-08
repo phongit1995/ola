@@ -8,6 +8,7 @@ export * from './settings.type';
 export * from './relationship.type';
 export * from './vip.type';
 export * from './egg.type';
+export * from './wheel.type';
 export * from './pen.type';
 export * from './ken.type';
 export * from './kenTreasure.type';

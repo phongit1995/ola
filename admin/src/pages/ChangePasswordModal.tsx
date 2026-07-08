@@ -12,9 +12,10 @@ interface ChangePasswordFormValues {
 interface ChangePasswordModalProps {
   open: boolean
   onClose: () => void
+  onChanged: () => void
 }
 
-export function ChangePasswordModal({ open, onClose }: ChangePasswordModalProps) {
+export function ChangePasswordModal({ open, onClose, onChanged }: ChangePasswordModalProps) {
   const { message } = App.useApp()
   const [form] = Form.useForm<ChangePasswordFormValues>()
   const [submitting, setSubmitting] = useState(false)
@@ -27,9 +28,10 @@ export function ChangePasswordModal({ open, onClose }: ChangePasswordModalProps)
         currentPassword: values.currentPassword,
         newPassword: values.newPassword,
       })
-      message.success('Đổi mật khẩu thành công')
+      message.success('Đổi mật khẩu thành công, vui lòng đăng nhập lại')
       form.resetFields()
       onClose()
+      onChanged()
     } catch (err) {
       message.error(err instanceof ApiError ? err.message : 'Đổi mật khẩu thất bại')
     } finally {

@@ -12,8 +12,10 @@ import { PenShotList } from './PenShotList';
 import { PenShootModal } from './PenShootModal';
 import { PenCatchModal } from './PenCatchModal';
 import { PenHistoryModal } from './PenHistoryModal';
+import { PenLeaderboardModal } from './PenLeaderboardModal';
 import { PenWinBurst } from './PenWinBurst';
-import { penAssets } from './penAssets';
+import { penAssets, penLeaderboardAssets } from './penAssets';
+import { bgImage } from './penUi';
 import { PEN_START_KEN } from './penConstants';
 
 const DEFAULT_BET = 1000;
@@ -45,6 +47,7 @@ export function PenGamePage({ onClose }: PenGamePageProps) {
   const [kicking, setKicking] = useState(false);
   const [shootOpen, setShootOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [leaderboardOpen, setLeaderboardOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [catchShot, setCatchShot] = useState<PenShotView | null>(null);
   const [catching, setCatching] = useState(false);
@@ -187,6 +190,23 @@ export function PenGamePage({ onClose }: PenGamePageProps) {
             </div>
           </header>
 
+          <button
+            type="button"
+            aria-label={t('penGame.leaderboard.title')}
+            onClick={() => setLeaderboardOpen(true)}
+            style={bgImage(penLeaderboardAssets.frame)}
+            className="absolute right-3 top-11 z-30 flex h-9 items-center gap-1 bg-no-repeat pl-1.5 pr-4 drop-shadow transition active:scale-95 @md:top-16 @md:h-11 @md:pr-5"
+          >
+            <img
+              src={penLeaderboardAssets.cup}
+              alt=""
+              className="h-5 w-auto object-contain @md:h-6"
+            />
+            <span className="text-base font-extrabold italic tracking-wider text-white drop-shadow @md:text-xl">
+              {t('penGame.leaderboard.short')}
+            </span>
+          </button>
+
           <div
             className="relative z-10 flex w-full shrink-0 items-end justify-end pb-2 pl-4 pr-8"
             style={{ aspectRatio: '1024 / 650' }}
@@ -265,6 +285,8 @@ export function PenGamePage({ onClose }: PenGamePageProps) {
           {historyOpen && (
             <PenHistoryModal userId={user?.id} onClose={() => setHistoryOpen(false)} />
           )}
+
+          {leaderboardOpen && <PenLeaderboardModal onClose={() => setLeaderboardOpen(false)} />}
         </div>
       </div>
     </FullScreenOverlay>

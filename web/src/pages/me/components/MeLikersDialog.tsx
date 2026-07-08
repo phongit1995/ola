@@ -8,11 +8,12 @@ import { PAGE_SIZE } from '../constants';
 
 interface MeLikersDialogProps {
   postId: string;
+  commentId?: string;
   onClose: () => void;
   onOpenProfile?: (nick: string, color: string) => void;
 }
 
-export function MeLikersDialog({ postId, onClose, onOpenProfile }: MeLikersDialogProps) {
+export function MeLikersDialog({ postId, commentId, onClose, onOpenProfile }: MeLikersDialogProps) {
   const { t } = useTranslation();
   const [likers, setLikers] = useState<PostAuthor[]>([]);
   const [total, setTotal] = useState(0);
@@ -23,11 +24,19 @@ export function MeLikersDialog({ postId, onClose, onOpenProfile }: MeLikersDialo
   const scrollRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
+  const loadPage = useCallback(
+    (offset: number) =>
+      commentId != null
+        ? MeService.commentLikers(postId, commentId, { limit: PAGE_SIZE, offset })
+        : MeService.likers(postId, { limit: PAGE_SIZE, offset }),
+    [postId, commentId]
+  );
+
   useEffect(() => {
     let active = true;
     (async () => {
       try {
-        const result = await MeService.likers(postId, { limit: PAGE_SIZE, offset: 0 });
+        const result = await loadPage(0);
         if (!active) return;
         setLikers(result.items);
         setTotal(result.total);
@@ -42,7 +51,7 @@ export function MeLikersDialog({ postId, onClose, onOpenProfile }: MeLikersDialo
     return () => {
       active = false;
     };
-  }, [postId]);
+  }, [loadPage]);
 
   const hasMore = !reachedEnd && likers.length < total;
 
@@ -50,7 +59,7 @@ export function MeLikersDialog({ postId, onClose, onOpenProfile }: MeLikersDialo
     if (loading || loadingMore) return;
     setLoadingMore(true);
     try {
-      const result = await MeService.likers(postId, { limit: PAGE_SIZE, offset: likers.length });
+      const result = await loadPage(likers.length);
       setLikers((current) => [...current, ...result.items]);
       setTotal(result.total);
       if (result.items.length < PAGE_SIZE) setReachedEnd(true);
@@ -59,7 +68,7 @@ export function MeLikersDialog({ postId, onClose, onOpenProfile }: MeLikersDialo
     } finally {
       setLoadingMore(false);
     }
-  }, [postId, likers.length, loading, loadingMore]);
+  }, [loadPage, likers.length, loading, loadingMore]);
 
   useEffect(() => {
     const el = sentinelRef.current;

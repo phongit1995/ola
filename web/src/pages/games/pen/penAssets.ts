@@ -48,6 +48,12 @@ import histPageCurrentUrl from '@/assets/games/pen/history-modal/button-page-cur
 import histPageNextUrl from '@/assets/games/pen/history-modal/button-page-next.webp';
 import histClockUrl from '@/assets/games/pen/history-modal/clock.webp';
 import histClockYellowUrl from '@/assets/games/pen/history-modal/clock-yellow.webp';
+import lbCupUrl from '@/assets/games/pen/leaderboard/cup.webp';
+import lbTabUrl from '@/assets/games/pen/leaderboard/tab.webp';
+import lbFrameUrl from '@/assets/games/pen/leaderboard/frame.webp';
+import lbMedal1Url from '@/assets/games/pen/leaderboard/medal-1.webp';
+import lbMedal2Url from '@/assets/games/pen/leaderboard/medal-2.webp';
+import lbMedal3Url from '@/assets/games/pen/leaderboard/medal-3.webp';
 
 export const penAssets = {
   scene: sceneUrl,
@@ -101,6 +107,13 @@ export const penHistoryAssets = {
   pageNext: histPageNextUrl,
   clock: histClockUrl,
   clockYellow: histClockYellowUrl,
+};
+
+export const penLeaderboardAssets = {
+  frame: lbFrameUrl,
+  cup: lbCupUrl,
+  tab: lbTabUrl,
+  medals: [lbMedal1Url, lbMedal2Url, lbMedal3Url] as const,
 };
 
 export const penCatchAssets = {

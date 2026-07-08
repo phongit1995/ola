@@ -4,9 +4,12 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 )
 
 func main() {
+	time.Local = time.UTC
+
 	cfg := LoadConfig()
 
 	if cfg.MigrationAction == "seed" {

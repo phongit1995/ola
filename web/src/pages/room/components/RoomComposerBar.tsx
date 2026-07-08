@@ -82,11 +82,11 @@ export const RoomComposerBar = forwardRef<RoomComposerHandle, RoomComposerBarPro
       }
     }
 
-    async function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
-      const files = Array.from(event.target.files ?? []);
-      event.target.value = '';
+    async function addImageFiles(files: File[]) {
       if (files.length === 0 || disabled) return;
       closeAttachPanel();
+      setDraft('');
+      composerRef.current?.reset();
       for (const file of files) {
         try {
           const prepared = await compressImageForUpload(file);
@@ -102,6 +102,12 @@ export const RoomComposerBar = forwardRef<RoomComposerHandle, RoomComposerBarPro
           );
         }
       }
+    }
+
+    async function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
+      const files = Array.from(event.target.files ?? []);
+      event.target.value = '';
+      await addImageFiles(files);
     }
 
     function removePendingImage(id: string) {
@@ -197,6 +203,7 @@ export const RoomComposerBar = forwardRef<RoomComposerHandle, RoomComposerBarPro
               onChange={setDraft}
               onEnter={() => void handleSend()}
               onFocus={() => closeAttachPanel()}
+              onImagePaste={(files) => void addImageFiles(files)}
               disabled={disabled}
               placeholder={t('room.chatInputHint')}
               multiline
