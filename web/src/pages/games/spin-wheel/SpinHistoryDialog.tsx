@@ -15,6 +15,7 @@ import {
   historyPagePrevUrl,
   historyTabActiveUrl,
   historyTabInactiveUrl,
+  rewardMissUrl,
   rewardVipDaysUrl,
   spinCoinUrl,
 } from './spinWheelAssets';
@@ -45,7 +46,7 @@ function useOutcomeLabel() {
   return useCallback(
     (item: WheelSpinHistoryItem): OutcomeView => {
       if (item.segmentKind === 'miss') {
-        return { text: t('wheelGame.miss'), win: false };
+        return { text: t('wheelGame.miss'), win: false, iconUrl: rewardMissUrl };
       }
       if (isKenKind(item.segmentKind)) {
         return {
@@ -115,19 +116,19 @@ export function SpinHistoryDialog({ open, onClose }: SpinHistoryDialogProps) {
 
   return (
     <div
-      className="font-game fixed inset-0 z-70 flex items-center justify-center bg-black/55 px-6"
+      className="font-game fixed inset-0 z-70 flex items-center justify-center bg-black/55 px-3"
       onClick={onClose}
     >
       <div
-        className="relative w-90 max-w-[86vw]"
-        style={{ aspectRatio: '1043 / 1458' }}
+        className="relative"
+        style={{ aspectRatio: '1043 / 1458', width: 'min(90vw, calc(62vh * 1043 / 1458))' }}
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="absolute inset-[3.5%] rounded-[26px] bg-[#fdeef0]" />
+        <div className="absolute inset-[3.5%] rounded-[24px] bg-[#fff4f1]" />
         <img src={historyFrameUrl} alt="" className="pointer-events-none absolute inset-0 h-full w-full" />
 
         <div className="absolute inset-0 flex flex-col px-[9%] pt-[15%] pb-[8%]">
-          <div className="mb-2 flex shrink-0 gap-1.5">
+          <div className="-mb-1 flex shrink-0 gap-0.5 px-2">
             {FILTERS.map((f) => {
               const activeTab = filter === f;
               return (
@@ -154,7 +155,13 @@ export function SpinHistoryDialog({ open, onClose }: SpinHistoryDialogProps) {
             })}
           </div>
 
-          <div className="min-h-0 flex-1">
+          <div
+            className="min-h-0 flex-1 overflow-hidden rounded-2xl border-2 border-[#ff8fa3]/55 px-3 py-1.5"
+            style={{
+              background: 'linear-gradient(180deg, #ffffff 0%, #fff1ee 100%)',
+              boxShadow: 'inset 0 0 0 2px rgba(255,236,239,0.45)',
+            }}
+          >
             {error ? (
               <div className="flex h-full items-center justify-center">
                 <p className="text-sm font-bold text-[#c0392b]">{t('wheelGame.error')}</p>
@@ -174,17 +181,17 @@ export function SpinHistoryDialog({ open, onClose }: SpinHistoryDialogProps) {
                   return (
                     <li
                       key={item.id}
-                      className="flex flex-1 items-center justify-between gap-2 overflow-hidden border-b border-[#f4dbe1]"
+                      className="flex flex-1 items-center justify-between gap-2 overflow-hidden border-b border-[#f6cfcb]/70"
                     >
                       <div className="flex min-w-0 items-center gap-2">
-                        <div className="flex w-8 shrink-0 justify-center">
+                        <div className="flex w-10 shrink-0 justify-center">
                           {outcome.vipTypeId != null ? (
-                            <VipIcon typeId={outcome.vipTypeId} className="h-7 w-7" rounded />
+                            <VipIcon typeId={outcome.vipTypeId} className="h-9 w-9" rounded />
                           ) : outcome.iconUrl ? (
                             <img
                               src={outcome.iconUrl}
                               alt=""
-                              className="h-7 w-7 object-contain"
+                              className="h-9 w-9 object-contain"
                             />
                           ) : null}
                         </div>
@@ -208,7 +215,7 @@ export function SpinHistoryDialog({ open, onClose }: SpinHistoryDialogProps) {
                   );
                 })}
                 {Array.from({ length: placeholders }).map((_, index) => (
-                  <li key={`empty-${index}`} className="flex-1 border-b border-[#f4dbe1] last:border-0" />
+                  <li key={`empty-${index}`} className="flex-1 border-b border-[#f6cfcb]/70 last:border-0" />
                 ))}
               </ul>
             )}
