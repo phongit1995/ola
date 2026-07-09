@@ -680,16 +680,14 @@ func (s *Service) enrichPresence(responses []ConversationResponse) {
 	if len(otherIDs) == 0 {
 		return
 	}
-	online := s.presence.GetOnlineUsers(otherIDs)
-	lastActive := s.presence.GetLastActiveBatch(otherIDs)
+	presenceMap := s.presence.GetPresenceBatch(otherIDs)
 	for i := range responses {
 		if responses[i].OtherUser == nil {
 			continue
 		}
-		oid := responses[i].OtherUser.ID
-		isOnline, lastActiveOut := utils.ApplyOnlineGrace(online[oid], lastActive[oid])
-		responses[i].OtherUser.IsOnline = isOnline
-		responses[i].OtherUser.LastActiveAt = lastActiveOut
+		info := presenceMap[responses[i].OtherUser.ID]
+		responses[i].OtherUser.IsOnline = info.IsOnline
+		responses[i].OtherUser.LastActiveAt = info.LastActiveAt
 	}
 }
 
@@ -993,9 +991,9 @@ func (s *Service) GetConversationDetail(userID, conversationID uuid.UUID) (*Conv
 
 	if conv.ConversationType == constants.ConversationTypeDirect && conv.OtherUserID != nil && resp.OtherUser != nil {
 		if otherUserID, err := uuid.Parse(conv.OtherUserID.String()); err == nil && s.presence != nil {
-			rawOnline := s.presence.IsUserOnline(otherUserID.String())
-			rawLastActive := s.presence.GetLastActive(otherUserID.String())
-			resp.OtherUser.IsOnline, resp.OtherUser.LastActiveAt = utils.ApplyOnlineGrace(rawOnline, rawLastActive)
+			info := s.presence.GetPresence(otherUserID.String())
+			resp.OtherUser.IsOnline = info.IsOnline
+			resp.OtherUser.LastActiveAt = info.LastActiveAt
 		}
 	}
 

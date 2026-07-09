@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
@@ -37,6 +38,17 @@ type Server struct {
 type SocketData struct {
 	UserID      string
 	JoinedRooms map[string]bool
+	Platform    string
+}
+
+func resolveSocketPlatform(auth map[string]any, userAgent string) string {
+	if v, ok := auth["platform"].(string); ok {
+		p := strings.TrimSpace(v)
+		if p != "" && p != "web" {
+			return p
+		}
+	}
+	return utils.ParsePlatform(userAgent)
 }
 
 func NewServer(
@@ -118,7 +130,8 @@ func NewServer(
 			}
 		}
 
-		data := &SocketData{UserID: userID.String(), JoinedRooms: make(map[string]bool)}
+		platform := resolveSocketPlatform(auth, s.Request().Headers().Peek("User-Agent"))
+		data := &SocketData{UserID: userID.String(), JoinedRooms: make(map[string]bool), Platform: platform}
 		s.SetData(data)
 
 		server.logger.Infow("WebSocket authenticated", "user_id", userID)
