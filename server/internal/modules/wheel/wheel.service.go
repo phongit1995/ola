@@ -661,7 +661,7 @@ func randomKenRounded(min, max *int) int {
 	loK := (lo + 999) / 1000
 	hiK := hi / 1000
 	if hiK < loK {
-		return roundToThousand((lo + hi) / 2)
+		return randomIntInRange(lo, hi)
 	}
 	span := hiK - loK + 1
 	k := loK + int(utils.CryptoFloat()*float64(span))
@@ -671,11 +671,18 @@ func randomKenRounded(min, max *int) int {
 	return k * 1000
 }
 
-func roundToThousand(v int) int {
-	if v < 0 {
-		v = 0
+func randomIntInRange(lo, hi int) int {
+	if lo < 0 {
+		lo = 0
 	}
-	return ((v + 500) / 1000) * 1000
+	if hi <= lo {
+		return lo
+	}
+	v := lo + int(utils.CryptoFloat()*float64(hi-lo+1))
+	if v > hi {
+		v = hi
+	}
+	return v
 }
 
 func weightedPick(weights []float64) int {
