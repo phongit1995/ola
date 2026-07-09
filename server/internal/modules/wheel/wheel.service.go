@@ -6,7 +6,6 @@ import (
 	"math"
 	"time"
 
-	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/user"
 	"ola-chat-server/internal/services"
@@ -51,16 +50,6 @@ func NewService(repo *Repository, userCache *user.CacheService, cache *services.
 		wsServer:  wsServer,
 		logger:    logger.Named("[wheel_service]"),
 	}
-}
-
-func (s *Service) emitKenUpdate(userID uuid.UUID, ken int) {
-	if s.wsServer == nil {
-		return
-	}
-	payload := utils.WrapWebSocketMessage(constants.WebSocketEventKenUpdated, map[string]interface{}{
-		"ken": ken,
-	})
-	s.wsServer.EmitToUser(userID.String(), constants.WebSocketMessageEvent, payload)
 }
 
 func (s *Service) invalidateUser(userID uuid.UUID) {
@@ -368,7 +357,6 @@ func (s *Service) Spin(userID, wheelID uuid.UUID, idempotencyKey string) (*SpinR
 	}
 
 	s.invalidateUser(userID)
-	s.emitKenUpdate(userID, updatedUser.Ken)
 
 	freeAvailable := false
 	if wheel.FreeDailyEnabled {
@@ -390,22 +378,28 @@ func (s *Service) Spin(userID, wheelID uuid.UUID, idempotencyKey string) (*SpinR
 		}
 	}
 
+	kenReward := 0
+	if spin.KenAmount != nil && *spin.KenAmount > 0 {
+		kenReward = *spin.KenAmount
+	}
+
 	return &SpinResult{
-		SpinID:        spin.ID,
-		WheelID:       wheel.ID,
-		SegmentIndex:  index,
-		SegmentID:     segmentID,
-		SegmentKind:   spin.SegmentKind,
-		IsWin:         spin.SegmentKind != models.WheelSegmentMiss,
-		IsSuperLucky:  spin.IsSuperLucky,
-		KenCost:       spin.KenCost,
-		IsFree:        spin.IsFree,
-		KenBalance:    updatedUser.Ken,
-		FreeAvailable: freeAvailable,
-		RewardLabel:   spin.RewardLabel,
-		KenAmount:     spin.KenAmount,
-		VipDays:       spin.VipDays,
-		VipTypeID:     spin.VipTypeID,
+		SpinID:              spin.ID,
+		WheelID:             wheel.ID,
+		SegmentIndex:        index,
+		SegmentID:           segmentID,
+		SegmentKind:         spin.SegmentKind,
+		IsWin:               spin.SegmentKind != models.WheelSegmentMiss,
+		IsSuperLucky:        spin.IsSuperLucky,
+		KenCost:             spin.KenCost,
+		IsFree:              spin.IsFree,
+		KenBalance:          updatedUser.Ken,
+		KenBalanceAfterCost: updatedUser.Ken - kenReward,
+		FreeAvailable:       freeAvailable,
+		RewardLabel:         spin.RewardLabel,
+		KenAmount:           spin.KenAmount,
+		VipDays:             spin.VipDays,
+		VipTypeID:           spin.VipTypeID,
 	}, nil
 }
 
@@ -667,7 +661,7 @@ func randomKenRounded(min, max *int) int {
 	loK := (lo + 999) / 1000
 	hiK := hi / 1000
 	if hiK < loK {
-		return roundToThousand((lo + hi) / 2)
+		return randomIntInRange(lo, hi)
 	}
 	span := hiK - loK + 1
 	k := loK + int(utils.CryptoFloat()*float64(span))
@@ -677,11 +671,18 @@ func randomKenRounded(min, max *int) int {
 	return k * 1000
 }
 
-func roundToThousand(v int) int {
-	if v < 0 {
-		v = 0
+func randomIntInRange(lo, hi int) int {
+	if lo < 0 {
+		lo = 0
 	}
-	return ((v + 500) / 1000) * 1000
+	if hi <= lo {
+		return lo
+	}
+	v := lo + int(utils.CryptoFloat()*float64(hi-lo+1))
+	if v > hi {
+		v = hi
+	}
+	return v
 }
 
 func weightedPick(weights []float64) int {

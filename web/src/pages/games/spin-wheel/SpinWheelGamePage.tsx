@@ -1,7 +1,7 @@
-import { useEffect, useState, type CSSProperties } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { formatKen, toast } from '@lib';
-import { FullScreenOverlay, Spinner } from '@components';
+import { toast } from '@lib';
+import { AnimatedKen, FullScreenOverlay, Spinner } from '@components';
 import { SocketService } from '@services';
 import { useAuthStore } from '@/store/authStore';
 import { useAppOverlayStore } from '@/store/appOverlayStore';
@@ -9,10 +9,12 @@ import { useSpinWheelStore } from './spinWheelStore';
 import { SpinWheel } from './SpinWheel';
 import { SpinResultDialog } from './SpinResultDialog';
 import { SpinHistoryDialog } from './SpinHistoryDialog';
+import { WheelActionButton } from './WheelActionButton';
+import { playSpinSound, stopSpinSound } from './spinWheelSound';
 import { SPIN_START_KEN } from './spinWheel.constants';
+import { CHIP_TEXT_STYLE, SPIN_TEXT_STYLE, TEXT_SHADOW, TITLE_STYLE } from './spinWheelStyles';
 import {
   backgroundUrl,
-  bottomButtonFrameUrl,
   closeButtonUrl,
   coinUrl,
   historyIconUrl,
@@ -25,32 +27,6 @@ import {
   spinCountNoteUrl,
   titleBannerUrl,
 } from './spinWheelAssets';
-
-const TEXT_SHADOW = { textShadow: '0 2px 4px rgba(0,0,0,0.45)' };
-
-const TITLE_STYLE: CSSProperties = {
-  color: '#ffffff',
-  WebkitTextStroke: '3px #6b4a1c',
-  paintOrder: 'stroke fill',
-  textShadow: '0 3px 4px rgba(0,0,0,0.35)',
-  letterSpacing: '0.02em',
-};
-
-const SPIN_TEXT_STYLE: CSSProperties = {
-  color: '#fffdf0',
-  WebkitTextStroke: '4px #4f6e16',
-  paintOrder: 'stroke fill',
-  textShadow: '0 5px 0 #9a6b16, 0 6px 6px rgba(0,0,0,0.3)',
-  letterSpacing: '0.08em',
-};
-
-const CHIP_TEXT_STYLE: CSSProperties = {
-  color: '#fffdf0',
-  WebkitTextStroke: '1.5px #5a3a12',
-  paintOrder: 'stroke fill',
-  textShadow: '0 2px 0 #7a4e18, 0 3px 4px rgba(0,0,0,0.35)',
-  letterSpacing: '0.03em',
-};
 
 interface SpinWheelGamePageProps {
   onClose: () => void;
@@ -85,6 +61,7 @@ export function SpinWheelGamePage({ onClose }: SpinWheelGamePageProps) {
     });
     return () => {
       off();
+      stopSpinSound();
       useSpinWheelStore.setState({ spinning: false, suppressKenSync: false });
     };
   }, []);
@@ -103,7 +80,11 @@ export function SpinWheelGamePage({ onClose }: SpinWheelGamePageProps) {
       return;
     }
     const ok = await state.spin();
-    if (!ok) toast.error(t('wheelGame.error'));
+    if (!ok) {
+      toast.error(t('wheelGame.error'));
+      return;
+    }
+    if (!useSpinWheelStore.getState().muted) playSpinSound();
   };
 
   return (
@@ -143,12 +124,13 @@ export function SpinWheelGamePage({ onClose }: SpinWheelGamePageProps) {
             }}
           >
             <img src={coinUrl} alt="" className="h-11 w-11 shrink-0" />
-            <span
-              className="min-w-0 flex-1 truncate text-center text-xl font-extrabold"
-              style={CHIP_TEXT_STYLE}
-            >
-              {formatKen(ken)}
-            </span>
+            <AnimatedKen
+              value={ken}
+              showIcon={false}
+              className="min-w-0 flex-1 justify-center"
+              numberClassName="truncate text-xl font-extrabold"
+              numberStyle={CHIP_TEXT_STYLE}
+            />
             <button
               type="button"
               onClick={() => openApp('ken')}
@@ -165,7 +147,10 @@ export function SpinWheelGamePage({ onClose }: SpinWheelGamePageProps) {
               segments={config.segments}
               rotation={rotation}
               spinning={spinning}
-              onSettle={() => useSpinWheelStore.getState().settle()}
+              onSettle={() => {
+                stopSpinSound();
+                useSpinWheelStore.getState().settle();
+              }}
             />
           ) : (
             <div
@@ -205,34 +190,19 @@ export function SpinWheelGamePage({ onClose }: SpinWheelGamePageProps) {
           </div>
 
           <div className="flex w-full max-w-75 gap-3">
-            <button
-              type="button"
-              onClick={() => useSpinWheelStore.getState().toggleMute()}
-              className="relative h-11 flex-1 active:scale-95"
-            >
-              <img src={bottomButtonFrameUrl} alt="" className="absolute inset-0 h-full w-full" />
-              <span
-                className="absolute inset-0 flex items-center justify-center gap-1.5 text-sm font-bold"
-                style={CHIP_TEXT_STYLE}
-              >
-                <img src={muted ? soundOffUrl : soundOnUrl} alt="" className="h-5 w-5" />
-                {t('wheelGame.sound')}
-              </span>
-            </button>
-            <button
-              type="button"
+            <WheelActionButton
+              icon={muted ? soundOffUrl : soundOnUrl}
+              label={t('wheelGame.sound')}
+              onClick={() => {
+                useSpinWheelStore.getState().toggleMute();
+                if (useSpinWheelStore.getState().muted) stopSpinSound();
+              }}
+            />
+            <WheelActionButton
+              icon={historyIconUrl}
+              label={t('wheelGame.history')}
               onClick={() => setHistoryOpen(true)}
-              className="relative h-11 flex-1 active:scale-95"
-            >
-              <img src={bottomButtonFrameUrl} alt="" className="absolute inset-0 h-full w-full" />
-              <span
-                className="absolute inset-0 flex items-center justify-center gap-1.5 text-sm font-bold"
-                style={CHIP_TEXT_STYLE}
-              >
-                <img src={historyIconUrl} alt="" className="h-5 w-5" />
-                {t('wheelGame.history')}
-              </span>
-            </button>
+            />
           </div>
         </div>
       </div>

@@ -8,17 +8,18 @@ import (
 type Router struct {
 	controller     *Controller
 	authMiddleware *middleware.AuthMiddleware
+	rateLimit      *middleware.RateLimitMiddleware
 }
 
-func NewRouter(controller *Controller, authMiddleware *middleware.AuthMiddleware) *Router {
-	return &Router{controller: controller, authMiddleware: authMiddleware}
+func NewRouter(controller *Controller, authMiddleware *middleware.AuthMiddleware, rateLimit *middleware.RateLimitMiddleware) *Router {
+	return &Router{controller: controller, authMiddleware: authMiddleware, rateLimit: rateLimit}
 }
 
 func (r *Router) Setup(api *utils.AppGroup) {
 	wheel := api.Group("/wheel", r.authMiddleware.RequireAuth())
 	{
 		wheel.GET("", r.controller.GetConfig)
-		wheel.POST("/spins", r.controller.Spin)
+		wheel.POST("/spins", r.rateLimit.LimitPolicy(middleware.PolicyWheelSpin), r.controller.Spin)
 		wheel.GET("/spins", r.controller.ListSpins)
 	}
 }

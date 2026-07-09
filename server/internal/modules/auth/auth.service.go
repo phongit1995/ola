@@ -23,6 +23,12 @@ import (
 
 var usernameRegex = regexp.MustCompile(`^[a-z0-9][a-z0-9._-]*[a-z0-9]$`)
 
+const (
+	registerThrottleWindow  = time.Second
+	registerSuccessCooldown = 12 * time.Hour
+	errRateLimited          = "RATE_LIMITED"
+)
+
 type Service struct {
 	repo           *Repository
 	jwtService     *services.JWTService
@@ -116,7 +122,23 @@ func (s *Service) RefreshToken(refreshTokenStr, clientIP, userAgent string) (*Re
 	}, nil
 }
 
+func (s *Service) guardRegister(clientIP string) error {
+	doneKey := fmt.Sprintf(constants.CacheKeyRegisterDone, clientIP)
+	if done, err := s.cache.Exists(doneKey); err == nil && done {
+		return errors.New(errRateLimited)
+	}
+	throttleKey := fmt.Sprintf(constants.CacheKeyRegisterThrottle, clientIP)
+	if ok, err := s.cache.SetNX(throttleKey, "1", registerThrottleWindow); err == nil && !ok {
+		return errors.New(errRateLimited)
+	}
+	return nil
+}
+
 func (s *Service) Register(req *RegisterRequest, clientIP string) (*RegisterResponse, error) {
+	if err := s.guardRegister(clientIP); err != nil {
+		return nil, err
+	}
+
 	req.Username = strings.ToLower(strings.TrimSpace(req.Username))
 	if !usernameRegex.MatchString(req.Username) {
 		return nil, errors.New("username may only contain lowercase letters, numbers, dot (.), hyphen (-) and underscore (_), and must start and end with a letter or number")
@@ -176,6 +198,10 @@ func (s *Service) Register(req *RegisterRequest, clientIP string) (*RegisterResp
 			"user_id", user.ID,
 			"error", err.Error(),
 		)
+	}
+
+	if err := s.cache.Set(fmt.Sprintf(constants.CacheKeyRegisterDone, clientIP), "1", registerSuccessCooldown); err != nil {
+		s.logger.Warnw("Failed to set register cooldown", "ip", clientIP, "error", err.Error())
 	}
 
 	s.logger.Infow("User registered successfully",

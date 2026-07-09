@@ -1080,6 +1080,7 @@
     "historyTitle": "Lịch sử quay",
     "historyEmpty": "Chưa có lượt quay nào",
     "historyLoadMore": "Xem thêm",
+    "historyPage": "Trang {{n}}",
     "historyFilter": {
       "all": "Tất cả",
       "win": "Trúng thưởng",
@@ -1194,6 +1195,8 @@
     "errChooseCatchDirection": "Vui lòng chọn hướng chụp.",
     "catchWin": "Chụp thành công! 🧤 Bạn thắng {{payout}} KEN.",
     "catchLose": "Tiếc quá, bạn đoán sai hướng. Thua lượt này.",
+    "shotWon": "Vào lưới! ⚽ Cú sút của bạn ăn {{payout}} KEN.",
+    "shotLost": "Cú sút của bạn đã bị bắt. Thua lượt này.",
     "leaderboard": {
       "title": "TOP NGƯỜI CHƠI",
       "short": "BXH",

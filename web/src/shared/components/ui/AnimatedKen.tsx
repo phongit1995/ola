@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { formatKen } from '@lib';
 import kenIconUrl from '@/assets/icons/apps/ken.png';
 
@@ -8,6 +8,7 @@ interface AnimatedKenProps {
   value: number;
   className?: string;
   numberClassName?: string;
+  numberStyle?: CSSProperties;
   iconClassName?: string;
   showIcon?: boolean;
   bounce?: boolean;
@@ -19,6 +20,7 @@ export function AnimatedKen({
   value,
   className = '',
   numberClassName = 'text-xl leading-none text-[#ffca28]',
+  numberStyle,
   iconClassName = 'h-5 w-5',
   showIcon = true,
   bounce = true,
@@ -79,7 +81,9 @@ export function AnimatedKen({
       key={bump}
       className={`inline-flex items-center gap-1.5 leading-none ${className}${bumpClass}`}
     >
-      <b className={numberClassName}>{formatKen(display)}</b>
+      <b className={numberClassName} style={numberStyle}>
+        {formatKen(display)}
+      </b>
       {showIcon && <img src={kenIconUrl} alt="KEN" className={`block shrink-0 ${iconClassName}`} />}
     </span>
   );

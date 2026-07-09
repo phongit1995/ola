@@ -18,7 +18,7 @@ func NewRouter(controller *Controller, authMiddleware *middleware.AuthMiddleware
 func (r *Router) Setup(api *utils.AppGroup) {
 	auth := api.Group("/auth")
 	{
-		auth.POST("/register", r.rateLimit.LimitPolicy(middleware.PolicyRegister), r.controller.Register)
+		auth.POST("/register", r.controller.Register)
 		auth.POST("/login", r.rateLimit.LimitPolicy(middleware.PolicyLogin), r.controller.Login)
 		auth.POST("/refresh", r.controller.Refresh)
 		auth.POST("/logout", r.authMiddleware.RequireAuth(), r.controller.Logout)

@@ -65,6 +65,7 @@ export const useSpinWheelStore = create<SpinWheelState>((set, get) => ({
       set((current) => ({
         pendingResult: result,
         rotation: rotationForIndex(current.rotation, result.segmentIndex, count),
+        ken: result.kenBalanceAfterCost,
       }));
       return true;
     } catch {

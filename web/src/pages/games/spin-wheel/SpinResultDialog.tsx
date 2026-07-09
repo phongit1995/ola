@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { VipIcon } from '@components';
 import type { WheelSpinResult } from '@app-types';
@@ -9,7 +10,15 @@ import {
   rewardVipDaysUrl,
   spinCoinUrl,
 } from './spinWheelAssets';
-import { formatRewardKen, isKenKind, isVipDaysKind, isVipItemKind } from './spinWheelReward';
+import { formatRewardKen, isKenKind, isVipDaysKind } from './spinWheelReward';
+
+const REWARD_ICON_CLASS = 'h-24 w-24 drop-shadow';
+
+interface ResolvedReward {
+  icon: ReactNode;
+  label: string;
+  labelClass: string;
+}
 
 interface SpinResultDialogProps {
   result: WheelSpinResult;
@@ -18,9 +27,42 @@ interface SpinResultDialogProps {
 
 export function SpinResultDialog({ result, onClose }: SpinResultDialogProps) {
   const { t } = useTranslation();
-  const isKen = isKenKind(result.segmentKind);
-  const isVipDays = isVipDaysKind(result.segmentKind);
-  const isVipItem = isVipItemKind(result.segmentKind);
+
+  const resolveReward = (): ResolvedReward => {
+    if (!result.isWin) {
+      return {
+        icon: <img src={rewardMissUrl} alt="" className={REWARD_ICON_CLASS} />,
+        label: t('wheelGame.miss'),
+        labelClass: 'text-2xl',
+      };
+    }
+    if (isKenKind(result.segmentKind)) {
+      return {
+        icon: <img src={spinCoinUrl} alt="" className={REWARD_ICON_CLASS} />,
+        label: `${formatRewardKen(result.kenAmount ?? 0)} KEN`,
+        labelClass: 'text-2xl',
+      };
+    }
+    if (isVipDaysKind(result.segmentKind)) {
+      return {
+        icon: <img src={rewardVipDaysUrl} alt="" className={REWARD_ICON_CLASS} />,
+        label: t('wheelGame.vipDays', { n: result.vipDays ?? 0 }),
+        labelClass: 'text-2xl',
+      };
+    }
+    return {
+      icon:
+        typeof result.vipTypeId === 'number' ? (
+          <VipIcon typeId={result.vipTypeId} className="h-24 w-24" rounded />
+        ) : (
+          <img src={rewardVipDaysUrl} alt="" className={REWARD_ICON_CLASS} />
+        ),
+      label: result.rewardLabel ?? t('wheelGame.rewardTitle'),
+      labelClass: 'text-base',
+    };
+  };
+
+  const reward = resolveReward();
 
   return (
     <div
@@ -50,40 +92,10 @@ export function SpinResultDialog({ result, onClose }: SpinResultDialogProps) {
           {result.isWin ? t('wheelGame.rewardTitle') : t('wheelGame.missTitle')}
         </div>
         <div className="absolute inset-x-0 top-[45%] flex flex-col items-center gap-2 px-8">
-          {isKen && (
-            <>
-              <img src={spinCoinUrl} alt="" className="h-24 w-24 drop-shadow" />
-              <span className="text-2xl font-extrabold text-[#e0348b]">
-                {formatRewardKen(result.kenAmount ?? 0)} KEN
-              </span>
-            </>
-          )}
-          {isVipDays && (
-            <>
-              <img src={rewardVipDaysUrl} alt="" className="h-24 w-24 drop-shadow" />
-              <span className="text-2xl font-extrabold text-[#e0348b]">
-                {t('wheelGame.vipDays', { n: result.vipDays ?? 0 })}
-              </span>
-            </>
-          )}
-          {isVipItem && (
-            <>
-              {typeof result.vipTypeId === 'number' ? (
-                <VipIcon typeId={result.vipTypeId} className="h-24 w-24" rounded />
-              ) : (
-                <img src={rewardVipDaysUrl} alt="" className="h-24 w-24 drop-shadow" />
-              )}
-              <span className="text-base font-extrabold text-[#e0348b]">
-                {result.rewardLabel ?? t('wheelGame.rewardTitle')}
-              </span>
-            </>
-          )}
-          {!result.isWin && (
-            <>
-              <img src={rewardMissUrl} alt="" className="h-24 w-24 drop-shadow" />
-              <span className="text-2xl font-extrabold text-[#e0348b]">{t('wheelGame.miss')}</span>
-            </>
-          )}
+          {reward.icon}
+          <span className={`${reward.labelClass} font-extrabold text-[#e0348b]`}>
+            {reward.label}
+          </span>
         </div>
       </div>
     </div>

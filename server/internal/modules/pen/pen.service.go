@@ -133,6 +133,8 @@ func (s *Service) CatchShot(userID, shotID uuid.UUID, req CatchRequest) (*CatchR
 		"shotId":      shot.ID.String(),
 		"result":      string(*shot.Result),
 		"winnerId":    shot.WinnerID.String(),
+		"shooterId":   shot.ShooterID.String(),
+		"keeperId":    userID.String(),
 		"betAmount":   shot.BetAmount,
 		"pot":         *shot.Pot,
 		"commission":  *shot.Commission,
