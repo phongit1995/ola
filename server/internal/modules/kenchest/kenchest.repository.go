@@ -175,7 +175,7 @@ func (r *Repository) ClaimDueJob(id uuid.UUID, expected *time.Time, next time.Ti
 		"last_run_at":    now,
 		"run_count":      gorm.Expr("run_count + 1"),
 		"remaining_runs": gorm.Expr("CASE WHEN remaining_runs IS NOT NULL THEN remaining_runs - 1 ELSE NULL END"),
-		"next_run_at":    gorm.Expr("CASE WHEN remaining_runs IS NOT NULL AND remaining_runs <= 1 THEN NULL ELSE ? END", next),
+		"next_run_at":    gorm.Expr("CASE WHEN remaining_runs IS NOT NULL AND remaining_runs <= 1 THEN NULL ELSE CAST(? AS timestamptz) END", next),
 		"enabled":        gorm.Expr("CASE WHEN remaining_runs IS NOT NULL AND remaining_runs <= 1 THEN false ELSE enabled END"),
 	})
 	if res.Error != nil {
