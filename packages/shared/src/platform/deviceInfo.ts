@@ -18,20 +18,31 @@ export interface DeviceInfoPort {
 const DEVICE_ID_KEY = 'ola.deviceId';
 
 let current: DeviceInfoPort | null = null;
+let cachedDeviceId: string | null = null;
 
 export function configureDeviceInfo(port: DeviceInfoPort): void {
   current = port;
 }
 
 function persistedDeviceId(): string {
-  const storage = getKeyValueStorage();
-  const existing = storage.getItem(DEVICE_ID_KEY);
-  if (existing != null && existing !== '') {
-    return existing;
+  if (cachedDeviceId != null) {
+    return cachedDeviceId;
   }
-  const generated = randomUuid();
-  storage.setItem(DEVICE_ID_KEY, generated);
-  return generated;
+  try {
+    const storage = getKeyValueStorage();
+    const existing = storage.getItem(DEVICE_ID_KEY);
+    if (existing != null && existing !== '') {
+      cachedDeviceId = existing;
+      return existing;
+    }
+    const generated = randomUuid();
+    storage.setItem(DEVICE_ID_KEY, generated);
+    cachedDeviceId = generated;
+    return generated;
+  } catch {
+    cachedDeviceId = randomUuid();
+    return cachedDeviceId;
+  }
 }
 
 export function getDeviceInfo(): DeviceInfoPayload {
