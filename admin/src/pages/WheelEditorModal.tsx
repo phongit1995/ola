@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { App, Divider, Input, InputNumber, Modal, Switch, Typography } from 'antd'
 import { useCreateWheel, useSaveWheelConfig, useUpdateWheel } from '@/hooks/useWheel'
 import { ApiError } from '@/lib/apiError'
+import { kenNumberInputProps } from '@/lib/format'
 import type { SaveWheelConfigRequest, Wheel, WheelSegment } from '@/types'
 import { WheelBuilder } from './WheelBuilder'
 import { newId } from './wheel/wheelHelpers'
@@ -191,7 +192,7 @@ export function WheelEditorModal({ open, wheel, nextSortOrder, onClose }: WheelE
           <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 4 }}>
             Giá (Ken/lượt)
           </Typography.Text>
-          <InputNumber min={0} style={{ width: '100%' }} value={kenCost} onChange={(v) => setKenCost(v ?? 0)} />
+          <InputNumber min={0} style={{ width: '100%' }} value={kenCost} onChange={(v) => setKenCost(v ?? 0)} {...kenNumberInputProps} />
         </div>
         <div>
           <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 4 }}>

@@ -22,5 +22,13 @@ func (r *Router) Setup(admin *utils.AppGroup) {
 		ken.GET("/chests/:id", r.controller.Detail)
 		ken.GET("/chests/:id/claims", r.controller.ListClaims)
 		ken.DELETE("/chests/:id", r.controller.Delete)
+
+		ken.GET("/auto-jobs", r.controller.ListAutoJobs)
+		ken.POST("/auto-jobs", r.controller.CreateAutoJob)
+		ken.PUT("/auto-jobs/:id", r.controller.UpdateAutoJob)
+		ken.DELETE("/auto-jobs/:id", r.controller.DeleteAutoJob)
+
+		ken.GET("/auto-settings", r.controller.GetAutoSettings)
+		ken.PUT("/auto-settings", r.controller.UpdateAutoSettings)
 	}
 }

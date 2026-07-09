@@ -19,8 +19,8 @@ const KenTreasureOverlay = lazy(() =>
 );
 
 function GlobalKenTreasure() {
-  const phase = useKenTreasureStore((s) => s.phase);
-  if (phase === 'idle') return null;
+  const hasChest = useKenTreasureStore((s) => Object.keys(s.chests).length > 0);
+  if (!hasChest) return null;
   return (
     <Suspense fallback={null}>
       <KenTreasureOverlay />

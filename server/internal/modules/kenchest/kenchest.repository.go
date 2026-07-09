@@ -1,6 +1,7 @@
 package kenchest
 
 import (
+	"errors"
 	"time"
 
 	"ola-chat-server/internal/models"
@@ -106,6 +107,95 @@ func (r *Repository) SoftDeleteChest(id uuid.UUID) error {
 		}
 		return tx.Delete(&models.KenChest{}, "id = ?", id).Error
 	})
+}
+
+func (r *Repository) ListAutoJobs() ([]models.KenChestAutoJob, error) {
+	var jobs []models.KenChestAutoJob
+	if err := r.db.Order("created_at DESC").Find(&jobs).Error; err != nil {
+		return nil, err
+	}
+	return jobs, nil
+}
+
+func (r *Repository) FindAutoJobByID(id uuid.UUID) (*models.KenChestAutoJob, error) {
+	var job models.KenChestAutoJob
+	if err := r.db.First(&job, "id = ?", id).Error; err != nil {
+		return nil, err
+	}
+	return &job, nil
+}
+
+func (r *Repository) CreateAutoJob(job *models.KenChestAutoJob) error {
+	return r.db.Create(job).Error
+}
+
+func (r *Repository) UpdateAutoJob(job *models.KenChestAutoJob) error {
+	return r.db.Save(job).Error
+}
+
+func (r *Repository) DeleteAutoJob(id uuid.UUID) error {
+	return r.db.Delete(&models.KenChestAutoJob{}, "id = ?", id).Error
+}
+
+func (r *Repository) ListEnabledDueJobs(now time.Time) ([]models.KenChestAutoJob, error) {
+	var jobs []models.KenChestAutoJob
+	err := r.db.
+		Where("enabled = ? AND (remaining_runs IS NULL OR remaining_runs > 0) AND (next_run_at IS NULL OR next_run_at <= ?)", true, now).
+		Find(&jobs).Error
+	if err != nil {
+		return nil, err
+	}
+	return jobs, nil
+}
+
+func (r *Repository) EarliestEnabledNextRun() (bool, *time.Time, error) {
+	var job models.KenChestAutoJob
+	err := r.db.
+		Where("enabled = ? AND (remaining_runs IS NULL OR remaining_runs > 0)", true).
+		Order("next_run_at IS NULL DESC, next_run_at ASC").
+		First(&job).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return false, nil, nil
+		}
+		return false, nil, err
+	}
+	return true, job.NextRunAt, nil
+}
+
+func (r *Repository) ClaimDueJob(id uuid.UUID, expected *time.Time, next time.Time, now time.Time) (bool, error) {
+	q := r.db.Model(&models.KenChestAutoJob{}).
+		Where("id = ? AND (remaining_runs IS NULL OR remaining_runs > 0)", id)
+	if expected == nil {
+		q = q.Where("next_run_at IS NULL")
+	} else {
+		q = q.Where("next_run_at = ?", *expected)
+	}
+	res := q.Updates(map[string]interface{}{
+		"last_run_at":    now,
+		"run_count":      gorm.Expr("run_count + 1"),
+		"remaining_runs": gorm.Expr("CASE WHEN remaining_runs IS NOT NULL THEN remaining_runs - 1 ELSE NULL END"),
+		"next_run_at":    gorm.Expr("CASE WHEN remaining_runs IS NOT NULL AND remaining_runs <= 1 THEN NULL ELSE CAST(? AS timestamptz) END", next),
+		"enabled":        gorm.Expr("CASE WHEN remaining_runs IS NOT NULL AND remaining_runs <= 1 THEN false ELSE enabled END"),
+	})
+	if res.Error != nil {
+		return false, res.Error
+	}
+	return res.RowsAffected == 1, nil
+}
+
+func (r *Repository) GetAutoSettings() (*models.KenChestAutoSettings, error) {
+	var settings models.KenChestAutoSettings
+	if err := r.db.First(&settings).Error; err != nil {
+		return nil, err
+	}
+	return &settings, nil
+}
+
+func (r *Repository) UpdateAutoSettings(enabled bool, updatedBy *uuid.UUID) error {
+	return r.db.Model(&models.KenChestAutoSettings{}).
+		Where("1 = 1").
+		Updates(map[string]interface{}{"enabled": enabled, "updated_by": updatedBy, "updated_at": time.Now().UTC()}).Error
 }
 
 func (r *Repository) ApplyClaim(userID uuid.UUID, chest *models.KenChest, rolledAmount int) (*ClaimOutcome, error) {

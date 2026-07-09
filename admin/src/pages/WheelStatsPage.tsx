@@ -98,34 +98,34 @@ export function WheelStatsPage() {
       >
         <Row gutter={16}>
           <Col span={6}>
-            <Statistic title="Tổng lượt quay" value={overview?.totalSpins ?? 0} />
+            <Statistic groupSeparator="." title="Tổng lượt quay" value={overview?.totalSpins ?? 0} />
           </Col>
           <Col span={6}>
-            <Statistic title="Người chơi" value={overview?.uniquePlayers ?? 0} />
+            <Statistic groupSeparator="." title="Người chơi" value={overview?.uniquePlayers ?? 0} />
           </Col>
           <Col span={6}>
-            <Statistic title="Tỉ lệ trúng" value={overview?.winRate ?? 0} precision={1} suffix="%" />
+            <Statistic groupSeparator="." title="Tỉ lệ trúng" value={overview?.winRate ?? 0} precision={1} suffix="%" />
           </Col>
           <Col span={6}>
-            <Statistic title="Lượt miễn phí" value={overview?.freeSpins ?? 0} />
+            <Statistic groupSeparator="." title="Lượt miễn phí" value={overview?.freeSpins ?? 0} />
           </Col>
         </Row>
         <Row gutter={16} style={{ marginTop: 16 }}>
           <Col span={6}>
-            <Statistic title="Ken thu" value={overview?.kenIn ?? 0} />
+            <Statistic groupSeparator="." title="Ken thu" value={overview?.kenIn ?? 0} />
           </Col>
           <Col span={6}>
-            <Statistic title="Ken trả thưởng" value={overview?.kenOut ?? 0} />
+            <Statistic groupSeparator="." title="Ken trả thưởng" value={overview?.kenOut ?? 0} />
           </Col>
           <Col span={6}>
-            <Statistic
+            <Statistic groupSeparator="."
               title="Ken ròng"
               value={overview?.netKen ?? 0}
               valueStyle={{ color: (overview?.netKen ?? 0) >= 0 ? '#1f8a3b' : '#c0392b' }}
             />
           </Col>
           <Col span={6}>
-            <Statistic title="Ngày VIP trao" value={overview?.vipDaysOut ?? 0} />
+            <Statistic groupSeparator="." title="Ngày VIP trao" value={overview?.vipDaysOut ?? 0} />
           </Col>
         </Row>
       </Card>

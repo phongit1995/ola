@@ -1,6 +1,7 @@
 import { getApi, http } from '../api';
 import { API_PATH } from '../config';
 import { authTokens } from '../lib';
+import { getDeviceInfo } from '../platform';
 import type {
   AuthResult,
   ChangePasswordRequest,
@@ -13,7 +14,10 @@ import type {
 
 export class AuthService {
   static async login(payload: LoginRequest): Promise<AuthResult> {
-    const result = await http.post<AuthResult>(API_PATH.auth.login, payload);
+    const result = await http.post<AuthResult>(API_PATH.auth.login, {
+      ...payload,
+      device: getDeviceInfo(),
+    });
     authTokens.setTokens(result.token, result.refreshToken);
     return result;
   }

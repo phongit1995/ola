@@ -3,6 +3,9 @@ import type {
   ApiResponse,
   CreateKenChestRequest,
   KenChest,
+  KenChestAutoJob,
+  KenChestAutoJobRequest,
+  KenChestAutoSettings,
   KenChestClaim,
   ListParams,
   ListResult,
@@ -37,6 +40,38 @@ export const AdminKenChestService = {
 
   async remove(id: string): Promise<MessageResult> {
     const { data } = await http.delete<ApiResponse<MessageResult>>(`/admin/ken/chests/${id}`)
+    return data.data
+  },
+
+  async listAutoJobs(): Promise<KenChestAutoJob[]> {
+    const { data } = await http.get<ApiResponse<KenChestAutoJob[]>>('/admin/ken/auto-jobs')
+    return data.data
+  },
+
+  async createAutoJob(payload: KenChestAutoJobRequest): Promise<KenChestAutoJob> {
+    const { data } = await http.post<ApiResponse<KenChestAutoJob>>('/admin/ken/auto-jobs', payload)
+    return data.data
+  },
+
+  async updateAutoJob(id: string, payload: KenChestAutoJobRequest): Promise<KenChestAutoJob> {
+    const { data } = await http.put<ApiResponse<KenChestAutoJob>>(`/admin/ken/auto-jobs/${id}`, payload)
+    return data.data
+  },
+
+  async removeAutoJob(id: string): Promise<MessageResult> {
+    const { data } = await http.delete<ApiResponse<MessageResult>>(`/admin/ken/auto-jobs/${id}`)
+    return data.data
+  },
+
+  async getAutoSettings(): Promise<KenChestAutoSettings> {
+    const { data } = await http.get<ApiResponse<KenChestAutoSettings>>('/admin/ken/auto-settings')
+    return data.data
+  },
+
+  async updateAutoSettings(enabled: boolean): Promise<KenChestAutoSettings> {
+    const { data } = await http.put<ApiResponse<KenChestAutoSettings>>('/admin/ken/auto-settings', {
+      enabled,
+    })
     return data.data
   },
 }

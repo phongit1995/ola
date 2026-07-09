@@ -5,7 +5,7 @@ import { toast, playKenChestSound } from '@lib';
 import i18n from '@/i18n';
 import { syncAuthKen } from '@/store/authKen';
 
-export type KenTreasurePhase = 'idle' | 'closed' | 'opening' | 'result';
+export type KenTreasurePhase = 'closed' | 'opening' | 'result';
 
 const OPEN_ANIM_MS = 1000;
 
@@ -14,45 +14,72 @@ interface KenTreasureResult {
   kenAmount: number;
 }
 
-interface KenTreasureState {
-  chestId: string | null;
-  expiresAt: string | null;
+export interface KenTreasureChest {
+  id: string;
+  expiresAt: string;
   phase: KenTreasurePhase;
   result: KenTreasureResult | null;
+}
+
+interface KenTreasureState {
+  chests: Record<string, KenTreasureChest>;
   show: (payload: { id: string; expiresAt: string }) => void;
-  open: () => Promise<void>;
-  dismiss: () => void;
+  open: (id: string) => Promise<void>;
+  dismiss: (id: string) => void;
+}
+
+function hasActiveModal(chests: Record<string, KenTreasureChest>): boolean {
+  return Object.values(chests).some((c) => c.phase === 'opening' || c.phase === 'result');
+}
+
+function patchChests(
+  chests: Record<string, KenTreasureChest>,
+  id: string,
+  patch: Partial<KenTreasureChest>
+): Record<string, KenTreasureChest> {
+  const current = chests[id];
+  if (!current) return chests;
+  return { ...chests, [id]: { ...current, ...patch } };
 }
 
 export const useKenTreasureStore = create<KenTreasureState>((set, get) => ({
-  chestId: null,
-  expiresAt: null,
-  phase: 'idle',
-  result: null,
+  chests: {},
   show: ({ id, expiresAt }) => {
-    const { phase, chestId } = get();
-    if (phase !== 'idle' && chestId === id) return;
-    if (phase === 'opening' || phase === 'result') return;
+    if (get().chests[id]) return;
     playKenChestSound();
-    set({ chestId: id, expiresAt, phase: 'closed', result: null });
+    set((state) => ({
+      chests: { ...state.chests, [id]: { id, expiresAt, phase: 'closed', result: null } },
+    }));
   },
-  open: async () => {
-    const { chestId, phase } = get();
-    if (!chestId || phase !== 'closed') return;
-    set({ phase: 'opening' });
+  open: async (id) => {
+    const { chests } = get();
+    const chest = chests[id];
+    if (!chest || chest.phase !== 'closed' || hasActiveModal(chests)) return;
+    set((state) => ({ chests: patchChests(state.chests, id, { phase: 'opening' }) }));
     const [result] = await Promise.all([
-      KenTreasureService.open(chestId).catch(() => null),
+      KenTreasureService.open(id).catch(() => null),
       new Promise((resolve) => setTimeout(resolve, OPEN_ANIM_MS)),
     ]);
     if (!result) {
       toast.error(i18n.t('kenTreasure.openError'));
-      set({ phase: 'closed' });
+      set((state) => ({ chests: patchChests(state.chests, id, { phase: 'closed' }) }));
       return;
     }
     syncAuthKen(result.kenBalance);
-    set({ result: { isEmpty: result.isEmpty, kenAmount: result.kenAmount }, phase: 'result' });
+    set((state) => ({
+      chests: patchChests(state.chests, id, {
+        phase: 'result',
+        result: { isEmpty: result.isEmpty, kenAmount: result.kenAmount },
+      }),
+    }));
   },
-  dismiss: () => set({ chestId: null, expiresAt: null, phase: 'idle', result: null }),
+  dismiss: (id) =>
+    set((state) => {
+      if (!state.chests[id]) return state;
+      const next = { ...state.chests };
+      delete next[id];
+      return { chests: next };
+    }),
 }));
 
 interface KenTreasurePositionState {

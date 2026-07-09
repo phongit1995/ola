@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type Repository struct {
@@ -113,8 +114,25 @@ func (r *Repository) Upsert(sess *models.UserSession) error {
 	if res.Error != nil {
 		return res.Error
 	}
-	if res.RowsAffected == 0 {
-		return r.db.Create(sess).Error
+	if res.RowsAffected > 0 {
+		return nil
 	}
-	return nil
+
+	return r.db.Clauses(clause.OnConflict{
+		Columns: []clause.Column{{Name: "user_id"}, {Name: "device_id"}},
+		TargetWhere: clause.Where{Exprs: []clause.Expression{
+			clause.Expr{SQL: "device_id <> '' AND revoked_at IS NULL"},
+		}},
+		DoUpdates: clause.Assignments(map[string]interface{}{
+			"id":             gorm.Expr("EXCLUDED.id"),
+			"refresh_token":  sess.RefreshToken,
+			"device_name":    sess.DeviceName,
+			"platform":       sess.Platform,
+			"app_version":    sess.AppVersion,
+			"user_agent":     sess.UserAgent,
+			"ip_address":     sess.IPAddress,
+			"last_active_at": gorm.Expr("NOW()"),
+			"revoked_at":     nil,
+		}),
+	}).Create(sess).Error
 }

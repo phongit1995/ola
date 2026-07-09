@@ -22,6 +22,7 @@ import {
   useVipShopItems,
 } from '@/hooks/useVipShop'
 import { ApiError } from '@/lib/apiError'
+import { kenNumberInputProps } from '@/lib/format'
 import { VIP_CATALOG, vipIconUrl, vipName } from '@/lib/vipCatalog'
 import type { VipShopItem } from '@/types'
 
@@ -249,7 +250,7 @@ export function VipShopPage() {
             label="Giá (KEN)"
             rules={[{ required: true, message: 'Vui lòng nhập giá' }]}
           >
-            <InputNumber min={0} style={{ width: '100%' }} placeholder="100" />
+            <InputNumber min={0} style={{ width: '100%' }} placeholder="100" {...kenNumberInputProps} />
           </Form.Item>
           <Form.Item name="sortOrder" label="Thứ tự sắp xếp (nhỏ hơn hiển thị trước)">
             <InputNumber min={0} style={{ width: '100%' }} placeholder="0" />

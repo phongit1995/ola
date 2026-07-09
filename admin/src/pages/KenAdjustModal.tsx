@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { App, Form, Input, InputNumber, Modal, Segmented } from 'antd'
 import { useAdjustKen } from '@/hooks/useKen'
 import { ApiError } from '@/lib/apiError'
+import { kenNumberInputProps } from '@/lib/format'
 import type { KenAdjustRequest } from '@/types'
 
 interface KenAdjustModalProps {
@@ -73,7 +74,7 @@ export function KenAdjustModal({
           label="Số ken"
           rules={[{ required: true, message: 'Vui lòng nhập số ken' }]}
         >
-          <InputNumber min={1} style={{ width: '100%' }} placeholder="500" />
+          <InputNumber min={1} style={{ width: '100%' }} placeholder="500" {...kenNumberInputProps} />
         </Form.Item>
         <Form.Item
           name="description"

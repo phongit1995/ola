@@ -1,6 +1,7 @@
 import { App, Form, InputNumber, Modal, Radio } from 'antd'
 import { useCreateKenChest } from '@/hooks/useKenChests'
 import { ApiError } from '@/lib/apiError'
+import { kenNumberInputProps } from '@/lib/format'
 import type { CreateKenChestRequest, KenChestRewardMode } from '@/types'
 
 interface KenChestFormModalProps {
@@ -76,7 +77,7 @@ export function KenChestFormModal({ open, onClose }: KenChestFormModalProps) {
             label="Số KEN mỗi rương"
             rules={[{ required: true, message: 'Vui lòng nhập số KEN' }]}
           >
-            <InputNumber min={1} style={{ width: '100%' }} placeholder="10000" />
+            <InputNumber min={1} style={{ width: '100%' }} placeholder="10.000" {...kenNumberInputProps} />
           </Form.Item>
         ) : (
           <>
@@ -85,7 +86,7 @@ export function KenChestFormModal({ open, onClose }: KenChestFormModalProps) {
               label="KEN tối thiểu"
               rules={[{ required: true, message: 'Vui lòng nhập KEN tối thiểu' }]}
             >
-              <InputNumber min={1} style={{ width: '100%' }} placeholder="1000" />
+              <InputNumber min={1} style={{ width: '100%' }} placeholder="1.000" {...kenNumberInputProps} />
             </Form.Item>
             <Form.Item
               name="kenMax"
@@ -102,7 +103,7 @@ export function KenChestFormModal({ open, onClose }: KenChestFormModalProps) {
                 }),
               ]}
             >
-              <InputNumber min={1} style={{ width: '100%' }} placeholder="10000" />
+              <InputNumber min={1} style={{ width: '100%' }} placeholder="10.000" {...kenNumberInputProps} />
             </Form.Item>
           </>
         )}

@@ -19,12 +19,14 @@ export function useKenRealtime() {
     const offAvailable = SocketService.on<{ id: string; expiresAt: string }>(
       'KEN_CHEST_AVAILABLE',
       (data) => {
-        if (data?.id) useKenTreasureStore.getState().show({ id: data.id, expiresAt: data.expiresAt });
+        if (data?.id && data.expiresAt)
+          useKenTreasureStore.getState().show({ id: data.id, expiresAt: data.expiresAt });
       }
     );
     const offClosed = SocketService.on<{ id: string }>('KEN_CHEST_CLOSED', (data) => {
       const state = useKenTreasureStore.getState();
-      if (data?.id && state.chestId === data.id && state.phase === 'closed') state.dismiss();
+      const chest = data?.id ? state.chests[data.id] : undefined;
+      if (chest && chest.phase === 'closed') state.dismiss(data.id);
     });
     return () => {
       offAvailable();
