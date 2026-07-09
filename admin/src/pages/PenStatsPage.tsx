@@ -133,17 +133,17 @@ export function PenStatsPage() {
           <Row gutter={[16, 16]}>
             <Col xs={12} sm={8} lg={6}>
               <Card>
-                <Statistic title="Tổng lượt" value={data.overview.totalShots} />
+                <Statistic groupSeparator="." title="Tổng lượt" value={data.overview.totalShots} />
               </Card>
             </Col>
             <Col xs={12} sm={8} lg={6}>
               <Card>
-                <Statistic title="Đã xử lý" value={data.overview.settledShots} />
+                <Statistic groupSeparator="." title="Đã xử lý" value={data.overview.settledShots} />
               </Card>
             </Col>
             <Col xs={12} sm={8} lg={6}>
               <Card>
-                <Statistic
+                <Statistic groupSeparator="."
                   title="Doanh thu nhà cái (Ken)"
                   value={data.overview.houseTake}
                   valueStyle={{ color: '#3f8600' }}
@@ -152,17 +152,17 @@ export function PenStatsPage() {
             </Col>
             <Col xs={12} sm={8} lg={6}>
               <Card>
-                <Statistic title="Tổng cược (Ken)" value={data.overview.totalVolume} />
+                <Statistic groupSeparator="." title="Tổng cược (Ken)" value={data.overview.totalVolume} />
               </Card>
             </Col>
             <Col xs={12} sm={8} lg={6}>
               <Card>
-                <Statistic title="Tổng trả thưởng (Ken)" value={data.overview.totalPayout} />
+                <Statistic groupSeparator="." title="Tổng trả thưởng (Ken)" value={data.overview.totalPayout} />
               </Card>
             </Col>
             <Col xs={12} sm={8} lg={6}>
               <Card>
-                <Statistic
+                <Statistic groupSeparator="."
                   title="Tỉ lệ thủ môn thắng"
                   value={data.overview.keeperWinRate}
                   precision={1}
@@ -172,12 +172,12 @@ export function PenStatsPage() {
             </Col>
             <Col xs={12} sm={8} lg={6}>
               <Card>
-                <Statistic title="Người sút" value={data.overview.uniqueShooters} />
+                <Statistic groupSeparator="." title="Người sút" value={data.overview.uniqueShooters} />
               </Card>
             </Col>
             <Col xs={12} sm={8} lg={6}>
               <Card>
-                <Statistic title="Người chụp" value={data.overview.uniqueKeepers} />
+                <Statistic groupSeparator="." title="Người chụp" value={data.overview.uniqueKeepers} />
               </Card>
             </Col>
           </Row>

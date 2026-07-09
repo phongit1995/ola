@@ -177,27 +177,27 @@ export function EggStatsPage() {
           <Row gutter={[16, 16]}>
             <Col xs={12} sm={8} lg={6}>
               <Card>
-                <Statistic title="Lượt đập" value={data.overview.totalDraws} />
+                <Statistic groupSeparator="." title="Lượt đập" value={data.overview.totalDraws} />
               </Card>
             </Col>
             <Col xs={12} sm={8} lg={6}>
               <Card>
-                <Statistic title="Người chơi" value={data.overview.uniquePlayers} />
+                <Statistic groupSeparator="." title="Người chơi" value={data.overview.uniquePlayers} />
               </Card>
             </Col>
             <Col xs={12} sm={8} lg={6}>
               <Card>
-                <Statistic title="Ken thu vào" value={data.overview.kenIn} />
+                <Statistic groupSeparator="." title="Ken thu vào" value={data.overview.kenIn} />
               </Card>
             </Col>
             <Col xs={12} sm={8} lg={6}>
               <Card>
-                <Statistic title="Ken trả ra" value={data.overview.kenOut} />
+                <Statistic groupSeparator="." title="Ken trả ra" value={data.overview.kenOut} />
               </Card>
             </Col>
             <Col xs={12} sm={8} lg={6}>
               <Card>
-                <Statistic
+                <Statistic groupSeparator="."
                   title="Lãi ròng (Ken)"
                   value={data.overview.netKen}
                   valueStyle={{ color: data.overview.netKen >= 0 ? '#3f8600' : '#cf1322' }}
@@ -206,17 +206,17 @@ export function EggStatsPage() {
             </Col>
             <Col xs={12} sm={8} lg={6}>
               <Card>
-                <Statistic title="Tỉ lệ trúng" value={data.overview.winRate} precision={1} suffix="%" />
+                <Statistic groupSeparator="." title="Tỉ lệ trúng" value={data.overview.winRate} precision={1} suffix="%" />
               </Card>
             </Col>
             <Col xs={12} sm={8} lg={6}>
               <Card>
-                <Statistic title="Ngày VIP trả ra" value={data.overview.vipDaysOut} />
+                <Statistic groupSeparator="." title="Ngày VIP trả ra" value={data.overview.vipDaysOut} />
               </Card>
             </Col>
             <Col xs={12} sm={8} lg={6}>
               <Card>
-                <Statistic title="VIP icon trao" value={data.overview.vipIconsOut} />
+                <Statistic groupSeparator="." title="VIP icon trao" value={data.overview.vipIconsOut} />
               </Card>
             </Col>
           </Row>

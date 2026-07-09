@@ -55,7 +55,7 @@ function StatBox({ label, value }: { label: string; value: number }) {
         borderRadius: 10,
       }}
     >
-      <div style={{ fontSize: 20, fontWeight: 700 }}>{value}</div>
+      <div style={{ fontSize: 20, fontWeight: 700 }}>{value.toLocaleString('vi-VN')}</div>
       <div style={{ fontSize: 12, color: '#6b7785' }}>{label}</div>
     </div>
   )
