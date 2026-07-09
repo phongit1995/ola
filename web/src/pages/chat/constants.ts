@@ -8,6 +8,12 @@ import type { ChatMessageStatus, DeviceType } from './types';
 
 export const DEVICE_TYPES: DeviceType[] = ['phone', 'pc', 'apple', 'android', 'winphone'];
 
+export const DEVICE_ALIASES: Record<string, DeviceType> = {
+  ios: 'apple',
+  android: 'android',
+  web: 'pc',
+};
+
 export const STATUS_MAP: Record<MessageStatus, ChatMessageStatus> = {
   sending: 'sending',
   uploading: 'sending',

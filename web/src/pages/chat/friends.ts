@@ -2,10 +2,12 @@ import type { TFunction } from 'i18next';
 import { activeVipTypeId, colorForName, isVipActive } from '@lib';
 import type { Friend } from '@app-types';
 import type { Contact, ContactGroup, DeviceType } from './types';
-import { DEVICE_TYPES } from './constants';
+import { DEVICE_ALIASES, DEVICE_TYPES } from './constants';
 
 function normalizeDevice(value?: string): DeviceType {
-  return DEVICE_TYPES.includes(value as DeviceType) ? (value as DeviceType) : 'android';
+  if (value == null || value === '') return 'pc';
+  if (DEVICE_TYPES.includes(value as DeviceType)) return value as DeviceType;
+  return DEVICE_ALIASES[value] ?? 'pc';
 }
 
 function isBirthdayToday(dateOfBirth: string | undefined, now: Date): boolean {

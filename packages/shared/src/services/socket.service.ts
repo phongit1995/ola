@@ -1,6 +1,7 @@
 import { io, type Socket } from 'socket.io-client';
 import { env } from '../config';
 import { ensureFreshToken } from '../api';
+import { getDeviceInfo } from '../platform';
 
 const ENVELOPE_EVENT = 'message';
 const PING_EVENT = 'ping';
@@ -35,7 +36,7 @@ export class SocketService {
     if (this.socket) return this.socket;
     const socket = io(env.socketUrl, {
       auth: (cb) => {
-        void ensureFreshToken().then((token) => cb({ token }));
+        void ensureFreshToken().then((token) => cb({ token, platform: getDeviceInfo().platform }));
       },
       transports: env.socketTransports,
       autoConnect: false,
