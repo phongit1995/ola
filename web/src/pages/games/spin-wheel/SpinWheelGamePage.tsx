@@ -10,6 +10,7 @@ import { SpinWheel } from './SpinWheel';
 import { SpinResultDialog } from './SpinResultDialog';
 import { SpinHistoryDialog } from './SpinHistoryDialog';
 import { WheelActionButton } from './WheelActionButton';
+import { playSpinSound, stopSpinSound } from './spinWheelSound';
 import { SPIN_START_KEN } from './spinWheel.constants';
 import { CHIP_TEXT_STYLE, SPIN_TEXT_STYLE, TEXT_SHADOW, TITLE_STYLE } from './spinWheelStyles';
 import {
@@ -60,6 +61,7 @@ export function SpinWheelGamePage({ onClose }: SpinWheelGamePageProps) {
     });
     return () => {
       off();
+      stopSpinSound();
       useSpinWheelStore.setState({ spinning: false, suppressKenSync: false });
     };
   }, []);
@@ -78,7 +80,11 @@ export function SpinWheelGamePage({ onClose }: SpinWheelGamePageProps) {
       return;
     }
     const ok = await state.spin();
-    if (!ok) toast.error(t('wheelGame.error'));
+    if (!ok) {
+      toast.error(t('wheelGame.error'));
+      return;
+    }
+    if (!useSpinWheelStore.getState().muted) playSpinSound();
   };
 
   return (
@@ -141,7 +147,10 @@ export function SpinWheelGamePage({ onClose }: SpinWheelGamePageProps) {
               segments={config.segments}
               rotation={rotation}
               spinning={spinning}
-              onSettle={() => useSpinWheelStore.getState().settle()}
+              onSettle={() => {
+                stopSpinSound();
+                useSpinWheelStore.getState().settle();
+              }}
             />
           ) : (
             <div
@@ -184,7 +193,10 @@ export function SpinWheelGamePage({ onClose }: SpinWheelGamePageProps) {
             <WheelActionButton
               icon={muted ? soundOffUrl : soundOnUrl}
               label={t('wheelGame.sound')}
-              onClick={() => useSpinWheelStore.getState().toggleMute()}
+              onClick={() => {
+                useSpinWheelStore.getState().toggleMute();
+                if (useSpinWheelStore.getState().muted) stopSpinSound();
+              }}
             />
             <WheelActionButton
               icon={historyIconUrl}
