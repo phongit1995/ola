@@ -2,6 +2,7 @@ import { useState } from 'react'
 import {
   Avatar,
   Descriptions,
+  Input,
   Modal,
   Space,
   Table,
@@ -11,6 +12,7 @@ import {
 } from 'antd'
 import { UserOutlined } from '@ant-design/icons'
 import { useKenChestClaims } from '@/hooks/useKenChests'
+import { useDebounce } from '@/hooks/useDebounce'
 import { formatDateTime } from '@/lib/format'
 import { kenChestRewardText } from '@/lib/kenChest'
 import type { KenChest, KenChestClaim } from '@/types'
@@ -25,9 +27,12 @@ interface KenChestDetailModalProps {
 
 function DetailContent({ chest }: { chest: KenChest }) {
   const [page, setPage] = useState(1)
+  const [search, setSearch] = useState('')
+  const q = useDebounce(search.trim())
   const { data, isFetching } = useKenChestClaims(chest.id, {
     limit: PAGE_SIZE,
     offset: (page - 1) * PAGE_SIZE,
+    ...(q ? { q } : {}),
   })
 
   const wonCount = chest.claimedRecipients
@@ -40,7 +45,12 @@ function DetailContent({ chest }: { chest: KenChest }) {
       render: (_, claim) => (
         <Space>
           <Avatar src={claim.user.avatar} icon={<UserOutlined />} size="small" />
-          <Typography.Text>{claim.user.fullName || claim.user.username}</Typography.Text>
+          <Space direction="vertical" size={0}>
+            {claim.user.fullName && <Typography.Text>{claim.user.fullName}</Typography.Text>}
+            <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+              @{claim.user.username}
+            </Typography.Text>
+          </Space>
         </Space>
       ),
     },
@@ -89,7 +99,30 @@ function DetailContent({ chest }: { chest: KenChest }) {
         <Descriptions.Item label="Hết hạn">{formatDateTime(chest.expiresAt)}</Descriptions.Item>
       </Descriptions>
 
-      <Typography.Title level={5}>Người đã mở</Typography.Title>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: 8,
+          gap: 12,
+        }}
+      >
+        <Typography.Title level={5} style={{ margin: 0 }}>
+          Người đã mở
+        </Typography.Title>
+        <Input.Search
+          allowClear
+          size="small"
+          style={{ width: 220 }}
+          placeholder="Tìm theo tên / @username"
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value)
+            setPage(1)
+          }}
+        />
+      </div>
       <Table<KenChestClaim>
         rowKey="id"
         size="small"

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"ola-chat-server/internal/models"
+	"ola-chat-server/internal/utils"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -326,6 +327,7 @@ type AdminSpinFilter struct {
 	WheelID     *uuid.UUID
 	SegmentKind string
 	Outcome     string
+	Query       string
 	From        *time.Time
 	To          *time.Time
 }
@@ -347,6 +349,10 @@ func adminSpinScope(f AdminSpinFilter) func(*gorm.DB) *gorm.DB {
 		case "miss":
 			db = db.Where("wheel_spins.segment_kind = ?", models.WheelSegmentMiss)
 		}
+		if f.Query != "" {
+			like := utils.LikeContains(f.Query)
+			db = db.Where("users.username ILIKE ? OR users.full_name ILIKE ?", like, like)
+		}
 		if f.From != nil {
 			db = db.Where("wheel_spins.created_at >= ?", *f.From)
 		}
@@ -359,7 +365,9 @@ func adminSpinScope(f AdminSpinFilter) func(*gorm.DB) *gorm.DB {
 
 func (r *Repository) ListAllSpins(filter AdminSpinFilter, limit, offset int) ([]AdminSpinRow, int64, error) {
 	var total int64
-	if err := r.db.Model(&models.WheelSpin{}).Scopes(adminSpinScope(filter)).Count(&total).Error; err != nil {
+	if err := r.db.Model(&models.WheelSpin{}).
+		Joins("LEFT JOIN users ON users.id = wheel_spins.user_id").
+		Scopes(adminSpinScope(filter)).Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
 

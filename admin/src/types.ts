@@ -699,6 +699,7 @@ export interface AdminWheelSpin extends WheelSpin {
 }
 
 export interface WheelSpinListParams {
+  q?: string
   userId?: string
   segmentKind?: WheelSegmentKind
   outcome?: 'win' | 'miss'

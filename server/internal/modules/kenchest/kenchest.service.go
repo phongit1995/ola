@@ -88,8 +88,8 @@ func (s *Service) ListChests(limit, offset int) (*ChestListResponse, error) {
 	return &ChestListResponse{Items: items, Total: total, Limit: limit, Offset: offset}, nil
 }
 
-func (s *Service) ListClaims(chestID uuid.UUID, limit, offset int) (*ClaimListResponse, error) {
-	rows, total, err := s.repo.ListClaims(chestID, limit, offset)
+func (s *Service) ListClaims(chestID uuid.UUID, search string, limit, offset int) (*ClaimListResponse, error) {
+	rows, total, err := s.repo.ListClaims(chestID, search, limit, offset)
 	if err != nil {
 		return nil, err
 	}
