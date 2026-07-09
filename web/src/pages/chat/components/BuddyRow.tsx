@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import { Avatar, PresenceBadge, UserName, VipBadge } from '@components';
+import { useLongPress } from '@hooks';
 import type { Contact } from '../types';
 import birthdayIcon from '@/assets/icons/chat/ic_buddy_birthday.png';
 import { DEVICE_ICONS } from '../constants';
@@ -21,8 +22,11 @@ export function BuddyRow({
   onLongPress,
   onPreviewImage,
 }: BuddyRowProps) {
-  const timer = useRef<number | undefined>(undefined);
-  const longPressed = useRef(false);
+  const suppressClick = useRef(false);
+  const longPress = useLongPress(() => {
+    suppressClick.current = true;
+    onLongPress();
+  });
   const showVip = contact.online && contact.vip;
   const badge =
     contact.group === 'birthday'
@@ -31,21 +35,9 @@ export function BuddyRow({
         ? DEVICE_ICONS[contact.deviceType]
         : null;
 
-  function startPress() {
-    longPressed.current = false;
-    timer.current = window.setTimeout(() => {
-      longPressed.current = true;
-      onLongPress();
-    }, 450);
-  }
-
-  function cancelPress() {
-    window.clearTimeout(timer.current);
-  }
-
   function handleClick() {
-    if (longPressed.current) {
-      longPressed.current = false;
+    if (suppressClick.current) {
+      suppressClick.current = false;
       return;
     }
     onSelect();
@@ -53,8 +45,8 @@ export function BuddyRow({
 
   function openProfile(event: { stopPropagation: () => void }) {
     event.stopPropagation();
-    if (longPressed.current) {
-      longPressed.current = false;
+    if (suppressClick.current) {
+      suppressClick.current = false;
       return;
     }
     onOpenProfile();
@@ -64,13 +56,7 @@ export function BuddyRow({
     <li>
       <div
         onClick={handleClick}
-        onPointerDown={startPress}
-        onPointerUp={cancelPress}
-        onPointerLeave={cancelPress}
-        onContextMenu={(event) => {
-          event.preventDefault();
-          onLongPress();
-        }}
+        {...longPress}
         className={`flex w-full cursor-pointer items-center border-b border-black/12 px-4 py-3 text-left ${
           highlight ? 'bg-[#f1f8e9]' : 'bg-white/80'
         }`}

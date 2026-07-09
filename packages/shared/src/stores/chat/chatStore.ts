@@ -89,6 +89,12 @@ const initialState = {
   typingUsers: [] as TypingUser[],
 };
 
+const clearedPeerView = {
+  peerRelationship: null as RelationshipInfo | null,
+  peerProfile: null as PublicProfile | null,
+  peerCardRoll: false,
+};
+
 export const useChatStore = create<ChatState>((set, get) => {
   registerChatRealtime(set, get);
 
@@ -146,9 +152,7 @@ export const useChatStore = create<ChatState>((set, get) => {
       set({
         currentConversationId: conversationId,
         draftRecipient: null,
-        peerRelationship: null,
-        peerProfile: null,
-        peerCardRoll: false,
+        ...clearedPeerView,
         messages: [],
         typingUsers: [],
         hasMore: false,
@@ -232,9 +236,7 @@ export const useChatStore = create<ChatState>((set, get) => {
       set({
         currentConversationId: null,
         draftRecipient: null,
-        peerRelationship: null,
-        peerProfile: null,
-        peerCardRoll: false,
+        ...clearedPeerView,
         messages: [],
         typingUsers: [],
       }),
@@ -403,9 +405,7 @@ export const useChatStore = create<ChatState>((set, get) => {
       try {
         const updated = await MessageService.toggleReaction(conversationId, messageId, type);
         set((state) => ({
-          messages: state.messages.map((item) =>
-            item.id === messageId ? { ...item, reactions: updated.reactions } : item
-          ),
+          messages: markById(state.messages, messageId, { reactions: updated.reactions }),
         }));
       } catch {
         return;
@@ -440,9 +440,7 @@ export const useChatStore = create<ChatState>((set, get) => {
       if (conversationId == null || text === '') return;
       const snapshot = get().messages;
       set((state) => ({
-        messages: state.messages.map((item) =>
-          item.id === messageId ? { ...item, content: text } : item
-        ),
+        messages: markById(state.messages, messageId, { content: text }),
       }));
       try {
         const updated = await MessageService.update(conversationId, messageId, text);

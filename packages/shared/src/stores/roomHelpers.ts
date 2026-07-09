@@ -52,6 +52,14 @@ export function markRoomMessageByClientMsgId(
   return messages.map((item) => (item.clientMsgId === clientMsgId ? { ...item, ...patch } : item));
 }
 
+export function markRoomMessageById(
+  messages: RoomMessage[],
+  id: string,
+  patch: Partial<RoomMessage>
+): RoomMessage[] {
+  return messages.map((item) => (item.id === id ? { ...item, ...patch } : item));
+}
+
 export function reconcileRoomServerMessage(
   messages: RoomMessage[],
   saved: RoomMessage

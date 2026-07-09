@@ -77,10 +77,16 @@ export function ChatPanel() {
   const requests = useFriendsStore((s) => s.requests);
   const requestsLoading = useFriendsStore((s) => s.requestsLoading);
   const friendsRaw = useFriendsWithPresence();
-  const friends = useMemo(() => mapFriendsToContacts(friendsRaw, t), [friendsRaw, t]);
+  const [now, setNow] = useState(() => Date.now());
+  const friends = useMemo(() => mapFriendsToContacts(friendsRaw, t, now), [friendsRaw, t, now]);
   const [profileTarget, setProfileTarget] = useState<ProfileTarget | null>(null);
 
   usePresenceListPolling();
+
+  useEffect(() => {
+    const interval = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     if (sub !== 'contacts') return;

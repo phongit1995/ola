@@ -8,9 +8,8 @@ function normalizeDevice(value?: string): DeviceType {
   return DEVICE_TYPES.includes(value as DeviceType) ? (value as DeviceType) : 'android';
 }
 
-function isBirthdayToday(dateOfBirth?: string): boolean {
+function isBirthdayToday(dateOfBirth: string | undefined, now: Date): boolean {
   if (dateOfBirth == null || dateOfBirth === '') return false;
-  const now = new Date();
   const parts = /^(\d{4})-(\d{2})-(\d{2})/.exec(dateOfBirth);
   if (parts != null) {
     return Number(parts[2]) === now.getMonth() + 1 && Number(parts[3]) === now.getDate();
@@ -36,11 +35,12 @@ export function formatLastActive(
   return t('chat.lastActiveDays', { count: Math.floor(hours / 24) });
 }
 
-function groupOf(friend: Friend): ContactGroup {
-  return isBirthdayToday(friend.dateOfBirth) ? 'birthday' : 'friend';
+function groupOf(friend: Friend, now: Date): ContactGroup {
+  return isBirthdayToday(friend.dateOfBirth, now) ? 'birthday' : 'friend';
 }
 
-export function mapFriendsToContacts(friends: Friend[], t: TFunction): Contact[] {
+export function mapFriendsToContacts(friends: Friend[], t: TFunction, now: number): Contact[] {
+  const today = new Date(now);
   return friends.map((friend) => {
     return {
       id: friend.id,
@@ -53,9 +53,9 @@ export function mapFriendsToContacts(friends: Friend[], t: TFunction): Contact[]
       vipTypeId: activeVipTypeId(friend.vipUsed, friend.vipEndTime),
       online: friend.isOnline,
       deviceType: normalizeDevice(friend.deviceType),
-      lastActive: friend.isOnline ? undefined : formatLastActive(t, friend.lastActiveAt),
+      lastActive: friend.isOnline ? undefined : formatLastActive(t, friend.lastActiveAt, now),
       statusImage: friend.bioImage ?? undefined,
-      group: groupOf(friend),
+      group: groupOf(friend, today),
     };
   });
 }
