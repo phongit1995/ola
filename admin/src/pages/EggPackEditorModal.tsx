@@ -6,6 +6,7 @@ import {
   useUpdateEggPack,
 } from '@/hooks/useEgg'
 import { ApiError } from '@/lib/apiError'
+import { kenNumberInputProps } from '@/lib/format'
 import type { EggPack as ApiEggPack, SaveEggConfigRequest } from '@/types'
 import { EggPackBuilder } from './EggPackBuilder'
 import { EggRewardFormModal, type EggItemFormValues } from './EggRewardFormModal'
@@ -289,7 +290,7 @@ export function EggPackEditorModal({ open, pack, nextSortOrder, onClose }: EggPa
           <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 4 }}>
             Giá (Ken/lượt)
           </Typography.Text>
-          <InputNumber min={0} style={{ width: '100%' }} value={kenCost} onChange={(v) => setKenCost(v ?? 0)} />
+          <InputNumber min={0} style={{ width: '100%' }} value={kenCost} onChange={(v) => setKenCost(v ?? 0)} {...kenNumberInputProps} />
         </div>
         <div>
           <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 4 }}>

@@ -123,3 +123,122 @@ func (ctrl *Controller) Delete(c *gin.Context) (interface{}, error) {
 	}
 	return map[string]string{"message": "ken chest deleted"}, nil
 }
+
+// ListAutoJobs godoc
+// @Summary      Danh sách lịch rương ken tự động (admin)
+// @Tags         admin-ken-chest
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200  {array}  kenchest.AutoJobView
+// @Router       /admin/ken/auto-jobs [get]
+func (ctrl *Controller) ListAutoJobs(c *gin.Context) (interface{}, error) {
+	items, err := ctrl.service.ListAutoJobs()
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return items, nil
+}
+
+// CreateAutoJob godoc
+// @Summary      Tạo lịch rương ken tự động (admin)
+// @Tags         admin-ken-chest
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        request body kenchest.AutoJobRequest true "Auto job"
+// @Success      201  {object}  kenchest.AutoJobView
+// @Router       /admin/ken/auto-jobs [post]
+func (ctrl *Controller) CreateAutoJob(c *gin.Context) (interface{}, error) {
+	adminID, _ := middleware.GetAdminID(c)
+	req, err := utils.BindJSON[kenchest.AutoJobRequest](c)
+	if err != nil {
+		return nil, err
+	}
+	job, err := ctrl.service.CreateAutoJob(adminID, *req)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return job, nil
+}
+
+// UpdateAutoJob godoc
+// @Summary      Sửa lịch rương ken tự động (admin)
+// @Tags         admin-ken-chest
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "Auto job ID"
+// @Param        request body kenchest.AutoJobRequest true "Auto job"
+// @Success      200  {object}  kenchest.AutoJobView
+// @Router       /admin/ken/auto-jobs/{id} [put]
+func (ctrl *Controller) UpdateAutoJob(c *gin.Context) (interface{}, error) {
+	id, err := utils.ParseUUIDParam(c, "id", "invalid auto job id")
+	if err != nil {
+		return nil, err
+	}
+	req, err := utils.BindJSON[kenchest.AutoJobRequest](c)
+	if err != nil {
+		return nil, err
+	}
+	job, err := ctrl.service.UpdateAutoJob(id, *req)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return job, nil
+}
+
+// DeleteAutoJob godoc
+// @Summary      Xoá lịch rương ken tự động (admin)
+// @Tags         admin-ken-chest
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "Auto job ID"
+// @Success      200  {object}  map[string]string
+// @Router       /admin/ken/auto-jobs/{id} [delete]
+func (ctrl *Controller) DeleteAutoJob(c *gin.Context) (interface{}, error) {
+	id, err := utils.ParseUUIDParam(c, "id", "invalid auto job id")
+	if err != nil {
+		return nil, err
+	}
+	if err := ctrl.service.DeleteAutoJob(id); err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return map[string]string{"message": "ken chest auto job deleted"}, nil
+}
+
+// GetAutoSettings godoc
+// @Summary      Trạng thái công tắc tổng rương ken tự động (admin)
+// @Tags         admin-ken-chest
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200  {object}  kenchest.AutoSettingsView
+// @Router       /admin/ken/auto-settings [get]
+func (ctrl *Controller) GetAutoSettings(c *gin.Context) (interface{}, error) {
+	settings, err := ctrl.service.GetAutoSettings()
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return settings, nil
+}
+
+// UpdateAutoSettings godoc
+// @Summary      Bật/tắt tất cả rương ken tự động (admin)
+// @Tags         admin-ken-chest
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        request body kenchest.UpdateAutoSettingsRequest true "Settings"
+// @Success      200  {object}  kenchest.AutoSettingsView
+// @Router       /admin/ken/auto-settings [put]
+func (ctrl *Controller) UpdateAutoSettings(c *gin.Context) (interface{}, error) {
+	adminID, _ := middleware.GetAdminID(c)
+	req, err := utils.BindJSON[kenchest.UpdateAutoSettingsRequest](c)
+	if err != nil {
+		return nil, err
+	}
+	settings, err := ctrl.service.UpdateAutoSettings(adminID, req.Enabled)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return settings, nil
+}

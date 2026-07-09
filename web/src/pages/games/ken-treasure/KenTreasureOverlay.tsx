@@ -2,7 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 import type { CSSProperties, PointerEvent as ReactPointerEvent, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { kenTreasureAssets, openingFrames } from './kenTreasureAssets';
-import { useKenTreasureStore, useKenTreasurePositionStore } from './kenTreasureStore';
+import {
+  useKenTreasureStore,
+  useKenTreasurePositionStore,
+  type KenTreasureChest,
+} from './kenTreasureStore';
 
 const goldTextStyle: CSSProperties = {
   color: '#ffe27a',
@@ -15,6 +19,8 @@ const whiteTextStyle: CSSProperties = {
   WebkitTextStroke: '1px #7a1e00',
   textShadow: '0 2px 3px rgba(0,0,0,.4)',
 };
+
+const STACK_OFFSET_PX = 150;
 
 interface DragState {
   startX: number;
@@ -86,47 +92,38 @@ function ChestPanel({
   backgroundSrc,
   widthClassName,
   centered,
+  stackIndex = 0,
   onClose,
   children,
 }: {
   backgroundSrc: string;
   widthClassName: string;
   centered?: boolean;
+  stackIndex?: number;
   onClose?: () => void;
   children: ReactNode;
 }) {
   const { t } = useTranslation();
+  const x = useKenTreasurePositionStore((s) => s.x);
+  const y = useKenTreasurePositionStore((s) => s.y);
   const setPosition = useKenTreasurePositionStore((s) => s.setPosition);
-  const [offset, setOffset] = useState(() => {
-    const saved = useKenTreasurePositionStore.getState();
-    return { x: saved.x, y: saved.y };
-  });
-  const offsetRef = useRef(offset);
   const dragRef = useRef<DragState | null>(null);
 
   function handlePointerDown(e: ReactPointerEvent<HTMLDivElement>) {
-    dragRef.current = {
-      startX: e.clientX,
-      startY: e.clientY,
-      baseX: offsetRef.current.x,
-      baseY: offsetRef.current.y,
-    };
+    dragRef.current = { startX: e.clientX, startY: e.clientY, baseX: x, baseY: y };
     e.currentTarget.setPointerCapture(e.pointerId);
   }
 
   function handlePointerMove(e: ReactPointerEvent<HTMLDivElement>) {
     const drag = dragRef.current;
     if (!drag) return;
-    const next = { x: drag.baseX + e.clientX - drag.startX, y: drag.baseY + e.clientY - drag.startY };
-    offsetRef.current = next;
-    setOffset(next);
+    setPosition(drag.baseX + e.clientX - drag.startX, drag.baseY + e.clientY - drag.startY);
   }
 
   function handlePointerUp(e: ReactPointerEvent<HTMLDivElement>) {
     if (!dragRef.current) return;
     dragRef.current = null;
     e.currentTarget.releasePointerCapture(e.pointerId);
-    setPosition(offsetRef.current.x, offsetRef.current.y);
   }
 
   const panel = (
@@ -172,7 +169,7 @@ function ChestPanel({
   return (
     <div
       className="absolute bottom-16 right-4 z-[80] cursor-grab touch-none select-none active:cursor-grabbing"
-      style={{ transform: `translate(${offset.x}px, ${offset.y}px)` }}
+      style={{ transform: `translate(${x - stackIndex * STACK_OFFSET_PX}px, ${y}px)` }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
@@ -182,9 +179,14 @@ function ChestPanel({
   );
 }
 
-function ResultView({ onClose }: { onClose: () => void }) {
+function ResultView({
+  result,
+  onClose,
+}: {
+  result: KenTreasureChest['result'];
+  onClose: () => void;
+}) {
   const { t } = useTranslation();
-  const result = useKenTreasureStore((s) => s.result);
   const isEmpty = result?.isEmpty ?? false;
   const amount = result?.kenAmount ?? 0;
 
@@ -253,24 +255,18 @@ function ResultView({ onClose }: { onClose: () => void }) {
   );
 }
 
-export function KenTreasureOverlay() {
+function ClosedChestPanel({ chest, stackIndex }: { chest: KenTreasureChest; stackIndex: number }) {
   const { t } = useTranslation();
-  const phase = useKenTreasureStore((s) => s.phase);
-  const expiresAt = useKenTreasureStore((s) => s.expiresAt);
   const openChest = useKenTreasureStore((s) => s.open);
   const dismiss = useKenTreasureStore((s) => s.dismiss);
-
-  const remaining = useRemaining(phase === 'closed' ? expiresAt : null, dismiss);
-
-  if (phase === 'idle') return null;
-  if (phase === 'result') return <ResultView onClose={dismiss} />;
-  if (phase === 'opening') return <OpeningChest />;
+  const remaining = useRemaining(chest.expiresAt, () => dismiss(chest.id));
 
   return (
     <ChestPanel
       backgroundSrc={kenTreasureAssets.frameBackground}
       widthClassName="w-[140px]"
-      onClose={dismiss}
+      stackIndex={stackIndex}
+      onClose={() => dismiss(chest.id)}
     >
       <div
         className="absolute left-1/2 top-[6%] w-[70%] -translate-x-1/2 text-center text-xs font-extrabold uppercase leading-none"
@@ -306,7 +302,7 @@ export function KenTreasureOverlay() {
 
       <button
         type="button"
-        onClick={openChest}
+        onClick={() => openChest(chest.id)}
         onPointerDown={(e) => e.stopPropagation()}
         style={{ backgroundImage: `url(${kenTreasureAssets.frameOpen})` }}
         className="absolute bottom-[7%] left-1/2 flex aspect-[1214/355] w-[54%] -translate-x-1/2 translate-y-1/2 items-center justify-center bg-contain bg-center bg-no-repeat transition active:scale-95"
@@ -316,5 +312,28 @@ export function KenTreasureOverlay() {
         </span>
       </button>
     </ChestPanel>
+  );
+}
+
+export function KenTreasureOverlay() {
+  const chests = useKenTreasureStore((s) => s.chests);
+  const dismiss = useKenTreasureStore((s) => s.dismiss);
+
+  const list = Object.values(chests);
+  if (list.length === 0) return null;
+
+  const active = list.find((c) => c.phase === 'opening' || c.phase === 'result');
+  const closed = list.filter((c) => c.phase === 'closed');
+
+  return (
+    <>
+      {closed.map((chest, i) => (
+        <ClosedChestPanel key={chest.id} chest={chest} stackIndex={i} />
+      ))}
+      {active?.phase === 'opening' && <OpeningChest key={active.id} />}
+      {active?.phase === 'result' && (
+        <ResultView key={active.id} result={active.result} onClose={() => dismiss(active.id)} />
+      )}
+    </>
   );
 }

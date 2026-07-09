@@ -1,4 +1,5 @@
 import { Button, Card, Input, InputNumber, Select, Slider, Space, Switch, Tag, Typography } from 'antd'
+import { kenNumberInputProps } from '@/lib/format'
 import { DeleteOutlined, DownOutlined, PlusOutlined } from '@ant-design/icons'
 import type { WheelSegment, WheelSegmentKind, WheelSegmentOption } from '@/types'
 import { VIP_CATALOG, vipIconUrl, vipName } from '@/lib/vipCatalog'
@@ -112,9 +113,10 @@ export function WheelSegmentCard({
             size="small"
             min={1}
             addonAfter="Ken"
-            placeholder="1000"
+            placeholder="1.000"
             value={seg.kenAmount}
             onChange={(v) => onUpdate({ kenAmount: v ?? undefined })}
+            {...kenNumberInputProps}
           />
         )}
         {seg.kind === 'ken_random' && (
@@ -127,6 +129,7 @@ export function WheelSegmentCard({
               addonAfter="Ken"
               value={seg.kenMin}
               onChange={(v) => onUpdate({ kenMin: v ?? undefined })}
+              {...kenNumberInputProps}
             />
             <InputNumber
               size="small"
@@ -136,6 +139,7 @@ export function WheelSegmentCard({
               addonAfter="Ken"
               value={seg.kenMax}
               onChange={(v) => onUpdate({ kenMax: v ?? undefined })}
+              {...kenNumberInputProps}
             />
             <Typography.Text type="secondary" style={{ fontSize: 12 }}>
               kết quả làm tròn nghìn

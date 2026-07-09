@@ -134,6 +134,12 @@ const (
 var CallRingTimeoutSeconds = 30
 
 const (
+	KenChestAutoTZ                 = "Asia/Ho_Chi_Minh"
+	KenChestAutoMaxSleepSeconds    = 120
+	KenChestAutoDefaultTickSeconds = 30
+)
+
+const (
 	WebSocketMessageEvent = "message"
 )
 

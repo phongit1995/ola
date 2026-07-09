@@ -21,6 +21,13 @@ const (
 	KenChestStatusDeleted KenChestStatus = "deleted"
 )
 
+type KenChestSource string
+
+const (
+	KenChestSourceManual KenChestSource = "manual"
+	KenChestSourceAuto   KenChestSource = "auto"
+)
+
 type KenChest struct {
 	BaseModel
 	RewardMode        KenChestRewardMode `gorm:"type:varchar(10);not null" json:"rewardMode"`
@@ -36,6 +43,8 @@ type KenChest struct {
 	CreatedBy         *uuid.UUID         `gorm:"type:uuid" json:"createdBy,omitempty"`
 	ClaimsCount       int                `gorm:"not null;default:0" json:"claimsCount"`
 	TotalKenGiven     int64              `gorm:"not null;default:0" json:"totalKenGiven"`
+	Source            KenChestSource     `gorm:"type:varchar(10);not null;default:manual" json:"source"`
+	AutoJobID         *uuid.UUID         `gorm:"type:uuid" json:"autoJobId,omitempty"`
 }
 
 func (KenChest) TableName() string {

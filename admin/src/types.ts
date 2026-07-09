@@ -75,7 +75,53 @@ export interface KenChest {
   expiresAt: string
   claimsCount: number
   totalKenGiven: number
+  source: 'manual' | 'auto'
+  autoJobId?: string
   createdAt: string
+}
+
+export type KenChestScheduleType = 'interval' | 'daily'
+
+export interface KenChestAutoJob {
+  id: string
+  name: string
+  enabled: boolean
+  scheduleType: KenChestScheduleType
+  intervalMinMinutes?: number
+  intervalMaxMinutes?: number
+  dailyTimes?: string[]
+  rewardMode: KenChestRewardMode
+  kenAmount?: number
+  kenMin?: number
+  kenMax?: number
+  maxRecipients: number
+  durationSeconds: number
+  remainingRuns?: number
+  runCount: number
+  nextRunAt?: string
+  lastRunAt?: string
+  createdAt: string
+}
+
+export interface KenChestAutoJobRequest {
+  name: string
+  enabled: boolean
+  scheduleType: KenChestScheduleType
+  intervalMinMinutes?: number
+  intervalMaxMinutes?: number
+  dailyTimes?: string[]
+  rewardMode: KenChestRewardMode
+  kenAmount?: number
+  kenMin?: number
+  kenMax?: number
+  maxRecipients: number
+  durationSeconds: number
+  remainingRuns?: number
+}
+
+export interface KenChestAutoSettings {
+  enabled: boolean
+  updatedAt: string
 }
 
 export interface CreateKenChestRequest {

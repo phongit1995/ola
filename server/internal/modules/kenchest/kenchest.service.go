@@ -43,19 +43,15 @@ func NewService(repo *Repository, userCache *user.CacheService, wsServer *websoc
 }
 
 func (s *Service) CreateAndBroadcast(ctx context.Context, adminID uuid.UUID, req CreateChestRequest) (*ChestView, error) {
+	return s.createChest(ctx, &adminID, req, models.KenChestSourceManual, nil)
+}
+
+func (s *Service) createChest(ctx context.Context, createdBy *uuid.UUID, req CreateChestRequest, source models.KenChestSource, autoJobID *uuid.UUID) (*ChestView, error) {
 	if err := normalizeAndValidate(&req); err != nil {
 		return nil, err
 	}
 
 	now := time.Now().UTC()
-	active, err := s.repo.HasActiveChest(now)
-	if err != nil {
-		return nil, err
-	}
-	if active {
-		return nil, ErrChestActiveExists
-	}
-
 	chest := models.KenChest{
 		RewardMode:      models.KenChestRewardMode(req.RewardMode),
 		KenAmount:       req.KenAmount,
@@ -66,7 +62,9 @@ func (s *Service) CreateAndBroadcast(ctx context.Context, adminID uuid.UUID, req
 		Status:          models.KenChestStatusActive,
 		StartedAt:       now,
 		ExpiresAt:       now.Add(time.Duration(req.DurationSeconds) * time.Second),
-		CreatedBy:       &adminID,
+		CreatedBy:       createdBy,
+		Source:          source,
+		AutoJobID:       autoJobID,
 	}
 	if err := s.repo.CreateChest(&chest); err != nil {
 		return nil, err
@@ -256,6 +254,8 @@ func toChestView(c *models.KenChest) ChestView {
 		ExpiresAt:         c.ExpiresAt,
 		ClaimsCount:       c.ClaimsCount,
 		TotalKenGiven:     c.TotalKenGiven,
+		Source:            string(c.Source),
+		AutoJobID:         c.AutoJobID,
 		CreatedAt:         c.CreatedAt,
 	}
 }

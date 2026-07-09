@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { App, Form, Input, InputNumber, Modal, Switch } from 'antd'
 import { useCreateVipPackage, useUpdateVipPackage } from '@/hooks/useVipPackages'
 import { ApiError } from '@/lib/apiError'
+import { kenNumberInputProps } from '@/lib/format'
 import type { CreateVipPackageRequest, VipPackage } from '@/types'
 
 interface VipPackageFormModalProps {
@@ -79,7 +80,7 @@ export function VipPackageFormModal({ open, pkg, onClose }: VipPackageFormModalP
           label="Giá (KEN)"
           rules={[{ required: true, message: 'Vui lòng nhập giá' }]}
         >
-          <InputNumber min={0} style={{ width: '100%' }} placeholder="250" />
+          <InputNumber min={0} style={{ width: '100%' }} placeholder="250" {...kenNumberInputProps} />
         </Form.Item>
         <Form.Item name="sortOrder" label="Thứ tự sắp xếp (nhỏ hơn hiển thị trước)">
           <InputNumber min={0} style={{ width: '100%' }} placeholder="0" />

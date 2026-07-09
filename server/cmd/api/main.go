@@ -3,6 +3,7 @@ package main
 import (
 	"ola-chat-server/internal/config"
 	"ola-chat-server/internal/constants"
+	"ola-chat-server/internal/modules/kenchest"
 	"ola-chat-server/internal/transport/kafka"
 	"ola-chat-server/internal/transport/websocket"
 	"context"
@@ -62,6 +63,14 @@ func main() {
 		log.Fatalf("❌ Failed to ensure Kafka topics: %v", err)
 	}
 
+	rootCtx, cancelRoot := context.WithCancel(context.Background())
+	defer cancelRoot()
+	if err := c.Invoke(func(scheduler *kenchest.Scheduler) {
+		scheduler.Start(rootCtx)
+	}); err != nil {
+		log.Fatalf("❌ Failed to start ken chest scheduler: %v", err)
+	}
+
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	errChan := make(chan error, 1)
@@ -103,6 +112,8 @@ func main() {
 	case sig := <-quit:
 		log.Printf("📡 Received signal: %v", sig)
 		log.Println("🛑 API Service shutdown...")
+
+		cancelRoot()
 
 		if srvCtx.wsServer != nil {
 			log.Println("🔌 Closing WebSocket connections...")

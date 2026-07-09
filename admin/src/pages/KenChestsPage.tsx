@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { App, Button, Card, Space, Table, Tag, Typography, type TableColumnsType } from 'antd'
+import { App, Button, Card, Space, Table, Tabs, Tag, Typography, type TableColumnsType } from 'antd'
 import { DeleteOutlined, EyeOutlined, GiftOutlined, PlusOutlined } from '@ant-design/icons'
 import { useDeleteKenChest, useKenChests } from '@/hooks/useKenChests'
 import { ApiError } from '@/lib/apiError'
@@ -7,6 +7,7 @@ import { formatDateTime } from '@/lib/format'
 import { kenChestRewardText } from '@/lib/kenChest'
 import { KenChestFormModal } from './KenChestFormModal'
 import { KenChestDetailModal } from './KenChestDetailModal'
+import { KenChestAutoJobs } from './KenChestAutoJobsPage'
 import type { KenChest } from '@/types'
 
 const PAGE_SIZE = 20
@@ -91,6 +92,13 @@ export function KenChestsPage() {
       render: (v: number) => v.toLocaleString('vi-VN'),
     },
     {
+      title: 'Nguồn',
+      dataIndex: 'source',
+      width: 90,
+      render: (source: string) =>
+        source === 'auto' ? <Tag color="blue">Auto</Tag> : <Tag>Tay</Tag>,
+    },
+    {
       title: 'Trạng thái',
       key: 'status',
       width: 120,
@@ -123,8 +131,8 @@ export function KenChestsPage() {
     },
   ]
 
-  return (
-    <Card>
+  const listTab = (
+    <>
       <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'flex-end' }}>
         <Button type="primary" icon={<PlusOutlined />} onClick={() => setFormOpen(true)}>
           Tạo & Phát rương
@@ -149,6 +157,18 @@ export function KenChestsPage() {
         chest={detailChest}
         open={detailChest !== null}
         onClose={() => setDetailChest(null)}
+      />
+    </>
+  )
+
+  return (
+    <Card>
+      <Tabs
+        defaultActiveKey="list"
+        items={[
+          { key: 'list', label: 'Danh sách rương', children: listTab },
+          { key: 'auto', label: 'Lịch tự động', children: <KenChestAutoJobs /> },
+        ]}
       />
     </Card>
   )

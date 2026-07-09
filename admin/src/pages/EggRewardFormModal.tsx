@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react'
 import { Form, Input, InputNumber, Modal, Select, Space, Switch, Typography } from 'antd'
 import { VIP_CATALOG, vipIconUrl, vipName } from '@/lib/vipCatalog'
+import { kenNumberInputProps } from '@/lib/format'
 import { rebalanceWeights, type EggCategoryType, type EggReward } from './egg/eggHelpers'
 
 export interface EggItemFormValues {
@@ -137,7 +138,7 @@ export function EggRewardFormModal({
             label="Số Ken thưởng"
             rules={[{ required: true, message: 'Vui lòng nhập số Ken' }]}
           >
-            <InputNumber min={1} style={{ width: '100%' }} addonAfter="Ken" placeholder="1000" />
+            <InputNumber min={1} style={{ width: '100%' }} addonAfter="Ken" placeholder="1.000" {...kenNumberInputProps} />
           </Form.Item>
         )}
 
