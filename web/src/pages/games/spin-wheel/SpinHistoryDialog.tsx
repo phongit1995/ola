@@ -1,13 +1,31 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Dialog, DialogButton, Spinner, VipIcon } from '@components';
-import { cn, createTimeFormatter, formatKen } from '@lib';
+import { Spinner, VipIcon } from '@components';
+import { createTimeFormatter, formatKen } from '@lib';
 import { WheelService } from '@services';
 import type { WheelSpinHistoryFilter, WheelSpinHistoryItem } from '@app-types';
-import { historyIconUrl, rewardVipDaysUrl, spinCoinUrl } from './spinWheelAssets';
+import {
+  historyCloseButtonUrl,
+  historyCloseMarkUrl,
+  historyFrameUrl,
+  historyHeaderUrl,
+  historyIconUrl,
+  historyPageButtonUrl,
+  historyPageNextUrl,
+  historyPagePrevUrl,
+  historyTabActiveUrl,
+  historyTabInactiveUrl,
+  rewardVipDaysUrl,
+  spinCoinUrl,
+} from './spinWheelAssets';
 import { formatRewardKen, isKenKind, isVipDaysKind } from './spinWheelReward';
+import {
+  HISTORY_LABEL_STYLE,
+  HISTORY_TAB_INACTIVE_STYLE,
+  HISTORY_TITLE_STYLE,
+} from './spinWheelStyles';
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 10;
 const FILTERS: WheelSpinHistoryFilter[] = ['all', 'win', 'miss'];
 
 interface SpinHistoryDialogProps {
@@ -17,7 +35,7 @@ interface SpinHistoryDialogProps {
 
 interface OutcomeView {
   text: string;
-  tone: 'win' | 'miss';
+  win: boolean;
   vipTypeId?: number;
   iconUrl?: string;
 }
@@ -27,25 +45,25 @@ function useOutcomeLabel() {
   return useCallback(
     (item: WheelSpinHistoryItem): OutcomeView => {
       if (item.segmentKind === 'miss') {
-        return { text: t('wheelGame.miss'), tone: 'miss' };
+        return { text: t('wheelGame.miss'), win: false };
       }
       if (isKenKind(item.segmentKind)) {
         return {
           text: `${formatRewardKen(item.kenAmount ?? 0)} KEN`,
-          tone: 'win',
+          win: true,
           iconUrl: spinCoinUrl,
         };
       }
       if (isVipDaysKind(item.segmentKind)) {
         return {
           text: t('wheelGame.vipDays', { n: item.vipDays ?? 0 }),
-          tone: 'win',
+          win: true,
           iconUrl: rewardVipDaysUrl,
         };
       }
       return {
         text: item.rewardLabel ?? t('wheelGame.rewardTitle'),
-        tone: 'win',
+        win: true,
         vipTypeId: item.vipTypeId,
       };
     },
@@ -60,21 +78,18 @@ export function SpinHistoryDialog({ open, onClose }: SpinHistoryDialogProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
   const [filter, setFilter] = useState<WheelSpinHistoryFilter>('all');
+  const [page, setPage] = useState(0);
 
   const outcomeLabel = useOutcomeLabel();
   const formatTime = useMemo(() => createTimeFormatter(i18n.language), [i18n.language]);
 
-  const loadPage = useCallback(async (offset: number, outcome: WheelSpinHistoryFilter) => {
+  const loadPage = useCallback(async (pageIndex: number, outcome: WheelSpinHistoryFilter) => {
     setLoading(true);
     setError(false);
-    if (offset === 0) {
-      setItems([]);
-      setTotal(0);
-    }
     try {
-      const result = await WheelService.listSpins(PAGE_SIZE, offset, outcome);
+      const result = await WheelService.listSpins(PAGE_SIZE, pageIndex * PAGE_SIZE, outcome);
       setTotal(result.total);
-      setItems((prev) => (offset === 0 ? result.items : [...prev, ...result.items]));
+      setItems(result.items);
     } catch {
       setError(true);
     } finally {
@@ -84,91 +99,183 @@ export function SpinHistoryDialog({ open, onClose }: SpinHistoryDialogProps) {
 
   useEffect(() => {
     if (!open) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- mở dialog/đổi filter mới nạp lịch sử; phần lớn setState chạy sau await
-    void loadPage(0, filter);
-  }, [open, filter, loadPage]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- mở dialog/đổi trang/đổi filter mới nạp; phần lớn setState chạy sau await
+    void loadPage(page, filter);
+  }, [open, page, filter, loadPage]);
 
-  const hasMore = items.length < total;
+  const selectFilter = (next: WheelSpinHistoryFilter) => {
+    setFilter(next);
+    setPage(0);
+  };
+
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const canPrev = page > 0 && !loading;
+  const canNext = page < totalPages - 1 && !loading;
+  const placeholders = Math.max(0, PAGE_SIZE - items.length);
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      title={t('wheelGame.historyTitle')}
-      icon={<img src={historyIconUrl} alt="" className="h-5 w-5 opacity-60 filter-[invert(1)]" />}
-      footer={<DialogButton onClick={onClose}>{t('wheelGame.close')}</DialogButton>}
+    <div
+      className="font-game fixed inset-0 z-70 flex items-center justify-center bg-black/55 px-6"
+      onClick={onClose}
     >
-      <div className="mb-2 flex gap-1.5">
-        {FILTERS.map((f) => (
-          <button
-            key={f}
-            type="button"
-            onClick={() => setFilter(f)}
-            className={cn(
-              'rounded-full px-3 py-1 text-xs font-medium transition-colors',
-              filter === f
-                ? 'bg-[#5e3c20] text-white'
-                : 'bg-[#efefef] text-[#5a5a5a] hover:bg-[#e4e4e4]'
-            )}
-          >
-            {t(`wheelGame.historyFilter.${f}`)}
-          </button>
-        ))}
-      </div>
-      <div className="max-h-[60vh] min-h-30 overflow-y-auto">
-        {error ? (
-          <p className="py-6 text-center text-[#9a2b20]">{t('wheelGame.error')}</p>
-        ) : items.length === 0 && loading ? (
-          <div className="flex h-30 items-center justify-center">
-            <Spinner />
-          </div>
-        ) : items.length === 0 ? (
-          <p className="py-6 text-center text-[#8a8a8c]">{t('wheelGame.historyEmpty')}</p>
-        ) : (
-          <ul className="divide-y divide-[#eceaea]">
-            {items.map((item) => {
-              const outcome = outcomeLabel(item);
+      <div
+        className="relative w-90 max-w-[86vw]"
+        style={{ aspectRatio: '1043 / 1458' }}
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="absolute inset-[3.5%] rounded-[26px] bg-[#fdeef0]" />
+        <img src={historyFrameUrl} alt="" className="pointer-events-none absolute inset-0 h-full w-full" />
+
+        <div className="absolute inset-0 flex flex-col px-[9%] pt-[15%] pb-[8%]">
+          <div className="mb-2 flex shrink-0 gap-1.5">
+            {FILTERS.map((f) => {
+              const activeTab = filter === f;
               return (
-                <li key={item.id} className="flex items-center justify-between gap-3 py-2">
-                  <div className="flex min-w-0 items-center gap-1.5">
-                    {outcome.vipTypeId != null ? (
-                      <VipIcon typeId={outcome.vipTypeId} className="h-5 w-5" rounded />
-                    ) : outcome.iconUrl ? (
-                      <img src={outcome.iconUrl} alt="" className="h-5 w-5 shrink-0 object-contain" />
-                    ) : null}
-                    <p
-                      className={
-                        outcome.tone === 'win'
-                          ? 'truncate font-semibold text-[#1f8a3b]'
-                          : 'truncate font-medium text-[#8a8a8c]'
-                      }
-                    >
-                      {outcome.text}
-                    </p>
-                  </div>
-                  <div className="shrink-0 text-right">
-                    <p className="text-xs text-[#9a9a9c]">{formatTime(item.createdAt)}</p>
-                    <p className="text-xs text-[#c0392b]">
-                      {item.isFree ? t('wheelGame.freeToday') : `-${formatKen(item.kenCost)} KEN`}
-                    </p>
-                  </div>
-                </li>
+                <button
+                  key={f}
+                  type="button"
+                  onClick={() => selectFilter(f)}
+                  className="relative flex-1 active:scale-95"
+                  style={{ aspectRatio: '1254 / 425' }}
+                >
+                  <img
+                    src={activeTab ? historyTabActiveUrl : historyTabInactiveUrl}
+                    alt=""
+                    className="absolute inset-0 h-full w-full"
+                  />
+                  <span
+                    className="absolute inset-0 flex items-center justify-center text-sm font-extrabold"
+                    style={activeTab ? HISTORY_LABEL_STYLE : HISTORY_TAB_INACTIVE_STYLE}
+                  >
+                    {t(`wheelGame.historyFilter.${f}`)}
+                  </span>
+                </button>
               );
             })}
-          </ul>
-        )}
+          </div>
 
-        {hasMore && !error && (
-          <button
-            type="button"
-            onClick={() => void loadPage(items.length, filter)}
-            disabled={loading}
-            className="mt-2 w-full rounded-[3px] border border-[#d1cece] bg-[#f6f6f6] py-1.5 text-sm text-[#3a3839] hover:bg-[#efefef] disabled:opacity-50"
-          >
-            {loading ? t('wheelGame.loading') : t('wheelGame.historyLoadMore')}
-          </button>
-        )}
+          <div className="min-h-0 flex-1">
+            {error ? (
+              <div className="flex h-full items-center justify-center">
+                <p className="text-sm font-bold text-[#c0392b]">{t('wheelGame.error')}</p>
+              </div>
+            ) : loading ? (
+              <div className="flex h-full items-center justify-center">
+                <Spinner />
+              </div>
+            ) : items.length === 0 ? (
+              <div className="flex h-full items-center justify-center">
+                <p className="text-sm font-bold text-[#b98a97]">{t('wheelGame.historyEmpty')}</p>
+              </div>
+            ) : (
+              <ul className="flex h-full flex-col">
+                {items.map((item) => {
+                  const outcome = outcomeLabel(item);
+                  return (
+                    <li
+                      key={item.id}
+                      className="flex flex-1 items-center justify-between gap-2 overflow-hidden border-b border-[#f4dbe1]"
+                    >
+                      <div className="flex min-w-0 items-center gap-2">
+                        <div className="flex w-8 shrink-0 justify-center">
+                          {outcome.vipTypeId != null ? (
+                            <VipIcon typeId={outcome.vipTypeId} className="h-7 w-7" rounded />
+                          ) : outcome.iconUrl ? (
+                            <img
+                              src={outcome.iconUrl}
+                              alt=""
+                              className="h-7 w-7 object-contain"
+                            />
+                          ) : null}
+                        </div>
+                        <span
+                          className={`truncate text-base font-extrabold ${
+                            outcome.win ? 'text-[#0b8f32]' : 'text-[#2b1717]'
+                          }`}
+                        >
+                          {outcome.text}
+                        </span>
+                      </div>
+                      <div className="shrink-0 text-right leading-tight">
+                        <p className="text-xs font-medium text-[#8a8a8a]">
+                          {formatTime(item.createdAt)}
+                        </p>
+                        <p className="text-xs font-bold text-[#ff1e1e]">
+                          {item.isFree ? t('wheelGame.freeToday') : `-${formatKen(item.kenCost)} KEN`}
+                        </p>
+                      </div>
+                    </li>
+                  );
+                })}
+                {Array.from({ length: placeholders }).map((_, index) => (
+                  <li key={`empty-${index}`} className="flex-1 border-b border-[#f4dbe1] last:border-0" />
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <div className="mt-2 flex shrink-0 items-center justify-center gap-4">
+            <button
+              type="button"
+              onClick={() => setPage((p) => Math.max(0, p - 1))}
+              disabled={!canPrev}
+              aria-label={t('wheelGame.historyFilter.all')}
+              className="relative w-[18%] active:scale-95 disabled:opacity-40"
+              style={{ aspectRatio: '2008 / 1519' }}
+            >
+              <img src={historyPageButtonUrl} alt="" className="absolute inset-0 h-full w-full" />
+              <img
+                src={historyPagePrevUrl}
+                alt=""
+                className="absolute left-1/2 top-1/2 h-[52%] w-auto -translate-x-1/2 -translate-y-1/2"
+              />
+            </button>
+            <span className="text-lg font-extrabold" style={HISTORY_LABEL_STYLE}>
+              {t('wheelGame.historyPage', { n: page + 1 })}
+            </span>
+            <button
+              type="button"
+              onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+              disabled={!canNext}
+              aria-label={t('wheelGame.historyFilter.all')}
+              className="relative w-[18%] active:scale-95 disabled:opacity-40"
+              style={{ aspectRatio: '2008 / 1519' }}
+            >
+              <img src={historyPageButtonUrl} alt="" className="absolute inset-0 h-full w-full" />
+              <img
+                src={historyPageNextUrl}
+                alt=""
+                className="absolute left-1/2 top-1/2 h-[52%] w-auto -translate-x-1/2 -translate-y-1/2"
+              />
+            </button>
+          </div>
+        </div>
+
+        <div
+          className="absolute left-1/2 top-0 flex w-[74%] -translate-x-1/2 -translate-y-1/2 items-center justify-center gap-2"
+          style={{ backgroundImage: `url(${historyHeaderUrl})`, backgroundSize: '100% 100%', aspectRatio: '1935 / 576' }}
+        >
+          <img src={historyIconUrl} alt="" className="h-[38%] w-auto drop-shadow" />
+          <span className="text-xl font-extrabold" style={HISTORY_TITLE_STYLE}>
+            {t('wheelGame.historyTitle')}
+          </span>
+        </div>
+
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label={t('wheelGame.close')}
+          className="absolute right-[-1%] top-[-2%] w-[14%] active:scale-95"
+          style={{ aspectRatio: '813 / 831' }}
+        >
+          <img src={historyCloseButtonUrl} alt="" className="absolute inset-0 h-full w-full" />
+          <img
+            src={historyCloseMarkUrl}
+            alt=""
+            className="absolute left-1/2 top-1/2 w-[46%] -translate-x-1/2 -translate-y-1/2"
+          />
+        </button>
       </div>
-    </Dialog>
+    </div>
   );
 }

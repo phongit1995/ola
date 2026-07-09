@@ -1080,6 +1080,7 @@
     "historyTitle": "Lịch sử quay",
     "historyEmpty": "Chưa có lượt quay nào",
     "historyLoadMore": "Xem thêm",
+    "historyPage": "Trang {{n}}",
     "historyFilter": {
       "all": "Tất cả",
       "win": "Trúng thưởng",

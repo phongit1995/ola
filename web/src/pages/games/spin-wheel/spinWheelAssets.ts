@@ -22,6 +22,15 @@ import historyIconUrl from '@/assets/games/spin-wheel/history-icon.webp';
 import resultPopupFrameUrl from '@/assets/games/spin-wheel/result-popup-frame.webp';
 import resultCloseFrameUrl from '@/assets/games/spin-wheel/result-close-frame.webp';
 import resultCloseMarkUrl from '@/assets/games/spin-wheel/result-close-mark.webp';
+import historyFrameUrl from '@/assets/games/spin-wheel/history/frame.png';
+import historyHeaderUrl from '@/assets/games/spin-wheel/history/header-banner.png';
+import historyCloseButtonUrl from '@/assets/games/spin-wheel/history/close-button.png';
+import historyCloseMarkUrl from '@/assets/games/spin-wheel/history/close-mark.png';
+import historyTabActiveUrl from '@/assets/games/spin-wheel/history/tab-active.png';
+import historyTabInactiveUrl from '@/assets/games/spin-wheel/history/tab-inactive.png';
+import historyPageButtonUrl from '@/assets/games/spin-wheel/history/page-button.png';
+import historyPagePrevUrl from '@/assets/games/spin-wheel/history/page-prev.png';
+import historyPageNextUrl from '@/assets/games/spin-wheel/history/page-next.png';
 import coinUrl from '@/assets/icons/apps/ken.png';
 
 export {
@@ -49,5 +58,14 @@ export {
   resultPopupFrameUrl,
   resultCloseFrameUrl,
   resultCloseMarkUrl,
+  historyFrameUrl,
+  historyHeaderUrl,
+  historyCloseButtonUrl,
+  historyCloseMarkUrl,
+  historyTabActiveUrl,
+  historyTabInactiveUrl,
+  historyPageButtonUrl,
+  historyPagePrevUrl,
+  historyPageNextUrl,
   coinUrl,
 };

@@ -27,6 +27,30 @@ export const CHIP_TEXT_STYLE: CSSProperties = {
   letterSpacing: '0.03em',
 };
 
+export const HISTORY_TITLE_STYLE: CSSProperties = {
+  color: '#fff5f8',
+  WebkitTextStroke: '4px #f04f7d',
+  paintOrder: 'stroke fill',
+  textShadow: '0 -1px 0 rgba(255,255,255,0.6), 0 4px 0 #b8194d, 0 5px 6px rgba(0,0,0,0.28)',
+  letterSpacing: '0.02em',
+};
+
+export const HISTORY_LABEL_STYLE: CSSProperties = {
+  color: '#ffffff',
+  WebkitTextStroke: '2px #f04b7b',
+  paintOrder: 'stroke fill',
+  textShadow: '0 2px 0 #c72a58, 0 3px 3px rgba(0,0,0,0.22)',
+  letterSpacing: '0.02em',
+};
+
+export const HISTORY_TAB_INACTIVE_STYLE: CSSProperties = {
+  color: '#ffffff',
+  WebkitTextStroke: '1.5px #f3a3bd',
+  paintOrder: 'stroke fill',
+  textShadow: '0 1px 1px rgba(196,74,120,0.35)',
+  letterSpacing: '0.02em',
+};
+
 export function segmentLabelStyle(theme: SegmentTheme): CSSProperties {
   return {
     color: '#fff7e8',

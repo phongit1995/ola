@@ -1080,6 +1080,7 @@
     "historyTitle": "Spin History",
     "historyEmpty": "No spins yet",
     "historyLoadMore": "Load more",
+    "historyPage": "Page {{n}}",
     "historyFilter": {
       "all": "All",
       "win": "Won",
