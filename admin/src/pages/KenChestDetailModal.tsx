@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import {
-  Avatar,
   Descriptions,
   Input,
   Modal,
@@ -10,11 +9,11 @@ import {
   Typography,
   type TableColumnsType,
 } from 'antd'
-import { UserOutlined } from '@ant-design/icons'
 import { useKenChestClaims } from '@/hooks/useKenChests'
 import { useDebounce } from '@/hooks/useDebounce'
 import { formatDateTime } from '@/lib/format'
 import { kenChestRewardText } from '@/lib/kenChest'
+import { UserCell } from '@/components/UserCell'
 import type { KenChest, KenChestClaim } from '@/types'
 
 const PAGE_SIZE = 20
@@ -42,17 +41,7 @@ function DetailContent({ chest }: { chest: KenChest }) {
     {
       title: 'Người dùng',
       key: 'user',
-      render: (_, claim) => (
-        <Space>
-          <Avatar src={claim.user.avatar} icon={<UserOutlined />} size="small" />
-          <Space direction="vertical" size={0}>
-            {claim.user.fullName && <Typography.Text>{claim.user.fullName}</Typography.Text>}
-            <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-              @{claim.user.username}
-            </Typography.Text>
-          </Space>
-        </Space>
-      ),
+      render: (_, claim) => <UserCell user={claim.user} />,
     },
     {
       title: 'Nhận',

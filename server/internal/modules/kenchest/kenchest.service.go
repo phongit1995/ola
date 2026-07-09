@@ -111,6 +111,30 @@ func (s *Service) ListClaims(chestID uuid.UUID, search string, limit, offset int
 	return &ClaimListResponse{Items: items, Total: total, Limit: limit, Offset: offset}, nil
 }
 
+func (s *Service) ListAllClaims(search string, limit, offset int) (*ClaimHistoryListResponse, error) {
+	rows, total, err := s.repo.ListAllClaims(search, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	items := make([]ClaimHistoryView, len(rows))
+	for i := range rows {
+		items[i] = ClaimHistoryView{
+			ID:          rows[i].ID,
+			KenAmount:   rows[i].KenAmount,
+			IsEmpty:     rows[i].IsEmpty,
+			ChestSource: rows[i].ChestSource,
+			CreatedAt:   rows[i].CreatedAt,
+			User: ClaimUserView{
+				ID:       rows[i].UserID,
+				Username: rows[i].Username,
+				FullName: rows[i].FullName,
+				Avatar:   rows[i].Avatar,
+			},
+		}
+	}
+	return &ClaimHistoryListResponse{Items: items, Total: total, Limit: limit, Offset: offset}, nil
+}
+
 func (s *Service) GetChest(id uuid.UUID) (*ChestView, error) {
 	chest, err := s.repo.FindByID(id)
 	if err != nil {

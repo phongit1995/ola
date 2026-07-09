@@ -108,6 +108,27 @@ func (ctrl *Controller) ListClaims(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
+// ListAllClaims godoc
+// @Summary      Lịch sử nhận KEN tất cả rương (admin)
+// @Tags         admin-ken-chest
+// @Produce      json
+// @Security     BearerAuth
+// @Param        q query string false "Tìm theo username/tên người nhận"
+// @Param        limit query int false "Page size"
+// @Param        offset query int false "Offset"
+// @Success      200  {object}  kenchest.ClaimHistoryListResponse
+// @Router       /admin/ken/claims [get]
+func (ctrl *Controller) ListAllClaims(c *gin.Context) (interface{}, error) {
+	search := strings.TrimSpace(c.Query("q"))
+	limit := utils.ParseLimit(c, 20, 100)
+	offset := utils.ParseOffset(c)
+	resp, err := ctrl.service.ListAllClaims(search, limit, offset)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
 // Delete godoc
 // @Summary      Huỷ rương ken (admin)
 // @Tags         admin-ken-chest

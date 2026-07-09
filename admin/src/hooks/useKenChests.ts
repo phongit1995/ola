@@ -23,6 +23,14 @@ export function useKenChestClaims(id: string | null, params: ListParams) {
   })
 }
 
+export function useKenAllClaims(params: ListParams) {
+  return useQuery({
+    queryKey: [KEN_CHESTS_KEY, 'all-claims', params],
+    queryFn: () => AdminKenChestService.listAllClaims(params),
+    placeholderData: (prev) => prev,
+  })
+}
+
 export function useCreateKenChest() {
   const queryClient = useQueryClient()
   return useMutation({

@@ -8,6 +8,8 @@ import { kenChestRewardText } from '@/lib/kenChest'
 import { KenChestFormModal } from './KenChestFormModal'
 import { KenChestDetailModal } from './KenChestDetailModal'
 import { KenChestAutoJobs } from './KenChestAutoJobsPage'
+import { KenClaimsHistory } from './KenClaimsHistoryPage'
+import { KenSourceTag } from '@/components/KenSourceTag'
 import type { KenChest } from '@/types'
 
 const PAGE_SIZE = 20
@@ -95,8 +97,7 @@ export function KenChestsPage() {
       title: 'Nguồn',
       dataIndex: 'source',
       width: 90,
-      render: (source: string) =>
-        source === 'auto' ? <Tag color="blue">Auto</Tag> : <Tag>Tay</Tag>,
+      render: (source: string) => <KenSourceTag source={source} />,
     },
     {
       title: 'Trạng thái',
@@ -167,6 +168,7 @@ export function KenChestsPage() {
         defaultActiveKey="list"
         items={[
           { key: 'list', label: 'Danh sách rương', children: listTab },
+          { key: 'claims', label: 'Lịch sử nhận KEN', children: <KenClaimsHistory /> },
           { key: 'auto', label: 'Lịch tự động', children: <KenChestAutoJobs /> },
         ]}
       />

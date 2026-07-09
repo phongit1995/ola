@@ -62,7 +62,7 @@ export function WheelStatsPage() {
   ]
 
   const playerColumns: ColumnsType<WheelStatsPlayer> = [
-    { title: 'Người chơi', key: 'user', render: (_, p) => p.user?.fullName || p.user?.username || '—' },
+    { title: 'Người chơi', key: 'user', render: (_, p) => (p.user ? `@${p.user.username}` : '—') },
     { title: 'Lượt', dataIndex: 'spins', align: 'right' },
     {
       title: 'Ken chi',

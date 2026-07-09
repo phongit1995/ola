@@ -7,6 +7,7 @@ import type {
   KenChestAutoJobRequest,
   KenChestAutoSettings,
   KenChestClaim,
+  KenClaimHistoryItem,
   ListParams,
   ListResult,
   MessageResult,
@@ -33,6 +34,14 @@ export const AdminKenChestService = {
   async listClaims(id: string, params: ListParams = {}): Promise<ListResult<KenChestClaim>> {
     const { data } = await http.get<ApiResponse<ListResult<KenChestClaim>>>(
       `/admin/ken/chests/${id}/claims`,
+      { params },
+    )
+    return data.data
+  },
+
+  async listAllClaims(params: ListParams = {}): Promise<ListResult<KenClaimHistoryItem>> {
+    const { data } = await http.get<ApiResponse<ListResult<KenClaimHistoryItem>>>(
+      '/admin/ken/claims',
       { params },
     )
     return data.data

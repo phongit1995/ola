@@ -52,6 +52,15 @@ export interface ListParams {
   offset?: number
 }
 
+export interface KenClaimHistoryItem {
+  id: string
+  kenAmount: number
+  isEmpty: boolean
+  chestSource: 'manual' | 'auto'
+  createdAt: string
+  user: { id: string; username: string; fullName?: string; avatar?: string }
+}
+
 export interface ListResult<T> {
   items: T[]
   total: number
