@@ -21,8 +21,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "@noble/hashes": "^2.0.1",
-    "@ola/api-guard": "workspace:*"
+    "@noble/hashes": "^2.0.1"
   },
   "peerDependencies": {
     "axios": ">=1.17.0",

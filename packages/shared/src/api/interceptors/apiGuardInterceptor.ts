@@ -1,7 +1,13 @@
 import type { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
-import { guardCanonical, signGuard } from '@ola/api-guard';
+import { hmac } from '@noble/hashes/hmac.js';
+import { sha512 } from '@noble/hashes/sha2.js';
+import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js';
 import { env } from '../../config';
 import { randomUuid } from '../../lib/randomUuid';
+
+function signHex(secret: string, value: string): string {
+  return bytesToHex(hmac(sha512, utf8ToBytes(secret), utf8ToBytes(value)));
+}
 
 function stripQuery(url: string): string {
   return url.split(/[?#]/, 1)[0] ?? '';
@@ -32,7 +38,8 @@ export function registerApiGuardInterceptor(http: AxiosInstance): void {
     const method = (config.method ?? 'get').toUpperCase();
     const path = resolveRequestPath(config);
 
-    const signature = signGuard(env.apiGuardSecret, guardCanonical(timestamp, nonce, method, path));
+    const canonical = [timestamp, nonce, method, path].join('\n');
+    const signature = signHex(env.apiGuardSecret, canonical);
 
     config.headers.set('X-Timestamp', timestamp);
     config.headers.set('X-Nonce', nonce);

@@ -22,12 +22,6 @@ importers:
       '@dnd-kit/utilities':
         specifier: ^3.2.2
         version: 3.2.2(react@19.2.7)
-      '@ola/api-guard':
-        specifier: workspace:*
-        version: link:../packages/api-guard
-      '@ola/domain':
-        specifier: workspace:*
-        version: link:../packages/domain
       '@tanstack/react-query':
         specifier: ^5.101.0
         version: 5.101.2(react@19.2.7)
@@ -247,22 +241,11 @@ importers:
         specifier: ~6.0.2
         version: 6.0.3
 
-  packages/api-guard:
-    dependencies:
-      '@noble/hashes':
-        specifier: ^2.0.1
-        version: 2.2.0
-
-  packages/domain: {}
-
   packages/shared:
     dependencies:
       '@noble/hashes':
         specifier: ^2.0.1
         version: 2.2.0
-      '@ola/api-guard':
-        specifier: workspace:*
-        version: link:../api-guard
       axios:
         specifier: '>=1.17.0'
         version: 1.17.0

@@ -1,4 +1,21 @@
-export type { ApiResponse, ApiErrorBody, ListResult } from '@ola/domain'
+export interface ApiResponse<T> {
+  success: boolean
+  status: number
+  traceId: string
+  timestamp: string
+  path: string
+  data: T
+  error?: string
+}
+
+export interface ApiErrorBody {
+  success: false
+  status: number
+  traceId?: string
+  timestamp?: string
+  path?: string
+  error: string
+}
 
 export interface AdminAccount {
   id: string
@@ -44,6 +61,12 @@ export interface KenClaimHistoryItem {
   user: { id: string; username: string; fullName?: string; avatar?: string }
 }
 
+export interface ListResult<T> {
+  items: T[]
+  total: number
+  limit: number
+  offset: number
+}
 
 export type KenChestRewardMode = 'fixed' | 'random'
 
