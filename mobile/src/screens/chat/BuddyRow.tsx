@@ -1,5 +1,4 @@
 import { Image, Pressable, Text, View } from 'react-native';
-import { colorForName } from '@ola/shared/lib';
 import { VipAvatar } from '../../components/VipAvatar';
 import { DEVICE_ICONS, type Contact } from './contacts';
 

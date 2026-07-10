@@ -52,13 +52,20 @@ export const SUGGESTED_FRIENDS: SuggestedFriend[] = [
   { name: 'tuanvu', color: '#8d6e63' },
 ];
 
+const DEVICE_ALIASES: Record<string, DeviceType> = {
+  ios: 'apple',
+  android: 'android',
+  web: 'pc',
+};
+
 function normalizeDevice(value?: string): DeviceType {
-  return DEVICE_TYPES.includes(value as DeviceType) ? (value as DeviceType) : 'android';
+  if (value == null || value === '') return 'pc';
+  if (DEVICE_TYPES.includes(value as DeviceType)) return value as DeviceType;
+  return DEVICE_ALIASES[value] ?? 'pc';
 }
 
-function isBirthdayToday(dateOfBirth?: string): boolean {
+function isBirthdayToday(dateOfBirth: string | undefined, now: Date): boolean {
   if (dateOfBirth == null || dateOfBirth === '') return false;
-  const now = new Date();
   const parts = /^(\d{4})-(\d{2})-(\d{2})/.exec(dateOfBirth);
   if (parts != null) {
     return Number(parts[2]) === now.getMonth() + 1 && Number(parts[3]) === now.getDate();
@@ -84,7 +91,8 @@ export function formatLastActive(
   return t('chat.lastActiveDays', { count: Math.floor(hours / 24) });
 }
 
-export function mapFriendsToContacts(friends: Friend[], t: TFunction): Contact[] {
+export function mapFriendsToContacts(friends: Friend[], t: TFunction, now: number): Contact[] {
+  const today = new Date(now);
   return friends.map((friend) => ({
     id: friend.id,
     name: friend.username,
@@ -96,8 +104,8 @@ export function mapFriendsToContacts(friends: Friend[], t: TFunction): Contact[]
     vipTypeId: activeVipTypeId(friend.vipUsed, friend.vipEndTime),
     online: friend.isOnline,
     deviceType: normalizeDevice(friend.deviceType),
-    lastActive: friend.isOnline ? undefined : formatLastActive(t, friend.lastActiveAt),
+    lastActive: friend.isOnline ? undefined : formatLastActive(t, friend.lastActiveAt, now),
     statusImage: friend.bioImage ?? undefined,
-    group: isBirthdayToday(friend.dateOfBirth) ? 'birthday' : 'friend',
+    group: isBirthdayToday(friend.dateOfBirth, today) ? 'birthday' : 'friend',
   }));
 }

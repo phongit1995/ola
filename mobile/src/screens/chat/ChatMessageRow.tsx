@@ -25,6 +25,7 @@ interface ChatMessageRowProps {
   onLongPress: (anchor: AnchorRect) => void;
   onResend: (id: string) => void;
   onOpenImage: (url: string) => void;
+  onMention: (nick: string) => void;
 }
 
 function ChatBubble({
@@ -33,12 +34,14 @@ function ChatBubble({
   firstInGroup,
   lastInGroup,
   onOpenImage,
+  onMention,
 }: {
   message: Message;
   fromMe: boolean;
   firstInGroup: boolean;
   lastInGroup: boolean;
   onOpenImage: (url: string) => void;
+  onMention: (nick: string) => void;
 }) {
   const meta = parseMessageMetadata(message.metadata);
   const failed = message.status === 'failed';
@@ -80,7 +83,7 @@ function ChatBubble({
         </View>
       ) : (
         <Text className="text-base" style={{ color: 'rgba(0,0,0,0.87)' }}>
-          {renderRichText(message.content, { own: false, onMention: () => undefined })}
+          {renderRichText(message.content, { own: false, onMention })}
         </Text>
       )}
     </View>
@@ -101,18 +104,21 @@ export function ChatMessageRow({
   onLongPress,
   onResend,
   onOpenImage,
+  onMention,
 }: ChatMessageRowProps) {
   const chips = reactionChips(message.reactions);
   const bubbleRef = useRef<View>(null);
   const showAvatar = !fromMe && firstInGroup;
+  const pending = message.status === 'sending' || message.status === 'uploading';
+  const failed = message.status === 'failed';
+  const canAct = !pending && !failed;
 
   function handleLongPress() {
+    if (!canAct) return;
     bubbleRef.current?.measureInWindow((x, y, width, height) => {
       onLongPress({ x, y, width, height });
     });
   }
-  const pending = message.status === 'sending' || message.status === 'uploading';
-  const failed = message.status === 'failed';
 
   return (
     <View className={firstInGroup ? 'mt-2' : ''}>
@@ -140,6 +146,7 @@ export function ChatMessageRow({
                 firstInGroup={firstInGroup}
                 lastInGroup={lastInGroup}
                 onOpenImage={onOpenImage}
+                onMention={onMention}
               />
             </Pressable>
             {showTime && (

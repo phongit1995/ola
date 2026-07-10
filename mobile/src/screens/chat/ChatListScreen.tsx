@@ -16,22 +16,32 @@ import { FlashList } from '@shopify/flash-list';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { formatClockHM } from '@ola/shared/lib';
+import { AuthService, SocketService, UserService } from '@ola/shared/services';
+import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
+import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { Conversation } from '@ola/shared/types';
 import type { RootStackParamList } from '../../navigation/types';
 import { ROOT_ROUTES } from '../../navigation/routes';
 import { Avatar } from '../../components/Avatar';
+import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { kulImageForText } from '../../lib/kul';
+import { pickSingleImage } from '../../lib/imagePicker';
 import { renderRichText } from '../../lib/richText';
+import { MePostMenu, type MePostMenuOption } from '../me/MePostMenu';
+import { BlockedListDialog } from './BlockedListDialog';
+import { ComposeDialog } from './ComposeDialog';
 import { ContactsPane } from './ContactsPane';
 
 const sentIcon = require('../../assets/icons/chat/ic_message_sent.png');
 const kulIcon = require('../../assets/icons/chat/ic_kul.png');
 const moreIcon = require('../../assets/icons/chat/ic_more_white.png');
+const composeIcon = require('../../assets/icons/chat/ic_action_compose_message.png');
 
 const SWIPE_MAX = 88;
 const SWIPE_TRIGGER = 56;
 const DIVIDER = 'rgba(0,0,0,0.12)';
+const MIN_AVATAR_SOURCE = 100;
 
 function displayName(conversation: Conversation): string {
   return (
@@ -224,8 +234,19 @@ export function ChatListScreen() {
   const loading = useChatStore((s) => s.loadingConversations);
   const loadConversations = useChatStore((s) => s.loadConversations);
   const hideConversation = useChatStore((s) => s.hideConversation);
+  const deleteAllConversations = useChatStore((s) => s.deleteAllConversations);
+  const startDirect = useChatStore((s) => s.startDirect);
+  const refreshUser = useAuthStore((s) => s.refreshUser);
+  const pushToast = useToastStore((s) => s.push);
 
   const [sub, setSub] = useState<ChatSub>('messages');
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [composeOpen, setComposeOpen] = useState(false);
+  const [deleteAllOpen, setDeleteAllOpen] = useState(false);
+  const [blockedOpen, setBlockedOpen] = useState(false);
+  const [showStrangers, setShowStrangers] = useState(true);
+  const [logoutOpen, setLogoutOpen] = useState(false);
+  const [logoutAll, setLogoutAll] = useState(false);
 
   useEffect(() => {
     void loadConversations();
@@ -235,6 +256,88 @@ export function ChatListScreen() {
     (id: string) => navigation.navigate(ROOT_ROUTES.ChatDetail, { conversationId: id }),
     [navigation]
   );
+
+  const comingSoon = () => pushToast('info', t('chat.comingSoon'));
+
+  async function startCompose(userId: string) {
+    setComposeOpen(false);
+    const conversation = await startDirect(userId);
+    if (conversation != null && conversation.id !== '') {
+      navigation.navigate(ROOT_ROUTES.ChatDetail, { conversationId: conversation.id });
+    }
+  }
+
+  async function confirmDeleteAll() {
+    setDeleteAllOpen(false);
+    await deleteAllConversations();
+    pushToast('success', t('chat.deleteAllDone'));
+  }
+
+  async function confirmLogout() {
+    setLogoutOpen(false);
+    try {
+      await AuthService.logout();
+    } catch {
+      pushToast('error', t('chat.logoutError'));
+    } finally {
+      SocketService.disconnect();
+      useAuthStore.getState().clearUser();
+    }
+  }
+
+  async function changePhoto(kind: 'avatar' | 'cover') {
+    const picked = await pickSingleImage();
+    if (picked == null) return;
+    if (
+      kind === 'avatar' &&
+      picked.width > 0 &&
+      picked.height > 0 &&
+      Math.min(picked.width, picked.height) < MIN_AVATAR_SOURCE
+    ) {
+      pushToast('error', t('avatar.tooSmall'));
+      return;
+    }
+    try {
+      const { url } = await UserService.uploadAvatar(picked.file);
+      await UserService.updateMe(kind === 'avatar' ? { avatar: url } : { coverPhoto: url });
+      await refreshUser();
+      pushToast('success', t(kind === 'avatar' ? 'profileEdit.avatarUpdated' : 'profileEdit.coverUpdated'));
+    } catch {
+      pushToast('error', t(kind === 'avatar' ? 'profileEdit.avatarError' : 'profileEdit.coverError'));
+    }
+  }
+
+  const messagesMenu: MePostMenuOption[] = [
+    { key: 'delete-all', label: t('chat.menuDeleteAll'), danger: true, onSelect: () => setDeleteAllOpen(true) },
+    {
+      key: 'strangers',
+      label: showStrangers ? t('chat.menuDeleteStrangers') : t('chat.menuShowStrangers'),
+      onSelect: () => setShowStrangers((value) => !value),
+    },
+    { key: 'block-list', label: t('chat.menuBlockList'), onSelect: () => setBlockedOpen(true) },
+  ];
+
+  const contactsMenu: MePostMenuOption[] = [
+    { key: 'buy-vip', label: t('chat.menuBuyVip'), onSelect: comingSoon },
+    { key: 'change-avatar', label: t('chat.menuChangeAvatar'), onSelect: () => void changePhoto('avatar') },
+    { key: 'change-cover', label: t('chat.menuChangeCover'), onSelect: () => void changePhoto('cover') },
+    {
+      key: 'logout',
+      label: t('chat.menuLogout'),
+      onSelect: () => {
+        setLogoutAll(false);
+        setLogoutOpen(true);
+      },
+    },
+    {
+      key: 'logout-all',
+      label: t('chat.menuLogoutAll'),
+      onSelect: () => {
+        setLogoutAll(true);
+        setLogoutOpen(true);
+      },
+    },
+  ];
 
   const totalUnread = conversations.reduce((sum, item) => sum + (item.unreadCount ?? 0), 0);
 
@@ -253,19 +356,20 @@ export function ChatListScreen() {
             active={sub === 'contacts'}
             onPress={() => setSub('contacts')}
           />
-          <Pressable className="w-11 items-center justify-center" onPress={() => undefined}>
+          <Pressable className="w-11 items-center justify-center" onPress={() => setMenuOpen(true)}>
             <Image source={moreIcon} style={{ width: 20, height: 20, tintColor: '#fff' }} resizeMode="contain" />
           </Pressable>
         </View>
       </View>
 
       {sub === 'contacts' ? (
-        <ContactsPane />
+        <ContactsPane onAccountMenu={() => setMenuOpen(true)} />
       ) : loading && conversations.length === 0 ? (
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator color="#7cb342" size="large" />
         </View>
       ) : (
+        <View className="flex-1">
         <FlashList
           data={conversations}
           keyExtractor={(item) => item.id}
@@ -276,10 +380,11 @@ export function ChatListScreen() {
             <View style={{ marginHorizontal: 16, height: 1, backgroundColor: DIVIDER }} />
           )}
           ListEmptyComponent={
-            <View className="mt-24 items-center">
-              <Text className="text-sm" style={{ color: 'rgba(0,0,0,0.4)' }}>
-                {t('home.contactsEmpty')}
+            <View className="gap-2 bg-white p-4">
+              <Text className="text-base font-medium text-gray-900">
+                {t('chat.emptyMessagesTitle')}
               </Text>
+              <Text className="text-sm text-gray-500">{t('chat.emptyMessagesBody')}</Text>
             </View>
           }
           renderItem={({ item }) => (
@@ -290,7 +395,58 @@ export function ChatListScreen() {
             />
           )}
         />
+        <Pressable
+          onPress={() => setComposeOpen(true)}
+          className="absolute h-14 w-14 items-center justify-center rounded-full bg-ola-primary"
+          style={{
+            right: 16,
+            bottom: 16,
+            elevation: 4,
+            shadowColor: '#000',
+            shadowOpacity: 0.3,
+            shadowRadius: 4,
+            shadowOffset: { width: 0, height: 2 },
+          }}
+        >
+          <Image source={composeIcon} style={{ width: 24, height: 24, tintColor: '#fff' }} resizeMode="contain" />
+        </Pressable>
+        </View>
       )}
+
+      <MePostMenu
+        visible={menuOpen}
+        title={sub === 'messages' ? t('home.subMessages') : t('home.subContacts')}
+        options={sub === 'messages' ? messagesMenu : contactsMenu}
+        onClose={() => setMenuOpen(false)}
+      />
+
+      {composeOpen && (
+        <ComposeDialog onClose={() => setComposeOpen(false)} onStart={(id) => void startCompose(id)} />
+      )}
+
+      {blockedOpen && <BlockedListDialog onClose={() => setBlockedOpen(false)} />}
+
+      <ConfirmDialog
+        visible={deleteAllOpen}
+        danger
+        title={t('chat.menuDeleteAll')}
+        message={t('chat.menuDeleteAllConfirm')}
+        confirmLabel={t('dialog.delete')}
+        cancelLabel={t('dialog.no')}
+        onConfirm={() => void confirmDeleteAll()}
+        onCancel={() => setDeleteAllOpen(false)}
+      />
+
+      <ConfirmDialog
+        visible={logoutOpen}
+        danger
+        title={logoutAll ? t('chat.menuLogoutAll') : t('chat.menuLogout')}
+        message={t('dialog.logoutMessage')}
+        confirmLabel={t('dialog.logoutButton')}
+        cancelLabel={t('dialog.no')}
+        onConfirm={() => void confirmLogout()}
+        onCancel={() => setLogoutOpen(false)}
+      />
     </View>
   );
 }

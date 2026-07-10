@@ -3,12 +3,10 @@ import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   Image,
-  Platform,
   Pressable,
   ScrollView,
   Text,
   TextInput,
-  ToastAndroid,
   View,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -16,13 +14,19 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RelationshipService } from '@ola/shared/services';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
+import { useToastStore } from '@ola/shared/stores/toastStore';
 import { activeVipTypeId, colorForName, isVipActive } from '@ola/shared/lib';
 import type { Friend, Relationship } from '@ola/shared/types';
 import type { RootStackParamList } from '../../navigation/types';
 import { ROOT_ROUTES } from '../../navigation/routes';
+import { useMediaViewerStore } from '../../store/mediaViewerStore';
 import { VipAvatar } from '../../components/VipAvatar';
 import { MessageActionSheet, type MessageSheetAction } from '../room/MessageActionSheet';
+import { AddContactDialog } from './AddContactDialog';
 import { BuddyRow } from './BuddyRow';
+import { FriendRequestsScreen } from './FriendRequestsScreen';
+import { StatusEditDialog } from './StatusEditDialog';
+import { SuggestedFriendsScreen } from './SuggestedFriendsScreen';
 import { mapFriendsToContacts, SUGGESTED_FRIENDS, type Contact } from './contacts';
 
 const smileyIcon = require('../../assets/icons/chat/ola_smiley_online.png');
@@ -33,10 +37,6 @@ const searchIcon = require('../../assets/icons/chat/ic_search_gray.png');
 const peopleIcon = require('../../assets/icons/chat/ic_people_gray.png');
 
 const DIVIDER = 'rgba(0,0,0,0.12)';
-
-function comingSoon(message: string) {
-  if (Platform.OS === 'android') ToastAndroid.show(message, ToastAndroid.SHORT);
-}
 
 function ActionRow({
   badge,
@@ -75,17 +75,29 @@ function SectionHeader({ label }: { label: string }) {
   );
 }
 
-export function ContactsPane() {
+export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) {
   const { t } = useTranslation();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const me = useAuthStore((s) => s.user);
   const startDirect = useChatStore((s) => s.startDirect);
+  const openViewer = useMediaViewerStore((s) => s.openViewer);
+  const push = useToastStore((s) => s.push);
 
   const [friends, setFriends] = useState<Friend[]>([]);
   const [requests, setRequests] = useState<Relationship[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
   const [menuContact, setMenuContact] = useState<Contact | null>(null);
+  const [requestsOpen, setRequestsOpen] = useState(false);
+  const [suggestedOpen, setSuggestedOpen] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
+  const [statusOpen, setStatusOpen] = useState(false);
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const interval = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -104,7 +116,7 @@ export function ContactsPane() {
     };
   }, []);
 
-  const contacts = useMemo(() => mapFriendsToContacts(friends, t), [friends, t]);
+  const contacts = useMemo(() => mapFriendsToContacts(friends, t, now), [friends, t, now]);
 
   const filtered = useMemo(() => {
     const term = query.trim().toLowerCase();
@@ -128,7 +140,32 @@ export function ContactsPane() {
     if (conversation != null && conversation.id !== '') {
       navigation.navigate(ROOT_ROUTES.ChatDetail, { conversationId: conversation.id });
     } else {
-      comingSoon(t('chat.comingSoon'));
+      push('info', t('chat.comingSoon'));
+    }
+  }
+
+  async function reloadFriends() {
+    const result = await RelationshipService.friends({ limit: 200 }).catch(() => null);
+    if (result != null) setFriends(result.friends);
+  }
+
+  async function acceptRequest(relationship: Relationship) {
+    try {
+      await RelationshipService.respond(relationship.id, 'accept');
+      setRequests((prev) => prev.filter((item) => item.id !== relationship.id));
+      void reloadFriends();
+      push('success', t('chat.requestAccepted'));
+    } catch {
+      push('error', t('chat.requestActionError'));
+    }
+  }
+
+  async function declineRequest(relationship: Relationship) {
+    try {
+      await RelationshipService.respond(relationship.id, 'reject');
+      setRequests((prev) => prev.filter((item) => item.id !== relationship.id));
+    } catch {
+      push('error', t('chat.requestActionError'));
     }
   }
 
@@ -138,10 +175,10 @@ export function ContactsPane() {
   const hasBioImage = me?.bioImage != null && me.bioImage !== '';
 
   const menuActions: MessageSheetAction[] = [
-    { key: 'view', label: t('chat.menuViewMe'), onSelect: () => comingSoon(t('chat.comingSoon')) },
-    { key: 'alias', label: t('chat.changeAlias'), onSelect: () => comingSoon(t('chat.comingSoon')) },
-    { key: 'delete', label: t('dialog.delete'), destructive: true, onSelect: () => comingSoon(t('chat.comingSoon')) },
-    { key: 'block', label: t('chat.menuBlock'), onSelect: () => comingSoon(t('chat.comingSoon')) },
+    { key: 'view', label: t('chat.menuViewMe'), onSelect: () => push('info', t('chat.comingSoon')) },
+    { key: 'alias', label: t('chat.changeAlias'), onSelect: () => push('info', t('chat.comingSoon')) },
+    { key: 'delete', label: t('dialog.delete'), destructive: true, onSelect: () => push('info', t('chat.comingSoon')) },
+    { key: 'block', label: t('chat.menuBlock'), onSelect: () => push('info', t('chat.comingSoon')) },
   ];
 
   return (
@@ -169,7 +206,7 @@ export function ContactsPane() {
             {!hasVip && (
               <View className="p-2">
                 <Pressable
-                  onPress={() => comingSoon(t('chat.comingSoon'))}
+                  onPress={() => push('info', t('chat.comingSoon'))}
                   className="rounded bg-white px-3 py-2"
                   style={{ borderWidth: 1, borderColor: '#ff8f00' }}
                 >
@@ -179,12 +216,14 @@ export function ContactsPane() {
               </View>
             )}
             <View className="flex-row items-center gap-2 px-4 py-2" style={{ minHeight: 72 }}>
-              {hasVip ? (
-                <VipAvatar typeId={meVipTypeId} size={40} />
-              ) : (
-                <Image source={smileyIcon} style={{ width: 40, height: 40 }} resizeMode="contain" />
-              )}
-              <Pressable className="min-w-0 flex-1" onPress={() => comingSoon(t('chat.comingSoon'))}>
+              <Pressable onPress={onAccountMenu}>
+                {hasVip ? (
+                  <VipAvatar typeId={meVipTypeId} size={40} />
+                ) : (
+                  <Image source={smileyIcon} style={{ width: 40, height: 40 }} resizeMode="contain" />
+                )}
+              </Pressable>
+              <Pressable className="min-w-0 flex-1" onPress={() => setStatusOpen(true)}>
                 <Text
                   className="text-base italic"
                   style={{ color: hasStatus ? 'rgba(0,0,0,0.87)' : 'rgba(0,0,0,0.26)' }}
@@ -193,7 +232,11 @@ export function ContactsPane() {
                   {hasStatus ? me.bio : t('chat.myStatusHint')}
                 </Text>
               </Pressable>
-              <Pressable onPress={() => comingSoon(t('chat.comingSoon'))}>
+              <Pressable
+                onPress={() => {
+                  if (hasBioImage) openViewer([me.bioImage!]);
+                }}
+              >
                 <Image
                   source={hasBioImage ? { uri: me.bioImage! } : snapPicIcon}
                   style={{ width: 36, height: 36 }}
@@ -206,7 +249,7 @@ export function ContactsPane() {
 
         {requests.length > 0 && (
           <Pressable
-            onPress={() => comingSoon(t('chat.comingSoon'))}
+            onPress={() => setRequestsOpen(true)}
             className="flex-row items-center gap-3 bg-white px-4 py-2"
             style={{ borderBottomWidth: 1, borderBottomColor: DIVIDER }}
           >
@@ -243,7 +286,7 @@ export function ContactsPane() {
         )}
 
         <Pressable
-          onPress={() => comingSoon(t('chat.comingSoon'))}
+          onPress={() => setSuggestedOpen(true)}
           className="flex-row items-center gap-3 bg-white px-4 py-2"
           style={{ borderBottomWidth: 1, borderBottomColor: DIVIDER }}
         >
@@ -278,7 +321,7 @@ export function ContactsPane() {
           }
           title={t('chat.inviteFriends')}
           subtitle={t('chat.inviteFriendsSub')}
-          onPress={() => comingSoon(t('chat.comingSoon'))}
+          onPress={() => push('info', t('chat.comingSoon'))}
         />
         <ActionRow
           badge={
@@ -289,7 +332,7 @@ export function ContactsPane() {
           title={t('chat.chatGroup')}
           subtitle={t('chat.chatGroupSub')}
           showChevron
-          onPress={() => comingSoon(t('chat.comingSoon'))}
+          onPress={() => push('info', t('chat.comingSoon'))}
         />
 
         {loading ? (
@@ -310,12 +353,29 @@ export function ContactsPane() {
                     navigation.navigate(ROOT_ROUTES.ProfileView, { userId: contact.id, color: contact.color })
                   }
                   onLongPress={() => setMenuContact(contact)}
+                  onPreviewImage={(url) => openViewer([url])}
                 />
               ))}
             </View>
           ))
         )}
       </ScrollView>
+
+      <Pressable
+        onPress={() => setAddOpen(true)}
+        className="absolute h-14 w-14 items-center justify-center rounded-full bg-ola-primary"
+        style={{
+          right: 16,
+          bottom: 16,
+          elevation: 4,
+          shadowColor: '#000',
+          shadowOpacity: 0.3,
+          shadowRadius: 6,
+          shadowOffset: { width: 0, height: 3 },
+        }}
+      >
+        <Image source={addFriendIcon} style={{ width: 24, height: 24, tintColor: '#fff' }} resizeMode="contain" />
+      </Pressable>
 
       <MessageActionSheet
         visible={menuContact != null}
@@ -324,6 +384,30 @@ export function ContactsPane() {
         onReact={() => undefined}
         onClose={() => setMenuContact(null)}
       />
+
+      {requestsOpen && (
+        <FriendRequestsScreen
+          requests={requests}
+          loading={loading}
+          onAccept={acceptRequest}
+          onDecline={declineRequest}
+          onClose={() => setRequestsOpen(false)}
+        />
+      )}
+
+      {suggestedOpen && <SuggestedFriendsScreen onClose={() => setSuggestedOpen(false)} />}
+
+      {addOpen && (
+        <AddContactDialog
+          onClose={() => setAddOpen(false)}
+          onOpenProfile={(username) => {
+            setAddOpen(false);
+            navigation.navigate(ROOT_ROUTES.ProfileView, { userId: username });
+          }}
+        />
+      )}
+
+      {statusOpen && <StatusEditDialog onClose={() => setStatusOpen(false)} />}
     </View>
   );
 }

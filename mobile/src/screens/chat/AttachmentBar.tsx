@@ -1,6 +1,7 @@
-import { Image, Platform, Pressable, ToastAndroid, View } from 'react-native';
+import { Image, Pressable, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { ImageSourcePropType } from 'react-native';
+import { useToastStore } from '@ola/shared/stores/toastStore';
 import { SmileyKulPanel } from '../room/SmileyKulPanel';
 
 export type AttachTab = 'smiley' | 'kul' | 'camera' | 'photo' | 'voice' | 'more';
@@ -40,17 +41,23 @@ interface AttachmentBarProps {
   onPickEmoji: (code: string) => void;
   onBackspace: () => void;
   onSendKul: (index: number) => void;
+  onPickImage?: () => void;
 }
 
-export function AttachmentBar({ openTab, onToggleTab, onPickEmoji, onBackspace, onSendKul }: AttachmentBarProps) {
+export function AttachmentBar({ openTab, onToggleTab, onPickEmoji, onBackspace, onSendKul, onPickImage }: AttachmentBarProps) {
   const { t } = useTranslation();
+  const push = useToastStore((s) => s.push);
 
   function handlePress(tab: AttachTab) {
     if (tab === 'smiley' || tab === 'kul') {
       onToggleTab(tab);
       return;
     }
-    if (Platform.OS === 'android') ToastAndroid.show(t('chat.comingSoon'), ToastAndroid.SHORT);
+    if (tab === 'photo' && onPickImage != null) {
+      onPickImage();
+      return;
+    }
+    push('info', t('chat.comingSoon'));
   }
 
   return (
