@@ -1,11 +1,7 @@
 package middleware
 
 import (
-	"crypto/hmac"
-	"crypto/sha512"
-	"encoding/hex"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 
@@ -26,24 +22,6 @@ const (
 	errSignatureInvalid = "REQUEST_SIGNATURE_INVALID"
 	statusSignature     = http.StatusLocked // 423 — single code for any signing failure
 )
-
-func signHex(secret, value string) string {
-	mac := hmac.New(sha512.New, []byte(secret))
-	mac.Write([]byte(value))
-	return hex.EncodeToString(mac.Sum(nil))
-}
-
-func safeEqualHex(a, b string) bool {
-	ab, err := hex.DecodeString(a)
-	if err != nil {
-		return false
-	}
-	bb, err := hex.DecodeString(b)
-	if err != nil {
-		return false
-	}
-	return hmac.Equal(ab, bb)
-}
 
 type ApiGuardMiddleware struct {
 	cfg     *config.Config
@@ -85,33 +63,9 @@ func (m *ApiGuardMiddleware) valid(c *gin.Context, path string) bool {
 	timestamp := c.GetHeader(headerTimestamp)
 	nonce := c.GetHeader(headerNonce)
 	signature := c.GetHeader(headerSignature)
-	if timestamp == "" || nonce == "" || signature == "" {
-		m.logger.Debugw("missing signature headers", "path", path)
-		return false
-	}
 
-	secret := m.cfg.APIGuardSecret
-
-	ms, err := strconv.ParseInt(timestamp, 10, 64)
-	if err != nil {
-		m.logger.Debugw("invalid timestamp", "path", path)
-		return false
-	}
-	skew := time.Since(time.UnixMilli(ms))
-	if skew > signingMaxSkew || skew < -signingMaxSkew {
-		m.logger.Debugw("expired/future timestamp", "path", path, "skew", skew.String())
-		return false
-	}
-
-	canonical := strings.Join([]string{
-		timestamp,
-		nonce,
-		strings.ToUpper(c.Request.Method),
-		path,
-	}, "\n")
-
-	if !safeEqualHex(signHex(secret, canonical), signature) {
-		m.logger.Debugw("signature mismatch", "path", path)
+	if !utils.APIGuardVerify(m.cfg.APIGuardSecret, timestamp, nonce, signature, c.Request.Method, path, signingMaxSkew) {
+		m.logger.Debugw("invalid request signature", "path", path)
 		return false
 	}
 
