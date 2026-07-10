@@ -66,6 +66,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   );
   const listRef = useRef<FlashListRef<Message>>(null);
   const stickToBottomRef = useRef(true);
+  const sheetOpenRef = useRef(false);
   const inputRef = useRef<TextInput>(null);
 
   useEffect(() => {
@@ -100,7 +101,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   }, [messages, myId]);
 
   const scrollToEnd = useCallback(() => {
-    if (stickToBottomRef.current) {
+    if (stickToBottomRef.current && !sheetOpenRef.current) {
       requestAnimationFrame(() => listRef.current?.scrollToEnd({ animated: false }));
     }
   }, []);
@@ -223,7 +224,10 @@ export function ChatDetailScreen({ navigation, route }: Props) {
                   peerName={title}
                   peerAvatar={peerAvatar}
                   timeLabel={timeFormatter(item.createdAt)}
-                  onLongPress={(anchor) => setActionTarget({ message: item, anchor })}
+                  onLongPress={(anchor) => {
+                    sheetOpenRef.current = true;
+                    setActionTarget({ message: item, anchor });
+                  }}
                   onResend={(id) => void resendMessage(id)}
                   onOpenImage={() => undefined}
                 />
@@ -307,7 +311,10 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         onReact={(type: ReactionType) => {
           if (actionTarget != null) void reactToMessage(actionTarget.message.id, type);
         }}
-        onClose={() => setActionTarget(null)}
+        onClose={() => {
+          sheetOpenRef.current = false;
+          setActionTarget(null);
+        }}
       />
     </KeyboardAvoidingView>
   );

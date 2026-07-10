@@ -101,6 +101,7 @@ export function RoomMessagesTab({
   );
   const listRef = useRef<FlashListRef<RoomFeedItem>>(null);
   const stickToBottomRef = useRef(true);
+  const sheetOpenRef = useRef(false);
   const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const selectionRef = useRef<{ start: number; end: number }>({ start: 0, end: 0 });
   const inputRef = useRef<TextInput>(null);
@@ -143,7 +144,7 @@ export function RoomMessagesTab({
   const messageById = useMemo(() => new Map(messages.map((item) => [item.id, item])), [messages]);
 
   const scrollToEnd = useCallback(() => {
-    if (stickToBottomRef.current) {
+    if (stickToBottomRef.current && !sheetOpenRef.current) {
       requestAnimationFrame(() => listRef.current?.scrollToEnd({ animated: false }));
     }
   }, []);
@@ -346,7 +347,10 @@ export function RoomMessagesTab({
                 onQuickMention={insertMention}
                 onLongPressMessage={(id, anchor) => {
                   const message = messageById.get(id);
-                  if (message != null) setActionTarget({ message, anchor });
+                  if (message != null) {
+                    sheetOpenRef.current = true;
+                    setActionTarget({ message, anchor });
+                  }
                 }}
                 onQuoteClick={scrollToMessage}
                 onShowReactions={setReactionsTargetId}
@@ -520,7 +524,10 @@ export function RoomMessagesTab({
         onReact={(type) => {
           if (actionTarget != null) onReact(actionTarget.message.id, type);
         }}
-        onClose={() => setActionTarget(null)}
+        onClose={() => {
+          sheetOpenRef.current = false;
+          setActionTarget(null);
+        }}
       />
 
       <RoomReactionsDialog
