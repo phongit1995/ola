@@ -23,6 +23,8 @@ import type { RootStackParamList } from '../../navigation/types';
 import { ROOT_ROUTES } from '../../navigation/routes';
 import { Avatar } from '../../components/Avatar';
 import { kulToken } from '../../lib/kul';
+import { splitSmileys } from '../../lib/chatSmiley';
+import { SmileyText } from '../../lib/richText';
 import { ChatMessageRow } from './ChatMessageRow';
 import { AttachmentBar, type AttachTab } from './AttachmentBar';
 import { formatLastActive } from './contacts';
@@ -235,20 +237,31 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         className="flex-row items-end gap-1 bg-white px-2 py-1.5"
         style={{ borderTopWidth: 1, borderTopColor: DIVIDER }}
       >
-        <TextInput
-          ref={inputRef}
-          className="max-h-32 min-h-9 flex-1 px-2 py-1.5 text-base"
-          style={{ color: 'rgba(0,0,0,0.87)', textAlignVertical: 'center' }}
-          placeholder={t('chat.messageInputPlaceholder', { name: title })}
-          placeholderTextColor="rgba(0,0,0,0.38)"
-          multiline
-          value={draft}
-          onChangeText={(text) => {
-            setDraft(text);
-            notifyTyping();
-          }}
-          onFocus={() => setOpenTab(null)}
-        />
+        <View className="max-h-32 min-h-9 flex-1 justify-center">
+          <TextInput
+            ref={inputRef}
+            className="px-2 py-1.5 text-base"
+            style={{ color: 'transparent', textAlignVertical: 'center' }}
+            selectionColor="#7cb342"
+            cursorColor="#7cb342"
+            placeholder={t('chat.messageInputPlaceholder', { name: title })}
+            placeholderTextColor="rgba(0,0,0,0.38)"
+            multiline
+            value={draft}
+            onChangeText={(text) => {
+              setDraft(text);
+              notifyTyping();
+            }}
+            onFocus={() => setOpenTab(null)}
+          />
+          {draft !== '' && (
+            <View pointerEvents="none" className="absolute inset-0 justify-center px-2 py-1.5">
+              <Text className="text-base" style={{ color: 'rgba(0,0,0,0.87)', lineHeight: 22 }}>
+                <SmileyText text={draft} size={20} />
+              </Text>
+            </View>
+          )}
+        </View>
         {isTyping ? (
           <Pressable
             onPress={() => {
@@ -274,7 +287,15 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         openTab={openTab}
         onToggleTab={(tab) => setOpenTab((c) => (c === tab ? null : tab))}
         onPickEmoji={(code) => setDraft((c) => c + code)}
-        onBackspace={() => setDraft((c) => c.slice(0, -1))}
+        onBackspace={() =>
+          setDraft((c) => {
+            if (c === '') return c;
+            const segments = splitSmileys(c);
+            const last = segments[segments.length - 1];
+            const removeLength = last != null && last.kind === 'image' ? last.code.length : 1;
+            return c.slice(0, c.length - removeLength);
+          })
+        }
         onSendKul={(index) => void send(kulToken(index))}
       />
 

@@ -16,7 +16,11 @@ export const TAB_ROUTES = {
 export const ROOT_ROUTES = {
   MainTabs: 'MainTabs',
   ChatDetail: 'ChatDetail',
-  RoomChat: 'RoomChat',
   ProfileView: 'ProfileView',
   EditProfile: 'EditProfile',
+} as const;
+
+export const ROOM_ROUTES = {
+  RoomList: 'RoomList',
+  RoomChat: 'RoomChat',
 } as const;

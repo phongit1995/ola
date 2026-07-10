@@ -20,6 +20,7 @@ const mentionIcon = require('../../assets/icons/notify/ic_notification_mention.p
 const TYPE_ICON: Record<MeNotificationType, number> = {
   like: likeIcon,
   comment: commentIcon,
+  reply: commentIcon,
   mention: mentionIcon,
 };
 
@@ -52,6 +53,7 @@ export function MeNotificationsScreen({ language, onClose, onOpenProfile }: MeNo
 
   function labelFor(type: MeNotificationType): string {
     if (type === 'comment') return t('me.notifComment');
+    if (type === 'reply') return t('me.notifReply');
     if (type === 'mention') return t('me.notifMention');
     return t('me.notifLike');
   }

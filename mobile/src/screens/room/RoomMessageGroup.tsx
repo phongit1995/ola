@@ -1,16 +1,20 @@
-import { memo } from 'react';
+import { memo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Image, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, Text, View } from 'react-native';
 import { colorForName } from '@ola/shared/lib';
 import type { RoomReplySnapshot } from '@ola/shared/types';
 import { kulImageForText } from '../../lib/kul';
 import { reactionChips } from '../../lib/reactions';
 import { renderRichText } from '../../lib/richText';
 import { VipAvatar } from '../../components/VipAvatar';
+import { useMediaViewerStore } from '../../store/mediaViewerStore';
+import type { AnchorRect } from './MessageActionSheet';
 import type { BubblePosition, GroupedMessage, MessageGroup } from './messageGroups';
 import { OTHER_CORNERS, OWN_CORNERS } from './roomConstants';
 
 const mentionIcon = require('../../assets/icons/room/ic_tag_people.png');
+const photoIcon = require('../../assets/icons/chat/ic_local.png');
+const resendIcon = require('../../assets/icons/chat/btn_resend_d.png');
 
 function clock(iso: string): string {
   const date = new Date(iso);
@@ -24,9 +28,10 @@ interface RoomMessageGroupProps {
   onOpenProfile?: (nick: string, color: string) => void;
   onOpenUser?: (userId: string) => void;
   onQuickMention?: (name: string) => void;
-  onLongPressMessage?: (id: string) => void;
+  onLongPressMessage?: (id: string, anchor: AnchorRect) => void;
   onQuoteClick?: (messageId: string) => void;
   onShowReactions?: (id: string) => void;
+  onResendImage?: (id: string) => void;
 }
 
 function QuoteBlock({
@@ -39,7 +44,12 @@ function QuoteBlock({
   onQuoteClick?: (messageId: string) => void;
 }) {
   const { t } = useTranslation();
-  const excerpt = kulImageForText(replyTo.excerpt) != null ? t('room.replySticker') : replyTo.excerpt;
+  const isImage = replyTo.type === 'image';
+  const excerpt = isImage
+    ? t('room.replyImage')
+    : kulImageForText(replyTo.excerpt) != null
+      ? t('room.replySticker')
+      : replyTo.excerpt;
   const name =
     replyTo.senderName != null && replyTo.senderName !== '' ? `@${replyTo.senderName}` : '';
   return (
@@ -61,14 +71,76 @@ function QuoteBlock({
           {name}
         </Text>
       )}
-      <Text
-        numberOfLines={2}
-        className="text-xs"
-        style={{ color: isOwn ? 'rgba(255,255,255,0.75)' : 'rgba(0,0,0,0.45)' }}
-      >
-        {excerpt}
-      </Text>
+      <View className="flex-row items-center gap-1">
+        {isImage && <Image source={photoIcon} style={{ width: 14, height: 14 }} resizeMode="contain" />}
+        <Text
+          numberOfLines={2}
+          className="text-xs"
+          style={{ color: isOwn ? 'rgba(255,255,255,0.75)' : 'rgba(0,0,0,0.45)' }}
+        >
+          {excerpt}
+        </Text>
+      </View>
     </Pressable>
+  );
+}
+
+function BubbleContent({
+  message,
+  isOwn,
+  onMention,
+  onResendImage,
+}: {
+  message: GroupedMessage;
+  isOwn: boolean;
+  onMention: (nick: string) => void;
+  onResendImage?: (id: string) => void;
+}) {
+  const { t } = useTranslation();
+  const openViewer = useMediaViewerStore((s) => s.openViewer);
+  const isImage = message.type === 'image' && message.imageUrl != null && message.imageUrl !== '';
+  const uploading = message.status === 'uploading';
+  const failed = message.status === 'failed';
+
+  if (isImage) {
+    return (
+      <Pressable
+        onPress={() => {
+          if (!uploading && !failed) openViewer([message.imageUrl!]);
+        }}
+      >
+        <Image
+          source={{ uri: message.imageUrl }}
+          style={{ width: 200, height: 200, borderRadius: 12, opacity: uploading || failed ? 0.6 : 1 }}
+          resizeMode="cover"
+        />
+        {uploading && (
+          <View className="absolute inset-0 items-center justify-center">
+            <ActivityIndicator color="#ffffff" />
+          </View>
+        )}
+        {failed && (
+          <Pressable
+            onPress={() => onResendImage?.(message.id)}
+            className="absolute inset-0 items-center justify-center rounded-xl"
+            style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}
+          >
+            <Image source={resendIcon} style={{ width: 28, height: 28 }} resizeMode="contain" />
+          </Pressable>
+        )}
+      </Pressable>
+    );
+  }
+
+  const kul = kulImageForText(message.content);
+  if (kul != null) {
+    return <Image source={kul} style={{ width: 112, height: 112 }} resizeMode="contain" />;
+  }
+
+  return (
+    <Text className="text-base" style={{ color: isOwn ? '#ffffff' : 'rgba(0,0,0,0.87)' }}>
+      {renderRichText(message.content, { own: isOwn, onMention })}
+    </Text>
   );
 }
 
@@ -80,49 +152,55 @@ function RoomBubble({
   onMention,
   onLongPressMessage,
   onQuoteClick,
+  onResendImage,
 }: {
   message: GroupedMessage;
   isOwn: boolean;
   position: BubblePosition;
   highlighted: boolean;
   onMention: (nick: string) => void;
-  onLongPressMessage?: (id: string) => void;
+  onLongPressMessage?: (id: string, anchor: AnchorRect) => void;
   onQuoteClick?: (messageId: string) => void;
+  onResendImage?: (id: string) => void;
 }) {
+  const isImage = message.type === 'image' && message.imageUrl != null && message.imageUrl !== '';
   const kul = kulImageForText(message.content);
   const corners = isOwn ? OWN_CORNERS[position] : OTHER_CORNERS[position];
+  const bare = (isImage || kul != null) && message.replyTo == null;
+  const uploading = message.status === 'uploading';
+  const failed = message.status === 'failed';
+  const bubbleRef = useRef<View>(null);
 
-  const content =
-    kul != null ? (
-      <Image source={kul} style={{ width: 112, height: 112 }} resizeMode="contain" />
-    ) : (
-      <Text
-        className="text-base"
-        style={{ color: isOwn ? '#ffffff' : 'rgba(0,0,0,0.87)' }}
-      >
-        {renderRichText(message.content, { own: isOwn, onMention })}
-      </Text>
-    );
-
-  const bareKul = kul != null && message.replyTo == null;
+  function handleLongPress() {
+    if (uploading || failed) return;
+    bubbleRef.current?.measureInWindow((x, y, width, height) => {
+      onLongPressMessage?.(message.id, { x, y, width, height });
+    });
+  }
 
   return (
     <Pressable
-      onLongPress={() => onLongPressMessage?.(message.id)}
+      ref={bubbleRef}
+      onLongPress={handleLongPress}
       delayLongPress={300}
       style={{ alignSelf: isOwn ? 'flex-end' : 'flex-start', maxWidth: '100%' }}
     >
       <View
-        className={bareKul ? '' : `${corners} px-3.5 py-2`}
+        className={bare ? 'rounded-xl' : `${corners} px-3.5 py-2`}
         style={[
-          bareKul ? null : { backgroundColor: isOwn ? '#7cb342' : '#f1f8e9' },
-          highlighted ? { borderWidth: 2, borderColor: 'rgba(124,179,66,0.4)' } : null,
+          bare ? null : { backgroundColor: isOwn ? '#7cb342' : '#f1f8e9' },
+          highlighted ? { borderWidth: 2, borderColor: 'rgba(124,179,66,0.6)' } : null,
         ]}
       >
         {message.replyTo != null && (
           <QuoteBlock replyTo={message.replyTo} isOwn={isOwn} onQuoteClick={onQuoteClick} />
         )}
-        {content}
+        <BubbleContent
+          message={message}
+          isOwn={isOwn}
+          onMention={onMention}
+          onResendImage={onResendImage}
+        />
       </View>
     </Pressable>
   );
@@ -180,6 +258,7 @@ function RoomMessageGroupComponent({
   onLongPressMessage,
   onQuoteClick,
   onShowReactions,
+  onResendImage,
 }: RoomMessageGroupProps) {
   const { isOwn, senderName } = group;
   const onMention = (nick: string) => onOpenProfile?.(nick, colorForName(nick));
@@ -189,9 +268,11 @@ function RoomMessageGroupComponent({
 
   return (
     <View className="gap-0.5">
-      <Text className="text-center text-xs" style={{ color: 'rgba(0,0,0,0.26)' }}>
-        {time}
-      </Text>
+      {group.showTime && (
+        <Text className="text-center text-xs" style={{ color: 'rgba(0,0,0,0.26)' }}>
+          {time}
+        </Text>
+      )}
       {isOwn ? (
         <Text
           numberOfLines={1}
@@ -229,21 +310,23 @@ function RoomMessageGroupComponent({
                 onMention={onMention}
                 onLongPressMessage={onLongPressMessage}
                 onQuoteClick={onQuoteClick}
+                onResendImage={onResendImage}
               />
             );
             const withQuickMention = !isOwn && index === lastIndex;
             return (
               <View
-                key={message.id}
+                key={message.key}
                 className="gap-0.5"
                 style={{ alignItems: isOwn ? 'flex-end' : 'flex-start' }}
               >
                 {withQuickMention ? (
-                  <View className="flex-row items-end gap-1">
+                  <View>
                     {bubble}
                     <Pressable
                       onPress={() => onQuickMention?.(senderName)}
-                      className="h-7 w-7 items-center justify-center rounded-full"
+                      className="absolute h-7 w-7 items-center justify-center rounded-full"
+                      style={{ left: '100%', bottom: 0, marginLeft: 4 }}
                     >
                       <Image source={mentionIcon} style={{ width: 24, height: 24 }} />
                     </Pressable>

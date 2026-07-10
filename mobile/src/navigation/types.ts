@@ -1,4 +1,4 @@
-import { AUTH_ROUTES, ROOT_ROUTES, TAB_ROUTES } from './routes';
+import { AUTH_ROUTES, ROOM_ROUTES, ROOT_ROUTES, TAB_ROUTES } from './routes';
 
 export type AuthStackParamList = {
   [AUTH_ROUTES.Login]: undefined;
@@ -18,7 +18,11 @@ export type MainTabParamList = {
 export type RootStackParamList = {
   [ROOT_ROUTES.MainTabs]: undefined;
   [ROOT_ROUTES.ChatDetail]: { conversationId: string };
-  [ROOT_ROUTES.RoomChat]: { roomId: string; roomName: string };
   [ROOT_ROUTES.ProfileView]: { userId: string; color?: string };
   [ROOT_ROUTES.EditProfile]: undefined;
+};
+
+export type RoomStackParamList = {
+  [ROOM_ROUTES.RoomList]: undefined;
+  [ROOM_ROUTES.RoomChat]: { roomId: string; roomName: string };
 };

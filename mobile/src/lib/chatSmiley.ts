@@ -1,5 +1,6 @@
 import type { ImageSourcePropType } from 'react-native';
 import { SMILEY_IMAGES } from './smileyImages';
+import { emojiImageForToken } from './emoji';
 
 export { SMILEY_IMAGES };
 
@@ -66,7 +67,7 @@ const SMILEY_MAP: Record<string, ImageSourcePropType> = (() => {
 })();
 
 export function smileyImageForCode(code: string): ImageSourcePropType | null {
-  return SMILEY_MAP[code] ?? null;
+  return SMILEY_MAP[code] ?? emojiImageForToken(code);
 }
 
 function escapeRegExp(value: string): string {
@@ -78,7 +79,7 @@ const SMILEY_PATTERN = Object.keys(SMILEY_MAP)
   .map(escapeRegExp)
   .join('|');
 
-const SMILEY_REGEX = new RegExp(SMILEY_PATTERN, 'g');
+const SMILEY_REGEX = new RegExp(`\\[e:\\d{1,2}\\]|${SMILEY_PATTERN}`, 'g');
 
 export type SmileySegment =
   | { kind: 'text'; value: string }
@@ -91,7 +92,7 @@ export function splitSmileys(text: string): SmileySegment[] {
   let match = SMILEY_REGEX.exec(text);
   while (match != null) {
     const code = match[0];
-    const src = SMILEY_MAP[code];
+    const src = SMILEY_MAP[code] ?? emojiImageForToken(code);
     if (src != null) {
       if (match.index > lastIndex) {
         segments.push({ kind: 'text', value: text.slice(lastIndex, match.index) });

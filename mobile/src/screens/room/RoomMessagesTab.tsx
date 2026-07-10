@@ -4,31 +4,44 @@ import {
   Image,
   NativeSyntheticEvent,
   Pressable,
+  ScrollView,
   Text,
   TextInput,
   NativeScrollEvent,
   View,
 } from 'react-native';
+import Clipboard from '@react-native-clipboard/clipboard';
+import { launchImageLibrary } from 'react-native-image-picker';
 import { FlashList, type FlashListRef } from '@shopify/flash-list';
 import type { ReactionType, RoomMessage } from '@ola/shared/types';
+import type { NativeUploadFile } from '@ola/shared/lib';
 import { createTimeFormatter } from '@ola/shared/lib';
 import { useToastStore } from '@ola/shared/stores/toastStore';
+import { useRoomFilterStore } from '@ola/shared/stores/roomFilterStore';
 import { kulImageForText, kulToken } from '../../lib/kul';
+import { splitSmileys } from '../../lib/chatSmiley';
+import { SmileyText } from '../../lib/richText';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { buildRoomFeed, type RoomFeedItem } from './messageGroups';
 import { RoomMessageGroup } from './RoomMessageGroup';
+import { RoomReactionNotice } from './RoomReactionNotice';
 import { SmileyKulPanel } from './SmileyKulPanel';
-import { MessageActionSheet, type MessageSheetAction } from './MessageActionSheet';
+import { MessageActionSheet, type AnchorRect, type MessageSheetAction } from './MessageActionSheet';
 import { RoomReactionsDialog } from './RoomReactionsDialog';
 import type { RoomChatStatus } from '@ola/shared/stores/roomChatStore';
 
 const likeIcon = require('../../assets/icons/chat/smiley/smiley_35.png');
 const smileyIcon = require('../../assets/icons/chat/ic_smiley.png');
 const smileyIconActive = require('../../assets/icons/chat/ic_smiley_selected.png');
-const kulIcon = require('../../assets/icons/chat/ic_kul.png');
-const kulIconActive = require('../../assets/icons/chat/ic_kul_selected.png');
+const photoIcon = require('../../assets/icons/chat/ic_local.png');
 const replyActionIcon = require('../../assets/icons/me/ic_action_reply_gray.png');
 const deleteActionIcon = require('../../assets/icons/chat/ic_menu_delete.png');
+
+interface PendingImage {
+  id: string;
+  uri: string;
+  file: NativeUploadFile;
+}
 
 interface RoomMessagesTabProps {
   currentUserId: string;
@@ -39,6 +52,8 @@ interface RoomMessagesTabProps {
   loadingMore: boolean;
   replyTarget: RoomMessage | null;
   onSend: (content: string) => Promise<void>;
+  onSendImage: (file: NativeUploadFile) => Promise<void>;
+  onResendImage: (messageId: string) => void;
   onLoadMore: () => void;
   onOpenProfile?: (nick: string, color: string) => void;
   onOpenUser?: (userId: string) => void;
@@ -57,6 +72,8 @@ export function RoomMessagesTab({
   loadingMore,
   replyTarget,
   onSend,
+  onSendImage,
+  onResendImage,
   onLoadMore,
   onOpenProfile,
   onOpenUser,
@@ -67,10 +84,16 @@ export function RoomMessagesTab({
 }: RoomMessagesTabProps) {
   const { t } = useTranslation();
   const pushToast = useToastStore((s) => s.push);
+  const blockedUserIds = useRoomFilterStore((s) => s.blockedUserIds);
+  const blockUser = useRoomFilterStore((s) => s.blockUser);
   const [draft, setDraft] = useState('');
-  const [openTab, setOpenTab] = useState<'smiley' | 'kul' | null>(null);
-  const [actionTarget, setActionTarget] = useState<RoomMessage | null>(null);
+  const [panelOpen, setPanelOpen] = useState(false);
+  const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
+  const [actionTarget, setActionTarget] = useState<{ message: RoomMessage; anchor: AnchorRect } | null>(
+    null
+  );
   const [deleteTarget, setDeleteTarget] = useState<RoomMessage | null>(null);
+  const [blockTarget, setBlockTarget] = useState<RoomMessage | null>(null);
   const [reactionsTargetId, setReactionsTargetId] = useState<string | null>(null);
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const [pendingSelection, setPendingSelection] = useState<{ start: number; end: number } | null>(
@@ -81,6 +104,7 @@ export function RoomMessagesTab({
   const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const selectionRef = useRef<{ start: number; end: number }>({ start: 0, end: 0 });
   const inputRef = useRef<TextInput>(null);
+  const imageIdRef = useRef(0);
 
   function applyDraft(next: string, caret: number) {
     selectionRef.current = { start: caret, end: caret };
@@ -99,7 +123,10 @@ export function RoomMessagesTab({
     const end = Math.max(start, Math.min(selectionRef.current.end, draft.length));
     if (start === end) {
       if (start === 0) return;
-      applyDraft(draft.slice(0, start - 1) + draft.slice(end), start - 1);
+      const segments = splitSmileys(draft.slice(0, start));
+      const last = segments[segments.length - 1];
+      const removeLength = last != null && last.kind === 'image' ? last.code.length : 1;
+      applyDraft(draft.slice(0, start - removeLength) + draft.slice(end), start - removeLength);
     } else {
       applyDraft(draft.slice(0, start) + draft.slice(end), start);
     }
@@ -107,7 +134,12 @@ export function RoomMessagesTab({
 
   const canSend = status === 'joined';
   const timeFormatter = useMemo(() => createTimeFormatter(language), [language]);
-  const feed = useMemo(() => buildRoomFeed(messages, currentUserId), [messages, currentUserId]);
+  const feed = useMemo(() => {
+    const blocked = new Set(blockedUserIds);
+    const visible =
+      blocked.size === 0 ? messages : messages.filter((item) => !blocked.has(item.senderId));
+    return buildRoomFeed(visible, currentUserId);
+  }, [messages, currentUserId, blockedUserIds]);
   const messageById = useMemo(() => new Map(messages.map((item) => [item.id, item])), [messages]);
 
   const scrollToEnd = useCallback(() => {
@@ -121,7 +153,7 @@ export function RoomMessagesTab({
     if (trimmed === '' || !canSend) return;
     stickToBottomRef.current = true;
     applyDraft('', 0);
-    setOpenTab(null);
+    setPanelOpen(false);
     try {
       await onSend(trimmed);
     } catch {
@@ -158,26 +190,103 @@ export function RoomMessagesTab({
     [feed, pushToast, t]
   );
 
+  function isCopyableText(message: RoomMessage): boolean {
+    return (
+      message.type !== 'image' &&
+      kulImageForText(message.content) == null &&
+      message.content.trim() !== ''
+    );
+  }
+
+  function copyMessage(content: string) {
+    Clipboard.setString(content);
+    pushToast('success', t('room.copied'));
+  }
+
   function sheetActions(message: RoomMessage): MessageSheetAction[] {
+    const actions: MessageSheetAction[] = [];
+    const copyAction: MessageSheetAction = {
+      key: 'copy',
+      label: t('room.actionCopy'),
+      onSelect: () => copyMessage(message.content),
+    };
     if (message.senderId !== currentUserId) {
-      return [
-        {
-          key: 'reply',
-          label: t('room.actionReply'),
-          icon: replyActionIcon,
-          onSelect: () => onSetReplyTarget(message),
-        },
-      ];
-    }
-    return [
-      {
+      actions.push({
+        key: 'reply',
+        label: t('room.actionReply'),
+        icon: replyActionIcon,
+        onSelect: () => onSetReplyTarget(message),
+      });
+      if (isCopyableText(message)) actions.push(copyAction);
+      actions.push({
+        key: 'block',
+        label: t('room.actionBlock'),
+        destructive: true,
+        onSelect: () => setBlockTarget(message),
+      });
+    } else {
+      if (isCopyableText(message)) actions.push(copyAction);
+      actions.push({
         key: 'delete',
         label: t('chat.actionDelete'),
         icon: deleteActionIcon,
         destructive: true,
         onSelect: () => setDeleteTarget(message),
-      },
-    ];
+      });
+    }
+    return actions;
+  }
+
+  async function pickImages() {
+    if (!canSend) return;
+    setPanelOpen(false);
+    const result = await launchImageLibrary({ mediaType: 'photo', selectionLimit: 0 });
+    if (result.didCancel) return;
+    const assets = result.assets ?? [];
+    if (assets.length === 0) {
+      if (result.errorCode != null) pushToast('error', t('room.sendError'));
+      return;
+    }
+    setPendingImages((current) => {
+      const next = [...current];
+      for (const asset of assets) {
+        if (asset.uri == null) continue;
+        imageIdRef.current += 1;
+        next.push({
+          id: String(imageIdRef.current),
+          uri: asset.uri,
+          file: {
+            uri: asset.uri,
+            name: asset.fileName ?? 'photo.jpg',
+            type: asset.type ?? 'image/jpeg',
+          },
+        });
+      }
+      return next;
+    });
+  }
+
+  function removePendingImage(id: string) {
+    setPendingImages((current) => current.filter((image) => image.id !== id));
+  }
+
+  function clearPendingImages() {
+    setPendingImages([]);
+  }
+
+  async function sendPendingImages() {
+    const images = pendingImages;
+    if (images.length === 0 || !canSend) return;
+    stickToBottomRef.current = true;
+    setPendingImages([]);
+    setPanelOpen(false);
+    for (const image of images) {
+      try {
+        await onSendImage(image.file);
+      } catch {
+        pushToast('error', t('room.sendError'));
+      }
+    }
   }
 
   function handleScroll(event: NativeSyntheticEvent<NativeScrollEvent>) {
@@ -188,6 +297,7 @@ export function RoomMessagesTab({
   }
 
   function replyExcerpt(message: RoomMessage): string {
+    if (message.type === 'image') return t('room.replyImage');
     return kulImageForText(message.content) != null ? t('room.replySticker') : message.content;
   }
 
@@ -195,6 +305,7 @@ export function RoomMessagesTab({
 
   return (
     <View className="flex-1">
+      <RoomReactionNotice />
       {status !== 'joined' && (
         <View className="bg-black/5 py-1.5">
           <Text className="text-center text-sm" style={{ color: 'rgba(0,0,0,0.54)' }}>
@@ -233,9 +344,13 @@ export function RoomMessagesTab({
                 onOpenProfile={onOpenProfile}
                 onOpenUser={onOpenUser}
                 onQuickMention={insertMention}
-                onLongPressMessage={(id) => setActionTarget(messageById.get(id) ?? null)}
+                onLongPressMessage={(id, anchor) => {
+                  const message = messageById.get(id);
+                  if (message != null) setActionTarget({ message, anchor });
+                }}
                 onQuoteClick={scrollToMessage}
                 onShowReactions={setReactionsTargetId}
+                onResendImage={onResendImage}
               />
             </View>
           )
@@ -272,50 +387,99 @@ export function RoomMessagesTab({
         style={{ borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.12)' }}
       >
         <Pressable
-          onPress={() => setOpenTab((current) => (current === 'smiley' ? null : 'smiley'))}
+          onPress={() => setPanelOpen((current) => !current)}
           className="h-9 w-9 items-center justify-center"
-          style={{ opacity: openTab === 'smiley' ? 1 : 0.6 }}
+          style={{ opacity: panelOpen ? 1 : 0.6 }}
         >
           <Image
-            source={openTab === 'smiley' ? smileyIconActive : smileyIcon}
+            source={panelOpen ? smileyIconActive : smileyIcon}
             style={{ width: 24, height: 24 }}
             resizeMode="contain"
           />
         </Pressable>
         <Pressable
-          onPress={() => setOpenTab((current) => (current === 'kul' ? null : 'kul'))}
+          onPress={() => void pickImages()}
+          disabled={!canSend}
           className="h-9 w-9 items-center justify-center"
-          style={{ opacity: openTab === 'kul' ? 1 : 0.6 }}
+          style={{ opacity: 0.6 }}
         >
-          <Image
-            source={openTab === 'kul' ? kulIconActive : kulIcon}
-            style={{ width: 24, height: 24 }}
-            resizeMode="contain"
-          />
+          <Image source={photoIcon} style={{ width: 24, height: 24 }} resizeMode="contain" />
         </Pressable>
-        <TextInput
-          ref={inputRef}
-          className="max-h-28 min-h-9 flex-1 rounded-2xl px-3 py-2 text-base"
-          style={{
-            color: 'rgba(0,0,0,0.87)',
-            textAlignVertical: 'center',
-            borderWidth: 1,
-            borderColor: 'rgba(0,0,0,0.12)',
-          }}
-          placeholder={t('room.chatInputHint')}
-          placeholderTextColor="rgba(0,0,0,0.38)"
-          multiline
-          editable={canSend}
-          value={draft}
-          selection={pendingSelection ?? undefined}
-          onSelectionChange={(event) => {
-            selectionRef.current = event.nativeEvent.selection;
-            if (pendingSelection != null) setPendingSelection(null);
-          }}
-          onChangeText={setDraft}
-          onFocus={() => setOpenTab(null)}
-        />
-        {isTyping ? (
+        {pendingImages.length > 0 ? (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            className="min-h-9 flex-1"
+            contentContainerClassName="items-center gap-2 px-1 py-1"
+          >
+            {pendingImages.map((image) => (
+              <View key={image.id} className="relative">
+                <Image
+                  source={{ uri: image.uri }}
+                  style={{ width: 44, height: 44, borderRadius: 8 }}
+                  resizeMode="cover"
+                />
+                <Pressable
+                  onPress={() => removePendingImage(image.id)}
+                  className="absolute h-5 w-5 items-center justify-center rounded-full"
+                  style={{ top: -6, right: -6, backgroundColor: 'rgba(0,0,0,0.6)' }}
+                >
+                  <Text className="text-xs leading-none text-white">×</Text>
+                </Pressable>
+              </View>
+            ))}
+            <Pressable
+              onPress={clearPendingImages}
+              className="ml-1 h-9 items-center justify-center rounded-full px-3"
+              style={{ borderWidth: 1, borderColor: 'rgba(0,0,0,0.12)' }}
+            >
+              <Text className="text-sm font-medium" style={{ color: 'rgba(0,0,0,0.54)' }}>
+                {t('dialog.cancel')}
+              </Text>
+            </Pressable>
+          </ScrollView>
+        ) : (
+          <View
+            className="max-h-28 min-h-9 flex-1 justify-center rounded-2xl"
+            style={{ borderWidth: 1, borderColor: 'rgba(0,0,0,0.12)' }}
+          >
+            <TextInput
+              ref={inputRef}
+              className="px-3 py-2 text-base"
+              style={{ color: 'transparent', textAlignVertical: 'center' }}
+              selectionColor="#7cb342"
+              cursorColor="#7cb342"
+              placeholder={t('room.chatInputHint')}
+              placeholderTextColor="rgba(0,0,0,0.38)"
+              multiline
+              editable={canSend}
+              value={draft}
+              selection={pendingSelection ?? undefined}
+              onSelectionChange={(event) => {
+                selectionRef.current = event.nativeEvent.selection;
+                if (pendingSelection != null) setPendingSelection(null);
+              }}
+              onChangeText={setDraft}
+              onFocus={() => setPanelOpen(false)}
+            />
+            {draft !== '' && (
+              <View pointerEvents="none" className="absolute inset-0 justify-center px-3 py-2">
+                <Text className="text-base" style={{ color: 'rgba(0,0,0,0.87)', lineHeight: 22 }}>
+                  <SmileyText text={draft} size={20} />
+                </Text>
+              </View>
+            )}
+          </View>
+        )}
+        {pendingImages.length > 0 ? (
+          <Pressable
+            onPress={() => void sendPendingImages()}
+            disabled={!canSend}
+            className="h-9 items-center justify-center rounded-full bg-ola-primary px-4 active:opacity-90"
+          >
+            <Text className="text-sm font-semibold text-white">{t('chat.send')}</Text>
+          </Pressable>
+        ) : isTyping ? (
           <Pressable
             onPress={() => {
               void sendText(draft);
@@ -338,9 +502,8 @@ export function RoomMessagesTab({
         )}
       </View>
 
-      {openTab != null && canSend && (
+      {panelOpen && canSend && (
         <SmileyKulPanel
-          tab={openTab}
           onPickEmoji={(code) => insertAtCursor(code)}
           onBackspace={backspaceAtCursor}
           onSendKul={(index) => {
@@ -351,10 +514,11 @@ export function RoomMessagesTab({
 
       <MessageActionSheet
         visible={actionTarget != null}
-        actions={actionTarget != null ? sheetActions(actionTarget) : []}
-        showReactions={actionTarget != null && actionTarget.senderId !== currentUserId}
+        anchor={actionTarget?.anchor ?? null}
+        actions={actionTarget != null ? sheetActions(actionTarget.message) : []}
+        showReactions={actionTarget != null && actionTarget.message.senderId !== currentUserId}
         onReact={(type) => {
-          if (actionTarget != null) onReact(actionTarget.id, type);
+          if (actionTarget != null) onReact(actionTarget.message.id, type);
         }}
         onClose={() => setActionTarget(null)}
       />
@@ -382,6 +546,24 @@ export function RoomMessagesTab({
           }
         }}
         onCancel={() => setDeleteTarget(null)}
+      />
+
+      <ConfirmDialog
+        visible={blockTarget != null}
+        danger
+        title={t('room.blockTitle')}
+        message={t('room.blockConfirm', { name: blockTarget?.senderName ?? '' })}
+        confirmLabel={t('room.actionBlock')}
+        cancelLabel={t('dialog.cancel')}
+        onConfirm={() => {
+          const target = blockTarget;
+          setBlockTarget(null);
+          if (target != null) {
+            blockUser(target.senderId);
+            pushToast('success', t('room.blockSuccess'));
+          }
+        }}
+        onCancel={() => setBlockTarget(null)}
       />
     </View>
   );

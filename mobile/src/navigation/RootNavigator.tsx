@@ -3,8 +3,13 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@ola/shared/stores/authStore';
-import type { AuthStackParamList, MainTabParamList, RootStackParamList } from './types';
-import { AUTH_ROUTES, ROOT_ROUTES, TAB_ROUTES } from './routes';
+import type {
+  AuthStackParamList,
+  MainTabParamList,
+  RoomStackParamList,
+  RootStackParamList,
+} from './types';
+import { AUTH_ROUTES, ROOM_ROUTES, ROOT_ROUTES, TAB_ROUTES } from './routes';
 import { LoginScreen } from '../screens/auth/LoginScreen';
 import { RegisterScreen } from '../screens/auth/RegisterScreen';
 import { ForgotPasswordScreen } from '../screens/auth/ForgotPasswordScreen';
@@ -22,6 +27,20 @@ import { TAB_ICONS } from '../assets/tabIcons';
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
 const Tabs = createBottomTabNavigator<MainTabParamList>();
 const RootStack = createNativeStackNavigator<RootStackParamList>();
+const RoomStack = createNativeStackNavigator<RoomStackParamList>();
+
+function RoomNavigator() {
+  return (
+    <RoomStack.Navigator screenOptions={{ headerShown: false }}>
+      <RoomStack.Screen name={ROOM_ROUTES.RoomList} component={RoomListScreen} />
+      <RoomStack.Screen
+        name={ROOM_ROUTES.RoomChat}
+        component={RoomChatScreen}
+        options={{ gestureEnabled: false }}
+      />
+    </RoomStack.Navigator>
+  );
+}
 
 function AuthNavigator() {
   return (
@@ -66,7 +85,7 @@ function MainTabs() {
       />
       <Tabs.Screen
         name={TAB_ROUTES.Room}
-        component={RoomListScreen}
+        component={RoomNavigator}
         options={{ title: t('home.tabRoom'), tabBarIcon: tabIcon('room') }}
       />
       <Tabs.Screen
@@ -108,7 +127,6 @@ export function RootNavigator() {
     <RootStack.Navigator screenOptions={{ headerShown: false }}>
       <RootStack.Screen name={ROOT_ROUTES.MainTabs} component={MainTabs} />
       <RootStack.Screen name={ROOT_ROUTES.ChatDetail} component={ChatDetailScreen} />
-      <RootStack.Screen name={ROOT_ROUTES.RoomChat} component={RoomChatScreen} />
       <RootStack.Screen name={ROOT_ROUTES.ProfileView} component={ProfileViewScreen} />
       <RootStack.Screen name={ROOT_ROUTES.EditProfile} component={EditProfileScreen} />
     </RootStack.Navigator>
