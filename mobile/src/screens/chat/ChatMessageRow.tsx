@@ -151,7 +151,7 @@ export function ChatMessageRow({
 
           {chips.length > 0 && (
             <View
-              className="mt-0.5 flex-row flex-wrap gap-1"
+              className="-mt-2 flex-row flex-wrap gap-1"
               style={{ alignSelf: fromMe ? 'flex-end' : 'flex-start' }}
             >
               {chips.map((chip) => (
