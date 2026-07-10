@@ -443,6 +443,10 @@ func (s *Service) BlockUser(blockerID, blockedID uuid.UUID) (*RelationshipRespon
 			return err
 		}
 
+		if err := removeFollowTx(tx, blockedID, blockerID); err != nil {
+			return err
+		}
+
 		if err := addAntiTx(tx, blockedID); err != nil {
 			return err
 		}
