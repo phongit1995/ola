@@ -11,6 +11,7 @@ import { MePostInteractions, type MePostSource } from '../me/MePostInteractions'
 import { ProfileCard } from './components/ProfileCard';
 import { ProfileMediaStore } from './components/ProfileMediaStore';
 import { ProfileFollowing } from './components/ProfileFollowing';
+import { FollowingListOverlay } from './components/FollowingListOverlay';
 import { EditProfileMePage } from './EditProfileMePage';
 import type {
   ProfileActions,
@@ -47,6 +48,7 @@ export function ProfilePage({
   const hidePost = useMeLocalStore((s) => s.hidePost);
   const blockAuthor = useMeLocalStore((s) => s.blockAuthor);
   const [editOpen, setEditOpen] = useState(false);
+  const [followersOpen, setFollowersOpen] = useState(false);
 
   const posts = secondary.posts.filter((post) => !hiddenPostIds.includes(post.id));
 
@@ -74,6 +76,7 @@ export function ProfilePage({
           onPostMe={() => toast.info(t('profile.comingSoon'))}
           onUpdateInfo={() => setEditOpen(true)}
           onOpenUser={(nick) => onOpenFriend({ name: nick, color: colorForName(nick) })}
+          onOpenFollowers={() => setFollowersOpen(true)}
         />
         {secondary.media.length > 0 && <ProfileMediaStore media={secondary.media} />}
         {secondary.following.length > 0 && (
@@ -118,6 +121,18 @@ export function ProfilePage({
       )}
 
       {editOpen && <EditProfileMePage onClose={() => setEditOpen(false)} />}
+
+      {followersOpen && (
+        <FollowingListOverlay
+          title={t('profile.peopleCare')}
+          following={secondary.followers}
+          onClose={() => setFollowersOpen(false)}
+          onSelect={(friend) => {
+            setFollowersOpen(false);
+            onOpenFriend(friend);
+          }}
+        />
+      )}
     </FullScreenOverlay>
   );
 }

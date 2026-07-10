@@ -450,6 +450,17 @@ func (s *Service) canSeeBirthday(callerID, ownerID uuid.UUID) bool {
 	return settings.ShowBirthday
 }
 
+func (s *Service) canSeeInterested(callerID, ownerID uuid.UUID) bool {
+	if callerID == ownerID {
+		return true
+	}
+	settings, err := s.userSettingSvc.GetSettings(ownerID)
+	if err != nil {
+		return true
+	}
+	return settings.ShowInterested
+}
+
 func (s *Service) buildPublicProfile(callerID uuid.UUID, user *models.User) *UserPublicProfileResponse {
 	idStr := user.ID.String()
 	presence := s.presence.GetPresence(idStr)
@@ -483,6 +494,12 @@ func (s *Service) buildPublicProfile(callerID uuid.UUID, user *models.User) *Use
 	response.Spouse = s.resolveSpouse(user)
 
 	s.applyFollowFlags(callerID, user.ID, response.Relationship)
+
+	response.CanViewInterested = s.canSeeInterested(callerID, user.ID)
+	if !response.CanViewInterested {
+		response.FollowerCount = 0
+		response.FollowingCount = 0
+	}
 
 	return response
 }
@@ -597,6 +614,15 @@ func (s *Service) ListFollowers(callerID, userID uuid.UUID, limit, offset int) (
 func (s *Service) ListFollowing(callerID, userID uuid.UUID, limit, offset int) (*FollowListResponse, error) {
 	if err := s.ensureNotBlockedByTarget(callerID, userID); err != nil {
 		return nil, err
+	}
+	if callerID != userID {
+		settings, err := s.userSettingSvc.GetSettings(userID)
+		if err != nil {
+			return nil, err
+		}
+		if !settings.ShowInterested {
+			return s.buildFollowList(nil, 0, limit, offset), nil
+		}
 	}
 	users, total, err := s.repo.ListFollowing(userID, limit, offset)
 	if err != nil {

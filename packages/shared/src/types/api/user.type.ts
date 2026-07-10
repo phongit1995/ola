@@ -33,6 +33,7 @@ export interface PublicProfile {
   vipEndTime?: string | null;
   followerCount: number;
   followingCount: number;
+  canViewInterested: boolean;
   antiCount: number;
   isOnline: boolean;
   lastActiveAt?: string;
