@@ -132,6 +132,12 @@ const VIP_NAMES = [
   'Meow',
   'Zakumi Cao Bồi',
   'Joker',
+  'Mafia',
+  'Bá Vương Học Đường',
+  'Cô Dâu Xinh Đẹp',
+  'Tí Ông Nội',
+  'T1',
+  'Liverpool',
 ];
 
 export const VIP_CATALOG: VipCatalogEntry[] = VIP_NAMES.map((name, index) => ({
