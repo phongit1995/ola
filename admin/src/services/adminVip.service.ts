@@ -1,5 +1,6 @@
 import http from '@/api/http'
 import type {
+  AdminVipTransfer,
   ApiResponse,
   CreateVipPackageRequest,
   CreateVipShopItemRequest,
@@ -10,6 +11,7 @@ import type {
   UpdateVipShopItemRequest,
   VipPackage,
   VipShopItem,
+  VipTransferListParams,
 } from '@/types'
 
 export const AdminVipService = {
@@ -58,6 +60,16 @@ export const AdminVipService = {
 
   async removeShopItem(id: string): Promise<MessageResult> {
     const { data } = await http.delete<ApiResponse<MessageResult>>(`/admin/vip/shop/${id}`)
+    return data.data
+  },
+
+  async listTransfers(
+    params: VipTransferListParams = {},
+  ): Promise<ListResult<AdminVipTransfer>> {
+    const { data } = await http.get<ApiResponse<ListResult<AdminVipTransfer>>>(
+      '/admin/vip/transfers',
+      { params },
+    )
     return data.data
   },
 }

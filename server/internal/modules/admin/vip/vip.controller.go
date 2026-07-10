@@ -1,6 +1,8 @@
 package adminvip
 
 import (
+	"strings"
+
 	"ola-chat-server/internal/modules/vip"
 	"ola-chat-server/internal/utils"
 
@@ -129,6 +131,38 @@ func (ctrl *Controller) ListHistory(c *gin.Context) (interface{}, error) {
 	}
 
 	resp, err := ctrl.service.ListHistory(userIDPtr, limit, offset)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
+// ListTransfers godoc
+// @Summary      Lịch sử chuyển icon VIP toàn hệ thống (admin)
+// @Tags         admin-vip
+// @Produce      json
+// @Security     BearerAuth
+// @Param        userId query string false "Filter theo user (chuyển hoặc nhận)"
+// @Param        q query string false "Tìm theo username người chuyển/nhận"
+// @Param        limit query int false "Page size"
+// @Param        offset query int false "Offset"
+// @Success      200  {object}  vip.TransferHistoryListSuccessResponse
+// @Router       /admin/vip/transfers [get]
+func (ctrl *Controller) ListTransfers(c *gin.Context) (interface{}, error) {
+	limit := utils.ParseLimit(c, 50, 100)
+	offset := utils.ParseOffset(c)
+	q := strings.TrimSpace(c.Query("q"))
+
+	var userIDPtr *uuid.UUID
+	if raw := c.Query("userId"); raw != "" {
+		uid, err := uuid.Parse(raw)
+		if err != nil {
+			return nil, utils.NewHTTPError(400, "invalid user id")
+		}
+		userIDPtr = &uid
+	}
+
+	resp, err := ctrl.service.ListTransfers(userIDPtr, q, limit, offset)
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}
