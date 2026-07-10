@@ -297,6 +297,25 @@ export interface UpdateVipShopItemRequest {
   sortOrder?: number
 }
 
+export interface AdminVipTransfer {
+  id: string
+  fromUserId: string
+  fromUsername: string
+  fromFullName: string
+  toUserId: string
+  toUsername: string
+  toFullName: string
+  vipIconId: number
+  createdAt: string
+}
+
+export interface VipTransferListParams {
+  q?: string
+  userId?: string
+  limit?: number
+  offset?: number
+}
+
 export interface Room {
   id: string
   name: string

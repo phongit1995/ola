@@ -89,13 +89,88 @@ func (r *Repository) SetLocked(id uuid.UUID, locked bool) error {
 		Update("is_locked", locked).Error
 }
 
-func (r *Repository) Transfer(id, toUserID uuid.UUID) error {
-	return r.db.Model(&models.UserVipIcon{}).
-		Where("id = ?", id).
-		Updates(map[string]interface{}{
-			"user_id": toUserID,
-			"source":  "transfer",
-		}).Error
+type TransferParams struct {
+	InstanceID uuid.UUID
+	FromUserID uuid.UUID
+	ToUserID   uuid.UUID
+	VipIconID  int16
+}
+
+func (r *Repository) Transfer(p TransferParams) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Model(&models.UserVipIcon{}).
+			Where("id = ?", p.InstanceID).
+			Updates(map[string]interface{}{
+				"user_id": p.ToUserID,
+				"source":  "transfer",
+			}).Error; err != nil {
+			return err
+		}
+		log := models.VipTransfer{
+			FromUserID: p.FromUserID,
+			ToUserID:   p.ToUserID,
+			VipIconID:  p.VipIconID,
+			InstanceID: p.InstanceID,
+		}
+		return tx.Create(&log).Error
+	})
+}
+
+func (r *Repository) ListTransfers(userID *uuid.UUID, q string, limit, offset int) ([]models.VipTransfer, int64, error) {
+	var items []models.VipTransfer
+	var total int64
+
+	countQ := r.db.Model(&models.VipTransfer{})
+	listQ := r.db.Model(&models.VipTransfer{}).Order("created_at DESC").Limit(limit).Offset(offset)
+	if userID != nil {
+		countQ = countQ.Where("from_user_id = ? OR to_user_id = ?", *userID, *userID)
+		listQ = listQ.Where("from_user_id = ? OR to_user_id = ?", *userID, *userID)
+	}
+	if q != "" {
+		var ids []uuid.UUID
+		like := "%" + q + "%"
+		if err := r.db.Model(&models.User{}).
+			Where("username ILIKE ? OR full_name ILIKE ?", like, like).
+			Pluck("id", &ids).Error; err != nil {
+			return nil, 0, err
+		}
+		if len(ids) == 0 {
+			return []models.VipTransfer{}, 0, nil
+		}
+		countQ = countQ.Where("from_user_id IN ? OR to_user_id IN ?", ids, ids)
+		listQ = listQ.Where("from_user_id IN ? OR to_user_id IN ?", ids, ids)
+	}
+	if err := countQ.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+	if err := listQ.Find(&items).Error; err != nil {
+		return nil, 0, err
+	}
+	return items, total, nil
+}
+
+type TransferUser struct {
+	ID       uuid.UUID
+	Username string
+	FullName string
+}
+
+func (r *Repository) FindUsers(ids []uuid.UUID) (map[uuid.UUID]TransferUser, error) {
+	result := make(map[uuid.UUID]TransferUser, len(ids))
+	if len(ids) == 0 {
+		return result, nil
+	}
+	var rows []TransferUser
+	if err := r.db.Unscoped().Model(&models.User{}).
+		Select("id", "username", "full_name").
+		Where("id IN ?", ids).
+		Find(&rows).Error; err != nil {
+		return nil, err
+	}
+	for _, u := range rows {
+		result[u.ID] = u
+	}
+	return result, nil
 }
 
 func (r *Repository) UpdateUserFields(userID uuid.UUID, fields map[string]interface{}) error {

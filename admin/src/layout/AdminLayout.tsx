@@ -11,6 +11,7 @@ import {
   LogoutOutlined,
   RocketOutlined,
   SmileOutlined,
+  SwapOutlined,
   PictureOutlined,
   TeamOutlined,
   UserOutlined,
@@ -32,6 +33,7 @@ const MENU_ITEMS = [
     children: [
       { key: '/vip-packages', icon: <CrownOutlined />, label: 'Gói ngày VIP' },
       { key: '/vip-shop', icon: <SmileOutlined />, label: 'Shop VIP' },
+      { key: '/vip-transfers', icon: <SwapOutlined />, label: 'Lịch sử chuyển VIP' },
     ],
   },
   {
@@ -53,7 +55,7 @@ const LEAF_KEYS = MENU_ITEMS.flatMap((item) => {
   return children ? children.map((child) => child.key) : [item.key]
 })
 
-const VIP_KEYS = ['/vip-packages', '/vip-shop']
+const VIP_KEYS = ['/vip-packages', '/vip-shop', '/vip-transfers']
 
 const PAGE_TITLES: Record<string, string> = {
   '/': 'Tổng quan',
@@ -61,6 +63,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/rooms': 'Quản lý phòng chat',
   '/vip-packages': 'Quản lý gói VIP',
   '/vip-shop': 'Shop VIP',
+  '/vip-transfers': 'Lịch sử chuyển VIP',
   '/games/egg': 'Đập trứng',
   '/games/egg/stats': 'Thống kê trứng',
   '/games/wheel': 'Vòng quay may mắn',
