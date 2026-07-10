@@ -119,3 +119,19 @@ type ClaimListResponse struct {
 	Limit  int         `json:"limit"`
 	Offset int         `json:"offset"`
 }
+
+type ClaimHistoryView struct {
+	ID          uuid.UUID     `json:"id"`
+	KenAmount   int           `json:"kenAmount"`
+	IsEmpty     bool          `json:"isEmpty"`
+	ChestSource string        `json:"chestSource"`
+	CreatedAt   time.Time     `json:"createdAt"`
+	User        ClaimUserView `json:"user"`
+}
+
+type ClaimHistoryListResponse struct {
+	Items  []ClaimHistoryView `json:"items"`
+	Total  int64              `json:"total"`
+	Limit  int                `json:"limit"`
+	Offset int                `json:"offset"`
+}

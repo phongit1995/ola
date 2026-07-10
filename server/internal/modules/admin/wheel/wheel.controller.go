@@ -2,6 +2,7 @@ package adminwheel
 
 import (
 	"net/http"
+	"strings"
 	"time"
 
 	"ola-chat-server/internal/modules/wheel"
@@ -137,6 +138,7 @@ func (ctrl *Controller) SaveConfig(c *gin.Context) (interface{}, error) {
 // @Produce      json
 // @Security     BearerAuth
 // @Param        userId query string false "Lọc theo user"
+// @Param        q query string false "Tìm theo username/tên người chơi"
 // @Param        segmentKind query string false "Lọc theo loại ô"
 // @Param        outcome query string false "Lọc trúng/trượt (win|miss)"
 // @Param        from query string false "Từ thời gian (RFC3339)"
@@ -165,6 +167,7 @@ func (ctrl *Controller) ListSpins(c *gin.Context) (interface{}, error) {
 	if raw := c.Query("outcome"); raw == "win" || raw == "miss" {
 		filter.Outcome = raw
 	}
+	filter.Query = strings.TrimSpace(c.Query("q"))
 	if raw := c.Query("from"); raw != "" {
 		t, err := time.Parse(time.RFC3339, raw)
 		if err != nil {

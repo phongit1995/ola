@@ -1,6 +1,8 @@
 package adminkenchest
 
 import (
+	"strings"
+
 	"ola-chat-server/internal/middleware"
 	"ola-chat-server/internal/modules/kenchest"
 	"ola-chat-server/internal/utils"
@@ -86,6 +88,7 @@ func (ctrl *Controller) Detail(c *gin.Context) (interface{}, error) {
 // @Produce      json
 // @Security     BearerAuth
 // @Param        id path string true "Chest ID"
+// @Param        q query string false "Tìm theo username/tên người mở"
 // @Param        limit query int false "Page size"
 // @Param        offset query int false "Offset"
 // @Success      200  {object}  kenchest.ClaimListResponse
@@ -95,9 +98,31 @@ func (ctrl *Controller) ListClaims(c *gin.Context) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+	search := strings.TrimSpace(c.Query("q"))
 	limit := utils.ParseLimit(c, 20, 100)
 	offset := utils.ParseOffset(c)
-	resp, err := ctrl.service.ListClaims(id, limit, offset)
+	resp, err := ctrl.service.ListClaims(id, search, limit, offset)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
+// ListAllClaims godoc
+// @Summary      Lịch sử nhận KEN tất cả rương (admin)
+// @Tags         admin-ken-chest
+// @Produce      json
+// @Security     BearerAuth
+// @Param        q query string false "Tìm theo username/tên người nhận"
+// @Param        limit query int false "Page size"
+// @Param        offset query int false "Offset"
+// @Success      200  {object}  kenchest.ClaimHistoryListResponse
+// @Router       /admin/ken/claims [get]
+func (ctrl *Controller) ListAllClaims(c *gin.Context) (interface{}, error) {
+	search := strings.TrimSpace(c.Query("q"))
+	limit := utils.ParseLimit(c, 20, 100)
+	offset := utils.ParseOffset(c)
+	resp, err := ctrl.service.ListAllClaims(search, limit, offset)
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}

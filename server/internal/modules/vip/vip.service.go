@@ -281,7 +281,12 @@ func (s *Service) Transfer(userID, instanceID, toUserID uuid.UUID, password stri
 	if sender.VipUsedInstanceID != nil && *sender.VipUsedInstanceID == instanceID {
 		return ErrVipInUse
 	}
-	return s.repo.Transfer(instanceID, toUserID)
+	return s.repo.Transfer(TransferParams{
+		InstanceID: instanceID,
+		FromUserID: userID,
+		ToUserID:   toUserID,
+		VipIconID:  item.VipIconID,
+	})
 }
 
 func (s *Service) clearActiveIfGone(userID, instanceID uuid.UUID, typeID int16) error {
@@ -616,6 +621,54 @@ func (s *Service) ListHistory(userID *uuid.UUID, limit, offset int) (*HistoryLis
 		out = append(out, toHistoryItem(&items[i]))
 	}
 	return &HistoryListResponse{
+		Total:  int(total),
+		Limit:  limit,
+		Offset: offset,
+		Items:  out,
+	}, nil
+}
+
+func toTransferHistoryItem(t *models.VipTransfer, users map[uuid.UUID]TransferUser) TransferHistoryItem {
+	from := users[t.FromUserID]
+	to := users[t.ToUserID]
+	return TransferHistoryItem{
+		ID:           t.ID.String(),
+		FromUserID:   t.FromUserID.String(),
+		FromUsername: from.Username,
+		FromFullName: from.FullName,
+		ToUserID:     t.ToUserID.String(),
+		ToUsername:   to.Username,
+		ToFullName:   to.FullName,
+		VipIconID:    t.VipIconID,
+		CreatedAt:    t.CreatedAt.Format(time.RFC3339),
+	}
+}
+
+func (s *Service) ListTransfers(userID *uuid.UUID, q string, limit, offset int) (*TransferHistoryListResponse, error) {
+	items, total, err := s.repo.ListTransfers(userID, q, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	idSet := make(map[uuid.UUID]struct{}, len(items)*2)
+	for i := range items {
+		idSet[items[i].FromUserID] = struct{}{}
+		idSet[items[i].ToUserID] = struct{}{}
+	}
+	ids := make([]uuid.UUID, 0, len(idSet))
+	for id := range idSet {
+		ids = append(ids, id)
+	}
+	users, err := s.repo.FindUsers(ids)
+	if err != nil {
+		return nil, err
+	}
+
+	out := make([]TransferHistoryItem, 0, len(items))
+	for i := range items {
+		out = append(out, toTransferHistoryItem(&items[i], users))
+	}
+	return &TransferHistoryListResponse{
 		Total:  int(total),
 		Limit:  limit,
 		Offset: offset,

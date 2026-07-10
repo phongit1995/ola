@@ -30,16 +30,20 @@ export function UserSessionsModal({ open, userId, username, onClose }: UserSessi
     {
       title: 'Thời gian',
       dataIndex: 'lastActiveAt',
-      width: 160,
+      width: 170,
       render: (v?: string) => formatDateTime(v),
     },
     {
       title: 'Thiết bị',
       dataIndex: 'deviceName',
-      width: 240,
+      width: 280,
       render: (v: string | undefined, r) => (
-        <div style={{ maxWidth: 220 }}>
-          <Typography.Text style={{ display: 'block' }} ellipsis={{ tooltip: v }}>
+        <div style={{ maxWidth: 260 }}>
+          <Typography.Text
+            style={{ display: 'block' }}
+            ellipsis={{ tooltip: v }}
+            copyable={v ? { text: v } : false}
+          >
             {v || '—'}
           </Typography.Text>
           {r.userAgent && (
@@ -47,6 +51,7 @@ export function UserSessionsModal({ open, userId, username, onClose }: UserSessi
               type="secondary"
               style={{ display: 'block', fontSize: 11 }}
               ellipsis={{ tooltip: r.userAgent }}
+              copyable={{ text: r.userAgent }}
             >
               {r.userAgent}
             </Typography.Text>
@@ -63,19 +68,21 @@ export function UserSessionsModal({ open, userId, username, onClose }: UserSessi
     {
       title: 'IP',
       dataIndex: 'ipAddress',
-      width: 130,
-      render: (v?: string) => v || '—',
+      width: 160,
+      render: (v?: string) =>
+        v ? <Typography.Text copyable={{ text: v }}>{v}</Typography.Text> : '—',
     },
     {
       title: 'Phiên bản',
       dataIndex: 'appVersion',
-      width: 100,
-      render: (v?: string) => v || '—',
+      width: 120,
+      render: (v?: string) =>
+        v ? <Typography.Text copyable={{ text: v }}>{v}</Typography.Text> : '—',
     },
     {
       title: 'Trạng thái',
       dataIndex: 'isActive',
-      width: 120,
+      width: 130,
       render: (v: boolean) =>
         v ? <Tag color="green">Đang hoạt động</Tag> : <Tag>Đã thu hồi</Tag>,
     },
@@ -87,7 +94,9 @@ export function UserSessionsModal({ open, userId, username, onClose }: UserSessi
       open={open}
       onCancel={onClose}
       footer={null}
-      width={820}
+      width={1000}
+      style={{ maxWidth: '95vw', top: 32 }}
+      styles={{ body: { maxHeight: '72vh', overflowY: 'auto' } }}
       destroyOnHidden
     >
       <Table<AdminUserSession>
@@ -96,6 +105,7 @@ export function UserSessionsModal({ open, userId, username, onClose }: UserSessi
         columns={columns}
         dataSource={data?.items ?? []}
         loading={isFetching}
+        scroll={{ x: 'max-content' }}
         pagination={{
           current: page,
           pageSize: PAGE_SIZE,

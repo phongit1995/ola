@@ -3,6 +3,7 @@ package websocket
 import (
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/services"
+	"ola-chat-server/internal/utils"
 	"fmt"
 	"strconv"
 	"time"
@@ -10,6 +11,12 @@ import (
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 )
+
+type PresenceInfo struct {
+	IsOnline     bool
+	LastActiveAt string
+	DeviceType   string
+}
 
 type PresenceService struct {
 	cache  *services.CacheService
@@ -96,46 +103,106 @@ func (s *PresenceService) RemoveConnection(userID string) (bool, error) {
 }
 
 func (s *PresenceService) RefreshPresence(userID string) error {
-	key := s.getPresenceKey(userID)
-	return s.cache.SetExpire(key, time.Duration(constants.PresenceTTLSeconds)*time.Second)
+	ttl := time.Duration(constants.PresenceTTLSeconds) * time.Second
+	if err := s.cache.SetExpire(s.getDeviceKey(userID), ttl); err != nil {
+		s.logger.Debugw("Failed to refresh device ttl", "user_id", userID, "error", err)
+	}
+	return s.cache.SetExpire(s.getPresenceKey(userID), ttl)
 }
 
-func (s *PresenceService) IsUserOnline(userID string) bool {
-	key := s.getPresenceKey(userID)
-	exists, err := s.cache.Exists(key)
-	if err != nil {
+func (s *PresenceService) getDeviceKey(userID string) string {
+	return fmt.Sprintf(constants.CacheKeyPresenceDevice, userID)
+}
+
+func (s *PresenceService) SetDevice(userID, deviceType string) error {
+	if deviceType == "" {
+		return nil
+	}
+	key := s.getDeviceKey(userID)
+	client := s.cache.GetClient()
+	ctx := s.cache.GetContext()
+	ttl := time.Duration(constants.PresenceTTLSeconds) * time.Second
+	if err := client.Set(ctx, key, deviceType, ttl).Err(); err != nil {
+		s.logger.Warnw("Failed to set device", "user_id", userID, "error", err)
+		return err
+	}
+	return nil
+}
+
+func parseOnlineRaw(val interface{}) bool {
+	str, ok := val.(string)
+	if !ok {
 		return false
 	}
-	return exists
+	count, _ := strconv.Atoi(str)
+	return count > 0
 }
 
-func (s *PresenceService) GetOnlineUsers(userIDs []string) map[string]bool {
-	result := make(map[string]bool, len(userIDs))
+func parsePresenceString(val interface{}) string {
+	str, ok := val.(string)
+	if !ok {
+		return ""
+	}
+	return str
+}
+
+func buildPresenceInfo(onlineRaw bool, lastActiveRaw, deviceRaw string) PresenceInfo {
+	isOnline, lastActiveOut := utils.ApplyOnlineGrace(onlineRaw, lastActiveRaw)
+	deviceType := ""
+	if isOnline {
+		deviceType = deviceRaw
+	}
+	return PresenceInfo{IsOnline: isOnline, LastActiveAt: lastActiveOut, DeviceType: deviceType}
+}
+
+func (s *PresenceService) GetPresence(userID string) PresenceInfo {
+	client := s.cache.GetClient()
+	ctx := s.cache.GetContext()
+
+	values, err := client.MGet(ctx,
+		s.getPresenceKey(userID),
+		s.getLastActiveKey(userID),
+		s.getDeviceKey(userID),
+	).Result()
+	if err != nil || len(values) < 3 {
+		if err != nil {
+			s.logger.Errorw("Failed to get presence", "user_id", userID, "error", err)
+		}
+		return PresenceInfo{}
+	}
+
+	return buildPresenceInfo(parseOnlineRaw(values[0]), parsePresenceString(values[1]), parsePresenceString(values[2]))
+}
+
+func (s *PresenceService) GetPresenceBatch(userIDs []string) map[string]PresenceInfo {
+	result := make(map[string]PresenceInfo, len(userIDs))
 	if len(userIDs) == 0 {
 		return result
 	}
 
-	keys := make([]string, len(userIDs))
-	for i, userID := range userIDs {
-		keys[i] = s.getPresenceKey(userID)
+	keys := make([]string, 0, len(userIDs)*3)
+	for _, userID := range userIDs {
+		keys = append(keys, s.getPresenceKey(userID), s.getLastActiveKey(userID), s.getDeviceKey(userID))
 	}
 
 	client := s.cache.GetClient()
 	ctx := s.cache.GetContext()
 
 	values, err := client.MGet(ctx, keys...).Result()
-	if err != nil {
-		s.logger.Errorw("Failed to batch check online status", "error", err)
+	if err != nil || len(values) < len(keys) {
+		if err != nil {
+			s.logger.Errorw("Failed to batch get presence", "error", err)
+		}
 		return result
 	}
 
-	for i, val := range values {
-		if val != nil {
-			count, _ := strconv.Atoi(val.(string))
-			result[userIDs[i]] = count > 0
-		} else {
-			result[userIDs[i]] = false
-		}
+	for i, userID := range userIDs {
+		base := i * 3
+		result[userID] = buildPresenceInfo(
+			parseOnlineRaw(values[base]),
+			parsePresenceString(values[base+1]),
+			parsePresenceString(values[base+2]),
+		)
 	}
 
 	return result
@@ -155,45 +222,6 @@ func (s *PresenceService) SetLastActive(userID string) error {
 		return err
 	}
 	return nil
-}
-
-func (s *PresenceService) GetLastActive(userID string) string {
-	key := s.getLastActiveKey(userID)
-	client := s.cache.GetClient()
-	ctx := s.cache.GetContext()
-	val, err := client.Get(ctx, key).Result()
-	if err != nil {
-		return ""
-	}
-	return val
-}
-
-func (s *PresenceService) GetLastActiveBatch(userIDs []string) map[string]string {
-	result := make(map[string]string, len(userIDs))
-	if len(userIDs) == 0 {
-		return result
-	}
-
-	keys := make([]string, len(userIDs))
-	for i, userID := range userIDs {
-		keys[i] = s.getLastActiveKey(userID)
-	}
-
-	client := s.cache.GetClient()
-	ctx := s.cache.GetContext()
-	values, err := client.MGet(ctx, keys...).Result()
-	if err != nil {
-		s.logger.Errorw("Failed to batch get last_active", "error", err)
-		return result
-	}
-	for i, val := range values {
-		if val != nil {
-			if str, ok := val.(string); ok {
-				result[userIDs[i]] = str
-			}
-		}
-	}
-	return result
 }
 
 func (s *PresenceService) GetConnectionCount(userID string) int {

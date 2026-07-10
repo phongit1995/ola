@@ -26,6 +26,7 @@ interface ProfileCardProps {
   onPostMe: () => void;
   onUpdateInfo: () => void;
   onOpenUser?: (nick: string) => void;
+  onOpenFollowers?: () => void;
 }
 
 function InfoRow({ icon, text, note }: { icon: string; text: React.ReactNode; note?: boolean }) {
@@ -49,6 +50,7 @@ export function ProfileCard({
   onPostMe,
   onUpdateInfo,
   onOpenUser,
+  onOpenFollowers,
 }: ProfileCardProps) {
   const { t } = useTranslation();
   const openViewer = useMediaViewerStore((s) => s.openViewer);
@@ -253,10 +255,15 @@ export function ProfileCard({
 
       <div className="mx-4 h-px bg-black/12" />
 
-      <div className="mt-4 flex items-center justify-center gap-1">
+      <button
+        type="button"
+        onClick={onOpenFollowers}
+        disabled={onOpenFollowers == null || profile.fans === 0}
+        className="mt-4 flex w-full items-center justify-center gap-1 rounded-lg py-1 transition-colors hover:bg-black/5 disabled:opacity-100 disabled:hover:bg-transparent"
+      >
         <b className="text-xl text-black">{profile.fans}</b>
         <span className="text-xs text-black/54">{t('profile.peopleCare')}</span>
-      </div>
+      </button>
 
       <button
         type="button"

@@ -22,6 +22,7 @@ export function useUserProfile(username: string, seedColor: string): ProfileCont
   const [userId, setUserId] = useState('');
   const [relationship, setRelationship] = useState<RelationshipInfo>(NO_RELATIONSHIP);
   const [secondary, setSecondary] = useState<ProfileSecondary>(EMPTY_SECONDARY);
+  const canViewInterestedRef = useRef(true);
 
   const formatTime = useMemo(() => createTimeFormatter(i18n.language), [i18n.language]);
   const formatDate = useMemo(() => createDateFormatter(i18n.language), [i18n.language]);
@@ -40,6 +41,7 @@ export function useUserProfile(username: string, seedColor: string): ProfileCont
   const loadProfile = useCallback(async () => {
     const data = await UserService.publicProfile(username);
     setUserId(data.id);
+    canViewInterestedRef.current = data.canViewInterested !== false;
     setRelationship(data.relationship ?? NO_RELATIONSHIP);
     setProfile(mapPublicProfile(data, mapDeps));
     setNotFound(false);
@@ -58,13 +60,16 @@ export function useUserProfile(username: string, seedColor: string): ProfileCont
   const loadSecondary = useCallback(
     async (id: string) => {
       setSecondary((s) => ({ ...s, loading: true }));
-      const [postsResult, followingResult] = await Promise.all([
+      const canView = canViewInterestedRef.current;
+      const [postsResult, followingResult, followersResult] = await Promise.all([
         MeService.byUser(id, { limit: 30 }).catch(() => null),
-        UserService.following(id, { limit: 12 }).catch(() => null),
+        canView ? UserService.following(id, { limit: 12 }).catch(() => null) : Promise.resolve(null),
+        canView ? UserService.followers(id, { limit: 12 }).catch(() => null) : Promise.resolve(null),
       ]);
       setSecondary({
         media: [],
         following: mapFollowing(followingResult?.users ?? []),
+        followers: mapFollowing(followersResult?.users ?? []),
         posts: mapPosts(postsResult?.items ?? [], formatTime),
         loading: false,
       });

@@ -51,6 +51,12 @@ func (h *EventHandler) handleConnection(client *socket.Socket, userID string) {
 		h.server.logger.Errorw("Failed to add presence", "user_id", userID, "error", err)
 	}
 
+	if data, ok := client.Data().(*SocketData); ok {
+		if err := h.presenceService.SetDevice(userID, data.Platform); err != nil {
+			h.server.logger.Warnw("Failed to set device", "user_id", userID, "error", err)
+		}
+	}
+
 	h.server.logger.Infow("WebSocket connected",
 		"user_id", userID,
 		"socket_id", client.Id(),

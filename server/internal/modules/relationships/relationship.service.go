@@ -9,7 +9,6 @@ import (
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/transport/websocket"
-	"ola-chat-server/internal/utils"
 	"sort"
 	"time"
 
@@ -562,12 +561,12 @@ func (s *Service) GetFriends(userID uuid.UUID) (*FriendListResponse, error) {
 		for i := range friends {
 			friendIDs[i] = friends[i].ID
 		}
-		online := s.presence.GetOnlineUsers(friendIDs)
-		lastActive := s.presence.GetLastActiveBatch(friendIDs)
+		presenceMap := s.presence.GetPresenceBatch(friendIDs)
 		for i, id := range friendIDs {
-			isOnline, lastActiveStr := utils.ApplyOnlineGrace(online[id], lastActive[id])
-			friends[i].IsOnline = isOnline
-			friends[i].LastActiveAt = lastActiveStr
+			info := presenceMap[id]
+			friends[i].IsOnline = info.IsOnline
+			friends[i].LastActiveAt = info.LastActiveAt
+			friends[i].DeviceType = info.DeviceType
 		}
 		sort.SliceStable(friends, func(i, j int) bool {
 			if friends[i].IsOnline != friends[j].IsOnline {
@@ -630,7 +629,6 @@ func (s *Service) buildFriendBase(u *models.User, actionedAt *time.Time) FriendR
 		FullName:   u.FullName,
 		Bio:        u.Bio,
 		BioImage:   u.BioImage,
-		DeviceType: "android",
 		VipUsed:    u.VipUsed,
 	}
 	if u.DateOfBirth != nil {

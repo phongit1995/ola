@@ -5,6 +5,7 @@ import { UsersPage } from '@/pages/UsersPage'
 import { RoomsPage } from '@/pages/RoomsPage'
 import { VipPackagesPage } from '@/pages/VipPackagesPage'
 import { VipShopPage } from '@/pages/VipShopPage'
+import { VipTransfersPage } from '@/pages/VipTransfersPage'
 import { EggRewardsPage } from '@/pages/EggRewardsPage'
 import { EggStatsPage } from '@/pages/EggStatsPage'
 import { WheelRewardsPage } from '@/pages/WheelRewardsPage'
@@ -38,6 +39,7 @@ export const router = createBrowserRouter([
       { path: 'rooms', element: <RoomsPage /> },
       { path: 'vip-packages', element: <VipPackagesPage /> },
       { path: 'vip-shop', element: <VipShopPage /> },
+      { path: 'vip-transfers', element: <VipTransfersPage /> },
       { path: 'games/egg', element: <EggRewardsPage /> },
       { path: 'games/egg/stats', element: <EggStatsPage /> },
       { path: 'games/wheel', element: <WheelRewardsPage /> },

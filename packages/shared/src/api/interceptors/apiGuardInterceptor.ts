@@ -1,13 +1,6 @@
 import type { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
-import { hmac } from '@noble/hashes/hmac.js';
-import { sha512 } from '@noble/hashes/sha2.js';
-import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js';
 import { env } from '../../config';
-import { randomUuid } from '../../lib/randomUuid';
-
-function signHex(secret: string, value: string): string {
-  return bytesToHex(hmac(sha512, utf8ToBytes(secret), utf8ToBytes(value)));
-}
+import { signApiGuard } from '../apiGuardSigner';
 
 function stripQuery(url: string): string {
   return url.split(/[?#]/, 1)[0] ?? '';
@@ -33,17 +26,14 @@ export function registerApiGuardInterceptor(http: AxiosInstance): void {
   if (!env.apiGuardSecret) return;
 
   http.interceptors.request.use((config) => {
-    const timestamp = Date.now().toString();
-    const nonce = randomUuid();
-    const method = (config.method ?? 'get').toUpperCase();
+    const method = config.method ?? 'get';
     const path = resolveRequestPath(config);
+    const signed = signApiGuard(method, path);
+    if (!signed) return config;
 
-    const canonical = [timestamp, nonce, method, path].join('\n');
-    const signature = signHex(env.apiGuardSecret, canonical);
-
-    config.headers.set('X-Timestamp', timestamp);
-    config.headers.set('X-Nonce', nonce);
-    config.headers.set('X-Signature', signature);
+    config.headers.set('X-Timestamp', signed.timestamp);
+    config.headers.set('X-Nonce', signed.nonce);
+    config.headers.set('X-Signature', signed.signature);
     return config;
   });
 }

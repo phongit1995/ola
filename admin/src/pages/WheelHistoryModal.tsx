@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
-import { Modal, Select, Space, Table, Tag, Typography } from 'antd'
+import { Input, Modal, Select, Space, Table, Tag, Typography } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import { useWheelSpins } from '@/hooks/useWheel'
+import { useDebounce } from '@/hooks/useDebounce'
 import type { AdminWheelSpin, WheelSegmentKind } from '@/types'
 import { WHEEL_KINDS, kindMeta } from './wheel/wheelHelpers'
 
@@ -27,17 +28,20 @@ function rewardText(spin: AdminWheelSpin): string {
 
 export function WheelHistoryModal({ open, onClose }: WheelHistoryModalProps) {
   const [page, setPage] = useState(1)
+  const [search, setSearch] = useState('')
   const [kind, setKind] = useState<WheelSegmentKind | ''>('')
   const [outcome, setOutcome] = useState<'' | 'win' | 'miss'>('')
+  const q = useDebounce(search.trim())
 
   const params = useMemo(
     () => ({
       limit: PAGE_SIZE,
       offset: (page - 1) * PAGE_SIZE,
+      ...(q ? { q } : {}),
       ...(kind ? { segmentKind: kind } : {}),
       ...(outcome ? { outcome } : {}),
     }),
-    [page, kind, outcome]
+    [page, q, kind, outcome]
   )
 
   const { data, isFetching } = useWheelSpins(params, open)
@@ -54,7 +58,17 @@ export function WheelHistoryModal({ open, onClose }: WheelHistoryModalProps) {
     {
       title: 'Người chơi',
       key: 'user',
-      render: (_, spin) => spin.user?.fullName || spin.user?.username || '—',
+      render: (_, spin) =>
+        spin.user ? (
+          <Space direction="vertical" size={0}>
+            {spin.user.fullName && <Typography.Text>{spin.user.fullName}</Typography.Text>}
+            <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+              @{spin.user.username}
+            </Typography.Text>
+          </Space>
+        ) : (
+          '—'
+        ),
     },
     {
       title: 'Ô',
@@ -89,7 +103,18 @@ export function WheelHistoryModal({ open, onClose }: WheelHistoryModalProps) {
 
   return (
     <Modal title="Lịch sử quay" open={open} onCancel={onClose} footer={null} width={860} destroyOnHidden>
-      <Space style={{ marginBottom: 12 }}>
+      <Space style={{ marginBottom: 12 }} wrap>
+        <Input.Search
+          allowClear
+          size="small"
+          style={{ width: 220 }}
+          placeholder="Tìm theo tên / @username"
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value)
+            setPage(1)
+          }}
+        />
         <Typography.Text type="secondary">Loại ô</Typography.Text>
         <Select
           size="small"

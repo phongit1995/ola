@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"ola-chat-server/internal/models"
+	"ola-chat-server/internal/utils"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -30,6 +31,21 @@ type ClaimRow struct {
 	Username string `gorm:"column:username"`
 	FullName string `gorm:"column:full_name"`
 	Avatar   string `gorm:"column:avatar"`
+}
+
+type ClaimHistoryRow struct {
+	ClaimRow
+	ChestSource string `gorm:"column:chest_source"`
+}
+
+func userSearchScope(search string) func(*gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
+		if search == "" {
+			return db
+		}
+		like := utils.LikeContains(search)
+		return db.Where("users.username ILIKE ? OR users.full_name ILIKE ?", like, like)
+	}
 }
 
 func (r *Repository) CreateChest(chest *models.KenChest) error {
@@ -64,20 +80,50 @@ func (r *Repository) ListChests(limit, offset int) ([]models.KenChest, int64, er
 	return chests, total, nil
 }
 
-func (r *Repository) ListClaims(chestID uuid.UUID, limit, offset int) ([]ClaimRow, int64, error) {
-	var total int64
-	if err := r.db.Model(&models.KenChestClaim{}).Where("chest_id = ?", chestID).Count(&total).Error; err != nil {
-		return nil, 0, err
-	}
-	var rows []ClaimRow
-	err := r.db.Table("ken_chest_claims").
+func (r *Repository) ListClaims(chestID uuid.UUID, search string, limit, offset int) ([]ClaimRow, int64, error) {
+	countQ := r.db.Model(&models.KenChestClaim{}).
+		Joins("LEFT JOIN users ON users.id = ken_chest_claims.user_id").
+		Where("ken_chest_claims.chest_id = ?", chestID).
+		Scopes(userSearchScope(search))
+	listQ := r.db.Table("ken_chest_claims").
 		Select("ken_chest_claims.*, users.username, users.full_name, users.avatar").
 		Joins("LEFT JOIN users ON users.id = ken_chest_claims.user_id").
 		Where("ken_chest_claims.chest_id = ?", chestID).
+		Scopes(userSearchScope(search))
+
+	var total int64
+	if err := countQ.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+	var rows []ClaimRow
+	if err := listQ.
 		Order("ken_chest_claims.created_at DESC").
 		Limit(limit).Offset(offset).
-		Scan(&rows).Error
-	if err != nil {
+		Scan(&rows).Error; err != nil {
+		return nil, 0, err
+	}
+	return rows, total, nil
+}
+
+func (r *Repository) ListAllClaims(search string, limit, offset int) ([]ClaimHistoryRow, int64, error) {
+	countQ := r.db.Model(&models.KenChestClaim{}).
+		Joins("LEFT JOIN users ON users.id = ken_chest_claims.user_id").
+		Scopes(userSearchScope(search))
+	listQ := r.db.Table("ken_chest_claims").
+		Select("ken_chest_claims.*, users.username, users.full_name, users.avatar, ken_chests.source AS chest_source").
+		Joins("LEFT JOIN users ON users.id = ken_chest_claims.user_id").
+		Joins("LEFT JOIN ken_chests ON ken_chests.id = ken_chest_claims.chest_id").
+		Scopes(userSearchScope(search))
+
+	var total int64
+	if err := countQ.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+	var rows []ClaimHistoryRow
+	if err := listQ.
+		Order("ken_chest_claims.created_at DESC").
+		Limit(limit).Offset(offset).
+		Scan(&rows).Error; err != nil {
 		return nil, 0, err
 	}
 	return rows, total, nil

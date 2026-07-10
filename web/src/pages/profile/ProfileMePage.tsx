@@ -13,7 +13,10 @@ import marriageIcon from '@/assets/icons/profile/ic_profile_marriage.png';
 import cameraIcon from '@/assets/icons/profile/ic_action_camera.png';
 import { Avatar, ScreenHeader, FullScreenOverlay, UserName, VipIcon } from '@components';
 import { CoverImageEditor } from './components/CoverImageEditor';
+import { FollowingListOverlay } from './components/FollowingListOverlay';
 import { UserProfileView } from './UserProfileView';
+import { mapFollowing } from './mappers';
+import type { ProfileFriend } from './types';
 import { COVER_ASPECT } from './constants';
 import { MePostCard } from '../me/components/MePostCard';
 import { MePostInteractions, type MePostSource } from '../me/MePostInteractions';
@@ -34,6 +37,11 @@ export function ProfileMePage() {
   const [uploadingCover, setUploadingCover] = useState(false);
   const [coverPreview, setCoverPreview] = useState<{ url: string; file: File } | null>(null);
   const [spouseTarget, setSpouseTarget] = useState<{ username: string; color: string } | null>(null);
+  const [followingOpen, setFollowingOpen] = useState(false);
+  const [followingList, setFollowingList] = useState<ProfileFriend[]>([]);
+  const [followersOpen, setFollowersOpen] = useState(false);
+  const [followersList, setFollowersList] = useState<ProfileFriend[]>([]);
+  const [friendTarget, setFriendTarget] = useState<{ username: string; color: string } | null>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
   const formatTime = useMemo(() => createTimeFormatter(i18n.language), [i18n.language]);
@@ -170,6 +178,26 @@ export function ProfileMePage() {
   const openSpouse = () => {
     if (spouse) setSpouseTarget({ username: spouse.username, color: colorForName(spouse.username) });
   };
+  const openFollowing = async () => {
+    if ((user.followingCount ?? 0) === 0) return;
+    try {
+      const res = await UserService.following(user.id, { limit: 100 });
+      setFollowingList(mapFollowing(res.users));
+      setFollowingOpen(true);
+    } catch {
+      toast.error(t('common.error'));
+    }
+  };
+  const openFollowers = async () => {
+    if ((user.followerCount ?? 0) === 0) return;
+    try {
+      const res = await UserService.followers(user.id, { limit: 100 });
+      setFollowersList(mapFollowing(res.users));
+      setFollowersOpen(true);
+    } catch {
+      toast.error(t('common.error'));
+    }
+  };
   const vipTypeId = activeVipTypeId(user.vipUsed, user.vipEndTime);
   const mePosts = posts
     .map((post) => toMePost(post, formatTime))
@@ -261,14 +289,24 @@ export function ProfileMePage() {
           <div className="mx-4 h-px bg-black/12" />
 
           <div className="mt-4 flex items-center justify-center gap-6">
-            <div className="flex items-baseline gap-1">
+            <button
+              type="button"
+              onClick={openFollowers}
+              disabled={(user.followerCount ?? 0) === 0}
+              className="flex items-baseline gap-1 rounded-lg px-3 py-1 transition-colors hover:bg-black/5 disabled:opacity-100 disabled:hover:bg-transparent"
+            >
               <b className="text-xl text-black">{user.followerCount ?? 0}</b>
               <span className="text-xs text-black/54">{t('profile.peopleCare')}</span>
-            </div>
-            <div className="flex items-baseline gap-1">
+            </button>
+            <button
+              type="button"
+              onClick={openFollowing}
+              disabled={(user.followingCount ?? 0) === 0}
+              className="flex items-baseline gap-1 rounded-lg px-3 py-1 transition-colors hover:bg-black/5 disabled:opacity-100 disabled:hover:bg-transparent"
+            >
               <b className="text-xl text-black">{user.followingCount ?? 0}</b>
               <span className="text-xs text-black/54">{t('profile.following')}</span>
-            </div>
+            </button>
           </div>
 
           {user.bio ? (
@@ -338,6 +376,36 @@ export function ProfileMePage() {
         </MePostInteractions>
       </div>
     </FullScreenOverlay>
+    {followingOpen ? (
+      <FollowingListOverlay
+        following={followingList}
+        onClose={() => setFollowingOpen(false)}
+        onSelect={(friend) => {
+          setFollowingOpen(false);
+          setFriendTarget({ username: friend.name, color: friend.color });
+        }}
+      />
+    ) : null}
+    {followersOpen ? (
+      <FollowingListOverlay
+        title={t('profile.peopleCare')}
+        following={followersList}
+        onClose={() => setFollowersOpen(false)}
+        onSelect={(friend) => {
+          setFollowersOpen(false);
+          setFriendTarget({ username: friend.name, color: friend.color });
+        }}
+      />
+    ) : null}
+    {friendTarget ? (
+      <UserProfileView
+        key={friendTarget.username}
+        username={friendTarget.username}
+        color={friendTarget.color}
+        onClose={() => setFriendTarget(null)}
+        onOpenFriend={(friend) => setFriendTarget({ username: friend.name, color: friend.color })}
+      />
+    ) : null}
     {spouseTarget ? (
       <UserProfileView
         key={spouseTarget.username}

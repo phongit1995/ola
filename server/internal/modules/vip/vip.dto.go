@@ -111,6 +111,25 @@ type HistoryListResponse struct {
 	Items  []PurchaseHistoryItem `json:"items"`
 }
 
+type TransferHistoryItem struct {
+	ID           string `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	FromUserID   string `json:"fromUserId" example:"550e8400-e29b-41d4-a716-446655440000"`
+	FromUsername string `json:"fromUsername" example:"phong"`
+	FromFullName string `json:"fromFullName" example:"Phong Phan"`
+	ToUserID     string `json:"toUserId" example:"660e8400-e29b-41d4-a716-446655440000"`
+	ToUsername   string `json:"toUsername" example:"minhanh"`
+	ToFullName   string `json:"toFullName" example:"Minh Anh"`
+	VipIconID    int16  `json:"vipIconId" example:"4"`
+	CreatedAt    string `json:"createdAt" example:"2026-06-19T10:00:00Z"`
+}
+
+type TransferHistoryListResponse struct {
+	Total  int                   `json:"total" example:"1"`
+	Limit  int                   `json:"limit" example:"50"`
+	Offset int                   `json:"offset" example:"0"`
+	Items  []TransferHistoryItem `json:"items"`
+}
+
 type CreatePackageRequest struct {
 	Name      string `json:"name" binding:"required,max=100" example:"Gói 30 ngày"`
 	Days      int    `json:"days" binding:"required,min=1,max=3650" example:"30"`
@@ -157,7 +176,7 @@ type ShopListResponse struct {
 }
 
 type CreateShopItemRequest struct {
-	VipTypeID int16 `json:"vipTypeId" binding:"required,min=1,max=126" example:"4"`
+	VipTypeID int16 `json:"vipTypeId" binding:"required,min=1,max=132" example:"4"`
 	KenPrice  int   `json:"kenPrice" binding:"min=0" example:"100"`
 	IsActive  *bool `json:"isActive" example:"true"`
 	SortOrder int   `json:"sortOrder" example:"0"`
@@ -178,6 +197,7 @@ type BuyPackageSuccessResponse = utils.BaseResponse[BuyPackageResponse]
 type GiftPackageSuccessResponse = utils.BaseResponse[GiftPackageResponse]
 type GiftIconSuccessResponse = utils.BaseResponse[GiftIconResponse]
 type HistoryListSuccessResponse = utils.BaseResponse[HistoryListResponse]
+type TransferHistoryListSuccessResponse = utils.BaseResponse[TransferHistoryListResponse]
 type ShopCatalogSuccessResponse = utils.BaseResponse[ShopCatalogResponse]
 type BuyIconSuccessResponse = utils.BaseResponse[BuyIconResponse]
 type ShopListSuccessResponse = utils.BaseResponse[ShopListResponse]

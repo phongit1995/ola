@@ -12,6 +12,7 @@ import {
 import {
   buildOptimisticRoomImage,
   markRoomMessageByClientMsgId,
+  markRoomMessageById,
   reconcileRoomServerMessage,
   withSenderVip,
   toRecord,
@@ -234,9 +235,7 @@ export const useRoomChatStore = create<RoomChatState>((set, get) => {
         const updated = await RoomService.toggleMessageReaction(room.id, messageId, type);
         if (get().activeRoom?.id !== room.id) return;
         set((state) => ({
-          messages: state.messages.map((item) =>
-            item.id === messageId ? { ...item, reactions: updated.reactions } : item
-          ),
+          messages: markRoomMessageById(state.messages, messageId, { reactions: updated.reactions }),
         }));
       } catch {
         return;

@@ -45,14 +45,9 @@ const playerColumns: ColumnsType<PenStatsPlayer> = [
     render: (_, row) => (
       <Space>
         <Avatar size="small" src={row.user.avatar || undefined}>
-          {row.user.fullName?.[0] ?? row.user.username?.[0] ?? '?'}
+          {row.user.username?.[0] ?? '?'}
         </Avatar>
-        <div>
-          <Typography.Text strong>{row.user.fullName || row.user.username}</Typography.Text>
-          <Typography.Text type="secondary" style={{ display: 'block', fontSize: 12 }}>
-            @{row.user.username}
-          </Typography.Text>
-        </div>
+        <Typography.Text strong>@{row.user.username}</Typography.Text>
       </Space>
     ),
   },

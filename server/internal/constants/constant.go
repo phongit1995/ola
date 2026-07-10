@@ -144,11 +144,12 @@ const (
 )
 
 const (
-	CacheKeyPresence      = "PRESENCE:%s:ONLINE"
-	PresenceTTLSeconds    = 300
-	CacheKeyLastActive    = "PRESENCE:%s:LAST_ACTIVE"
-	LastActiveTTLSeconds  = 365 * 24 * 60 * 60
-	OnlineGraceWindowSecs = 120
+	CacheKeyPresence       = "PRESENCE:%s:ONLINE"
+	PresenceTTLSeconds     = 300
+	CacheKeyLastActive     = "PRESENCE:%s:LAST_ACTIVE"
+	LastActiveTTLSeconds   = 365 * 24 * 60 * 60
+	OnlineGraceWindowSecs  = 120
+	CacheKeyPresenceDevice = "PRESENCE:%s:DEVICE"
 )
 
 const (

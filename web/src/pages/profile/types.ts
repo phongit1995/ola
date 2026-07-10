@@ -51,6 +51,7 @@ export interface UserProfile {
 export interface ProfileSecondary {
   media: string[];
   following: ProfileFriend[];
+  followers: ProfileFriend[];
   posts: MePost[];
   loading: boolean;
 }

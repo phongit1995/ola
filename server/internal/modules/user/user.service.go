@@ -14,7 +14,6 @@ import (
 	usersetting "ola-chat-server/internal/modules/user-setting"
 	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/transport/websocket"
-	"ola-chat-server/internal/utils"
 	"time"
 
 	"github.com/google/uuid"
@@ -217,7 +216,7 @@ func (s *Service) SearchUsers(query string, limit int, currentUserID uuid.UUID) 
 		userIDs[i] = u.ID.String()
 		userUUIDs[i] = u.ID
 	}
-	onlineMap := s.presence.GetOnlineUsers(userIDs)
+	presenceMap := s.presence.GetPresenceBatch(userIDs)
 	relMap := s.relationshipMap(currentUserID, userUUIDs)
 
 	results := make([]UserSearchResult, 0, len(users))
@@ -229,7 +228,7 @@ func (s *Service) SearchUsers(query string, limit int, currentUserID uuid.UUID) 
 			FullName:     user.FullName,
 			Avatar:       user.Avatar,
 			Bio:          user.Bio,
-			IsOnline:     onlineMap[user.ID.String()],
+			IsOnline:     presenceMap[user.ID.String()].IsOnline,
 			Relationship: rel.status,
 			RequestID:    rel.requestID,
 			VipUsed:      user.VipUsed,
@@ -289,16 +288,15 @@ func (s *Service) relationshipMap(meID uuid.UUID, otherIDs []uuid.UUID) map[uuid
 }
 
 func (s *Service) GetPresenceBatch(userIDs []string) *PresenceBatchResponse {
-	online := s.presence.GetOnlineUsers(userIDs)
-	lastActive := s.presence.GetLastActiveBatch(userIDs)
+	presenceMap := s.presence.GetPresenceBatch(userIDs)
 
 	users := make([]UserPresence, 0, len(userIDs))
 	for _, id := range userIDs {
-		isOnline, lastActiveStr := utils.ApplyOnlineGrace(online[id], lastActive[id])
+		info := presenceMap[id]
 		users = append(users, UserPresence{
 			UserID:       id,
-			IsOnline:     isOnline,
-			LastActiveAt: lastActiveStr,
+			IsOnline:     info.IsOnline,
+			LastActiveAt: info.LastActiveAt,
 		})
 	}
 
@@ -376,11 +374,9 @@ func (s *Service) GetMyVisitors(meID uuid.UUID, cursor string, limit int) (*Visi
 
 	if len(otherIDs) > 0 {
 		relMap := s.relationshipMap(meID, otherIDs)
-		online := s.presence.GetOnlineUsers(ids)
-		lastActive := s.presence.GetLastActiveBatch(ids)
+		presenceMap := s.presence.GetPresenceBatch(ids)
 		for i, id := range ids {
-			isOnline, _ := utils.ApplyOnlineGrace(online[id], lastActive[id])
-			items[i].IsOnline = isOnline
+			items[i].IsOnline = presenceMap[id].IsOnline
 			if rel, ok := relMap[otherIDs[i]]; ok {
 				items[i].Relationship = &RelationshipInfo{Status: rel.status, RequestID: rel.requestID}
 			} else {
@@ -454,8 +450,20 @@ func (s *Service) canSeeBirthday(callerID, ownerID uuid.UUID) bool {
 	return settings.ShowBirthday
 }
 
+func (s *Service) canSeeInterested(callerID, ownerID uuid.UUID) bool {
+	if callerID == ownerID {
+		return true
+	}
+	settings, err := s.userSettingSvc.GetSettings(ownerID)
+	if err != nil {
+		return true
+	}
+	return settings.ShowInterested
+}
+
 func (s *Service) buildPublicProfile(callerID uuid.UUID, user *models.User) *UserPublicProfileResponse {
 	idStr := user.ID.String()
+	presence := s.presence.GetPresence(idStr)
 
 	response := &UserPublicProfileResponse{
 		ID:             idStr,
@@ -473,8 +481,8 @@ func (s *Service) buildPublicProfile(callerID uuid.UUID, user *models.User) *Use
 		FollowerCount:  user.FollowerCount,
 		FollowingCount: user.FollowingCount,
 		AntiCount:      user.AntiCount,
-		IsOnline:       s.presence.IsUserOnline(idStr),
-		LastActiveAt:   s.presence.GetLastActive(idStr),
+		IsOnline:       presence.IsOnline,
+		LastActiveAt:   presence.LastActiveAt,
 		CreatedAt:      user.CreatedAt.Format(time.RFC3339),
 		Relationship:   s.resolveRelationship(callerID, user.ID),
 	}
@@ -486,6 +494,12 @@ func (s *Service) buildPublicProfile(callerID uuid.UUID, user *models.User) *Use
 	response.Spouse = s.resolveSpouse(user)
 
 	s.applyFollowFlags(callerID, user.ID, response.Relationship)
+
+	response.CanViewInterested = s.canSeeInterested(callerID, user.ID)
+	if !response.CanViewInterested {
+		response.FollowerCount = 0
+		response.FollowingCount = 0
+	}
 
 	return response
 }
@@ -601,6 +615,15 @@ func (s *Service) ListFollowing(callerID, userID uuid.UUID, limit, offset int) (
 	if err := s.ensureNotBlockedByTarget(callerID, userID); err != nil {
 		return nil, err
 	}
+	if callerID != userID {
+		settings, err := s.userSettingSvc.GetSettings(userID)
+		if err != nil {
+			return nil, err
+		}
+		if !settings.ShowInterested {
+			return s.buildFollowList(nil, 0, limit, offset), nil
+		}
+	}
 	users, total, err := s.repo.ListFollowing(userID, limit, offset)
 	if err != nil {
 		return nil, err
@@ -623,12 +646,11 @@ func (s *Service) buildFollowList(users []*models.User, total int64, limit, offs
 	}
 
 	if len(ids) > 0 {
-		online := s.presence.GetOnlineUsers(ids)
-		lastActive := s.presence.GetLastActiveBatch(ids)
+		presenceMap := s.presence.GetPresenceBatch(ids)
 		for i, id := range ids {
-			isOnline, lastActiveStr := utils.ApplyOnlineGrace(online[id], lastActive[id])
-			items[i].IsOnline = isOnline
-			items[i].LastActiveAt = lastActiveStr
+			info := presenceMap[id]
+			items[i].IsOnline = info.IsOnline
+			items[i].LastActiveAt = info.LastActiveAt
 		}
 	}
 

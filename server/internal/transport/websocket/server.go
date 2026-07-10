@@ -1,13 +1,15 @@
 package websocket
 
 import (
+	"context"
+	"fmt"
+	"net/http"
 	"ola-chat-server/internal/config"
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/utils"
-	"context"
-	"fmt"
-	"net/http"
+	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
@@ -37,6 +39,30 @@ type Server struct {
 type SocketData struct {
 	UserID      string
 	JoinedRooms map[string]bool
+	Platform    string
+}
+
+const (
+	wsGuardMethod  = "WS"
+	wsGuardPath    = "/socket.io/"
+	wsGuardMaxSkew = 10 * time.Second
+)
+
+func authString(auth map[string]any, key string) string {
+	if v, ok := auth[key].(string); ok {
+		return v
+	}
+	return ""
+}
+
+func resolveSocketPlatform(auth map[string]any, userAgent string) string {
+	if v, ok := auth["platform"].(string); ok {
+		p := strings.TrimSpace(v)
+		if p != "" && p != "web" {
+			return p
+		}
+	}
+	return utils.ParsePlatform(userAgent)
 }
 
 func NewServer(
@@ -118,7 +144,19 @@ func NewServer(
 			}
 		}
 
-		data := &SocketData{UserID: userID.String(), JoinedRooms: make(map[string]bool)}
+		if cfg.APIGuardSecret != "" {
+			ts := authString(auth, "ts")
+			nonce := authString(auth, "nonce")
+			sig := authString(auth, "sig")
+			if !utils.APIGuardVerify(cfg.APIGuardSecret, ts, nonce, sig, wsGuardMethod, wsGuardPath, wsGuardMaxSkew) {
+				server.logger.Warnw("WebSocket rejected: invalid client signature", "user_id", userID)
+				next(socket.NewExtendedError("invalid client signature", nil))
+				return
+			}
+		}
+
+		platform := resolveSocketPlatform(auth, s.Request().Headers().Peek("User-Agent"))
+		data := &SocketData{UserID: userID.String(), JoinedRooms: make(map[string]bool), Platform: platform}
 		s.SetData(data)
 
 		server.logger.Infow("WebSocket authenticated", "user_id", userID)

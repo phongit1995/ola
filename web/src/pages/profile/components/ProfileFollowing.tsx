@@ -15,7 +15,14 @@ export function ProfileFollowing({ following, onSelect }: ProfileFollowingProps)
   return (
     <>
       <div className="mb-2 bg-white pb-1 shadow-[0_1px_2px_rgba(0,0,0,0.18)]">
-        <h3 className="mx-4 py-2 text-base text-black/87">{t('profile.following')}</h3>
+        <button
+          type="button"
+          onClick={() => setShowAll(true)}
+          className="flex w-full items-center justify-between px-4 py-2 transition-colors hover:bg-black/5 active:bg-black/5"
+        >
+          <h3 className="text-base text-black/87">{t('profile.following')}</h3>
+          <span className="text-sm text-black/38">{t('profile.viewAll')} ›</span>
+        </button>
         <div className="grid grid-cols-5 gap-1 px-2">
           {following.slice(0, 5).map((friend) => (
             <button
@@ -37,15 +44,6 @@ export function ProfileFollowing({ following, onSelect }: ProfileFollowingProps)
             </button>
           ))}
         </div>
-        {following.length > 5 && (
-          <button
-            type="button"
-            onClick={() => setShowAll(true)}
-            className="block w-full py-3 text-center text-sm text-black/54 active:bg-black/5"
-          >
-            {t('profile.viewAll')}
-          </button>
-        )}
       </div>
 
       {showAll && (

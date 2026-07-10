@@ -90,6 +90,7 @@ services:
       - WEBSOCKET_REDIS_DB=${WEBSOCKET_REDIS_DB:-1}
       - JWT_SECRET=${JWT_SECRET:-your-jwt-secret-change-in-production-min-32-chars}
       - JWT_EXPIRY=${JWT_EXPIRY:-24h}
+      - API_GUARD_SECRET=${API_GUARD_SECRET:-}
       - KAFKA_BROKERS=${KAFKA_BROKERS:-kafka:9092}
       - CHAT_PORT=${CHAT_PORT:-8081}
       - SERVICE_NAME=chat

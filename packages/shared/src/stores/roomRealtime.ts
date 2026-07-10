@@ -4,6 +4,7 @@ import { useAuthStore } from './authStore';
 import { ROOM_SOCKET_EVENTS, type RoomMessage, type RoomReactor } from '../types';
 import { playRoomTagSound } from '../platform/sound';
 import {
+  markRoomMessageById,
   messageMentionsUser,
   reconcileRoomServerMessage,
   toRecord,
@@ -77,9 +78,7 @@ function handleReactionUpdated(get: RoomGet, set: RoomSet, data: unknown) {
     actorUserId !== me?.id &&
     actorUsername !== '';
   set((state) => ({
-    messages: state.messages.map((item) =>
-      item.id === messageId ? { ...item, reactions } : item
-    ),
+    messages: markRoomMessageById(state.messages, messageId, { reactions }),
     ...(notifyOwnMessageReaction
       ? {
           reactionNotice: {

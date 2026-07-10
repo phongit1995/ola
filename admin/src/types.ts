@@ -52,6 +52,15 @@ export interface ListParams {
   offset?: number
 }
 
+export interface KenClaimHistoryItem {
+  id: string
+  kenAmount: number
+  isEmpty: boolean
+  chestSource: 'manual' | 'auto'
+  createdAt: string
+  user: { id: string; username: string; fullName?: string; avatar?: string }
+}
+
 export interface ListResult<T> {
   items: T[]
   total: number
@@ -286,6 +295,25 @@ export interface UpdateVipShopItemRequest {
   kenPrice?: number
   isActive?: boolean
   sortOrder?: number
+}
+
+export interface AdminVipTransfer {
+  id: string
+  fromUserId: string
+  fromUsername: string
+  fromFullName: string
+  toUserId: string
+  toUsername: string
+  toFullName: string
+  vipIconId: number
+  createdAt: string
+}
+
+export interface VipTransferListParams {
+  q?: string
+  userId?: string
+  limit?: number
+  offset?: number
 }
 
 export interface Room {
@@ -699,6 +727,7 @@ export interface AdminWheelSpin extends WheelSpin {
 }
 
 export interface WheelSpinListParams {
+  q?: string
   userId?: string
   segmentKind?: WheelSegmentKind
   outcome?: 'win' | 'miss'

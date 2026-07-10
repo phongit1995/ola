@@ -127,4 +127,10 @@ export const VIP_ICONS: ImageSourcePropType[] = [
   require('../assets/vip/vip_124.png'),
   require('../assets/vip/vip_125.png'),
   require('../assets/vip/vip_126.png'),
+  require('../assets/vip/vip_127.png'),
+  require('../assets/vip/vip_128.png'),
+  require('../assets/vip/vip_129.png'),
+  require('../assets/vip/vip_130.png'),
+  require('../assets/vip/vip_131.png'),
+  require('../assets/vip/vip_132.png'),
 ];

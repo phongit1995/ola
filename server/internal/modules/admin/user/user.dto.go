@@ -108,5 +108,5 @@ type ResetPasswordRequest struct {
 }
 
 type GrantVipRequest struct {
-	VipTypeID int16 `json:"vipTypeId" binding:"required,min=1,max=126" example:"4"`
+	VipTypeID int16 `json:"vipTypeId" binding:"required,min=1,max=132" example:"4"`
 }
