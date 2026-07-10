@@ -12,9 +12,10 @@ const kulTabIcon = require('../../assets/icons/chat/ic_tab_kul.png');
 
 interface SmileyKulPanelProps {
   tab?: PanelTab;
+  hideKul?: boolean;
   onPickEmoji: (code: string) => void;
   onBackspace?: () => void;
-  onSendKul: (index: number) => void;
+  onSendKul?: (index: number) => void;
 }
 
 const TABS: Array<{ key: PanelTab; icon: number }> = [
@@ -23,13 +24,21 @@ const TABS: Array<{ key: PanelTab; icon: number }> = [
   { key: 'kul', icon: kulTabIcon },
 ];
 
-function PanelTabBar({ active, onSelect }: { active: PanelTab; onSelect: (tab: PanelTab) => void }) {
+function PanelTabBar({
+  active,
+  tabs,
+  onSelect,
+}: {
+  active: PanelTab;
+  tabs: Array<{ key: PanelTab; icon: number }>;
+  onSelect: (tab: PanelTab) => void;
+}) {
   return (
     <View
       className="flex-row"
       style={{ height: 44, borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.12)' }}
     >
-      {TABS.map((tab) => {
+      {tabs.map((tab) => {
         const isActive = tab.key === active;
         return (
           <Pressable
@@ -56,14 +65,15 @@ function PanelTabBar({ active, onSelect }: { active: PanelTab; onSelect: (tab: P
   );
 }
 
-export function SmileyKulPanel({ tab, onPickEmoji, onBackspace, onSendKul }: SmileyKulPanelProps) {
-  const [innerTab, setInnerTab] = useState<PanelTab>('smiley');
+export function SmileyKulPanel({ tab, hideKul, onPickEmoji, onBackspace, onSendKul }: SmileyKulPanelProps) {
+  const visibleTabs = hideKul === true ? TABS.filter((item) => item.key !== 'kul') : TABS;
+  const [innerTab, setInnerTab] = useState<PanelTab>(hideKul === true ? 'emoji' : 'smiley');
   const controlled = tab != null;
   const active = controlled ? tab : innerTab;
 
   return (
     <View className="bg-white" style={{ borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.12)' }}>
-      {!controlled && <PanelTabBar active={innerTab} onSelect={setInnerTab} />}
+      {!controlled && <PanelTabBar active={innerTab} tabs={visibleTabs} onSelect={setInnerTab} />}
       <View style={{ height: 220 }}>
         <ScrollView contentContainerClassName="flex-row flex-wrap p-2">
           {active === 'emoji'
@@ -91,7 +101,7 @@ export function SmileyKulPanel({ tab, onPickEmoji, onBackspace, onSendKul }: Smi
             : KUL_IMAGES.map((image, index) => (
                 <Pressable
                   key={index}
-                  onPress={() => onSendKul(index + 1)}
+                  onPress={() => onSendKul?.(index + 1)}
                   className="items-center justify-center p-1"
                   style={{ width: `${100 / 6}%`, height: 64 }}
                 >

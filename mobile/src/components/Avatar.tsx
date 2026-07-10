@@ -5,10 +5,11 @@ interface AvatarProps {
   name: string;
   uri?: string;
   size?: number;
+  rounded?: boolean;
 }
 
-export function Avatar({ name, uri, size = 48 }: AvatarProps) {
-  const style = { width: size, height: size, borderRadius: size / 2 };
+export function Avatar({ name, uri, size = 48, rounded = true }: AvatarProps) {
+  const style = { width: size, height: size, borderRadius: rounded ? size / 2 : 0 };
   if (uri != null && uri !== '') {
     return <Image source={{ uri }} style={style} />;
   }
@@ -18,7 +19,7 @@ export function Avatar({ name, uri, size = 48 }: AvatarProps) {
       className="items-center justify-center"
       style={[style, { backgroundColor: colorForName(name) }]}
     >
-      <Text className="font-semibold text-white" style={{ fontSize: size * 0.4 }}>
+      <Text className="font-medium text-white" style={{ fontSize: size * 0.45 }}>
         {initial}
       </Text>
     </View>

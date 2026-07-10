@@ -11,6 +11,7 @@ import { useAuthStore } from '@ola/shared/stores/authStore';
 import { RootNavigator } from './navigation/RootNavigator';
 import { ToastHost } from './components/ToastHost';
 import { MediaViewer } from './components/MediaViewer';
+import { useMeNotificationRealtime } from './hooks/useMeNotificationRealtime';
 import { checkForOtaUpdate } from './services/otaUpdate';
 
 function clearSession() {
@@ -20,6 +21,7 @@ function clearSession() {
 }
 
 export default function App() {
+  useMeNotificationRealtime();
   useEffect(() => {
     if (!__DEV__) void checkForOtaUpdate();
     setOnUnauthorized(clearSession);

@@ -11,11 +11,12 @@ const PAGE_SIZE = 30;
 
 interface MeLikersDialogProps {
   postId: string;
+  commentId?: string;
   onClose: () => void;
   onOpenProfile?: (nick: string, color: string) => void;
 }
 
-export function MeLikersDialog({ postId, onClose, onOpenProfile }: MeLikersDialogProps) {
+export function MeLikersDialog({ postId, commentId, onClose, onOpenProfile }: MeLikersDialogProps) {
   const { t } = useTranslation();
   const push = useToastStore((s) => s.push);
   const [likers, setLikers] = useState<PostAuthor[]>([]);
@@ -26,11 +27,19 @@ export function MeLikersDialog({ postId, onClose, onOpenProfile }: MeLikersDialo
   const [error, setError] = useState(false);
   const [requested, setRequested] = useState<Record<string, boolean>>({});
 
+  const fetchPage = useCallback(
+    (offset: number) =>
+      commentId != null
+        ? MeService.commentLikers(postId, commentId, { limit: PAGE_SIZE, offset })
+        : MeService.likers(postId, { limit: PAGE_SIZE, offset }),
+    [postId, commentId]
+  );
+
   useEffect(() => {
     let active = true;
     (async () => {
       try {
-        const result = await MeService.likers(postId, { limit: PAGE_SIZE, offset: 0 });
+        const result = await fetchPage(0);
         if (!active) return;
         setLikers(result.items);
         setTotal(result.total);
@@ -44,7 +53,7 @@ export function MeLikersDialog({ postId, onClose, onOpenProfile }: MeLikersDialo
     return () => {
       active = false;
     };
-  }, [postId]);
+  }, [fetchPage]);
 
   const hasMore = !reachedEnd && likers.length < total;
 
@@ -52,7 +61,7 @@ export function MeLikersDialog({ postId, onClose, onOpenProfile }: MeLikersDialo
     if (loading || loadingMore || !hasMore) return;
     setLoadingMore(true);
     try {
-      const result = await MeService.likers(postId, { limit: PAGE_SIZE, offset: likers.length });
+      const result = await fetchPage(likers.length);
       setLikers((current) => [...current, ...result.items]);
       setTotal(result.total);
       if (result.items.length < PAGE_SIZE) setReachedEnd(true);
@@ -61,7 +70,7 @@ export function MeLikersDialog({ postId, onClose, onOpenProfile }: MeLikersDialo
     } finally {
       setLoadingMore(false);
     }
-  }, [postId, likers.length, loading, loadingMore, hasMore]);
+  }, [fetchPage, likers.length, loading, loadingMore, hasMore]);
 
   function openProfile(name: string) {
     onOpenProfile?.(name, colorForName(name));
@@ -99,11 +108,11 @@ export function MeLikersDialog({ postId, onClose, onOpenProfile }: MeLikersDialo
             <FlatList
               data={likers}
               keyExtractor={(item) => item.id}
-              style={{ maxHeight: 360 }}
+              style={{ maxHeight: 320 }}
               onEndReached={() => void loadMore()}
               onEndReachedThreshold={0.3}
               ListFooterComponent={loadingMore ? <ActivityIndicator className="py-3" color="#7cb342" /> : null}
-              renderItem={({ item }) => {
+              renderItem={({ item, index }) => {
                 const isSelf = item.isSelf === true || item.relationship?.status === 'self';
                 const isFriend = item.isFriend === true || item.relationship?.status === 'friend';
                 const sent =
@@ -111,17 +120,27 @@ export function MeLikersDialog({ postId, onClose, onOpenProfile }: MeLikersDialo
                 const title = item.fullName != null && item.fullName !== '' ? item.fullName : item.username;
                 return (
                   <View
-                    className="flex-row items-center gap-3 py-3"
-                    style={{ borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.12)' }}
+                    className="flex-row items-center gap-3 px-2 py-3"
+                    style={{
+                      borderBottomWidth: index === likers.length - 1 ? 0 : 1,
+                      borderBottomColor: 'rgba(0,0,0,0.12)',
+                    }}
                   >
                     <Pressable
                       onPress={() => openProfile(item.username)}
                       className="min-w-0 flex-1 flex-row items-center gap-3"
                     >
-                      <Avatar name={item.username} uri={item.avatar ?? undefined} size={48} />
-                      <Text numberOfLines={1} className="min-w-0 flex-1 text-base font-medium" style={{ color: 'rgba(0,0,0,0.87)' }}>
-                        {title}
-                      </Text>
+                      <Avatar name={item.username} uri={item.avatar ?? undefined} size={44} rounded={false} />
+                      <View className="min-w-0 flex-1">
+                        <Text numberOfLines={1} className="text-base font-medium" style={{ color: 'rgba(0,0,0,0.87)' }}>
+                          {title}
+                        </Text>
+                        {item.fullName != null && item.fullName !== '' && (
+                          <Text numberOfLines={1} className="text-sm" style={{ color: 'rgba(0,0,0,0.45)' }}>
+                            @{item.username}
+                          </Text>
+                        )}
+                      </View>
                     </Pressable>
                     {!isSelf &&
                       (isFriend ? (

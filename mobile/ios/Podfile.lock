@@ -1521,6 +1521,28 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
+  - react-native-geolocation (3.4.0):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - Yoga
   - react-native-get-random-values (2.0.0):
     - hermes-engine
     - RCTRequired
@@ -2387,6 +2409,7 @@ DEPENDENCIES:
   - React-mutationobservernativemodule (from `../../node_modules/react-native/ReactCommon/react/nativemodule/mutationobserver`)
   - react-native-blob-util (from `../../node_modules/react-native-blob-util`)
   - react-native-config (from `../../node_modules/react-native-config`)
+  - "react-native-geolocation (from `../../node_modules/@react-native-community/geolocation`)"
   - react-native-get-random-values (from `../../node_modules/react-native-get-random-values`)
   - react-native-image-picker (from `../../node_modules/react-native-image-picker`)
   - react-native-ota-hot-update (from `../../node_modules/react-native-ota-hot-update`)
@@ -2528,6 +2551,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/react-native-blob-util"
   react-native-config:
     :path: "../../node_modules/react-native-config"
+  react-native-geolocation:
+    :path: "../../node_modules/@react-native-community/geolocation"
   react-native-get-random-values:
     :path: "../../node_modules/react-native-get-random-values"
   react-native-image-picker:
@@ -2668,6 +2693,7 @@ SPEC CHECKSUMS:
   React-mutationobservernativemodule: f0a0d5ae9b51caf7becbeabf836d716cfedb6bf2
   react-native-blob-util: 13e70f811eb34f14864622c4afa37cc20fe8100e
   react-native-config: 6188f674e4f4b3bdfd43c22886fb04f3103793ff
+  react-native-geolocation: c41d1ad8e832fa800b4e457c721e348bcc5aa147
   react-native-get-random-values: 68792987aef40e8aa72dc448d97e009d1f440c88
   react-native-image-picker: 23540feacc79c63c60857f318fdfa8477c26e70a
   react-native-ota-hot-update: d0d125c3cb85245d9bebafe7f69a423195ea93a3

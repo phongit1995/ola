@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Animated, Image, ImageBackground, Pressable, ScrollView, Text, View } from 'react-native';
+import { Animated, Image, ImageBackground, Modal, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Avatar } from '../../components/Avatar';
 
@@ -15,7 +15,7 @@ const funnyIcon = require('../../assets/icons/me/ic_indicate_funny.png');
 const publicIcon = require('../../assets/icons/me/ic_indicate_public.png');
 const rssIcon = require('../../assets/icons/me/ic_indicate_rss.png');
 
-const WIDTH = 260;
+const WIDTH = 240;
 
 interface MeLeftDrawerProps {
   displayName: string;
@@ -62,7 +62,7 @@ export function MeLeftDrawer({
   ];
 
   return (
-    <View className="absolute inset-0" style={{ zIndex: 40 }}>
+    <Modal transparent animationType="none" onRequestClose={onClose}>
       <Animated.View style={{ flex: 1, opacity: backdrop }} className="bg-black/30">
         <Pressable className="flex-1" onPress={onClose} />
       </Animated.View>
@@ -75,14 +75,19 @@ export function MeLeftDrawer({
             source={coverUrl != null ? { uri: coverUrl } : undefined}
             className="flex-1 justify-end bg-ola-primary-dark"
           >
-            <View
-              className="flex-row items-center gap-2 px-2 pb-2 pt-8"
-              style={{ backgroundColor: 'rgba(0,0,0,0.45)' }}
-            >
-              <Avatar name={displayName} uri={avatarUrl} size={40} />
-              <Text numberOfLines={1} className="flex-1 text-base font-medium text-white">
-                {displayName}
-              </Text>
+            <View>
+              <View className="absolute inset-0">
+                <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.05)' }} />
+                <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.25)' }} />
+                <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }} />
+                <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.7)' }} />
+              </View>
+              <View className="flex-row items-center gap-2 px-2 pb-2 pt-8">
+                <Avatar name={displayName} uri={avatarUrl} size={40} />
+                <Text numberOfLines={1} className="flex-1 text-base font-medium text-white">
+                  {displayName}
+                </Text>
+              </View>
             </View>
           </ImageBackground>
         </Pressable>
@@ -110,14 +115,14 @@ export function MeLeftDrawer({
 
         <Pressable
           onPress={onLogout}
-          className="h-12 flex-row items-center gap-2 border-t px-4 active:bg-black/5"
-          style={{ borderTopColor: 'rgba(0,0,0,0.1)', paddingBottom: insets.bottom }}
+          className="flex-row items-center gap-2 border-t px-4 active:bg-black/5"
+          style={{ borderTopColor: 'rgba(0,0,0,0.1)', height: 48 + insets.bottom, paddingBottom: insets.bottom }}
         >
-          <Text className="text-base font-medium" style={{ color: '#e53935' }}>
+          <Text className="text-base font-medium" style={{ color: '#e34545' }}>
             {t('home.logout')}
           </Text>
         </Pressable>
       </Animated.View>
-    </View>
+    </Modal>
   );
 }

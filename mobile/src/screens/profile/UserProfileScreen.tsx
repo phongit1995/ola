@@ -25,6 +25,7 @@ import {
   isSameDay,
 } from '@ola/shared/lib';
 import type { Post, PublicProfile } from '@ola/shared/types';
+import { useMeLocalStore } from '../../store/meLocalStore';
 import { Avatar } from '../../components/Avatar';
 import { VipAvatar } from '../../components/VipAvatar';
 import { MePostCard } from '../me/MePostCard';
@@ -128,6 +129,15 @@ export function UserProfileScreen({ username, language, onClose, onOpenProfile, 
         setKisses(data.kisses);
         setNotFound(false);
         setLoading(false);
+        if (data.id !== useAuthStore.getState().user?.id) {
+          useMeLocalStore.getState().recordViewedProfile({
+            id: data.id,
+            username: data.username,
+            fullName: data.fullName,
+            avatar: data.avatar,
+            vipTypeId: activeVipTypeId(data.vipUsed, data.vipEndTime),
+          });
+        }
         const result = await MeService.byUser(data.id, { limit: 30 }).catch(() => null);
         if (!active) return;
         setPosts(result?.items ?? []);

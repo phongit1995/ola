@@ -11,8 +11,9 @@ import Animated, {
   type SharedValue,
 } from 'react-native-reanimated';
 import { colorForName } from '@ola/shared/lib';
-import type { Post, PostCheckIn } from '@ola/shared/types';
+import type { Post, PostAuthor, PostCheckIn } from '@ola/shared/types';
 import { renderRichText } from '../../lib/richText';
+import { stickerImageForCode } from '../../lib/kul';
 import { Avatar } from '../../components/Avatar';
 
 const moreIcon = require('../../assets/icons/me/ic_more.png');
@@ -23,9 +24,31 @@ const likeIcon = require('../../assets/icons/me/ic_like_gray.png');
 const likeIconActive = require('../../assets/icons/me/ic_like_selected.png');
 const likeStickerFly = require('../../assets/icons/me/sticker_like.png');
 const checkInIcon = require('../../assets/icons/me/ic_check_in.png');
+const pinIcon = require('../../assets/icons/me/ic_pin.png');
 
 function formatLikeCount(count: number): string {
   return count > 9 ? '9+' : String(count);
+}
+
+function LikerStack({ likers }: { likers: PostAuthor[] }) {
+  if (likers.length === 0) return null;
+  return (
+    <View className="flex-row">
+      {likers.map((liker, index) => (
+        <View
+          key={liker.id ?? index}
+          style={{
+            marginLeft: index === 0 ? 0 : -6,
+            borderRadius: 999,
+            borderWidth: 2,
+            borderColor: '#ffffff',
+          }}
+        >
+          <Avatar name={liker.username} uri={liker.avatar ?? undefined} size={18} />
+        </View>
+      ))}
+    </View>
+  );
 }
 
 function CheckInCard({ checkIn }: { checkIn: PostCheckIn }) {
@@ -100,13 +123,13 @@ function MediaGrid({ photos, onOpen }: { photos: string[]; onOpen?: (index: numb
   if (count === 1) {
     return (
       <Pressable onPress={() => onOpen?.(0)} className="mx-4 mt-3">
-        <Image source={{ uri: photos[0] }} style={{ height: 260, borderRadius: 4 }} resizeMode="cover" />
+        <Image source={{ uri: photos[0] }} style={{ height: 384, borderRadius: 4 }} resizeMode="cover" />
       </Pressable>
     );
   }
 
   if (count === 2 || count === 4) {
-    const height = count === 2 ? 170 : 150;
+    const height = count === 2 ? 176 : 160;
     const rows = count === 2 ? [photos] : [photos.slice(0, 2), photos.slice(2, 4)];
     return (
       <View className="mx-4 mt-3 gap-2">
@@ -125,7 +148,7 @@ function MediaGrid({ photos, onOpen }: { photos: string[]; onOpen?: (index: numb
     return (
       <View className="mx-4 mt-3 flex-row gap-2">
         {photos.map((url, i) => (
-          <MediaCell key={url} url={url} height={110} onOpen={() => onOpen?.(i)} />
+          <MediaCell key={url} url={url} height={112} onOpen={() => onOpen?.(i)} />
         ))}
       </View>
     );
@@ -138,7 +161,7 @@ function MediaGrid({ photos, onOpen }: { photos: string[]; onOpen?: (index: numb
     <View className="mx-4 mt-3 gap-2">
       <View className="flex-row gap-2">
         {top.map((url, i) => (
-          <MediaCell key={url} url={url} height={160} onOpen={() => onOpen?.(i)} />
+          <MediaCell key={url} url={url} height={176} onOpen={() => onOpen?.(i)} />
         ))}
       </View>
       <View className="flex-row gap-2">
@@ -146,7 +169,7 @@ function MediaGrid({ photos, onOpen }: { photos: string[]; onOpen?: (index: numb
           <MediaCell
             key={url}
             url={url}
-            height={110}
+            height={112}
             extra={i === bottom.length - 1 ? extra : undefined}
             onOpen={() => onOpen?.(i + 2)}
           />
@@ -163,6 +186,7 @@ interface MePostCardProps {
   onToggleDislike: (id: string) => void;
   onOpenProfile?: (author: string, color: string) => void;
   onOpenComments?: (id: string) => void;
+  onQuickComment?: (id: string) => void;
   onOpenMenu?: (id: string) => void;
   onOpenLikers?: (id: string) => void;
   onOpenPhotos?: (photos: string[], index: number) => void;
@@ -175,6 +199,7 @@ function MePostCardComponent({
   onToggleDislike,
   onOpenProfile,
   onOpenComments,
+  onQuickComment,
   onOpenMenu,
   onOpenLikers,
   onOpenPhotos,
@@ -190,8 +215,15 @@ function MePostCardComponent({
   const disliked = post.myReaction === 'dislike';
   const comments = post.commentCount;
   const likes = post.likeCount;
+  const topLikers = post.topLikers ?? [];
   const photos = post.images.map((image) => image.url);
   const sticker = post.sticker != null && post.sticker !== '' ? post.sticker : null;
+  const stickerImg = stickerImageForCode(post.sticker);
+
+  function handleCommentIcon() {
+    if (onQuickComment != null) onQuickComment(post.id);
+    else onOpenComments?.(post.id);
+  }
 
   const likeScale = useSharedValue(1);
   const dislikeScale = useSharedValue(1);
@@ -246,16 +278,14 @@ function MePostCardComponent({
           <Avatar name={author} uri={post.author?.avatar ?? undefined} size={40} />
           <View className="min-w-0 flex-1">
             <View className="flex-row items-center gap-1">
-              <Text numberOfLines={1} className="text-base" style={{ color: 'rgba(0,0,0,0.87)' }}>
+              <Text numberOfLines={1} className="min-w-0 shrink text-base" style={{ color: 'rgba(0,0,0,0.87)' }}>
                 {author}
+                {showFullName && (
+                  <Text style={{ color: 'rgba(0,0,0,0.54)' }}> · {fullName}</Text>
+                )}
               </Text>
-              {showFullName && (
-                <Text numberOfLines={1} className="text-base" style={{ color: 'rgba(0,0,0,0.54)' }}>
-                  {fullName}
-                </Text>
-              )}
               {post.isPinned && (
-                <Text className="text-xs" style={{ color: '#7cb342' }}>📌</Text>
+                <Image source={pinIcon} style={{ width: 14, height: 14 }} resizeMode="contain" />
               )}
             </View>
             <Text className="mt-0.5 text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>
@@ -270,7 +300,11 @@ function MePostCardComponent({
 
       {(post.content != null && post.content !== '') || sticker != null ? (
         <View className="flex-row items-start gap-2 px-4 pt-3">
-          {sticker != null && <Text style={{ fontSize: 40, lineHeight: 44 }}>{sticker}</Text>}
+          {stickerImg != null ? (
+            <Image source={stickerImg} style={{ width: 84, height: 84 }} resizeMode="contain" />
+          ) : sticker != null ? (
+            <Text style={{ fontSize: 48, lineHeight: 48 }}>{sticker}</Text>
+          ) : null}
           <View className="min-w-0 flex-1">
             <Text
               onTextLayout={onTextLayout}
@@ -300,7 +334,7 @@ function MePostCardComponent({
         <MediaGrid photos={photos} onOpen={(index) => onOpenPhotos?.(photos, index)} />
       )}
 
-      <View className="mx-4 mt-4 flex-row items-end">
+      <View className="mx-4 mt-4 flex-row items-end gap-1">
         <Pressable
           disabled={comments === 0}
           onPress={() => onOpenComments?.(post.id)}
@@ -311,8 +345,12 @@ function MePostCardComponent({
           </Text>
         </Pressable>
         {likes > 0 && (
-          <Pressable onPress={() => onOpenLikers?.(post.id)}>
-            <Text className="ml-2 text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>
+          <Pressable
+            onPress={() => onOpenLikers?.(post.id)}
+            className="ml-2 flex-row items-center gap-1"
+          >
+            <LikerStack likers={topLikers} />
+            <Text className="text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>
               {t('me.likeCount', { value: formatLikeCount(likes) })}
             </Text>
           </Pressable>
@@ -323,10 +361,10 @@ function MePostCardComponent({
 
       <View className="flex-row px-4 pb-3 pt-3">
         <Pressable
-          onPress={() => onOpenComments?.(post.id)}
+          onPress={handleCommentIcon}
           className="h-7 flex-1 flex-row items-center justify-center gap-1"
         >
-          <Image source={replyIcon} style={{ width: 26, height: 26 }} resizeMode="contain" />
+          <Image source={replyIcon} style={{ width: 28, height: 28 }} resizeMode="contain" />
           <Text className="text-sm" style={{ color: 'rgba(0,0,0,0.26)' }}>{t('me.comment')}</Text>
         </Pressable>
         <Pressable
@@ -335,7 +373,7 @@ function MePostCardComponent({
         >
           <Animated.Image
             source={disliked ? dislikeIconActive : dislikeIcon}
-            style={[{ width: 26, height: 26 }, dislikeIconStyle]}
+            style={[{ width: 28, height: 28 }, dislikeIconStyle]}
             resizeMode="contain"
           />
           <Text className="text-sm" style={{ color: disliked ? 'rgba(0,0,0,0.87)' : 'rgba(0,0,0,0.26)' }}>
@@ -348,7 +386,7 @@ function MePostCardComponent({
         >
           <Animated.Image
             source={liked ? likeIconActive : likeIcon}
-            style={[{ width: 26, height: 26 }, likeIconStyle]}
+            style={[{ width: 28, height: 28 }, likeIconStyle]}
             resizeMode="contain"
           />
           <Text className="text-sm" style={{ color: liked ? '#7cb342' : 'rgba(0,0,0,0.26)' }}>
@@ -358,12 +396,20 @@ function MePostCardComponent({
       </View>
 
       {flying && (
-        <View pointerEvents="none" style={{ position: 'absolute', right: 12, bottom: 30 }}>
-          <Animated.Image
-            source={likeStickerFly}
-            style={[{ width: 96, height: 96 }, flyStyle]}
-            resizeMode="contain"
-          />
+        <View
+          pointerEvents="none"
+          className="absolute flex-row px-4"
+          style={{ left: 0, right: 0, bottom: 6 }}
+        >
+          <View className="flex-1" />
+          <View className="flex-1" />
+          <View className="flex-1 items-center">
+            <Animated.Image
+              source={likeStickerFly}
+              style={[{ width: 96, height: 96 }, flyStyle]}
+              resizeMode="contain"
+            />
+          </View>
         </View>
       )}
     </View>

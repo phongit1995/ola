@@ -94,9 +94,9 @@ export function MeNotificationsScreen({ language, onClose, onOpenProfile }: MeNo
   return (
     <Modal visible transparent animationType="slide" onRequestClose={onClose}>
       <View className="flex-1 bg-[#f3f3f3]">
-        <View className="flex-row items-center bg-ola-primary px-1" style={{ paddingTop: insets.top }}>
+        <View className="flex-row items-center bg-ola-primary px-2" style={{ paddingTop: insets.top }}>
           <Pressable onPress={onClose} className="h-12 w-10 items-center justify-center">
-            <Text className="text-2xl leading-none text-white">×</Text>
+            <Text className="text-2xl leading-none text-white">‹</Text>
           </Pressable>
           <Text className="flex-1 text-sm font-bold text-white">{t('me.notifTitle')}</Text>
           <View className="w-10" />
@@ -114,6 +114,9 @@ export function MeNotificationsScreen({ language, onClose, onOpenProfile }: MeNo
             keyExtractor={(item) => item.id}
             onEndReached={() => void loadMore()}
             onEndReachedThreshold={0.4}
+            ItemSeparatorComponent={() => (
+              <View style={{ height: 1, marginHorizontal: 16, backgroundColor: 'rgba(0,0,0,0.12)' }} />
+            )}
             ListFooterComponent={loadingMore ? <ActivityIndicator className="my-4" color="#7cb342" /> : null}
             renderItem={({ item }) => {
               const name = item.actor?.fullName || item.actor?.username || '';
@@ -121,9 +124,8 @@ export function MeNotificationsScreen({ language, onClose, onOpenProfile }: MeNo
                 <Pressable
                   onPress={() => openNotification(item)}
                   className="flex-row items-start gap-3 bg-white/80 p-4 active:bg-black/5"
-                  style={{ borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.12)' }}
                 >
-                  <Avatar name={name} uri={item.actor?.avatar ?? undefined} size={48} />
+                  <Avatar name={name} uri={item.actor?.avatar ?? undefined} size={40} />
                   <View className="min-w-0 flex-1">
                     <Text className="text-sm leading-snug" style={{ color: 'rgba(0,0,0,0.87)' }}>
                       <Text className="font-bold">{name}</Text> {labelFor(item.type)}
