@@ -16,6 +16,13 @@ export function formatDateDMY(iso: string): string {
   return `${day}-${month}-${date.getFullYear()}`;
 }
 
+export function formatClockHM(iso?: string): string {
+  if (iso == null || iso === '') return '';
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return '';
+  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+}
+
 export function isSameDay(a: string, b: string): boolean {
   const da = new Date(a);
   const db = new Date(b);

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { formatDateDMY, toApiError, toast } from '@lib';
+import { formatClockHM, formatDateDMY, toApiError, toast } from '@lib';
 import { KenService } from '@services';
 import type { KenTransaction } from '@app-types';
 
@@ -42,12 +42,6 @@ function dayKey(date: Date): string {
   return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
 }
 
-function timeText(iso: string): string {
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return '';
-  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
-}
-
 function groupByDay(items: KenTransaction[]): KenHistoryGroup[] {
   const now = new Date();
   const todayKey = dayKey(now);
@@ -65,7 +59,7 @@ function groupByDay(items: KenTransaction[]): KenHistoryGroup[] {
       };
       groups.push(group);
     }
-    group.rows.push({ ...item, timeText: timeText(item.createdAt) });
+    group.rows.push({ ...item, timeText: formatClockHM(item.createdAt) });
   }
   return groups;
 }

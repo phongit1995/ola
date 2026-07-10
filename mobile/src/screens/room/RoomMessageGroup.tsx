@@ -1,7 +1,7 @@
 import { memo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Image, Pressable, Text, View } from 'react-native';
-import { colorForName } from '@ola/shared/lib';
+import { colorForName, formatClockHM } from '@ola/shared/lib';
 import type { RoomReplySnapshot } from '@ola/shared/types';
 import { kulImageForText } from '../../lib/kul';
 import { reactionChips } from '../../lib/reactions';
@@ -15,12 +15,6 @@ import { OTHER_CORNERS, OWN_CORNERS } from './roomConstants';
 const mentionIcon = require('../../assets/icons/room/ic_tag_people.png');
 const photoIcon = require('../../assets/icons/chat/ic_local.png');
 const resendIcon = require('../../assets/icons/chat/btn_resend_d.png');
-
-function clock(iso: string): string {
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return '';
-  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-}
 
 interface RoomMessageGroupProps {
   group: MessageGroup;
@@ -262,7 +256,7 @@ function RoomMessageGroupComponent({
 }: RoomMessageGroupProps) {
   const { isOwn, senderName } = group;
   const onMention = (nick: string) => onOpenProfile?.(nick, colorForName(nick));
-  const time = clock(group.messages[0]!.createdAt);
+  const time = formatClockHM(group.messages[0]!.createdAt);
   const openSender = () => onOpenUser?.(group.senderId);
   const lastIndex = group.messages.length - 1;
 

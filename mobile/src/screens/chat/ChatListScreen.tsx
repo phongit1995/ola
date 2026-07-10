@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { formatClockHM } from '@ola/shared/lib';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import type { Conversation } from '@ola/shared/types';
 import type { RootStackParamList } from '../../navigation/types';
@@ -31,13 +32,6 @@ const moreIcon = require('../../assets/icons/chat/ic_more_white.png');
 const SWIPE_MAX = 88;
 const SWIPE_TRIGGER = 56;
 const DIVIDER = 'rgba(0,0,0,0.12)';
-
-function formatClock(iso?: string): string {
-  if (iso == null || iso === '') return '';
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return '';
-  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
-}
 
 function displayName(conversation: Conversation): string {
   return (
@@ -139,7 +133,7 @@ function ConversationRow({ conversation, onPress, onDelete }: RowProps) {
                 className={`text-xs ${unread ? 'font-bold' : ''}`}
                 style={{ color: unread ? 'rgba(0,0,0,0.87)' : 'rgba(0,0,0,0.54)' }}
               >
-                {formatClock(conversation.lastMessageAt)}
+                {formatClockHM(conversation.lastMessageAt)}
               </Text>
             </View>
             <View className="mt-0.5 flex-row items-center gap-1">
