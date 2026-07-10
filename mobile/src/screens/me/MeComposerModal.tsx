@@ -107,7 +107,13 @@ export function MeComposerModal({ visible, onClose, editPost }: MeComposerModalP
     const room = MAX_IMAGES - photos.length;
     if (room <= 0) return;
     setPanel(null);
-    const result = await launchImageLibrary({ mediaType: 'photo', selectionLimit: room });
+    const result = await launchImageLibrary({
+      mediaType: 'photo',
+      selectionLimit: room,
+      maxWidth: 1920,
+      maxHeight: 1920,
+      quality: 0.9,
+    });
     if (result.didCancel) return;
     const assets = result.assets ?? [];
     if (assets.length === 0) {
