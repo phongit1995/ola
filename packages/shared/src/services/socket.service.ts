@@ -1,7 +1,9 @@
 import { io, type Socket } from 'socket.io-client';
 import { env } from '../config';
-import { ensureFreshToken } from '../api';
+import { ensureFreshToken, signApiGuard } from '../api';
 import { getDeviceInfo } from '../platform';
+
+const SOCKET_GUARD_PATH = '/socket.io/';
 
 const ENVELOPE_EVENT = 'message';
 const PING_EVENT = 'ping';
@@ -36,7 +38,14 @@ export class SocketService {
     if (this.socket) return this.socket;
     const socket = io(env.socketUrl, {
       auth: (cb) => {
-        void ensureFreshToken().then((token) => cb({ token, platform: getDeviceInfo().platform }));
+        void ensureFreshToken().then((token) => {
+          const guard = signApiGuard('WS', SOCKET_GUARD_PATH);
+          cb({
+            token,
+            platform: getDeviceInfo().platform,
+            ...(guard && { ts: guard.timestamp, nonce: guard.nonce, sig: guard.signature }),
+          });
+        });
       },
       transports: env.socketTransports,
       autoConnect: false,

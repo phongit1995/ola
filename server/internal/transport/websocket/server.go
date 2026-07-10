@@ -1,14 +1,15 @@
 package websocket
 
 import (
+	"context"
+	"fmt"
+	"net/http"
 	"ola-chat-server/internal/config"
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/utils"
-	"context"
-	"fmt"
-	"net/http"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
@@ -39,6 +40,19 @@ type SocketData struct {
 	UserID      string
 	JoinedRooms map[string]bool
 	Platform    string
+}
+
+const (
+	wsGuardMethod  = "WS"
+	wsGuardPath    = "/socket.io/"
+	wsGuardMaxSkew = 10 * time.Second
+)
+
+func authString(auth map[string]any, key string) string {
+	if v, ok := auth[key].(string); ok {
+		return v
+	}
+	return ""
 }
 
 func resolveSocketPlatform(auth map[string]any, userAgent string) string {
@@ -126,6 +140,17 @@ func NewServer(
 			if revoked, _ := server.cache.Exists(revokedKey); revoked {
 				server.logger.Warnw("WebSocket rejected: session revoked", "user_id", userID, "session_id", sid)
 				next(socket.NewExtendedError("session revoked", nil))
+				return
+			}
+		}
+
+		if cfg.APIGuardSecret != "" {
+			ts := authString(auth, "ts")
+			nonce := authString(auth, "nonce")
+			sig := authString(auth, "sig")
+			if !utils.APIGuardVerify(cfg.APIGuardSecret, ts, nonce, sig, wsGuardMethod, wsGuardPath, wsGuardMaxSkew) {
+				server.logger.Warnw("WebSocket rejected: invalid client signature", "user_id", userID)
+				next(socket.NewExtendedError("invalid client signature", nil))
 				return
 			}
 		}
