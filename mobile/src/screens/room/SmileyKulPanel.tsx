@@ -79,7 +79,11 @@ export function SmileyKulPanel({ hideKul, onPickEmoji, onBackspace, onSendKul }:
     <View className="bg-white" style={{ borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.12)' }}>
       <PanelTabBar active={active} tabs={visibleTabs} onSelect={setActive} />
       <View style={{ height: 164 }}>
-        <ScrollView style={{ flex: 1 }} contentContainerClassName="flex-row flex-wrap p-2">
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerClassName="flex-row flex-wrap p-2"
+          keyboardShouldPersistTaps="handled"
+        >
           {active === 'emoji'
             ? EMOJI_IMAGES.map((image, index) => (
                 <Pressable
