@@ -1,5 +1,5 @@
-import { activeVipTypeId } from '@lib';
-import type { PenShotView, PenUserBrief } from '@app-types';
+import { activeVipTypeId } from '../lib';
+import type { PenShotView, PenUserBrief } from '../types';
 
 export function withPenVip(user?: PenUserBrief): PenUserBrief | undefined {
   if (user == null) return user;

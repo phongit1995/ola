@@ -24,6 +24,7 @@ export const ROOT_ROUTES = {
   BuyKen: 'BuyKen',
   MediaStore: 'MediaStore',
   Settings: 'Settings',
+  PenGame: 'PenGame',
 } as const;
 
 export const ROOM_ROUTES = {

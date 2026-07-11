@@ -35,6 +35,10 @@ export function AppsScreen() {
       navigation.navigate(ROOT_ROUTES.Settings);
       return;
     }
+    if (item.action === 'pen') {
+      navigation.navigate(ROOT_ROUTES.PenGame);
+      return;
+    }
     push('info', t('chat.comingSoon'));
   }
 
