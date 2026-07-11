@@ -5,7 +5,14 @@ import photoIcon from '@/assets/icons/chat/ic_local.png';
 import resendIcon from '@/assets/icons/chat/btn_resend_d.png';
 import { Spinner, VipAvatar } from '@components';
 import { useLongPress } from '@hooks';
-import { colorForName, formatClockHM, kulImageForText, reactionChips, renderRichText } from '@lib';
+import {
+  colorForName,
+  formatClockHM,
+  kulImageForText,
+  reactionChips,
+  renderRichText,
+  SmileyText,
+} from '@lib';
 import { useMediaViewerStore } from '@/store/mediaViewerStore';
 import type { RoomReplySnapshot } from '@app-types';
 import type { BubblePosition, GroupedMessage, MessageGroup } from '../messageGroups';
@@ -58,7 +65,9 @@ function QuoteBlock({ replyTo, isOwn, onQuoteClick }: QuoteBlockProps) {
         className={`flex items-center gap-1 text-xs ${isOwn ? 'text-white/75' : 'text-black/45'}`}
       >
         {isImage && <img src={photoIcon} alt="" className="h-3.5 w-3.5 shrink-0 object-contain" />}
-        <span className="line-clamp-2">{excerpt}</span>
+        <span className="line-clamp-2">
+          <SmileyText text={excerpt} />
+        </span>
       </span>
     </button>
   );
