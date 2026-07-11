@@ -171,7 +171,7 @@ export function RoomChatScreen({ navigation, route }: Props) {
           >
             <Image source={backIcon} style={{ width: 24, height: 24 }} resizeMode="contain" />
           </Pressable>
-          <Text className="px-12 text-center text-sm font-bold text-white" numberOfLines={1}>
+          <Text className="px-12 text-center text-base font-medium text-white" numberOfLines={1}>
             {roomName}
           </Text>
           {activeTab === 'members' && (

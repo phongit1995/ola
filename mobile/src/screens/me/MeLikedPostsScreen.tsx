@@ -85,7 +85,7 @@ export function MeLikedPostsScreen({ language, onClose, onOpenProfile }: MeLiked
           <Pressable onPress={onClose} className="h-12 w-10 items-center justify-center">
             <Text className="text-2xl leading-none text-white">‹</Text>
           </Pressable>
-          <Text className="flex-1 text-sm font-bold text-white">{t('me.drawerLikes')}</Text>
+          <Text className="flex-1 text-base font-medium text-white">{t('me.drawerLikes')}</Text>
           <View className="w-10" />
         </View>
 

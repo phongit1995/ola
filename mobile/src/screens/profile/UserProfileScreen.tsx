@@ -479,7 +479,7 @@ export function UserProfileScreen({ username, language, onClose, onOpenProfile, 
           <Pressable onPress={onClose} className="h-12 w-10 items-center justify-center">
             <Text className="text-2xl leading-none text-white">‹</Text>
           </Pressable>
-          <Text numberOfLines={1} className="flex-1 text-sm font-bold text-white">{nick}</Text>
+          <Text numberOfLines={1} className="flex-1 text-base font-medium text-white">{nick}</Text>
           <View className="w-10" />
         </View>
 

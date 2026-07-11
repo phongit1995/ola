@@ -152,7 +152,7 @@ export function MediaStoreScreen({ navigation }: Props) {
             <Text className="text-2xl leading-none text-white">‹</Text>
           </Pressable>
           <View className="min-w-0 flex-1">
-            <Text className="text-sm font-bold text-white" numberOfLines={1}>
+            <Text className="text-base font-medium text-white" numberOfLines={1}>
               {t('media.title')}
             </Text>
             {hasPhotos && (

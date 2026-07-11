@@ -22,7 +22,7 @@ export function FollowingListOverlay({ following, onSelect, onClose, title }: Fo
           <Pressable onPress={onClose} className="h-12 w-10 items-center justify-center">
             <Text className="text-2xl leading-none text-white">‹</Text>
           </Pressable>
-          <Text numberOfLines={1} className="flex-1 text-center text-sm font-bold text-white">
+          <Text numberOfLines={1} className="flex-1 text-center text-base font-medium text-white">
             {title ?? t('profile.following')}
           </Text>
           <View className="w-10" />

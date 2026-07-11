@@ -41,7 +41,7 @@ export function ScreenHeader({
         >
           <BackIcon />
         </button>
-        <span className="truncate text-sm font-bold">{title}</span>
+        <span className="truncate text-base font-medium">{title}</span>
         {children != null && (
           <div className="absolute right-2 flex items-center">{children}</div>
         )}
@@ -72,7 +72,7 @@ export function ScreenHeader({
               <span className="truncate text-xs text-white/70">{subtitle}</span>
             </span>
           ) : (
-            <span className="min-w-0 truncate text-sm font-bold">{title}</span>
+            <span className="min-w-0 truncate text-base font-medium">{title}</span>
           )}
         </button>
       ) : (
@@ -84,7 +84,7 @@ export function ScreenHeader({
               <span className="truncate text-xs text-white/70">{subtitle}</span>
             </span>
           ) : (
-            <span className="flex-1 truncate text-sm font-bold">{title}</span>
+            <span className="flex-1 truncate text-base font-medium">{title}</span>
           )}
         </>
       )}

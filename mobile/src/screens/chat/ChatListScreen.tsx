@@ -208,7 +208,7 @@ function HeaderTab({
     <Pressable onPress={onPress} className="h-full flex-1 items-center justify-center">
       <View className="relative flex-row items-center">
         <Text
-          className={`text-base font-medium ${active ? 'text-white' : 'text-white/70'}`}
+          className={`text-sm font-bold ${active ? 'text-white' : 'text-white/70'}`}
         >
           {label}
         </Text>

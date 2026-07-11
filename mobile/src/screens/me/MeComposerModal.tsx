@@ -198,7 +198,7 @@ export function MeComposerModal({ visible, onClose, editPost }: MeComposerModalP
           <Pressable onPress={close} className="h-9 w-9 items-center justify-center rounded-full active:bg-white/15">
             <Text className="text-2xl leading-none text-white">×</Text>
           </Pressable>
-          <Text className="text-sm font-bold text-white">
+          <Text className="text-base font-medium text-white">
             {isEdit ? t('me.editTitle') : t('me.composerTitle')}
           </Text>
           <Pressable
