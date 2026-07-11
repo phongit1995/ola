@@ -16,7 +16,7 @@ import { FlashList } from '@shopify/flash-list';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { formatClockHM } from '@ola/shared/lib';
-import { AuthService, SocketService, UserService } from '@ola/shared/services';
+import { AuthService, SocketService } from '@ola/shared/services';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
@@ -26,11 +26,12 @@ import { ROOT_ROUTES } from '../../navigation/routes';
 import { Avatar } from '../../components/Avatar';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { kulImageForText } from '../../lib/kul';
-import { pickSingleImage } from '../../lib/imagePicker';
 import { SmileyText } from '../../lib/richText';
 import { ListOptionDialog, type ListOption } from '../../components/ListOptionDialog';
 import { BlockedListDialog } from './BlockedListDialog';
 import { ComposeDialog } from './ComposeDialog';
+import { ChangeAvatarDialog } from './ChangeAvatarDialog';
+import { ChangeCoverDialog } from './ChangeCoverDialog';
 import { ContactsPane } from './ContactsPane';
 
 const sentIcon = require('../../assets/icons/chat/ic_message_sent.png');
@@ -41,7 +42,6 @@ const composeIcon = require('../../assets/icons/chat/ic_action_compose_message.p
 const SWIPE_MAX = 88;
 const SWIPE_TRIGGER = 56;
 const DIVIDER = 'rgba(0,0,0,0.12)';
-const MIN_AVATAR_SOURCE = 100;
 
 function displayName(conversation: Conversation): string {
   return (
@@ -236,7 +236,6 @@ export function ChatListScreen() {
   const hideConversation = useChatStore((s) => s.hideConversation);
   const deleteAllConversations = useChatStore((s) => s.deleteAllConversations);
   const startDirect = useChatStore((s) => s.startDirect);
-  const refreshUser = useAuthStore((s) => s.refreshUser);
   const pushToast = useToastStore((s) => s.push);
 
   const [sub, setSub] = useState<ChatSub>('messages');
@@ -246,6 +245,8 @@ export function ChatListScreen() {
   const [blockedOpen, setBlockedOpen] = useState(false);
   const [showStrangers, setShowStrangers] = useState(true);
   const [logoutOpen, setLogoutOpen] = useState(false);
+  const [avatarOpen, setAvatarOpen] = useState(false);
+  const [coverOpen, setCoverOpen] = useState(false);
   const [logoutAll, setLogoutAll] = useState(false);
 
   useEffect(() => {
@@ -285,28 +286,6 @@ export function ChatListScreen() {
     }
   }
 
-  async function changePhoto(kind: 'avatar' | 'cover') {
-    const picked = await pickSingleImage();
-    if (picked == null) return;
-    if (
-      kind === 'avatar' &&
-      picked.width > 0 &&
-      picked.height > 0 &&
-      Math.min(picked.width, picked.height) < MIN_AVATAR_SOURCE
-    ) {
-      pushToast('error', t('avatar.tooSmall'));
-      return;
-    }
-    try {
-      const { url } = await UserService.uploadAvatar(picked.file);
-      await UserService.updateMe(kind === 'avatar' ? { avatar: url } : { coverPhoto: url });
-      await refreshUser();
-      pushToast('success', t(kind === 'avatar' ? 'profileEdit.avatarUpdated' : 'profileEdit.coverUpdated'));
-    } catch {
-      pushToast('error', t(kind === 'avatar' ? 'profileEdit.avatarError' : 'profileEdit.coverError'));
-    }
-  }
-
   const messagesMenu: ListOption[] = [
     { key: 'delete-all', label: t('chat.menuDeleteAll'), danger: true, onSelect: () => setDeleteAllOpen(true) },
     {
@@ -319,8 +298,8 @@ export function ChatListScreen() {
 
   const contactsMenu: ListOption[] = [
     { key: 'buy-vip', label: t('chat.menuBuyVip'), onSelect: comingSoon },
-    { key: 'change-avatar', label: t('chat.menuChangeAvatar'), onSelect: () => void changePhoto('avatar') },
-    { key: 'change-cover', label: t('chat.menuChangeCover'), onSelect: () => void changePhoto('cover') },
+    { key: 'change-avatar', label: t('chat.menuChangeAvatar'), onSelect: () => setAvatarOpen(true) },
+    { key: 'change-cover', label: t('chat.menuChangeCover'), onSelect: () => setCoverOpen(true) },
     {
       key: 'logout',
       label: t('chat.menuLogout'),
@@ -425,6 +404,9 @@ export function ChatListScreen() {
       )}
 
       {blockedOpen && <BlockedListDialog onClose={() => setBlockedOpen(false)} />}
+
+      <ChangeAvatarDialog visible={avatarOpen} onClose={() => setAvatarOpen(false)} />
+      <ChangeCoverDialog visible={coverOpen} onClose={() => setCoverOpen(false)} />
 
       <ConfirmDialog
         visible={deleteAllOpen}
