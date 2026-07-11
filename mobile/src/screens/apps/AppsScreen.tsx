@@ -43,6 +43,10 @@ export function AppsScreen() {
       navigation.navigate(ROOT_ROUTES.SpinWheel);
       return;
     }
+    if (item.action === 'egg') {
+      navigation.navigate(ROOT_ROUTES.EggGame);
+      return;
+    }
     push('info', t('chat.comingSoon'));
   }
 

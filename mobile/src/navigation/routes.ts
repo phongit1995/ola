@@ -26,6 +26,7 @@ export const ROOT_ROUTES = {
   Settings: 'Settings',
   PenGame: 'PenGame',
   SpinWheel: 'SpinWheel',
+  EggGame: 'EggGame',
 } as const;
 
 export const ROOM_ROUTES = {

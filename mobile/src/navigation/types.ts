@@ -28,6 +28,7 @@ export type RootStackParamList = {
   [ROOT_ROUTES.Settings]: undefined;
   [ROOT_ROUTES.PenGame]: undefined;
   [ROOT_ROUTES.SpinWheel]: undefined;
+  [ROOT_ROUTES.EggGame]: undefined;
 };
 
 export type RoomStackParamList = {
