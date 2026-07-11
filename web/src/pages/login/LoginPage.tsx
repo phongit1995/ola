@@ -69,13 +69,22 @@ export function LoginPage() {
     clearError();
   }
 
+  function handleRemoveAccount(removedUsername: string) {
+    removeAccount(removedUsername);
+    if (username.trim().toLowerCase() === removedUsername.toLowerCase()) {
+      setValue('username', '');
+      setValue('password', '');
+      clearError();
+    }
+  }
+
   async function onSubmit(data: LoginForm) {
     setLoading(true);
     setError(null);
     const username = data.username.trim().toLowerCase();
     try {
       const { user } = await AuthService.login({ username, password: data.password });
-      saveAccount(username, data.password);
+      saveAccount(username, data.password, user.avatar);
       setUser(user);
       navigate(ROUTES.home);
     } catch (err) {
@@ -98,7 +107,7 @@ export function LoginPage() {
         <SavedAccountGallery
           accounts={accounts}
           onPick={pickAccount}
-          onRemove={removeAccount}
+          onRemove={handleRemoveAccount}
         />
       ) : (
         <img

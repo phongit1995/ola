@@ -28,6 +28,7 @@ export function SavedAccountGallery({ accounts, onPick, onRemove }: SavedAccount
                 <Avatar
                   name={account.username}
                   color={colorForName(account.username)}
+                  src={account.avatar}
                   size={96}
                   rounded={false}
                 />

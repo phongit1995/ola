@@ -52,6 +52,7 @@ export function LoginScreen({ navigation }: Props) {
     control,
     handleSubmit,
     setValue,
+    getValues,
     formState: { errors },
   } = useForm<LoginForm>({
     mode: 'onTouched',
@@ -83,13 +84,22 @@ export function LoginScreen({ navigation }: Props) {
     clearError();
   }
 
+  function handleRemoveAccount(removedUsername: string) {
+    removeAccount(removedUsername);
+    if (getValues('username').trim().toLowerCase() === removedUsername.toLowerCase()) {
+      setValue('username', '');
+      setValue('password', '');
+      clearError();
+    }
+  }
+
   async function onSubmit(data: LoginForm) {
     setLoading(true);
     setError(null);
     const username = data.username.trim().toLowerCase();
     try {
       const { user } = await AuthService.login({ username, password: data.password });
-      saveAccount(username, data.password);
+      saveAccount(username, data.password, user.avatar);
       setUser(user);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : t('auth.errGeneric'));
@@ -116,7 +126,7 @@ export function LoginScreen({ navigation }: Props) {
           <SavedAccountGallery
             accounts={accounts}
             onPick={pickAccount}
-            onRemove={removeAccount}
+            onRemove={handleRemoveAccount}
           />
         ) : (
           <Image

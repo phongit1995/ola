@@ -6,12 +6,13 @@ import { sharedPersistStorage } from '../platform/persistStorage';
 export interface SavedAccount {
   username: string;
   secret: string;
+  avatar?: string;
   lastAccessTime: number;
 }
 
 interface SavedAccountsState {
   accounts: SavedAccount[];
-  saveAccount: (username: string, password: string) => void;
+  saveAccount: (username: string, password: string, avatar?: string) => void;
   removeAccount: (username: string) => void;
 }
 
@@ -23,12 +24,13 @@ export const useSavedAccountsStore = create<SavedAccountsState>()(
   persist(
     (set) => ({
       accounts: [],
-      saveAccount: (username, password) =>
+      saveAccount: (username, password, avatar) =>
         set((state) => {
           const others = state.accounts.filter((item) => item.username !== username);
           const updated: SavedAccount = {
             username,
             secret: encodeSecret(password),
+            avatar,
             lastAccessTime: Date.now(),
           };
           return { accounts: [updated, ...others].sort(byMostRecent) };
