@@ -6,10 +6,12 @@ import {
   AppstoreOutlined,
   CommentOutlined,
   CrownOutlined,
+  DollarOutlined,
   GiftOutlined,
   LockOutlined,
   LogoutOutlined,
   RocketOutlined,
+  SettingOutlined,
   SmileOutlined,
   SwapOutlined,
   PictureOutlined,
@@ -48,6 +50,12 @@ const MENU_ITEMS = [
     ],
   },
   { key: '/me', icon: <PictureOutlined />, label: 'Me' },
+  {
+    key: 'settings',
+    icon: <SettingOutlined />,
+    label: 'Cài đặt hệ thống',
+    children: [{ key: '/settings/topup', icon: <DollarOutlined />, label: 'Nạp KEN' }],
+  },
 ]
 
 const LEAF_KEYS = MENU_ITEMS.flatMap((item) => {
@@ -72,6 +80,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/games/pen/stats': 'Thống kê Pen',
   '/games/ken-treasure': 'Rương Ken',
   '/me': 'Quản lý Me',
+  '/settings/topup': 'Cài đặt nạp KEN',
 }
 
 export function AdminLayout() {
@@ -90,6 +99,7 @@ export function AdminLayout() {
   const openKeys = [
     ...(VIP_KEYS.includes(selectedKey) ? ['vip'] : []),
     ...(selectedKey.startsWith('/games') ? ['games'] : []),
+    ...(selectedKey.startsWith('/settings') ? ['settings'] : []),
   ]
 
   function logout() {

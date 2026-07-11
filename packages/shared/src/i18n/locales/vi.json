@@ -3,6 +3,7 @@
     "clear": "Xoá",
     "delete": "Xoá",
     "cancel": "Huỷ",
+    "copy": "Sao chép",
     "loading": "Đang tải…",
     "error": "Đã có lỗi xảy ra, vui lòng thử lại.",
     "menu": "Menu",
@@ -970,15 +971,22 @@
       "balance": "Số dư hiện tại",
       "chooseAmount": "Chọn mệnh giá",
       "customLabel": "Hoặc nhập số tiền (VNĐ)",
-      "customHint": "Tối thiểu 10.000, bội số 1.000",
+      "customHint": "Tối thiểu {{min}}, bội số {{step}}",
       "receive": "Bạn sẽ nhận",
-      "invalid": "Số tiền tối thiểu 10.000đ và là bội số của 1.000đ",
+      "invalid": "Số tiền tối thiểu {{min}}đ và là bội số của {{step}}đ",
       "qrTitle": "Quét mã để thanh toán",
       "qrHint": "Mở app ngân hàng/ví và quét mã QR để nạp {{ken}} KEN.",
       "amountLabel": "Số tiền cần chuyển",
       "paid": "Tôi đã thanh toán",
       "paidPending": "Đang chờ xác nhận thanh toán. Tính năng sẽ sớm hoàn thiện.",
-      "demoNote": "Mã QR demo — chưa kết nối cổng thanh toán thật."
+      "bankLabel": "Ngân hàng",
+      "accountNumberLabel": "Số tài khoản",
+      "accountNameLabel": "Chủ tài khoản",
+      "memoLabel": "Nội dung chuyển khoản",
+      "copied": "Đã sao chép",
+      "memoHint": "Nhập đúng nội dung chuyển khoản để được cộng KEN nhanh nhất.",
+      "disabled": "Nạp KEN đang tạm khoá. Vui lòng quay lại sau.",
+      "notConfigured": "Chưa cấu hình tài khoản nhận tiền. Vui lòng liên hệ hỗ trợ."
     }
   },
   "media": {

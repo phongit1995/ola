@@ -14,6 +14,7 @@ import { PenShotsPage } from '@/pages/PenShotsPage'
 import { PenStatsPage } from '@/pages/PenStatsPage'
 import { KenChestsPage } from '@/pages/KenChestsPage'
 import { MePage } from '@/pages/MePage'
+import { TopupSettingsPage } from '@/pages/TopupSettingsPage'
 import { AdminLayout } from '@/layout/AdminLayout'
 import { RedirectIfAuthed, RequireAuth } from './RequireAuth'
 
@@ -48,6 +49,7 @@ export const router = createBrowserRouter([
       { path: 'games/pen/stats', element: <PenStatsPage /> },
       { path: 'games/ken-treasure', element: <KenChestsPage /> },
       { path: 'me', element: <MePage /> },
+      { path: 'settings/topup', element: <TopupSettingsPage /> },
     ],
   },
   {

@@ -3,6 +3,7 @@
     "clear": "Clear",
     "delete": "Delete",
     "cancel": "Cancel",
+    "copy": "Copy",
     "loading": "Loading…",
     "error": "Something went wrong, please try again.",
     "menu": "Menu",
@@ -970,15 +971,22 @@
       "balance": "Current balance",
       "chooseAmount": "Choose an amount",
       "customLabel": "Or enter an amount (VND)",
-      "customHint": "Minimum 10,000, multiples of 1,000",
+      "customHint": "Minimum {{min}}, multiples of {{step}}",
       "receive": "You will receive",
-      "invalid": "Amount must be at least 10,000đ and a multiple of 1,000đ",
+      "invalid": "Amount must be at least {{min}}đ and a multiple of {{step}}đ",
       "qrTitle": "Scan to pay",
       "qrHint": "Open your bank/e-wallet app and scan the QR to top up {{ken}} KEN.",
       "amountLabel": "Amount to transfer",
       "paid": "I have paid",
       "paidPending": "Waiting for payment confirmation. This feature is coming soon.",
-      "demoNote": "Demo QR code — not connected to a real payment gateway."
+      "bankLabel": "Bank",
+      "accountNumberLabel": "Account number",
+      "accountNameLabel": "Account holder",
+      "memoLabel": "Transfer note",
+      "copied": "Copied",
+      "memoHint": "Use the exact transfer note so your KEN is credited faster.",
+      "disabled": "KEN top-up is temporarily disabled. Please come back later.",
+      "notConfigured": "Receiving account is not configured yet. Please contact support."
     }
   },
   "media": {

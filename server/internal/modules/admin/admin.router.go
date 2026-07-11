@@ -8,6 +8,7 @@ import (
 	adminme "ola-chat-server/internal/modules/admin/me"
 	adminpen "ola-chat-server/internal/modules/admin/pen"
 	adminroom "ola-chat-server/internal/modules/admin/room"
+	adminsetting "ola-chat-server/internal/modules/admin/setting"
 	adminupload "ola-chat-server/internal/modules/admin/upload"
 	adminuser "ola-chat-server/internal/modules/admin/user"
 	adminvip "ola-chat-server/internal/modules/admin/vip"
@@ -27,10 +28,11 @@ type Router struct {
 	kenRouter      *adminken.Router
 	kenChestRouter *adminkenchest.Router
 	penRouter      *adminpen.Router
+	settingRouter  *adminsetting.Router
 }
 
-func NewRouter(authRouter *adminauth.Router, userRouter *adminuser.Router, meRouter *adminme.Router, roomRouter *adminroom.Router, uploadRouter *adminupload.Router, vipRouter *adminvip.Router, eggRouter *adminegg.Router, wheelRouter *adminwheel.Router, kenRouter *adminken.Router, kenChestRouter *adminkenchest.Router, penRouter *adminpen.Router) *Router {
-	return &Router{authRouter: authRouter, userRouter: userRouter, meRouter: meRouter, roomRouter: roomRouter, uploadRouter: uploadRouter, vipRouter: vipRouter, eggRouter: eggRouter, wheelRouter: wheelRouter, kenRouter: kenRouter, kenChestRouter: kenChestRouter, penRouter: penRouter}
+func NewRouter(authRouter *adminauth.Router, userRouter *adminuser.Router, meRouter *adminme.Router, roomRouter *adminroom.Router, uploadRouter *adminupload.Router, vipRouter *adminvip.Router, eggRouter *adminegg.Router, wheelRouter *adminwheel.Router, kenRouter *adminken.Router, kenChestRouter *adminkenchest.Router, penRouter *adminpen.Router, settingRouter *adminsetting.Router) *Router {
+	return &Router{authRouter: authRouter, userRouter: userRouter, meRouter: meRouter, roomRouter: roomRouter, uploadRouter: uploadRouter, vipRouter: vipRouter, eggRouter: eggRouter, wheelRouter: wheelRouter, kenRouter: kenRouter, kenChestRouter: kenChestRouter, penRouter: penRouter, settingRouter: settingRouter}
 }
 
 func (r *Router) Setup(api *utils.AppGroup) {
@@ -47,5 +49,6 @@ func (r *Router) Setup(api *utils.AppGroup) {
 		r.kenRouter.Setup(admin)
 		r.kenChestRouter.Setup(admin)
 		r.penRouter.Setup(admin)
+		r.settingRouter.Setup(admin)
 	}
 }

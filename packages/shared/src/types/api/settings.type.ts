@@ -32,3 +32,20 @@ export const DEFAULT_USER_SETTINGS: UserSettings = {
   fontSize: 'medium',
   wallpaperUrl: '',
 };
+
+export interface TopupBankInfo {
+  bankName: string;
+  bankBin: string;
+  accountNumber: string;
+  accountName: string;
+  memoTemplate: string;
+}
+
+export interface TopupConfigResult {
+  enabled: boolean;
+  minAmount: number;
+  stepAmount: number;
+  presetAmounts: number[];
+  kenPerVnd: number;
+  bank?: TopupBankInfo;
+}

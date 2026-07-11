@@ -20,6 +20,19 @@ definitions:
         example: admin
         type: string
     type: object
+  internal_modules_admin_auth.ChangePasswordRequest:
+    properties:
+      currentPassword:
+        example: admin@123
+        type: string
+      newPassword:
+        example: newpass@456
+        minLength: 6
+        type: string
+    required:
+    - currentPassword
+    - newPassword
+    type: object
   internal_modules_admin_auth.LoginRequest:
     properties:
       password:
@@ -340,16 +353,118 @@ definitions:
     required:
     - enabled
     type: object
+  internal_modules_admin_setting.PutSettingRequest:
+    properties:
+      value:
+        $ref: '#/definitions/ola-chat-server_internal_models.JSONB'
+    required:
+    - value
+    type: object
+  internal_modules_admin_setting.SettingItemSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/ola-chat-server_internal_models.AppSetting'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_admin_setting.SettingListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_models.AppSetting'
+        type: array
+    type: object
+  internal_modules_admin_setting.SettingListSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_setting.SettingListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
   internal_modules_admin_upload.UploadResponse:
     properties:
       url:
         type: string
+    type: object
+  internal_modules_admin_user.GrantVipRequest:
+    properties:
+      vipTypeId:
+        example: 4
+        maximum: 132
+        minimum: 1
+        type: integer
+    required:
+    - vipTypeId
     type: object
   internal_modules_admin_user.ListUsersResponse:
     properties:
       items:
         items:
           $ref: '#/definitions/internal_modules_admin_user.UserListItem'
+        type: array
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  internal_modules_admin_user.ResetPasswordRequest:
+    properties:
+      password:
+        example: newpass123
+        type: string
+    required:
+    - password
+    type: object
+  internal_modules_admin_user.SessionItem:
+    properties:
+      appVersion:
+        type: string
+      createdAt:
+        type: string
+      deviceName:
+        type: string
+      id:
+        type: string
+      ipAddress:
+        type: string
+      isActive:
+        type: boolean
+      lastActiveAt:
+        type: string
+      platform:
+        type: string
+      revokedAt:
+        type: string
+      userAgent:
+        type: string
+    type: object
+  internal_modules_admin_user.SessionListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_admin_user.SessionItem'
         type: array
       limit:
         type: integer
@@ -383,6 +498,8 @@ definitions:
       createdAt:
         type: string
       dateOfBirth:
+        type: string
+      deletedAt:
         type: string
       email:
         type: string
@@ -422,6 +539,8 @@ definitions:
       avatar:
         type: string
       createdAt:
+        type: string
+      deletedAt:
         type: string
       email:
         type: string
@@ -1017,6 +1136,68 @@ definitions:
       traceId:
         type: string
     type: object
+  internal_modules_ken.KenHistoryResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_ken.KenTransactionItem'
+        type: array
+      limit:
+        example: 20
+        type: integer
+      offset:
+        example: 0
+        type: integer
+      total:
+        example: 2
+        type: integer
+    type: object
+  internal_modules_ken.KenHistorySuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_ken.KenHistoryResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_ken.KenTransactionItem:
+    properties:
+      amount:
+        example: 1000
+        type: integer
+      balanceAfter:
+        example: 9000
+        type: integer
+      counterpartyId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      counterpartyName:
+        example: minh
+        type: string
+      createdAt:
+        example: "2026-06-22T10:00:00Z"
+        type: string
+      description:
+        type: string
+      direction:
+        example: credit
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      type:
+        example: TRANSFER_IN
+        type: string
+    type: object
   internal_modules_ken.TransferRequest:
     properties:
       amount:
@@ -1431,6 +1612,15 @@ definitions:
       total:
         type: integer
     type: object
+  internal_modules_me.CommentReplySnapshot:
+    properties:
+      authorName:
+        type: string
+      commentId:
+        type: string
+      excerpt:
+        type: string
+    type: object
   internal_modules_me.CommentResponse:
     properties:
       author:
@@ -1441,8 +1631,20 @@ definitions:
         type: string
       id:
         type: string
+      likeCount:
+        type: integer
+      liked:
+        type: boolean
+      parentId:
+        type: string
       postId:
         type: string
+      replyTo:
+        $ref: '#/definitions/internal_modules_me.CommentReplySnapshot'
+      topLikers:
+        items:
+          $ref: '#/definitions/internal_modules_me.AuthorResponse'
+        type: array
     type: object
   internal_modules_me.CreateCommentRequest:
     properties:
@@ -1450,6 +1652,9 @@ definitions:
         example: Bài viết hay quá!
         maxLength: 2000
         minLength: 1
+        type: string
+      parentId:
+        example: 550e8400-e29b-41d4-a716-446655440000
         type: string
     required:
     - content
@@ -1569,6 +1774,34 @@ definitions:
         type: string
       type:
         type: string
+    type: object
+  internal_modules_me.MePhotoListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_me.MePhotoResponse'
+        type: array
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  internal_modules_me.MePhotoResponse:
+    properties:
+      createdAt:
+        type: string
+      height:
+        type: integer
+      mimeType:
+        type: string
+      postId:
+        type: string
+      url:
+        type: string
+      width:
+        type: integer
     type: object
   internal_modules_me.MeResponse:
     properties:
@@ -1985,6 +2218,50 @@ definitions:
       traceId:
         type: string
     type: object
+  internal_modules_pen.LeaderboardEntry:
+    properties:
+      profit:
+        example: 19000
+        type: integer
+      rank:
+        example: 1
+        type: integer
+      user:
+        $ref: '#/definitions/internal_modules_pen.UserBrief'
+    type: object
+  internal_modules_pen.LeaderboardResponse:
+    properties:
+      from:
+        example: "2026-07-06T17:00:00Z"
+        type: string
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_pen.LeaderboardEntry'
+        type: array
+      period:
+        example: day
+        type: string
+      to:
+        example: "2026-07-07T09:00:00Z"
+        type: string
+    type: object
+  internal_modules_pen.LeaderboardSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_pen.LeaderboardResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
   internal_modules_pen.ShotListResponse:
     properties:
       items:
@@ -2329,11 +2606,15 @@ definitions:
     type: object
   internal_modules_room.RoomMessageResponse:
     properties:
+      clientMsgId:
+        type: string
       content:
         type: string
       createdAt:
         type: string
       id:
+        type: string
+      imageUrl:
         type: string
       reactions:
         additionalProperties:
@@ -2356,6 +2637,8 @@ definitions:
       senderVip:
         type: string
       senderVipEnd:
+        type: string
+      type:
         type: string
     type: object
   internal_modules_room.RoomMessagesListResponse:
@@ -2380,11 +2663,15 @@ definitions:
     properties:
       excerpt:
         type: string
+      imageUrl:
+        type: string
       messageId:
         type: string
       senderId:
         type: string
       senderName:
+        type: string
+      type:
         type: string
     type: object
   internal_modules_room.RoomResponse:
@@ -2535,6 +2822,62 @@ definitions:
         example: web
         type: string
     type: object
+  internal_modules_setting.TopupBankInfo:
+    properties:
+      accountName:
+        example: NGUYEN VAN A
+        type: string
+      accountNumber:
+        example: "0123456789"
+        type: string
+      bankBin:
+        example: "970436"
+        type: string
+      bankName:
+        example: Vietcombank
+        type: string
+      memoTemplate:
+        example: '@{username}'
+        type: string
+    type: object
+  internal_modules_setting.TopupConfigResponse:
+    properties:
+      bank:
+        $ref: '#/definitions/internal_modules_setting.TopupBankInfo'
+      enabled:
+        example: true
+        type: boolean
+      kenPerVnd:
+        example: 1
+        type: integer
+      minAmount:
+        example: 10000
+        type: integer
+      presetAmounts:
+        items:
+          type: integer
+        type: array
+      stepAmount:
+        example: 1000
+        type: integer
+    type: object
+  internal_modules_setting.TopupConfigSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_setting.TopupConfigResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
   internal_modules_user-setting.UpdateSettingsRequest:
     properties:
       commentPrivacy:
@@ -2554,14 +2897,12 @@ definitions:
         enum:
         - all
         - friends
-        - private
         example: all
         type: string
       messagePrivacy:
         enum:
         - all
         - friends
-        - nobody
         example: all
         type: string
       notifMessage:
@@ -2570,13 +2911,16 @@ definitions:
       notifSound:
         example: true
         type: boolean
-      notifVibrate:
-        example: true
-        type: boolean
       showBirthday:
         example: true
         type: boolean
-      showOnline:
+      showInterested:
+        example: true
+        type: boolean
+      soundGame:
+        example: true
+        type: boolean
+      soundKen:
         example: true
         type: boolean
       wallpaperUrl:
@@ -2604,13 +2948,16 @@ definitions:
       notifSound:
         example: true
         type: boolean
-      notifVibrate:
-        example: true
-        type: boolean
       showBirthday:
         example: true
         type: boolean
-      showOnline:
+      showInterested:
+        example: true
+        type: boolean
+      soundGame:
+        example: true
+        type: boolean
+      soundKen:
         example: true
         type: boolean
       wallpaperUrl:
@@ -2924,6 +3271,9 @@ definitions:
       bioImage:
         example: https://example.com/bio.jpg
         type: string
+      canViewInterested:
+        example: true
+        type: boolean
       coverPhoto:
         example: https://example.com/cover.jpg
         type: string
@@ -3415,10 +3765,137 @@ definitions:
         example: 4
         type: integer
     type: object
+  internal_modules_wheel.PlayerConfigResponse:
+    properties:
+      freeAvailable:
+        type: boolean
+      freeDailyEnabled:
+        type: boolean
+      id:
+        type: string
+      kenCost:
+        type: integer
+      name:
+        type: string
+      segments:
+        items:
+          $ref: '#/definitions/internal_modules_wheel.PlayerSegmentView'
+        type: array
+    type: object
+  internal_modules_wheel.PlayerSegmentView:
+    properties:
+      id:
+        type: string
+      kenAmount:
+        type: integer
+      kenMax:
+        type: integer
+      kenMin:
+        type: integer
+      kind:
+        $ref: '#/definitions/ola-chat-server_internal_models.WheelSegmentKind'
+      label:
+        type: string
+      sortOrder:
+        type: integer
+      vipDays:
+        type: integer
+      vipTypeId:
+        type: integer
+    type: object
+  internal_modules_wheel.SpinListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_wheel.SpinView'
+        type: array
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  internal_modules_wheel.SpinRequest:
+    properties:
+      idempotencyKey:
+        type: string
+    type: object
+  internal_modules_wheel.SpinResult:
+    properties:
+      freeAvailable:
+        type: boolean
+      isFree:
+        type: boolean
+      isSuperLucky:
+        type: boolean
+      isWin:
+        type: boolean
+      kenAmount:
+        type: integer
+      kenBalance:
+        type: integer
+      kenBalanceAfterCost:
+        type: integer
+      kenCost:
+        type: integer
+      rewardLabel:
+        type: string
+      segmentId:
+        type: string
+      segmentIndex:
+        type: integer
+      segmentKind:
+        $ref: '#/definitions/ola-chat-server_internal_models.WheelSegmentKind'
+      spinId:
+        type: string
+      vipDays:
+        type: integer
+      vipTypeId:
+        type: integer
+      wheelId:
+        type: string
+    type: object
+  internal_modules_wheel.SpinView:
+    properties:
+      createdAt:
+        type: string
+      id:
+        type: string
+      isFree:
+        type: boolean
+      isSuperLucky:
+        type: boolean
+      kenAmount:
+        type: integer
+      kenCost:
+        type: integer
+      rewardLabel:
+        type: string
+      segmentKind:
+        $ref: '#/definitions/ola-chat-server_internal_models.WheelSegmentKind'
+      vipDays:
+        type: integer
+      vipTypeId:
+        type: integer
+      wheelId:
+        type: string
+      wheelName:
+        type: string
+    type: object
   map_string_int64:
     additionalProperties:
       format: int64
       type: integer
+    type: object
+  ola-chat-server_internal_models.AppSetting:
+    properties:
+      key:
+        type: string
+      updatedAt:
+        type: string
+      value:
+        $ref: '#/definitions/ola-chat-server_internal_models.JSONB'
     type: object
   ola-chat-server_internal_models.EggCategoryType:
     enum:
@@ -3432,6 +3909,25 @@ definitions:
     - EggCategoryVipIcon
     - EggCategoryKen
     - EggCategoryVipDays
+  ola-chat-server_internal_models.JSONB:
+    additionalProperties: true
+    type: object
+  ola-chat-server_internal_models.WheelSegmentKind:
+    enum:
+    - miss
+    - ken_fixed
+    - ken_random
+    - vip_days
+    - vip_item
+    - vip_random
+    type: string
+    x-enum-varnames:
+    - WheelSegmentMiss
+    - WheelSegmentKenFixed
+    - WheelSegmentKenRandom
+    - WheelSegmentVipDays
+    - WheelSegmentVipItem
+    - WheelSegmentVipRandom
   ola-chat-server_internal_modules_egg.AdminDrawListResponse:
     properties:
       items:
@@ -3738,6 +4234,95 @@ definitions:
       sortOrder:
         type: integer
     type: object
+  ola-chat-server_internal_modules_kenchest.AutoJobRequest:
+    properties:
+      dailyTimes:
+        items:
+          type: string
+        type: array
+      durationSeconds:
+        type: integer
+      enabled:
+        type: boolean
+      intervalMaxMinutes:
+        type: integer
+      intervalMinMinutes:
+        type: integer
+      kenAmount:
+        type: integer
+      kenMax:
+        type: integer
+      kenMin:
+        type: integer
+      maxRecipients:
+        type: integer
+      name:
+        type: string
+      remainingRuns:
+        type: integer
+      rewardMode:
+        enum:
+        - fixed
+        - random
+        type: string
+      scheduleType:
+        enum:
+        - interval
+        - daily
+        type: string
+    required:
+    - maxRecipients
+    - rewardMode
+    - scheduleType
+    type: object
+  ola-chat-server_internal_modules_kenchest.AutoJobView:
+    properties:
+      createdAt:
+        type: string
+      dailyTimes:
+        items:
+          type: string
+        type: array
+      durationSeconds:
+        type: integer
+      enabled:
+        type: boolean
+      id:
+        type: string
+      intervalMaxMinutes:
+        type: integer
+      intervalMinMinutes:
+        type: integer
+      kenAmount:
+        type: integer
+      kenMax:
+        type: integer
+      kenMin:
+        type: integer
+      lastRunAt:
+        type: string
+      maxRecipients:
+        type: integer
+      name:
+        type: string
+      nextRunAt:
+        type: string
+      remainingRuns:
+        type: integer
+      rewardMode:
+        type: string
+      runCount:
+        type: integer
+      scheduleType:
+        type: string
+    type: object
+  ola-chat-server_internal_modules_kenchest.AutoSettingsView:
+    properties:
+      enabled:
+        type: boolean
+      updatedAt:
+        type: string
+    type: object
   ola-chat-server_internal_modules_kenchest.ChestListResponse:
     properties:
       items:
@@ -3753,6 +4338,8 @@ definitions:
     type: object
   ola-chat-server_internal_modules_kenchest.ChestView:
     properties:
+      autoJobId:
+        type: string
       claimedRecipients:
         type: integer
       claimsCount:
@@ -3775,12 +4362,42 @@ definitions:
         type: integer
       rewardMode:
         type: string
+      source:
+        type: string
       startedAt:
         type: string
       status:
         type: string
       totalKenGiven:
         type: integer
+    type: object
+  ola-chat-server_internal_modules_kenchest.ClaimHistoryListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_kenchest.ClaimHistoryView'
+        type: array
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  ola-chat-server_internal_modules_kenchest.ClaimHistoryView:
+    properties:
+      chestSource:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: string
+      isEmpty:
+        type: boolean
+      kenAmount:
+        type: integer
+      user:
+        $ref: '#/definitions/ola-chat-server_internal_modules_kenchest.ClaimUserView'
     type: object
   ola-chat-server_internal_modules_kenchest.ClaimListResponse:
     properties:
@@ -3839,6 +4456,11 @@ definitions:
     required:
     - maxRecipients
     - rewardMode
+    type: object
+  ola-chat-server_internal_modules_kenchest.UpdateAutoSettingsRequest:
+    properties:
+      enabled:
+        type: boolean
     type: object
   ola-chat-server_internal_modules_pen.AdminShotListSuccessResponse:
     properties:
@@ -4083,11 +4705,15 @@ definitions:
     type: object
   ola-chat-server_internal_modules_room.RoomMessageResponse:
     properties:
+      clientMsgId:
+        type: string
       content:
         type: string
       createdAt:
         type: string
       id:
+        type: string
+      imageUrl:
         type: string
       reactions:
         additionalProperties:
@@ -4110,6 +4736,8 @@ definitions:
       senderVip:
         type: string
       senderVipEnd:
+        type: string
+      type:
         type: string
     type: object
   ola-chat-server_internal_modules_room.RoomMessagesListResponse:
@@ -4134,11 +4762,15 @@ definitions:
     properties:
       excerpt:
         type: string
+      imageUrl:
+        type: string
       messageId:
         type: string
       senderId:
         type: string
       senderName:
+        type: string
+      type:
         type: string
     type: object
   ola-chat-server_internal_modules_room.RoomResponse:
@@ -4223,7 +4855,7 @@ definitions:
         type: integer
       vipTypeId:
         example: 4
-        maximum: 126
+        maximum: 132
         minimum: 1
         type: integer
     required:
@@ -4422,6 +5054,69 @@ definitions:
       traceId:
         type: string
     type: object
+  ola-chat-server_internal_modules_vip.TransferHistoryItem:
+    properties:
+      createdAt:
+        example: "2026-06-19T10:00:00Z"
+        type: string
+      fromFullName:
+        example: Phong Phan
+        type: string
+      fromUserId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      fromUsername:
+        example: phong
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      toFullName:
+        example: Minh Anh
+        type: string
+      toUserId:
+        example: 660e8400-e29b-41d4-a716-446655440000
+        type: string
+      toUsername:
+        example: minhanh
+        type: string
+      vipIconId:
+        example: 4
+        type: integer
+    type: object
+  ola-chat-server_internal_modules_vip.TransferHistoryListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_vip.TransferHistoryItem'
+        type: array
+      limit:
+        example: 50
+        type: integer
+      offset:
+        example: 0
+        type: integer
+      total:
+        example: 1
+        type: integer
+    type: object
+  ola-chat-server_internal_modules_vip.TransferHistoryListSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/ola-chat-server_internal_modules_vip.TransferHistoryListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
   ola-chat-server_internal_modules_vip.UpdatePackageRequest:
     properties:
       days:
@@ -4455,6 +5150,342 @@ definitions:
         type: integer
       sortOrder:
         example: 0
+        type: integer
+    type: object
+  ola-chat-server_internal_modules_wheel.AdminSpinListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_wheel.AdminSpinView'
+        type: array
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  ola-chat-server_internal_modules_wheel.AdminSpinView:
+    properties:
+      createdAt:
+        type: string
+      id:
+        type: string
+      isFree:
+        type: boolean
+      isSuperLucky:
+        type: boolean
+      kenAmount:
+        type: integer
+      kenCost:
+        type: integer
+      rewardLabel:
+        type: string
+      segmentKind:
+        $ref: '#/definitions/ola-chat-server_internal_models.WheelSegmentKind'
+      user:
+        $ref: '#/definitions/ola-chat-server_internal_modules_wheel.SpinUserView'
+      vipDays:
+        type: integer
+      vipTypeId:
+        type: integer
+      wheelId:
+        type: string
+      wheelName:
+        type: string
+    type: object
+  ola-chat-server_internal_modules_wheel.CreateWheelRequest:
+    properties:
+      freeDailyEnabled:
+        type: boolean
+      isEnabled:
+        type: boolean
+      kenCost:
+        minimum: 0
+        type: integer
+      name:
+        maxLength: 100
+        type: string
+      segments:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_wheel.SegmentInput'
+        type: array
+      sortOrder:
+        type: integer
+    required:
+    - name
+    type: object
+  ola-chat-server_internal_modules_wheel.OptionInput:
+    properties:
+      isActive:
+        type: boolean
+      kenAmount:
+        type: integer
+      label:
+        maxLength: 100
+        type: string
+      sortOrder:
+        type: integer
+      vipDays:
+        type: integer
+      vipTypeId:
+        type: integer
+      weight:
+        minimum: 0
+        type: number
+    required:
+    - label
+    type: object
+  ola-chat-server_internal_modules_wheel.OptionView:
+    properties:
+      id:
+        type: string
+      isActive:
+        type: boolean
+      kenAmount:
+        type: integer
+      label:
+        type: string
+      sortOrder:
+        type: integer
+      vipDays:
+        type: integer
+      vipTypeId:
+        type: integer
+      weight:
+        type: number
+    type: object
+  ola-chat-server_internal_modules_wheel.SaveConfigRequest:
+    properties:
+      segments:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_wheel.SegmentInput'
+        type: array
+    type: object
+  ola-chat-server_internal_modules_wheel.SegmentInput:
+    properties:
+      isActive:
+        type: boolean
+      isSuperLucky:
+        type: boolean
+      kenAmount:
+        type: integer
+      kenMax:
+        type: integer
+      kenMin:
+        type: integer
+      kind:
+        allOf:
+        - $ref: '#/definitions/ola-chat-server_internal_models.WheelSegmentKind'
+        enum:
+        - miss
+        - ken_fixed
+        - ken_random
+        - vip_days
+        - vip_item
+        - vip_random
+      label:
+        maxLength: 100
+        type: string
+      options:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_wheel.OptionInput'
+        type: array
+      sortOrder:
+        type: integer
+      vipDays:
+        type: integer
+      vipTypeId:
+        type: integer
+      weight:
+        minimum: 0
+        type: number
+    required:
+    - kind
+    - label
+    type: object
+  ola-chat-server_internal_modules_wheel.SegmentView:
+    properties:
+      id:
+        type: string
+      isActive:
+        type: boolean
+      isSuperLucky:
+        type: boolean
+      kenAmount:
+        type: integer
+      kenMax:
+        type: integer
+      kenMin:
+        type: integer
+      kind:
+        $ref: '#/definitions/ola-chat-server_internal_models.WheelSegmentKind'
+      label:
+        type: string
+      options:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_wheel.OptionView'
+        type: array
+      sortOrder:
+        type: integer
+      vipDays:
+        type: integer
+      vipTypeId:
+        type: integer
+      weight:
+        type: number
+    type: object
+  ola-chat-server_internal_modules_wheel.SpinUserView:
+    properties:
+      avatar:
+        type: string
+      fullName:
+        type: string
+      id:
+        type: string
+      username:
+        type: string
+    type: object
+  ola-chat-server_internal_modules_wheel.StatsKind:
+    properties:
+      percent:
+        type: number
+      segmentKind:
+        $ref: '#/definitions/ola-chat-server_internal_models.WheelSegmentKind'
+      spins:
+        type: integer
+    type: object
+  ola-chat-server_internal_modules_wheel.StatsOverview:
+    properties:
+      freeSpins:
+        type: integer
+      kenIn:
+        type: integer
+      kenOut:
+        type: integer
+      netKen:
+        type: integer
+      totalSpins:
+        type: integer
+      uniquePlayers:
+        type: integer
+      vipDaysOut:
+        type: integer
+      vipItemsOut:
+        type: integer
+      winRate:
+        type: number
+      winSpins:
+        type: integer
+    type: object
+  ola-chat-server_internal_modules_wheel.StatsPlayer:
+    properties:
+      kenSpent:
+        type: integer
+      spins:
+        type: integer
+      user:
+        $ref: '#/definitions/ola-chat-server_internal_modules_wheel.SpinUserView'
+    type: object
+  ola-chat-server_internal_modules_wheel.StatsResponse:
+    properties:
+      bucket:
+        type: string
+      byKind:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_wheel.StatsKind'
+        type: array
+      byWheel:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_wheel.StatsWheel'
+        type: array
+      overview:
+        $ref: '#/definitions/ola-chat-server_internal_modules_wheel.StatsOverview'
+      timeseries:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_wheel.StatsTimePoint'
+        type: array
+      topPlayers:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_wheel.StatsPlayer'
+        type: array
+      topRewards:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_wheel.StatsReward'
+        type: array
+    type: object
+  ola-chat-server_internal_modules_wheel.StatsReward:
+    properties:
+      count:
+        type: integer
+      rewardLabel:
+        type: string
+      segmentKind:
+        $ref: '#/definitions/ola-chat-server_internal_models.WheelSegmentKind'
+    type: object
+  ola-chat-server_internal_modules_wheel.StatsTimePoint:
+    properties:
+      date:
+        type: string
+      kenIn:
+        type: integer
+      kenOut:
+        type: integer
+      spins:
+        type: integer
+    type: object
+  ola-chat-server_internal_modules_wheel.StatsWheel:
+    properties:
+      kenIn:
+        type: integer
+      kenOut:
+        type: integer
+      rtp:
+        type: number
+      spins:
+        type: integer
+      wheelId:
+        type: string
+      wheelName:
+        type: string
+    type: object
+  ola-chat-server_internal_modules_wheel.UpdateWheelRequest:
+    properties:
+      freeDailyEnabled:
+        type: boolean
+      isEnabled:
+        type: boolean
+      kenCost:
+        type: integer
+      name:
+        type: string
+      sortOrder:
+        type: integer
+    type: object
+  ola-chat-server_internal_modules_wheel.WheelListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_wheel.WheelView'
+        type: array
+    type: object
+  ola-chat-server_internal_modules_wheel.WheelView:
+    properties:
+      freeDailyEnabled:
+        type: boolean
+      id:
+        type: string
+      isEnabled:
+        type: boolean
+      kenCost:
+        type: integer
+      name:
+        type: string
+      segments:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_wheel.SegmentView'
+        type: array
+      sortOrder:
         type: integer
     type: object
   ola-chat-server_internal_utils.APIError:
@@ -4614,10 +5645,44 @@ definitions:
       traceId:
         type: string
     type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_user_SessionListResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_user.SessionListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
   ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_user_UserDetail:
     properties:
       data:
         $ref: '#/definitions/internal_modules_admin_user.UserDetail'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_user_VipIconItem:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_user.VipIconItem'
       error:
         type: string
       path:
@@ -4754,6 +5819,23 @@ definitions:
     properties:
       data:
         $ref: '#/definitions/internal_modules_me.MeNotificationListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_me_MePhotoListResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_me.MePhotoListResponse'
       error:
         type: string
       path:
@@ -4983,6 +6065,40 @@ info:
   title: Chat Server API
   version: "1.0"
 paths:
+  /admin/auth/change-password:
+    post:
+      consumes:
+      - application/json
+      description: Change the authenticated admin's password; revokes existing sessions
+      parameters:
+      - description: Change Password Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_admin_auth.ChangePasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Change admin password
+      tags:
+      - admin-auth
   /admin/auth/login:
     post:
       consumes:
@@ -5265,6 +6381,129 @@ paths:
       summary: Thống kê đập trứng (admin)
       tags:
       - admin-egg
+  /admin/ken/auto-jobs:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/ola-chat-server_internal_modules_kenchest.AutoJobView'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Danh sách lịch rương ken tự động (admin)
+      tags:
+      - admin-ken-chest
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Auto job
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ola-chat-server_internal_modules_kenchest.AutoJobRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_modules_kenchest.AutoJobView'
+      security:
+      - BearerAuth: []
+      summary: Tạo lịch rương ken tự động (admin)
+      tags:
+      - admin-ken-chest
+  /admin/ken/auto-jobs/{id}:
+    delete:
+      parameters:
+      - description: Auto job ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Xoá lịch rương ken tự động (admin)
+      tags:
+      - admin-ken-chest
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Auto job ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Auto job
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ola-chat-server_internal_modules_kenchest.AutoJobRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_modules_kenchest.AutoJobView'
+      security:
+      - BearerAuth: []
+      summary: Sửa lịch rương ken tự động (admin)
+      tags:
+      - admin-ken-chest
+  /admin/ken/auto-settings:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_modules_kenchest.AutoSettingsView'
+      security:
+      - BearerAuth: []
+      summary: Trạng thái công tắc tổng rương ken tự động (admin)
+      tags:
+      - admin-ken-chest
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Settings
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ola-chat-server_internal_modules_kenchest.UpdateAutoSettingsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_modules_kenchest.AutoSettingsView'
+      security:
+      - BearerAuth: []
+      summary: Bật/tắt tất cả rương ken tự động (admin)
+      tags:
+      - admin-ken-chest
   /admin/ken/chests:
     get:
       parameters:
@@ -5367,6 +6606,10 @@ paths:
         name: id
         required: true
         type: string
+      - description: Tìm theo username/tên người mở
+        in: query
+        name: q
+        type: string
       - description: Page size
         in: query
         name: limit
@@ -5385,6 +6628,33 @@ paths:
       security:
       - BearerAuth: []
       summary: Danh sách người đã mở 1 rương ken (admin)
+      tags:
+      - admin-ken-chest
+  /admin/ken/claims:
+    get:
+      parameters:
+      - description: Tìm theo username/tên người nhận
+        in: query
+        name: q
+        type: string
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_modules_kenchest.ClaimHistoryListResponse'
+      security:
+      - BearerAuth: []
+      summary: Lịch sử nhận KEN tất cả rương (admin)
       tags:
       - admin-ken-chest
   /admin/ken/users/{userId}/adjust:
@@ -5827,6 +7097,52 @@ paths:
       summary: Get room message history (admin, includes disabled rooms)
       tags:
       - admin-room
+  /admin/settings:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_setting.SettingListSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Danh sách cấu hình hệ thống (admin)
+      tags:
+      - admin-settings
+  /admin/settings/{key}:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Setting key
+        in: path
+        name: key
+        required: true
+        type: string
+      - description: Setting value
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_admin_setting.PutSettingRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_setting.SettingItemSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Tạo/cập nhật một cấu hình hệ thống theo key (admin)
+      tags:
+      - admin-settings
   /admin/upload:
     post:
       consumes:
@@ -5870,6 +7186,10 @@ paths:
       - description: Filter VIP (true=vip, false=non-vip)
         in: query
         name: vip
+        type: boolean
+      - description: Include soft-deleted users (default true; pass false to hide)
+        in: query
+        name: includeDeleted
         type: boolean
       - description: Sort field (createdAt, lastLoginAt, followerCount, username)
         in: query
@@ -5972,6 +7292,95 @@ paths:
       security:
       - BearerAuth: []
       summary: Get user detail
+      tags:
+      - admin-user
+  /admin/users/{id}/password:
+    patch:
+      consumes:
+      - application/json
+      description: Set a new password for a user (admin only)
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Password Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_admin_user.ResetPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Reset user password
+      tags:
+      - admin-user
+  /admin/users/{id}/sessions:
+    get:
+      description: List a user's login sessions/devices, including revoked ones (admin
+        only)
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Page size (default 20, max 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Offset (default 0)
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_user_SessionListResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: List user login sessions
       tags:
       - admin-user
   /admin/users/{id}/status:
@@ -6107,6 +7516,50 @@ paths:
       security:
       - BearerAuth: []
       summary: List owned VIP icons
+      tags:
+      - admin-user
+    post:
+      consumes:
+      - application/json
+      description: Grant a VIP icon to a user's collection (admin only)
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: VIP grant request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_admin_user.GrantVipRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_user_VipIconItem'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Grant VIP icon
       tags:
       - admin-user
   /admin/vip/history:
@@ -6335,6 +7788,236 @@ paths:
       summary: Cập nhật giá / trạng thái VIP trong shop (admin)
       tags:
       - admin-vip
+  /admin/vip/transfers:
+    get:
+      parameters:
+      - description: Filter theo user (chuyển hoặc nhận)
+        in: query
+        name: userId
+        type: string
+      - description: Tìm theo username người chuyển/nhận
+        in: query
+        name: q
+        type: string
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_modules_vip.TransferHistoryListSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Lịch sử chuyển icon VIP toàn hệ thống (admin)
+      tags:
+      - admin-vip
+  /admin/wheel/spins:
+    get:
+      parameters:
+      - description: Lọc theo user
+        in: query
+        name: userId
+        type: string
+      - description: Tìm theo username/tên người chơi
+        in: query
+        name: q
+        type: string
+      - description: Lọc theo loại ô
+        in: query
+        name: segmentKind
+        type: string
+      - description: Lọc trúng/trượt (win|miss)
+        in: query
+        name: outcome
+        type: string
+      - description: Từ thời gian (RFC3339)
+        in: query
+        name: from
+        type: string
+      - description: Đến thời gian (RFC3339)
+        in: query
+        name: to
+        type: string
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_modules_wheel.AdminSpinListResponse'
+      security:
+      - BearerAuth: []
+      summary: Lịch sử quay toàn hệ thống (admin)
+      tags:
+      - admin-wheel
+  /admin/wheel/stats:
+    get:
+      parameters:
+      - description: Lọc theo vòng quay
+        in: query
+        name: wheelId
+        type: string
+      - description: Từ thời gian (RFC3339)
+        in: query
+        name: from
+        type: string
+      - description: Đến thời gian (RFC3339)
+        in: query
+        name: to
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_modules_wheel.StatsResponse'
+      security:
+      - BearerAuth: []
+      summary: Thống kê vòng quay (admin)
+      tags:
+      - admin-wheel
+  /admin/wheel/wheels:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_modules_wheel.WheelListResponse'
+      security:
+      - BearerAuth: []
+      summary: Danh sách vòng quay + cấu hình (admin)
+      tags:
+      - admin-wheel
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Wheel
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ola-chat-server_internal_modules_wheel.CreateWheelRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_modules_wheel.WheelView'
+      security:
+      - BearerAuth: []
+      summary: Tạo vòng quay (admin)
+      tags:
+      - admin-wheel
+  /admin/wheel/wheels/{id}:
+    delete:
+      parameters:
+      - description: Wheel ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Xoá vòng quay (admin)
+      tags:
+      - admin-wheel
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Wheel ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Wheel
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ola-chat-server_internal_modules_wheel.UpdateWheelRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_modules_wheel.WheelView'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Cập nhật vòng quay (admin)
+      tags:
+      - admin-wheel
+  /admin/wheel/wheels/{id}/config:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Wheel ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Config
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ola-chat-server_internal_modules_wheel.SaveConfigRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_modules_wheel.WheelView'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Lưu cấu hình ô + lựa chọn của vòng quay (admin)
+      tags:
+      - admin-wheel
   /auth/change-password:
     post:
       consumes:
@@ -7057,6 +8740,39 @@ paths:
       summary: Mở rương ken
       tags:
       - ken-chest
+  /ken/transactions:
+    get:
+      description: Danh sách ken_transactions của user đang đăng nhập, mới nhất trước;
+        lọc theo direction (credit/debit) và phân trang
+      parameters:
+      - description: Lọc chiều giao dịch (credit=nhận, debit=chi)
+        in: query
+        name: direction
+        type: string
+      - description: Số bản ghi mỗi trang (mặc định 20, tối đa 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Vị trí bắt đầu (mặc định 0)
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_ken.KenHistorySuccessResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Lịch sử giao dịch ken của user hiện tại
+      tags:
+      - ken
   /ken/transfer:
     post:
       consumes:
@@ -7542,6 +9258,64 @@ paths:
       summary: Delete a comment (comment author or post author)
       tags:
       - me
+  /me/{id}/comments/{commentId}/like:
+    post:
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Comment ID
+        in: path
+        name: commentId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_CommentResponse'
+      security:
+      - BearerAuth: []
+      summary: Toggle like on a comment (same call again removes it)
+      tags:
+      - me
+  /me/{id}/comments/{commentId}/likers:
+    get:
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Comment ID
+        in: path
+        name: commentId
+        required: true
+        type: string
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_LikerListResponse'
+      security:
+      - BearerAuth: []
+      summary: List users who liked a comment
+      tags:
+      - me
   /me/{id}/likers:
     get:
       parameters:
@@ -7776,6 +9550,29 @@ paths:
       security:
       - BearerAuth: []
       summary: Count my unread ME notifications
+      tags:
+      - me
+  /me/photos:
+    get:
+      parameters:
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_me_MePhotoListResponse'
+      security:
+      - BearerAuth: []
+      summary: List all images from my own posts (newest first)
       tags:
       - me
   /me/users/{userId}:
@@ -8238,6 +10035,25 @@ paths:
       security:
       - BearerAuth: []
       summary: Lịch sử các lượt đã xử lý của tất cả mọi người
+      tags:
+      - pen
+  /pen/leaderboard:
+    get:
+      parameters:
+      - description: day | week (default day)
+        in: query
+        name: period
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_pen.LeaderboardSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Top người chơi PEN lời nhiều nhất (ngày/tuần, GMT+7)
       tags:
       - pen
   /pen/mine:
@@ -8908,6 +10724,59 @@ paths:
         replaces old)
       tags:
       - room
+  /rooms/{id}/messages/images:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload an image and create a message of type=image in one call
+        (≤2MB jpeg/png/gif/webp)
+      parameters:
+      - description: Room ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Image file
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: Idempotency key
+        in: formData
+        name: clientMsgId
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_room_RoomMessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "413":
+          description: Request Entity Too Large
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "429":
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Send an image message to a room (must have joined via socket)
+      tags:
+      - room
   /sessions:
     get:
       description: Trả về các phiên đăng nhập đang hoạt động của người dùng hiện tại
@@ -8964,6 +10833,24 @@ paths:
       summary: Revoke all other sessions
       tags:
       - sessions
+  /settings/topup:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_setting.TopupConfigSuccessResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Cấu hình nạp KEN (bank nhận tiền VietQR + mệnh giá) cho app
+      tags:
+      - settings
   /user-settings:
     get:
       description: Get the authenticated user's settings (returns defaults if not
@@ -9702,6 +11589,80 @@ paths:
       summary: Kho VIP của người khác (theo quyền xem)
       tags:
       - vip
+  /wheel:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_wheel.PlayerConfigResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Cấu hình vòng quay may mắn cho người chơi
+      tags:
+      - wheel
+  /wheel/spins:
+    get:
+      parameters:
+      - description: 'Filter: win or miss'
+        in: query
+        name: outcome
+        type: string
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_wheel.SpinListResponse'
+      security:
+      - BearerAuth: []
+      summary: Lịch sử quay của tôi
+      tags:
+      - wheel
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Idempotency
+        in: body
+        name: request
+        schema:
+          $ref: '#/definitions/internal_modules_wheel.SpinRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_wheel.SpinResult'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Quay vòng quay may mắn
+      tags:
+      - wheel
 schemes:
 - http
 - https

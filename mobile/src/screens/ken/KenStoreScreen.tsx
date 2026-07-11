@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -6,6 +6,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { formatKen } from '@ola/shared/lib';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
+import { selectTopupEnabled, useTopupConfigStore } from '@ola/shared/stores/topupConfigStore';
 import type { RootStackParamList } from '../../navigation/types';
 import { ROOT_ROUTES } from '../../navigation/routes';
 import { KenCoin } from './KenCoin';
@@ -44,7 +45,13 @@ export function KenStoreScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
   const user = useAuthStore((s) => s.user);
   const push = useToastStore((s) => s.push);
+  const topupEnabled = useTopupConfigStore(selectTopupEnabled);
+  const loadTopupConfig = useTopupConfigStore((s) => s.load);
   const [transferOpen, setTransferOpen] = useState(false);
+
+  useEffect(() => {
+    void loadTopupConfig();
+  }, [loadTopupConfig]);
 
   function comingSoon() {
     push('info', t('ken.comingSoon'));
@@ -93,12 +100,16 @@ export function KenStoreScreen({ navigation }: Props) {
             </View>
           </View>
 
-          <RowAction
-            icon={<KenCoin />}
-            label={t('ken.purchase')}
-            onPress={() => navigation.navigate(ROOT_ROUTES.BuyKen)}
-          />
-          <View className="mx-2" style={{ height: 1, backgroundColor: DIVIDER }} />
+          {topupEnabled && (
+            <>
+              <RowAction
+                icon={<KenCoin />}
+                label={t('ken.purchase')}
+                onPress={() => navigation.navigate(ROOT_ROUTES.BuyKen)}
+              />
+              <View className="mx-2" style={{ height: 1, backgroundColor: DIVIDER }} />
+            </>
+          )}
           <RowAction icon={<KenCoin />} label={t('ken.transfer')} onPress={() => setTransferOpen(true)} />
         </View>
 

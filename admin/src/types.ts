@@ -897,3 +897,25 @@ export interface PenStatsParams {
   from?: string
   to?: string
 }
+
+export interface AppSetting {
+  key: string
+  value: Record<string, unknown>
+  updatedAt: string
+}
+
+export interface TopupBankSetting {
+  bankName: string
+  bankBin: string
+  accountNumber: string
+  accountName: string
+  memoTemplate: string
+}
+
+export interface TopupSetting {
+  enabled: boolean
+  minAmount: number
+  stepAmount: number
+  presetAmounts: number[]
+  kenPerVnd: number
+}
