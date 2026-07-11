@@ -20,7 +20,7 @@ export function SavedAccountGallery({ accounts, onPick, onRemove }: SavedAccount
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        className="mb-4 mt-8 w-full max-w-md grow-0"
+        className="mb-4 w-full max-w-md grow-0"
         contentContainerClassName="min-w-full justify-center gap-8 px-1 py-1"
       >
         {accounts.map((account) => (

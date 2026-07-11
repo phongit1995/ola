@@ -3,6 +3,8 @@ import { persist } from 'zustand/middleware';
 import { encodeSecret } from '../lib';
 import { sharedPersistStorage } from '../platform/persistStorage';
 
+export const MAX_SAVED_ACCOUNTS = 3;
+
 export interface SavedAccount {
   username: string;
   secret: string;
@@ -33,7 +35,9 @@ export const useSavedAccountsStore = create<SavedAccountsState>()(
             avatar,
             lastAccessTime: Date.now(),
           };
-          return { accounts: [updated, ...others].sort(byMostRecent) };
+          return {
+            accounts: [updated, ...others].sort(byMostRecent).slice(0, MAX_SAVED_ACCOUNTS),
+          };
         }),
       removeAccount: (username) =>
         set((state) => ({
@@ -42,11 +46,18 @@ export const useSavedAccountsStore = create<SavedAccountsState>()(
     }),
     {
       name: 'ola.savedAccounts',
-      version: 1,
+      version: 2,
       storage: sharedPersistStorage<SavedAccountsState>(),
       migrate: (persisted, version) => {
-        if (version >= 1) {
+        if (version >= 2) {
           return persisted as SavedAccountsState;
+        }
+        if (version === 1) {
+          const state = persisted as SavedAccountsState;
+          return {
+            ...state,
+            accounts: [...(state.accounts ?? [])].sort(byMostRecent).slice(0, MAX_SAVED_ACCOUNTS),
+          };
         }
         const legacy = persisted as { accounts?: Array<Record<string, unknown>> } | undefined;
         const accounts: SavedAccount[] = (legacy?.accounts ?? [])
@@ -61,7 +72,9 @@ export const useSavedAccountsStore = create<SavedAccountsState>()(
                   : '',
             lastAccessTime: typeof item.lastAccessTime === 'number' ? item.lastAccessTime : 0,
           }));
-        return { accounts } as SavedAccountsState;
+        return {
+          accounts: accounts.sort(byMostRecent).slice(0, MAX_SAVED_ACCOUNTS),
+        } as SavedAccountsState;
       },
     }
   )

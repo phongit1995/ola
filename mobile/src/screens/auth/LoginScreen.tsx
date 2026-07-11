@@ -122,19 +122,20 @@ export function LoginScreen({ navigation }: Props) {
       >
         <LanguageSwitcher className="mt-3 self-end" />
 
-        {accounts.length > 0 ? (
-          <SavedAccountGallery
-            accounts={accounts}
-            onPick={pickAccount}
-            onRemove={handleRemoveAccount}
-          />
-        ) : (
-          <Image
-            source={require('../../assets/ola-logo.png')}
-            className="mb-4 mt-8 h-14 w-14"
-            resizeMode="contain"
-          />
-        )}
+        <View className="w-full flex-1 items-center justify-center py-6">
+          {accounts.length > 0 ? (
+            <SavedAccountGallery
+              accounts={accounts}
+              onPick={pickAccount}
+              onRemove={handleRemoveAccount}
+            />
+          ) : (
+            <Image
+              source={require('../../assets/ola-logo.png')}
+              className="mb-4 h-14 w-14"
+              resizeMode="contain"
+            />
+          )}
 
         <View
           className={`w-full max-w-md overflow-hidden rounded-sm bg-white shadow ${
@@ -220,14 +221,15 @@ export function LoginScreen({ navigation }: Props) {
           <Text className="text-right text-sm text-white">{t('login.forgot')}</Text>
         </Pressable>
 
-        <Pressable
-          className="mt-1 h-12 w-full max-w-md items-center justify-center"
-          onPress={() => navigation.navigate(AUTH_ROUTES.Register)}
-        >
-          <Text className="text-xl text-white/70">{t('login.createAccount')}</Text>
-        </Pressable>
+          <Pressable
+            className="mt-1 h-12 w-full max-w-md items-center justify-center"
+            onPress={() => navigation.navigate(AUTH_ROUTES.Register)}
+          >
+            <Text className="text-xl text-white/70">{t('login.createAccount')}</Text>
+          </Pressable>
+        </View>
 
-        <Text className="mt-5 w-full max-w-md pb-4 text-right text-[9px] text-white/70">
+        <Text className="w-full max-w-md pb-4 text-right text-[9px] text-white/70">
           {t('login.version')}: {APP_VERSION}
         </Text>
       </ScrollView>

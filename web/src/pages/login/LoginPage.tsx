@@ -103,19 +103,16 @@ export function LoginPage() {
     >
       <LanguageSwitcher className="mt-3 self-end" />
 
-      {accounts.length > 0 ? (
-        <SavedAccountGallery
-          accounts={accounts}
-          onPick={pickAccount}
-          onRemove={handleRemoveAccount}
-        />
-      ) : (
-        <img
-          src={olaLogo}
-          alt="Ola"
-          className="mt-8 mb-4 h-14 w-14 object-contain"
-        />
-      )}
+      <div className="my-auto flex w-full flex-col items-center py-6">
+        {accounts.length > 0 ? (
+          <SavedAccountGallery
+            accounts={accounts}
+            onPick={pickAccount}
+            onRemove={handleRemoveAccount}
+          />
+        ) : (
+          <img src={olaLogo} alt="Ola" className="mb-4 h-14 w-14 object-contain" />
+        )}
 
       <div
         className={`w-full max-w-md overflow-hidden rounded-sm bg-white shadow-[0_1px_4px_rgba(0,0,0,.24),0_0_2px_rgba(0,0,0,.12)] ${
@@ -169,15 +166,16 @@ export function LoginPage() {
         {t('login.forgot')}
       </button>
 
-      <button
-        type="button"
-        onClick={() => navigate(ROUTES.register)}
-        className="mt-1 h-12 w-full max-w-md text-center text-xl text-white/70"
-      >
-        {t('login.createAccount')}
-      </button>
+        <button
+          type="button"
+          onClick={() => navigate(ROUTES.register)}
+          className="mt-1 h-12 w-full max-w-md text-center text-xl text-white/70"
+        >
+          {t('login.createAccount')}
+        </button>
+      </div>
 
-      <div className="mt-5 w-full max-w-md pb-4 text-right text-[9px] text-white/70">
+      <div className="w-full max-w-md pb-4 text-right text-[9px] text-white/70">
         {t('login.version')}: {APP_VERSION}
       </div>
 

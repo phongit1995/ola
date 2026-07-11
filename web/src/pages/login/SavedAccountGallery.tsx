@@ -16,7 +16,7 @@ export function SavedAccountGallery({ accounts, onPick, onRemove }: SavedAccount
 
   return (
     <>
-      <div className="mt-8 mb-4 flex w-full max-w-md justify-center gap-8 overflow-x-auto px-1 py-1">
+      <div className="mb-4 flex w-full max-w-md justify-center gap-8 overflow-x-auto px-1 py-1">
         {accounts.map((account) => (
           <div key={account.username} className="flex shrink-0 flex-col items-center gap-1">
             <div className="relative">
