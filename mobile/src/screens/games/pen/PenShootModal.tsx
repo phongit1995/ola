@@ -178,7 +178,7 @@ export function PenShootModal({
               key={bet}
               disabled={disabled}
               onPress={() => setThousands(String(bet / 1000))}
-              style={({ pressed }) => [{
+              style={{
                 flexBasis: '30%',
                 flexGrow: 1,
                 alignItems: 'center',
@@ -188,8 +188,7 @@ export function PenShootModal({
                 borderColor: active ? '#8dffab' : 'rgba(255,255,255,0.15)',
                 backgroundColor: active ? 'rgba(55,200,79,0.25)' : 'rgba(0,0,0,0.2)',
                 opacity: disabled ? 0.35 : 1,
-                transform: [{ scale: pressed ? 0.95 : 1 }],
-              }]}
+              }}
             >
               <Text
                 style={{

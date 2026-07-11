@@ -75,7 +75,14 @@ export function VerticalGradient({
       {Array.from({ length: steps }).map((_, i) => (
         <View
           key={i}
-          style={{ flex: 1, backgroundColor: colorAt(stops, i / (steps - 1)) }}
+          style={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            top: `${(i / steps) * 100}%`,
+            height: `${100 / steps + 0.5}%`,
+            backgroundColor: colorAt(stops, i / (steps - 1)),
+          }}
         />
       ))}
     </View>

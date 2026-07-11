@@ -104,7 +104,7 @@ export function PenModalShell({
               <Pressable
                 accessibilityLabel={t('penGame.close')}
                 onPress={onClose}
-                style={({ pressed }) => [{
+                style={{
                   position: 'absolute',
                   right: panelW * 0.05,
                   top: panelH * 0.03,
@@ -112,8 +112,7 @@ export function PenModalShell({
                   height: 36,
                   alignItems: 'center',
                   justifyContent: 'center',
-                  transform: [{ scale: pressed ? 0.95 : 1 }],
-                }]}
+                }}
               >
                 <PenBg source={closeBtn} />
                 <Image source={closeIcon} style={{ width: 16, height: 16 }} resizeMode="contain" />
@@ -163,13 +162,12 @@ export function PenKenRow({ ken, onTopUp }: PenKenRowProps) {
       <Pressable
         accessibilityLabel={t('penGame.topUp')}
         onPress={onTopUp}
-        style={({ pressed }) => [{
+        style={{
           width: 32,
           height: 32,
           alignItems: 'center',
           justifyContent: 'center',
-          transform: [{ scale: pressed ? 0.95 : 1 }],
-        }]}
+        }}
       >
         <PenBg source={penAssets.plusBtn} />
         <Image source={penAssets.plusIcon} style={{ width: 14, height: 14 }} resizeMode="contain" />
@@ -255,10 +253,9 @@ export function PenDirectionPicker({
             <Pressable
               accessibilityState={{ selected: active }}
               onPress={() => onSelect(dir)}
-              style={({ pressed }) => [{
+              style={{
                 flex: 1,
-                transform: [{ scale: pressed ? 0.95 : 1 }],
-              }]}
+              }}
             >
               <PenBg source={skin.bg} />
               <Image
@@ -349,13 +346,12 @@ export function PenModalActions({
     <View style={[{ flexDirection: 'row', alignItems: 'center', gap: 12, width: '100%' }, style]}>
       <Pressable
         onPress={onCancel}
-        style={({ pressed }) => [{
+        style={{
           flex: 2,
           height: 48,
           alignItems: 'center',
           justifyContent: 'center',
-          transform: [{ scale: pressed ? 0.95 : 1 }],
-        }]}
+        }}
       >
         <PenBg source={cancelBg} />
         <Text
@@ -370,14 +366,13 @@ export function PenModalActions({
       <Pressable
         onPress={onConfirm}
         disabled={confirmDisabled}
-        style={({ pressed }) => [{
+        style={{
           flex: 3,
           height: 48,
           alignItems: 'center',
           justifyContent: 'center',
           opacity: confirmDisabled ? 0.6 : 1,
-          transform: [{ scale: pressed ? 0.95 : 1 }],
-        }]}
+        }}
       >
         <PenBg source={confirmBg} />
         <Text

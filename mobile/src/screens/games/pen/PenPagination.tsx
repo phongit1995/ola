@@ -16,14 +16,13 @@ function PageNav({
       disabled={disabled}
       onPress={onPress}
       accessibilityLabel={dir}
-      style={({ pressed }) => [{
+      style={{
         width: 36,
         height: 36,
         alignItems: 'center',
         justifyContent: 'center',
         opacity: disabled ? 0.3 : 1,
-        transform: [{ scale: pressed ? 0.95 : 1 }],
-      }]}
+      }}
     >
       <PenBg source={penHistoryAssets.pageNext} />
       <Text

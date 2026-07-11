@@ -57,15 +57,14 @@ function ResultCell({
       <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
         <Pressable
           onPress={onCancel}
-          style={({ pressed }) => [{
+          style={{
             borderRadius: 6,
             borderWidth: 1,
             borderColor: 'rgba(255,91,91,0.7)',
             backgroundColor: 'rgba(255,91,91,0.15)',
             paddingHorizontal: 10,
             paddingVertical: 4,
-            transform: [{ scale: pressed ? 0.95 : 1 }],
-          }]}
+          }}
         >
           <Text style={{ fontSize: 11, fontWeight: '700', color: '#ff7a7a' }}>
             {t('penGame.hist.cancel')}

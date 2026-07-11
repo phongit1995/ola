@@ -79,7 +79,7 @@ export function PenHistoryModal({ userId, onClose }: PenHistoryModalProps) {
           <Pressable
             accessibilityLabel={t('penGame.close')}
             onPress={onClose}
-            style={({ pressed }) => [{
+            style={{
               position: 'absolute',
               right: '4%',
               top: '3.5%',
@@ -87,9 +87,8 @@ export function PenHistoryModal({ userId, onClose }: PenHistoryModalProps) {
               height: 36,
               alignItems: 'center',
               justifyContent: 'center',
-              transform: [{ scale: pressed ? 0.95 : 1 }],
               zIndex: 1,
-            }]}
+            }}
           >
             <PenBg source={penShootAssets.closeBtn} />
             <Image
@@ -114,13 +113,12 @@ export function PenHistoryModal({ userId, onClose }: PenHistoryModalProps) {
                 <Pressable
                   key={item.key}
                   onPress={() => setTab(item.key)}
-                  style={({ pressed }) => [{
+                  style={{
                     flex: 1,
                     alignItems: 'center',
                     paddingVertical: 10,
                     opacity: active ? 1 : 0.4,
-                    transform: [{ scale: pressed ? 0.95 : 1 }],
-                  }]}
+                  }}
                 >
                   <PenBg source={penHistoryAssets.tab} />
                   <Text

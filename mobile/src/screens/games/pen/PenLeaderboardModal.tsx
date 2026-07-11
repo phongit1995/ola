@@ -102,13 +102,12 @@ export function PenLeaderboardModal({ onClose }: PenLeaderboardModalProps) {
             <Pressable
               accessibilityLabel={t('penGame.close')}
               onPress={onClose}
-              style={({ pressed }) => [{
+              style={{
                 width: 36,
                 height: 36,
                 alignItems: 'center',
                 justifyContent: 'center',
-                transform: [{ scale: pressed ? 0.95 : 1 }],
-              }]}
+              }}
             >
               <PenBg source={penShootAssets.closeBtn} />
               <Image
@@ -134,13 +133,12 @@ export function PenLeaderboardModal({ onClose }: PenLeaderboardModalProps) {
                 <Pressable
                   key={item.key}
                   onPress={() => setPeriod(item.key)}
-                  style={({ pressed }) => [{
+                  style={{
                     flex: 1,
                     alignItems: 'center',
                     paddingVertical: 12,
                     opacity: active ? 1 : 0.4,
-                    transform: [{ scale: pressed ? 0.95 : 1 }],
-                  }]}
+                  }}
                 >
                   <PenBg source={penLeaderboardAssets.tab} />
                   <Text

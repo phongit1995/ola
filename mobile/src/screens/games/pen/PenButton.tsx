@@ -39,14 +39,13 @@ export function PenButton({
     <Pressable
       onPress={onPress}
       disabled={disabled}
-      style={({ pressed }) => [
+      style={[
         {
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'center',
           gap,
           opacity: disabled ? 0.6 : 1,
-          transform: [{ scale: pressed ? 0.95 : 1 }],
         },
         style,
       ]}

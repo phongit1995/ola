@@ -87,7 +87,7 @@ function ShakingBall({ size }: { size: number }) {
   );
 }
 
-function PenKickBall() {
+function PenKickBall({ zoneWidth, zoneHeight }: { zoneWidth: number; zoneHeight: number }) {
   const progress = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -108,9 +108,8 @@ function PenKickBall() {
       resizeMode="contain"
       style={{
         position: 'absolute',
-        bottom: '26%',
-        left: '50%',
-        marginLeft: -width / 2,
+        bottom: zoneHeight * 0.26,
+        left: zoneWidth / 2 - width / 2,
         width,
         height,
         opacity: progress.interpolate({ inputRange: [0, 0.7, 1], outputRange: [1, 1, 0] }),
@@ -391,7 +390,7 @@ export function PenGameScreen({ navigation }: Props) {
           <Pressable
             accessibilityLabel={t('penGame.leaderboard.title')}
             onPress={() => setLeaderboardOpen(true)}
-            style={({ pressed }) => [{ transform: [{ scale: pressed ? 0.95 : 1 }] }]}
+            style={{ }}
           >
             <View
               style={{
@@ -441,7 +440,13 @@ export function PenGameScreen({ navigation }: Props) {
             paddingRight: 32,
           }}
         >
-          {kickId > 0 && <PenKickBall key={kickId} />}
+          {kickId > 0 && (
+            <PenKickBall
+              key={kickId}
+              zoneWidth={containerWidth}
+              zoneHeight={(containerWidth * 650) / 1024}
+            />
+          )}
           <PenButton
             bg={penAssets.shootBtn}
             iconNode={<ShakingBall size={44} />}
