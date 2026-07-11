@@ -313,6 +313,7 @@ export function BuyVipScreen({ navigation, route }: Props) {
   function changeMode(next: BuyVipMode) {
     setMode(next);
     setConfirmOpen(false);
+    clearReceiver();
   }
 
   function startPurchase() {

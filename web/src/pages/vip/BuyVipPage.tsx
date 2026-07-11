@@ -262,6 +262,7 @@ export function BuyVipPage({ mode: initialMode = 'buy', onClose }: { mode?: BuyV
   function changeMode(next: BuyVipMode) {
     setMode(next);
     setConfirmOpen(false);
+    clearReceiver();
   }
 
   function startPurchase() {
