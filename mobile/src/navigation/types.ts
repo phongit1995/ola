@@ -20,6 +20,8 @@ export type RootStackParamList = {
   [ROOT_ROUTES.ChatDetail]: { conversationId: string };
   [ROOT_ROUTES.ProfileView]: { userId: string; color?: string };
   [ROOT_ROUTES.EditProfile]: undefined;
+  [ROOT_ROUTES.VipStore]: undefined;
+  [ROOT_ROUTES.BuyVip]: { mode?: 'buy' | 'give' | 'giveDays' | 'extend' } | undefined;
 };
 
 export type RoomStackParamList = {

@@ -19,6 +19,10 @@ export function AppsScreen() {
       navigation.navigate(ROOT_ROUTES.EditProfile);
       return;
     }
+    if (item.action === 'vip') {
+      navigation.navigate(ROOT_ROUTES.VipStore);
+      return;
+    }
     push('info', t('chat.comingSoon'));
   }
 

@@ -22,6 +22,8 @@ import { MeFeedScreen } from '../screens/me/MeFeedScreen';
 import { AppsScreen } from '../screens/apps/AppsScreen';
 import { ProfileViewScreen } from '../screens/profile/ProfileViewScreen';
 import { EditProfileScreen } from '../screens/profile/EditProfileScreen';
+import { VipStoreScreen } from '../screens/vip/VipStoreScreen';
+import { BuyVipScreen } from '../screens/vip/BuyVipScreen';
 import { TAB_ICONS } from '../assets/tabIcons';
 
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -122,6 +124,8 @@ export function RootNavigator() {
       <RootStack.Screen name={ROOT_ROUTES.ChatDetail} component={ChatDetailScreen} />
       <RootStack.Screen name={ROOT_ROUTES.ProfileView} component={ProfileViewScreen} />
       <RootStack.Screen name={ROOT_ROUTES.EditProfile} component={EditProfileScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.VipStore} component={VipStoreScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.BuyVip} component={BuyVipScreen} />
     </RootStack.Navigator>
   );
 }

@@ -22,6 +22,7 @@ import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { Gender, UpdateProfileRequest } from '@ola/shared/types';
 import type { RootStackParamList } from '../../navigation/types';
+import { ROOT_ROUTES } from '../../navigation/routes';
 import { Avatar } from '../../components/Avatar';
 import { pickCroppedImage } from '../../lib/imagePicker';
 import { ChangePasswordDialog } from './ChangePasswordDialog';
@@ -70,7 +71,13 @@ export function EditProfileScreen({ navigation }: Props) {
   const user = useAuthStore((s) => s.user);
   const refreshUser = useAuthStore((s) => s.refreshUser);
   const push = useToastStore((s) => s.push);
-  const onClose = () => navigation.goBack();
+  const onClose = () => {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+      return;
+    }
+    navigation.navigate(ROOT_ROUTES.MainTabs);
+  };
 
   const [avatar, setAvatar] = useState(user?.avatar ?? '');
   const [fullName, setFullName] = useState(user?.fullName ?? '');

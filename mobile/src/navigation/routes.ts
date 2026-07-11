@@ -18,6 +18,8 @@ export const ROOT_ROUTES = {
   ChatDetail: 'ChatDetail',
   ProfileView: 'ProfileView',
   EditProfile: 'EditProfile',
+  VipStore: 'VipStore',
+  BuyVip: 'BuyVip',
 } as const;
 
 export const ROOM_ROUTES = {
