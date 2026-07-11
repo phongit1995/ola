@@ -54,7 +54,7 @@ export function AppsScreen() {
     <View className="flex-1" style={{ backgroundColor: '#d5d5d5' }}>
       <View className="bg-ola-primary" style={{ paddingTop: insets.top }}>
         <View className="h-12 items-center justify-center px-2">
-          <Text className="text-base font-medium text-white">{t('home.tabApps')}</Text>
+          <Text className="text-lg font-medium text-white">{t('home.tabApps')}</Text>
         </View>
       </View>
       <ScrollView className="flex-1">

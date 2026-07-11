@@ -118,7 +118,7 @@ export function BuyKenScreen({ navigation }: Props) {
           >
             <Text className="text-2xl leading-none text-white">‹</Text>
           </Pressable>
-          <Text className="flex-1 text-base font-medium text-white" numberOfLines={1}>
+          <Text className="flex-1 text-lg font-medium text-white" numberOfLines={1}>
             {t('ken.buy.title')}
           </Text>
         </View>

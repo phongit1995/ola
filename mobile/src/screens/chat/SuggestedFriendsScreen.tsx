@@ -31,7 +31,7 @@ export function SuggestedFriendsScreen({ onClose }: { onClose: () => void }) {
           <Pressable onPress={onClose} className="h-12 w-10 items-center justify-center">
             <Text className="text-2xl leading-none text-white">‹</Text>
           </Pressable>
-          <Text numberOfLines={1} className="flex-1 text-center text-base font-medium text-white">
+          <Text numberOfLines={1} className="flex-1 text-center text-lg font-medium text-white">
             {t('chat.suggestFriends')}
           </Text>
           <View className="w-10" />

@@ -76,7 +76,7 @@ export function RegisterScreen({ navigation }: Props) {
           <Pressable className="-ml-2 px-2" onPress={() => navigation.navigate(AUTH_ROUTES.Login)}>
             <Text className="text-base text-white">{t('common.cancel')}</Text>
           </Pressable>
-          <Text className="flex-1 text-center text-base font-medium text-white">
+          <Text className="flex-1 text-center text-lg font-medium text-white">
             {t('register.title')}
           </Text>
           <LanguageSwitcher />

@@ -229,7 +229,7 @@ export function SettingsScreen({ navigation }: Props) {
             <Text className="text-2xl leading-none text-white">‹</Text>
           </Pressable>
           <Text
-            className="flex-1 text-center text-base font-medium text-white"
+            className="flex-1 text-center text-lg font-medium text-white"
             numberOfLines={1}
           >
             {t('settings.title')}

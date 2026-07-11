@@ -65,7 +65,7 @@ export function MeCommentSheet({
           <Pressable onPress={onClose} className="h-12 w-10 items-center justify-center">
             <Text className="text-2xl leading-none text-white">×</Text>
           </Pressable>
-          <Text className="flex-1 text-base font-medium text-white">
+          <Text className="flex-1 text-lg font-medium text-white">
             {`${t('me.commentsTitle')}${total > 0 ? ` (${total})` : ''}`}
           </Text>
           <View className="w-10" />

@@ -24,7 +24,7 @@ export function CoverPreviewOverlay({
     <Modal visible={visible} animationType="fade" onRequestClose={onCancel}>
       <View className="flex-1 bg-black" style={{ paddingTop: insets.top }}>
         <View className="h-12 items-center justify-center">
-          <Text className="text-base font-medium text-white">{t('profileEdit.coverPreviewTitle')}</Text>
+          <Text className="text-lg font-medium text-white">{t('profileEdit.coverPreviewTitle')}</Text>
         </View>
 
         <View className="min-h-0 flex-1 items-center justify-center p-4">

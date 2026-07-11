@@ -194,7 +194,7 @@ export function EditProfileScreen({ navigation }: Props) {
         <Pressable className="h-9 w-9 items-center justify-center rounded-full active:bg-white/15" onPress={onClose}>
           <Text className="text-2xl leading-none text-white">‹</Text>
         </Pressable>
-        <Text className="flex-1 text-base font-medium text-white" numberOfLines={1}>{t('profileEdit.title')}</Text>
+        <Text className="flex-1 text-lg font-medium text-white" numberOfLines={1}>{t('profileEdit.title')}</Text>
         <Pressable
           onPress={() => setPasswordOpen(true)}
           className="h-8 flex-row items-center gap-1 rounded-full bg-white/15 px-2.5 active:bg-white/25"

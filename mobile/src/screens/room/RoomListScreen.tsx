@@ -175,7 +175,7 @@ export function RoomListScreen() {
       <View className="bg-ola-primary" style={{ paddingTop: insets.top }}>
         <View className="h-12 flex-row items-center px-2">
           <View className="w-9" />
-          <Text className="flex-1 text-center text-base font-medium text-white">{t('home.tabRoom')}</Text>
+          <Text className="flex-1 text-center text-lg font-medium text-white">{t('home.tabRoom')}</Text>
           <Pressable
             onPress={() => void load()}
             aria-label={t('room.refresh')}

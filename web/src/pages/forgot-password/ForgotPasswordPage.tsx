@@ -49,7 +49,7 @@ export function ForgotPasswordPage() {
         >
           {t('common.cancel')}
         </button>
-        <span className="flex-1 text-center text-base font-medium">{t('forgot.title')}</span>
+        <span className="flex-1 text-center text-lg font-medium">{t('forgot.title')}</span>
         <LanguageSwitcher />
       </header>
 
