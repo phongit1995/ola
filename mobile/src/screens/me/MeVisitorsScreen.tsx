@@ -111,7 +111,7 @@ export function MeVisitorsScreen({ language, onClose, onOpenProfile }: MeVisitor
                   <View className="min-w-0 flex-1 gap-1.5">
                     <Pressable onPress={openProfile}>
                       <View className="flex-row items-center gap-1">
-                        <VipBadge typeId={activeVipTypeId(item.vipUsed, item.vipEndTime)} />
+                        <VipBadge typeId={activeVipTypeId(item.vipUsed, item.vipEndTime)} size={16} />
                         <Text numberOfLines={1} className="min-w-0 shrink text-base font-medium" style={{ color: 'rgba(0,0,0,0.87)' }}>
                           @{item.username}
                           {item.fullName != null && item.fullName !== '' && (

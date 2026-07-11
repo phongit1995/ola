@@ -51,7 +51,7 @@ function MeProfileRow({
       <Avatar name={title} uri={profile.avatar ?? undefined} size={32} />
       <View className="min-w-0 flex-1">
         <View className="flex-row items-center gap-1">
-          <VipBadge typeId={profile.vipTypeId} />
+          <VipBadge typeId={profile.vipTypeId} size={16} />
           <Text numberOfLines={1} className="min-w-0 shrink text-base" style={{ color: 'rgba(0,0,0,0.87)' }}>
             {title}
           </Text>
