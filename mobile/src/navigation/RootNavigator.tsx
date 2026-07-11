@@ -19,9 +19,9 @@ import { ChatDetailScreen } from '../screens/chat/ChatDetailScreen';
 import { RoomListScreen } from '../screens/room/RoomListScreen';
 import { RoomChatScreen } from '../screens/room/RoomChatScreen';
 import { MeFeedScreen } from '../screens/me/MeFeedScreen';
+import { AppsScreen } from '../screens/apps/AppsScreen';
 import { ProfileViewScreen } from '../screens/profile/ProfileViewScreen';
 import { EditProfileScreen } from '../screens/profile/EditProfileScreen';
-import { ScreenPlaceholder } from '../components/ScreenPlaceholder';
 import { TAB_ICONS } from '../assets/tabIcons';
 
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -51,14 +51,6 @@ function AuthNavigator() {
       <AuthStack.Screen name={AUTH_ROUTES.Terms} component={TermsScreen} />
     </AuthStack.Navigator>
   );
-}
-
-function RssTabScreen() {
-  return <ScreenPlaceholder title="RSS" />;
-}
-
-function AppsTabScreen() {
-  return <ScreenPlaceholder title="Apps" />;
 }
 
 function tabIcon(key: keyof typeof TAB_ICONS) {
@@ -93,14 +85,15 @@ function MainTabs() {
         component={MeFeedScreen}
         options={{ title: t('home.tabMe'), tabBarIcon: tabIcon('me') }}
       />
+      {/* TODO: mở lại tab RSS khi có tính năng thật
       <Tabs.Screen
         name={TAB_ROUTES.Rss}
         component={RssTabScreen}
         options={{ title: t('home.tabRss'), tabBarIcon: tabIcon('rss') }}
-      />
+      /> */}
       <Tabs.Screen
         name={TAB_ROUTES.Apps}
-        component={AppsTabScreen}
+        component={AppsScreen}
         options={{ title: t('home.tabApps'), tabBarIcon: tabIcon('apps') }}
       />
     </Tabs.Navigator>
