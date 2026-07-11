@@ -26,26 +26,26 @@ func NewRepository(session *gocql.Session, logger *zap.SugaredLogger) *Repositor
 
 	r.preparedQueries["create_message"] = session.Query(`
 		INSERT INTO messages_by_conversation
-		(conversation_id, message_id, sender_id, sender_name, sender_avatar, message_type, content, metadata, created_at, updated_at, reply_to_id)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		(conversation_id, message_id, sender_id, sender_name, sender_avatar, message_type, content, metadata, created_at, updated_at, reply_to_id, reply_snapshot)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`)
 
 	r.preparedQueries["get_messages"] = session.Query(`
-		SELECT conversation_id, message_id, sender_id, sender_name, sender_avatar, message_type, content, metadata, created_at, updated_at, deleted_at, reply_to_id, reactions, edited_at
+		SELECT conversation_id, message_id, sender_id, sender_name, sender_avatar, message_type, content, metadata, created_at, updated_at, deleted_at, reply_to_id, reply_snapshot, reactions, edited_at
 		FROM messages_by_conversation
 		WHERE conversation_id = ?
 		LIMIT ?
 	`)
 
 	r.preparedQueries["get_messages_before"] = session.Query(`
-		SELECT conversation_id, message_id, sender_id, sender_name, sender_avatar, message_type, content, metadata, created_at, updated_at, deleted_at, reply_to_id, reactions, edited_at
+		SELECT conversation_id, message_id, sender_id, sender_name, sender_avatar, message_type, content, metadata, created_at, updated_at, deleted_at, reply_to_id, reply_snapshot, reactions, edited_at
 		FROM messages_by_conversation
 		WHERE conversation_id = ? AND message_id < ?
 		LIMIT ?
 	`)
 
 	r.preparedQueries["get_message_by_id"] = session.Query(`
-		SELECT conversation_id, message_id, sender_id, sender_name, sender_avatar, message_type, content, metadata, created_at, updated_at, deleted_at, reply_to_id, reactions, edited_at
+		SELECT conversation_id, message_id, sender_id, sender_name, sender_avatar, message_type, content, metadata, created_at, updated_at, deleted_at, reply_to_id, reply_snapshot, reactions, edited_at
 		FROM messages_by_conversation
 		WHERE conversation_id = ? AND message_id = ?
 	`)
@@ -91,6 +91,7 @@ type Message struct {
 	UpdatedAt      time.Time
 	DeletedAt      *time.Time
 	ReplyToID      *uuid.UUID
+	ReplySnapshot  string
 	Reactions      string
 	EditedAt       *time.Time
 }
@@ -116,7 +117,7 @@ func (r *Repository) CreateMessage(msg *Message) error {
 
 	return r.preparedQueries["create_message"].Bind(
 		gocqlConvID, msg.MessageID, gocqlSenderID, msg.SenderName, msg.SenderAvatar,
-		msg.MessageType, msg.Content, msg.Metadata, msg.CreatedAt, msg.UpdatedAt, gocqlReplyToID,
+		msg.MessageType, msg.Content, msg.Metadata, msg.CreatedAt, msg.UpdatedAt, gocqlReplyToID, msg.ReplySnapshot,
 	).Exec()
 }
 
@@ -133,6 +134,7 @@ type scyllaMessageRow struct {
 	UpdatedAt      time.Time
 	DeletedAt      *time.Time
 	ReplyToID      *gocql.UUID
+	ReplySnapshot  string
 	Reactions      string
 	EditedAt       *time.Time
 }
@@ -159,6 +161,7 @@ func messageFromRow(row scyllaMessageRow) (*Message, error) {
 		CreatedAt:      row.CreatedAt,
 		UpdatedAt:      row.UpdatedAt,
 		DeletedAt:      row.DeletedAt,
+		ReplySnapshot:  row.ReplySnapshot,
 		Reactions:      row.Reactions,
 		EditedAt:       row.EditedAt,
 	}
@@ -193,7 +196,7 @@ func (r *Repository) GetMessages(conversationID uuid.UUID, limit int, beforeMess
 
 	for iter.Scan(&row.ConversationID, &row.MessageID, &row.SenderID, &row.SenderName, &row.SenderAvatar,
 		&row.MessageType, &row.Content, &row.Metadata, &row.CreatedAt, &row.UpdatedAt,
-		&row.DeletedAt, &row.ReplyToID, &row.Reactions, &row.EditedAt) {
+		&row.DeletedAt, &row.ReplyToID, &row.ReplySnapshot, &row.Reactions, &row.EditedAt) {
 
 		msg, err := messageFromRow(row)
 		if err != nil {
@@ -222,7 +225,7 @@ func (r *Repository) GetMessageByID(conversationID uuid.UUID, messageID gocql.UU
 	err = r.preparedQueries["get_message_by_id"].Bind(gocqlConvID, messageID).Scan(
 		&row.ConversationID, &row.MessageID, &row.SenderID, &row.SenderName, &row.SenderAvatar,
 		&row.MessageType, &row.Content, &row.Metadata, &row.CreatedAt, &row.UpdatedAt,
-		&row.DeletedAt, &row.ReplyToID, &row.Reactions, &row.EditedAt,
+		&row.DeletedAt, &row.ReplyToID, &row.ReplySnapshot, &row.Reactions, &row.EditedAt,
 	)
 	if err != nil {
 		return nil, err

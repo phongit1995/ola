@@ -41,6 +41,15 @@ export interface ConversationsListResult {
   total: number;
 }
 
+export interface ChatReplySnapshot {
+  messageId: string;
+  senderId: string;
+  senderName?: string;
+  excerpt: string;
+  type?: MessageType;
+  imageUrl?: string;
+}
+
 export interface Message {
   id: string;
   conversationId: string;
@@ -55,6 +64,7 @@ export interface Message {
   updatedAt: string;
   editedAt?: string;
   replyToId?: string;
+  replyTo?: ChatReplySnapshot;
   clientMsgId?: string;
   reactions?: Record<string, string[]>;
 }

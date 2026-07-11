@@ -11755,6 +11755,9 @@
                         }
                     }
                 },
+                "replyTo": {
+                    "$ref": "#/definitions/internal_modules_message.ReplySnapshot"
+                },
                 "replyToId": {
                     "type": "string",
                     "example": "ga8g0h98-cb4g-8b79-f3e0-ggi49e48eihf"
@@ -11848,6 +11851,29 @@
                     "type": "string"
                 },
                 "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_message.ReplySnapshot": {
+            "type": "object",
+            "properties": {
+                "excerpt": {
+                    "type": "string"
+                },
+                "imageUrl": {
+                    "type": "string"
+                },
+                "messageId": {
+                    "type": "string"
+                },
+                "senderId": {
+                    "type": "string"
+                },
+                "senderName": {
+                    "type": "string"
+                },
+                "type": {
                     "type": "string"
                 }
             }

@@ -93,6 +93,8 @@ const (
 	RoomPresenceTTLSeconds   = 43200
 	RoomJoinTicketTTLSeconds = 5
 	RoomReplyExcerptMaxRunes = 120
+
+	MessageReplyExcerptMaxRunes = 120
 )
 
 const (

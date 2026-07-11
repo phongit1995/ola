@@ -68,7 +68,7 @@ func (ctrl *Controller) SendMessage(c *gin.Context) (interface{}, error) {
 	message, err := ctrl.service.SendMessage(userID, conversationID, req.Type, req.Content, req.Metadata, replyToID, req.ClientMsgID)
 	if err != nil {
 		ctrl.logger.Errorw("Failed to send message", "error", err)
-		return nil, utils.NewHTTPError(http.StatusInternalServerError, "failed to send message")
+		return nil, utils.NewHTTPError(httpStatusForError(err), err.Error())
 	}
 
 	return message, nil

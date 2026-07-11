@@ -17,14 +17,16 @@ interface MessageRowProps {
   avatar?: string;
   isLastOwn: boolean;
   seen: boolean;
+  highlighted?: boolean;
   onOpenActions: (message: ChatMessage, anchor: DOMRect | null) => void;
   onOpenProfile?: () => void;
   onMention?: (nick: string) => void;
+  onQuoteClick?: (messageId: string) => void;
   onOpenImage: (url: string) => void;
   onResend: (id: string) => void;
 }
 
-export function MessageRow({ message, prev, next, name, color, avatar, isLastOwn, seen, onOpenActions, onOpenProfile, onMention, onOpenImage, onResend }: MessageRowProps) {
+export function MessageRow({ message, prev, next, name, color, avatar, isLastOwn, seen, highlighted = false, onOpenActions, onOpenProfile, onMention, onQuoteClick, onOpenImage, onResend }: MessageRowProps) {
   const isOut = message.direction === 'out';
   const boundary = prev == null;
   const firstInGroup = boundary || prev.direction !== message.direction;
@@ -75,15 +77,16 @@ export function MessageRow({ message, prev, next, name, color, avatar, isLastOwn
         <div className={`flex max-w-[78%] flex-col ${isOut ? 'items-end' : ''}`}>
           <div className={`flex items-center gap-2 ${isOut ? 'flex-row-reverse' : ''}`}>
             <div
+              data-message-id={message.id}
               {...longPress}
               onPointerDown={(event) => {
                 suppressClick.current = false;
                 longPress.onPointerDown(event);
               }}
               onClick={handleBubbleClick}
-              className="touch-pan-y select-none"
+              className={`touch-pan-y select-none ${highlighted ? 'rounded-2xl ring-2 ring-ola-primary/40' : ''}`}
             >
-              <ChatMessageBubble message={message} firstInGroup={firstInGroup} lastInGroup={lastInGroup} onMention={onMention} />
+              <ChatMessageBubble message={message} firstInGroup={firstInGroup} lastInGroup={lastInGroup} onMention={onMention} onQuoteClick={onQuoteClick} />
             </div>
             {showTime && (
               <span className="shrink-0 text-[10px] text-black/38">{message.time}</span>

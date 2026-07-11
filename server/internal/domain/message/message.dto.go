@@ -1,21 +1,31 @@
 package message
 
+type ReplySnapshot struct {
+	MessageID  string `json:"messageId"`
+	SenderID   string `json:"senderId"`
+	SenderName string `json:"senderName,omitempty"`
+	Excerpt    string `json:"excerpt"`
+	Type       string `json:"type,omitempty"`
+	ImageURL   string `json:"imageUrl,omitempty"`
+}
+
 // MessageData contains the message and conversation information for events
 type MessageData struct {
-	ID             string `json:"id"`
-	ConversationID string `json:"conversationId"`
-	SenderID       string `json:"senderId"`
-	SenderName     string `json:"senderName,omitempty"`
-	SenderAvatar   string `json:"senderAvatar,omitempty"`
-	Type           string `json:"type"`
-	Content        string `json:"content"`
-	Metadata       string `json:"metadata,omitempty"`
-	Status         string `json:"status"`
-	CreatedAt      string `json:"createdAt"`
-	UpdatedAt      string `json:"updatedAt"`
-	EditedAt       string `json:"editedAt,omitempty"`
-	ReplyToID      string `json:"replyToId,omitempty"`
-	ClientMsgID    string `json:"clientMsgId,omitempty"`
+	ID             string         `json:"id"`
+	ConversationID string         `json:"conversationId"`
+	SenderID       string         `json:"senderId"`
+	SenderName     string         `json:"senderName,omitempty"`
+	SenderAvatar   string         `json:"senderAvatar,omitempty"`
+	Type           string         `json:"type"`
+	Content        string         `json:"content"`
+	Metadata       string         `json:"metadata,omitempty"`
+	Status         string         `json:"status"`
+	CreatedAt      string         `json:"createdAt"`
+	UpdatedAt      string         `json:"updatedAt"`
+	EditedAt       string         `json:"editedAt,omitempty"`
+	ReplyToID      string         `json:"replyToId,omitempty"`
+	ReplyTo        *ReplySnapshot `json:"replyTo,omitempty"`
+	ClientMsgID    string         `json:"clientMsgId,omitempty"`
 }
 
 // ConversationData contains conversation information for events

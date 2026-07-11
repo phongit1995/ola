@@ -20,6 +20,7 @@ import (
 	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/transport/kafka"
 	"ola-chat-server/internal/transport/websocket"
+	"ola-chat-server/internal/utils"
 	"path/filepath"
 	"strings"
 	"time"
@@ -688,7 +689,7 @@ func (s *Service) resolveReplySnapshot(ctx context.Context, roomID, replyToID st
 	snapshot := &RoomReplySnapshot{
 		MessageID: orig.ID,
 		SenderID:  orig.SenderID,
-		Excerpt:   truncateRunes(orig.Content, constants.RoomReplyExcerptMaxRunes),
+		Excerpt:   utils.TruncateRunes(orig.Content, constants.RoomReplyExcerptMaxRunes),
 		Type:      orig.Type,
 		ImageURL:  orig.ImageURL,
 	}
@@ -751,14 +752,6 @@ func isAllowedRoomReactionType(t string) bool {
 		}
 	}
 	return false
-}
-
-func truncateRunes(content string, maxRunes int) string {
-	runes := []rune(content)
-	if len(runes) <= maxRunes {
-		return content
-	}
-	return string(runes[:maxRunes])
 }
 
 func toEventReplySnapshot(snapshot *RoomReplySnapshot) *roomEvents.RoomReplySnapshot {

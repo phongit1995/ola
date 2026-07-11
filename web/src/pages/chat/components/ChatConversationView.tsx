@@ -17,14 +17,14 @@ import {
   type SmileyInputHandle,
   type ListOption,
 } from '@components';
-import { colorForName, compressImageForUpload, ImageTooLargeError, isSameDay, kulToken, toast } from '@lib';
+import { colorForName, compressImageForUpload, ImageTooLargeError, isSameDay, kulToken, parseMessageMetadata, SmileyText, toast } from '@lib';
 import moreIcon from '@/assets/icons/chat/ic_more_white.png';
 import likeIcon from '@/assets/icons/chat/smiley_35.png';
 import { useChatStore } from '@/store/chat/chatStore';
 import { useAuthStore } from '@/store/authStore';
 import type { RelationshipStatus } from '@app-types';
 import type { ChatMessage } from '../types';
-import { toBubble } from '../chatView';
+import { chatQuoteExcerpt, toBubble } from '../chatView';
 import { formatLastActive } from '../friends';
 import { usePeerCard } from '../usePeerCard';
 import { useLongPress, useOutsideClick, useStickyScroll } from '@hooks';
@@ -78,6 +78,9 @@ export function ChatConversationView({
   const reactToMessage = useChatStore((s) => s.reactToMessage);
   const deleteMessage = useChatStore((s) => s.deleteMessage);
   const editMessage = useChatStore((s) => s.editMessage);
+  const replyTarget = useChatStore((s) => s.replyTarget);
+  const setReplyTarget = useChatStore((s) => s.setReplyTarget);
+  const clearReplyTarget = useChatStore((s) => s.clearReplyTarget);
   const blockPeer = useChatStore((s) => s.blockPeer);
   const unblockPeer = useChatStore((s) => s.unblockPeer);
   const friendAction = useChatStore((s) => s.friendAction);
@@ -107,6 +110,8 @@ export function ChatConversationView({
   } | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ChatMessage | null>(null);
   const [editing, setEditing] = useState<{ id: string } | null>(null);
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const openViewer = useMediaViewerStore((s) => s.openViewer);
   const [profileTarget, setProfileTarget] = useState<{ username: string; color: string } | null>(
     null
@@ -145,7 +150,7 @@ export function ChatConversationView({
     [messages, myId]
   );
 
-  const { scrollRef, handleScroll, pin, scrollToBottomIfPinned } = useStickyScroll({
+  const { scrollRef, handleScroll, pin, unpin, scrollToBottomIfPinned } = useStickyScroll({
     count: bubbles.length,
     lastId: bubbles[bubbles.length - 1]?.id ?? null,
     hasMore,
@@ -183,8 +188,19 @@ export function ChatConversationView({
     setPendingAudio(null);
     setOpenTab(null);
     setEditing(null);
+    setHighlightedId(null);
     setDraft('');
   }
+
+  useEffect(() => {
+    return () => {
+      if (highlightTimerRef.current != null) clearTimeout(highlightTimerRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (replyTarget != null) composerRef.current?.focus();
+  }, [replyTarget]);
 
   useEffect(() => {
     pin();
@@ -216,11 +232,35 @@ export function ChatConversationView({
     setEditing({ id: message.id });
     setDraft(message.text ?? '');
     setOpenTab(null);
+    clearReplyTarget();
+  }
+
+  function startReply(message: ChatMessage) {
+    const target = messages.find((item) => item.id === message.id);
+    if (target == null) return;
+    setEditing(null);
+    setReplyTarget(target);
+  }
+
+  function scrollToMessage(id: string) {
+    const element = scrollRef.current?.querySelector(`[data-message-id="${CSS.escape(id)}"]`);
+    if (element == null) {
+      toast.error(t('chat.replyNotFound'));
+      return;
+    }
+    unpin();
+    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setHighlightedId(id);
+    if (highlightTimerRef.current != null) clearTimeout(highlightTimerRef.current);
+    highlightTimerRef.current = setTimeout(() => setHighlightedId(null), 1500);
   }
 
   function messageSheetActions(message: ChatMessage): MessageSheetAction[] {
     const isOwn = message.direction === 'out';
     const actions: MessageSheetAction[] = [];
+    if (!blocked) {
+      actions.push({ key: 'reply', label: t('chat.actionReply'), onSelect: () => startReply(message) });
+    }
     if (isOwn && message.kind === 'text') {
       actions.push({ key: 'edit', label: t('chat.actionEdit'), onSelect: () => startEdit(message) });
     }
@@ -394,9 +434,11 @@ export function ChatConversationView({
                     avatar={avatar}
                     isLastOwn={message.id === lastOwnId}
                     seen={conversationSeen}
+                    highlighted={message.id === highlightedId}
                     onOpenActions={(message, anchor) => setActionTarget({ message, anchor })}
                     onOpenProfile={canViewProfile ? openPeerProfile : undefined}
                     onMention={openMentionProfile}
+                    onQuoteClick={scrollToMessage}
                     onOpenImage={(img) => openViewer([img])}
                     onResend={resendMessage}
                   />
@@ -440,6 +482,37 @@ export function ChatConversationView({
             className="px-2 text-base text-black/54"
           >
             ✕
+          </button>
+        </div>
+      )}
+
+      {editing == null && replyTarget != null && (
+        <div className="flex shrink-0 items-center gap-2 border-t border-black/12 bg-black/3 px-3 py-1.5">
+          <span className="h-8 w-0.5 shrink-0 rounded bg-ola-primary" />
+          {replyTarget.type === 'image' && (parseMessageMetadata(replyTarget.metadata).url ?? '') !== '' && (
+            <img
+              src={parseMessageMetadata(replyTarget.metadata).url}
+              alt=""
+              className="h-8 w-8 shrink-0 rounded object-cover"
+            />
+          )}
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-xs font-semibold text-ola-primary">
+              {t('chat.replyingTo', { name: replyTarget.senderName ?? '' })}
+            </span>
+            <span className="block truncate text-xs text-black/54">
+              <SmileyText
+                text={chatQuoteExcerpt(t, { type: replyTarget.type, excerpt: replyTarget.content })}
+              />
+            </span>
+          </span>
+          <button
+            type="button"
+            aria-label={t('dialog.cancel')}
+            onClick={clearReplyTarget}
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-lg text-black/54 hover:bg-black/5"
+          >
+            ×
           </button>
         </div>
       )}

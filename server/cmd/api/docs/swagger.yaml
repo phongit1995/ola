@@ -1924,6 +1924,8 @@ definitions:
             type: string
           type: array
         type: object
+      replyTo:
+        $ref: '#/definitions/internal_modules_message.ReplySnapshot'
       replyToId:
         example: ga8g0h98-cb4g-8b79-f3e0-ggi49e48eihf
         type: string
@@ -1988,6 +1990,21 @@ definitions:
       timestamp:
         type: string
       traceId:
+        type: string
+    type: object
+  internal_modules_message.ReplySnapshot:
+    properties:
+      excerpt:
+        type: string
+      imageUrl:
+        type: string
+      messageId:
+        type: string
+      senderId:
+        type: string
+      senderName:
+        type: string
+      type:
         type: string
     type: object
   internal_modules_message.SendDirectMessageRequest:

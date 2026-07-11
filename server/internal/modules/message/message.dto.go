@@ -23,6 +23,15 @@ type UpdateMessageRequest struct {
 	Content string `json:"content" binding:"required,min=1,max=4000" example:"Updated message content"`
 }
 
+type ReplySnapshot struct {
+	MessageID  string `json:"messageId"`
+	SenderID   string `json:"senderId"`
+	SenderName string `json:"senderName,omitempty"`
+	Excerpt    string `json:"excerpt"`
+	Type       string `json:"type,omitempty"`
+	ImageURL   string `json:"imageUrl,omitempty"`
+}
+
 type MessageResponse struct {
 	ID             string              `json:"id" example:"fa7f9g87-ba3f-7a68-e2d9-ffh38d37dhge"`
 	ConversationID string              `json:"conversationId" example:"ea6e8f76-a92e-6957-d1c8-eeg27c26cgfd"`
@@ -37,6 +46,7 @@ type MessageResponse struct {
 	UpdatedAt      string              `json:"updatedAt" example:"2024-01-15T10:30:00Z"`
 	EditedAt       string              `json:"editedAt,omitempty" example:"2024-01-15T10:35:00Z"`
 	ReplyToID      string              `json:"replyToId,omitempty" example:"ga8g0h98-cb4g-8b79-f3e0-ggi49e48eihf"`
+	ReplyTo        *ReplySnapshot      `json:"replyTo,omitempty"`
 	ClientMsgID    string              `json:"clientMsgId,omitempty" example:"550e8400-e29b-41d4-a716-446655440000"`
 	Reactions      map[string][]string `json:"reactions,omitempty"`
 }
