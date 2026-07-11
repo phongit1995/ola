@@ -273,67 +273,96 @@ export function MeFeedScreen() {
         </Pressable>
       </View>
 
-      {loading && posts.length === 0 ? (
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator color="#7cb342" size="large" />
-        </View>
-      ) : error && posts.length === 0 ? (
-        <View className="flex-1 items-center justify-center px-8">
-          <Text className="text-center text-sm" style={{ color: '#e34545' }}>
-            {t('common.error')}
-          </Text>
-        </View>
-      ) : visiblePosts.length === 0 ? (
-        <View className="flex-1 items-center justify-center px-8">
-          <Text className="text-center text-sm" style={{ color: 'rgba(0,0,0,0.54)' }}>
-            {t('me.empty')}
-          </Text>
-        </View>
-      ) : (
-        <FlashList
-          data={visiblePosts}
-          keyExtractor={(item) => item.id}
-          contentContainerClassName="py-2"
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={() => void refreshFeed(TAB_FILTER[tab])} />
-          }
-          onEndReached={() => void loadMore(TAB_FILTER[tab])}
-          onEndReachedThreshold={0.4}
-          ListFooterComponent={
-            loadingMore ? <ActivityIndicator className="my-3" color="#7cb342" /> : null
-          }
-          renderItem={({ item }) => (
-            <MePostCard
-              post={item}
-              timeLabel={timeLabelOf(item)}
-              onToggleLike={(id) => handleReaction(id, 'like')}
-              onToggleDislike={(id) => handleReaction(id, 'dislike')}
-              onOpenProfile={openProfile}
-              onOpenComments={(id) => setCommentPostId(id)}
-              onQuickComment={(id) => setQuickCommentPostId(id)}
-              onOpenMenu={(id) => setMenuPostId(id)}
-              onOpenLikers={(id) => setLikersPostId(id)}
-              onOpenPhotos={(photos, index) => openViewer(photos, index)}
-            />
-          )}
-        />
-      )}
+      <View className="relative flex-1">
+        {loading && posts.length === 0 ? (
+          <View className="flex-1 items-center justify-center">
+            <ActivityIndicator color="#7cb342" size="large" />
+          </View>
+        ) : error && posts.length === 0 ? (
+          <View className="flex-1 items-center justify-center px-8">
+            <Text className="text-center text-sm" style={{ color: '#e34545' }}>
+              {t('common.error')}
+            </Text>
+          </View>
+        ) : visiblePosts.length === 0 ? (
+          <View className="flex-1 items-center justify-center px-8">
+            <Text className="text-center text-sm" style={{ color: 'rgba(0,0,0,0.54)' }}>
+              {t('me.empty')}
+            </Text>
+          </View>
+        ) : (
+          <FlashList
+            data={visiblePosts}
+            keyExtractor={(item) => item.id}
+            contentContainerClassName="py-2"
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={() => void refreshFeed(TAB_FILTER[tab])} />
+            }
+            onEndReached={() => void loadMore(TAB_FILTER[tab])}
+            onEndReachedThreshold={0.4}
+            ListFooterComponent={
+              loadingMore ? <ActivityIndicator className="my-3" color="#7cb342" /> : null
+            }
+            renderItem={({ item }) => (
+              <MePostCard
+                post={item}
+                timeLabel={timeLabelOf(item)}
+                onToggleLike={(id) => handleReaction(id, 'like')}
+                onToggleDislike={(id) => handleReaction(id, 'dislike')}
+                onOpenProfile={openProfile}
+                onOpenComments={(id) => setCommentPostId(id)}
+                onQuickComment={(id) => setQuickCommentPostId(id)}
+                onOpenMenu={(id) => setMenuPostId(id)}
+                onOpenLikers={(id) => setLikersPostId(id)}
+                onOpenPhotos={(photos, index) => openViewer(photos, index)}
+              />
+            )}
+          />
+        )}
 
-      <Pressable
-        onPress={() => setComposerOpen(true)}
-        className="absolute h-14 w-14 items-center justify-center rounded-full bg-ola-primary"
-        style={{
-          right: 16,
-          bottom: 16,
-          elevation: 4,
-          shadowColor: '#000',
-          shadowOpacity: 0.3,
-          shadowRadius: 4,
-          shadowOffset: { width: 0, height: 2 },
-        }}
-      >
-        <Image source={editIcon} style={{ width: 24, height: 24 }} resizeMode="contain" />
-      </Pressable>
+        <Pressable
+          onPress={() => setComposerOpen(true)}
+          className="absolute h-14 w-14 items-center justify-center rounded-full bg-ola-primary"
+          style={{
+            right: 16,
+            bottom: 16,
+            elevation: 4,
+            shadowColor: '#000',
+            shadowOpacity: 0.3,
+            shadowRadius: 4,
+            shadowOffset: { width: 0, height: 2 },
+          }}
+        >
+          <Image source={editIcon} style={{ width: 24, height: 24 }} resizeMode="contain" />
+        </Pressable>
+
+        {drawerOpen && (
+          <MeLeftDrawer
+            displayName={displayName}
+            avatarUrl={avatarUrl ?? undefined}
+            coverUrl={coverUrl ?? undefined}
+            onClose={() => setDrawerOpen(false)}
+            onViewProfile={() => {
+              setDrawerOpen(false);
+              openProfile(displayName);
+            }}
+            onSelect={(key) => {
+              setDrawerOpen(false);
+              if (key === 'likes') setLikedOpen(true);
+              else if (key === 'visitors') setVisitorsOpen(true);
+              else comingSoon();
+            }}
+            onLogout={() => {
+              setDrawerOpen(false);
+              confirmLogout();
+            }}
+          />
+        )}
+
+        {searchOpen && (
+          <MeRightDrawer onClose={() => setSearchOpen(false)} onOpenProfile={openProfile} />
+        )}
+      </View>
 
       <MeComposerModal
         visible={composerOpen || editingPost != null}
@@ -408,33 +437,6 @@ export function MeFeedScreen() {
           onClose={() => setNotifOpen(false)}
           onOpenProfile={openProfile}
         />
-      )}
-
-      {drawerOpen && (
-        <MeLeftDrawer
-          displayName={displayName}
-          avatarUrl={avatarUrl ?? undefined}
-          coverUrl={coverUrl ?? undefined}
-          onClose={() => setDrawerOpen(false)}
-          onViewProfile={() => {
-            setDrawerOpen(false);
-            openProfile(displayName);
-          }}
-          onSelect={(key) => {
-            setDrawerOpen(false);
-            if (key === 'likes') setLikedOpen(true);
-            else if (key === 'visitors') setVisitorsOpen(true);
-            else comingSoon();
-          }}
-          onLogout={() => {
-            setDrawerOpen(false);
-            confirmLogout();
-          }}
-        />
-      )}
-
-      {searchOpen && (
-        <MeRightDrawer onClose={() => setSearchOpen(false)} onOpenProfile={openProfile} />
       )}
 
       {visitorsOpen && (

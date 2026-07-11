@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Animated, Image, ImageBackground, Modal, Pressable, ScrollView, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Animated, BackHandler, Image, ImageBackground, Pressable, ScrollView, Text, View } from 'react-native';
 import { Avatar } from '../../components/Avatar';
 
 const noteIcon = require('../../assets/icons/me/ic_indicate_note.png');
@@ -37,7 +36,6 @@ export function MeLeftDrawer({
   onLogout,
 }: MeLeftDrawerProps) {
   const { t } = useTranslation();
-  const insets = useSafeAreaInsets();
   const translateX = useRef(new Animated.Value(-WIDTH)).current;
   const backdrop = useRef(new Animated.Value(0)).current;
 
@@ -47,6 +45,14 @@ export function MeLeftDrawer({
       Animated.timing(backdrop, { toValue: 1, duration: 200, useNativeDriver: true }),
     ]).start();
   }, [translateX, backdrop]);
+
+  useEffect(() => {
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      onClose();
+      return true;
+    });
+    return () => sub.remove();
+  }, [onClose]);
 
   const items = [
     { key: 'diary', icon: noteIcon, label: t('me.drawerDiary'), tint: undefined },
@@ -62,7 +68,7 @@ export function MeLeftDrawer({
   ];
 
   return (
-    <Modal transparent animationType="none" onRequestClose={onClose}>
+    <View className="absolute inset-0">
       <Animated.View style={{ flex: 1, opacity: backdrop }} className="bg-black/30">
         <Pressable className="flex-1" onPress={onClose} />
       </Animated.View>
@@ -70,7 +76,7 @@ export function MeLeftDrawer({
         className="absolute inset-y-0 left-0 bg-white"
         style={{ width: WIDTH, transform: [{ translateX }] }}
       >
-        <Pressable onPress={onViewProfile} style={{ height: 112 + insets.top }}>
+        <Pressable onPress={onViewProfile} style={{ height: 112 }}>
           <ImageBackground
             source={coverUrl != null ? { uri: coverUrl } : undefined}
             className="flex-1 justify-end bg-ola-primary-dark"
@@ -115,14 +121,14 @@ export function MeLeftDrawer({
 
         <Pressable
           onPress={onLogout}
-          className="flex-row items-center gap-2 border-t px-4 active:bg-black/5"
-          style={{ borderTopColor: 'rgba(0,0,0,0.1)', height: 48 + insets.bottom, paddingBottom: insets.bottom }}
+          className="h-12 flex-row items-center gap-2 border-t px-4 active:bg-black/5"
+          style={{ borderTopColor: 'rgba(0,0,0,0.1)' }}
         >
           <Text className="text-base font-medium" style={{ color: '#e34545' }}>
             {t('home.logout')}
           </Text>
         </Pressable>
       </Animated.View>
-    </Modal>
+    </View>
   );
 }
