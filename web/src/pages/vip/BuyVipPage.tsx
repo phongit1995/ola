@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 import { useTranslation } from 'react-i18next';
-import { toast, ApiError, formatKen, colorForName } from '@lib';
+import { toast, ApiError, formatKen, colorForName, vipById, vipName } from '@lib';
 import {
   ScreenHeader,
   FullScreenOverlay,
@@ -15,7 +15,6 @@ import type { ListOption } from '@components';
 import { VipService, UserService } from '@services';
 import type { VipIconCatalogItem, VipPackageItem, UserSearchResult } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
-import { vipById, vipName } from './vipCatalog';
 
 type BuyVipMode = 'buy' | 'give' | 'giveDays' | 'extend';
 

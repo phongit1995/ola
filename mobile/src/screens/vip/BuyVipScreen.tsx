@@ -14,7 +14,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { VipService, UserService } from '@ola/shared/services';
-import { ApiError, formatKen } from '@ola/shared/lib';
+import { ApiError, formatKen, vipById, vipName } from '@ola/shared/lib';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { VipIconCatalogItem, VipPackageItem, UserSearchResult } from '@ola/shared/types';
@@ -24,7 +24,6 @@ import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { Avatar } from '../../components/Avatar';
 import { MePostMenu, type MePostMenuOption } from '../me/MePostMenu';
 import { VipIconImage } from './VipIconImage';
-import { vipById, vipName } from './vipCatalog';
 
 export type BuyVipMode = 'buy' | 'give' | 'giveDays' | 'extend';
 
@@ -439,7 +438,7 @@ export function BuyVipScreen({ navigation, route }: Props) {
           >
             <Text className="text-2xl leading-none text-white">‹</Text>
           </Pressable>
-          <Text className="flex-1 text-base font-medium text-white" numberOfLines={1}>
+          <Text className="flex-1 text-sm font-bold text-white" numberOfLines={1}>
             {t(MODE_TITLE[mode])}
           </Text>
         </View>

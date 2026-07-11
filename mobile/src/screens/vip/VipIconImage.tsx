@@ -10,7 +10,7 @@ interface VipIconImageProps {
 export function VipIconImage({ typeId, size = 40, rounded = false }: VipIconImageProps) {
   const source =
     typeId >= 1 && typeId <= VIP_ICONS.length ? VIP_ICONS[typeId - 1] : null;
-  const borderRadius = rounded ? size / 2 : 0;
+  const borderRadius = rounded ? 4 : 0;
   if (source == null) {
     return (
       <View

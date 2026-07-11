@@ -7,6 +7,7 @@ export * from './avatarColor';
 export * from './secret';
 export * from './datetime';
 export * from './vipIcon';
+export * from './vipCatalog';
 export * from './vip';
 export * from './messageMetadata';
 export * from './duration';

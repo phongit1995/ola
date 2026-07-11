@@ -4,7 +4,7 @@ import { FlatList, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { VipService } from '@ola/shared/services';
-import { formatDateDMY } from '@ola/shared/lib';
+import { formatDateDMY, vipName } from '@ola/shared/lib';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { VipIconInstance, VipStoreResult } from '@ola/shared/types';
@@ -13,7 +13,6 @@ import { ROOT_ROUTES } from '../../navigation/routes';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { MePostMenu, type MePostMenuOption } from '../me/MePostMenu';
 import { VipIconImage } from './VipIconImage';
-import { vipName } from './vipCatalog';
 
 const PRIVACY_KEYS = ['privacyPublic', 'privacyFriends', 'privacyPrivate'] as const;
 const VIP_PAGE_SIZE = 100;
@@ -290,7 +289,7 @@ export function VipStoreScreen({ navigation }: Props) {
           >
             <Text className="text-2xl leading-none text-white">‹</Text>
           </Pressable>
-          <Text className="flex-1 text-base font-medium text-white" numberOfLines={1}>
+          <Text className="flex-1 text-sm font-bold text-white" numberOfLines={1}>
             {t('vip.title')}
           </Text>
         </View>
