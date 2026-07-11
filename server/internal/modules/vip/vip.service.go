@@ -523,13 +523,21 @@ func (s *Service) BuyPackage(userID, packageID uuid.UUID) (*BuyPackageResponse, 
 	}, nil
 }
 
-func (s *Service) GiftPackage(fromID, packageID uuid.UUID, toUsername string) (*GiftPackageResponse, error) {
+func (s *Service) GiftPackage(fromID, packageID uuid.UUID, toUsername, password string) (*GiftPackageResponse, error) {
 	pkg, err := s.repo.FindActivePackage(packageID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrPackageNotFound
 		}
 		return nil, err
+	}
+
+	sender, err := s.repo.GetUser(fromID)
+	if err != nil {
+		return nil, err
+	}
+	if bcrypt.CompareHashAndPassword([]byte(sender.Password), []byte(password)) != nil {
+		return nil, ErrWrongPassword
 	}
 
 	receiver, err := s.repo.FindByUsername(strings.TrimSpace(toUsername))

@@ -42,7 +42,8 @@ type BuyErrorKey =
   | 'vip.buy.errPackageUnavailable'
   | 'vip.buy.errReceiverNotFound'
   | 'vip.buy.errGiftSelf'
-  | 'vip.buy.errBlocked';
+  | 'vip.buy.errBlocked'
+  | 'vip.buy.errWrongPassword';
 
 const BUY_ERROR_KEYS: Record<string, BuyErrorKey> = {
   'insufficient ken balance': 'vip.buy.errInsufficientKen',
@@ -51,6 +52,7 @@ const BUY_ERROR_KEYS: Record<string, BuyErrorKey> = {
   'receiver not found': 'vip.buy.errReceiverNotFound',
   'cannot gift to yourself': 'vip.buy.errGiftSelf',
   'cannot gift to blocked user': 'vip.buy.errBlocked',
+  'invalid transfer password': 'vip.buy.errWrongPassword',
 };
 
 const MODE_TAB = {
@@ -138,6 +140,7 @@ export function BuyVipPage({ mode: initialMode = 'buy', onClose }: { mode?: BuyV
   const [vipPickerOpen, setVipPickerOpen] = useState(false);
   const [packagePickerOpen, setPackagePickerOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [giftPassword, setGiftPassword] = useState('');
   const [catalog, setCatalog] = useState<VipIconCatalogItem[]>([]);
   const [packages, setPackages] = useState<VipPackageItem[]>([]);
   const [purchasing, setPurchasing] = useState(false);
@@ -278,6 +281,7 @@ export function BuyVipPage({ mode: initialMode = 'buy', onClose }: { mode?: BuyV
       toast.info(t('vip.buy.needPackage'));
       return;
     }
+    setGiftPassword('');
     setConfirmOpen(true);
   }
 
@@ -354,9 +358,13 @@ export function BuyVipPage({ mode: initialMode = 'buy', onClose }: { mode?: BuyV
         toast.info(t('vip.buy.needPackage'));
         return;
       }
+      if (giftPassword.trim() === '') {
+        toast.info(t('vip.buy.needPassword'));
+        return;
+      }
       setPurchasing(true);
       try {
-        const result = await VipService.giftPackage(selectedPackageId, receiver.trim());
+        const result = await VipService.giftPackage(selectedPackageId, receiver.trim(), giftPassword);
         if (user) setUser({ ...user, ken: result.kenBalance });
         await refreshUser();
         setConfirmOpen(false);
@@ -552,7 +560,23 @@ export function BuyVipPage({ mode: initialMode = 'buy', onClose }: { mode?: BuyV
       <ConfirmDialog
         open={confirmOpen}
         title={t(MODE_TITLE[mode])}
-        message={confirmMessage()}
+        message={
+          isGiftDays ? (
+            <span className="block">
+              {confirmMessage()}
+              <input
+                type="password"
+                autoFocus
+                value={giftPassword}
+                onChange={(event) => setGiftPassword(event.target.value)}
+                placeholder={t('vip.buy.passwordPlaceholder')}
+                className="mt-3 w-full rounded border border-black/12 px-3 py-2 text-base text-black/87 outline-none focus:border-ola-primary"
+              />
+            </span>
+          ) : (
+            confirmMessage()
+          )
+        }
         confirmLabel={t(MODE_ACTION[mode])}
         cancelLabel={t('vip.buy.cancel')}
         onConfirm={confirmPurchase}

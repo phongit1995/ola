@@ -31,8 +31,15 @@ export class VipService {
     return http.post<BuyVipPackageResult>(API_PATH.vip.buyPackage(packageId));
   }
 
-  static giftPackage(packageId: string, toUsername: string): Promise<GiftVipPackageResult> {
-    return http.post<GiftVipPackageResult>(API_PATH.vip.giftPackage(packageId), { toUsername });
+  static giftPackage(
+    packageId: string,
+    toUsername: string,
+    password: string,
+  ): Promise<GiftVipPackageResult> {
+    return http.post<GiftVipPackageResult>(API_PATH.vip.giftPackage(packageId), {
+      toUsername,
+      password,
+    });
   }
 
   static store(params?: { limit?: number; offset?: number }): Promise<VipStoreResult> {

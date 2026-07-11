@@ -19,7 +19,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import { currentUserId } from '@ola/shared/stores/chat/chatHelpers';
 import { useToastStore } from '@ola/shared/stores/toastStore';
-import { createDateFormatter, createTimeFormatter, isSameDay } from '@ola/shared/lib';
+import { colorForName, createDateFormatter, createTimeFormatter, isSameDay } from '@ola/shared/lib';
 import type { Message, ReactionType } from '@ola/shared/types';
 import type { RootStackParamList } from '../../navigation/types';
 import { ROOT_ROUTES } from '../../navigation/routes';
@@ -32,6 +32,8 @@ import { useSmileyDraft } from '../../hooks/useSmileyDraft';
 import { ListOptionDialog, type ListOption } from '../../components/ListOptionDialog';
 import { ChatMessageRow } from './ChatMessageRow';
 import { AttachmentBar, type AttachTab } from './AttachmentBar';
+import { TransferKenDialog } from '../ken/TransferKenDialog';
+import { TransferVipDaysDialog } from './TransferVipDaysDialog';
 import { formatLastActive } from './contacts';
 import { PeerProfileCard } from './PeerProfileCard';
 import { usePeerCard } from './usePeerCard';
@@ -86,6 +88,8 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     handleSelectionChange,
   } = useSmileyDraft();
   const [openTab, setOpenTab] = useState<AttachTab | null>(null);
+  const [transferKenOpen, setTransferKenOpen] = useState(false);
+  const [transferVipDaysOpen, setTransferVipDaysOpen] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [blockOpen, setBlockOpen] = useState(false);
@@ -532,8 +536,51 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         onBackspace={backspaceAtCursor}
         onSendKul={(index) => void send(kulToken(index))}
         onPickImage={() => void pickAndSendImages()}
+        onTransferKen={() => {
+          setOpenTab(null);
+          if (peerId === '') {
+            push('error', t('chat.actionError'));
+            return;
+          }
+          setTransferKenOpen(true);
+        }}
+        onSendVipDays={() => {
+          setOpenTab(null);
+          if (peerId === '') {
+            push('error', t('chat.actionError'));
+            return;
+          }
+          setTransferVipDaysOpen(true);
+        }}
       />
       </>
+      )}
+
+      {transferKenOpen && peerId !== '' && (
+        <TransferKenDialog
+          visible
+          onClose={() => setTransferKenOpen(false)}
+          receiver={{
+            id: peerId,
+            name: title,
+            username: conversation?.otherUser?.username,
+            avatar: peerProfile?.avatar ?? peerAvatar,
+            color: colorForName(conversation?.otherUser?.username ?? title),
+          }}
+        />
+      )}
+
+      {transferVipDaysOpen && peerId !== '' && (
+        <TransferVipDaysDialog
+          visible
+          onClose={() => setTransferVipDaysOpen(false)}
+          receiver={{
+            id: peerId,
+            name: title,
+            username: conversation?.otherUser?.username,
+            avatar: peerProfile?.avatar ?? peerAvatar,
+          }}
+        />
       )}
 
       <MessageActionSheet

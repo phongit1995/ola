@@ -20,7 +20,7 @@ import type { VipIconCatalogItem, VipPackageItem, UserSearchResult } from '@ola/
 import type { RootStackParamList } from '../../navigation/types';
 import { ROOT_ROUTES } from '../../navigation/routes';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
-import { Dialog } from '../../components/Dialog';
+import { Dialog, DialogButton } from '../../components/Dialog';
 import { Avatar } from '../../components/Avatar';
 import { ListOptionDialog, type ListOption } from '../../components/ListOptionDialog';
 import { VipIconImage } from './VipIconImage';
@@ -61,7 +61,8 @@ type BuyErrorKey =
   | 'vip.buy.errPackageUnavailable'
   | 'vip.buy.errReceiverNotFound'
   | 'vip.buy.errGiftSelf'
-  | 'vip.buy.errBlocked';
+  | 'vip.buy.errBlocked'
+  | 'vip.buy.errWrongPassword';
 
 const BUY_ERROR_KEYS: Record<string, BuyErrorKey> = {
   'insufficient ken balance': 'vip.buy.errInsufficientKen',
@@ -70,6 +71,7 @@ const BUY_ERROR_KEYS: Record<string, BuyErrorKey> = {
   'receiver not found': 'vip.buy.errReceiverNotFound',
   'cannot gift to yourself': 'vip.buy.errGiftSelf',
   'cannot gift to blocked user': 'vip.buy.errBlocked',
+  'invalid transfer password': 'vip.buy.errWrongPassword',
 };
 
 interface PickerItem {
@@ -184,6 +186,7 @@ export function BuyVipScreen({ navigation, route }: Props) {
   const [vipPickerOpen, setVipPickerOpen] = useState(false);
   const [packagePickerOpen, setPackagePickerOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [giftPassword, setGiftPassword] = useState('');
   const [catalog, setCatalog] = useState<VipIconCatalogItem[]>([]);
   const [packages, setPackages] = useState<VipPackageItem[]>([]);
   const [purchasing, setPurchasing] = useState(false);
@@ -319,6 +322,7 @@ export function BuyVipScreen({ navigation, route }: Props) {
       push('info', t('vip.buy.needPackage'));
       return;
     }
+    setGiftPassword('');
     setConfirmOpen(true);
   }
 
@@ -386,8 +390,12 @@ export function BuyVipScreen({ navigation, route }: Props) {
         push('info', t('vip.buy.needPackage'));
         return;
       }
+      if (giftPassword.trim() === '') {
+        push('info', t('vip.buy.needPassword'));
+        return;
+      }
       await runPurchase(
-        () => VipService.giftPackage(selectedPackageId, receiver.trim()),
+        () => VipService.giftPackage(selectedPackageId, receiver.trim(), giftPassword),
         (result) => t('vip.buy.gifted', { days: result.days, name: result.receiverUsername }),
       );
       return;
@@ -588,7 +596,7 @@ export function BuyVipScreen({ navigation, route }: Props) {
       />
 
       <ConfirmDialog
-        visible={confirmOpen}
+        visible={confirmOpen && !isGiftDays}
         title={t(MODE_TITLE[mode])}
         message={confirmMessage()}
         confirmLabel={t(MODE_ACTION[mode])}
@@ -596,6 +604,42 @@ export function BuyVipScreen({ navigation, route }: Props) {
         onConfirm={() => void confirmPurchase()}
         onCancel={() => setConfirmOpen(false)}
       />
+
+      <Dialog
+        visible={confirmOpen && isGiftDays}
+        onClose={() => setConfirmOpen(false)}
+        title={t(MODE_TITLE[mode])}
+        footer={
+          <>
+            <DialogButton onPress={() => setConfirmOpen(false)} disabled={purchasing}>
+              {t('vip.buy.cancel')}
+            </DialogButton>
+            <DialogButton
+              variant="green"
+              onPress={() => void confirmPurchase()}
+              disabled={purchasing}
+            >
+              {t(MODE_ACTION[mode])}
+            </DialogButton>
+          </>
+        }
+      >
+        <View className="px-1 py-1">
+          <Text className="text-base" style={{ color: 'rgba(0,0,0,0.87)' }}>
+            {confirmMessage()}
+          </Text>
+          <TextInput
+            autoFocus
+            secureTextEntry
+            value={giftPassword}
+            onChangeText={setGiftPassword}
+            placeholder={t('vip.buy.passwordPlaceholder')}
+            placeholderTextColor="rgba(0,0,0,0.38)"
+            className="mt-3 w-full rounded px-3 py-2 text-base"
+            style={{ borderWidth: 1, borderColor: 'rgba(0,0,0,0.12)', color: 'rgba(0,0,0,0.87)' }}
+          />
+        </View>
+      </Dialog>
     </KeyboardAvoidingView>
   );
 }

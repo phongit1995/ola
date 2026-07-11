@@ -72,6 +72,7 @@ type BuyPackageResponse struct {
 
 type GiftPackageRequest struct {
 	ToUsername string `json:"toUsername" binding:"required" example:"minhanh"`
+	Password   string `json:"password" binding:"required" example:"password123"`
 }
 
 type GiftPackageResponse struct {

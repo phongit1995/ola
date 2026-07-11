@@ -1,4 +1,4 @@
-import { Image, Pressable, View } from 'react-native';
+import { Image, Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { ImageSourcePropType } from 'react-native';
 import { useToastStore } from '@ola/shared/stores/toastStore';
@@ -38,14 +38,71 @@ interface AttachmentBarProps {
   onBackspace: () => void;
   onSendKul: (index: number) => void;
   onPickImage?: () => void;
+  onTransferKen?: () => void;
+  onSendVipDays?: () => void;
 }
 
-export function AttachmentBar({ openTab, onToggleTab, onPickEmoji, onBackspace, onSendKul, onPickImage }: AttachmentBarProps) {
+function MorePanel({
+  onTransferKen,
+  onSendVipDays,
+}: {
+  onTransferKen?: () => void;
+  onSendVipDays?: () => void;
+}) {
+  const { t } = useTranslation();
+  const push = useToastStore((s) => s.push);
+
+  const buttons: Array<{ key: string; label: string; onPress: () => void }> = [
+    {
+      key: 'transfer-ken',
+      label: t('chat.attachTransferKen'),
+      onPress: () => (onTransferKen != null ? onTransferKen() : push('info', t('chat.comingSoon'))),
+    },
+    {
+      key: 'trading-vip',
+      label: t('chat.attachTradingVip'),
+      onPress: () => push('info', t('chat.comingSoon')),
+    },
+    {
+      key: 'send-vip-days',
+      label: t('chat.attachSendVipDays'),
+      onPress: () => (onSendVipDays != null ? onSendVipDays() : push('info', t('chat.comingSoon'))),
+    },
+  ];
+
+  return (
+    <View className="gap-2 px-4 py-2">
+      {buttons.map((button) => (
+        <Pressable
+          key={button.key}
+          onPress={button.onPress}
+          className="h-10 w-full items-center justify-center rounded bg-white active:bg-black/5"
+          style={{ borderWidth: 1, borderColor: 'rgba(0,0,0,0.15)' }}
+        >
+          <Text className="text-sm font-medium" style={{ color: 'rgba(0,0,0,0.87)' }}>
+            {button.label}
+          </Text>
+        </Pressable>
+      ))}
+    </View>
+  );
+}
+
+export function AttachmentBar({
+  openTab,
+  onToggleTab,
+  onPickEmoji,
+  onBackspace,
+  onSendKul,
+  onPickImage,
+  onTransferKen,
+  onSendVipDays,
+}: AttachmentBarProps) {
   const { t } = useTranslation();
   const push = useToastStore((s) => s.push);
 
   function handlePress(tab: AttachTab) {
-    if (tab === 'smiley') {
+    if (tab === 'smiley' || tab === 'more') {
       onToggleTab(tab);
       return;
     }
@@ -79,6 +136,9 @@ export function AttachmentBar({ openTab, onToggleTab, onPickEmoji, onBackspace, 
       </View>
       {openTab === 'smiley' && (
         <SmileyKulPanel onPickEmoji={onPickEmoji} onBackspace={onBackspace} onSendKul={onSendKul} />
+      )}
+      {openTab === 'more' && (
+        <MorePanel onTransferKen={onTransferKen} onSendVipDays={onSendVipDays} />
       )}
     </View>
   );
