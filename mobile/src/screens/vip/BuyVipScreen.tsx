@@ -377,8 +377,12 @@ export function BuyVipScreen({ navigation, route }: Props) {
         push('info', t('vip.buy.needVip'));
         return;
       }
+      if (giftPassword.trim() === '') {
+        push('info', t('vip.buy.needPassword'));
+        return;
+      }
       await runPurchase(
-        () => VipService.giftIcon(selectedShopId, receiver.trim()),
+        () => VipService.giftIcon(selectedShopId, receiver.trim(), giftPassword),
         (result) =>
           t('vip.buy.giftedVip', { name: selectedVip?.name ?? '', receiver: result.receiverUsername }),
       );
@@ -596,7 +600,7 @@ export function BuyVipScreen({ navigation, route }: Props) {
       />
 
       <ConfirmDialog
-        visible={confirmOpen && !isGiftDays}
+        visible={confirmOpen && !showReceiver}
         title={t(MODE_TITLE[mode])}
         message={confirmMessage()}
         confirmLabel={t(MODE_ACTION[mode])}
@@ -606,7 +610,7 @@ export function BuyVipScreen({ navigation, route }: Props) {
       />
 
       <Dialog
-        visible={confirmOpen && isGiftDays}
+        visible={confirmOpen && showReceiver}
         onClose={() => setConfirmOpen(false)}
         title={t(MODE_TITLE[mode])}
         footer={

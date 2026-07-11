@@ -19,8 +19,12 @@ export class VipService {
     return http.post<BuyVipIconResult>(API_PATH.vip.buy, { shopItemId });
   }
 
-  static giftIcon(shopItemId: string, toUsername: string): Promise<GiftVipIconResult> {
-    return http.post<GiftVipIconResult>(API_PATH.vip.gift, { shopItemId, toUsername });
+  static giftIcon(
+    shopItemId: string,
+    toUsername: string,
+    password: string,
+  ): Promise<GiftVipIconResult> {
+    return http.post<GiftVipIconResult>(API_PATH.vip.gift, { shopItemId, toUsername, password });
   }
 
   static listPackages(): Promise<VipPackageListResult> {

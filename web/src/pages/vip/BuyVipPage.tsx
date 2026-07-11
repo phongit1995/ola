@@ -335,9 +335,13 @@ export function BuyVipPage({ mode: initialMode = 'buy', onClose }: { mode?: BuyV
         toast.info(t('vip.buy.needVip'));
         return;
       }
+      if (giftPassword.trim() === '') {
+        toast.info(t('vip.buy.needPassword'));
+        return;
+      }
       setPurchasing(true);
       try {
-        const result = await VipService.giftIcon(selectedShopId, receiver.trim());
+        const result = await VipService.giftIcon(selectedShopId, receiver.trim(), giftPassword);
         if (user) setUser({ ...user, ken: result.kenBalance });
         await refreshUser();
         setConfirmOpen(false);
@@ -561,7 +565,7 @@ export function BuyVipPage({ mode: initialMode = 'buy', onClose }: { mode?: BuyV
         open={confirmOpen}
         title={t(MODE_TITLE[mode])}
         message={
-          isGiftDays ? (
+          isGiftDays || isGiftIcon ? (
             <span className="block">
               {confirmMessage()}
               <input

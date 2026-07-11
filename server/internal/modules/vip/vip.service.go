@@ -576,13 +576,21 @@ func (s *Service) GiftPackage(fromID, packageID uuid.UUID, toUsername, password 
 	}, nil
 }
 
-func (s *Service) GiftIcon(fromID, shopItemID uuid.UUID, toUsername string) (*GiftIconResponse, error) {
+func (s *Service) GiftIcon(fromID, shopItemID uuid.UUID, toUsername, password string) (*GiftIconResponse, error) {
 	item, err := s.repo.FindActiveShopItem(shopItemID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrShopItemNotFound
 		}
 		return nil, err
+	}
+
+	sender, err := s.repo.GetUser(fromID)
+	if err != nil {
+		return nil, err
+	}
+	if bcrypt.CompareHashAndPassword([]byte(sender.Password), []byte(password)) != nil {
+		return nil, ErrWrongPassword
 	}
 
 	receiver, err := s.repo.FindByUsername(strings.TrimSpace(toUsername))
