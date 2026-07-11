@@ -39,6 +39,10 @@ export function AppsScreen() {
       navigation.navigate(ROOT_ROUTES.PenGame);
       return;
     }
+    if (item.action === 'wheel') {
+      navigation.navigate(ROOT_ROUTES.SpinWheel);
+      return;
+    }
     push('info', t('chat.comingSoon'));
   }
 

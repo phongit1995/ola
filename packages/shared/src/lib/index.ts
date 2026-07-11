@@ -16,3 +16,4 @@ export * from './base64';
 export * from './randomUuid';
 export * from './upload';
 export * from './vietqr';
+export * from './spinWheel';

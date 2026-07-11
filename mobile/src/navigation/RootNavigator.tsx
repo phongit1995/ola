@@ -29,6 +29,7 @@ import { BuyKenScreen } from '../screens/ken/BuyKenScreen';
 import { MediaStoreScreen } from '../screens/media/MediaStoreScreen';
 import { SettingsScreen } from '../screens/settings/SettingsScreen';
 import { PenGameScreen } from '../screens/games/pen/PenGameScreen';
+import { SpinWheelGameScreen } from '../screens/games/spin-wheel/SpinWheelGameScreen';
 import { TAB_ICONS } from '../assets/tabIcons';
 
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -136,6 +137,7 @@ export function RootNavigator() {
       <RootStack.Screen name={ROOT_ROUTES.MediaStore} component={MediaStoreScreen} />
       <RootStack.Screen name={ROOT_ROUTES.Settings} component={SettingsScreen} />
       <RootStack.Screen name={ROOT_ROUTES.PenGame} component={PenGameScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.SpinWheel} component={SpinWheelGameScreen} />
     </RootStack.Navigator>
   );
 }

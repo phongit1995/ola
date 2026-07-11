@@ -25,6 +25,7 @@ export const ROOT_ROUTES = {
   MediaStore: 'MediaStore',
   Settings: 'Settings',
   PenGame: 'PenGame',
+  SpinWheel: 'SpinWheel',
 } as const;
 
 export const ROOM_ROUTES = {
