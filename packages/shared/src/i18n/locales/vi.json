@@ -796,6 +796,7 @@
       "errBlocked": "Không thể tặng cho người đã chặn hoặc bị chặn",
       "errWrongPassword": "Sai mật khẩu",
       "needPassword": "Nhập mật khẩu để xác nhận",
+      "passwordLabel": "Mật khẩu xác nhận",
       "passwordPlaceholder": "Nhập mật khẩu",
       "shopEmpty": "Chưa có VIP nào được bán",
       "packagesEmpty": "Chưa có gói ngày nào"

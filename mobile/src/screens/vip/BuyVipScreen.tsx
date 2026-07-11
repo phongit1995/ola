@@ -20,7 +20,7 @@ import type { VipIconCatalogItem, VipPackageItem, UserSearchResult } from '@ola/
 import type { RootStackParamList } from '../../navigation/types';
 import { ROOT_ROUTES } from '../../navigation/routes';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
-import { Dialog, DialogButton } from '../../components/Dialog';
+import { Dialog } from '../../components/Dialog';
 import { Avatar } from '../../components/Avatar';
 import { ListOptionDialog, type ListOption } from '../../components/ListOptionDialog';
 import { VipIconImage } from './VipIconImage';
@@ -283,6 +283,7 @@ export function BuyVipScreen({ navigation, route }: Props) {
     setReceiver('');
     setReceiverQuery('');
     setReceiverResults([]);
+    setGiftPassword('');
   }
 
   function packageLabel(pkg: VipPackageItem): string {
@@ -322,7 +323,10 @@ export function BuyVipScreen({ navigation, route }: Props) {
       push('info', t('vip.buy.needPackage'));
       return;
     }
-    setGiftPassword('');
+    if (showReceiver && giftPassword.trim() === '') {
+      push('info', t('vip.buy.needPassword'));
+      return;
+    }
     setConfirmOpen(true);
   }
 
@@ -573,6 +577,21 @@ export function BuyVipScreen({ navigation, route }: Props) {
           </View>
         )}
 
+        {showReceiver && receiverUser != null && (
+          <View className="mt-2 bg-white px-4 py-3">
+            <Text className="text-xs" style={{ color: MUTED }}>{t('vip.buy.passwordLabel')}</Text>
+            <TextInput
+              secureTextEntry
+              value={giftPassword}
+              onChangeText={setGiftPassword}
+              placeholder={t('vip.buy.passwordPlaceholder')}
+              placeholderTextColor="rgba(0,0,0,0.38)"
+              className="mt-1 w-full rounded px-3 py-2 text-sm"
+              style={{ borderWidth: 1, borderColor: DIVIDER, color: BODY, backgroundColor: '#fff' }}
+            />
+          </View>
+        )}
+
         <View className="px-4">
           <Pressable
             onPress={startPurchase}
@@ -600,7 +619,7 @@ export function BuyVipScreen({ navigation, route }: Props) {
       />
 
       <ConfirmDialog
-        visible={confirmOpen && !showReceiver}
+        visible={confirmOpen}
         title={t(MODE_TITLE[mode])}
         message={confirmMessage()}
         confirmLabel={t(MODE_ACTION[mode])}
@@ -609,41 +628,6 @@ export function BuyVipScreen({ navigation, route }: Props) {
         onCancel={() => setConfirmOpen(false)}
       />
 
-      <Dialog
-        visible={confirmOpen && showReceiver}
-        onClose={() => setConfirmOpen(false)}
-        title={t(MODE_TITLE[mode])}
-        footer={
-          <>
-            <DialogButton onPress={() => setConfirmOpen(false)} disabled={purchasing}>
-              {t('vip.buy.cancel')}
-            </DialogButton>
-            <DialogButton
-              variant="green"
-              onPress={() => void confirmPurchase()}
-              disabled={purchasing}
-            >
-              {t(MODE_ACTION[mode])}
-            </DialogButton>
-          </>
-        }
-      >
-        <View className="px-1 py-1">
-          <Text className="text-base" style={{ color: 'rgba(0,0,0,0.87)' }}>
-            {confirmMessage()}
-          </Text>
-          <TextInput
-            autoFocus
-            secureTextEntry
-            value={giftPassword}
-            onChangeText={setGiftPassword}
-            placeholder={t('vip.buy.passwordPlaceholder')}
-            placeholderTextColor="rgba(0,0,0,0.38)"
-            className="mt-3 w-full rounded px-3 py-2 text-base"
-            style={{ borderWidth: 1, borderColor: 'rgba(0,0,0,0.12)', color: 'rgba(0,0,0,0.87)' }}
-          />
-        </View>
-      </Dialog>
     </KeyboardAvoidingView>
   );
 }

@@ -242,6 +242,7 @@ export function BuyVipPage({ mode: initialMode = 'buy', onClose }: { mode?: BuyV
     setReceiver('');
     setReceiverQuery('');
     setReceiverResults([]);
+    setGiftPassword('');
   }
 
   function packageLabel(pkg: VipPackageItem): string {
@@ -281,7 +282,10 @@ export function BuyVipPage({ mode: initialMode = 'buy', onClose }: { mode?: BuyV
       toast.info(t('vip.buy.needPackage'));
       return;
     }
-    setGiftPassword('');
+    if (showReceiver && giftPassword.trim() === '') {
+      toast.info(t('vip.buy.needPassword'));
+      return;
+    }
     setConfirmOpen(true);
   }
 
@@ -535,6 +539,19 @@ export function BuyVipPage({ mode: initialMode = 'buy', onClose }: { mode?: BuyV
           </div>
         )}
 
+        {showReceiver && receiverUser != null && (
+          <div className="mt-2 bg-white px-4 py-3">
+            <span className="text-xs text-black/54">{t('vip.buy.passwordLabel')}</span>
+            <input
+              type="password"
+              value={giftPassword}
+              onChange={(event) => setGiftPassword(event.target.value)}
+              placeholder={t('vip.buy.passwordPlaceholder')}
+              className="mt-1 w-full rounded border border-black/12 bg-white px-3 py-2 text-sm text-black/87 outline-none placeholder:text-black/38 focus:border-ola-primary"
+            />
+          </div>
+        )}
+
         <div className="px-4">
           <button
             type="button"
@@ -564,23 +581,7 @@ export function BuyVipPage({ mode: initialMode = 'buy', onClose }: { mode?: BuyV
       <ConfirmDialog
         open={confirmOpen}
         title={t(MODE_TITLE[mode])}
-        message={
-          isGiftDays || isGiftIcon ? (
-            <span className="block">
-              {confirmMessage()}
-              <input
-                type="password"
-                autoFocus
-                value={giftPassword}
-                onChange={(event) => setGiftPassword(event.target.value)}
-                placeholder={t('vip.buy.passwordPlaceholder')}
-                className="mt-3 w-full rounded border border-black/12 px-3 py-2 text-base text-black/87 outline-none focus:border-ola-primary"
-              />
-            </span>
-          ) : (
-            confirmMessage()
-          )
-        }
+        message={confirmMessage()}
         confirmLabel={t(MODE_ACTION[mode])}
         cancelLabel={t('vip.buy.cancel')}
         onConfirm={confirmPurchase}

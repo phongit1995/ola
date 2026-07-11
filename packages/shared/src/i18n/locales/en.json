@@ -796,6 +796,7 @@
       "errBlocked": "Cannot gift to a blocked user",
       "errWrongPassword": "Wrong password",
       "needPassword": "Enter your password to confirm",
+      "passwordLabel": "Confirm password",
       "passwordPlaceholder": "Enter password",
       "shopEmpty": "No VIP for sale yet",
       "packagesEmpty": "No day package yet"
