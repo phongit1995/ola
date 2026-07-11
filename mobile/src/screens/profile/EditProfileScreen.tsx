@@ -4,38 +4,58 @@ import {
   ActivityIndicator,
   Image,
   ImageBackground,
+  KeyboardAvoidingView,
+  Modal,
   Platform,
   Pressable,
   ScrollView,
   Text,
   TextInput,
-  ToastAndroid,
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { UserService } from '@ola/shared/services';
-import { ApiError } from '@ola/shared/lib';
+import { ApiError, type NativeUploadFile } from '@ola/shared/lib';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { Gender, UpdateProfileRequest } from '@ola/shared/types';
 import type { RootStackParamList } from '../../navigation/types';
+import { ROOT_ROUTES } from '../../navigation/routes';
 import { Avatar } from '../../components/Avatar';
+import { pickCroppedImage } from '../../lib/imagePicker';
+import { ChangePasswordDialog } from './ChangePasswordDialog';
+import { CoverPreviewOverlay } from './CoverPreviewOverlay';
 
 const cameraIcon = require('../../assets/icons/profile/ic_action_camera.png');
+const lockIcon = require('../../assets/icons/profile/ic_lock.png');
 const maleIcon = require('../../assets/icons/profile/ic_indicate_male.png');
 const femaleIcon = require('../../assets/icons/profile/ic_indicate_female.png');
 
 const DIVIDER = 'rgba(0,0,0,0.12)';
 const PHONE_PATTERN = /^[0-9+\-() ]{6,20}$/;
+const MIN_AVATAR_SOURCE = 100;
+const PLACEHOLDER_COLOR = '#e34545';
+const AVATAR_OUTPUT = 800;
+const COVER_OUTPUT = { width: 1600, height: 900 };
+const DEFAULT_BIRTHDAY = new Date(2000, 0, 1);
 
-function comingSoon(message: string) {
-  if (Platform.OS === 'android') ToastAndroid.show(message, ToastAndroid.SHORT);
+function formatDateOnly(date: Date): string {
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${date.getFullYear()}-${month}-${day}`;
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function parseBirthday(value: string): Date {
+  if (value === '') return DEFAULT_BIRTHDAY;
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? DEFAULT_BIRTHDAY : parsed;
+}
+
+function Field({ label, first, children }: { label: string; first?: boolean; children: React.ReactNode }) {
   return (
-    <View className="mt-4">
+    <View className={first ? '' : 'mt-4'}>
       <Text className="text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>{label}</Text>
       <View className="mt-1">{children}</View>
       <View className="mt-4" style={{ height: 1, backgroundColor: DIVIDER }} />
@@ -51,13 +71,25 @@ export function EditProfileScreen({ navigation }: Props) {
   const user = useAuthStore((s) => s.user);
   const refreshUser = useAuthStore((s) => s.refreshUser);
   const push = useToastStore((s) => s.push);
-  const onClose = () => navigation.goBack();
+  const onClose = () => {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+      return;
+    }
+    navigation.navigate(ROOT_ROUTES.MainTabs);
+  };
 
+  const [avatar, setAvatar] = useState(user?.avatar ?? '');
   const [fullName, setFullName] = useState(user?.fullName ?? '');
   const [phone, setPhone] = useState(user?.phone ?? '');
   const [gender, setGender] = useState<Gender>(user?.gender ?? 'male');
   const [dateOfBirth, setDateOfBirth] = useState(user?.dateOfBirth ?? '');
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
+  const [coverPreview, setCoverPreview] = useState<NativeUploadFile | null>(null);
+  const [passwordOpen, setPasswordOpen] = useState(false);
+  const [birthdayPickerDate, setBirthdayPickerDate] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   if (user == null) return null;
@@ -71,6 +103,59 @@ export function EditProfileScreen({ navigation }: Props) {
     return null;
   }
 
+  async function pickAvatar() {
+    if (uploading) return;
+    let picked;
+    try {
+      picked = await pickCroppedImage(AVATAR_OUTPUT, AVATAR_OUTPUT);
+    } catch {
+      push('error', t('avatar.error'));
+      return;
+    }
+    if (picked == null) return;
+    if (Math.min(picked.sourceWidth, picked.sourceHeight) < MIN_AVATAR_SOURCE) {
+      push('error', t('avatar.tooSmall'));
+      return;
+    }
+    setUploading(true);
+    try {
+      const result = await UserService.uploadAvatar(picked.file);
+      setAvatar(result.url);
+      push('success', t('profileEdit.avatarUpdated'));
+    } catch {
+      push('error', t('profileEdit.avatarError'));
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  async function pickCover() {
+    if (uploadingCover) return;
+    try {
+      const picked = await pickCroppedImage(COVER_OUTPUT.width, COVER_OUTPUT.height);
+      if (picked == null) return;
+      setCoverPreview(picked.file);
+    } catch {
+      push('error', t('profileEdit.coverError'));
+    }
+  }
+
+  async function confirmCover() {
+    if (coverPreview == null || uploadingCover) return;
+    setUploadingCover(true);
+    try {
+      const { url } = await UserService.uploadAvatar(coverPreview);
+      await UserService.updateMe({ coverPhoto: url });
+      await refreshUser();
+      push('success', t('profileEdit.coverUpdated'));
+      setCoverPreview(null);
+    } catch {
+      push('error', t('profileEdit.coverError'));
+    } finally {
+      setUploadingCover(false);
+    }
+  }
+
   async function save() {
     if (saving) return;
     const validationError = validate();
@@ -81,6 +166,7 @@ export function EditProfileScreen({ navigation }: Props) {
     setError(null);
     setSaving(true);
     const payload: UpdateProfileRequest = {
+      avatar,
       fullName: fullName.trim(),
       phone: phone.trim(),
       gender,
@@ -100,13 +186,23 @@ export function EditProfileScreen({ navigation }: Props) {
   }
 
   return (
-    <View className="flex-1 bg-white">
-      <View className="h-12 flex-row items-center gap-2 bg-ola-primary px-2" style={{ paddingTop: insets.top }}>
-          <Pressable className="h-9 w-9 items-center justify-center rounded-full active:bg-white/15" onPress={onClose}>
-            <Text className="text-2xl leading-none text-white">‹</Text>
-          </Pressable>
-          <Text className="flex-1 text-base font-medium text-white">{t('profileEdit.title')}</Text>
-        </View>
+    <KeyboardAvoidingView className="flex-1 bg-white" behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <View
+        className="flex-row items-center gap-2 bg-ola-primary px-2"
+        style={{ paddingTop: insets.top, height: 48 + insets.top, borderBottomWidth: 1, borderBottomColor: DIVIDER }}
+      >
+        <Pressable className="h-9 w-9 items-center justify-center rounded-full active:bg-white/15" onPress={onClose}>
+          <Text className="text-2xl leading-none text-white">‹</Text>
+        </Pressable>
+        <Text className="flex-1 text-lg font-medium text-white" numberOfLines={1}>{t('profileEdit.title')}</Text>
+        <Pressable
+          onPress={() => setPasswordOpen(true)}
+          className="h-8 flex-row items-center gap-1 rounded-full bg-white/15 px-2.5 active:bg-white/25"
+        >
+          <Image source={lockIcon} style={{ width: 16, height: 16 }} resizeMode="contain" />
+          <Text className="text-xs font-medium text-white">{t('changePassword.title')}</Text>
+        </Pressable>
+      </View>
 
         <ScrollView className="flex-1" keyboardShouldPersistTaps="handled">
           <ImageBackground
@@ -114,12 +210,18 @@ export function EditProfileScreen({ navigation }: Props) {
             style={{ width: '100%', height: 176, backgroundColor: '#f1f8e9' }}
           >
             <Pressable
-              onPress={() => comingSoon(t('profile.comingSoon'))}
+              onPress={() => void pickCover()}
+              disabled={uploadingCover}
               className="absolute bottom-2 right-2 h-8 w-8 items-center justify-center rounded-full"
-              style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}
+              style={{ backgroundColor: 'rgba(0,0,0,0.4)', opacity: uploadingCover ? 0.6 : 1 }}
             >
               <Image source={cameraIcon} style={{ width: 20, height: 20, tintColor: '#fff' }} resizeMode="contain" />
             </Pressable>
+            {uploadingCover && (
+              <View className="absolute inset-0 items-center justify-center" style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}>
+                <Text className="text-sm text-white">{t('common.loading')}</Text>
+              </View>
+            )}
           </ImageBackground>
 
           <View className="p-4">
@@ -129,9 +231,16 @@ export function EditProfileScreen({ navigation }: Props) {
               </View>
             )}
 
-            <View className="-mt-16 mb-4 items-center">
-              <Pressable onPress={() => comingSoon(t('profile.comingSoon'))} className="relative">
-                <Avatar name={nick} uri={user.avatar} size={96} />
+            <View className="-mt-12 mb-4 items-center">
+              <Pressable onPress={() => void pickAvatar()} disabled={uploading} className="relative">
+                {avatar !== '' ? (
+                  <Image
+                    source={{ uri: avatar }}
+                    style={{ width: 96, height: 96, borderRadius: 48, borderWidth: 4, borderColor: '#fff' }}
+                  />
+                ) : (
+                  <Avatar name={nick} size={96} />
+                )}
                 <View
                   className="absolute bottom-0 right-0 h-7 w-7 items-center justify-center rounded-full bg-ola-primary"
                   style={{ borderWidth: 2, borderColor: '#fff' }}
@@ -139,14 +248,17 @@ export function EditProfileScreen({ navigation }: Props) {
                   <Image source={cameraIcon} style={{ width: 16, height: 16, tintColor: '#fff' }} resizeMode="contain" />
                 </View>
               </Pressable>
+              {uploading && (
+                <Text className="mt-2 text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>{t('common.loading')}</Text>
+              )}
             </View>
 
-            <Field label={t('profileEdit.fullnameLabel')}>
+            <Field label={t('profileEdit.fullnameLabel')} first>
               <TextInput
                 value={fullName}
                 onChangeText={setFullName}
                 placeholder={t('profileEdit.fullnameHint')}
-                placeholderTextColor="rgba(0,0,0,0.26)"
+                placeholderTextColor={PLACEHOLDER_COLOR}
                 maxLength={100}
                 className="text-sm"
                 style={{ color: 'rgba(0,0,0,0.87)', padding: 0 }}
@@ -159,7 +271,7 @@ export function EditProfileScreen({ navigation }: Props) {
                 onChangeText={setPhone}
                 keyboardType="phone-pad"
                 placeholder={t('profileEdit.phoneHint')}
-                placeholderTextColor="rgba(0,0,0,0.26)"
+                placeholderTextColor={PLACEHOLDER_COLOR}
                 maxLength={20}
                 className="text-sm"
                 style={{ color: 'rgba(0,0,0,0.87)', padding: 0 }}
@@ -192,14 +304,16 @@ export function EditProfileScreen({ navigation }: Props) {
             </Field>
 
             <Field label={t('profileEdit.birthdayLabel')}>
-              <TextInput
-                value={dateOfBirth}
-                onChangeText={setDateOfBirth}
-                placeholder={t('profileEdit.birthdayHint')}
-                placeholderTextColor="rgba(0,0,0,0.26)"
-                className="text-sm"
-                style={{ color: 'rgba(0,0,0,0.87)', padding: 0 }}
-              />
+              <Pressable onPress={() => setBirthdayPickerDate(parseBirthday(dateOfBirth))}>
+                <Text
+                  className="text-sm"
+                  style={{
+                    color: dateOfBirth !== '' ? 'rgba(0,0,0,0.87)' : PLACEHOLDER_COLOR,
+                  }}
+                >
+                  {dateOfBirth !== '' ? dateOfBirth.slice(0, 10) : t('profileEdit.birthdayHint')}
+                </Text>
+              </Pressable>
             </Field>
           </View>
         </ScrollView>
@@ -215,14 +329,84 @@ export function EditProfileScreen({ navigation }: Props) {
           </Pressable>
           <Pressable
             onPress={() => void save()}
-            disabled={saving}
+            disabled={saving || uploading}
             className="flex-1 flex-row items-center justify-center rounded bg-ola-primary py-2.5"
-            style={{ opacity: saving ? 0.6 : 1 }}
+            style={{ opacity: saving || uploading ? 0.6 : 1 }}
           >
             {saving && <ActivityIndicator size="small" color="#fff" style={{ marginRight: 6 }} />}
             <Text className="text-sm font-medium text-white">{saving ? t('profileEdit.saving') : t('profileEdit.save')}</Text>
           </Pressable>
         </View>
-      </View>
+
+        <ChangePasswordDialog visible={passwordOpen} onClose={() => setPasswordOpen(false)} />
+
+        <CoverPreviewOverlay
+          visible={coverPreview != null}
+          url={coverPreview?.uri ?? ''}
+          uploading={uploadingCover}
+          onCancel={() => setCoverPreview(null)}
+          onConfirm={() => void confirmCover()}
+        />
+
+        {Platform.OS === 'ios' && birthdayPickerDate != null && (
+          <Modal transparent animationType="fade" onRequestClose={() => setBirthdayPickerDate(null)}>
+            <Pressable
+              className="flex-1 justify-end"
+              style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}
+              onPress={() => setBirthdayPickerDate(null)}
+            >
+              <Pressable
+                className="bg-white"
+                style={{ paddingBottom: insets.bottom }}
+                onPress={() => undefined}
+              >
+                <View
+                  className="h-11 flex-row items-center justify-between px-4"
+                  style={{ borderBottomWidth: 1, borderBottomColor: DIVIDER }}
+                >
+                  <Pressable onPress={() => setBirthdayPickerDate(null)}>
+                    <Text className="text-base" style={{ color: 'rgba(0,0,0,0.54)' }}>
+                      {t('dialog.cancel')}
+                    </Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => {
+                      setDateOfBirth(formatDateOnly(birthdayPickerDate));
+                      setBirthdayPickerDate(null);
+                    }}
+                  >
+                    <Text className="text-base font-bold" style={{ color: '#558b2f' }}>
+                      {t('dialog.accept')}
+                    </Text>
+                  </Pressable>
+                </View>
+                <DateTimePicker
+                  value={birthdayPickerDate}
+                  mode="date"
+                  display="spinner"
+                  themeVariant="light"
+                  onChange={(_, date) => {
+                    if (date != null) setBirthdayPickerDate(date);
+                  }}
+                  style={{ alignSelf: 'center' }}
+                />
+              </Pressable>
+            </Pressable>
+          </Modal>
+        )}
+
+        {Platform.OS === 'android' && birthdayPickerDate != null && (
+          <DateTimePicker
+            value={birthdayPickerDate}
+            mode="date"
+            onChange={(event, date) => {
+              setBirthdayPickerDate(null);
+              if (event.type === 'set' && date != null) {
+                setDateOfBirth(formatDateOnly(date));
+              }
+            }}
+          />
+        )}
+      </KeyboardAvoidingView>
   );
 }

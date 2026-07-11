@@ -17,3 +17,12 @@ export function kulImageForText(text: string | undefined | null): ImageSourcePro
   if (index < 1 || index > KUL_IMAGES.length) return null;
   return KUL_IMAGES[index - 1] ?? null;
 }
+
+const STICKER_PREFIX = 'kul:';
+
+export function stickerImageForCode(code: string | undefined | null): ImageSourcePropType | null {
+  if (code == null || code === '' || !code.startsWith(STICKER_PREFIX)) return null;
+  const index = Number(code.slice(STICKER_PREFIX.length));
+  if (!Number.isFinite(index) || index < 1 || index > KUL_IMAGES.length) return null;
+  return KUL_IMAGES[index - 1] ?? null;
+}

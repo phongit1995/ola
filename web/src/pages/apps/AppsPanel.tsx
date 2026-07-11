@@ -18,7 +18,7 @@ export function AppsPanel() {
   return (
     <>
       <HomeHeader>
-        <span className="flex-1 text-center text-base font-medium">
+        <span className="flex-1 text-center text-lg font-medium">
           {t('home.tabApps')}
         </span>
       </HomeHeader>

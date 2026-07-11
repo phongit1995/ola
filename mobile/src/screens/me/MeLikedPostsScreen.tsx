@@ -80,12 +80,12 @@ export function MeLikedPostsScreen({ language, onClose, onOpenProfile }: MeLiked
 
   return (
     <Modal visible transparent animationType="slide" onRequestClose={onClose}>
-      <View className="flex-1 bg-[#f3f3f3]">
-        <View className="flex-row items-center bg-ola-primary px-1" style={{ paddingTop: insets.top }}>
+      <View className="flex-1 bg-[#eceff1]">
+        <View className="flex-row items-center bg-ola-primary px-2" style={{ paddingTop: insets.top }}>
           <Pressable onPress={onClose} className="h-12 w-10 items-center justify-center">
             <Text className="text-2xl leading-none text-white">‹</Text>
           </Pressable>
-          <Text className="flex-1 text-sm font-bold text-white">{t('me.drawerLikes')}</Text>
+          <Text className="flex-1 text-lg font-medium text-white">{t('me.drawerLikes')}</Text>
           <View className="w-10" />
         </View>
 
@@ -99,8 +99,7 @@ export function MeLikedPostsScreen({ language, onClose, onOpenProfile }: MeLiked
           <FlashList
             data={posts}
             keyExtractor={(item) => item.id}
-            contentContainerClassName="py-2"
-            renderItem={({ item }) => (
+                        renderItem={({ item }) => (
               <MePostCard
                 post={item}
                 timeLabel={timeLabelOf(item)}

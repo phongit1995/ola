@@ -171,7 +171,7 @@ export function ChatPanel() {
       <button
         type="button"
         onClick={() => setSub(value)}
-        className={`flex-1 self-stretch text-base font-medium ${
+        className={`flex-1 self-stretch text-sm font-bold ${
           isActive ? 'border-b-2 border-white text-white' : 'text-white/70'
         }`}
       >

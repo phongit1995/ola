@@ -7,14 +7,15 @@ import icPhoto from '@/assets/icons/notify/ic_notification_photo.png';
 import icHeart from '@/assets/icons/notify/ic_notification_heart.png';
 import icBrokenHeart from '@/assets/icons/notify/ic_notification_broken_heart.png';
 import iconNotify from '@/assets/icons/apps/notify.png';
-import iconGame from '@/assets/icons/apps/game.png';
+// TODO: mở lại các import icon dưới khi bật lại mục Kho game / Đăng quảng cáo / OlaMall / Lân cận
+// import iconGame from '@/assets/icons/apps/game.png';
 import iconPersonal from '@/assets/icons/apps/personal.png';
 import iconVip from '@/assets/icons/apps/vip.png';
 import iconKen from '@/assets/icons/apps/ken.png';
-import iconAdme from '@/assets/icons/apps/adme.png';
+// import iconAdme from '@/assets/icons/apps/adme.png';
 import iconMedia from '@/assets/icons/apps/media.png';
-import iconMall from '@/assets/icons/apps/mall.png';
-import iconNearby from '@/assets/icons/apps/nearby.png';
+// import iconMall from '@/assets/icons/apps/mall.png';
+// import iconNearby from '@/assets/icons/apps/nearby.png';
 import iconSetting from '@/assets/icons/apps/setting.png';
 import iconEgg from '@/assets/icons/apps/egg.png';
 import iconPen from '@/assets/games/pen/pen_icon.webp';
@@ -53,14 +54,18 @@ export const APP_ITEMS: AppItem[] = [
   { icon: iconEgg, titleKey: 'home.apps.egg', overlay: 'egg' },
   { icon: iconPen, titleKey: 'home.apps.pen', overlay: 'pen' },
   { icon: iconWheel, titleKey: 'home.apps.wheel', overlay: 'wheel' },
-  { icon: iconGame, titleKey: 'home.apps.gameStore', subtitleKey: 'home.appGameSubtitle' },
+  // TODO: mở lại mục Kho game khi có tính năng thật
+  // { icon: iconGame, titleKey: 'home.apps.gameStore', subtitleKey: 'home.appGameSubtitle' },
   { icon: iconPersonal, titleKey: 'home.apps.profile', app: 'profile' },
   { icon: iconVip, titleKey: 'home.apps.vip', app: 'vip' },
   { icon: iconKen, titleKey: 'home.apps.ken', app: 'ken' },
-  { icon: iconAdme, titleKey: 'home.apps.advertise' },
+  // TODO: mở lại mục Đăng quảng cáo khi có tính năng thật
+  // { icon: iconAdme, titleKey: 'home.apps.advertise' },
   { icon: iconMedia, titleKey: 'home.apps.photos', app: 'media' },
-  { icon: iconMall, titleKey: 'home.apps.mall', subtitleKey: 'home.appMallSubtitle' },
-  { icon: iconNearby, titleKey: 'home.apps.nearby', app: 'nearby' },
+  // TODO: mở lại mục OlaMall khi có tính năng thật
+  // { icon: iconMall, titleKey: 'home.apps.mall', subtitleKey: 'home.appMallSubtitle' },
+  // TODO: mở lại mục Lân cận khi NearbyPlacesPage hết dữ liệu mock (MOCK_VENUES)
+  // { icon: iconNearby, titleKey: 'home.apps.nearby', app: 'nearby' },
   { icon: iconSetting, titleKey: 'home.apps.settings', app: 'settings' },
 ];
 
@@ -76,4 +81,3 @@ export const KEN_LOW_THRESHOLD = 10_000;
 export const MIN_AMOUNT = 10_000;
 export const STEP_AMOUNT = 1_000;
 export const PRESET_AMOUNTS = [10_000, 20_000, 50_000, 100_000, 200_000, 500_000];
-export const QR_MODULES = 29;

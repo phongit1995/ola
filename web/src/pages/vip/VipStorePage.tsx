@@ -10,11 +10,10 @@ import {
   VipIcon,
   type ListOption,
 } from '@components';
-import { formatDateDMY } from '@lib';
+import { formatDateDMY, vipName } from '@lib';
 import { VipService } from '@services';
 import type { VipIconInstance, VipStoreResult } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
-import { vipName } from './vipCatalog';
 
 const PRIVACY_KEYS = ['privacyPublic', 'privacyFriends', 'privacyPrivate'] as const;
 const VIP_PAGE_SIZE = 100;

@@ -72,6 +72,7 @@ type BuyPackageResponse struct {
 
 type GiftPackageRequest struct {
 	ToUsername string `json:"toUsername" binding:"required" example:"minhanh"`
+	Password   string `json:"password" binding:"required" example:"password123"`
 }
 
 type GiftPackageResponse struct {
@@ -85,6 +86,7 @@ type GiftPackageResponse struct {
 type GiftIconRequest struct {
 	ShopItemID string `json:"shopItemId" binding:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440000"`
 	ToUsername string `json:"toUsername" binding:"required" example:"minhanh"`
+	Password   string `json:"password" binding:"required" example:"password123"`
 }
 
 type GiftIconResponse struct {

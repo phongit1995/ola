@@ -31,6 +31,7 @@ import { useLongPress, useOutsideClick, useStickyScroll } from '@hooks';
 import { MessageRow } from './MessageRow';
 import { TransferKenDialog } from './TransferKenDialog';
 import { TradingVipDialog } from './TradingVipDialog';
+import { TransferVipDaysDialog } from './TransferVipDaysDialog';
 import { VoicePreviewBar } from './VoicePreviewBar';
 import { PeerProfileCard } from './PeerProfileCard';
 import { UserProfileView } from '../../profile/UserProfileView';
@@ -98,6 +99,7 @@ export function ChatConversationView({
   const [openTab, setOpenTab] = useState<AttachTab | null>(null);
   const [transferKenOpen, setTransferKenOpen] = useState(false);
   const [tradingVipOpen, setTradingVipOpen] = useState(false);
+  const [transferVipDaysOpen, setTransferVipDaysOpen] = useState(false);
   const [pendingAudio, setPendingAudio] = useState<{ blob: Blob; duration: number } | null>(null);
   const [actionTarget, setActionTarget] = useState<{
     message: ChatMessage;
@@ -533,6 +535,15 @@ export function ChatConversationView({
             setTradingVipOpen(true);
             return;
           }
+          if (payload.kind === 'vipDays') {
+            setOpenTab(null);
+            if (peerId === '') {
+              toast.error(t('chat.actionError'));
+              return;
+            }
+            setTransferVipDaysOpen(true);
+            return;
+          }
           toast.info(t('chat.comingSoon'));
         }}
         onRecorded={(blob, duration) => {
@@ -606,6 +617,14 @@ export function ChatConversationView({
         <TradingVipDialog
           open
           onClose={() => setTradingVipOpen(false)}
+          receiver={{ id: peerId, name, username, avatar: peerProfile?.avatar ?? avatar, color }}
+        />
+      )}
+
+      {transferVipDaysOpen && (
+        <TransferVipDaysDialog
+          open
+          onClose={() => setTransferVipDaysOpen(false)}
           receiver={{ id: peerId, name, username, avatar: peerProfile?.avatar ?? avatar, color }}
         />
       )}

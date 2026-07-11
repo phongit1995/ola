@@ -306,7 +306,7 @@ func (ctrl *Controller) GiftPackage(c *gin.Context) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	resp, err := ctrl.service.GiftPackage(userID, packageID, req.ToUsername)
+	resp, err := ctrl.service.GiftPackage(userID, packageID, req.ToUsername, req.Password)
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}
@@ -326,7 +326,7 @@ func (ctrl *Controller) GiftIcon(c *gin.Context) (interface{}, error) {
 	if err != nil {
 		return nil, utils.NewHTTPError(400, "invalid shop item id")
 	}
-	resp, err := ctrl.service.GiftIcon(userID, shopItemID, req.ToUsername)
+	resp, err := ctrl.service.GiftIcon(userID, shopItemID, req.ToUsername, req.Password)
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}

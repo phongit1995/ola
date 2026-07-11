@@ -1,19 +1,30 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Image, KeyboardAvoidingView, Platform, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useIsFocused } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { CompositeScreenProps, NavigationAction } from '@react-navigation/native';
+import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { useRoomChatStore, type RoomTab } from '@ola/shared/stores/roomChatStore';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { memberMatchesFilter, useRoomFilterStore } from '@ola/shared/stores/roomFilterStore';
+import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { ReactionType } from '@ola/shared/types';
-import type { RootStackParamList } from '../../navigation/types';
-import { ROOT_ROUTES } from '../../navigation/routes';
+import type { MainTabParamList, RoomStackParamList, RootStackParamList } from '../../navigation/types';
+import { ROOT_ROUTES, TAB_ROUTES } from '../../navigation/routes';
 import { RoomMessagesTab } from './RoomMessagesTab';
 import { RoomMembersTab } from './RoomMembersTab';
 import { RoomFilterDialog } from './RoomFilterDialog';
+import { ConfirmDialog } from '../../components/ConfirmDialog';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'RoomChat'>;
+type Props = CompositeScreenProps<
+  NativeStackScreenProps<RoomStackParamList, 'RoomChat'>,
+  CompositeScreenProps<
+    BottomTabScreenProps<MainTabParamList, typeof TAB_ROUTES.Room>,
+    NativeStackScreenProps<RootStackParamList>
+  >
+>;
 
 const membersIcon = require('../../assets/icons/room/ic_add_friend.png');
 const messagesIcon = require('../../assets/icons/room/ic_notify_new_chat_group_message.png');
@@ -35,10 +46,6 @@ function DashedLine() {
 
 function memberCountText(count: number): string {
   return count >= 200 ? '200+' : String(count);
-}
-
-function memberCountColor(count: number): string {
-  return count >= 200 ? '#ff4081' : '#ffffff';
 }
 
 function TabButton({
@@ -64,9 +71,7 @@ function TabButton({
     >
       <Text className="text-sm font-medium text-white">
         {label}
-        {count != null && (
-          <Text style={{ color: memberCountColor(count) }}> ({memberCountText(count)})</Text>
-        )}
+        {count != null && <Text className="text-white"> ({memberCountText(count)})</Text>}
       </Text>
       <View>
         <Image source={icon} style={{ width: 20, height: 20, tintColor: '#ffffff' }} resizeMode="contain" />
@@ -101,6 +106,8 @@ export function RoomChatScreen({ navigation, route }: Props) {
   const setActiveTab = useRoomChatStore((s) => s.setActiveTab);
   const setRoomForeground = useRoomChatStore((s) => s.setRoomForeground);
   const sendMessage = useRoomChatStore((s) => s.sendMessage);
+  const sendImage = useRoomChatStore((s) => s.sendImage);
+  const resendRoomImage = useRoomChatStore((s) => s.resendRoomImage);
   const loadMoreMessages = useRoomChatStore((s) => s.loadMoreMessages);
   const setReplyTarget = useRoomChatStore((s) => s.setReplyTarget);
   const clearReplyTarget = useRoomChatStore((s) => s.clearReplyTarget);
@@ -109,7 +116,10 @@ export function RoomChatScreen({ navigation, route }: Props) {
   const currentUserId = useAuthStore((s) => s.user?.id) ?? '';
   const filters = useRoomFilterStore((s) => s.filters);
   const setFilters = useRoomFilterStore((s) => s.setFilters);
+  const pushToast = useToastStore((s) => s.push);
   const [filterOpen, setFilterOpen] = useState(false);
+  const [pendingLeave, setPendingLeave] = useState<NavigationAction | null>(null);
+  const confirmedLeaveRef = useRef(false);
   const visibleMembers = useMemo(
     () => members.filter((member) => memberMatchesFilter(member, filters)),
     [members, filters]
@@ -117,12 +127,22 @@ export function RoomChatScreen({ navigation, route }: Props) {
 
   useEffect(() => {
     void open({ id: roomId, name: roomName });
-    setRoomForeground(true);
-    return () => {
-      setRoomForeground(false);
-      close();
-    };
-  }, [roomId, roomName, open, close, setRoomForeground]);
+    return () => close();
+  }, [roomId, roomName, open, close]);
+
+  const isFocused = useIsFocused();
+  useEffect(() => {
+    setRoomForeground(isFocused);
+  }, [isFocused, setRoomForeground]);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('beforeRemove', (event) => {
+      if (confirmedLeaveRef.current) return;
+      event.preventDefault();
+      setPendingLeave(event.data.action);
+    });
+    return unsubscribe;
+  }, [navigation]);
 
   const onSelectTab = useCallback((tab: RoomTab) => setActiveTab(tab), [setActiveTab]);
   const handleReact = useCallback(
@@ -151,7 +171,7 @@ export function RoomChatScreen({ navigation, route }: Props) {
           >
             <Image source={backIcon} style={{ width: 24, height: 24 }} resizeMode="contain" />
           </Pressable>
-          <Text className="px-12 text-center text-sm font-bold text-white" numberOfLines={1}>
+          <Text className="px-12 text-center text-lg font-medium text-white" numberOfLines={1}>
             {roomName}
           </Text>
           {activeTab === 'members' && (
@@ -198,6 +218,8 @@ export function RoomChatScreen({ navigation, route }: Props) {
           loadingMore={loadingMore}
           replyTarget={replyTarget}
           onSend={sendMessage}
+          onSendImage={sendImage}
+          onResendImage={(id) => void resendRoomImage(id)}
           onLoadMore={loadMoreMessages}
           onOpenUser={openUser}
           onOpenProfile={openProfileByNick}
@@ -216,6 +238,23 @@ export function RoomChatScreen({ navigation, route }: Props) {
           setFilterOpen(false);
         }}
         onClose={() => setFilterOpen(false)}
+      />
+
+      <ConfirmDialog
+        visible={pendingLeave != null}
+        danger
+        title={t('room.quitTitle')}
+        message={t('room.quitMessage', { name: roomName })}
+        confirmLabel={t('dialog.yes')}
+        cancelLabel={t('dialog.no')}
+        onConfirm={() => {
+          const action = pendingLeave;
+          setPendingLeave(null);
+          confirmedLeaveRef.current = true;
+          pushToast('success', t('room.quitSuccess'));
+          if (action != null) navigation.dispatch(action);
+        }}
+        onCancel={() => setPendingLeave(null)}
       />
     </KeyboardAvoidingView>
   );

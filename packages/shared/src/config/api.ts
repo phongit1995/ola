@@ -21,6 +21,9 @@ export const API_PATH = {
     detail: (id: string) => `/admin/rooms/${id}`,
   },
   userSettings: '/user-settings',
+  appSettings: {
+    topup: '/settings/topup',
+  },
   user: {
     me: '/user/me',
     search: '/user/search',

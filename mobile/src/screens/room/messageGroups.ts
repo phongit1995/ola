@@ -1,15 +1,19 @@
-import type { RoomMessage, RoomReactor, RoomReplySnapshot } from '@ola/shared/types';
+import type { RoomMessage, RoomMessageStatus, RoomReactor, RoomReplySnapshot } from '@ola/shared/types';
 import { GROUP_GAP_MS } from './roomConstants';
 
 export type BubblePosition = 'single' | 'first' | 'middle' | 'last';
 
 export interface GroupedMessage {
   id: string;
+  key: string;
   content: string;
+  type?: 'text' | 'image';
+  imageUrl?: string;
   createdAt: string;
   position: BubblePosition;
   replyTo?: RoomReplySnapshot;
   reactions?: Record<string, RoomReactor[]>;
+  status?: RoomMessageStatus;
 }
 
 export interface MessageGroup {
@@ -20,6 +24,7 @@ export interface MessageGroup {
   senderName: string;
   senderAvatar?: string;
   senderVipTypeId?: number | null;
+  showTime: boolean;
   messages: GroupedMessage[];
 }
 
@@ -30,6 +35,10 @@ export interface DateSeparator {
 }
 
 export type RoomFeedItem = MessageGroup | DateSeparator;
+
+function renderKey(message: RoomMessage): string {
+  return message.clientMsgId ?? message.id;
+}
 
 function dayKey(iso: string): string {
   const date = new Date(iso);
@@ -53,30 +62,57 @@ interface PendingGroup {
   raw: RoomMessage[];
 }
 
+function resolveReplySnapshot(
+  reply: RoomReplySnapshot | undefined,
+  byId: Map<string, RoomMessage>
+): RoomReplySnapshot | undefined {
+  if (reply == null || reply.type === 'image') return reply;
+  const original = byId.get(reply.messageId);
+  if (original?.type === 'image') {
+    return { ...reply, type: 'image', imageUrl: reply.imageUrl ?? original.imageUrl };
+  }
+  return reply;
+}
+
 export function buildRoomFeed(messages: RoomMessage[], currentUserId: string): RoomFeedItem[] {
+  const byId = new Map(messages.map((message) => [message.id, message]));
   const items: RoomFeedItem[] = [];
   let pending: PendingGroup | null = null;
   let lastDay = '';
   let lastTime = 0;
+  let lastShownMinute = -1;
+
+  const minuteBucket = (iso: string): number => {
+    const value = new Date(iso).getTime();
+    return Number.isNaN(value) ? -1 : Math.floor(value / 60000);
+  };
 
   const flush = () => {
     if (pending == null) return;
     const count = pending.raw.length;
+    const bucket = minuteBucket(pending.raw[0]!.createdAt);
+    const showTime = bucket !== lastShownMinute;
+    if (showTime) lastShownMinute = bucket;
     items.push({
       kind: 'group',
-      key: pending.raw[0]!.id,
+      key: renderKey(pending.raw[0]!),
       isOwn: pending.isOwn,
       senderId: pending.senderId,
       senderName: pending.senderName,
       senderAvatar: pending.senderAvatar,
       senderVipTypeId: pending.senderVipTypeId,
+      showTime,
       messages: pending.raw.map((message, index) => ({
         id: message.id,
+        key: renderKey(message),
         content: message.content,
+        type: message.type,
+        imageUrl: message.imageUrl,
         createdAt: message.createdAt,
         position: bubblePosition(count, index),
-        replyTo: message.replyTo,
+        replyTo: resolveReplySnapshot(message.replyTo, byId),
         reactions: message.reactions,
+        status: message.status,
       })),
     });
     pending = null;
@@ -91,6 +127,7 @@ export function buildRoomFeed(messages: RoomMessage[], currentUserId: string): R
       items.push({ kind: 'date', key: `date-${day}-${message.id}`, createdAt: message.createdAt });
       lastDay = day;
       lastTime = 0;
+      lastShownMinute = -1;
     }
 
     const gap = Number.isNaN(time) || lastTime === 0 ? 0 : time - lastTime;

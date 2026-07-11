@@ -3,8 +3,13 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@ola/shared/stores/authStore';
-import type { AuthStackParamList, MainTabParamList, RootStackParamList } from './types';
-import { AUTH_ROUTES, ROOT_ROUTES, TAB_ROUTES } from './routes';
+import type {
+  AuthStackParamList,
+  MainTabParamList,
+  RoomStackParamList,
+  RootStackParamList,
+} from './types';
+import { AUTH_ROUTES, ROOM_ROUTES, ROOT_ROUTES, TAB_ROUTES } from './routes';
 import { LoginScreen } from '../screens/auth/LoginScreen';
 import { RegisterScreen } from '../screens/auth/RegisterScreen';
 import { ForgotPasswordScreen } from '../screens/auth/ForgotPasswordScreen';
@@ -14,14 +19,37 @@ import { ChatDetailScreen } from '../screens/chat/ChatDetailScreen';
 import { RoomListScreen } from '../screens/room/RoomListScreen';
 import { RoomChatScreen } from '../screens/room/RoomChatScreen';
 import { MeFeedScreen } from '../screens/me/MeFeedScreen';
+import { AppsScreen } from '../screens/apps/AppsScreen';
 import { ProfileViewScreen } from '../screens/profile/ProfileViewScreen';
 import { EditProfileScreen } from '../screens/profile/EditProfileScreen';
-import { ScreenPlaceholder } from '../components/ScreenPlaceholder';
+import { VipStoreScreen } from '../screens/vip/VipStoreScreen';
+import { BuyVipScreen } from '../screens/vip/BuyVipScreen';
+import { KenStoreScreen } from '../screens/ken/KenStoreScreen';
+import { BuyKenScreen } from '../screens/ken/BuyKenScreen';
+import { MediaStoreScreen } from '../screens/media/MediaStoreScreen';
+import { SettingsScreen } from '../screens/settings/SettingsScreen';
+import { PenGameScreen } from '../screens/games/pen/PenGameScreen';
+import { SpinWheelGameScreen } from '../screens/games/spin-wheel/SpinWheelGameScreen';
+import { EggGameScreen } from '../screens/games/egg/EggGameScreen';
 import { TAB_ICONS } from '../assets/tabIcons';
 
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
 const Tabs = createBottomTabNavigator<MainTabParamList>();
 const RootStack = createNativeStackNavigator<RootStackParamList>();
+const RoomStack = createNativeStackNavigator<RoomStackParamList>();
+
+function RoomNavigator() {
+  return (
+    <RoomStack.Navigator screenOptions={{ headerShown: false }}>
+      <RoomStack.Screen name={ROOM_ROUTES.RoomList} component={RoomListScreen} />
+      <RoomStack.Screen
+        name={ROOM_ROUTES.RoomChat}
+        component={RoomChatScreen}
+        options={{ gestureEnabled: false }}
+      />
+    </RoomStack.Navigator>
+  );
+}
 
 function AuthNavigator() {
   return (
@@ -32,14 +60,6 @@ function AuthNavigator() {
       <AuthStack.Screen name={AUTH_ROUTES.Terms} component={TermsScreen} />
     </AuthStack.Navigator>
   );
-}
-
-function RssTabScreen() {
-  return <ScreenPlaceholder title="RSS" />;
-}
-
-function AppsTabScreen() {
-  return <ScreenPlaceholder title="Apps" />;
 }
 
 function tabIcon(key: keyof typeof TAB_ICONS) {
@@ -66,7 +86,7 @@ function MainTabs() {
       />
       <Tabs.Screen
         name={TAB_ROUTES.Room}
-        component={RoomListScreen}
+        component={RoomNavigator}
         options={{ title: t('home.tabRoom'), tabBarIcon: tabIcon('room') }}
       />
       <Tabs.Screen
@@ -74,14 +94,15 @@ function MainTabs() {
         component={MeFeedScreen}
         options={{ title: t('home.tabMe'), tabBarIcon: tabIcon('me') }}
       />
+      {/* TODO: mở lại tab RSS khi có tính năng thật
       <Tabs.Screen
         name={TAB_ROUTES.Rss}
         component={RssTabScreen}
         options={{ title: t('home.tabRss'), tabBarIcon: tabIcon('rss') }}
-      />
+      /> */}
       <Tabs.Screen
         name={TAB_ROUTES.Apps}
-        component={AppsTabScreen}
+        component={AppsScreen}
         options={{ title: t('home.tabApps'), tabBarIcon: tabIcon('apps') }}
       />
     </Tabs.Navigator>
@@ -108,9 +129,17 @@ export function RootNavigator() {
     <RootStack.Navigator screenOptions={{ headerShown: false }}>
       <RootStack.Screen name={ROOT_ROUTES.MainTabs} component={MainTabs} />
       <RootStack.Screen name={ROOT_ROUTES.ChatDetail} component={ChatDetailScreen} />
-      <RootStack.Screen name={ROOT_ROUTES.RoomChat} component={RoomChatScreen} />
       <RootStack.Screen name={ROOT_ROUTES.ProfileView} component={ProfileViewScreen} />
       <RootStack.Screen name={ROOT_ROUTES.EditProfile} component={EditProfileScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.VipStore} component={VipStoreScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.BuyVip} component={BuyVipScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.KenStore} component={KenStoreScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.BuyKen} component={BuyKenScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.MediaStore} component={MediaStoreScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.Settings} component={SettingsScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.PenGame} component={PenGameScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.SpinWheel} component={SpinWheelGameScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.EggGame} component={EggGameScreen} />
     </RootStack.Navigator>
   );
 }

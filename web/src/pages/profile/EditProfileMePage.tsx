@@ -258,7 +258,7 @@ export function EditProfileMePage({ onClose }: { onClose: () => void }) {
             <path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
           </svg>
         </button>
-        <span className="flex-1 truncate text-base font-medium">{t('profileEdit.title')}</span>
+        <span className="flex-1 truncate text-lg font-medium">{t('profileEdit.title')}</span>
         <button
           type="button"
           onClick={() => setPasswordOpen(true)}

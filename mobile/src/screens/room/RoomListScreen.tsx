@@ -1,16 +1,18 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Image, Pressable, RefreshControl, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RoomService } from '@ola/shared/services';
 import type { Room } from '@ola/shared/types';
-import type { RootStackParamList } from '../../navigation/types';
-import { ROOT_ROUTES } from '../../navigation/routes';
+import type { RoomStackParamList } from '../../navigation/types';
+import { ROOM_ROUTES } from '../../navigation/routes';
 
 const membersIcon = require('../../assets/icons/room/ic_indicate_privacy_friends.png');
 const quickJoinIcon = require('../../assets/icons/room/ic_action_auto_join_room.png');
+const refreshIcon = require('../../assets/icons/room/ic_refresh.png');
 
 const ROOM_COLORS = ['#ef5350', '#ec407a', '#5c6bc0', '#26a69a', '#7e57c2', '#ffa726'];
 const ROOM_CAPACITY = 200;
@@ -121,7 +123,8 @@ function SectionHeader({ label }: { label: string }) {
 
 export function RoomListScreen() {
   const { t } = useTranslation();
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation = useNavigation<NativeStackNavigationProp<RoomStackParamList>>();
+  const insets = useSafeAreaInsets();
   const [rooms, setRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -137,13 +140,15 @@ export function RoomListScreen() {
     }
   }, []);
 
-  useEffect(() => {
-    void load();
-  }, [load]);
+  useFocusEffect(
+    useCallback(() => {
+      void load();
+    }, [load])
+  );
 
   const enterRoom = useCallback(
     (room: Room) => {
-      navigation.navigate(ROOT_ROUTES.RoomChat, { roomId: room.id, roomName: room.name });
+      navigation.navigate(ROOM_ROUTES.RoomChat, { roomId: room.id, roomName: room.name });
     },
     [navigation]
   );
@@ -167,8 +172,18 @@ export function RoomListScreen() {
 
   return (
     <View className="flex-1 bg-white">
-      <View className="h-12 items-center justify-center bg-ola-primary">
-        <Text className="text-base font-medium text-white">{t('home.tabRoom')}</Text>
+      <View className="bg-ola-primary" style={{ paddingTop: insets.top }}>
+        <View className="h-12 flex-row items-center px-2">
+          <View className="w-9" />
+          <Text className="flex-1 text-center text-lg font-medium text-white">{t('home.tabRoom')}</Text>
+          <Pressable
+            onPress={() => void load()}
+            aria-label={t('room.refresh')}
+            className="h-9 w-9 items-center justify-center rounded-full active:bg-white/15"
+          >
+            <Image source={refreshIcon} style={{ width: 20, height: 20 }} resizeMode="contain" />
+          </Pressable>
+        </View>
       </View>
       {loading && rooms.length === 0 ? (
         <View className="flex-1 items-center justify-center">

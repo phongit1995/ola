@@ -78,7 +78,7 @@ export function RegisterPage() {
         >
           {t('common.cancel')}
         </button>
-        <span className="flex-1 text-center text-base font-medium">
+        <span className="flex-1 text-center text-lg font-medium">
           {t('register.title')}
         </span>
         <LanguageSwitcher />

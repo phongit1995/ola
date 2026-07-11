@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 import { useTranslation } from 'react-i18next';
-import { toast, ApiError, formatKen, colorForName } from '@lib';
+import { toast, ApiError, formatKen, colorForName, vipById, vipName } from '@lib';
 import {
   ScreenHeader,
   FullScreenOverlay,
@@ -15,7 +15,6 @@ import type { ListOption } from '@components';
 import { VipService, UserService } from '@services';
 import type { VipIconCatalogItem, VipPackageItem, UserSearchResult } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
-import { vipById, vipName } from './vipCatalog';
 
 type BuyVipMode = 'buy' | 'give' | 'giveDays' | 'extend';
 
@@ -43,7 +42,8 @@ type BuyErrorKey =
   | 'vip.buy.errPackageUnavailable'
   | 'vip.buy.errReceiverNotFound'
   | 'vip.buy.errGiftSelf'
-  | 'vip.buy.errBlocked';
+  | 'vip.buy.errBlocked'
+  | 'vip.buy.errWrongPassword';
 
 const BUY_ERROR_KEYS: Record<string, BuyErrorKey> = {
   'insufficient ken balance': 'vip.buy.errInsufficientKen',
@@ -52,6 +52,7 @@ const BUY_ERROR_KEYS: Record<string, BuyErrorKey> = {
   'receiver not found': 'vip.buy.errReceiverNotFound',
   'cannot gift to yourself': 'vip.buy.errGiftSelf',
   'cannot gift to blocked user': 'vip.buy.errBlocked',
+  'invalid transfer password': 'vip.buy.errWrongPassword',
 };
 
 const MODE_TAB = {
@@ -139,6 +140,7 @@ export function BuyVipPage({ mode: initialMode = 'buy', onClose }: { mode?: BuyV
   const [vipPickerOpen, setVipPickerOpen] = useState(false);
   const [packagePickerOpen, setPackagePickerOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [giftPassword, setGiftPassword] = useState('');
   const [catalog, setCatalog] = useState<VipIconCatalogItem[]>([]);
   const [packages, setPackages] = useState<VipPackageItem[]>([]);
   const [purchasing, setPurchasing] = useState(false);
@@ -240,6 +242,7 @@ export function BuyVipPage({ mode: initialMode = 'buy', onClose }: { mode?: BuyV
     setReceiver('');
     setReceiverQuery('');
     setReceiverResults([]);
+    setGiftPassword('');
   }
 
   function packageLabel(pkg: VipPackageItem): string {
@@ -263,6 +266,7 @@ export function BuyVipPage({ mode: initialMode = 'buy', onClose }: { mode?: BuyV
   function changeMode(next: BuyVipMode) {
     setMode(next);
     setConfirmOpen(false);
+    clearReceiver();
   }
 
   function startPurchase() {
@@ -276,6 +280,10 @@ export function BuyVipPage({ mode: initialMode = 'buy', onClose }: { mode?: BuyV
     }
     if (showPackage && !selectedPackageId) {
       toast.info(t('vip.buy.needPackage'));
+      return;
+    }
+    if (showReceiver && giftPassword.trim() === '') {
+      toast.info(t('vip.buy.needPassword'));
       return;
     }
     setConfirmOpen(true);
@@ -331,9 +339,13 @@ export function BuyVipPage({ mode: initialMode = 'buy', onClose }: { mode?: BuyV
         toast.info(t('vip.buy.needVip'));
         return;
       }
+      if (giftPassword.trim() === '') {
+        toast.info(t('vip.buy.needPassword'));
+        return;
+      }
       setPurchasing(true);
       try {
-        const result = await VipService.giftIcon(selectedShopId, receiver.trim());
+        const result = await VipService.giftIcon(selectedShopId, receiver.trim(), giftPassword);
         if (user) setUser({ ...user, ken: result.kenBalance });
         await refreshUser();
         setConfirmOpen(false);
@@ -354,9 +366,13 @@ export function BuyVipPage({ mode: initialMode = 'buy', onClose }: { mode?: BuyV
         toast.info(t('vip.buy.needPackage'));
         return;
       }
+      if (giftPassword.trim() === '') {
+        toast.info(t('vip.buy.needPassword'));
+        return;
+      }
       setPurchasing(true);
       try {
-        const result = await VipService.giftPackage(selectedPackageId, receiver.trim());
+        const result = await VipService.giftPackage(selectedPackageId, receiver.trim(), giftPassword);
         if (user) setUser({ ...user, ken: result.kenBalance });
         await refreshUser();
         setConfirmOpen(false);
@@ -520,6 +536,19 @@ export function BuyVipPage({ mode: initialMode = 'buy', onClose }: { mode?: BuyV
               </span>
               <ChevronIcon />
             </button>
+          </div>
+        )}
+
+        {showReceiver && receiverUser != null && (
+          <div className="mt-2 bg-white px-4 py-3">
+            <span className="text-xs text-black/54">{t('vip.buy.passwordLabel')}</span>
+            <input
+              type="password"
+              value={giftPassword}
+              onChange={(event) => setGiftPassword(event.target.value)}
+              placeholder={t('vip.buy.passwordPlaceholder')}
+              className="mt-1 w-full rounded border border-black/12 bg-white px-3 py-2 text-sm text-black/87 outline-none placeholder:text-black/38 focus:border-ola-primary"
+            />
           </div>
         )}
 

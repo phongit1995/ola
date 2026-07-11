@@ -1,4 +1,3 @@
-export { vipIconUrl, parseVipTypeId } from '@lib';
 
 export interface VipCatalogEntry {
   id: number;

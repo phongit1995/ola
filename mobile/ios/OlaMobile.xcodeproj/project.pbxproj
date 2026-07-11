@@ -273,7 +273,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.olachat.net.org.vn";
+				PRODUCT_BUNDLE_IDENTIFIER = com.olachat.net.org.vn;
 				PRODUCT_NAME = OlaMobile;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -302,7 +302,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.olachat.net.org.vn";
+				PRODUCT_BUNDLE_IDENTIFIER = com.olachat.net.org.vn;
 				PRODUCT_NAME = OlaMobile;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_VERSION = 5.0;

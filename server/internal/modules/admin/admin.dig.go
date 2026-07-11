@@ -8,6 +8,7 @@ import (
 	adminme "ola-chat-server/internal/modules/admin/me"
 	adminpen "ola-chat-server/internal/modules/admin/pen"
 	adminroom "ola-chat-server/internal/modules/admin/room"
+	adminsetting "ola-chat-server/internal/modules/admin/setting"
 	adminupload "ola-chat-server/internal/modules/admin/upload"
 	adminuser "ola-chat-server/internal/modules/admin/user"
 	adminvip "ola-chat-server/internal/modules/admin/vip"
@@ -29,6 +30,7 @@ func Provider(c *dig.Container) error {
 		adminken.Provider,
 		adminkenchest.Provider,
 		adminpen.Provider,
+		adminsetting.Provider,
 	}
 
 	for _, module := range modules {

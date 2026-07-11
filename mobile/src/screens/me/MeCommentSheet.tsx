@@ -44,9 +44,11 @@ export function MeCommentSheet({
   const insets = useSafeAreaInsets();
   const meId = useAuthStore((s) => s.user?.id) ?? '';
 
-  const { comments, total, loading, error, submitting, add, remove } = useMeComments(post.id, {
-    onDelta: (delta) => onCommentDelta(post.id, delta),
-  });
+  const { comments, total, loading, error, submitting, add, remove, like, replyTarget, setReplyTarget } =
+    useMeComments(post.id, {
+      onDelta: (delta) => onCommentDelta(post.id, delta),
+    });
+  const replyingToUsername = replyTarget != null ? replyTarget.author?.username ?? null : null;
 
   const formatTime = useMemo(() => createTimeFormatter(language), [language]);
   const postTime = isSameDay(post.createdAt, new Date().toISOString())
@@ -63,7 +65,7 @@ export function MeCommentSheet({
           <Pressable onPress={onClose} className="h-12 w-10 items-center justify-center">
             <Text className="text-2xl leading-none text-white">×</Text>
           </Pressable>
-          <Text className="flex-1 text-sm font-bold text-white">
+          <Text className="flex-1 text-lg font-medium text-white">
             {`${t('me.commentsTitle')}${total > 0 ? ` (${total})` : ''}`}
           </Text>
           <View className="w-10" />
@@ -82,7 +84,7 @@ export function MeCommentSheet({
           <View className="py-2">
             {loading && <ActivityIndicator className="py-8" color="#7cb342" />}
             {!loading && error && (
-              <Text className="py-8 text-center text-sm" style={{ color: '#e53935' }}>
+              <Text className="py-8 text-center text-sm" style={{ color: '#e34545' }}>
                 {t('me.commentLoadError')}
               </Text>
             )}
@@ -93,21 +95,33 @@ export function MeCommentSheet({
             )}
             {!loading &&
               !error &&
-              comments.map((comment) => (
-                <MeCommentItem
-                  key={comment.id}
-                  comment={comment}
-                  time={formatTime(comment.createdAt)}
-                  canDelete={comment.author?.id === meId}
-                  onDelete={remove}
-                  onOpenProfile={onOpenProfile}
-                />
-              ))}
+              comments.map((comment) => {
+                const isOwn = comment.author?.id === meId;
+                return (
+                  <MeCommentItem
+                    key={comment.id}
+                    comment={comment}
+                    time={formatTime(comment.createdAt)}
+                    canDelete={isOwn}
+                    onDelete={remove}
+                    onReply={isOwn ? undefined : setReplyTarget}
+                    onToggleLike={like}
+                    onOpenProfile={onOpenProfile}
+                  />
+                );
+              })}
           </View>
         </ScrollView>
 
         <View style={{ paddingBottom: insets.bottom }}>
-          <MeCommentComposer submitting={submitting} onSubmit={add} />
+          <MeCommentComposer
+            key={replyTarget?.id ?? 'root'}
+            submitting={submitting}
+            onSubmit={add}
+            initialDraft={replyingToUsername != null ? `@${replyingToUsername} ` : ''}
+            replyingTo={replyingToUsername}
+            onCancelReply={() => setReplyTarget(null)}
+          />
         </View>
       </KeyboardAvoidingView>
     </Modal>

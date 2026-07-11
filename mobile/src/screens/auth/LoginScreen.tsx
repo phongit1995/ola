@@ -52,6 +52,7 @@ export function LoginScreen({ navigation }: Props) {
     control,
     handleSubmit,
     setValue,
+    getValues,
     formState: { errors },
   } = useForm<LoginForm>({
     mode: 'onTouched',
@@ -83,13 +84,22 @@ export function LoginScreen({ navigation }: Props) {
     clearError();
   }
 
+  function handleRemoveAccount(removedUsername: string) {
+    removeAccount(removedUsername);
+    if (getValues('username').trim().toLowerCase() === removedUsername.toLowerCase()) {
+      setValue('username', '');
+      setValue('password', '');
+      clearError();
+    }
+  }
+
   async function onSubmit(data: LoginForm) {
     setLoading(true);
     setError(null);
     const username = data.username.trim().toLowerCase();
     try {
       const { user } = await AuthService.login({ username, password: data.password });
-      saveAccount(username, data.password);
+      saveAccount(username, data.password, user.avatar);
       setUser(user);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : t('auth.errGeneric'));
@@ -112,19 +122,20 @@ export function LoginScreen({ navigation }: Props) {
       >
         <LanguageSwitcher className="mt-3 self-end" />
 
-        {accounts.length > 0 ? (
-          <SavedAccountGallery
-            accounts={accounts}
-            onPick={pickAccount}
-            onRemove={removeAccount}
-          />
-        ) : (
-          <Image
-            source={require('../../assets/ola-logo.png')}
-            className="mb-4 mt-8 h-14 w-14"
-            resizeMode="contain"
-          />
-        )}
+        <View className="w-full flex-1 items-center justify-center py-6">
+          {accounts.length > 0 ? (
+            <SavedAccountGallery
+              accounts={accounts}
+              onPick={pickAccount}
+              onRemove={handleRemoveAccount}
+            />
+          ) : (
+            <Image
+              source={require('../../assets/ola-logo.png')}
+              className="mb-4 h-14 w-14"
+              resizeMode="contain"
+            />
+          )}
 
         <View
           className={`w-full max-w-md overflow-hidden rounded-sm bg-white shadow ${
@@ -210,14 +221,15 @@ export function LoginScreen({ navigation }: Props) {
           <Text className="text-right text-sm text-white">{t('login.forgot')}</Text>
         </Pressable>
 
-        <Pressable
-          className="mt-1 h-12 w-full max-w-md items-center justify-center"
-          onPress={() => navigation.navigate(AUTH_ROUTES.Register)}
-        >
-          <Text className="text-xl text-white/70">{t('login.createAccount')}</Text>
-        </Pressable>
+          <Pressable
+            className="mt-1 h-12 w-full max-w-md items-center justify-center"
+            onPress={() => navigation.navigate(AUTH_ROUTES.Register)}
+          >
+            <Text className="text-xl text-white/70">{t('login.createAccount')}</Text>
+          </Pressable>
+        </View>
 
-        <Text className="mt-5 w-full max-w-md pb-4 text-right text-[9px] text-white/70">
+        <Text className="w-full max-w-md pb-4 text-right text-[9px] text-white/70">
           {t('login.version')}: {APP_VERSION}
         </Text>
       </ScrollView>

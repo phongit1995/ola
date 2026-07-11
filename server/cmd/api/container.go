@@ -22,6 +22,7 @@ import (
 	"ola-chat-server/internal/modules/relationships"
 	"ola-chat-server/internal/modules/room"
 	"ola-chat-server/internal/modules/session"
+	"ola-chat-server/internal/modules/setting"
 	"ola-chat-server/internal/modules/user"
 	usersetting "ola-chat-server/internal/modules/user-setting"
 	"ola-chat-server/internal/modules/vip"
@@ -64,6 +65,7 @@ func NewContainer() (*dig.Container, error) {
 		domConversation.Provider,
 		websocket.Provider,
 		auth.Provider,
+		setting.Provider,
 		admin.Provider,
 		session.Provider,
 		room.Provider,

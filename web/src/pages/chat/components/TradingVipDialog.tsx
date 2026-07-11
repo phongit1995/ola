@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dialog, DialogButton, Spinner, UserRow, VipIcon } from '@components';
-import { toApiError, toast } from '@lib';
+import { toApiError, toast, vipName } from '@lib';
 import { VipService } from '@services';
 import type { VipIconInstance } from '@app-types';
-import { vipName } from '../../vip/vipCatalog';
 
 interface TradingVipReceiver {
   id: string;

@@ -43,6 +43,9 @@ FrameLayout (gốc)
 
 Thành phần đặc trưng (không có ở chat 1-1):
 - **Kéo-để-làm-mới** (SwipeRefreshLayout) — vuốt xuống gọi `OlaApplication.b.a((short)0)` tải lại danh sách phòng.
+
+> ⚠️ **Đối chiếu WEB & MOBILE — action bar CÓ THÊM nút "Làm mới":**
+> APK gốc action bar danh sách phòng **chỉ có tiêu đề giữa "Phòng chat"**, làm mới **duy nhất bằng kéo-xuống**. Cả WEB ([RoomPanel.tsx](../../../../web/src/pages/room/RoomPanel.tsx)) lẫn MOBILE ([RoomListScreen.tsx](../../../../mobile/src/screens/room/RoomListScreen.tsx)) **bổ sung nút refresh góc phải header** (icon Material refresh trắng 20dp, `t('room.refresh')`) gọi lại `RoomService.browse` — đây là **tính năng thêm ngoài APK**, không phải bám gốc. Mobile vẫn giữ kéo-để-làm-mới (`RefreshControl`) song song.
 - **FAB tròn góc phải-dưới** + bong bóng tin nhắn cuối: nút quay lại phòng đang chat ("loa loa"), kèm badge số tin chưa đọc.
 - **Drawer trái 240dp**: danh sách phòng đang tham gia / yêu thích, vuốt từ mép trái.
 

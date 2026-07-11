@@ -19,6 +19,7 @@ import (
 	"ola-chat-server/internal/modules/relationships"
 	"ola-chat-server/internal/modules/room"
 	"ola-chat-server/internal/modules/session"
+	"ola-chat-server/internal/modules/setting"
 	"ola-chat-server/internal/modules/user"
 	usersetting "ola-chat-server/internal/modules/user-setting"
 	"ola-chat-server/internal/modules/vip"
@@ -50,6 +51,7 @@ func CreateServer(
 	callRouter *call.Router,
 	roomRouter *room.Router,
 	roomService *room.Service,
+	settingRouter *setting.Router,
 	meRouter *me.Router,
 	sessionRouter *session.Router,
 	vipRouter *vip.Router,
@@ -100,6 +102,7 @@ func CreateServer(
 		adminRouter.Setup(api)
 		userRouter.Setup(api)
 		userSettingRouter.Setup(api)
+		settingRouter.Setup(api)
 		relationshipsRouter.Setup(api)
 		conversationRouter.Setup(api)
 		messageRouter.Setup(api)

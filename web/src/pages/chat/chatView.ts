@@ -2,6 +2,7 @@ import type { Conversation, Message } from '@app-types';
 import {
   colorForName,
   DEFAULT_AVATAR_COLOR,
+  formatClockHM,
   formatDuration,
   kulImageForText,
   parseMessageMetadata,
@@ -25,13 +26,6 @@ export interface ConversationView {
   time: string;
   unread: number;
   online: boolean;
-}
-
-export function formatClock(iso?: string): string {
-  if (iso == null || iso === '') return '';
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return '';
-  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
 }
 
 export function conversationDisplayName(conversation: Conversation): string {
@@ -67,7 +61,7 @@ export function toConversationView(conversation: Conversation): ConversationView
     seen: conversation.seen,
     senderName: conversation.lastMessageSenderName,
     isGroup: conversation.type === 'group',
-    time: formatClock(conversation.lastMessageAt),
+    time: formatClockHM(conversation.lastMessageAt),
     unread: conversation.unreadCount,
     online: conversation.type === 'direct' ? (conversation.otherUser?.isOnline ?? false) : false,
   };
@@ -87,7 +81,7 @@ export function toBubble(message: Message, myId: string): ChatMessage {
     audioUrl: isAudio ? meta.url : undefined,
     audioDuration: isAudio ? meta.duration : undefined,
     voiceDuration: isAudio ? formatDuration(meta.duration) : undefined,
-    time: formatClock(message.createdAt),
+    time: formatClockHM(message.createdAt),
     createdAt: message.createdAt,
     status: STATUS_MAP[message.status] ?? 'sent',
     reactions: message.reactions,

@@ -1,5 +1,6 @@
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Image, Modal, Pressable, Text, useWindowDimensions, View } from 'react-native';
+import { Image, Keyboard, Modal, Platform, Pressable, Text, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { ImageSourcePropType, ViewStyle } from 'react-native';
 import type { ReactionType } from '@ola/shared/types';
@@ -80,6 +81,19 @@ function ReactionRow({
   );
 }
 
+function useKeyboardHeight(): number {
+  const [height, setHeight] = useState(() => Keyboard.metrics()?.height ?? 0);
+  useEffect(() => {
+    const show = Keyboard.addListener('keyboardDidShow', (e) => setHeight(e.endCoordinates.height));
+    const hide = Keyboard.addListener('keyboardDidHide', () => setHeight(0));
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, []);
+  return height;
+}
+
 function clamp(value: number, min: number, max: number): number {
   if (max < min) return min;
   return Math.min(Math.max(value, min), max);
@@ -101,15 +115,20 @@ function AnchoredPopup({
 }: MessageActionSheetProps & { anchor: AnchorRect }) {
   const { width: winW, height: winH } = useWindowDimensions();
   const insets = useSafeAreaInsets();
+  const kbHeight = useKeyboardHeight();
   const refWidth = Math.min(BAR_WIDTH, winW - POPUP_MARGIN * 2);
   const height = popupHeight(actions.length, showReactions);
   const alignRight = anchor.x + anchor.width / 2 > winW / 2;
 
-  const spaceBelow = winH - (anchor.y + anchor.height) - POPUP_MARGIN;
+  const kbAdjust = Platform.OS === 'ios' ? kbHeight : 0;
+  const usableBottom = winH - kbAdjust;
+  const bottomInset = kbAdjust > 0 ? POPUP_MARGIN : Math.max(POPUP_MARGIN, insets.bottom);
+
+  const spaceBelow = usableBottom - (anchor.y + anchor.height) - POPUP_MARGIN;
   const placeBelow = spaceBelow >= height + POPUP_GAP || spaceBelow >= anchor.y - POPUP_MARGIN;
   const rawTop = placeBelow ? anchor.y + anchor.height + POPUP_GAP : anchor.y - POPUP_GAP - height;
   const minTop = Math.max(POPUP_MARGIN, insets.top);
-  const top = clamp(rawTop, minTop, winH - Math.max(POPUP_MARGIN, insets.bottom) - height);
+  const top = clamp(rawTop, minTop, usableBottom - bottomInset - height);
 
   const left = alignRight
     ? winW -

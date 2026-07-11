@@ -16,7 +16,20 @@ export const TAB_ROUTES = {
 export const ROOT_ROUTES = {
   MainTabs: 'MainTabs',
   ChatDetail: 'ChatDetail',
-  RoomChat: 'RoomChat',
   ProfileView: 'ProfileView',
   EditProfile: 'EditProfile',
+  VipStore: 'VipStore',
+  BuyVip: 'BuyVip',
+  KenStore: 'KenStore',
+  BuyKen: 'BuyKen',
+  MediaStore: 'MediaStore',
+  Settings: 'Settings',
+  PenGame: 'PenGame',
+  SpinWheel: 'SpinWheel',
+  EggGame: 'EggGame',
+} as const;
+
+export const ROOM_ROUTES = {
+  RoomList: 'RoomList',
+  RoomChat: 'RoomChat',
 } as const;

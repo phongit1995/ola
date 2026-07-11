@@ -4,9 +4,10 @@ import { ActivityIndicator, FlatList, Modal, Pressable, Text, View } from 'react
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RelationshipService, UserService } from '@ola/shared/services';
 import { useToastStore } from '@ola/shared/stores/toastStore';
-import { colorForName, createTimeFormatter } from '@ola/shared/lib';
+import { activeVipTypeId, colorForName, createTimeFormatter } from '@ola/shared/lib';
 import type { VisitorUser } from '@ola/shared/types';
 import { Avatar } from '../../components/Avatar';
+import { VipBadge } from '../../components/VipBadge';
 
 const PAGE_SIZE = 40;
 
@@ -74,18 +75,18 @@ export function MeVisitorsScreen({ language, onClose, onOpenProfile }: MeVisitor
   return (
     <Modal visible transparent animationType="slide" onRequestClose={onClose}>
       <View className="flex-1 bg-white">
-        <View className="flex-row items-center bg-ola-primary px-1" style={{ paddingTop: insets.top }}>
+        <View className="flex-row items-center bg-ola-primary px-2" style={{ paddingTop: insets.top }}>
           <Pressable onPress={onClose} className="h-12 w-10 items-center justify-center">
             <Text className="text-2xl leading-none text-white">‹</Text>
           </Pressable>
-          <Text className="flex-1 text-sm font-bold text-white">{t('me.tabVisitors')}</Text>
+          <Text className="flex-1 text-lg font-medium text-white">{t('me.tabVisitors')}</Text>
           <View className="w-10" />
         </View>
 
         {loading ? (
           <ActivityIndicator className="py-6" color="#7cb342" />
         ) : error ? (
-          <Text className="py-6 text-center text-sm" style={{ color: '#e53935' }}>{t('me.visitorsError')}</Text>
+          <Text className="py-6 text-center text-sm" style={{ color: '#e34545' }}>{t('me.visitorsError')}</Text>
         ) : rows.length === 0 ? (
           <Text className="py-10 text-center text-sm" style={{ color: 'rgba(0,0,0,0.54)' }}>{t('me.followerEmpty')}</Text>
         ) : (
@@ -96,7 +97,6 @@ export function MeVisitorsScreen({ language, onClose, onOpenProfile }: MeVisitor
             onEndReachedThreshold={0.4}
             ListFooterComponent={loadingMore ? <ActivityIndicator className="py-3" color="#7cb342" /> : null}
             renderItem={({ item }) => {
-              const title = item.fullName != null && item.fullName !== '' ? item.fullName : item.username;
               const status = item.relationship?.status ?? 'none';
               const sent = status === 'pending_outgoing' || requested[item.id] === true;
               const openProfile = () => onOpenProfile(item.username, colorForName(item.username));
@@ -106,13 +106,19 @@ export function MeVisitorsScreen({ language, onClose, onOpenProfile }: MeVisitor
                   style={{ borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.12)' }}
                 >
                   <Pressable onPress={openProfile}>
-                    <Avatar name={item.username} uri={item.avatar ?? undefined} size={56} />
+                    <Avatar name={item.username} uri={item.avatar ?? undefined} size={72} rounded={false} />
                   </Pressable>
                   <View className="min-w-0 flex-1 gap-1.5">
                     <Pressable onPress={openProfile}>
-                      <Text numberOfLines={1} className="text-base font-medium" style={{ color: 'rgba(0,0,0,0.87)' }}>
-                        {title}
-                      </Text>
+                      <View className="flex-row items-center gap-1">
+                        <VipBadge typeId={activeVipTypeId(item.vipUsed, item.vipEndTime)} size={16} />
+                        <Text numberOfLines={1} className="min-w-0 shrink text-base font-medium" style={{ color: 'rgba(0,0,0,0.87)' }}>
+                          @{item.username}
+                          {item.fullName != null && item.fullName !== '' && (
+                            <Text style={{ color: 'rgba(0,0,0,0.45)' }}> · {item.fullName}</Text>
+                          )}
+                        </Text>
+                      </View>
                       <Text numberOfLines={1} className="text-xs" style={{ color: 'rgba(0,0,0,0.45)' }}>
                         {formatTime(item.viewedAt)}
                       </Text>

@@ -5,7 +5,7 @@ import type { Message } from '@ola/shared/types';
 import { Avatar } from '../../components/Avatar';
 import { kulImageForText } from '../../lib/kul';
 import { reactionChips } from '../../lib/reactions';
-import { renderRichText } from '../../lib/richText';
+import { imageSizeForHeight, renderRichText } from '../../lib/richText';
 import type { AnchorRect } from '../room/MessageActionSheet';
 
 const sentIcon = require('../../assets/icons/chat/ic_message_sent.png');
@@ -25,6 +25,7 @@ interface ChatMessageRowProps {
   onLongPress: (anchor: AnchorRect) => void;
   onResend: (id: string) => void;
   onOpenImage: (url: string) => void;
+  onMention: (nick: string) => void;
 }
 
 function ChatBubble({
@@ -33,19 +34,21 @@ function ChatBubble({
   firstInGroup,
   lastInGroup,
   onOpenImage,
+  onMention,
 }: {
   message: Message;
   fromMe: boolean;
   firstInGroup: boolean;
   lastInGroup: boolean;
   onOpenImage: (url: string) => void;
+  onMention: (nick: string) => void;
 }) {
   const meta = parseMessageMetadata(message.metadata);
   const failed = message.status === 'failed';
   const kul = message.type === 'text' ? kulImageForText(message.content) : null;
 
   if (kul != null) {
-    return <Image source={kul} style={{ width: 120, height: 120 }} resizeMode="contain" />;
+    return <Image source={kul} style={imageSizeForHeight(kul, 120)} resizeMode="contain" />;
   }
 
   if (message.type === 'image' && meta.url != null && meta.url !== '') {
@@ -80,7 +83,7 @@ function ChatBubble({
         </View>
       ) : (
         <Text className="text-base" style={{ color: 'rgba(0,0,0,0.87)' }}>
-          {renderRichText(message.content, { own: false, onMention: () => undefined })}
+          {renderRichText(message.content, { own: false, onMention })}
         </Text>
       )}
     </View>
@@ -101,18 +104,21 @@ export function ChatMessageRow({
   onLongPress,
   onResend,
   onOpenImage,
+  onMention,
 }: ChatMessageRowProps) {
   const chips = reactionChips(message.reactions);
   const bubbleRef = useRef<View>(null);
   const showAvatar = !fromMe && firstInGroup;
+  const pending = message.status === 'sending' || message.status === 'uploading';
+  const failed = message.status === 'failed';
+  const canAct = !pending && !failed;
 
   function handleLongPress() {
+    if (!canAct) return;
     bubbleRef.current?.measureInWindow((x, y, width, height) => {
       onLongPress({ x, y, width, height });
     });
   }
-  const pending = message.status === 'sending' || message.status === 'uploading';
-  const failed = message.status === 'failed';
 
   return (
     <View className={firstInGroup ? 'mt-2' : ''}>
@@ -140,6 +146,7 @@ export function ChatMessageRow({
                 firstInGroup={firstInGroup}
                 lastInGroup={lastInGroup}
                 onOpenImage={onOpenImage}
+                onMention={onMention}
               />
             </Pressable>
             {showTime && (
@@ -151,7 +158,7 @@ export function ChatMessageRow({
 
           {chips.length > 0 && (
             <View
-              className="mt-0.5 flex-row flex-wrap gap-1"
+              className="-mt-2 flex-row flex-wrap gap-1"
               style={{ alignSelf: fromMe ? 'flex-end' : 'flex-start' }}
             >
               {chips.map((chip) => (

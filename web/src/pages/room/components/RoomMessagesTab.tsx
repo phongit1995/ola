@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ReactionType, RoomMessage } from '@app-types';
-import { kulImageForText, toast } from '@lib';
+import { kulImageForText, SmileyText, toast } from '@lib';
 import { useStickyScroll } from '@hooks';
 import {
   ConfirmDialog,
@@ -240,7 +240,7 @@ export function RoomMessagesTab({
               {t('room.replyingTo', { name: replyTarget.senderName ?? '' })}
             </span>
             <span className="block truncate text-xs text-black/54">
-              {replyExcerpt(replyTarget)}
+              <SmileyText text={replyExcerpt(replyTarget)} />
             </span>
           </span>
           <button

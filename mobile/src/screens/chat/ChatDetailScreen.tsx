@@ -13,19 +13,30 @@ import {
   View,
 } from 'react-native';
 import { FlashList, type FlashListRef } from '@shopify/flash-list';
+import { launchImageLibrary } from 'react-native-image-picker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import { currentUserId } from '@ola/shared/stores/chat/chatHelpers';
-import { createDateFormatter, createTimeFormatter, isSameDay } from '@ola/shared/lib';
+import { useToastStore } from '@ola/shared/stores/toastStore';
+import { colorForName, createDateFormatter, createTimeFormatter, isSameDay } from '@ola/shared/lib';
 import type { Message, ReactionType } from '@ola/shared/types';
 import type { RootStackParamList } from '../../navigation/types';
 import { ROOT_ROUTES } from '../../navigation/routes';
 import { Avatar } from '../../components/Avatar';
+import { ConfirmDialog } from '../../components/ConfirmDialog';
+import { useMediaViewerStore } from '../../store/mediaViewerStore';
 import { kulToken } from '../../lib/kul';
+import { composerSingleLineHeight, SmileyDraftOverlay } from '../../components/SmileyDraftOverlay';
+import { useSmileyDraft } from '../../hooks/useSmileyDraft';
+import { ListOptionDialog, type ListOption } from '../../components/ListOptionDialog';
 import { ChatMessageRow } from './ChatMessageRow';
 import { AttachmentBar, type AttachTab } from './AttachmentBar';
+import { TransferKenDialog } from '../ken/TransferKenDialog';
+import { TransferVipDaysDialog } from './TransferVipDaysDialog';
 import { formatLastActive } from './contacts';
+import { PeerProfileCard } from './PeerProfileCard';
+import { usePeerCard } from './usePeerCard';
 import { MessageActionSheet, type AnchorRect, type MessageSheetAction } from '../room/MessageActionSheet';
 
 const backIcon = require('../../assets/icons/ic_back.png');
@@ -52,18 +63,43 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   const closeConversation = useChatStore((s) => s.closeConversation);
   const loadMoreMessages = useChatStore((s) => s.loadMoreMessages);
   const sendText = useChatStore((s) => s.sendText);
+  const sendImage = useChatStore((s) => s.sendImage);
   const resendMessage = useChatStore((s) => s.resendMessage);
   const reactToMessage = useChatStore((s) => s.reactToMessage);
   const deleteMessage = useChatStore((s) => s.deleteMessage);
+  const editMessage = useChatStore((s) => s.editMessage);
+  const blockPeer = useChatStore((s) => s.blockPeer);
+  const unblockPeer = useChatStore((s) => s.unblockPeer);
+  const friendAction = useChatStore((s) => s.friendAction);
+  const peerProfile = useChatStore((s) => s.peerProfile);
+  const peerRelationship = useChatStore((s) => s.peerRelationship);
+  const peerCardRoll = useChatStore((s) => s.peerCardRoll);
   const notifyTyping = useChatStore((s) => s.notifyTyping);
+  const push = useToastStore((s) => s.push);
+  const openViewer = useMediaViewerStore((s) => s.openViewer);
 
-  const [draft, setDraft] = useState('');
+  const {
+    draft,
+    setDraft,
+    applyDraft,
+    insertAtCursor,
+    backspaceAtCursor,
+    selection,
+    handleSelectionChange,
+  } = useSmileyDraft();
   const [openTab, setOpenTab] = useState<AttachTab | null>(null);
+  const [transferKenOpen, setTransferKenOpen] = useState(false);
+  const [transferVipDaysOpen, setTransferVipDaysOpen] = useState(false);
+  const [editing, setEditing] = useState<string | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [blockOpen, setBlockOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Message | null>(null);
   const [actionTarget, setActionTarget] = useState<{ message: Message; anchor: AnchorRect } | null>(
     null
   );
   const listRef = useRef<FlashListRef<Message>>(null);
   const stickToBottomRef = useRef(true);
+  const sheetOpenRef = useRef(false);
   const inputRef = useRef<TextInput>(null);
 
   useEffect(() => {
@@ -83,12 +119,44 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   const dateFormatter = useMemo(() => createDateFormatter(i18n.language), [i18n.language]);
 
   const peerOnline = conversation?.otherUser?.isOnline === true;
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const interval = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(interval);
+  }, []);
+
   const subtitle =
     typingUsers.length > 0
       ? t('chat.typing', { name: typingUsers[0]?.username ?? '' })
       : peerOnline
         ? t('chat.statusActive')
-        : formatLastActive(t, conversation?.otherUser?.lastActiveAt) ?? '';
+        : formatLastActive(t, conversation?.otherUser?.lastActiveAt, now) ?? '';
+
+  const conversationSeen =
+    conversation == null ? false : !conversation.isLastMessageFromMe ? true : conversation.seen;
+
+  const blockStatus = peerRelationship?.status ?? null;
+  const blockedByMe = blockStatus === 'blocked_by_me';
+  const blockedByThem = blockStatus === 'blocked_by_them';
+  const blocked = blockedByMe || blockedByThem;
+
+  const peerId = peerProfile?.id ?? '';
+  const {
+    anchorId: peerCardAnchorId,
+    visible: peerCardVisible,
+    hide: hidePeerCardNow,
+  } = usePeerCard({
+    peerId,
+    hasProfile: peerProfile != null,
+    blocked,
+    blockStatus,
+    hasMore,
+    messageCount: messages.length,
+    messagesReady: !loadingMessages,
+    peerCardRoll,
+    lastMessageId: messages[messages.length - 1]?.id,
+  });
 
   const lastOwnId = useMemo(() => {
     for (let i = messages.length - 1; i >= 0; i -= 1) {
@@ -98,7 +166,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   }, [messages, myId]);
 
   const scrollToEnd = useCallback(() => {
-    if (stickToBottomRef.current) {
+    if (stickToBottomRef.current && !sheetOpenRef.current) {
       requestAnimationFrame(() => listRef.current?.scrollToEnd({ animated: false }));
     }
   }, []);
@@ -112,8 +180,15 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   async function send(text: string) {
     const trimmed = text.trim();
     if (trimmed === '') return;
+    if (editing != null) {
+      const id = editing;
+      setEditing(null);
+      applyDraft('', 0);
+      await editMessage(id, trimmed);
+      return;
+    }
     stickToBottomRef.current = true;
-    setDraft('');
+    applyDraft('', 0);
     setOpenTab(null);
     await sendText(trimmed);
   }
@@ -128,17 +203,104 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     }
   };
 
+  function showPeerAvatar() {
+    const url = peerProfile?.avatar ?? peerAvatar ?? '';
+    if (url !== '') openViewer([url]);
+  }
+
+  function startEdit(message: Message) {
+    const content = message.content ?? '';
+    setEditing(message.id);
+    applyDraft(content, content.length);
+    setOpenTab(null);
+    requestAnimationFrame(() => inputRef.current?.focus());
+  }
+
+  function cancelEdit() {
+    setEditing(null);
+    applyDraft('', 0);
+  }
+
+  async function pickAndSendImages() {
+    const result = await launchImageLibrary({
+      mediaType: 'photo',
+      selectionLimit: 0,
+      maxWidth: 1920,
+      maxHeight: 1920,
+      quality: 0.9,
+    });
+    if (result.didCancel) return;
+    const assets = result.assets ?? [];
+    setOpenTab(null);
+    for (const asset of assets) {
+      if (asset.uri == null) continue;
+      try {
+        await sendImage({ uri: asset.uri, name: asset.fileName ?? 'photo.jpg', type: asset.type ?? 'image/jpeg' });
+      } catch {
+        push('error', t('chat.imageError'));
+      }
+    }
+  }
+
+  async function handleFriendAction() {
+    if (blocked) {
+      push('info', t('chat.makeFriendBlocked'));
+      return;
+    }
+    const result = await friendAction();
+    if (result === 'error') {
+      push('error', t('chat.actionError'));
+      return;
+    }
+    if (result === 'request') push('success', t('chat.friendRequestSent'));
+    else if (result === 'cancel') push('success', t('chat.requestCancelled'));
+    else if (result === 'accept') push('success', t('chat.friendAccepted'));
+    else if (result === 'unfriend') push('success', t('chat.unfriendDone'));
+  }
+
+  async function handleBlock() {
+    setBlockOpen(false);
+    const ok = await blockPeer();
+    push(ok ? 'success' : 'error', ok ? t('chat.blockDone', { name: title }) : t('chat.actionError'));
+  }
+
+  async function handleUnblock() {
+    const ok = await unblockPeer();
+    push(ok ? 'success' : 'error', ok ? t('chat.unblockDone', { name: title }) : t('chat.actionError'));
+  }
+
+  const friendLabel =
+    blockStatus === 'pending_outgoing'
+      ? t('chat.cancelRequest')
+      : blockStatus === 'pending_incoming'
+        ? t('chat.acceptRequest')
+        : blockStatus === 'friend'
+          ? t('chat.unfriend')
+          : t('chat.menuMakeFriend');
+
+  const menuOptions: ListOption[] = [
+    { key: 'make-friend', label: friendLabel, onSelect: () => void handleFriendAction() },
+    { key: 'view-me', label: t('chat.menuViewMe'), onSelect: openPeerProfile },
+    blockedByMe
+      ? { key: 'unblock', label: t('chat.menuUnblock'), onSelect: () => void handleUnblock() }
+      : { key: 'block', label: t('chat.menuBlock'), danger: true, onSelect: () => setBlockOpen(true) },
+    { key: 'chat-group', label: t('chat.menuChatGroup'), onSelect: () => push('info', t('chat.comingSoon')) },
+  ];
+
   function sheetActions(message: Message): MessageSheetAction[] {
     if (message.senderId !== myId) return [];
-    return [
-      {
-        key: 'delete',
-        label: t('chat.actionDelete'),
-        icon: deleteActionIcon,
-        destructive: true,
-        onSelect: () => void deleteMessage(message.id),
-      },
-    ];
+    const actions: MessageSheetAction[] = [];
+    if (message.type === 'text') {
+      actions.push({ key: 'edit', label: t('chat.actionEdit'), onSelect: () => startEdit(message) });
+    }
+    actions.push({
+      key: 'delete',
+      label: t('chat.actionDelete'),
+      icon: deleteActionIcon,
+      destructive: true,
+      onSelect: () => setDeleteTarget(message),
+    });
+    return actions;
   }
 
   return (
@@ -155,8 +317,10 @@ export function ChatDetailScreen({ navigation, route }: Props) {
           >
             <Image source={backIcon} style={{ width: 24, height: 24 }} resizeMode="contain" />
           </Pressable>
-          <Pressable className="flex-1 flex-row items-center gap-2" onPress={openPeerProfile}>
+          <Pressable onPress={showPeerAvatar}>
             <Avatar name={title} uri={peerAvatar} size={32} />
+          </Pressable>
+          <Pressable className="flex-1 flex-row items-center gap-2" onPress={openPeerProfile}>
             <View className="flex-1">
               <Text className="text-sm font-bold text-white" numberOfLines={1}>
                 {title}
@@ -168,7 +332,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
               )}
             </View>
           </Pressable>
-          <Pressable className="h-9 w-9 items-center justify-center rounded-full active:bg-white/15" onPress={() => undefined}>
+          <Pressable className="h-9 w-9 items-center justify-center rounded-full active:bg-white/15" onPress={() => setMenuOpen(true)}>
             <Image source={moreIcon} style={{ width: 20, height: 20, tintColor: '#fff' }} resizeMode="contain" />
           </Pressable>
         </View>
@@ -187,6 +351,35 @@ export function ChatDetailScreen({ navigation, route }: Props) {
           scrollEventThrottle={16}
           contentContainerStyle={{ paddingVertical: 12 }}
           onContentSizeChange={scrollToEnd}
+          ListHeaderComponent={
+            peerCardVisible && peerCardAnchorId === '' && peerProfile != null ? (
+              <PeerProfileCard
+                profile={peerProfile}
+                name={title}
+                avatar={peerAvatar}
+                friendLabel={friendLabel}
+                onHide={hidePeerCardNow}
+                onBlock={() => setBlockOpen(true)}
+                onFriendAction={() => void handleFriendAction()}
+                onShowAvatar={showPeerAvatar}
+              />
+            ) : null
+          }
+          ListFooterComponent={
+            typingUsers.length > 0 ? (
+              <View className="mt-1 flex-row items-end gap-1 px-3">
+                <Avatar name={title} uri={peerAvatar} size={32} />
+                <View
+                  className="flex-row items-center gap-1 rounded-2xl rounded-tl-sm bg-white px-3 py-3"
+                  style={{ shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 2, shadowOffset: { width: 0, height: 1 }, elevation: 1 }}
+                >
+                  <View className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: 'rgba(0,0,0,0.25)' }} />
+                  <View className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: 'rgba(0,0,0,0.4)' }} />
+                  <View className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: 'rgba(0,0,0,0.55)' }} />
+                </View>
+              </View>
+            ) : null
+          }
           renderItem={({ item, index }) => {
             const prev = messages[index - 1];
             const next = messages[index + 1];
@@ -217,38 +410,102 @@ export function ChatDetailScreen({ navigation, route }: Props) {
                   lastInGroup={lastInGroup}
                   showTime={showTime}
                   isLastOwn={item.id === lastOwnId}
-                  seen={conversation?.seen ?? false}
+                  seen={conversationSeen}
                   peerName={title}
                   peerAvatar={peerAvatar}
                   timeLabel={timeFormatter(item.createdAt)}
-                  onLongPress={(anchor) => setActionTarget({ message: item, anchor })}
+                  onLongPress={(anchor) => {
+                    sheetOpenRef.current = true;
+                    setActionTarget({ message: item, anchor });
+                  }}
                   onResend={(id) => void resendMessage(id)}
-                  onOpenImage={() => undefined}
+                  onOpenImage={(url) => openViewer([url])}
+                  onMention={(nick) => navigation.navigate(ROOT_ROUTES.ProfileView, { userId: nick })}
                 />
+                {peerCardVisible && item.id === peerCardAnchorId && peerProfile != null && (
+                  <PeerProfileCard
+                    profile={peerProfile}
+                    name={title}
+                    avatar={peerAvatar}
+                    friendLabel={friendLabel}
+                    onHide={hidePeerCardNow}
+                    onBlock={() => setBlockOpen(true)}
+                    onFriendAction={() => void handleFriendAction()}
+                    onShowAvatar={showPeerAvatar}
+                  />
+                )}
               </>
             );
           }}
         />
       )}
 
+      {blocked ? (
+        <View
+          className="flex-row items-center justify-center gap-3 bg-white px-4 py-3"
+          style={{ borderTopWidth: 1, borderTopColor: DIVIDER }}
+        >
+          <Text className="text-center text-sm" style={{ color: 'rgba(0,0,0,0.54)' }}>
+            {blockedByMe ? t('chat.blockedByMe') : t('chat.blockedByThem')}
+          </Text>
+          {blockedByMe && (
+            <Pressable
+              onPress={() => void handleUnblock()}
+              className="rounded px-3 py-1.5"
+              style={{ borderWidth: 1, borderColor: '#7cb342' }}
+            >
+              <Text className="text-sm font-medium" style={{ color: '#7cb342' }}>{t('chat.unblock')}</Text>
+            </Pressable>
+          )}
+        </View>
+      ) : (
+      <>
+      {editing != null && (
+        <View
+          className="flex-row items-center gap-2 px-3 py-1.5"
+          style={{ borderTopWidth: 1, borderTopColor: DIVIDER, backgroundColor: '#f1f8e9' }}
+        >
+          <Text className="flex-1 text-sm" style={{ color: 'rgba(0,0,0,0.7)' }}>{t('chat.editingHint')}</Text>
+          <Pressable onPress={cancelEdit} className="px-2">
+            <Text className="text-base" style={{ color: 'rgba(0,0,0,0.54)' }}>✕</Text>
+          </Pressable>
+        </View>
+      )}
       <View
         className="flex-row items-end gap-1 bg-white px-2 py-1.5"
         style={{ borderTopWidth: 1, borderTopColor: DIVIDER }}
       >
-        <TextInput
-          ref={inputRef}
-          className="max-h-32 min-h-9 flex-1 px-2 py-1.5 text-base"
-          style={{ color: 'rgba(0,0,0,0.87)', textAlignVertical: 'center' }}
-          placeholder={t('chat.messageInputPlaceholder', { name: title })}
-          placeholderTextColor="rgba(0,0,0,0.38)"
-          multiline
-          value={draft}
-          onChangeText={(text) => {
-            setDraft(text);
-            notifyTyping();
-          }}
-          onFocus={() => setOpenTab(null)}
-        />
+        <View className="max-h-32 min-h-9 flex-1 justify-center">
+          <TextInput
+            ref={inputRef}
+            className="px-2 py-1.5 text-base"
+            style={[
+              { color: 'transparent', textAlignVertical: 'center' },
+              draft === '' ? { height: composerSingleLineHeight(6) } : null,
+            ]}
+            selectionColor="#7cb342"
+            cursorColor="#7cb342"
+            placeholder={t('chat.messageInputPlaceholder', { name: title })}
+            placeholderTextColor="rgba(0,0,0,0.38)"
+            multiline
+            value={draft}
+            selection={selection}
+            onSelectionChange={handleSelectionChange}
+            onChangeText={(text) => {
+              setDraft(text);
+              if (editing == null) notifyTyping();
+            }}
+            onFocus={() => setOpenTab(null)}
+          />
+          {draft !== '' && (
+            <View
+              pointerEvents="none"
+              className="absolute inset-0 justify-end overflow-hidden px-2 py-1.5"
+            >
+              <SmileyDraftOverlay text={draft} />
+            </View>
+          )}
+        </View>
         {isTyping ? (
           <Pressable
             onPress={() => {
@@ -257,7 +514,9 @@ export function ChatDetailScreen({ navigation, route }: Props) {
             }}
             className="h-9 items-center justify-center rounded-full bg-ola-primary px-4 active:opacity-90"
           >
-            <Text className="text-sm font-semibold text-white">{t('chat.send')}</Text>
+            <Text className="text-sm font-semibold text-white">
+              {editing != null ? t('chat.actionSave') : t('chat.send')}
+            </Text>
           </Pressable>
         ) : (
           <Pressable
@@ -273,10 +532,56 @@ export function ChatDetailScreen({ navigation, route }: Props) {
       <AttachmentBar
         openTab={openTab}
         onToggleTab={(tab) => setOpenTab((c) => (c === tab ? null : tab))}
-        onPickEmoji={(code) => setDraft((c) => c + code)}
-        onBackspace={() => setDraft((c) => c.slice(0, -1))}
+        onPickEmoji={insertAtCursor}
+        onBackspace={backspaceAtCursor}
         onSendKul={(index) => void send(kulToken(index))}
+        onPickImage={() => void pickAndSendImages()}
+        onTransferKen={() => {
+          setOpenTab(null);
+          if (peerId === '') {
+            push('error', t('chat.actionError'));
+            return;
+          }
+          setTransferKenOpen(true);
+        }}
+        onSendVipDays={() => {
+          setOpenTab(null);
+          if (peerId === '') {
+            push('error', t('chat.actionError'));
+            return;
+          }
+          setTransferVipDaysOpen(true);
+        }}
       />
+      </>
+      )}
+
+      {transferKenOpen && peerId !== '' && (
+        <TransferKenDialog
+          visible
+          onClose={() => setTransferKenOpen(false)}
+          receiver={{
+            id: peerId,
+            name: title,
+            username: conversation?.otherUser?.username,
+            avatar: peerProfile?.avatar ?? peerAvatar,
+            color: colorForName(conversation?.otherUser?.username ?? title),
+          }}
+        />
+      )}
+
+      {transferVipDaysOpen && peerId !== '' && (
+        <TransferVipDaysDialog
+          visible
+          onClose={() => setTransferVipDaysOpen(false)}
+          receiver={{
+            id: peerId,
+            name: title,
+            username: conversation?.otherUser?.username,
+            avatar: peerProfile?.avatar ?? peerAvatar,
+          }}
+        />
+      )}
 
       <MessageActionSheet
         visible={actionTarget != null}
@@ -286,7 +591,42 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         onReact={(type: ReactionType) => {
           if (actionTarget != null) void reactToMessage(actionTarget.message.id, type);
         }}
-        onClose={() => setActionTarget(null)}
+        onClose={() => {
+          sheetOpenRef.current = false;
+          setActionTarget(null);
+        }}
+      />
+
+      <ListOptionDialog
+        visible={menuOpen}
+        title={title}
+        options={menuOptions}
+        onClose={() => setMenuOpen(false)}
+      />
+
+      <ConfirmDialog
+        visible={deleteTarget != null}
+        danger
+        title={t('chat.deleteTitle')}
+        message={t('chat.deleteConfirm')}
+        confirmLabel={t('dialog.delete')}
+        cancelLabel={t('dialog.cancel')}
+        onConfirm={() => {
+          if (deleteTarget != null) void deleteMessage(deleteTarget.id);
+          setDeleteTarget(null);
+        }}
+        onCancel={() => setDeleteTarget(null)}
+      />
+
+      <ConfirmDialog
+        visible={blockOpen}
+        danger
+        title={t('chat.blockTitle')}
+        message={t('chat.blockMessage', { name: title })}
+        confirmLabel={t('chat.block')}
+        cancelLabel={t('dialog.cancel')}
+        onConfirm={() => void handleBlock()}
+        onCancel={() => setBlockOpen(false)}
       />
     </KeyboardAvoidingView>
   );

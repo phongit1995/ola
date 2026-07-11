@@ -21,16 +21,34 @@ export function memberMatchesFilter(member: RoomMember, filters: RoomFilters): b
   return false;
 }
 
+const MAX_BLOCKED_USERS = 500;
+
 interface RoomFilterState {
   filters: RoomFilters;
+  blockedUserIds: string[];
   setFilters: (filters: RoomFilters) => void;
+  blockUser: (userId: string) => void;
+  unblockUser: (userId: string) => void;
+  isBlocked: (userId: string) => boolean;
 }
 
 export const useRoomFilterStore = create<RoomFilterState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       filters: DEFAULT_ROOM_FILTERS,
+      blockedUserIds: [],
       setFilters: (filters) => set({ filters }),
+      blockUser: (userId) =>
+        set((state) =>
+          state.blockedUserIds.includes(userId)
+            ? state
+            : { blockedUserIds: [...state.blockedUserIds, userId].slice(-MAX_BLOCKED_USERS) }
+        ),
+      unblockUser: (userId) =>
+        set((state) => ({
+          blockedUserIds: state.blockedUserIds.filter((id) => id !== userId),
+        })),
+      isBlocked: (userId) => get().blockedUserIds.includes(userId),
     }),
     { name: 'ola.roomFilter', storage: sharedPersistStorage<RoomFilterState>() }
   )

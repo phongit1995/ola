@@ -5,17 +5,18 @@ import photoIcon from '@/assets/icons/chat/ic_local.png';
 import resendIcon from '@/assets/icons/chat/btn_resend_d.png';
 import { Spinner, VipAvatar } from '@components';
 import { useLongPress } from '@hooks';
-import { colorForName, kulImageForText, reactionChips, renderRichText } from '@lib';
+import {
+  colorForName,
+  formatClockHM,
+  kulImageForText,
+  reactionChips,
+  renderRichText,
+  SmileyText,
+} from '@lib';
 import { useMediaViewerStore } from '@/store/mediaViewerStore';
 import type { RoomReplySnapshot } from '@app-types';
 import type { BubblePosition, GroupedMessage, MessageGroup } from '../messageGroups';
 import { OTHER_CORNERS, OWN_CORNERS } from '../constants';
-
-function clock(iso: string): string {
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return '';
-  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-}
 
 interface RoomMessageGroupProps {
   group: MessageGroup;
@@ -64,7 +65,9 @@ function QuoteBlock({ replyTo, isOwn, onQuoteClick }: QuoteBlockProps) {
         className={`flex items-center gap-1 text-xs ${isOwn ? 'text-white/75' : 'text-black/45'}`}
       >
         {isImage && <img src={photoIcon} alt="" className="h-3.5 w-3.5 shrink-0 object-contain" />}
-        <span className="line-clamp-2">{excerpt}</span>
+        <span className="line-clamp-2">
+          <SmileyText text={excerpt} />
+        </span>
       </span>
     </button>
   );
@@ -222,7 +225,7 @@ function RoomMessageGroupComponent({
   const { t } = useTranslation();
   const { isOwn, senderName } = group;
   const onMention = (nick: string) => onOpenProfile?.(nick, colorForName(nick));
-  const time = clock(group.messages[0]!.createdAt);
+  const time = formatClockHM(group.messages[0]!.createdAt);
   const openSender = () => onOpenProfile?.(senderName, colorForName(senderName));
   const lastIndex = group.messages.length - 1;
 

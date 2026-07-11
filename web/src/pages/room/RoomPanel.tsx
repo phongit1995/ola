@@ -68,7 +68,7 @@ export function RoomPanel() {
     <>
       <HomeHeader>
         <span className="w-9" />
-        <span className="flex-1 text-center text-base font-medium">
+        <span className="flex-1 text-center text-lg font-medium">
           {t('home.tabRoom')}
         </span>
         <button
