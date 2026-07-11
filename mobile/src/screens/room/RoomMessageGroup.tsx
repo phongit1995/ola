@@ -5,7 +5,7 @@ import { colorForName, formatClockHM } from '@ola/shared/lib';
 import type { RoomReplySnapshot } from '@ola/shared/types';
 import { kulImageForText } from '../../lib/kul';
 import { reactionChips } from '../../lib/reactions';
-import { renderRichText } from '../../lib/richText';
+import { imageSizeForHeight, renderRichText, SmileyText } from '../../lib/richText';
 import { VipAvatar } from '../../components/VipAvatar';
 import { useMediaViewerStore } from '../../store/mediaViewerStore';
 import type { AnchorRect } from './MessageActionSheet';
@@ -72,7 +72,7 @@ function QuoteBlock({
           className="text-xs"
           style={{ color: isOwn ? 'rgba(255,255,255,0.75)' : 'rgba(0,0,0,0.45)' }}
         >
-          {excerpt}
+          <SmileyText text={excerpt} size={14} />
         </Text>
       </View>
     </Pressable>
@@ -128,7 +128,7 @@ function BubbleContent({
 
   const kul = kulImageForText(message.content);
   if (kul != null) {
-    return <Image source={kul} style={{ width: 112, height: 112 }} resizeMode="contain" />;
+    return <Image source={kul} style={imageSizeForHeight(kul, 112)} resizeMode="contain" />;
   }
 
   return (

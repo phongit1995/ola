@@ -19,8 +19,9 @@ import { createTimeFormatter } from '@ola/shared/lib';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { useRoomFilterStore } from '@ola/shared/stores/roomFilterStore';
 import { kulImageForText, kulToken } from '../../lib/kul';
-import { splitSmileys } from '../../lib/chatSmiley';
 import { SmileyText } from '../../lib/richText';
+import { composerSingleLineHeight, SmileyDraftOverlay } from '../../components/SmileyDraftOverlay';
+import { useSmileyDraft } from '../../hooks/useSmileyDraft';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { buildRoomFeed, type RoomFeedItem } from './messageGroups';
 import { RoomMessageGroup } from './RoomMessageGroup';
@@ -86,7 +87,15 @@ export function RoomMessagesTab({
   const pushToast = useToastStore((s) => s.push);
   const blockedUserIds = useRoomFilterStore((s) => s.blockedUserIds);
   const blockUser = useRoomFilterStore((s) => s.blockUser);
-  const [draft, setDraft] = useState('');
+  const {
+    draft,
+    setDraft,
+    applyDraft,
+    insertAtCursor,
+    backspaceAtCursor,
+    selection,
+    handleSelectionChange,
+  } = useSmileyDraft();
   const [panelOpen, setPanelOpen] = useState(false);
   const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
   const [actionTarget, setActionTarget] = useState<{ message: RoomMessage; anchor: AnchorRect } | null>(
@@ -96,42 +105,12 @@ export function RoomMessagesTab({
   const [blockTarget, setBlockTarget] = useState<RoomMessage | null>(null);
   const [reactionsTargetId, setReactionsTargetId] = useState<string | null>(null);
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
-  const [pendingSelection, setPendingSelection] = useState<{ start: number; end: number } | null>(
-    null
-  );
   const listRef = useRef<FlashListRef<RoomFeedItem>>(null);
   const stickToBottomRef = useRef(true);
   const sheetOpenRef = useRef(false);
   const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const selectionRef = useRef<{ start: number; end: number }>({ start: 0, end: 0 });
   const inputRef = useRef<TextInput>(null);
   const imageIdRef = useRef(0);
-
-  function applyDraft(next: string, caret: number) {
-    selectionRef.current = { start: caret, end: caret };
-    setDraft(next);
-    setPendingSelection({ start: caret, end: caret });
-  }
-
-  function insertAtCursor(text: string) {
-    const start = Math.max(0, Math.min(selectionRef.current.start, draft.length));
-    const end = Math.max(start, Math.min(selectionRef.current.end, draft.length));
-    applyDraft(draft.slice(0, start) + text + draft.slice(end), start + text.length);
-  }
-
-  function backspaceAtCursor() {
-    const start = Math.max(0, Math.min(selectionRef.current.start, draft.length));
-    const end = Math.max(start, Math.min(selectionRef.current.end, draft.length));
-    if (start === end) {
-      if (start === 0) return;
-      const segments = splitSmileys(draft.slice(0, start));
-      const last = segments[segments.length - 1];
-      const removeLength = last != null && last.kind === 'image' ? last.code.length : 1;
-      applyDraft(draft.slice(0, start - removeLength) + draft.slice(end), start - removeLength);
-    } else {
-      applyDraft(draft.slice(0, start) + draft.slice(end), start);
-    }
-  }
 
   const canSend = status === 'joined';
   const timeFormatter = useMemo(() => createTimeFormatter(language), [language]);
@@ -171,7 +150,7 @@ export function RoomMessagesTab({
       const prefix = current === '' || current.endsWith(' ') ? current : `${current} `;
       return `${prefix}@${name} `;
     });
-  }, []);
+  }, [setDraft]);
 
   const scrollToMessage = useCallback(
     (id: string) => {
@@ -372,7 +351,7 @@ export function RoomMessagesTab({
               {t('room.replyingTo', { name: replyTarget.senderName ?? '' })}
             </Text>
             <Text numberOfLines={1} className="text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>
-              {replyExcerpt(replyTarget)}
+              <SmileyText text={replyExcerpt(replyTarget)} size={14} />
             </Text>
           </View>
           <Pressable
@@ -450,7 +429,10 @@ export function RoomMessagesTab({
             <TextInput
               ref={inputRef}
               className="px-3 py-2 text-base"
-              style={{ color: 'transparent', textAlignVertical: 'center' }}
+              style={[
+                { color: 'transparent', textAlignVertical: 'center' },
+                draft === '' ? { height: composerSingleLineHeight(8) } : null,
+              ]}
               selectionColor="#7cb342"
               cursorColor="#7cb342"
               placeholder={t('room.chatInputHint')}
@@ -458,19 +440,17 @@ export function RoomMessagesTab({
               multiline
               editable={canSend}
               value={draft}
-              selection={pendingSelection ?? undefined}
-              onSelectionChange={(event) => {
-                selectionRef.current = event.nativeEvent.selection;
-                if (pendingSelection != null) setPendingSelection(null);
-              }}
+              selection={selection}
+              onSelectionChange={handleSelectionChange}
               onChangeText={setDraft}
               onFocus={() => setPanelOpen(false)}
             />
             {draft !== '' && (
-              <View pointerEvents="none" className="absolute inset-0 justify-center px-3 py-2">
-                <Text className="text-base" style={{ color: 'rgba(0,0,0,0.87)', lineHeight: 22 }}>
-                  <SmileyText text={draft} size={20} />
-                </Text>
+              <View
+                pointerEvents="none"
+                className="absolute inset-0 justify-end overflow-hidden px-3 py-2"
+              >
+                <SmileyDraftOverlay text={draft} />
               </View>
             )}
           </View>
@@ -508,7 +488,7 @@ export function RoomMessagesTab({
 
       {panelOpen && canSend && (
         <SmileyKulPanel
-          onPickEmoji={(code) => insertAtCursor(code)}
+          onPickEmoji={insertAtCursor}
           onBackspace={backspaceAtCursor}
           onSendKul={(index) => {
             void sendText(kulToken(index));

@@ -19,7 +19,9 @@ import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { NativeUploadFile } from '@ola/shared/lib';
 import type { Post, PostVisibility } from '@ola/shared/types';
 import { KUL_IMAGES, stickerImageForCode } from '../../lib/kul';
-import { SmileyText } from '../../lib/richText';
+import { SmileyDraftOverlay } from '../../components/SmileyDraftOverlay';
+import { imageSizeForHeight } from '../../lib/richText';
+import { useSmileyDraft } from '../../hooks/useSmileyDraft';
 import { SmileyKulPanel } from '../room/SmileyKulPanel';
 import { MeComposerTagPanel } from './MeComposerTagPanel';
 import { MeComposerCheckInPanel, type ComposedCheckIn } from './MeComposerCheckInPanel';
@@ -50,7 +52,13 @@ export function MeComposerModal({ visible, onClose, editPost }: MeComposerModalP
   const prependPost = useMeFeedStore((s) => s.prependPost);
   const pushToast = useToastStore((s) => s.push);
 
-  const [content, setContent] = useState('');
+  const {
+    draft: content,
+    setDraft: setContent,
+    insertAtCursor,
+    selection,
+    handleSelectionChange,
+  } = useSmileyDraft();
   const [privacy, setPrivacy] = useState<PostVisibility>('public');
   const [photos, setPhotos] = useState<PickedPhoto[]>([]);
   const [sticker, setSticker] = useState<string | null>(null);
@@ -58,10 +66,6 @@ export function MeComposerModal({ visible, onClose, editPost }: MeComposerModalP
   const [panel, setPanel] = useState<ComposerPanel>(null);
   const [posting, setPosting] = useState(false);
   const [inputFocused, setInputFocused] = useState(false);
-  const [pendingSelection, setPendingSelection] = useState<{ start: number; end: number } | null>(
-    null
-  );
-  const selectionRef = useRef<{ start: number; end: number }>({ start: 0, end: 0 });
   const imageIdRef = useRef(0);
 
   const isEdit = editPost != null;
@@ -85,19 +89,7 @@ export function MeComposerModal({ visible, onClose, editPost }: MeComposerModalP
         : null
     );
     setPanel(null);
-  }, [visible, editPost]);
-
-  function applyDraft(next: string, caret: number) {
-    selectionRef.current = { start: caret, end: caret };
-    setContent(next);
-    setPendingSelection({ start: caret, end: caret });
-  }
-
-  function insertAtCursor(text: string) {
-    const start = Math.max(0, Math.min(selectionRef.current.start, content.length));
-    const end = Math.max(start, Math.min(selectionRef.current.end, content.length));
-    applyDraft(content.slice(0, start) + text + content.slice(end), start + text.length);
-  }
+  }, [visible, editPost, setContent]);
 
   function close() {
     onClose();
@@ -273,11 +265,8 @@ export function MeComposerModal({ visible, onClose, editPost }: MeComposerModalP
               multiline
               autoFocus={!isEdit}
               value={content}
-              selection={pendingSelection ?? undefined}
-              onSelectionChange={(event) => {
-                selectionRef.current = event.nativeEvent.selection;
-                if (pendingSelection != null) setPendingSelection(null);
-              }}
+              selection={selection}
+              onSelectionChange={handleSelectionChange}
               onChangeText={setContent}
               onFocus={() => {
                 setInputFocused(true);
@@ -286,10 +275,8 @@ export function MeComposerModal({ visible, onClose, editPost }: MeComposerModalP
               onBlur={() => setInputFocused(false)}
             />
             {content !== '' && (
-              <View pointerEvents="none" className="absolute inset-0 px-3 py-2">
-                <Text className="text-base" style={{ color: 'rgba(0,0,0,0.87)', lineHeight: 24 }}>
-                  <SmileyText text={content} size={20} />
-                </Text>
+              <View pointerEvents="none" className="absolute inset-0 overflow-hidden px-3 py-2">
+                <SmileyDraftOverlay text={content} />
               </View>
             )}
           </View>
@@ -299,7 +286,7 @@ export function MeComposerModal({ visible, onClose, editPost }: MeComposerModalP
               className="mx-4 mt-2 flex-row items-center rounded-md p-2"
               style={{ borderWidth: 1, borderColor: 'rgba(0,0,0,0.12)' }}
             >
-              <Image source={stickerImg} style={{ width: 64, height: 64 }} resizeMode="contain" />
+              <Image source={stickerImg} style={imageSizeForHeight(stickerImg, 64)} resizeMode="contain" />
               <Pressable onPress={() => setSticker(null)} className="ml-auto px-2">
                 <Text className="text-xs" style={{ color: '#e34545' }}>{t('me.removeSticker')}</Text>
               </Pressable>
@@ -425,7 +412,7 @@ export function MeComposerModal({ visible, onClose, editPost }: MeComposerModalP
         </View>
 
         {panel === 'smiley' && (
-          <SmileyKulPanel hideKul onPickEmoji={(code) => insertAtCursor(code)} />
+          <SmileyKulPanel hideKul onPickEmoji={insertAtCursor} />
         )}
       </KeyboardAvoidingView>
     </Modal>

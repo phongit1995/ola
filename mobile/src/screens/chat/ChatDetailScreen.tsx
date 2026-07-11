@@ -27,8 +27,8 @@ import { Avatar } from '../../components/Avatar';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { useMediaViewerStore } from '../../store/mediaViewerStore';
 import { kulToken } from '../../lib/kul';
-import { splitSmileys } from '../../lib/chatSmiley';
-import { SmileyText } from '../../lib/richText';
+import { composerSingleLineHeight, SmileyDraftOverlay } from '../../components/SmileyDraftOverlay';
+import { useSmileyDraft } from '../../hooks/useSmileyDraft';
 import { MePostMenu, type MePostMenuOption } from '../me/MePostMenu';
 import { ChatMessageRow } from './ChatMessageRow';
 import { AttachmentBar, type AttachTab } from './AttachmentBar';
@@ -76,7 +76,15 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   const push = useToastStore((s) => s.push);
   const openViewer = useMediaViewerStore((s) => s.openViewer);
 
-  const [draft, setDraft] = useState('');
+  const {
+    draft,
+    setDraft,
+    applyDraft,
+    insertAtCursor,
+    backspaceAtCursor,
+    selection,
+    handleSelectionChange,
+  } = useSmileyDraft();
   const [openTab, setOpenTab] = useState<AttachTab | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -171,12 +179,12 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     if (editing != null) {
       const id = editing;
       setEditing(null);
-      setDraft('');
+      applyDraft('', 0);
       await editMessage(id, trimmed);
       return;
     }
     stickToBottomRef.current = true;
-    setDraft('');
+    applyDraft('', 0);
     setOpenTab(null);
     await sendText(trimmed);
   }
@@ -197,15 +205,16 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   }
 
   function startEdit(message: Message) {
+    const content = message.content ?? '';
     setEditing(message.id);
-    setDraft(message.content ?? '');
+    applyDraft(content, content.length);
     setOpenTab(null);
     requestAnimationFrame(() => inputRef.current?.focus());
   }
 
   function cancelEdit() {
     setEditing(null);
-    setDraft('');
+    applyDraft('', 0);
   }
 
   async function pickAndSendImages() {
@@ -466,13 +475,18 @@ export function ChatDetailScreen({ navigation, route }: Props) {
           <TextInput
             ref={inputRef}
             className="px-2 py-1.5 text-base"
-            style={{ color: 'transparent', textAlignVertical: 'center' }}
+            style={[
+              { color: 'transparent', textAlignVertical: 'center' },
+              draft === '' ? { height: composerSingleLineHeight(6) } : null,
+            ]}
             selectionColor="#7cb342"
             cursorColor="#7cb342"
             placeholder={t('chat.messageInputPlaceholder', { name: title })}
             placeholderTextColor="rgba(0,0,0,0.38)"
             multiline
             value={draft}
+            selection={selection}
+            onSelectionChange={handleSelectionChange}
             onChangeText={(text) => {
               setDraft(text);
               if (editing == null) notifyTyping();
@@ -480,10 +494,11 @@ export function ChatDetailScreen({ navigation, route }: Props) {
             onFocus={() => setOpenTab(null)}
           />
           {draft !== '' && (
-            <View pointerEvents="none" className="absolute inset-0 justify-center px-2 py-1.5">
-              <Text className="text-base" style={{ color: 'rgba(0,0,0,0.87)', lineHeight: 22 }}>
-                <SmileyText text={draft} size={20} />
-              </Text>
+            <View
+              pointerEvents="none"
+              className="absolute inset-0 justify-end overflow-hidden px-2 py-1.5"
+            >
+              <SmileyDraftOverlay text={draft} />
             </View>
           )}
         </View>
@@ -513,16 +528,8 @@ export function ChatDetailScreen({ navigation, route }: Props) {
       <AttachmentBar
         openTab={openTab}
         onToggleTab={(tab) => setOpenTab((c) => (c === tab ? null : tab))}
-        onPickEmoji={(code) => setDraft((c) => c + code)}
-        onBackspace={() =>
-          setDraft((c) => {
-            if (c === '') return c;
-            const segments = splitSmileys(c);
-            const last = segments[segments.length - 1];
-            const removeLength = last != null && last.kind === 'image' ? last.code.length : 1;
-            return c.slice(0, c.length - removeLength);
-          })
-        }
+        onPickEmoji={insertAtCursor}
+        onBackspace={backspaceAtCursor}
         onSendKul={(index) => void send(kulToken(index))}
         onPickImage={() => void pickAndSendImages()}
       />

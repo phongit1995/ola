@@ -12,7 +12,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { colorForName } from '@ola/shared/lib';
 import type { Post, PostAuthor, PostCheckIn } from '@ola/shared/types';
-import { renderRichText } from '../../lib/richText';
+import { imageSizeForHeight, renderRichText } from '../../lib/richText';
 import { stickerImageForCode } from '../../lib/kul';
 import { Avatar } from '../../components/Avatar';
 
@@ -301,7 +301,7 @@ function MePostCardComponent({
       {(post.content != null && post.content !== '') || sticker != null ? (
         <View className="flex-row items-start gap-2 px-4 pt-3">
           {stickerImg != null ? (
-            <Image source={stickerImg} style={{ width: 84, height: 84 }} resizeMode="contain" />
+            <Image source={stickerImg} style={imageSizeForHeight(stickerImg, 84)} resizeMode="contain" />
           ) : sticker != null ? (
             <Text style={{ fontSize: 48, lineHeight: 48 }}>{sticker}</Text>
           ) : null}

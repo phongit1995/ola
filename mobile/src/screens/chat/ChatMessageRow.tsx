@@ -5,7 +5,7 @@ import type { Message } from '@ola/shared/types';
 import { Avatar } from '../../components/Avatar';
 import { kulImageForText } from '../../lib/kul';
 import { reactionChips } from '../../lib/reactions';
-import { renderRichText } from '../../lib/richText';
+import { imageSizeForHeight, renderRichText } from '../../lib/richText';
 import type { AnchorRect } from '../room/MessageActionSheet';
 
 const sentIcon = require('../../assets/icons/chat/ic_message_sent.png');
@@ -48,7 +48,7 @@ function ChatBubble({
   const kul = message.type === 'text' ? kulImageForText(message.content) : null;
 
   if (kul != null) {
-    return <Image source={kul} style={{ width: 120, height: 120 }} resizeMode="contain" />;
+    return <Image source={kul} style={imageSizeForHeight(kul, 120)} resizeMode="contain" />;
   }
 
   if (message.type === 'image' && meta.url != null && meta.url !== '') {

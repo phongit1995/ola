@@ -27,7 +27,7 @@ import { Avatar } from '../../components/Avatar';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { kulImageForText } from '../../lib/kul';
 import { pickSingleImage } from '../../lib/imagePicker';
-import { renderRichText } from '../../lib/richText';
+import { SmileyText } from '../../lib/richText';
 import { MePostMenu, type MePostMenuOption } from '../me/MePostMenu';
 import { BlockedListDialog } from './BlockedListDialog';
 import { ComposeDialog } from './ComposeDialog';
@@ -162,7 +162,7 @@ function ConversationRow({ conversation, onPress, onDelete }: RowProps) {
                   </View>
                 ) : (
                   <Text className="flex-1 text-sm" style={{ color: 'rgba(0,0,0,0.87)' }} numberOfLines={1}>
-                    {renderRichText(lastText, { own: false, onMention: () => undefined })}
+                    <SmileyText text={lastText} size={16} />
                   </Text>
                 )}
               </View>

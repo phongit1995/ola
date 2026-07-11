@@ -1,11 +1,11 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, Pressable, Text, TextInput, View } from 'react-native';
 import { useAuthStore } from '@ola/shared/stores/authStore';
-import { splitSmileys } from '../../lib/chatSmiley';
-import { SmileyText } from '../../lib/richText';
+import { composerSingleLineHeight, SmileyDraftOverlay } from '../../components/SmileyDraftOverlay';
 import { SmileyKulPanel } from '../room/SmileyKulPanel';
 import { Avatar } from '../../components/Avatar';
+import { useSmileyDraft } from '../../hooks/useSmileyDraft';
 
 const smileyIcon = require('../../assets/icons/chat/ic_smiley.png');
 const smileyIconActive = require('../../assets/icons/chat/ic_smiley_selected.png');
@@ -29,43 +29,18 @@ export function MeCommentComposer({
 }: MeCommentComposerProps) {
   const { t } = useTranslation();
   const me = useAuthStore((s) => s.user);
-  const [draft, setDraft] = useState(initialDraft);
+  const {
+    draft,
+    setDraft,
+    applyDraft,
+    insertAtCursor,
+    backspaceAtCursor,
+    selection,
+    handleSelectionChange,
+  } = useSmileyDraft(initialDraft);
   const [smileyOpen, setSmileyOpen] = useState(false);
-  const [pendingSelection, setPendingSelection] = useState<{ start: number; end: number } | null>(
-    null
-  );
-  const selectionRef = useRef<{ start: number; end: number }>({
-    start: initialDraft.length,
-    end: initialDraft.length,
-  });
   const myName = me?.username ?? t('home.guest');
   const canSend = draft.trim() !== '' && !submitting;
-
-  function applyDraft(next: string, caret: number) {
-    selectionRef.current = { start: caret, end: caret };
-    setDraft(next);
-    setPendingSelection({ start: caret, end: caret });
-  }
-
-  function insertAtCursor(text: string) {
-    const start = Math.max(0, Math.min(selectionRef.current.start, draft.length));
-    const end = Math.max(start, Math.min(selectionRef.current.end, draft.length));
-    applyDraft(draft.slice(0, start) + text + draft.slice(end), start + text.length);
-  }
-
-  function backspaceAtCursor() {
-    const start = Math.max(0, Math.min(selectionRef.current.start, draft.length));
-    const end = Math.max(start, Math.min(selectionRef.current.end, draft.length));
-    if (start === end) {
-      if (start === 0) return;
-      const segments = splitSmileys(draft.slice(0, start));
-      const last = segments[segments.length - 1];
-      const removeLength = last != null && last.kind === 'image' ? last.code.length : 1;
-      applyDraft(draft.slice(0, start - removeLength) + draft.slice(end), start - removeLength);
-    } else {
-      applyDraft(draft.slice(0, start) + draft.slice(end), start);
-    }
-  }
 
   async function submit() {
     if (!canSend) return;
@@ -102,7 +77,10 @@ export function MeCommentComposer({
         >
           <TextInput
             className="px-3 py-2 text-base"
-            style={{ color: 'transparent', textAlignVertical: 'center' }}
+            style={[
+              { color: 'transparent', textAlignVertical: 'center' },
+              draft === '' ? { height: composerSingleLineHeight(8) } : null,
+            ]}
             selectionColor="#7cb342"
             cursorColor="#7cb342"
             placeholder={t('me.commentInputHint')}
@@ -110,19 +88,14 @@ export function MeCommentComposer({
             multiline
             autoFocus={autoFocus}
             value={draft}
-            selection={pendingSelection ?? undefined}
-            onSelectionChange={(event) => {
-              selectionRef.current = event.nativeEvent.selection;
-              if (pendingSelection != null) setPendingSelection(null);
-            }}
+            selection={selection}
+            onSelectionChange={handleSelectionChange}
             onChangeText={setDraft}
             onFocus={() => setSmileyOpen(false)}
           />
           {draft !== '' && (
-            <View pointerEvents="none" className="absolute inset-0 justify-center px-3 py-2">
-              <Text className="text-base" style={{ color: 'rgba(0,0,0,0.87)', lineHeight: 22 }}>
-                <SmileyText text={draft} size={20} />
-              </Text>
+            <View pointerEvents="none" className="absolute inset-0 justify-end overflow-hidden px-3 py-2">
+              <SmileyDraftOverlay text={draft} />
             </View>
           )}
         </View>
@@ -150,7 +123,7 @@ export function MeCommentComposer({
       {smileyOpen && (
         <SmileyKulPanel
           hideKul
-          onPickEmoji={(code) => insertAtCursor(code)}
+          onPickEmoji={insertAtCursor}
           onBackspace={backspaceAtCursor}
         />
       )}

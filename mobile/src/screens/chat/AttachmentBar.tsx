@@ -4,16 +4,12 @@ import type { ImageSourcePropType } from 'react-native';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { SmileyKulPanel } from '../room/SmileyKulPanel';
 
-export type AttachTab = 'smiley' | 'kul' | 'camera' | 'photo' | 'voice' | 'more';
+export type AttachTab = 'smiley' | 'camera' | 'photo' | 'voice' | 'more';
 
 const TAB_ICONS: Record<AttachTab, { icon: ImageSourcePropType; active: ImageSourcePropType }> = {
   smiley: {
     icon: require('../../assets/icons/chat/ic_smiley.png'),
     active: require('../../assets/icons/chat/ic_smiley_selected.png'),
-  },
-  kul: {
-    icon: require('../../assets/icons/chat/ic_kul.png'),
-    active: require('../../assets/icons/chat/ic_kul_selected.png'),
   },
   camera: {
     icon: require('../../assets/icons/chat/ic_camera.png'),
@@ -33,7 +29,7 @@ const TAB_ICONS: Record<AttachTab, { icon: ImageSourcePropType; active: ImageSou
   },
 };
 
-const ALL_TABS: AttachTab[] = ['smiley', 'kul', 'camera', 'photo', 'voice', 'more'];
+const ALL_TABS: AttachTab[] = ['smiley', 'camera', 'photo', 'voice', 'more'];
 
 interface AttachmentBarProps {
   openTab: AttachTab | null;
@@ -49,7 +45,7 @@ export function AttachmentBar({ openTab, onToggleTab, onPickEmoji, onBackspace, 
   const push = useToastStore((s) => s.push);
 
   function handlePress(tab: AttachTab) {
-    if (tab === 'smiley' || tab === 'kul') {
+    if (tab === 'smiley') {
       onToggleTab(tab);
       return;
     }
@@ -81,8 +77,8 @@ export function AttachmentBar({ openTab, onToggleTab, onPickEmoji, onBackspace, 
           );
         })}
       </View>
-      {(openTab === 'smiley' || openTab === 'kul') && (
-        <SmileyKulPanel tab={openTab} onPickEmoji={onPickEmoji} onBackspace={onBackspace} onSendKul={onSendKul} />
+      {openTab === 'smiley' && (
+        <SmileyKulPanel onPickEmoji={onPickEmoji} onBackspace={onBackspace} onSendKul={onSendKul} />
       )}
     </View>
   );

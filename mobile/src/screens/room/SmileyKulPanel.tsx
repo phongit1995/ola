@@ -11,7 +11,6 @@ const smileyTabIcon = require('../../assets/icons/chat/ic_tab_smiley.png');
 const kulTabIcon = require('../../assets/icons/chat/ic_tab_kul.png');
 
 interface SmileyKulPanelProps {
-  tab?: PanelTab;
   hideKul?: boolean;
   onPickEmoji: (code: string) => void;
   onBackspace?: () => void;
@@ -65,22 +64,20 @@ function PanelTabBar({
   );
 }
 
-export function SmileyKulPanel({ tab, hideKul, onPickEmoji, onBackspace, onSendKul }: SmileyKulPanelProps) {
+export function SmileyKulPanel({ hideKul, onPickEmoji, onBackspace, onSendKul }: SmileyKulPanelProps) {
   const visibleTabs = hideKul === true ? TABS.filter((item) => item.key !== 'kul') : TABS;
-  const [innerTab, setInnerTab] = useState<PanelTab>(hideKul === true ? 'emoji' : 'smiley');
-  const controlled = tab != null;
-  const active = controlled ? tab : innerTab;
+  const [active, setActive] = useState<PanelTab>(hideKul === true ? 'emoji' : 'smiley');
 
   return (
     <View className="bg-white" style={{ borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.12)' }}>
-      {!controlled && <PanelTabBar active={innerTab} tabs={visibleTabs} onSelect={setInnerTab} />}
+      <PanelTabBar active={active} tabs={visibleTabs} onSelect={setActive} />
       <View style={{ height: 220 }}>
         <ScrollView contentContainerClassName="flex-row flex-wrap p-2">
           {active === 'emoji'
             ? EMOJI_IMAGES.map((image, index) => (
                 <Pressable
                   key={index}
-                  onPress={() => onPickEmoji(emojiToken(index + 1))}
+                  onPress={() => onPickEmoji(`${emojiToken(index + 1)} `)}
                   className="items-center justify-center"
                   style={{ width: `${100 / 8}%`, height: 40 }}
                 >
@@ -91,7 +88,7 @@ export function SmileyKulPanel({ tab, hideKul, onPickEmoji, onBackspace, onSendK
             ? SMILEY_PANEL.map((smiley, index) => (
                 <Pressable
                   key={index}
-                  onPress={() => onPickEmoji(smiley.code)}
+                  onPress={() => onPickEmoji(`${smiley.code} `)}
                   className="items-center justify-center"
                   style={{ width: `${100 / 8}%`, height: 40 }}
                 >
