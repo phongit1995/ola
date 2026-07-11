@@ -2,8 +2,8 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ConfirmDialog, VipAvatar } from '@components';
 import { createTimeFormatter, toast } from '@lib';
-import { useMarriageStore } from './marriageStore';
-import type { PendingProposal } from './marriage.types';
+import { useMarriageStore } from '@/store/marriageStore';
+import type { PendingProposal } from '@/store/marriageStore';
 
 interface MarriageLockedViewProps {
   onPropose: () => void;
