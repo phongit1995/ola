@@ -26,6 +26,7 @@ import { SpinResultDialog } from './SpinResultDialog';
 import { SpinHistoryDialog } from './SpinHistoryDialog';
 import { WheelActionButton } from './WheelActionButton';
 import { CHIP_TEXT_STYLE, SPIN_TEXT_STYLE, TEXT_SHADOW, TITLE_STYLE } from './spinWheelStyles';
+import { playSpinSound, stopSpinSound } from './spinWheelSound';
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROOT_ROUTES.SpinWheel>;
 
@@ -60,6 +61,7 @@ export function SpinWheelGameScreen({ navigation }: Props) {
     });
     return () => {
       off();
+      stopSpinSound();
       useSpinWheelStore.setState({ spinning: false, suppressKenSync: false });
     };
   }, []);
@@ -78,10 +80,14 @@ export function SpinWheelGameScreen({ navigation }: Props) {
       return;
     }
     const ok = await state.spin();
-    if (!ok) push('error', t('wheelGame.error'));
+    if (!ok) {
+      push('error', t('wheelGame.error'));
+      return;
+    }
+    if (!useSpinWheelStore.getState().muted) playSpinSound();
   };
 
-  const headerHeight = (windowWidth * 360) / 1906;
+  const headerHeight = insets.top + (windowWidth * 360) / 1906;
   const wheelSize = Math.min(windowWidth * 0.84, 360);
   const barWidth = Math.min(260, windowWidth - 32);
   const barHeight = (barWidth * 521) / 2014;
@@ -97,8 +103,15 @@ export function SpinWheelGameScreen({ navigation }: Props) {
           resizeMode="cover"
         />
       </View>
-      <View style={{ flex: 1, paddingTop: insets.top }}>
-        <View style={{ width: windowWidth, height: headerHeight, justifyContent: 'center' }}>
+      <View style={{ flex: 1 }}>
+        <View
+          style={{
+            width: windowWidth,
+            height: headerHeight,
+            paddingTop: insets.top,
+            justifyContent: 'center',
+          }}
+        >
           <Image
             source={wheelAssets.titleBanner}
             style={{ position: 'absolute', left: 0, top: 0, width: windowWidth, height: headerHeight }}
@@ -124,7 +137,7 @@ export function SpinWheelGameScreen({ navigation }: Props) {
             style={{
               position: 'absolute',
               right: 16,
-              top: headerHeight / 2 - 16,
+              top: insets.top + (headerHeight - insets.top) / 2 - 16,
               width: 32,
               height: 32,
             }}
@@ -204,7 +217,10 @@ export function SpinWheelGameScreen({ navigation }: Props) {
               rotation={rotation}
               spinning={spinning}
               size={wheelSize}
-              onSettle={() => useSpinWheelStore.getState().settle()}
+              onSettle={() => {
+                stopSpinSound();
+                useSpinWheelStore.getState().settle();
+              }}
             />
           ) : (
             <View
@@ -275,7 +291,10 @@ export function SpinWheelGameScreen({ navigation }: Props) {
             <WheelActionButton
               icon={muted ? wheelAssets.soundOff : wheelAssets.soundOn}
               label={t('wheelGame.sound')}
-              onPress={() => useSpinWheelStore.getState().toggleMute()}
+              onPress={() => {
+                useSpinWheelStore.getState().toggleMute();
+                if (useSpinWheelStore.getState().muted) stopSpinSound();
+              }}
             />
             <WheelActionButton
               icon={wheelAssets.historyIcon}
