@@ -5,6 +5,7 @@ import {
   Image,
   ImageBackground,
   KeyboardAvoidingView,
+  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -14,15 +15,17 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { UserService } from '@ola/shared/services';
-import { ApiError } from '@ola/shared/lib';
+import { ApiError, type NativeUploadFile } from '@ola/shared/lib';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { Gender, UpdateProfileRequest } from '@ola/shared/types';
 import type { RootStackParamList } from '../../navigation/types';
 import { Avatar } from '../../components/Avatar';
-import { pickSingleImage } from '../../lib/imagePicker';
+import { pickCroppedImage } from '../../lib/imagePicker';
 import { ChangePasswordDialog } from './ChangePasswordDialog';
+import { CoverPreviewOverlay } from './CoverPreviewOverlay';
 
 const cameraIcon = require('../../assets/icons/profile/ic_action_camera.png');
 const lockIcon = require('../../assets/icons/profile/ic_lock.png');
@@ -33,6 +36,21 @@ const DIVIDER = 'rgba(0,0,0,0.12)';
 const PHONE_PATTERN = /^[0-9+\-() ]{6,20}$/;
 const MIN_AVATAR_SOURCE = 100;
 const PLACEHOLDER_COLOR = '#e34545';
+const AVATAR_OUTPUT = 800;
+const COVER_OUTPUT = { width: 1600, height: 900 };
+const DEFAULT_BIRTHDAY = new Date(2000, 0, 1);
+
+function formatDateOnly(date: Date): string {
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${date.getFullYear()}-${month}-${day}`;
+}
+
+function parseBirthday(value: string): Date {
+  if (value === '') return DEFAULT_BIRTHDAY;
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? DEFAULT_BIRTHDAY : parsed;
+}
 
 function Field({ label, first, children }: { label: string; first?: boolean; children: React.ReactNode }) {
   return (
@@ -62,7 +80,9 @@ export function EditProfileScreen({ navigation }: Props) {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
+  const [coverPreview, setCoverPreview] = useState<NativeUploadFile | null>(null);
   const [passwordOpen, setPasswordOpen] = useState(false);
+  const [birthdayPickerDate, setBirthdayPickerDate] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   if (user == null) return null;
@@ -78,9 +98,15 @@ export function EditProfileScreen({ navigation }: Props) {
 
   async function pickAvatar() {
     if (uploading) return;
-    const picked = await pickSingleImage();
+    let picked;
+    try {
+      picked = await pickCroppedImage(AVATAR_OUTPUT, AVATAR_OUTPUT);
+    } catch {
+      push('error', t('avatar.error'));
+      return;
+    }
     if (picked == null) return;
-    if (picked.width > 0 && picked.height > 0 && Math.min(picked.width, picked.height) < MIN_AVATAR_SOURCE) {
+    if (Math.min(picked.sourceWidth, picked.sourceHeight) < MIN_AVATAR_SOURCE) {
       push('error', t('avatar.tooSmall'));
       return;
     }
@@ -98,14 +124,24 @@ export function EditProfileScreen({ navigation }: Props) {
 
   async function pickCover() {
     if (uploadingCover) return;
-    const picked = await pickSingleImage();
-    if (picked == null) return;
+    try {
+      const picked = await pickCroppedImage(COVER_OUTPUT.width, COVER_OUTPUT.height);
+      if (picked == null) return;
+      setCoverPreview(picked.file);
+    } catch {
+      push('error', t('profileEdit.coverError'));
+    }
+  }
+
+  async function confirmCover() {
+    if (coverPreview == null || uploadingCover) return;
     setUploadingCover(true);
     try {
-      const { url } = await UserService.uploadAvatar(picked.file);
+      const { url } = await UserService.uploadAvatar(coverPreview);
       await UserService.updateMe({ coverPhoto: url });
       await refreshUser();
       push('success', t('profileEdit.coverUpdated'));
+      setCoverPreview(null);
     } catch {
       push('error', t('profileEdit.coverError'));
     } finally {
@@ -261,14 +297,16 @@ export function EditProfileScreen({ navigation }: Props) {
             </Field>
 
             <Field label={t('profileEdit.birthdayLabel')}>
-              <TextInput
-                value={dateOfBirth}
-                onChangeText={setDateOfBirth}
-                placeholder={t('profileEdit.birthdayHint')}
-                placeholderTextColor={PLACEHOLDER_COLOR}
-                className="text-sm"
-                style={{ color: 'rgba(0,0,0,0.87)', padding: 0 }}
-              />
+              <Pressable onPress={() => setBirthdayPickerDate(parseBirthday(dateOfBirth))}>
+                <Text
+                  className="text-sm"
+                  style={{
+                    color: dateOfBirth !== '' ? 'rgba(0,0,0,0.87)' : PLACEHOLDER_COLOR,
+                  }}
+                >
+                  {dateOfBirth !== '' ? dateOfBirth.slice(0, 10) : t('profileEdit.birthdayHint')}
+                </Text>
+              </Pressable>
             </Field>
           </View>
         </ScrollView>
@@ -294,6 +332,74 @@ export function EditProfileScreen({ navigation }: Props) {
         </View>
 
         <ChangePasswordDialog visible={passwordOpen} onClose={() => setPasswordOpen(false)} />
+
+        <CoverPreviewOverlay
+          visible={coverPreview != null}
+          url={coverPreview?.uri ?? ''}
+          uploading={uploadingCover}
+          onCancel={() => setCoverPreview(null)}
+          onConfirm={() => void confirmCover()}
+        />
+
+        {Platform.OS === 'ios' && birthdayPickerDate != null && (
+          <Modal transparent animationType="fade" onRequestClose={() => setBirthdayPickerDate(null)}>
+            <Pressable
+              className="flex-1 justify-end"
+              style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}
+              onPress={() => setBirthdayPickerDate(null)}
+            >
+              <Pressable
+                className="bg-white"
+                style={{ paddingBottom: insets.bottom }}
+                onPress={() => undefined}
+              >
+                <View
+                  className="h-11 flex-row items-center justify-between px-4"
+                  style={{ borderBottomWidth: 1, borderBottomColor: DIVIDER }}
+                >
+                  <Pressable onPress={() => setBirthdayPickerDate(null)}>
+                    <Text className="text-base" style={{ color: 'rgba(0,0,0,0.54)' }}>
+                      {t('dialog.cancel')}
+                    </Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => {
+                      setDateOfBirth(formatDateOnly(birthdayPickerDate));
+                      setBirthdayPickerDate(null);
+                    }}
+                  >
+                    <Text className="text-base font-bold" style={{ color: '#558b2f' }}>
+                      {t('dialog.accept')}
+                    </Text>
+                  </Pressable>
+                </View>
+                <DateTimePicker
+                  value={birthdayPickerDate}
+                  mode="date"
+                  display="spinner"
+                  themeVariant="light"
+                  onChange={(_, date) => {
+                    if (date != null) setBirthdayPickerDate(date);
+                  }}
+                  style={{ alignSelf: 'center' }}
+                />
+              </Pressable>
+            </Pressable>
+          </Modal>
+        )}
+
+        {Platform.OS === 'android' && birthdayPickerDate != null && (
+          <DateTimePicker
+            value={birthdayPickerDate}
+            mode="date"
+            onChange={(event, date) => {
+              setBirthdayPickerDate(null);
+              if (event.type === 'set' && date != null) {
+                setDateOfBirth(formatDateOnly(date));
+              }
+            }}
+          />
+        )}
       </KeyboardAvoidingView>
   );
 }
