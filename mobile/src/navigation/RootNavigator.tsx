@@ -27,6 +27,7 @@ import { BuyVipScreen } from '../screens/vip/BuyVipScreen';
 import { KenStoreScreen } from '../screens/ken/KenStoreScreen';
 import { BuyKenScreen } from '../screens/ken/BuyKenScreen';
 import { MediaStoreScreen } from '../screens/media/MediaStoreScreen';
+import { SettingsScreen } from '../screens/settings/SettingsScreen';
 import { TAB_ICONS } from '../assets/tabIcons';
 
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -132,6 +133,7 @@ export function RootNavigator() {
       <RootStack.Screen name={ROOT_ROUTES.KenStore} component={KenStoreScreen} />
       <RootStack.Screen name={ROOT_ROUTES.BuyKen} component={BuyKenScreen} />
       <RootStack.Screen name={ROOT_ROUTES.MediaStore} component={MediaStoreScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.Settings} component={SettingsScreen} />
     </RootStack.Navigator>
   );
 }

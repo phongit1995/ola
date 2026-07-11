@@ -25,6 +25,7 @@ export type RootStackParamList = {
   [ROOT_ROUTES.KenStore]: undefined;
   [ROOT_ROUTES.BuyKen]: undefined;
   [ROOT_ROUTES.MediaStore]: undefined;
+  [ROOT_ROUTES.Settings]: undefined;
 };
 
 export type RoomStackParamList = {

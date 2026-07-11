@@ -23,6 +23,7 @@ export const ROOT_ROUTES = {
   KenStore: 'KenStore',
   BuyKen: 'BuyKen',
   MediaStore: 'MediaStore',
+  Settings: 'Settings',
 } as const;
 
 export const ROOM_ROUTES = {

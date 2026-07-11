@@ -8,6 +8,7 @@ import { setOnUnauthorized } from '@ola/shared/api';
 import { authTokens } from '@ola/shared/lib';
 import { SocketService } from '@ola/shared/services';
 import { useAuthStore } from '@ola/shared/stores/authStore';
+import { useSettingsStore } from '@ola/shared/stores/settingsStore';
 import { RootNavigator } from './navigation/RootNavigator';
 import { ToastHost } from './components/ToastHost';
 import { MediaViewer } from './components/MediaViewer';
@@ -22,6 +23,10 @@ function clearSession() {
 
 export default function App() {
   useMeNotificationRealtime();
+  const userId = useAuthStore((s) => s.user?.id);
+  useEffect(() => {
+    if (userId != null) void useSettingsStore.getState().hydrate();
+  }, [userId]);
   useEffect(() => {
     if (!__DEV__) void checkForOtaUpdate();
     setOnUnauthorized(clearSession);

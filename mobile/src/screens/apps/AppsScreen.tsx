@@ -31,6 +31,10 @@ export function AppsScreen() {
       navigation.navigate(ROOT_ROUTES.MediaStore);
       return;
     }
+    if (item.action === 'settings') {
+      navigation.navigate(ROOT_ROUTES.Settings);
+      return;
+    }
     push('info', t('chat.comingSoon'));
   }
 
