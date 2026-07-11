@@ -28,7 +28,7 @@ import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { kulImageForText } from '../../lib/kul';
 import { pickSingleImage } from '../../lib/imagePicker';
 import { SmileyText } from '../../lib/richText';
-import { MePostMenu, type MePostMenuOption } from '../me/MePostMenu';
+import { ListOptionDialog, type ListOption } from '../../components/ListOptionDialog';
 import { BlockedListDialog } from './BlockedListDialog';
 import { ComposeDialog } from './ComposeDialog';
 import { ContactsPane } from './ContactsPane';
@@ -307,7 +307,7 @@ export function ChatListScreen() {
     }
   }
 
-  const messagesMenu: MePostMenuOption[] = [
+  const messagesMenu: ListOption[] = [
     { key: 'delete-all', label: t('chat.menuDeleteAll'), danger: true, onSelect: () => setDeleteAllOpen(true) },
     {
       key: 'strangers',
@@ -317,7 +317,7 @@ export function ChatListScreen() {
     { key: 'block-list', label: t('chat.menuBlockList'), onSelect: () => setBlockedOpen(true) },
   ];
 
-  const contactsMenu: MePostMenuOption[] = [
+  const contactsMenu: ListOption[] = [
     { key: 'buy-vip', label: t('chat.menuBuyVip'), onSelect: comingSoon },
     { key: 'change-avatar', label: t('chat.menuChangeAvatar'), onSelect: () => void changePhoto('avatar') },
     { key: 'change-cover', label: t('chat.menuChangeCover'), onSelect: () => void changePhoto('cover') },
@@ -413,7 +413,7 @@ export function ChatListScreen() {
         </View>
       )}
 
-      <MePostMenu
+      <ListOptionDialog
         visible={menuOpen}
         title={sub === 'messages' ? t('home.subMessages') : t('home.subContacts')}
         options={sub === 'messages' ? messagesMenu : contactsMenu}

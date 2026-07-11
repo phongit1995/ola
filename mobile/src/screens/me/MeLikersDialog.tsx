@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, FlatList, Modal, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native';
 import { colorForName } from '@ola/shared/lib';
 import { MeService, RelationshipService } from '@ola/shared/services';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { PostAuthor } from '@ola/shared/types';
 import { Avatar } from '../../components/Avatar';
+import { Dialog } from '../../components/Dialog';
 
 const PAGE_SIZE = 30;
 
@@ -88,13 +89,13 @@ export function MeLikersDialog({ postId, commentId, onClose, onOpenProfile }: Me
   }
 
   return (
-    <Modal visible transparent animationType="fade" onRequestClose={onClose}>
-      <Pressable className="flex-1 items-center justify-center bg-black/40 px-8" onPress={onClose}>
-        <Pressable className="w-full max-w-md rounded-2xl bg-white p-4" onPress={() => undefined}>
-          <Text className="mb-2 text-base font-semibold" style={{ color: 'rgba(0,0,0,0.87)' }}>
-            {total > 0 ? t('me.likersCount', { count: total }) : t('me.likersTitle')}
-          </Text>
-          {loading ? (
+    <Dialog
+      visible
+      title={total > 0 ? t('me.likersCount', { count: total }) : t('me.likersTitle')}
+      onClose={onClose}
+      showClose
+    >
+      {loading ? (
             <ActivityIndicator className="py-6" color="#7cb342" />
           ) : error ? (
             <Text className="py-6 text-center text-sm" style={{ color: '#e53935' }}>
@@ -160,9 +161,7 @@ export function MeLikersDialog({ postId, commentId, onClose, onOpenProfile }: Me
                 );
               }}
             />
-          )}
-        </Pressable>
-      </Pressable>
-    </Modal>
+      )}
+    </Dialog>
   );
 }

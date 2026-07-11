@@ -36,7 +36,7 @@ import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { MePostCard } from '../me/MePostCard';
 import { MeCommentSheet } from '../me/MeCommentSheet';
 import { MeLikersDialog } from '../me/MeLikersDialog';
-import { MePostMenu, type MePostMenuOption } from '../me/MePostMenu';
+import { ListOptionDialog, type ListOption } from '../../components/ListOptionDialog';
 import { MeQuickCommentBar } from '../me/MeQuickCommentBar';
 import { MeComposerModal } from '../me/MeComposerModal';
 import { FollowingListOverlay } from './FollowingListOverlay';
@@ -369,7 +369,7 @@ export function UserProfileScreen({ username, language, onClose, onOpenProfile, 
       .catch(() => push('error', t('me.pinError')));
   }
 
-  function buildPostMenuOptions(post: Post): MePostMenuOption[] {
+  function buildPostMenuOptions(post: Post): ListOption[] {
     const mine = meId !== '' && post.author?.id === meId;
     if (mine) {
       return [
@@ -460,7 +460,7 @@ export function UserProfileScreen({ username, language, onClose, onOpenProfile, 
 
   const openFriend = (friend: FollowUser) => onOpenProfile(friend.username, colorForName(friend.username));
 
-  const profileMenuOptions: MePostMenuOption[] = isSelf
+  const profileMenuOptions: ListOption[] = isSelf
     ? [
         { key: 'avatar', label: t('profile.changeAvatar'), onSelect: () => void changeAvatar() },
         { key: 'cover', label: t('profile.changeCover'), onSelect: () => void changeCover() },
@@ -739,14 +739,14 @@ export function UserProfileScreen({ username, language, onClose, onOpenProfile, 
           </Pressable>
         )}
 
-        <MePostMenu
+        <ListOptionDialog
           visible={menuOpen}
           title={nick}
           options={profileMenuOptions}
           onClose={() => setMenuOpen(false)}
         />
 
-        <MePostMenu
+        <ListOptionDialog
           visible={menuPost != null}
           title={t('me.postMenu')}
           options={menuPost != null ? buildPostMenuOptions(menuPost) : []}

@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
-  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -21,6 +20,7 @@ import type { VipIconCatalogItem, VipPackageItem, UserSearchResult } from '@ola/
 import type { RootStackParamList } from '../../navigation/types';
 import { ROOT_ROUTES } from '../../navigation/routes';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
+import { Dialog } from '../../components/Dialog';
 import { Avatar } from '../../components/Avatar';
 import { ListOptionDialog, type ListOption } from '../../components/ListOptionDialog';
 import { VipIconImage } from './VipIconImage';
@@ -90,16 +90,8 @@ interface VipPickerDialogProps {
 function VipPickerDialog({ visible, selectedKey, items, onSelect, onClose }: VipPickerDialogProps) {
   const { t } = useTranslation();
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <Pressable className="flex-1 items-center justify-center bg-black/40 p-4" onPress={onClose}>
-        <Pressable
-          className="w-full max-w-md rounded-lg bg-white p-3"
-          onPress={(event) => event.stopPropagation()}
-        >
-          <Text className="mb-2 text-base font-semibold" style={{ color: BODY }}>
-            {t('vip.buy.pickVipTitle')}
-          </Text>
-          {items.length === 0 ? (
+    <Dialog visible={visible} title={t('vip.buy.pickVipTitle')} onClose={onClose}>
+      {items.length === 0 ? (
             <Text className="py-8 text-center text-sm" style={{ color: MUTED }}>
               {t('vip.buy.shopEmpty')}
             </Text>
@@ -141,10 +133,8 @@ function VipPickerDialog({ visible, selectedKey, items, onSelect, onClose }: Vip
                 })}
               </View>
             </ScrollView>
-          )}
-        </Pressable>
-      </Pressable>
-    </Modal>
+      )}
+    </Dialog>
   );
 }
 

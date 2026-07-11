@@ -29,7 +29,7 @@ import { useMediaViewerStore } from '../../store/mediaViewerStore';
 import { kulToken } from '../../lib/kul';
 import { composerSingleLineHeight, SmileyDraftOverlay } from '../../components/SmileyDraftOverlay';
 import { useSmileyDraft } from '../../hooks/useSmileyDraft';
-import { MePostMenu, type MePostMenuOption } from '../me/MePostMenu';
+import { ListOptionDialog, type ListOption } from '../../components/ListOptionDialog';
 import { ChatMessageRow } from './ChatMessageRow';
 import { AttachmentBar, type AttachTab } from './AttachmentBar';
 import { formatLastActive } from './contacts';
@@ -274,7 +274,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
           ? t('chat.unfriend')
           : t('chat.menuMakeFriend');
 
-  const menuOptions: MePostMenuOption[] = [
+  const menuOptions: ListOption[] = [
     { key: 'make-friend', label: friendLabel, onSelect: () => void handleFriendAction() },
     { key: 'view-me', label: t('chat.menuViewMe'), onSelect: openPeerProfile },
     blockedByMe
@@ -550,7 +550,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         }}
       />
 
-      <MePostMenu
+      <ListOptionDialog
         visible={menuOpen}
         title={title}
         options={menuOptions}

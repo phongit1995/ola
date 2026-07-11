@@ -16,7 +16,7 @@ import { useMeLocalStore } from '../../store/meLocalStore';
 import { useMediaViewerStore } from '../../store/mediaViewerStore';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { MePostCard } from './MePostCard';
-import { MePostMenu, type MePostMenuOption } from './MePostMenu';
+import { ListOptionDialog, type ListOption } from '../../components/ListOptionDialog';
 import { MeQuickCommentBar } from './MeQuickCommentBar';
 import { MeComposerModal } from './MeComposerModal';
 import { MeLeftDrawer } from './MeLeftDrawer';
@@ -160,7 +160,7 @@ export function MeFeedScreen() {
     setEditingPost(post);
   }
 
-  function buildMenuOptions(post: Post): MePostMenuOption[] {
+  function buildMenuOptions(post: Post): ListOption[] {
     const mine = meId != null && post.author?.id === meId;
     if (mine) {
       return [
@@ -344,7 +344,7 @@ export function MeFeedScreen() {
         }}
       />
 
-      <MePostMenu
+      <ListOptionDialog
         visible={menuPost != null}
         title={t('me.postMenu')}
         options={menuPost != null ? buildMenuOptions(menuPost) : []}

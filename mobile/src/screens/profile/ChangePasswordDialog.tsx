@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { KeyboardAvoidingView, Modal, Platform, Pressable, Text, TextInput, View } from 'react-native';
+import { Text, TextInput, View } from 'react-native';
 import { PASSWORD_MAX, PASSWORD_MIN } from '@ola/shared/constants';
 import { ApiError } from '@ola/shared/lib';
 import { AuthService } from '@ola/shared/services';
 import { useToastStore } from '@ola/shared/stores/toastStore';
+import { Dialog, DialogButton } from '../../components/Dialog';
 
 interface ChangePasswordForm {
   current: string;
@@ -95,14 +96,22 @@ export function ChangePasswordDialog({ visible, onClose }: { visible: boolean; o
   }
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={close}>
-      <KeyboardAvoidingView className="flex-1" behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <Pressable className="flex-1 items-center justify-center bg-black/40 px-8" onPress={close}>
-        <Pressable className="w-full max-w-md rounded-2xl bg-white p-4" onPress={() => undefined}>
-          <Text className="mb-3 text-base font-semibold" style={{ color: 'rgba(0,0,0,0.87)' }}>
-            {t('changePassword.title')}
-          </Text>
-          <View className="gap-3">
+    <Dialog
+      visible={visible}
+      title={t('changePassword.title')}
+      onClose={close}
+      footer={
+        <>
+          <DialogButton onPress={close} disabled={submitting}>
+            {t('common.cancel')}
+          </DialogButton>
+          <DialogButton variant="green" onPress={handleSubmit(onSubmit)} disabled={submitting}>
+            {t('changePassword.submit')}
+          </DialogButton>
+        </>
+      }
+    >
+      <View className="gap-3">
             <Controller
               control={control}
               name="current"
@@ -153,25 +162,7 @@ export function ChangePasswordDialog({ visible, onClose }: { visible: boolean; o
                 />
               )}
             />
-          </View>
-          <View className="mt-4 flex-row justify-end gap-2">
-            <Pressable onPress={close} disabled={submitting} className="rounded-full px-4 py-2">
-              <Text className="text-sm font-semibold" style={{ color: 'rgba(0,0,0,0.54)' }}>
-                {t('common.cancel')}
-              </Text>
-            </Pressable>
-            <Pressable
-              onPress={handleSubmit(onSubmit)}
-              disabled={submitting}
-              className="rounded-full px-4 py-2"
-              style={{ backgroundColor: '#7cb342', opacity: submitting ? 0.6 : 1 }}
-            >
-              <Text className="text-sm font-semibold text-white">{t('changePassword.submit')}</Text>
-            </Pressable>
-          </View>
-        </Pressable>
-      </Pressable>
-      </KeyboardAvoidingView>
-    </Modal>
+      </View>
+    </Dialog>
   );
 }
