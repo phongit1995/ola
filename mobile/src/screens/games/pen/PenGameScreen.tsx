@@ -264,7 +264,7 @@ export function PenGameScreen({ navigation }: Props) {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: PEN_COLORS.screenBg }}>
+    <View style={{ flex: 1, backgroundColor: PEN_COLORS.screenBg, paddingTop: insets.top }}>
       <View
         style={{
           flex: 1,
@@ -289,7 +289,7 @@ export function PenGameScreen({ navigation }: Props) {
         <View
           style={{
             position: 'absolute',
-            top: insets.top,
+            top: 0,
             left: 0,
             right: 0,
             zIndex: 20,
@@ -382,7 +382,7 @@ export function PenGameScreen({ navigation }: Props) {
             position: 'absolute',
             left: 0,
             right: 12,
-            top: insets.top + 44,
+            top: 44,
             zIndex: 30,
             alignItems: 'flex-end',
           }}
