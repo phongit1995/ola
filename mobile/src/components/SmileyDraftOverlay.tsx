@@ -1,5 +1,6 @@
-import { useReducer } from 'react';
+import { useCallback, useReducer, useState } from 'react';
 import { Image, Text, View } from 'react-native';
+import type { TextInputScrollEvent } from 'react-native';
 import { splitSmileys } from '../lib/chatSmiley';
 import { imageAspectRatio, smileyBaselineShift } from '../lib/richText';
 
@@ -10,6 +11,42 @@ const COMPOSER_LINE_HEIGHT = 24;
 
 export function composerSingleLineHeight(verticalPadding: number): number {
   return COMPOSER_LINE_HEIGHT + verticalPadding * 2;
+}
+
+export function useComposerScrollSync(draft: string) {
+  const [scrollY, setScrollY] = useState(0);
+  if (draft === '' && scrollY !== 0) setScrollY(0);
+  const handleScroll = useCallback(
+    (event: TextInputScrollEvent) => setScrollY(event.nativeEvent.contentOffset.y),
+    []
+  );
+  return { scrollY, handleScroll };
+}
+
+export function ComposerDraftOverlay({
+  text,
+  scrollY,
+  paddingHorizontal,
+  paddingVertical,
+  color,
+}: {
+  text: string;
+  scrollY: number;
+  paddingHorizontal: number;
+  paddingVertical: number;
+  color?: string;
+}) {
+  return (
+    <View
+      pointerEvents="none"
+      className="absolute inset-0 overflow-hidden"
+      style={{ paddingHorizontal, paddingVertical }}
+    >
+      <View style={{ transform: [{ translateY: -scrollY }] }}>
+        <SmileyDraftOverlay text={text} color={color} />
+      </View>
+    </View>
+  );
 }
 
 export function SmileyDraftOverlay({ text, color }: { text: string; color?: string }) {
@@ -53,7 +90,7 @@ export function SmileyDraftOverlay({ text, color }: { text: string; color?: stri
                 <Image
                   source={segment.src}
                   style={{
-                    width: Math.min(width, IMAGE_SIZE * imageAspectRatio(segment.src)),
+                    width: IMAGE_SIZE * imageAspectRatio(segment.src),
                     height: IMAGE_SIZE,
                   }}
                   resizeMode="contain"

@@ -2,7 +2,11 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, Pressable, Text, TextInput, View } from 'react-native';
 import { useAuthStore } from '@ola/shared/stores/authStore';
-import { composerSingleLineHeight, SmileyDraftOverlay } from '../../components/SmileyDraftOverlay';
+import {
+  ComposerDraftOverlay,
+  composerSingleLineHeight,
+  useComposerScrollSync,
+} from '../../components/SmileyDraftOverlay';
 import { SmileyKulPanel } from '../room/SmileyKulPanel';
 import { Avatar } from '../../components/Avatar';
 import { useSmileyDraft } from '../../hooks/useSmileyDraft';
@@ -38,6 +42,7 @@ export function MeCommentComposer({
     selection,
     handleSelectionChange,
   } = useSmileyDraft(initialDraft);
+  const { scrollY: inputScrollY, handleScroll: handleInputScroll } = useComposerScrollSync(draft);
   const [smileyOpen, setSmileyOpen] = useState(false);
   const myName = me?.username ?? t('home.guest');
   const canSend = draft.trim() !== '' && !submitting;
@@ -78,7 +83,7 @@ export function MeCommentComposer({
           <TextInput
             className="px-3 py-2 text-base"
             style={[
-              { color: 'transparent', textAlignVertical: 'center' },
+              { color: 'transparent', textAlignVertical: 'center', maxHeight: 112 },
               draft === '' ? { height: composerSingleLineHeight(8) } : null,
             ]}
             selectionColor="#7cb342"
@@ -91,12 +96,16 @@ export function MeCommentComposer({
             selection={selection}
             onSelectionChange={handleSelectionChange}
             onChangeText={setDraft}
+            onScroll={handleInputScroll}
             onFocus={() => setSmileyOpen(false)}
           />
           {draft !== '' && (
-            <View pointerEvents="none" className="absolute inset-0 justify-end overflow-hidden px-3 py-2">
-              <SmileyDraftOverlay text={draft} />
-            </View>
+            <ComposerDraftOverlay
+              text={draft}
+              scrollY={inputScrollY}
+              paddingHorizontal={12}
+              paddingVertical={8}
+            />
           )}
         </View>
         <Pressable

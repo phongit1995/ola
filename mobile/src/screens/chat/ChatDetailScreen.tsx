@@ -27,7 +27,11 @@ import { Avatar } from '../../components/Avatar';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { useMediaViewerStore } from '../../store/mediaViewerStore';
 import { kulToken } from '../../lib/kul';
-import { composerSingleLineHeight, SmileyDraftOverlay } from '../../components/SmileyDraftOverlay';
+import {
+  ComposerDraftOverlay,
+  composerSingleLineHeight,
+  useComposerScrollSync,
+} from '../../components/SmileyDraftOverlay';
 import { useSmileyDraft } from '../../hooks/useSmileyDraft';
 import { ListOptionDialog, type ListOption } from '../../components/ListOptionDialog';
 import { ChatMessageRow } from './ChatMessageRow';
@@ -87,6 +91,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     selection,
     handleSelectionChange,
   } = useSmileyDraft();
+  const { scrollY: inputScrollY, handleScroll: handleInputScroll } = useComposerScrollSync(draft);
   const [openTab, setOpenTab] = useState<AttachTab | null>(null);
   const [transferKenOpen, setTransferKenOpen] = useState(false);
   const [transferVipDaysOpen, setTransferVipDaysOpen] = useState(false);
@@ -480,7 +485,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
             ref={inputRef}
             className="px-2 py-1.5 text-base"
             style={[
-              { color: 'transparent', textAlignVertical: 'center' },
+              { color: 'transparent', textAlignVertical: 'center', maxHeight: 128 },
               draft === '' ? { height: composerSingleLineHeight(6) } : null,
             ]}
             selectionColor="#7cb342"
@@ -495,15 +500,16 @@ export function ChatDetailScreen({ navigation, route }: Props) {
               setDraft(text);
               if (editing == null) notifyTyping();
             }}
+            onScroll={handleInputScroll}
             onFocus={() => setOpenTab(null)}
           />
           {draft !== '' && (
-            <View
-              pointerEvents="none"
-              className="absolute inset-0 justify-end overflow-hidden px-2 py-1.5"
-            >
-              <SmileyDraftOverlay text={draft} />
-            </View>
+            <ComposerDraftOverlay
+              text={draft}
+              scrollY={inputScrollY}
+              paddingHorizontal={8}
+              paddingVertical={6}
+            />
           )}
         </View>
         {isTyping ? (
@@ -534,7 +540,10 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         onToggleTab={(tab) => setOpenTab((c) => (c === tab ? null : tab))}
         onPickEmoji={insertAtCursor}
         onBackspace={backspaceAtCursor}
-        onSendKul={(index) => void send(kulToken(index))}
+        onSendKul={(index) => {
+          void send(kulToken(index));
+          setOpenTab(null);
+        }}
         onPickImage={() => void pickAndSendImages()}
         onTransferKen={() => {
           setOpenTab(null);

@@ -1,14 +1,16 @@
 import { useState } from 'react';
-import { Image, Pressable, ScrollView, Text, View } from 'react-native';
+import { Image, Pressable, ScrollView, View } from 'react-native';
 import { SMILEY_PANEL } from '../../lib/chatSmiley';
 import { EMOJI_IMAGES, emojiToken } from '../../lib/emoji';
 import { KUL_IMAGES } from '../../lib/kul';
+import { imageSizeForHeight } from '../../lib/richText';
 
 type PanelTab = 'emoji' | 'smiley' | 'kul';
 
 const emojiTabIcon = require('../../assets/icons/chat/ic_tab_emoji.png');
 const smileyTabIcon = require('../../assets/icons/chat/ic_tab_smiley.png');
 const kulTabIcon = require('../../assets/icons/chat/ic_tab_kul.png');
+const backspaceIcon = require('../../assets/icons/chat/ic_backspace_selected.png');
 
 interface SmileyKulPanelProps {
   hideKul?: boolean;
@@ -17,10 +19,15 @@ interface SmileyKulPanelProps {
   onSendKul?: (index: number) => void;
 }
 
-const TABS: Array<{ key: PanelTab; icon: number }> = [
+const GROUP_TABS: Array<{ key: PanelTab; icon: number }> = [
   { key: 'emoji', icon: emojiTabIcon },
   { key: 'smiley', icon: smileyTabIcon },
   { key: 'kul', icon: kulTabIcon },
+];
+
+const COMPOSER_TABS: Array<{ key: PanelTab; icon: number }> = [
+  { key: 'smiley', icon: smileyTabIcon },
+  { key: 'emoji', icon: emojiTabIcon },
 ];
 
 function PanelTabBar({
@@ -65,23 +72,23 @@ function PanelTabBar({
 }
 
 export function SmileyKulPanel({ hideKul, onPickEmoji, onBackspace, onSendKul }: SmileyKulPanelProps) {
-  const visibleTabs = hideKul === true ? TABS.filter((item) => item.key !== 'kul') : TABS;
-  const [active, setActive] = useState<PanelTab>(hideKul === true ? 'emoji' : 'smiley');
+  const visibleTabs = hideKul === true ? COMPOSER_TABS : GROUP_TABS;
+  const [active, setActive] = useState<PanelTab>('smiley');
 
   return (
     <View className="bg-white" style={{ borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.12)' }}>
       <PanelTabBar active={active} tabs={visibleTabs} onSelect={setActive} />
-      <View style={{ height: 220 }}>
-        <ScrollView contentContainerClassName="flex-row flex-wrap p-2">
+      <View style={{ height: 164 }}>
+        <ScrollView style={{ flex: 1 }} contentContainerClassName="flex-row flex-wrap p-2">
           {active === 'emoji'
             ? EMOJI_IMAGES.map((image, index) => (
                 <Pressable
                   key={index}
                   onPress={() => onPickEmoji(`${emojiToken(index + 1)} `)}
                   className="items-center justify-center"
-                  style={{ width: `${100 / 8}%`, height: 40 }}
+                  style={{ width: `${100 / 8}%`, height: 36 }}
                 >
-                  <Image source={image} style={{ width: 24, height: 24 }} resizeMode="contain" />
+                  <Image source={image} style={imageSizeForHeight(image, 22)} resizeMode="contain" />
                 </Pressable>
               ))
             : active === 'smiley'
@@ -90,32 +97,51 @@ export function SmileyKulPanel({ hideKul, onPickEmoji, onBackspace, onSendKul }:
                   key={index}
                   onPress={() => onPickEmoji(`${smiley.code} `)}
                   className="items-center justify-center"
-                  style={{ width: `${100 / 8}%`, height: 40 }}
+                  style={{ width: `${100 / 8}%`, height: 36 }}
                 >
-                  <Image source={smiley.image} style={{ width: 26, height: 26 }} resizeMode="contain" />
+                  <Image
+                    source={smiley.image}
+                    style={imageSizeForHeight(smiley.image, 24)}
+                    resizeMode="contain"
+                  />
                 </Pressable>
               ))
             : KUL_IMAGES.map((image, index) => (
                 <Pressable
                   key={index}
                   onPress={() => onSendKul?.(index + 1)}
-                  className="items-center justify-center p-1"
-                  style={{ width: `${100 / 6}%`, height: 64 }}
+                  className="items-center justify-center"
+                  style={{ width: `${100 / 6}%`, aspectRatio: 1, padding: 4 }}
                 >
-                  <Image source={image} style={{ width: 52, height: 52 }} resizeMode="contain" />
+                  <Image
+                    source={image}
+                    style={{ width: '100%', height: '100%' }}
+                    resizeMode="contain"
+                  />
                 </Pressable>
               ))}
         </ScrollView>
         {(active === 'emoji' || active === 'smiley') && onBackspace != null && (
-          <Pressable
-            onPress={onBackspace}
-            className="absolute bottom-2 right-2 h-9 w-11 items-center justify-center rounded-full"
-            style={{ backgroundColor: 'rgba(0,0,0,0.06)' }}
+          <View
+            className="flex-row items-center justify-end bg-white px-2"
+            style={{ height: 32, borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.12)' }}
           >
-            <Text className="text-base" style={{ color: 'rgba(0,0,0,0.54)' }}>
-              ⌫
-            </Text>
-          </Pressable>
+            <View
+              style={{
+                width: 1,
+                height: 16,
+                marginRight: 4,
+                backgroundColor: 'rgba(0,0,0,0.12)',
+              }}
+            />
+            <Pressable onPress={onBackspace} className="h-full w-12 items-center justify-center">
+              <Image
+                source={backspaceIcon}
+                style={{ width: 20, height: 20 }}
+                resizeMode="contain"
+              />
+            </Pressable>
+          </View>
         )}
       </View>
     </View>
