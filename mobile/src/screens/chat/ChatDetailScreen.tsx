@@ -32,6 +32,7 @@ import {
   composerSingleLineHeight,
   useComposerScrollSync,
 } from '../../components/SmileyDraftOverlay';
+import { useKeyboardHeight } from '../../hooks/useKeyboardHeight';
 import { useSmileyDraft } from '../../hooks/useSmileyDraft';
 import { ListOptionDialog, type ListOption } from '../../components/ListOptionDialog';
 import { ChatMessageRow } from './ChatMessageRow';
@@ -57,6 +58,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   const { conversationId } = route.params;
   const { t, i18n } = useTranslation();
   const insets = useSafeAreaInsets();
+  const keyboardHeight = useKeyboardHeight();
 
   const conversations = useChatStore((s) => s.conversations);
   const messages = useChatStore((s) => s.messages);
@@ -537,6 +539,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
 
       <AttachmentBar
         openTab={openTab}
+        bottomInset={keyboardHeight > 0 ? 0 : insets.bottom}
         onToggleTab={(tab) => setOpenTab((c) => (c === tab ? null : tab))}
         onPickEmoji={insertAtCursor}
         onBackspace={backspaceAtCursor}
