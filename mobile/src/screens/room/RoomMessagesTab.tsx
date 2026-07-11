@@ -307,6 +307,7 @@ export function RoomMessagesTab({
         scrollEventThrottle={16}
         contentContainerClassName="p-3"
         onContentSizeChange={scrollToEnd}
+        onLayout={scrollToEnd}
         ListHeaderComponent={
           loadingMore ? (
             <Text className="py-1 text-center text-xs" style={{ color: 'rgba(0,0,0,0.4)' }}>

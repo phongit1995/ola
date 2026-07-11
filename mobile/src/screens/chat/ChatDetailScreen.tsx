@@ -358,6 +358,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
           scrollEventThrottle={16}
           contentContainerStyle={{ paddingVertical: 12 }}
           onContentSizeChange={scrollToEnd}
+          onLayout={scrollToEnd}
           ListHeaderComponent={
             peerCardVisible && peerCardAnchorId === '' && peerProfile != null ? (
               <PeerProfileCard

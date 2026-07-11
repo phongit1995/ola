@@ -77,6 +77,7 @@ function MainTabs() {
         headerShown: false,
         tabBarActiveTintColor: '#7cb342',
         tabBarInactiveTintColor: '#9e9e9e',
+        tabBarHideOnKeyboard: true,
       }}
     >
       <Tabs.Screen
