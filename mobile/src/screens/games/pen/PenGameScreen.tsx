@@ -259,11 +259,13 @@ export function PenGameScreen({ navigation }: Props) {
   };
 
   const handleTopUp = () => {
+    setShootOpen(false);
+    setCatchShot(null);
     navigation.navigate(ROOT_ROUTES.BuyKen);
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: PEN_COLORS.screenBg, paddingTop: insets.top }}>
+    <View style={{ flex: 1, backgroundColor: PEN_COLORS.screenBg }}>
       <View
         style={{
           flex: 1,
@@ -288,7 +290,7 @@ export function PenGameScreen({ navigation }: Props) {
         <View
           style={{
             position: 'absolute',
-            top: 0,
+            top: insets.top,
             left: 0,
             right: 0,
             zIndex: 20,
@@ -381,7 +383,7 @@ export function PenGameScreen({ navigation }: Props) {
             position: 'absolute',
             left: 0,
             right: 12,
-            top: 44,
+            top: insets.top + 44,
             zIndex: 30,
             alignItems: 'flex-end',
           }}
@@ -389,36 +391,40 @@ export function PenGameScreen({ navigation }: Props) {
           <Pressable
             accessibilityLabel={t('penGame.leaderboard.title')}
             onPress={() => setLeaderboardOpen(true)}
-            style={({ pressed }) => ({
-              height: 36,
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 4,
-              paddingLeft: 6,
-              paddingRight: 16,
-              transform: [{ scale: pressed ? 0.95 : 1 }],
-            })}
+            style={({ pressed }) => [{ transform: [{ scale: pressed ? 0.95 : 1 }] }]}
           >
-            <PenBg source={penLeaderboardAssets.frame} />
-          <Image
-            source={penLeaderboardAssets.cup}
-            style={sizeByHeight(penLeaderboardAssets.cup, 20)}
-            resizeMode="contain"
-          />
-          <Text
-            style={[
-              {
-                color: '#ffffff',
-                fontSize: 16,
-                fontWeight: '800',
-                fontStyle: 'italic',
-                letterSpacing: 1,
-              },
-              penTextShadow,
-            ]}
-          >
-            {t('penGame.leaderboard.short')}
-            </Text>
+            <View
+              style={{
+                height: 36,
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 4,
+                paddingLeft: 6,
+                paddingRight: 16,
+              }}
+            >
+              <PenBg source={penLeaderboardAssets.frame} />
+              <Image
+                source={penLeaderboardAssets.cup}
+                style={sizeByHeight(penLeaderboardAssets.cup, 20)}
+                resizeMode="contain"
+              />
+              <Text
+                numberOfLines={1}
+                style={[
+                  {
+                    color: '#ffffff',
+                    fontSize: 16,
+                    fontWeight: '800',
+                    fontStyle: 'italic',
+                    letterSpacing: 1,
+                  },
+                  penTextShadow,
+                ]}
+              >
+                {t('penGame.leaderboard.short')}
+              </Text>
+            </View>
           </Pressable>
         </View>
 

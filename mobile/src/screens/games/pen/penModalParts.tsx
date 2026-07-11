@@ -7,7 +7,7 @@ import {
   Pressable,
   Text,
   View,
-  type DimensionValue,
+  useWindowDimensions,
   type ImageSourcePropType,
 } from 'react-native';
 import { formatVnd } from '@ola/shared/lib';
@@ -16,6 +16,14 @@ import { penAssets } from './penAssets';
 import { assetRatio, PenBg, PenPanel, penTextShadow, sizeByHeight, PEN_COLORS } from './penUi';
 
 const DIRECTIONS: PenSide[] = ['left', 'right'];
+
+export function penPanelWidth(windowWidth: number): number {
+  return Math.min(380, windowWidth - 32);
+}
+
+export function penPickerWidth(windowWidth: number): number {
+  return penPanelWidth(windowWidth) * 0.84 * 1.1;
+}
 
 interface PenModalShellProps {
   panelAspect: number;
@@ -39,6 +47,10 @@ export function PenModalShell({
   children,
 }: PenModalShellProps) {
   const { t } = useTranslation();
+  const { width: windowWidth } = useWindowDimensions();
+  const panelW = penPanelWidth(windowWidth);
+  const panelH = panelW / panelAspect;
+
   return (
     <Pressable
       onPress={onClose}
@@ -50,25 +62,21 @@ export function PenModalShell({
         bottom: 0,
         zIndex: 40,
         backgroundColor: 'rgba(0,0,0,0.55)',
-        paddingHorizontal: 16,
       }}
     >
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
       >
-        <Pressable
-          onPress={() => {}}
-          style={{ width: '100%', maxWidth: 380, aspectRatio: panelAspect }}
-        >
+        <Pressable onPress={() => {}} style={{ width: panelW, height: panelH }}>
           <PenPanel style={{ flex: 1 }}>
             <View
               style={{
                 flex: 1,
                 alignItems: 'center',
-                paddingHorizontal: '8%',
-                paddingTop: '4%',
-                paddingBottom: '4%',
+                paddingHorizontal: panelW * 0.08,
+                paddingTop: panelW * 0.04,
+                paddingBottom: panelW * 0.04,
               }}
             >
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -96,16 +104,16 @@ export function PenModalShell({
               <Pressable
                 accessibilityLabel={t('penGame.close')}
                 onPress={onClose}
-                style={({ pressed }) => ({
+                style={({ pressed }) => [{
                   position: 'absolute',
-                  right: '5%',
-                  top: '3%',
+                  right: panelW * 0.05,
+                  top: panelH * 0.03,
                   width: 36,
                   height: 36,
                   alignItems: 'center',
                   justifyContent: 'center',
                   transform: [{ scale: pressed ? 0.95 : 1 }],
-                })}
+                }]}
               >
                 <PenBg source={closeBtn} />
                 <Image source={closeIcon} style={{ width: 16, height: 16 }} resizeMode="contain" />
@@ -155,13 +163,13 @@ export function PenKenRow({ ken, onTopUp }: PenKenRowProps) {
       <Pressable
         accessibilityLabel={t('penGame.topUp')}
         onPress={onTopUp}
-        style={({ pressed }) => ({
+        style={({ pressed }) => [{
           width: 32,
           height: 32,
           alignItems: 'center',
           justifyContent: 'center',
           transform: [{ scale: pressed ? 0.95 : 1 }],
-        })}
+        }]}
       >
         <PenBg source={penAssets.plusBtn} />
         <Image source={penAssets.plusIcon} style={{ width: 14, height: 14 }} resizeMode="contain" />
@@ -180,55 +188,21 @@ export interface PenDirSkin {
 
 export interface PenDirLayout {
   buttonAspect: number;
-  arrowTop: DimensionValue;
-  arrowWidth: DimensionValue;
-  arrowInset: DimensionValue;
-  centerTop: DimensionValue;
-  centerWidth: DimensionValue;
-  centerInset: DimensionValue;
-  markBottom: DimensionValue;
-  markWidth: DimensionValue;
+  arrowTop: number;
+  arrowWidth: number;
+  arrowInset: number;
+  centerTop: number;
+  centerWidth: number;
+  centerInset: number;
+  markBottom: number;
+  markWidth: number;
   tabAspect: number;
-  tabWidth: DimensionValue;
+  tabWidth: number;
 }
 
-function OverlayImage({
-  source,
-  top,
-  bottom,
-  left,
-  right,
-  width,
-  centered = false,
-}: {
-  source: ImageSourcePropType;
-  top?: DimensionValue;
-  bottom?: DimensionValue;
-  left?: DimensionValue;
-  right?: DimensionValue;
-  width: DimensionValue;
-  centered?: boolean;
-}) {
-  return (
-    <View
-      pointerEvents="none"
-      style={{
-        position: 'absolute',
-        top,
-        bottom,
-        left: centered ? 0 : left,
-        right: centered ? 0 : right,
-        width: centered ? undefined : width,
-        height: 0,
-        justifyContent: 'center',
-        alignItems: centered ? 'center' : 'stretch',
-      }}
-    >
-      <View style={{ width: centered ? width : '100%', aspectRatio: assetRatio(source) }}>
-        <Image source={source} style={{ width: '100%', height: '100%' }} resizeMode="contain" />
-      </View>
-    </View>
-  );
+function fitByWidth(source: ImageSourcePropType, width: number): { width: number; height: number } {
+  const ratio = assetRatio(source);
+  return { width, height: ratio > 0 ? width / ratio : width };
 }
 
 interface PenDirectionPickerProps {
@@ -238,6 +212,7 @@ interface PenDirectionPickerProps {
   unselected: PenDirSkin;
   center: { left: ImageSourcePropType; right: ImageSourcePropType };
   layout: PenDirLayout;
+  width: number;
 }
 
 export function PenDirectionPicker({
@@ -247,63 +222,95 @@ export function PenDirectionPicker({
   unselected,
   center,
   layout,
+  width,
 }: PenDirectionPickerProps) {
   const { t } = useTranslation();
+  const btnW = (width - 8) / 2;
+  const btnH = btnW / layout.buttonAspect;
+  const tabW = btnW * layout.tabWidth;
+  const tabH = tabW / layout.tabAspect;
+
   return (
-    <View style={{ marginTop: '3%', width: '110%', flexDirection: 'row', gap: 8 }}>
+    <View
+      style={{
+        marginTop: '3%',
+        width,
+        alignSelf: 'center',
+        flexDirection: 'row',
+        gap: 8,
+      }}
+    >
       {DIRECTIONS.map((dir) => {
         const active = value === dir;
         const skin = active ? selected : unselected;
         const left = dir === 'left';
         const label = left ? t('penGame.directionLeft') : t('penGame.directionRight');
+        const arrow = fitByWidth(left ? skin.arrowLeft : skin.arrowRight, btnW * layout.arrowWidth);
+        const centerImg = fitByWidth(left ? center.left : center.right, btnW * layout.centerWidth);
+        const mark = skin.mark != null ? fitByWidth(skin.mark, btnW * layout.markWidth) : null;
+        const inset = btnW * layout.arrowInset;
+        const centerInset = btnW * layout.centerInset;
         return (
-          <Pressable
-            key={dir}
-            accessibilityState={{ selected: active }}
-            onPress={() => onSelect(dir)}
-            style={({ pressed }) => ({
-              flex: 1,
-              aspectRatio: layout.buttonAspect,
-              transform: [{ scale: pressed ? 0.95 : 1 }],
-            })}
-          >
-            <PenBg source={skin.bg} />
-            <OverlayImage
-              source={left ? skin.arrowLeft : skin.arrowRight}
-              top={layout.arrowTop}
-              left={left ? layout.arrowInset : undefined}
-              right={left ? undefined : layout.arrowInset}
-              width={layout.arrowWidth}
-            />
-            <OverlayImage
-              source={left ? center.left : center.right}
-              top={layout.centerTop}
-              left={left ? undefined : layout.centerInset}
-              right={left ? layout.centerInset : undefined}
-              width={layout.centerWidth}
-            />
-            {skin.mark != null && (
-              <OverlayImage
-                source={skin.mark}
-                bottom={layout.markBottom}
-                width={layout.markWidth}
-                centered
-              />
-            )}
-            <View
-              pointerEvents="none"
-              style={{ position: 'absolute', top: 0, left: 0, right: 0, alignItems: 'center' }}
+          <View key={dir} style={{ width: btnW, height: btnH }}>
+            <Pressable
+              accessibilityState={{ selected: active }}
+              onPress={() => onSelect(dir)}
+              style={({ pressed }) => [{
+                flex: 1,
+                transform: [{ scale: pressed ? 0.95 : 1 }],
+              }]}
             >
-              <View
+              <PenBg source={skin.bg} />
+              <Image
+                source={left ? skin.arrowLeft : skin.arrowRight}
+                resizeMode="contain"
                 style={{
-                  width: layout.tabWidth,
-                  aspectRatio: layout.tabAspect,
+                  position: 'absolute',
+                  top: btnH * layout.arrowTop - arrow.height / 2,
+                  ...(left ? { left: inset } : { right: inset }),
+                  width: arrow.width,
+                  height: arrow.height,
+                }}
+              />
+              <Image
+                source={left ? center.left : center.right}
+                resizeMode="contain"
+                style={{
+                  position: 'absolute',
+                  top: btnH * layout.centerTop - centerImg.height / 2,
+                  ...(left ? { right: centerInset } : { left: centerInset }),
+                  width: centerImg.width,
+                  height: centerImg.height,
+                }}
+              />
+              {mark != null && skin.mark != null && (
+                <Image
+                  source={skin.mark}
+                  resizeMode="contain"
+                  style={{
+                    position: 'absolute',
+                    bottom: btnH * layout.markBottom - mark.height / 2,
+                    left: (btnW - mark.width) / 2,
+                    width: mark.width,
+                    height: mark.height,
+                  }}
+                />
+              )}
+              <View
+                pointerEvents="none"
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: (btnW - tabW) / 2,
+                  width: tabW,
+                  height: tabH,
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
               >
                 <PenBg source={skin.tab} />
                 <Text
+                  numberOfLines={1}
                   style={[
                     { color: '#ffffff', fontSize: 14, fontWeight: '800', letterSpacing: 1 },
                     penTextShadow,
@@ -312,8 +319,8 @@ export function PenDirectionPicker({
                   {label}
                 </Text>
               </View>
-            </View>
-          </Pressable>
+            </Pressable>
+          </View>
         );
       })}
     </View>
@@ -342,13 +349,13 @@ export function PenModalActions({
     <View style={[{ flexDirection: 'row', alignItems: 'center', gap: 12, width: '100%' }, style]}>
       <Pressable
         onPress={onCancel}
-        style={({ pressed }) => ({
+        style={({ pressed }) => [{
           flex: 2,
           height: 48,
           alignItems: 'center',
           justifyContent: 'center',
           transform: [{ scale: pressed ? 0.95 : 1 }],
-        })}
+        }]}
       >
         <PenBg source={cancelBg} />
         <Text
@@ -363,14 +370,14 @@ export function PenModalActions({
       <Pressable
         onPress={onConfirm}
         disabled={confirmDisabled}
-        style={({ pressed }) => ({
+        style={({ pressed }) => [{
           flex: 3,
           height: 48,
           alignItems: 'center',
           justifyContent: 'center',
           opacity: confirmDisabled ? 0.6 : 1,
           transform: [{ scale: pressed ? 0.95 : 1 }],
-        })}
+        }]}
       >
         <PenBg source={confirmBg} />
         <Text

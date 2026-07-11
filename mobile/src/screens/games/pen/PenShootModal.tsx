@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Image, Pressable, Text, TextInput, View } from 'react-native';
+import { Image, Pressable, Text, TextInput, View, useWindowDimensions } from 'react-native';
 import { formatVnd } from '@ola/shared/lib';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { PenSide } from '@ola/shared/types';
@@ -10,6 +10,7 @@ import {
   PenKenRow,
   PenModalActions,
   PenModalShell,
+  penPickerWidth,
   type PenDirLayout,
 } from './penModalParts';
 import { PEN_COLORS } from './penUi';
@@ -18,16 +19,16 @@ const QUICK_BETS = [1000, 2000, 5000, 10000, 20000, 50000, 100000, 200000, 50000
 
 const SHOOT_DIR_LAYOUT: PenDirLayout = {
   buttonAspect: 1116 / 1332,
-  arrowTop: '44%',
-  arrowWidth: '82%',
-  arrowInset: '5%',
-  centerTop: '48%',
-  centerWidth: '33%',
-  centerInset: '5%',
-  markBottom: '4%',
-  markWidth: '23%',
+  arrowTop: 0.44,
+  arrowWidth: 0.82,
+  arrowInset: 0.05,
+  centerTop: 0.48,
+  centerWidth: 0.33,
+  centerInset: 0.05,
+  markBottom: 0.04,
+  markWidth: 0.23,
   tabAspect: 1319 / 400,
-  tabWidth: '50%',
+  tabWidth: 0.5,
 };
 
 interface PenShootModalProps {
@@ -48,6 +49,7 @@ export function PenShootModal({
   onClose,
 }: PenShootModalProps) {
   const { t } = useTranslation();
+  const { width: windowWidth } = useWindowDimensions();
   const push = useToastStore((s) => s.push);
   const [direction, setDirection] = useState<PenSide | null>(null);
   const [thousands, setThousands] = useState(String(Math.floor(amount / 1000)));
@@ -100,6 +102,7 @@ export function PenShootModal({
         unselected={penShootAssets.dir.unselected}
         center={{ left: penShootAssets.panelBall, right: penShootAssets.panelBall }}
         layout={SHOOT_DIR_LAYOUT}
+        width={penPickerWidth(windowWidth)}
       />
 
       <Text
@@ -175,7 +178,7 @@ export function PenShootModal({
               key={bet}
               disabled={disabled}
               onPress={() => setThousands(String(bet / 1000))}
-              style={({ pressed }) => ({
+              style={({ pressed }) => [{
                 flexBasis: '30%',
                 flexGrow: 1,
                 alignItems: 'center',
@@ -186,7 +189,7 @@ export function PenShootModal({
                 backgroundColor: active ? 'rgba(55,200,79,0.25)' : 'rgba(0,0,0,0.2)',
                 opacity: disabled ? 0.35 : 1,
                 transform: [{ scale: pressed ? 0.95 : 1 }],
-              })}
+              }]}
             >
               <Text
                 style={{

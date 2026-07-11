@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Image, Text, View } from 'react-native';
+import { Image, Text, View, useWindowDimensions } from 'react-native';
 import { formatVnd } from '@ola/shared/lib';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { PenSide } from '@ola/shared/types';
@@ -10,21 +10,22 @@ import {
   PenKenRow,
   PenModalActions,
   PenModalShell,
+  penPickerWidth,
   type PenDirLayout,
 } from './penModalParts';
 
 const CATCH_DIR_LAYOUT: PenDirLayout = {
   buttonAspect: 1082 / 1220,
-  arrowTop: '46%',
-  arrowWidth: '56%',
-  arrowInset: '2%',
-  centerTop: '48%',
-  centerWidth: '40%',
-  centerInset: '4%',
-  markBottom: '4%',
-  markWidth: '22%',
+  arrowTop: 0.46,
+  arrowWidth: 0.56,
+  arrowInset: 0.02,
+  centerTop: 0.48,
+  centerWidth: 0.4,
+  centerInset: 0.04,
+  markBottom: 0.04,
+  markWidth: 0.22,
   tabAspect: 1063 / 360,
-  tabWidth: '50%',
+  tabWidth: 0.5,
 };
 
 interface PenCatchModalProps {
@@ -45,6 +46,7 @@ export function PenCatchModal({
   onClose,
 }: PenCatchModalProps) {
   const { t } = useTranslation();
+  const { width: windowWidth } = useWindowDimensions();
   const push = useToastStore((s) => s.push);
   const [direction, setDirection] = useState<PenSide | null>(null);
 
@@ -86,6 +88,7 @@ export function PenCatchModal({
         unselected={penCatchAssets.dir.unselected}
         center={{ left: penCatchAssets.gloveLeft, right: penCatchAssets.gloveRight }}
         layout={CATCH_DIR_LAYOUT}
+        width={penPickerWidth(windowWidth)}
       />
 
       <View style={{ marginTop: 'auto', alignItems: 'center', gap: 4, paddingTop: '4%' }}>
