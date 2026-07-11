@@ -4,6 +4,7 @@ import { Image, Pressable, Text, TextInput, View } from 'react-native';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import {
   ComposerDraftOverlay,
+  composerHiddenTextColor,
   composerSingleLineHeight,
   useComposerScrollSync,
 } from '../../components/SmileyDraftOverlay';
@@ -83,7 +84,7 @@ export function MeCommentComposer({
           <TextInput
             className="px-3 py-2 text-base"
             style={[
-              { color: 'transparent', textAlignVertical: 'center', maxHeight: 112 },
+              { color: composerHiddenTextColor, textAlignVertical: 'center', maxHeight: 112 },
               draft === '' ? { height: composerSingleLineHeight(8) } : null,
             ]}
             selectionColor="#7cb342"

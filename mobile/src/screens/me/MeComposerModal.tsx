@@ -19,7 +19,7 @@ import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { NativeUploadFile } from '@ola/shared/lib';
 import type { Post, PostVisibility } from '@ola/shared/types';
 import { KUL_IMAGES, stickerImageForCode } from '../../lib/kul';
-import { SmileyDraftOverlay } from '../../components/SmileyDraftOverlay';
+import { composerHiddenTextColor, SmileyDraftOverlay } from '../../components/SmileyDraftOverlay';
 import { imageSizeForHeight } from '../../lib/richText';
 import { useSmileyDraft } from '../../hooks/useSmileyDraft';
 import { SmileyKulPanel } from '../room/SmileyKulPanel';
@@ -257,7 +257,7 @@ export function MeComposerModal({ visible, onClose, editPost }: MeComposerModalP
           >
             <TextInput
               className="px-3 py-2 text-base"
-              style={{ color: 'transparent', textAlignVertical: 'top', minHeight: 94 }}
+              style={{ color: composerHiddenTextColor, textAlignVertical: 'top', minHeight: 94 }}
               selectionColor="#7cb342"
               cursorColor="#7cb342"
               placeholder={t('me.composerHint')}

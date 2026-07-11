@@ -1,5 +1,5 @@
 import { useCallback, useReducer, useState } from 'react';
-import { Image, Text, View } from 'react-native';
+import { Image, Platform, Text, View } from 'react-native';
 import type { TextInputScrollEvent } from 'react-native';
 import { splitSmileys } from '../lib/chatSmiley';
 import { imageAspectRatio, smileyBaselineShift } from '../lib/richText';
@@ -8,6 +8,8 @@ const codeWidths = new Map<string, number>();
 
 const IMAGE_SIZE = 20;
 const COMPOSER_LINE_HEIGHT = 24;
+
+export const composerHiddenTextColor = Platform.OS === 'android' ? 'rgba(0,0,0,0.004)' : 'transparent';
 
 export function composerSingleLineHeight(verticalPadding: number): number {
   return COMPOSER_LINE_HEIGHT + verticalPadding * 2;
@@ -70,7 +72,7 @@ export function SmileyDraftOverlay({ text, color }: { text: string; color?: stri
           const width = codeWidths.get(segment.code);
           if (width == null) {
             return (
-              <Text key={index} style={{ color: 'transparent' }}>
+              <Text key={index} style={{ color: composerHiddenTextColor }}>
                 {segment.code}
               </Text>
             );
@@ -90,7 +92,7 @@ export function SmileyDraftOverlay({ text, color }: { text: string; color?: stri
                 <Image
                   source={segment.src}
                   style={{
-                    width: IMAGE_SIZE * imageAspectRatio(segment.src),
+                    width: Math.min(IMAGE_SIZE * imageAspectRatio(segment.src), width + 8),
                     height: IMAGE_SIZE,
                   }}
                   resizeMode="contain"
