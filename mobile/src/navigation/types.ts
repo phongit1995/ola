@@ -24,6 +24,7 @@ export type RootStackParamList = {
   [ROOT_ROUTES.BuyVip]: { mode?: 'buy' | 'give' | 'giveDays' | 'extend' } | undefined;
   [ROOT_ROUTES.KenStore]: undefined;
   [ROOT_ROUTES.BuyKen]: undefined;
+  [ROOT_ROUTES.MediaStore]: undefined;
 };
 
 export type RoomStackParamList = {

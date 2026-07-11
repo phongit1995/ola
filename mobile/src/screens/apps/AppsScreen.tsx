@@ -27,6 +27,10 @@ export function AppsScreen() {
       navigation.navigate(ROOT_ROUTES.KenStore);
       return;
     }
+    if (item.action === 'media') {
+      navigation.navigate(ROOT_ROUTES.MediaStore);
+      return;
+    }
     push('info', t('chat.comingSoon'));
   }
 

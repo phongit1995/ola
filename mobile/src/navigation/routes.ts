@@ -22,6 +22,7 @@ export const ROOT_ROUTES = {
   BuyVip: 'BuyVip',
   KenStore: 'KenStore',
   BuyKen: 'BuyKen',
+  MediaStore: 'MediaStore',
 } as const;
 
 export const ROOM_ROUTES = {
