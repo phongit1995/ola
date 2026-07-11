@@ -11,7 +11,7 @@ import type { VipIconInstance, VipStoreResult } from '@ola/shared/types';
 import type { RootStackParamList } from '../../navigation/types';
 import { ROOT_ROUTES } from '../../navigation/routes';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
-import { MePostMenu, type MePostMenuOption } from '../me/MePostMenu';
+import { ListOptionDialog, type ListOption } from '../../components/ListOptionDialog';
 import { VipIconImage } from './VipIconImage';
 
 const PRIVACY_KEYS = ['privacyPublic', 'privacyFriends', 'privacyPrivate'] as const;
@@ -186,8 +186,8 @@ export function VipStoreScreen({ navigation }: Props) {
     navigation.navigate(ROOT_ROUTES.BuyVip, { mode });
   }
 
-  function buildMenuOptions(icon: VipIconInstance): MePostMenuOption[] {
-    const options: MePostMenuOption[] = [];
+  function buildMenuOptions(icon: VipIconInstance): ListOption[] {
+    const options: ListOption[] = [];
     if (!icon.isUsing) {
       options.push({ key: 'use', label: t('vip.actionUse'), onSelect: () => setUseTarget(icon) });
     }
@@ -208,7 +208,7 @@ export function VipStoreScreen({ navigation }: Props) {
     return options;
   }
 
-  const privacyOptions: MePostMenuOption[] = PRIVACY_KEYS.map((key, index) => ({
+  const privacyOptions: ListOption[] = PRIVACY_KEYS.map((key, index) => ({
     key,
     label: t(`vip.${key}`),
     onSelect: () => changePrivacy(index as 0 | 1 | 2),
@@ -334,14 +334,14 @@ export function VipStoreScreen({ navigation }: Props) {
         </Pressable>
       </View>
 
-      <MePostMenu
+      <ListOptionDialog
         visible={privacyOpen}
         title={t('vip.privacyTitle')}
         options={privacyOptions}
         onClose={() => setPrivacyOpen(false)}
       />
 
-      <MePostMenu
+      <ListOptionDialog
         visible={menuIcon != null}
         title={menuIcon != null ? vipName(menuIcon.typeId) : ''}
         options={menuIcon != null ? buildMenuOptions(menuIcon) : []}

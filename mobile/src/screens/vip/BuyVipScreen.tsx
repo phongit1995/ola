@@ -22,7 +22,7 @@ import type { RootStackParamList } from '../../navigation/types';
 import { ROOT_ROUTES } from '../../navigation/routes';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { Avatar } from '../../components/Avatar';
-import { MePostMenu, type MePostMenuOption } from '../me/MePostMenu';
+import { ListOptionDialog, type ListOption } from '../../components/ListOptionDialog';
 import { VipIconImage } from './VipIconImage';
 
 export type BuyVipMode = 'buy' | 'give' | 'giveDays' | 'extend';
@@ -296,7 +296,7 @@ export function BuyVipScreen({ navigation, route }: Props) {
     return t('vip.buy.kenPrice', { ken: formatKen(pkg.kenPrice), days: pkg.days });
   }
 
-  const packageOptions: MePostMenuOption[] = packages.map((pkg) => ({
+  const packageOptions: ListOption[] = packages.map((pkg) => ({
     key: pkg.id,
     label: packageLabel(pkg),
     onSelect: () => setSelectedPackageId(pkg.id),
@@ -589,7 +589,7 @@ export function BuyVipScreen({ navigation, route }: Props) {
         onClose={() => setVipPickerOpen(false)}
       />
 
-      <MePostMenu
+      <ListOptionDialog
         visible={packagePickerOpen}
         title={t('vip.buy.pickPackageTitle')}
         options={packageOptions}
