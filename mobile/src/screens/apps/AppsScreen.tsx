@@ -23,6 +23,10 @@ export function AppsScreen() {
       navigation.navigate(ROOT_ROUTES.VipStore);
       return;
     }
+    if (item.action === 'ken') {
+      navigation.navigate(ROOT_ROUTES.KenStore);
+      return;
+    }
     push('info', t('chat.comingSoon'));
   }
 

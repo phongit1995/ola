@@ -20,6 +20,8 @@ export const ROOT_ROUTES = {
   EditProfile: 'EditProfile',
   VipStore: 'VipStore',
   BuyVip: 'BuyVip',
+  KenStore: 'KenStore',
+  BuyKen: 'BuyKen',
 } as const;
 
 export const ROOM_ROUTES = {
