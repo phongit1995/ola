@@ -1,7 +1,7 @@
 import { useCallback, useReducer, useState } from 'react';
 import { Image, Platform, Text, View } from 'react-native';
-import type { TextInputScrollEvent } from 'react-native';
-import { splitSmileys } from '../lib/chatSmiley';
+import type { ImageSourcePropType, TextInputScrollEvent } from 'react-native';
+import { SMILEY_PLACEHOLDER, smileyImageForCode, splitSmileys } from '../lib/chatSmiley';
 import { imageAspectRatio, smileyBaselineShift } from '../lib/richText';
 
 const codeWidths = new Map<string, number>();
@@ -25,18 +25,23 @@ export function useComposerScrollSync(draft: string) {
   return { scrollY, handleScroll };
 }
 
+interface DraftOverlayProps {
+  display: string;
+  codes: string[];
+  color?: string;
+}
+
 export function ComposerDraftOverlay({
-  text,
+  display,
+  codes,
   scrollY,
   paddingHorizontal,
   paddingVertical,
   color,
-}: {
-  text: string;
+}: DraftOverlayProps & {
   scrollY: number;
   paddingHorizontal: number;
   paddingVertical: number;
-  color?: string;
 }) {
   return (
     <View
@@ -45,65 +50,91 @@ export function ComposerDraftOverlay({
       style={{ paddingHorizontal, paddingVertical }}
     >
       <View style={{ transform: [{ translateY: -scrollY }] }}>
-        <SmileyDraftOverlay text={text} color={color} />
+        <SmileyDraftOverlay display={display} codes={codes} color={color} />
       </View>
     </View>
   );
 }
 
-export function SmileyDraftOverlay({ text, color }: { text: string; color?: string }) {
+function DraftImageBox({ width, src }: { width: number; src: ImageSourcePropType }) {
+  return (
+    <Text>
+      {'​'}
+      <View
+        style={{
+          width,
+          height: IMAGE_SIZE,
+          alignItems: 'center',
+          justifyContent: 'center',
+          transform: [{ translateY: smileyBaselineShift(IMAGE_SIZE) }],
+        }}
+      >
+        <Image
+          source={src}
+          style={{
+            width: Math.min(IMAGE_SIZE * imageAspectRatio(src), width + 2),
+            height: IMAGE_SIZE,
+          }}
+          resizeMode="contain"
+        />
+      </View>
+    </Text>
+  );
+}
+
+function PlaceholderBox({ code }: { code: string }) {
+  const width = codeWidths.get(SMILEY_PLACEHOLDER);
+  const src = code === '' ? null : smileyImageForCode(code);
+  if (width == null || src == null) {
+    return <Text style={{ color: composerHiddenTextColor }}>{SMILEY_PLACEHOLDER}</Text>;
+  }
+  return <DraftImageBox width={width} src={src} />;
+}
+
+export function SmileyDraftOverlay({ display, codes, color }: DraftOverlayProps) {
   const [, remeasured] = useReducer((count: number) => count + 1, 0);
-  const segments = splitSmileys(text);
+  const parts = display.split(SMILEY_PLACEHOLDER);
+  const partSegments = parts.map((part) => splitSmileys(part));
   const pendingCodes = [
-    ...new Set(
-      segments.flatMap((segment) =>
-        segment.kind === 'image' && !codeWidths.has(segment.code) ? [segment.code] : []
-      )
-    ),
+    ...new Set([
+      ...(parts.length > 1 && !codeWidths.has(SMILEY_PLACEHOLDER) ? [SMILEY_PLACEHOLDER] : []),
+      ...partSegments.flatMap((segments) =>
+        segments.flatMap((segment) =>
+          segment.kind === 'image' && !codeWidths.has(segment.code) ? [segment.code] : []
+        )
+      ),
+    ]),
   ];
 
   return (
     <>
       <Text className="text-base" style={{ color: color ?? 'rgba(0,0,0,0.87)' }}>
-        {segments.map((segment, index) => {
-          if (segment.kind === 'text') {
-            return <Text key={index}>{segment.value}</Text>;
-          }
-          const width = codeWidths.get(segment.code);
-          if (width == null) {
-            return (
-              <Text key={index} style={{ color: composerHiddenTextColor }}>
-                {segment.code}
-              </Text>
-            );
-          }
-          return (
-            <Text key={index}>
-              {'\u200B'}
-              <View
-                style={{
-                  width,
-                  height: IMAGE_SIZE,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transform: [{ translateY: smileyBaselineShift(IMAGE_SIZE) }],
-                }}
-              >
-                <Image
-                  source={segment.src}
-                  style={{
-                    width: Math.min(IMAGE_SIZE * imageAspectRatio(segment.src), width + 8),
-                    height: IMAGE_SIZE,
-                  }}
-                  resizeMode="contain"
-                />
-              </View>
-            </Text>
-          );
-        })}
+        {parts.map((part, partIndex) => (
+          <Text key={partIndex}>
+            {partSegments[partIndex].map((segment, index) => {
+              if (segment.kind === 'text') {
+                return <Text key={index}>{segment.value}</Text>;
+              }
+              const width = codeWidths.get(segment.code);
+              if (width == null) {
+                return (
+                  <Text key={index} style={{ color: composerHiddenTextColor }}>
+                    {segment.code}
+                  </Text>
+                );
+              }
+              return <DraftImageBox key={index} width={width} src={segment.src} />;
+            })}
+            {partIndex < parts.length - 1 && <PlaceholderBox code={codes[partIndex] ?? ''} />}
+          </Text>
+        ))}
       </Text>
       {pendingCodes.length > 0 && (
-        <View pointerEvents="none" className="absolute opacity-0">
+        <View
+          pointerEvents="none"
+          className="absolute opacity-0"
+          style={{ alignItems: 'flex-start' }}
+        >
           {pendingCodes.map((code) => (
             <Text
               key={code}

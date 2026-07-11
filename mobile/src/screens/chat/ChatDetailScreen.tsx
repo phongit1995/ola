@@ -87,8 +87,10 @@ export function ChatDetailScreen({ navigation, route }: Props) {
 
   const {
     draft,
-    setDraft,
+    inputValue,
+    codes,
     applyDraft,
+    handleChangeText,
     insertAtCursor,
     backspaceAtCursor,
     selection,
@@ -191,12 +193,12 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     if (editing != null) {
       const id = editing;
       setEditing(null);
-      applyDraft('', 0);
+      applyDraft('');
       await editMessage(id, trimmed);
       return;
     }
     stickToBottomRef.current = true;
-    applyDraft('', 0);
+    applyDraft('');
     setOpenTab(null);
     await sendText(trimmed);
   }
@@ -219,14 +221,14 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   function startEdit(message: Message) {
     const content = message.content ?? '';
     setEditing(message.id);
-    applyDraft(content, content.length);
+    applyDraft(content);
     setOpenTab(null);
     requestAnimationFrame(() => inputRef.current?.focus());
   }
 
   function cancelEdit() {
     setEditing(null);
-    applyDraft('', 0);
+    applyDraft('');
   }
 
   async function pickAndSendImages() {
@@ -497,19 +499,20 @@ export function ChatDetailScreen({ navigation, route }: Props) {
             placeholder={t('chat.messageInputPlaceholder', { name: title })}
             placeholderTextColor="rgba(0,0,0,0.38)"
             multiline
-            value={draft}
+            value={inputValue}
             selection={selection}
             onSelectionChange={handleSelectionChange}
             onChangeText={(text) => {
-              setDraft(text);
+              handleChangeText(text);
               if (editing == null) notifyTyping();
             }}
             onScroll={handleInputScroll}
             onFocus={() => setOpenTab(null)}
           />
-          {draft !== '' && (
+          {inputValue !== '' && (
             <ComposerDraftOverlay
-              text={draft}
+              display={inputValue}
+              codes={codes}
               scrollY={inputScrollY}
               paddingHorizontal={8}
               paddingVertical={6}

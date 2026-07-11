@@ -94,8 +94,11 @@ export function RoomMessagesTab({
   const blockUser = useRoomFilterStore((s) => s.blockUser);
   const {
     draft,
+    inputValue,
+    codes,
     setDraft,
     applyDraft,
+    handleChangeText,
     insertAtCursor,
     backspaceAtCursor,
     selection,
@@ -138,12 +141,12 @@ export function RoomMessagesTab({
     const trimmed = text.trim();
     if (trimmed === '' || !canSend) return;
     stickToBottomRef.current = true;
-    applyDraft('', 0);
+    applyDraft('');
     setPanelOpen(false);
     try {
       await onSend(trimmed);
     } catch {
-      applyDraft(trimmed, trimmed.length);
+      applyDraft(trimmed);
       pushToast('error', t('room.sendError'));
     }
   }
@@ -446,16 +449,17 @@ export function RoomMessagesTab({
               placeholderTextColor="rgba(0,0,0,0.38)"
               multiline
               editable={canSend}
-              value={draft}
+              value={inputValue}
               selection={selection}
               onSelectionChange={handleSelectionChange}
-              onChangeText={setDraft}
+              onChangeText={handleChangeText}
               onScroll={handleInputScroll}
               onFocus={() => setPanelOpen(false)}
             />
-            {draft !== '' && (
+            {inputValue !== '' && (
               <ComposerDraftOverlay
-                text={draft}
+                display={inputValue}
+                codes={codes}
                 scrollY={inputScrollY}
                 paddingHorizontal={12}
                 paddingVertical={8}

@@ -54,7 +54,10 @@ export function MeComposerModal({ visible, onClose, editPost }: MeComposerModalP
 
   const {
     draft: content,
+    inputValue,
+    codes,
     setDraft: setContent,
+    handleChangeText,
     insertAtCursor,
     selection,
     handleSelectionChange,
@@ -264,19 +267,19 @@ export function MeComposerModal({ visible, onClose, editPost }: MeComposerModalP
               placeholderTextColor="rgba(0,0,0,0.38)"
               multiline
               autoFocus={!isEdit}
-              value={content}
+              value={inputValue}
               selection={selection}
               onSelectionChange={handleSelectionChange}
-              onChangeText={setContent}
+              onChangeText={handleChangeText}
               onFocus={() => {
                 setInputFocused(true);
                 setPanel(null);
               }}
               onBlur={() => setInputFocused(false)}
             />
-            {content !== '' && (
+            {inputValue !== '' && (
               <View pointerEvents="none" className="absolute inset-0 overflow-hidden px-3 py-2">
-                <SmileyDraftOverlay text={content} />
+                <SmileyDraftOverlay display={inputValue} codes={codes} />
               </View>
             )}
           </View>

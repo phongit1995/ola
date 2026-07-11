@@ -81,6 +81,44 @@ const SMILEY_PATTERN = Object.keys(SMILEY_MAP)
 
 const SMILEY_REGEX = new RegExp(`\\[e:\\d{1,2}\\]|${SMILEY_PATTERN}`, 'g');
 
+export const SMILEY_PLACEHOLDER = '〿';
+
+export interface SmileyDraftValue {
+  display: string;
+  codes: string[];
+}
+
+export function countSmileyPlaceholders(text: string): number {
+  let count = 0;
+  for (let index = 0; index < text.length; index++) {
+    if (text[index] === SMILEY_PLACEHOLDER) count++;
+  }
+  return count;
+}
+
+export function parseSmileyDraft(real: string): SmileyDraftValue {
+  let display = '';
+  const codes: string[] = [];
+  for (const segment of splitSmileys(real)) {
+    if (segment.kind === 'image') {
+      display += SMILEY_PLACEHOLDER;
+      codes.push(segment.code);
+    } else {
+      display += segment.value.split(SMILEY_PLACEHOLDER).join(' ');
+    }
+  }
+  return { display, codes };
+}
+
+export function serializeSmileyDraft(value: SmileyDraftValue): string {
+  const parts = value.display.split(SMILEY_PLACEHOLDER);
+  let out = parts[0] ?? '';
+  for (let index = 1; index < parts.length; index++) {
+    out += (value.codes[index - 1] ?? '') + parts[index];
+  }
+  return out;
+}
+
 export type SmileySegment =
   | { kind: 'text'; value: string }
   | { kind: 'image'; src: ImageSourcePropType; code: string };

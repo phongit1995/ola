@@ -36,8 +36,10 @@ export function MeCommentComposer({
   const me = useAuthStore((s) => s.user);
   const {
     draft,
-    setDraft,
+    inputValue,
+    codes,
     applyDraft,
+    handleChangeText,
     insertAtCursor,
     backspaceAtCursor,
     selection,
@@ -52,7 +54,7 @@ export function MeCommentComposer({
     if (!canSend) return;
     const ok = await onSubmit(draft);
     if (ok) {
-      applyDraft('', 0);
+      applyDraft('');
       setSmileyOpen(false);
     }
   }
@@ -93,16 +95,17 @@ export function MeCommentComposer({
             placeholderTextColor="rgba(0,0,0,0.38)"
             multiline
             autoFocus={autoFocus}
-            value={draft}
+            value={inputValue}
             selection={selection}
             onSelectionChange={handleSelectionChange}
-            onChangeText={setDraft}
+            onChangeText={handleChangeText}
             onScroll={handleInputScroll}
             onFocus={() => setSmileyOpen(false)}
           />
-          {draft !== '' && (
+          {inputValue !== '' && (
             <ComposerDraftOverlay
-              text={draft}
+              display={inputValue}
+              codes={codes}
               scrollY={inputScrollY}
               paddingHorizontal={12}
               paddingVertical={8}
