@@ -18,6 +18,7 @@ target 'OlaMobile' do
   config = use_native_modules!
 
   pod 'TextRangeRects', :path => './TextRangeRects'
+  pod 'OlaRichText', :path => './OlaRichText'
 
   use_react_native!(
     :path => config[:reactNativePath],

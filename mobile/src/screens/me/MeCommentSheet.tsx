@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
@@ -16,7 +16,7 @@ import { createTimeFormatter, formatDateDMY, isSameDay } from '@ola/shared/lib';
 import type { Post } from '@ola/shared/types';
 import { MePostCard } from './MePostCard';
 import { MeCommentItem } from './MeCommentItem';
-import { MeCommentComposer } from './MeCommentComposer';
+import { MeCommentComposer, type MeCommentComposerHandle } from './MeCommentComposer';
 import { useMeComments } from './useMeComments';
 
 interface MeCommentSheetProps {
@@ -43,6 +43,7 @@ export function MeCommentSheet({
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const meId = useAuthStore((s) => s.user?.id) ?? '';
+  const composerRef = useRef<MeCommentComposerHandle>(null);
 
   const { comments, total, loading, error, submitting, add, remove, like, replyTarget, setReplyTarget } =
     useMeComments(post.id, {
@@ -71,7 +72,14 @@ export function MeCommentSheet({
           <View className="w-10" />
         </View>
 
-        <ScrollView className="flex-1" keyboardShouldPersistTaps="handled">
+        <ScrollView
+          className="flex-1"
+          keyboardShouldPersistTaps="handled"
+          onStartShouldSetResponderCapture={() => {
+            composerRef.current?.closePanel();
+            return false;
+          }}
+        >
           <MePostCard
             post={post}
             timeLabel={postTime}
@@ -115,6 +123,7 @@ export function MeCommentSheet({
 
         <View style={{ paddingBottom: insets.bottom }}>
           <MeCommentComposer
+            ref={composerRef}
             key={replyTarget?.id ?? 'root'}
             submitting={submitting}
             onSubmit={add}

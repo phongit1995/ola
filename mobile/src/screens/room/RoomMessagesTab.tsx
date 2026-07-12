@@ -6,7 +6,6 @@ import {
   Pressable,
   ScrollView,
   Text,
-  TextInput,
   NativeScrollEvent,
   View,
 } from 'react-native';
@@ -20,12 +19,7 @@ import { useToastStore } from '@ola/shared/stores/toastStore';
 import { useRoomFilterStore } from '@ola/shared/stores/roomFilterStore';
 import { kulImageForText, kulToken } from '../../lib/kul';
 import { SmileyText } from '../../lib/richText';
-import {
-  ComposerDraftOverlay,
-  composerSingleLineHeight,
-  useComposerScrollSync,
-} from '../../components/SmileyDraftOverlay';
-import { useSmileyDraft } from '../../hooks/useSmileyDraft';
+import { ChatComposer, type ChatComposerHandle } from '../../components/ChatComposer';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { buildRoomFeed, type RoomFeedItem } from './messageGroups';
 import { RoomMessageGroup } from './RoomMessageGroup';
@@ -91,19 +85,7 @@ export function RoomMessagesTab({
   const pushToast = useToastStore((s) => s.push);
   const blockedUserIds = useRoomFilterStore((s) => s.blockedUserIds);
   const blockUser = useRoomFilterStore((s) => s.blockUser);
-  const {
-    draft,
-    inputValue,
-    codes,
-    setDraft,
-    applyDraft,
-    handleChangeText,
-    insertAtCursor,
-    backspaceAtCursor,
-    selection,
-    handleSelectionChange,
-  } = useSmileyDraft();
-  const { scrollY: inputScrollY, handleScroll: handleInputScroll } = useComposerScrollSync(draft);
+  const [draft, setDraft] = useState('');
   const [panelOpen, setPanelOpen] = useState(false);
   const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
   const [actionTarget, setActionTarget] = useState<{ message: RoomMessage; anchor: AnchorRect } | null>(
@@ -117,7 +99,7 @@ export function RoomMessagesTab({
   const stickToBottomRef = useRef(true);
   const sheetOpenRef = useRef(false);
   const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const inputRef = useRef<TextInput>(null);
+  const composerRef = useRef<ChatComposerHandle>(null);
   const imageIdRef = useRef(0);
 
   const canSend = status === 'joined';
@@ -140,12 +122,12 @@ export function RoomMessagesTab({
     const trimmed = text.trim();
     if (trimmed === '' || !canSend) return;
     stickToBottomRef.current = true;
-    applyDraft('');
+    setDraft('');
     setPanelOpen(false);
     try {
       await onSend(trimmed);
     } catch {
-      applyDraft(trimmed);
+      setDraft(trimmed);
       pushToast('error', t('room.sendError'));
     }
   }
@@ -302,6 +284,13 @@ export function RoomMessagesTab({
         </View>
       )}
 
+      <View
+        className="flex-1"
+        onStartShouldSetResponderCapture={() => {
+          if (panelOpen) setPanelOpen(false);
+          return false;
+        }}
+      >
       <FlashList
         ref={listRef}
         data={feed}
@@ -348,6 +337,7 @@ export function RoomMessagesTab({
           )
         }
       />
+      </View>
 
       {replyTarget != null && (
         <View
@@ -432,37 +422,17 @@ export function RoomMessagesTab({
           </ScrollView>
         ) : (
           <View
-            className="max-h-28 min-h-9 flex-1 justify-center rounded-2xl"
+            className="flex-1 rounded-2xl"
             style={{ borderWidth: 1, borderColor: 'rgba(0,0,0,0.12)' }}
           >
-            <TextInput
-              ref={inputRef}
-              className="px-3 py-2 text-base"
-              style={[
-                { color: 'rgba(0,0,0,0.87)', textAlignVertical: 'center', maxHeight: 112 },
-                draft === '' ? { height: composerSingleLineHeight(8) } : null,
-              ]}
-              selectionColor="#7cb342"
-              cursorColor="#7cb342"
-              placeholder={t('room.chatInputHint')}
-              placeholderTextColor="rgba(0,0,0,0.38)"
-              multiline
+            <ChatComposer
+              ref={composerRef}
+              value={draft}
+              onChange={setDraft}
               editable={canSend}
-              value={inputValue}
-              selection={selection}
-              onSelectionChange={handleSelectionChange}
-              onChangeText={handleChangeText}
-              onScroll={handleInputScroll}
+              placeholder={t('room.chatInputHint')}
               onFocus={() => setPanelOpen(false)}
             />
-            {inputValue !== '' && (
-              <ComposerDraftOverlay
-                display={inputValue}
-                codes={codes}
-                scrollY={inputScrollY}
-                inputRef={inputRef}
-              />
-            )}
           </View>
         )}
         {pendingImages.length > 0 ? (
@@ -477,7 +447,7 @@ export function RoomMessagesTab({
           <Pressable
             onPress={() => {
               void sendText(draft);
-              requestAnimationFrame(() => inputRef.current?.focus());
+              requestAnimationFrame(() => composerRef.current?.focus());
             }}
             disabled={!canSend}
             className="h-9 items-center justify-center rounded-full bg-ola-primary px-4 active:opacity-90"
@@ -498,8 +468,8 @@ export function RoomMessagesTab({
 
       {panelOpen && canSend && (
         <SmileyKulPanel
-          onPickEmoji={insertAtCursor}
-          onBackspace={backspaceAtCursor}
+          onPickEmoji={(code) => composerRef.current?.insertCode(code, true)}
+          onBackspace={() => composerRef.current?.backspace()}
           onSendKul={(index) => {
             void sendText(kulToken(index));
             setPanelOpen(false);

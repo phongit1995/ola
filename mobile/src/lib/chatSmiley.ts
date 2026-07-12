@@ -23,7 +23,7 @@ export function imageSizeForHeight(
   return { width: height * imageAspectRatio(src), height };
 }
 
-const SMILEY_ALIASES: string[][] = [
+export const SMILEY_ALIASES: string[][] = [
   [':-)', ':)'],
   [':-P', ':-p', ':p', ':P'],
   ['>:D<'],

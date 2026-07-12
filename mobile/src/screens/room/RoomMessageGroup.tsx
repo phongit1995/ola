@@ -1,17 +1,18 @@
 import { memo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Image, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, Text, useWindowDimensions, View } from 'react-native';
 import { colorForName, formatClockHM } from '@ola/shared/lib';
 import type { RoomReplySnapshot } from '@ola/shared/types';
 import { kulImageForText } from '../../lib/kul';
 import { reactionChips } from '../../lib/reactions';
 import { imageSizeForHeight } from '../../lib/chatSmiley';
-import { renderRichText, SmileyText } from '../../lib/richText';
+import { SmileyText } from '../../lib/richText';
+import { RichTextView } from '../../components/RichTextView';
 import { VipAvatar } from '../../components/VipAvatar';
 import { useMediaViewerStore } from '../../store/mediaViewerStore';
 import type { AnchorRect } from './MessageActionSheet';
 import type { BubblePosition, GroupedMessage, MessageGroup } from './messageGroups';
-import { OTHER_CORNERS, OWN_CORNERS } from './roomConstants';
+import { OTHER_CORNERS, OWN_CORNERS, roomBubbleTextMaxWidth } from './roomConstants';
 
 const mentionIcon = require('../../assets/icons/room/ic_tag_people.png');
 const photoIcon = require('../../assets/icons/chat/ic_local.png');
@@ -92,6 +93,7 @@ function BubbleContent({
   onResendImage?: (id: string) => void;
 }) {
   const openViewer = useMediaViewerStore((s) => s.openViewer);
+  const { width: windowWidth } = useWindowDimensions();
   const isImage = message.type === 'image' && message.imageUrl != null && message.imageUrl !== '';
   const uploading = message.status === 'uploading';
   const failed = message.status === 'failed';
@@ -132,9 +134,13 @@ function BubbleContent({
   }
 
   return (
-    <Text className="text-base" style={{ color: isOwn ? '#ffffff' : 'rgba(0,0,0,0.87)' }}>
-      {renderRichText(message.content, { own: isOwn, onMention })}
-    </Text>
+    <RichTextView
+      content={message.content}
+      own={isOwn}
+      color={isOwn ? '#ffffff' : 'rgba(0,0,0,0.87)'}
+      maxWidth={roomBubbleTextMaxWidth(windowWidth, isOwn)}
+      onMention={onMention}
+    />
   );
 }
 

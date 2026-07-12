@@ -2,6 +2,23 @@
   "name": "mobile",
   "version": "0.0.1",
   "private": true,
+  "codegenConfig": {
+    "name": "OlaNativeSpec",
+    "type": "all",
+    "jsSrcsDir": "src/specs",
+    "android": {
+      "javaPackageName": "com.olachat.net.org.vn.richtext"
+    },
+    "ios": {
+      "componentProvider": {
+        "OlaRichTextView": "OlaRichTextView",
+        "OlaChatComposer": "OlaChatComposerView"
+      },
+      "modulesProvider": {
+        "OlaRichText": "NativeOlaRichText"
+      }
+    }
+  },
   "scripts": {
     "android": "react-native run-android",
     "ios": "react-native run-ios",

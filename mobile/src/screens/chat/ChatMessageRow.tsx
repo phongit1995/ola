@@ -1,13 +1,18 @@
 import { useRef } from 'react';
-import { ActivityIndicator, Image, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, Text, useWindowDimensions, View } from 'react-native';
 import { formatDuration, parseMessageMetadata } from '@ola/shared/lib';
 import type { Message } from '@ola/shared/types';
 import { Avatar } from '../../components/Avatar';
 import { kulImageForText } from '../../lib/kul';
 import { reactionChips } from '../../lib/reactions';
 import { imageSizeForHeight } from '../../lib/chatSmiley';
-import { renderRichText } from '../../lib/richText';
+import { RichTextView } from '../../components/RichTextView';
 import type { AnchorRect } from '../room/MessageActionSheet';
+
+function chatBubbleTextMaxWidth(windowWidth: number, fromMe: boolean): number {
+  const rowWidth = windowWidth - 24 - (fromMe ? 0 : 36);
+  return Math.floor(rowWidth * 0.78 - 24) - 2;
+}
 
 const sentIcon = require('../../assets/icons/chat/ic_message_sent.png');
 const resendIcon = require('../../assets/icons/chat/btn_resend_d.png');
@@ -45,6 +50,7 @@ function ChatBubble({
   onMention: (nick: string) => void;
 }) {
   const meta = parseMessageMetadata(message.metadata);
+  const { width: windowWidth } = useWindowDimensions();
   const failed = message.status === 'failed';
   const kul = message.type === 'text' ? kulImageForText(message.content) : null;
 
@@ -83,9 +89,13 @@ function ChatBubble({
           </Text>
         </View>
       ) : (
-        <Text className="text-base" style={{ color: 'rgba(0,0,0,0.87)' }}>
-          {renderRichText(message.content, { own: false, onMention })}
-        </Text>
+        <RichTextView
+          content={message.content}
+          own={false}
+          color="rgba(0,0,0,0.87)"
+          maxWidth={chatBubbleTextMaxWidth(windowWidth, fromMe)}
+          onMention={onMention}
+        />
       )}
     </View>
   );
