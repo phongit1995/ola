@@ -4,6 +4,7 @@ import {
   SMILEY_PLACEHOLDER,
   countSmileyPlaceholders,
   parseSmileyDraft,
+  placeholderGhostRunStart,
   serializeSmileyDraft,
   splitSmileys,
   type SmileyDraftValue,
@@ -95,18 +96,35 @@ export function useSmileyDraft(initialDraft = '') {
       }
       const before = countSmileyPlaceholders(oldDisplay.slice(0, start));
       const removedCodes = countSmileyPlaceholders(oldDisplay.slice(start, start + removedLength));
-      const codes =
+      let codes =
         removedCodes === 0
           ? prev.codes
           : [...prev.codes.slice(0, before), ...prev.codes.slice(before + removedCodes)];
       const inserted = insertedRaw.split(SMILEY_PLACEHOLDER).join(' ');
-      const display =
+      let display =
         inserted === insertedRaw
           ? nextDisplay
           : oldDisplay.slice(0, start) + inserted + oldDisplay.slice(start + removedLength);
+      if (removedCodes > 0 && inserted === '' && display[start] !== SMILEY_PLACEHOLDER) {
+        const ghostStart = placeholderGhostRunStart(display, codes, start);
+        if (ghostStart !== start) {
+          const ghostSlot = countSmileyPlaceholders(display.slice(0, ghostStart));
+          applyValue(
+            {
+              display: display.slice(0, ghostStart) + display.slice(start),
+              codes: [
+                ...codes.slice(0, ghostSlot),
+                ...codes.slice(ghostSlot + (start - ghostStart)),
+              ],
+            },
+            ghostStart
+          );
+          return;
+        }
+      }
       commit({ display, codes });
     },
-    [commit]
+    [applyValue, commit]
   );
 
   const clampedSelection = useCallback((): DraftSelection => {
@@ -157,7 +175,12 @@ export function useSmileyDraft(initialDraft = '') {
     if (start === 0) return;
     const beforeCursor = valueRef.current.display.slice(0, start);
     let removeLength = 1;
-    if (!beforeCursor.endsWith(SMILEY_PLACEHOLDER)) {
+    if (beforeCursor.endsWith(SMILEY_PLACEHOLDER)) {
+      const codes = valueRef.current.codes;
+      if (codes[countSmileyPlaceholders(beforeCursor) - 1] !== '') {
+        removeLength = start - placeholderGhostRunStart(beforeCursor, codes, start - 1);
+      }
+    } else {
       const segments = splitSmileys(beforeCursor);
       const last = segments[segments.length - 1];
       if (last != null && last.kind === 'image') {

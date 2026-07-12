@@ -3,7 +3,7 @@ import { Image, Pressable, ScrollView, View } from 'react-native';
 import { SMILEY_PANEL } from '../../lib/chatSmiley';
 import { EMOJI_IMAGES, emojiToken } from '../../lib/emoji';
 import { KUL_IMAGES } from '../../lib/kul';
-import { imageSizeForHeight } from '../../lib/richText';
+import { imageSizeForHeight } from '../../lib/chatSmiley';
 
 type PanelTab = 'emoji' | 'smiley' | 'kul';
 

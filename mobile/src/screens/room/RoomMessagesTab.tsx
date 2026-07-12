@@ -22,7 +22,6 @@ import { kulImageForText, kulToken } from '../../lib/kul';
 import { SmileyText } from '../../lib/richText';
 import {
   ComposerDraftOverlay,
-  composerHiddenTextColor,
   composerSingleLineHeight,
   useComposerScrollSync,
 } from '../../components/SmileyDraftOverlay';
@@ -361,7 +360,7 @@ export function RoomMessagesTab({
               {t('room.replyingTo', { name: replyTarget.senderName ?? '' })}
             </Text>
             <Text numberOfLines={1} className="text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>
-              <SmileyText text={replyExcerpt(replyTarget)} size={14} />
+              <SmileyText text={replyExcerpt(replyTarget)} fontSize={12} />
             </Text>
           </View>
           <Pressable
@@ -440,7 +439,7 @@ export function RoomMessagesTab({
               ref={inputRef}
               className="px-3 py-2 text-base"
               style={[
-                { color: composerHiddenTextColor, textAlignVertical: 'center', maxHeight: 112 },
+                { color: 'rgba(0,0,0,0.87)', textAlignVertical: 'center', maxHeight: 112 },
                 draft === '' ? { height: composerSingleLineHeight(8) } : null,
               ]}
               selectionColor="#7cb342"
@@ -461,8 +460,7 @@ export function RoomMessagesTab({
                 display={inputValue}
                 codes={codes}
                 scrollY={inputScrollY}
-                paddingHorizontal={12}
-                paddingVertical={8}
+                inputRef={inputRef}
               />
             )}
           </View>

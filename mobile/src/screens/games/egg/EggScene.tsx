@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Animated, Easing, Image, Pressable, Text, View } from 'react-native';
+import { Animated, Image, Pressable, Text, View } from 'react-native';
 import { BG_H, BG_W, NESTS } from '@ola/shared/lib';
 import { useEggGameStore } from '@ola/shared/stores/eggGameStore';
 import { EggSprite } from './EggSprite';

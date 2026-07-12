@@ -5,7 +5,8 @@ import type { Message } from '@ola/shared/types';
 import { Avatar } from '../../components/Avatar';
 import { kulImageForText } from '../../lib/kul';
 import { reactionChips } from '../../lib/reactions';
-import { imageSizeForHeight, renderRichText } from '../../lib/richText';
+import { imageSizeForHeight } from '../../lib/chatSmiley';
+import { renderRichText } from '../../lib/richText';
 import type { AnchorRect } from '../room/MessageActionSheet';
 
 const sentIcon = require('../../assets/icons/chat/ic_message_sent.png');

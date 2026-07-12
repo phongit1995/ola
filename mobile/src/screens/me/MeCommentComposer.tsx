@@ -1,10 +1,9 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, Pressable, Text, TextInput, View } from 'react-native';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import {
   ComposerDraftOverlay,
-  composerHiddenTextColor,
   composerSingleLineHeight,
   useComposerScrollSync,
 } from '../../components/SmileyDraftOverlay';
@@ -47,6 +46,7 @@ export function MeCommentComposer({
   } = useSmileyDraft(initialDraft);
   const { scrollY: inputScrollY, handleScroll: handleInputScroll } = useComposerScrollSync(draft);
   const [smileyOpen, setSmileyOpen] = useState(false);
+  const inputRef = useRef<TextInput>(null);
   const myName = me?.username ?? t('home.guest');
   const canSend = draft.trim() !== '' && !submitting;
 
@@ -84,9 +84,10 @@ export function MeCommentComposer({
           style={{ borderWidth: 1, borderColor: 'rgba(0,0,0,0.12)' }}
         >
           <TextInput
+            ref={inputRef}
             className="px-3 py-2 text-base"
             style={[
-              { color: composerHiddenTextColor, textAlignVertical: 'center', maxHeight: 112 },
+              { color: 'rgba(0,0,0,0.87)', textAlignVertical: 'center', maxHeight: 112 },
               draft === '' ? { height: composerSingleLineHeight(8) } : null,
             ]}
             selectionColor="#7cb342"
@@ -107,8 +108,7 @@ export function MeCommentComposer({
               display={inputValue}
               codes={codes}
               scrollY={inputScrollY}
-              paddingHorizontal={12}
-              paddingVertical={8}
+              inputRef={inputRef}
             />
           )}
         </View>

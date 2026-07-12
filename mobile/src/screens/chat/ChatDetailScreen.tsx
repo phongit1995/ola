@@ -29,7 +29,6 @@ import { useMediaViewerStore } from '../../store/mediaViewerStore';
 import { kulToken } from '../../lib/kul';
 import {
   ComposerDraftOverlay,
-  composerHiddenTextColor,
   composerSingleLineHeight,
   useComposerScrollSync,
 } from '../../components/SmileyDraftOverlay';
@@ -491,7 +490,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
             ref={inputRef}
             className="px-2 py-1.5 text-base"
             style={[
-              { color: composerHiddenTextColor, textAlignVertical: 'center', maxHeight: 128 },
+              { color: 'rgba(0,0,0,0.87)', textAlignVertical: 'center', maxHeight: 128 },
               draft === '' ? { height: composerSingleLineHeight(6) } : null,
             ]}
             selectionColor="#7cb342"
@@ -514,8 +513,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
               display={inputValue}
               codes={codes}
               scrollY={inputScrollY}
-              paddingHorizontal={8}
-              paddingVertical={6}
+              inputRef={inputRef}
             />
           )}
         </View>
