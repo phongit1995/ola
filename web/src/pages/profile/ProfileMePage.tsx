@@ -15,8 +15,6 @@ import { Avatar, ScreenHeader, FullScreenOverlay, UserName, VipIcon } from '@com
 import { CoverImageEditor } from './components/CoverImageEditor';
 import { FollowingListOverlay } from './components/FollowingListOverlay';
 import { UserProfileView } from './UserProfileView';
-import { mapFollowing } from './mappers';
-import type { ProfileFriend } from './types';
 import { COVER_ASPECT } from './constants';
 import { MePostCard } from '../me/components/MePostCard';
 import { MePostInteractions, type MePostSource } from '../me/MePostInteractions';
@@ -38,9 +36,7 @@ export function ProfileMePage() {
   const [coverPreview, setCoverPreview] = useState<{ url: string; file: File } | null>(null);
   const [spouseTarget, setSpouseTarget] = useState<{ username: string; color: string } | null>(null);
   const [followingOpen, setFollowingOpen] = useState(false);
-  const [followingList, setFollowingList] = useState<ProfileFriend[]>([]);
   const [followersOpen, setFollowersOpen] = useState(false);
-  const [followersList, setFollowersList] = useState<ProfileFriend[]>([]);
   const [friendTarget, setFriendTarget] = useState<{ username: string; color: string } | null>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
@@ -178,25 +174,13 @@ export function ProfileMePage() {
   const openSpouse = () => {
     if (spouse) setSpouseTarget({ username: spouse.username, color: colorForName(spouse.username) });
   };
-  const openFollowing = async () => {
+  const openFollowing = () => {
     if ((user.followingCount ?? 0) === 0) return;
-    try {
-      const res = await UserService.following(user.id, { limit: 100 });
-      setFollowingList(mapFollowing(res.users));
-      setFollowingOpen(true);
-    } catch {
-      toast.error(t('common.error'));
-    }
+    setFollowingOpen(true);
   };
-  const openFollowers = async () => {
+  const openFollowers = () => {
     if ((user.followerCount ?? 0) === 0) return;
-    try {
-      const res = await UserService.followers(user.id, { limit: 100 });
-      setFollowersList(mapFollowing(res.users));
-      setFollowersOpen(true);
-    } catch {
-      toast.error(t('common.error'));
-    }
+    setFollowersOpen(true);
   };
   const vipTypeId = activeVipTypeId(user.vipUsed, user.vipEndTime);
   const mePosts = posts
@@ -378,7 +362,8 @@ export function ProfileMePage() {
     </FullScreenOverlay>
     {followingOpen ? (
       <FollowingListOverlay
-        following={followingList}
+        userId={user.id}
+        kind="following"
         onClose={() => setFollowingOpen(false)}
         onSelect={(friend) => {
           setFollowingOpen(false);
@@ -389,7 +374,8 @@ export function ProfileMePage() {
     {followersOpen ? (
       <FollowingListOverlay
         title={t('profile.peopleCare')}
-        following={followersList}
+        userId={user.id}
+        kind="followers"
         onClose={() => setFollowersOpen(false)}
         onSelect={(friend) => {
           setFollowersOpen(false);

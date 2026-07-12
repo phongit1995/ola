@@ -51,13 +51,13 @@ export interface UserProfile {
 export interface ProfileSecondary {
   media: string[];
   following: ProfileFriend[];
-  followers: ProfileFriend[];
   posts: MePost[];
   loading: boolean;
 }
 
 export interface ProfileController {
   profile: UserProfile | null;
+  userId: string;
   loading: boolean;
   notFound: boolean;
   relationship: RelationshipInfo;
