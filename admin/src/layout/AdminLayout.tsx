@@ -7,6 +7,7 @@ import {
   CommentOutlined,
   CrownOutlined,
   DollarOutlined,
+  FileSearchOutlined,
   GiftOutlined,
   LockOutlined,
   LogoutOutlined,
@@ -50,6 +51,7 @@ const MENU_ITEMS = [
     ],
   },
   { key: '/me', icon: <PictureOutlined />, label: 'Me' },
+  { key: '/audit-logs', icon: <FileSearchOutlined />, label: 'Nhật ký admin' },
   {
     key: 'settings',
     icon: <SettingOutlined />,
@@ -80,6 +82,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/games/pen/stats': 'Thống kê Pen',
   '/games/ken-treasure': 'Rương Ken',
   '/me': 'Quản lý Me',
+  '/audit-logs': 'Nhật ký admin',
   '/settings/topup': 'Cài đặt nạp KEN',
 }
 

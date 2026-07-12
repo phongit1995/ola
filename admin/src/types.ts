@@ -61,6 +61,42 @@ export interface KenClaimHistoryItem {
   user: { id: string; username: string; fullName?: string; avatar?: string }
 }
 
+export interface AdminAuditLog {
+  id: string
+  adminId: string
+  adminUsername?: string
+  adminFullName?: string
+  method: string
+  resource: string
+  path: string
+  route?: string
+  status: number
+  ip?: string
+  detail?: Record<string, unknown>
+  createdAt: string
+}
+
+export interface AuditLogListParams {
+  adminId?: string
+  resource?: string
+  method?: string
+  from?: string
+  to?: string
+  limit?: number
+  offset?: number
+}
+
+export interface VipPurchaseHistory {
+  id: string
+  packageName: string
+  days: number
+  kenPrice: number
+  kenBalanceAfter: number
+  vipEndTime: string
+  source: string
+  createdAt: string
+}
+
 export interface ListResult<T> {
   items: T[]
   total: number
