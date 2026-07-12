@@ -6,7 +6,6 @@ import type { RoomReplySnapshot } from '@ola/shared/types';
 import { kulImageForText } from '../../lib/kul';
 import { reactionChips } from '../../lib/reactions';
 import { imageSizeForHeight } from '../../lib/chatSmiley';
-import { SmileyText } from '../../lib/richText';
 import { RichTextView } from '../../components/RichTextView';
 import { VipAvatar } from '../../components/VipAvatar';
 import { useMediaViewerStore } from '../../store/mediaViewerStore';
@@ -40,6 +39,7 @@ function QuoteBlock({
   onQuoteClick?: (messageId: string) => void;
 }) {
   const { t } = useTranslation();
+  const { width: windowWidth } = useWindowDimensions();
   const isImage = replyTo.type === 'image';
   const excerpt = isImage
     ? t('room.replyImage')
@@ -69,13 +69,15 @@ function QuoteBlock({
       )}
       <View className="flex-row items-center gap-1">
         {isImage && <Image source={photoIcon} style={{ width: 14, height: 14 }} resizeMode="contain" />}
-        <Text
-          numberOfLines={2}
-          className="text-xs"
-          style={{ color: isOwn ? 'rgba(255,255,255,0.75)' : 'rgba(0,0,0,0.45)' }}
-        >
-          <SmileyText text={excerpt} fontSize={12} />
-        </Text>
+        <RichTextView
+          content={excerpt}
+          own={isOwn}
+          color={isOwn ? 'rgba(255,255,255,0.75)' : 'rgba(0,0,0,0.45)'}
+          maxWidth={roomBubbleTextMaxWidth(windowWidth, isOwn) - (isImage ? 32 : 14)}
+          fontSize={12}
+          maxLines={2}
+          onMention={() => onQuoteClick?.(replyTo.messageId)}
+        />
       </View>
     </Pressable>
   );

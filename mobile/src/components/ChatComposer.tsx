@@ -6,17 +6,11 @@ import {
   useState,
   type ElementRef,
 } from 'react';
-import { TextInput, View } from 'react-native';
+import { TextInput } from 'react-native';
 import OlaChatComposerNative, {
   Commands as ComposerCommands,
 } from '../specs/OlaChatComposerNativeComponent';
 import { richTextNativeAvailable } from '../lib/richTextNativeConfig';
-import { useSmileyDraft } from '../hooks/useSmileyDraft';
-import {
-  ComposerDraftOverlay,
-  composerSingleLineHeight,
-  useComposerScrollSync,
-} from './SmileyDraftOverlay';
 
 export interface ChatComposerHandle {
   focus: () => void;
@@ -129,7 +123,7 @@ const NativeComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(functio
   );
 });
 
-const LegacyComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(function LegacyComposer(
+const PlainComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(function PlainComposer(
   {
     value,
     onChange,
@@ -138,7 +132,7 @@ const LegacyComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(functio
     placeholder,
     editable = true,
     fontSize = 16,
-    minHeight,
+    minHeight = 40,
     maxHeight = 112,
     paddingH = 12,
     paddingV = 8,
@@ -149,83 +143,44 @@ const LegacyComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(functio
   },
   ref
 ) {
-  const {
-    draft,
-    inputValue,
-    codes,
-    applyDraft,
-    handleChangeText,
-    insertAtCursor,
-    backspaceAtCursor,
-    selection,
-    handleSelectionChange,
-  } = useSmileyDraft(value);
   const inputRef = useRef<TextInput>(null);
-  const lastReported = useRef(value);
-  const { scrollY, handleScroll } = useComposerScrollSync(draft);
-
-  useEffect(() => {
-    if (value !== lastReported.current) {
-      lastReported.current = value;
-      applyDraft(value);
-    }
-  }, [value, applyDraft]);
-
-  useEffect(() => {
-    if (draft !== lastReported.current) {
-      lastReported.current = draft;
-      onChange(draft);
-    }
-  }, [draft, onChange]);
+  const valueRef = useRef(value);
+  valueRef.current = value;
 
   useImperativeHandle(ref, () => ({
     focus: () => inputRef.current?.focus(),
     blur: () => inputRef.current?.blur(),
     insertCode: (code, trailingSpace = true) =>
-      insertAtCursor(trailingSpace ? `${code} ` : code),
-    insertText: (text) => insertAtCursor(text),
-    backspace: backspaceAtCursor,
+      onChange(valueRef.current + code + (trailingSpace ? ' ' : '')),
+    insertText: (text) => onChange(valueRef.current + text),
+    backspace: () => onChange(Array.from(valueRef.current).slice(0, -1).join('')),
   }));
 
   return (
-    <View className="flex-1 justify-center">
-      <TextInput
-        ref={inputRef}
-        style={[
-          {
-            color: textColor,
-            fontSize,
-            textAlignVertical: alignTop ? 'top' : 'center',
-            maxHeight,
-            paddingHorizontal: paddingH,
-            paddingVertical: paddingV,
-          },
-          minHeight != null ? { minHeight } : null,
-          draft === '' && !alignTop ? { height: composerSingleLineHeight(paddingV) } : null,
-        ]}
-        selectionColor={selectionColor}
-        cursorColor={selectionColor}
-        placeholder={placeholder}
-        placeholderTextColor={placeholderTextColor}
-        multiline
-        editable={editable}
-        value={inputValue}
-        selection={selection}
-        onSelectionChange={handleSelectionChange}
-        onChangeText={handleChangeText}
-        onScroll={handleScroll}
-        onFocus={onFocus}
-        onBlur={onBlur}
-      />
-      {inputValue !== '' && (
-        <ComposerDraftOverlay
-          display={inputValue}
-          codes={codes}
-          scrollY={scrollY}
-          inputRef={inputRef}
-        />
-      )}
-    </View>
+    <TextInput
+      ref={inputRef}
+      style={{
+        color: textColor,
+        fontSize,
+        textAlignVertical: alignTop ? 'top' : 'center',
+        minHeight,
+        maxHeight,
+        paddingHorizontal: paddingH,
+        paddingVertical: paddingV,
+        flexGrow: 1,
+        flexShrink: 1,
+      }}
+      selectionColor={selectionColor}
+      cursorColor={selectionColor}
+      placeholder={placeholder}
+      placeholderTextColor={placeholderTextColor}
+      multiline
+      editable={editable}
+      value={value}
+      onChangeText={onChange}
+      onFocus={onFocus}
+      onBlur={onBlur}
+    />
   );
 });
 
@@ -234,6 +189,6 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(
     if (richTextNativeAvailable && nativeComposerEnabled) {
       return <NativeComposer ref={ref} {...props} />;
     }
-    return <LegacyComposer ref={ref} {...props} />;
+    return <PlainComposer ref={ref} {...props} />;
   }
 );

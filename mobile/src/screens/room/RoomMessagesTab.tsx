@@ -7,6 +7,7 @@ import {
   ScrollView,
   Text,
   NativeScrollEvent,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import Clipboard from '@react-native-clipboard/clipboard';
@@ -18,8 +19,8 @@ import { createTimeFormatter } from '@ola/shared/lib';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { useRoomFilterStore } from '@ola/shared/stores/roomFilterStore';
 import { kulImageForText, kulToken } from '../../lib/kul';
-import { SmileyText } from '../../lib/richText';
 import { ChatComposer, type ChatComposerHandle } from '../../components/ChatComposer';
+import { RichTextView } from '../../components/RichTextView';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { buildRoomFeed, type RoomFeedItem } from './messageGroups';
 import { RoomMessageGroup } from './RoomMessageGroup';
@@ -82,6 +83,7 @@ export function RoomMessagesTab({
   onDeleteMessage,
 }: RoomMessagesTabProps) {
   const { t } = useTranslation();
+  const { width: windowWidth } = useWindowDimensions();
   const pushToast = useToastStore((s) => s.push);
   const blockedUserIds = useRoomFilterStore((s) => s.blockedUserIds);
   const blockUser = useRoomFilterStore((s) => s.blockUser);
@@ -349,9 +351,15 @@ export function RoomMessagesTab({
             <Text numberOfLines={1} className="text-xs font-semibold text-ola-primary">
               {t('room.replyingTo', { name: replyTarget.senderName ?? '' })}
             </Text>
-            <Text numberOfLines={1} className="text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>
-              <SmileyText text={replyExcerpt(replyTarget)} fontSize={12} />
-            </Text>
+            <RichTextView
+              content={replyExcerpt(replyTarget)}
+              own={false}
+              color="rgba(0,0,0,0.54)"
+              maxWidth={windowWidth - 70}
+              fontSize={12}
+              maxLines={1}
+              onMention={() => undefined}
+            />
           </View>
           <Pressable
             onPress={onClearReplyTarget}

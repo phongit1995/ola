@@ -14,7 +14,6 @@ class MainApplication : Application(), ReactApplication {
       context = applicationContext,
       packageList =
         PackageList(this).packages.apply {
-          add(TextRangeRectsPackage())
           add(com.olachat.net.org.vn.richtext.OlaRichTextPackage())
         },
     )
