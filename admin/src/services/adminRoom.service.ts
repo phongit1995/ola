@@ -43,4 +43,11 @@ export const AdminRoomService = {
     )
     return data.data
   },
+
+  async deleteMessage(roomId: string, messageId: string): Promise<MessageResult> {
+    const { data } = await http.delete<ApiResponse<MessageResult>>(
+      `/admin/rooms/${roomId}/messages/${messageId}`,
+    )
+    return data.data
+  },
 }

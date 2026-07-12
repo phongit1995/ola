@@ -4,11 +4,12 @@ import type { ProfileFriend } from '../types';
 import { FollowingListOverlay } from './FollowingListOverlay';
 
 interface ProfileFollowingProps {
+  userId: string;
   following: ProfileFriend[];
   onSelect: (friend: ProfileFriend) => void;
 }
 
-export function ProfileFollowing({ following, onSelect }: ProfileFollowingProps) {
+export function ProfileFollowing({ userId, following, onSelect }: ProfileFollowingProps) {
   const { t } = useTranslation();
   const [showAll, setShowAll] = useState(false);
 
@@ -48,7 +49,8 @@ export function ProfileFollowing({ following, onSelect }: ProfileFollowingProps)
 
       {showAll && (
         <FollowingListOverlay
-          following={following}
+          userId={userId}
+          kind="following"
           onClose={() => setShowAll(false)}
           onSelect={(friend) => {
             setShowAll(false);

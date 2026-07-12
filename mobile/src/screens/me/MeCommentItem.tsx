@@ -95,6 +95,7 @@ function MeCommentItemComponent({
           <Text className="mt-0.5 text-sm leading-relaxed" style={{ color: 'rgba(0,0,0,0.87)' }}>
             {renderRichText(comment.content, {
               own: false,
+              fontSize: 14,
               onMention: (nick) => onOpenProfile?.(nick, colorForName(nick)),
             })}
           </Text>

@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { Avatar, ConfirmDialog, Dialog, DialogButton, VipAvatar } from '@components';
 import { colorForName, toast } from '@lib';
 import { useAuthStore } from '@/store/authStore';
-import { useMarriageStore } from './marriageStore';
-import type { DiaryEntry } from './marriage.types';
+import { useMarriageStore } from '@/store/marriageStore';
+import type { DiaryEntry } from '@/store/marriageStore';
 
 const DAY_MS = 86_400_000;
 

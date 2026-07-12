@@ -6,9 +6,10 @@ interface AvatarProps {
   uri?: string;
   size?: number;
   rounded?: boolean;
+  color?: string;
 }
 
-export function Avatar({ name, uri, size = 48, rounded = true }: AvatarProps) {
+export function Avatar({ name, uri, size = 48, rounded = true, color }: AvatarProps) {
   const style = { width: size, height: size, borderRadius: rounded ? size / 2 : 0 };
   if (uri != null && uri !== '') {
     return <Image source={{ uri }} style={style} />;
@@ -17,7 +18,7 @@ export function Avatar({ name, uri, size = 48, rounded = true }: AvatarProps) {
   return (
     <View
       className="items-center justify-center"
-      style={[style, { backgroundColor: colorForName(name) }]}
+      style={[style, { backgroundColor: color ?? colorForName(name) }]}
     >
       <Text className="font-medium text-white" style={{ fontSize: size * 0.45 }}>
         {initial}

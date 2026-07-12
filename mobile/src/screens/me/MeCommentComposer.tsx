@@ -1,8 +1,12 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, Pressable, Text, TextInput, View } from 'react-native';
 import { useAuthStore } from '@ola/shared/stores/authStore';
-import { composerSingleLineHeight, SmileyDraftOverlay } from '../../components/SmileyDraftOverlay';
+import {
+  ComposerDraftOverlay,
+  composerSingleLineHeight,
+  useComposerScrollSync,
+} from '../../components/SmileyDraftOverlay';
 import { SmileyKulPanel } from '../room/SmileyKulPanel';
 import { Avatar } from '../../components/Avatar';
 import { useSmileyDraft } from '../../hooks/useSmileyDraft';
@@ -31,14 +35,18 @@ export function MeCommentComposer({
   const me = useAuthStore((s) => s.user);
   const {
     draft,
-    setDraft,
+    inputValue,
+    codes,
     applyDraft,
+    handleChangeText,
     insertAtCursor,
     backspaceAtCursor,
     selection,
     handleSelectionChange,
   } = useSmileyDraft(initialDraft);
+  const { scrollY: inputScrollY, handleScroll: handleInputScroll } = useComposerScrollSync(draft);
   const [smileyOpen, setSmileyOpen] = useState(false);
+  const inputRef = useRef<TextInput>(null);
   const myName = me?.username ?? t('home.guest');
   const canSend = draft.trim() !== '' && !submitting;
 
@@ -46,7 +54,7 @@ export function MeCommentComposer({
     if (!canSend) return;
     const ok = await onSubmit(draft);
     if (ok) {
-      applyDraft('', 0);
+      applyDraft('');
       setSmileyOpen(false);
     }
   }
@@ -76,9 +84,10 @@ export function MeCommentComposer({
           style={{ borderWidth: 1, borderColor: 'rgba(0,0,0,0.12)' }}
         >
           <TextInput
+            ref={inputRef}
             className="px-3 py-2 text-base"
             style={[
-              { color: 'transparent', textAlignVertical: 'center' },
+              { color: 'rgba(0,0,0,0.87)', textAlignVertical: 'center', maxHeight: 112 },
               draft === '' ? { height: composerSingleLineHeight(8) } : null,
             ]}
             selectionColor="#7cb342"
@@ -87,16 +96,20 @@ export function MeCommentComposer({
             placeholderTextColor="rgba(0,0,0,0.38)"
             multiline
             autoFocus={autoFocus}
-            value={draft}
+            value={inputValue}
             selection={selection}
             onSelectionChange={handleSelectionChange}
-            onChangeText={setDraft}
+            onChangeText={handleChangeText}
+            onScroll={handleInputScroll}
             onFocus={() => setSmileyOpen(false)}
           />
-          {draft !== '' && (
-            <View pointerEvents="none" className="absolute inset-0 justify-end overflow-hidden px-3 py-2">
-              <SmileyDraftOverlay text={draft} />
-            </View>
+          {inputValue !== '' && (
+            <ComposerDraftOverlay
+              display={inputValue}
+              codes={codes}
+              scrollY={inputScrollY}
+              inputRef={inputRef}
+            />
           )}
         </View>
         <Pressable

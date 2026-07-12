@@ -5,6 +5,7 @@ import {
   buildOptimisticMessage,
   markById,
   markByClientMsgId,
+  replySnapshotOf,
   runOptimisticSend,
 } from './messageHelpers';
 import {
@@ -48,6 +49,9 @@ export interface ChatState {
   loadingMessages: boolean;
   loadingMore: boolean;
   typingUsers: TypingUser[];
+  replyTarget: Message | null;
+  setReplyTarget: (message: Message) => void;
+  clearReplyTarget: () => void;
   loadConversations: () => Promise<void>;
   syncCurrentConversation: () => Promise<void>;
   openConversation: (conversationId: string) => Promise<void>;
@@ -87,6 +91,7 @@ const initialState = {
   loadingMessages: false,
   loadingMore: false,
   typingUsers: [] as TypingUser[],
+  replyTarget: null as Message | null,
 };
 
 const clearedPeerView = {
@@ -155,6 +160,7 @@ export const useChatStore = create<ChatState>((set, get) => {
         ...clearedPeerView,
         messages: [],
         typingUsers: [],
+        replyTarget: null,
         hasMore: false,
         loadingMore: false,
         loadingMessages: true,
@@ -202,6 +208,7 @@ export const useChatStore = create<ChatState>((set, get) => {
           currentConversationId: null,
           messages: [],
           typingUsers: [],
+          replyTarget: null,
           hasMore: false,
           peerRelationship: null,
           peerProfile: null,
@@ -239,7 +246,12 @@ export const useChatStore = create<ChatState>((set, get) => {
         ...clearedPeerView,
         messages: [],
         typingUsers: [],
+        replyTarget: null,
       }),
+
+    setReplyTarget: (message) => set({ replyTarget: message }),
+
+    clearReplyTarget: () => set({ replyTarget: null }),
 
     hideConversation: async (conversationId) => {
       const isCurrent = get().currentConversationId === conversationId;
@@ -288,11 +300,27 @@ export const useChatStore = create<ChatState>((set, get) => {
         return;
       }
 
+      const reply = get().replyTarget;
+      if (reply != null) set({ replyTarget: null });
       const clientMsgId = randomUuid();
       await runOptimisticSend(
         set,
-        buildOptimisticMessage({ clientMsgId, conversationId, type: 'text', content: text, status: 'sending' }),
-        (id) => MessageService.send({ conversationId, type: 'text', content: text, clientMsgId: id })
+        buildOptimisticMessage({
+          clientMsgId,
+          conversationId,
+          type: 'text',
+          content: text,
+          status: 'sending',
+          ...(reply != null ? { replyTo: replySnapshotOf(reply) } : {}),
+        }),
+        (id) =>
+          MessageService.send({
+            conversationId,
+            type: 'text',
+            content: text,
+            clientMsgId: id,
+            ...(reply != null ? { replyToId: reply.id } : {}),
+          })
       );
     },
 
@@ -416,7 +444,10 @@ export const useChatStore = create<ChatState>((set, get) => {
       const conversationId = get().currentConversationId;
       if (conversationId == null) return;
       const snapshot = get().messages;
-      set((state) => ({ messages: state.messages.filter((item) => item.id !== messageId) }));
+      set((state) => ({
+        messages: state.messages.filter((item) => item.id !== messageId),
+        ...(state.replyTarget?.id === messageId ? { replyTarget: null } : {}),
+      }));
       try {
         await MessageService.remove(conversationId, messageId);
       } catch {

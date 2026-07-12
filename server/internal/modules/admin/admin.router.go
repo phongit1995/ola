@@ -2,6 +2,7 @@ package admin
 
 import (
 	adminauth "ola-chat-server/internal/modules/admin/auth"
+	admindashboard "ola-chat-server/internal/modules/admin/dashboard"
 	adminegg "ola-chat-server/internal/modules/admin/egg"
 	adminken "ola-chat-server/internal/modules/admin/ken"
 	adminkenchest "ola-chat-server/internal/modules/admin/kenchest"
@@ -17,27 +18,29 @@ import (
 )
 
 type Router struct {
-	authRouter   *adminauth.Router
-	userRouter   *adminuser.Router
-	meRouter     *adminme.Router
-	roomRouter   *adminroom.Router
-	uploadRouter *adminupload.Router
-	vipRouter    *adminvip.Router
-	eggRouter      *adminegg.Router
-	wheelRouter    *adminwheel.Router
-	kenRouter      *adminken.Router
-	kenChestRouter *adminkenchest.Router
-	penRouter      *adminpen.Router
-	settingRouter  *adminsetting.Router
+	dashboardRouter *admindashboard.Router
+	authRouter      *adminauth.Router
+	userRouter      *adminuser.Router
+	meRouter        *adminme.Router
+	roomRouter      *adminroom.Router
+	uploadRouter    *adminupload.Router
+	vipRouter       *adminvip.Router
+	eggRouter       *adminegg.Router
+	wheelRouter     *adminwheel.Router
+	kenRouter       *adminken.Router
+	kenChestRouter  *adminkenchest.Router
+	penRouter       *adminpen.Router
+	settingRouter   *adminsetting.Router
 }
 
-func NewRouter(authRouter *adminauth.Router, userRouter *adminuser.Router, meRouter *adminme.Router, roomRouter *adminroom.Router, uploadRouter *adminupload.Router, vipRouter *adminvip.Router, eggRouter *adminegg.Router, wheelRouter *adminwheel.Router, kenRouter *adminken.Router, kenChestRouter *adminkenchest.Router, penRouter *adminpen.Router, settingRouter *adminsetting.Router) *Router {
-	return &Router{authRouter: authRouter, userRouter: userRouter, meRouter: meRouter, roomRouter: roomRouter, uploadRouter: uploadRouter, vipRouter: vipRouter, eggRouter: eggRouter, wheelRouter: wheelRouter, kenRouter: kenRouter, kenChestRouter: kenChestRouter, penRouter: penRouter, settingRouter: settingRouter}
+func NewRouter(dashboardRouter *admindashboard.Router, authRouter *adminauth.Router, userRouter *adminuser.Router, meRouter *adminme.Router, roomRouter *adminroom.Router, uploadRouter *adminupload.Router, vipRouter *adminvip.Router, eggRouter *adminegg.Router, wheelRouter *adminwheel.Router, kenRouter *adminken.Router, kenChestRouter *adminkenchest.Router, penRouter *adminpen.Router, settingRouter *adminsetting.Router) *Router {
+	return &Router{dashboardRouter: dashboardRouter, authRouter: authRouter, userRouter: userRouter, meRouter: meRouter, roomRouter: roomRouter, uploadRouter: uploadRouter, vipRouter: vipRouter, eggRouter: eggRouter, wheelRouter: wheelRouter, kenRouter: kenRouter, kenChestRouter: kenChestRouter, penRouter: penRouter, settingRouter: settingRouter}
 }
 
 func (r *Router) Setup(api *utils.AppGroup) {
 	admin := api.Group("/admin")
 	{
+		r.dashboardRouter.Setup(admin)
 		r.authRouter.Setup(admin)
 		r.userRouter.Setup(admin)
 		r.meRouter.Setup(admin)

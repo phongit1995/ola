@@ -1,10 +1,13 @@
 import type { StoreApi } from 'zustand';
 import { useAuthStore } from '../authStore';
-import type { Message, MessageType } from '../../types';
+import { parseMessageMetadata } from '../../lib';
+import type { ChatReplySnapshot, Message, MessageType } from '../../types';
 import type { ChatState } from './chatStore';
 import { applyOutgoingToConversations } from './chatHelpers';
 
 type ChatSet = StoreApi<ChatState>['setState'];
+
+const REPLY_EXCERPT_MAX_RUNES = 120;
 
 interface OptimisticMessageInput {
   clientMsgId: string;
@@ -13,6 +16,18 @@ interface OptimisticMessageInput {
   status: Message['status'];
   content?: string;
   metadata?: string;
+  replyTo?: ChatReplySnapshot;
+}
+
+export function replySnapshotOf(message: Message): ChatReplySnapshot {
+  return {
+    messageId: message.id,
+    senderId: message.senderId,
+    senderName: message.senderName,
+    excerpt: Array.from(message.content).slice(0, REPLY_EXCERPT_MAX_RUNES).join(''),
+    type: message.type,
+    imageUrl: message.type === 'image' ? parseMessageMetadata(message.metadata).url : undefined,
+  };
 }
 
 export function buildOptimisticMessage(input: OptimisticMessageInput): Message {
@@ -30,6 +45,8 @@ export function buildOptimisticMessage(input: OptimisticMessageInput): Message {
     status: input.status,
     createdAt: now,
     updatedAt: now,
+    replyToId: input.replyTo?.messageId,
+    replyTo: input.replyTo,
     clientMsgId: input.clientMsgId,
   };
 }

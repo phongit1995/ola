@@ -19,8 +19,8 @@ import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { NativeUploadFile } from '@ola/shared/lib';
 import type { Post, PostVisibility } from '@ola/shared/types';
 import { KUL_IMAGES, stickerImageForCode } from '../../lib/kul';
-import { SmileyDraftOverlay } from '../../components/SmileyDraftOverlay';
-import { imageSizeForHeight } from '../../lib/richText';
+import { ComposerDraftOverlay } from '../../components/SmileyDraftOverlay';
+import { imageSizeForHeight } from '../../lib/chatSmiley';
 import { useSmileyDraft } from '../../hooks/useSmileyDraft';
 import { SmileyKulPanel } from '../room/SmileyKulPanel';
 import { MeComposerTagPanel } from './MeComposerTagPanel';
@@ -54,7 +54,10 @@ export function MeComposerModal({ visible, onClose, editPost }: MeComposerModalP
 
   const {
     draft: content,
+    inputValue,
+    codes,
     setDraft: setContent,
+    handleChangeText,
     insertAtCursor,
     selection,
     handleSelectionChange,
@@ -67,6 +70,7 @@ export function MeComposerModal({ visible, onClose, editPost }: MeComposerModalP
   const [posting, setPosting] = useState(false);
   const [inputFocused, setInputFocused] = useState(false);
   const imageIdRef = useRef(0);
+  const contentInputRef = useRef<TextInput>(null);
 
   const isEdit = editPost != null;
 
@@ -256,28 +260,27 @@ export function MeComposerModal({ visible, onClose, editPost }: MeComposerModalP
             }}
           >
             <TextInput
+              ref={contentInputRef}
               className="px-3 py-2 text-base"
-              style={{ color: 'transparent', textAlignVertical: 'top', minHeight: 94 }}
+              style={{ color: 'rgba(0,0,0,0.87)', textAlignVertical: 'top', minHeight: 94 }}
               selectionColor="#7cb342"
               cursorColor="#7cb342"
               placeholder={t('me.composerHint')}
               placeholderTextColor="rgba(0,0,0,0.38)"
               multiline
               autoFocus={!isEdit}
-              value={content}
+              value={inputValue}
               selection={selection}
               onSelectionChange={handleSelectionChange}
-              onChangeText={setContent}
+              onChangeText={handleChangeText}
               onFocus={() => {
                 setInputFocused(true);
                 setPanel(null);
               }}
               onBlur={() => setInputFocused(false)}
             />
-            {content !== '' && (
-              <View pointerEvents="none" className="absolute inset-0 overflow-hidden px-3 py-2">
-                <SmileyDraftOverlay text={content} />
-              </View>
+            {inputValue !== '' && (
+              <ComposerDraftOverlay display={inputValue} codes={codes} inputRef={contentInputRef} />
             )}
           </View>
 

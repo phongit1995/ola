@@ -61,15 +61,13 @@ export function useUserProfile(username: string, seedColor: string): ProfileCont
     async (id: string) => {
       setSecondary((s) => ({ ...s, loading: true }));
       const canView = canViewInterestedRef.current;
-      const [postsResult, followingResult, followersResult] = await Promise.all([
+      const [postsResult, followingResult] = await Promise.all([
         MeService.byUser(id, { limit: 30 }).catch(() => null),
         canView ? UserService.following(id, { limit: 12 }).catch(() => null) : Promise.resolve(null),
-        canView ? UserService.followers(id, { limit: 12 }).catch(() => null) : Promise.resolve(null),
       ]);
       setSecondary({
         media: [],
         following: mapFollowing(followingResult?.users ?? []),
-        followers: mapFollowing(followersResult?.users ?? []),
         posts: mapPosts(postsResult?.items ?? [], formatTime),
         loading: false,
       });
@@ -192,5 +190,5 @@ export function useUserProfile(username: string, seedColor: string): ProfileCont
 
   const { actions, busy } = useProfileActions({ userId, relationship, setRelationship, setProfile, reload });
 
-  return { profile, loading, notFound, relationship, busy, actions, secondary, postActions };
+  return { profile, userId, loading, notFound, relationship, busy, actions, secondary, postActions };
 }

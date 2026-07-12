@@ -162,7 +162,7 @@ function ConversationRow({ conversation, onPress, onDelete }: RowProps) {
                   </View>
                 ) : (
                   <Text className="flex-1 text-sm" style={{ color: 'rgba(0,0,0,0.87)' }} numberOfLines={1}>
-                    <SmileyText text={lastText} size={16} />
+                    <SmileyText text={lastText} fontSize={14} />
                   </Text>
                 )}
               </View>

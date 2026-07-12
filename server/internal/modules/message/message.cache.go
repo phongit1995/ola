@@ -28,6 +28,15 @@ func (c *CacheService) SetMessage(message *Message) error {
 	return c.cache.Set(key, message, constants.CacheTTLMessage*time.Second)
 }
 
+func (c *CacheService) GetMessage(conversationID uuid.UUID, messageID gocql.UUID) (*Message, error) {
+	key := fmt.Sprintf(constants.CacheKeyMessage, fmt.Sprintf("%s:%s", conversationID.String(), messageID.String()))
+	var msg Message
+	if err := c.cache.Get(key, &msg); err != nil {
+		return nil, err
+	}
+	return &msg, nil
+}
+
 func (c *CacheService) DeleteMessage(conversationID uuid.UUID, messageID gocql.UUID) error {
 	key := fmt.Sprintf(constants.CacheKeyMessage, fmt.Sprintf("%s:%s", conversationID.String(), messageID.String()))
 	return c.cache.Delete(key)

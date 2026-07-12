@@ -2500,6 +2500,8 @@ PODS:
     - ReactNativeDependencies
     - Yoga
   - SSZipArchive (2.4.3)
+  - TextRangeRects (1.0.0):
+    - React-Core
   - TOCropViewController (2.8.0)
   - Yoga (0.0.0)
 
@@ -2599,6 +2601,7 @@ DEPENDENCIES:
   - RNSound (from `../../node_modules/react-native-sound`)
   - RNSVG (from `../../node_modules/react-native-svg`)
   - RNWorklets (from `../../node_modules/react-native-worklets`)
+  - TextRangeRects (from `./TextRangeRects`)
   - Yoga (from `../../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -2797,6 +2800,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/react-native-svg"
   RNWorklets:
     :path: "../../node_modules/react-native-worklets"
+  TextRangeRects:
+    :path: "./TextRangeRects"
   Yoga:
     :path: "../../node_modules/react-native/ReactCommon/yoga"
 
@@ -2897,9 +2902,10 @@ SPEC CHECKSUMS:
   RNSVG: 6cae8d4082913be2eb43eaec2a456222c42195ed
   RNWorklets: bb6f040dd3a46ef34d7e9ca51d4c7d1b804c190c
   SSZipArchive: fe6a26b2a54d5a0890f2567b5cc6de5caa600aef
+  TextRangeRects: bcd200f507cd73ee7978058dda691b50c00848de
   TOCropViewController: 797deaf39c90e6e9ddd848d88817f6b9a8a09888
   Yoga: fe50ab299e578f397fef753cf309c6703a4db29b
 
-PODFILE CHECKSUM: e3977186fc5d4e67abf52f62c928ee7c6c7e29d9
+PODFILE CHECKSUM: ea2b51253242872c3fff9ac24a976537b26035a8
 
 COCOAPODS: 1.16.2

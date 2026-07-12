@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
-import { colorForName } from '@ola/shared/lib';
 import { useFriendsStore } from '../../store/friendsStore';
 import { Avatar } from '../../components/Avatar';
 

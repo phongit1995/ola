@@ -23,6 +23,7 @@ import type {
 
 interface ProfilePageProps {
   profile: UserProfile;
+  userId: string;
   relationship: RelationshipInfo;
   actions: ProfileActions;
   secondary: ProfileSecondary;
@@ -34,6 +35,7 @@ interface ProfilePageProps {
 
 export function ProfilePage({
   profile,
+  userId,
   relationship,
   actions,
   secondary,
@@ -80,7 +82,7 @@ export function ProfilePage({
         />
         {secondary.media.length > 0 && <ProfileMediaStore media={secondary.media} />}
         {secondary.following.length > 0 && (
-          <ProfileFollowing following={secondary.following} onSelect={onOpenFriend} />
+          <ProfileFollowing userId={userId} following={secondary.following} onSelect={onOpenFriend} />
         )}
 
         <h3 className="mx-4 mt-2 mb-1 text-base font-medium text-black/87">{t('profile.mePosts')}</h3>
@@ -125,7 +127,8 @@ export function ProfilePage({
       {followersOpen && (
         <FollowingListOverlay
           title={t('profile.peopleCare')}
-          following={secondary.followers}
+          userId={userId}
+          kind="followers"
           onClose={() => setFollowersOpen(false)}
           onSelect={(friend) => {
             setFollowersOpen(false);

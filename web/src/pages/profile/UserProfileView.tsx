@@ -20,13 +20,14 @@ export function UserProfileView({
   z = 40,
 }: UserProfileViewProps) {
   const { t } = useTranslation();
-  const { profile, loading, notFound, relationship, actions, secondary, postActions } =
+  const { profile, userId, loading, notFound, relationship, actions, secondary, postActions } =
     useUserProfile(username, color);
 
   if (profile && !loading) {
     return (
       <ProfilePage
         profile={profile}
+        userId={userId}
         relationship={relationship}
         actions={actions}
         secondary={secondary}

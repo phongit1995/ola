@@ -5,7 +5,8 @@ import { colorForName, formatClockHM } from '@ola/shared/lib';
 import type { RoomReplySnapshot } from '@ola/shared/types';
 import { kulImageForText } from '../../lib/kul';
 import { reactionChips } from '../../lib/reactions';
-import { imageSizeForHeight, renderRichText, SmileyText } from '../../lib/richText';
+import { imageSizeForHeight } from '../../lib/chatSmiley';
+import { renderRichText, SmileyText } from '../../lib/richText';
 import { VipAvatar } from '../../components/VipAvatar';
 import { useMediaViewerStore } from '../../store/mediaViewerStore';
 import type { AnchorRect } from './MessageActionSheet';
@@ -72,7 +73,7 @@ function QuoteBlock({
           className="text-xs"
           style={{ color: isOwn ? 'rgba(255,255,255,0.75)' : 'rgba(0,0,0,0.45)' }}
         >
-          <SmileyText text={excerpt} size={14} />
+          <SmileyText text={excerpt} fontSize={12} />
         </Text>
       </View>
     </Pressable>
@@ -90,7 +91,6 @@ function BubbleContent({
   onMention: (nick: string) => void;
   onResendImage?: (id: string) => void;
 }) {
-  const { t } = useTranslation();
   const openViewer = useMediaViewerStore((s) => s.openViewer);
   const isImage = message.type === 'image' && message.imageUrl != null && message.imageUrl !== '';
   const uploading = message.status === 'uploading';

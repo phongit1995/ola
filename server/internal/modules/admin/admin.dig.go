@@ -2,6 +2,7 @@ package admin
 
 import (
 	adminauth "ola-chat-server/internal/modules/admin/auth"
+	admindashboard "ola-chat-server/internal/modules/admin/dashboard"
 	adminegg "ola-chat-server/internal/modules/admin/egg"
 	adminken "ola-chat-server/internal/modules/admin/ken"
 	adminkenchest "ola-chat-server/internal/modules/admin/kenchest"
@@ -19,6 +20,7 @@ import (
 
 func Provider(c *dig.Container) error {
 	modules := []func(*dig.Container) error{
+		admindashboard.Provider,
 		adminauth.Provider,
 		adminuser.Provider,
 		adminme.Provider,

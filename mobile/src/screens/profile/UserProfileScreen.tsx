@@ -135,7 +135,6 @@ export function UserProfileScreen({ username, language, onClose, onOpenProfile, 
   const [posts, setPosts] = useState<Post[]>([]);
   const [postsLoading, setPostsLoading] = useState(true);
   const [followingUsers, setFollowingUsers] = useState<FollowUser[]>([]);
-  const [followerUsers, setFollowerUsers] = useState<FollowUser[]>([]);
   const [following, setFollowing] = useState(false);
   const [fans, setFans] = useState(0);
   const [kisses, setKisses] = useState(0);
@@ -183,15 +182,13 @@ export function UserProfileScreen({ username, language, onClose, onOpenProfile, 
           });
         }
         const canView = data.canViewInterested !== false;
-        const [postsResult, followingResult, followersResult] = await Promise.all([
+        const [postsResult, followingResult] = await Promise.all([
           MeService.byUser(data.id, { limit: 30 }).catch(() => null),
           canView ? UserService.following(data.id, { limit: 12 }).catch(() => null) : Promise.resolve(null),
-          canView ? UserService.followers(data.id, { limit: 12 }).catch(() => null) : Promise.resolve(null),
         ]);
         if (!active) return;
         setPosts(postsResult?.items ?? []);
         setFollowingUsers(followingResult?.users ?? []);
-        setFollowerUsers(followersResult?.users ?? []);
         setPostsLoading(false);
       } catch {
         if (!active) return;
@@ -800,9 +797,10 @@ export function UserProfileScreen({ username, language, onClose, onOpenProfile, 
           />
         )}
 
-        {followingOpen && (
+        {followingOpen && profile != null && (
           <FollowingListOverlay
-            following={followingUsers}
+            userId={profile.id}
+            kind="following"
             onClose={() => setFollowingOpen(false)}
             onSelect={(friend) => {
               setFollowingOpen(false);
@@ -817,10 +815,11 @@ export function UserProfileScreen({ username, language, onClose, onOpenProfile, 
           onClose={() => setViewer(null)}
         />
 
-        {followersOpen && (
+        {followersOpen && profile != null && (
           <FollowingListOverlay
             title={t('profile.peopleCare')}
-            following={followerUsers}
+            userId={profile.id}
+            kind="followers"
             onClose={() => setFollowersOpen(false)}
             onSelect={(friend) => {
               setFollowersOpen(false);

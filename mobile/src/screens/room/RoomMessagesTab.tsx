@@ -20,7 +20,11 @@ import { useToastStore } from '@ola/shared/stores/toastStore';
 import { useRoomFilterStore } from '@ola/shared/stores/roomFilterStore';
 import { kulImageForText, kulToken } from '../../lib/kul';
 import { SmileyText } from '../../lib/richText';
-import { composerSingleLineHeight, SmileyDraftOverlay } from '../../components/SmileyDraftOverlay';
+import {
+  ComposerDraftOverlay,
+  composerSingleLineHeight,
+  useComposerScrollSync,
+} from '../../components/SmileyDraftOverlay';
 import { useSmileyDraft } from '../../hooks/useSmileyDraft';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { buildRoomFeed, type RoomFeedItem } from './messageGroups';
@@ -89,13 +93,17 @@ export function RoomMessagesTab({
   const blockUser = useRoomFilterStore((s) => s.blockUser);
   const {
     draft,
+    inputValue,
+    codes,
     setDraft,
     applyDraft,
+    handleChangeText,
     insertAtCursor,
     backspaceAtCursor,
     selection,
     handleSelectionChange,
   } = useSmileyDraft();
+  const { scrollY: inputScrollY, handleScroll: handleInputScroll } = useComposerScrollSync(draft);
   const [panelOpen, setPanelOpen] = useState(false);
   const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
   const [actionTarget, setActionTarget] = useState<{ message: RoomMessage; anchor: AnchorRect } | null>(
@@ -132,12 +140,12 @@ export function RoomMessagesTab({
     const trimmed = text.trim();
     if (trimmed === '' || !canSend) return;
     stickToBottomRef.current = true;
-    applyDraft('', 0);
+    applyDraft('');
     setPanelOpen(false);
     try {
       await onSend(trimmed);
     } catch {
-      applyDraft(trimmed, trimmed.length);
+      applyDraft(trimmed);
       pushToast('error', t('room.sendError'));
     }
   }
@@ -302,6 +310,7 @@ export function RoomMessagesTab({
         scrollEventThrottle={16}
         contentContainerClassName="p-3"
         onContentSizeChange={scrollToEnd}
+        onLayout={scrollToEnd}
         ListHeaderComponent={
           loadingMore ? (
             <Text className="py-1 text-center text-xs" style={{ color: 'rgba(0,0,0,0.4)' }}>
@@ -351,7 +360,7 @@ export function RoomMessagesTab({
               {t('room.replyingTo', { name: replyTarget.senderName ?? '' })}
             </Text>
             <Text numberOfLines={1} className="text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>
-              <SmileyText text={replyExcerpt(replyTarget)} size={14} />
+              <SmileyText text={replyExcerpt(replyTarget)} fontSize={12} />
             </Text>
           </View>
           <Pressable
@@ -430,7 +439,7 @@ export function RoomMessagesTab({
               ref={inputRef}
               className="px-3 py-2 text-base"
               style={[
-                { color: 'transparent', textAlignVertical: 'center' },
+                { color: 'rgba(0,0,0,0.87)', textAlignVertical: 'center', maxHeight: 112 },
                 draft === '' ? { height: composerSingleLineHeight(8) } : null,
               ]}
               selectionColor="#7cb342"
@@ -439,19 +448,20 @@ export function RoomMessagesTab({
               placeholderTextColor="rgba(0,0,0,0.38)"
               multiline
               editable={canSend}
-              value={draft}
+              value={inputValue}
               selection={selection}
               onSelectionChange={handleSelectionChange}
-              onChangeText={setDraft}
+              onChangeText={handleChangeText}
+              onScroll={handleInputScroll}
               onFocus={() => setPanelOpen(false)}
             />
-            {draft !== '' && (
-              <View
-                pointerEvents="none"
-                className="absolute inset-0 justify-end overflow-hidden px-3 py-2"
-              >
-                <SmileyDraftOverlay text={draft} />
-              </View>
+            {inputValue !== '' && (
+              <ComposerDraftOverlay
+                display={inputValue}
+                codes={codes}
+                scrollY={inputScrollY}
+                inputRef={inputRef}
+              />
             )}
           </View>
         )}
@@ -492,6 +502,7 @@ export function RoomMessagesTab({
           onBackspace={backspaceAtCursor}
           onSendKul={(index) => {
             void sendText(kulToken(index));
+            setPanelOpen(false);
           }}
         />
       )}

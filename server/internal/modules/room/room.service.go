@@ -20,6 +20,7 @@ import (
 	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/transport/kafka"
 	"ola-chat-server/internal/transport/websocket"
+	"ola-chat-server/internal/utils"
 	"path/filepath"
 	"strings"
 	"time"
@@ -496,6 +497,32 @@ func (s *Service) DeleteMessage(ctx context.Context, userID, roomID uuid.UUID, m
 	return nil
 }
 
+func (s *Service) DeleteMessageAdmin(ctx context.Context, roomID uuid.UUID, messageID string) error {
+	if _, err := s.getRoom(roomID); err != nil {
+		return err
+	}
+
+	data, err := s.redisMsg.Get(ctx, roomID.String(), messageID)
+	if err != nil {
+		return err
+	}
+	if data == nil {
+		return errors.New("message not found")
+	}
+
+	if err := s.redisMsg.Delete(ctx, roomID.String(), messageID); err != nil {
+		return err
+	}
+
+	if err := s.producer.PublishRoomMessageDeleted(ctx, &roomEvents.RoomMessageDeletedEvent{
+		RoomID:    roomID.String(),
+		MessageID: messageID,
+	}); err != nil {
+		s.logger.Errorw("Failed to publish room message deleted", "room_id", roomID, "message_id", messageID, "error", err)
+	}
+	return nil
+}
+
 func (s *Service) GetMessages(ctx context.Context, roomID uuid.UUID, limit int, beforeID string) (*RoomMessagesListResponse, error) {
 	room, err := s.getRoom(roomID)
 	if err != nil {
@@ -688,7 +715,7 @@ func (s *Service) resolveReplySnapshot(ctx context.Context, roomID, replyToID st
 	snapshot := &RoomReplySnapshot{
 		MessageID: orig.ID,
 		SenderID:  orig.SenderID,
-		Excerpt:   truncateRunes(orig.Content, constants.RoomReplyExcerptMaxRunes),
+		Excerpt:   utils.TruncateRunes(orig.Content, constants.RoomReplyExcerptMaxRunes),
 		Type:      orig.Type,
 		ImageURL:  orig.ImageURL,
 	}
@@ -751,14 +778,6 @@ func isAllowedRoomReactionType(t string) bool {
 		}
 	}
 	return false
-}
-
-func truncateRunes(content string, maxRunes int) string {
-	runes := []rune(content)
-	if len(runes) <= maxRunes {
-		return content
-	}
-	return string(runes[:maxRunes])
 }
 
 func toEventReplySnapshot(snapshot *RoomReplySnapshot) *roomEvents.RoomReplySnapshot {

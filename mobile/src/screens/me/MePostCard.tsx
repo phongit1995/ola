@@ -12,7 +12,8 @@ import Animated, {
 } from 'react-native-reanimated';
 import { colorForName } from '@ola/shared/lib';
 import type { Post, PostAuthor, PostCheckIn } from '@ola/shared/types';
-import { imageSizeForHeight, renderRichText } from '../../lib/richText';
+import { imageSizeForHeight } from '../../lib/chatSmiley';
+import { renderRichText } from '../../lib/richText';
 import { stickerImageForCode } from '../../lib/kul';
 import { Avatar } from '../../components/Avatar';
 
@@ -314,6 +315,7 @@ function MePostCardComponent({
             >
               {renderRichText(post.content ?? '', {
                 own: false,
+                fontSize: 14,
                 onMention: (nick) => onOpenProfile?.(nick, colorForName(nick)),
               })}
             </Text>

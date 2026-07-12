@@ -5,7 +5,7 @@ import { FullScreenOverlay, PresenceBadge, ScreenHeader, UserName, VipAvatar } f
 import { toast } from '@lib';
 import { UserService } from '@services';
 import type { UserSearchResult } from '@app-types';
-import { useMarriageStore } from './marriageStore';
+import { useMarriageStore } from '@/store/marriageStore';
 
 const MESSAGE_LIMIT = 500;
 

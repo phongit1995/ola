@@ -1,20 +1,56 @@
+import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Avatar } from '@components';
 import checkedIcon from '@/assets/icons/profile/ic_checked.png';
 import snapIcon from '@/assets/icons/chat/icon_snap_pic.png';
 import kenIcon from '@/assets/icons/chat/ic_ken_white.png';
 import addFriendIcon from '@/assets/icons/chat/ic_add_friend.png';
-import { kulImageForText, renderRichText } from '@lib';
+import photoIcon from '@/assets/icons/chat/ic_local.png';
+import { kulImageForText, renderRichText, SmileyText } from '@lib';
+import type { ChatReplySnapshot } from '@app-types';
 import type { ChatMessage } from '../types';
+import { chatQuoteExcerpt } from '../chatView';
 import { VoiceBubble } from './VoiceBubble';
 
 const noop = () => undefined;
+
+interface ChatQuoteBlockProps {
+  replyTo: ChatReplySnapshot;
+  onQuoteClick?: (messageId: string) => void;
+}
+
+function ChatQuoteBlock({ replyTo, onQuoteClick }: ChatQuoteBlockProps) {
+  const { t } = useTranslation();
+  const isImage = replyTo.type === 'image';
+  const excerpt = chatQuoteExcerpt(t, replyTo);
+  return (
+    <button
+      type="button"
+      onClick={(event) => {
+        event.stopPropagation();
+        onQuoteClick?.(replyTo.messageId);
+      }}
+      className="mb-1 block w-full rounded border-l-2 border-[#7cb342] bg-black/5 py-0.5 pl-2 pr-1 text-left"
+    >
+      <span className="block truncate text-xs font-semibold text-black/60">
+        {replyTo.senderName != null && replyTo.senderName !== '' ? `@${replyTo.senderName}` : ''}
+      </span>
+      <span className="flex items-center gap-1 text-xs text-black/45">
+        {isImage && <img src={photoIcon} alt="" className="h-3.5 w-3.5 shrink-0 object-contain" />}
+        <span className="line-clamp-2">
+          <SmileyText text={excerpt} />
+        </span>
+      </span>
+    </button>
+  );
+}
 
 interface ChatMessageBubbleProps {
   message: ChatMessage;
   firstInGroup?: boolean;
   lastInGroup?: boolean;
   onMention?: (nick: string) => void;
+  onQuoteClick?: (messageId: string) => void;
 }
 
 export function ChatMessageBubble({
@@ -22,6 +58,7 @@ export function ChatMessageBubble({
   firstInGroup = true,
   lastInGroup = true,
   onMention,
+  onQuoteClick,
 }: ChatMessageBubbleProps) {
   const { t } = useTranslation();
   const isOut = message.direction === 'out';
@@ -32,10 +69,20 @@ export function ChatMessageBubble({
     : `${firstInGroup ? '' : 'rounded-tl-sm'} ${lastInGroup ? '' : 'rounded-bl-sm'}`;
   const bubbleBg = failed ? 'bg-[#f8d7d7]' : isOut ? 'bg-[#dcedc8]' : 'bg-white shadow-sm';
 
+  const quotedWrap = (content: ReactNode) =>
+    message.replyTo != null ? (
+      <div className={`max-w-[300px] rounded-2xl px-3 py-2 ${groupCorners} ${bubbleBg}`}>
+        <ChatQuoteBlock replyTo={message.replyTo} onQuoteClick={onQuoteClick} />
+        {content}
+      </div>
+    ) : (
+      content
+    );
+
   if (message.kind === 'text') {
     const kulImage = kulImageForText(message.text);
     if (kulImage != null) {
-      return <img src={kulImage} alt="" className="h-30 w-auto object-contain" />;
+      return quotedWrap(<img src={kulImage} alt="" className="h-30 w-auto object-contain" />);
     }
   }
 
@@ -44,20 +91,22 @@ export function ChatMessageBubble({
       return <span className="px-1 text-6xl leading-none">{message.sticker}</span>;
 
     case 'image':
-      return message.image != null && message.image !== '' ? (
-        <img
-          src={message.image}
-          alt=""
-          className="max-h-60 max-w-[220px] cursor-pointer rounded-lg object-cover shadow-sm"
-        />
-      ) : (
-        <div className="flex h-44 w-44 items-center justify-center overflow-hidden rounded-lg bg-linear-to-br from-ola-primary-light to-ola-primary/30 text-6xl shadow-sm">
-          🖼️
-        </div>
+      return quotedWrap(
+        message.image != null && message.image !== '' ? (
+          <img
+            src={message.image}
+            alt=""
+            className="max-h-60 max-w-[220px] cursor-pointer rounded-lg object-cover shadow-sm"
+          />
+        ) : (
+          <div className="flex h-44 w-44 items-center justify-center overflow-hidden rounded-lg bg-linear-to-br from-ola-primary-light to-ola-primary/30 text-6xl shadow-sm">
+            🖼️
+          </div>
+        )
       );
 
     case 'voice':
-      return (
+      return quotedWrap(
         <VoiceBubble
           url={message.audioUrl}
           duration={message.voiceDuration}
@@ -130,6 +179,9 @@ export function ChatMessageBubble({
         <div
           className={`max-w-[300px] rounded-2xl px-3 py-2 text-base break-words text-black/87 ${groupCorners} ${bubbleBg}`}
         >
+          {message.replyTo != null && (
+            <ChatQuoteBlock replyTo={message.replyTo} onQuoteClick={onQuoteClick} />
+          )}
           {renderRichText(message.text ?? '', onMention ?? noop)}
         </div>
       );

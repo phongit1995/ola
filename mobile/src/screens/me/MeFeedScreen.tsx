@@ -23,6 +23,7 @@ import { MeLeftDrawer } from './MeLeftDrawer';
 import { MeRightDrawer } from './MeRightDrawer';
 import { MeVisitorsScreen } from './MeVisitorsScreen';
 import { MeLikedPostsScreen } from './MeLikedPostsScreen';
+import { MarriageScreen } from './marriage/MarriageScreen';
 import { MeCommentSheet } from './MeCommentSheet';
 import { MeLikersDialog } from './MeLikersDialog';
 import { MeNotificationsScreen } from './MeNotificationsScreen';
@@ -94,6 +95,7 @@ export function MeFeedScreen() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [visitorsOpen, setVisitorsOpen] = useState(false);
   const [likedOpen, setLikedOpen] = useState(false);
+  const [marriageOpen, setMarriageOpen] = useState(false);
   const [menuPostId, setMenuPostId] = useState<string | null>(null);
   const [quickCommentPostId, setQuickCommentPostId] = useState<string | null>(null);
   const [quickSubmitting, setQuickSubmitting] = useState(false);
@@ -348,7 +350,8 @@ export function MeFeedScreen() {
             }}
             onSelect={(key) => {
               setDrawerOpen(false);
-              if (key === 'likes') setLikedOpen(true);
+              if (key === 'marriage') setMarriageOpen(true);
+              else if (key === 'likes') setLikedOpen(true);
               else if (key === 'visitors') setVisitorsOpen(true);
               else comingSoon();
             }}
@@ -454,6 +457,8 @@ export function MeFeedScreen() {
           onOpenProfile={openProfile}
         />
       )}
+
+      {marriageOpen && <MarriageScreen onClose={() => setMarriageOpen(false)} />}
 
       {profileUsername != null && (
         <UserProfileScreen

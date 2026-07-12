@@ -346,6 +346,20 @@ export interface UpdateRoomRequest {
   enabled?: boolean
 }
 
+export interface RoomReplySnapshot {
+  messageId: string
+  senderId: string
+  senderName?: string
+  excerpt: string
+  type?: string
+  imageUrl?: string
+}
+
+export interface RoomReactor {
+  userId: string
+  username: string
+}
+
 export interface RoomMessage {
   id: string
   roomId: string
@@ -353,8 +367,14 @@ export interface RoomMessage {
   senderName?: string
   senderAvatar?: string
   senderGender?: string
+  senderVip?: string
+  senderVipEnd?: string
+  type?: string
   content: string
+  imageUrl?: string
   createdAt: string
+  replyTo?: RoomReplySnapshot
+  reactions?: Record<string, RoomReactor[]>
 }
 
 export interface RoomMessagesList {
@@ -918,4 +938,86 @@ export interface TopupSetting {
   stepAmount: number
   presetAmounts: number[]
   kenPerVnd: number
+}
+
+export interface DashboardTotals {
+  users: number
+  posts: number
+  rooms: number
+  kenInCirculation: number
+  kisses: number
+  activeMarriages: number
+}
+
+export interface DashboardUsers {
+  new: number
+  active: number
+  verified: number
+  male: number
+  female: number
+}
+
+export interface DashboardRegistrations {
+  today: number
+  week: number
+}
+
+export interface DashboardSpendByType {
+  type: string
+  amount: number
+  count: number
+}
+
+export interface DashboardRevenue {
+  topupKen: number
+  topupCount: number
+  vipRevenueKen: number
+  vipPurchases: number
+  spendByType: DashboardSpendByType[]
+}
+
+export interface DashboardEngagement {
+  newPosts: number
+  likes: number
+  dislikes: number
+  comments: number
+}
+
+export interface DashboardSocial {
+  newFollows: number
+  friendRequests: number
+  newFriendships: number
+  newMarriages: number
+}
+
+export interface DashboardGames {
+  eggDraws: number
+  wheelSpins: number
+  penShots: number
+}
+
+export interface DashboardTimePoint {
+  date: string
+  newUsers: number
+  topupKen: number
+  revenueKen: number
+  posts: number
+}
+
+export interface DashboardOverview {
+  range: { from: string; to: string }
+  bucket: 'day' | 'month'
+  totals: DashboardTotals
+  registrations: DashboardRegistrations
+  users: DashboardUsers
+  revenue: DashboardRevenue
+  engagement: DashboardEngagement
+  social: DashboardSocial
+  games: DashboardGames
+  timeseries: DashboardTimePoint[]
+}
+
+export interface DashboardOverviewParams {
+  from?: string
+  to?: string
 }

@@ -1,19 +1,43 @@
 import { create } from 'zustand';
-import { colorForName } from '@lib';
+import { colorForName } from '../lib';
 import {
   MarriageService,
   type DiaryEntryResult,
   type MarriageUserBrief,
   type ProposalItem,
-} from '@services';
-import { useAuthStore } from '@/store/authStore';
-import type {
-  DiaryEntry,
-  MarriageStatus,
-  PendingProposal,
-  SentProposal,
-  Spouse,
-} from './marriage.types';
+} from '../services';
+import { useAuthStore } from './authStore';
+
+export type MarriageStatus = 'single' | 'married';
+
+export interface Spouse {
+  nick: string;
+  name: string;
+  avatarColor: string;
+  avatarUrl?: string;
+}
+
+export interface DiaryEntry {
+  id: string;
+  author: 'me' | 'spouse';
+  content: string;
+  createdAt: number;
+}
+
+export interface PendingProposal {
+  id: string;
+  fromNick: string;
+  fromName: string;
+  avatarColor: string;
+  message: string;
+}
+
+export interface SentProposal {
+  id: string;
+  toNick: string;
+  message: string;
+  createdAt: number;
+}
 
 interface MarriageState {
   loading: boolean;

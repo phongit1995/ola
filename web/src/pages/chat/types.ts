@@ -1,3 +1,5 @@
+import type { ChatReplySnapshot } from '@app-types';
+
 export interface Conversation {
   name: string;
   last: string;
@@ -79,4 +81,5 @@ export interface ChatMessage {
   senderName?: string;
   senderColor?: string;
   reactions?: Record<string, string[]>;
+  replyTo?: ChatReplySnapshot;
 }

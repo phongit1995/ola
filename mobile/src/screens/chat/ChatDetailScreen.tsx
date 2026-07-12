@@ -27,7 +27,12 @@ import { Avatar } from '../../components/Avatar';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { useMediaViewerStore } from '../../store/mediaViewerStore';
 import { kulToken } from '../../lib/kul';
-import { composerSingleLineHeight, SmileyDraftOverlay } from '../../components/SmileyDraftOverlay';
+import {
+  ComposerDraftOverlay,
+  composerSingleLineHeight,
+  useComposerScrollSync,
+} from '../../components/SmileyDraftOverlay';
+import { useKeyboardHeight } from '../../hooks/useKeyboardHeight';
 import { useSmileyDraft } from '../../hooks/useSmileyDraft';
 import { ListOptionDialog, type ListOption } from '../../components/ListOptionDialog';
 import { ChatMessageRow } from './ChatMessageRow';
@@ -53,6 +58,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   const { conversationId } = route.params;
   const { t, i18n } = useTranslation();
   const insets = useSafeAreaInsets();
+  const keyboardHeight = useKeyboardHeight();
 
   const conversations = useChatStore((s) => s.conversations);
   const messages = useChatStore((s) => s.messages);
@@ -80,13 +86,16 @@ export function ChatDetailScreen({ navigation, route }: Props) {
 
   const {
     draft,
-    setDraft,
+    inputValue,
+    codes,
     applyDraft,
+    handleChangeText,
     insertAtCursor,
     backspaceAtCursor,
     selection,
     handleSelectionChange,
   } = useSmileyDraft();
+  const { scrollY: inputScrollY, handleScroll: handleInputScroll } = useComposerScrollSync(draft);
   const [openTab, setOpenTab] = useState<AttachTab | null>(null);
   const [transferKenOpen, setTransferKenOpen] = useState(false);
   const [transferVipDaysOpen, setTransferVipDaysOpen] = useState(false);
@@ -183,12 +192,12 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     if (editing != null) {
       const id = editing;
       setEditing(null);
-      applyDraft('', 0);
+      applyDraft('');
       await editMessage(id, trimmed);
       return;
     }
     stickToBottomRef.current = true;
-    applyDraft('', 0);
+    applyDraft('');
     setOpenTab(null);
     await sendText(trimmed);
   }
@@ -211,14 +220,14 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   function startEdit(message: Message) {
     const content = message.content ?? '';
     setEditing(message.id);
-    applyDraft(content, content.length);
+    applyDraft(content);
     setOpenTab(null);
     requestAnimationFrame(() => inputRef.current?.focus());
   }
 
   function cancelEdit() {
     setEditing(null);
-    applyDraft('', 0);
+    applyDraft('');
   }
 
   async function pickAndSendImages() {
@@ -351,6 +360,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
           scrollEventThrottle={16}
           contentContainerStyle={{ paddingVertical: 12 }}
           onContentSizeChange={scrollToEnd}
+          onLayout={scrollToEnd}
           ListHeaderComponent={
             peerCardVisible && peerCardAnchorId === '' && peerProfile != null ? (
               <PeerProfileCard
@@ -480,7 +490,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
             ref={inputRef}
             className="px-2 py-1.5 text-base"
             style={[
-              { color: 'transparent', textAlignVertical: 'center' },
+              { color: 'rgba(0,0,0,0.87)', textAlignVertical: 'center', maxHeight: 128 },
               draft === '' ? { height: composerSingleLineHeight(6) } : null,
             ]}
             selectionColor="#7cb342"
@@ -488,22 +498,23 @@ export function ChatDetailScreen({ navigation, route }: Props) {
             placeholder={t('chat.messageInputPlaceholder', { name: title })}
             placeholderTextColor="rgba(0,0,0,0.38)"
             multiline
-            value={draft}
+            value={inputValue}
             selection={selection}
             onSelectionChange={handleSelectionChange}
             onChangeText={(text) => {
-              setDraft(text);
+              handleChangeText(text);
               if (editing == null) notifyTyping();
             }}
+            onScroll={handleInputScroll}
             onFocus={() => setOpenTab(null)}
           />
-          {draft !== '' && (
-            <View
-              pointerEvents="none"
-              className="absolute inset-0 justify-end overflow-hidden px-2 py-1.5"
-            >
-              <SmileyDraftOverlay text={draft} />
-            </View>
+          {inputValue !== '' && (
+            <ComposerDraftOverlay
+              display={inputValue}
+              codes={codes}
+              scrollY={inputScrollY}
+              inputRef={inputRef}
+            />
           )}
         </View>
         {isTyping ? (
@@ -531,10 +542,14 @@ export function ChatDetailScreen({ navigation, route }: Props) {
 
       <AttachmentBar
         openTab={openTab}
+        bottomInset={keyboardHeight > 0 ? 0 : insets.bottom}
         onToggleTab={(tab) => setOpenTab((c) => (c === tab ? null : tab))}
         onPickEmoji={insertAtCursor}
         onBackspace={backspaceAtCursor}
-        onSendKul={(index) => void send(kulToken(index))}
+        onSendKul={(index) => {
+          void send(kulToken(index));
+          setOpenTab(null);
+        }}
         onPickImage={() => void pickAndSendImages()}
         onTransferKen={() => {
           setOpenTab(null);

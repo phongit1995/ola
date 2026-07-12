@@ -33,6 +33,7 @@ const ALL_TABS: AttachTab[] = ['smiley', 'camera', 'photo', 'voice', 'more'];
 
 interface AttachmentBarProps {
   openTab: AttachTab | null;
+  bottomInset?: number;
   onToggleTab: (tab: AttachTab) => void;
   onPickEmoji: (code: string) => void;
   onBackspace: () => void;
@@ -90,6 +91,7 @@ function MorePanel({
 
 export function AttachmentBar({
   openTab,
+  bottomInset = 0,
   onToggleTab,
   onPickEmoji,
   onBackspace,
@@ -114,7 +116,14 @@ export function AttachmentBar({
   }
 
   return (
-    <View className="bg-white" style={{ borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.12)' }}>
+    <View
+      className="bg-white"
+      style={{
+        borderTopWidth: 1,
+        borderTopColor: 'rgba(0,0,0,0.12)',
+        paddingBottom: bottomInset,
+      }}
+    >
       <View className="flex-row">
         {ALL_TABS.map((tab) => {
           const active = tab === openTab;

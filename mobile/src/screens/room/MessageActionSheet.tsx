@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Image, Keyboard, Modal, Platform, Pressable, Text, useWindowDimensions, View } from 'react-native';
+import { Image, Modal, Platform, Pressable, Text, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { ImageSourcePropType, ViewStyle } from 'react-native';
 import type { ReactionType } from '@ola/shared/types';
+import { useKeyboardHeight } from '../../hooks/useKeyboardHeight';
 import { REACTION_IMAGE, REACTION_ORDER } from '../../lib/reactions';
 
 export interface MessageSheetAction {
@@ -79,19 +79,6 @@ function ReactionRow({
       ))}
     </View>
   );
-}
-
-function useKeyboardHeight(): number {
-  const [height, setHeight] = useState(() => Keyboard.metrics()?.height ?? 0);
-  useEffect(() => {
-    const show = Keyboard.addListener('keyboardDidShow', (e) => setHeight(e.endCoordinates.height));
-    const hide = Keyboard.addListener('keyboardDidHide', () => setHeight(0));
-    return () => {
-      show.remove();
-      hide.remove();
-    };
-  }, []);
-  return height;
 }
 
 function clamp(value: number, min: number, max: number): number {

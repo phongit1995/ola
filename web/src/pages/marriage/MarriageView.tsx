@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FullScreenOverlay, ScreenHeader } from '@components';
-import { useMarriageStore } from './marriageStore';
+import { useMarriageStore } from '@/store/marriageStore';
 import { MarriageBoxView } from './MarriageBoxView';
 import { MarriageLockedView } from './MarriageLockedView';
 import { ProposeComposer } from './ProposeComposer';

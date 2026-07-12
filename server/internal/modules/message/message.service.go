@@ -683,6 +683,14 @@ func (s *Service) SendMessage(senderID, conversationID uuid.UUID, messageType, c
 		return nil, err
 	}
 
+	var replySnapshot *ReplySnapshot
+	if replyToID != nil {
+		replySnapshot, err = s.resolveReplySnapshot(conversationID, *replyToID)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	now := time.Now()
 	messageID := gocql.TimeUUID()
 
@@ -703,6 +711,12 @@ func (s *Service) SendMessage(senderID, conversationID uuid.UUID, messageType, c
 		CreatedAt:      now,
 		UpdatedAt:      now,
 		ReplyToID:      replyToID,
+	}
+
+	if replySnapshot != nil {
+		if raw, marshalErr := json.Marshal(replySnapshot); marshalErr == nil {
+			msg.ReplySnapshot = string(raw)
+		}
 	}
 
 	if err := s.repo.CreateMessage(msg); err != nil {
@@ -730,6 +744,7 @@ func (s *Service) SendMessage(senderID, conversationID uuid.UUID, messageType, c
 
 	if replyToID != nil {
 		response.ReplyToID = replyToID.String()
+		response.ReplyTo = replySnapshot
 	}
 
 	if clientMsgID != "" {
@@ -743,6 +758,67 @@ func (s *Service) SendMessage(senderID, conversationID uuid.UUID, messageType, c
 	})
 
 	return response, nil
+}
+
+func (s *Service) resolveReplySnapshot(conversationID, replyToID uuid.UUID) (*ReplySnapshot, error) {
+	messageID, err := gocql.ParseUUID(replyToID.String())
+	if err != nil {
+		return nil, fmt.Errorf("invalid reply to ID: %w", err)
+	}
+
+	orig, cacheErr := s.cache.GetMessage(conversationID, messageID)
+	if cacheErr != nil || orig == nil {
+		orig, err = s.repo.GetMessageByID(conversationID, messageID)
+		if err != nil {
+			return nil, ErrReplyNotFound
+		}
+	}
+	if orig.DeletedAt != nil {
+		return nil, ErrReplyNotFound
+	}
+
+	snapshot := &ReplySnapshot{
+		MessageID:  orig.MessageID.String(),
+		SenderID:   orig.SenderID.String(),
+		SenderName: orig.SenderName,
+		Excerpt:    utils.TruncateRunes(orig.Content, constants.MessageReplyExcerptMaxRunes),
+		Type:       orig.MessageType,
+	}
+	if u, userErr := s.userCache.GetUserCache(orig.SenderID, true); userErr == nil && u != nil {
+		snapshot.SenderName = u.Username
+	}
+	if orig.MessageType == constants.MessageTypeImage {
+		var meta ImageMetadata
+		if unmarshalErr := json.Unmarshal([]byte(orig.Metadata), &meta); unmarshalErr == nil {
+			snapshot.ImageURL = meta.URL
+		}
+	}
+	return snapshot, nil
+}
+
+func parseReplySnapshot(raw string) *ReplySnapshot {
+	if raw == "" {
+		return nil
+	}
+	var snapshot ReplySnapshot
+	if err := json.Unmarshal([]byte(raw), &snapshot); err != nil {
+		return nil
+	}
+	return &snapshot
+}
+
+func toEventReplySnapshot(snapshot *ReplySnapshot) *messageEvents.ReplySnapshot {
+	if snapshot == nil {
+		return nil
+	}
+	return &messageEvents.ReplySnapshot{
+		MessageID:  snapshot.MessageID,
+		SenderID:   snapshot.SenderID,
+		SenderName: snapshot.SenderName,
+		Excerpt:    snapshot.Excerpt,
+		Type:       snapshot.Type,
+		ImageURL:   snapshot.ImageURL,
+	}
 }
 
 func (s *Service) applyInboxFanout(conversationID uuid.UUID, members []conversation.ConversationMember,
@@ -951,6 +1027,7 @@ func (s *Service) GetMessages(userID, conversationID uuid.UUID, limit int, befor
 
 		if msg.ReplyToID != nil {
 			resp.ReplyToID = msg.ReplyToID.String()
+			resp.ReplyTo = parseReplySnapshot(msg.ReplySnapshot)
 		}
 
 		responses = append(responses, resp)
@@ -1030,10 +1107,17 @@ func (s *Service) UpdateMessage(userID uuid.UUID, conversationIDStr, messageIDSt
 		SenderAvatar:   senderAvatar,
 		Type:           msg.MessageType,
 		Content:        newContent,
+		Metadata:       msg.Metadata,
 		Status:         "sent",
 		CreatedAt:      msg.CreatedAt.Format(time.RFC3339),
 		UpdatedAt:      now.Format(time.RFC3339),
 		EditedAt:       now.Format(time.RFC3339),
+		Reactions:      parseReactions(msg.Reactions),
+	}
+
+	if msg.ReplyToID != nil {
+		response.ReplyToID = msg.ReplyToID.String()
+		response.ReplyTo = parseReplySnapshot(msg.ReplySnapshot)
 	}
 
 	s.invalidateMessageCachesAsync(conversationID, messageID)
@@ -1090,6 +1174,7 @@ func messageDataFromResponse(resp MessageResponse) *messageEvents.MessageData {
 		UpdatedAt:      resp.UpdatedAt,
 		EditedAt:       resp.EditedAt,
 		ReplyToID:      resp.ReplyToID,
+		ReplyTo:        toEventReplySnapshot(resp.ReplyTo),
 		ClientMsgID:    resp.ClientMsgID,
 	}
 }
@@ -1538,6 +1623,7 @@ func (s *Service) ToggleReaction(ctx context.Context, userID, conversationID uui
 	}
 	if msg.ReplyToID != nil {
 		resp.ReplyToID = msg.ReplyToID.String()
+		resp.ReplyTo = parseReplySnapshot(msg.ReplySnapshot)
 	}
 	return resp, nil
 }
