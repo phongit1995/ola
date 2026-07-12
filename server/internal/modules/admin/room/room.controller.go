@@ -132,3 +132,27 @@ func (ctrl *Controller) Messages(c *gin.Context) (interface{}, error) {
 	}
 	return resp, nil
 }
+
+// DeleteMessage godoc
+// @Summary      Delete a room message (admin)
+// @Tags         admin-room
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "Room ID"
+// @Param        messageId path string true "Message ID"
+// @Success      200  {object}  map[string]string
+// @Router       /admin/rooms/{id}/messages/{messageId} [delete]
+func (ctrl *Controller) DeleteMessage(c *gin.Context) (interface{}, error) {
+	id, err := utils.ParseUUIDParam(c, "id", "invalid room id")
+	if err != nil {
+		return nil, err
+	}
+	messageID := c.Param("messageId")
+	if messageID == "" {
+		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid message id")
+	}
+	if err := ctrl.service.DeleteMessageAdmin(c.Request.Context(), id, messageID); err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return map[string]string{"message": "message deleted"}, nil
+}

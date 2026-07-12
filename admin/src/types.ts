@@ -346,6 +346,20 @@ export interface UpdateRoomRequest {
   enabled?: boolean
 }
 
+export interface RoomReplySnapshot {
+  messageId: string
+  senderId: string
+  senderName?: string
+  excerpt: string
+  type?: string
+  imageUrl?: string
+}
+
+export interface RoomReactor {
+  userId: string
+  username: string
+}
+
 export interface RoomMessage {
   id: string
   roomId: string
@@ -353,8 +367,14 @@ export interface RoomMessage {
   senderName?: string
   senderAvatar?: string
   senderGender?: string
+  senderVip?: string
+  senderVipEnd?: string
+  type?: string
   content: string
+  imageUrl?: string
   createdAt: string
+  replyTo?: RoomReplySnapshot
+  reactions?: Record<string, RoomReactor[]>
 }
 
 export interface RoomMessagesList {

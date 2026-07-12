@@ -50,3 +50,14 @@ export function useDeleteRoom() {
     },
   })
 }
+
+export function useDeleteRoomMessage(roomId: string | null) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (messageId: string) =>
+      AdminRoomService.deleteMessage(roomId as string, messageId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: [ROOMS_KEY, 'messages', roomId] })
+    },
+  })
+}
