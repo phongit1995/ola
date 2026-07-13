@@ -200,7 +200,7 @@ export function ChatMessageRow({
   }
 
   return (
-    <View className={firstInGroup ? 'mt-2' : ''}>
+    <View className={firstInGroup ? 'mt-2' : 'mt-0.5'}>
       <View
         className="flex-row items-end gap-1 px-3"
         style={{ flexDirection: fromMe ? 'row-reverse' : 'row' }}

@@ -182,7 +182,7 @@ func pickAudioExtension(mime, originalName string) string {
 	switch strings.ToLower(base) {
 	case "audio/webm":
 		return ".webm"
-	case "audio/mp4", "audio/aac":
+	case "audio/mp4", "audio/x-m4a", "audio/aac":
 		return ".m4a"
 	case "audio/mpeg":
 		return ".mp3"
@@ -253,6 +253,9 @@ func (s *Service) uploadAudioFile(ctx context.Context, userID, conversationID uu
 
 	declaredMime := fileHeader.Header.Get("Content-Type")
 	detectedMime := http.DetectContentType(data)
+	if strings.EqualFold(strings.TrimSpace(strings.SplitN(detectedMime, ";", 2)[0]), "video/mp4") {
+		detectedMime = "audio/mp4"
+	}
 	finalMime := declaredMime
 	if !isAllowedAudioMime(finalMime) {
 		finalMime = detectedMime
