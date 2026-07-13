@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, Text, TextInput, View } from 'react-native';
 import { formatKen, toApiError } from '@ola/shared/lib';
 import { VipService } from '@ola/shared/services';
 import { useAuthStore } from '@ola/shared/stores/authStore';
@@ -8,6 +8,7 @@ import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { VipPackageItem } from '@ola/shared/types';
 import { Avatar } from '../../components/Avatar';
 import { Dialog, DialogButton } from '../../components/Dialog';
+import { ListOptionDialog } from '../../components/ListOptionDialog';
 
 const vipIcon = require('../../assets/icons/apps/vip.png');
 
@@ -57,6 +58,7 @@ export function TransferVipDaysDialog({ visible, onClose, receiver }: TransferVi
   const [loading, setLoading] = useState(true);
   const [packages, setPackages] = useState<VipPackageItem[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [pickerOpen, setPickerOpen] = useState(false);
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -66,7 +68,9 @@ export function TransferVipDaysDialog({ visible, onClose, receiver }: TransferVi
     setLoading(true);
     VipService.listPackages()
       .then((res) => {
-        if (active) setPackages(res.items);
+        if (!active) return;
+        setPackages(res.items);
+        setSelectedId((current) => current ?? res.items[0]?.id ?? null);
       })
       .catch(() => undefined)
       .finally(() => {
@@ -173,45 +177,41 @@ export function TransferVipDaysDialog({ visible, onClose, receiver }: TransferVi
               {t('chat.transferVipDaysEmpty')}
             </Text>
           ) : (
-            <View className="mt-1 rounded" style={{ borderWidth: 1, borderColor: DIVIDER, maxHeight: 224 }}>
-              <ScrollView keyboardShouldPersistTaps="handled">
-                {packages.map((item, index) => {
-                  const active = item.id === selectedId;
-                  return (
-                    <Pressable
-                      key={item.id}
-                      onPress={() => setSelectedId(item.id)}
-                      className="flex-row items-center justify-between px-3 py-2.5"
-                      style={{
-                        backgroundColor: active ? 'rgba(124,179,66,0.1)' : '#ffffff',
-                        borderTopWidth: index > 0 ? 1 : 0,
-                        borderTopColor: 'rgba(0,0,0,0.08)',
-                      }}
-                    >
-                      <View className="min-w-0 flex-1">
-                        <Text
-                          numberOfLines={1}
-                          className="text-sm font-medium"
-                          style={{ color: active ? PRIMARY : BODY }}
-                        >
-                          {item.name}
-                        </Text>
-                        <Text className="text-xs" style={{ color: MUTED }}>
-                          {t('chat.transferVipDaysDayUnit', { days: item.days })}
-                        </Text>
-                      </View>
-                      <Text
-                        className="ml-2 shrink-0 text-sm font-bold"
-                        style={{ color: active ? PRIMARY : BODY }}
-                      >
-                        {formatKen(item.kenPrice)} {t('chat.transferKenUnit')}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </ScrollView>
-            </View>
+            <Pressable
+              onPress={() => setPickerOpen(true)}
+              className="mt-1 flex-row items-center justify-between rounded px-3 py-2.5 active:bg-black/5"
+              style={{ borderWidth: 1, borderColor: DIVIDER }}
+            >
+              {selected != null ? (
+                <View className="min-w-0 flex-1">
+                  <Text numberOfLines={1} className="text-sm font-medium" style={{ color: BODY }}>
+                    {selected.name}
+                  </Text>
+                  <Text className="text-xs" style={{ color: MUTED }}>
+                    {t('chat.transferVipDaysDayUnit', { days: selected.days })} ·{' '}
+                    {formatKen(selected.kenPrice)} {t('chat.transferKenUnit')}
+                  </Text>
+                </View>
+              ) : (
+                <Text className="min-w-0 flex-1 text-sm" style={{ color: MUTED }}>
+                  {t('chat.transferVipDaysSelectLabel')}
+                </Text>
+              )}
+              <Text className="ml-2 text-xs" style={{ color: MUTED }}>
+                ▼
+              </Text>
+            </Pressable>
           )}
+          <ListOptionDialog
+            visible={pickerOpen}
+            title={t('chat.transferVipDaysSelectLabel')}
+            options={packages.map((item) => ({
+              key: item.id,
+              label: `${item.name} · ${formatKen(item.kenPrice)} ${t('chat.transferKenUnit')}`,
+              onSelect: () => setSelectedId(item.id),
+            }))}
+            onClose={() => setPickerOpen(false)}
+          />
         </View>
       ) : (
         <View className="px-1 py-1">
