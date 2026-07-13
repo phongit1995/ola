@@ -40,6 +40,7 @@ import { ListOptionDialog, type ListOption } from '../../components/ListOptionDi
 import { MeQuickCommentBar } from '../me/MeQuickCommentBar';
 import { MeComposerModal } from '../me/MeComposerModal';
 import { FollowingListOverlay } from './FollowingListOverlay';
+import { PeerVipStoreDialog } from './PeerVipStoreDialog';
 
 const checkedIcon = require('../../assets/icons/profile/ic_checked.png');
 const kissIcon = require('../../assets/icons/profile/sticker_kiss.png');
@@ -47,7 +48,7 @@ const maleIcon = require('../../assets/icons/profile/ic_indicate_male.png');
 const femaleIcon = require('../../assets/icons/profile/ic_indicate_female.png');
 const marriageIcon = require('../../assets/icons/profile/ic_profile_marriage.png');
 const birthdayIcon = require('../../assets/icons/profile/ic_profile_birthday.png');
-const noteIcon = require('../../assets/icons/profile/ic_profile_note.png');
+const vipStoreIcon = require('../../assets/icons/apps/vip.png');
 const addFriendIcon = require('../../assets/icons/profile/ic_add_friend_black_disable.png');
 const friendsActiveIcon = require('../../assets/icons/profile/ic_state_friends.png');
 const followIcon = require('../../assets/icons/profile/ic_follow_black_disable.png');
@@ -152,6 +153,7 @@ export function UserProfileScreen({ username, language, onClose, onOpenProfile, 
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [viewer, setViewer] = useState<{ images: string[]; index: number } | null>(null);
   const [busy, setBusy] = useState(false);
+  const [vipStoreOpen, setVipStoreOpen] = useState(false);
 
   const openViewer = (images: string[], index = 0) => setViewer({ images, index });
 
@@ -632,7 +634,15 @@ export function UserProfileScreen({ username, language, onClose, onOpenProfile, 
                 />
                 <InfoRow icon={birthdayIcon} text={birthday} />
                 <View className="ml-4 mt-2"><Text className="text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>{joinDate}</Text></View>
-                <InfoRow icon={noteIcon} text={t('profile.viewNote')} note />
+                {profile.canViewVipStore && (
+                  <Pressable
+                    onPress={() => setVipStoreOpen(true)}
+                    className="ml-4 mt-2 flex-row items-center gap-1 active:opacity-70"
+                  >
+                    <Image source={vipStoreIcon} style={{ width: 16, height: 16 }} resizeMode="contain" />
+                    <Text className="text-xs" style={{ color: '#33691e' }}>{t('profile.viewVipStore')}</Text>
+                  </Pressable>
+                )}
               </View>
             </View>
 
@@ -814,6 +824,14 @@ export function UserProfileScreen({ username, language, onClose, onOpenProfile, 
           index={viewer?.index ?? 0}
           onClose={() => setViewer(null)}
         />
+
+        {vipStoreOpen && profile != null && (
+          <PeerVipStoreDialog
+            userId={profile.id}
+            name={profile.username}
+            onClose={() => setVipStoreOpen(false)}
+          />
+        )}
 
         {followersOpen && profile != null && (
           <FollowingListOverlay

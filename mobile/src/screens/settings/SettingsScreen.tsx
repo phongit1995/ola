@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Image,
@@ -12,12 +12,15 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { useSettingsStore } from '@ola/shared/stores/settingsStore';
+import { VipService } from '@ola/shared/services';
 import type { UserSettings } from '@ola/shared/types';
 import type { RootStackParamList } from '../../navigation/types';
 import { ROOT_ROUTES } from '../../navigation/routes';
 
 const PRIMARY = '#7cb342';
 const ROW_BORDER = 'rgba(0,0,0,0.06)';
+const VIP_PRIVACY_KEYS = ['privacyPublic', 'privacyFriends', 'privacyPrivate'] as const;
+const VIP_PRIVACY_DISPLAY = ['privacyPrivate', 'privacyFriends', 'privacyPublic'] as const;
 
 const iconPrivacy = require('../../assets/icons/settings/icon-privacy.webp');
 const iconNotification = require('../../assets/icons/settings/icon-notification.webp');
@@ -195,23 +198,64 @@ export function SettingsScreen({ navigation }: Props) {
   const update = useSettingsStore((s) => s.update);
   const [draft, setDraft] = useState(settings);
   const [saving, setSaving] = useState(false);
+  const [vipPrivacy, setVipPrivacy] = useState<number | null>(null);
+  const [vipPrivacyDraft, setVipPrivacyDraft] = useState(0);
+  const [vipTouched, setVipTouched] = useState(false);
+  const vipTouchedRef = useRef(false);
 
-  const dirty = useMemo(
+  useEffect(() => {
+    let active = true;
+    VipService.store({ limit: 1 })
+      .then((res) => {
+        if (!active) return;
+        setVipPrivacy(res.privacy);
+        if (!vipTouchedRef.current) setVipPrivacyDraft(res.privacy);
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const settingsDirty = useMemo(
     () => (Object.keys(draft) as (keyof UserSettings)[]).some((key) => draft[key] !== settings[key]),
     [draft, settings]
   );
+  const vipDirty = vipTouched && vipPrivacyDraft !== vipPrivacy;
+  const dirty = settingsDirty || vipDirty;
+
+  const vipPrivacyKey = VIP_PRIVACY_KEYS[vipPrivacyDraft] ?? VIP_PRIVACY_KEYS[0];
 
   function setField<K extends keyof UserSettings>(key: K, value: UserSettings[K]) {
     setDraft((current) => ({ ...current, [key]: value }));
   }
 
+  function changeVipPrivacy(value: number) {
+    vipTouchedRef.current = true;
+    setVipTouched(true);
+    setVipPrivacyDraft(value);
+  }
+
   async function handleSave() {
     if (!dirty || saving) return;
     setSaving(true);
-    const ok = await update(draft);
+    let ok = true;
+    if (settingsDirty) ok = await update(draft);
+    if (ok && vipDirty) {
+      try {
+        await VipService.setPrivacy(vipPrivacyDraft);
+      } catch {
+        ok = false;
+      }
+    }
     setSaving(false);
     if (ok) {
       setDraft(useSettingsStore.getState().settings);
+      if (vipDirty) {
+        setVipPrivacy(vipPrivacyDraft);
+        setVipTouched(false);
+        vipTouchedRef.current = false;
+      }
       push('success', t('settings.saved'));
     } else {
       push('error', t('settings.saveError'));
@@ -281,6 +325,21 @@ export function SettingsScreen({ navigation }: Props) {
                 { value: 'friends', label: t('settings.optFriends') },
                 { value: 'all', label: t('settings.optAll') },
               ]}
+            />
+          </SettingRow>
+          <SettingRow label={t('settings.whoCanViewVip')}>
+            <Segmented
+              value={vipPrivacyKey}
+              onChange={(k) => changeVipPrivacy(VIP_PRIVACY_KEYS.indexOf(k))}
+              options={VIP_PRIVACY_DISPLAY.map((key) => ({
+                value: key,
+                label:
+                  key === 'privacyPrivate'
+                    ? t('settings.vipPrivacyMine')
+                    : key === 'privacyPublic'
+                      ? t('settings.optAll')
+                      : t(`vip.${key}`),
+              }))}
             />
           </SettingRow>
           <SettingRow label={t('settings.showBirthday')}>
