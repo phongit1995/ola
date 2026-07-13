@@ -1,9 +1,8 @@
-import type { TurboModule } from 'react-native';
+import type { CodegenTypes, TurboModule } from 'react-native';
 import { TurboModuleRegistry } from 'react-native';
-import type { UnsafeObject } from 'react-native/Libraries/Types/CodegenTypes';
 
 export interface Spec extends TurboModule {
-  configure(config: UnsafeObject): void;
+  configure(config: CodegenTypes.UnsafeObject): void;
   measure(content: string, maxWidth: number, fontSize: number, maxLines: number): number[];
 }
 

@@ -1,15 +1,29 @@
+import { useCallback, useEffect, useRef, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Image, Modal, Platform, Pressable, Text, useWindowDimensions, View } from 'react-native';
+import {
+  Animated,
+  Image,
+  Modal,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from 'react-native';
+import { BlurView } from '@react-native-community/blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { ImageSourcePropType, ViewStyle } from 'react-native';
 import type { ReactionType } from '@ola/shared/types';
 import { useKeyboardHeight } from '../../hooks/useKeyboardHeight';
+import { hapticImpact } from '../../lib/haptics';
 import { REACTION_IMAGE, REACTION_ORDER } from '../../lib/reactions';
 
 export interface MessageSheetAction {
   key: string;
   label: string;
   icon?: ImageSourcePropType;
+  iconTint?: string;
   destructive?: boolean;
   onSelect: () => void;
 }
@@ -26,6 +40,7 @@ interface MessageActionSheetProps {
   actions: MessageSheetAction[];
   showReactions?: boolean;
   anchor?: AnchorRect | null;
+  preview?: ReactNode;
   onReact: (type: ReactionType) => void;
   onClose: () => void;
 }
@@ -81,6 +96,49 @@ function ReactionRow({
   );
 }
 
+function ActionMenu({
+  actions,
+  onClose,
+  style,
+}: {
+  actions: MessageSheetAction[];
+  onClose: () => void;
+  style?: ViewStyle;
+}) {
+  return (
+    <View
+      className="overflow-hidden rounded-xl bg-white"
+      style={[{ minWidth: MENU_MIN_WIDTH }, CARD_SHADOW, style]}
+    >
+      {actions.map((action) => (
+        <Pressable
+          key={action.key}
+          onPress={() => {
+            action.onSelect();
+            onClose();
+          }}
+          style={{ height: MENU_ITEM_HEIGHT }}
+          className="flex-row items-center gap-2.5 px-4 active:bg-neutral-100"
+        >
+          {action.icon != null && (
+            <Image
+              source={action.icon}
+              style={{ width: 20, height: 20, tintColor: action.iconTint }}
+              resizeMode="contain"
+            />
+          )}
+          <Text
+            className="text-base"
+            style={{ color: action.destructive ? '#e34545' : 'rgba(0,0,0,0.87)' }}
+          >
+            {action.label}
+          </Text>
+        </Pressable>
+      ))}
+    </View>
+  );
+}
+
 function clamp(value: number, min: number, max: number): number {
   if (max < min) return min;
   return Math.min(Math.max(value, min), max);
@@ -93,6 +151,137 @@ function popupHeight(actionCount: number, showReactions: boolean): number {
   return BAR_HEIGHT + POPUP_GAP + menu;
 }
 
+function useSheetTransition(onClose: () => void): {
+  progress: Animated.Value;
+  requestClose: () => void;
+} {
+  const progress = useRef(new Animated.Value(0)).current;
+  const closingRef = useRef(false);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+  useEffect(() => {
+    Animated.spring(progress, {
+      toValue: 1,
+      tension: 220,
+      friction: 16,
+      useNativeDriver: true,
+    }).start();
+  }, [progress]);
+  const requestClose = useCallback(() => {
+    if (closingRef.current) return;
+    closingRef.current = true;
+    Animated.timing(progress, {
+      toValue: 0,
+      duration: 140,
+      useNativeDriver: true,
+    }).start(() => onCloseRef.current());
+  }, [progress]);
+  return { progress, requestClose };
+}
+
+function popStyle(progress: Animated.Value) {
+  return {
+    opacity: progress,
+    transform: [
+      {
+        scale: progress.interpolate({ inputRange: [0, 1], outputRange: [0.75, 1] }),
+      },
+    ],
+  };
+}
+
+function MessengerPopup({
+  actions,
+  showReactions = true,
+  anchor,
+  preview,
+  onReact,
+  onClose,
+}: MessageActionSheetProps & { anchor: AnchorRect; preview: ReactNode }) {
+  const { width: winW, height: winH } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  const kbHeight = useKeyboardHeight();
+  const { progress, requestClose } = useSheetTransition(onClose);
+
+  const menuH = actions.length > 0 ? MENU_PADDING_V * 2 + actions.length * MENU_ITEM_HEIGHT : 0;
+  const barH = showReactions ? BAR_HEIGHT : 0;
+  const topNeed = barH > 0 ? barH + POPUP_GAP : 0;
+  const bottomNeed = menuH > 0 ? menuH + POPUP_GAP : 0;
+
+  const kbAdjust = Platform.OS === 'ios' ? kbHeight : 0;
+  const usableBottom = winH - kbAdjust;
+  const bottomInset = kbAdjust > 0 ? POPUP_MARGIN : Math.max(POPUP_MARGIN, insets.bottom);
+
+  const minBubbleTop = Math.max(POPUP_MARGIN, insets.top) + topNeed;
+  const maxBubbleTop = usableBottom - bottomInset - anchor.height - bottomNeed;
+  const bubbleTop = clamp(anchor.y, minBubbleTop, maxBubbleTop);
+
+  const alignRight = anchor.x + anchor.width / 2 > winW / 2;
+  const barWidth = Math.min(BAR_WIDTH, winW - POPUP_MARGIN * 2);
+  const anchorRight = winW - (anchor.x + anchor.width);
+  const sideRight = clamp(anchorRight, POPUP_MARGIN, winW - POPUP_MARGIN - barWidth);
+  const sideLeft = clamp(anchor.x, POPUP_MARGIN, winW - POPUP_MARGIN - barWidth);
+
+  const barPos: ViewStyle = alignRight ? { right: sideRight } : { left: sideLeft };
+  const menuPos: ViewStyle = alignRight
+    ? { right: clamp(anchorRight, POPUP_MARGIN, winW - POPUP_MARGIN - MENU_MIN_WIDTH) }
+    : { left: clamp(anchor.x, POPUP_MARGIN, winW - POPUP_MARGIN - MENU_MIN_WIDTH) };
+
+  return (
+    <Pressable className="flex-1" onPress={requestClose}>
+      <Animated.View
+        pointerEvents="none"
+        style={[StyleSheet.absoluteFill, { opacity: progress }]}
+      >
+        {Platform.OS === 'ios' ? (
+          <>
+            <BlurView
+              style={StyleSheet.absoluteFill}
+              blurType="regular"
+              blurAmount={25}
+              reducedTransparencyFallbackColor="rgba(235,235,235,0.6)"
+            />
+          </>
+        ) : (
+          <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(255,255,255,0.45)' }]} />
+        )}
+      </Animated.View>
+      <Animated.View
+        pointerEvents="box-none"
+        style={{
+          position: 'absolute',
+          top: bubbleTop,
+          left: anchor.x,
+          width: anchor.width,
+          opacity: progress,
+        }}
+      >
+        {preview}
+      </Animated.View>
+      {showReactions && (
+        <Animated.View
+          style={[
+            { position: 'absolute', top: bubbleTop - POPUP_GAP - BAR_HEIGHT, ...barPos },
+            popStyle(progress),
+          ]}
+        >
+          <ReactionRow onReact={onReact} onClose={requestClose} />
+        </Animated.View>
+      )}
+      {actions.length > 0 && (
+        <Animated.View
+          style={[
+            { position: 'absolute', top: bubbleTop + anchor.height + POPUP_GAP, ...menuPos },
+            popStyle(progress),
+          ]}
+        >
+          <ActionMenu actions={actions} onClose={requestClose} />
+        </Animated.View>
+      )}
+    </Pressable>
+  );
+}
+
 function AnchoredPopup({
   actions,
   showReactions = true,
@@ -103,6 +292,7 @@ function AnchoredPopup({
   const { width: winW, height: winH } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const kbHeight = useKeyboardHeight();
+  const { progress, requestClose } = useSheetTransition(onClose);
   const refWidth = Math.min(BAR_WIDTH, winW - POPUP_MARGIN * 2);
   const height = popupHeight(actions.length, showReactions);
   const alignRight = anchor.x + anchor.width / 2 > winW / 2;
@@ -132,41 +322,21 @@ function AnchoredPopup({
   };
 
   return (
-    <Pressable className="flex-1" style={{ backgroundColor: 'rgba(0,0,0,0.15)' }} onPress={onClose}>
-      <View style={containerStyle}>
-        {showReactions && <ReactionRow onReact={onReact} onClose={onClose} />}
+    <Pressable className="flex-1" onPress={requestClose}>
+      <Animated.View
+        pointerEvents="none"
+        style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.15)', opacity: progress }]}
+      />
+      <Animated.View style={[containerStyle, popStyle(progress)]}>
+        {showReactions && <ReactionRow onReact={onReact} onClose={requestClose} />}
         {actions.length > 0 && (
-          <View
-            className="overflow-hidden rounded-xl bg-white"
-            style={[
-              { minWidth: MENU_MIN_WIDTH, marginTop: showReactions ? POPUP_GAP : 0 },
-              CARD_SHADOW,
-            ]}
-          >
-            {actions.map((action) => (
-              <Pressable
-                key={action.key}
-                onPress={() => {
-                  action.onSelect();
-                  onClose();
-                }}
-                style={{ height: MENU_ITEM_HEIGHT }}
-                className="flex-row items-center gap-2.5 px-4 active:bg-neutral-100"
-              >
-                {action.icon != null && (
-                  <Image source={action.icon} style={{ width: 20, height: 20 }} resizeMode="contain" />
-                )}
-                <Text
-                  className="text-base"
-                  style={{ color: action.destructive ? '#e34545' : 'rgba(0,0,0,0.87)' }}
-                >
-                  {action.label}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
+          <ActionMenu
+            actions={actions}
+            onClose={requestClose}
+            style={{ marginTop: showReactions ? POPUP_GAP : 0 }}
+          />
         )}
-      </View>
+      </Animated.View>
     </Pressable>
   );
 }
@@ -208,7 +378,11 @@ function BottomSheet({
               className="flex-row items-center gap-3 px-5 py-3 active:bg-neutral-100"
             >
               {action.icon != null && (
-                <Image source={action.icon} style={{ width: 20, height: 20 }} resizeMode="contain" />
+                <Image
+                  source={action.icon}
+                  style={{ width: 20, height: 20, tintColor: action.iconTint }}
+                  resizeMode="contain"
+                />
               )}
               <Text
                 className="text-base"
@@ -232,17 +406,25 @@ function BottomSheet({
   );
 }
 
-export function MessageActionSheet({ anchor, ...props }: MessageActionSheetProps) {
+export function MessageActionSheet({ anchor, preview, ...props }: MessageActionSheetProps) {
+  useEffect(() => {
+    if (props.visible && anchor != null) hapticImpact();
+  }, [props.visible, anchor != null]);
+
   return (
     <Modal
       visible={props.visible}
       transparent
       statusBarTranslucent
-      animationType={anchor != null ? 'fade' : 'slide'}
+      animationType={anchor == null && props.visible ? 'slide' : 'none'}
       onRequestClose={props.onClose}
     >
-      {anchor != null ? (
-        <AnchoredPopup {...props} anchor={anchor} />
+      {!props.visible ? null : anchor != null ? (
+        preview != null ? (
+          <MessengerPopup {...props} anchor={anchor} preview={preview} />
+        ) : (
+          <AnchoredPopup {...props} anchor={anchor} />
+        )
       ) : (
         <BottomSheet {...props} />
       )}

@@ -1,37 +1,31 @@
 import type * as React from 'react';
-import type { ColorValue, HostComponent, ViewProps } from 'react-native';
-import type {
-  DirectEventHandler,
-  Float,
-  WithDefault,
-} from 'react-native/Libraries/Types/CodegenTypes';
-import codegenNativeCommands from 'react-native/Libraries/Utilities/codegenNativeCommands';
-import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
+import type { CodegenTypes, ColorValue, HostComponent, ViewProps } from 'react-native';
+import { codegenNativeCommands, codegenNativeComponent } from 'react-native';
 
 interface ChangeTextEvent {
   text: string;
 }
 
 interface ComposerHeightEvent {
-  height: Float;
+  height: CodegenTypes.Float;
 }
 
 export interface NativeProps extends ViewProps {
-  fontSize: Float;
-  maxHeight: Float;
-  paddingH?: WithDefault<Float, 12>;
-  paddingV?: WithDefault<Float, 8>;
+  fontSize: CodegenTypes.Float;
+  maxHeight: CodegenTypes.Float;
+  paddingH?: CodegenTypes.WithDefault<CodegenTypes.Float, 12>;
+  paddingV?: CodegenTypes.WithDefault<CodegenTypes.Float, 8>;
   placeholder?: string;
   placeholderTextColor?: ColorValue;
   textColor?: ColorValue;
   selectionColor?: ColorValue;
-  editable?: WithDefault<boolean, true>;
-  alignTop?: WithDefault<boolean, false>;
+  editable?: CodegenTypes.WithDefault<boolean, true>;
+  alignTop?: CodegenTypes.WithDefault<boolean, false>;
   initialText?: string;
-  onChangeText?: DirectEventHandler<ChangeTextEvent>;
-  onComposerHeight?: DirectEventHandler<ComposerHeightEvent>;
-  onComposerFocus?: DirectEventHandler<null>;
-  onComposerBlur?: DirectEventHandler<null>;
+  onChangeText?: CodegenTypes.DirectEventHandler<ChangeTextEvent>;
+  onComposerHeight?: CodegenTypes.DirectEventHandler<ComposerHeightEvent>;
+  onComposerFocus?: CodegenTypes.DirectEventHandler<null>;
+  onComposerBlur?: CodegenTypes.DirectEventHandler<null>;
 }
 
 type ComposerComponent = HostComponent<NativeProps>;

@@ -1,8 +1,10 @@
 import { useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Image, Pressable, Text, useWindowDimensions, View } from 'react-native';
 import { formatDuration, parseMessageMetadata } from '@ola/shared/lib';
-import type { Message } from '@ola/shared/types';
+import type { ChatReplySnapshot, Message } from '@ola/shared/types';
 import { Avatar } from '../../components/Avatar';
+import { VoiceBubble } from '../../components/VoiceBubble';
 import { kulImageForText } from '../../lib/kul';
 import { reactionChips } from '../../lib/reactions';
 import { imageSizeForHeight } from '../../lib/chatSmiley';
@@ -16,6 +18,56 @@ function chatBubbleTextMaxWidth(windowWidth: number, fromMe: boolean): number {
 
 const sentIcon = require('../../assets/icons/chat/ic_message_sent.png');
 const resendIcon = require('../../assets/icons/chat/btn_resend_d.png');
+const photoIcon = require('../../assets/icons/chat/ic_local.png');
+
+function ChatQuoteBlock({
+  replyTo,
+  fromMe,
+  maxWidth,
+  onQuoteClick,
+}: {
+  replyTo: ChatReplySnapshot;
+  fromMe: boolean;
+  maxWidth: number;
+  onQuoteClick?: (messageId: string) => void;
+}) {
+  const { t } = useTranslation();
+  const isImage = replyTo.type === 'image';
+  const excerpt = isImage
+    ? t('chat.replyImage')
+    : replyTo.type === 'audio'
+      ? t('chat.replyAudio')
+      : kulImageForText(replyTo.excerpt) != null
+        ? t('chat.replySticker')
+        : replyTo.excerpt;
+  const name =
+    replyTo.senderName != null && replyTo.senderName !== '' ? `@${replyTo.senderName}` : '';
+  return (
+    <Pressable
+      onPress={() => onQuoteClick?.(replyTo.messageId)}
+      className="mb-1 rounded py-0.5 pl-2 pr-1"
+      style={{ borderLeftWidth: 2, borderLeftColor: '#7cb342', backgroundColor: 'rgba(0,0,0,0.05)' }}
+    >
+      {name !== '' && (
+        <Text numberOfLines={1} className="text-xs font-semibold" style={{ color: 'rgba(0,0,0,0.6)' }}>
+          {name}
+        </Text>
+      )}
+      <View className="flex-row items-center gap-1">
+        {isImage && <Image source={photoIcon} style={{ width: 14, height: 14 }} resizeMode="contain" />}
+        <RichTextView
+          content={excerpt}
+          own={false}
+          color="rgba(0,0,0,0.45)"
+          maxWidth={maxWidth - (isImage ? 32 : 14)}
+          fontSize={12}
+          maxLines={2}
+          onMention={() => onQuoteClick?.(replyTo.messageId)}
+        />
+      </View>
+    </Pressable>
+  );
+}
 
 interface ChatMessageRowProps {
   message: Message;
@@ -32,15 +84,18 @@ interface ChatMessageRowProps {
   onResend: (id: string) => void;
   onOpenImage: (url: string) => void;
   onMention: (nick: string) => void;
+  onShowReactions?: (id: string) => void;
+  onQuoteClick?: (messageId: string) => void;
 }
 
-function ChatBubble({
+export function ChatBubble({
   message,
   fromMe,
   firstInGroup,
   lastInGroup,
   onOpenImage,
   onMention,
+  onQuoteClick,
 }: {
   message: Message;
   fromMe: boolean;
@@ -48,6 +103,7 @@ function ChatBubble({
   lastInGroup: boolean;
   onOpenImage: (url: string) => void;
   onMention: (nick: string) => void;
+  onQuoteClick?: (messageId: string) => void;
 }) {
   const meta = parseMessageMetadata(message.metadata);
   const { width: windowWidth } = useWindowDimensions();
@@ -66,6 +122,17 @@ function ChatBubble({
     );
   }
 
+  if (message.type === 'audio') {
+    return (
+      <VoiceBubble
+        url={meta.url}
+        duration={formatDuration(meta.duration)}
+        durationSec={meta.duration}
+        isOut={fromMe}
+      />
+    );
+  }
+
   const bg = failed ? '#f8d7d7' : fromMe ? '#dcedc8' : '#ffffff';
   const cornerClass = fromMe
     ? `${firstInGroup ? '' : 'rounded-tr-sm'} ${lastInGroup ? '' : 'rounded-br-sm'}`
@@ -81,22 +148,21 @@ function ChatBubble({
           : { shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 2, shadowOffset: { width: 0, height: 1 }, elevation: 1 },
       ]}
     >
-      {message.type === 'audio' ? (
-        <View className="flex-row items-center gap-2">
-          <Text className="text-lg">🎤</Text>
-          <Text className="text-sm" style={{ color: 'rgba(0,0,0,0.7)' }}>
-            {formatDuration(meta.duration)}
-          </Text>
-        </View>
-      ) : (
-        <RichTextView
-          content={message.content}
-          own={false}
-          color="rgba(0,0,0,0.87)"
+      {message.replyTo != null && (
+        <ChatQuoteBlock
+          replyTo={message.replyTo}
+          fromMe={fromMe}
           maxWidth={chatBubbleTextMaxWidth(windowWidth, fromMe)}
-          onMention={onMention}
+          onQuoteClick={onQuoteClick}
         />
       )}
+      <RichTextView
+        content={message.content}
+        own={false}
+        color="rgba(0,0,0,0.87)"
+        maxWidth={chatBubbleTextMaxWidth(windowWidth, fromMe)}
+        onMention={onMention}
+      />
     </View>
   );
 }
@@ -116,6 +182,8 @@ export function ChatMessageRow({
   onResend,
   onOpenImage,
   onMention,
+  onShowReactions,
+  onQuoteClick,
 }: ChatMessageRowProps) {
   const chips = reactionChips(message.reactions);
   const bubbleRef = useRef<View>(null);
@@ -132,7 +200,7 @@ export function ChatMessageRow({
   }
 
   return (
-    <View className={firstInGroup ? 'mt-2' : ''}>
+    <View className={firstInGroup ? 'mt-2' : 'mt-0.5'}>
       <View
         className="flex-row items-end gap-1 px-3"
         style={{ flexDirection: fromMe ? 'row-reverse' : 'row' }}
@@ -158,6 +226,7 @@ export function ChatMessageRow({
                 lastInGroup={lastInGroup}
                 onOpenImage={onOpenImage}
                 onMention={onMention}
+                onQuoteClick={onQuoteClick}
               />
             </Pressable>
             {showTime && (
@@ -168,7 +237,8 @@ export function ChatMessageRow({
           </View>
 
           {chips.length > 0 && (
-            <View
+            <Pressable
+              onPress={() => onShowReactions?.(message.id)}
               className="-mt-2 flex-row flex-wrap gap-1"
               style={{ alignSelf: fromMe ? 'flex-end' : 'flex-start' }}
             >
@@ -194,7 +264,7 @@ export function ChatMessageRow({
                   </Text>
                 </View>
               ))}
-            </View>
+            </Pressable>
           )}
 
           {fromMe && isLastOwn && !pending && !failed && (

@@ -22,8 +22,8 @@ import { kulImageForText, kulToken } from '../../lib/kul';
 import { ChatComposer, type ChatComposerHandle } from '../../components/ChatComposer';
 import { RichTextView } from '../../components/RichTextView';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
-import { buildRoomFeed, type RoomFeedItem } from './messageGroups';
-import { RoomMessageGroup } from './RoomMessageGroup';
+import { buildRoomFeed, type GroupedMessage, type RoomFeedItem } from './messageGroups';
+import { RoomBubbleBody, RoomMessageGroup } from './RoomMessageGroup';
 import { RoomReactionNotice } from './RoomReactionNotice';
 import { SmileyKulPanel } from './SmileyKulPanel';
 import { MessageActionSheet, type AnchorRect, type MessageSheetAction } from './MessageActionSheet';
@@ -90,9 +90,12 @@ export function RoomMessagesTab({
   const [draft, setDraft] = useState('');
   const [panelOpen, setPanelOpen] = useState(false);
   const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
-  const [actionTarget, setActionTarget] = useState<{ message: RoomMessage; anchor: AnchorRect } | null>(
-    null
-  );
+  const [actionTarget, setActionTarget] = useState<{
+    message: RoomMessage;
+    anchor: AnchorRect;
+    grouped: GroupedMessage;
+    isOwn: boolean;
+  } | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<RoomMessage | null>(null);
   const [blockTarget, setBlockTarget] = useState<RoomMessage | null>(null);
   const [reactionsTargetId, setReactionsTargetId] = useState<string | null>(null);
@@ -324,11 +327,11 @@ export function RoomMessagesTab({
                 onOpenProfile={onOpenProfile}
                 onOpenUser={onOpenUser}
                 onQuickMention={insertMention}
-                onLongPressMessage={(id, anchor) => {
+                onLongPressMessage={(id, anchor, grouped, isOwn) => {
                   const message = messageById.get(id);
                   if (message != null) {
                     sheetOpenRef.current = true;
-                    setActionTarget({ message, anchor });
+                    setActionTarget({ message, anchor, grouped, isOwn });
                   }
                 }}
                 onQuoteClick={scrollToMessage}
@@ -488,6 +491,18 @@ export function RoomMessagesTab({
       <MessageActionSheet
         visible={actionTarget != null}
         anchor={actionTarget?.anchor ?? null}
+        preview={
+          actionTarget != null ? (
+            <View style={{ alignSelf: actionTarget.isOwn ? 'flex-end' : 'flex-start' }}>
+              <RoomBubbleBody
+                message={actionTarget.grouped}
+                isOwn={actionTarget.isOwn}
+                position={actionTarget.grouped.position}
+                onMention={() => undefined}
+              />
+            </View>
+          ) : null
+        }
         actions={actionTarget != null ? sheetActions(actionTarget.message) : []}
         showReactions={actionTarget != null && actionTarget.message.senderId !== currentUserId}
         onReact={(type) => {

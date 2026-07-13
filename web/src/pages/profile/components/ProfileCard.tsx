@@ -7,7 +7,7 @@ import maleIcon from '@/assets/icons/profile/ic_indicate_male.png';
 import femaleIcon from '@/assets/icons/profile/ic_indicate_female.png';
 import marriageIcon from '@/assets/icons/profile/ic_profile_marriage.png';
 import birthdayIcon from '@/assets/icons/profile/ic_profile_birthday.png';
-import vipStoreIcon from '@/assets/icons/apps/vip.png';
+import vipStoreIcon from '@/assets/icons/me/icon_vip.webp';
 import { Avatar, UserName, VipIcon } from '@components';
 import { colorForName, toast } from '@lib';
 import { useMediaViewerStore } from '@/store/mediaViewerStore';

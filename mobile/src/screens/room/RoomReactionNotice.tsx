@@ -1,26 +1,44 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Animated, Image, Text, View } from 'react-native';
+import { Animated, Easing, Image, Text, View } from 'react-native';
 import { useRoomChatStore } from '@ola/shared/stores/roomChatStore';
 import type { ReactionType } from '@ola/shared/types';
 import { REACTION_IMAGE } from '../../lib/reactions';
 
 const NOTICE_DURATION_MS = 2500;
+const ENTER_MS = NOTICE_DURATION_MS * 0.15;
+const HOLD_MS = NOTICE_DURATION_MS * 0.65;
+const EXIT_MS = NOTICE_DURATION_MS * 0.2;
 
 export function RoomReactionNotice() {
   const { t } = useTranslation();
   const notice = useRoomChatStore((s) => s.reactionNotice);
   const clearReactionNotice = useRoomChatStore((s) => s.clearReactionNotice);
-  const opacity = useRef(new Animated.Value(0)).current;
+  const progress = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (notice == null) return;
     const seq = notice.seq;
-    opacity.setValue(0);
-    Animated.timing(opacity, { toValue: 1, duration: 180, useNativeDriver: true }).start();
-    const timer = setTimeout(() => clearReactionNotice(seq), NOTICE_DURATION_MS);
-    return () => clearTimeout(timer);
-  }, [notice, clearReactionNotice, opacity]);
+    progress.setValue(0);
+    Animated.sequence([
+      Animated.timing(progress, {
+        toValue: 1,
+        duration: ENTER_MS,
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: true,
+      }),
+      Animated.delay(HOLD_MS),
+      Animated.timing(progress, {
+        toValue: 0,
+        duration: EXIT_MS,
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: true,
+      }),
+    ]).start(({ finished }) => {
+      if (finished) clearReactionNotice(seq);
+    });
+    return () => progress.stopAnimation();
+  }, [notice, clearReactionNotice, progress]);
 
   if (notice == null) return null;
 
@@ -30,7 +48,15 @@ export function RoomReactionNotice() {
     <View pointerEvents="none" className="absolute inset-x-0 top-6 z-20 items-center px-4">
       <Animated.View
         style={{
-          opacity,
+          opacity: progress,
+          transform: [
+            {
+              translateY: progress.interpolate({
+                inputRange: [0, 1],
+                outputRange: [-12, 0],
+              }),
+            },
+          ],
           shadowColor: '#000',
           shadowOpacity: 0.18,
           shadowRadius: 20,

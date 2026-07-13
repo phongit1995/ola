@@ -50,7 +50,9 @@ export function TransferVipDaysDialog({ open, onClose, receiver }: TransferVipDa
     let active = true;
     VipService.listPackages()
       .then((res) => {
-        if (active) setPackages(res.items);
+        if (!active) return;
+        setPackages(res.items);
+        setSelectedId((current) => current ?? res.items[0]?.id ?? null);
       })
       .catch(() => undefined)
       .finally(() => {
@@ -159,44 +161,18 @@ export function TransferVipDaysDialog({ open, onClose, receiver }: TransferVipDa
               {t('chat.transferVipDaysEmpty')}
             </p>
           ) : (
-            <div className="mt-1 max-h-56 overflow-y-auto rounded border border-black/12">
-              <ul className="divide-y divide-black/8">
-                {packages.map((item) => {
-                  const active = item.id === selectedId;
-                  return (
-                    <li key={item.id}>
-                      <button
-                        type="button"
-                        onClick={() => setSelectedId(item.id)}
-                        className={`flex w-full items-center justify-between px-3 py-2.5 text-left ${
-                          active ? 'bg-ola-primary/10' : 'bg-white'
-                        }`}
-                      >
-                        <span className="min-w-0">
-                          <span
-                            className={`block truncate text-sm font-medium ${
-                              active ? 'text-ola-primary' : 'text-black/87'
-                            }`}
-                          >
-                            {item.name}
-                          </span>
-                          <span className="block text-xs text-black/54">
-                            {t('chat.transferVipDaysDayUnit', { days: item.days })}
-                          </span>
-                        </span>
-                        <span
-                          className={`ml-2 shrink-0 text-sm font-bold ${
-                            active ? 'text-ola-primary' : 'text-black/87'
-                          }`}
-                        >
-                          {formatKen(item.kenPrice)} {t('chat.transferKenUnit')}
-                        </span>
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
+            <select
+              value={selectedId ?? ''}
+              onChange={(event) => setSelectedId(event.target.value)}
+              className="mt-1 w-full cursor-pointer rounded border border-black/12 bg-white px-3 py-2.5 text-sm text-black/87 outline-none focus:border-ola-primary"
+            >
+              {packages.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.name} · {t('chat.transferVipDaysDayUnit', { days: item.days })} ·{' '}
+                  {formatKen(item.kenPrice)} {t('chat.transferKenUnit')}
+                </option>
+              ))}
+            </select>
           )}
         </div>
       ) : (

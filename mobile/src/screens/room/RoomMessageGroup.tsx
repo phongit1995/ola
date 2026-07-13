@@ -23,7 +23,12 @@ interface RoomMessageGroupProps {
   onOpenProfile?: (nick: string, color: string) => void;
   onOpenUser?: (userId: string) => void;
   onQuickMention?: (name: string) => void;
-  onLongPressMessage?: (id: string, anchor: AnchorRect) => void;
+  onLongPressMessage?: (
+    id: string,
+    anchor: AnchorRect,
+    grouped: GroupedMessage,
+    isOwn: boolean
+  ) => void;
   onQuoteClick?: (messageId: string) => void;
   onShowReactions?: (id: string) => void;
   onResendImage?: (id: string) => void;
@@ -146,6 +151,49 @@ function BubbleContent({
   );
 }
 
+export function RoomBubbleBody({
+  message,
+  isOwn,
+  position,
+  highlighted = false,
+  onMention,
+  onQuoteClick,
+  onResendImage,
+}: {
+  message: GroupedMessage;
+  isOwn: boolean;
+  position: BubblePosition;
+  highlighted?: boolean;
+  onMention: (nick: string) => void;
+  onQuoteClick?: (messageId: string) => void;
+  onResendImage?: (id: string) => void;
+}) {
+  const isImage = message.type === 'image' && message.imageUrl != null && message.imageUrl !== '';
+  const kul = kulImageForText(message.content);
+  const corners = isOwn ? OWN_CORNERS[position] : OTHER_CORNERS[position];
+  const bare = (isImage || kul != null) && message.replyTo == null;
+
+  return (
+    <View
+      className={bare ? 'rounded-xl' : `${corners} px-3.5 py-2`}
+      style={[
+        bare ? null : { backgroundColor: isOwn ? '#7cb342' : '#f1f8e9' },
+        highlighted ? { borderWidth: 2, borderColor: 'rgba(124,179,66,0.6)' } : null,
+      ]}
+    >
+      {message.replyTo != null && (
+        <QuoteBlock replyTo={message.replyTo} isOwn={isOwn} onQuoteClick={onQuoteClick} />
+      )}
+      <BubbleContent
+        message={message}
+        isOwn={isOwn}
+        onMention={onMention}
+        onResendImage={onResendImage}
+      />
+    </View>
+  );
+}
+
 function RoomBubble({
   message,
   isOwn,
@@ -161,14 +209,15 @@ function RoomBubble({
   position: BubblePosition;
   highlighted: boolean;
   onMention: (nick: string) => void;
-  onLongPressMessage?: (id: string, anchor: AnchorRect) => void;
+  onLongPressMessage?: (
+    id: string,
+    anchor: AnchorRect,
+    grouped: GroupedMessage,
+    isOwn: boolean
+  ) => void;
   onQuoteClick?: (messageId: string) => void;
   onResendImage?: (id: string) => void;
 }) {
-  const isImage = message.type === 'image' && message.imageUrl != null && message.imageUrl !== '';
-  const kul = kulImageForText(message.content);
-  const corners = isOwn ? OWN_CORNERS[position] : OTHER_CORNERS[position];
-  const bare = (isImage || kul != null) && message.replyTo == null;
   const uploading = message.status === 'uploading';
   const failed = message.status === 'failed';
   const bubbleRef = useRef<View>(null);
@@ -176,7 +225,7 @@ function RoomBubble({
   function handleLongPress() {
     if (uploading || failed) return;
     bubbleRef.current?.measureInWindow((x, y, width, height) => {
-      onLongPressMessage?.(message.id, { x, y, width, height });
+      onLongPressMessage?.(message.id, { x, y, width, height }, message, isOwn);
     });
   }
 
@@ -187,23 +236,15 @@ function RoomBubble({
       delayLongPress={300}
       style={{ alignSelf: isOwn ? 'flex-end' : 'flex-start', maxWidth: '100%' }}
     >
-      <View
-        className={bare ? 'rounded-xl' : `${corners} px-3.5 py-2`}
-        style={[
-          bare ? null : { backgroundColor: isOwn ? '#7cb342' : '#f1f8e9' },
-          highlighted ? { borderWidth: 2, borderColor: 'rgba(124,179,66,0.6)' } : null,
-        ]}
-      >
-        {message.replyTo != null && (
-          <QuoteBlock replyTo={message.replyTo} isOwn={isOwn} onQuoteClick={onQuoteClick} />
-        )}
-        <BubbleContent
-          message={message}
-          isOwn={isOwn}
-          onMention={onMention}
-          onResendImage={onResendImage}
-        />
-      </View>
+      <RoomBubbleBody
+        message={message}
+        isOwn={isOwn}
+        position={position}
+        highlighted={highlighted}
+        onMention={onMention}
+        onQuoteClick={onQuoteClick}
+        onResendImage={onResendImage}
+      />
     </Pressable>
   );
 }

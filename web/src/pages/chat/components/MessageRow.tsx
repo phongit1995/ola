@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, type MouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Avatar } from '@components';
 import { useLongPress } from '@hooks';
@@ -42,14 +42,16 @@ export function MessageRow({ message, prev, next, name, color, avatar, isLastOwn
     if (canAct) onOpenActions(message, anchor);
   });
 
-  function handleBubbleClick() {
+  function handleBubbleClick(event: MouseEvent<HTMLDivElement>) {
     if (suppressClick.current) {
       suppressClick.current = false;
       return;
     }
     if (message.kind === 'image' && message.image != null && message.image !== '') {
       onOpenImage(message.image);
+      return;
     }
+    if (canAct) onOpenActions(message, event.currentTarget.getBoundingClientRect());
   }
 
   return (
@@ -93,7 +95,13 @@ export function MessageRow({ message, prev, next, name, color, avatar, isLastOwn
             )}
           </div>
           {chips.length > 0 && (
-            <div className={`mt-0.5 flex flex-wrap gap-1 ${isOut ? 'justify-end' : ''}`}>
+            <button
+              type="button"
+              onClick={(event) => {
+                if (canAct) onOpenActions(message, event.currentTarget.getBoundingClientRect());
+              }}
+              className={`relative z-10 -mt-2 flex flex-wrap gap-1 ${isOut ? 'justify-end self-end' : 'self-start'}`}
+            >
               {chips.map((chip) => (
                 <span
                   key={chip.type}
@@ -105,7 +113,7 @@ export function MessageRow({ message, prev, next, name, color, avatar, isLastOwn
                   </span>
                 </span>
               ))}
-            </div>
+            </button>
           )}
           {isOut && isLastOwn && message.status !== 'sending' && message.status !== 'failed' && (
             <SeenIndicator seen={seen} name={name} color={color} avatar={avatar} />
