@@ -1,5 +1,6 @@
 User-agent: *
 Allow: /$
+Allow: /gioi-thieu
 Allow: /dieu-khoan
 Disallow: /
 
