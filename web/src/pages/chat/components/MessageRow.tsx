@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, type MouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Avatar } from '@components';
 import { useLongPress } from '@hooks';
@@ -42,14 +42,16 @@ export function MessageRow({ message, prev, next, name, color, avatar, isLastOwn
     if (canAct) onOpenActions(message, anchor);
   });
 
-  function handleBubbleClick() {
+  function handleBubbleClick(event: MouseEvent<HTMLDivElement>) {
     if (suppressClick.current) {
       suppressClick.current = false;
       return;
     }
     if (message.kind === 'image' && message.image != null && message.image !== '') {
       onOpenImage(message.image);
+      return;
     }
+    if (canAct) onOpenActions(message, event.currentTarget.getBoundingClientRect());
   }
 
   return (
