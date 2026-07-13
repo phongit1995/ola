@@ -233,12 +233,21 @@ function MessengerPopup({
         pointerEvents="none"
         style={[StyleSheet.absoluteFill, { opacity: progress }]}
       >
-        <BlurView
-          style={StyleSheet.absoluteFill}
-          blurType="dark"
-          blurAmount={16}
-          reducedTransparencyFallbackColor="rgba(20,20,20,0.85)"
-        />
+        {Platform.OS === 'ios' ? (
+          <>
+            <BlurView
+              style={StyleSheet.absoluteFill}
+              blurType="ultraThinMaterialDark"
+              blurAmount={22}
+              reducedTransparencyFallbackColor="rgba(20,20,20,0.8)"
+            />
+            <View
+              style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.18)' }]}
+            />
+          </>
+        ) : (
+          <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.55)' }]} />
+        )}
       </Animated.View>
       <Animated.View
         pointerEvents="box-none"
