@@ -413,7 +413,7 @@ export function MessageActionSheet({ anchor, preview, ...props }: MessageActionS
       animationType={anchor == null && props.visible ? 'slide' : 'none'}
       onRequestClose={props.onClose}
     >
-      {anchor != null ? (
+      {!props.visible ? null : anchor != null ? (
         preview != null ? (
           <MessengerPopup {...props} anchor={anchor} preview={preview} />
         ) : (
