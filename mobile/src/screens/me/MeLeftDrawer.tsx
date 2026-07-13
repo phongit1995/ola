@@ -3,16 +3,17 @@ import { useTranslation } from 'react-i18next';
 import { Animated, BackHandler, Image, ImageBackground, Pressable, ScrollView, Text, View } from 'react-native';
 import { Avatar } from '../../components/Avatar';
 
-const noteIcon = require('../../assets/icons/me/ic_indicate_note.png');
+const personalIcon = require('../../assets/icons/me/ic_indicate_personal.png');
 const boxIcon = require('../../assets/icons/me/ic_indicate_box.png');
 const likeIcon = require('../../assets/icons/me/ic_section_like.png');
 const visitorIcon = require('../../assets/icons/me/ic_action_tab_follower.png');
-const eggIcon = require('../../assets/icons/me/ic_indicate_broken_egg.png');
-const androidIcon = require('../../assets/icons/me/ic_indicate_android.png');
-const olaIcon = require('../../assets/icons/me/ic_indicate_me.png');
-const funnyIcon = require('../../assets/icons/me/ic_indicate_funny.png');
-const publicIcon = require('../../assets/icons/me/ic_indicate_public.png');
-const rssIcon = require('../../assets/icons/me/ic_indicate_rss.png');
+// TODO: các mục chưa có action, ẩn tạm — bật lại khi làm xong
+// const eggIcon = require('../../assets/icons/me/ic_indicate_broken_egg.png');
+// const androidIcon = require('../../assets/icons/me/ic_indicate_android.png');
+// const olaIcon = require('../../assets/icons/me/ic_indicate_me.png');
+// const funnyIcon = require('../../assets/icons/me/ic_indicate_funny.png');
+// const publicIcon = require('../../assets/icons/me/ic_indicate_public.png');
+// const rssIcon = require('../../assets/icons/me/ic_indicate_rss.png');
 
 const WIDTH = 240;
 
@@ -55,16 +56,17 @@ export function MeLeftDrawer({
   }, [onClose]);
 
   const items = [
-    { key: 'diary', icon: noteIcon, label: t('me.drawerDiary'), tint: undefined },
+    { key: 'personal', icon: personalIcon, label: t('me.drawerPersonal'), tint: undefined },
     { key: 'marriage', icon: boxIcon, label: t('me.drawerMarriage'), tint: undefined },
     { key: 'likes', icon: likeIcon, label: t('me.drawerLikes'), tint: undefined },
     { key: 'visitors', icon: visitorIcon, label: t('me.tabVisitors'), tint: 'rgba(0,0,0,0.6)' },
-    { key: 'egg', icon: eggIcon, label: t('me.drawerEgg'), tint: undefined },
-    { key: 'android', icon: androidIcon, label: '#Android', tint: undefined },
-    { key: 'ola', icon: olaIcon, label: '#Ola', tint: undefined },
-    { key: 'funny', icon: funnyIcon, label: t('me.drawerFunny'), tint: undefined },
-    { key: 'public', icon: publicIcon, label: t('me.drawerPublic'), tint: undefined },
-    { key: 'rss', icon: rssIcon, label: 'RSS', tint: undefined },
+    // TODO: các mục chưa có action, ẩn tạm — bật lại khi làm xong
+    // { key: 'egg', icon: eggIcon, label: t('me.drawerEgg'), tint: undefined },
+    // { key: 'android', icon: androidIcon, label: '#Android', tint: undefined },
+    // { key: 'ola', icon: olaIcon, label: '#Ola', tint: undefined },
+    // { key: 'funny', icon: funnyIcon, label: t('me.drawerFunny'), tint: undefined },
+    // { key: 'public', icon: publicIcon, label: t('me.drawerPublic'), tint: undefined },
+    // { key: 'rss', icon: rssIcon, label: 'RSS', tint: undefined },
   ];
 
   return (

@@ -2,16 +2,17 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Avatar } from '@components';
 import { DEFAULT_AVATAR_COLOR } from '@lib';
-import noteIcon from '@/assets/icons/me/ic_indicate_note.png';
+import personalIcon from '@/assets/icons/me/ic_indicate_personal.png';
 import boxIcon from '@/assets/icons/me/ic_indicate_box.png';
 import likeIcon from '@/assets/icons/me/ic_section_like.png';
 import visitorIcon from '@/assets/icons/me/ic_action_tab_follower.png';
-import eggIcon from '@/assets/icons/me/ic_indicate_broken_egg.png';
-import androidIcon from '@/assets/icons/me/ic_indicate_android.png';
-import olaIcon from '@/assets/icons/me/ic_indicate_me.png';
-import funnyIcon from '@/assets/icons/me/ic_indicate_funny.png';
-import publicIcon from '@/assets/icons/me/ic_indicate_public.png';
-import rssIcon from '@/assets/icons/me/ic_indicate_rss.png';
+// TODO: các mục chưa có action, ẩn tạm — bật lại khi làm xong
+// import eggIcon from '@/assets/icons/me/ic_indicate_broken_egg.png';
+// import androidIcon from '@/assets/icons/me/ic_indicate_android.png';
+// import olaIcon from '@/assets/icons/me/ic_indicate_me.png';
+// import funnyIcon from '@/assets/icons/me/ic_indicate_funny.png';
+// import publicIcon from '@/assets/icons/me/ic_indicate_public.png';
+// import rssIcon from '@/assets/icons/me/ic_indicate_rss.png';
 import { CLOSE_ANIMATION_MS } from '../constants';
 
 interface MeLeftDrawerProps {
@@ -57,7 +58,7 @@ export function MeLeftDrawer({
   }
 
   const items: DrawerItem[] = [
-    { key: 'diary', icon: noteIcon, label: t('me.drawerDiary') },
+    { key: 'personal', icon: personalIcon, label: t('me.drawerPersonal') },
     { key: 'marriage', icon: boxIcon, label: t('me.drawerMarriage') },
     { key: 'likes', icon: likeIcon, label: t('me.drawerLikes') },
     {
@@ -66,12 +67,13 @@ export function MeLeftDrawer({
       label: t('me.tabVisitors'),
       iconClassName: 'brightness-0 opacity-60',
     },
-    { key: 'egg', icon: eggIcon, label: t('me.drawerEgg') },
-    { key: 'android', icon: androidIcon, label: '#Android' },
-    { key: 'ola', icon: olaIcon, label: '#Ola' },
-    { key: 'funny', icon: funnyIcon, label: t('me.drawerFunny') },
-    { key: 'public', icon: publicIcon, label: t('me.drawerPublic') },
-    { key: 'rss', icon: rssIcon, label: 'RSS' },
+    // TODO: các mục chưa có action, ẩn tạm — bật lại khi làm xong
+    // { key: 'egg', icon: eggIcon, label: t('me.drawerEgg') },
+    // { key: 'android', icon: androidIcon, label: '#Android' },
+    // { key: 'ola', icon: olaIcon, label: '#Ola' },
+    // { key: 'funny', icon: funnyIcon, label: t('me.drawerFunny') },
+    // { key: 'public', icon: publicIcon, label: t('me.drawerPublic') },
+    // { key: 'rss', icon: rssIcon, label: 'RSS' },
   ];
 
   function pick(key: string) {
