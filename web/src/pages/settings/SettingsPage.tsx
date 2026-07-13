@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FullScreenOverlay, ScreenHeader } from '@components';
 import { toast } from '@lib';
@@ -109,6 +109,7 @@ export function SettingsPage({ onClose }: { onClose: () => void }) {
   const [vipPrivacy, setVipPrivacy] = useState<number | null>(null);
   const [vipPrivacyDraft, setVipPrivacyDraft] = useState(0);
   const [vipTouched, setVipTouched] = useState(false);
+  const vipTouchedRef = useRef(false);
 
   useEffect(() => {
     let active = true;
@@ -116,7 +117,7 @@ export function SettingsPage({ onClose }: { onClose: () => void }) {
       .then((res) => {
         if (!active) return;
         setVipPrivacy(res.privacy);
-        setVipPrivacyDraft(res.privacy);
+        if (!vipTouchedRef.current) setVipPrivacyDraft(res.privacy);
       })
       .catch(() => {});
     return () => {
@@ -138,6 +139,7 @@ export function SettingsPage({ onClose }: { onClose: () => void }) {
   }
 
   function changeVipPrivacy(value: number) {
+    vipTouchedRef.current = true;
     setVipTouched(true);
     setVipPrivacyDraft(value);
   }
@@ -160,6 +162,7 @@ export function SettingsPage({ onClose }: { onClose: () => void }) {
       if (vipDirty) {
         setVipPrivacy(vipPrivacyDraft);
         setVipTouched(false);
+        vipTouchedRef.current = false;
       }
       toast.success(t('settings.saved'));
     } else {
