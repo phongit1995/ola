@@ -1,10 +1,5 @@
-import type { ColorValue, HostComponent, ViewProps } from 'react-native';
-import type {
-  DirectEventHandler,
-  Float,
-  Int32,
-} from 'react-native/Libraries/Types/CodegenTypes';
-import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
+import type { CodegenTypes, ColorValue, HostComponent, ViewProps } from 'react-native';
+import { codegenNativeComponent } from 'react-native';
 
 interface MentionPressEvent {
   nick: string;
@@ -16,12 +11,12 @@ interface UrlPressEvent {
 
 export interface NativeProps extends ViewProps {
   content: string;
-  fontSize: Float;
+  fontSize: CodegenTypes.Float;
   textColor: ColorValue;
   accentColor: ColorValue;
-  maxLines: Int32;
-  onMentionPress?: DirectEventHandler<MentionPressEvent>;
-  onUrlPress?: DirectEventHandler<UrlPressEvent>;
+  maxLines: CodegenTypes.Int32;
+  onMentionPress?: CodegenTypes.DirectEventHandler<MentionPressEvent>;
+  onUrlPress?: CodegenTypes.DirectEventHandler<UrlPressEvent>;
 }
 
 export default codegenNativeComponent<NativeProps>(
