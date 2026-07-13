@@ -1,5 +1,6 @@
 User-agent: *
 Allow: /$
+Allow: /dieu-khoan
 Disallow: /
 
 Sitemap: https://olachat.net/sitemap.xml
