@@ -37,6 +37,7 @@ import { RoomReactionsDialog } from '../room/RoomReactionsDialog';
 import { ChatMessageRow } from './ChatMessageRow';
 import { AttachmentBar, type AttachTab } from './AttachmentBar';
 import { TransferKenDialog } from '../ken/TransferKenDialog';
+import { TradingVipDialog } from './TradingVipDialog';
 import { TransferVipDaysDialog } from './TransferVipDaysDialog';
 import { formatLastActive } from './contacts';
 import { PeerProfileCard } from './PeerProfileCard';
@@ -94,6 +95,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   const [openTab, setOpenTab] = useState<AttachTab | null>(null);
   const [transferKenOpen, setTransferKenOpen] = useState(false);
   const [transferVipDaysOpen, setTransferVipDaysOpen] = useState(false);
+  const [tradingVipOpen, setTradingVipOpen] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [blockOpen, setBlockOpen] = useState(false);
@@ -654,6 +656,14 @@ export function ChatDetailScreen({ navigation, route }: Props) {
           }
           setTransferKenOpen(true);
         }}
+        onTradingVip={() => {
+          setOpenTab(null);
+          if (peerId === '') {
+            push('error', t('chat.actionError'));
+            return;
+          }
+          setTradingVipOpen(true);
+        }}
         onSendVipDays={() => {
           setOpenTab(null);
           if (peerId === '') {
@@ -684,6 +694,19 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         <TransferVipDaysDialog
           visible
           onClose={() => setTransferVipDaysOpen(false)}
+          receiver={{
+            id: peerId,
+            name: title,
+            username: conversation?.otherUser?.username,
+            avatar: peerProfile?.avatar ?? peerAvatar,
+          }}
+        />
+      )}
+
+      {tradingVipOpen && peerId !== '' && (
+        <TradingVipDialog
+          visible
+          onClose={() => setTradingVipOpen(false)}
           receiver={{
             id: peerId,
             name: title,

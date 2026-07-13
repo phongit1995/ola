@@ -4,6 +4,7 @@ import { ActivityIndicator, Image, Pressable, Text, useWindowDimensions, View } 
 import { formatDuration, parseMessageMetadata } from '@ola/shared/lib';
 import type { ChatReplySnapshot, Message } from '@ola/shared/types';
 import { Avatar } from '../../components/Avatar';
+import { VoiceBubble } from '../../components/VoiceBubble';
 import { kulImageForText } from '../../lib/kul';
 import { reactionChips } from '../../lib/reactions';
 import { imageSizeForHeight } from '../../lib/chatSmiley';
@@ -121,6 +122,17 @@ function ChatBubble({
     );
   }
 
+  if (message.type === 'audio') {
+    return (
+      <VoiceBubble
+        url={meta.url}
+        duration={formatDuration(meta.duration)}
+        durationSec={meta.duration}
+        isOut={fromMe}
+      />
+    );
+  }
+
   const bg = failed ? '#f8d7d7' : fromMe ? '#dcedc8' : '#ffffff';
   const cornerClass = fromMe
     ? `${firstInGroup ? '' : 'rounded-tr-sm'} ${lastInGroup ? '' : 'rounded-br-sm'}`
@@ -144,22 +156,13 @@ function ChatBubble({
           onQuoteClick={onQuoteClick}
         />
       )}
-      {message.type === 'audio' ? (
-        <View className="flex-row items-center gap-2">
-          <Text className="text-lg">🎤</Text>
-          <Text className="text-sm" style={{ color: 'rgba(0,0,0,0.7)' }}>
-            {formatDuration(meta.duration)}
-          </Text>
-        </View>
-      ) : (
-        <RichTextView
-          content={message.content}
-          own={false}
-          color="rgba(0,0,0,0.87)"
-          maxWidth={chatBubbleTextMaxWidth(windowWidth, fromMe)}
-          onMention={onMention}
-        />
-      )}
+      <RichTextView
+        content={message.content}
+        own={false}
+        color="rgba(0,0,0,0.87)"
+        maxWidth={chatBubbleTextMaxWidth(windowWidth, fromMe)}
+        onMention={onMention}
+      />
     </View>
   );
 }

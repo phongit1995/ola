@@ -40,14 +40,17 @@ interface AttachmentBarProps {
   onSendKul: (index: number) => void;
   onPickImage?: () => void;
   onTransferKen?: () => void;
+  onTradingVip?: () => void;
   onSendVipDays?: () => void;
 }
 
 function MorePanel({
   onTransferKen,
+  onTradingVip,
   onSendVipDays,
 }: {
   onTransferKen?: () => void;
+  onTradingVip?: () => void;
   onSendVipDays?: () => void;
 }) {
   const { t } = useTranslation();
@@ -62,7 +65,7 @@ function MorePanel({
     {
       key: 'trading-vip',
       label: t('chat.attachTradingVip'),
-      onPress: () => push('info', t('chat.comingSoon')),
+      onPress: () => (onTradingVip != null ? onTradingVip() : push('info', t('chat.comingSoon'))),
     },
     {
       key: 'send-vip-days',
@@ -98,6 +101,7 @@ export function AttachmentBar({
   onSendKul,
   onPickImage,
   onTransferKen,
+  onTradingVip,
   onSendVipDays,
 }: AttachmentBarProps) {
   const { t } = useTranslation();
@@ -147,7 +151,11 @@ export function AttachmentBar({
         <SmileyKulPanel onPickEmoji={onPickEmoji} onBackspace={onBackspace} onSendKul={onSendKul} />
       )}
       {openTab === 'more' && (
-        <MorePanel onTransferKen={onTransferKen} onSendVipDays={onSendVipDays} />
+        <MorePanel
+          onTransferKen={onTransferKen}
+          onTradingVip={onTradingVip}
+          onSendVipDays={onSendVipDays}
+        />
       )}
     </View>
   );
