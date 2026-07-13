@@ -229,7 +229,10 @@ function MessengerPopup({
 
   return (
     <Pressable className="flex-1" onPress={requestClose}>
-      <Animated.View style={[StyleSheet.absoluteFill, { opacity: progress }]}>
+      <Animated.View
+        pointerEvents="none"
+        style={[StyleSheet.absoluteFill, { opacity: progress }]}
+      >
         <BlurView
           style={StyleSheet.absoluteFill}
           blurType="dark"
@@ -315,6 +318,7 @@ function AnchoredPopup({
   return (
     <Pressable className="flex-1" onPress={requestClose}>
       <Animated.View
+        pointerEvents="none"
         style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.15)', opacity: progress }]}
       />
       <Animated.View style={[containerStyle, popStyle(progress)]}>
@@ -406,7 +410,7 @@ export function MessageActionSheet({ anchor, preview, ...props }: MessageActionS
       visible={props.visible}
       transparent
       statusBarTranslucent
-      animationType={anchor != null ? 'none' : 'slide'}
+      animationType={anchor == null && props.visible ? 'slide' : 'none'}
       onRequestClose={props.onClose}
     >
       {anchor != null ? (
