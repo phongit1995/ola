@@ -280,7 +280,7 @@ export function ChatConversationView({
   function messageSheetActions(message: ChatMessage): MessageSheetAction[] {
     const isOwn = message.direction === 'out';
     const actions: MessageSheetAction[] = [];
-    if (!blocked) {
+    if (!isOwn && !blocked) {
       actions.push({ key: 'reply', label: t('chat.actionReply'), icon: replyActionIcon, onSelect: () => startReply(message) });
     }
     if (isCopyableText(message)) {

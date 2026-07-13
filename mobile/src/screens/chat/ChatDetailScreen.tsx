@@ -9,12 +9,14 @@ import {
   Platform,
   Pressable,
   Text,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { FlashList, type FlashListRef } from '@shopify/flash-list';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import { currentUserId } from '@ola/shared/stores/chat/chatHelpers';
 import { useToastStore } from '@ola/shared/stores/toastStore';
@@ -25,10 +27,13 @@ import { ROOT_ROUTES } from '../../navigation/routes';
 import { Avatar } from '../../components/Avatar';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { useMediaViewerStore } from '../../store/mediaViewerStore';
-import { kulToken } from '../../lib/kul';
+import Clipboard from '@react-native-clipboard/clipboard';
+import { kulImageForText, kulToken } from '../../lib/kul';
 import { ChatComposer, type ChatComposerHandle } from '../../components/ChatComposer';
+import { RichTextView } from '../../components/RichTextView';
 import { useKeyboardHeight } from '../../hooks/useKeyboardHeight';
 import { ListOptionDialog, type ListOption } from '../../components/ListOptionDialog';
+import { RoomReactionsDialog } from '../room/RoomReactionsDialog';
 import { ChatMessageRow } from './ChatMessageRow';
 import { AttachmentBar, type AttachTab } from './AttachmentBar';
 import { TransferKenDialog } from '../ken/TransferKenDialog';
@@ -42,6 +47,9 @@ const backIcon = require('../../assets/icons/ic_back.png');
 const likeIcon = require('../../assets/icons/chat/smiley/smiley_35.png');
 const moreIcon = require('../../assets/icons/chat/ic_more_white.png');
 const deleteActionIcon = require('../../assets/icons/chat/ic_menu_delete.png');
+const editActionIcon = require('../../assets/icons/chat/ic_action_edit.png');
+const copyActionIcon = require('../../assets/icons/chat/ic_menu_copy.png');
+const replyActionIcon = require('../../assets/icons/me/ic_action_reply_gray.png');
 
 const CHAT_BG = '#ECE5DD';
 const DIVIDER = 'rgba(0,0,0,0.12)';
@@ -53,6 +61,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   const { t, i18n } = useTranslation();
   const insets = useSafeAreaInsets();
   const keyboardHeight = useKeyboardHeight();
+  const { width: windowWidth } = useWindowDimensions();
 
   const conversations = useChatStore((s) => s.conversations);
   const messages = useChatStore((s) => s.messages);
@@ -68,6 +77,9 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   const reactToMessage = useChatStore((s) => s.reactToMessage);
   const deleteMessage = useChatStore((s) => s.deleteMessage);
   const editMessage = useChatStore((s) => s.editMessage);
+  const replyTarget = useChatStore((s) => s.replyTarget);
+  const setReplyTarget = useChatStore((s) => s.setReplyTarget);
+  const clearReplyTarget = useChatStore((s) => s.clearReplyTarget);
   const blockPeer = useChatStore((s) => s.blockPeer);
   const unblockPeer = useChatStore((s) => s.unblockPeer);
   const friendAction = useChatStore((s) => s.friendAction);
@@ -89,6 +101,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   const [actionTarget, setActionTarget] = useState<{ message: Message; anchor: AnchorRect } | null>(
     null
   );
+  const [reactionsTargetId, setReactionsTargetId] = useState<string | null>(null);
   const listRef = useRef<FlashListRef<Message>>(null);
   const stickToBottomRef = useRef(true);
   const sheetOpenRef = useRef(false);
@@ -279,19 +292,96 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     { key: 'chat-group', label: t('chat.menuChatGroup'), onSelect: () => push('info', t('chat.comingSoon')) },
   ];
 
-  function sheetActions(message: Message): MessageSheetAction[] {
-    if (message.senderId !== myId) return [];
-    const actions: MessageSheetAction[] = [];
-    if (message.type === 'text') {
-      actions.push({ key: 'edit', label: t('chat.actionEdit'), onSelect: () => startEdit(message) });
+  const myName = useAuthStore((s) => s.user?.username) ?? '';
+  const reactionsTarget =
+    reactionsTargetId != null
+      ? messages.find((item) => item.id === reactionsTargetId)
+      : undefined;
+  const reactionsForDialog =
+    reactionsTarget?.reactions != null
+      ? Object.fromEntries(
+          Object.entries(reactionsTarget.reactions).map(([type, userIds]) => [
+            type,
+            userIds.map((userId) => ({
+              userId,
+              username: userId === myId ? myName : title,
+            })),
+          ])
+        )
+      : undefined;
+
+  function scrollToMessage(id: string) {
+    const index = messages.findIndex((m) => m.id === id);
+    if (index < 0) {
+      push('error', t('chat.replyNotFound'));
+      return;
     }
-    actions.push({
-      key: 'delete',
-      label: t('chat.actionDelete'),
-      icon: deleteActionIcon,
-      destructive: true,
-      onSelect: () => setDeleteTarget(message),
-    });
+    listRef.current?.scrollToIndex({ index, animated: true, viewPosition: 0.5 });
+  }
+
+  function startReply(message: Message) {
+    setEditing(null);
+    setReplyTarget(message);
+    requestAnimationFrame(() => composerRef.current?.focus());
+  }
+
+  function copyMessage(content: string) {
+    Clipboard.setString(content);
+    push('success', t('chat.copied'));
+  }
+
+  function isCopyableText(message: Message): boolean {
+    return (
+      message.type === 'text' &&
+      message.content.trim() !== '' &&
+      kulImageForText(message.content) == null
+    );
+  }
+
+  function replyExcerpt(message: Message): string {
+    if (message.type === 'image') return t('chat.replyImage');
+    if (message.type === 'audio') return t('chat.replyAudio');
+    return kulImageForText(message.content) != null ? t('chat.replySticker') : message.content;
+  }
+
+  function sheetActions(message: Message): MessageSheetAction[] {
+    const isOwn = message.senderId === myId;
+    const actions: MessageSheetAction[] = [];
+    if (!isOwn) {
+      actions.push({
+        key: 'reply',
+        label: t('chat.actionReply'),
+        icon: replyActionIcon,
+        onSelect: () => startReply(message),
+      });
+    }
+    if (isCopyableText(message)) {
+      actions.push({
+        key: 'copy',
+        label: t('chat.actionCopy'),
+        icon: copyActionIcon,
+        iconTint: '#595959',
+        onSelect: () => copyMessage(message.content),
+      });
+    }
+    if (isOwn && message.type === 'text') {
+      actions.push({
+        key: 'edit',
+        label: t('chat.actionEdit'),
+        icon: editActionIcon,
+        iconTint: '#b5b5b5',
+        onSelect: () => startEdit(message),
+      });
+    }
+    if (isOwn) {
+      actions.push({
+        key: 'delete',
+        label: t('chat.actionDelete'),
+        icon: deleteActionIcon,
+        destructive: true,
+        onSelect: () => setDeleteTarget(message),
+      });
+    }
     return actions;
   }
 
@@ -421,6 +511,8 @@ export function ChatDetailScreen({ navigation, route }: Props) {
                   onResend={(id) => void resendMessage(id)}
                   onOpenImage={(url) => openViewer([url])}
                   onMention={(nick) => navigation.navigate(ROOT_ROUTES.ProfileView, { userId: nick })}
+                  onShowReactions={setReactionsTargetId}
+                  onQuoteClick={scrollToMessage}
                 />
                 {peerCardVisible && item.id === peerCardAnchorId && peerProfile != null && (
                   <PeerProfileCard
@@ -469,6 +561,34 @@ export function ChatDetailScreen({ navigation, route }: Props) {
           <Text className="flex-1 text-sm" style={{ color: 'rgba(0,0,0,0.7)' }}>{t('chat.editingHint')}</Text>
           <Pressable onPress={cancelEdit} className="px-2">
             <Text className="text-base" style={{ color: 'rgba(0,0,0,0.54)' }}>✕</Text>
+          </Pressable>
+        </View>
+      )}
+      {editing == null && replyTarget != null && (
+        <View
+          className="flex-row items-center gap-2 bg-black/5 px-3 py-1.5"
+          style={{ borderTopWidth: 1, borderTopColor: DIVIDER }}
+        >
+          <View className="h-8 w-0.5 rounded bg-ola-primary" />
+          <View className="min-w-0 flex-1">
+            <Text numberOfLines={1} className="text-xs font-semibold text-ola-primary">
+              {t('chat.replyingTo', { name: replyTarget.senderName ?? title })}
+            </Text>
+            <RichTextView
+              content={replyExcerpt(replyTarget)}
+              own={false}
+              color="rgba(0,0,0,0.54)"
+              maxWidth={windowWidth - 70}
+              fontSize={12}
+              maxLines={1}
+              onMention={() => undefined}
+            />
+          </View>
+          <Pressable
+            onPress={clearReplyTarget}
+            className="h-7 w-7 items-center justify-center rounded-full"
+          >
+            <Text className="text-lg" style={{ color: 'rgba(0,0,0,0.54)' }}>×</Text>
           </Pressable>
         </View>
       )}
@@ -585,6 +705,12 @@ export function ChatDetailScreen({ navigation, route }: Props) {
           sheetOpenRef.current = false;
           setActionTarget(null);
         }}
+      />
+
+      <RoomReactionsDialog
+        visible={reactionsTargetId != null}
+        reactions={reactionsForDialog}
+        onClose={() => setReactionsTargetId(null)}
       />
 
       <ListOptionDialog
