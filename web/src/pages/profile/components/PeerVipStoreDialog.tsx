@@ -13,17 +13,22 @@ interface PeerVipStoreDialogProps {
 
 type LoadState = 'loading' | 'private' | 'error' | 'ready';
 
+const PAGE_SIZE = 100;
+
 export function PeerVipStoreDialog({ userId, name, onClose }: PeerVipStoreDialogProps) {
   const { t } = useTranslation();
   const [items, setItems] = useState<VipIconInstance[]>([]);
+  const [total, setTotal] = useState(0);
   const [state, setState] = useState<LoadState>('loading');
+  const [loadingMore, setLoadingMore] = useState(false);
 
   useEffect(() => {
     let active = true;
-    VipService.userStore(userId, { limit: 100 })
+    VipService.userStore(userId, { limit: PAGE_SIZE, offset: 0 })
       .then((res) => {
         if (!active) return;
         setItems(res.items);
+        setTotal(res.total);
         setState('ready');
       })
       .catch((err) => {
@@ -35,6 +40,23 @@ export function PeerVipStoreDialog({ userId, name, onClose }: PeerVipStoreDialog
     };
   }, [userId]);
 
+  const hasMore = items.length < total;
+
+  function loadMore() {
+    if (loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    VipService.userStore(userId, { limit: PAGE_SIZE, offset: items.length })
+      .then((res) => setItems((prev) => [...prev, ...res.items]))
+      .catch(() => {})
+      .finally(() => setLoadingMore(false));
+  }
+
+  function handleScroll(event: React.UIEvent<HTMLDivElement>) {
+    const el = event.currentTarget;
+    if (el.scrollHeight - el.scrollTop - el.clientHeight > 200) return;
+    loadMore();
+  }
+
   return (
     <Dialog
       open
@@ -42,7 +64,7 @@ export function PeerVipStoreDialog({ userId, name, onClose }: PeerVipStoreDialog
       showClose
       title={t('vip.storeOf', { name })}
     >
-      <div className="max-h-[60vh] min-h-[120px] overflow-y-auto">
+      <div className="max-h-[60vh] min-h-[120px] overflow-y-auto" onScroll={handleScroll}>
         {state === 'loading' ? (
           <div className="flex h-28 items-center justify-center text-sm text-black/54">
             {t('common.loading')}
@@ -58,7 +80,7 @@ export function PeerVipStoreDialog({ userId, name, onClose }: PeerVipStoreDialog
         ) : (
           <>
             <div className="mb-1 text-xs text-black/54">
-              {t('vip.collection')} ({items.length})
+              {t('vip.collection')} ({total})
             </div>
             {items.length === 0 ? (
               <div className="flex h-20 items-center justify-center text-sm text-black/54">
@@ -86,6 +108,11 @@ export function PeerVipStoreDialog({ userId, name, onClose }: PeerVipStoreDialog
                     </span>
                   </div>
                 ))}
+              </div>
+            )}
+            {loadingMore && (
+              <div className="flex h-10 items-center justify-center text-xs text-black/54">
+                {t('common.loading')}
               </div>
             )}
           </>
