@@ -9,7 +9,6 @@ import {
   Pressable,
   ScrollView,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -19,9 +18,8 @@ import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { NativeUploadFile } from '@ola/shared/lib';
 import type { Post, PostVisibility } from '@ola/shared/types';
 import { KUL_IMAGES, stickerImageForCode } from '../../lib/kul';
-import { ComposerDraftOverlay } from '../../components/SmileyDraftOverlay';
 import { imageSizeForHeight } from '../../lib/chatSmiley';
-import { useSmileyDraft } from '../../hooks/useSmileyDraft';
+import { ChatComposer, type ChatComposerHandle } from '../../components/ChatComposer';
 import { SmileyKulPanel } from '../room/SmileyKulPanel';
 import { MeComposerTagPanel } from './MeComposerTagPanel';
 import { MeComposerCheckInPanel, type ComposedCheckIn } from './MeComposerCheckInPanel';
@@ -52,16 +50,7 @@ export function MeComposerModal({ visible, onClose, editPost }: MeComposerModalP
   const prependPost = useMeFeedStore((s) => s.prependPost);
   const pushToast = useToastStore((s) => s.push);
 
-  const {
-    draft: content,
-    inputValue,
-    codes,
-    setDraft: setContent,
-    handleChangeText,
-    insertAtCursor,
-    selection,
-    handleSelectionChange,
-  } = useSmileyDraft();
+  const [content, setContent] = useState('');
   const [privacy, setPrivacy] = useState<PostVisibility>('public');
   const [photos, setPhotos] = useState<PickedPhoto[]>([]);
   const [sticker, setSticker] = useState<string | null>(null);
@@ -70,7 +59,7 @@ export function MeComposerModal({ visible, onClose, editPost }: MeComposerModalP
   const [posting, setPosting] = useState(false);
   const [inputFocused, setInputFocused] = useState(false);
   const imageIdRef = useRef(0);
-  const contentInputRef = useRef<TextInput>(null);
+  const composerRef = useRef<ChatComposerHandle>(null);
 
   const isEdit = editPost != null;
 
@@ -93,7 +82,10 @@ export function MeComposerModal({ visible, onClose, editPost }: MeComposerModalP
         : null
     );
     setPanel(null);
-  }, [visible, editPost, setContent]);
+    if (editPost == null) {
+      requestAnimationFrame(() => composerRef.current?.focus());
+    }
+  }, [visible, editPost]);
 
   function close() {
     onClose();
@@ -249,7 +241,14 @@ export function MeComposerModal({ visible, onClose, editPost }: MeComposerModalP
           })}
         </View>
 
-        <ScrollView className="flex-1" keyboardShouldPersistTaps="handled">
+        <ScrollView
+          className="flex-1"
+          keyboardShouldPersistTaps="handled"
+          onStartShouldSetResponderCapture={() => {
+            if (panel === 'smiley') setPanel(null);
+            return false;
+          }}
+        >
           <View
             className="mx-4 mt-3"
             style={{
@@ -259,29 +258,22 @@ export function MeComposerModal({ visible, onClose, editPost }: MeComposerModalP
               borderRadius: 6,
             }}
           >
-            <TextInput
-              ref={contentInputRef}
-              className="px-3 py-2 text-base"
-              style={{ color: 'rgba(0,0,0,0.87)', textAlignVertical: 'top', minHeight: 94 }}
-              selectionColor="#7cb342"
-              cursorColor="#7cb342"
+            <ChatComposer
+              ref={composerRef}
+              value={content}
+              onChange={setContent}
               placeholder={t('me.composerHint')}
-              placeholderTextColor="rgba(0,0,0,0.38)"
-              multiline
-              autoFocus={!isEdit}
-              value={inputValue}
-              selection={selection}
-              onSelectionChange={handleSelectionChange}
-              onChangeText={handleChangeText}
+              alignTop
+              minHeight={94}
+              maxHeight={100000}
+              paddingH={12}
+              paddingV={8}
               onFocus={() => {
                 setInputFocused(true);
                 setPanel(null);
               }}
               onBlur={() => setInputFocused(false)}
             />
-            {inputValue !== '' && (
-              <ComposerDraftOverlay display={inputValue} codes={codes} inputRef={contentInputRef} />
-            )}
           </View>
 
           {stickerImg != null && (
@@ -377,7 +369,7 @@ export function MeComposerModal({ visible, onClose, editPost }: MeComposerModalP
 
           {panel === 'tag' && (
             <View className="mx-4 mt-2">
-              <MeComposerTagPanel onMention={(nick) => insertAtCursor(` @${nick} `)} />
+              <MeComposerTagPanel onMention={(nick) => composerRef.current?.insertText(` @${nick} `)} />
             </View>
           )}
 
@@ -415,7 +407,10 @@ export function MeComposerModal({ visible, onClose, editPost }: MeComposerModalP
         </View>
 
         {panel === 'smiley' && (
-          <SmileyKulPanel hideKul onPickEmoji={insertAtCursor} />
+          <SmileyKulPanel
+            hideKul
+            onPickEmoji={(code) => composerRef.current?.insertCode(code, true)}
+          />
         )}
       </KeyboardAvoidingView>
     </Modal>

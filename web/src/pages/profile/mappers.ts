@@ -40,6 +40,7 @@ export function mapPublicProfile(data: PublicProfile, deps: ProfileMapDeps): Use
     birthday: data.dateOfBirth ? formatBirthday(data.dateOfBirth) : '',
     joinDate: `${deps.joinedLabel} ${deps.formatDate(data.createdAt)}`,
     isSelf: data.relationship?.status === 'self',
+    canViewVipStore: data.canViewVipStore !== false,
   };
 }
 

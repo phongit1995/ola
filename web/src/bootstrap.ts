@@ -1,7 +1,7 @@
 import { configureDeviceInfo, configureEnv, configureSound } from '@ola/shared/platform';
 import { registerOnLogout } from '@ola/shared/stores/authStore';
 import { useRoomChatStore } from '@ola/shared/stores/roomChatStore';
-import { webEnv } from '@config';
+import { webEnv, initAnalytics } from '@config';
 import { playMessageSound, playRoomTagSound } from '@lib';
 import { APP_VERSION } from '@/pages/login/constants';
 import { useGameOverlayStore } from './store/gameOverlayStore';
@@ -14,6 +14,7 @@ configureSound({
   playMessage: playMessageSound,
   playRoomTag: playRoomTagSound,
 });
+void initAnalytics();
 registerOnLogout(() => {
   useRoomChatStore.getState().reset();
   useGameOverlayStore.getState().close();

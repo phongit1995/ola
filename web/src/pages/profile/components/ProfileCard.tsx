@@ -7,7 +7,7 @@ import maleIcon from '@/assets/icons/profile/ic_indicate_male.png';
 import femaleIcon from '@/assets/icons/profile/ic_indicate_female.png';
 import marriageIcon from '@/assets/icons/profile/ic_profile_marriage.png';
 import birthdayIcon from '@/assets/icons/profile/ic_profile_birthday.png';
-import noteIcon from '@/assets/icons/profile/ic_profile_note.png';
+import vipStoreIcon from '@/assets/icons/apps/vip.png';
 import { Avatar, UserName, VipIcon } from '@components';
 import { colorForName, toast } from '@lib';
 import { useMediaViewerStore } from '@/store/mediaViewerStore';
@@ -25,18 +25,15 @@ interface ProfileCardProps {
   actions: ProfileActions;
   onPostMe: () => void;
   onUpdateInfo: () => void;
+  onViewVipStore: () => void;
   onOpenUser?: (nick: string) => void;
   onOpenFollowers?: () => void;
 }
 
-function InfoRow({ icon, text, note }: { icon: string; text: React.ReactNode; note?: boolean }) {
+function InfoRow({ icon, text }: { icon: string; text: React.ReactNode }) {
   if (text == null || text === '') return null;
   return (
-    <div
-      className={`mt-2 ml-4 flex items-center gap-1 text-xs ${
-        note ? 'text-ola-primary-darker italic' : 'text-black/54'
-      }`}
-    >
+    <div className="mt-2 ml-4 flex items-center gap-1 text-xs text-black/54">
       <img src={icon} alt="" className="h-3.5 w-auto shrink-0 object-contain" />
       {text}
     </div>
@@ -49,6 +46,7 @@ export function ProfileCard({
   actions,
   onPostMe,
   onUpdateInfo,
+  onViewVipStore,
   onOpenUser,
   onOpenFollowers,
 }: ProfileCardProps) {
@@ -314,7 +312,16 @@ export function ProfileCard({
         />
         <InfoRow icon={birthdayIcon} text={profile.birthday} />
         <div className="mt-2 ml-4 text-xs text-black/54">{profile.joinDate}</div>
-        <InfoRow icon={noteIcon} text={t('profile.viewNote')} note />
+        {profile.canViewVipStore && (
+          <button
+            type="button"
+            onClick={onViewVipStore}
+            className="mt-2 ml-4 flex items-center gap-1 text-xs text-ola-primary-darker active:opacity-70"
+          >
+            <img src={vipStoreIcon} alt="" className="h-4 w-auto shrink-0 object-contain" />
+            {t('profile.viewVipStore')}
+          </button>
+        )}
       </div>
     </div>
   );

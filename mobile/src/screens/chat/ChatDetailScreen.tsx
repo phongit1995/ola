@@ -9,7 +9,6 @@ import {
   Platform,
   Pressable,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 import { FlashList, type FlashListRef } from '@shopify/flash-list';
@@ -27,13 +26,8 @@ import { Avatar } from '../../components/Avatar';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { useMediaViewerStore } from '../../store/mediaViewerStore';
 import { kulToken } from '../../lib/kul';
-import {
-  ComposerDraftOverlay,
-  composerSingleLineHeight,
-  useComposerScrollSync,
-} from '../../components/SmileyDraftOverlay';
+import { ChatComposer, type ChatComposerHandle } from '../../components/ChatComposer';
 import { useKeyboardHeight } from '../../hooks/useKeyboardHeight';
-import { useSmileyDraft } from '../../hooks/useSmileyDraft';
 import { ListOptionDialog, type ListOption } from '../../components/ListOptionDialog';
 import { ChatMessageRow } from './ChatMessageRow';
 import { AttachmentBar, type AttachTab } from './AttachmentBar';
@@ -84,18 +78,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   const push = useToastStore((s) => s.push);
   const openViewer = useMediaViewerStore((s) => s.openViewer);
 
-  const {
-    draft,
-    inputValue,
-    codes,
-    applyDraft,
-    handleChangeText,
-    insertAtCursor,
-    backspaceAtCursor,
-    selection,
-    handleSelectionChange,
-  } = useSmileyDraft();
-  const { scrollY: inputScrollY, handleScroll: handleInputScroll } = useComposerScrollSync(draft);
+  const [draft, setDraft] = useState('');
   const [openTab, setOpenTab] = useState<AttachTab | null>(null);
   const [transferKenOpen, setTransferKenOpen] = useState(false);
   const [transferVipDaysOpen, setTransferVipDaysOpen] = useState(false);
@@ -109,7 +92,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   const listRef = useRef<FlashListRef<Message>>(null);
   const stickToBottomRef = useRef(true);
   const sheetOpenRef = useRef(false);
-  const inputRef = useRef<TextInput>(null);
+  const composerRef = useRef<ChatComposerHandle>(null);
 
   useEffect(() => {
     void openConversation(conversationId);
@@ -192,12 +175,12 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     if (editing != null) {
       const id = editing;
       setEditing(null);
-      applyDraft('');
+      setDraft('');
       await editMessage(id, trimmed);
       return;
     }
     stickToBottomRef.current = true;
-    applyDraft('');
+    setDraft('');
     setOpenTab(null);
     await sendText(trimmed);
   }
@@ -220,14 +203,14 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   function startEdit(message: Message) {
     const content = message.content ?? '';
     setEditing(message.id);
-    applyDraft(content);
+    setDraft(content);
     setOpenTab(null);
-    requestAnimationFrame(() => inputRef.current?.focus());
+    requestAnimationFrame(() => composerRef.current?.focus());
   }
 
   function cancelEdit() {
     setEditing(null);
-    applyDraft('');
+    setDraft('');
   }
 
   async function pickAndSendImages() {
@@ -347,6 +330,13 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         </View>
       </View>
 
+      <View
+        className="flex-1"
+        onStartShouldSetResponderCapture={() => {
+          if (openTab != null) setOpenTab(null);
+          return false;
+        }}
+      >
       {loadingMessages ? (
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator color="#7cb342" size="large" />
@@ -449,6 +439,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
           }}
         />
       )}
+      </View>
 
       {blocked ? (
         <View
@@ -485,43 +476,27 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         className="flex-row items-end gap-1 bg-white px-2 py-1.5"
         style={{ borderTopWidth: 1, borderTopColor: DIVIDER }}
       >
-        <View className="max-h-32 min-h-9 flex-1 justify-center">
-          <TextInput
-            ref={inputRef}
-            className="px-2 py-1.5 text-base"
-            style={[
-              { color: 'rgba(0,0,0,0.87)', textAlignVertical: 'center', maxHeight: 128 },
-              draft === '' ? { height: composerSingleLineHeight(6) } : null,
-            ]}
-            selectionColor="#7cb342"
-            cursorColor="#7cb342"
-            placeholder={t('chat.messageInputPlaceholder', { name: title })}
-            placeholderTextColor="rgba(0,0,0,0.38)"
-            multiline
-            value={inputValue}
-            selection={selection}
-            onSelectionChange={handleSelectionChange}
-            onChangeText={(text) => {
-              handleChangeText(text);
+        <View className="flex-1">
+          <ChatComposer
+            ref={composerRef}
+            value={draft}
+            onChange={(text) => {
+              setDraft(text);
               if (editing == null) notifyTyping();
             }}
-            onScroll={handleInputScroll}
+            placeholder={t('chat.messageInputPlaceholder', { name: title })}
+            minHeight={36}
+            maxHeight={128}
+            paddingH={8}
+            paddingV={6}
             onFocus={() => setOpenTab(null)}
           />
-          {inputValue !== '' && (
-            <ComposerDraftOverlay
-              display={inputValue}
-              codes={codes}
-              scrollY={inputScrollY}
-              inputRef={inputRef}
-            />
-          )}
         </View>
         {isTyping ? (
           <Pressable
             onPress={() => {
               void send(draft);
-              requestAnimationFrame(() => inputRef.current?.focus());
+              requestAnimationFrame(() => composerRef.current?.focus());
             }}
             className="h-9 items-center justify-center rounded-full bg-ola-primary px-4 active:opacity-90"
           >
@@ -544,8 +519,8 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         openTab={openTab}
         bottomInset={keyboardHeight > 0 ? 0 : insets.bottom}
         onToggleTab={(tab) => setOpenTab((c) => (c === tab ? null : tab))}
-        onPickEmoji={insertAtCursor}
-        onBackspace={backspaceAtCursor}
+        onPickEmoji={(code) => composerRef.current?.insertCode(code, true)}
+        onBackspace={() => composerRef.current?.backspace()}
         onSendKul={(index) => {
           void send(kulToken(index));
           setOpenTab(null);

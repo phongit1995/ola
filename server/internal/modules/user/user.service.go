@@ -461,6 +461,24 @@ func (s *Service) canSeeInterested(callerID, ownerID uuid.UUID) bool {
 	return settings.ShowInterested
 }
 
+func (s *Service) canSeeVipStore(callerID, ownerID uuid.UUID, rel *RelationshipInfo) bool {
+	if callerID == ownerID {
+		return true
+	}
+	settings, err := s.userSettingSvc.GetSettings(ownerID)
+	if err != nil {
+		return true
+	}
+	switch settings.VipStorePrivacy {
+	case 2:
+		return false
+	case 1:
+		return rel != nil && rel.Status == RelationshipStatusFriend
+	default:
+		return true
+	}
+}
+
 func (s *Service) buildPublicProfile(callerID uuid.UUID, user *models.User) *UserPublicProfileResponse {
 	idStr := user.ID.String()
 	presence := s.presence.GetPresence(idStr)
@@ -500,6 +518,8 @@ func (s *Service) buildPublicProfile(callerID uuid.UUID, user *models.User) *Use
 		response.FollowerCount = 0
 		response.FollowingCount = 0
 	}
+
+	response.CanViewVipStore = s.canSeeVipStore(callerID, user.ID, response.Relationship)
 
 	return response
 }

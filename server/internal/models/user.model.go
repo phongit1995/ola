@@ -46,7 +46,6 @@ type User struct {
 	VipUsed           *string    `gorm:"type:varchar(50)"`
 	VipUsedInstanceID *uuid.UUID `gorm:"type:uuid"`
 	VipEndTime        *time.Time
-	VipStorePrivacy   int16      `gorm:"not null;default:0"`
 	FollowerCount     int        `gorm:"not null;default:0"`
 	FollowingCount    int        `gorm:"not null;default:0"`
 	AntiCount         int        `gorm:"not null;default:0"`

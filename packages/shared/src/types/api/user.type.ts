@@ -34,6 +34,7 @@ export interface PublicProfile {
   followerCount: number;
   followingCount: number;
   canViewInterested: boolean;
+  canViewVipStore: boolean;
   antiCount: number;
   isOnline: boolean;
   lastActiveAt?: string;

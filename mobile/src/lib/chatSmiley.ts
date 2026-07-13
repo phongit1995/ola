@@ -23,7 +23,7 @@ export function imageSizeForHeight(
   return { width: height * imageAspectRatio(src), height };
 }
 
-const SMILEY_ALIASES: string[][] = [
+export const SMILEY_ALIASES: string[][] = [
   [':-)', ':)'],
   [':-P', ':-p', ':p', ':P'],
   ['>:D<'],
@@ -100,80 +100,11 @@ const SMILEY_PATTERN = Object.keys(SMILEY_MAP)
 
 const SMILEY_REGEX = new RegExp(`\\[e:\\d{1,2}\\]|${SMILEY_PATTERN}`, 'g');
 
-export const SMILEY_PLACEHOLDER = '⠀';
-
-export const PLACEHOLDER_SLOT_WIDTH = 9;
-export const PLACEHOLDER_WIDTH_TOLERANCE = 3;
-const PLACEHOLDER_MAX_RUN = 6;
-const COMPOSER_FONT_SIZE = 16;
+export type SmileyVariant = 'smiley' | 'emoji';
 
 export function smileyVariantForCode(code: string): SmileyVariant {
   return isEmojiToken(code) ? 'emoji' : 'smiley';
 }
-
-export function composerSmileyHeight(code: string): number {
-  return smileyImageHeight(COMPOSER_FONT_SIZE, smileyVariantForCode(code));
-}
-
-export function placeholderRunLength(code: string): number {
-  const src = smileyImageForCode(code);
-  if (src == null) return 1;
-  const width = imageSizeForHeight(src, composerSmileyHeight(code)).width;
-  return Math.min(
-    PLACEHOLDER_MAX_RUN,
-    Math.max(1, Math.ceil((width - PLACEHOLDER_WIDTH_TOLERANCE) / PLACEHOLDER_SLOT_WIDTH))
-  );
-}
-
-export function placeholderGhostRunStart(display: string, codes: string[], end: number): number {
-  let start = end;
-  let slot = countSmileyPlaceholders(display.slice(0, end));
-  while (start > 0 && display[start - 1] === SMILEY_PLACEHOLDER && codes[slot - 1] === '') {
-    start -= 1;
-    slot -= 1;
-  }
-  return start;
-}
-
-export interface SmileyDraftValue {
-  display: string;
-  codes: string[];
-}
-
-export function countSmileyPlaceholders(text: string): number {
-  let count = 0;
-  for (let index = 0; index < text.length; index++) {
-    if (text[index] === SMILEY_PLACEHOLDER) count++;
-  }
-  return count;
-}
-
-export function parseSmileyDraft(real: string): SmileyDraftValue {
-  let display = '';
-  const codes: string[] = [];
-  for (const segment of splitSmileys(real)) {
-    if (segment.kind === 'image') {
-      const run = placeholderRunLength(segment.code);
-      display += SMILEY_PLACEHOLDER.repeat(run);
-      for (let slot = 1; slot < run; slot++) codes.push('');
-      codes.push(segment.code);
-    } else {
-      display += segment.value.split(SMILEY_PLACEHOLDER).join(' ');
-    }
-  }
-  return { display, codes };
-}
-
-export function serializeSmileyDraft(value: SmileyDraftValue): string {
-  const parts = value.display.split(SMILEY_PLACEHOLDER);
-  let out = parts[0] ?? '';
-  for (let index = 1; index < parts.length; index++) {
-    out += (value.codes[index - 1] ?? '') + parts[index];
-  }
-  return out;
-}
-
-export type SmileyVariant = 'smiley' | 'emoji';
 
 export function smileyImageHeight(fontSize: number, variant: SmileyVariant): number {
   return fontSize * (variant === 'smiley' ? 1.25 : 1.15);

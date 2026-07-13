@@ -88,7 +88,7 @@ export function SmileyKulPanel({ hideKul, onPickEmoji, onBackspace, onSendKul }:
             ? EMOJI_IMAGES.map((image, index) => (
                 <Pressable
                   key={index}
-                  onPress={() => onPickEmoji(`${emojiToken(index + 1)} `)}
+                  onPress={() => onPickEmoji(emojiToken(index + 1))}
                   className="items-center justify-center"
                   style={{ width: `${100 / 8}%`, height: 36 }}
                 >
@@ -99,7 +99,7 @@ export function SmileyKulPanel({ hideKul, onPickEmoji, onBackspace, onSendKul }:
             ? SMILEY_PANEL.map((smiley, index) => (
                 <Pressable
                   key={index}
-                  onPress={() => onPickEmoji(`${smiley.code} `)}
+                  onPress={() => onPickEmoji(smiley.code)}
                   className="items-center justify-center"
                   style={{ width: `${100 / 8}%`, height: 36 }}
                 >

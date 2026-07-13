@@ -181,7 +181,10 @@ export function MePanel() {
                 onClose={() => setDrawerOpen(false)}
                 onViewProfile={() => handlers.onOpenProfile(displayName, DEFAULT_AVATAR_COLOR)}
                 onSelect={(key) => {
-                  if (key === 'marriage') {
+                  if (key === 'personal') {
+                    setDrawerOpen(false);
+                    handlers.onOpenProfile(displayName, DEFAULT_AVATAR_COLOR);
+                  } else if (key === 'marriage') {
                     setDrawerOpen(false);
                     setMarriageOpen(true);
                   } else if (key === 'likes') {

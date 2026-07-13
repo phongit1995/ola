@@ -350,7 +350,8 @@ export function MeFeedScreen() {
             }}
             onSelect={(key) => {
               setDrawerOpen(false);
-              if (key === 'marriage') setMarriageOpen(true);
+              if (key === 'personal') openProfile(displayName);
+              else if (key === 'marriage') setMarriageOpen(true);
               else if (key === 'likes') setLikedOpen(true);
               else if (key === 'visitors') setVisitorsOpen(true);
               else comingSoon();

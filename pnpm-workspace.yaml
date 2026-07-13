@@ -4,4 +4,8 @@ packages:
   - mobile
   - packages/*
 
+allowBuilds:
+  '@firebase/util': false
+  protobufjs: false
+
 nodeLinker: hoisted

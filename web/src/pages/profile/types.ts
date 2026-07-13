@@ -46,6 +46,7 @@ export interface UserProfile {
   birthday: string;
   joinDate: string;
   isSelf: boolean;
+  canViewVipStore: boolean;
 }
 
 export interface ProfileSecondary {

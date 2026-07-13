@@ -83,6 +83,7 @@ export const API_PATH = {
   },
   vip: {
     store: '/vip/store',
+    userStore: (userId: string) => `/vip/users/${userId}/store`,
     storePrivacy: '/vip/store/privacy',
     iconCatalog: '/vip/icons/catalog',
     buy: '/vip/buy',

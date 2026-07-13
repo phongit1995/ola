@@ -16,6 +16,7 @@ import { KenAdjustModal } from './KenAdjustModal'
 import { KenHistoryModal } from './KenHistoryModal'
 import { UserMeModal } from './UserMeModal'
 import { UserVipIconsModal } from './UserVipIconsModal'
+import { UserVipHistoryModal } from './UserVipHistoryModal'
 import { UserSessionsModal } from './UserSessionsModal'
 import { EditUsernameModal } from './EditUsernameModal'
 import { ResetPasswordModal } from './ResetPasswordModal'
@@ -78,6 +79,7 @@ export function UserDetailModal({ userId, open, onClose }: UserDetailModalProps)
   const [sessionsOpen, setSessionsOpen] = useState(false)
   const [meOpen, setMeOpen] = useState(false)
   const [vipsOpen, setVipsOpen] = useState(false)
+  const [vipHistoryOpen, setVipHistoryOpen] = useState(false)
   const [usernameOpen, setUsernameOpen] = useState(false)
   const [passwordOpen, setPasswordOpen] = useState(false)
 
@@ -97,6 +99,9 @@ export function UserDetailModal({ userId, open, onClose }: UserDetailModalProps)
           </Button>
           <Button icon={<CrownOutlined />} disabled={!userId} onClick={() => setVipsOpen(true)}>
             VIP đang có
+          </Button>
+          <Button icon={<CrownOutlined />} disabled={!userId} onClick={() => setVipHistoryOpen(true)}>
+            Lịch sử VIP
           </Button>
           <Button icon={<HistoryOutlined />} disabled={!userId} onClick={() => setHistoryOpen(true)}>
             Lịch sử Ken
@@ -232,6 +237,12 @@ export function UserDetailModal({ userId, open, onClose }: UserDetailModalProps)
       userId={userId}
       username={data?.username}
       onClose={() => setVipsOpen(false)}
+    />
+    <UserVipHistoryModal
+      open={vipHistoryOpen}
+      userId={userId}
+      username={data?.username}
+      onClose={() => setVipHistoryOpen(false)}
     />
     <UserSessionsModal
       open={sessionsOpen}
