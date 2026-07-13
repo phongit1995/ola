@@ -237,13 +237,13 @@ function MessengerPopup({
           <>
             <BlurView
               style={StyleSheet.absoluteFill}
-              blurType="thinMaterialLight"
-              blurAmount={10}
-              reducedTransparencyFallbackColor="rgba(255,255,255,0.72)"
+              blurType="regular"
+              blurAmount={25}
+              reducedTransparencyFallbackColor="rgba(235,235,235,0.6)"
             />
           </>
         ) : (
-          <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(255,255,255,0.72)' }]} />
+          <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(255,255,255,0.45)' }]} />
         )}
       </Animated.View>
       <Animated.View
