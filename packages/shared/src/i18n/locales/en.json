@@ -230,6 +230,8 @@
     "actionEdit": "Edit message",
     "actionDelete": "Delete message",
     "actionReply": "Reply",
+    "actionCopy": "Copy",
+    "copied": "Copied",
     "actionSave": "Save",
     "replyingTo": "Replying to @{{name}}",
     "replySticker": "[Sticker]",

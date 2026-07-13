@@ -17,9 +17,13 @@ import {
   type SmileyInputHandle,
   type ListOption,
 } from '@components';
-import { colorForName, compressImageForUpload, ImageTooLargeError, isSameDay, kulToken, parseMessageMetadata, SmileyText, toast } from '@lib';
+import { colorForName, compressImageForUpload, ImageTooLargeError, isSameDay, kulImageForText, kulToken, parseMessageMetadata, SmileyText, toast } from '@lib';
 import moreIcon from '@/assets/icons/chat/ic_more_white.png';
 import likeIcon from '@/assets/icons/chat/smiley_35.png';
+import replyActionIcon from '@/assets/icons/me/ic_action_reply_gray.png';
+import editActionIcon from '@/assets/icons/me/ic_action_edit.png';
+import copyActionIcon from '@/assets/icons/chat/ic_menu_copy.svg';
+import deleteActionIcon from '@/assets/icons/chat/ic_menu_delete.png';
 import { useChatStore } from '@/store/chat/chatStore';
 import { useAuthStore } from '@/store/authStore';
 import type { RelationshipStatus } from '@app-types';
@@ -255,19 +259,41 @@ export function ChatConversationView({
     highlightTimerRef.current = setTimeout(() => setHighlightedId(null), 1500);
   }
 
+  async function copyMessage(text: string) {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success(t('chat.copied'));
+    } catch {
+      toast.error(t('common.error'));
+    }
+  }
+
+  function isCopyableText(message: ChatMessage): boolean {
+    return (
+      message.kind === 'text' &&
+      message.text != null &&
+      message.text.trim() !== '' &&
+      kulImageForText(message.text) == null
+    );
+  }
+
   function messageSheetActions(message: ChatMessage): MessageSheetAction[] {
     const isOwn = message.direction === 'out';
     const actions: MessageSheetAction[] = [];
     if (!blocked) {
-      actions.push({ key: 'reply', label: t('chat.actionReply'), onSelect: () => startReply(message) });
+      actions.push({ key: 'reply', label: t('chat.actionReply'), icon: replyActionIcon, onSelect: () => startReply(message) });
+    }
+    if (isCopyableText(message)) {
+      actions.push({ key: 'copy', label: t('chat.actionCopy'), icon: copyActionIcon, onSelect: () => void copyMessage(message.text ?? '') });
     }
     if (isOwn && message.kind === 'text') {
-      actions.push({ key: 'edit', label: t('chat.actionEdit'), onSelect: () => startEdit(message) });
+      actions.push({ key: 'edit', label: t('chat.actionEdit'), icon: editActionIcon, onSelect: () => startEdit(message) });
     }
     if (isOwn) {
       actions.push({
         key: 'delete',
         label: t('chat.actionDelete'),
+        icon: deleteActionIcon,
         destructive: true,
         onSelect: () => setDeleteTarget(message),
       });
