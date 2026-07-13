@@ -26,9 +26,13 @@ export interface VoiceRecorder {
 const AUDIO_SET: AudioSet = {
   AVFormatIDKeyIOS: 'aac',
   AVNumberOfChannelsKeyIOS: 1,
+  AVSampleRateKeyIOS: 44100,
   AVEncoderAudioQualityKeyIOS: AVEncoderAudioQualityIOSType.medium,
   AudioEncoderAndroid: AudioEncoderAndroidType.AAC,
   OutputFormatAndroid: OutputFormatAndroidType.MPEG_4,
+  AudioChannels: 1,
+  AudioSamplingRate: 44100,
+  AudioEncodingBitRate: 48000,
 };
 
 function normalizeUri(path: string): string {
