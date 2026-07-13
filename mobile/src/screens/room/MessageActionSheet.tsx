@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Animated,
@@ -6,14 +6,17 @@ import {
   Modal,
   Platform,
   Pressable,
+  StyleSheet,
   Text,
   useWindowDimensions,
   View,
 } from 'react-native';
+import { BlurView } from '@react-native-community/blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { ImageSourcePropType, ViewStyle } from 'react-native';
 import type { ReactionType } from '@ola/shared/types';
 import { useKeyboardHeight } from '../../hooks/useKeyboardHeight';
+import { hapticImpact } from '../../lib/haptics';
 import { REACTION_IMAGE, REACTION_ORDER } from '../../lib/reactions';
 
 export interface MessageSheetAction {
@@ -148,8 +151,14 @@ function popupHeight(actionCount: number, showReactions: boolean): number {
   return BAR_HEIGHT + POPUP_GAP + menu;
 }
 
-function usePopIn(): Animated.Value {
+function useSheetTransition(onClose: () => void): {
+  progress: Animated.Value;
+  requestClose: () => void;
+} {
   const progress = useRef(new Animated.Value(0)).current;
+  const closingRef = useRef(false);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
   useEffect(() => {
     Animated.spring(progress, {
       toValue: 1,
@@ -158,7 +167,16 @@ function usePopIn(): Animated.Value {
       useNativeDriver: true,
     }).start();
   }, [progress]);
-  return progress;
+  const requestClose = useCallback(() => {
+    if (closingRef.current) return;
+    closingRef.current = true;
+    Animated.timing(progress, {
+      toValue: 0,
+      duration: 140,
+      useNativeDriver: true,
+    }).start(() => onCloseRef.current());
+  }, [progress]);
+  return { progress, requestClose };
 }
 
 function popStyle(progress: Animated.Value) {
@@ -183,7 +201,7 @@ function MessengerPopup({
   const { width: winW, height: winH } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const kbHeight = useKeyboardHeight();
-  const progress = usePopIn();
+  const { progress, requestClose } = useSheetTransition(onClose);
 
   const menuH = actions.length > 0 ? MENU_PADDING_V * 2 + actions.length * MENU_ITEM_HEIGHT : 0;
   const barH = showReactions ? BAR_HEIGHT : 0;
@@ -210,18 +228,27 @@ function MessengerPopup({
     : { left: clamp(anchor.x, POPUP_MARGIN, winW - POPUP_MARGIN - MENU_MIN_WIDTH) };
 
   return (
-    <Pressable className="flex-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} onPress={onClose}>
-      <View
+    <Pressable className="flex-1" onPress={requestClose}>
+      <Animated.View style={[StyleSheet.absoluteFill, { opacity: progress }]}>
+        <BlurView
+          style={StyleSheet.absoluteFill}
+          blurType="dark"
+          blurAmount={16}
+          reducedTransparencyFallbackColor="rgba(20,20,20,0.85)"
+        />
+      </Animated.View>
+      <Animated.View
         pointerEvents="box-none"
         style={{
           position: 'absolute',
           top: bubbleTop,
           left: anchor.x,
           width: anchor.width,
+          opacity: progress,
         }}
       >
         {preview}
-      </View>
+      </Animated.View>
       {showReactions && (
         <Animated.View
           style={[
@@ -229,7 +256,7 @@ function MessengerPopup({
             popStyle(progress),
           ]}
         >
-          <ReactionRow onReact={onReact} onClose={onClose} />
+          <ReactionRow onReact={onReact} onClose={requestClose} />
         </Animated.View>
       )}
       {actions.length > 0 && (
@@ -239,7 +266,7 @@ function MessengerPopup({
             popStyle(progress),
           ]}
         >
-          <ActionMenu actions={actions} onClose={onClose} />
+          <ActionMenu actions={actions} onClose={requestClose} />
         </Animated.View>
       )}
     </Pressable>
@@ -256,6 +283,7 @@ function AnchoredPopup({
   const { width: winW, height: winH } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const kbHeight = useKeyboardHeight();
+  const { progress, requestClose } = useSheetTransition(onClose);
   const refWidth = Math.min(BAR_WIDTH, winW - POPUP_MARGIN * 2);
   const height = popupHeight(actions.length, showReactions);
   const alignRight = anchor.x + anchor.width / 2 > winW / 2;
@@ -285,17 +313,20 @@ function AnchoredPopup({
   };
 
   return (
-    <Pressable className="flex-1" style={{ backgroundColor: 'rgba(0,0,0,0.15)' }} onPress={onClose}>
-      <View style={containerStyle}>
-        {showReactions && <ReactionRow onReact={onReact} onClose={onClose} />}
+    <Pressable className="flex-1" onPress={requestClose}>
+      <Animated.View
+        style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.15)', opacity: progress }]}
+      />
+      <Animated.View style={[containerStyle, popStyle(progress)]}>
+        {showReactions && <ReactionRow onReact={onReact} onClose={requestClose} />}
         {actions.length > 0 && (
           <ActionMenu
             actions={actions}
-            onClose={onClose}
+            onClose={requestClose}
             style={{ marginTop: showReactions ? POPUP_GAP : 0 }}
           />
         )}
-      </View>
+      </Animated.View>
     </Pressable>
   );
 }
@@ -366,12 +397,16 @@ function BottomSheet({
 }
 
 export function MessageActionSheet({ anchor, preview, ...props }: MessageActionSheetProps) {
+  useEffect(() => {
+    if (props.visible && anchor != null) hapticImpact();
+  }, [props.visible, anchor != null]);
+
   return (
     <Modal
       visible={props.visible}
       transparent
       statusBarTranslucent
-      animationType={anchor != null ? 'fade' : 'slide'}
+      animationType={anchor != null ? 'none' : 'slide'}
       onRequestClose={props.onClose}
     >
       {anchor != null ? (
