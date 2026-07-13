@@ -2,6 +2,7 @@ package vip
 
 import (
 	"errors"
+	"fmt"
 	"math"
 	"strconv"
 	"strings"
@@ -122,8 +123,13 @@ func (s *Service) GetStore(viewerID, targetID uuid.UUID, limit, offset int) (*St
 		return nil, err
 	}
 
+	privacy, err := s.repo.GetVipStorePrivacy(targetID)
+	if err != nil {
+		return nil, err
+	}
+
 	if viewerID != targetID {
-		switch target.VipStorePrivacy {
+		switch privacy {
 		case 2:
 			return nil, ErrPrivateStore
 		case 1:
@@ -162,7 +168,7 @@ func (s *Service) GetStore(viewerID, targetID uuid.UUID, limit, offset int) (*St
 		UserID:       targetID.String(),
 		ActiveTypeID: active,
 		Days:         remainingDays(target.VipEndTime),
-		Privacy:      target.VipStorePrivacy,
+		Privacy:      privacy,
 		Total:        int(total),
 		Limit:        limit,
 		Offset:       offset,
@@ -442,7 +448,14 @@ func toShopItem(it *models.VipShopItem) ShopItem {
 }
 
 func (s *Service) SetPrivacy(userID uuid.UUID, privacy int16) error {
-	return s.repo.UpdateUserFields(userID, map[string]interface{}{"vip_store_privacy": privacy})
+	if err := s.repo.SetVipStorePrivacy(userID, privacy); err != nil {
+		return err
+	}
+	key := fmt.Sprintf(constants.CacheKeyUserSettings, userID)
+	if err := s.cache.Delete(key); err != nil {
+		s.logger.Warnw("failed to invalidate user settings cache", "user_id", userID, "error", err.Error())
+	}
+	return nil
 }
 
 func toPackageItem(p *models.VipPackage) PackageItem {

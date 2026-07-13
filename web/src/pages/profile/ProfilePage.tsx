@@ -12,6 +12,7 @@ import { ProfileCard } from './components/ProfileCard';
 import { ProfileMediaStore } from './components/ProfileMediaStore';
 import { ProfileFollowing } from './components/ProfileFollowing';
 import { FollowingListOverlay } from './components/FollowingListOverlay';
+import { PeerVipStoreDialog } from './components/PeerVipStoreDialog';
 import { EditProfileMePage } from './EditProfileMePage';
 import type {
   ProfileActions,
@@ -51,6 +52,7 @@ export function ProfilePage({
   const blockAuthor = useMeLocalStore((s) => s.blockAuthor);
   const [editOpen, setEditOpen] = useState(false);
   const [followersOpen, setFollowersOpen] = useState(false);
+  const [vipStoreOpen, setVipStoreOpen] = useState(false);
 
   const posts = secondary.posts.filter((post) => !hiddenPostIds.includes(post.id));
 
@@ -77,6 +79,7 @@ export function ProfilePage({
           actions={actions}
           onPostMe={() => toast.info(t('profile.comingSoon'))}
           onUpdateInfo={() => setEditOpen(true)}
+          onViewVipStore={() => setVipStoreOpen(true)}
           onOpenUser={(nick) => onOpenFriend({ name: nick, color: colorForName(nick) })}
           onOpenFollowers={() => setFollowersOpen(true)}
         />
@@ -123,6 +126,14 @@ export function ProfilePage({
       )}
 
       {editOpen && <EditProfileMePage onClose={() => setEditOpen(false)} />}
+
+      {vipStoreOpen && (
+        <PeerVipStoreDialog
+          userId={userId}
+          name={profile.username}
+          onClose={() => setVipStoreOpen(false)}
+        />
+      )}
 
       {followersOpen && (
         <FollowingListOverlay

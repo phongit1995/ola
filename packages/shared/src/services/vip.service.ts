@@ -50,6 +50,13 @@ export class VipService {
     return http.get<VipStoreResult>(API_PATH.vip.store, { params });
   }
 
+  static userStore(
+    userId: string,
+    params?: { limit?: number; offset?: number },
+  ): Promise<VipStoreResult> {
+    return http.get<VipStoreResult>(API_PATH.vip.userStore(userId), { params });
+  }
+
   static setPrivacy(privacy: number): Promise<unknown> {
     return http.put<unknown>(API_PATH.vip.storePrivacy, { privacy });
   }

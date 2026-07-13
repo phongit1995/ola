@@ -1,6 +1,7 @@
 package vip
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -177,6 +178,26 @@ func (r *Repository) UpdateUserFields(userID uuid.UUID, fields map[string]interf
 	return r.db.Model(&models.User{}).
 		Where("id = ?", userID).
 		Updates(fields).Error
+}
+
+func (r *Repository) GetVipStorePrivacy(userID uuid.UUID) (int16, error) {
+	var setting models.UserSetting
+	err := r.db.Select("vip_store_privacy").First(&setting, "user_id = ?", userID).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return 0, nil
+	}
+	if err != nil {
+		return 0, err
+	}
+	return setting.VipStorePrivacy, nil
+}
+
+func (r *Repository) SetVipStorePrivacy(userID uuid.UUID, privacy int16) error {
+	return r.db.Exec(
+		`INSERT INTO user_settings (user_id, vip_store_privacy) VALUES (?, ?)
+		 ON CONFLICT (user_id) DO UPDATE SET vip_store_privacy = EXCLUDED.vip_store_privacy, updated_at = CURRENT_TIMESTAMP`,
+		userID, privacy,
+	).Error
 }
 
 func (r *Repository) AreFriends(a, b uuid.UUID) (bool, error) {

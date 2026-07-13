@@ -96,6 +96,7 @@ type UserPublicProfileResponse struct {
 	FollowerCount     int               `json:"followerCount" example:"0"`
 	FollowingCount    int               `json:"followingCount" example:"0"`
 	CanViewInterested bool              `json:"canViewInterested" example:"true"`
+	CanViewVipStore   bool              `json:"canViewVipStore" example:"true"`
 	AntiCount         int               `json:"antiCount" example:"0"`
 	IsOnline          bool              `json:"isOnline" example:"true"`
 	LastActiveAt      string            `json:"lastActiveAt,omitempty" example:"2024-01-15T10:30:00Z"`

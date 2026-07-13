@@ -68,7 +68,7 @@ func SeedVipStore(db *sql.DB) error {
 		}
 		endTime := time.Now().AddDate(0, 0, d.days)
 		if _, err := tx.Exec(
-			`UPDATE users SET vip_used = $1, vip_end_time = $2, vip_store_privacy = 0 WHERE id = $3`,
+			`UPDATE users SET vip_used = $1, vip_end_time = $2 WHERE id = $3`,
 			vipUsed, endTime, userID,
 		); err != nil {
 			tx.Rollback()

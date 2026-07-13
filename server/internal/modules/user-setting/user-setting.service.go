@@ -52,17 +52,18 @@ func defaultUserSettings(userID uuid.UUID) *models.UserSetting {
 
 func toUserSettingsResponse(setting *models.UserSetting) *UserSettingsResponse {
 	return &UserSettingsResponse{
-		MessagePrivacy: setting.MessagePrivacy,
-		MeVisibility:   setting.MeVisibility,
-		CommentPrivacy: setting.CommentPrivacy,
-		ShowBirthday:   setting.ShowBirthday,
-		ShowInterested: setting.ShowInterested,
-		NotifMessage:   setting.NotifMessage,
-		NotifSound:     setting.NotifSound,
-		SoundGame:      setting.SoundGame,
-		SoundKen:       setting.SoundKen,
-		FontSize:       setting.FontSize,
-		WallpaperURL:   setting.WallpaperURL,
+		MessagePrivacy:  setting.MessagePrivacy,
+		MeVisibility:    setting.MeVisibility,
+		CommentPrivacy:  setting.CommentPrivacy,
+		ShowBirthday:    setting.ShowBirthday,
+		ShowInterested:  setting.ShowInterested,
+		NotifMessage:    setting.NotifMessage,
+		NotifSound:      setting.NotifSound,
+		SoundGame:       setting.SoundGame,
+		SoundKen:        setting.SoundKen,
+		FontSize:        setting.FontSize,
+		WallpaperURL:    setting.WallpaperURL,
+		VipStorePrivacy: setting.VipStorePrivacy,
 	}
 }
 
