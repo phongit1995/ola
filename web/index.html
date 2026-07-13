@@ -42,6 +42,44 @@
       content="Ola Chat — mạng xã hội trò chuyện miễn phí: nhắn tin, phòng chat, kết bạn và chia sẻ khoảnh khắc."
     />
     <meta name="twitter:image" content="https://olachat.net/og-image.png" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://olachat.net/#organization",
+            "name": "Ola Chat",
+            "url": "https://olachat.net/",
+            "logo": "https://olachat.net/apple-touch-icon.png",
+            "description": "Mạng xã hội trò chuyện miễn phí: nhắn tin, phòng chat, kết bạn và chia sẻ khoảnh khắc."
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://olachat.net/#website",
+            "name": "Ola Chat",
+            "url": "https://olachat.net/",
+            "description": "Ola Chat — mạng xã hội chat, kết bạn, trò chuyện online miễn phí.",
+            "inLanguage": "vi-VN",
+            "publisher": { "@id": "https://olachat.net/#organization" }
+          },
+          {
+            "@type": "WebApplication",
+            "name": "Ola Chat",
+            "url": "https://olachat.net/",
+            "applicationCategory": "SocialNetworkingApplication",
+            "operatingSystem": "Web, Android, iOS",
+            "inLanguage": "vi-VN",
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "VND"
+            }
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
