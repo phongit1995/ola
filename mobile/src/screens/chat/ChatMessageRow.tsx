@@ -88,7 +88,7 @@ interface ChatMessageRowProps {
   onQuoteClick?: (messageId: string) => void;
 }
 
-function ChatBubble({
+export function ChatBubble({
   message,
   fromMe,
   firstInGroup,

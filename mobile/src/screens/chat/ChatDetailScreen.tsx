@@ -34,7 +34,7 @@ import { RichTextView } from '../../components/RichTextView';
 import { useKeyboardHeight } from '../../hooks/useKeyboardHeight';
 import { ListOptionDialog, type ListOption } from '../../components/ListOptionDialog';
 import { RoomReactionsDialog } from '../room/RoomReactionsDialog';
-import { ChatMessageRow } from './ChatMessageRow';
+import { ChatBubble, ChatMessageRow } from './ChatMessageRow';
 import { AttachmentBar, type AttachTab } from './AttachmentBar';
 import { VoicePreviewBar } from './VoicePreviewBar';
 import type { VoiceRecording } from '../../hooks/useVoiceRecorder';
@@ -104,9 +104,13 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [blockOpen, setBlockOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Message | null>(null);
-  const [actionTarget, setActionTarget] = useState<{ message: Message; anchor: AnchorRect } | null>(
-    null
-  );
+  const [actionTarget, setActionTarget] = useState<{
+    message: Message;
+    anchor: AnchorRect;
+    fromMe: boolean;
+    firstInGroup: boolean;
+    lastInGroup: boolean;
+  } | null>(null);
   const [reactionsTargetId, setReactionsTargetId] = useState<string | null>(null);
   const listRef = useRef<FlashListRef<Message>>(null);
   const stickToBottomRef = useRef(true);
@@ -512,7 +516,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
                   timeLabel={timeFormatter(item.createdAt)}
                   onLongPress={(anchor) => {
                     sheetOpenRef.current = true;
-                    setActionTarget({ message: item, anchor });
+                    setActionTarget({ message: item, anchor, fromMe, firstInGroup, lastInGroup });
                   }}
                   onResend={(id) => void resendMessage(id)}
                   onOpenImage={(url) => openViewer([url])}
@@ -743,6 +747,18 @@ export function ChatDetailScreen({ navigation, route }: Props) {
       <MessageActionSheet
         visible={actionTarget != null}
         anchor={actionTarget?.anchor ?? null}
+        preview={
+          actionTarget != null ? (
+            <ChatBubble
+              message={actionTarget.message}
+              fromMe={actionTarget.fromMe}
+              firstInGroup={actionTarget.firstInGroup}
+              lastInGroup={actionTarget.lastInGroup}
+              onOpenImage={() => undefined}
+              onMention={() => undefined}
+            />
+          ) : null
+        }
         actions={actionTarget != null ? sheetActions(actionTarget.message) : []}
         showReactions={actionTarget != null && actionTarget.message.senderId !== myId}
         onReact={(type: ReactionType) => {
