@@ -10,6 +10,7 @@ export interface MessageSheetAction {
   key: string;
   label: string;
   icon?: ImageSourcePropType;
+  iconTint?: string;
   destructive?: boolean;
   onSelect: () => void;
 }
@@ -154,7 +155,11 @@ function AnchoredPopup({
                 className="flex-row items-center gap-2.5 px-4 active:bg-neutral-100"
               >
                 {action.icon != null && (
-                  <Image source={action.icon} style={{ width: 20, height: 20 }} resizeMode="contain" />
+                  <Image
+                    source={action.icon}
+                    style={{ width: 20, height: 20, tintColor: action.iconTint }}
+                    resizeMode="contain"
+                  />
                 )}
                 <Text
                   className="text-base"
@@ -208,7 +213,11 @@ function BottomSheet({
               className="flex-row items-center gap-3 px-5 py-3 active:bg-neutral-100"
             >
               {action.icon != null && (
-                <Image source={action.icon} style={{ width: 20, height: 20 }} resizeMode="contain" />
+                <Image
+                  source={action.icon}
+                  style={{ width: 20, height: 20, tintColor: action.iconTint }}
+                  resizeMode="contain"
+                />
               )}
               <Text
                 className="text-base"
