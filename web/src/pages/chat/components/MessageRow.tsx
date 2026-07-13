@@ -93,7 +93,13 @@ export function MessageRow({ message, prev, next, name, color, avatar, isLastOwn
             )}
           </div>
           {chips.length > 0 && (
-            <div className={`mt-0.5 flex flex-wrap gap-1 ${isOut ? 'justify-end' : ''}`}>
+            <button
+              type="button"
+              onClick={(event) => {
+                if (canAct) onOpenActions(message, event.currentTarget.getBoundingClientRect());
+              }}
+              className={`relative z-10 -mt-2 flex flex-wrap gap-1 ${isOut ? 'justify-end self-end' : 'self-start'}`}
+            >
               {chips.map((chip) => (
                 <span
                   key={chip.type}
@@ -105,7 +111,7 @@ export function MessageRow({ message, prev, next, name, color, avatar, isLastOwn
                   </span>
                 </span>
               ))}
-            </div>
+            </button>
           )}
           {isOut && isLastOwn && message.status !== 'sending' && message.status !== 'failed' && (
             <SeenIndicator seen={seen} name={name} color={color} avatar={avatar} />
