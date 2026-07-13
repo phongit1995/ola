@@ -52,6 +52,30 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
+  - NitroSound (0.2.15):
+    - hermes-engine
+    - NitroModules
+    - RCTRequired
+    - RCTTypeSafety
+    - React-callinvoker
+    - React-Core
+    - React-Core-prebuilt
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - Yoga
   - OlaRichText (1.0.0):
     - hermes-engine
     - RCTRequired
@@ -2530,6 +2554,7 @@ DEPENDENCIES:
   - hermes-engine (from `../../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
   - NitroMmkv (from `../../node_modules/react-native-mmkv`)
   - NitroModules (from `../../node_modules/react-native-nitro-modules`)
+  - NitroSound (from `../../node_modules/react-native-nitro-sound`)
   - OlaRichText (from `./OlaRichText`)
   - RCTDeprecation (from `../../node_modules/react-native/ReactApple/Libraries/RCTFoundation/RCTDeprecation`)
   - RCTRequired (from `../../node_modules/react-native/Libraries/Required`)
@@ -2640,6 +2665,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/react-native-mmkv"
   NitroModules:
     :path: "../../node_modules/react-native-nitro-modules"
+  NitroSound:
+    :path: "../../node_modules/react-native-nitro-sound"
   OlaRichText:
     :path: "./OlaRichText"
   RCTDeprecation:
@@ -2831,6 +2858,7 @@ SPEC CHECKSUMS:
   MMKVCore: 3d16ce9f7d411e135020915fde98a056859a1efa
   NitroMmkv: 85a251e15c39d7c95fe58cf40786fa126b8d143c
   NitroModules: b4174dd303728e16ad1afb79f64c1a5c69a3b373
+  NitroSound: b34bf12cd3f2771560fd923fa953ec2f3f1a73e5
   OlaRichText: 09789bde01201cdc64e18d33581ce9d6ed0a5dfc
   RCTDeprecation: 2a74a2c57675e64419bd89078efde81f7c1de90b
   RCTRequired: 30451112e6fef4e6f31b4e7eee0845156e35e4b0

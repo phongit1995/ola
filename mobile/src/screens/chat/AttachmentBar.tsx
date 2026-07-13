@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import type { ImageSourcePropType } from 'react-native';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { SmileyKulPanel } from '../room/SmileyKulPanel';
+import { VoicePanel } from './VoicePanel';
+import type { VoiceRecording } from '../../hooks/useVoiceRecorder';
 
 export type AttachTab = 'smiley' | 'camera' | 'photo' | 'voice' | 'more';
 
@@ -39,6 +41,7 @@ interface AttachmentBarProps {
   onBackspace: () => void;
   onSendKul: (index: number) => void;
   onPickImage?: () => void;
+  onRecorded?: (recording: VoiceRecording) => void;
   onTransferKen?: () => void;
   onTradingVip?: () => void;
   onSendVipDays?: () => void;
@@ -100,6 +103,7 @@ export function AttachmentBar({
   onBackspace,
   onSendKul,
   onPickImage,
+  onRecorded,
   onTransferKen,
   onTradingVip,
   onSendVipDays,
@@ -108,7 +112,7 @@ export function AttachmentBar({
   const push = useToastStore((s) => s.push);
 
   function handlePress(tab: AttachTab) {
-    if (tab === 'smiley' || tab === 'more') {
+    if (tab === 'smiley' || tab === 'more' || tab === 'voice') {
       onToggleTab(tab);
       return;
     }
@@ -150,6 +154,7 @@ export function AttachmentBar({
       {openTab === 'smiley' && (
         <SmileyKulPanel onPickEmoji={onPickEmoji} onBackspace={onBackspace} onSendKul={onSendKul} />
       )}
+      {openTab === 'voice' && onRecorded != null && <VoicePanel onRecorded={onRecorded} />}
       {openTab === 'more' && (
         <MorePanel
           onTransferKen={onTransferKen}

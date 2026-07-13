@@ -33,8 +33,14 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>Ola cần truy cập máy ảnh để bạn chụp và gửi ảnh trong phòng chat.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Ola cần vị trí của bạn để gợi ý địa điểm check-in gần đây khi đăng bài.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Ola cần truy cập micro để bạn ghi và gửi tin nhắn thoại.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Ola cần truy cập thư viện ảnh để bạn gửi ảnh trong phòng chat.</string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
@@ -56,9 +62,5 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Ola cần truy cập thư viện ảnh để bạn gửi ảnh trong phòng chat.</string>
-	<key>NSCameraUsageDescription</key>
-	<string>Ola cần truy cập máy ảnh để bạn chụp và gửi ảnh trong phòng chat.</string>
 </dict>
 </plist>

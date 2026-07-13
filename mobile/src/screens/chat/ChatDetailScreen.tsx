@@ -36,6 +36,8 @@ import { ListOptionDialog, type ListOption } from '../../components/ListOptionDi
 import { RoomReactionsDialog } from '../room/RoomReactionsDialog';
 import { ChatMessageRow } from './ChatMessageRow';
 import { AttachmentBar, type AttachTab } from './AttachmentBar';
+import { VoicePreviewBar } from './VoicePreviewBar';
+import type { VoiceRecording } from '../../hooks/useVoiceRecorder';
 import { TransferKenDialog } from '../ken/TransferKenDialog';
 import { TradingVipDialog } from './TradingVipDialog';
 import { TransferVipDaysDialog } from './TransferVipDaysDialog';
@@ -74,6 +76,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   const loadMoreMessages = useChatStore((s) => s.loadMoreMessages);
   const sendText = useChatStore((s) => s.sendText);
   const sendImage = useChatStore((s) => s.sendImage);
+  const sendAudio = useChatStore((s) => s.sendAudio);
   const resendMessage = useChatStore((s) => s.resendMessage);
   const reactToMessage = useChatStore((s) => s.reactToMessage);
   const deleteMessage = useChatStore((s) => s.deleteMessage);
@@ -96,6 +99,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   const [transferKenOpen, setTransferKenOpen] = useState(false);
   const [transferVipDaysOpen, setTransferVipDaysOpen] = useState(false);
   const [tradingVipOpen, setTradingVipOpen] = useState(false);
+  const [pendingAudio, setPendingAudio] = useState<VoiceRecording | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [blockOpen, setBlockOpen] = useState(false);
@@ -594,6 +598,21 @@ export function ChatDetailScreen({ navigation, route }: Props) {
           </Pressable>
         </View>
       )}
+      {pendingAudio != null ? (
+        <VoicePreviewBar
+          uri={pendingAudio.file.uri}
+          duration={pendingAudio.duration}
+          onSend={() => {
+            const audio = pendingAudio;
+            setPendingAudio(null);
+            setOpenTab(null);
+            void sendAudio(audio.file, audio.duration).catch(() =>
+              push('error', t('chat.actionError'))
+            );
+          }}
+          onDiscard={() => setPendingAudio(null)}
+        />
+      ) : (
       <View
         className="flex-row items-end gap-1 bg-white px-2 py-1.5"
         style={{ borderTopWidth: 1, borderTopColor: DIVIDER }}
@@ -636,6 +655,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
           </Pressable>
         )}
       </View>
+      )}
 
       <AttachmentBar
         openTab={openTab}
@@ -648,6 +668,10 @@ export function ChatDetailScreen({ navigation, route }: Props) {
           setOpenTab(null);
         }}
         onPickImage={() => void pickAndSendImages()}
+        onRecorded={(recording) => {
+          setOpenTab(null);
+          setPendingAudio(recording);
+        }}
         onTransferKen={() => {
           setOpenTab(null);
           if (peerId === '') {
