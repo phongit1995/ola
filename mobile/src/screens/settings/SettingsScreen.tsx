@@ -30,7 +30,7 @@ const iconAppearance = require('../../assets/icons/settings/icon-appearance.webp
 function SectionIcon({ src }: { src: ImageSourcePropType }) {
   const resolved = Image.resolveAssetSource(src);
   const ratio = resolved != null && resolved.height > 0 ? resolved.width / resolved.height : 1;
-  return <Image source={src} style={{ height: 20, aspectRatio: ratio }} resizeMode="contain" />;
+  return <Image source={src} style={{ height: 16, width: 16 * ratio }} resizeMode="contain" />;
 }
 
 function ImageIcon() {
