@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Image, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Image, Keyboard, Pressable, Text, View } from 'react-native';
 import { KeyboardView } from '../../components/KeyboardView';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useIsFocused } from '@react-navigation/native';
@@ -144,6 +144,7 @@ export function RoomChatScreen({ navigation, route }: Props) {
       if (confirmedLeaveRef.current) return;
       if (useRoomChatStore.getState().status !== 'joined') return;
       event.preventDefault();
+      Keyboard.dismiss();
       setPendingLeave(event.data.action);
     });
     return unsubscribe;
