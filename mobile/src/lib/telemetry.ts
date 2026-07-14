@@ -15,6 +15,9 @@ import {
 } from '@react-native-firebase/crashlytics';
 import type { Crashlytics } from '@react-native-firebase/crashlytics';
 
+(globalThis as { RNFB_SILENCE_MODULAR_DEPRECATION_WARNINGS?: boolean }).RNFB_SILENCE_MODULAR_DEPRECATION_WARNINGS =
+  true;
+
 export type TelemetryParams = Record<string, string | number | boolean>;
 
 let analyticsInstance: Analytics | null = null;
