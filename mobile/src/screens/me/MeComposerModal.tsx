@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   Image,
+  Keyboard,
   Modal,
   Pressable,
   ScrollView,
@@ -16,11 +17,13 @@ import { useMeFeedStore } from '@ola/shared/stores/meFeedStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { NativeUploadFile } from '@ola/shared/lib';
 import type { Post, PostVisibility } from '@ola/shared/types';
+import { EDIT_WINDOW_MS } from '@ola/shared/constants';
 import { KUL_IMAGES, stickerImageForCode } from '../../lib/kul';
 import { imageSizeForHeight } from '../../lib/chatSmiley';
 import { ChatComposer, type ChatComposerHandle } from '../../components/ChatComposer';
 import { useBottomBarInset } from '../../hooks/useBottomBarInset';
-import { SmileyKulPanel } from '../room/SmileyKulPanel';
+import { useLastKeyboardHeight } from '../../hooks/useKeyboardHeight';
+import { SmileyKulPanel, SMILEY_PANEL_MIN_CONTENT_HEIGHT } from '../room/SmileyKulPanel';
 import { MeComposerTagPanel } from './MeComposerTagPanel';
 import { MeComposerCheckInPanel, type ComposedCheckIn } from './MeComposerCheckInPanel';
 import { findActionIcon } from '../../lib/checkInActions';
@@ -35,6 +38,7 @@ type PickedPhoto = { id: string; uri: string; file?: NativeUploadFile };
 interface MeComposerModalProps {
   visible: boolean;
   onClose: () => void;
+  onSaved?: (post: Post) => void;
   editPost?: Post | null;
 }
 
@@ -42,10 +46,12 @@ function privacyKey(option: PostVisibility): 'me.privacy_public' {
   return `me.privacy_${option}` as 'me.privacy_public';
 }
 
-export function MeComposerModal({ visible, onClose, editPost }: MeComposerModalProps) {
+export function MeComposerModal({ visible, onClose, onSaved, editPost }: MeComposerModalProps) {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const bottomBarInset = useBottomBarInset();
+  const lastKeyboardHeight = useLastKeyboardHeight();
+  const panelContentHeight = Math.max(SMILEY_PANEL_MIN_CONTENT_HEIGHT, lastKeyboardHeight - 44);
   const createPost = useMeFeedStore((s) => s.createPost);
   const updatePost = useMeFeedStore((s) => s.updatePost);
   const prependPost = useMeFeedStore((s) => s.prependPost);
@@ -89,13 +95,14 @@ export function MeComposerModal({ visible, onClose, editPost }: MeComposerModalP
   }, [visible, editPost]);
 
   function close() {
+    if (posting) return;
     onClose();
   }
 
   async function pickImages() {
     const room = MAX_IMAGES - photos.length;
     if (room <= 0) return;
-    setPanel(null);
+    const keyboardWasVisible = Keyboard.isVisible();
     const result = await launchImageLibrary({
       mediaType: 'photo',
       selectionLimit: room,
@@ -103,10 +110,11 @@ export function MeComposerModal({ visible, onClose, editPost }: MeComposerModalP
       maxHeight: 1920,
       quality: 0.9,
     });
+    if (keyboardWasVisible) requestAnimationFrame(() => composerRef.current?.focus());
     if (result.didCancel) return;
     const assets = result.assets ?? [];
     if (assets.length === 0) {
-      if (result.errorCode != null) pushToast('error', t('me.postError'));
+      if (result.errorCode != null) pushToast('error', t('common.error'));
       return;
     }
     setPhotos((current) => {
@@ -137,14 +145,18 @@ export function MeComposerModal({ visible, onClose, editPost }: MeComposerModalP
       void pickImages();
       return;
     }
+    if (panel !== key) Keyboard.dismiss();
     setPanel((current) => (current === key ? null : key));
   }
 
-  const canPost =
-    !posting && (content.trim() !== '' || photos.length > 0 || sticker != null || checkIn != null);
+  const canPost = !posting && (content.trim() !== '' || photos.length > 0);
 
   async function submit() {
     if (!canPost) return;
+    if (isEdit && Date.now() - new Date(editPost.createdAt).getTime() > EDIT_WINDOW_MS) {
+      pushToast('info', t('me.editExpired'));
+      return;
+    }
     setPosting(true);
     const files = photos.filter((item) => item.file != null).map((item) => item.file as NativeUploadFile);
     const imageUrls = photos.filter((item) => item.file == null).map((item) => item.uri);
@@ -169,7 +181,8 @@ export function MeComposerModal({ visible, onClose, editPost }: MeComposerModalP
     setPosting(false);
     if (result != null) {
       if (!isEdit) prependPost(result);
-      close();
+      onSaved?.(result);
+      onClose();
     }
   }
 
@@ -278,12 +291,16 @@ export function MeComposerModal({ visible, onClose, editPost }: MeComposerModalP
             </ScrollView>
           </View>
 
-          {stickerImg != null && (
+          {sticker != null && (
             <View
               className="mx-4 mt-2 flex-row items-center rounded-md p-2"
               style={{ borderWidth: 1, borderColor: 'rgba(0,0,0,0.12)' }}
             >
-              <Image source={stickerImg} style={imageSizeForHeight(stickerImg, 64)} resizeMode="contain" />
+              {stickerImg != null ? (
+                <Image source={stickerImg} style={imageSizeForHeight(stickerImg, 64)} resizeMode="contain" />
+              ) : (
+                <Text className="text-sm" style={{ color: 'rgba(0,0,0,0.54)' }}>{sticker}</Text>
+              )}
               <Pressable onPress={() => setSticker(null)} className="ml-auto px-2">
                 <Text className="text-xs" style={{ color: '#e34545' }}>{t('me.removeSticker')}</Text>
               </Pressable>
@@ -417,6 +434,7 @@ export function MeComposerModal({ visible, onClose, editPost }: MeComposerModalP
           <View style={{ paddingBottom: bottomBarInset }}>
             <SmileyKulPanel
               hideKul
+              contentHeight={panelContentHeight}
               onPickEmoji={(code) => composerRef.current?.insertCode(code, true)}
             />
           </View>

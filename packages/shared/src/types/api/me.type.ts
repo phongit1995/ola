@@ -135,6 +135,7 @@ export interface UpdatePostRequest {
   content?: string;
   images?: PostImage[];
   checkIn?: PostCheckIn;
+  clearCheckIn?: boolean;
   sticker?: string;
   visibility?: PostVisibility;
 }

@@ -268,6 +268,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   }
 
   async function pickAndSendImages() {
+    const keyboardWasVisible = Keyboard.isVisible();
     const result = await launchImageLibrary({
       mediaType: 'photo',
       selectionLimit: 0,
@@ -275,12 +276,13 @@ export function ChatDetailScreen({ navigation, route }: Props) {
       maxHeight: 1920,
       quality: 0.9,
     });
+    if (keyboardWasVisible) requestAnimationFrame(() => composerRef.current?.focus());
     if (result.didCancel) return;
-    setOpenTab(null);
     await sendPickedAssets(result.assets ?? []);
   }
 
   async function captureAndSendPhoto() {
+    const keyboardWasVisible = Keyboard.isVisible();
     const result = await launchCamera({
       mediaType: 'photo',
       maxWidth: 1920,
@@ -288,12 +290,12 @@ export function ChatDetailScreen({ navigation, route }: Props) {
       quality: 0.9,
       saveToPhotos: false,
     });
+    if (keyboardWasVisible) requestAnimationFrame(() => composerRef.current?.focus());
     if (result.didCancel) return;
     if (result.errorCode != null) {
       push('error', t('chat.imageError'));
       return;
     }
-    setOpenTab(null);
     await sendPickedAssets(result.assets ?? []);
   }
 

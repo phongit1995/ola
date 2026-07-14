@@ -8,7 +8,8 @@ import type { PostReaction, RelationshipInfo } from '@app-types';
 import { applyMeReaction, meSelfLiker, reconcileMeLikers, toMePost } from '../me/mappers';
 import type { MePost } from '../me/types';
 import type { ComposedPost } from '../me/components/MeComposerDialog';
-import { composedToImages, composedToPayload } from '../me/composer';
+import { composedToImages, composedToUpdatePayload } from '../me/composer';
+import { useMeFeedStore } from '../me/meFeedStore';
 import { mapFollowing, mapPosts, mapPublicProfile, type ProfileMapDeps } from './mappers';
 import { useProfileActions } from './useProfileActions';
 import type { ProfileController, ProfilePostActions, ProfileSecondary, UserProfile } from './types';
@@ -120,9 +121,10 @@ export function useUserProfile(username: string, seedColor: string): ProfileCont
     async (id: string, draft: ComposedPost): Promise<boolean> => {
       try {
         const images = await composedToImages(draft, 'existingFirst');
-        const updated = await MeService.update(id, { ...composedToPayload(draft), images });
+        const updated = await MeService.update(id, { ...composedToUpdatePayload(draft), images });
         const mapped = toMePost(updated, formatTime);
         setPost(id, (p) => ({ ...mapped, color: p.color }));
+        useMeFeedStore.getState().syncPost(updated);
         toast.success(t('me.editSuccess'));
         return true;
       } catch {

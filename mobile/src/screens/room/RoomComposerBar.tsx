@@ -86,8 +86,9 @@ export const RoomComposerBar = forwardRef<RoomComposerHandle, RoomComposerBarPro
 
     async function pickImages() {
       if (disabled) return;
-      setPanelOpen(false);
+      const keyboardWasVisible = Keyboard.isVisible();
       const result = await launchImageLibrary({ mediaType: 'photo', selectionLimit: 0 });
+      if (keyboardWasVisible) requestAnimationFrame(() => composerRef.current?.focus());
       if (result.didCancel) return;
       const assets = result.assets ?? [];
       if (assets.length === 0) {

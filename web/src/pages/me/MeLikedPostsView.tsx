@@ -8,7 +8,8 @@ import { useAuthStore } from '@/store/authStore';
 import { useMeLocalStore } from '@/store/meLocalStore';
 import { MePostCard } from './components/MePostCard';
 import { MePostInteractions, type MePostSource } from './MePostInteractions';
-import { composedToImages, composedToPayload } from './composer';
+import { composedToImages, composedToUpdatePayload } from './composer';
+import { useMeFeedStore } from './meFeedStore';
 import { selfLiker } from '@ola/shared/stores/selfLiker';
 import { reconcileTopLikers } from '@ola/shared/stores/postHelpers';
 import { applyPostReaction, toMePost } from './mappers';
@@ -90,9 +91,11 @@ export function MeLikedPostsView({ onClose }: MeLikedPostsViewProps) {
   const editPost = useCallback(
     async (id: string, draft: ComposedPost): Promise<boolean> => {
       try {
-        const images = await composedToImages(draft, 'existingFirst');
-        const updated = await MeService.update(id, { ...composedToPayload(draft), images });
+        const existing = posts.find((item) => item.id === id)?.images ?? [];
+        const images = await composedToImages(draft, 'existingFirst', existing);
+        const updated = await MeService.update(id, { ...composedToUpdatePayload(draft), images });
         setPosts((current) => current.map((item) => (item.id === id ? updated : item)));
+        useMeFeedStore.getState().syncPost(updated);
         toast.success(t('me.editSuccess'));
         return true;
       } catch {
@@ -100,7 +103,7 @@ export function MeLikedPostsView({ onClose }: MeLikedPostsViewProps) {
         return false;
       }
     },
-    [t]
+    [t, posts]
   );
 
   const deletePost = useCallback(

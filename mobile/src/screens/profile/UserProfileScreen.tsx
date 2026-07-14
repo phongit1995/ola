@@ -27,6 +27,7 @@ import {
   toApiError,
 } from '@ola/shared/lib';
 import type { FollowUser, Post, PublicProfile } from '@ola/shared/types';
+import { EDIT_WINDOW_MS } from '@ola/shared/constants';
 import { useMeLocalStore } from '../../store/meLocalStore';
 import { pickSingleImage } from '../../lib/imagePicker';
 import { MediaViewerModal } from '../../components/MediaViewer';
@@ -63,7 +64,6 @@ const cameraIcon = require('../../assets/icons/profile/ic_action_camera.png');
 
 const DEFAULT_COVER_COLOR = '#33691e';
 const MIN_AVATAR_SOURCE = 100;
-const EDIT_WINDOW_MS = 60 * 60 * 1000;
 
 const CARD_SHADOW = {
   shadowColor: '#000',
@@ -802,10 +802,8 @@ export function UserProfileScreen({ username, language, onClose, onOpenProfile, 
           <MeComposerModal
             visible
             editPost={editingPost}
-            onClose={() => {
-              setEditingPost(null);
-              void reloadPosts();
-            }}
+            onSaved={() => void reloadPosts()}
+            onClose={() => setEditingPost(null)}
           />
         )}
 

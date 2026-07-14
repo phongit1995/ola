@@ -12,6 +12,7 @@ import { useToastStore } from '@ola/shared/stores/toastStore';
 import { AuthService, MeService, SocketService } from '@ola/shared/services';
 import { createTimeFormatter, formatDateDMY, isSameDay, toApiError } from '@ola/shared/lib';
 import type { MeFeedFilter, Post, PostReaction } from '@ola/shared/types';
+import { EDIT_WINDOW_MS } from '@ola/shared/constants';
 import { useMeLocalStore } from '../../store/meLocalStore';
 import { useMediaViewerStore } from '../../store/mediaViewerStore';
 import { useHorizontalSwipe } from '../../hooks/useHorizontalSwipe';
@@ -54,7 +55,6 @@ const ME_TABS = [
   { key: 'personal' as const, labelKey: 'me.tabPersonal' as const, icon: tabFollower, iconActive: tabFollowerActive },
 ];
 
-const EDIT_WINDOW_MS = 60 * 60 * 1000;
 
 export function MeFeedScreen() {
   const { t, i18n } = useTranslation();

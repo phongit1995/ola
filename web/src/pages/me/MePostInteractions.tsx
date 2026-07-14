@@ -154,11 +154,17 @@ export function MePostInteractions({ source, children }: MePostInteractionsProps
         };
 
   const submitEdit = useCallback(
-    (draft: ComposedPost) =>
-      editPostId == null || editPost == null
-        ? Promise.resolve(false)
-        : editPost(editPostId, draft),
-    [editPostId, editPost]
+    (draft: ComposedPost) => {
+      if (editPostId == null || editPost == null) return Promise.resolve(false);
+      const createdAtMs =
+        editingPost?.createdAt != null ? new Date(editingPost.createdAt).getTime() : 0;
+      if (Date.now() - createdAtMs > EDIT_WINDOW_MS) {
+        toast.info(t('me.editExpired'));
+        return Promise.resolve(false);
+      }
+      return editPost(editPostId, draft);
+    },
+    [editPostId, editPost, editingPost, t]
   );
 
   const openProfile = useCallback((nick: string, color: string) => {

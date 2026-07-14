@@ -126,7 +126,9 @@ func (s *Service) Update(userID, postID uuid.UUID, req *UpdateMeRequest) (*MeRes
 		}
 		post.Images = toModelImages(*req.Images)
 	}
-	if req.CheckIn != nil {
+	if req.ClearCheckIn {
+		post.CheckIn = nil
+	} else if req.CheckIn != nil {
 		post.CheckIn = toModelCheckIn(req.CheckIn)
 	}
 	if req.Sticker != nil {
@@ -150,6 +152,7 @@ func (s *Service) Update(userID, postID uuid.UUID, req *UpdateMeRequest) (*MeRes
 		return nil, err
 	}
 	resp := toMeResponse(updated, s.myReaction(userID, postID))
+	s.attachTopLikers(&resp, postID)
 	return &resp, nil
 }
 

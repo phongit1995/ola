@@ -123,7 +123,7 @@ export function MeComposerDialog({
   async function submit() {
     if (submitting) return;
     const text = content.trim();
-    if (text === '' && photos.length === 0 && sticker == null && checkIn == null) return;
+    if (text === '' && photos.length === 0) return;
     setSubmitting(true);
     const ok = await onPost({
       content: text,

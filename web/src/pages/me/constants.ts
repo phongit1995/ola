@@ -22,7 +22,7 @@ export const ME_TABS = [
 
 export const PRIVACY_OPTIONS: PostVisibility[] = ['public', 'friend', 'private'];
 
-export const EDIT_WINDOW_MS = 60 * 60 * 1000;
+export { EDIT_WINDOW_MS } from '@ola/shared/constants';
 
 export const ATTACH_BUTTONS = [
   { key: 'local', glyph: '📷', labelKey: 'me.attachLocal' },
