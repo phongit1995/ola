@@ -35,12 +35,25 @@ export function composedToPayload(draft: ComposedPost): ComposedPayload {
   };
 }
 
+export function composedToUpdatePayload(
+  draft: ComposedPost
+): ComposedPayload & { sticker: string; clearCheckIn: boolean } {
+  return {
+    ...composedToPayload(draft),
+    sticker: draft.sticker ?? '',
+    clearCheckIn: draft.checkIn == null,
+  };
+}
+
 export async function composedToImages(
   draft: ComposedPost,
-  order: 'createdFirst' | 'existingFirst'
+  order: 'createdFirst' | 'existingFirst',
+  existingImages: PostImage[] = []
 ): Promise<PostImage[]> {
   const prepared = await compressImagesForUpload(draft.files);
   const uploaded = prepared.length > 0 ? (await MeService.uploadImages(prepared)).images : [];
-  const existing: PostImage[] = draft.imageUrls.map((url) => ({ url }));
+  const existing: PostImage[] = draft.imageUrls.map(
+    (url) => existingImages.find((image) => image.url === url) ?? { url }
+  );
   return order === 'createdFirst' ? [...uploaded, ...existing] : [...existing, ...uploaded];
 }

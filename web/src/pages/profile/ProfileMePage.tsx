@@ -18,7 +18,8 @@ import { UserProfileView } from './UserProfileView';
 import { COVER_ASPECT } from './constants';
 import { MePostCard } from '../me/components/MePostCard';
 import { MePostInteractions, type MePostSource } from '../me/MePostInteractions';
-import { composedToImages, composedToPayload } from '../me/composer';
+import { composedToImages, composedToUpdatePayload } from '../me/composer';
+import { useMeFeedStore } from '../me/meFeedStore';
 import { applyPostReaction, toMePost } from '../me/mappers';
 import { reconcileTopLikers } from '@ola/shared/stores/postHelpers';
 import type { ComposedPost } from '../me/components/MeComposerDialog';
@@ -89,9 +90,11 @@ export function ProfileMePage() {
   const editPost = useCallback(
     async (id: string, draft: ComposedPost): Promise<boolean> => {
       try {
-        const images = await composedToImages(draft, 'existingFirst');
-        const updated = await MeService.update(id, { ...composedToPayload(draft), images });
+        const existing = posts.find((item) => item.id === id)?.images ?? [];
+        const images = await composedToImages(draft, 'existingFirst', existing);
+        const updated = await MeService.update(id, { ...composedToUpdatePayload(draft), images });
         setPosts((current) => current.map((item) => (item.id === id ? updated : item)));
+        useMeFeedStore.getState().syncPost(updated);
         toast.success(t('me.editSuccess'));
         return true;
       } catch {
@@ -99,7 +102,7 @@ export function ProfileMePage() {
         return false;
       }
     },
-    [t]
+    [t, posts]
   );
 
   const deletePost = useCallback(

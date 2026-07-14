@@ -4,13 +4,12 @@ import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   Image,
-  KeyboardAvoidingView,
-  Platform,
   Pressable,
   ScrollView,
   Text,
   View,
 } from 'react-native';
+import { KeyboardView } from '../../components/KeyboardView';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import DeviceInfo from 'react-native-device-info';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -111,10 +110,9 @@ export function LoginScreen({ navigation }: Props) {
   const hasFieldError = errors.username != null || errors.password != null;
 
   return (
-    <KeyboardAvoidingView
+    <KeyboardView
       className="flex-1 bg-ola-primary"
       style={{ paddingTop: insets.top + 8 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView
         contentContainerClassName="flex-grow items-center px-4"
@@ -239,6 +237,6 @@ export function LoginScreen({ navigation }: Props) {
           <ActivityIndicator size="large" color="#ffffff" />
         </View>
       )}
-    </KeyboardAvoidingView>
+    </KeyboardView>
   );
 }

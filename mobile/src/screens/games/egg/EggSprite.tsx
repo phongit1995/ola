@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import { Animated, Easing, Image, Pressable } from 'react-native';
 import {
   ANIM_ANCHOR_X,
@@ -16,6 +16,8 @@ import {
 } from '@ola/shared/lib';
 import { EGG_FRAMES, frameSize } from './eggAssets';
 import type { SmashOutcome, SmashStarter } from './useEggGame';
+
+const ANIM_FRAME_KEYS = Object.keys(EGG_FRAMES).filter((key) => key !== 'Egg');
 
 type Phase = 'idle' | 'smashing' | 'broken';
 
@@ -36,7 +38,7 @@ interface EggSpriteProps {
   onBroken: () => void;
 }
 
-export function EggSprite({ nest, scaleX, scaleY, onSmash, onBroken }: EggSpriteProps) {
+function EggSpriteComponent({ nest, scaleX, scaleY, onSmash, onBroken }: EggSpriteProps) {
   const animRef = useRef<AnimState | null>(null);
   const tickerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pendingRef = useRef(false);
@@ -163,56 +165,63 @@ export function EggSprite({ nest, scaleX, scaleY, onSmash, onBroken }: EggSprite
   const restLeft = (nest.x - restW / 2) * scaleX;
   const restTop = (baseY - restH * REST_ANCHOR_Y) * scaleY;
 
-  if (phase === 'idle') {
-    return (
-      <Pressable
-        onPress={handleTap}
-        style={{
-          position: 'absolute',
-          left: restLeft,
-          top: restTop,
-          width: restW * scaleX,
-          height: restH * scaleY,
-        }}
-      >
-        <Animated.Image
-          source={EGG_FRAMES.Egg}
-          resizeMode="stretch"
-          style={{
-            width: restW * scaleX,
-            height: restH * scaleY,
-            transform: [
-              {
-                translateY: bob.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [-1.5 * scaleY, 1.5 * scaleY],
-                }),
-              },
-            ],
-          }}
-        />
-      </Pressable>
-    );
-  }
-
-  if (frameKey == null) return null;
-  const frame = frameSize(frameKey);
-  const frameW = frame.width * ANIM_SCALE;
-  const frameH = frame.height * ANIM_SCALE;
-  const animLeft = (nest.x - frameW * ANIM_ANCHOR_X) * scaleX;
-  const animTop = (baseY + ANIM_OFFSET_Y - frameH * ANIM_ANCHOR_Y) * scaleY;
+  const visibleFrame = phase === 'idle' ? null : frameKey;
 
   return (
-    <Image
-      source={EGG_FRAMES[frameKey]}
-      resizeMode="stretch"
-      style={{
-        position: 'absolute',
-        left: animLeft,
-        top: animTop,
-        width: frameW * scaleX,
-        height: frameH * scaleY,
-      }}
-    />
+    <>
+      {ANIM_FRAME_KEYS.map((key) => {
+        const frame = frameSize(key);
+        const frameW = frame.width * ANIM_SCALE;
+        const frameH = frame.height * ANIM_SCALE;
+        return (
+          <Image
+            key={key}
+            source={EGG_FRAMES[key]}
+            fadeDuration={0}
+            resizeMode="stretch"
+            style={{
+              position: 'absolute',
+              left: (nest.x - frameW * ANIM_ANCHOR_X) * scaleX,
+              top: (baseY + ANIM_OFFSET_Y - frameH * ANIM_ANCHOR_Y) * scaleY,
+              width: frameW * scaleX,
+              height: frameH * scaleY,
+              opacity: visibleFrame === key ? 1 : 0,
+            }}
+          />
+        );
+      })}
+      {phase === 'idle' && (
+        <Pressable
+          onPress={handleTap}
+          style={{
+            position: 'absolute',
+            left: restLeft,
+            top: restTop,
+            width: restW * scaleX,
+            height: restH * scaleY,
+          }}
+        >
+          <Animated.Image
+            source={EGG_FRAMES.Egg}
+            fadeDuration={0}
+            resizeMode="stretch"
+            style={{
+              width: restW * scaleX,
+              height: restH * scaleY,
+              transform: [
+                {
+                  translateY: bob.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [-1.5 * scaleY, 1.5 * scaleY],
+                  }),
+                },
+              ],
+            }}
+          />
+        </Pressable>
+      )}
+    </>
   );
 }
+
+export const EggSprite = memo(EggSpriteComponent);

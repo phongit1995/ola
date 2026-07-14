@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Image, KeyboardAvoidingView, Platform, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, Text, View } from 'react-native';
+import { KeyboardView } from '../../components/KeyboardView';
+import { useBottomBarInset } from '../../hooks/useBottomBarInset';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useIsFocused } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -126,7 +128,10 @@ export function RoomChatScreen({ navigation, route }: Props) {
   );
 
   useEffect(() => {
-    void open({ id: roomId, name: roomName });
+    const current = useRoomChatStore.getState();
+    if (current.activeRoom?.id !== roomId || current.status === 'error') {
+      void open({ id: roomId, name: roomName });
+    }
     return () => close();
   }, [roomId, roomName, open, close]);
 
@@ -135,9 +140,17 @@ export function RoomChatScreen({ navigation, route }: Props) {
     setRoomForeground(isFocused);
   }, [isFocused, setRoomForeground]);
 
+  const bottomBarInset = useBottomBarInset();
+  useEffect(() => {
+    const tabNavigation = navigation.getParent();
+    tabNavigation?.setOptions({ tabBarStyle: { display: 'none' } });
+    return () => tabNavigation?.setOptions({ tabBarStyle: undefined });
+  }, [navigation]);
+
   useEffect(() => {
     const unsubscribe = navigation.addListener('beforeRemove', (event) => {
       if (confirmedLeaveRef.current) return;
+      if (useRoomChatStore.getState().status !== 'joined') return;
       event.preventDefault();
       setPendingLeave(event.data.action);
     });
@@ -159,9 +172,8 @@ export function RoomChatScreen({ navigation, route }: Props) {
   );
 
   return (
-    <KeyboardAvoidingView
+    <KeyboardView
       className="flex-1 bg-white"
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View className="bg-ola-primary px-2 pb-2" style={{ paddingTop: insets.top + 8 }}>
         <View className="h-9 flex-row items-center justify-center">
@@ -202,15 +214,29 @@ export function RoomChatScreen({ navigation, route }: Props) {
           />
       </View>
 
-      {status === 'connecting' ? (
-        <View className="flex-1 items-center justify-center">
+      {status === 'error' ? (
+        <View className="flex-1 items-center justify-center gap-4 px-8">
+          <Text className="text-center text-base" style={{ color: 'rgba(0,0,0,0.7)' }}>
+            {t('room.joinError')}
+          </Text>
+          <Pressable
+            onPress={() => navigation.goBack()}
+            className="rounded-full bg-ola-primary px-6 py-2 active:opacity-90"
+          >
+            <Text className="text-sm font-medium text-white">{t('chat.back')}</Text>
+          </Pressable>
+        </View>
+      ) : status !== 'joined' ? (
+        <View className="flex-1 items-center justify-center gap-3">
           <ActivityIndicator color="#7cb342" size="large" />
+          <Text className="text-sm" style={{ color: 'rgba(0,0,0,0.54)' }}>{t('room.joining')}</Text>
         </View>
       ) : activeTab === 'members' ? (
         <RoomMembersTab members={visibleMembers} onOpenUser={openUser} />
       ) : (
         <RoomMessagesTab
           currentUserId={currentUserId}
+          bottomInset={bottomBarInset}
           language={i18n.language}
           messages={messages}
           status={status}
@@ -256,6 +282,6 @@ export function RoomChatScreen({ navigation, route }: Props) {
         }}
         onCancel={() => setPendingLeave(null)}
       />
-    </KeyboardAvoidingView>
+    </KeyboardView>
   );
 }

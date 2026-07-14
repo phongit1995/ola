@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Image, Modal, Pressable, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
 import { useMeNotificationStore } from '@ola/shared/stores/meNotificationStore';
 import { useMeFeedStore } from '@ola/shared/stores/meFeedStore';
@@ -12,6 +11,7 @@ import { createTimeFormatter } from '@ola/shared/lib';
 import type { MeNotification, MeNotificationType, Post } from '@ola/shared/types';
 import { Avatar } from '../../components/Avatar';
 import { MeCommentSheet } from './MeCommentSheet';
+import { ScreenHeader } from '../../components/ScreenHeader';
 
 const likeIcon = require('../../assets/icons/notify/ic_notification_like.png');
 const commentIcon = require('../../assets/icons/notify/ic_notification_comment.png');
@@ -24,6 +24,10 @@ const TYPE_ICON: Record<MeNotificationType, number> = {
   mention: mentionIcon,
 };
 
+function NotificationSeparator() {
+  return <View style={{ height: 1, marginHorizontal: 16, backgroundColor: 'rgba(0,0,0,0.12)' }} />;
+}
+
 interface MeNotificationsScreenProps {
   language: string;
   onClose: () => void;
@@ -32,7 +36,6 @@ interface MeNotificationsScreenProps {
 
 export function MeNotificationsScreen({ language, onClose, onOpenProfile }: MeNotificationsScreenProps) {
   const { t } = useTranslation();
-  const insets = useSafeAreaInsets();
   const push = useToastStore((s) => s.push);
   const items = useMeNotificationStore((s) => s.items);
   const loading = useMeNotificationStore((s) => s.loading);
@@ -94,13 +97,7 @@ export function MeNotificationsScreen({ language, onClose, onOpenProfile }: MeNo
   return (
     <Modal visible transparent animationType="slide" onRequestClose={onClose}>
       <View className="flex-1 bg-[#f3f3f3]">
-        <View className="flex-row items-center bg-ola-primary px-2" style={{ paddingTop: insets.top }}>
-          <Pressable onPress={onClose} className="h-12 w-10 items-center justify-center">
-            <Text className="text-2xl leading-none text-white">‹</Text>
-          </Pressable>
-          <Text className="flex-1 text-lg font-medium text-white">{t('me.notifTitle')}</Text>
-          <View className="w-10" />
-        </View>
+        <ScreenHeader title={t('me.notifTitle')} onBack={onClose} />
 
         {loading && items.length === 0 ? (
           <ActivityIndicator className="py-10" color="#7cb342" />
@@ -114,9 +111,7 @@ export function MeNotificationsScreen({ language, onClose, onOpenProfile }: MeNo
             keyExtractor={(item) => item.id}
             onEndReached={() => void loadMore()}
             onEndReachedThreshold={0.4}
-            ItemSeparatorComponent={() => (
-              <View style={{ height: 1, marginHorizontal: 16, backgroundColor: 'rgba(0,0,0,0.12)' }} />
-            )}
+            ItemSeparatorComponent={NotificationSeparator}
             ListFooterComponent={loadingMore ? <ActivityIndicator className="my-4" color="#7cb342" /> : null}
             renderItem={({ item }) => {
               const name = item.actor?.fullName || item.actor?.username || '';

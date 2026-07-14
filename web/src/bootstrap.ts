@@ -2,7 +2,7 @@ import { configureDeviceInfo, configureEnv, configureSound } from '@ola/shared/p
 import { registerOnLogout } from '@ola/shared/stores/authStore';
 import { useRoomChatStore } from '@ola/shared/stores/roomChatStore';
 import { webEnv, initAnalytics } from '@config';
-import { playMessageSound, playRoomTagSound } from '@lib';
+import { playKenChestSound, playKenCreditSound, playMessageSound, playRoomTagSound } from '@lib';
 import { APP_VERSION } from '@/pages/login/constants';
 import { useGameOverlayStore } from './store/gameOverlayStore';
 import { useAppOverlayStore } from './store/appOverlayStore';
@@ -13,6 +13,8 @@ configureDeviceInfo({ platform: 'web', appVersion: APP_VERSION });
 configureSound({
   playMessage: playMessageSound,
   playRoomTag: playRoomTagSound,
+  playKenChest: playKenChestSound,
+  playKenCredit: playKenCreditSound,
 });
 void initAnalytics();
 registerOnLogout(() => {

@@ -3,20 +3,19 @@ import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   Image,
-  KeyboardAvoidingView,
-  Platform,
   Pressable,
   ScrollView,
   Text,
   TextInput,
   View,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { KeyboardView } from '../../../components/KeyboardView';
 import { toast } from '@ola/shared/lib';
 import { UserService } from '@ola/shared/services';
 import { useMarriageStore } from '@ola/shared/stores/marriageStore';
 import type { UserSearchResult } from '@ola/shared/types';
 import { VipAvatar } from '../../../components/VipAvatar';
+import { ScreenHeader } from '../../../components/ScreenHeader';
 
 const MESSAGE_LIMIT = 500;
 
@@ -50,7 +49,6 @@ function UserRowName({ user }: { user: UserSearchResult }) {
 
 export function ProposeComposer({ onClose }: ProposeComposerProps) {
   const { t } = useTranslation();
-  const insets = useSafeAreaInsets();
   const propose = useMarriageStore((s) => s.propose);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<UserSearchResult[]>([]);
@@ -114,30 +112,26 @@ export function ProposeComposer({ onClose }: ProposeComposerProps) {
   }
 
   return (
-    <KeyboardAvoidingView
+    <KeyboardView
       className="flex-1 bg-white"
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <View
-        className="flex-row items-center bg-ola-primary px-2"
-        style={{ paddingTop: insets.top }}
-      >
-        <Pressable onPress={onClose} className="h-12 w-10 items-center justify-center">
-          <Text className="text-2xl leading-none text-white">‹</Text>
-        </Pressable>
-        <Text className="flex-1 text-lg font-medium text-white">{t('marriage.composeTitle')}</Text>
-        <Pressable
-          onPress={() => void send()}
-          disabled={!canSend}
-          className="rounded-full px-4 active:opacity-90"
-          style={{
-            paddingVertical: 6,
-            backgroundColor: canSend ? '#ff4d7d' : 'rgba(0,0,0,0.15)',
-          }}
-        >
-          <Text className="text-sm font-bold text-white">{t('marriage.send')}</Text>
-        </Pressable>
-      </View>
+      <ScreenHeader
+        title={t('marriage.composeTitle')}
+        onBack={onClose}
+        right={
+          <Pressable
+            onPress={() => void send()}
+            disabled={!canSend}
+            className="rounded-full px-4 active:opacity-90"
+            style={{
+              paddingVertical: 6,
+              backgroundColor: canSend ? '#ff4d7d' : 'rgba(0,0,0,0.15)',
+            }}
+          >
+            <Text className="text-sm font-bold text-white">{t('marriage.send')}</Text>
+          </Pressable>
+        }
+      />
 
       <ScrollView className="flex-1" keyboardShouldPersistTaps="handled">
         <View className="items-center px-5 pb-4 pt-6">
@@ -289,6 +283,6 @@ export function ProposeComposer({ onClose }: ProposeComposerProps) {
           </View>
         </View>
       </ScrollView>
-    </KeyboardAvoidingView>
+    </KeyboardView>
   );
 }

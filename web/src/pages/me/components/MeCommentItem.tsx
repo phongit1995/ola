@@ -1,6 +1,6 @@
 import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ConfirmDialog, Avatar } from '@components';
+import { ConfirmDialog, Avatar, ReportDialog } from '@components';
 import { colorForName, renderRichText } from '@lib';
 import replyIcon from '@/assets/icons/me/ic_action_reply_gray.png';
 import likeIcon from '@/assets/icons/me/ic_like_gray.png';
@@ -33,6 +33,7 @@ interface MeCommentItemProps {
   comment: PostComment;
   time: string;
   canDelete: boolean;
+  canReport?: boolean;
   onDelete: (id: string) => void;
   onReply?: (comment: PostComment) => void;
   onToggleLike: (id: string) => void;
@@ -51,6 +52,7 @@ function MeCommentItemComponent({
   comment,
   time,
   canDelete,
+  canReport = false,
   onDelete,
   onReply,
   onToggleLike,
@@ -58,6 +60,7 @@ function MeCommentItemComponent({
 }: MeCommentItemProps) {
   const { t } = useTranslation();
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
   const [likersOpen, setLikersOpen] = useState(false);
   const liked = comment.liked;
   const likers = comment.topLikers ?? [];
@@ -104,6 +107,15 @@ function MeCommentItemComponent({
                 >
                   <img src={replyIcon} alt="" className="h-5 w-5 object-contain" />
                   {t('me.reply')}
+                </button>
+              )}
+              {canReport && (
+                <button
+                  type="button"
+                  onClick={() => setReportOpen(true)}
+                  className="text-xs font-medium text-black/45 transition-colors hover:text-ola-error"
+                >
+                  {t('report.action')}
                 </button>
               )}
               <div className="ml-auto flex items-center gap-1.5">
@@ -156,6 +168,12 @@ function MeCommentItemComponent({
           commentId={comment.id}
           onClose={() => setLikersOpen(false)}
           onOpenProfile={onOpenProfile}
+        />
+      )}
+      {reportOpen && (
+        <ReportDialog
+          target={{ type: 'comment', id: comment.id }}
+          onClose={() => setReportOpen(false)}
         />
       )}
     </>

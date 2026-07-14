@@ -25,11 +25,12 @@ type CreateMeRequest struct {
 }
 
 type UpdateMeRequest struct {
-	Content    *string         `json:"content" binding:"omitempty,max=5000"`
-	Images     *[]MeImageInput `json:"images" binding:"omitempty,max=5,dive"`
-	CheckIn    *CheckInInput   `json:"checkIn" binding:"omitempty"`
-	Sticker    *string         `json:"sticker" binding:"omitempty,max=500"`
-	Visibility *string         `json:"visibility" binding:"omitempty,oneof=public friend private"`
+	Content      *string         `json:"content" binding:"omitempty,max=5000"`
+	Images       *[]MeImageInput `json:"images" binding:"omitempty,max=5,dive"`
+	CheckIn      *CheckInInput   `json:"checkIn" binding:"omitempty"`
+	ClearCheckIn bool            `json:"clearCheckIn" binding:"omitempty"`
+	Sticker      *string         `json:"sticker" binding:"omitempty,max=500"`
+	Visibility   *string         `json:"visibility" binding:"omitempty,oneof=public friend private"`
 }
 
 type CheckInResponse struct {

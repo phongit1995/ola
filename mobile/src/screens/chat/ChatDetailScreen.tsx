@@ -3,17 +3,17 @@ import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   Image,
-  KeyboardAvoidingView,
+  Keyboard,
   NativeScrollEvent,
   NativeSyntheticEvent,
-  Platform,
   Pressable,
   Text,
   useWindowDimensions,
   View,
 } from 'react-native';
+import { KeyboardView } from '../../components/KeyboardView';
 import { FlashList, type FlashListRef } from '@shopify/flash-list';
-import { launchImageLibrary } from 'react-native-image-picker';
+import { launchCamera, launchImageLibrary, type Asset } from 'react-native-image-picker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useAuthStore } from '@ola/shared/stores/authStore';
@@ -29,9 +29,10 @@ import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { useMediaViewerStore } from '../../store/mediaViewerStore';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { kulImageForText, kulToken } from '../../lib/kul';
-import { ChatComposer, type ChatComposerHandle } from '../../components/ChatComposer';
+import { ChatInputBar, type ChatInputBarHandle } from './ChatInputBar';
 import { RichTextView } from '../../components/RichTextView';
-import { useKeyboardHeight } from '../../hooks/useKeyboardHeight';
+import { useBottomBarInset } from '../../hooks/useBottomBarInset';
+import { useFocusPresence } from '../../hooks/usePresence';
 import { ListOptionDialog, type ListOption } from '../../components/ListOptionDialog';
 import { RoomReactionsDialog } from '../room/RoomReactionsDialog';
 import { ChatBubble, ChatMessageRow } from './ChatMessageRow';
@@ -47,7 +48,6 @@ import { usePeerCard } from './usePeerCard';
 import { MessageActionSheet, type AnchorRect, type MessageSheetAction } from '../room/MessageActionSheet';
 
 const backIcon = require('../../assets/icons/ic_back.png');
-const likeIcon = require('../../assets/icons/chat/smiley/smiley_35.png');
 const moreIcon = require('../../assets/icons/chat/ic_more_white.png');
 const deleteActionIcon = require('../../assets/icons/chat/ic_menu_delete.png');
 const editActionIcon = require('../../assets/icons/chat/ic_action_edit.png');
@@ -56,6 +56,7 @@ const replyActionIcon = require('../../assets/icons/me/ic_action_reply_gray.png'
 
 const CHAT_BG = '#ECE5DD';
 const DIVIDER = 'rgba(0,0,0,0.12)';
+const MAX_UPLOAD_BYTES = 2 * 1024 * 1024;
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ChatDetail'>;
 
@@ -63,7 +64,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   const { conversationId } = route.params;
   const { t, i18n } = useTranslation();
   const insets = useSafeAreaInsets();
-  const keyboardHeight = useKeyboardHeight();
+  const bottomBarInset = useBottomBarInset();
   const { width: windowWidth } = useWindowDimensions();
 
   const conversations = useChatStore((s) => s.conversations);
@@ -94,7 +95,6 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   const push = useToastStore((s) => s.push);
   const openViewer = useMediaViewerStore((s) => s.openViewer);
 
-  const [draft, setDraft] = useState('');
   const [openTab, setOpenTab] = useState<AttachTab | null>(null);
   const [transferKenOpen, setTransferKenOpen] = useState(false);
   const [transferVipDaysOpen, setTransferVipDaysOpen] = useState(false);
@@ -115,25 +115,36 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   const listRef = useRef<FlashListRef<Message>>(null);
   const stickToBottomRef = useRef(true);
   const sheetOpenRef = useRef(false);
-  const composerRef = useRef<ChatComposerHandle>(null);
+  const composerRef = useRef<ChatInputBarHandle>(null);
 
   useEffect(() => {
-    void openConversation(conversationId);
+    if (conversationId != null) void openConversation(conversationId);
     return () => closeConversation();
   }, [conversationId, openConversation, closeConversation]);
 
-  const conversation = conversations.find((item) => item.id === conversationId);
+  const currentConversationId = useChatStore((s) => s.currentConversationId);
+  const draftRecipient = useChatStore((s) => s.draftRecipient);
+  const activeConversationId = conversationId ?? currentConversationId ?? null;
+  const conversation = conversations.find((item) => item.id === activeConversationId);
   const title =
     conversation?.otherUser?.fullName ??
     conversation?.otherUser?.username ??
     conversation?.name ??
+    draftRecipient?.name ??
+    peerProfile?.fullName ??
+    peerProfile?.username ??
     '';
-  const peerAvatar = conversation?.otherUser?.avatar;
+  const peerAvatar = conversation?.otherUser?.avatar ?? draftRecipient?.avatar ?? peerProfile?.avatar;
   const myId = currentUserId();
   const timeFormatter = useMemo(() => createTimeFormatter(i18n.language), [i18n.language]);
   const dateFormatter = useMemo(() => createDateFormatter(i18n.language), [i18n.language]);
 
-  const peerOnline = conversation?.otherUser?.isOnline === true;
+  const peerId = peerProfile?.id ?? '';
+  const livePresence = useFocusPresence(peerId !== '' ? peerId : null);
+  const peerOnline =
+    (livePresence?.isOnline ?? peerProfile?.isOnline ?? conversation?.otherUser?.isOnline) === true;
+  const peerLastActiveAt =
+    livePresence?.lastActiveAt ?? peerProfile?.lastActiveAt ?? conversation?.otherUser?.lastActiveAt;
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
@@ -146,7 +157,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
       ? t('chat.typing', { name: typingUsers[0]?.username ?? '' })
       : peerOnline
         ? t('chat.statusActive')
-        : formatLastActive(t, conversation?.otherUser?.lastActiveAt, now) ?? '';
+        : formatLastActive(t, peerLastActiveAt, now) ?? '';
 
   const conversationSeen =
     conversation == null ? false : !conversation.isLastMessageFromMe ? true : conversation.seen;
@@ -156,7 +167,6 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   const blockedByThem = blockStatus === 'blocked_by_them';
   const blocked = blockedByMe || blockedByThem;
 
-  const peerId = peerProfile?.id ?? '';
   const {
     anchorId: peerCardAnchorId,
     visible: peerCardVisible,
@@ -180,11 +190,21 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     return null;
   }, [messages, myId]);
 
-  const scrollToEnd = useCallback(() => {
+  const forceScrollRef = useRef(false);
+
+  const repinOnResize = useCallback(() => {
     if (stickToBottomRef.current && !sheetOpenRef.current) {
       requestAnimationFrame(() => listRef.current?.scrollToEnd({ animated: false }));
     }
   }, []);
+
+  const scrollOnContentChange = useCallback(() => {
+    if (!forceScrollRef.current) return;
+    forceScrollRef.current = false;
+    requestAnimationFrame(() => listRef.current?.scrollToEnd({ animated: false }));
+  }, []);
+
+  const closeAttachTab = useCallback(() => setOpenTab(null), []);
 
   function handleScroll(event: NativeSyntheticEvent<NativeScrollEvent>) {
     const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
@@ -198,17 +218,13 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     if (editing != null) {
       const id = editing;
       setEditing(null);
-      setDraft('');
       await editMessage(id, trimmed);
       return;
     }
+    forceScrollRef.current = !stickToBottomRef.current;
     stickToBottomRef.current = true;
-    setDraft('');
-    setOpenTab(null);
     await sendText(trimmed);
   }
-
-  const isTyping = draft.trim() !== '';
 
   const openPeerProfile = () => {
     const peer = conversation?.otherUser;
@@ -226,17 +242,33 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   function startEdit(message: Message) {
     const content = message.content ?? '';
     setEditing(message.id);
-    setDraft(content);
+    composerRef.current?.setText(content);
     setOpenTab(null);
     requestAnimationFrame(() => composerRef.current?.focus());
   }
 
   function cancelEdit() {
     setEditing(null);
-    setDraft('');
+    composerRef.current?.clear();
+  }
+
+  async function sendPickedAssets(assets: Asset[]) {
+    for (const asset of assets) {
+      if (asset.uri == null) continue;
+      if ((asset.fileSize ?? 0) > MAX_UPLOAD_BYTES) {
+        push('error', t('chat.imageTooLarge'));
+        continue;
+      }
+      try {
+        await sendImage({ uri: asset.uri, name: asset.fileName ?? 'photo.jpg', type: asset.type ?? 'image/jpeg' });
+      } catch {
+        push('error', t('chat.imageError'));
+      }
+    }
   }
 
   async function pickAndSendImages() {
+    const keyboardWasVisible = Keyboard.isVisible();
     const result = await launchImageLibrary({
       mediaType: 'photo',
       selectionLimit: 0,
@@ -244,17 +276,27 @@ export function ChatDetailScreen({ navigation, route }: Props) {
       maxHeight: 1920,
       quality: 0.9,
     });
+    if (keyboardWasVisible) requestAnimationFrame(() => composerRef.current?.focus());
     if (result.didCancel) return;
-    const assets = result.assets ?? [];
-    setOpenTab(null);
-    for (const asset of assets) {
-      if (asset.uri == null) continue;
-      try {
-        await sendImage({ uri: asset.uri, name: asset.fileName ?? 'photo.jpg', type: asset.type ?? 'image/jpeg' });
-      } catch {
-        push('error', t('chat.imageError'));
-      }
+    await sendPickedAssets(result.assets ?? []);
+  }
+
+  async function captureAndSendPhoto() {
+    const keyboardWasVisible = Keyboard.isVisible();
+    const result = await launchCamera({
+      mediaType: 'photo',
+      maxWidth: 1920,
+      maxHeight: 1920,
+      quality: 0.9,
+      saveToPhotos: false,
+    });
+    if (keyboardWasVisible) requestAnimationFrame(() => composerRef.current?.focus());
+    if (result.didCancel) return;
+    if (result.errorCode != null) {
+      push('error', t('chat.imageError'));
+      return;
     }
+    await sendPickedAssets(result.assets ?? []);
   }
 
   async function handleFriendAction() {
@@ -396,10 +438,9 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   }
 
   return (
-    <KeyboardAvoidingView
+    <KeyboardView
       className="flex-1"
       style={{ backgroundColor: CHAT_BG }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View className="bg-ola-primary px-2 pb-2" style={{ paddingTop: insets.top + 8 }}>
         <View className="h-9 flex-row items-center gap-2">
@@ -446,11 +487,15 @@ export function ChatDetailScreen({ navigation, route }: Props) {
           ref={listRef}
           data={messages}
           keyExtractor={(item) => item.clientMsgId ?? item.id}
+          maintainVisibleContentPosition={{
+            startRenderingFromBottom: true,
+            autoscrollToBottomThreshold: 0.2,
+          }}
           onScroll={handleScroll}
           scrollEventThrottle={16}
           contentContainerStyle={{ paddingVertical: 12 }}
-          onContentSizeChange={scrollToEnd}
-          onLayout={scrollToEnd}
+          onContentSizeChange={scrollOnContentChange}
+          onLayout={repinOnResize}
           ListHeaderComponent={
             peerCardVisible && peerCardAnchorId === '' && peerProfile != null ? (
               <PeerProfileCard
@@ -602,7 +647,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
           </Pressable>
         </View>
       )}
-      {pendingAudio != null ? (
+      {pendingAudio != null && (
         <VoicePreviewBar
           uri={pendingAudio.file.uri}
           duration={pendingAudio.duration}
@@ -616,55 +661,25 @@ export function ChatDetailScreen({ navigation, route }: Props) {
           }}
           onDiscard={() => setPendingAudio(null)}
         />
-      ) : (
-      <View
-        className="flex-row items-end gap-1 bg-white px-2 py-1.5"
-        style={{ borderTopWidth: 1, borderTopColor: DIVIDER }}
-      >
-        <View className="flex-1">
-          <ChatComposer
-            ref={composerRef}
-            value={draft}
-            onChange={(text) => {
-              setDraft(text);
-              if (editing == null) notifyTyping();
-            }}
-            placeholder={t('chat.messageInputPlaceholder', { name: title })}
-            minHeight={36}
-            maxHeight={128}
-            paddingH={8}
-            paddingV={6}
-            onFocus={() => setOpenTab(null)}
-          />
-        </View>
-        {isTyping ? (
-          <Pressable
-            onPress={() => {
-              void send(draft);
-              requestAnimationFrame(() => composerRef.current?.focus());
-            }}
-            className="h-9 items-center justify-center rounded-full bg-ola-primary px-4 active:opacity-90"
-          >
-            <Text className="text-sm font-semibold text-white">
-              {editing != null ? t('chat.actionSave') : t('chat.send')}
-            </Text>
-          </Pressable>
-        ) : (
-          <Pressable
-            onPress={() => void send('(y)')}
-            onLongPress={() => void send('(Y)')}
-            className="h-9 w-9 items-center justify-center"
-          >
-            <Image source={likeIcon} style={{ width: 28, height: 28 }} resizeMode="contain" />
-          </Pressable>
-        )}
-      </View>
       )}
+      <ChatInputBar
+        ref={composerRef}
+        hidden={pendingAudio != null}
+        refocusOnSend={openTab == null}
+        editing={editing != null}
+        placeholder={t('chat.messageInputPlaceholder', { name: title })}
+        onSend={(text) => void send(text)}
+        onTyping={notifyTyping}
+        onFocusInput={closeAttachTab}
+      />
 
       <AttachmentBar
         openTab={openTab}
-        bottomInset={keyboardHeight > 0 ? 0 : insets.bottom}
-        onToggleTab={(tab) => setOpenTab((c) => (c === tab ? null : tab))}
+        bottomInset={bottomBarInset}
+        onToggleTab={(tab) => {
+          if (openTab !== tab) Keyboard.dismiss();
+          setOpenTab(openTab === tab ? null : tab);
+        }}
         onPickEmoji={(code) => composerRef.current?.insertCode(code, true)}
         onBackspace={() => composerRef.current?.backspace()}
         onSendKul={(index) => {
@@ -672,6 +687,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
           setOpenTab(null);
         }}
         onPickImage={() => void pickAndSendImages()}
+        onPickCamera={() => void captureAndSendPhoto()}
         onRecorded={(recording) => {
           setOpenTab(null);
           setPendingAudio(recording);
@@ -807,6 +823,6 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         onConfirm={() => void handleBlock()}
         onCancel={() => setBlockOpen(false)}
       />
-    </KeyboardAvoidingView>
+    </KeyboardView>
   );
 }

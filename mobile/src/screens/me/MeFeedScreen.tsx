@@ -12,11 +12,14 @@ import { useToastStore } from '@ola/shared/stores/toastStore';
 import { AuthService, MeService, SocketService } from '@ola/shared/services';
 import { createTimeFormatter, formatDateDMY, isSameDay, toApiError } from '@ola/shared/lib';
 import type { MeFeedFilter, Post, PostReaction } from '@ola/shared/types';
+import { EDIT_WINDOW_MS } from '@ola/shared/constants';
 import { useMeLocalStore } from '../../store/meLocalStore';
 import { useMediaViewerStore } from '../../store/mediaViewerStore';
+import { useHorizontalSwipe } from '../../hooks/useHorizontalSwipe';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { MePostCard } from './MePostCard';
 import { ListOptionDialog, type ListOption } from '../../components/ListOptionDialog';
+import { ReportDialog } from '../../components/ReportDialog';
 import { MeQuickCommentBar } from './MeQuickCommentBar';
 import { MeComposerModal } from './MeComposerModal';
 import { MeLeftDrawer } from './MeLeftDrawer';
@@ -48,11 +51,10 @@ const tabFollower = require('../../assets/icons/me/ic_action_tab_follower.png');
 const tabFollowerActive = require('../../assets/icons/me/ic_action_tab_follower_selected.png');
 
 const ME_TABS = [
-  { key: 'community' as const, icon: tabOla, iconActive: tabOlaActive },
-  { key: 'personal' as const, icon: tabFollower, iconActive: tabFollowerActive },
+  { key: 'community' as const, labelKey: 'me.tabCommunity' as const, icon: tabOla, iconActive: tabOlaActive },
+  { key: 'personal' as const, labelKey: 'me.tabPersonal' as const, icon: tabFollower, iconActive: tabFollowerActive },
 ];
 
-const EDIT_WINDOW_MS = 60 * 60 * 1000;
 
 export function MeFeedScreen() {
   const { t, i18n } = useTranslation();
@@ -89,6 +91,7 @@ export function MeFeedScreen() {
   const [composerOpen, setComposerOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [commentPostId, setCommentPostId] = useState<string | null>(null);
+  const [commentFocusInput, setCommentFocusInput] = useState(false);
   const [likersPostId, setLikersPostId] = useState<string | null>(null);
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileUsername, setProfileUsername] = useState<string | null>(null);
@@ -97,6 +100,7 @@ export function MeFeedScreen() {
   const [likedOpen, setLikedOpen] = useState(false);
   const [marriageOpen, setMarriageOpen] = useState(false);
   const [menuPostId, setMenuPostId] = useState<string | null>(null);
+  const [reportPostId, setReportPostId] = useState<string | null>(null);
   const [quickCommentPostId, setQuickCommentPostId] = useState<string | null>(null);
   const [quickSubmitting, setQuickSubmitting] = useState(false);
   const [deletePostId, setDeletePostId] = useState<string | null>(null);
@@ -152,6 +156,12 @@ export function MeFeedScreen() {
 
   const comingSoon = () => pushToast('info', t('me.comingSoon'));
   const handleReaction = (id: string, type: PostReaction) => void toggleReaction(id, type);
+  const swipeHandlers = useHorizontalSwipe({ onSwipeLeft: () => setSearchOpen(true) });
+
+  function openComments(id: string, focusInput?: boolean) {
+    setCommentFocusInput(focusInput === true);
+    setCommentPostId(id);
+  }
 
   function requestEdit(post: Post) {
     const createdAtMs = post.createdAt != null ? new Date(post.createdAt).getTime() : 0;
@@ -191,6 +201,7 @@ export function MeFeedScreen() {
       },
       { key: 'save', label: t('me.menuSave'), onSelect: () => pushToast('success', t('me.saveSuccess')) },
       { key: 'share', label: t('me.menuShare'), onSelect: () => pushToast('success', t('me.shareSuccess')) },
+      { key: 'report', label: t('report.post'), onSelect: () => setReportPostId(post.id) },
       {
         key: 'block',
         label: t('me.menuBlock'),
@@ -233,7 +244,12 @@ export function MeFeedScreen() {
         className="flex-row items-center bg-ola-primary px-2"
         style={{ paddingTop: insets.top, borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.12)' }}
       >
-        <Pressable onPress={() => setDrawerOpen(true)} className="h-12 w-10 items-center justify-center">
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('me.openMenu')}
+          onPress={() => setDrawerOpen(true)}
+          className="h-12 w-10 items-center justify-center"
+        >
           <Image source={menuIcon} style={{ width: 20, height: 20 }} resizeMode="contain" />
         </Pressable>
         <View className="flex-1 flex-row items-center justify-center gap-8">
@@ -242,6 +258,9 @@ export function MeFeedScreen() {
             return (
               <Pressable
                 key={item.key}
+                accessibilityRole="button"
+                accessibilityLabel={t(item.labelKey)}
+                accessibilityState={{ selected: active }}
                 onPress={() => setTab(item.key)}
                 className="h-12 w-12 items-center justify-center"
                 style={{ opacity: active ? 1 : 0.6 }}
@@ -255,7 +274,12 @@ export function MeFeedScreen() {
             );
           })}
         </View>
-        <Pressable onPress={() => setNotifOpen(true)} className="h-12 w-10 items-center justify-center">
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('me.notifTitle')}
+          onPress={() => setNotifOpen(true)}
+          className="h-12 w-10 items-center justify-center"
+        >
           <View>
             <Image source={bellIcon} style={{ width: 24, height: 24, tintColor: '#ffffff' }} resizeMode="contain" />
             {unreadCount > 0 && (
@@ -270,12 +294,23 @@ export function MeFeedScreen() {
             )}
           </View>
         </Pressable>
-        <Pressable onPress={() => setSearchOpen(true)} className="h-12 w-10 items-center justify-center">
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('me.openSearch')}
+          onPress={() => setSearchOpen(true)}
+          className="h-12 w-10 items-center justify-center"
+        >
           <Image source={searchIcon} style={{ width: 24, height: 24, tintColor: '#ffffff' }} resizeMode="contain" />
         </Pressable>
       </View>
 
-      <View className="relative flex-1">
+      <View
+        className="relative flex-1"
+        onTouchStart={swipeHandlers.onTouchStart}
+        onTouchMove={swipeHandlers.onTouchMove}
+        onTouchEnd={swipeHandlers.onTouchEnd}
+        onTouchCancel={swipeHandlers.onTouchCancel}
+      >
         {loading && posts.length === 0 ? (
           <View className="flex-1 items-center justify-center">
             <ActivityIndicator color="#7cb342" size="large" />
@@ -312,7 +347,7 @@ export function MeFeedScreen() {
                 onToggleLike={(id) => handleReaction(id, 'like')}
                 onToggleDislike={(id) => handleReaction(id, 'dislike')}
                 onOpenProfile={openProfile}
-                onOpenComments={(id) => setCommentPostId(id)}
+                onOpenComments={openComments}
                 onQuickComment={(id) => setQuickCommentPostId(id)}
                 onOpenMenu={(id) => setMenuPostId(id)}
                 onOpenLikers={(id) => setLikersPostId(id)}
@@ -323,6 +358,8 @@ export function MeFeedScreen() {
         )}
 
         <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('me.composerTitle')}
           onPress={() => setComposerOpen(true)}
           className="absolute h-14 w-14 items-center justify-center rounded-full bg-ola-primary"
           style={{
@@ -384,6 +421,13 @@ export function MeFeedScreen() {
         onClose={() => setMenuPostId(null)}
       />
 
+      {reportPostId != null && (
+        <ReportDialog
+          target={{ type: 'post', id: reportPostId }}
+          onClose={() => setReportPostId(null)}
+        />
+      )}
+
       {quickCommentPostId != null && (
         <MeQuickCommentBar
           contextLabel={
@@ -418,6 +462,7 @@ export function MeFeedScreen() {
         <MeCommentSheet
           post={commentPost}
           language={i18n.language}
+          autoFocusInput={commentFocusInput}
           onClose={() => setCommentPostId(null)}
           onToggleLike={(id) => handleReaction(id, 'like')}
           onToggleDislike={(id) => handleReaction(id, 'dislike')}

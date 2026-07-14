@@ -27,6 +27,7 @@ import {
   toApiError,
 } from '@ola/shared/lib';
 import type { FollowUser, Post, PublicProfile } from '@ola/shared/types';
+import { EDIT_WINDOW_MS } from '@ola/shared/constants';
 import { useMeLocalStore } from '../../store/meLocalStore';
 import { pickSingleImage } from '../../lib/imagePicker';
 import { MediaViewerModal } from '../../components/MediaViewer';
@@ -37,10 +38,12 @@ import { MePostCard } from '../me/MePostCard';
 import { MeCommentSheet } from '../me/MeCommentSheet';
 import { MeLikersDialog } from '../me/MeLikersDialog';
 import { ListOptionDialog, type ListOption } from '../../components/ListOptionDialog';
+import { ReportDialog } from '../../components/ReportDialog';
 import { MeQuickCommentBar } from '../me/MeQuickCommentBar';
 import { MeComposerModal } from '../me/MeComposerModal';
 import { FollowingListOverlay } from './FollowingListOverlay';
 import { PeerVipStoreDialog } from './PeerVipStoreDialog';
+import { ScreenHeader } from '../../components/ScreenHeader';
 
 const checkedIcon = require('../../assets/icons/profile/ic_checked.png');
 const kissIcon = require('../../assets/icons/profile/sticker_kiss.png');
@@ -61,7 +64,6 @@ const cameraIcon = require('../../assets/icons/profile/ic_action_camera.png');
 
 const DEFAULT_COVER_COLOR = '#33691e';
 const MIN_AVATAR_SOURCE = 100;
-const EDIT_WINDOW_MS = 60 * 60 * 1000;
 
 const CARD_SHADOW = {
   shadowColor: '#000',
@@ -140,8 +142,10 @@ export function UserProfileScreen({ username, language, onClose, onOpenProfile, 
   const [fans, setFans] = useState(0);
   const [kisses, setKisses] = useState(0);
   const [commentPostId, setCommentPostId] = useState<string | null>(null);
+  const [commentFocusInput, setCommentFocusInput] = useState(false);
   const [likersPostId, setLikersPostId] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
   const [followingOpen, setFollowingOpen] = useState(false);
   const [followersOpen, setFollowersOpen] = useState(false);
   const [menuPostId, setMenuPostId] = useState<string | null>(null);
@@ -468,19 +472,13 @@ export function UserProfileScreen({ username, language, onClose, onOpenProfile, 
     : [
         { key: 'block', label: blockedByMe ? t('profile.unblock') : t('profile.block'), danger: true, onSelect: blockAction },
         { key: 'copy', label: t('profile.copyNick'), onSelect: () => Clipboard.setString(nick) },
-        { key: 'report', label: t('profile.report'), onSelect: comingSoon },
+        { key: 'report', label: t('profile.report'), onSelect: () => setReportOpen(true) },
       ];
 
   return (
     <Modal visible transparent animationType="slide" onRequestClose={onClose}>
       <View className="flex-1 bg-[#f3f3f3]">
-        <View className="flex-row items-center bg-ola-primary px-1" style={{ paddingTop: insets.top }}>
-          <Pressable onPress={onClose} className="h-12 w-10 items-center justify-center">
-            <Text className="text-2xl leading-none text-white">‹</Text>
-          </Pressable>
-          <Text numberOfLines={1} className="flex-1 text-lg font-medium text-white">{nick}</Text>
-          <View className="w-10" />
-        </View>
+        <ScreenHeader title={nick} onBack={onClose} />
 
         {loading ? (
           <ActivityIndicator className="py-16" color="#7cb342" size="large" />
@@ -703,7 +701,10 @@ export function UserProfileScreen({ username, language, onClose, onOpenProfile, 
                   onToggleLike={(id) => void toggleReaction(id, 'like')}
                   onToggleDislike={(id) => void toggleReaction(id, 'dislike')}
                   onOpenProfile={onOpenProfile}
-                  onOpenComments={(id) => setCommentPostId(id)}
+                  onOpenComments={(id, focusInput) => {
+                    setCommentFocusInput(focusInput === true);
+                    setCommentPostId(id);
+                  }}
                   onQuickComment={(id) => setQuickCommentPostId(id)}
                   onOpenMenu={(id) => setMenuPostId(id)}
                   onOpenLikers={(id) => setLikersPostId(id)}
@@ -719,6 +720,7 @@ export function UserProfileScreen({ username, language, onClose, onOpenProfile, 
           <MeCommentSheet
             post={commentPost}
             language={language}
+            autoFocusInput={commentFocusInput}
             onClose={() => setCommentPostId(null)}
             onToggleLike={(id) => void toggleReaction(id, 'like')}
             onToggleDislike={(id) => void toggleReaction(id, 'dislike')}
@@ -800,10 +802,8 @@ export function UserProfileScreen({ username, language, onClose, onOpenProfile, 
           <MeComposerModal
             visible
             editPost={editingPost}
-            onClose={() => {
-              setEditingPost(null);
-              void reloadPosts();
-            }}
+            onSaved={() => void reloadPosts()}
+            onClose={() => setEditingPost(null)}
           />
         )}
 
@@ -824,6 +824,13 @@ export function UserProfileScreen({ username, language, onClose, onOpenProfile, 
           index={viewer?.index ?? 0}
           onClose={() => setViewer(null)}
         />
+
+        {reportOpen && profile != null && (
+          <ReportDialog
+            target={{ type: 'account', id: profile.id }}
+            onClose={() => setReportOpen(false)}
+          />
+        )}
 
         {vipStoreOpen && profile != null && (
           <PeerVipStoreDialog

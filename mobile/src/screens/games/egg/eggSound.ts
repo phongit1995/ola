@@ -1,24 +1,5 @@
-import Sound from 'react-native-sound';
+import { createSoundPlayer } from '../../../lib/sound';
 
-let smashSound: Sound | null = null;
-let loadFailed = false;
+const smashSound = createSoundPlayer(require('../../../assets/sounds/smash.wav'), 'soundGame');
 
-function ensureSmashSound(): Sound | null {
-  if (smashSound != null || loadFailed) return smashSound;
-  smashSound = new Sound(require('../../../assets/sounds/smash.wav'), (error) => {
-    if (error) {
-      loadFailed = true;
-      smashSound = null;
-    }
-  });
-  return smashSound;
-}
-
-export function playSmashSound() {
-  const sound = ensureSmashSound();
-  if (sound == null) return;
-  sound.stop(() => {
-    sound.setCurrentTime(0);
-    sound.play();
-  });
-}
+export const playSmashSound = smashSound.play;

@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Modal, Pressable, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ActivityIndicator, Modal, Text, View } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { MeService } from '@ola/shared/services';
 import { applyPostReaction } from '@ola/shared/stores/postHelpers';
@@ -11,6 +10,7 @@ import type { Post } from '@ola/shared/types';
 import { MePostCard } from './MePostCard';
 import { MeCommentSheet } from './MeCommentSheet';
 import { MeLikersDialog } from './MeLikersDialog';
+import { ScreenHeader } from '../../components/ScreenHeader';
 
 interface MeLikedPostsScreenProps {
   language: string;
@@ -20,11 +20,11 @@ interface MeLikedPostsScreenProps {
 
 export function MeLikedPostsScreen({ language, onClose, onOpenProfile }: MeLikedPostsScreenProps) {
   const { t } = useTranslation();
-  const insets = useSafeAreaInsets();
   const push = useToastStore((s) => s.push);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [commentPostId, setCommentPostId] = useState<string | null>(null);
+  const [commentFocusInput, setCommentFocusInput] = useState(false);
   const [likersPostId, setLikersPostId] = useState<string | null>(null);
   const formatTime = useMemo(() => createTimeFormatter(language), [language]);
 
@@ -81,13 +81,7 @@ export function MeLikedPostsScreen({ language, onClose, onOpenProfile }: MeLiked
   return (
     <Modal visible transparent animationType="slide" onRequestClose={onClose}>
       <View className="flex-1 bg-[#eceff1]">
-        <View className="flex-row items-center bg-ola-primary px-2" style={{ paddingTop: insets.top }}>
-          <Pressable onPress={onClose} className="h-12 w-10 items-center justify-center">
-            <Text className="text-2xl leading-none text-white">‹</Text>
-          </Pressable>
-          <Text className="flex-1 text-lg font-medium text-white">{t('me.drawerLikes')}</Text>
-          <View className="w-10" />
-        </View>
+        <ScreenHeader title={t('me.drawerLikes')} onBack={onClose} />
 
         {loading && posts.length === 0 ? (
           <ActivityIndicator className="py-10" color="#7cb342" size="large" />
@@ -106,7 +100,10 @@ export function MeLikedPostsScreen({ language, onClose, onOpenProfile }: MeLiked
                 onToggleLike={(id) => void toggleReaction(id, 'like')}
                 onToggleDislike={(id) => void toggleReaction(id, 'dislike')}
                 onOpenProfile={onOpenProfile}
-                onOpenComments={(id) => setCommentPostId(id)}
+                onOpenComments={(id, focusInput) => {
+                  setCommentFocusInput(focusInput === true);
+                  setCommentPostId(id);
+                }}
                 onOpenLikers={(id) => setLikersPostId(id)}
               />
             )}
@@ -117,6 +114,7 @@ export function MeLikedPostsScreen({ language, onClose, onOpenProfile }: MeLiked
           <MeCommentSheet
             post={commentPost}
             language={language}
+            autoFocusInput={commentFocusInput}
             onClose={() => setCommentPostId(null)}
             onToggleLike={(id) => void toggleReaction(id, 'like')}
             onToggleDislike={(id) => void toggleReaction(id, 'dislike')}

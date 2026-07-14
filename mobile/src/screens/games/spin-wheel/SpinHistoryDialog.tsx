@@ -23,7 +23,7 @@ import {
   HISTORY_TITLE_STYLE,
 } from './spinWheelStyles';
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 8;
 const FILTERS: WheelSpinHistoryFilter[] = ['all', 'win', 'miss'];
 
 interface SpinHistoryDialogProps {
@@ -164,8 +164,8 @@ export function SpinHistoryDialog({ onClose }: SpinHistoryDialogProps) {
               top: 0,
               bottom: 0,
               paddingHorizontal: panelWidth * 0.09,
-              paddingTop: panelHeight * 0.15,
-              paddingBottom: panelHeight * 0.08,
+              paddingTop: panelHeight * 0.105,
+              paddingBottom: panelHeight * 0.05,
             }}
           >
             <View
@@ -268,6 +268,7 @@ export function SpinHistoryDialog({ onClose }: SpinHistoryDialogProps) {
                           alignItems: 'center',
                           justifyContent: 'space-between',
                           gap: 8,
+                          paddingVertical: 2,
                           overflow: 'hidden',
                           borderBottomWidth: 1,
                           borderBottomColor: 'rgba(246,207,203,0.7)',
@@ -281,13 +282,13 @@ export function SpinHistoryDialog({ onClose }: SpinHistoryDialogProps) {
                             flexShrink: 1,
                           }}
                         >
-                          <View style={{ width: 40, alignItems: 'center' }}>
+                          <View style={{ width: 36, alignItems: 'center' }}>
                             {outcome.vipTypeId != null ? (
-                              <VipIconImage typeId={outcome.vipTypeId} size={36} rounded />
+                              <VipIconImage typeId={outcome.vipTypeId} size={32} rounded />
                             ) : outcome.iconSource != null ? (
                               <Image
                                 source={outcome.iconSource}
-                                style={{ width: 36, height: 36 }}
+                                style={{ width: 32, height: 32 }}
                                 resizeMode="contain"
                               />
                             ) : null}
@@ -333,7 +334,7 @@ export function SpinHistoryDialog({ onClose }: SpinHistoryDialogProps) {
 
             <View
               style={{
-                marginTop: 8,
+                marginTop: 6,
                 flexDirection: 'row',
                 alignItems: 'center',
                 justifyContent: 'center',

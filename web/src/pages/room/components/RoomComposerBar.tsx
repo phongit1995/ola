@@ -73,7 +73,6 @@ export const RoomComposerBar = forwardRef<RoomComposerHandle, RoomComposerBarPro
       onBeforeSend();
       setDraft('');
       composerRef.current?.reset();
-      closeAttachPanel();
       try {
         await onSendText(trimmed);
       } catch {

@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Clipboard from '@react-native-clipboard/clipboard';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { buildVietQrImageUrl, fillMemoTemplate, formatKen, formatVnd } from '@ola/shared/lib';
@@ -10,6 +9,7 @@ import { useToastStore } from '@ola/shared/stores/toastStore';
 import { useTopupConfigStore } from '@ola/shared/stores/topupConfigStore';
 import type { RootStackParamList } from '../../navigation/types';
 import { ROOT_ROUTES } from '../../navigation/routes';
+import { ScreenHeader } from '../../components/ScreenHeader';
 
 const MIN_AMOUNT = 10_000;
 const STEP_AMOUNT = 1_000;
@@ -54,7 +54,6 @@ type Props = NativeStackScreenProps<RootStackParamList, typeof ROOT_ROUTES.BuyKe
 
 export function BuyKenScreen({ navigation }: Props) {
   const { t } = useTranslation();
-  const insets = useSafeAreaInsets();
   const user = useAuthStore((s) => s.user);
   const push = useToastStore((s) => s.push);
 
@@ -110,19 +109,7 @@ export function BuyKenScreen({ navigation }: Props) {
 
   return (
     <View className="flex-1" style={{ backgroundColor: '#ececec' }}>
-      <View className="bg-ola-primary" style={{ paddingTop: insets.top }}>
-        <View className="h-12 flex-row items-center gap-2 px-2">
-          <Pressable
-            className="h-9 w-9 items-center justify-center rounded-full active:bg-white/15"
-            onPress={() => navigation.goBack()}
-          >
-            <Text className="text-2xl leading-none text-white">‹</Text>
-          </Pressable>
-          <Text className="flex-1 text-lg font-medium text-white" numberOfLines={1}>
-            {t('ken.buy.title')}
-          </Text>
-        </View>
-      </View>
+      <ScreenHeader title={t('ken.buy.title')} onBack={() => navigation.goBack()} />
 
       <ScrollView className="flex-1" contentContainerClassName="pb-6" keyboardShouldPersistTaps="handled">
         <View

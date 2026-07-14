@@ -158,9 +158,17 @@ export const useMeFeedStore = create<MeFeedState>((set, get) => ({
   updatePost: async (id, payload, files, imageUrls) => {
     try {
       const uploaded = files.length > 0 ? (await MeService.uploadImages(files)).images : [];
-      const urlImages = imageUrls.map((url) => ({ url }));
+      const existingImages = get().posts.find((post) => post.id === id)?.images ?? [];
+      const urlImages = imageUrls.map(
+        (url) => existingImages.find((image) => image.url === url) ?? { url }
+      );
       const images = [...urlImages, ...uploaded];
-      const updated = await MeService.update(id, { ...payload, images });
+      const updated = await MeService.update(id, {
+        ...payload,
+        sticker: payload.sticker ?? '',
+        clearCheckIn: payload.checkIn == null,
+        images,
+      });
       set((state) => ({ posts: replacePost(state.posts, updated) }));
       toast.success(i18n.t('me.editSuccess'));
       return updated;

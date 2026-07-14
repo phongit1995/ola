@@ -66,7 +66,7 @@ export function AddContactDialog({ onClose, onOpenProfile }: AddContactDialogPro
     }
   }
 
-  function RelationButton({ user }: { user: UserSearchResult }) {
+  function renderRelationButton(user: UserSearchResult) {
     const busy = busyId === user.id;
     const disabledStyle = { borderWidth: 1, borderColor: 'rgba(0,0,0,0.12)' } as const;
     if (acceptedIds.includes(user.id) || user.relationship === 'friend') {
@@ -163,7 +163,7 @@ export function AddContactDialog({ onClose, onOpenProfile }: AddContactDialogPro
               </Text>
             </View>
           </Pressable>
-          <RelationButton user={item} />
+          {renderRelationButton(item)}
         </View>
       ))}
     </UserListDialog>

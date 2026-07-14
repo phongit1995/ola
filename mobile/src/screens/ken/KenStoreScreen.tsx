@@ -12,6 +12,7 @@ import { ROOT_ROUTES } from '../../navigation/routes';
 import { KenCoin } from './KenCoin';
 import { KenHistorySection } from './KenHistorySection';
 import { TransferKenDialog } from './TransferKenDialog';
+import { ScreenHeader } from '../../components/ScreenHeader';
 
 const KEN_LOW_THRESHOLD = 10_000;
 const MUTED = 'rgba(0,0,0,0.54)';
@@ -63,19 +64,7 @@ export function KenStoreScreen({ navigation }: Props) {
 
   return (
     <View className="flex-1 bg-white">
-      <View className="bg-ola-primary" style={{ paddingTop: insets.top }}>
-        <View className="h-12 flex-row items-center gap-2 px-2">
-          <Pressable
-            className="h-9 w-9 items-center justify-center rounded-full active:bg-white/15"
-            onPress={() => navigation.goBack()}
-          >
-            <Text className="text-2xl leading-none text-white">‹</Text>
-          </Pressable>
-          <Text className="flex-1 text-lg font-medium text-white" numberOfLines={1}>
-            {t('ken.title')}
-          </Text>
-        </View>
-      </View>
+      <ScreenHeader title={t('ken.title')} onBack={() => navigation.goBack()} />
 
       <ScrollView
         className="flex-1"

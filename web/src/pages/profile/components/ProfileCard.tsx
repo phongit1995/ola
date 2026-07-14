@@ -20,6 +20,7 @@ import { readImageSize } from '../imageSize';
 import { AVATAR_ASPECT, COVER_ASPECT, MIN_AVATAR_SOURCE } from '../constants';
 
 interface ProfileCardProps {
+  userId: string;
   profile: UserProfile;
   relationship: RelationshipInfo;
   actions: ProfileActions;
@@ -41,6 +42,7 @@ function InfoRow({ icon, text }: { icon: string; text: React.ReactNode }) {
 }
 
 export function ProfileCard({
+  userId,
   profile,
   relationship,
   actions,
@@ -241,6 +243,7 @@ export function ProfileCard({
       <div className="mx-4 h-px bg-black/12" />
 
       <RelationButtons
+        userId={userId}
         nick={profile.nick}
         isSelf={profile.isSelf}
         onPostMe={onPostMe}

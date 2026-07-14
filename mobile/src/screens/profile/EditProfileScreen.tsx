@@ -4,7 +4,6 @@ import {
   ActivityIndicator,
   Image,
   ImageBackground,
-  KeyboardAvoidingView,
   Modal,
   Platform,
   Pressable,
@@ -13,6 +12,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { KeyboardView } from '../../components/KeyboardView';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -27,6 +27,7 @@ import { Avatar } from '../../components/Avatar';
 import { pickCroppedImage } from '../../lib/imagePicker';
 import { ChangePasswordDialog } from './ChangePasswordDialog';
 import { CoverPreviewOverlay } from './CoverPreviewOverlay';
+import { ScreenHeader } from '../../components/ScreenHeader';
 
 const cameraIcon = require('../../assets/icons/profile/ic_action_camera.png');
 const lockIcon = require('../../assets/icons/profile/ic_lock.png');
@@ -186,23 +187,21 @@ export function EditProfileScreen({ navigation }: Props) {
   }
 
   return (
-    <KeyboardAvoidingView className="flex-1 bg-white" behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <View
-        className="flex-row items-center gap-2 bg-ola-primary px-2"
-        style={{ paddingTop: insets.top, height: 48 + insets.top, borderBottomWidth: 1, borderBottomColor: DIVIDER }}
-      >
-        <Pressable className="h-9 w-9 items-center justify-center rounded-full active:bg-white/15" onPress={onClose}>
-          <Text className="text-2xl leading-none text-white">‹</Text>
-        </Pressable>
-        <Text className="flex-1 text-lg font-medium text-white" numberOfLines={1}>{t('profileEdit.title')}</Text>
-        <Pressable
-          onPress={() => setPasswordOpen(true)}
-          className="h-8 flex-row items-center gap-1 rounded-full bg-white/15 px-2.5 active:bg-white/25"
-        >
-          <Image source={lockIcon} style={{ width: 16, height: 16 }} resizeMode="contain" />
-          <Text className="text-xs font-medium text-white">{t('changePassword.title')}</Text>
-        </Pressable>
-      </View>
+    <KeyboardView className="flex-1 bg-white">
+      <ScreenHeader
+        title={t('profileEdit.title')}
+        onBack={onClose}
+        style={{ borderBottomWidth: 1, borderBottomColor: DIVIDER }}
+        right={
+          <Pressable
+            onPress={() => setPasswordOpen(true)}
+            className="h-8 flex-row items-center gap-1 rounded-full bg-white/15 px-2.5 active:bg-white/25"
+          >
+            <Image source={lockIcon} style={{ width: 16, height: 16 }} resizeMode="contain" />
+            <Text className="text-xs font-medium text-white">{t('changePassword.title')}</Text>
+          </Pressable>
+        }
+      />
 
         <ScrollView className="flex-1" keyboardShouldPersistTaps="handled">
           <ImageBackground
@@ -407,6 +406,6 @@ export function EditProfileScreen({ navigation }: Props) {
             }}
           />
         )}
-      </KeyboardAvoidingView>
+      </KeyboardView>
   );
 }

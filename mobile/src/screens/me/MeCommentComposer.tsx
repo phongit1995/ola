@@ -1,9 +1,10 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Image, Pressable, Text, View } from 'react-native';
+import { Image, Keyboard, Pressable, Text, View } from 'react-native';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { ChatComposer, type ChatComposerHandle } from '../../components/ChatComposer';
-import { SmileyKulPanel } from '../room/SmileyKulPanel';
+import { useLastKeyboardHeight } from '../../hooks/useKeyboardHeight';
+import { SmileyKulPanel, SMILEY_PANEL_MIN_CONTENT_HEIGHT } from '../room/SmileyKulPanel';
 import { Avatar } from '../../components/Avatar';
 
 const smileyIcon = require('../../assets/icons/chat/ic_smiley.png');
@@ -23,7 +24,7 @@ interface MeCommentComposerProps {
 }
 
 export const MeCommentComposer = forwardRef<MeCommentComposerHandle, MeCommentComposerProps>(
-  function MeCommentComposer(
+  function MeCommentComposerInner(
     { submitting, onSubmit, autoFocus, initialDraft = '', replyingTo, onCancelReply },
     ref
   ) {
@@ -34,6 +35,17 @@ export const MeCommentComposer = forwardRef<MeCommentComposerHandle, MeCommentCo
   const composerRef = useRef<ChatComposerHandle>(null);
   const myName = me?.username ?? t('home.guest');
   const canSend = draft.trim() !== '' && !submitting;
+  const lastKeyboardHeight = useLastKeyboardHeight();
+  const panelContentHeight = Math.max(SMILEY_PANEL_MIN_CONTENT_HEIGHT, lastKeyboardHeight - 44);
+
+  function toggleSmiley() {
+    if (smileyOpen) {
+      setSmileyOpen(false);
+      return;
+    }
+    Keyboard.dismiss();
+    setSmileyOpen(true);
+  }
 
   useEffect(() => {
     if (autoFocus === true) {
@@ -48,10 +60,7 @@ export const MeCommentComposer = forwardRef<MeCommentComposerHandle, MeCommentCo
   async function submit() {
     if (!canSend) return;
     const ok = await onSubmit(draft);
-    if (ok) {
-      setDraft('');
-      setSmileyOpen(false);
-    }
+    if (ok) setDraft('');
   }
 
   return (
@@ -87,7 +96,7 @@ export const MeCommentComposer = forwardRef<MeCommentComposerHandle, MeCommentCo
           />
         </View>
         <Pressable
-          onPress={() => setSmileyOpen((open) => !open)}
+          onPress={toggleSmiley}
           className="h-9 w-9 items-center justify-center"
           style={{ opacity: smileyOpen ? 1 : 0.6 }}
         >
@@ -110,6 +119,7 @@ export const MeCommentComposer = forwardRef<MeCommentComposerHandle, MeCommentCo
       {smileyOpen && (
         <SmileyKulPanel
           hideKul
+          contentHeight={panelContentHeight}
           onPickEmoji={(code) => composerRef.current?.insertCode(code, true)}
           onBackspace={() => composerRef.current?.backspace()}
         />

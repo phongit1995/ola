@@ -186,7 +186,7 @@ interface MePostCardProps {
   onToggleLike: (id: string) => void;
   onToggleDislike: (id: string) => void;
   onOpenProfile?: (author: string, color: string) => void;
-  onOpenComments?: (id: string) => void;
+  onOpenComments?: (id: string, focusInput?: boolean) => void;
   onQuickComment?: (id: string) => void;
   onOpenMenu?: (id: string) => void;
   onOpenLikers?: (id: string) => void;
@@ -223,7 +223,7 @@ function MePostCardComponent({
 
   function handleCommentIcon() {
     if (onQuickComment != null) onQuickComment(post.id);
-    else onOpenComments?.(post.id);
+    else onOpenComments?.(post.id, true);
   }
 
   const likeScale = useSharedValue(1);

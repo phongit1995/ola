@@ -33,6 +33,7 @@ import { ComposeDialog } from './ComposeDialog';
 import { ChangeAvatarDialog } from './ChangeAvatarDialog';
 import { ChangeCoverDialog } from './ChangeCoverDialog';
 import { ContactsPane } from './ContactsPane';
+import { useConversationsWithPresence, usePresenceListPolling } from '../../hooks/usePresence';
 
 const sentIcon = require('../../assets/icons/chat/ic_message_sent.png');
 const kulIcon = require('../../assets/icons/chat/ic_kul.png');
@@ -42,6 +43,10 @@ const composeIcon = require('../../assets/icons/chat/ic_action_compose_message.p
 const SWIPE_MAX = 88;
 const SWIPE_TRIGGER = 56;
 const DIVIDER = 'rgba(0,0,0,0.12)';
+
+function ConversationSeparator() {
+  return <View style={{ marginHorizontal: 16, height: 1, backgroundColor: DIVIDER }} />;
+}
 
 function displayName(conversation: Conversation): string {
   return (
@@ -230,7 +235,7 @@ export function ChatListScreen() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const conversations = useChatStore((s) => s.conversations);
+  const conversations = useConversationsWithPresence();
   const loading = useChatStore((s) => s.loadingConversations);
   const loadConversations = useChatStore((s) => s.loadConversations);
   const hideConversation = useChatStore((s) => s.hideConversation);
@@ -253,6 +258,8 @@ export function ChatListScreen() {
     void loadConversations();
   }, [loadConversations]);
 
+  usePresenceListPolling();
+
   const openConversation = useCallback(
     (id: string) => navigation.navigate(ROOT_ROUTES.ChatDetail, { conversationId: id }),
     [navigation]
@@ -265,6 +272,12 @@ export function ChatListScreen() {
     const conversation = await startDirect(userId);
     if (conversation != null && conversation.id !== '') {
       navigation.navigate(ROOT_ROUTES.ChatDetail, { conversationId: conversation.id });
+      return;
+    }
+    if (useChatStore.getState().draftRecipient != null) {
+      navigation.navigate(ROOT_ROUTES.ChatDetail, {});
+    } else {
+      pushToast('error', t('chat.actionError'));
     }
   }
 
@@ -355,9 +368,7 @@ export function ChatListScreen() {
           refreshControl={
             <RefreshControl refreshing={loading} onRefresh={() => void loadConversations()} />
           }
-          ItemSeparatorComponent={() => (
-            <View style={{ marginHorizontal: 16, height: 1, backgroundColor: DIVIDER }} />
-          )}
+          ItemSeparatorComponent={ConversationSeparator}
           ListEmptyComponent={
             <View className="gap-2 bg-white p-4">
               <Text className="text-base font-medium text-gray-900">

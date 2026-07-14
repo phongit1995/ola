@@ -17,6 +17,7 @@ import type { MePhoto } from '@ola/shared/types';
 import type { RootStackParamList } from '../../navigation/types';
 import { ROOT_ROUTES } from '../../navigation/routes';
 import { useMediaViewerStore } from '../../store/mediaViewerStore';
+import { ScreenHeader } from '../../components/ScreenHeader';
 
 const PAGE_SIZE = 50;
 const MUTED = 'rgba(0,0,0,0.45)';
@@ -143,26 +144,11 @@ export function MediaStoreScreen({ navigation }: Props) {
 
   return (
     <View className="flex-1" style={{ backgroundColor: '#fafafa' }}>
-      <View className="bg-ola-primary" style={{ paddingTop: insets.top }}>
-        <View className="h-12 flex-row items-center gap-2 px-2">
-          <Pressable
-            className="h-9 w-9 items-center justify-center rounded-full active:bg-white/15"
-            onPress={() => navigation.goBack()}
-          >
-            <Text className="text-2xl leading-none text-white">‹</Text>
-          </Pressable>
-          <View className="min-w-0 flex-1">
-            <Text className="text-lg font-medium text-white" numberOfLines={1}>
-              {t('media.title')}
-            </Text>
-            {hasPhotos && (
-              <Text className="text-xs text-white/70" numberOfLines={1}>
-                {t('media.count', { count: total })}
-              </Text>
-            )}
-          </View>
-        </View>
-      </View>
+      <ScreenHeader
+        title={t('media.title')}
+        subtitle={hasPhotos ? t('media.count', { count: total }) : undefined}
+        onBack={() => navigation.goBack()}
+      />
 
       {loading ? (
         <PhotoSkeleton />

@@ -663,6 +663,19 @@
     "viewAll": "Xem Tất Cả",
     "mePosts": "ME Đã Đăng"
   },
+  "report": {
+    "title": "Báo cáo",
+    "post": "Báo cáo bài viết",
+    "action": "Báo cáo",
+    "reasonSpam": "Spam / quảng cáo",
+    "reasonSensitive": "Nội dung nhạy cảm",
+    "reasonScam": "Lừa đảo",
+    "reasonHarassment": "Quấy rối / xúc phạm",
+    "reasonOther": "Khác",
+    "notePlaceholder": "Mô tả thêm (không bắt buộc)",
+    "send": "Gửi",
+    "sent": "Cảm ơn bạn đã gửi báo cáo đến Ola"
+  },
   "profileEdit": {
     "title": "Thông tin cá nhân",
     "fullnameLabel": "Họ và tên của bạn",

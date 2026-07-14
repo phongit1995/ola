@@ -2,15 +2,13 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
   Pressable,
   ScrollView,
   Text,
   TextInput,
   View,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { KeyboardView } from '../../components/KeyboardView';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { VipService, UserService } from '@ola/shared/services';
 import { ApiError, formatKen, vipById, vipName } from '@ola/shared/lib';
@@ -24,6 +22,7 @@ import { Dialog } from '../../components/Dialog';
 import { Avatar } from '../../components/Avatar';
 import { ListOptionDialog, type ListOption } from '../../components/ListOptionDialog';
 import { VipIconImage } from './VipIconImage';
+import { ScreenHeader } from '../../components/ScreenHeader';
 
 export type BuyVipMode = 'buy' | 'give' | 'giveDays' | 'extend';
 
@@ -168,7 +167,6 @@ type Props = NativeStackScreenProps<RootStackParamList, typeof ROOT_ROUTES.BuyVi
 
 export function BuyVipScreen({ navigation, route }: Props) {
   const { t } = useTranslation();
-  const insets = useSafeAreaInsets();
   const user = useAuthStore((s) => s.user);
   const setUser = useAuthStore((s) => s.setUser);
   const refreshUser = useAuthStore((s) => s.refreshUser);
@@ -432,24 +430,11 @@ export function BuyVipScreen({ navigation, route }: Props) {
   }
 
   return (
-    <KeyboardAvoidingView
+    <KeyboardView
       className="flex-1"
       style={{ backgroundColor: '#ececec' }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <View className="bg-ola-primary" style={{ paddingTop: insets.top }}>
-        <View className="h-12 flex-row items-center gap-2 px-2">
-          <Pressable
-            className="h-9 w-9 items-center justify-center rounded-full active:bg-white/15"
-            onPress={() => navigation.goBack()}
-          >
-            <Text className="text-2xl leading-none text-white">‹</Text>
-          </Pressable>
-          <Text className="flex-1 text-lg font-medium text-white" numberOfLines={1}>
-            {t(MODE_TITLE[mode])}
-          </Text>
-        </View>
-      </View>
+      <ScreenHeader title={t(MODE_TITLE[mode])} onBack={() => navigation.goBack()} />
 
       <ScrollView className="flex-1" keyboardShouldPersistTaps="handled" contentContainerClassName="pb-6">
         <View className="flex-row gap-1 bg-white px-2 py-2">
@@ -628,6 +613,6 @@ export function BuyVipScreen({ navigation, route }: Props) {
         onCancel={() => setConfirmOpen(false)}
       />
 
-    </KeyboardAvoidingView>
+    </KeyboardView>
   );
 }

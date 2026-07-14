@@ -16,7 +16,7 @@ import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { activeVipTypeId, colorForName, isVipActive } from '@ola/shared/lib';
-import type { Friend, Relationship } from '@ola/shared/types';
+import type { Relationship } from '@ola/shared/types';
 import type { RootStackParamList } from '../../navigation/types';
 import { ROOT_ROUTES } from '../../navigation/routes';
 import { useMediaViewerStore } from '../../store/mediaViewerStore';
@@ -28,6 +28,9 @@ import { FriendRequestsScreen } from './FriendRequestsScreen';
 import { StatusEditDialog } from './StatusEditDialog';
 import { SuggestedFriendsScreen } from './SuggestedFriendsScreen';
 import { mapFriendsToContacts, SUGGESTED_FRIENDS, type Contact } from './contacts';
+import { useFriendsStore } from '@ola/shared/stores/friendsStore';
+import { useFriendsWithPresence } from '../../hooks/usePresence';
+import { VipBadge } from '../../components/VipBadge';
 
 const smileyIcon = require('../../assets/icons/chat/ola_smiley_online.png');
 const snapPicIcon = require('../../assets/icons/chat/icon_snap_pic.png');
@@ -83,9 +86,11 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
   const openViewer = useMediaViewerStore((s) => s.openViewer);
   const push = useToastStore((s) => s.push);
 
-  const [friends, setFriends] = useState<Friend[]>([]);
-  const [requests, setRequests] = useState<Relationship[]>([]);
-  const [loading, setLoading] = useState(true);
+  const friends = useFriendsWithPresence();
+  const requests = useFriendsStore((s) => s.requests);
+  const friendsLoading = useFriendsStore((s) => s.loading);
+  const friendsLoaded = useFriendsStore((s) => s.loaded);
+  const requestsLoading = useFriendsStore((s) => s.requestsLoading);
   const [query, setQuery] = useState('');
   const [menuContact, setMenuContact] = useState<Contact | null>(null);
   const [requestsOpen, setRequestsOpen] = useState(false);
@@ -100,20 +105,9 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
   }, []);
 
   useEffect(() => {
-    let active = true;
-    setLoading(true);
-    Promise.all([
-      RelationshipService.friends({ limit: 200 }).catch(() => ({ friends: [], total: 0 })),
-      RelationshipService.pending().catch(() => ({ relationships: [], total: 0 })),
-    ]).then(([friendsRes, pendingRes]) => {
-      if (!active) return;
-      setFriends(friendsRes.friends);
-      setRequests(pendingRes.relationships);
-      setLoading(false);
-    });
-    return () => {
-      active = false;
-    };
+    const store = useFriendsStore.getState();
+    store.ensureFriends();
+    store.loadRequests();
   }, []);
 
   const contacts = useMemo(() => mapFriendsToContacts(friends, t, now), [friends, t, now]);
@@ -139,21 +133,20 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
     const conversation = await startDirect(contact.id);
     if (conversation != null && conversation.id !== '') {
       navigation.navigate(ROOT_ROUTES.ChatDetail, { conversationId: conversation.id });
-    } else {
-      push('info', t('chat.comingSoon'));
+      return;
     }
-  }
-
-  async function reloadFriends() {
-    const result = await RelationshipService.friends({ limit: 200 }).catch(() => null);
-    if (result != null) setFriends(result.friends);
+    if (useChatStore.getState().draftRecipient != null) {
+      navigation.navigate(ROOT_ROUTES.ChatDetail, {});
+    } else {
+      push('error', t('chat.actionError'));
+    }
   }
 
   async function acceptRequest(relationship: Relationship) {
     try {
       await RelationshipService.respond(relationship.id, 'accept');
-      setRequests((prev) => prev.filter((item) => item.id !== relationship.id));
-      void reloadFriends();
+      useFriendsStore.getState().removeRequest(relationship.id);
+      void useFriendsStore.getState().loadFriends();
       push('success', t('chat.requestAccepted'));
     } catch {
       push('error', t('chat.requestActionError'));
@@ -163,7 +156,7 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
   async function declineRequest(relationship: Relationship) {
     try {
       await RelationshipService.respond(relationship.id, 'reject');
-      setRequests((prev) => prev.filter((item) => item.id !== relationship.id));
+      useFriendsStore.getState().removeRequest(relationship.id);
     } catch {
       push('error', t('chat.requestActionError'));
     }
@@ -262,17 +255,26 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
                 {requests.slice(0, 3).map((rel) => {
                   const requester = rel.requester;
                   const name = requester?.fullName || requester?.username || '';
-                  return requester?.avatar ? (
-                    <Image key={rel.id} source={{ uri: requester.avatar }} style={{ width: 28, height: 28, borderRadius: 4 }} />
-                  ) : (
-                    <View
-                      key={rel.id}
-                      className="h-7 w-7 items-center justify-center rounded"
-                      style={{ backgroundColor: colorForName(requester?.id ?? name) }}
-                    >
-                      <Text className="text-xs font-semibold text-white">
-                        {name.trim().charAt(0).toUpperCase() || '?'}
-                      </Text>
+                  const vipTypeId = activeVipTypeId(requester?.vipUsed, requester?.vipEndTime);
+                  return (
+                    <View key={rel.id} className="relative">
+                      {requester?.avatar ? (
+                        <Image source={{ uri: requester.avatar }} style={{ width: 28, height: 28, borderRadius: 4 }} />
+                      ) : (
+                        <View
+                          className="h-7 w-7 items-center justify-center rounded"
+                          style={{ backgroundColor: colorForName(requester?.id ?? name) }}
+                        >
+                          <Text className="text-xs font-semibold text-white">
+                            {name.trim().charAt(0).toUpperCase() || '?'}
+                          </Text>
+                        </View>
+                      )}
+                      {vipTypeId != null && (
+                        <View className="absolute" style={{ right: -4, bottom: -4 }}>
+                          <VipBadge typeId={vipTypeId} size={14} />
+                        </View>
+                      )}
                     </View>
                   );
                 })}
@@ -335,7 +337,7 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
           onPress={() => push('info', t('chat.comingSoon'))}
         />
 
-        {loading ? (
+        {friendsLoading && !friendsLoaded ? (
           <View className="items-center py-8">
             <ActivityIndicator color="#7cb342" />
           </View>
@@ -388,7 +390,7 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
       {requestsOpen && (
         <FriendRequestsScreen
           requests={requests}
-          loading={loading}
+          loading={requestsLoading}
           onAccept={acceptRequest}
           onDecline={declineRequest}
           onClose={() => setRequestsOpen(false)}

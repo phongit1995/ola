@@ -230,7 +230,7 @@ function RoomMessageGroupComponent({
   const lastIndex = group.messages.length - 1;
 
   return (
-    <div className="flex w-full flex-col gap-0.5">
+    <div className="flex w-full flex-col gap-0.5 [contain-intrinsic-size:auto_64px] [content-visibility:auto]">
       {group.showTime && <span className="text-center text-xs text-black/26">{time}</span>}
       {isOwn ? (
         <span className="mr-12 flex max-w-[80%] items-center gap-1 self-end text-sm text-black/54">
