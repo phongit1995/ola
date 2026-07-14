@@ -28,7 +28,7 @@ import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { useMediaViewerStore } from '../../store/mediaViewerStore';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { kulImageForText, kulToken } from '../../lib/kul';
-import { ChatComposer, type ChatComposerHandle } from '../../components/ChatComposer';
+import { ChatInputBar, type ChatInputBarHandle } from './ChatInputBar';
 import { RichTextView } from '../../components/RichTextView';
 import { useBottomBarInset } from '../../hooks/useBottomBarInset';
 import { useFocusPresence } from '../../hooks/usePresence';
@@ -47,7 +47,6 @@ import { usePeerCard } from './usePeerCard';
 import { MessageActionSheet, type AnchorRect, type MessageSheetAction } from '../room/MessageActionSheet';
 
 const backIcon = require('../../assets/icons/ic_back.png');
-const likeIcon = require('../../assets/icons/chat/smiley/smiley_35.png');
 const moreIcon = require('../../assets/icons/chat/ic_more_white.png');
 const deleteActionIcon = require('../../assets/icons/chat/ic_menu_delete.png');
 const editActionIcon = require('../../assets/icons/chat/ic_action_edit.png');
@@ -95,7 +94,6 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   const push = useToastStore((s) => s.push);
   const openViewer = useMediaViewerStore((s) => s.openViewer);
 
-  const [draft, setDraft] = useState('');
   const [openTab, setOpenTab] = useState<AttachTab | null>(null);
   const [transferKenOpen, setTransferKenOpen] = useState(false);
   const [transferVipDaysOpen, setTransferVipDaysOpen] = useState(false);
@@ -116,7 +114,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   const listRef = useRef<FlashListRef<Message>>(null);
   const stickToBottomRef = useRef(true);
   const sheetOpenRef = useRef(false);
-  const composerRef = useRef<ChatComposerHandle>(null);
+  const composerRef = useRef<ChatInputBarHandle>(null);
 
   useEffect(() => {
     if (conversationId != null) void openConversation(conversationId);
@@ -197,6 +195,8 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     }
   }, []);
 
+  const closeAttachTab = useCallback(() => setOpenTab(null), []);
+
   function handleScroll(event: NativeSyntheticEvent<NativeScrollEvent>) {
     const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
     stickToBottomRef.current = contentSize.height - contentOffset.y - layoutMeasurement.height < 80;
@@ -209,17 +209,13 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     if (editing != null) {
       const id = editing;
       setEditing(null);
-      setDraft('');
       await editMessage(id, trimmed);
       return;
     }
     stickToBottomRef.current = true;
-    setDraft('');
     setOpenTab(null);
     await sendText(trimmed);
   }
-
-  const isTyping = draft.trim() !== '';
 
   const openPeerProfile = () => {
     const peer = conversation?.otherUser;
@@ -237,14 +233,14 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   function startEdit(message: Message) {
     const content = message.content ?? '';
     setEditing(message.id);
-    setDraft(content);
+    composerRef.current?.setText(content);
     setOpenTab(null);
     requestAnimationFrame(() => composerRef.current?.focus());
   }
 
   function cancelEdit() {
     setEditing(null);
-    setDraft('');
+    composerRef.current?.clear();
   }
 
   async function sendPickedAssets(assets: Asset[]) {
@@ -480,6 +476,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
           ref={listRef}
           data={messages}
           keyExtractor={(item) => item.clientMsgId ?? item.id}
+          maintainVisibleContentPosition={{ startRenderingFromBottom: true }}
           onScroll={handleScroll}
           scrollEventThrottle={16}
           contentContainerStyle={{ paddingVertical: 12 }}
@@ -636,7 +633,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
           </Pressable>
         </View>
       )}
-      {pendingAudio != null ? (
+      {pendingAudio != null && (
         <VoicePreviewBar
           uri={pendingAudio.file.uri}
           duration={pendingAudio.duration}
@@ -650,50 +647,16 @@ export function ChatDetailScreen({ navigation, route }: Props) {
           }}
           onDiscard={() => setPendingAudio(null)}
         />
-      ) : (
-      <View
-        className="flex-row items-end gap-1 bg-white px-2 py-1.5"
-        style={{ borderTopWidth: 1, borderTopColor: DIVIDER }}
-      >
-        <View className="flex-1">
-          <ChatComposer
-            ref={composerRef}
-            value={draft}
-            onChange={(text) => {
-              setDraft(text);
-              if (editing == null) notifyTyping();
-            }}
-            placeholder={t('chat.messageInputPlaceholder', { name: title })}
-            minHeight={36}
-            maxHeight={128}
-            paddingH={8}
-            paddingV={6}
-            onFocus={() => setOpenTab(null)}
-          />
-        </View>
-        {isTyping ? (
-          <Pressable
-            onPress={() => {
-              void send(draft);
-              requestAnimationFrame(() => composerRef.current?.focus());
-            }}
-            className="h-9 items-center justify-center rounded-full bg-ola-primary px-4 active:opacity-90"
-          >
-            <Text className="text-sm font-semibold text-white">
-              {editing != null ? t('chat.actionSave') : t('chat.send')}
-            </Text>
-          </Pressable>
-        ) : (
-          <Pressable
-            onPress={() => void send('(y)')}
-            onLongPress={() => void send('(Y)')}
-            className="h-9 w-9 items-center justify-center"
-          >
-            <Image source={likeIcon} style={{ width: 28, height: 28 }} resizeMode="contain" />
-          </Pressable>
-        )}
-      </View>
       )}
+      <ChatInputBar
+        ref={composerRef}
+        hidden={pendingAudio != null}
+        editing={editing != null}
+        placeholder={t('chat.messageInputPlaceholder', { name: title })}
+        onSend={(text) => void send(text)}
+        onTyping={notifyTyping}
+        onFocusInput={closeAttachTab}
+      />
 
       <AttachmentBar
         openTab={openTab}
