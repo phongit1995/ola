@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { PermissionsAndroid, Platform } from 'react-native';
 import Sound, {
   AVEncoderAudioQualityIOSType,
   AudioEncoderAndroidType,
@@ -39,6 +40,12 @@ function normalizeUri(path: string): string {
   return path.startsWith('file://') ? path : `file://${path}`;
 }
 
+async function ensureMicPermission(): Promise<boolean> {
+  if (Platform.OS !== 'android') return true;
+  const status = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.RECORD_AUDIO);
+  return status === PermissionsAndroid.RESULTS.GRANTED;
+}
+
 export function useVoiceRecorder(onMaxDuration?: () => void): VoiceRecorder {
   const [isRecording, setIsRecording] = useState(false);
   const [elapsedMs, setElapsedMs] = useState(0);
@@ -51,6 +58,7 @@ export function useVoiceRecorder(onMaxDuration?: () => void): VoiceRecorder {
 
   const start = useCallback(async () => {
     if (recordingRef.current) return false;
+    if (!(await ensureMicPermission())) return false;
     try {
       Sound.setSubscriptionDuration(0.1);
       Sound.addRecordBackListener((meta) => {
