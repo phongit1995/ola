@@ -7,6 +7,8 @@ import {
   type ElementRef,
 } from 'react';
 import { TextInput } from 'react-native';
+// eslint-disable-next-line @react-native/no-deep-imports -- TextInput.State không có registerInput; cần đăng ký composer native vào registry để tap-ra-ngoài/Keyboard.dismiss ẩn được bàn phím
+import TextInputState from 'react-native/Libraries/Components/TextInput/TextInputState';
 import OlaChatComposerNative, {
   Commands as ComposerCommands,
 } from '../specs/OlaChatComposerNativeComponent';
@@ -75,6 +77,13 @@ const NativeComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(functio
     if (nativeRef.current != null) ComposerCommands.setText(nativeRef.current, value);
   }, [value]);
 
+  useEffect(() => {
+    const instance = nativeRef.current;
+    if (instance == null) return;
+    TextInputState.registerInput(instance);
+    return () => TextInputState.unregisterInput(instance);
+  }, []);
+
   useImperativeHandle(ref, () => ({
     focus: () => {
       if (nativeRef.current != null) ComposerCommands.focus(nativeRef.current);
@@ -117,8 +126,14 @@ const NativeComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(functio
         onChange(event.nativeEvent.text);
       }}
       onComposerHeight={(event) => setContentHeight(Math.ceil(event.nativeEvent.height))}
-      onComposerFocus={onFocus}
-      onComposerBlur={onBlur}
+      onComposerFocus={() => {
+        if (nativeRef.current != null) TextInputState.focusInput(nativeRef.current);
+        onFocus?.();
+      }}
+      onComposerBlur={() => {
+        if (nativeRef.current != null) TextInputState.blurInput(nativeRef.current);
+        onBlur?.();
+      }}
     />
   );
 });
