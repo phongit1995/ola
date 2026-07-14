@@ -35,6 +35,7 @@ export function ConfirmDialog({
       onClose={onCancel}
       title={title}
       icon={showIcon ? infoIcon : undefined}
+      avoidKeyboard={false}
       footer={
         <>
           <DialogButton variant={danger ? 'danger' : 'green'} onPress={onConfirm}>

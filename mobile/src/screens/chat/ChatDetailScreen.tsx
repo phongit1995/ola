@@ -11,7 +11,7 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
-import { KeyboardView } from '../../components/KeyboardView';
+import { KeyboardShift } from '../../components/KeyboardShift';
 import { FlashList, type FlashListRef } from '@shopify/flash-list';
 import { launchCamera, launchImageLibrary, type Asset } from 'react-native-image-picker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -112,8 +112,6 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     lastInGroup: boolean;
   } | null>(null);
   const [reactionsTargetId, setReactionsTargetId] = useState<string | null>(null);
-  const [contentOffsetY, setContentOffsetY] = useState(0);
-  const contentRef = useRef<View>(null);
   const listRef = useRef<FlashListRef<Message>>(null);
   const stickToBottomRef = useRef(true);
   const sheetOpenRef = useRef(false);
@@ -470,17 +468,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         </View>
       </View>
 
-      <View
-        ref={contentRef}
-        className="flex-1"
-        style={{ overflow: 'hidden' }}
-        onLayout={() => contentRef.current?.measureInWindow((_x, y) => setContentOffsetY(y))}
-      >
-      <KeyboardView
-        behavior="translate-with-padding"
-        keyboardVerticalOffset={contentOffsetY}
-        className="flex-1"
-      >
+      <KeyboardShift>
       <View
         className="flex-1"
         onStartShouldSetResponderCapture={() => {
@@ -729,8 +717,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
       />
       </>
       )}
-      </KeyboardView>
-      </View>
+      </KeyboardShift>
 
       {transferKenOpen && peerId !== '' && (
         <TransferKenDialog
