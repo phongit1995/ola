@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Image, Pressable, RefreshControl, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -6,6 +6,7 @@ import { FlashList } from '@shopify/flash-list';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RoomService } from '@ola/shared/services';
+import { useRoomChatStore } from '@ola/shared/stores/roomChatStore';
 import type { Room } from '@ola/shared/types';
 import type { RoomStackParamList } from '../../navigation/types';
 import { ROOM_ROUTES } from '../../navigation/routes';
@@ -146,12 +147,33 @@ export function RoomListScreen() {
     }, [load])
   );
 
+  const joinStatus = useRoomChatStore((s) => s.status);
+  const activeRoom = useRoomChatStore((s) => s.activeRoom);
+  const openRoom = useRoomChatStore((s) => s.open);
+  const closeRoom = useRoomChatStore((s) => s.close);
+  const [joiningRoom, setJoiningRoom] = useState<{ id: string; name: string } | null>(null);
+
   const enterRoom = useCallback(
     (room: Room) => {
-      navigation.navigate(ROOM_ROUTES.RoomChat, { roomId: room.id, roomName: room.name });
+      setJoiningRoom({ id: room.id, name: room.name });
+      void openRoom({ id: room.id, name: room.name });
     },
-    [navigation]
+    [openRoom]
   );
+
+  useEffect(() => {
+    if (joiningRoom == null) return;
+    if (joinStatus === 'joined' && activeRoom?.id === joiningRoom.id) {
+      const room = joiningRoom;
+      setJoiningRoom(null);
+      navigation.navigate(ROOM_ROUTES.RoomChat, { roomId: room.id, roomName: room.name });
+    }
+  }, [joinStatus, activeRoom, joiningRoom, navigation]);
+
+  const cancelJoin = useCallback(() => {
+    closeRoom();
+    setJoiningRoom(null);
+  }, [closeRoom]);
 
   const quickJoin = useCallback(() => {
     const available = [...rooms]
@@ -206,6 +228,45 @@ export function RoomListScreen() {
             <RoomRow room={item} color={ROOM_COLORS[index % ROOM_COLORS.length]!} onEnter={enterRoom} />
           )}
         />
+      )}
+
+      {joiningRoom != null && (
+        <View
+          className="absolute inset-0 z-20 items-center justify-center px-6"
+          style={{ backgroundColor: 'rgba(0,0,0,0.25)' }}
+        >
+          <View
+            className="items-center gap-3 rounded-lg bg-white px-8 py-6"
+            style={{
+              shadowColor: '#000',
+              shadowOpacity: 0.2,
+              shadowRadius: 12,
+              shadowOffset: { width: 0, height: 4 },
+              elevation: 8,
+            }}
+          >
+            {joinStatus === 'error' ? (
+              <>
+                <Text className="text-center text-base" style={{ color: 'rgba(0,0,0,0.7)' }}>
+                  {t('room.joinError')}
+                </Text>
+                <Pressable
+                  onPress={cancelJoin}
+                  className="rounded-full bg-ola-primary px-6 py-2 active:opacity-90"
+                >
+                  <Text className="text-sm font-medium text-white">{t('chat.back')}</Text>
+                </Pressable>
+              </>
+            ) : (
+              <>
+                <ActivityIndicator color="#7cb342" size="large" />
+                <Text className="text-sm" style={{ color: 'rgba(0,0,0,0.54)' }}>
+                  {t('room.joining')}
+                </Text>
+              </>
+            )}
+          </View>
+        </View>
       )}
     </View>
   );

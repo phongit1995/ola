@@ -127,7 +127,10 @@ export function RoomChatScreen({ navigation, route }: Props) {
   );
 
   useEffect(() => {
-    void open({ id: roomId, name: roomName });
+    const current = useRoomChatStore.getState();
+    if (current.activeRoom?.id !== roomId || current.status === 'error') {
+      void open({ id: roomId, name: roomName });
+    }
     return () => close();
   }, [roomId, roomName, open, close]);
 
