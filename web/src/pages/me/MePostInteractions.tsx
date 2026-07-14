@@ -2,8 +2,8 @@ import { useCallback, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toApiError, toast } from '@lib';
 import { MeService } from '@services';
-import { ConfirmDialog, ListOptionDialog, type ListOption } from '@components';
-import type { PostReaction } from '@app-types';
+import { ConfirmDialog, ListOptionDialog, ReportDialog, type ListOption } from '@components';
+import type { PostReaction, ReportTarget } from '@app-types';
 import { MeComposerDialog, type ComposedPost } from './components/MeComposerDialog';
 import { MeCommentSheet } from './components/MeCommentSheet';
 import { QuickCommentBar } from './components/QuickCommentBar';
@@ -52,6 +52,7 @@ export function MePostInteractions({ source, children }: MePostInteractionsProps
   const [quickCommentPostId, setQuickCommentPostId] = useState<string | null>(null);
   const [quickSubmitting, setQuickSubmitting] = useState(false);
   const [menuPostId, setMenuPostId] = useState<string | null>(null);
+  const [reportTarget, setReportTarget] = useState<ReportTarget | null>(null);
   const [editPostId, setEditPostId] = useState<string | null>(null);
   const [deletePostId, setDeletePostId] = useState<string | null>(null);
   const [likersPostId, setLikersPostId] = useState<string | null>(null);
@@ -114,6 +115,13 @@ export function MePostInteractions({ source, children }: MePostInteractionsProps
             key: 'share',
             label: t('me.menuShare'),
             onSelect: () => toast.success(t('me.shareSuccess')),
+          },
+          {
+            key: 'report',
+            label: t('report.post'),
+            onSelect: () => {
+              if (menuPostId != null) setReportTarget({ type: 'post', id: menuPostId });
+            },
           },
           {
             key: 'block',
@@ -236,6 +244,10 @@ export function MePostInteractions({ source, children }: MePostInteractionsProps
         options={menuOptions}
         onClose={() => setMenuPostId(null)}
       />
+
+      {reportTarget != null && (
+        <ReportDialog target={reportTarget} onClose={() => setReportTarget(null)} />
+      )}
 
       {canManageOwn && (
         <MeComposerDialog

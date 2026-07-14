@@ -18,6 +18,7 @@ import { useHorizontalSwipe } from '../../hooks/useHorizontalSwipe';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { MePostCard } from './MePostCard';
 import { ListOptionDialog, type ListOption } from '../../components/ListOptionDialog';
+import { ReportDialog } from '../../components/ReportDialog';
 import { MeQuickCommentBar } from './MeQuickCommentBar';
 import { MeComposerModal } from './MeComposerModal';
 import { MeLeftDrawer } from './MeLeftDrawer';
@@ -99,6 +100,7 @@ export function MeFeedScreen() {
   const [likedOpen, setLikedOpen] = useState(false);
   const [marriageOpen, setMarriageOpen] = useState(false);
   const [menuPostId, setMenuPostId] = useState<string | null>(null);
+  const [reportPostId, setReportPostId] = useState<string | null>(null);
   const [quickCommentPostId, setQuickCommentPostId] = useState<string | null>(null);
   const [quickSubmitting, setQuickSubmitting] = useState(false);
   const [deletePostId, setDeletePostId] = useState<string | null>(null);
@@ -199,6 +201,7 @@ export function MeFeedScreen() {
       },
       { key: 'save', label: t('me.menuSave'), onSelect: () => pushToast('success', t('me.saveSuccess')) },
       { key: 'share', label: t('me.menuShare'), onSelect: () => pushToast('success', t('me.shareSuccess')) },
+      { key: 'report', label: t('report.post'), onSelect: () => setReportPostId(post.id) },
       {
         key: 'block',
         label: t('me.menuBlock'),
@@ -417,6 +420,13 @@ export function MeFeedScreen() {
         options={menuPost != null ? buildMenuOptions(menuPost) : []}
         onClose={() => setMenuPostId(null)}
       />
+
+      {reportPostId != null && (
+        <ReportDialog
+          target={{ type: 'post', id: reportPostId }}
+          onClose={() => setReportPostId(null)}
+        />
+      )}
 
       {quickCommentPostId != null && (
         <MeQuickCommentBar

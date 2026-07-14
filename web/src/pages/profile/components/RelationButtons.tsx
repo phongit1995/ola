@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ListOptionDialog, type ListOption } from '@components';
+import { ListOptionDialog, ReportDialog, type ListOption } from '@components';
 import { toast } from '@lib';
 import type { RelationshipInfo } from '@app-types';
 import type { ProfileActions } from '../types';
@@ -13,6 +13,7 @@ import postMeIcon from '@/assets/icons/profile/ic_post_me_gray.png';
 import moreIcon from '@/assets/icons/profile/ic_more_horizon_black_disable.png';
 
 interface RelationButtonsProps {
+  userId: string;
   nick: string;
   isSelf: boolean;
   onPostMe: () => void;
@@ -49,6 +50,7 @@ function RelationButton({
 }
 
 export function RelationButtons({
+  userId,
   nick,
   isSelf,
   onPostMe,
@@ -60,6 +62,7 @@ export function RelationButtons({
 }: RelationButtonsProps) {
   const { t } = useTranslation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
 
   const { status } = relationship;
   const isFriend = status === 'friend';
@@ -83,7 +86,7 @@ export function RelationButtons({
   const otherMenu: ListOption[] = [
     { key: 'block', label: t('profile.block'), danger: true, onSelect: actions.blockAction },
     { key: 'copy', label: t('profile.copyNick'), onSelect: () => navigator.clipboard?.writeText(nick) },
-    { key: 'report', label: t('profile.report'), onSelect: comingSoon },
+    { key: 'report', label: t('profile.report'), onSelect: () => setReportOpen(true) },
   ];
 
   const selfMenu: ListOption[] = [
@@ -137,6 +140,10 @@ export function RelationButtons({
         options={isSelf ? selfMenu : otherMenu}
         onClose={() => setMenuOpen(false)}
       />
+
+      {reportOpen && (
+        <ReportDialog target={{ type: 'account', id: userId }} onClose={() => setReportOpen(false)} />
+      )}
     </>
   );
 }

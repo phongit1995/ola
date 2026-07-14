@@ -74,6 +74,7 @@ export function ProfilePage({
 
       <div className="flex-1 overflow-y-auto">
         <ProfileCard
+          userId={userId}
           profile={profile}
           relationship={relationship}
           actions={actions}

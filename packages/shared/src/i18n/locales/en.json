@@ -663,6 +663,19 @@
     "viewAll": "View all",
     "mePosts": "Me Posts"
   },
+  "report": {
+    "title": "Report",
+    "post": "Report post",
+    "action": "Report",
+    "reasonSpam": "Spam / advertising",
+    "reasonSensitive": "Sensitive content",
+    "reasonScam": "Scam",
+    "reasonHarassment": "Harassment / abuse",
+    "reasonOther": "Other",
+    "notePlaceholder": "Additional details (optional)",
+    "send": "Send",
+    "sent": "Thank you for sending a report to Ola"
+  },
   "profileEdit": {
     "title": "Profile",
     "fullnameLabel": "Your first and last name",

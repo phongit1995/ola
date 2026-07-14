@@ -37,6 +37,7 @@ import { MePostCard } from '../me/MePostCard';
 import { MeCommentSheet } from '../me/MeCommentSheet';
 import { MeLikersDialog } from '../me/MeLikersDialog';
 import { ListOptionDialog, type ListOption } from '../../components/ListOptionDialog';
+import { ReportDialog } from '../../components/ReportDialog';
 import { MeQuickCommentBar } from '../me/MeQuickCommentBar';
 import { MeComposerModal } from '../me/MeComposerModal';
 import { FollowingListOverlay } from './FollowingListOverlay';
@@ -144,6 +145,7 @@ export function UserProfileScreen({ username, language, onClose, onOpenProfile, 
   const [commentFocusInput, setCommentFocusInput] = useState(false);
   const [likersPostId, setLikersPostId] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
   const [followingOpen, setFollowingOpen] = useState(false);
   const [followersOpen, setFollowersOpen] = useState(false);
   const [menuPostId, setMenuPostId] = useState<string | null>(null);
@@ -470,7 +472,7 @@ export function UserProfileScreen({ username, language, onClose, onOpenProfile, 
     : [
         { key: 'block', label: blockedByMe ? t('profile.unblock') : t('profile.block'), danger: true, onSelect: blockAction },
         { key: 'copy', label: t('profile.copyNick'), onSelect: () => Clipboard.setString(nick) },
-        { key: 'report', label: t('profile.report'), onSelect: comingSoon },
+        { key: 'report', label: t('profile.report'), onSelect: () => setReportOpen(true) },
       ];
 
   return (
@@ -824,6 +826,13 @@ export function UserProfileScreen({ username, language, onClose, onOpenProfile, 
           index={viewer?.index ?? 0}
           onClose={() => setViewer(null)}
         />
+
+        {reportOpen && profile != null && (
+          <ReportDialog
+            target={{ type: 'account', id: profile.id }}
+            onClose={() => setReportOpen(false)}
+          />
+        )}
 
         {vipStoreOpen && profile != null && (
           <PeerVipStoreDialog

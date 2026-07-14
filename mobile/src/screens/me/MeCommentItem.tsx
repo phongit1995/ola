@@ -6,6 +6,7 @@ import type { PostAuthor, PostComment } from '@ola/shared/types';
 import { renderRichText } from '../../lib/richText';
 import { Avatar } from '../../components/Avatar';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
+import { ReportDialog } from '../../components/ReportDialog';
 import { MeLikersDialog } from './MeLikersDialog';
 
 const replyIcon = require('../../assets/icons/me/ic_action_reply_gray.png');
@@ -42,6 +43,7 @@ interface MeCommentItemProps {
   comment: PostComment;
   time: string;
   canDelete: boolean;
+  canReport?: boolean;
   onDelete: (id: string) => void;
   onReply?: (comment: PostComment) => void;
   onToggleLike: (id: string) => void;
@@ -52,6 +54,7 @@ function MeCommentItemComponent({
   comment,
   time,
   canDelete,
+  canReport = false,
   onDelete,
   onReply,
   onToggleLike,
@@ -59,6 +62,7 @@ function MeCommentItemComponent({
 }: MeCommentItemProps) {
   const { t } = useTranslation();
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
   const [likersOpen, setLikersOpen] = useState(false);
   const liked = comment.liked;
   const likers = comment.topLikers ?? [];
@@ -108,6 +112,13 @@ function MeCommentItemComponent({
                 </Text>
               </Pressable>
             )}
+            {canReport && (
+              <Pressable onPress={() => setReportOpen(true)}>
+                <Text className="text-xs font-medium" style={{ color: 'rgba(0,0,0,0.45)' }}>
+                  {t('report.action')}
+                </Text>
+              </Pressable>
+            )}
             <View className="ml-auto flex-row items-center gap-1.5">
               {comment.likeCount > 0 && (
                 <Pressable onPress={() => setLikersOpen(true)} className="flex-row items-center gap-1">
@@ -149,6 +160,13 @@ function MeCommentItemComponent({
           commentId={comment.id}
           onClose={() => setLikersOpen(false)}
           onOpenProfile={onOpenProfile}
+        />
+      )}
+
+      {reportOpen && (
+        <ReportDialog
+          target={{ type: 'comment', id: comment.id }}
+          onClose={() => setReportOpen(false)}
         />
       )}
     </>

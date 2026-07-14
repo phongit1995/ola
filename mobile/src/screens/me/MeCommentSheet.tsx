@@ -106,6 +106,7 @@ export function MeCommentSheet({
                     comment={comment}
                     time={formatTime(comment.createdAt)}
                     canDelete={isOwn}
+                    canReport={!isOwn}
                     onDelete={remove}
                     onReply={isOwn ? undefined : setReplyTarget}
                     onToggleLike={like}
