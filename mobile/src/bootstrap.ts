@@ -1,9 +1,20 @@
 import 'react-native-get-random-values';
-import { configureEnv, configureKeyValueStorage } from '@ola/shared/platform';
+import './platform/configureStorage';
+import { configureEnv, configureSound } from '@ola/shared/platform';
 import { mobileEnv } from './platform/env';
-import { mmkvStorage } from './platform/storage';
 import { configureRichTextNative } from './lib/richTextNativeConfig';
+import {
+  playKenChestSound,
+  playKenCreditSound,
+  playMessageSound,
+  playRoomTagSound,
+} from './lib/sound';
 
 configureEnv(mobileEnv);
-configureKeyValueStorage(mmkvStorage);
 configureRichTextNative();
+configureSound({
+  playMessage: playMessageSound,
+  playRoomTag: playRoomTagSound,
+  playKenChest: playKenChestSound,
+  playKenCredit: playKenCreditSound,
+});

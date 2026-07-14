@@ -23,6 +23,7 @@ import {
 import type { PenSettledEvent, PenSide, PenShotView } from '@ola/shared/types';
 import type { RootStackParamList } from '../../../navigation/types';
 import { ROOT_ROUTES } from '../../../navigation/routes';
+import { playKenShotFailSound } from '../../../lib/sound';
 import { AnimatedKen } from '../../../components/AnimatedKen';
 import { PenButton } from './PenButton';
 import { PenShotList } from './PenShotList';
@@ -193,6 +194,7 @@ export function PenGameScreen({ navigation }: Props) {
         triggerWinFx(Math.max(0, e.payout - e.betAmount));
         push('success', t('penGame.shotWon', { payout: formatKen(e.payout) }));
       } else {
+        playKenShotFailSound();
         push('error', t('penGame.shotLost'));
       }
     };
@@ -242,6 +244,7 @@ export function PenGameScreen({ navigation }: Props) {
         triggerWinFx(Math.max(0, res.payout - res.betAmount));
         push('success', t('penGame.catchWin', { payout: formatKen(res.payout) }));
       } else {
+        playKenShotFailSound();
         push('error', t('penGame.catchLose'));
       }
       void loadShots();
