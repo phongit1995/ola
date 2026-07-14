@@ -4,6 +4,7 @@ import {
   ActivityIndicator,
   Image,
   Keyboard,
+  LayoutChangeEvent,
   NativeScrollEvent,
   NativeSyntheticEvent,
   Pressable,
@@ -191,23 +192,34 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   }, [messages, myId]);
 
   const forceScrollRef = useRef(false);
+  const listHeightRef = useRef(0);
+  const contentHeightRef = useRef(0);
 
-  const repinOnResize = useCallback(() => {
-    if (stickToBottomRef.current && !sheetOpenRef.current) {
-      requestAnimationFrame(() => listRef.current?.scrollToEnd({ animated: false }));
-    }
+  const pinToBottomOffset = useCallback(() => {
+    listRef.current?.scrollToOffset({
+      offset: Math.max(0, contentHeightRef.current - listHeightRef.current),
+      animated: false,
+    });
   }, []);
 
-  const scrollOnContentChange = useCallback(() => {
-    if (forceScrollRef.current) {
+  const repinOnResize = useCallback(
+    (event: LayoutChangeEvent) => {
+      listHeightRef.current = event.nativeEvent.layout.height;
+      if (stickToBottomRef.current && !sheetOpenRef.current) pinToBottomOffset();
+    },
+    [pinToBottomOffset]
+  );
+
+  const scrollOnContentChange = useCallback(
+    (_width: number, height: number) => {
+      contentHeightRef.current = height;
+      const shouldPin =
+        forceScrollRef.current || (stickToBottomRef.current && !sheetOpenRef.current);
       forceScrollRef.current = false;
-      requestAnimationFrame(() => listRef.current?.scrollToEnd({ animated: false }));
-      return;
-    }
-    if (stickToBottomRef.current && !sheetOpenRef.current) {
-      listRef.current?.scrollToEnd({ animated: false });
-    }
-  }, []);
+      if (shouldPin) pinToBottomOffset();
+    },
+    [pinToBottomOffset]
+  );
 
   const closeAttachTab = useCallback(() => setOpenTab(null), []);
 
