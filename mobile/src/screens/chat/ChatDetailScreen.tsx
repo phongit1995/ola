@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { KeyboardView } from '../../components/KeyboardView';
 import { FlashList, type FlashListRef } from '@shopify/flash-list';
-import { launchImageLibrary } from 'react-native-image-picker';
+import { launchCamera, launchImageLibrary, type Asset } from 'react-native-image-picker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useAuthStore } from '@ola/shared/stores/authStore';
@@ -31,6 +31,7 @@ import { kulImageForText, kulToken } from '../../lib/kul';
 import { ChatComposer, type ChatComposerHandle } from '../../components/ChatComposer';
 import { RichTextView } from '../../components/RichTextView';
 import { useBottomBarInset } from '../../hooks/useBottomBarInset';
+import { useFocusPresence } from '../../hooks/usePresence';
 import { ListOptionDialog, type ListOption } from '../../components/ListOptionDialog';
 import { RoomReactionsDialog } from '../room/RoomReactionsDialog';
 import { ChatBubble, ChatMessageRow } from './ChatMessageRow';
@@ -55,6 +56,7 @@ const replyActionIcon = require('../../assets/icons/me/ic_action_reply_gray.png'
 
 const CHAT_BG = '#ECE5DD';
 const DIVIDER = 'rgba(0,0,0,0.12)';
+const MAX_UPLOAD_BYTES = 2 * 1024 * 1024;
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ChatDetail'>;
 
@@ -117,22 +119,33 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   const composerRef = useRef<ChatComposerHandle>(null);
 
   useEffect(() => {
-    void openConversation(conversationId);
+    if (conversationId != null) void openConversation(conversationId);
     return () => closeConversation();
   }, [conversationId, openConversation, closeConversation]);
 
-  const conversation = conversations.find((item) => item.id === conversationId);
+  const currentConversationId = useChatStore((s) => s.currentConversationId);
+  const draftRecipient = useChatStore((s) => s.draftRecipient);
+  const activeConversationId = conversationId ?? currentConversationId ?? null;
+  const conversation = conversations.find((item) => item.id === activeConversationId);
   const title =
     conversation?.otherUser?.fullName ??
     conversation?.otherUser?.username ??
     conversation?.name ??
+    draftRecipient?.name ??
+    peerProfile?.fullName ??
+    peerProfile?.username ??
     '';
-  const peerAvatar = conversation?.otherUser?.avatar;
+  const peerAvatar = conversation?.otherUser?.avatar ?? draftRecipient?.avatar ?? peerProfile?.avatar;
   const myId = currentUserId();
   const timeFormatter = useMemo(() => createTimeFormatter(i18n.language), [i18n.language]);
   const dateFormatter = useMemo(() => createDateFormatter(i18n.language), [i18n.language]);
 
-  const peerOnline = conversation?.otherUser?.isOnline === true;
+  const peerId = peerProfile?.id ?? '';
+  const livePresence = useFocusPresence(peerId !== '' ? peerId : null);
+  const peerOnline =
+    (livePresence?.isOnline ?? peerProfile?.isOnline ?? conversation?.otherUser?.isOnline) === true;
+  const peerLastActiveAt =
+    livePresence?.lastActiveAt ?? peerProfile?.lastActiveAt ?? conversation?.otherUser?.lastActiveAt;
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
@@ -145,7 +158,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
       ? t('chat.typing', { name: typingUsers[0]?.username ?? '' })
       : peerOnline
         ? t('chat.statusActive')
-        : formatLastActive(t, conversation?.otherUser?.lastActiveAt, now) ?? '';
+        : formatLastActive(t, peerLastActiveAt, now) ?? '';
 
   const conversationSeen =
     conversation == null ? false : !conversation.isLastMessageFromMe ? true : conversation.seen;
@@ -155,7 +168,6 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   const blockedByThem = blockStatus === 'blocked_by_them';
   const blocked = blockedByMe || blockedByThem;
 
-  const peerId = peerProfile?.id ?? '';
   const {
     anchorId: peerCardAnchorId,
     visible: peerCardVisible,
@@ -235,6 +247,21 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     setDraft('');
   }
 
+  async function sendPickedAssets(assets: Asset[]) {
+    for (const asset of assets) {
+      if (asset.uri == null) continue;
+      if ((asset.fileSize ?? 0) > MAX_UPLOAD_BYTES) {
+        push('error', t('chat.imageTooLarge'));
+        continue;
+      }
+      try {
+        await sendImage({ uri: asset.uri, name: asset.fileName ?? 'photo.jpg', type: asset.type ?? 'image/jpeg' });
+      } catch {
+        push('error', t('chat.imageError'));
+      }
+    }
+  }
+
   async function pickAndSendImages() {
     const result = await launchImageLibrary({
       mediaType: 'photo',
@@ -244,16 +271,25 @@ export function ChatDetailScreen({ navigation, route }: Props) {
       quality: 0.9,
     });
     if (result.didCancel) return;
-    const assets = result.assets ?? [];
     setOpenTab(null);
-    for (const asset of assets) {
-      if (asset.uri == null) continue;
-      try {
-        await sendImage({ uri: asset.uri, name: asset.fileName ?? 'photo.jpg', type: asset.type ?? 'image/jpeg' });
-      } catch {
-        push('error', t('chat.imageError'));
-      }
+    await sendPickedAssets(result.assets ?? []);
+  }
+
+  async function captureAndSendPhoto() {
+    const result = await launchCamera({
+      mediaType: 'photo',
+      maxWidth: 1920,
+      maxHeight: 1920,
+      quality: 0.9,
+      saveToPhotos: false,
+    });
+    if (result.didCancel) return;
+    if (result.errorCode != null) {
+      push('error', t('chat.imageError'));
+      return;
     }
+    setOpenTab(null);
+    await sendPickedAssets(result.assets ?? []);
   }
 
   async function handleFriendAction() {
@@ -670,6 +706,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
           setOpenTab(null);
         }}
         onPickImage={() => void pickAndSendImages()}
+        onPickCamera={() => void captureAndSendPhoto()}
         onRecorded={(recording) => {
           setOpenTab(null);
           setPendingAudio(recording);

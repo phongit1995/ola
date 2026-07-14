@@ -33,6 +33,7 @@ import { ComposeDialog } from './ComposeDialog';
 import { ChangeAvatarDialog } from './ChangeAvatarDialog';
 import { ChangeCoverDialog } from './ChangeCoverDialog';
 import { ContactsPane } from './ContactsPane';
+import { useConversationsWithPresence, usePresenceListPolling } from '../../hooks/usePresence';
 
 const sentIcon = require('../../assets/icons/chat/ic_message_sent.png');
 const kulIcon = require('../../assets/icons/chat/ic_kul.png');
@@ -234,7 +235,7 @@ export function ChatListScreen() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const conversations = useChatStore((s) => s.conversations);
+  const conversations = useConversationsWithPresence();
   const loading = useChatStore((s) => s.loadingConversations);
   const loadConversations = useChatStore((s) => s.loadConversations);
   const hideConversation = useChatStore((s) => s.hideConversation);
@@ -257,6 +258,8 @@ export function ChatListScreen() {
     void loadConversations();
   }, [loadConversations]);
 
+  usePresenceListPolling();
+
   const openConversation = useCallback(
     (id: string) => navigation.navigate(ROOT_ROUTES.ChatDetail, { conversationId: id }),
     [navigation]
@@ -269,6 +272,12 @@ export function ChatListScreen() {
     const conversation = await startDirect(userId);
     if (conversation != null && conversation.id !== '') {
       navigation.navigate(ROOT_ROUTES.ChatDetail, { conversationId: conversation.id });
+      return;
+    }
+    if (useChatStore.getState().draftRecipient != null) {
+      navigation.navigate(ROOT_ROUTES.ChatDetail, {});
+    } else {
+      pushToast('error', t('chat.actionError'));
     }
   }
 

@@ -28,6 +28,7 @@ import { FriendRequestsScreen } from './FriendRequestsScreen';
 import { StatusEditDialog } from './StatusEditDialog';
 import { SuggestedFriendsScreen } from './SuggestedFriendsScreen';
 import { mapFriendsToContacts, SUGGESTED_FRIENDS, type Contact } from './contacts';
+import { usePresenceStore } from '@ola/shared/stores/presenceStore';
 
 const smileyIcon = require('../../assets/icons/chat/ola_smiley_online.png');
 const snapPicIcon = require('../../assets/icons/chat/icon_snap_pic.png');
@@ -116,7 +117,15 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
     };
   }, []);
 
-  const contacts = useMemo(() => mapFriendsToContacts(friends, t, now), [friends, t, now]);
+  const presence = usePresenceStore((s) => s.presence);
+  const contacts = useMemo(() => {
+    const merged = friends.map((friend) => {
+      const live = presence.get(friend.id);
+      if (live == null) return friend;
+      return { ...friend, isOnline: live.isOnline, lastActiveAt: live.lastActiveAt };
+    });
+    return mapFriendsToContacts(merged, t, now);
+  }, [friends, presence, t, now]);
 
   const filtered = useMemo(() => {
     const term = query.trim().toLowerCase();

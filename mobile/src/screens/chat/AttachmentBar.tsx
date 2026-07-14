@@ -41,6 +41,7 @@ interface AttachmentBarProps {
   onBackspace: () => void;
   onSendKul: (index: number) => void;
   onPickImage?: () => void;
+  onPickCamera?: () => void;
   onRecorded?: (recording: VoiceRecording) => void;
   onTransferKen?: () => void;
   onTradingVip?: () => void;
@@ -103,6 +104,7 @@ export function AttachmentBar({
   onBackspace,
   onSendKul,
   onPickImage,
+  onPickCamera,
   onRecorded,
   onTransferKen,
   onTradingVip,
@@ -118,6 +120,10 @@ export function AttachmentBar({
     }
     if (tab === 'photo' && onPickImage != null) {
       onPickImage();
+      return;
+    }
+    if (tab === 'camera' && onPickCamera != null) {
+      onPickCamera();
       return;
     }
     push('info', t('chat.comingSoon'));
