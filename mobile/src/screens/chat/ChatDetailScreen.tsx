@@ -4,7 +4,6 @@ import {
   ActivityIndicator,
   Image,
   Keyboard,
-  LayoutChangeEvent,
   NativeScrollEvent,
   NativeSyntheticEvent,
   Pressable,
@@ -13,7 +12,8 @@ import {
   View,
 } from 'react-native';
 import { KeyboardShift } from '../../components/KeyboardShift';
-import { FlashList, type FlashListRef } from '@shopify/flash-list';
+import { FlashList } from '@shopify/flash-list';
+import { useStickyBottomList } from '../../hooks/useStickyBottomList';
 import { launchCamera, launchImageLibrary, type Asset } from 'react-native-image-picker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -113,9 +113,19 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     lastInGroup: boolean;
   } | null>(null);
   const [reactionsTargetId, setReactionsTargetId] = useState<string | null>(null);
-  const listRef = useRef<FlashListRef<Message>>(null);
-  const stickToBottomRef = useRef(true);
-  const sheetOpenRef = useRef(false);
+  const {
+    listRef,
+    suspendRef,
+    onListLayout,
+    onContentSizeChange,
+    onScroll,
+    onScrollBeginDrag,
+    onScrollEndDrag,
+    onMomentumScrollBegin,
+    onMomentumScrollEnd,
+    pinOnNextContent,
+    unstick,
+  } = useStickyBottomList<Message>();
   const composerRef = useRef<ChatInputBarHandle>(null);
 
   useEffect(() => {
@@ -191,42 +201,11 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     return null;
   }, [messages, myId]);
 
-  const forceScrollRef = useRef(false);
-  const listHeightRef = useRef(0);
-  const contentHeightRef = useRef(0);
-
-  const pinToBottomOffset = useCallback(() => {
-    listRef.current?.scrollToOffset({
-      offset: Math.max(0, contentHeightRef.current - listHeightRef.current),
-      animated: false,
-    });
-  }, []);
-
-  const repinOnResize = useCallback(
-    (event: LayoutChangeEvent) => {
-      listHeightRef.current = event.nativeEvent.layout.height;
-      if (stickToBottomRef.current && !sheetOpenRef.current) pinToBottomOffset();
-    },
-    [pinToBottomOffset]
-  );
-
-  const scrollOnContentChange = useCallback(
-    (_width: number, height: number) => {
-      contentHeightRef.current = height;
-      const shouldPin =
-        forceScrollRef.current || (stickToBottomRef.current && !sheetOpenRef.current);
-      forceScrollRef.current = false;
-      if (shouldPin) pinToBottomOffset();
-    },
-    [pinToBottomOffset]
-  );
-
   const closeAttachTab = useCallback(() => setOpenTab(null), []);
 
   function handleScroll(event: NativeSyntheticEvent<NativeScrollEvent>) {
-    const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
-    stickToBottomRef.current = contentSize.height - contentOffset.y - layoutMeasurement.height < 80;
-    if (contentOffset.y < 80 && hasMore) void loadMoreMessages();
+    onScroll(event);
+    if (event.nativeEvent.contentOffset.y < 80 && hasMore) void loadMoreMessages();
   }
 
   async function send(text: string) {
@@ -238,8 +217,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
       await editMessage(id, trimmed);
       return;
     }
-    forceScrollRef.current = !stickToBottomRef.current;
-    stickToBottomRef.current = true;
+    pinOnNextContent();
     await sendText(trimmed);
   }
 
@@ -385,6 +363,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
       push('error', t('chat.replyNotFound'));
       return;
     }
+    unstick();
     listRef.current?.scrollToIndex({ index, animated: true, viewPosition: 0.5 });
   }
 
@@ -508,10 +487,14 @@ export function ChatDetailScreen({ navigation, route }: Props) {
             animateAutoScrollToBottom: false,
           }}
           onScroll={handleScroll}
+          onScrollBeginDrag={onScrollBeginDrag}
+          onScrollEndDrag={onScrollEndDrag}
+          onMomentumScrollBegin={onMomentumScrollBegin}
+          onMomentumScrollEnd={onMomentumScrollEnd}
           scrollEventThrottle={16}
           contentContainerStyle={{ paddingVertical: 12 }}
-          onContentSizeChange={scrollOnContentChange}
-          onLayout={repinOnResize}
+          onContentSizeChange={onContentSizeChange}
+          onLayout={onListLayout}
           ListHeaderComponent={
             peerCardVisible && peerCardAnchorId === '' && peerProfile != null ? (
               <PeerProfileCard
@@ -576,7 +559,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
                   peerAvatar={peerAvatar}
                   timeLabel={timeFormatter(item.createdAt)}
                   onLongPress={(anchor) => {
-                    sheetOpenRef.current = true;
+                    suspendRef.current = true;
                     setActionTarget({ message: item, anchor, fromMe, firstInGroup, lastInGroup });
                   }}
                   onResend={(id) => void resendMessage(id)}
@@ -798,7 +781,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
           if (actionTarget != null) void reactToMessage(actionTarget.message.id, type);
         }}
         onClose={() => {
-          sheetOpenRef.current = false;
+          suspendRef.current = false;
           setActionTarget(null);
         }}
       />
