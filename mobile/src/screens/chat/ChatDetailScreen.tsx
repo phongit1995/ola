@@ -112,6 +112,8 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     lastInGroup: boolean;
   } | null>(null);
   const [reactionsTargetId, setReactionsTargetId] = useState<string | null>(null);
+  const [contentOffsetY, setContentOffsetY] = useState(0);
+  const contentRef = useRef<View>(null);
   const listRef = useRef<FlashListRef<Message>>(null);
   const stickToBottomRef = useRef(true);
   const sheetOpenRef = useRef(false);
@@ -438,10 +440,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   }
 
   return (
-    <KeyboardView
-      className="flex-1"
-      style={{ backgroundColor: CHAT_BG }}
-    >
+    <View className="flex-1" style={{ backgroundColor: CHAT_BG }}>
       <View className="bg-ola-primary px-2 pb-2" style={{ paddingTop: insets.top + 8 }}>
         <View className="h-9 flex-row items-center gap-2">
           <Pressable
@@ -471,6 +470,17 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         </View>
       </View>
 
+      <View
+        ref={contentRef}
+        className="flex-1"
+        style={{ overflow: 'hidden' }}
+        onLayout={() => contentRef.current?.measureInWindow((_x, y) => setContentOffsetY(y))}
+      >
+      <KeyboardView
+        behavior="translate-with-padding"
+        keyboardVerticalOffset={contentOffsetY}
+        className="flex-1"
+      >
       <View
         className="flex-1"
         onStartShouldSetResponderCapture={() => {
@@ -719,6 +729,8 @@ export function ChatDetailScreen({ navigation, route }: Props) {
       />
       </>
       )}
+      </KeyboardView>
+      </View>
 
       {transferKenOpen && peerId !== '' && (
         <TransferKenDialog
@@ -823,6 +835,6 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         onConfirm={() => void handleBlock()}
         onCancel={() => setBlockOpen(false)}
       />
-    </KeyboardView>
+    </View>
   );
 }
