@@ -57,7 +57,9 @@ export function VoiceBubble({ url, duration, durationSec, isOut }: VoiceBubblePr
     setPlaying(false);
   }
 
-  useEffect(() => release, []);
+  const releaseRef = useRef(release);
+  releaseRef.current = release;
+  useEffect(() => () => releaseRef.current(), []);
 
   function startProgressTimer(total: number) {
     clearTimer();

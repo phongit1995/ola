@@ -44,7 +44,7 @@ export function setNativeComposerEnabled(enabled: boolean): void {
   nativeComposerEnabled = enabled;
 }
 
-const NativeComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(function NativeComposer(
+const NativeComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(function NativeComposerInner(
   {
     value,
     onChange,
@@ -123,7 +123,7 @@ const NativeComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(functio
   );
 });
 
-const PlainComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(function PlainComposer(
+const PlainComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(function PlainComposerInner(
   {
     value,
     onChange,
@@ -185,7 +185,7 @@ const PlainComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(function
 });
 
 export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(
-  function ChatComposer(props, ref) {
+  function ChatComposerInner(props, ref) {
     if (richTextNativeAvailable && nativeComposerEnabled) {
       return <NativeComposer ref={ref} {...props} />;
     }

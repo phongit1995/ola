@@ -43,6 +43,10 @@ const SWIPE_MAX = 88;
 const SWIPE_TRIGGER = 56;
 const DIVIDER = 'rgba(0,0,0,0.12)';
 
+function ConversationSeparator() {
+  return <View style={{ marginHorizontal: 16, height: 1, backgroundColor: DIVIDER }} />;
+}
+
 function displayName(conversation: Conversation): string {
   return (
     conversation.otherUser?.fullName ||
@@ -355,9 +359,7 @@ export function ChatListScreen() {
           refreshControl={
             <RefreshControl refreshing={loading} onRefresh={() => void loadConversations()} />
           }
-          ItemSeparatorComponent={() => (
-            <View style={{ marginHorizontal: 16, height: 1, backgroundColor: DIVIDER }} />
-          )}
+          ItemSeparatorComponent={ConversationSeparator}
           ListEmptyComponent={
             <View className="gap-2 bg-white p-4">
               <Text className="text-base font-medium text-gray-900">

@@ -39,8 +39,11 @@ interface GradientStop {
 }
 
 function hexToRgb(hex: string): [number, number, number] {
-  const value = parseInt(hex.slice(1), 16);
-  return [(value >> 16) & 255, (value >> 8) & 255, value & 255];
+  return [
+    parseInt(hex.slice(1, 3), 16),
+    parseInt(hex.slice(3, 5), 16),
+    parseInt(hex.slice(5, 7), 16),
+  ];
 }
 
 function colorAt(stops: GradientStop[], t: number): string {

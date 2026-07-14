@@ -22,12 +22,10 @@ const photoIcon = require('../../assets/icons/chat/ic_local.png');
 
 function ChatQuoteBlock({
   replyTo,
-  fromMe,
   maxWidth,
   onQuoteClick,
 }: {
   replyTo: ChatReplySnapshot;
-  fromMe: boolean;
   maxWidth: number;
   onQuoteClick?: (messageId: string) => void;
 }) {
@@ -151,7 +149,6 @@ export function ChatBubble({
       {message.replyTo != null && (
         <ChatQuoteBlock
           replyTo={message.replyTo}
-          fromMe={fromMe}
           maxWidth={chatBubbleTextMaxWidth(windowWidth, fromMe)}
           onQuoteClick={onQuoteClick}
         />

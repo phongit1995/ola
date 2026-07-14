@@ -124,15 +124,15 @@ export function MeVisitorsScreen({ language, onClose, onOpenProfile }: MeVisitor
                       </Text>
                     </Pressable>
                     {status === 'friend' ? (
-                      <View className="w-fit rounded px-3 py-1" style={{ backgroundColor: 'rgba(0,0,0,0.08)' }}>
+                      <View className="self-start rounded px-3 py-1" style={{ backgroundColor: 'rgba(0,0,0,0.08)' }}>
                         <Text className="text-sm font-medium" style={{ color: 'rgba(0,0,0,0.45)' }}>{t('me.alreadyFriend')}</Text>
                       </View>
                     ) : sent ? (
-                      <View className="w-fit rounded px-3 py-1" style={{ backgroundColor: 'rgba(0,0,0,0.08)' }}>
+                      <View className="self-start rounded px-3 py-1" style={{ backgroundColor: 'rgba(0,0,0,0.08)' }}>
                         <Text className="text-sm font-medium" style={{ color: 'rgba(0,0,0,0.45)' }}>{t('me.friendRequestSent')}</Text>
                       </View>
                     ) : (
-                      <Pressable onPress={() => void addFriend(item)} className="w-fit rounded bg-ola-primary px-3 py-1">
+                      <Pressable onPress={() => void addFriend(item)} className="self-start rounded bg-ola-primary px-3 py-1">
                         <Text className="text-sm font-medium text-white">{t('me.makeFriend')}</Text>
                       </Pressable>
                     )}

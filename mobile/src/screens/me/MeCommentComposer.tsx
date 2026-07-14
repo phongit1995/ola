@@ -23,7 +23,7 @@ interface MeCommentComposerProps {
 }
 
 export const MeCommentComposer = forwardRef<MeCommentComposerHandle, MeCommentComposerProps>(
-  function MeCommentComposer(
+  function MeCommentComposerInner(
     { submitting, onSubmit, autoFocus, initialDraft = '', replyingTo, onCancelReply },
     ref
   ) {

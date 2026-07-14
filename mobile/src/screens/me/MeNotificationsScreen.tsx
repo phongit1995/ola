@@ -24,6 +24,10 @@ const TYPE_ICON: Record<MeNotificationType, number> = {
   mention: mentionIcon,
 };
 
+function NotificationSeparator() {
+  return <View style={{ height: 1, marginHorizontal: 16, backgroundColor: 'rgba(0,0,0,0.12)' }} />;
+}
+
 interface MeNotificationsScreenProps {
   language: string;
   onClose: () => void;
@@ -114,9 +118,7 @@ export function MeNotificationsScreen({ language, onClose, onOpenProfile }: MeNo
             keyExtractor={(item) => item.id}
             onEndReached={() => void loadMore()}
             onEndReachedThreshold={0.4}
-            ItemSeparatorComponent={() => (
-              <View style={{ height: 1, marginHorizontal: 16, backgroundColor: 'rgba(0,0,0,0.12)' }} />
-            )}
+            ItemSeparatorComponent={NotificationSeparator}
             ListFooterComponent={loadingMore ? <ActivityIndicator className="my-4" color="#7cb342" /> : null}
             renderItem={({ item }) => {
               const name = item.actor?.fullName || item.actor?.username || '';

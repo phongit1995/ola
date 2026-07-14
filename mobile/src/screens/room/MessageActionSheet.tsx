@@ -407,9 +407,10 @@ function BottomSheet({
 }
 
 export function MessageActionSheet({ anchor, preview, ...props }: MessageActionSheetProps) {
+  const hasAnchor = anchor != null;
   useEffect(() => {
-    if (props.visible && anchor != null) hapticImpact();
-  }, [props.visible, anchor != null]);
+    if (props.visible && hasAnchor) hapticImpact();
+  }, [props.visible, hasAnchor]);
 
   return (
     <Modal
