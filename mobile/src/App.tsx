@@ -13,6 +13,8 @@ import { RootNavigator } from './navigation/RootNavigator';
 import { ToastHost } from './components/ToastHost';
 import { MediaViewer } from './components/MediaViewer';
 import { useMeNotificationRealtime } from './hooks/useMeNotificationRealtime';
+import { useKenRealtime } from './hooks/useKenRealtime';
+import { KenTreasureOverlay } from './screens/games/ken-treasure/KenTreasureOverlay';
 import { checkForOtaUpdate } from './services/otaUpdate';
 
 function clearSession() {
@@ -23,6 +25,7 @@ function clearSession() {
 
 export default function App() {
   useMeNotificationRealtime();
+  useKenRealtime();
   const userId = useAuthStore((s) => s.user?.id);
   useEffect(() => {
     if (userId != null) void useSettingsStore.getState().hydrate();
@@ -49,6 +52,7 @@ export default function App() {
         <NavigationContainer>
           <RootNavigator />
         </NavigationContainer>
+        <KenTreasureOverlay />
         <ToastHost />
         <MediaViewer />
       </SafeAreaProvider>
