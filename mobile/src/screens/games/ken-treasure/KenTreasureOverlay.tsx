@@ -1,9 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Animated,
   Image,
-  PanResponder,
   Pressable,
   StyleSheet,
   Text,
@@ -13,6 +11,12 @@ import {
   type TextStyle,
   type ViewStyle,
 } from 'react-native';
+import Animated, {
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+} from 'react-native-reanimated';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { formatKen } from '@ola/shared/lib';
 import {
@@ -150,6 +154,61 @@ function clampValue(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
 
+function ChestCountdown({
+  expiresAt,
+  onExpire,
+  panelWidth,
+  panelHeight,
+}: {
+  expiresAt: string;
+  onExpire: () => void;
+  panelWidth: number;
+  panelHeight: number;
+}) {
+  const remaining = useRemaining(expiresAt, onExpire);
+  const timeWidth = panelWidth * 0.56;
+  const timeHeight = timeWidth / assetRatio(kenTreasureAssets.frameTime);
+  const hourglassWidth = timeWidth * 0.26;
+  const hourglassHeight = hourglassWidth / assetRatio(kenTreasureAssets.buttonHourglass);
+
+  return (
+    <View
+      style={{
+        position: 'absolute',
+        left: (panelWidth - timeWidth) / 2,
+        top: panelHeight * 0.68,
+        width: timeWidth,
+        height: timeHeight,
+      }}
+    >
+      <Image
+        source={kenTreasureAssets.frameTime}
+        style={{ position: 'absolute', width: timeWidth, height: timeHeight }}
+        resizeMode="stretch"
+      />
+      <Image
+        source={kenTreasureAssets.buttonHourglass}
+        style={{
+          position: 'absolute',
+          left: -timeWidth * 0.08,
+          top: (timeHeight - hourglassHeight) / 2,
+          width: hourglassWidth,
+          height: hourglassHeight,
+        }}
+        resizeMode="contain"
+      />
+      <View
+        style={[StyleSheet.absoluteFill, { paddingLeft: timeWidth * 0.1 }]}
+        className="items-center justify-center"
+      >
+        <Text style={[{ fontSize: 11, fontWeight: '800' }, goldTextStyle]}>
+          {formatCountdown(remaining)}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
 function ClosedChestPanel({ chest, stackIndex }: { chest: KenTreasureChest; stackIndex: number }) {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
@@ -158,17 +217,10 @@ function ClosedChestPanel({ chest, stackIndex }: { chest: KenTreasureChest; stac
   const dismiss = useKenTreasureStore((s) => s.dismiss);
   const positionX = useKenTreasurePositionStore((s) => s.x);
   const positionY = useKenTreasurePositionStore((s) => s.y);
-  const remaining = useRemaining(chest.expiresAt, () => dismiss(chest.id));
-  const dragBase = useRef({ x: 0, y: 0 });
-
   const panelWidth = 140;
   const panelHeight = panelWidth / assetRatio(kenTreasureAssets.frameBackground);
   const chestWidth = panelWidth * 0.48;
   const chestHeight = chestWidth / assetRatio(kenTreasureAssets.chestClosed);
-  const timeWidth = panelWidth * 0.56;
-  const timeHeight = timeWidth / assetRatio(kenTreasureAssets.frameTime);
-  const hourglassWidth = timeWidth * 0.26;
-  const hourglassHeight = hourglassWidth / assetRatio(kenTreasureAssets.buttonHourglass);
   const openWidth = panelWidth * 0.54;
   const openHeight = openWidth / assetRatio(kenTreasureAssets.frameOpen);
 
@@ -182,141 +234,119 @@ function ClosedChestPanel({ chest, stackIndex }: { chest: KenTreasureChest; stac
   const translateX = clampValue(positionX - stackShift, minTranslateX, maxTranslateX);
   const translateY = clampValue(positionY, minTranslateY, maxTranslateY);
 
-  const pan = useRef(new Animated.ValueXY({ x: translateX, y: translateY })).current;
-  useEffect(() => {
-    pan.setValue({ x: translateX, y: translateY });
-  }, [pan, translateX, translateY]);
+  const tx = useSharedValue(translateX);
+  const ty = useSharedValue(translateY);
+  const startX = useSharedValue(0);
+  const startY = useSharedValue(0);
 
-  const panResponder = useMemo(() => {
-    const shouldDrag = (_event: unknown, gesture: { dx: number; dy: number }) =>
-      Math.abs(gesture.dx) + Math.abs(gesture.dy) > DRAG_START_DISTANCE;
-    const dragTranslate = (gesture: { dx: number; dy: number }) => ({
-      x: clampValue(
-        dragBase.current.x + gesture.dx - stackShift,
-        minTranslateX,
-        maxTranslateX
-      ),
-      y: clampValue(dragBase.current.y + gesture.dy, minTranslateY, maxTranslateY),
+  useEffect(() => {
+    tx.value = translateX;
+    ty.value = translateY;
+  }, [tx, ty, translateX, translateY]);
+
+  const commit = (x: number, y: number) => {
+    useKenTreasurePositionStore.getState().setPosition(x + stackShift, y);
+  };
+
+  const dragGesture = Gesture.Pan()
+    .minDistance(DRAG_START_DISTANCE)
+    .onStart(() => {
+      startX.value = tx.value;
+      startY.value = ty.value;
+    })
+    .onUpdate((event) => {
+      tx.value = Math.min(
+        maxTranslateX,
+        Math.max(minTranslateX, startX.value + event.translationX)
+      );
+      ty.value = Math.min(
+        maxTranslateY,
+        Math.max(minTranslateY, startY.value + event.translationY)
+      );
+    })
+    .onEnd(() => {
+      runOnJS(commit)(tx.value, ty.value);
     });
-    const commit = (gesture: { dx: number; dy: number }) => {
-      const next = dragTranslate(gesture);
-      useKenTreasurePositionStore.getState().setPosition(next.x + stackShift, next.y);
-    };
-    return PanResponder.create({
-      onMoveShouldSetPanResponder: shouldDrag,
-      onMoveShouldSetPanResponderCapture: shouldDrag,
-      onPanResponderGrant: () => {
-        const { x, y } = useKenTreasurePositionStore.getState();
-        dragBase.current = { x, y };
-      },
-      onPanResponderMove: (_event, gesture) => {
-        pan.setValue(dragTranslate(gesture));
-      },
-      onPanResponderRelease: (_event, gesture) => commit(gesture),
-      onPanResponderTerminate: (_event, gesture) => commit(gesture),
-    });
-  }, [pan, minTranslateX, maxTranslateX, minTranslateY, maxTranslateY, stackShift]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: tx.value }, { translateY: ty.value }],
+  }));
 
   return (
-    <Animated.View
-      {...panResponder.panHandlers}
-      style={{
-        position: 'absolute',
-        right: 16,
-        bottom: insets.bottom + 76,
-        width: panelWidth,
-        height: panelHeight,
-        transform: [{ translateX: pan.x }, { translateY: pan.y }],
-      }}
-    >
-      <Image
-        source={kenTreasureAssets.frameBackground}
-        style={{ position: 'absolute', width: panelWidth, height: panelHeight }}
-        resizeMode="stretch"
-      />
-      <Crown panelWidth={panelWidth} panelHeight={panelHeight} />
-      <CloseBadge size={panelWidth * 0.13} onPress={() => dismiss(chest.id)} />
-
-      <Text
+    <GestureDetector gesture={dragGesture}>
+      <Animated.View
         style={[
           {
             position: 'absolute',
-            top: panelHeight * 0.06,
-            left: panelWidth * 0.15,
-            width: panelWidth * 0.7,
-            textAlign: 'center',
-            fontSize: 12,
-            fontWeight: '800',
-            textTransform: 'uppercase',
+            right: 16,
+            bottom: insets.bottom + 76,
+            width: panelWidth,
+            height: panelHeight,
           },
-          goldTextStyle,
+          animatedStyle,
         ]}
-        numberOfLines={1}
-      >
-        {t('kenTreasure.title')}
-      </Text>
-
-      <Image
-        source={kenTreasureAssets.chestClosed}
-        style={{
-          position: 'absolute',
-          left: (panelWidth - chestWidth) / 2,
-          top: panelHeight * 0.23,
-          width: chestWidth,
-          height: chestHeight,
-        }}
-        resizeMode="contain"
-      />
-
-      <View
-        style={{
-          position: 'absolute',
-          left: (panelWidth - timeWidth) / 2,
-          top: panelHeight * 0.68,
-          width: timeWidth,
-          height: timeHeight,
-        }}
       >
         <Image
-          source={kenTreasureAssets.frameTime}
-          style={{ position: 'absolute', width: timeWidth, height: timeHeight }}
+          source={kenTreasureAssets.frameBackground}
+          style={{ position: 'absolute', width: panelWidth, height: panelHeight }}
           resizeMode="stretch"
         />
+        <Crown panelWidth={panelWidth} panelHeight={panelHeight} />
+        <CloseBadge size={panelWidth * 0.13} onPress={() => dismiss(chest.id)} />
+
+        <Text
+          style={[
+            {
+              position: 'absolute',
+              top: panelHeight * 0.06,
+              left: panelWidth * 0.15,
+              width: panelWidth * 0.7,
+              textAlign: 'center',
+              fontSize: 12,
+              fontWeight: '800',
+              textTransform: 'uppercase',
+            },
+            goldTextStyle,
+          ]}
+          numberOfLines={1}
+        >
+          {t('kenTreasure.title')}
+        </Text>
+
         <Image
-          source={kenTreasureAssets.buttonHourglass}
+          source={kenTreasureAssets.chestClosed}
           style={{
             position: 'absolute',
-            left: -timeWidth * 0.08,
-            top: (timeHeight - hourglassHeight) / 2,
-            width: hourglassWidth,
-            height: hourglassHeight,
+            left: (panelWidth - chestWidth) / 2,
+            top: panelHeight * 0.23,
+            width: chestWidth,
+            height: chestHeight,
           }}
           resizeMode="contain"
         />
-        <View
-          style={[StyleSheet.absoluteFill, { paddingLeft: timeWidth * 0.1 }]}
-          className="items-center justify-center"
-        >
-          <Text style={[{ fontSize: 11, fontWeight: '800' }, goldTextStyle]}>
-            {formatCountdown(remaining)}
-          </Text>
-        </View>
-      </View>
 
-      <ImageButton
-        source={kenTreasureAssets.frameOpen}
-        width={openWidth}
-        label={t('kenTreasure.open')}
-        labelStyle={whiteTextStyle}
-        fontSize={13}
-        style={{
-          position: 'absolute',
-          left: (panelWidth - openWidth) / 2,
-          bottom: panelHeight * 0.07 - openHeight / 2,
-        }}
-        onPress={() => void openChest(chest.id)}
-      />
-    </Animated.View>
+        <ChestCountdown
+          expiresAt={chest.expiresAt}
+          onExpire={() => dismiss(chest.id)}
+          panelWidth={panelWidth}
+          panelHeight={panelHeight}
+        />
+
+        <ImageButton
+          source={kenTreasureAssets.frameOpen}
+          width={openWidth}
+          label={t('kenTreasure.open')}
+          labelStyle={whiteTextStyle}
+          fontSize={13}
+          style={{
+            position: 'absolute',
+            left: (panelWidth - openWidth) / 2,
+            bottom: panelHeight * 0.07 - openHeight / 2,
+          }}
+          onPress={() => void openChest(chest.id)}
+        />
+      </Animated.View>
+    </GestureDetector>
   );
 }
 
