@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { UserService } from '@ola/shared/services';
 import type { FollowUser } from '@ola/shared/types';
 import { Avatar } from '../../components/Avatar';
+import { ScreenHeader } from '../../components/ScreenHeader';
 
 const FOLLOW_PAGE_SIZE = 10;
 
@@ -66,15 +67,7 @@ export function FollowingListOverlay({ userId, kind, onSelect, onClose, title }:
   return (
     <Modal visible transparent animationType="slide" onRequestClose={onClose}>
       <View className="flex-1 bg-white">
-        <View className="flex-row items-center bg-ola-primary px-1" style={{ paddingTop: insets.top }}>
-          <Pressable onPress={onClose} className="h-12 w-10 items-center justify-center">
-            <Text className="text-2xl leading-none text-white">‹</Text>
-          </Pressable>
-          <Text numberOfLines={1} className="flex-1 text-center text-lg font-medium text-white">
-            {title ?? t('profile.following')}
-          </Text>
-          <View className="w-10" />
-        </View>
+        <ScreenHeader title={title ?? t('profile.following')} centerTitle onBack={onClose} />
         {loading ? (
           <ActivityIndicator className="py-16" color="#7cb342" size="large" />
         ) : (

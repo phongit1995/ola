@@ -13,6 +13,7 @@ import { ROOT_ROUTES } from '../../navigation/routes';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { ListOptionDialog, type ListOption } from '../../components/ListOptionDialog';
 import { VipIconImage } from './VipIconImage';
+import { ScreenHeader } from '../../components/ScreenHeader';
 
 const PRIVACY_KEYS = ['privacyPublic', 'privacyFriends', 'privacyPrivate'] as const;
 const VIP_PAGE_SIZE = 100;
@@ -281,19 +282,7 @@ export function VipStoreScreen({ navigation }: Props) {
 
   return (
     <View className="flex-1 bg-white">
-      <View className="bg-ola-primary" style={{ paddingTop: insets.top }}>
-        <View className="h-12 flex-row items-center gap-2 px-2">
-          <Pressable
-            className="h-9 w-9 items-center justify-center rounded-full active:bg-white/15"
-            onPress={() => navigation.goBack()}
-          >
-            <Text className="text-2xl leading-none text-white">‹</Text>
-          </Pressable>
-          <Text className="flex-1 text-lg font-medium text-white" numberOfLines={1}>
-            {t('vip.title')}
-          </Text>
-        </View>
-      </View>
+      <ScreenHeader title={t('vip.title')} onBack={() => navigation.goBack()} />
 
       <FlatList
         className="flex-1"

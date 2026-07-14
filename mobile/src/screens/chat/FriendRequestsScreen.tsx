@@ -6,6 +6,7 @@ import { activeVipTypeId, createTimeFormatter } from '@ola/shared/lib';
 import type { Relationship } from '@ola/shared/types';
 import { Avatar } from '../../components/Avatar';
 import { VipAvatar } from '../../components/VipAvatar';
+import { ScreenHeader } from '../../components/ScreenHeader';
 
 interface FriendRequestsScreenProps {
   requests: Relationship[];
@@ -34,15 +35,7 @@ export function FriendRequestsScreen({ requests, loading, onAccept, onDecline, o
   return (
     <Modal visible transparent animationType="slide" onRequestClose={onClose}>
       <View className="flex-1 bg-white">
-        <View className="flex-row items-center bg-ola-primary px-1" style={{ paddingTop: insets.top }}>
-          <Pressable onPress={onClose} className="h-12 w-10 items-center justify-center">
-            <Text className="text-2xl leading-none text-white">‹</Text>
-          </Pressable>
-          <Text numberOfLines={1} className="flex-1 text-center text-lg font-medium text-white">
-            {t('chat.friendRequests')}
-          </Text>
-          <View className="w-10" />
-        </View>
+        <ScreenHeader title={t('chat.friendRequests')} centerTitle onBack={onClose} />
 
         {loading ? (
           <ActivityIndicator className="py-10" color="#7cb342" size="large" />

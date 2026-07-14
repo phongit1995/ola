@@ -41,6 +41,7 @@ import { MeQuickCommentBar } from '../me/MeQuickCommentBar';
 import { MeComposerModal } from '../me/MeComposerModal';
 import { FollowingListOverlay } from './FollowingListOverlay';
 import { PeerVipStoreDialog } from './PeerVipStoreDialog';
+import { ScreenHeader } from '../../components/ScreenHeader';
 
 const checkedIcon = require('../../assets/icons/profile/ic_checked.png');
 const kissIcon = require('../../assets/icons/profile/sticker_kiss.png');
@@ -474,13 +475,7 @@ export function UserProfileScreen({ username, language, onClose, onOpenProfile, 
   return (
     <Modal visible transparent animationType="slide" onRequestClose={onClose}>
       <View className="flex-1 bg-[#f3f3f3]">
-        <View className="flex-row items-center bg-ola-primary px-1" style={{ paddingTop: insets.top }}>
-          <Pressable onPress={onClose} className="h-12 w-10 items-center justify-center">
-            <Text className="text-2xl leading-none text-white">‹</Text>
-          </Pressable>
-          <Text numberOfLines={1} className="flex-1 text-lg font-medium text-white">{nick}</Text>
-          <View className="w-10" />
-        </View>
+        <ScreenHeader title={nick} onBack={onClose} />
 
         {loading ? (
           <ActivityIndicator className="py-16" color="#7cb342" size="large" />

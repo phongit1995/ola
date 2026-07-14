@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, FlatList, Modal, Pressable, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RelationshipService, UserService } from '@ola/shared/services';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { activeVipTypeId, colorForName, createTimeFormatter } from '@ola/shared/lib';
 import type { VisitorUser } from '@ola/shared/types';
 import { Avatar } from '../../components/Avatar';
 import { VipBadge } from '../../components/VipBadge';
+import { ScreenHeader } from '../../components/ScreenHeader';
 
 const PAGE_SIZE = 40;
 
@@ -19,7 +19,6 @@ interface MeVisitorsScreenProps {
 
 export function MeVisitorsScreen({ language, onClose, onOpenProfile }: MeVisitorsScreenProps) {
   const { t } = useTranslation();
-  const insets = useSafeAreaInsets();
   const push = useToastStore((s) => s.push);
   const [rows, setRows] = useState<VisitorUser[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
@@ -75,13 +74,7 @@ export function MeVisitorsScreen({ language, onClose, onOpenProfile }: MeVisitor
   return (
     <Modal visible transparent animationType="slide" onRequestClose={onClose}>
       <View className="flex-1 bg-white">
-        <View className="flex-row items-center bg-ola-primary px-2" style={{ paddingTop: insets.top }}>
-          <Pressable onPress={onClose} className="h-12 w-10 items-center justify-center">
-            <Text className="text-2xl leading-none text-white">‹</Text>
-          </Pressable>
-          <Text className="flex-1 text-lg font-medium text-white">{t('me.tabVisitors')}</Text>
-          <View className="w-10" />
-        </View>
+        <ScreenHeader title={t('me.tabVisitors')} onBack={onClose} />
 
         {loading ? (
           <ActivityIndicator className="py-6" color="#7cb342" />

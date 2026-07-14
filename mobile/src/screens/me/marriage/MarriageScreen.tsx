@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Modal, Pressable, ScrollView, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ActivityIndicator, Modal, ScrollView, Text, View } from 'react-native';
 import { useMarriageStore } from '@ola/shared/stores/marriageStore';
 import { MarriageBoxView } from './MarriageBoxView';
 import { MarriageLockedView } from './MarriageLockedView';
 import { ProposeComposer } from './ProposeComposer';
+import { ScreenHeader } from '../../../components/ScreenHeader';
 
 interface MarriageScreenProps {
   onClose: () => void;
@@ -13,7 +13,6 @@ interface MarriageScreenProps {
 
 export function MarriageScreen({ onClose }: MarriageScreenProps) {
   const { t } = useTranslation();
-  const insets = useSafeAreaInsets();
   const status = useMarriageStore((s) => s.status);
   const loading = useMarriageStore((s) => s.loading);
   const loaded = useMarriageStore((s) => s.loaded);
@@ -30,18 +29,7 @@ export function MarriageScreen({ onClose }: MarriageScreenProps) {
         <ProposeComposer onClose={() => setComposeOpen(false)} />
       ) : (
         <View className="flex-1 bg-white">
-          <View
-            className="flex-row items-center bg-ola-primary px-2"
-            style={{ paddingTop: insets.top }}
-          >
-            <Pressable onPress={onClose} className="h-12 w-10 items-center justify-center">
-              <Text className="text-2xl leading-none text-white">‹</Text>
-            </Pressable>
-            <Text className="flex-1 text-center text-lg font-medium text-white">
-              {t('marriage.title')}
-            </Text>
-            <View className="w-10" />
-          </View>
+          <ScreenHeader title={t('marriage.title')} centerTitle onBack={onClose} />
 
           {!loaded && loading ? (
             <View className="flex-1 items-center justify-center">

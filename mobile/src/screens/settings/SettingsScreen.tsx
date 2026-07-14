@@ -16,6 +16,7 @@ import { VipService } from '@ola/shared/services';
 import type { UserSettings } from '@ola/shared/types';
 import type { RootStackParamList } from '../../navigation/types';
 import { ROOT_ROUTES } from '../../navigation/routes';
+import { ScreenHeader } from '../../components/ScreenHeader';
 
 const PRIMARY = '#7cb342';
 const ROW_BORDER = 'rgba(0,0,0,0.06)';
@@ -264,20 +265,11 @@ export function SettingsScreen({ navigation }: Props) {
 
   return (
     <View className="flex-1" style={{ backgroundColor: '#eef0f2' }}>
-      <View className="bg-ola-primary" style={{ paddingTop: insets.top }}>
-        <View className="h-12 flex-row items-center px-2">
-          <Pressable
-            className="h-9 w-9 items-center justify-center rounded-full active:bg-white/15"
-            onPress={() => navigation.goBack()}
-          >
-            <Text className="text-2xl leading-none text-white">‹</Text>
-          </Pressable>
-          <Text
-            className="flex-1 text-center text-lg font-medium text-white"
-            numberOfLines={1}
-          >
-            {t('settings.title')}
-          </Text>
+      <ScreenHeader
+        title={t('settings.title')}
+        centerTitle
+        onBack={() => navigation.goBack()}
+        right={
           <Pressable
             onPress={handleSave}
             disabled={!dirty || saving}
@@ -288,8 +280,8 @@ export function SettingsScreen({ navigation }: Props) {
               {saving ? t('common.loading') : t('settings.save')}
             </Text>
           </Pressable>
-        </View>
-      </View>
+        }
+      />
 
       <ScrollView
         className="flex-1"

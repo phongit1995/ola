@@ -4,6 +4,7 @@ import { FlatList, Modal, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { SUGGESTED_FRIENDS, type SuggestedFriend } from './contacts';
+import { ScreenHeader } from '../../components/ScreenHeader';
 
 export function SuggestedFriendsScreen({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();
@@ -27,15 +28,7 @@ export function SuggestedFriendsScreen({ onClose }: { onClose: () => void }) {
   return (
     <Modal visible transparent animationType="slide" onRequestClose={onClose}>
       <View className="flex-1 bg-white">
-        <View className="flex-row items-center bg-ola-primary px-1" style={{ paddingTop: insets.top }}>
-          <Pressable onPress={onClose} className="h-12 w-10 items-center justify-center">
-            <Text className="text-2xl leading-none text-white">‹</Text>
-          </Pressable>
-          <Text numberOfLines={1} className="flex-1 text-center text-lg font-medium text-white">
-            {t('chat.suggestFriends')}
-          </Text>
-          <View className="w-10" />
-        </View>
+        <ScreenHeader title={t('chat.suggestFriends')} centerTitle onBack={onClose} />
 
         {list.length > 0 && (
           <View className="p-2" style={{ borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.12)' }}>
