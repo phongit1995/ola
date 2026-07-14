@@ -109,9 +109,14 @@ export function RoomMessagesTab({
   }, []);
 
   const scrollOnContentChange = useCallback(() => {
-    if (!forceScrollRef.current) return;
-    forceScrollRef.current = false;
-    requestAnimationFrame(() => listRef.current?.scrollToEnd({ animated: false }));
+    if (forceScrollRef.current) {
+      forceScrollRef.current = false;
+      requestAnimationFrame(() => listRef.current?.scrollToEnd({ animated: false }));
+      return;
+    }
+    if (stickToBottomRef.current && !sheetOpenRef.current) {
+      listRef.current?.scrollToEnd({ animated: false });
+    }
   }, []);
 
   const pinToBottom = useCallback(() => {
@@ -242,6 +247,7 @@ export function RoomMessagesTab({
         maintainVisibleContentPosition={{
           startRenderingFromBottom: true,
           autoscrollToBottomThreshold: 0.2,
+          animateAutoScrollToBottom: false,
         }}
         onScroll={handleScroll}
         scrollEventThrottle={16}
