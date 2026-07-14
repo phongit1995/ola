@@ -3,7 +3,7 @@ import { Animated, View } from 'react-native';
 
 const COLORS = ['#ffd54f', '#ff6f61', '#4fc3f7', '#81c784', '#ba68c8', '#fff176', '#ff8a65'];
 const GRAVITY = 520;
-const PER_BURST = 64;
+const PER_BURST = 40;
 const VOLLEY_NORMAL = 3;
 const VOLLEY_SUPER = 5;
 const GAP_NORMAL = 350;

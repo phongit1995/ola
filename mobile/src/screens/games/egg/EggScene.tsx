@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Animated, Image, Pressable, Text, View } from 'react-native';
 import { BG_H, BG_W, NESTS } from '@ola/shared/lib';
 import { useEggGameStore } from '@ola/shared/stores/eggGameStore';
@@ -55,6 +55,8 @@ export function EggScene({ hint, play }: EggSceneProps) {
     endSmash();
   }
 
+  const handleBroken = useCallback(() => setBrokenCount((c) => c + 1), []);
+
   const scaleX = size.w / BG_W;
   const scaleY = size.h / BG_H;
 
@@ -79,7 +81,7 @@ export function EggScene({ hint, play }: EggSceneProps) {
               scaleX={scaleX}
               scaleY={scaleY}
               onSmash={play}
-              onBroken={() => setBrokenCount((c) => c + 1)}
+              onBroken={handleBroken}
             />
           ))}
 
