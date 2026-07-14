@@ -3,15 +3,14 @@ import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   Image,
-  KeyboardAvoidingView,
   NativeScrollEvent,
   NativeSyntheticEvent,
-  Platform,
   Pressable,
   Text,
   useWindowDimensions,
   View,
 } from 'react-native';
+import { KeyboardView } from '../../components/KeyboardView';
 import { FlashList, type FlashListRef } from '@shopify/flash-list';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -31,7 +30,7 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import { kulImageForText, kulToken } from '../../lib/kul';
 import { ChatComposer, type ChatComposerHandle } from '../../components/ChatComposer';
 import { RichTextView } from '../../components/RichTextView';
-import { useKeyboardHeight } from '../../hooks/useKeyboardHeight';
+import { useBottomBarInset } from '../../hooks/useBottomBarInset';
 import { ListOptionDialog, type ListOption } from '../../components/ListOptionDialog';
 import { RoomReactionsDialog } from '../room/RoomReactionsDialog';
 import { ChatBubble, ChatMessageRow } from './ChatMessageRow';
@@ -63,7 +62,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   const { conversationId } = route.params;
   const { t, i18n } = useTranslation();
   const insets = useSafeAreaInsets();
-  const keyboardHeight = useKeyboardHeight();
+  const bottomBarInset = useBottomBarInset();
   const { width: windowWidth } = useWindowDimensions();
 
   const conversations = useChatStore((s) => s.conversations);
@@ -396,10 +395,9 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   }
 
   return (
-    <KeyboardAvoidingView
+    <KeyboardView
       className="flex-1"
       style={{ backgroundColor: CHAT_BG }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View className="bg-ola-primary px-2 pb-2" style={{ paddingTop: insets.top + 8 }}>
         <View className="h-9 flex-row items-center gap-2">
@@ -663,7 +661,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
 
       <AttachmentBar
         openTab={openTab}
-        bottomInset={keyboardHeight > 0 ? 0 : insets.bottom}
+        bottomInset={bottomBarInset}
         onToggleTab={(tab) => setOpenTab((c) => (c === tab ? null : tab))}
         onPickEmoji={(code) => composerRef.current?.insertCode(code, true)}
         onBackspace={() => composerRef.current?.backspace()}
@@ -807,6 +805,6 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         onConfirm={() => void handleBlock()}
         onCancel={() => setBlockOpen(false)}
       />
-    </KeyboardAvoidingView>
+    </KeyboardView>
   );
 }

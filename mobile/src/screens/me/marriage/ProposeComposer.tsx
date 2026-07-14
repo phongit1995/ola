@@ -3,14 +3,13 @@ import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   Image,
-  KeyboardAvoidingView,
-  Platform,
   Pressable,
   ScrollView,
   Text,
   TextInput,
   View,
 } from 'react-native';
+import { KeyboardView } from '../../../components/KeyboardView';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { toast } from '@ola/shared/lib';
 import { UserService } from '@ola/shared/services';
@@ -114,9 +113,8 @@ export function ProposeComposer({ onClose }: ProposeComposerProps) {
   }
 
   return (
-    <KeyboardAvoidingView
+    <KeyboardView
       className="flex-1 bg-white"
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View
         className="flex-row items-center bg-ola-primary px-2"
@@ -289,6 +287,6 @@ export function ProposeComposer({ onClose }: ProposeComposerProps) {
           </View>
         </View>
       </ScrollView>
-    </KeyboardAvoidingView>
+    </KeyboardView>
   );
 }

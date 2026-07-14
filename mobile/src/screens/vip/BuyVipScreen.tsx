@@ -2,14 +2,13 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
   Pressable,
   ScrollView,
   Text,
   TextInput,
   View,
 } from 'react-native';
+import { KeyboardView } from '../../components/KeyboardView';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { VipService, UserService } from '@ola/shared/services';
@@ -432,10 +431,9 @@ export function BuyVipScreen({ navigation, route }: Props) {
   }
 
   return (
-    <KeyboardAvoidingView
+    <KeyboardView
       className="flex-1"
       style={{ backgroundColor: '#ececec' }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View className="bg-ola-primary" style={{ paddingTop: insets.top }}>
         <View className="h-12 flex-row items-center gap-2 px-2">
@@ -628,6 +626,6 @@ export function BuyVipScreen({ navigation, route }: Props) {
         onCancel={() => setConfirmOpen(false)}
       />
 
-    </KeyboardAvoidingView>
+    </KeyboardView>
   );
 }

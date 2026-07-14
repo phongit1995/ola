@@ -2,14 +2,13 @@ import { useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
-  KeyboardAvoidingView,
   Modal,
-  Platform,
   Pressable,
   ScrollView,
   Text,
   View,
 } from 'react-native';
+import { KeyboardView } from '../../components/KeyboardView';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { createTimeFormatter, formatDateDMY, isSameDay } from '@ola/shared/lib';
@@ -58,9 +57,8 @@ export function MeCommentSheet({
 
   return (
     <Modal visible transparent animationType="slide" onRequestClose={onClose}>
-      <KeyboardAvoidingView
+      <KeyboardView
         className="flex-1 bg-[#eceff1]"
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <View className="flex-row items-center bg-ola-primary px-1" style={{ paddingTop: insets.top }}>
           <Pressable onPress={onClose} className="h-12 w-10 items-center justify-center">
@@ -132,7 +130,7 @@ export function MeCommentSheet({
             onCancelReply={() => setReplyTarget(null)}
           />
         </View>
-      </KeyboardAvoidingView>
+      </KeyboardView>
     </Modal>
   );
 }

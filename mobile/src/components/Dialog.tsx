@@ -1,14 +1,13 @@
 import type { ReactNode } from 'react';
 import {
   Image,
-  KeyboardAvoidingView,
   Modal,
-  Platform,
   Pressable,
   Text,
   View,
   type ImageSourcePropType,
 } from 'react-native';
+import { KeyboardView } from './KeyboardView';
 
 interface DialogProps {
   visible: boolean;
@@ -33,9 +32,8 @@ export function Dialog({
 }: DialogProps) {
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <KeyboardAvoidingView
+      <KeyboardView
         className="flex-1"
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <Pressable
           className="flex-1 items-center justify-center p-4"
@@ -98,7 +96,7 @@ export function Dialog({
             {footer != null && <View className="flex-row gap-2 px-1 pb-2">{footer}</View>}
           </Pressable>
         </Pressable>
-      </KeyboardAvoidingView>
+      </KeyboardView>
     </Modal>
   );
 }

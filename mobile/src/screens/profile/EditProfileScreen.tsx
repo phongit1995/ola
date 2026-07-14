@@ -4,7 +4,6 @@ import {
   ActivityIndicator,
   Image,
   ImageBackground,
-  KeyboardAvoidingView,
   Modal,
   Platform,
   Pressable,
@@ -13,6 +12,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { KeyboardView } from '../../components/KeyboardView';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -186,7 +186,7 @@ export function EditProfileScreen({ navigation }: Props) {
   }
 
   return (
-    <KeyboardAvoidingView className="flex-1 bg-white" behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardView className="flex-1 bg-white">
       <View
         className="flex-row items-center gap-2 bg-ola-primary px-2"
         style={{ paddingTop: insets.top, height: 48 + insets.top, borderBottomWidth: 1, borderBottomColor: DIVIDER }}
@@ -407,6 +407,6 @@ export function EditProfileScreen({ navigation }: Props) {
             }}
           />
         )}
-      </KeyboardAvoidingView>
+      </KeyboardView>
   );
 }

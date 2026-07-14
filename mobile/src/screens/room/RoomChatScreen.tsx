@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Image, KeyboardAvoidingView, Platform, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, Text, View } from 'react-native';
+import { KeyboardView } from '../../components/KeyboardView';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useIsFocused } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -159,9 +160,8 @@ export function RoomChatScreen({ navigation, route }: Props) {
   );
 
   return (
-    <KeyboardAvoidingView
+    <KeyboardView
       className="flex-1 bg-white"
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View className="bg-ola-primary px-2 pb-2" style={{ paddingTop: insets.top + 8 }}>
         <View className="h-9 flex-row items-center justify-center">
@@ -256,6 +256,6 @@ export function RoomChatScreen({ navigation, route }: Props) {
         }}
         onCancel={() => setPendingLeave(null)}
       />
-    </KeyboardAvoidingView>
+    </KeyboardView>
   );
 }

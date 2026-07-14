@@ -2,14 +2,13 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Image,
-  KeyboardAvoidingView,
-  Platform,
   Pressable,
   Text,
   View,
   useWindowDimensions,
   type ImageSourcePropType,
 } from 'react-native';
+import { KeyboardView } from '../../../components/KeyboardView';
 import { formatVnd } from '@ola/shared/lib';
 import type { PenSide } from '@ola/shared/types';
 import { penAssets } from './penAssets';
@@ -64,8 +63,7 @@ export function PenModalShell({
         backgroundColor: 'rgba(0,0,0,0.55)',
       }}
     >
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      <KeyboardView
         style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
       >
         <Pressable onPress={() => {}} style={{ width: panelW, height: panelH }}>
@@ -122,7 +120,7 @@ export function PenModalShell({
             </View>
           </PenPanel>
         </Pressable>
-      </KeyboardAvoidingView>
+      </KeyboardView>
     </Pressable>
   );
 }

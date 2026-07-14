@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import { KeyboardAvoidingView, Modal, Platform, Pressable, Text, View } from 'react-native';
+import { Modal, Pressable, Text, View } from 'react-native';
+import { KeyboardView } from '../../components/KeyboardView';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MeCommentComposer } from './MeCommentComposer';
 
@@ -16,9 +17,8 @@ export function MeQuickCommentBar({ contextLabel, submitting, onSubmit, onClose 
 
   return (
     <Modal visible transparent animationType="fade" onRequestClose={onClose}>
-      <KeyboardAvoidingView
+      <KeyboardView
         className="flex-1 justify-end"
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <Pressable className="flex-1 bg-black/20" onPress={onClose} />
         <View style={{ paddingBottom: insets.bottom }}>
@@ -37,7 +37,7 @@ export function MeQuickCommentBar({ contextLabel, submitting, onSubmit, onClose 
           )}
           <MeCommentComposer submitting={submitting} onSubmit={onSubmit} autoFocus />
         </View>
-      </KeyboardAvoidingView>
+      </KeyboardView>
     </Modal>
   );
 }
