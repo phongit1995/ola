@@ -139,6 +139,7 @@ export function RoomChatScreen({ navigation, route }: Props) {
   useEffect(() => {
     const unsubscribe = navigation.addListener('beforeRemove', (event) => {
       if (confirmedLeaveRef.current) return;
+      if (useRoomChatStore.getState().status !== 'joined') return;
       event.preventDefault();
       setPendingLeave(event.data.action);
     });
@@ -202,9 +203,22 @@ export function RoomChatScreen({ navigation, route }: Props) {
           />
       </View>
 
-      {status === 'connecting' ? (
-        <View className="flex-1 items-center justify-center">
+      {status === 'error' ? (
+        <View className="flex-1 items-center justify-center gap-4 px-8">
+          <Text className="text-center text-base" style={{ color: 'rgba(0,0,0,0.7)' }}>
+            {t('room.joinError')}
+          </Text>
+          <Pressable
+            onPress={() => navigation.goBack()}
+            className="rounded-full bg-ola-primary px-6 py-2 active:opacity-90"
+          >
+            <Text className="text-sm font-medium text-white">{t('chat.back')}</Text>
+          </Pressable>
+        </View>
+      ) : status !== 'joined' ? (
+        <View className="flex-1 items-center justify-center gap-3">
           <ActivityIndicator color="#7cb342" size="large" />
+          <Text className="text-sm" style={{ color: 'rgba(0,0,0,0.54)' }}>{t('room.joining')}</Text>
         </View>
       ) : activeTab === 'members' ? (
         <RoomMembersTab members={visibleMembers} onOpenUser={openUser} />
