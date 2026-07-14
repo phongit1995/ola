@@ -1,8 +1,11 @@
+import { useState } from 'react';
 import { ActivityIndicator, Image, View } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@ola/shared/stores/authStore';
+import { useChatStore } from '@ola/shared/stores/chat/chatStore';
+import { useRoomChatStore } from '@ola/shared/stores/roomChatStore';
 import type {
   AuthStackParamList,
   MainTabParamList,
@@ -32,6 +35,8 @@ import { PenGameScreen } from '../screens/games/pen/PenGameScreen';
 import { SpinWheelGameScreen } from '../screens/games/spin-wheel/SpinWheelGameScreen';
 import { EggGameScreen } from '../screens/games/egg/EggGameScreen';
 import { TAB_ICONS } from '../assets/tabIcons';
+import { KenBalanceBadge } from '../components/KenBalanceBadge';
+import { mmkvStorage } from '../platform/storage';
 
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
 const Tabs = createBottomTabNavigator<MainTabParamList>();
@@ -69,44 +74,102 @@ function tabIcon(key: keyof typeof TAB_ICONS) {
   };
 }
 
+const ACTIVE_TAB_KEY = 'ola.home.activeTab';
+const VISIBLE_TABS: (keyof MainTabParamList)[] = [
+  TAB_ROUTES.Chat,
+  TAB_ROUTES.Room,
+  TAB_ROUTES.Me,
+  TAB_ROUTES.Apps,
+];
+
+function readStoredTab(): keyof MainTabParamList {
+  const stored = mmkvStorage.getItem(ACTIVE_TAB_KEY);
+  return VISIBLE_TABS.includes(stored as keyof MainTabParamList)
+    ? (stored as keyof MainTabParamList)
+    : TAB_ROUTES.Chat;
+}
+
 function MainTabs() {
   const { t } = useTranslation();
+  const [initialTab] = useState(readStoredTab);
+  const [activeTab, setActiveTab] = useState<string>(initialTab);
+  const chatUnread = useChatStore((state) =>
+    state.conversations.reduce((sum, item) => sum + (item.unreadCount ?? 0), 0)
+  );
+  const roomUnread = useRoomChatStore((state) => state.hasUnread);
   return (
-    <Tabs.Navigator
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: '#7cb342',
-        tabBarInactiveTintColor: '#9e9e9e',
-        tabBarHideOnKeyboard: true,
-      }}
-    >
-      <Tabs.Screen
-        name={TAB_ROUTES.Chat}
-        component={ChatListScreen}
-        options={{ title: t('home.tabChat'), tabBarIcon: tabIcon('chat') }}
-      />
-      <Tabs.Screen
-        name={TAB_ROUTES.Room}
-        component={RoomNavigator}
-        options={{ title: t('home.tabRoom'), tabBarIcon: tabIcon('room') }}
-      />
-      <Tabs.Screen
-        name={TAB_ROUTES.Me}
-        component={MeFeedScreen}
-        options={{ title: t('home.tabMe'), tabBarIcon: tabIcon('me') }}
-      />
-      {/* TODO: mở lại tab RSS khi có tính năng thật
-      <Tabs.Screen
-        name={TAB_ROUTES.Rss}
-        component={RssTabScreen}
-        options={{ title: t('home.tabRss'), tabBarIcon: tabIcon('rss') }}
-      /> */}
-      <Tabs.Screen
-        name={TAB_ROUTES.Apps}
-        component={AppsScreen}
-        options={{ title: t('home.tabApps'), tabBarIcon: tabIcon('apps') }}
-      />
-    </Tabs.Navigator>
+    <View style={{ flex: 1 }}>
+      <Tabs.Navigator
+        initialRouteName={initialTab}
+        screenListeners={{
+          state: (event) => {
+            const state = event.data.state;
+            const name = state.routes[state.index]?.name;
+            if (name == null || name === activeTab) return;
+            mmkvStorage.setItem(ACTIVE_TAB_KEY, name);
+            setActiveTab(name);
+          },
+        }}
+        screenOptions={{
+          headerShown: false,
+          tabBarActiveTintColor: '#7cb342',
+          tabBarInactiveTintColor: '#9e9e9e',
+          tabBarHideOnKeyboard: true,
+        }}
+      >
+        <Tabs.Screen
+          name={TAB_ROUTES.Chat}
+          component={ChatListScreen}
+          options={{
+            title: t('home.tabChat'),
+            tabBarIcon: tabIcon('chat'),
+            tabBarBadge:
+              chatUnread > 0 ? (chatUnread > 99 ? '99+' : chatUnread) : undefined,
+            tabBarBadgeStyle: {
+              backgroundColor: '#ff4081',
+              color: '#ffffff',
+              fontSize: 10,
+              fontWeight: 'bold',
+            },
+          }}
+        />
+        <Tabs.Screen
+          name={TAB_ROUTES.Room}
+          component={RoomNavigator}
+          options={{
+            title: t('home.tabRoom'),
+            tabBarIcon: tabIcon('room'),
+            tabBarBadge: roomUnread && activeTab !== TAB_ROUTES.Room ? '' : undefined,
+            tabBarBadgeStyle: {
+              backgroundColor: '#ff9800',
+              borderWidth: 2,
+              borderColor: '#ffffff',
+              minWidth: 12,
+              maxWidth: 12,
+              height: 12,
+              borderRadius: 6,
+            },
+          }}
+        />
+        <Tabs.Screen
+          name={TAB_ROUTES.Me}
+          component={MeFeedScreen}
+          options={{ title: t('home.tabMe'), tabBarIcon: tabIcon('me') }}
+        />
+        {/* TODO: mở lại tab RSS khi có tính năng thật
+        <Tabs.Screen
+          name={TAB_ROUTES.Rss}
+          component={RssTabScreen}
+          options={{ title: t('home.tabRss'), tabBarIcon: tabIcon('rss') }}
+        /> */}
+        <Tabs.Screen
+          name={TAB_ROUTES.Apps}
+          component={AppsScreen}
+          options={{ title: t('home.tabApps'), tabBarIcon: tabIcon('apps') }}
+        />
+      </Tabs.Navigator>
+      <KenBalanceBadge />
+    </View>
   );
 }
 

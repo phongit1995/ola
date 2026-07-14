@@ -24,6 +24,7 @@ export function MeLikedPostsScreen({ language, onClose, onOpenProfile }: MeLiked
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [commentPostId, setCommentPostId] = useState<string | null>(null);
+  const [commentFocusInput, setCommentFocusInput] = useState(false);
   const [likersPostId, setLikersPostId] = useState<string | null>(null);
   const formatTime = useMemo(() => createTimeFormatter(language), [language]);
 
@@ -99,7 +100,10 @@ export function MeLikedPostsScreen({ language, onClose, onOpenProfile }: MeLiked
                 onToggleLike={(id) => void toggleReaction(id, 'like')}
                 onToggleDislike={(id) => void toggleReaction(id, 'dislike')}
                 onOpenProfile={onOpenProfile}
-                onOpenComments={(id) => setCommentPostId(id)}
+                onOpenComments={(id, focusInput) => {
+                  setCommentFocusInput(focusInput === true);
+                  setCommentPostId(id);
+                }}
                 onOpenLikers={(id) => setLikersPostId(id)}
               />
             )}
@@ -110,6 +114,7 @@ export function MeLikedPostsScreen({ language, onClose, onOpenProfile }: MeLiked
           <MeCommentSheet
             post={commentPost}
             language={language}
+            autoFocusInput={commentFocusInput}
             onClose={() => setCommentPostId(null)}
             onToggleLike={(id) => void toggleReaction(id, 'like')}
             onToggleDislike={(id) => void toggleReaction(id, 'dislike')}

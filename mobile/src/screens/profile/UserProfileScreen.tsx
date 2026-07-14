@@ -141,6 +141,7 @@ export function UserProfileScreen({ username, language, onClose, onOpenProfile, 
   const [fans, setFans] = useState(0);
   const [kisses, setKisses] = useState(0);
   const [commentPostId, setCommentPostId] = useState<string | null>(null);
+  const [commentFocusInput, setCommentFocusInput] = useState(false);
   const [likersPostId, setLikersPostId] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [followingOpen, setFollowingOpen] = useState(false);
@@ -698,7 +699,10 @@ export function UserProfileScreen({ username, language, onClose, onOpenProfile, 
                   onToggleLike={(id) => void toggleReaction(id, 'like')}
                   onToggleDislike={(id) => void toggleReaction(id, 'dislike')}
                   onOpenProfile={onOpenProfile}
-                  onOpenComments={(id) => setCommentPostId(id)}
+                  onOpenComments={(id, focusInput) => {
+                    setCommentFocusInput(focusInput === true);
+                    setCommentPostId(id);
+                  }}
                   onQuickComment={(id) => setQuickCommentPostId(id)}
                   onOpenMenu={(id) => setMenuPostId(id)}
                   onOpenLikers={(id) => setLikersPostId(id)}
@@ -714,6 +718,7 @@ export function UserProfileScreen({ username, language, onClose, onOpenProfile, 
           <MeCommentSheet
             post={commentPost}
             language={language}
+            autoFocusInput={commentFocusInput}
             onClose={() => setCommentPostId(null)}
             onToggleLike={(id) => void toggleReaction(id, 'like')}
             onToggleDislike={(id) => void toggleReaction(id, 'dislike')}

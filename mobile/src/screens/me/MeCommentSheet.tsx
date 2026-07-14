@@ -3,12 +3,12 @@ import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   Modal,
-  Pressable,
   ScrollView,
   Text,
   View,
 } from 'react-native';
 import { KeyboardView } from '../../components/KeyboardView';
+import { ScreenHeader } from '../../components/ScreenHeader';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { createTimeFormatter, formatDateDMY, isSameDay } from '@ola/shared/lib';
@@ -21,6 +21,7 @@ import { useMeComments } from './useMeComments';
 interface MeCommentSheetProps {
   post: Post;
   language: string;
+  autoFocusInput?: boolean;
   onClose: () => void;
   onToggleLike: (id: string) => void;
   onToggleDislike: (id: string) => void;
@@ -32,6 +33,7 @@ interface MeCommentSheetProps {
 export function MeCommentSheet({
   post,
   language,
+  autoFocusInput = false,
   onClose,
   onToggleLike,
   onToggleDislike,
@@ -60,15 +62,10 @@ export function MeCommentSheet({
       <KeyboardView
         className="flex-1 bg-[#eceff1]"
       >
-        <View className="flex-row items-center bg-ola-primary px-1" style={{ paddingTop: insets.top }}>
-          <Pressable onPress={onClose} className="h-12 w-10 items-center justify-center">
-            <Text className="text-2xl leading-none text-white">×</Text>
-          </Pressable>
-          <Text className="flex-1 text-lg font-medium text-white">
-            {`${t('me.commentsTitle')}${total > 0 ? ` (${total})` : ''}`}
-          </Text>
-          <View className="w-10" />
-        </View>
+        <ScreenHeader
+          title={`${t('me.commentsTitle')}${total > 0 ? ` (${total})` : ''}`}
+          onBack={onClose}
+        />
 
         <ScrollView
           className="flex-1"
@@ -123,6 +120,7 @@ export function MeCommentSheet({
           <MeCommentComposer
             ref={composerRef}
             key={replyTarget?.id ?? 'root'}
+            autoFocus={autoFocusInput}
             submitting={submitting}
             onSubmit={add}
             initialDraft={replyingToUsername != null ? `@${replyingToUsername} ` : ''}
