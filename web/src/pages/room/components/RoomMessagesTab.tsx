@@ -18,6 +18,7 @@ import { RoomMessageGroup } from './RoomMessageGroup';
 import { RoomComposerBar, type RoomComposerHandle } from './RoomComposerBar';
 import { RoomReactionsDialog } from './RoomReactionsDialog';
 import { RoomReactionNotice } from './RoomReactionNotice';
+import { RoomReactionBalloons } from './RoomReactionBalloons';
 import type { RoomChatStatus } from '@/store/roomChatStore';
 import { useRoomFilterStore } from '../roomFilterStore';
 
@@ -196,6 +197,7 @@ export function RoomMessagesTab({
   return (
     <div className={`relative flex flex-1 flex-col overflow-hidden ${active ? '' : 'hidden'}`}>
       <RoomReactionNotice />
+      <RoomReactionBalloons />
       {status !== 'joined' && (
         <div className="bg-black/5 py-1.5 text-center text-sm text-black/54">
           {status === 'connecting' ? t('room.connecting') : t('room.joinError')}

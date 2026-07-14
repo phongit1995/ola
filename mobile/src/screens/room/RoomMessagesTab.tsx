@@ -25,6 +25,7 @@ import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { buildRoomFeed, type GroupedMessage, type RoomFeedItem } from './messageGroups';
 import { RoomBubbleBody, RoomMessageGroup } from './RoomMessageGroup';
 import { RoomReactionNotice } from './RoomReactionNotice';
+import { RoomReactionBalloons } from './RoomReactionBalloons';
 import { SmileyKulPanel } from './SmileyKulPanel';
 import { MessageActionSheet, type AnchorRect, type MessageSheetAction } from './MessageActionSheet';
 import { RoomReactionsDialog } from './RoomReactionsDialog';
@@ -281,6 +282,7 @@ export function RoomMessagesTab({
   return (
     <View className="flex-1">
       <RoomReactionNotice />
+      <RoomReactionBalloons />
       {status !== 'joined' && (
         <View className="bg-black/5 py-1.5">
           <Text className="text-center text-sm" style={{ color: 'rgba(0,0,0,0.54)' }}>
