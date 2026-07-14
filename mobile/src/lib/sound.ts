@@ -1,3 +1,4 @@
+import { Image } from 'react-native';
 import Sound from 'react-native-sound';
 import { useSettingsStore } from '@ola/shared/stores/settingsStore';
 import type { UserSettings } from '@ola/shared/types';
@@ -22,8 +23,13 @@ export function createSoundPlayer(asset: number, gate: SoundGate): SoundPlayer {
       if (!useSettingsStore.getState().settings[gate]) return;
       if (loadFailed) return;
       if (sound == null) {
+        const source = Image.resolveAssetSource(asset);
+        if (source?.uri == null || source.uri === '') {
+          loadFailed = true;
+          return;
+        }
         playWhenLoaded = true;
-        const created = new Sound(asset, (error) => {
+        const created = new Sound(source.uri, undefined, (error) => {
           if (error) {
             loadFailed = true;
             sound = null;
