@@ -32,7 +32,6 @@ const deleteActionIcon = require('../../assets/icons/chat/ic_menu_delete.png');
 
 interface RoomMessagesTabProps {
   currentUserId: string;
-  bottomInset?: number;
   language: string;
   messages: RoomMessage[];
   status: RoomChatStatus;
@@ -53,7 +52,6 @@ interface RoomMessagesTabProps {
 
 export function RoomMessagesTab({
   currentUserId,
-  bottomInset = 0,
   language,
   messages,
   status,
@@ -316,7 +314,6 @@ export function RoomMessagesTab({
 
       <RoomComposerBar
         ref={composerRef}
-        bottomInset={bottomInset}
         disabled={!canSend}
         onBeforeSend={pinToBottom}
         onSendText={onSend}

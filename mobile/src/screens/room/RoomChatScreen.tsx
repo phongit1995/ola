@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Image, Pressable, Text, View } from 'react-native';
 import { KeyboardView } from '../../components/KeyboardView';
-import { useBottomBarInset } from '../../hooks/useBottomBarInset';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useIsFocused } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -140,13 +139,6 @@ export function RoomChatScreen({ navigation, route }: Props) {
     setRoomForeground(isFocused);
   }, [isFocused, setRoomForeground]);
 
-  const bottomBarInset = useBottomBarInset();
-  useEffect(() => {
-    const tabNavigation = navigation.getParent();
-    tabNavigation?.setOptions({ tabBarStyle: { display: 'none' } });
-    return () => tabNavigation?.setOptions({ tabBarStyle: undefined });
-  }, [navigation]);
-
   useEffect(() => {
     const unsubscribe = navigation.addListener('beforeRemove', (event) => {
       if (confirmedLeaveRef.current) return;
@@ -236,7 +228,6 @@ export function RoomChatScreen({ navigation, route }: Props) {
       ) : (
         <RoomMessagesTab
           currentUserId={currentUserId}
-          bottomInset={bottomBarInset}
           language={i18n.language}
           messages={messages}
           status={status}
