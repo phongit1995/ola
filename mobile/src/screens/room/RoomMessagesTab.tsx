@@ -32,6 +32,7 @@ const deleteActionIcon = require('../../assets/icons/chat/ic_menu_delete.png');
 
 interface RoomMessagesTabProps {
   currentUserId: string;
+  bottomInset?: number;
   language: string;
   messages: RoomMessage[];
   status: RoomChatStatus;
@@ -52,6 +53,7 @@ interface RoomMessagesTabProps {
 
 export function RoomMessagesTab({
   currentUserId,
+  bottomInset = 0,
   language,
   messages,
   status,
@@ -100,13 +102,22 @@ export function RoomMessagesTab({
   }, [messages, currentUserId, blockedUserIds]);
   const messageById = useMemo(() => new Map(messages.map((item) => [item.id, item])), [messages]);
 
-  const scrollToEnd = useCallback(() => {
+  const forceScrollRef = useRef(false);
+
+  const repinOnResize = useCallback(() => {
     if (stickToBottomRef.current && !sheetOpenRef.current) {
       requestAnimationFrame(() => listRef.current?.scrollToEnd({ animated: false }));
     }
   }, []);
 
+  const scrollOnContentChange = useCallback(() => {
+    if (!forceScrollRef.current) return;
+    forceScrollRef.current = false;
+    requestAnimationFrame(() => listRef.current?.scrollToEnd({ animated: false }));
+  }, []);
+
   const pinToBottom = useCallback(() => {
+    forceScrollRef.current = !stickToBottomRef.current;
     stickToBottomRef.current = true;
   }, []);
 
@@ -230,12 +241,15 @@ export function RoomMessagesTab({
         data={feed}
         keyExtractor={(item) => item.key}
         getItemType={(item) => item.kind}
-        maintainVisibleContentPosition={{ startRenderingFromBottom: true }}
+        maintainVisibleContentPosition={{
+          startRenderingFromBottom: true,
+          autoscrollToBottomThreshold: 0.2,
+        }}
         onScroll={handleScroll}
         scrollEventThrottle={16}
         contentContainerClassName="p-3"
-        onContentSizeChange={scrollToEnd}
-        onLayout={scrollToEnd}
+        onContentSizeChange={scrollOnContentChange}
+        onLayout={repinOnResize}
         ListHeaderComponent={
           loadingMore ? (
             <Text className="py-1 text-center text-xs" style={{ color: 'rgba(0,0,0,0.4)' }}>
@@ -302,6 +316,7 @@ export function RoomMessagesTab({
 
       <RoomComposerBar
         ref={composerRef}
+        bottomInset={bottomInset}
         disabled={!canSend}
         onBeforeSend={pinToBottom}
         onSendText={onSend}

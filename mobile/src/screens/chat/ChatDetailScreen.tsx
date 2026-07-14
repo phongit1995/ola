@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   Image,
+  Keyboard,
   NativeScrollEvent,
   NativeSyntheticEvent,
   Pressable,
@@ -189,10 +190,18 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     return null;
   }, [messages, myId]);
 
-  const scrollToEnd = useCallback(() => {
+  const forceScrollRef = useRef(false);
+
+  const repinOnResize = useCallback(() => {
     if (stickToBottomRef.current && !sheetOpenRef.current) {
       requestAnimationFrame(() => listRef.current?.scrollToEnd({ animated: false }));
     }
+  }, []);
+
+  const scrollOnContentChange = useCallback(() => {
+    if (!forceScrollRef.current) return;
+    forceScrollRef.current = false;
+    requestAnimationFrame(() => listRef.current?.scrollToEnd({ animated: false }));
   }, []);
 
   const closeAttachTab = useCallback(() => setOpenTab(null), []);
@@ -212,8 +221,8 @@ export function ChatDetailScreen({ navigation, route }: Props) {
       await editMessage(id, trimmed);
       return;
     }
+    forceScrollRef.current = !stickToBottomRef.current;
     stickToBottomRef.current = true;
-    setOpenTab(null);
     await sendText(trimmed);
   }
 
@@ -476,12 +485,15 @@ export function ChatDetailScreen({ navigation, route }: Props) {
           ref={listRef}
           data={messages}
           keyExtractor={(item) => item.clientMsgId ?? item.id}
-          maintainVisibleContentPosition={{ startRenderingFromBottom: true }}
+          maintainVisibleContentPosition={{
+            startRenderingFromBottom: true,
+            autoscrollToBottomThreshold: 0.2,
+          }}
           onScroll={handleScroll}
           scrollEventThrottle={16}
           contentContainerStyle={{ paddingVertical: 12 }}
-          onContentSizeChange={scrollToEnd}
-          onLayout={scrollToEnd}
+          onContentSizeChange={scrollOnContentChange}
+          onLayout={repinOnResize}
           ListHeaderComponent={
             peerCardVisible && peerCardAnchorId === '' && peerProfile != null ? (
               <PeerProfileCard
@@ -651,6 +663,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
       <ChatInputBar
         ref={composerRef}
         hidden={pendingAudio != null}
+        refocusOnSend={openTab == null}
         editing={editing != null}
         placeholder={t('chat.messageInputPlaceholder', { name: title })}
         onSend={(text) => void send(text)}
@@ -661,7 +674,10 @@ export function ChatDetailScreen({ navigation, route }: Props) {
       <AttachmentBar
         openTab={openTab}
         bottomInset={bottomBarInset}
-        onToggleTab={(tab) => setOpenTab((c) => (c === tab ? null : tab))}
+        onToggleTab={(tab) => {
+          if (openTab !== tab) Keyboard.dismiss();
+          setOpenTab(openTab === tab ? null : tab);
+        }}
         onPickEmoji={(code) => composerRef.current?.insertCode(code, true)}
         onBackspace={() => composerRef.current?.backspace()}
         onSendKul={(index) => {

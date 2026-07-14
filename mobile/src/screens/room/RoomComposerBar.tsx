@@ -1,12 +1,13 @@
 import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Image, Pressable, ScrollView, Text, View } from 'react-native';
+import { Image, Keyboard, Pressable, ScrollView, Text, View } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import type { NativeUploadFile } from '@ola/shared/lib';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { kulToken } from '../../lib/kul';
 import { ChatComposer, type ChatComposerHandle } from '../../components/ChatComposer';
-import { SmileyKulPanel } from './SmileyKulPanel';
+import { useKeyboardHeight } from '../../hooks/useKeyboardHeight';
+import { SmileyKulPanel, SMILEY_PANEL_MIN_CONTENT_HEIGHT } from './SmileyKulPanel';
 
 const likeIcon = require('../../assets/icons/chat/smiley/smiley_35.png');
 const smileyIcon = require('../../assets/icons/chat/ic_smiley.png');
@@ -27,13 +28,14 @@ interface PendingImage {
 
 interface RoomComposerBarProps {
   disabled: boolean;
+  bottomInset?: number;
   onBeforeSend: () => void;
   onSendText: (content: string) => Promise<void>;
   onSendImage: (file: NativeUploadFile) => Promise<void>;
 }
 
 export const RoomComposerBar = forwardRef<RoomComposerHandle, RoomComposerBarProps>(
-  function RoomComposerBarInner({ disabled, onBeforeSend, onSendText, onSendImage }, ref) {
+  function RoomComposerBarInner({ disabled, bottomInset = 0, onBeforeSend, onSendText, onSendImage }, ref) {
     const { t } = useTranslation();
     const pushToast = useToastStore((s) => s.push);
     const [draft, setDraft] = useState('');
@@ -41,6 +43,22 @@ export const RoomComposerBar = forwardRef<RoomComposerHandle, RoomComposerBarPro
     const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
     const composerRef = useRef<ChatComposerHandle>(null);
     const imageIdRef = useRef(0);
+    const keyboardHeight = useKeyboardHeight();
+    const lastKeyboardHeightRef = useRef(0);
+    if (keyboardHeight > 0) lastKeyboardHeightRef.current = keyboardHeight;
+    const panelContentHeight = Math.max(
+      SMILEY_PANEL_MIN_CONTENT_HEIGHT,
+      lastKeyboardHeightRef.current - 44
+    );
+
+    function togglePanel() {
+      if (panelOpen) {
+        setPanelOpen(false);
+        return;
+      }
+      Keyboard.dismiss();
+      setPanelOpen(true);
+    }
 
     function insertMention(name: string) {
       setDraft((current) => {
@@ -63,7 +81,6 @@ export const RoomComposerBar = forwardRef<RoomComposerHandle, RoomComposerBarPro
       if (trimmed === '' || disabled) return;
       onBeforeSend();
       setDraft('');
-      setPanelOpen(false);
       try {
         await onSendText(trimmed);
       } catch {
@@ -127,13 +144,13 @@ export const RoomComposerBar = forwardRef<RoomComposerHandle, RoomComposerBarPro
     const isTyping = draft.trim() !== '';
 
     return (
-      <>
+      <View className="bg-white" style={{ paddingBottom: bottomInset }}>
         <View
           className="flex-row items-center gap-1 bg-white px-2 py-2"
           style={{ borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.12)' }}
         >
           <Pressable
-            onPress={() => setPanelOpen((current) => !current)}
+            onPress={togglePanel}
             className="h-9 w-9 items-center justify-center"
             style={{ opacity: panelOpen ? 1 : 0.6 }}
           >
@@ -211,7 +228,7 @@ export const RoomComposerBar = forwardRef<RoomComposerHandle, RoomComposerBarPro
             <Pressable
               onPress={() => {
                 void sendText(draft);
-                requestAnimationFrame(() => composerRef.current?.focus());
+                if (!panelOpen) requestAnimationFrame(() => composerRef.current?.focus());
               }}
               disabled={disabled}
               className="h-9 items-center justify-center rounded-full bg-ola-primary px-4 active:opacity-90"
@@ -232,6 +249,7 @@ export const RoomComposerBar = forwardRef<RoomComposerHandle, RoomComposerBarPro
 
         {panelOpen && !disabled && (
           <SmileyKulPanel
+            contentHeight={panelContentHeight}
             onPickEmoji={(code) => composerRef.current?.insertCode(code, true)}
             onBackspace={() => composerRef.current?.backspace()}
             onSendKul={(index) => {
@@ -240,7 +258,7 @@ export const RoomComposerBar = forwardRef<RoomComposerHandle, RoomComposerBarPro
             }}
           />
         )}
-      </>
+      </View>
     );
   }
 );

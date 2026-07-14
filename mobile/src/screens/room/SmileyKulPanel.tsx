@@ -12,8 +12,11 @@ const smileyTabIcon = require('../../assets/icons/chat/ic_tab_smiley.png');
 const kulTabIcon = require('../../assets/icons/chat/ic_tab_kul.png');
 const backspaceIcon = require('../../assets/icons/chat/ic_backspace_selected.png');
 
+export const SMILEY_PANEL_MIN_CONTENT_HEIGHT = 164;
+
 interface SmileyKulPanelProps {
   hideKul?: boolean;
+  contentHeight?: number;
   onPickEmoji: (code: string) => void;
   onBackspace?: () => void;
   onSendKul?: (index: number) => void;
@@ -71,14 +74,20 @@ function PanelTabBar({
   );
 }
 
-export function SmileyKulPanel({ hideKul, onPickEmoji, onBackspace, onSendKul }: SmileyKulPanelProps) {
+export function SmileyKulPanel({
+  hideKul,
+  contentHeight = SMILEY_PANEL_MIN_CONTENT_HEIGHT,
+  onPickEmoji,
+  onBackspace,
+  onSendKul,
+}: SmileyKulPanelProps) {
   const visibleTabs = hideKul === true ? COMPOSER_TABS : GROUP_TABS;
   const [active, setActive] = useState<PanelTab>('smiley');
 
   return (
     <View className="bg-white" style={{ borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.12)' }}>
       <PanelTabBar active={active} tabs={visibleTabs} onSelect={setActive} />
-      <View style={{ height: 164 }}>
+      <View style={{ height: contentHeight }}>
         <ScrollView
           style={{ flex: 1 }}
           contentContainerClassName="flex-row flex-wrap p-2"

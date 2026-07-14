@@ -19,13 +19,17 @@ interface ChatInputBarProps {
   placeholder: string;
   editing: boolean;
   hidden?: boolean;
+  refocusOnSend?: boolean;
   onSend: (text: string) => void;
   onTyping: () => void;
   onFocusInput: () => void;
 }
 
 export const ChatInputBar = forwardRef<ChatInputBarHandle, ChatInputBarProps>(
-  function ChatInputBarInner({ placeholder, editing, hidden = false, onSend, onTyping, onFocusInput }, ref) {
+  function ChatInputBarInner(
+    { placeholder, editing, hidden = false, refocusOnSend = true, onSend, onTyping, onFocusInput },
+    ref
+  ) {
     const { t } = useTranslation();
     const [draft, setDraft] = useState('');
     const composerRef = useRef<ChatComposerHandle>(null);
@@ -43,7 +47,7 @@ export const ChatInputBar = forwardRef<ChatInputBarHandle, ChatInputBarProps>(
       if (text.trim() === '') return;
       setDraft('');
       onSend(text);
-      requestAnimationFrame(() => composerRef.current?.focus());
+      if (refocusOnSend) requestAnimationFrame(() => composerRef.current?.focus());
     }
 
     const isTyping = draft.trim() !== '';
