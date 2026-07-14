@@ -6,7 +6,7 @@ import type { NativeUploadFile } from '@ola/shared/lib';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { kulToken } from '../../lib/kul';
 import { ChatComposer, type ChatComposerHandle } from '../../components/ChatComposer';
-import { useKeyboardHeight } from '../../hooks/useKeyboardHeight';
+import { useLastKeyboardHeight } from '../../hooks/useKeyboardHeight';
 import { SmileyKulPanel, SMILEY_PANEL_MIN_CONTENT_HEIGHT } from './SmileyKulPanel';
 
 const likeIcon = require('../../assets/icons/chat/smiley/smiley_35.png');
@@ -43,13 +43,8 @@ export const RoomComposerBar = forwardRef<RoomComposerHandle, RoomComposerBarPro
     const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
     const composerRef = useRef<ChatComposerHandle>(null);
     const imageIdRef = useRef(0);
-    const keyboardHeight = useKeyboardHeight();
-    const lastKeyboardHeightRef = useRef(0);
-    if (keyboardHeight > 0) lastKeyboardHeightRef.current = keyboardHeight;
-    const panelContentHeight = Math.max(
-      SMILEY_PANEL_MIN_CONTENT_HEIGHT,
-      lastKeyboardHeightRef.current - 44
-    );
+    const lastKeyboardHeight = useLastKeyboardHeight();
+    const panelContentHeight = Math.max(SMILEY_PANEL_MIN_CONTENT_HEIGHT, lastKeyboardHeight - 44);
 
     function togglePanel() {
       if (panelOpen) {

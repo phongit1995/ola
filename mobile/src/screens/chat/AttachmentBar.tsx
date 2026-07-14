@@ -2,7 +2,8 @@ import { Image, Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { ImageSourcePropType } from 'react-native';
 import { useToastStore } from '@ola/shared/stores/toastStore';
-import { SmileyKulPanel } from '../room/SmileyKulPanel';
+import { useLastKeyboardHeight } from '../../hooks/useKeyboardHeight';
+import { SmileyKulPanel, SMILEY_PANEL_MIN_CONTENT_HEIGHT } from '../room/SmileyKulPanel';
 import { VoicePanel } from './VoicePanel';
 import type { VoiceRecording } from '../../hooks/useVoiceRecorder';
 
@@ -112,6 +113,8 @@ export function AttachmentBar({
 }: AttachmentBarProps) {
   const { t } = useTranslation();
   const push = useToastStore((s) => s.push);
+  const lastKeyboardHeight = useLastKeyboardHeight();
+  const panelContentHeight = Math.max(SMILEY_PANEL_MIN_CONTENT_HEIGHT, lastKeyboardHeight - 44);
 
   function handlePress(tab: AttachTab) {
     if (tab === 'smiley' || tab === 'more' || tab === 'voice') {
@@ -158,7 +161,12 @@ export function AttachmentBar({
         })}
       </View>
       {openTab === 'smiley' && (
-        <SmileyKulPanel onPickEmoji={onPickEmoji} onBackspace={onBackspace} onSendKul={onSendKul} />
+        <SmileyKulPanel
+          contentHeight={panelContentHeight}
+          onPickEmoji={onPickEmoji}
+          onBackspace={onBackspace}
+          onSendKul={onSendKul}
+        />
       )}
       {openTab === 'voice' && onRecorded != null && <VoicePanel onRecorded={onRecorded} />}
       {openTab === 'more' && (

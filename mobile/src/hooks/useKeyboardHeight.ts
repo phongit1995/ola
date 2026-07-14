@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Keyboard } from 'react-native';
 
 export function useKeyboardHeight(): number {
@@ -12,4 +12,11 @@ export function useKeyboardHeight(): number {
     };
   }, []);
   return height;
+}
+
+export function useLastKeyboardHeight(): number {
+  const height = useKeyboardHeight();
+  const lastRef = useRef(0);
+  if (height > 0) lastRef.current = height;
+  return lastRef.current;
 }
