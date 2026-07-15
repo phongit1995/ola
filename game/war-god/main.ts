@@ -2,7 +2,7 @@ import { Application, Container, Graphics, Text } from 'pixi.js';
 import { bridge } from '../src/sdk';
 
 const GRID = 8;
-const COLORS = [0xf87171, 0xfbbf24, 0x34d399, 0x60a5fa, 0xc084fc, 0xf472b6];
+const COLORS = [0xf87171, 0xfbbf24, 0x34d399, 0x60a5fa, 0xc084fc, 0x94a3b8];
 
 async function main(): Promise<void> {
   const root = document.getElementById('app')!;
@@ -34,7 +34,7 @@ async function main(): Promise<void> {
   board.y = (app.screen.height - GRID * cellSize) / 2;
 
   const title = new Text({
-    text: 'CANDY BATTLE',
+    text: 'WAR GOD',
     style: { fill: 0xe2e8f0, fontSize: 28, fontWeight: '800', fontFamily: 'system-ui' },
   });
   title.anchor.set(0.5);
@@ -43,7 +43,7 @@ async function main(): Promise<void> {
   app.stage.addChild(title);
 
   const subtitle = new Text({
-    text: 'Đang phát triển — pipeline Pixi v8 hoạt động ✅',
+    text: 'Match-3 battle — coming soon',
     style: { fill: 0x94a3b8, fontSize: 14, fontFamily: 'system-ui' },
   });
   subtitle.anchor.set(0.5);

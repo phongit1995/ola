@@ -7,7 +7,7 @@ export default defineConfig({
       input: {
         hub: resolve(__dirname, 'index.html'),
         caro: resolve(__dirname, 'caro/index.html'),
-        candy: resolve(__dirname, 'candy/index.html'),
+        wargod: resolve(__dirname, 'war-god/index.html'),
       },
     },
   },

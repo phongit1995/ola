@@ -1,4 +1,4 @@
-package candy
+package wargod
 
 import (
 	"encoding/json"
@@ -16,18 +16,18 @@ func init() {
 	logic.Register(Logic{})
 }
 
-func (Logic) ID() string { return "candy" }
+func (Logic) ID() string { return "war-god" }
 
 func (Logic) Init(seed int64) any {
 	return &State{Placeholder: true}
 }
 
 func (Logic) ValidateMove(state any, playerIdx int, move json.RawMessage) error {
-	return errors.New("candy is not implemented yet")
+	return errors.New("war-god is not implemented yet")
 }
 
 func (Logic) Apply(state any, playerIdx int, move json.RawMessage) (any, error) {
-	return state, errors.New("candy is not implemented yet")
+	return state, errors.New("war-god is not implemented yet")
 }
 
 func (Logic) Result(state any) (bool, int) {
