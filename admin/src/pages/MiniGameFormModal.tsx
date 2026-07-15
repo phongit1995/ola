@@ -1,6 +1,8 @@
-import { useEffect } from 'react'
-import { App, Form, Input, InputNumber, Modal, Switch } from 'antd'
+import { useEffect, useState } from 'react'
+import { App, Button, Form, Image, Input, InputNumber, Modal, Space, Switch, Upload } from 'antd'
+import { DeleteOutlined, UploadOutlined } from '@ant-design/icons'
 import { useCreateMiniGame, useUpdateMiniGame } from '@/hooks/useMiniGames'
+import { AdminUploadService } from '@/services/adminUpload.service'
 import { ApiError } from '@/lib/apiError'
 import type { CreateMiniGameRequest, MiniGame } from '@/types'
 
@@ -15,7 +17,9 @@ export function MiniGameFormModal({ open, game, onClose }: MiniGameFormModalProp
   const [form] = Form.useForm<CreateMiniGameRequest>()
   const createGame = useCreateMiniGame()
   const updateGame = useUpdateMiniGame()
+  const [uploading, setUploading] = useState(false)
   const isEdit = game != null
+  const iconUrl = Form.useWatch('iconUrl', form)
 
   useEffect(() => {
     if (open) {
@@ -30,6 +34,19 @@ export function MiniGameFormModal({ open, game, onClose }: MiniGameFormModalProp
       })
     }
   }, [open, game, form])
+
+  async function handleUpload(file: File) {
+    setUploading(true)
+    try {
+      const url = await AdminUploadService.image(file)
+      form.setFieldValue('iconUrl', url)
+      message.success('Đã tải icon lên')
+    } catch (err) {
+      message.error(err instanceof ApiError ? err.message : 'Tải icon thất bại')
+    } finally {
+      setUploading(false)
+    }
+  }
 
   async function onOk() {
     const values = await form.validateFields()
@@ -96,15 +113,44 @@ export function MiniGameFormModal({ open, game, onClose }: MiniGameFormModalProp
             placeholder="Ví dụ: Ghép 5 quân liên tiếp để thắng, đấu online với bạn bè"
           />
         </Form.Item>
-        <Form.Item
-          name="iconUrl"
-          label="URL icon"
-          rules={[
-            { type: 'url', message: 'URL không hợp lệ' },
-            { max: 500, message: 'Tối đa 500 ký tự' },
-          ]}
-        >
-          <Input placeholder="https://cdn.olachat.net/games/caro.webp" />
+        <Form.Item label="Icon game">
+          <Space align="start" size={16}>
+            {iconUrl && (
+              <Image
+                src={iconUrl}
+                width={72}
+                height={72}
+                style={{ objectFit: 'cover', borderRadius: 8 }}
+              />
+            )}
+            <Space direction="vertical">
+              <Upload
+                accept="image/*"
+                showUploadList={false}
+                beforeUpload={(file) => {
+                  void handleUpload(file)
+                  return false
+                }}
+              >
+                <Button icon={<UploadOutlined />} loading={uploading}>
+                  {iconUrl ? 'Đổi icon' : 'Tải icon lên'}
+                </Button>
+              </Upload>
+              {iconUrl && (
+                <Button
+                  type="text"
+                  danger
+                  icon={<DeleteOutlined />}
+                  onClick={() => form.setFieldValue('iconUrl', '')}
+                >
+                  Xoá icon
+                </Button>
+              )}
+            </Space>
+          </Space>
+        </Form.Item>
+        <Form.Item name="iconUrl" hidden>
+          <Input />
         </Form.Item>
         <Form.Item
           name="gameUrl"
