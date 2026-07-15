@@ -45,7 +45,7 @@ export function useStickyScroll({
     }
 
     if (prependAnchorRef.current != null) {
-      element.scrollTop = element.scrollHeight - prependAnchorRef.current;
+      element.scrollTop = element.scrollTop + element.scrollHeight - prependAnchorRef.current;
       prependAnchorRef.current = null;
     } else if (enabled && lastId !== lastIdRef.current && stickyRef.current) {
       element.scrollTop = element.scrollHeight;
