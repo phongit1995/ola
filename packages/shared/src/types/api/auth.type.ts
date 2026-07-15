@@ -11,6 +11,7 @@ export interface AuthUser {
   id: string;
   username: string;
   email: string;
+  emailVerified?: boolean;
   avatar?: string;
   coverPhoto?: string;
   phone?: string;
@@ -80,4 +81,22 @@ export interface RefreshTokenResult {
 
 export interface MessageResult {
   message: string;
+}
+
+export interface SendVerifyEmailRequest {
+  email: string;
+}
+
+export interface SendVerifyEmailResult {
+  verifyId: string;
+  message: string;
+}
+
+export interface ConfirmVerifyEmailRequest {
+  verifyId: string;
+  code: string;
+}
+
+export interface ConfirmVerifyEmailResult {
+  emailVerified: boolean;
 }

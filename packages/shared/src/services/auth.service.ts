@@ -5,11 +5,15 @@ import { getDeviceInfo } from '../platform';
 import type {
   AuthResult,
   ChangePasswordRequest,
+  ConfirmVerifyEmailRequest,
+  ConfirmVerifyEmailResult,
   LoginRequest,
   MessageResult,
   RefreshTokenResult,
   RegisterRequest,
   RegisterResult,
+  SendVerifyEmailRequest,
+  SendVerifyEmailResult,
 } from '../types';
 
 export class AuthService {
@@ -42,6 +46,14 @@ export class AuthService {
 
   static changePassword(payload: ChangePasswordRequest): Promise<MessageResult> {
     return http.post<MessageResult>(API_PATH.auth.changePassword, payload);
+  }
+
+  static sendVerifyEmail(payload: SendVerifyEmailRequest): Promise<SendVerifyEmailResult> {
+    return http.post<SendVerifyEmailResult>(API_PATH.auth.sendVerifyEmail, payload);
+  }
+
+  static confirmVerifyEmail(payload: ConfirmVerifyEmailRequest): Promise<ConfirmVerifyEmailResult> {
+    return http.post<ConfirmVerifyEmailResult>(API_PATH.auth.confirmVerifyEmail, payload);
   }
 
   static async logout(): Promise<void> {
