@@ -28,5 +28,12 @@ mobile/.ota-token
 # Artifact build OTA local
 mobile/android-bundle.zip
 mobile/android/output/
+
+# Build game (Vite output)
+game/dist/
+
+# Python cache (script trong .claude/skills)
+__pycache__/
+*.pyc
 node_modules/
 .DS_Store
