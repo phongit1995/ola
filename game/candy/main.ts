@@ -5,9 +5,10 @@ const GRID = 8;
 const COLORS = [0xf87171, 0xfbbf24, 0x34d399, 0x60a5fa, 0xc084fc, 0xf472b6];
 
 async function main(): Promise<void> {
+  const root = document.getElementById('app')!;
   const app = new Application();
-  await app.init({ resizeTo: window, background: 0x0f172a, antialias: true });
-  document.getElementById('app')!.appendChild(app.canvas);
+  await app.init({ resizeTo: root, background: 0x0f172a, antialias: true });
+  root.appendChild(app.canvas);
   bridge.ready();
 
   const board = new Container();

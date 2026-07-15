@@ -2,7 +2,6 @@ import { lazy, Suspense } from 'react';
 import { ReconnectingBanner, ToastViewport } from '@components';
 import { useSoundUnlock, useAuthSessionSync, useReconnectOnVisible, useSettingsSync } from '@hooks';
 import { AppRouter } from '@/routes';
-import { useLayoutStore } from '@/store/layoutStore';
 import { useMediaViewerStore } from '@/store/mediaViewerStore';
 import { useKenTreasureStore } from '@/pages/games/ken-treasure/kenTreasureStore';
 import { useKenRealtime } from '@/pages/games/ken-treasure/useKenRealtime';
@@ -42,8 +41,6 @@ function GlobalMediaViewer() {
 }
 
 function App() {
-  const wide = useLayoutStore((s) => s.wide);
-
   useSoundUnlock();
   useAuthSessionSync();
   useSettingsSync();
@@ -53,11 +50,7 @@ function App() {
 
   return (
     <>
-      <div
-        className={`relative mx-auto flex h-dvh w-full flex-col overflow-hidden bg-white shadow-2xl [transform:translateZ(0)] ${
-          wide ? 'max-w-none' : 'max-w-[520px]'
-        }`}
-      >
+      <div className="relative mx-auto flex h-dvh w-full max-w-[520px] flex-col overflow-hidden bg-white shadow-2xl [transform:translateZ(0)]">
         <AppRouter />
         <ReconnectingBanner />
         <ToastViewport />
