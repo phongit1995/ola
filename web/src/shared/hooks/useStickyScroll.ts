@@ -66,6 +66,19 @@ export function useStickyScroll({
     return () => element.removeEventListener('load', scrollToBottomIfPinned, true);
   }, []);
 
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    function repinBottom() {
+      const element = scrollRef.current;
+      if (element != null && stickyRef.current && prependAnchorRef.current == null) {
+        element.scrollTop = element.scrollHeight;
+      }
+    }
+    const target: Window | VisualViewport = viewport ?? window;
+    target.addEventListener('resize', repinBottom);
+    return () => target.removeEventListener('resize', repinBottom);
+  }, []);
+
   const handleScroll = useCallback(() => {
     const element = scrollRef.current;
     if (element == null || !enabled) return;
