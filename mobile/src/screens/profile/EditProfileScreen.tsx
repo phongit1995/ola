@@ -26,6 +26,7 @@ import { ROOT_ROUTES } from '../../navigation/routes';
 import { Avatar } from '../../components/Avatar';
 import { pickCroppedImage } from '../../lib/imagePicker';
 import { ChangePasswordDialog } from './ChangePasswordDialog';
+import { VerifyEmailDialog } from './VerifyEmailDialog';
 import { CoverPreviewOverlay } from './CoverPreviewOverlay';
 import { ScreenHeader } from '../../components/ScreenHeader';
 
@@ -64,6 +65,19 @@ function Field({ label, first, children }: { label: string; first?: boolean; chi
   );
 }
 
+function EmailStatusIcon({ verified }: { verified: boolean }) {
+  return (
+    <View
+      className="items-center justify-center"
+      style={{ width: 14, height: 14, borderRadius: 7, backgroundColor: verified ? '#16a34a' : '#f59e0b' }}
+    >
+      <Text style={{ color: '#fff', fontSize: 9, fontWeight: '700', lineHeight: 12 }}>
+        {verified ? '✓' : '!'}
+      </Text>
+    </View>
+  );
+}
+
 type Props = NativeStackScreenProps<RootStackParamList, 'EditProfile'>;
 
 export function EditProfileScreen({ navigation }: Props) {
@@ -90,6 +104,7 @@ export function EditProfileScreen({ navigation }: Props) {
   const [uploadingCover, setUploadingCover] = useState(false);
   const [coverPreview, setCoverPreview] = useState<NativeUploadFile | null>(null);
   const [passwordOpen, setPasswordOpen] = useState(false);
+  const [verifyOpen, setVerifyOpen] = useState(false);
   const [birthdayPickerDate, setBirthdayPickerDate] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -314,6 +329,24 @@ export function EditProfileScreen({ navigation }: Props) {
                 </Text>
               </Pressable>
             </Field>
+
+            <View className="mt-4">
+              <View className="flex-row items-center gap-1">
+                <Text className="text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>{t('verifyEmail.fieldLabel')}</Text>
+                <EmailStatusIcon verified={!!user.emailVerified} />
+              </View>
+              <View className="mt-1 flex-row items-center gap-2">
+                <Text className="flex-1 text-sm" numberOfLines={1} style={{ color: 'rgba(0,0,0,0.87)' }}>
+                  {user.email !== '' ? user.email : t('verifyEmail.empty')}
+                </Text>
+                {!user.emailVerified && (
+                  <Pressable onPress={() => setVerifyOpen(true)} className="rounded bg-ola-primary px-2.5 py-1">
+                    <Text className="text-xs font-medium text-white">{t('verifyEmail.verifyAction')}</Text>
+                  </Pressable>
+                )}
+              </View>
+              <View className="mt-4" style={{ height: 1, backgroundColor: DIVIDER }} />
+            </View>
           </View>
         </ScrollView>
 
@@ -338,6 +371,13 @@ export function EditProfileScreen({ navigation }: Props) {
         </View>
 
         <ChangePasswordDialog visible={passwordOpen} onClose={() => setPasswordOpen(false)} />
+
+        <VerifyEmailDialog
+          visible={verifyOpen}
+          initialEmail={user.email ?? ''}
+          onClose={() => setVerifyOpen(false)}
+          onVerified={() => void refreshUser()}
+        />
 
         <CoverPreviewOverlay
           visible={coverPreview != null}
