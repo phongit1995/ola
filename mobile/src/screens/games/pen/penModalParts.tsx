@@ -88,6 +88,7 @@ export function PenModalShell({
                     {
                       color: '#ffffff',
                       fontSize: 30,
+                      lineHeight: 40,
                       fontWeight: '800',
                       fontStyle: 'italic',
                       letterSpacing: 1,
