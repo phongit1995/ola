@@ -1,7 +1,7 @@
 import type { GameSession, MatchFoundData, MatchOverData, StateData, ErrorData } from '../src/sdk';
 import { SIZE, checkWin, emptyState, scorePlacement, type CaroMove, type CaroState } from './types';
 
-const TURN_MS = 45_000;
+const TURN_MS = (Number(import.meta.env.VITE_GAME_TURN_SECONDS) || 45) * 1000;
 const PLAYER_MARK = 1;
 const BOT_MARK = 2;
 

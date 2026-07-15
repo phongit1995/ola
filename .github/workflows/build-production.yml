@@ -94,7 +94,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [api, chat, migrate]
+        service: [api, chat, migrate, game]
     steps:
       - uses: actions/checkout@v4
         with:
