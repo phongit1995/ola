@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { ReconnectingBanner, ToastViewport } from '@components';
 import { useSoundUnlock, useAuthSessionSync, useReconnectOnVisible, useSettingsSync } from '@hooks';
 import { AppRouter } from '@/routes';
+import { useArcadeStore } from '@/store/arcadeStore';
 import { useMediaViewerStore } from '@/store/mediaViewerStore';
 import { useKenTreasureStore } from '@/pages/games/ken-treasure/kenTreasureStore';
 import { useKenRealtime } from '@/pages/games/ken-treasure/useKenRealtime';
@@ -16,6 +17,20 @@ const KenTreasureOverlay = lazy(() =>
     default: m.KenTreasureOverlay,
   })),
 );
+
+const ArcadeOverlay = lazy(() =>
+  import('@/pages/apps/ArcadeOverlay').then((m) => ({ default: m.ArcadeOverlay })),
+);
+
+function GlobalArcade() {
+  const hasActive = useArcadeStore((s) => s.active != null);
+  if (!hasActive) return null;
+  return (
+    <Suspense fallback={null}>
+      <ArcadeOverlay />
+    </Suspense>
+  );
+}
 
 function GlobalKenTreasure() {
   const hasChest = useKenTreasureStore((s) => Object.keys(s.chests).length > 0);
@@ -56,6 +71,7 @@ function App() {
         <ToastViewport />
         <div id="ola-portal" />
         <GlobalKenTreasure />
+        <GlobalArcade />
       </div>
       <GlobalMediaViewer />
     </>

@@ -108,6 +108,9 @@ export const API_PATH = {
     config: '/wheel',
     spins: '/wheel/spins',
   },
+  miniGame: {
+    list: '/mini-games',
+  },
   ken: {
     transfer: '/ken/transfer',
     transactions: '/ken/transactions',

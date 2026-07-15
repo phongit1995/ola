@@ -12,3 +12,4 @@ export * from './wheel.type';
 export * from './pen.type';
 export * from './ken.type';
 export * from './kenTreasure.type';
+export * from './miniGame.type';
