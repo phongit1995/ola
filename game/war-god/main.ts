@@ -1,4 +1,13 @@
-import { Application, Container, Graphics, Text, type Ticker } from 'pixi.js';
+import {
+  AnimatedSprite,
+  Application,
+  Container,
+  Graphics,
+  Rectangle,
+  Sprite,
+  Texture,
+  type Ticker,
+} from 'pixi.js';
 import { bridge } from '../src/sdk';
 import {
   CELLS,
@@ -13,8 +22,6 @@ import {
   type TileType,
 } from './core';
 import {
-  MAX_HP,
-  MAX_MP,
   ULT_COST,
   ULT_DMG,
   applyTileEffects,
@@ -23,48 +30,37 @@ import {
   createFighter,
   type Fighter,
 } from './battle';
+import { A, loadAssets, tex } from './assets';
+import { initKit, makeText, sleep, tween, addTick, removeTick } from './kit';
+import { buildHud, hud, showConfirm, showOverlay, updateFighter } from './hud';
+import { CHAT_W, buildChat, layoutChat, resetChat, setChatInputVisible } from './chat';
 
-const EMOJI: Record<TileType, string> = {
-  sword: '⚔️',
-  fire: '🔥',
-  heart: '❤️',
-  water: '💧',
-  shield: '🛡️',
-  stone: '🪨',
-};
-
-const el = {
-  status: document.getElementById('status')!,
-  turnCount: document.getElementById('turn-count')!,
-  hint: document.getElementById('hint')!,
-  host: document.getElementById('board-host')!,
-  overlay: document.getElementById('overlay')!,
-  overlayTitle: document.getElementById('overlay-title')!,
-  overlaySub: document.getElementById('overlay-sub')!,
-  btnStart: document.getElementById('btn-start') as HTMLButtonElement,
-  btnUlt: document.getElementById('btn-ult') as HTMLButtonElement,
-  btnForfeit: document.getElementById('btn-forfeit') as HTMLButtonElement,
-  btnExit: document.getElementById('btn-exit')!,
-  fMe: document.getElementById('f-me')!,
-  fFoe: document.getElementById('f-foe')!,
-  meHp: document.getElementById('me-hp')!,
-  meHpText: document.getElementById('me-hp-text')!,
-  meMp: document.getElementById('me-mp')!,
-  meMpText: document.getElementById('me-mp-text')!,
-  meArmor: document.getElementById('me-armor')!,
-  foeHp: document.getElementById('foe-hp')!,
-  foeHpText: document.getElementById('foe-hp-text')!,
-  foeMp: document.getElementById('foe-mp')!,
-  foeMpText: document.getElementById('foe-mp-text')!,
-  foeArmor: document.getElementById('foe-armor')!,
-  foeUlt: document.getElementById('foe-ult')!,
-};
+const DESIGN_W = 520;
+const TURN_SECONDS = Number(new URLSearchParams(location.search).get('turnsec')) || 45;
+const FX_COLS = 6;
+const FX_ROWS = 10;
+const FX_FRAMES = 60;
 
 let app: Application;
+let root: Container;
+let bgSprite: Sprite;
+let bgMask: Graphics;
+let boardBox: Container;
 let boardLayer: Container;
+let fxLayer: Container;
+let boardFrame: Sprite;
+let cellLayer: Container;
+let boardMask: Graphics;
 let selector: Graphics;
+let botSelectorA: Graphics;
+let hintBox: Container;
+let statusText: ReturnType<typeof makeText>;
+let chatBox: Container;
 let sprites: Array<Container | null> = new Array(CELLS).fill(null);
 let tileSize = 0;
+let fxFrames: Texture[] = [];
+let designH = 980;
+let pendingRefit = false;
 
 let board: Board = [];
 let me: Fighter = createFighter();
@@ -74,61 +70,131 @@ let busy = false;
 let over = false;
 let turnNumber = 1;
 let selected: number | null = null;
-
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
+let turnDeadline = 0;
 
 function pos(i: number): { x: number; y: number } {
   return { x: (i % GRID) * tileSize, y: Math.floor(i / GRID) * tileSize };
 }
 
-function tween(
-  obj: Container,
-  to: Partial<{ x: number; y: number; alpha: number; scale: number }>,
-  dur: number,
-): Promise<void> {
-  const from = { x: obj.x, y: obj.y, alpha: obj.alpha, scale: obj.scale.x };
-  return new Promise((resolve) => {
-    let t = 0;
-    const step = (ticker: Ticker): void => {
-      t += ticker.deltaMS;
-      const k = Math.min(1, t / dur);
-      const e = 1 - (1 - k) * (1 - k);
-      if (to.x !== undefined) obj.x = from.x + (to.x - from.x) * e;
-      if (to.y !== undefined) obj.y = from.y + (to.y - from.y) * e;
-      if (to.alpha !== undefined) obj.alpha = from.alpha + (to.alpha - from.alpha) * e;
-      if (to.scale !== undefined) obj.scale.set(from.scale + (to.scale - from.scale) * e);
-      if (k >= 1) {
-        app.ticker.remove(step);
-        resolve();
-      }
-    };
-    app.ticker.add(step);
+function redrawSelector(g: Graphics, color: number): void {
+  g.clear()
+    .roundRect(1, 1, tileSize - 2, tileSize - 2, tileSize * 0.24)
+    .stroke({ width: 3, color });
+}
+
+function makeSelector(color: number): Graphics {
+  const g = new Graphics();
+  redrawSelector(g, color);
+  g.visible = false;
+  return g;
+}
+
+function computeTileSize(): number {
+  const scale0 = Math.min(window.innerWidth, DESIGN_W) / DESIGN_W;
+  const designH0 = window.innerHeight / scale0;
+  const boardBudget = (designH0 - 156 - 68 - 30 - 6 - 10 - 96 - 10) / 1.1;
+  return Math.max(24, Math.floor(Math.min(470, DESIGN_W - 50, boardBudget) / GRID));
+}
+
+function placeHint(): void {
+  if (!hintBox) return;
+  const boardW = tileSize * GRID;
+  hintBox.x = Math.round(boardW / 2 - 180);
+  hintBox.y = -Math.round(boardW * 0.05) - 16;
+}
+
+function rebuildBoardVisuals(): void {
+  const boardW = tileSize * GRID;
+  boardFrame.width = boardW * 1.1;
+  boardFrame.height = boardW * 1.1;
+  boardFrame.x = boardW / 2;
+  boardFrame.y = boardW / 2;
+  cellLayer.removeChildren().forEach((c) => c.destroy());
+  for (let i = 0; i < CELLS; i++) {
+    const cell = new Sprite(tex[A.board.cell]);
+    const p = pos(i);
+    cell.width = tileSize * 0.97;
+    cell.height = tileSize * 0.97;
+    cell.x = p.x + tileSize * 0.015;
+    cell.y = p.y + tileSize * 0.015;
+    cellLayer.addChild(cell);
+  }
+  boardMask
+    .clear()
+    .roundRect(-tileSize * 0.05, -tileSize * 0.05, boardW + tileSize * 0.1, boardW + tileSize * 0.1, 8)
+    .fill(0xffffff);
+  redrawSelector(selector, 0xffd75e);
+  redrawSelector(botSelectorA, 0xff5a4d);
+  setSelected(null);
+  botSelectorA.visible = false;
+  placeHint();
+  rebuildSprites();
+}
+
+function endBusy(): void {
+  busy = false;
+  if (pendingRefit) layout();
+}
+
+let hintPair: [number, number] | null = null;
+let hintStep: ((ticker: Ticker) => void) | null = null;
+
+function tileIconBaseScale(icon: Sprite): number {
+  return (tileSize * 0.82) / Math.max(icon.texture.width, icon.texture.height);
+}
+
+function showHint(): void {
+  if (hintPair) return;
+  const moves = findValidMoves(board);
+  if (moves.length === 0) return;
+  hintPair = moves[Math.floor(Math.random() * moves.length)];
+  const icons = hintPair
+    .map((i) => sprites[i]?.children[0])
+    .filter((c): c is Sprite => c instanceof Sprite);
+  const bases = icons.map((s) => s.scale.x);
+  let t = 0;
+  hintStep = (ticker: Ticker) => {
+    t += ticker.deltaMS;
+    const k = 1 + Math.sin(t / 110) * 0.09;
+    icons.forEach((icon, idx) => icon.scale.set(bases[idx] * k));
+  };
+  addTick(hintStep);
+}
+
+function clearHint(): void {
+  if (!hintPair) return;
+  const pair = hintPair;
+  hintPair = null;
+  if (hintStep) {
+    removeTick(hintStep);
+    hintStep = null;
+  }
+  pair.forEach((i) => {
+    const icon = sprites[i]?.children[0];
+    if (icon instanceof Sprite) icon.scale.set(tileIconBaseScale(icon));
   });
 }
 
 function makeTile(type: TileType, index: number): Container {
   const c = new Container();
-  const bg = new Graphics()
-    .roundRect(2, 2, tileSize - 4, tileSize - 4, tileSize * 0.22)
-    .fill(0x16162b)
-    .stroke({ width: 1, color: 0x2a2a4a });
-  const label = new Text({ text: EMOJI[type], style: { fontSize: tileSize * 0.52 } });
-  label.anchor.set(0.5);
-  label.x = tileSize / 2;
-  label.y = tileSize / 2;
-  c.addChild(bg, label);
+  const icon = new Sprite(tex[A.items[type]]);
+  icon.anchor.set(0.5);
+  icon.scale.set(tileIconBaseScale(icon));
+  icon.x = tileSize / 2;
+  icon.y = tileSize / 2;
+  c.addChild(icon);
   const p = pos(index);
   c.x = p.x;
   c.y = p.y;
   c.eventMode = 'static';
   c.cursor = 'pointer';
+  c.hitArea = new Rectangle(0, 0, tileSize, tileSize);
   c.on('pointertap', () => onTileTap(index));
   return c;
 }
 
 function rebuildSprites(): void {
+  clearHint();
   sprites.forEach((s) => s?.destroy());
   sprites = new Array(CELLS).fill(null);
   for (let i = 0; i < CELLS; i++) {
@@ -136,7 +202,6 @@ function rebuildSprites(): void {
     sprites[i] = sprite;
     boardLayer.addChild(sprite);
   }
-  boardLayer.addChild(selector);
 }
 
 function retargetTaps(): void {
@@ -159,29 +224,109 @@ function setSelected(i: number | null): void {
 }
 
 function setStatus(text: string): void {
-  el.status.textContent = text;
+  statusText.text = text;
+}
+
+function resetTurnClock(): void {
+  turnDeadline = performance.now() + TURN_SECONDS * 1000;
+  clearHint();
+}
+
+function renderTurnClock(): void {
+  const left = Math.max(0, turnDeadline - performance.now());
+  const total = Math.ceil(left / 1000);
+  const mm = String(Math.floor(total / 60)).padStart(2, '0');
+  const ss = String(total % 60).padStart(2, '0');
+  hud.timer.text = `${mm}:${ss}`;
+  if (!over && myTurn && !busy) {
+    if (left <= 0) {
+      setStatus('Hết giờ — mất lượt!');
+      void startBotTurn();
+      return;
+    }
+    if (left <= 10_000) showHint();
+  }
 }
 
 function updateHud(): void {
-  el.meHp.style.width = `${(me.hp / MAX_HP) * 100}%`;
-  el.meHpText.textContent = `${me.hp}/${MAX_HP}`;
-  el.meHp.parentElement!.classList.toggle('low', me.hp <= 30);
-  el.meMp.style.width = `${(me.mp / MAX_MP) * 100}%`;
-  el.meMpText.textContent = `${me.mp}/${MAX_MP}`;
-  el.meArmor.textContent = me.armor > 0 ? `🛡️ ${me.armor}` : '';
+  const meActive = myTurn && !over;
+  const foeActive = !myTurn && !over;
+  updateFighter(hud.me, me, meActive, me.mp >= ULT_COST);
+  updateFighter(hud.foe, foe, foeActive, foe.mp >= ULT_COST);
 
-  el.foeHp.style.width = `${(foe.hp / MAX_HP) * 100}%`;
-  el.foeHpText.textContent = `${foe.hp}/${MAX_HP}`;
-  el.foeHp.parentElement!.classList.toggle('low', foe.hp <= 30);
-  el.foeMp.style.width = `${(foe.mp / MAX_MP) * 100}%`;
-  el.foeMpText.textContent = `${foe.mp}/${MAX_MP}`;
-  el.foeArmor.textContent = foe.armor > 0 ? `🛡️ ${foe.armor}` : '';
-  el.foeUlt.classList.toggle('ready', foe.mp >= ULT_COST);
+  const canUlt = meActive && !busy && me.mp >= ULT_COST;
+  hud.me.ultBtn.eventMode = canUlt ? 'static' : 'none';
+  hud.me.ultBtn.alpha = canUlt || !meActive ? 1 : 0.85;
 
-  el.fMe.classList.toggle('active', myTurn && !over);
-  el.fFoe.classList.toggle('active', !myTurn && !over);
-  el.turnCount.textContent = String(turnNumber);
-  el.btnUlt.disabled = !myTurn || busy || over || me.mp < ULT_COST;
+  hud.turnCount.text = String(turnNumber);
+  hud.forfeit.setEnabled(myTurn && !busy && !over);
+}
+
+function buildFxFrames(sheet: Texture): Texture[] {
+  const fw = sheet.width / FX_COLS;
+  const fh = sheet.height / FX_ROWS;
+  const frames: Texture[] = [];
+  for (let i = 0; i < FX_FRAMES; i++) {
+    const col = i % FX_COLS;
+    const row = Math.floor(i / FX_COLS);
+    frames.push(
+      new Texture({
+        source: sheet.source,
+        frame: new Rectangle(col * fw, row * fh, fw, fh),
+      }),
+    );
+  }
+  return frames;
+}
+
+async function playUltFx(side: 'me' | 'foe'): Promise<void> {
+  if (fxFrames.length === 0) {
+    await sleep(600);
+    return;
+  }
+  const fx = new AnimatedSprite(fxFrames);
+  fx.loop = false;
+  fx.animationSpeed = 0.5;
+  fx.anchor.set(0.5);
+  const boardW = tileSize * GRID;
+  fx.width = boardW;
+  fx.height = boardW / 2;
+  fx.x = boardW / 2;
+  fx.y = boardW / 2;
+  if (side === 'foe') fx.scale.x = -Math.abs(fx.scale.x);
+  fxLayer.addChild(fx);
+  await new Promise<void>((resolve) => {
+    fx.onComplete = () => resolve();
+    fx.play();
+  });
+  fx.destroy();
+}
+
+async function showBotPick(a: number): Promise<void> {
+  const pa = pos(a);
+  botSelectorA.position.set(pa.x, pa.y);
+  botSelectorA.visible = true;
+  await sleep(550);
+  botSelectorA.visible = false;
+}
+
+async function dropInBoard(): Promise<void> {
+  const jobs: Promise<void>[] = [];
+  for (let i = 0; i < CELLS; i++) {
+    const sprite = sprites[i];
+    if (!sprite) continue;
+    const target = pos(i);
+    const col = i % GRID;
+    const row = Math.floor(i / GRID);
+    sprite.y = target.y - (GRID + 2) * tileSize;
+    const delay = col * 35 + (GRID - 1 - row) * 50;
+    jobs.push(
+      sleep(delay)
+        .then(() => tween(sprite, { y: target.y + tileSize * 0.07 }, 300))
+        .then(() => tween(sprite, { y: target.y }, 90)),
+    );
+  }
+  await Promise.all(jobs);
 }
 
 async function animateSwap(a: number, b: number): Promise<void> {
@@ -211,7 +356,10 @@ async function animateRemove(cells: Set<number>): Promise<void> {
   });
 }
 
-async function animateGravity(falls: Array<{ from: number; to: number }>, spawns: Array<{ index: number; type: TileType; fromRow: number }>): Promise<void> {
+async function animateGravity(
+  falls: Array<{ from: number; to: number }>,
+  spawns: Array<{ index: number; type: TileType; fromRow: number }>,
+): Promise<void> {
   const jobs: Promise<void>[] = [];
   for (const fall of falls) {
     const sprite = sprites[fall.from];
@@ -229,7 +377,6 @@ async function animateGravity(falls: Array<{ from: number; to: number }>, spawns
     boardLayer.addChild(sprite);
     jobs.push(tween(sprite, { y: target.y }, 300));
   }
-  boardLayer.addChild(selector);
   await Promise.all(jobs);
   retargetTaps();
 }
@@ -254,10 +401,10 @@ async function resolveCascades(side: 'me' | 'foe'): Promise<boolean> {
 
     const result = applyTileEffects(attacker, defender, match.counts);
     const parts: string[] = [];
-    if (result.damage > 0) parts.push(`⚔️ -${result.damage} HP`);
-    if (result.heal > 0) parts.push(`❤️ +${result.heal}`);
-    if (result.mana > 0) parts.push(`💧 +${result.mana} MP`);
-    if (result.armor > 0) parts.push(`🛡️ +${result.armor}`);
+    if (result.damage > 0) parts.push(`-${result.damage} HP`);
+    if (result.heal > 0) parts.push(`+${result.heal} HP`);
+    if (result.mana > 0) parts.push(`+${result.mana} MP`);
+    if (result.armor > 0) parts.push(`+${result.armor} giáp`);
     if (parts.length > 0) {
       setStatus(`${side === 'me' ? 'Bạn' : 'Máy'}: ${parts.join('  ')}`);
     }
@@ -274,26 +421,23 @@ async function resolveCascades(side: 'me' | 'foe'): Promise<boolean> {
   return extraTurn;
 }
 
-function finish(won: boolean, reason: string): void {
+function finish(won: boolean, reason: 'win' | 'forfeit', sub: string): void {
   over = true;
-  busy = false;
-  el.btnForfeit.disabled = true;
+  endBusy();
+  clearHint();
   updateHud();
-  el.overlay.classList.remove('hidden');
-  el.overlayTitle.textContent = won ? 'CHIẾN THẮNG!' : 'THẤT BẠI';
-  el.overlayTitle.className = won ? 'win' : 'lose';
-  el.overlaySub.textContent = reason;
-  el.btnStart.innerHTML = el.btnStart.innerHTML.replace('Chơi với máy', 'Chơi lại');
-  bridge.gameOver({ matchId: `wargod-${Date.now()}`, winnerId: won ? 'you' : 'bot', reason: 'win', won });
+  showOverlay(won ? 'CHIẾN THẮNG!' : 'THẤT BẠI', won ? 0xffd75e : 0xff7a6e, sub, 'Chơi lại');
+  setChatInputVisible(false);
+  bridge.gameOver({ matchId: `wargod-${Date.now()}`, winnerId: won ? 'you' : 'bot', reason, won });
 }
 
 function checkEnd(): boolean {
   if (foe.hp <= 0) {
-    finish(true, 'Bạn đã hạ gục Máy 🤖');
+    finish(true, 'win', 'Bạn đã hạ gục Máy 🤖');
     return true;
   }
   if (me.hp <= 0) {
-    finish(false, 'Máy 🤖 đã hạ gục bạn');
+    finish(false, 'win', 'Máy 🤖 đã hạ gục bạn');
     return true;
   }
   return false;
@@ -318,6 +462,7 @@ async function onTileTap(i: number): Promise<void> {
   const b = i;
   setSelected(null);
   busy = true;
+  clearHint();
 
   swapCells(board, a, b);
   if (!findMatches(board)) {
@@ -325,7 +470,7 @@ async function onTileTap(i: number): Promise<void> {
     await animateSwap(a, b);
     await animateSwap(a, b);
     setStatus('Không tạo được combo');
-    busy = false;
+    endBusy();
     return;
   }
 
@@ -335,7 +480,8 @@ async function onTileTap(i: number): Promise<void> {
 
   if (extraTurn) {
     setStatus('Combo 4+ — bạn được thêm lượt!');
-    busy = false;
+    endBusy();
+    resetTurnClock();
     updateHud();
     return;
   }
@@ -346,10 +492,11 @@ async function castMyUltimate(): Promise<void> {
   if (!myTurn || busy || over || me.mp < ULT_COST) return;
   busy = true;
   setSelected(null);
+  clearHint();
   castUltimate(me, foe);
-  setStatus(`🔥 TUYỆT CHIÊU! -${ULT_DMG} HP`);
+  setStatus(`TUYỆT CHIÊU! -${ULT_DMG} HP`);
   updateHud();
-  await sleep(600);
+  await playUltFx('me');
   if (checkEnd()) return;
   void startBotTurn();
 }
@@ -357,6 +504,7 @@ async function castMyUltimate(): Promise<void> {
 async function startBotTurn(): Promise<void> {
   myTurn = false;
   busy = true;
+  resetTurnClock();
   updateHud();
   setStatus('Máy đang nghĩ...');
 
@@ -368,7 +516,7 @@ async function startBotTurn(): Promise<void> {
       castUltimate(foe, me);
       setStatus(`Máy tung TUYỆT CHIÊU! -${ULT_DMG} HP`);
       updateHud();
-      await sleep(600);
+      await playUltFx('foe');
       if (checkEnd()) return;
       break;
     }
@@ -378,6 +526,8 @@ async function startBotTurn(): Promise<void> {
       await ensurePlayable();
       continue;
     }
+    await showBotPick(move[0]);
+    if (over) return;
     swapCells(board, move[0], move[1]);
     await animateSwap(move[0], move[1]);
     const extraTurn = await resolveCascades('foe');
@@ -387,9 +537,10 @@ async function startBotTurn(): Promise<void> {
   }
 
   myTurn = true;
-  busy = false;
+  endBusy();
   turnNumber++;
-  setStatus('Lượt của bạn');
+  resetTurnClock();
+  setStatus('Lượt của bạn — ghép 3 ô để tấn công!');
   updateHud();
 }
 
@@ -398,48 +549,202 @@ function startGame(): void {
   foe = createFighter();
   board = createBoard();
   myTurn = true;
-  busy = false;
+  busy = true;
   over = false;
   turnNumber = 1;
   setSelected(null);
   rebuildSprites();
-  el.overlay.classList.add('hidden');
-  el.btnForfeit.disabled = false;
-  setStatus('Lượt của bạn');
+  hud.overlay.visible = false;
+  setChatInputVisible(true);
+  resetChat('Chào! Chơi vui nhé 😄');
+  setStatus('Chuẩn bị chiến đấu...');
   updateHud();
+  void dropInBoard().then(() => {
+    endBusy();
+    resetTurnClock();
+    setStatus('Lượt của bạn — ghép 3 ô để tấn công!');
+    updateHud();
+  });
+}
+
+function layout(): void {
+  const winW = window.innerWidth;
+  const winH = window.innerHeight;
+  const scale = Math.min(winW, DESIGN_W) / DESIGN_W;
+  designH = winH / scale;
+
+  root.scale.set(scale);
+  root.x = Math.round((winW - DESIGN_W * scale) / 2);
+  root.y = 0;
+
+  const bgTex = bgSprite.texture;
+  const cover = Math.max(DESIGN_W / bgTex.width, designH / bgTex.height);
+  bgSprite.scale.set(cover);
+  bgSprite.x = (DESIGN_W - bgTex.width * cover) / 2;
+  bgSprite.y = 0;
+  bgMask.clear().rect(0, 0, DESIGN_W, designH).fill(0xffffff);
+
+  hud.me.card.x = 8;
+  hud.me.card.y = 8;
+  hud.foe.card.x = DESIGN_W - 8 - 190;
+  hud.foe.card.y = 8;
+  hud.banner.x = (DESIGN_W - 92) / 2;
+  hud.banner.y = 4;
+
+  const bottomH = 46;
+  hud.bottomRow.y = Math.round(designH - bottomH - 12);
+  hud.bottomRow.x = (DESIGN_W - 444) / 2;
+
+  const want = computeTileSize();
+  if (want !== tileSize) {
+    if (busy) {
+      pendingRefit = true;
+    } else {
+      pendingRefit = false;
+      tileSize = want;
+      rebuildBoardVisuals();
+    }
+  }
+
+  const boardW = tileSize * GRID;
+  const overhang = Math.round(boardW * 0.05);
+  const topStart = 156;
+  const bottomLimit = hud.bottomRow.y - 10;
+  const HINT_SPACE = 20;
+  const GAP_BOARD_CHAT = 10;
+
+  let chatH = 150;
+  const blockH = (): number =>
+    HINT_SPACE + overhang + boardW + overhang + GAP_BOARD_CHAT + chatH;
+  let slack = bottomLimit - topStart - blockH();
+  if (slack < 0) {
+    chatH = Math.max(96, chatH + slack);
+    slack = bottomLimit - topStart - blockH();
+  }
+
+  const blockTop = topStart + Math.max(0, Math.round(slack / 2));
+  boardBox.x = Math.round((DESIGN_W - boardW) / 2);
+  boardBox.y = blockTop + HINT_SPACE + overhang;
+  const chatY = boardBox.y + boardW + overhang + GAP_BOARD_CHAT;
+  layoutChat(Math.round((DESIGN_W - CHAT_W) / 2), chatY, chatH, root.x, scale);
+
+  hud.overlayDim.clear().rect(0, 0, DESIGN_W, designH).fill({ color: 0x080814, alpha: 0.72 });
+  const overlayCard = hud.overlay.getChildByLabel('overlay-card')!;
+  overlayCard.x = (DESIGN_W - 340) / 2;
+  overlayCard.y = Math.max(120, designH / 2 - 220);
+
+  hud.confirmDim.clear().rect(0, 0, DESIGN_W, designH).fill({ color: 0x080814, alpha: 0.6 });
+  const confirmCard = hud.confirm.getChildByLabel('confirm-card')!;
+  confirmCard.x = (DESIGN_W - 300) / 2;
+  confirmCard.y = designH / 2 - 75;
 }
 
 async function main(): Promise<void> {
-  const size = Math.min(el.host.clientWidth, el.host.clientHeight, 520 - 16);
-  tileSize = Math.floor(size / GRID);
-  const boardSize = tileSize * GRID;
+  await document.fonts.ready;
 
   app = new Application();
-  await app.init({ width: boardSize, height: boardSize, background: 0x141428, antialias: true });
-  el.host.appendChild(app.canvas);
+  await app.init({
+    resizeTo: window,
+    backgroundColor: 0x141428,
+    antialias: true,
+    resolution: window.devicePixelRatio || 1,
+    autoDensity: true,
+    preference: 'webgl',
+  });
+  document.getElementById('app')!.appendChild(app.canvas);
+  initKit(app);
+
+  await loadAssets();
+  fxFrames = buildFxFrames(tex[A.fx.ult]);
+
+  root = new Container();
+  app.stage.addChild(root);
+
+  const bgBox = new Container();
+  bgSprite = new Sprite(tex[A.bg]);
+  bgMask = new Graphics();
+  bgBox.addChild(bgSprite);
+  bgBox.mask = bgMask;
+  bgBox.addChild(bgMask);
+  root.addChild(bgBox);
+
+  tileSize = computeTileSize();
+
+  boardBox = new Container();
+  boardFrame = new Sprite(tex[A.board.frame]);
+  boardFrame.anchor.set(0.5);
+  boardBox.addChild(boardFrame);
+
+  cellLayer = new Container();
+  boardBox.addChild(cellLayer);
 
   boardLayer = new Container();
-  app.stage.addChild(boardLayer);
+  boardBox.addChild(boardLayer);
 
-  selector = new Graphics()
-    .roundRect(1, 1, tileSize - 2, tileSize - 2, tileSize * 0.24)
-    .stroke({ width: 3, color: 0xa78bfa });
-  selector.visible = false;
+  boardMask = new Graphics();
+  boardBox.addChild(boardMask);
+  boardLayer.mask = boardMask;
+
+  selector = makeSelector(0xffd75e);
+  botSelectorA = makeSelector(0xff5a4d);
+  const selectorLayer = new Container();
+  selectorLayer.addChild(selector, botSelectorA);
+  boardBox.addChild(selectorLayer);
+
+  fxLayer = new Container();
+  boardBox.addChild(fxLayer);
+
+  hintBox = new Container();
+  const hintBg = new Sprite(tex[A.hud.noteStrip]);
+  hintBg.width = 360;
+  hintBg.height = 30;
+  hintBox.addChild(hintBg);
+  statusText = makeText('Ghép 3 ô trở lên để tấn công đối thủ!', 11, 0xf6c445, '800');
+  statusText.x = 180;
+  statusText.y = 15;
+  hintBox.addChild(statusText);
+  boardBox.addChild(hintBox);
+
+  root.addChild(boardBox);
+
+  buildHud(root, {
+    onUlt: () => void castMyUltimate(),
+    onStart: () => startGame(),
+    onRestart: () => {
+      if (over) {
+        startGame();
+        return;
+      }
+      showConfirm('Chơi lại từ đầu?', () => startGame());
+    },
+    onForfeit: () => {
+      if (over || !myTurn || busy) return;
+      showConfirm('Bỏ cuộc trận này?', () => finish(false, 'forfeit', 'Bạn đã bỏ cuộc'));
+    },
+    onExit: () => bridge.exit(),
+  });
+
+  chatBox = buildChat({ isOver: () => over });
+  root.addChild(chatBox);
+  root.addChild(hud.overlay, hud.confirm);
+
+  layout();
+  window.addEventListener('resize', layout);
 
   board = createBoard();
-  rebuildSprites();
+  rebuildBoardVisuals();
   bridge.ready();
 
-  el.btnStart.addEventListener('click', startGame);
-  el.btnUlt.addEventListener('click', () => void castMyUltimate());
-  el.btnForfeit.addEventListener('click', () => {
-    if (!over && window.confirm('Bỏ cuộc trận này?')) finish(false, 'Bạn đã bỏ cuộc');
-  });
-  el.btnExit.addEventListener('click', () => {
-    bridge.exit();
-  });
+  setInterval(renderTurnClock, 250);
 
+  resetTurnClock();
   updateHud();
+
+  if (new URLSearchParams(location.search).has('autostart')) startGame();
+
+  Object.defineProperty(window, '__wg', {
+    get: () => ({ myTurn, busy, over, turn: turnNumber, status: statusText.text, hint: hintPair }),
+  });
 }
 
 void main();
