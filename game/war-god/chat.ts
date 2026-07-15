@@ -21,6 +21,7 @@ interface ChatEntry {
 
 interface ChatDeps {
   isOver(): boolean;
+  onFocusChange(focused: boolean): void;
 }
 
 const chatLog: ChatEntry[] = [];
@@ -187,6 +188,8 @@ export function buildChat(chatDeps: ChatDeps): Container {
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') sendChat();
   });
+  input.addEventListener('focus', () => deps.onFocusChange(true));
+  input.addEventListener('blur', () => deps.onFocusChange(false));
   input.style.display = 'none';
   document.getElementById('app')!.appendChild(input);
 

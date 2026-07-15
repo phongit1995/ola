@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { View } from 'react-native';
+import { Platform, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import WebView, { type WebViewMessageEvent } from 'react-native-webview';
@@ -43,13 +43,18 @@ export function ArcadeGameScreen({ navigation, route }: Props) {
     if (message.type === 'exit') navigation.goBack();
   }
 
+  const androidInsets =
+    Platform.OS === 'android'
+      ? { paddingTop: insets.top, paddingBottom: insets.bottom }
+      : undefined;
+
   return (
-    <View className="flex-1" style={{ backgroundColor: '#0f0f23', paddingTop: insets.top }}>
+    <View className="flex-1" style={[{ backgroundColor: '#141428' }, androidInsets]}>
       <WebView<object>
         ref={webRef}
         source={{ uri: game.gameUrl }}
         onMessage={handleMessage}
-        style={{ flex: 1, backgroundColor: '#0f0f23', marginBottom: insets.bottom }}
+        style={{ flex: 1, backgroundColor: '#141428' }}
         allowsInlineMediaPlayback
         mediaPlaybackRequiresUserAction={false}
       />

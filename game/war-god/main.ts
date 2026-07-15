@@ -62,6 +62,10 @@ let fxFrames: Texture[] = [];
 let designH = 980;
 let pendingRefit = false;
 
+let safeTop = 0;
+let safeBottom = 0;
+let chatFocused = false;
+
 let board: Board = [];
 let me: Fighter = createFighter();
 let foe: Fighter = createFighter();
@@ -89,9 +93,21 @@ function makeSelector(color: number): Graphics {
   return g;
 }
 
+function readSafeInsets(): void {
+  const probe = document.createElement('div');
+  probe.style.cssText =
+    'position:fixed;top:0;left:0;height:0;visibility:hidden;pointer-events:none;' +
+    'padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);';
+  document.body.appendChild(probe);
+  const cs = getComputedStyle(probe);
+  safeTop = parseFloat(cs.paddingTop) || 0;
+  safeBottom = parseFloat(cs.paddingBottom) || 0;
+  probe.remove();
+}
+
 function computeTileSize(): number {
   const scale0 = Math.min(window.innerWidth, DESIGN_W) / DESIGN_W;
-  const designH0 = window.innerHeight / scale0;
+  const designH0 = (window.innerHeight - safeTop - safeBottom) / scale0;
   const boardBudget = (designH0 - 156 - 68 - 30 - 6 - 10 - 96 - 10) / 1.1;
   return Math.max(24, Math.floor(Math.min(470, DESIGN_W - 50, boardBudget) / GRID));
 }
@@ -568,10 +584,17 @@ function startGame(): void {
 }
 
 function layout(): void {
+  if (chatFocused) {
+    pendingRefit = true;
+    return;
+  }
+  readSafeInsets();
   const winW = window.innerWidth;
   const winH = window.innerHeight;
   const scale = Math.min(winW, DESIGN_W) / DESIGN_W;
   designH = winH / scale;
+  const insetTop = Math.round(safeTop / scale);
+  const insetBottom = Math.round(safeBottom / scale);
 
   root.scale.set(scale);
   root.x = Math.round((winW - DESIGN_W * scale) / 2);
@@ -585,14 +608,14 @@ function layout(): void {
   bgMask.clear().rect(0, 0, DESIGN_W, designH).fill(0xffffff);
 
   hud.me.card.x = 8;
-  hud.me.card.y = 8;
+  hud.me.card.y = 8 + insetTop;
   hud.foe.card.x = DESIGN_W - 8 - 190;
-  hud.foe.card.y = 8;
+  hud.foe.card.y = 8 + insetTop;
   hud.banner.x = (DESIGN_W - 92) / 2;
-  hud.banner.y = 4;
+  hud.banner.y = 4 + insetTop;
 
   const bottomH = 46;
-  hud.bottomRow.y = Math.round(designH - bottomH - 12);
+  hud.bottomRow.y = Math.round(designH - bottomH - 12 - insetBottom);
   hud.bottomRow.x = (DESIGN_W - 444) / 2;
 
   const want = computeTileSize();
@@ -608,7 +631,7 @@ function layout(): void {
 
   const boardW = tileSize * GRID;
   const overhang = Math.round(boardW * 0.05);
-  const topStart = 156;
+  const topStart = 156 + insetTop;
   const bottomLimit = hud.bottomRow.y - 10;
   const HINT_SPACE = 20;
   const GAP_BOARD_CHAT = 10;
@@ -724,7 +747,16 @@ async function main(): Promise<void> {
     onExit: () => bridge.exit(),
   });
 
-  chatBox = buildChat({ isOver: () => over });
+  chatBox = buildChat({
+    isOver: () => over,
+    onFocusChange: (focused) => {
+      chatFocused = focused;
+      if (!focused && pendingRefit) {
+        pendingRefit = false;
+        layout();
+      }
+    },
+  });
   root.addChild(chatBox);
   root.addChild(hud.overlay, hud.confirm);
 
