@@ -69,6 +69,27 @@ type RefreshTokenResponse struct {
 	RefreshToken string `json:"refreshToken" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."`
 }
 
+type SendEmailVerifyRequest struct {
+	Email string `json:"email" binding:"required,email,max=255" example:"john@example.com"`
+}
+
+type SendEmailVerifyResponse struct {
+	VerifyID string `json:"verifyId" example:"550e8400-e29b-41d4-a716-446655440000"`
+	Message  string `json:"message" example:"Verification code sent"`
+}
+
+type ConfirmEmailVerifyRequest struct {
+	VerifyID string `json:"verifyId" binding:"required,uuid" example:"550e8400-e29b-41d4-a716-446655440000"`
+	Code     string `json:"code" binding:"required,len=6,numeric" example:"123456"`
+}
+
+type ConfirmEmailVerifyResponse struct {
+	EmailVerified bool `json:"emailVerified" example:"true"`
+}
+
+type SendEmailVerifySuccessResponse = utils.BaseResponse[SendEmailVerifyResponse]
+type ConfirmEmailVerifySuccessResponse = utils.BaseResponse[ConfirmEmailVerifyResponse]
+
 type ChangePasswordSuccessResponse = utils.BaseResponse[ChangePasswordResponse]
 
 type RegisterSuccessResponse = utils.BaseResponse[RegisterResponse]

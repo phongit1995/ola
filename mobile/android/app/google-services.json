@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "380249924077",
+    "project_id": "ola-chat-net",
+    "storage_bucket": "ola-chat-net.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:380249924077:android:7777a05407c0f8e10e47e4",
+        "android_client_info": {
+          "package_name": "com.olachat.net.org.vn"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCNNxdk2OJSD91jAhuzpp4FTWerA8W75MI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

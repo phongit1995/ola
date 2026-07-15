@@ -85,6 +85,17 @@ const (
 	CacheKeyVipPackages         = "VIP:PACKAGES:ACTIVE"
 	CacheKeyEggPacks            = "EGG:PACKS:ENABLED"
 	CacheKeyUserSettings        = "USER:%s:SETTINGS"
+	CacheKeyEmailVerifyCode     = "EMAIL_VERIFY:%s:CODE"
+	CacheKeyEmailVerifyCooldown = "EMAIL_VERIFY:%s:COOLDOWN"
+	CacheKeyEmailVerifyDaily    = "EMAIL_VERIFY:%s:DAILY"
+)
+
+const (
+	EmailVerifyCooldownSeconds = 60
+	EmailVerifyMaxAttempts     = 5
+	EmailVerifyCodeLength      = 6
+	EmailVerifyMaxPerDay       = 3
+	EmailVerifyDailyWindow     = 24 * 60 * 60
 )
 
 const (

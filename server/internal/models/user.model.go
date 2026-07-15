@@ -53,6 +53,8 @@ type User struct {
 	CoverPhoto        string     `gorm:"type:varchar(500)"`
 	BioImage          *string    `gorm:"type:varchar(500)"`
 	Verified          bool       `gorm:"not null;default:false"`
+	EmailVerified     bool       `gorm:"not null;default:false"`
+	EmailVerifiedAt   *time.Time
 	Kisses            int        `gorm:"not null;default:0"`
 	IsActive          bool       `gorm:"not null;default:true"`
 	RefreshToken      string     `gorm:"type:text"`

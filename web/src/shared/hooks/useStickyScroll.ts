@@ -25,12 +25,27 @@ export function useStickyScroll({
   const stickyRef = useRef(true);
   const lastIdRef = useRef<string | null>(null);
   const prependAnchorRef = useRef<number | null>(null);
+  const wasEnabledRef = useRef(enabled);
+  const savedScrollTopRef = useRef<number | null>(null);
 
   useLayoutEffect(() => {
     const element = scrollRef.current;
     if (element == null) return;
+    const becameVisible = enabled && !wasEnabledRef.current;
+    wasEnabledRef.current = enabled;
+
+    if (becameVisible) {
+      if (stickyRef.current) {
+        element.scrollTop = element.scrollHeight;
+      } else if (savedScrollTopRef.current != null) {
+        element.scrollTop = savedScrollTopRef.current;
+      }
+      lastIdRef.current = lastId;
+      return;
+    }
+
     if (prependAnchorRef.current != null) {
-      element.scrollTop = element.scrollHeight - prependAnchorRef.current;
+      element.scrollTop = element.scrollTop + element.scrollHeight - prependAnchorRef.current;
       prependAnchorRef.current = null;
     } else if (enabled && lastId !== lastIdRef.current && stickyRef.current) {
       element.scrollTop = element.scrollHeight;
@@ -51,16 +66,30 @@ export function useStickyScroll({
     return () => element.removeEventListener('load', scrollToBottomIfPinned, true);
   }, []);
 
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    function repinBottom() {
+      const element = scrollRef.current;
+      if (element != null && stickyRef.current && prependAnchorRef.current == null) {
+        element.scrollTop = element.scrollHeight;
+      }
+    }
+    const target: Window | VisualViewport = viewport ?? window;
+    target.addEventListener('resize', repinBottom);
+    return () => target.removeEventListener('resize', repinBottom);
+  }, []);
+
   const handleScroll = useCallback(() => {
     const element = scrollRef.current;
-    if (element == null) return;
+    if (element == null || !enabled) return;
     const distanceFromBottom = element.scrollHeight - element.scrollTop - element.clientHeight;
     stickyRef.current = distanceFromBottom < bottomThreshold;
+    savedScrollTopRef.current = element.scrollTop;
     if (element.scrollTop <= loadMoreAtTop && hasMore && !loadingMore) {
       prependAnchorRef.current = element.scrollHeight;
       onLoadMore();
     }
-  }, [hasMore, loadingMore, onLoadMore, bottomThreshold, loadMoreAtTop]);
+  }, [enabled, hasMore, loadingMore, onLoadMore, bottomThreshold, loadMoreAtTop]);
 
   const pin = useCallback(() => {
     stickyRef.current = true;

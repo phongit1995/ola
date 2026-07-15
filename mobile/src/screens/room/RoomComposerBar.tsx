@@ -28,14 +28,13 @@ interface PendingImage {
 
 interface RoomComposerBarProps {
   disabled: boolean;
-  bottomInset?: number;
   onBeforeSend: () => void;
   onSendText: (content: string) => Promise<void>;
   onSendImage: (file: NativeUploadFile) => Promise<void>;
 }
 
 export const RoomComposerBar = forwardRef<RoomComposerHandle, RoomComposerBarProps>(
-  function RoomComposerBarInner({ disabled, bottomInset = 0, onBeforeSend, onSendText, onSendImage }, ref) {
+  function RoomComposerBarInner({ disabled, onBeforeSend, onSendText, onSendImage }, ref) {
     const { t } = useTranslation();
     const pushToast = useToastStore((s) => s.push);
     const [draft, setDraft] = useState('');
@@ -140,7 +139,7 @@ export const RoomComposerBar = forwardRef<RoomComposerHandle, RoomComposerBarPro
     const isTyping = draft.trim() !== '';
 
     return (
-      <View className="bg-white" style={{ paddingBottom: bottomInset }}>
+      <View className="bg-white">
         <View
           className="flex-row items-center gap-1 bg-white px-2 py-2"
           style={{ borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.12)' }}

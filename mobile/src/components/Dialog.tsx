@@ -16,6 +16,7 @@ interface DialogProps {
   icon?: ImageSourcePropType;
   showClose?: boolean;
   dismissOnBackdrop?: boolean;
+  avoidKeyboard?: boolean;
   children: ReactNode;
   footer?: ReactNode;
 }
@@ -27,18 +28,22 @@ export function Dialog({
   icon,
   showClose = false,
   dismissOnBackdrop = true,
+  avoidKeyboard = true,
   children,
   footer,
 }: DialogProps) {
+  const Body = avoidKeyboard ? KeyboardView : View;
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <KeyboardView
-        className="flex-1"
-      >
-        <Pressable
+      <Pressable
+        className="absolute inset-0"
+        style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}
+        onPress={dismissOnBackdrop ? onClose : undefined}
+      />
+      <Body className="flex-1" pointerEvents="box-none">
+        <View
           className="flex-1 items-center justify-center p-4"
-          style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}
-          onPress={dismissOnBackdrop ? onClose : undefined}
+          pointerEvents="box-none"
         >
           <Pressable
             className="w-full overflow-hidden bg-white"
@@ -95,8 +100,8 @@ export function Dialog({
             </View>
             {footer != null && <View className="flex-row gap-2 px-1 pb-2">{footer}</View>}
           </Pressable>
-        </Pressable>
-      </KeyboardView>
+        </View>
+      </Body>
     </Modal>
   );
 }

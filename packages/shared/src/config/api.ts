@@ -4,6 +4,8 @@ export const API_PATH = {
     register: '/auth/register',
     refresh: '/auth/refresh',
     changePassword: '/auth/change-password',
+    sendVerifyEmail: '/auth/verify-email/send',
+    confirmVerifyEmail: '/auth/verify-email/confirm',
     logout: '/auth/logout',
   },
   rooms: {

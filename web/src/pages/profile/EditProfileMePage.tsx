@@ -11,6 +11,7 @@ import { Avatar } from '@components';
 import { CoverImageEditor } from './components/CoverImageEditor';
 import { CoverCropOverlay } from './components/CoverCropOverlay';
 import { ChangePasswordDialog } from './components/ChangePasswordDialog';
+import { VerifyEmailDialog } from './components/VerifyEmailDialog';
 import { readImageSize } from './imageSize';
 import { AVATAR_ASPECT, COVER_ASPECT, INPUT_CLASS, MIN_AVATAR_SOURCE, PHONE_PATTERN } from './constants';
 
@@ -22,13 +23,29 @@ function LockIcon({ className = 'h-4 w-4' }: { className?: string }) {
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, children }: { label: React.ReactNode; children: React.ReactNode }) {
   return (
     <div className="mt-4 first:mt-0">
       <div className="text-xs text-black/54">{label}</div>
       <div className="mt-1">{children}</div>
       <div className="mt-4 h-px bg-black/12" />
     </div>
+  );
+}
+
+function EmailStatusIcon({ verified, label }: { verified: boolean; label: string }) {
+  return (
+    <span title={label} aria-label={label} className="inline-flex align-middle">
+      {verified ? (
+        <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 text-green-600" fill="currentColor" aria-hidden="true">
+          <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm-1 14-4-4 1.41-1.41L11 13.17l4.59-4.58L17 10l-6 6z" />
+        </svg>
+      ) : (
+        <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 text-amber-500" fill="currentColor" aria-hidden="true">
+          <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+        </svg>
+      )}
+    </span>
   );
 }
 
@@ -153,6 +170,7 @@ export function EditProfileMePage({ onClose }: { onClose: () => void }) {
   const [uploadingCover, setUploadingCover] = useState(false);
   const [coverPreview, setCoverPreview] = useState<{ url: string; file: File } | null>(null);
   const [passwordOpen, setPasswordOpen] = useState(false);
+  const [verifyOpen, setVerifyOpen] = useState(false);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
   const clearCoverPreview = useCallback(() => {
@@ -353,6 +371,33 @@ export function EditProfileMePage({ onClose }: { onClose: () => void }) {
               onChange={(event) => setDateOfBirth(event.target.value)}
             />
           </Field>
+
+          <Field
+            label={
+              <span className="inline-flex items-center gap-1">
+                {t('verifyEmail.fieldLabel')}
+                <EmailStatusIcon
+                  verified={!!user.emailVerified}
+                  label={user.emailVerified ? t('verifyEmail.verified') : t('verifyEmail.unverified')}
+                />
+              </span>
+            }
+          >
+            <div className="flex items-center gap-2">
+              <span className="min-w-0 flex-1 truncate text-sm text-black/87">
+                {user.email || t('verifyEmail.empty')}
+              </span>
+              {!user.emailVerified && (
+                <button
+                  type="button"
+                  onClick={() => setVerifyOpen(true)}
+                  className="shrink-0 rounded bg-ola-primary px-2.5 py-1 text-xs font-medium text-white"
+                >
+                  {t('verifyEmail.verifyAction')}
+                </button>
+              )}
+            </div>
+          </Field>
         </div>
       </div>
 
@@ -376,6 +421,12 @@ export function EditProfileMePage({ onClose }: { onClose: () => void }) {
       </div>
 
       <ChangePasswordDialog open={passwordOpen} onClose={() => setPasswordOpen(false)} />
+      <VerifyEmailDialog
+        open={verifyOpen}
+        initialEmail={user.email ?? ''}
+        onClose={() => setVerifyOpen(false)}
+        onVerified={refreshUser}
+      />
     </div>
   );
 }

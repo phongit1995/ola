@@ -207,7 +207,9 @@ var (
 	}
 
 	errorsTooManyRequests = map[string]bool{
-		"RATE_LIMITED": true,
+		"RATE_LIMITED":                             true,
+		"daily email verification limit reached":   true,
+		"please wait before requesting a new code": true,
 	}
 )
 

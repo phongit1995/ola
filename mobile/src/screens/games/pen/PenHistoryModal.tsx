@@ -65,6 +65,7 @@ export function PenHistoryModal({ userId, onClose }: PenHistoryModalProps) {
                 {
                   color: '#ffffff',
                   fontSize: 30,
+                  lineHeight: 40,
                   fontWeight: '800',
                   fontStyle: 'italic',
                   letterSpacing: 1,

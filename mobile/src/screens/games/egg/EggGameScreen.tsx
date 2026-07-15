@@ -68,7 +68,7 @@ export function EggGameScreen({ navigation }: Props) {
                 resizeMode="contain"
               />
             </Pressable>
-            <AnimatedKen value={ken} textStyle={{ color: '#ffffff', fontWeight: '600' }} />
+            <AnimatedKen value={ken} />
             <View className="flex-1" />
             <Pressable
               onPress={() => setHistoryOpen(true)}

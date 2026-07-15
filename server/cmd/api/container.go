@@ -48,6 +48,7 @@ func NewContainer() (*dig.Container, error) {
 		services.NewCacheService,
 		services.NewJWTService,
 		services.NewS3Service,
+		services.NewMailService,
 		middleware.NewAuthMiddleware,
 		middleware.NewApiGuardMiddleware,
 		middleware.NewRateLimitMiddleware,

@@ -1,8 +1,11 @@
 package auth
 
 import (
+	"context"
+	"crypto/rand"
 	"errors"
 	"fmt"
+	"math/big"
 	"ola-chat-server/internal/apperr"
 	"ola-chat-server/internal/config"
 	"ola-chat-server/internal/constants"
@@ -35,17 +38,19 @@ type Service struct {
 	userCache      *user.CacheService
 	cache          *services.CacheService
 	sessionService *session.Service
+	mailService    *services.MailService
 	cfg            *config.Config
 	logger         *zap.SugaredLogger
 }
 
-func NewService(repo *Repository, jwtService *services.JWTService, userCache *user.CacheService, cache *services.CacheService, sessionService *session.Service, cfg *config.Config, logger *zap.SugaredLogger) *Service {
+func NewService(repo *Repository, jwtService *services.JWTService, userCache *user.CacheService, cache *services.CacheService, sessionService *session.Service, mailService *services.MailService, cfg *config.Config, logger *zap.SugaredLogger) *Service {
 	return &Service{
 		repo:           repo,
 		jwtService:     jwtService,
 		userCache:      userCache,
 		cache:          cache,
 		sessionService: sessionService,
+		mailService:    mailService,
 		cfg:            cfg,
 		logger:         logger.Named("[auth_service]"),
 	}
@@ -354,6 +359,134 @@ func (s *Service) buildAuthResponse(user *models.User, token, refreshToken strin
 		RefreshToken: refreshToken,
 		User:         userResponse,
 	}
+}
+
+type emailVerifyEntry struct {
+	VerifyID string `json:"verifyId"`
+	Email    string `json:"email"`
+	Code     string `json:"code"`
+	Attempts int    `json:"attempts"`
+}
+
+func generateNumericCode(n int) (string, error) {
+	const digits = "0123456789"
+	buf := make([]byte, n)
+	for i := range buf {
+		idx, err := rand.Int(rand.Reader, big.NewInt(int64(len(digits))))
+		if err != nil {
+			return "", err
+		}
+		buf[i] = digits[idx.Int64()]
+	}
+	return string(buf), nil
+}
+
+func (s *Service) SendEmailVerification(userID uuid.UUID, email string) (string, error) {
+	email = strings.ToLower(strings.TrimSpace(email))
+
+	user, err := s.repo.FindByID(userID)
+	if err != nil {
+		return "", apperr.ErrUserNotFound
+	}
+	if user.EmailVerified && strings.EqualFold(user.Email, email) {
+		return "", errors.New("email already verified")
+	}
+
+	taken, err := s.repo.EmailVerifiedByOther(email, userID)
+	if err != nil {
+		return "", err
+	}
+	if taken {
+		return "", errors.New("email already exists")
+	}
+
+	cooldownKey := fmt.Sprintf(constants.CacheKeyEmailVerifyCooldown, userID)
+	if ok, err := s.cache.SetNX(cooldownKey, "1", constants.EmailVerifyCooldownSeconds*time.Second); err == nil && !ok {
+		return "", errors.New("please wait before requesting a new code")
+	}
+
+	dailyKey := fmt.Sprintf(constants.CacheKeyEmailVerifyDaily, userID)
+	if count, err := s.cache.Increment(dailyKey); err == nil {
+		if count == 1 {
+			_ = s.cache.SetExpire(dailyKey, constants.EmailVerifyDailyWindow*time.Second)
+		}
+		if count > constants.EmailVerifyMaxPerDay {
+			return "", errors.New("daily email verification limit reached")
+		}
+	}
+
+	code, err := generateNumericCode(constants.EmailVerifyCodeLength)
+	if err != nil {
+		return "", err
+	}
+
+	verifyID := uuid.NewString()
+	entry := emailVerifyEntry{VerifyID: verifyID, Email: email, Code: code}
+	if err := s.cache.Set(fmt.Sprintf(constants.CacheKeyEmailVerifyCode, userID), entry, constants.CacheTTLOTP*time.Second); err != nil {
+		return "", err
+	}
+
+	if err := s.mailService.SendVerificationCode(context.Background(), email, code); err != nil {
+		s.logger.Errorw("Failed to send verification email", "user_id", userID, "error", err.Error())
+		_, _ = s.cache.Decrement(dailyKey)
+		return "", errors.New("failed to send verification email")
+	}
+
+	s.logger.Infow("Verification code sent", "user_id", userID, "email", email)
+	return verifyID, nil
+}
+
+func (s *Service) ConfirmEmailVerification(userID uuid.UUID, verifyID, code string) error {
+	key := fmt.Sprintf(constants.CacheKeyEmailVerifyCode, userID)
+
+	var entry emailVerifyEntry
+	if err := s.cache.Get(key, &entry); err != nil {
+		return errors.New("verification code expired or not found")
+	}
+
+	if entry.VerifyID != verifyID {
+		return errors.New("invalid verification request")
+	}
+
+	email := entry.Email
+
+	if entry.Code != code {
+		entry.Attempts++
+		if entry.Attempts >= constants.EmailVerifyMaxAttempts {
+			_ = s.cache.Delete(key)
+			return errors.New("too many invalid attempts, please request a new code")
+		}
+		ttl, err := s.cache.GetTTL(key)
+		if err != nil || ttl <= 0 {
+			ttl = constants.CacheTTLOTP * time.Second
+		}
+		_ = s.cache.Set(key, entry, ttl)
+		return errors.New("invalid verification code")
+	}
+
+	taken, err := s.repo.EmailVerifiedByOther(email, userID)
+	if err != nil {
+		return err
+	}
+	if taken {
+		return errors.New("email already exists")
+	}
+
+	if err := s.repo.SetEmailVerified(userID, email); err != nil {
+		if strings.Contains(err.Error(), "idx_users_email_verified_unique") {
+			return errors.New("email already exists")
+		}
+		s.logger.Errorw("Failed to set email verified", "user_id", userID, "error", err.Error())
+		return err
+	}
+
+	_ = s.cache.Delete(key)
+	if err := s.userCache.InvalidateUser(userID); err != nil {
+		s.logger.Warnw("Failed to invalidate user cache after email verify", "user_id", userID, "error", err.Error())
+	}
+
+	s.logger.Infow("Email verified", "user_id", userID, "email", email)
+	return nil
 }
 
 func resolveDeviceInfo(device *DeviceInfo, userAgent string) (name, platform, deviceID, appVersion string) {

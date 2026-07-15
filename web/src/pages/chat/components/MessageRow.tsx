@@ -56,7 +56,7 @@ export function MessageRow({ message, prev, next, name, color, avatar, isLastOwn
 
   return (
     <div
-      className={`flex flex-col [contain-intrinsic-size:auto_40px] [content-visibility:auto] ${firstInGroup && !boundary ? 'mt-2' : ''}`}
+      className={`flex flex-col ${firstInGroup && !boundary ? 'mt-2' : ''}`}
     >
       <div className={`flex items-end gap-1 ${isOut ? 'flex-row-reverse' : ''}`}>
         {!isOut &&

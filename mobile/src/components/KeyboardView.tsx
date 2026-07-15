@@ -1,10 +1,11 @@
-import { KeyboardAvoidingView, Platform, type KeyboardAvoidingViewProps } from 'react-native';
+import { cssInterop } from 'nativewind';
+import {
+  KeyboardAvoidingView,
+  type KeyboardAvoidingViewProps,
+} from 'react-native-keyboard-controller';
+
+cssInterop(KeyboardAvoidingView, { className: 'style' });
 
 export function KeyboardView(props: KeyboardAvoidingViewProps) {
-  return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      {...props}
-    />
-  );
+  return <KeyboardAvoidingView behavior="padding" {...props} />;
 }

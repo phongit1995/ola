@@ -68,3 +68,24 @@ func (r *Repository) ClearRefreshToken(userID uuid.UUID) error {
 		Where("id = ?", userID).
 		Update("refresh_token", "").Error
 }
+
+func (r *Repository) EmailVerifiedByOther(email string, excludeID uuid.UUID) (bool, error) {
+	var count int64
+	err := r.db.Model(&models.User{}).
+		Where("LOWER(email) = LOWER(?) AND email_verified = true AND id <> ?", email, excludeID).
+		Count(&count).Error
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
+}
+
+func (r *Repository) SetEmailVerified(userID uuid.UUID, email string) error {
+	return r.db.Model(&models.User{}).
+		Where("id = ?", userID).
+		Updates(map[string]interface{}{
+			"email":             email,
+			"email_verified":    true,
+			"email_verified_at": gorm.Expr("NOW()"),
+		}).Error
+}

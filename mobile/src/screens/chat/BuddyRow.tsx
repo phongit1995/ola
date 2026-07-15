@@ -46,12 +46,25 @@ export function BuddyRow({ contact, highlight, onSelect, onLongPress, onOpenProf
       className="flex-row items-center px-4 py-3"
       style={{ backgroundColor: highlight ? '#f1f8e9' : '#fff', borderBottomWidth: 1, borderBottomColor: DIVIDER }}
     >
-      <Pressable className="relative h-10 w-10 shrink-0" onPress={onOpenProfile ?? onSelect}>
+      <Pressable
+        className="shrink-0"
+        style={{ position: 'relative', width: 40, height: 40 }}
+        onPress={onOpenProfile ?? onSelect}
+      >
         <SquareAvatar name={contact.name} color={contact.color} uri={contact.avatar} />
         {badge != null && (
           <View
-            className="absolute bottom-0 right-0 h-3.5 w-3.5 items-center justify-center rounded-full bg-ola-primary"
-            style={{ borderWidth: 1, borderColor: '#fff' }}
+            className="items-center justify-center bg-ola-primary"
+            style={{
+              position: 'absolute',
+              right: 0,
+              bottom: 0,
+              width: 14,
+              height: 14,
+              borderRadius: 7,
+              borderWidth: 1,
+              borderColor: '#fff',
+            }}
           >
             <Image source={badge} style={{ width: 10, height: 10 }} resizeMode="contain" />
           </View>

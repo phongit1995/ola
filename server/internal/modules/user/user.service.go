@@ -779,6 +779,7 @@ func (s *Service) buildProfileResponse(user *models.User) *UserProfileResponse {
 		CoverPhoto:     user.CoverPhoto,
 		BioImage:       user.BioImage,
 		Verified:       user.Verified,
+		EmailVerified:  user.EmailVerified,
 		Kisses:         user.Kisses,
 		CreatedAt:      user.CreatedAt.Format(time.RFC3339),
 		UpdatedAt:      user.UpdatedAt.Format(time.RFC3339),

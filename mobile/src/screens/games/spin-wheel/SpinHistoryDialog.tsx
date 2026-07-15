@@ -198,9 +198,13 @@ export function SpinHistoryDialog({ onClose }: SpinHistoryDialogProps) {
                         bottom: 0,
                         alignItems: 'center',
                         justifyContent: 'center',
+                        paddingHorizontal: 6,
                       }}
                     >
                       <Text
+                        numberOfLines={1}
+                        adjustsFontSizeToFit
+                        minimumFontScale={0.7}
                         style={[
                           { fontSize: 14, fontWeight: '800' },
                           activeTab ? HISTORY_LABEL_STYLE : HISTORY_TAB_INACTIVE_STYLE,

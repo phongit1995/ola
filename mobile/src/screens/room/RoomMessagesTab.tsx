@@ -9,7 +9,8 @@ import {
   View,
 } from 'react-native';
 import Clipboard from '@react-native-clipboard/clipboard';
-import { FlashList, type FlashListRef } from '@shopify/flash-list';
+import { FlashList } from '@shopify/flash-list';
+import { useStickyBottomList } from '../../hooks/useStickyBottomList';
 import type { ReactionType, RoomMessage } from '@ola/shared/types';
 import type { NativeUploadFile } from '@ola/shared/lib';
 import { createTimeFormatter } from '@ola/shared/lib';
@@ -32,7 +33,6 @@ const deleteActionIcon = require('../../assets/icons/chat/ic_menu_delete.png');
 
 interface RoomMessagesTabProps {
   currentUserId: string;
-  bottomInset?: number;
   language: string;
   messages: RoomMessage[];
   status: RoomChatStatus;
@@ -53,7 +53,6 @@ interface RoomMessagesTabProps {
 
 export function RoomMessagesTab({
   currentUserId,
-  bottomInset = 0,
   language,
   messages,
   status,
@@ -86,9 +85,19 @@ export function RoomMessagesTab({
   const [blockTarget, setBlockTarget] = useState<RoomMessage | null>(null);
   const [reactionsTargetId, setReactionsTargetId] = useState<string | null>(null);
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
-  const listRef = useRef<FlashListRef<RoomFeedItem>>(null);
-  const stickToBottomRef = useRef(true);
-  const sheetOpenRef = useRef(false);
+  const {
+    listRef,
+    suspendRef,
+    onListLayout,
+    onContentSizeChange,
+    onScroll,
+    onScrollBeginDrag,
+    onScrollEndDrag,
+    onMomentumScrollBegin,
+    onMomentumScrollEnd,
+    pinOnNextContent,
+    unstick,
+  } = useStickyBottomList<RoomFeedItem>();
   const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const composerRef = useRef<RoomComposerHandle>(null);
 
@@ -102,24 +111,6 @@ export function RoomMessagesTab({
   }, [messages, currentUserId, blockedUserIds]);
   const messageById = useMemo(() => new Map(messages.map((item) => [item.id, item])), [messages]);
 
-  const forceScrollRef = useRef(false);
-
-  const repinOnResize = useCallback(() => {
-    if (stickToBottomRef.current && !sheetOpenRef.current) {
-      requestAnimationFrame(() => listRef.current?.scrollToEnd({ animated: false }));
-    }
-  }, []);
-
-  const scrollOnContentChange = useCallback(() => {
-    if (!forceScrollRef.current) return;
-    forceScrollRef.current = false;
-    requestAnimationFrame(() => listRef.current?.scrollToEnd({ animated: false }));
-  }, []);
-
-  const pinToBottom = useCallback(() => {
-    forceScrollRef.current = !stickToBottomRef.current;
-    stickToBottomRef.current = true;
-  }, []);
 
   useEffect(() => {
     if (replyTarget != null) composerRef.current?.focus();
@@ -133,11 +124,11 @@ export function RoomMessagesTab({
     (id: string, anchor: AnchorRect, grouped: GroupedMessage, isOwn: boolean) => {
       const message = messageById.get(id);
       if (message != null) {
-        sheetOpenRef.current = true;
+        suspendRef.current = true;
         setActionTarget({ message, anchor, grouped, isOwn });
       }
     },
-    [messageById]
+    [messageById, suspendRef]
   );
 
   const scrollToMessage = useCallback(
@@ -149,13 +140,13 @@ export function RoomMessagesTab({
         pushToast('error', t('room.replyNotFound'));
         return;
       }
-      stickToBottomRef.current = false;
+      unstick();
       listRef.current?.scrollToIndex({ index, animated: true, viewPosition: 0.5 });
       setHighlightedId(id);
       if (highlightTimerRef.current != null) clearTimeout(highlightTimerRef.current);
       highlightTimerRef.current = setTimeout(() => setHighlightedId(null), 1500);
     },
-    [feed, pushToast, t]
+    [feed, pushToast, t, listRef, unstick]
   );
 
   function isCopyableText(message: RoomMessage): boolean {
@@ -206,10 +197,8 @@ export function RoomMessagesTab({
   }
 
   function handleScroll(event: NativeSyntheticEvent<NativeScrollEvent>) {
-    const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
-    const distanceFromBottom = contentSize.height - contentOffset.y - layoutMeasurement.height;
-    stickToBottomRef.current = distanceFromBottom < 80;
-    if (contentOffset.y < 80 && hasMore && !loadingMore) onLoadMore();
+    onScroll(event);
+    if (event.nativeEvent.contentOffset.y < 80 && hasMore && !loadingMore) onLoadMore();
   }
 
   function replyExcerpt(message: RoomMessage): string {
@@ -244,12 +233,17 @@ export function RoomMessagesTab({
         maintainVisibleContentPosition={{
           startRenderingFromBottom: true,
           autoscrollToBottomThreshold: 0.2,
+          animateAutoScrollToBottom: false,
         }}
         onScroll={handleScroll}
+        onScrollBeginDrag={onScrollBeginDrag}
+        onScrollEndDrag={onScrollEndDrag}
+        onMomentumScrollBegin={onMomentumScrollBegin}
+        onMomentumScrollEnd={onMomentumScrollEnd}
         scrollEventThrottle={16}
         contentContainerClassName="p-3"
-        onContentSizeChange={scrollOnContentChange}
-        onLayout={repinOnResize}
+        onContentSizeChange={onContentSizeChange}
+        onLayout={onListLayout}
         ListHeaderComponent={
           loadingMore ? (
             <Text className="py-1 text-center text-xs" style={{ color: 'rgba(0,0,0,0.4)' }}>
@@ -316,9 +310,8 @@ export function RoomMessagesTab({
 
       <RoomComposerBar
         ref={composerRef}
-        bottomInset={bottomInset}
         disabled={!canSend}
-        onBeforeSend={pinToBottom}
+        onBeforeSend={pinOnNextContent}
         onSendText={onSend}
         onSendImage={onSendImage}
       />
@@ -344,7 +337,7 @@ export function RoomMessagesTab({
           if (actionTarget != null) onReact(actionTarget.message.id, type);
         }}
         onClose={() => {
-          sheetOpenRef.current = false;
+          suspendRef.current = false;
           setActionTarget(null);
         }}
       />

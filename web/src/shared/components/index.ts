@@ -15,6 +15,7 @@ export * from './ui/ComposerSmileyPanel';
 export * from './ui/SmileyGroupPanel';
 export * from './ui/AttachmentBar';
 export * from './ui/Dialog';
+export * from './ui/OtpInput';
 export * from './ui/ConfirmDialog';
 export * from './ui/ListOptionDialog';
 export * from './ui/ReportDialog';

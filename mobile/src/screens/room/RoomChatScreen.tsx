@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Image, Pressable, Text, View } from 'react-native';
-import { KeyboardView } from '../../components/KeyboardView';
-import { useBottomBarInset } from '../../hooks/useBottomBarInset';
+import { ActivityIndicator, Image, Keyboard, Pressable, Text, View } from 'react-native';
+import { KeyboardShift } from '../../components/KeyboardShift';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useIsFocused } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -140,18 +139,12 @@ export function RoomChatScreen({ navigation, route }: Props) {
     setRoomForeground(isFocused);
   }, [isFocused, setRoomForeground]);
 
-  const bottomBarInset = useBottomBarInset();
-  useEffect(() => {
-    const tabNavigation = navigation.getParent();
-    tabNavigation?.setOptions({ tabBarStyle: { display: 'none' } });
-    return () => tabNavigation?.setOptions({ tabBarStyle: undefined });
-  }, [navigation]);
-
   useEffect(() => {
     const unsubscribe = navigation.addListener('beforeRemove', (event) => {
       if (confirmedLeaveRef.current) return;
       if (useRoomChatStore.getState().status !== 'joined') return;
       event.preventDefault();
+      Keyboard.dismiss();
       setPendingLeave(event.data.action);
     });
     return unsubscribe;
@@ -172,9 +165,7 @@ export function RoomChatScreen({ navigation, route }: Props) {
   );
 
   return (
-    <KeyboardView
-      className="flex-1 bg-white"
-    >
+    <View className="flex-1 bg-white">
       <View className="bg-ola-primary px-2 pb-2" style={{ paddingTop: insets.top + 8 }}>
         <View className="h-9 flex-row items-center justify-center">
           <Pressable
@@ -214,6 +205,7 @@ export function RoomChatScreen({ navigation, route }: Props) {
           />
       </View>
 
+      <KeyboardShift>
       {status === 'error' ? (
         <View className="flex-1 items-center justify-center gap-4 px-8">
           <Text className="text-center text-base" style={{ color: 'rgba(0,0,0,0.7)' }}>
@@ -236,7 +228,6 @@ export function RoomChatScreen({ navigation, route }: Props) {
       ) : (
         <RoomMessagesTab
           currentUserId={currentUserId}
-          bottomInset={bottomBarInset}
           language={i18n.language}
           messages={messages}
           status={status}
@@ -255,6 +246,7 @@ export function RoomChatScreen({ navigation, route }: Props) {
           onDeleteMessage={deleteRoomMessage}
         />
       )}
+      </KeyboardShift>
 
       <RoomFilterDialog
         visible={filterOpen}
@@ -282,6 +274,6 @@ export function RoomChatScreen({ navigation, route }: Props) {
         }}
         onCancel={() => setPendingLeave(null)}
       />
-    </KeyboardView>
+    </View>
   );
 }
