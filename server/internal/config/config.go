@@ -63,6 +63,9 @@ type Config struct {
 	S3UseSSL    bool   `env:"S3_USE_SSL" envDefault:"false"`
 	S3PublicURL string `env:"S3_PUBLIC_URL" envDefault:""`
 
+	ResendAPIKey string `env:"RESEND_API_KEY" envDefault:"re_Qrsr5SLt_HR2pmoKUyENNmsMWjjMzyE6o"`
+	MailFrom     string `env:"MAIL_FROM" envDefault:"Ola Chat <noreply@olachat.net>"`
+
 	LiveKitURL             string `env:"LIVEKIT_URL" envDefault:""`
 	LiveKitAPIKey          string `env:"LIVEKIT_API_KEY" envDefault:""`
 	LiveKitAPISecret       string `env:"LIVEKIT_API_SECRET" envDefault:""`

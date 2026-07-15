@@ -22,6 +22,7 @@ type UserProfileResponse struct {
 	CoverPhoto     string                 `json:"coverPhoto,omitempty" example:"https://example.com/cover.jpg"`
 	BioImage       *string                `json:"bioImage,omitempty" example:"https://example.com/bio.jpg"`
 	Verified       bool                   `json:"verified" example:"false"`
+	EmailVerified  bool                   `json:"emailVerified" example:"false"`
 	Kisses         int                    `json:"kisses" example:"0"`
 	CreatedAt      string                 `json:"createdAt" example:"2024-01-01T00:00:00Z"`
 	UpdatedAt      string                 `json:"updatedAt" example:"2024-01-01T00:00:00Z"`

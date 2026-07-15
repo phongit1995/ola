@@ -94,6 +94,70 @@ func (ctrl *Controller) ChangePassword(c *gin.Context) (interface{}, error) {
 	return &ChangePasswordResponse{Message: "Password changed successfully"}, nil
 }
 
+// SendEmailVerify godoc
+// @Summary      Send email verification code
+// @Description  Send a 6-digit verification code to the given email for the authenticated user
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        request body SendEmailVerifyRequest true "Send Email Verify Request"
+// @Success      200  {object}  SendEmailVerifySuccessResponse
+// @Failure      400  {object}  utils.APIError
+// @Failure      401  {object}  utils.APIError
+// @Failure      409  {object}  utils.APIError
+// @Failure      429  {object}  utils.APIError
+// @Router       /auth/verify-email/send [post]
+func (ctrl *Controller) SendEmailVerify(c *gin.Context) (interface{}, error) {
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := utils.BindJSON[SendEmailVerifyRequest](c)
+	if err != nil {
+		return nil, err
+	}
+
+	verifyID, err := ctrl.service.SendEmailVerification(userID, req.Email)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+
+	return &SendEmailVerifyResponse{VerifyID: verifyID, Message: "Verification code sent"}, nil
+}
+
+// ConfirmEmailVerify godoc
+// @Summary      Confirm email verification code
+// @Description  Verify the 6-digit code and mark the authenticated user's email as verified
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        request body ConfirmEmailVerifyRequest true "Confirm Email Verify Request"
+// @Success      200  {object}  ConfirmEmailVerifySuccessResponse
+// @Failure      400  {object}  utils.APIError
+// @Failure      401  {object}  utils.APIError
+// @Failure      409  {object}  utils.APIError
+// @Router       /auth/verify-email/confirm [post]
+func (ctrl *Controller) ConfirmEmailVerify(c *gin.Context) (interface{}, error) {
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := utils.BindJSON[ConfirmEmailVerifyRequest](c)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := ctrl.service.ConfirmEmailVerification(userID, req.VerifyID, req.Code); err != nil {
+		return nil, utils.ServiceError(err)
+	}
+
+	return &ConfirmEmailVerifyResponse{EmailVerified: true}, nil
+}
+
 // Login godoc
 // @Summary      Login user
 // @Description  Authenticate user and get access token
