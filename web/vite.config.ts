@@ -17,7 +17,7 @@ const obfuscatorPlugin = obfuscator({
     stringArray: true,
     stringArrayEncoding: ['base64'],
     stringArrayThreshold: 1,
-    reservedStrings: ['Panel$', 'Page$', 'MediaViewer$', 'KenTreasureOverlay$', '^heic2any$'],
+    reservedStrings: ['Panel$', 'Page$', 'MediaViewer$', 'Overlay$', '^heic2any$'],
     splitStrings: false,
     numbersToExpressions: false,
     selfDefending: false,

@@ -11,7 +11,7 @@ import {
   View,
 } from 'react-native';
 import { KeyboardView } from '../../components/KeyboardView';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeInsets } from '../../hooks/useSafeInsets';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { useMeFeedStore } from '@ola/shared/stores/meFeedStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
@@ -48,7 +48,7 @@ function privacyKey(option: PostVisibility): 'me.privacy_public' {
 
 export function MeComposerModal({ visible, onClose, onSaved, editPost }: MeComposerModalProps) {
   const { t } = useTranslation();
-  const insets = useSafeAreaInsets();
+  const insets = useSafeInsets();
   const bottomBarInset = useBottomBarInset();
   const lastKeyboardHeight = useLastKeyboardHeight();
   const panelContentHeight = Math.max(SMILEY_PANEL_MIN_CONTENT_HEIGHT, lastKeyboardHeight - 44);
@@ -196,7 +196,7 @@ export function MeComposerModal({ visible, onClose, onSaved, editPost }: MeCompo
   ];
 
   return (
-    <Modal visible={visible} animationType="slide" onRequestClose={close}>
+    <Modal visible={visible} animationType="slide" statusBarTranslucent onRequestClose={close}>
       <KeyboardView
         className="flex-1 bg-white"
       >

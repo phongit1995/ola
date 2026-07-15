@@ -1,5 +1,5 @@
 import { Image, Modal, Pressable, ScrollView, useWindowDimensions, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeInsets } from '../hooks/useSafeInsets';
 import { Text } from 'react-native';
 import { useMediaViewerStore } from '../store/mediaViewerStore';
 
@@ -13,7 +13,7 @@ export function MediaViewerModal({
   onClose: () => void;
 }) {
   const { width, height } = useWindowDimensions();
-  const insets = useSafeAreaInsets();
+  const insets = useSafeInsets();
   const visible = images.length > 0;
 
   return (

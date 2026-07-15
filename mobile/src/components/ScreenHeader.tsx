@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Image, Pressable, Text, View, type StyleProp, type ViewStyle } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeInsets } from '../hooks/useSafeInsets';
 
 const backIcon = require('../assets/icons/ic_back.png');
 
@@ -14,7 +14,7 @@ interface ScreenHeaderProps {
 }
 
 export function ScreenHeader({ title, subtitle, onBack, right, centerTitle = false, style }: ScreenHeaderProps) {
-  const insets = useSafeAreaInsets();
+  const insets = useSafeInsets();
   return (
     <View className="flex-row items-center bg-ola-primary pr-2" style={[{ paddingTop: insets.top }, style]}>
       <View className="h-12 w-12 items-center justify-center">

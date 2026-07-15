@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Image, Modal, Pressable, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeInsets } from '../../hooks/useSafeInsets';
 
 interface CoverPreviewOverlayProps {
   visible: boolean;
@@ -18,7 +18,7 @@ export function CoverPreviewOverlay({
   onConfirm,
 }: CoverPreviewOverlayProps) {
   const { t } = useTranslation();
-  const insets = useSafeAreaInsets();
+  const insets = useSafeInsets();
 
   return (
     <Modal visible={visible} animationType="fade" onRequestClose={onCancel}>
