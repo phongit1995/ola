@@ -18,6 +18,7 @@ import (
 	marriagediary "ola-chat-server/internal/modules/marriage-diary"
 	"ola-chat-server/internal/modules/me"
 	"ola-chat-server/internal/modules/message"
+	minigame "ola-chat-server/internal/modules/mini-game"
 	"ola-chat-server/internal/modules/pen"
 	"ola-chat-server/internal/modules/relationships"
 	"ola-chat-server/internal/modules/room"
@@ -86,6 +87,7 @@ func NewContainer() (*dig.Container, error) {
 		marriage.Provider,
 		marriagediary.Provider,
 		pen.Provider,
+		minigame.Provider,
 	}
 
 	for _, module := range modules {

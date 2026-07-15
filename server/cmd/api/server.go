@@ -15,6 +15,7 @@ import (
 	marriagediary "ola-chat-server/internal/modules/marriage-diary"
 	"ola-chat-server/internal/modules/me"
 	"ola-chat-server/internal/modules/message"
+	minigame "ola-chat-server/internal/modules/mini-game"
 	"ola-chat-server/internal/modules/pen"
 	"ola-chat-server/internal/modules/relationships"
 	"ola-chat-server/internal/modules/room"
@@ -62,6 +63,7 @@ func CreateServer(
 	marriageRouter *marriage.Router,
 	marriageDiaryRouter *marriagediary.Router,
 	penRouter *pen.Router,
+	miniGameRouter *minigame.Router,
 	wsServer *websocket.Server,
 	apiGuard *middleware.ApiGuardMiddleware,
 	cfg *config.Config,
@@ -118,6 +120,7 @@ func CreateServer(
 		marriageRouter.Setup(api)
 		marriageDiaryRouter.Setup(api)
 		penRouter.Setup(api)
+		miniGameRouter.Setup(api)
 	}
 
 	r.NoRoute(func(c *gin.Context) {

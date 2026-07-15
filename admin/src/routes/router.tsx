@@ -13,6 +13,7 @@ import { WheelStatsPage } from '@/pages/WheelStatsPage'
 import { PenShotsPage } from '@/pages/PenShotsPage'
 import { PenStatsPage } from '@/pages/PenStatsPage'
 import { KenChestsPage } from '@/pages/KenChestsPage'
+import { MiniGamePage } from '@/pages/MiniGamePage'
 import { MePage } from '@/pages/MePage'
 import { TopupSettingsPage } from '@/pages/TopupSettingsPage'
 import { AuditLogsPage } from '@/pages/AuditLogsPage'
@@ -49,6 +50,7 @@ export const router = createBrowserRouter([
       { path: 'games/pen', element: <PenShotsPage /> },
       { path: 'games/pen/stats', element: <PenStatsPage /> },
       { path: 'games/ken-treasure', element: <KenChestsPage /> },
+      { path: 'games/mini-game', element: <MiniGamePage /> },
       { path: 'me', element: <MePage /> },
       { path: 'settings/topup', element: <TopupSettingsPage /> },
       { path: 'audit-logs', element: <AuditLogsPage /> },

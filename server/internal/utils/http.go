@@ -168,11 +168,13 @@ var (
 		"pen shot not found":             true,
 		"marriage diary entry not found": true,
 		"ken chest not found":            true,
+		"mini game not found":            true,
 	}
 
 	errorsConflict = map[string]bool{
 		"email already exists":                                           true,
 		"username already exists":                                        true,
+		"slug already exists":                                            true,
 		"you are already friends":                                        true,
 		"friend request already sent":                                    true,
 		"vip already in shop":                                            true,
