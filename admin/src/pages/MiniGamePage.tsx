@@ -15,8 +15,8 @@ import {
   DeleteOutlined,
   EditOutlined,
   LinkOutlined,
+  PlayCircleOutlined,
   PlusOutlined,
-  RocketOutlined,
 } from '@ant-design/icons'
 import { useDeleteMiniGame, useMiniGames, useUpdateMiniGame } from '@/hooks/useMiniGames'
 import { ApiError } from '@/lib/apiError'
@@ -91,7 +91,7 @@ export function MiniGamePage() {
             shape="square"
             size={40}
             src={game.iconUrl || undefined}
-            icon={<RocketOutlined />}
+            icon={<PlayCircleOutlined />}
           />
           <Space direction="vertical" size={0}>
             <Typography.Text strong>{game.name}</Typography.Text>
