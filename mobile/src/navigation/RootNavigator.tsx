@@ -34,6 +34,7 @@ import { SettingsScreen } from '../screens/settings/SettingsScreen';
 import { PenGameScreen } from '../screens/games/pen/PenGameScreen';
 import { SpinWheelGameScreen } from '../screens/games/spin-wheel/SpinWheelGameScreen';
 import { EggGameScreen } from '../screens/games/egg/EggGameScreen';
+import { ArcadeGameScreen } from '../screens/apps/ArcadeGameScreen';
 import { TAB_ICONS } from '../assets/tabIcons';
 import { KenBalanceBadge } from '../components/KenBalanceBadge';
 import { mmkvStorage } from '../platform/storage';
@@ -203,6 +204,7 @@ export function RootNavigator() {
       <RootStack.Screen name={ROOT_ROUTES.PenGame} component={PenGameScreen} />
       <RootStack.Screen name={ROOT_ROUTES.SpinWheel} component={SpinWheelGameScreen} />
       <RootStack.Screen name={ROOT_ROUTES.EggGame} component={EggGameScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.ArcadeGame} component={ArcadeGameScreen} />
     </RootStack.Navigator>
   );
 }
