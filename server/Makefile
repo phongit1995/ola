@@ -1,5 +1,5 @@
 .PHONY: dev-up dev-down dev-logs dev-clean dev-status \
-        run run-api run-chat build build-api build-chat build-migrate build-seed \
+        run run-api run-chat run-game build build-api build-chat build-game build-migrate build-seed \
         migrate-up migrate-down migrate-version migrate-create migrate-run \
         seed \
         db-shell redis-cli scylla-cli kafka-cli \
@@ -37,6 +37,10 @@ run-chat:
 	@echo "🚀 Starting Chat Service..."
 	go run ./cmd/chat
 
+run-game:
+	@echo "🚀 Starting Game Service..."
+	go run ./cmd/game
+
 run-all:
 	@echo "🚀 Starting all services..."
 	@make run-api & make run-chat & wait
@@ -52,6 +56,10 @@ build-api:
 build-chat:
 	@echo "🔨 Building Chat Service..."
 	go build -o bin/chat ./cmd/chat
+
+build-game:
+	@echo "🔨 Building Game Service..."
+	go build -o bin/game ./cmd/game
 
 build-migrate:
 	@echo "🔨 Building Migration Service..."
@@ -160,12 +168,14 @@ help:
 	@echo "🚀 Run Services:"
 	@echo "  make run-api     - Run API service only"
 	@echo "  make run-chat    - Run Chat service only"
+	@echo "  make run-game    - Run Game service only"
 	@echo "  make run-all     - Run both services in background"
 	@echo ""
 	@echo "🔨 Build:"
 	@echo "  make build         - Build both services"
 	@echo "  make build-api     - Build API service"
 	@echo "  make build-chat    - Build Chat service"
+	@echo "  make build-game    - Build Game service"
 	@echo "  make build-migrate - Build Migration service"
 	@echo ""
 	@echo "📦 Database Migrations:"
