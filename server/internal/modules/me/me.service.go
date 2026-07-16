@@ -98,6 +98,22 @@ var (
 const editWindow = time.Hour
 
 func (s *Service) Create(userID uuid.UUID, req *CreateMeRequest) (*MeResponse, error) {
+	return s.createPost(userID, nil, req)
+}
+
+func (s *Service) CreateClanPost(userID, clanID uuid.UUID, req *CreateMeRequest) (*MeResponse, error) {
+	if s.clanGate == nil {
+		return nil, errClanUnavailable
+	}
+	visibility := parseClanVisibility(req.Visibility)
+	req.Visibility = string(visibility)
+	if err := s.clanGate.CanPost(userID, clanID, visibility); err != nil {
+		return nil, err
+	}
+	return s.createPost(userID, &clanID, req)
+}
+
+func (s *Service) createPost(userID uuid.UUID, clanID *uuid.UUID, req *CreateMeRequest) (*MeResponse, error) {
 	if len(req.Images) > constants.MaxPostImages {
 		return nil, errMaxImages
 	}
@@ -107,21 +123,6 @@ func (s *Service) Create(userID uuid.UUID, req *CreateMeRequest) (*MeResponse, e
 	}
 
 	visibility := parseVisibility(req.Visibility)
-
-	var clanID *uuid.UUID
-	if strings.TrimSpace(req.ClanID) != "" {
-		parsed, err := uuid.Parse(req.ClanID)
-		if err != nil {
-			return nil, errors.New("invalid clan id")
-		}
-		if s.clanGate == nil {
-			return nil, errClanUnavailable
-		}
-		if err := s.clanGate.CanPost(userID, parsed, visibility); err != nil {
-			return nil, err
-		}
-		clanID = &parsed
-	}
 
 	post := &models.Me{
 		AuthorID:   userID,
@@ -179,12 +180,15 @@ func (s *Service) Update(userID, postID uuid.UUID, req *UpdateMeRequest) (*MeRes
 	}
 	if req.Visibility != nil {
 		newVisibility := parseVisibility(*req.Visibility)
-		if post.ClanID != nil && newVisibility != post.Visibility {
-			if s.clanGate == nil {
-				return nil, errClanUnavailable
-			}
-			if err := s.clanGate.CanPost(userID, *post.ClanID, newVisibility); err != nil {
-				return nil, err
+		if post.ClanID != nil {
+			newVisibility = parseClanVisibility(*req.Visibility)
+			if newVisibility != post.Visibility {
+				if s.clanGate == nil {
+					return nil, errClanUnavailable
+				}
+				if err := s.clanGate.CanPost(userID, *post.ClanID, newVisibility); err != nil {
+					return nil, err
+				}
 			}
 		}
 		post.Visibility = newVisibility
@@ -980,9 +984,7 @@ func (s *Service) canView(viewerID uuid.UUID, post *models.Me) bool {
 		if s.clanGate == nil {
 			return false
 		}
-		if err := s.clanGate.CanView(viewerID, *post.ClanID); err != nil {
-			return false
-		}
+		return s.clanGate.CanView(viewerID, *post.ClanID) == nil
 	}
 	if post.Visibility == models.MeVisibilityPublic {
 		return true
@@ -994,6 +996,13 @@ func (s *Service) canView(viewerID uuid.UUID, post *models.Me) bool {
 		return s.isFriend(viewerID, post.AuthorID)
 	}
 	return false
+}
+
+func parseClanVisibility(value string) models.MeVisibility {
+	if value == string(models.MeVisibilityPublic) {
+		return models.MeVisibilityPublic
+	}
+	return models.MeVisibilityPrivate
 }
 
 func parseVisibility(value string) models.MeVisibility {

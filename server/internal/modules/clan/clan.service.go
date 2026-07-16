@@ -449,6 +449,10 @@ func (s *Service) Bans(userID, clanID uuid.UUID, limit, offset int) (*BanListRes
 	return &BanListResponse{Items: items, Total: total, Limit: limit, Offset: offset}, nil
 }
 
+func (s *Service) CreatePost(userID, clanID uuid.UUID, req *me.CreateMeRequest) (*me.MeResponse, error) {
+	return s.meService.CreateClanPost(userID, clanID, req)
+}
+
 func (s *Service) Posts(viewerID, clanID uuid.UUID, cursor string, limit int) (*ClanPostsResponse, error) {
 	clan, err := s.repo.GetByID(clanID)
 	if err != nil {

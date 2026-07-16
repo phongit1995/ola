@@ -58,15 +58,15 @@ func (r *Repository) paginate(db *gorm.DB, limit, offset int) ([]*models.Me, int
 	return posts, total, nil
 }
 
-const clanVisibleCond = `(me.clan_id IS NULL OR EXISTS (
+const clanVisibleCond = `(me.clan_id IS NULL OR (me.visibility = 'public' AND EXISTS (
 	SELECT 1 FROM clans c
 	WHERE c.id = me.clan_id AND c.policy != 4 AND c.deleted_at IS NULL
-))`
+)))`
 
-const clanVisibleCondAliasM = `(m.clan_id IS NULL OR EXISTS (
+const clanVisibleCondAliasM = `(m.clan_id IS NULL OR (m.visibility = 'public' AND EXISTS (
 	SELECT 1 FROM clans c
 	WHERE c.id = m.clan_id AND c.policy != 4 AND c.deleted_at IS NULL
-))`
+)))`
 
 func (r *Repository) SetPinned(authorID, postID uuid.UUID, pinned bool) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
@@ -257,17 +257,9 @@ func (r *Repository) FeedPage(viewerID uuid.UUID, filter string, cursorTime *tim
 	return ordered, hasMore, nil
 }
 
-const clanFeedVisibilityCond = `(me.visibility = ? OR me.author_id = ? OR (me.visibility = ? AND EXISTS (
-	SELECT 1 FROM relationships rel
-	WHERE rel.status = ?
-	  AND ((rel.requester_id = ? AND rel.addressee_id = me.author_id)
-	    OR (rel.addressee_id = ? AND rel.requester_id = me.author_id))
-)))`
-
 func (r *Repository) ListByClanPage(clanID, viewerID uuid.UUID, excludeID *uuid.UUID, cursorTime *time.Time, cursorID *uuid.UUID, limit int) ([]*models.Me, bool, error) {
 	db := r.db.Model(&models.Me{}).
-		Where("me.clan_id = ? AND me.enabled = ?", clanID, true).
-		Where(clanFeedVisibilityCond, models.MeVisibilityPublic, viewerID, models.MeVisibilityFriend, models.RelationshipStatusAccepted, viewerID, viewerID)
+		Where("me.clan_id = ? AND me.enabled = ?", clanID, true)
 	if excludeID != nil {
 		db = db.Where("me.id != ?", *excludeID)
 	}
@@ -296,7 +288,7 @@ func (r *Repository) DowngradeClanPublicPosts(clanID uuid.UUID, keepAuthorIDs []
 	if len(keepAuthorIDs) > 0 {
 		db = db.Where("author_id NOT IN ?", keepAuthorIDs)
 	}
-	return db.Update("visibility", models.MeVisibilityFriend).Error
+	return db.Update("visibility", models.MeVisibilityPrivate).Error
 }
 
 func (r *Repository) DisableAllByClanAuthor(clanID, authorID uuid.UUID) error {

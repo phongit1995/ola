@@ -35,6 +35,7 @@ func (r *Router) Setup(api *utils.AppGroup) {
 		clans.POST("/:id/bans", r.controller.Ban)
 		clans.DELETE("/:id/bans/:userId", r.controller.Unban)
 		clans.GET("/:id/posts", r.controller.Posts)
+		clans.POST("/:id/posts", r.controller.CreatePost)
 		clans.POST("/:id/pin", r.controller.Pin)
 		clans.DELETE("/:id/pin", r.controller.Unpin)
 		clans.DELETE("/:id/posts/:postId", r.controller.DeletePost)

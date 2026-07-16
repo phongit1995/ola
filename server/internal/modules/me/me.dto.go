@@ -22,7 +22,6 @@ type CreateMeRequest struct {
 	CheckIn    *CheckInInput  `json:"checkIn" binding:"omitempty"`
 	Sticker    string         `json:"sticker" binding:"omitempty,max=500"`
 	Visibility string         `json:"visibility" binding:"omitempty,oneof=public friend private" example:"public"`
-	ClanID     string         `json:"clanId" binding:"omitempty,uuid"`
 }
 
 type UpdateMeRequest struct {

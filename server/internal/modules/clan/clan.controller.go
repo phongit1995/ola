@@ -3,6 +3,7 @@ package clan
 import (
 	"net/http"
 
+	"ola-chat-server/internal/modules/me"
 	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
@@ -481,6 +482,36 @@ func (ctrl *Controller) Posts(c *gin.Context) (interface{}, error) {
 	}
 	limit := utils.ParseLimit(c, 20, 100)
 	resp, err := ctrl.service.Posts(userID, clanID, c.Query("cursor"), limit)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
+// CreatePost godoc
+// @Summary      Create a Me post inside the clan
+// @Tags         clan
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "Clan ID"
+// @Param        request body me.CreateMeRequest true "Post content"
+// @Success      201  {object}  utils.BaseResponse[me.MeResponse]
+// @Router       /clans/{id}/posts [post]
+func (ctrl *Controller) CreatePost(c *gin.Context) (interface{}, error) {
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+	clanID, err := parseClanID(c)
+	if err != nil {
+		return nil, err
+	}
+	req, err := utils.BindJSON[me.CreateMeRequest](c)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := ctrl.service.CreatePost(userID, clanID, req)
 	if err != nil {
 		return nil, utils.ServiceError(err)
 	}
