@@ -19,6 +19,7 @@ const TYPE_ICON: Record<MeNotificationType, string> = {
   comment: commentIcon,
   reply: commentIcon,
   mention: mentionIcon,
+  comment_like: likeIcon,
 };
 
 interface MeNotificationsViewProps {
@@ -44,6 +45,7 @@ export function MeNotificationsView({ onClose }: MeNotificationsViewProps) {
     if (type === 'comment') return t('me.notifComment');
     if (type === 'reply') return t('me.notifReply');
     if (type === 'mention') return t('me.notifMention');
+    if (type === 'comment_like') return t('me.notifCommentLike');
     return t('me.notifLike');
   }
 
@@ -114,7 +116,7 @@ export function MeNotificationsView({ onClose }: MeNotificationsViewProps) {
                         <span className="font-bold">{name}</span>{' '}
                         {labelFor(item.type)}
                       </p>
-                      {item.type === 'comment' && item.preview != null && item.preview !== '' && (
+                      {(item.type === 'comment' || item.type === 'comment_like') && item.preview != null && item.preview !== '' && (
                         <p className="mt-0.5 truncate text-sm text-black/54">{item.preview}</p>
                       )}
                       <div className="mt-1 flex items-center gap-1">

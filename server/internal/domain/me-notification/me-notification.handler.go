@@ -34,6 +34,19 @@ func (h *EventHandler) OnCreated(ctx context.Context, message []byte) error {
 		return errors.New("recipient id is required")
 	}
 
+	if len(event.Notification) == 0 || string(event.Notification) == "null" {
+		if event.RemovedID == "" {
+			return errors.New("notification or removed id is required")
+		}
+		wrapped := utils.WrapWebSocketMessage(constants.WebSocketEventMeNotification, map[string]interface{}{
+			"removedId":   event.RemovedID,
+			"unreadCount": event.UnreadCount,
+		})
+		h.wsServer.EmitToUser(event.RecipientID, constants.WebSocketMessageEvent, wrapped)
+		h.logger.Infow("✅ ME_NOTIFICATION removal emitted", "recipient_id", event.RecipientID, "unread_count", event.UnreadCount)
+		return nil
+	}
+
 	var notification map[string]interface{}
 	if err := json.Unmarshal(event.Notification, &notification); err != nil {
 		h.logger.Errorw("Failed to unmarshal MeNotification body", "error", err)

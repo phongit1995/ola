@@ -605,6 +605,7 @@
     "reactionError": "Couldn't react, try again",
     "notifTitle": "Notifications",
     "notifLike": "liked your status",
+    "notifCommentLike": "liked your comment",
     "notifComment": "commented on your status",
     "notifReply": "replied to your comment",
     "notifMention": "mentioned you in a status",

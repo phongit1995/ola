@@ -313,6 +313,9 @@ const (
 	CacheKeyMeLikeLock         = "LOCK:ME_LIKE:%s"
 	CacheKeyRateLimitMeLike    = "RATE_LIMIT:%s:ME_LIKE"
 
+	CacheKeyMeNotifPushGuard   = "ME_NOTIF:PUSH_GUARD:%s:%s:%s"
+	MeNotifPushGuardTTLSeconds = 600
+
 	ReactionActionAdded   = "added"
 	ReactionActionRemoved = "removed"
 )

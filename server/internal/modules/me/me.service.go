@@ -325,6 +325,8 @@ func (s *Service) React(userID, postID uuid.UUID, reactionType string) (*MeRespo
 	s.invalidateTopLikers(constants.CacheKeyMePostTopLikers, postID)
 	if current != nil && *current == models.MeReactionLike {
 		s.createMeNotification(post.AuthorID, userID, models.MeNotificationLike, postID, nil, "")
+	} else {
+		s.removeMeNotification(post.AuthorID, userID, models.MeNotificationLike, postID, nil)
 	}
 	resp := toMeResponse(updated, current)
 	s.attachTopLikers(&resp, postID)
@@ -332,7 +334,8 @@ func (s *Service) React(userID, postID uuid.UUID, reactionType string) (*MeRespo
 }
 
 func (s *Service) RemoveReaction(userID, postID uuid.UUID) (*MeResponse, error) {
-	if _, err := s.viewablePost(userID, postID); err != nil {
+	post, err := s.viewablePost(userID, postID)
+	if err != nil {
 		return nil, err
 	}
 
@@ -347,6 +350,7 @@ func (s *Service) RemoveReaction(userID, postID uuid.UUID) (*MeResponse, error) 
 		return nil, err
 	}
 	s.invalidateTopLikers(constants.CacheKeyMePostTopLikers, postID)
+	s.removeMeNotification(post.AuthorID, userID, models.MeNotificationLike, postID, nil)
 	resp := toMeResponse(updated, nil)
 	s.attachTopLikers(&resp, postID)
 	return &resp, nil
@@ -480,7 +484,78 @@ func (s *Service) createMeNotification(recipientID, actorID uuid.UUID, ntype str
 			s.logger.Warnw("Failed to create me notification", "recipient_id", recipientID, "type", ntype, "error", err.Error())
 			return
 		}
+		if !s.allowMeNotificationPush(ntype, actorID, postID, commentID) {
+			return
+		}
 		s.publishMeNotification(recipientID, created)
+	})
+}
+
+func (s *Service) allowMeNotificationPush(ntype string, actorID, postID uuid.UUID, commentID *uuid.UUID) bool {
+	if ntype != models.MeNotificationLike && ntype != models.MeNotificationCommentLike {
+		return true
+	}
+	if s.cache == nil {
+		return true
+	}
+	entityID := postID.String()
+	if commentID != nil {
+		entityID = commentID.String()
+	}
+	key := fmt.Sprintf(constants.CacheKeyMeNotifPushGuard, ntype, actorID.String(), entityID)
+	acquired, err := s.cache.SetNX(key, "1", time.Duration(constants.MeNotifPushGuardTTLSeconds)*time.Second)
+	if err != nil {
+		return true
+	}
+	return acquired
+}
+
+func (s *Service) removeMeNotification(recipientID, actorID uuid.UUID, ntype string, postID uuid.UUID, commentID *uuid.UUID) {
+	if recipientID == actorID {
+		return
+	}
+	utils.SafeGo(s.logger, func() {
+		removed, err := s.repo.DeleteMeNotification(recipientID, actorID, ntype, postID, commentID)
+		if err != nil {
+			s.logger.Warnw("Failed to remove me notification", "recipient_id", recipientID, "type", ntype, "error", err.Error())
+			return
+		}
+		if removed == nil {
+			return
+		}
+		s.publishMeNotificationRemoval(recipientID, removed.ID)
+	})
+}
+
+func (s *Service) cleanupCommentNotifications(commentID uuid.UUID) {
+	utils.SafeGo(s.logger, func() {
+		removed, err := s.repo.DeleteMeNotificationsByComment(commentID)
+		if err != nil {
+			s.logger.Warnw("Failed to cleanup comment notifications", "comment_id", commentID, "error", err.Error())
+			return
+		}
+		for _, n := range removed {
+			s.publishMeNotificationRemoval(n.RecipientID, n.ID)
+		}
+	})
+}
+
+func (s *Service) publishMeNotificationRemoval(recipientID, notificationID uuid.UUID) {
+	if s.kafkaProducer == nil {
+		return
+	}
+	unread, err := s.repo.CountUnreadMeNotifications(recipientID)
+	if err != nil {
+		s.logger.Warnw("Failed to count unread me notifications", "recipient_id", recipientID, "error", err.Error())
+		return
+	}
+	event := &meNotificationEvents.Event{
+		RecipientID: recipientID.String(),
+		RemovedID:   notificationID.String(),
+		UnreadCount: unread,
+	}
+	utils.PublishAsync(s.logger, "me notification removal", func(ctx context.Context) error {
+		return s.kafkaProducer.PublishMeNotification(ctx, event)
 	})
 }
 
@@ -628,6 +703,11 @@ func (s *Service) ToggleCommentLike(viewerID, postID, commentID uuid.UUID) (*Com
 		return nil, err
 	}
 	s.invalidateTopLikers(constants.CacheKeyMeCommentTopLikers, commentID)
+	if liked {
+		s.createMeNotification(comment.AuthorID, viewerID, models.MeNotificationCommentLike, postID, &commentID, excerptText(comment.Content))
+	} else {
+		s.removeMeNotification(comment.AuthorID, viewerID, models.MeNotificationCommentLike, postID, &commentID)
+	}
 
 	resp := toCommentResponse(comment)
 	resp.LikeCount = likeCount
@@ -660,7 +740,11 @@ func (s *Service) DeleteComment(viewerID, postID, commentID uuid.UUID) error {
 	if comment.AuthorID != viewerID && post.AuthorID != viewerID {
 		return errors.New("not your comment")
 	}
-	return s.repo.DeleteComment(postID, commentID)
+	if err := s.repo.DeleteComment(postID, commentID); err != nil {
+		return err
+	}
+	s.cleanupCommentNotifications(commentID)
+	return nil
 }
 
 func (s *Service) UploadImages(ctx context.Context, userID uuid.UUID, files []*multipart.FileHeader) (*UploadImagesResponse, error) {

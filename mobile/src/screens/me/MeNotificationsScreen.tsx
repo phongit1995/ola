@@ -22,6 +22,7 @@ const TYPE_ICON: Record<MeNotificationType, number> = {
   comment: commentIcon,
   reply: commentIcon,
   mention: mentionIcon,
+  comment_like: likeIcon,
 };
 
 function NotificationSeparator() {
@@ -58,6 +59,7 @@ export function MeNotificationsScreen({ language, onClose, onOpenProfile }: MeNo
     if (type === 'comment') return t('me.notifComment');
     if (type === 'reply') return t('me.notifReply');
     if (type === 'mention') return t('me.notifMention');
+    if (type === 'comment_like') return t('me.notifCommentLike');
     return t('me.notifLike');
   }
 
@@ -125,7 +127,7 @@ export function MeNotificationsScreen({ language, onClose, onOpenProfile }: MeNo
                     <Text className="text-sm leading-snug" style={{ color: 'rgba(0,0,0,0.87)' }}>
                       <Text className="font-bold">{name}</Text> {labelFor(item.type)}
                     </Text>
-                    {item.type === 'comment' && item.preview != null && item.preview !== '' && (
+                    {(item.type === 'comment' || item.type === 'comment_like') && item.preview != null && item.preview !== '' && (
                       <Text numberOfLines={1} className="mt-0.5 text-sm" style={{ color: 'rgba(0,0,0,0.54)' }}>
                         {item.preview}
                       </Text>

@@ -628,11 +628,22 @@ func (r *Repository) ListCommentLikers(viewerID, commentID uuid.UUID, limit, off
 	return rows, total, nil
 }
 
+func isDedupedMeNotificationType(ntype string) bool {
+	return ntype == models.MeNotificationLike || ntype == models.MeNotificationCommentLike
+}
+
+func meNotificationDedupScope(db *gorm.DB, n *models.MeNotification) *gorm.DB {
+	q := db.Where("recipient_id = ? AND actor_id = ? AND post_id = ? AND type = ?",
+		n.RecipientID, n.ActorID, n.PostID, n.Type)
+	if n.CommentID != nil {
+		q = q.Where("comment_id = ?", *n.CommentID)
+	}
+	return q
+}
+
 func (r *Repository) CreateMeNotification(n *models.MeNotification) (*models.MeNotification, error) {
-	if n.Type == models.MeNotificationLike {
-		res := r.db.Model(&models.MeNotification{}).
-			Where("recipient_id = ? AND actor_id = ? AND post_id = ? AND type = ?",
-				n.RecipientID, n.ActorID, n.PostID, models.MeNotificationLike).
+	if isDedupedMeNotificationType(n.Type) {
+		res := meNotificationDedupScope(r.db.Model(&models.MeNotification{}), n).
 			Updates(map[string]interface{}{
 				"is_read":    false,
 				"created_at": time.Now(),
@@ -647,10 +658,7 @@ func (r *Repository) CreateMeNotification(n *models.MeNotification) (*models.MeN
 			}
 		}
 		var row models.MeNotification
-		if err := r.db.Preload("Actor").
-			Where("recipient_id = ? AND actor_id = ? AND post_id = ? AND type = ?",
-				n.RecipientID, n.ActorID, n.PostID, models.MeNotificationLike).
-			First(&row).Error; err != nil {
+		if err := meNotificationDedupScope(r.db.Preload("Actor"), n).First(&row).Error; err != nil {
 			return nil, err
 		}
 		return &row, nil
@@ -664,6 +672,39 @@ func (r *Repository) CreateMeNotification(n *models.MeNotification) (*models.MeN
 		return nil, err
 	}
 	return &row, nil
+}
+
+func (r *Repository) DeleteMeNotification(recipientID, actorID uuid.UUID, ntype string, postID uuid.UUID, commentID *uuid.UUID) (*models.MeNotification, error) {
+	q := r.db.Where("recipient_id = ? AND actor_id = ? AND post_id = ? AND type = ?",
+		recipientID, actorID, postID, ntype)
+	if commentID != nil {
+		q = q.Where("comment_id = ?", *commentID)
+	}
+	var row models.MeNotification
+	if err := q.First(&row).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	if err := r.db.Unscoped().Delete(&models.MeNotification{}, "id = ?", row.ID).Error; err != nil {
+		return nil, err
+	}
+	return &row, nil
+}
+
+func (r *Repository) DeleteMeNotificationsByComment(commentID uuid.UUID) ([]*models.MeNotification, error) {
+	var rows []*models.MeNotification
+	if err := r.db.Where("comment_id = ?", commentID).Find(&rows).Error; err != nil {
+		return nil, err
+	}
+	if len(rows) == 0 {
+		return rows, nil
+	}
+	if err := r.db.Unscoped().Where("comment_id = ?", commentID).Delete(&models.MeNotification{}).Error; err != nil {
+		return nil, err
+	}
+	return rows, nil
 }
 
 func (r *Repository) ListMeNotificationsPage(recipientID uuid.UUID, cursorTime *time.Time, cursorID *uuid.UUID, limit int) ([]*models.MeNotification, bool, error) {

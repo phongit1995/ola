@@ -605,6 +605,7 @@
     "reactionError": "Không thực hiện được, thử lại",
     "notifTitle": "Thông báo",
     "notifLike": "đã thích trạng thái của bạn",
+    "notifCommentLike": "đã thích bình luận của bạn",
     "notifComment": "đã bình luận về trạng thái của bạn",
     "notifReply": "đã trả lời bình luận của bạn",
     "notifMention": "đã nhắc đến bạn trong một trạng thái",

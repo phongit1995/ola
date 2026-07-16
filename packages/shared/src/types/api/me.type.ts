@@ -149,7 +149,7 @@ export interface CreateCommentRequest {
   parentId?: string;
 }
 
-export type MeNotificationType = 'like' | 'comment' | 'reply' | 'mention';
+export type MeNotificationType = 'like' | 'comment' | 'reply' | 'mention' | 'comment_like';
 
 export interface MeNotification {
   id: string;
