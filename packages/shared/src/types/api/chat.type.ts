@@ -133,6 +133,11 @@ export interface MessageDeletedEvent {
   messageId: string;
 }
 
+export interface ConversationUpdatedEvent {
+  id?: string;
+  seen?: boolean;
+}
+
 export interface MessageReactionUpdatedEvent {
   conversationId: string;
   messageId: string;

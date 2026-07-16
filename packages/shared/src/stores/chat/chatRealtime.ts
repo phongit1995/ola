@@ -4,6 +4,7 @@ import { playMessageSound } from '../../platform/sound';
 import {
   CHAT_SOCKET_EVENTS,
   type Conversation,
+  type ConversationUpdatedEvent,
   type MessageDeletedEvent,
   type MessageReactionUpdatedEvent,
   type MessageUpdatedEvent,
@@ -161,7 +162,17 @@ export function registerChatRealtime(set: ChatSet, get: ChatGet) {
     void get().loadConversations();
   });
 
-  SocketService.on(CHAT_SOCKET_EVENTS.conversationUpdated, () => {
+  SocketService.on<ConversationUpdatedEvent>(CHAT_SOCKET_EVENTS.conversationUpdated, (data) => {
+    const conversationId = data?.id;
+    if (conversationId != null && conversationId !== '' && typeof data.seen === 'boolean') {
+      const seen = data.seen;
+      set((state) => ({
+        conversations: state.conversations.map((item) =>
+          item.id === conversationId ? { ...item, seen } : item
+        ),
+      }));
+      return;
+    }
     void get().loadConversations();
   });
 
