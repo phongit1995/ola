@@ -4061,6 +4061,30 @@ const docTemplate = `{
                 }
             }
         },
+        "/clans/mine": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clan"
+                ],
+                "summary": "List clans the current user has joined",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-array_internal_modules_clan_ClanResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/clans/{id}": {
             "get": {
                 "security": [
@@ -19724,6 +19748,35 @@ const docTemplate = `{
                 "traceId": {
                     "type": "string",
                     "example": "550e8400-e29b-41d4-a716-446655440000"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-array_internal_modules_clan_ClanResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_clan.ClanResponse"
+                    }
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
                 }
             }
         },

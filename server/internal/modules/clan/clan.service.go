@@ -161,6 +161,22 @@ func (s *Service) Create(userID uuid.UUID, req *CreateClanRequest) (*ClanRespons
 	return resp, nil
 }
 
+func (s *Service) Mine(userID uuid.UUID) ([]ClanResponse, error) {
+	clans, err := s.repo.ListByUser(userID)
+	if err != nil {
+		return nil, err
+	}
+	items := make([]ClanResponse, 0, len(clans))
+	for i := range clans {
+		resp, err := s.buildClanResponse(userID, &clans[i])
+		if err != nil {
+			return nil, err
+		}
+		items = append(items, *resp)
+	}
+	return items, nil
+}
+
 func (s *Service) GetByID(viewerID, clanID uuid.UUID) (*ClanResponse, error) {
 	clan, err := s.repo.GetByID(clanID)
 	if err != nil {

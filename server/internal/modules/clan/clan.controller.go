@@ -68,6 +68,25 @@ func (ctrl *Controller) Create(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
+// Mine godoc
+// @Summary      List clans the current user has joined
+// @Tags         clan
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200  {object}  utils.BaseResponse[[]ClanResponse]
+// @Router       /clans/mine [get]
+func (ctrl *Controller) Mine(c *gin.Context) (interface{}, error) {
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := ctrl.service.Mine(userID)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
 // GetByID godoc
 // @Summary      Get clan info by id (increments visit count once per viewer per 6h)
 // @Tags         clan

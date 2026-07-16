@@ -188,6 +188,16 @@ func (r *Repository) GetStaff(clanID uuid.UUID) ([]models.ClanMember, error) {
 	return staff, err
 }
 
+func (r *Repository) ListByUser(userID uuid.UUID) ([]models.Clan, error) {
+	var clans []models.Clan
+	err := r.db.Preload("Owner").
+		Joins("JOIN clan_members cm ON cm.clan_id = clans.id AND cm.deleted_at IS NULL").
+		Where("cm.user_id = ?", userID).
+		Order("cm.created_at ASC").
+		Find(&clans).Error
+	return clans, err
+}
+
 func (r *Repository) IsBanned(clanID, userID uuid.UUID) (bool, error) {
 	var count int64
 	err := r.db.Model(&models.ClanBan{}).
