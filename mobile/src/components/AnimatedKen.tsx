@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Animated, Image, type StyleProp, type TextStyle } from 'react-native';
 import { formatKen } from '@ola/shared/lib';
 
-const kenIcon = require('../assets/icons/apps/ken.png');
+const kenIcon = require('@assets/icons/apps/ken.png');
 
 const SETTLE_MS = 700;
 

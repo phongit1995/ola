@@ -4,8 +4,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import WebView, { type WebViewMessageEvent } from 'react-native-webview';
 import { ensureFreshToken } from '@ola/shared/api';
-import type { RootStackParamList } from '../../navigation/types';
-import { ROOT_ROUTES } from '../../navigation/routes';
+import type { RootStackParamList } from '@navigation/types';
+import { ROOT_ROUTES } from '@navigation/routes';
 
 interface GameBridgeMessage {
   source?: string;

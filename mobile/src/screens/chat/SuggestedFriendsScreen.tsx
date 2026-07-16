@@ -4,8 +4,8 @@ import { FlatList, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { SUGGESTED_FRIENDS, type SuggestedFriend } from './contacts';
-import { OlaModal } from '../../components/OlaModal';
-import { ScreenHeader } from '../../components/ScreenHeader';
+import { OlaModal } from '@components/OlaModal';
+import { ScreenHeader } from '@components/ScreenHeader';
 
 export function SuggestedFriendsScreen({ onClose }: { onClose: () => void }) {
   return (

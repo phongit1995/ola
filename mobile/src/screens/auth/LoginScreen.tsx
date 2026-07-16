@@ -9,7 +9,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { KeyboardView } from '../../components/KeyboardView';
+import { KeyboardView } from '@components/KeyboardView';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import DeviceInfo from 'react-native-device-info';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -21,11 +21,11 @@ import {
   useSavedAccountsStore,
   type SavedAccount,
 } from '@ola/shared/stores/savedAccountsStore';
-import { ClearableInput } from '../../components/ClearableInput';
-import { LanguageSwitcher } from '../../components/LanguageSwitcher';
+import { ClearableInput } from '@components/ClearableInput';
+import { LanguageSwitcher } from '@components/LanguageSwitcher';
 import { SavedAccountGallery } from './SavedAccountGallery';
-import type { AuthStackParamList } from '../../navigation/types';
-import { AUTH_ROUTES } from '../../navigation/routes';
+import type { AuthStackParamList } from '@navigation/types';
+import { AUTH_ROUTES } from '@navigation/routes';
 import { USERNAME_MIN } from './constants';
 
 const APP_VERSION = `${DeviceInfo.getVersion()} (${DeviceInfo.getBuildNumber()})`;
@@ -129,7 +129,7 @@ export function LoginScreen({ navigation }: Props) {
             />
           ) : (
             <Image
-              source={require('../../assets/ola-logo.png')}
+              source={require('@assets/ola-logo.png')}
               className="mb-4 h-14 w-14"
               resizeMode="contain"
             />

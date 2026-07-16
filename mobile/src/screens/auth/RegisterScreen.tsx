@@ -9,16 +9,16 @@ import {
   Text,
   View,
 } from 'react-native';
-import { KeyboardView } from '../../components/KeyboardView';
+import { KeyboardView } from '@components/KeyboardView';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AuthService } from '@ola/shared/services';
 import { resolveAuthError, USERNAME_MAX, USERNAME_PATTERN } from '@ola/shared/lib';
 import { PASSWORD_MAX, PASSWORD_MIN } from '@ola/shared/constants';
-import { LanguageSwitcher } from '../../components/LanguageSwitcher';
-import { TextField } from '../../components/TextField';
-import type { AuthStackParamList } from '../../navigation/types';
-import { AUTH_ROUTES } from '../../navigation/routes';
+import { LanguageSwitcher } from '@components/LanguageSwitcher';
+import { TextField } from '@components/TextField';
+import type { AuthStackParamList } from '@navigation/types';
+import { AUTH_ROUTES } from '@navigation/routes';
 import { REGISTER_USERNAME_MIN } from './constants';
 
 interface RegisterForm {
@@ -81,7 +81,7 @@ export function RegisterScreen({ navigation }: Props) {
         </View>
 
         <Image
-          source={require('../../assets/ola-logo.png')}
+          source={require('@assets/ola-logo.png')}
           className="my-3 mt-6 h-14 w-14"
           resizeMode="contain"
         />

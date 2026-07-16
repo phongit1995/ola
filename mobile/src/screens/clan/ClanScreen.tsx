@@ -18,19 +18,19 @@ import { useClanFeedStore } from '@ola/shared/stores/clanFeedStore';
 import { useClanStore } from '@ola/shared/stores/clanStore';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
-import { useMeLocalStore } from '../../store/meLocalStore';
-import { pickCroppedImage } from '../../lib/imagePicker';
-import { ConfirmDialog } from '../../components/ConfirmDialog';
-import { ListOptionDialog, type ListOption } from '../../components/ListOptionDialog';
-import { ReportDialog } from '../../components/ReportDialog';
-import { ScreenHeader } from '../../components/ScreenHeader';
-import { MediaViewerModal } from '../../components/MediaViewer';
-import { MePostCard } from '../me/MePostCard';
-import { MeComposerModal } from '../me/MeComposerModal';
-import { MeCommentSheet } from '../me/MeCommentSheet';
-import { MeQuickCommentBar } from '../me/MeQuickCommentBar';
-import { MeLikersDialog } from '../me/MeLikersDialog';
-import { UserProfileScreen } from '../profile/UserProfileScreen';
+import { useMeLocalStore } from '@store/meLocalStore';
+import { pickCroppedImage } from '@lib/imagePicker';
+import { ConfirmDialog } from '@components/ConfirmDialog';
+import { ListOptionDialog, type ListOption } from '@components/ListOptionDialog';
+import { ReportDialog } from '@components/ReportDialog';
+import { ScreenHeader } from '@components/ScreenHeader';
+import { MediaViewerModal } from '@components/MediaViewer';
+import { MePostCard } from '@screens/me/MePostCard';
+import { MeComposerModal } from '@screens/me/MeComposerModal';
+import { MeCommentSheet } from '@screens/me/MeCommentSheet';
+import { MeQuickCommentBar } from '@screens/me/MeQuickCommentBar';
+import { MeLikersDialog } from '@screens/me/MeLikersDialog';
+import { UserProfileScreen } from '@screens/profile/UserProfileScreen';
 import {
   CLAN_ROLE_ICONS,
   canPostPublicInClan,
@@ -38,14 +38,14 @@ import {
   clanFeedErrorText,
   clanPolicyLabel,
   isClanStaff,
-} from '../../lib/clanHelpers';
+} from '@lib/clanHelpers';
 
-const manageIcon = require('../../assets/icons/clan/ic_manage_clan.png');
-const followIcon = require('../../assets/icons/clan/ic_follow_black_disable.png');
-const followingIcon = require('../../assets/icons/clan/ic_state_following.png');
-const postMeIcon = require('../../assets/icons/clan/ic_post_me_gray.png');
-const policyIcon = require('../../assets/icons/clan/ic_profile_note.png');
-const cameraIcon = require('../../assets/icons/me/ic_action_edit.png');
+const manageIcon = require('@assets/icons/clan/ic_manage_clan.png');
+const followIcon = require('@assets/icons/clan/ic_follow_black_disable.png');
+const followingIcon = require('@assets/icons/clan/ic_state_following.png');
+const postMeIcon = require('@assets/icons/clan/ic_post_me_gray.png');
+const policyIcon = require('@assets/icons/clan/ic_profile_note.png');
+const cameraIcon = require('@assets/icons/me/ic_action_edit.png');
 
 interface ClanScreenProps {
   handle?: string;

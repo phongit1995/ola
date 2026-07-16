@@ -4,11 +4,11 @@ import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { colorForName, toast } from '@ola/shared/lib';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useMarriageStore, type DiaryEntry } from '@ola/shared/stores/marriageStore';
-import { Avatar } from '../../../components/Avatar';
-import { ConfirmDialog } from '../../../components/ConfirmDialog';
-import { Dialog, DialogButton } from '../../../components/Dialog';
-import { VipAvatar } from '../../../components/VipAvatar';
-import { VerticalGradient } from '../../games/pen/penUi';
+import { Avatar } from '@components/Avatar';
+import { ConfirmDialog } from '@components/ConfirmDialog';
+import { Dialog, DialogButton } from '@components/Dialog';
+import { VipAvatar } from '@components/VipAvatar';
+import { VerticalGradient } from '@screens/games/pen/penUi';
 
 const DAY_MS = 86_400_000;
 

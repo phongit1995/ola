@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { Image, ScrollView, Text, View } from 'react-native';
 import type { RoomReactor } from '@ola/shared/types';
-import { REACTION_IMAGE, REACTION_ORDER } from '../../lib/reactions';
-import { Dialog } from '../../components/Dialog';
+import { REACTION_IMAGE, REACTION_ORDER } from '@lib/reactions';
+import { Dialog } from '@components/Dialog';
 
 interface RoomReactionsDialogProps {
   visible: boolean;

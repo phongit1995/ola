@@ -8,12 +8,12 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RoomService } from '@ola/shared/services';
 import { useRoomChatStore } from '@ola/shared/stores/roomChatStore';
 import type { Room } from '@ola/shared/types';
-import type { RoomStackParamList } from '../../navigation/types';
-import { ROOM_ROUTES } from '../../navigation/routes';
+import type { RoomStackParamList } from '@navigation/types';
+import { ROOM_ROUTES } from '@navigation/routes';
 
-const membersIcon = require('../../assets/icons/room/ic_indicate_privacy_friends.png');
-const quickJoinIcon = require('../../assets/icons/room/ic_action_auto_join_room.png');
-const refreshIcon = require('../../assets/icons/room/ic_refresh.png');
+const membersIcon = require('@assets/icons/room/ic_indicate_privacy_friends.png');
+const quickJoinIcon = require('@assets/icons/room/ic_action_auto_join_room.png');
+const refreshIcon = require('@assets/icons/room/ic_refresh.png');
 
 const ROOM_COLORS = ['#ef5350', '#ec407a', '#5c6bc0', '#26a69a', '#7e57c2', '#ffa726'];
 const ROOM_CAPACITY = 200;

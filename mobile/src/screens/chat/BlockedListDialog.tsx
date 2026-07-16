@@ -4,8 +4,8 @@ import { Pressable, Text, View } from 'react-native';
 import { RelationshipService } from '@ola/shared/services';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { Relationship } from '@ola/shared/types';
-import { Avatar } from '../../components/Avatar';
-import { UserListDialog } from '../../components/UserListDialog';
+import { Avatar } from '@components/Avatar';
+import { UserListDialog } from '@components/UserListDialog';
 
 function blockedName(relationship: Relationship): string {
   return relationship.addressee?.fullName || relationship.addressee?.username || '';

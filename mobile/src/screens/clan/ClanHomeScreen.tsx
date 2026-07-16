@@ -15,22 +15,22 @@ import { ClanService } from '@ola/shared/services';
 import type { ClanCheckNameResult } from '@ola/shared/types';
 import { useClanStore } from '@ola/shared/stores/clanStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
-import { Avatar } from '../../components/Avatar';
-import { ConfirmDialog } from '../../components/ConfirmDialog';
-import { Dialog, DialogButton } from '../../components/Dialog';
-import { ScreenHeader } from '../../components/ScreenHeader';
-import { UserProfileScreen } from '../profile/UserProfileScreen';
+import { Avatar } from '@components/Avatar';
+import { ConfirmDialog } from '@components/ConfirmDialog';
+import { Dialog, DialogButton } from '@components/Dialog';
+import { ScreenHeader } from '@components/ScreenHeader';
+import { UserProfileScreen } from '@screens/profile/UserProfileScreen';
 import {
   CLAN_HANDLE_PATTERN,
   CLAN_ROLE_ICONS,
   clanErrorText,
   clanRoleLabel,
   normalizeClanHandle,
-} from '../../lib/clanHelpers';
+} from '@lib/clanHelpers';
 
-const addIcon = require('../../assets/icons/clan/ic_action_add.png');
-const memberIcon = require('../../assets/icons/clan/ic_clan_member.png');
-const visitIcon = require('../../assets/icons/clan/ic_clan_visit.png');
+const addIcon = require('@assets/icons/clan/ic_action_add.png');
+const memberIcon = require('@assets/icons/clan/ic_clan_member.png');
+const visitIcon = require('@assets/icons/clan/ic_clan_visit.png');
 
 interface ClanHomeScreenProps {
   onClose: () => void;

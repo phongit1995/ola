@@ -3,22 +3,22 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Image, Pressable, Text, useWindowDimensions, View } from 'react-native';
 import { formatDuration, parseMessageMetadata } from '@ola/shared/lib';
 import type { ChatReplySnapshot, Message } from '@ola/shared/types';
-import { Avatar } from '../../components/Avatar';
-import { VoiceBubble } from '../../components/VoiceBubble';
-import { kulImageForText } from '../../lib/kul';
-import { reactionChips } from '../../lib/reactions';
-import { imageSizeForHeight } from '../../lib/chatSmiley';
-import { RichTextView } from '../../components/RichTextView';
-import type { AnchorRect } from '../room/MessageActionSheet';
+import { Avatar } from '@components/Avatar';
+import { VoiceBubble } from '@components/VoiceBubble';
+import { kulImageForText } from '@lib/kul';
+import { reactionChips } from '@lib/reactions';
+import { imageSizeForHeight } from '@lib/chatSmiley';
+import { RichTextView } from '@components/RichTextView';
+import type { AnchorRect } from '@screens/room/MessageActionSheet';
 
 function chatBubbleTextMaxWidth(windowWidth: number, fromMe: boolean): number {
   const rowWidth = windowWidth - 24 - (fromMe ? 0 : 36);
   return Math.floor(rowWidth * 0.78 - 24) - 2;
 }
 
-const sentIcon = require('../../assets/icons/chat/ic_message_sent.png');
-const resendIcon = require('../../assets/icons/chat/btn_resend_d.png');
-const photoIcon = require('../../assets/icons/chat/ic_local.png');
+const sentIcon = require('@assets/icons/chat/ic_message_sent.png');
+const resendIcon = require('@assets/icons/chat/btn_resend_d.png');
+const photoIcon = require('@assets/icons/chat/ic_local.png');
 
 function ChatQuoteBlock({
   replyTo,

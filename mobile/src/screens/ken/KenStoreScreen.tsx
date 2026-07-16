@@ -7,12 +7,12 @@ import { formatKen } from '@ola/shared/lib';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { selectTopupEnabled, useTopupConfigStore } from '@ola/shared/stores/topupConfigStore';
-import type { RootStackParamList } from '../../navigation/types';
-import { ROOT_ROUTES } from '../../navigation/routes';
+import type { RootStackParamList } from '@navigation/types';
+import { ROOT_ROUTES } from '@navigation/routes';
 import { KenCoin } from './KenCoin';
 import { KenHistorySection } from './KenHistorySection';
 import { TransferKenDialog } from './TransferKenDialog';
-import { ScreenHeader } from '../../components/ScreenHeader';
+import { ScreenHeader } from '@components/ScreenHeader';
 
 const KEN_LOW_THRESHOLD = 10_000;
 const MUTED = 'rgba(0,0,0,0.54)';

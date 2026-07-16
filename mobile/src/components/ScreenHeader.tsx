@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-const backIcon = require('../assets/icons/ic_back.png');
+const backIcon = require('@assets/icons/ic_back.png');
 
 interface ScreenHeaderProps {
   title: string;

@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, Text, View } from 'react-native';
 import { createTimeFormatter, toast } from '@ola/shared/lib';
 import { useMarriageStore, type PendingProposal } from '@ola/shared/stores/marriageStore';
-import { ConfirmDialog } from '../../../components/ConfirmDialog';
-import { VipAvatar } from '../../../components/VipAvatar';
+import { ConfirmDialog } from '@components/ConfirmDialog';
+import { VipAvatar } from '@components/VipAvatar';
 
 interface MarriageLockedViewProps {
   onPropose: () => void;

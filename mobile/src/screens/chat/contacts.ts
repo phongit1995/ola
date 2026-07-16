@@ -1,7 +1,7 @@
 import type { TFunction } from 'i18next';
 import { activeVipTypeId, colorForName, isVipActive } from '@ola/shared/lib';
 import type { Friend } from '@ola/shared/types';
-import { normalizeDevice, type DeviceType } from '../../lib/deviceIcons';
+import { normalizeDevice, type DeviceType } from '@lib/deviceIcons';
 
 export type ContactGroup = 'birthday' | 'new' | 'utility' | 'friend';
 

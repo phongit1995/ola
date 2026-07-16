@@ -8,9 +8,9 @@ const translate = i18n.t.bind(i18n) as (key: string, options?: Record<string, un
 export const CLAN_HANDLE_PATTERN = /^[a-z0-9]{5,32}$/;
 
 export const CLAN_ROLE_ICONS: Record<Exclude<ClanRole, 'member'>, ImageSourcePropType> = {
-  owner: require('../assets/icons/clan/ic_clan_role_leader.png'),
-  deputy: require('../assets/icons/clan/ic_clan_role_vice_leader.png'),
-  ambassador: require('../assets/icons/clan/ic_clan_role_supporter.png'),
+  owner: require('@assets/icons/clan/ic_clan_role_leader.png'),
+  deputy: require('@assets/icons/clan/ic_clan_role_vice_leader.png'),
+  ambassador: require('@assets/icons/clan/ic_clan_role_supporter.png'),
 };
 
 export function normalizeClanHandle(input: string): string {

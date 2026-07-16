@@ -6,7 +6,7 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useMediaViewerStore } from '../store/mediaViewerStore';
+import { useMediaViewerStore } from '@store/mediaViewerStore';
 import { CloseIcon } from './CloseIcon';
 import { OlaModal } from './OlaModal';
 

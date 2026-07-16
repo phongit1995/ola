@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Image, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { OlaModal } from '../../components/OlaModal';
+import { OlaModal } from '@components/OlaModal';
 
 interface CoverPreviewOverlayProps {
   visible: boolean;

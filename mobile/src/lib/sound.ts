@@ -58,22 +58,22 @@ export function createSoundPlayer(asset: number, gate: SoundGate): SoundPlayer {
 }
 
 export const playKenChestSound = createSoundPlayer(
-  require('../assets/sounds/ken-chest.mp3'),
+  require('@assets/sounds/ken-chest.mp3'),
   'soundGame'
 ).play;
 export const playKenShotFailSound = createSoundPlayer(
-  require('../assets/sounds/ken-shot-fail.mp3'),
+  require('@assets/sounds/ken-shot-fail.mp3'),
   'soundGame'
 ).play;
 export const playKenCreditSound = createSoundPlayer(
-  require('../assets/sounds/ken-credit.mp3'),
+  require('@assets/sounds/ken-credit.mp3'),
   'soundKen'
 ).play;
 export const playMessageSound = createSoundPlayer(
-  require('../assets/sounds/message.mp3'),
+  require('@assets/sounds/message.mp3'),
   'notifSound'
 ).play;
 export const playRoomTagSound = createSoundPlayer(
-  require('../assets/sounds/room-tag.mp3'),
+  require('@assets/sounds/room-tag.mp3'),
   'notifSound'
 ).play;

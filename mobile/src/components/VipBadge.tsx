@@ -1,7 +1,7 @@
 import { Image } from 'react-native';
-import { VIP_ICONS } from '../lib/vipImages';
+import { VIP_ICONS } from '@lib/vipImages';
 
-const smileyIcon = require('../assets/icons/chat/ola_smiley_online.png');
+const smileyIcon = require('@assets/icons/chat/ola_smiley_online.png');
 
 interface VipBadgeProps {
   typeId?: number | null;

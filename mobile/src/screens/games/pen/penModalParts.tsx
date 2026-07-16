@@ -8,7 +8,7 @@ import {
   useWindowDimensions,
   type ImageSourcePropType,
 } from 'react-native';
-import { KeyboardView } from '../../../components/KeyboardView';
+import { KeyboardView } from '@components/KeyboardView';
 import { formatVnd } from '@ola/shared/lib';
 import type { PenSide } from '@ola/shared/types';
 import { penAssets } from './penAssets';

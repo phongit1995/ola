@@ -2,20 +2,20 @@ import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Animated, BackHandler, Image, ImageBackground, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
-import { Avatar } from '../../components/Avatar';
+import { Avatar } from '@components/Avatar';
 
-const personalIcon = require('../../assets/icons/me/ic_indicate_personal.png');
-const boxIcon = require('../../assets/icons/me/ic_indicate_box.png');
-const likeIcon = require('../../assets/icons/me/ic_section_like.png');
-const visitorIcon = require('../../assets/icons/me/ic_action_tab_follower.png');
-const clanIcon = require('../../assets/icons/clan/ic_menu_clan.png');
+const personalIcon = require('@assets/icons/me/ic_indicate_personal.png');
+const boxIcon = require('@assets/icons/me/ic_indicate_box.png');
+const likeIcon = require('@assets/icons/me/ic_section_like.png');
+const visitorIcon = require('@assets/icons/me/ic_action_tab_follower.png');
+const clanIcon = require('@assets/icons/clan/ic_menu_clan.png');
 // TODO: các mục chưa có action, ẩn tạm — bật lại khi làm xong
-// const eggIcon = require('../../assets/icons/me/ic_indicate_broken_egg.png');
-// const androidIcon = require('../../assets/icons/me/ic_indicate_android.png');
-// const olaIcon = require('../../assets/icons/me/ic_indicate_me.png');
-// const funnyIcon = require('../../assets/icons/me/ic_indicate_funny.png');
-// const publicIcon = require('../../assets/icons/me/ic_indicate_public.png');
-// const rssIcon = require('../../assets/icons/me/ic_indicate_rss.png');
+// const eggIcon = require('@assets/icons/me/ic_indicate_broken_egg.png');
+// const androidIcon = require('@assets/icons/me/ic_indicate_android.png');
+// const olaIcon = require('@assets/icons/me/ic_indicate_me.png');
+// const funnyIcon = require('@assets/icons/me/ic_indicate_funny.png');
+// const publicIcon = require('@assets/icons/me/ic_indicate_public.png');
+// const rssIcon = require('@assets/icons/me/ic_indicate_rss.png');
 
 const WIDTH = 240;
 

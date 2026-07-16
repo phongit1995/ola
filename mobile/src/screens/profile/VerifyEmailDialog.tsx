@@ -4,7 +4,7 @@ import { Pressable, Text, TextInput, View } from 'react-native';
 import { ApiError } from '@ola/shared/lib';
 import { AuthService } from '@ola/shared/services';
 import { useToastStore } from '@ola/shared/stores/toastStore';
-import { Dialog, DialogButton } from '../../components/Dialog';
+import { Dialog, DialogButton } from '@components/Dialog';
 import { OtpInput } from './OtpInput';
 
 const RESEND_SECONDS = 60;

@@ -10,15 +10,15 @@ import {
 } from 'react-native';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { FlashList } from '@shopify/flash-list';
-import { useStickyBottomList } from '../../hooks/useStickyBottomList';
+import { useStickyBottomList } from '@hooks/useStickyBottomList';
 import type { ReactionType, RoomMessage } from '@ola/shared/types';
 import type { NativeUploadFile } from '@ola/shared/lib';
 import { createTimeFormatter } from '@ola/shared/lib';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { useRoomFilterStore } from '@ola/shared/stores/roomFilterStore';
-import { kulImageForText } from '../../lib/kul';
-import { RichTextView } from '../../components/RichTextView';
-import { ConfirmDialog } from '../../components/ConfirmDialog';
+import { kulImageForText } from '@lib/kul';
+import { RichTextView } from '@components/RichTextView';
+import { ConfirmDialog } from '@components/ConfirmDialog';
 import { buildRoomFeed, type GroupedMessage, type RoomFeedItem } from './messageGroups';
 import { RoomBubbleBody, RoomMessageGroup } from './RoomMessageGroup';
 import { RoomComposerBar, type RoomComposerHandle } from './RoomComposerBar';
@@ -28,8 +28,8 @@ import { MessageActionSheet, type AnchorRect, type MessageSheetAction } from './
 import { RoomReactionsDialog } from './RoomReactionsDialog';
 import type { RoomChatStatus } from '@ola/shared/stores/roomChatStore';
 
-const replyActionIcon = require('../../assets/icons/me/ic_action_reply_gray.png');
-const deleteActionIcon = require('../../assets/icons/chat/ic_menu_delete.png');
+const replyActionIcon = require('@assets/icons/me/ic_action_reply_gray.png');
+const deleteActionIcon = require('@assets/icons/chat/ic_menu_delete.png');
 
 interface RoomMessagesTabProps {
   currentUserId: string;

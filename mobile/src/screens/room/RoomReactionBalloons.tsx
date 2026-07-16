@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Animated, Dimensions, Easing, Image, View } from 'react-native';
 import { useRoomChatStore } from '@ola/shared/stores/roomChatStore';
 import type { ReactionType } from '@ola/shared/types';
-import { REACTION_IMAGE } from '../../lib/reactions';
+import { REACTION_IMAGE } from '@lib/reactions';
 
 interface Balloon {
   id: number;

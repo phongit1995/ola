@@ -12,7 +12,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { KeyboardView } from '../../components/KeyboardView';
+import { KeyboardView } from '@components/KeyboardView';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -21,19 +21,19 @@ import { ApiError, type NativeUploadFile } from '@ola/shared/lib';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { Gender, UpdateProfileRequest } from '@ola/shared/types';
-import type { RootStackParamList } from '../../navigation/types';
-import { ROOT_ROUTES } from '../../navigation/routes';
-import { Avatar } from '../../components/Avatar';
-import { pickCroppedImage } from '../../lib/imagePicker';
+import type { RootStackParamList } from '@navigation/types';
+import { ROOT_ROUTES } from '@navigation/routes';
+import { Avatar } from '@components/Avatar';
+import { pickCroppedImage } from '@lib/imagePicker';
 import { ChangePasswordDialog } from './ChangePasswordDialog';
 import { VerifyEmailDialog } from './VerifyEmailDialog';
 import { CoverPreviewOverlay } from './CoverPreviewOverlay';
-import { ScreenHeader } from '../../components/ScreenHeader';
+import { ScreenHeader } from '@components/ScreenHeader';
 
-const cameraIcon = require('../../assets/icons/profile/ic_action_camera.png');
-const lockIcon = require('../../assets/icons/profile/ic_lock.png');
-const maleIcon = require('../../assets/icons/profile/ic_indicate_male.png');
-const femaleIcon = require('../../assets/icons/profile/ic_indicate_female.png');
+const cameraIcon = require('@assets/icons/profile/ic_action_camera.png');
+const lockIcon = require('@assets/icons/profile/ic_lock.png');
+const maleIcon = require('@assets/icons/profile/ic_indicate_male.png');
+const femaleIcon = require('@assets/icons/profile/ic_indicate_female.png');
 
 const DIVIDER = 'rgba(0,0,0,0.12)';
 const PHONE_PATTERN = /^[0-9+\-() ]{6,20}$/;

@@ -13,13 +13,13 @@ import {
 import { ClanService } from '@ola/shared/services';
 import type { Clan, ClanPolicy } from '@ola/shared/types';
 import { useToastStore } from '@ola/shared/stores/toastStore';
-import { ConfirmDialog } from '../../components/ConfirmDialog';
-import { Dialog, DialogButton } from '../../components/Dialog';
-import { ListOptionDialog, type ListOption } from '../../components/ListOptionDialog';
-import { ScreenHeader } from '../../components/ScreenHeader';
-import { clanErrorText, clanPolicyLabel } from '../../lib/clanHelpers';
+import { ConfirmDialog } from '@components/ConfirmDialog';
+import { Dialog, DialogButton } from '@components/Dialog';
+import { ListOptionDialog, type ListOption } from '@components/ListOptionDialog';
+import { ScreenHeader } from '@components/ScreenHeader';
+import { clanErrorText, clanPolicyLabel } from '@lib/clanHelpers';
 
-const editIcon = require('../../assets/icons/me/ic_action_edit.png');
+const editIcon = require('@assets/icons/me/ic_action_edit.png');
 
 interface ClanManageScreenProps {
   clanId: string;

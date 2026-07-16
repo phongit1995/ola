@@ -5,8 +5,8 @@ import { MeService, UserService } from '@ola/shared/services';
 import type { NativeUploadFile } from '@ola/shared/lib';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
-import { Dialog, DialogButton } from '../../components/Dialog';
-import { pickCroppedImage } from '../../lib/imagePicker';
+import { Dialog, DialogButton } from '@components/Dialog';
+import { pickCroppedImage } from '@lib/imagePicker';
 
 const COVER_OUTPUT = { width: 1600, height: 900 };
 const COVER_ASPECT = 16 / 9;

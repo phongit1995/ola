@@ -4,12 +4,12 @@ import { ActivityIndicator, Animated, BackHandler, FlatList, Image, Pressable, T
 import { UserService } from '@ola/shared/services';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { activeVipTypeId, colorForName } from '@ola/shared/lib';
-import { useMeLocalStore, type ViewedProfile } from '../../store/meLocalStore';
-import { Avatar } from '../../components/Avatar';
-import { VipBadge } from '../../components/VipBadge';
-import { ConfirmDialog } from '../../components/ConfirmDialog';
+import { useMeLocalStore, type ViewedProfile } from '@store/meLocalStore';
+import { Avatar } from '@components/Avatar';
+import { VipBadge } from '@components/VipBadge';
+import { ConfirmDialog } from '@components/ConfirmDialog';
 
-const searchEmptyIcon = require('../../assets/icons/me/ic_action_search.png');
+const searchEmptyIcon = require('@assets/icons/me/ic_action_search.png');
 
 const WIDTH = 240;
 

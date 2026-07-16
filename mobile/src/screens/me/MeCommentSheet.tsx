@@ -1,9 +1,9 @@
 import { useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
-import { KeyboardView } from '../../components/KeyboardView';
-import { OlaModal } from '../../components/OlaModal';
-import { ScreenHeader } from '../../components/ScreenHeader';
+import { KeyboardView } from '@components/KeyboardView';
+import { OlaModal } from '@components/OlaModal';
+import { ScreenHeader } from '@components/ScreenHeader';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { createTimeFormatter, formatDateDMY, isSameDay } from '@ola/shared/lib';

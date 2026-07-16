@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, Text, View } from 'react-native';
 import { useToastStore } from '@ola/shared/stores/toastStore';
-import { useVoiceRecorder, type VoiceRecording } from '../../hooks/useVoiceRecorder';
+import { useVoiceRecorder, type VoiceRecording } from '@hooks/useVoiceRecorder';
 
 function formatElapsed(ms: number): string {
   const total = Math.floor(ms / 1000);

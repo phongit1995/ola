@@ -9,13 +9,13 @@ import { useToastStore } from '@ola/shared/stores/toastStore';
 import { MeService } from '@ola/shared/services';
 import { createTimeFormatter } from '@ola/shared/lib';
 import type { MeNotification, MeNotificationType, Post } from '@ola/shared/types';
-import { Avatar } from '../../components/Avatar';
+import { Avatar } from '@components/Avatar';
 import { MeCommentSheet } from './MeCommentSheet';
-import { ScreenHeader } from '../../components/ScreenHeader';
+import { ScreenHeader } from '@components/ScreenHeader';
 
-const likeIcon = require('../../assets/icons/notify/ic_notification_like.png');
-const commentIcon = require('../../assets/icons/notify/ic_notification_comment.png');
-const mentionIcon = require('../../assets/icons/notify/ic_notification_mention.png');
+const likeIcon = require('@assets/icons/notify/ic_notification_like.png');
+const commentIcon = require('@assets/icons/notify/ic_notification_comment.png');
+const mentionIcon = require('@assets/icons/notify/ic_notification_mention.png');
 
 const TYPE_ICON: Record<MeNotificationType, number> = {
   like: likeIcon,

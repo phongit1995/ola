@@ -7,15 +7,15 @@ import { EGG_START_KEN, formatKen } from '@ola/shared/lib';
 import { SocketService } from '@ola/shared/services';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useEggGameStore } from '@ola/shared/stores/eggGameStore';
-import type { RootStackParamList } from '../../../navigation/types';
-import { ROOT_ROUTES } from '../../../navigation/routes';
-import { AnimatedKen } from '../../../components/AnimatedKen';
+import type { RootStackParamList } from '@navigation/types';
+import { ROOT_ROUTES } from '@navigation/routes';
+import { AnimatedKen } from '@components/AnimatedKen';
 import { EggScene } from './EggScene';
 import { EggHistoryDialog } from './EggHistoryDialog';
 import { useEggGame } from './useEggGame';
 import { eggAssets } from './eggAssets';
 
-const backIcon = require('../../../assets/icons/ic_back.png');
+const backIcon = require('@assets/icons/ic_back.png');
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof ROOT_ROUTES.EggGame>;
 

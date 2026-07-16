@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Pressable, Text, View } from 'react-native';
-import { KeyboardView } from '../../components/KeyboardView';
-import { OlaModal } from '../../components/OlaModal';
+import { KeyboardView } from '@components/KeyboardView';
+import { OlaModal } from '@components/OlaModal';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MeCommentComposer } from './MeCommentComposer';
 

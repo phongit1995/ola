@@ -4,8 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { USERNAME_MAX, USERNAME_PATTERN } from '@ola/shared/lib';
-import type { AuthStackParamList } from '../../navigation/types';
-import { AUTH_ROUTES } from '../../navigation/routes';
+import type { AuthStackParamList } from '@navigation/types';
+import { AUTH_ROUTES } from '@navigation/routes';
 import { FORGOT_USERNAME_MIN } from './constants';
 
 interface ForgotForm {

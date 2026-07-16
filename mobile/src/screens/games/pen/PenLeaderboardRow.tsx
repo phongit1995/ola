@@ -1,7 +1,7 @@
 import { Image, Text, View } from 'react-native';
 import { formatKen } from '@ola/shared/lib';
 import type { PenLeaderboardEntry } from '@ola/shared/types';
-import { VipBadge } from '../../../components/VipBadge';
+import { VipBadge } from '@components/VipBadge';
 import { penAssets, penLeaderboardAssets } from './penAssets';
 import { PEN_COLORS } from './penUi';
 

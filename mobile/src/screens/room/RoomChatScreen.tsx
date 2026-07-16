@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Image, Keyboard, Pressable, Text, View } from 'react-native';
-import { KeyboardShift } from '../../components/KeyboardShift';
+import { KeyboardShift } from '@components/KeyboardShift';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useIsFocused } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -12,12 +12,12 @@ import { useAuthStore } from '@ola/shared/stores/authStore';
 import { memberMatchesFilter, useRoomFilterStore } from '@ola/shared/stores/roomFilterStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { ReactionType } from '@ola/shared/types';
-import type { MainTabParamList, RoomStackParamList, RootStackParamList } from '../../navigation/types';
-import { ROOT_ROUTES, TAB_ROUTES } from '../../navigation/routes';
+import type { MainTabParamList, RoomStackParamList, RootStackParamList } from '@navigation/types';
+import { ROOT_ROUTES, TAB_ROUTES } from '@navigation/routes';
 import { RoomMessagesTab } from './RoomMessagesTab';
 import { RoomMembersTab } from './RoomMembersTab';
 import { RoomFilterDialog } from './RoomFilterDialog';
-import { ConfirmDialog } from '../../components/ConfirmDialog';
+import { ConfirmDialog } from '@components/ConfirmDialog';
 
 type Props = CompositeScreenProps<
   NativeStackScreenProps<RoomStackParamList, 'RoomChat'>,
@@ -27,10 +27,10 @@ type Props = CompositeScreenProps<
   >
 >;
 
-const membersIcon = require('../../assets/icons/room/ic_add_friend.png');
-const messagesIcon = require('../../assets/icons/room/ic_notify_new_chat_group_message.png');
-const backIcon = require('../../assets/icons/ic_back.png');
-const filterIcon = require('../../assets/icons/room/ic_filter_unselected.png');
+const membersIcon = require('@assets/icons/room/ic_add_friend.png');
+const messagesIcon = require('@assets/icons/room/ic_notify_new_chat_group_message.png');
+const backIcon = require('@assets/icons/ic_back.png');
+const filterIcon = require('@assets/icons/room/ic_filter_unselected.png');
 
 function DashedLine() {
   return (

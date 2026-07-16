@@ -14,18 +14,18 @@ import { useToastStore } from '@ola/shared/stores/toastStore';
 import { useSettingsStore } from '@ola/shared/stores/settingsStore';
 import { VipService } from '@ola/shared/services';
 import type { UserSettings } from '@ola/shared/types';
-import type { RootStackParamList } from '../../navigation/types';
-import { ROOT_ROUTES } from '../../navigation/routes';
-import { ScreenHeader } from '../../components/ScreenHeader';
+import type { RootStackParamList } from '@navigation/types';
+import { ROOT_ROUTES } from '@navigation/routes';
+import { ScreenHeader } from '@components/ScreenHeader';
 
 const PRIMARY = '#7cb342';
 const ROW_BORDER = 'rgba(0,0,0,0.06)';
 const VIP_PRIVACY_KEYS = ['privacyPublic', 'privacyFriends', 'privacyPrivate'] as const;
 const VIP_PRIVACY_DISPLAY = ['privacyPrivate', 'privacyFriends', 'privacyPublic'] as const;
 
-const iconPrivacy = require('../../assets/icons/settings/icon-privacy.webp');
-const iconNotification = require('../../assets/icons/settings/icon-notification.webp');
-const iconAppearance = require('../../assets/icons/settings/icon-appearance.webp');
+const iconPrivacy = require('@assets/icons/settings/icon-privacy.webp');
+const iconNotification = require('@assets/icons/settings/icon-notification.webp');
+const iconAppearance = require('@assets/icons/settings/icon-appearance.webp');
 
 function SectionIcon({ src }: { src: ImageSourcePropType }) {
   const resolved = Image.resolveAssetSource(src);

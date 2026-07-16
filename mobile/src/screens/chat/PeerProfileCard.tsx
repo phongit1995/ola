@@ -2,12 +2,12 @@ import { useTranslation } from 'react-i18next';
 import { Image, ImageBackground, Pressable, Text, View } from 'react-native';
 import { activeVipTypeId, daysSince, monthsSince, yearsSince } from '@ola/shared/lib';
 import type { PublicProfile } from '@ola/shared/types';
-import { Avatar } from '../../components/Avatar';
-import { VipAvatar } from '../../components/VipAvatar';
+import { Avatar } from '@components/Avatar';
+import { VipAvatar } from '@components/VipAvatar';
 
-const checkedIcon = require('../../assets/icons/profile/ic_checked.png');
-const maleIcon = require('../../assets/icons/profile/ic_indicate_male.png');
-const femaleIcon = require('../../assets/icons/profile/ic_indicate_female.png');
+const checkedIcon = require('@assets/icons/profile/ic_checked.png');
+const maleIcon = require('@assets/icons/profile/ic_indicate_male.png');
+const femaleIcon = require('@assets/icons/profile/ic_indicate_female.png');
 
 const DIVIDER = 'rgba(0,0,0,0.12)';
 

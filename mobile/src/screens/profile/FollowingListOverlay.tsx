@@ -10,9 +10,9 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { UserService } from '@ola/shared/services';
 import type { FollowUser } from '@ola/shared/types';
-import { Avatar } from '../../components/Avatar';
-import { OlaModal } from '../../components/OlaModal';
-import { ScreenHeader } from '../../components/ScreenHeader';
+import { Avatar } from '@components/Avatar';
+import { OlaModal } from '@components/OlaModal';
+import { ScreenHeader } from '@components/ScreenHeader';
 
 const FOLLOW_PAGE_SIZE = 10;
 

@@ -11,12 +11,12 @@ import { useToastStore } from '@ola/shared/stores/toastStore';
 import { MarriageService, RelationshipService } from '@ola/shared/services';
 import { createTimeFormatter } from '@ola/shared/lib';
 import type { AppNotification } from '@ola/shared/types';
-import { Avatar } from '../../components/Avatar';
-import { ConfirmDialog } from '../../components/ConfirmDialog';
-import { ScreenHeader } from '../../components/ScreenHeader';
+import { Avatar } from '@components/Avatar';
+import { ConfirmDialog } from '@components/ConfirmDialog';
+import { ScreenHeader } from '@components/ScreenHeader';
 
-const icFriend = require('../../assets/icons/notify/ic_notification_add_friend.png');
-const icHeart = require('../../assets/icons/notify/ic_notification_heart.png');
+const icFriend = require('@assets/icons/notify/ic_notification_add_friend.png');
+const icHeart = require('@assets/icons/notify/ic_notification_heart.png');
 
 const KIND_CONFIG: Record<string, { icon: number; messageKey: ParseKeys }> = {
   friend_request: { icon: icFriend, messageKey: 'notify.msg_friend' },

@@ -12,7 +12,7 @@ import TextInputState from 'react-native/Libraries/Components/TextInput/TextInpu
 import OlaChatComposerNative, {
   Commands as ComposerCommands,
 } from '../specs/OlaChatComposerNativeComponent';
-import { richTextNativeAvailable } from '../lib/richTextNativeConfig';
+import { richTextNativeAvailable } from '@lib/richTextNativeConfig';
 
 export interface ChatComposerHandle {
   focus: () => void;

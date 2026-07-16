@@ -6,12 +6,12 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAppNotificationStore } from '@ola/shared/stores/appNotificationStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
-import type { RootStackParamList } from '../../navigation/types';
-import { ROOT_ROUTES } from '../../navigation/routes';
-import { useArcadeStore } from '../../store/arcadeStore';
+import type { RootStackParamList } from '@navigation/types';
+import { ROOT_ROUTES } from '@navigation/routes';
+import { useArcadeStore } from '@store/arcadeStore';
 import { APP_ITEMS, type AppItem } from './constants';
 
-const iconGameDefault = require('../../assets/icons/apps/game.png');
+const iconGameDefault = require('@assets/icons/apps/game.png');
 
 interface PanelRowProps {
   icon: ImageSourcePropType;

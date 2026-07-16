@@ -12,20 +12,20 @@ import Animated, {
 } from 'react-native-reanimated';
 import { colorForName } from '@ola/shared/lib';
 import type { Post, PostAuthor, PostCheckIn } from '@ola/shared/types';
-import { imageSizeForHeight } from '../../lib/chatSmiley';
-import { renderRichText } from '../../lib/richText';
-import { stickerImageForCode } from '../../lib/kul';
-import { Avatar } from '../../components/Avatar';
+import { imageSizeForHeight } from '@lib/chatSmiley';
+import { renderRichText } from '@lib/richText';
+import { stickerImageForCode } from '@lib/kul';
+import { Avatar } from '@components/Avatar';
 
-const moreIcon = require('../../assets/icons/me/ic_more.png');
-const replyIcon = require('../../assets/icons/me/ic_action_reply_gray.png');
-const dislikeIcon = require('../../assets/icons/me/ic_dislike_gray.png');
-const dislikeIconActive = require('../../assets/icons/me/ic_dislike_black.png');
-const likeIcon = require('../../assets/icons/me/ic_like_gray.png');
-const likeIconActive = require('../../assets/icons/me/ic_like_selected.png');
-const likeStickerFly = require('../../assets/icons/me/sticker_like.png');
-const checkInIcon = require('../../assets/icons/me/ic_check_in.png');
-const pinIcon = require('../../assets/icons/me/ic_pin.png');
+const moreIcon = require('@assets/icons/me/ic_more.png');
+const replyIcon = require('@assets/icons/me/ic_action_reply_gray.png');
+const dislikeIcon = require('@assets/icons/me/ic_dislike_gray.png');
+const dislikeIconActive = require('@assets/icons/me/ic_dislike_black.png');
+const likeIcon = require('@assets/icons/me/ic_like_gray.png');
+const likeIconActive = require('@assets/icons/me/ic_like_selected.png');
+const likeStickerFly = require('@assets/icons/me/sticker_like.png');
+const checkInIcon = require('@assets/icons/me/ic_check_in.png');
+const pinIcon = require('@assets/icons/me/ic_pin.png');
 
 function formatLikeCount(count: number): string {
   return count > 9 ? '9+' : String(count);

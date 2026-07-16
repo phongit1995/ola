@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { AuthStackParamList } from '../../navigation/types';
+import type { AuthStackParamList } from '@navigation/types';
 
 type TermsBlock = { type: 'p'; text: string } | { type: 'ul'; items: string[] };
 
@@ -24,7 +24,7 @@ export function TermsScreen({ navigation }: Props) {
         </Pressable>
         <View className="mt-3 items-center">
           <Image
-            source={require('../../assets/ola-logo.png')}
+            source={require('@assets/ola-logo.png')}
             className="mb-3 h-16 w-16 rounded-2xl"
             resizeMode="contain"
           />

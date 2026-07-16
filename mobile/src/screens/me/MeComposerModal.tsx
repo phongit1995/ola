@@ -9,8 +9,8 @@ import {
   Text,
   View,
 } from 'react-native';
-import { KeyboardView } from '../../components/KeyboardView';
-import { OlaModal } from '../../components/OlaModal';
+import { KeyboardView } from '@components/KeyboardView';
+import { OlaModal } from '@components/OlaModal';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { useMeFeedStore } from '@ola/shared/stores/meFeedStore';
@@ -18,28 +18,28 @@ import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { NativeUploadFile } from '@ola/shared/lib';
 import type { CreatePostRequest, Post, PostVisibility } from '@ola/shared/types';
 import { EDIT_WINDOW_MS } from '@ola/shared/constants';
-import { KUL_IMAGES, stickerImageForCode } from '../../lib/kul';
-import { imageSizeForHeight } from '../../lib/chatSmiley';
+import { KUL_IMAGES, stickerImageForCode } from '@lib/kul';
+import { imageSizeForHeight } from '@lib/chatSmiley';
 import {
   ChatComposer,
   type ChatComposerHandle,
-} from '../../components/ChatComposer';
-import { CloseIcon } from '../../components/CloseIcon';
-import { useBottomBarInset } from '../../hooks/useBottomBarInset';
-import { useLastKeyboardHeight } from '../../hooks/useKeyboardHeight';
+} from '@components/ChatComposer';
+import { CloseIcon } from '@components/CloseIcon';
+import { useBottomBarInset } from '@hooks/useBottomBarInset';
+import { useLastKeyboardHeight } from '@hooks/useKeyboardHeight';
 import {
   SmileyKulPanel,
   SMILEY_PANEL_MIN_CONTENT_HEIGHT,
-} from '../room/SmileyKulPanel';
+} from '@screens/room/SmileyKulPanel';
 import { MeComposerTagPanel } from './MeComposerTagPanel';
 import {
   MeComposerCheckInPanel,
   type ComposedCheckIn,
 } from './MeComposerCheckInPanel';
-import { findActionIcon } from '../../lib/checkInActions';
+import { findActionIcon } from '@lib/checkInActions';
 
-const checkInCardIcon = require('../../assets/icons/me/ic_check_in.png');
-const kulTabIcon = require('../../assets/icons/chat/ic_tab_kul.png');
+const checkInCardIcon = require('@assets/icons/me/ic_check_in.png');
+const kulTabIcon = require('@assets/icons/chat/ic_tab_kul.png');
 const MAX_IMAGES = 5;
 const PRIVACY_OPTIONS: PostVisibility[] = ['public', 'friend', 'private'];
 

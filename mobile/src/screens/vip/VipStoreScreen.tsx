@@ -8,12 +8,12 @@ import { formatDateDMY, vipName } from '@ola/shared/lib';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { VipIconInstance, VipStoreResult } from '@ola/shared/types';
-import type { RootStackParamList } from '../../navigation/types';
-import { ROOT_ROUTES } from '../../navigation/routes';
-import { ConfirmDialog } from '../../components/ConfirmDialog';
-import { ListOptionDialog, type ListOption } from '../../components/ListOptionDialog';
+import type { RootStackParamList } from '@navigation/types';
+import { ROOT_ROUTES } from '@navigation/routes';
+import { ConfirmDialog } from '@components/ConfirmDialog';
+import { ListOptionDialog, type ListOption } from '@components/ListOptionDialog';
 import { VipIconImage } from './VipIconImage';
-import { ScreenHeader } from '../../components/ScreenHeader';
+import { ScreenHeader } from '@components/ScreenHeader';
 
 const PRIVACY_KEYS = ['privacyPublic', 'privacyFriends', 'privacyPrivate'] as const;
 const VIP_PAGE_SIZE = 100;

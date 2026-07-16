@@ -4,15 +4,15 @@ import { Image, Keyboard, Pressable, ScrollView, Text, View } from 'react-native
 import { launchImageLibrary } from 'react-native-image-picker';
 import type { NativeUploadFile } from '@ola/shared/lib';
 import { useToastStore } from '@ola/shared/stores/toastStore';
-import { kulToken } from '../../lib/kul';
-import { ChatComposer, type ChatComposerHandle } from '../../components/ChatComposer';
-import { useLastKeyboardHeight } from '../../hooks/useKeyboardHeight';
+import { kulToken } from '@lib/kul';
+import { ChatComposer, type ChatComposerHandle } from '@components/ChatComposer';
+import { useLastKeyboardHeight } from '@hooks/useKeyboardHeight';
 import { SmileyKulPanel, SMILEY_PANEL_MIN_CONTENT_HEIGHT } from './SmileyKulPanel';
 
-const likeIcon = require('../../assets/icons/chat/smiley/smiley_35.png');
-const smileyIcon = require('../../assets/icons/chat/ic_smiley.png');
-const smileyIconActive = require('../../assets/icons/chat/ic_smiley_selected.png');
-const photoIcon = require('../../assets/icons/chat/ic_local.png');
+const likeIcon = require('@assets/icons/chat/smiley/smiley_35.png');
+const smileyIcon = require('@assets/icons/chat/ic_smiley.png');
+const smileyIconActive = require('@assets/icons/chat/ic_smiley_selected.png');
+const photoIcon = require('@assets/icons/chat/ic_local.png');
 
 export interface RoomComposerHandle {
   focus: () => void;

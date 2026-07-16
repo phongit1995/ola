@@ -3,11 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { Image, Modal, Pressable, Text, View } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import type { RoomMember } from '@ola/shared/types';
-import { VipAvatar } from '../../components/VipAvatar';
-import { DEVICE_ICONS, normalizeDevice } from '../../lib/deviceIcons';
+import { VipAvatar } from '@components/VipAvatar';
+import { DEVICE_ICONS, normalizeDevice } from '@lib/deviceIcons';
 
-const maleIcon = require('../../assets/icons/chat/ic_indicate_male.png');
-const femaleIcon = require('../../assets/icons/chat/ic_indicate_female.png');
+const maleIcon = require('@assets/icons/chat/ic_indicate_male.png');
+const femaleIcon = require('@assets/icons/chat/ic_indicate_female.png');
 
 interface RoomMembersTabProps {
   members: RoomMember[];
