@@ -36,12 +36,6 @@ type Server struct {
 	redisClient     *redis.Client
 }
 
-type SocketData struct {
-	UserID      string
-	JoinedRooms map[string]bool
-	Platform    string
-}
-
 const (
 	wsGuardMethod  = "WS"
 	wsGuardPath    = "/socket.io/"
@@ -156,7 +150,7 @@ func NewServer(
 		}
 
 		platform := resolveSocketPlatform(auth, s.Request().Headers().Peek("User-Agent"))
-		data := &SocketData{UserID: userID.String(), JoinedRooms: make(map[string]bool), Platform: platform}
+		data := NewSocketData(userID.String(), platform)
 		s.SetData(data)
 
 		server.logger.Infow("WebSocket authenticated", "user_id", userID)
