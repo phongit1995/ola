@@ -74,6 +74,14 @@ func NewRepository(session *gocql.Session, logger *zap.SugaredLogger) *Repositor
 		UPDATE conversations_by_user
 		SET unread_count = 0, last_read_message_id = ?, last_read_at = ?, updated_at = ?
 		WHERE user_id = ? AND conversation_id = ?
+		IF EXISTS
+	`
+
+	r.queries["mark_inbox_read_no_marker"] = `
+		UPDATE conversations_by_user
+		SET unread_count = 0, last_read_at = ?, updated_at = ?
+		WHERE user_id = ? AND conversation_id = ?
+		IF EXISTS
 	`
 
 	r.queries["get_read_status"] = `
@@ -442,14 +450,29 @@ func (r *Repository) GetDirectConversationID(userA, userB uuid.UUID) (*uuid.UUID
 	return &resultUUID, nil
 }
 
-func (r *Repository) MarkAsRead(conversationID, userID uuid.UUID, lastReadMessageID *gocql.UUID, lastReadAt time.Time) error {
+func (r *Repository) MarkAsRead(conversationID, userID uuid.UUID, lastReadMessageID *gocql.UUID, lastReadAt time.Time) (bool, error) {
 	gocqlConvID, _ := utils.ToGocqlUUID(conversationID)
 	gocqlUserID, _ := utils.ToGocqlUUID(userID)
 
-	batch := r.session.NewBatch(gocql.LoggedBatch)
-	batch.Query(r.queries["mark_inbox_read"], lastReadMessageID, lastReadAt, lastReadAt, gocqlUserID, gocqlConvID)
-	batch.Query(r.queries["mark_as_read"], gocqlConvID, gocqlUserID, lastReadMessageID, lastReadAt)
-	return r.session.ExecuteBatch(batch)
+	var applied bool
+	var err error
+	if lastReadMessageID != nil {
+		applied, err = r.session.Query(r.queries["mark_inbox_read"],
+			lastReadMessageID, lastReadAt, lastReadAt, gocqlUserID, gocqlConvID).ScanCAS()
+	} else {
+		applied, err = r.session.Query(r.queries["mark_inbox_read_no_marker"],
+			lastReadAt, lastReadAt, gocqlUserID, gocqlConvID).ScanCAS()
+	}
+	if err != nil || !applied {
+		return applied, err
+	}
+
+	if lastReadMessageID != nil {
+		if err := r.session.Query(r.queries["mark_as_read"], gocqlConvID, gocqlUserID, lastReadMessageID, lastReadAt).Exec(); err != nil {
+			return true, err
+		}
+	}
+	return true, nil
 }
 
 func (r *Repository) GetReadStatus(conversationID, userID uuid.UUID) (*gocql.UUID, *time.Time, error) {

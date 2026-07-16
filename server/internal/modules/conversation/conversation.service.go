@@ -712,8 +712,14 @@ func (s *Service) MarkConversationAsRead(userID, conversationID uuid.UUID) error
 
 	lastReadMessageID := userConv.LastMessageID
 
-	if err := s.repo.MarkAsRead(conversationID, userID, lastReadMessageID, now); err != nil {
+	applied, err := s.repo.MarkAsRead(conversationID, userID, lastReadMessageID, now)
+	if err != nil {
 		return fmt.Errorf("failed to mark as read: %w", err)
+	}
+	if !applied {
+		s.logger.Infow("markRead skipped, inbox row no longer exists",
+			"user_id", userID, "conversation_id", conversationID)
+		return nil
 	}
 
 	utils.SafeGo(s.logger, func() {

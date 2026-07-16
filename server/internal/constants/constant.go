@@ -172,7 +172,7 @@ const (
 	CacheTTLUserProfile         = 3600
 	CacheTTLUserSession         = 86400
 	CacheTTLConversation        = 1800
-	CacheTTLConversationList    = 600
+	CacheTTLConversationList    = 120
 	CacheTTLHiddenConversations = 1800
 	CacheTTLMessage             = 3600
 	CacheTTLMessageList         = 300
