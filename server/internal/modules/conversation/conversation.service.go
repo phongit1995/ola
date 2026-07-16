@@ -783,8 +783,12 @@ func (s *Service) SetConversationMuted(userID, conversationID uuid.UUID, muted b
 		return fmt.Errorf("user is not a member of this conversation")
 	}
 
-	if err := s.repo.SetMuted(userID, conversationID, muted); err != nil {
+	applied, err := s.repo.SetMuted(userID, conversationID, muted)
+	if err != nil {
 		return fmt.Errorf("failed to set mute state: %w", err)
+	}
+	if !applied {
+		return fmt.Errorf("conversation not found in inbox")
 	}
 
 	utils.SafeGo(s.logger, func() { s.InvalidateUserConversationsCache([]uuid.UUID{userID}) })

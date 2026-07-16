@@ -667,11 +667,11 @@ func (r *Repository) GetHiddenConversation(userID, conversationID uuid.UUID) (*H
 	}, nil
 }
 
-func (r *Repository) SetMuted(userID, conversationID uuid.UUID, muted bool) error {
+func (r *Repository) SetMuted(userID, conversationID uuid.UUID, muted bool) (bool, error) {
 	gocqlUserID, _ := utils.ToGocqlUUID(userID)
 	gocqlConvID, _ := utils.ToGocqlUUID(conversationID)
-	query := `UPDATE conversations_by_user SET is_muted = ? WHERE user_id = ? AND conversation_id = ?`
-	return r.session.Query(query, muted, gocqlUserID, gocqlConvID).Exec()
+	query := `UPDATE conversations_by_user SET is_muted = ? WHERE user_id = ? AND conversation_id = ? IF EXISTS`
+	return r.session.Query(query, muted, gocqlUserID, gocqlConvID).ScanCAS()
 }
 
 // HideConversation moves a conversation from inbox to hidden
