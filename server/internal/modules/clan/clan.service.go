@@ -143,6 +143,7 @@ func (s *Service) Create(userID uuid.UUID, req *CreateClanRequest) (*ClanRespons
 		Handle:      handle,
 		Description: strings.TrimSpace(req.Description),
 		Cost:        s.cfg.ClanCreateCost,
+		MaxOwned:    s.cfg.ClanMaxOwned,
 	})
 	if err != nil {
 		return nil, err

@@ -9,6 +9,7 @@ import { useClanFeedStore } from '@ola/shared/stores/clanFeedStore';
 import { useClanStore } from '@ola/shared/stores/clanStore';
 import { useAuthStore } from '@/store/authStore';
 import { useMeLocalStore } from '@/store/meLocalStore';
+import { CoverImageEditor } from '../profile/components/CoverImageEditor';
 import { MeComposerDialog, type ComposedPost } from '../me/components/MeComposerDialog';
 import { MeFeedList } from '../me/components/MeFeedList';
 import { MePostCard } from '../me/components/MePostCard';
@@ -83,6 +84,10 @@ export function ClanPage({ handle, id, onClose, onOpenManage, onOpenMembers }: C
   const [composerOpen, setComposerOpen] = useState(false);
   const [leaveConfirm, setLeaveConfirm] = useState(false);
   const [staffConfirm, setStaffConfirm] = useState<StaffConfirm | null>(null);
+  const [imageEdit, setImageEdit] = useState<{ field: 'avatar' | 'cover'; src: string } | null>(
+    null
+  );
+  const [imageUploading, setImageUploading] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
@@ -268,21 +273,37 @@ export function ClanPage({ handle, id, onClose, onOpenManage, onOpenMembers }: C
     }
   }
 
-  async function uploadImage(event: ChangeEvent<HTMLInputElement>, field: 'avatar' | 'cover') {
+  function pickImage(event: ChangeEvent<HTMLInputElement>, field: 'avatar' | 'cover') {
     const file = event.target.files?.[0];
     event.target.value = '';
-    if (file == null || clan == null) return;
+    if (file == null) return;
+    setImageEdit({ field, src: URL.createObjectURL(file) });
+  }
+
+  function closeImageEdit() {
+    setImageEdit((prev) => {
+      if (prev != null) URL.revokeObjectURL(prev.src);
+      return null;
+    });
+  }
+
+  async function applyImage(file: File) {
+    if (clan == null || imageEdit == null || imageUploading) return;
+    setImageUploading(true);
     try {
       const prepared = await compressImagesForUpload([file]);
       const upload = prepared[0] ?? file;
       const result =
-        field === 'avatar'
+        imageEdit.field === 'avatar'
           ? await ClanService.uploadAvatar(clan.id, upload)
           : await ClanService.uploadCover(clan.id, upload);
-      setClan({ ...clan, [field]: result.url });
+      setClan({ ...clan, [imageEdit.field]: result.url });
       toast.success(t('clan.uploadSuccess'));
+      closeImageEdit();
     } catch (error) {
       toast.error(clanErrorText(error));
+    } finally {
+      setImageUploading(false);
     }
   }
 
@@ -385,7 +406,7 @@ export function ClanPage({ handle, id, onClose, onOpenManage, onOpenMembers }: C
                     <img src={cameraIcon} alt="" className="h-4 w-4 object-contain" />
                   </button>
                 )}
-                <div className="absolute -bottom-10 left-2 bg-white p-1 pb-1.5 shadow-[0_1px_3px_rgba(0,0,0,0.24)]">
+                <div className="absolute bottom-2 left-2 bg-white p-1 pb-1.5 shadow-[0_1px_3px_rgba(0,0,0,0.24)]">
                   <div className="relative h-24 w-24 overflow-hidden bg-[#eceff1]">
                     {clan.avatar != null && clan.avatar !== '' && (
                       <img src={clan.avatar} alt="" className="h-full w-full object-cover" />
@@ -404,7 +425,7 @@ export function ClanPage({ handle, id, onClose, onOpenManage, onOpenMembers }: C
                 </div>
               </div>
 
-              <div className="mt-10 py-2 text-center text-2xl text-black/54">#{clan.handle}</div>
+              <div className="py-2 text-center text-2xl text-black/54">#{clan.handle}</div>
               <div className="mx-4 h-px bg-black/12" />
 
               <div className="flex px-2 py-2">
@@ -584,8 +605,18 @@ export function ClanPage({ handle, id, onClose, onOpenManage, onOpenMembers }: C
         onConfirm={() => void runStaffConfirm()}
       />
 
-      <input ref={avatarInputRef} type="file" accept="image/*" hidden onChange={(e) => void uploadImage(e, 'avatar')} />
-      <input ref={coverInputRef} type="file" accept="image/*" hidden onChange={(e) => void uploadImage(e, 'cover')} />
+      <input ref={avatarInputRef} type="file" accept="image/*" hidden onChange={(e) => pickImage(e, 'avatar')} />
+      <input ref={coverInputRef} type="file" accept="image/*" hidden onChange={(e) => pickImage(e, 'cover')} />
+
+      {imageEdit != null && (
+        <CoverImageEditor
+          src={imageEdit.src}
+          aspect={imageEdit.field === 'avatar' ? 1 : 2}
+          busy={imageUploading}
+          onCancel={closeImageEdit}
+          onApply={(file) => void applyImage(file)}
+        />
+      )}
     </FullScreenOverlay>
   );
 }

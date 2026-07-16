@@ -144,9 +144,9 @@ export function ClanHomeView({ onClose, onOpenClan }: ClanHomeViewProps) {
           type="button"
           aria-label={t('clan.create')}
           onClick={() => setCreateOpen(true)}
-          className="flex h-9 items-center gap-1 rounded-full px-2 hover:bg-white/15"
+          className="flex h-8 items-center gap-1 rounded-full bg-white/15 px-2.5 hover:bg-white/25"
         >
-          <img src={addIcon} alt="" className="h-6 w-6 object-contain" />
+          <img src={addIcon} alt="" className="h-4.5 w-4.5 object-contain" />
           <span className="text-sm">{t('clan.createShort')}</span>
         </button>
       </ScreenHeader>
@@ -175,6 +175,7 @@ export function ClanHomeView({ onClose, onOpenClan }: ClanHomeViewProps) {
                   src={clan.avatar !== '' ? clan.avatar : undefined}
                   color={colorForName(clan.handle)}
                   size={40}
+                  rounded={false}
                 />
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-base text-black/87">#{clan.handle}</span>

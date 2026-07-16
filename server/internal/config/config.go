@@ -73,6 +73,7 @@ type Config struct {
 	EmailVerifyVipRewardDays int `env:"EMAIL_VERIFY_VIP_REWARD_DAYS" envDefault:"30" validate:"min=0"`
 
 	ClanCreateCost int `env:"CLAN_CREATE_COST" envDefault:"20000" validate:"min=0"`
+	ClanMaxOwned   int `env:"CLAN_MAX_OWNED" envDefault:"1" validate:"min=1"`
 
 	LiveKitURL             string `env:"LIVEKIT_URL" envDefault:""`
 	LiveKitAPIKey          string `env:"LIVEKIT_API_KEY" envDefault:""`

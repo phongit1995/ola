@@ -15,6 +15,7 @@ import (
 var (
 	ErrClanNotFound             = errors.New("clan not found")
 	ErrClanNameTaken            = errors.New("clan name is already taken")
+	ErrClanOwnLimitReached      = errors.New("you have reached the maximum number of clans you can own")
 	ErrInsufficientKen          = errors.New("insufficient ken balance")
 	ErrNotClanMember            = errors.New("you are not a member of this clan")
 	ErrAlreadyClanMember        = errors.New("you are already a member of this clan")
@@ -46,6 +47,7 @@ type CreateClanParams struct {
 	Handle      string
 	Description string
 	Cost        int
+	MaxOwned    int
 }
 
 type CreateClanResult struct {
@@ -66,6 +68,14 @@ func (r *Repository) CreateClan(p CreateClanParams) (*CreateClanResult, error) {
 		}
 		if owner.Ken < p.Cost {
 			return ErrInsufficientKen
+		}
+
+		var owned int64
+		if err := tx.Model(&models.Clan{}).Where("owner_id = ?", p.OwnerID).Count(&owned).Error; err != nil {
+			return err
+		}
+		if owned >= int64(p.MaxOwned) {
+			return ErrClanOwnLimitReached
 		}
 
 		clan := &models.Clan{

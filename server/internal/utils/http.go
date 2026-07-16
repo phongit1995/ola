@@ -185,6 +185,7 @@ var (
 		"this user has reached the maximum number of friends":            true,
 		"you have reached the maximum number of pending friend requests": true,
 		"clan name is already taken":                                     true,
+		"you have reached the maximum number of clans you can own":       true,
 		"you are already a member of this clan":                          true,
 	}
 

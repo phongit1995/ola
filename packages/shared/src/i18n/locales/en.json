@@ -1447,7 +1447,8 @@
       "cannot ban clan staff": "Cannot ban Clan staff",
       "user not found": "Account not found",
       "clan member not found": "Member not found",
-      "clan name must be 5-32 lowercase letters or digits, no spaces or accents": "Clan name must be 5-32 lowercase letters or digits, no spaces or accents"
+      "clan name must be 5-32 lowercase letters or digits, no spaces or accents": "Clan name must be 5-32 lowercase letters or digits, no spaces or accents",
+      "you have reached the maximum number of clans you can own": "You have reached the limit of clans you can create"
     },
     "createShort": "Create"
   }

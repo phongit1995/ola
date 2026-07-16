@@ -1447,7 +1447,8 @@
       "cannot ban clan staff": "Không thể cấm ban quản trị",
       "user not found": "Không tìm thấy tài khoản",
       "clan member not found": "Không tìm thấy thành viên",
-      "clan name must be 5-32 lowercase letters or digits, no spaces or accents": "Tên Clan phải viết liền 5-32 ký tự thường/số, không dấu"
+      "clan name must be 5-32 lowercase letters or digits, no spaces or accents": "Tên Clan phải viết liền 5-32 ký tự thường/số, không dấu",
+      "you have reached the maximum number of clans you can own": "Bạn đã đạt giới hạn số Clan được tạo"
     },
     "createShort": "Tạo"
   }
