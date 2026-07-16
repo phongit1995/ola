@@ -1,5 +1,5 @@
-import { OlaModal } from '../../components/OlaModal';
-import { useClanOverlayStore, type ClanOverlayEntry } from '../../store/clanOverlayStore';
+import { OlaModal } from '@components/OlaModal';
+import { useClanOverlayStore, type ClanOverlayEntry } from '@store/clanOverlayStore';
 import { ClanHomeScreen } from './ClanHomeScreen';
 import { ClanScreen } from './ClanScreen';
 import { ClanMembersScreen } from './ClanMembersScreen';
