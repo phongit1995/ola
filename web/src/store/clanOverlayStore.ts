@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { registerOnLogout } from '@/store/authStore';
 
 export type ClanOverlayEntry =
   | { kind: 'home' }
@@ -22,3 +23,5 @@ export const useClanOverlayStore = create<ClanOverlayState>((set) => ({
   back: () => set((state) => ({ stack: state.stack.slice(0, -1) })),
   reset: () => set({ stack: [] }),
 }));
+
+registerOnLogout(() => useClanOverlayStore.getState().reset());
