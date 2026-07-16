@@ -152,7 +152,7 @@ export function MeRightDrawer({ onClose, onOpenProfile }: MeRightDrawerProps) {
             />
             <TextInput
               className="flex-1 text-base"
-              style={{ color: 'rgba(0,0,0,0.87)' }}
+              style={{ color: 'rgba(0,0,0,0.87)', paddingVertical: 0 }}
               value={query}
               onChangeText={setQuery}
               placeholder={t('me.searchHint')}

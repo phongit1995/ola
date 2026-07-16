@@ -188,7 +188,7 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
             placeholder={t('chat.searchContacts')}
             placeholderTextColor="rgba(0,0,0,0.26)"
             className="flex-1 text-base"
-            style={{ color: 'rgba(0,0,0,0.87)' }}
+            style={{ color: 'rgba(0,0,0,0.87)', paddingVertical: 0 }}
           />
         </View>
       </View>
