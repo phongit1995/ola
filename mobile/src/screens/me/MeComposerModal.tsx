@@ -29,6 +29,7 @@ import { MeComposerCheckInPanel, type ComposedCheckIn } from './MeComposerCheckI
 import { findActionIcon } from '../../lib/checkInActions';
 
 const checkInCardIcon = require('../../assets/icons/me/ic_check_in.png');
+const kulTabIcon = require('../../assets/icons/chat/ic_tab_kul.png');
 const MAX_IMAGES = 5;
 const PRIVACY_OPTIONS: PostVisibility[] = ['public', 'friend', 'private'];
 
@@ -192,7 +193,7 @@ export function MeComposerModal({ visible, onClose, onSaved, editPost }: MeCompo
     { key: 'smiley' as const, glyph: '😀', label: t('me.attachSmiley') },
     { key: 'tag' as const, glyph: '🏷️', label: t('me.attachTag') },
     { key: 'checkin' as const, glyph: '📍', label: t('me.attachCheckIn') },
-    { key: 'sticker' as const, glyph: '😊', label: t('me.attachSticker') },
+    { key: 'sticker' as const, icon: kulTabIcon, label: t('me.attachSticker') },
   ];
 
   return (
@@ -419,7 +420,11 @@ export function MeComposerModal({ visible, onClose, onSaved, editPost }: MeCompo
               onPress={() => handleAttach(button.key)}
               className="items-center gap-0.5 px-2 py-1"
             >
-              <Text style={{ fontSize: 24, lineHeight: 24 }}>{button.glyph}</Text>
+              {'icon' in button ? (
+                <Image source={button.icon} style={{ width: 24, height: 24 }} resizeMode="contain" />
+              ) : (
+                <Text style={{ fontSize: 24, lineHeight: 24 }}>{button.glyph}</Text>
+              )}
               <Text
                 className="text-xs"
                 style={{ color: panel === button.key ? '#7cb342' : 'rgba(0,0,0,0.54)' }}

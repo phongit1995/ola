@@ -205,7 +205,11 @@ export function MeComposerDialog({
                 panel === button.key ? 'text-ola-primary' : 'text-black/54'
               }`}
             >
-              <span className="text-2xl leading-none">{button.glyph}</span>
+              {'icon' in button ? (
+                <img src={button.icon} alt="" className="h-6 w-6 object-contain" />
+              ) : (
+                <span className="text-2xl leading-none">{button.glyph}</span>
+              )}
               {t(button.labelKey)}
             </button>
           ))}

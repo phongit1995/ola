@@ -1,3 +1,4 @@
+import kulTabIcon from '@/assets/icons/chat/ic_tab_kul.png';
 import tabOla from '@/assets/icons/me/ic_action_tab_ola.png';
 import tabOlaActive from '@/assets/icons/me/ic_action_tab_ola_selected.png';
 import tabFollower from '@/assets/icons/me/ic_action_tab_follower.png';
@@ -29,7 +30,7 @@ export const ATTACH_BUTTONS = [
   { key: 'smiley', glyph: '😀', labelKey: 'me.attachSmiley' },
   { key: 'tag', glyph: '🏷️', labelKey: 'me.attachTag' },
   { key: 'checkin', glyph: '📍', labelKey: 'me.attachCheckIn' },
-  { key: 'sticker', glyph: '😊', labelKey: 'me.attachSticker' },
+  { key: 'sticker', icon: kulTabIcon, labelKey: 'me.attachSticker' },
 ] as const;
 
 export type AttachButtonKey = (typeof ATTACH_BUTTONS)[number]['key'];
