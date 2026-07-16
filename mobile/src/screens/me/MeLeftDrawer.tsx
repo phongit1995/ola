@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Animated, BackHandler, Image, ImageBackground, Pressable, ScrollView, Text, View } from 'react-native';
+import { Animated, BackHandler, Image, ImageBackground, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { Avatar } from '../../components/Avatar';
 
 const personalIcon = require('../../assets/icons/me/ic_indicate_personal.png');
@@ -84,12 +85,15 @@ export function MeLeftDrawer({
             className="flex-1 justify-end bg-ola-primary-dark"
           >
             <View>
-              <View className="absolute inset-0">
-                <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.05)' }} />
-                <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.25)' }} />
-                <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }} />
-                <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.7)' }} />
-              </View>
+              <Svg style={StyleSheet.absoluteFill} width="100%" height="100%">
+                <Defs>
+                  <LinearGradient id="me-drawer-cover-shade" x1="0" y1="0" x2="0" y2="1">
+                    <Stop offset="0" stopColor="#000000" stopOpacity="0" />
+                    <Stop offset="1" stopColor="#000000" stopOpacity="0.7" />
+                  </LinearGradient>
+                </Defs>
+                <Rect width="100%" height="100%" fill="url(#me-drawer-cover-shade)" />
+              </Svg>
               <View className="flex-row items-center gap-2 px-2 pb-2 pt-8">
                 <Avatar name={displayName} uri={avatarUrl} size={40} />
                 <Text numberOfLines={1} className="flex-1 text-base font-medium text-white">
