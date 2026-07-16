@@ -20,7 +20,7 @@ interface MeFeedState {
   toggleReaction: (id: string, type: PostReaction) => Promise<void>;
   createPost: (payload: CreatePostRequest, files: UploadFile[], imageUrls: string[]) => Promise<Post | null>;
   prependPost: (post: Post) => void;
-  updatePost: (id: string, payload: CreatePostRequest, files: UploadFile[], imageUrls: string[]) => Promise<Post | null>;
+  updatePost: (id: string, payload: CreatePostRequest, files: UploadFile[], imageUrls: string[], existingImages?: Post['images']) => Promise<Post | null>;
   removePost: (id: string) => Promise<boolean>;
   togglePin: (id: string, pinned: boolean) => Promise<void>;
   adjustCommentCount: (id: string, delta: number) => void;
@@ -155,10 +155,10 @@ export const useMeFeedStore = create<MeFeedState>((set, get) => ({
   prependPost: (post) => {
     set((state) => ({ posts: [post, ...state.posts] }));
   },
-  updatePost: async (id, payload, files, imageUrls) => {
+  updatePost: async (id, payload, files, imageUrls, existing) => {
     try {
       const uploaded = files.length > 0 ? (await MeService.uploadImages(files)).images : [];
-      const existingImages = get().posts.find((post) => post.id === id)?.images ?? [];
+      const existingImages = existing ?? get().posts.find((post) => post.id === id)?.images ?? [];
       const urlImages = imageUrls.map(
         (url) => existingImages.find((image) => image.url === url) ?? { url }
       );

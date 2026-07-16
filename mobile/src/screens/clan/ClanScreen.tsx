@@ -285,7 +285,7 @@ export function ClanScreen({ handle, id, onClose, onOpenManage, onOpenMembers }:
         await refreshAll();
         return;
       }
-      pushToast('success', t('me.deleteSuccess'));
+      pushToast('success', t('clan.deleteSuccess'));
       void loadClan();
     } catch (error) {
       pushToast('error', clanErrorText(error));

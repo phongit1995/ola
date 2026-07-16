@@ -244,7 +244,7 @@ function MeComposerBody({
       visibility: privacy,
     };
     const result = isEdit
-      ? await updatePost(editPost.id, payload, files, imageUrls)
+      ? await updatePost(editPost.id, payload, files, imageUrls, editPost.images)
       : submitPost != null
         ? await submitPost(payload, files, imageUrls)
         : await createPost(payload, files, imageUrls);
