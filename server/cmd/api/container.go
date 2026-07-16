@@ -9,6 +9,7 @@ import (
 	"ola-chat-server/internal/modules/admin"
 	"ola-chat-server/internal/modules/auth"
 	"ola-chat-server/internal/modules/call"
+	"ola-chat-server/internal/modules/clan"
 	"ola-chat-server/internal/modules/conversation"
 	"ola-chat-server/internal/modules/egg"
 	"ola-chat-server/internal/modules/health"
@@ -81,6 +82,7 @@ func NewContainer() (*dig.Container, error) {
 		message.Provider,
 		call.Provider,
 		me.Provider,
+		clan.Provider,
 		vip.Provider,
 		ken.Provider,
 		egg.Provider,

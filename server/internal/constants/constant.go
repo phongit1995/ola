@@ -257,12 +257,19 @@ const (
 	UploadFolderPosts            = "posts"
 	UploadFolderAvatar           = "avatar"
 	UploadFolderAdmin            = "admin"
+	UploadFolderClans            = "clans"
 	UploadDateLayout             = "02012006"
 	UploadDateLayoutDay          = "2006-01-02"
 	MaxPostImages                = 5
 	CacheKeyRateLimitUpload      = "RATE_LIMIT:%s:UPLOAD"
 	RateLimitUploadMaxRequests   = 30
 	RateLimitUploadWindowSeconds = 60
+)
+
+const (
+	CacheKeyClanVisitGuard   = "CLAN:%s:VISIT:%s"
+	ClanVisitGuardTTLSeconds = 21600
+	ClanHandleMaxLen         = 32
 )
 
 var AllowedImageMimes = []string{

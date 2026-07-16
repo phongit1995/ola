@@ -6,6 +6,7 @@ import (
 	"ola-chat-server/internal/modules/admin"
 	"ola-chat-server/internal/modules/auth"
 	"ola-chat-server/internal/modules/call"
+	"ola-chat-server/internal/modules/clan"
 	"ola-chat-server/internal/modules/conversation"
 	"ola-chat-server/internal/modules/egg"
 	"ola-chat-server/internal/modules/health"
@@ -55,6 +56,7 @@ func CreateServer(
 	roomService *room.Service,
 	settingRouter *setting.Router,
 	meRouter *me.Router,
+	clanRouter *clan.Router,
 	sessionRouter *session.Router,
 	vipRouter *vip.Router,
 	kenRouter *ken.Router,
@@ -113,6 +115,7 @@ func CreateServer(
 		callRouter.Setup(api)
 		roomRouter.Setup(api)
 		meRouter.Setup(api)
+		clanRouter.Setup(api)
 		sessionRouter.Setup(api)
 		vipRouter.Setup(api)
 		kenRouter.Setup(api)

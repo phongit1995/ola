@@ -5,6 +5,11 @@ import "github.com/google/uuid"
 const (
 	AppNotificationFriendRequest    = "friend_request"
 	AppNotificationMarriageProposal = "marriage_proposal"
+	AppNotificationClanRoleAssigned = "clan_role_assigned"
+	AppNotificationClanRoleRevoked  = "clan_role_revoked"
+	AppNotificationClanVerified     = "clan_verified"
+	AppNotificationClanUnverified   = "clan_unverified"
+	AppNotificationClanBanned       = "clan_banned"
 )
 
 type AppNotification struct {

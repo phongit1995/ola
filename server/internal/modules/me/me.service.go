@@ -32,9 +32,16 @@ import (
 	"ola-chat-server/internal/utils"
 
 	"github.com/google/uuid"
+	"go.uber.org/dig"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
+
+type ClanGate interface {
+	CanPost(userID, clanID uuid.UUID, visibility models.MeVisibility) error
+	CanView(userID, clanID uuid.UUID) error
+	OnPostDisabled(postID uuid.UUID)
+}
 
 type Service struct {
 	repo           *Repository
@@ -44,19 +51,35 @@ type Service struct {
 	kafkaProducer  *kafka.Producer
 	cache          *services.CacheService
 	userCache      *userModule.CacheService
+	clanGate       ClanGate
 	logger         *zap.SugaredLogger
 }
 
-func NewService(repo *Repository, relRepo *relationships.Repository, userSettingSvc *usersetting.Service, s3 *services.S3Service, kafkaProducer *kafka.Producer, cache *services.CacheService, userCache *userModule.CacheService, logger *zap.SugaredLogger) *Service {
+type ServiceParams struct {
+	dig.In
+
+	Repo           *Repository
+	RelRepo        *relationships.Repository
+	UserSettingSvc *usersetting.Service
+	S3             *services.S3Service
+	KafkaProducer  *kafka.Producer
+	Cache          *services.CacheService
+	UserCache      *userModule.CacheService
+	ClanGate       ClanGate `optional:"true"`
+	Logger         *zap.SugaredLogger
+}
+
+func NewService(p ServiceParams) *Service {
 	return &Service{
-		repo:           repo,
-		relRepo:        relRepo,
-		userSettingSvc: userSettingSvc,
-		s3:             s3,
-		kafkaProducer:  kafkaProducer,
-		cache:          cache,
-		userCache:      userCache,
-		logger:         logger.Named("[post_service]"),
+		repo:           p.Repo,
+		relRepo:        p.RelRepo,
+		userSettingSvc: p.UserSettingSvc,
+		s3:             p.S3,
+		kafkaProducer:  p.KafkaProducer,
+		cache:          p.Cache,
+		userCache:      p.UserCache,
+		clanGate:       p.ClanGate,
+		logger:         p.Logger.Named("[post_service]"),
 	}
 }
 
@@ -68,6 +91,8 @@ var (
 	errEditExpired          = errors.New("post is too old to edit")
 	errMeFriendsOnly        = errors.New("this profile is visible to friends only")
 	errMeCommentFriendsOnly = errors.New("only friends can comment on this post")
+	errClanUnavailable      = errors.New("clan posting is unavailable")
+	errCannotPinClanPost    = errors.New("cannot pin a clan post")
 )
 
 const editWindow = time.Hour
@@ -81,14 +106,32 @@ func (s *Service) Create(userID uuid.UUID, req *CreateMeRequest) (*MeResponse, e
 		return nil, errEmptyPost
 	}
 
+	visibility := parseVisibility(req.Visibility)
+
+	var clanID *uuid.UUID
+	if strings.TrimSpace(req.ClanID) != "" {
+		parsed, err := uuid.Parse(req.ClanID)
+		if err != nil {
+			return nil, errors.New("invalid clan id")
+		}
+		if s.clanGate == nil {
+			return nil, errClanUnavailable
+		}
+		if err := s.clanGate.CanPost(userID, parsed, visibility); err != nil {
+			return nil, err
+		}
+		clanID = &parsed
+	}
+
 	post := &models.Me{
 		AuthorID:   userID,
+		ClanID:     clanID,
 		Content:    content,
 		Images:     toModelImages(req.Images),
 		Mentions:   s.resolveMentions(content),
 		CheckIn:    toModelCheckIn(req.CheckIn),
 		Sticker:    strings.TrimSpace(req.Sticker),
-		Visibility: parseVisibility(req.Visibility),
+		Visibility: visibility,
 		Enabled:    true,
 	}
 	if err := s.repo.Create(post); err != nil {
@@ -135,7 +178,16 @@ func (s *Service) Update(userID, postID uuid.UUID, req *UpdateMeRequest) (*MeRes
 		post.Sticker = strings.TrimSpace(*req.Sticker)
 	}
 	if req.Visibility != nil {
-		post.Visibility = parseVisibility(*req.Visibility)
+		newVisibility := parseVisibility(*req.Visibility)
+		if post.ClanID != nil && newVisibility != post.Visibility {
+			if s.clanGate == nil {
+				return nil, errClanUnavailable
+			}
+			if err := s.clanGate.CanPost(userID, *post.ClanID, newVisibility); err != nil {
+				return nil, err
+			}
+		}
+		post.Visibility = newVisibility
 	}
 	if strings.TrimSpace(post.Content) == "" && len(post.Images) == 0 {
 		return nil, errEmptyPost
@@ -157,15 +209,26 @@ func (s *Service) Update(userID, postID uuid.UUID, req *UpdateMeRequest) (*MeRes
 }
 
 func (s *Service) Delete(userID, postID uuid.UUID) error {
-	if _, err := s.ownedPost(userID, postID); err != nil {
+	post, err := s.ownedPost(userID, postID)
+	if err != nil {
 		return err
 	}
-	return s.repo.Disable(postID)
+	if err := s.repo.Disable(postID); err != nil {
+		return err
+	}
+	if post.ClanID != nil && s.clanGate != nil {
+		s.clanGate.OnPostDisabled(postID)
+	}
+	return nil
 }
 
 func (s *Service) SetPinned(userID, postID uuid.UUID, pinned bool) (*MeResponse, error) {
-	if _, err := s.ownedPost(userID, postID); err != nil {
+	post, err := s.ownedPost(userID, postID)
+	if err != nil {
 		return nil, err
+	}
+	if pinned && post.ClanID != nil {
+		return nil, errCannotPinClanPost
 	}
 	if err := s.repo.SetPinned(userID, postID, pinned); err != nil {
 		return nil, err
@@ -193,6 +256,27 @@ func (s *Service) Feed(viewerID uuid.UUID, filter, cursor string, limit int) (*M
 		return nil, err
 	}
 	posts, hasMore, err := s.repo.FeedPage(viewerID, filter, cursorTime, cursorID, limit)
+	if err != nil {
+		return nil, err
+	}
+	items, err := s.enrich(viewerID, posts)
+	if err != nil {
+		return nil, err
+	}
+	var nextCursor string
+	if hasMore && len(posts) > 0 {
+		last := posts[len(posts)-1]
+		nextCursor = encodeFeedCursor(last.CreatedAt, last.ID)
+	}
+	return &MeFeedResponse{Items: items, NextCursor: nextCursor}, nil
+}
+
+func (s *Service) ClanFeed(viewerID, clanID uuid.UUID, excludeID *uuid.UUID, cursor string, limit int) (*MeFeedResponse, error) {
+	cursorTime, cursorID, err := decodeFeedCursor(cursor)
+	if err != nil {
+		return nil, err
+	}
+	posts, hasMore, err := s.repo.ListByClanPage(clanID, viewerID, excludeID, cursorTime, cursorID, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -892,6 +976,14 @@ func (s *Service) canView(viewerID uuid.UUID, post *models.Me) bool {
 	if !post.Enabled {
 		return false
 	}
+	if post.ClanID != nil {
+		if s.clanGate == nil {
+			return false
+		}
+		if err := s.clanGate.CanView(viewerID, *post.ClanID); err != nil {
+			return false
+		}
+	}
 	if post.Visibility == models.MeVisibilityPublic {
 		return true
 	}
@@ -1081,6 +1173,8 @@ func toMeResponse(post *models.Me, myReaction *models.MeReactionType) MeResponse
 	resp := MeResponse{
 		ID:           post.ID.String(),
 		Content:      post.Content,
+		ClanID:       clanIDString(post),
+		ClanHandle:   clanHandleString(post),
 		Images:       images,
 		Mentions:     []string(post.Mentions),
 		CheckIn:      toCheckInResponse(post.CheckIn),
@@ -1096,6 +1190,20 @@ func toMeResponse(post *models.Me, myReaction *models.MeReactionType) MeResponse
 		UpdatedAt:    post.UpdatedAt.UTC().Format(time.RFC3339),
 	}
 	return resp
+}
+
+func clanIDString(post *models.Me) string {
+	if post.ClanID == nil {
+		return ""
+	}
+	return post.ClanID.String()
+}
+
+func clanHandleString(post *models.Me) string {
+	if post.Clan == nil {
+		return ""
+	}
+	return post.Clan.Handle
 }
 
 func toAuthorResponse(u *models.User) *AuthorResponse {
