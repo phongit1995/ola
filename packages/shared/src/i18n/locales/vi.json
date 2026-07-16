@@ -1362,7 +1362,7 @@
     "title": "Clan",
     "searchPlaceholder": "Nhập tên Clan",
     "validate": "Kiểm tra",
-    "nameHint": "Tên viết liền, không dấu, chỉ chữ thường và số (2-32 ký tự)",
+    "nameHint": "Tên viết liền, không dấu, chỉ chữ thường và số (5-32 ký tự)",
     "nameTaken": "Clan #{{name}} hiện đang có người sở hữu. Hãy chọn tên khác",
     "nameAvailable": "Tên clan hợp lệ. Bạn có thể tạo clan này",
     "create": "Tạo Clan",
@@ -1447,7 +1447,8 @@
       "cannot ban clan staff": "Không thể cấm ban quản trị",
       "user not found": "Không tìm thấy tài khoản",
       "clan member not found": "Không tìm thấy thành viên",
-      "clan name must be 2-32 lowercase letters or digits, no spaces or accents": "Tên Clan phải viết liền 2-32 ký tự thường/số, không dấu"
-    }
+      "clan name must be 5-32 lowercase letters or digits, no spaces or accents": "Tên Clan phải viết liền 5-32 ký tự thường/số, không dấu"
+    },
+    "createShort": "Tạo"
   }
 }

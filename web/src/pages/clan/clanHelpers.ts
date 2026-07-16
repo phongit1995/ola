@@ -7,7 +7,7 @@ import supporterIcon from '@/assets/icons/clan/ic_clan_role_supporter.png';
 
 const translate = i18n.t.bind(i18n) as (key: string, options?: Record<string, unknown>) => string;
 
-export const CLAN_HANDLE_PATTERN = /^[a-z0-9]{2,32}$/;
+export const CLAN_HANDLE_PATTERN = /^[a-z0-9]{5,32}$/;
 
 export const CLAN_ROLE_ICONS: Record<Exclude<ClanRole, 'member'>, string> = {
   owner: leaderIcon,

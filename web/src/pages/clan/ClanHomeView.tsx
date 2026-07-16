@@ -1,6 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Avatar, ConfirmDialog, FullScreenOverlay, ScreenHeader, Spinner } from '@components';
+import {
+  Avatar,
+  ConfirmDialog,
+  Dialog,
+  DialogButton,
+  FullScreenOverlay,
+  ScreenHeader,
+  Spinner,
+} from '@components';
 import { colorForName, toast } from '@lib';
 import { ClanService } from '@services';
 import type { ClanCheckNameResult } from '@app-types';
@@ -13,6 +21,7 @@ import {
   clanRoleLabel,
   normalizeClanHandle,
 } from './clanHelpers';
+import addIcon from '@/assets/icons/clan/ic_action_add.png';
 import memberIcon from '@/assets/icons/clan/ic_clan_member.png';
 import visitIcon from '@/assets/icons/clan/ic_clan_visit.png';
 
@@ -54,6 +63,7 @@ export function ClanHomeView({ onClose, onOpenClan }: ClanHomeViewProps) {
   const mineLoading = useClanStore((s) => s.mineLoading);
   const ensureMine = useClanStore((s) => s.ensureMine);
 
+  const [createOpen, setCreateOpen] = useState(false);
   const [name, setName] = useState('');
   const [checking, setChecking] = useState(false);
   const [result, setResult] = useState<ClanCheckNameResult | null>(null);
@@ -65,6 +75,17 @@ export function ClanHomeView({ onClose, onOpenClan }: ClanHomeViewProps) {
   useEffect(() => {
     void ensureMine();
   }, [ensureMine]);
+
+  function resetCreateState() {
+    setName('');
+    setResult(null);
+    setFreshCheck(false);
+  }
+
+  function closeCreate() {
+    setCreateOpen(false);
+    resetCreateState();
+  }
 
   function handleNameChange(value: string) {
     setName(value);
@@ -90,6 +111,11 @@ export function ClanHomeView({ onClose, onOpenClan }: ClanHomeViewProps) {
     }
   }
 
+  function openClan(handle: string) {
+    closeCreate();
+    onOpenClan(handle);
+  }
+
   async function create() {
     if (result == null || creating) return;
     setCreating(true);
@@ -97,9 +123,7 @@ export function ClanHomeView({ onClose, onOpenClan }: ClanHomeViewProps) {
       const clan = await ClanService.create({ name: result.name });
       toast.success(t('clan.createSuccess', { name: clan.handle }));
       void useClanStore.getState().refreshMine();
-      setResult(null);
-      setName('');
-      onOpenClan(clan.handle);
+      openClan(clan.handle);
     } catch (error) {
       toast.error(clanErrorText(error));
     } finally {
@@ -115,91 +139,20 @@ export function ClanHomeView({ onClose, onOpenClan }: ClanHomeViewProps) {
 
   return (
     <FullScreenOverlay>
-      <ScreenHeader title={t('clan.title')} onBack={onClose} />
+      <ScreenHeader title={t('clan.title')} onBack={onClose}>
+        <button
+          type="button"
+          aria-label={t('clan.create')}
+          onClick={() => setCreateOpen(true)}
+          className="flex h-9 items-center gap-1 rounded-full px-2 hover:bg-white/15"
+        >
+          <img src={addIcon} alt="" className="h-6 w-6 object-contain" />
+          <span className="text-sm">{t('clan.createShort')}</span>
+        </button>
+      </ScreenHeader>
+
       <div className="flex-1 overflow-y-auto p-2">
-        <div className="rounded-md border border-black/12 bg-white p-4">
-          <div className="flex items-center gap-2">
-            <input
-              value={name}
-              onChange={(event) => handleNameChange(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter') void check();
-              }}
-              placeholder={t('clan.searchPlaceholder')}
-              className="min-w-0 flex-1 rounded border border-ola-primary px-4 py-3 text-base text-black/87 outline-none"
-            />
-            <button
-              type="button"
-              onClick={() => void check()}
-              disabled={checking}
-              className="shrink-0 rounded-sm border border-black/12 bg-white px-3 py-2 text-sm text-[#4c4c4c] active:bg-black/5"
-            >
-              {checking ? <Spinner size={16} /> : t('clan.validate')}
-            </button>
-          </div>
-          <p className="mt-2 text-xs text-black/45">{t('clan.nameHint')}</p>
-        </div>
-
-        {takenVisible && (
-          <p className="mt-2 px-1 text-xs font-bold text-ola-error italic">
-            {t('clan.nameTaken', { name: result.name })}
-          </p>
-        )}
-        {availableVisible && result != null && (
-          <>
-            <p className="mt-2 px-1 text-xs font-bold text-blue-700 italic">
-              {t('clan.nameAvailable')}
-            </p>
-            <button
-              type="button"
-              onClick={() => setConfirmOpen(true)}
-              className="mt-4 w-full rounded-sm border border-ola-primary-dark bg-ola-button py-3 text-sm text-white active:brightness-95"
-            >
-              {t('clan.create')}
-            </button>
-          </>
-        )}
-
-        {preview != null && (
-          <div className="mt-4 rounded-md border border-black/12 bg-white p-4">
-            <div className="text-center text-sm font-bold text-black/87">#{preview.handle}</div>
-            {preview.owner != null && preview.owner !== '' && (
-              <PreviewRow
-                icon={CLAN_ROLE_ICONS.owner}
-                text={preview.owner}
-                onClick={() => setProfileTarget(preview.owner!)}
-              />
-            )}
-            {preview.deputy != null && preview.deputy !== '' && (
-              <PreviewRow
-                icon={CLAN_ROLE_ICONS.deputy}
-                text={preview.deputy}
-                onClick={() => setProfileTarget(preview.deputy!)}
-              />
-            )}
-            {preview.ambassador != null && preview.ambassador !== '' && (
-              <PreviewRow
-                icon={CLAN_ROLE_ICONS.ambassador}
-                text={preview.ambassador}
-                onClick={() => setProfileTarget(preview.ambassador!)}
-              />
-            )}
-            <PreviewRow
-              icon={memberIcon}
-              text={t('clan.membersCount', { count: preview.memberCount })}
-            />
-            <PreviewRow icon={visitIcon} text={t('clan.visits', { count: preview.visitCount })} />
-            <button
-              type="button"
-              onClick={() => onOpenClan(preview.handle)}
-              className="mt-4 w-full rounded-sm border border-black/12 bg-white py-2 text-sm text-[#4c4c4c] active:bg-black/5"
-            >
-              {t('clan.openClan')}
-            </button>
-          </div>
-        )}
-
-        <h2 className="mt-6 px-1 text-base text-black/87">{t('clan.myClans')}</h2>
+        <h2 className="px-1 text-base text-black/87">{t('clan.myClans')}</h2>
         {mineLoading && myClans.length === 0 ? (
           <div className="flex justify-center py-6">
             <Spinner size={24} />
@@ -235,6 +188,93 @@ export function ClanHomeView({ onClose, onOpenClan }: ClanHomeViewProps) {
           </div>
         )}
       </div>
+
+      <Dialog
+        open={createOpen}
+        onClose={closeCreate}
+        title={t('clan.create')}
+        footer={
+          <>
+            {availableVisible && (
+              <DialogButton variant="green" onClick={() => setConfirmOpen(true)} disabled={creating}>
+                {t('clan.create')}
+              </DialogButton>
+            )}
+            <DialogButton variant="default" onClick={closeCreate}>
+              {t('dialog.cancel')}
+            </DialogButton>
+          </>
+        }
+      >
+        <div className="flex items-center gap-2">
+          <input
+            value={name}
+            onChange={(event) => handleNameChange(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') void check();
+            }}
+            placeholder={t('clan.searchPlaceholder')}
+            className="min-w-0 flex-1 rounded border border-ola-primary px-3 py-2.5 text-base text-black/87 outline-none"
+          />
+          <button
+            type="button"
+            onClick={() => void check()}
+            disabled={checking}
+            className="shrink-0 rounded-sm border border-black/12 bg-white px-3 py-2 text-sm text-[#4c4c4c] active:bg-black/5"
+          >
+            {checking ? <Spinner size={16} /> : t('clan.validate')}
+          </button>
+        </div>
+        <p className="mt-2 text-xs text-black/45">{t('clan.nameHint')}</p>
+
+        {takenVisible && (
+          <p className="mt-2 text-xs font-bold text-ola-error italic">
+            {t('clan.nameTaken', { name: result.name })}
+          </p>
+        )}
+        {availableVisible && (
+          <p className="mt-2 text-xs font-bold text-blue-700 italic">{t('clan.nameAvailable')}</p>
+        )}
+
+        {preview != null && (
+          <div className="mt-3 rounded-md border border-black/12 bg-white p-4">
+            <div className="text-center text-sm font-bold text-black/87">#{preview.handle}</div>
+            {preview.owner != null && preview.owner !== '' && (
+              <PreviewRow
+                icon={CLAN_ROLE_ICONS.owner}
+                text={preview.owner}
+                onClick={() => setProfileTarget(preview.owner!)}
+              />
+            )}
+            {preview.deputy != null && preview.deputy !== '' && (
+              <PreviewRow
+                icon={CLAN_ROLE_ICONS.deputy}
+                text={preview.deputy}
+                onClick={() => setProfileTarget(preview.deputy!)}
+              />
+            )}
+            {preview.ambassador != null && preview.ambassador !== '' && (
+              <PreviewRow
+                icon={CLAN_ROLE_ICONS.ambassador}
+                text={preview.ambassador}
+                onClick={() => setProfileTarget(preview.ambassador!)}
+              />
+            )}
+            <PreviewRow
+              icon={memberIcon}
+              text={t('clan.membersCount', { count: preview.memberCount })}
+            />
+            <PreviewRow icon={visitIcon} text={t('clan.visits', { count: preview.visitCount })} />
+            <button
+              type="button"
+              onClick={() => openClan(preview.handle)}
+              className="mt-4 w-full rounded-sm border border-black/12 bg-white py-2 text-sm text-[#4c4c4c] active:bg-black/5"
+            >
+              {t('clan.openClan')}
+            </button>
+          </div>
+        )}
+      </Dialog>
 
       <ConfirmDialog
         open={confirmOpen}

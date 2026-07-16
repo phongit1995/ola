@@ -1362,7 +1362,7 @@
     "title": "Clan",
     "searchPlaceholder": "Enter Clan name",
     "validate": "Validate",
-    "nameHint": "Lowercase letters and digits only, no spaces or accents (2-32 chars)",
+    "nameHint": "Lowercase letters and digits only, no spaces or accents (5-32 chars)",
     "nameTaken": "Clan #{{name}} is not available. Please choose another",
     "nameAvailable": "Clan name is available. You can create it",
     "create": "Create Clan",
@@ -1447,7 +1447,8 @@
       "cannot ban clan staff": "Cannot ban Clan staff",
       "user not found": "Account not found",
       "clan member not found": "Member not found",
-      "clan name must be 2-32 lowercase letters or digits, no spaces or accents": "Clan name must be 2-32 lowercase letters or digits, no spaces or accents"
-    }
+      "clan name must be 5-32 lowercase letters or digits, no spaces or accents": "Clan name must be 5-32 lowercase letters or digits, no spaces or accents"
+    },
+    "createShort": "Create"
   }
 }

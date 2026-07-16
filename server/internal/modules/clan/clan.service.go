@@ -33,7 +33,7 @@ import (
 )
 
 var (
-	errInvalidHandle    = errors.New("clan name must be 2-32 lowercase letters or digits, no spaces or accents")
+	errInvalidHandle    = errors.New("clan name must be 5-32 lowercase letters or digits, no spaces or accents")
 	errInvalidPolicy    = errors.New("invalid clan policy")
 	errOnlyOwner        = errors.New("only the clan owner can do this")
 	errOnlyStaff        = errors.New("only clan staff can do this")
@@ -41,7 +41,7 @@ var (
 	errClanImageMissing = errors.New("image file is required")
 )
 
-var handlePattern = regexp.MustCompile(`^[a-z0-9]{2,32}$`)
+var handlePattern = regexp.MustCompile(`^[a-z0-9]{5,32}$`)
 
 type Service struct {
 	repo            *Repository
