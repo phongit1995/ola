@@ -19,19 +19,27 @@ type AdjustResponse struct {
 	BalanceAfter  int    `json:"balanceAfter" example:"1500"`
 }
 
+type CounterpartyInfo struct {
+	ID       string `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	Username string `json:"username" example:"john_doe"`
+	FullName string `json:"fullName,omitempty" example:"John Doe"`
+	Avatar   string `json:"avatar,omitempty" example:"https://cdn.ola.vn/a.png"`
+}
+
 type TransactionItem struct {
-	ID            string `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	Direction     string `json:"direction" example:"credit"`
-	Type          string `json:"type" example:"ADMIN_GRANT"`
-	Amount        int    `json:"amount" example:"500"`
-	BalanceBefore int    `json:"balanceBefore" example:"1000"`
-	BalanceAfter  int    `json:"balanceAfter" example:"1500"`
-	Description   string `json:"description" example:"Đền bù sự kiện"`
-	RefType       string `json:"refType,omitempty" example:"vip_purchase"`
-	RefID         string `json:"refId,omitempty" example:"550e8400-e29b-41d4-a716-446655440000"`
-	ActorType     string `json:"actorType,omitempty" example:"admin"`
-	ActorID       string `json:"actorId,omitempty" example:"550e8400-e29b-41d4-a716-446655440000"`
-	CreatedAt     string `json:"createdAt" example:"2026-06-22T10:00:00Z"`
+	ID            string            `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	Direction     string            `json:"direction" example:"credit"`
+	Type          string            `json:"type" example:"ADMIN_GRANT"`
+	Amount        int               `json:"amount" example:"500"`
+	BalanceBefore int               `json:"balanceBefore" example:"1000"`
+	BalanceAfter  int               `json:"balanceAfter" example:"1500"`
+	Description   string            `json:"description" example:"Đền bù sự kiện"`
+	RefType       string            `json:"refType,omitempty" example:"vip_purchase"`
+	RefID         string            `json:"refId,omitempty" example:"550e8400-e29b-41d4-a716-446655440000"`
+	ActorType     string            `json:"actorType,omitempty" example:"admin"`
+	ActorID       string            `json:"actorId,omitempty" example:"550e8400-e29b-41d4-a716-446655440000"`
+	Counterparty  *CounterpartyInfo `json:"counterparty,omitempty"`
+	CreatedAt     string            `json:"createdAt" example:"2026-06-22T10:00:00Z"`
 }
 
 type TransactionListResponse struct {

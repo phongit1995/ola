@@ -255,6 +255,13 @@ export interface UserListParams {
   sortDir?: string
 }
 
+export interface KenCounterparty {
+  id: string
+  username: string
+  fullName?: string
+  avatar?: string
+}
+
 export interface KenTransaction {
   id: string
   direction: 'credit' | 'debit'
@@ -267,6 +274,7 @@ export interface KenTransaction {
   refId?: string
   actorType?: string
   actorId?: string
+  counterparty?: KenCounterparty
   createdAt: string
 }
 

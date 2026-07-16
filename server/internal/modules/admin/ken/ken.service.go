@@ -103,9 +103,32 @@ func (s *Service) ListTransactions(userID uuid.UUID, limit, offset int) (*Transa
 	if err != nil {
 		return nil, err
 	}
+
+	counterpartyIDs := make([]uuid.UUID, 0, len(items))
+	for i := range items {
+		if items[i].RefType == "user" && items[i].RefID != nil {
+			counterpartyIDs = append(counterpartyIDs, *items[i].RefID)
+		}
+	}
+	users, err := s.repo.FindUsersByIDs(counterpartyIDs)
+	if err != nil {
+		return nil, err
+	}
+
 	out := make([]TransactionItem, 0, len(items))
 	for i := range items {
-		out = append(out, toTransactionItem(&items[i]))
+		item := toTransactionItem(&items[i])
+		if items[i].RefType == "user" && items[i].RefID != nil {
+			if u, ok := users[*items[i].RefID]; ok {
+				item.Counterparty = &CounterpartyInfo{
+					ID:       u.ID.String(),
+					Username: u.Username,
+					FullName: u.FullName,
+					Avatar:   u.Avatar,
+				}
+			}
+		}
+		out = append(out, item)
 	}
 	return &TransactionListResponse{
 		Total:  int(total),
