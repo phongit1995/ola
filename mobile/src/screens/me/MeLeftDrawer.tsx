@@ -8,6 +8,7 @@ const personalIcon = require('../../assets/icons/me/ic_indicate_personal.png');
 const boxIcon = require('../../assets/icons/me/ic_indicate_box.png');
 const likeIcon = require('../../assets/icons/me/ic_section_like.png');
 const visitorIcon = require('../../assets/icons/me/ic_action_tab_follower.png');
+const clanIcon = require('../../assets/icons/clan/ic_menu_clan.png');
 // TODO: các mục chưa có action, ẩn tạm — bật lại khi làm xong
 // const eggIcon = require('../../assets/icons/me/ic_indicate_broken_egg.png');
 // const androidIcon = require('../../assets/icons/me/ic_indicate_android.png');
@@ -61,6 +62,7 @@ export function MeLeftDrawer({
     { key: 'marriage', icon: boxIcon, label: t('me.drawerMarriage'), tint: undefined },
     { key: 'likes', icon: likeIcon, label: t('me.drawerLikes'), tint: undefined },
     { key: 'visitors', icon: visitorIcon, label: t('me.tabVisitors'), tint: 'rgba(0,0,0,0.6)' },
+    { key: 'clan', icon: clanIcon, label: t('me.drawerClan'), tint: undefined },
     // TODO: các mục chưa có action, ẩn tạm — bật lại khi làm xong
     // { key: 'egg', icon: eggIcon, label: t('me.drawerEgg'), tint: undefined },
     // { key: 'android', icon: androidIcon, label: '#Android', tint: undefined },

@@ -27,6 +27,8 @@ import { MeRightDrawer } from './MeRightDrawer';
 import { MeVisitorsScreen } from './MeVisitorsScreen';
 import { MeLikedPostsScreen } from './MeLikedPostsScreen';
 import { MarriageScreen } from './marriage/MarriageScreen';
+import { ClanOverlayHost } from '../clan/ClanOverlayHost';
+import { useClanOverlayStore } from '../../store/clanOverlayStore';
 import { MeCommentSheet } from './MeCommentSheet';
 import { MeLikersDialog } from './MeLikersDialog';
 import { MeNotificationsScreen } from './MeNotificationsScreen';
@@ -391,6 +393,7 @@ export function MeFeedScreen() {
               else if (key === 'marriage') setMarriageOpen(true);
               else if (key === 'likes') setLikedOpen(true);
               else if (key === 'visitors') setVisitorsOpen(true);
+              else if (key === 'clan') useClanOverlayStore.getState().open({ kind: 'home' });
               else comingSoon();
             }}
             onLogout={() => {
@@ -505,6 +508,8 @@ export function MeFeedScreen() {
       )}
 
       {marriageOpen && <MarriageScreen onClose={() => setMarriageOpen(false)} />}
+
+      <ClanOverlayHost />
 
       {profileUsername != null && (
         <UserProfileScreen
