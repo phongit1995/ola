@@ -72,6 +72,8 @@ export interface Message {
 export interface MessagesListResult {
   messages: Message[];
   total: number;
+  hasMore?: boolean;
+  nextBefore?: string;
 }
 
 export interface CreateDirectConversationRequest {

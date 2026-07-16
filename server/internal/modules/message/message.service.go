@@ -970,35 +970,42 @@ func (s *Service) GetMessages(userID, conversationID uuid.UUID, limit int, befor
 		beforeTimeuuid = &parsed
 	}
 
-	var messages []Message
-	if beforeTimeuuid == nil {
-		if cached, err := s.cache.GetConversationMessages(conversationID, limit); err == nil && len(cached) > 0 {
-			s.logger.Debugw("Cache HIT for messages", "conversation_id", conversationID)
-			messages = cached
-		}
+	raws, exhausted, fromCache, err := s.fetchRawMessages(conversationID, limit, beforeTimeuuid)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get messages: %w", err)
+	}
+	if !fromCache && beforeTimeuuid == nil && len(raws) > 0 {
+		cacheRaws := raws
+		utils.SafeGo(s.logger, func() {
+			if err := s.cache.SetConversationMessages(conversationID, limit, cacheRaws, exhausted); err != nil {
+				s.logger.Warnw("Failed to cache messages", "conversation_id", conversationID, "error", err)
+			}
+		})
 	}
 
-	if len(messages) == 0 {
-		s.logger.Debugw("Cache MISS for messages", "conversation_id", conversationID)
-		messages, err = s.repo.GetMessages(conversationID, limit, beforeTimeuuid)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get messages: %w", err)
-		}
-
-		if beforeTimeuuid == nil && len(messages) > 0 {
-			utils.SafeGo(s.logger, func() {
-				if err := s.cache.SetConversationMessages(conversationID, limit, messages); err != nil {
-					s.logger.Warnw("Failed to cache messages", "conversation_id", conversationID, "error", err)
-				}
-			})
-		}
-	}
-
-	senderIDSet := make(map[uuid.UUID]struct{}, len(messages))
-	for _, msg := range messages {
+	visible := make([]Message, 0, limit)
+	for _, msg := range raws {
 		if msg.DeletedAt == nil {
-			senderIDSet[msg.SenderID] = struct{}{}
+			visible = append(visible, msg)
 		}
+	}
+
+	hasMore := !exhausted
+	nextBefore := ""
+	if len(visible) > limit {
+		visible = visible[:limit]
+		hasMore = true
+		nextBefore = visible[limit-1].MessageID.String()
+	} else if len(raws) > 0 {
+		nextBefore = raws[len(raws)-1].MessageID.String()
+	}
+	if !hasMore {
+		nextBefore = ""
+	}
+
+	senderIDSet := make(map[uuid.UUID]struct{}, len(visible))
+	for _, msg := range visible {
+		senderIDSet[msg.SenderID] = struct{}{}
 	}
 	senderIDs := make([]uuid.UUID, 0, len(senderIDSet))
 	for id := range senderIDSet {
@@ -1006,12 +1013,8 @@ func (s *Service) GetMessages(userID, conversationID uuid.UUID, limit int, befor
 	}
 	senders := s.userCache.GetUsersBatch(senderIDs, false)
 
-	responses := make([]MessageResponse, 0, len(messages))
-	for _, msg := range messages {
-		if msg.DeletedAt != nil {
-			continue
-		}
-
+	responses := make([]MessageResponse, 0, len(visible))
+	for _, msg := range visible {
 		senderName := msg.SenderName
 		senderAvatar := msg.SenderAvatar
 		if u, ok := senders[msg.SenderID]; ok && u != nil {
@@ -1047,9 +1050,54 @@ func (s *Service) GetMessages(userID, conversationID uuid.UUID, limit int, befor
 	}
 
 	return &MessagesListResponse{
-		Messages: responses,
-		Total:    len(responses),
+		Messages:   responses,
+		Total:      len(responses),
+		HasMore:    hasMore,
+		NextBefore: nextBefore,
 	}, nil
+}
+
+const messageFetchMaxRounds = 3
+
+func (s *Service) fetchRawMessages(conversationID uuid.UUID, limit int, before *gocql.UUID) ([]Message, bool, bool, error) {
+	if before == nil {
+		cached, exhausted, err := s.cache.GetConversationMessages(conversationID, limit)
+		if err == nil && (exhausted || countVisibleMessages(cached) >= limit) {
+			s.logger.Debugw("Cache HIT for messages", "conversation_id", conversationID)
+			return cached, exhausted, true, nil
+		}
+	}
+
+	s.logger.Debugw("Cache MISS for messages", "conversation_id", conversationID)
+	rawLimit := limit * 2
+	var raws []Message
+	cursor := before
+	for round := 0; round < messageFetchMaxRounds; round++ {
+		batch, err := s.repo.GetMessages(conversationID, rawLimit, cursor)
+		if err != nil {
+			return nil, false, false, err
+		}
+		raws = append(raws, batch...)
+		if len(batch) < rawLimit {
+			return raws, true, false, nil
+		}
+		if countVisibleMessages(raws) >= limit {
+			return raws, false, false, nil
+		}
+		last := batch[len(batch)-1].MessageID
+		cursor = &last
+	}
+	return raws, false, false, nil
+}
+
+func countVisibleMessages(messages []Message) int {
+	count := 0
+	for _, msg := range messages {
+		if msg.DeletedAt == nil {
+			count++
+		}
+	}
+	return count
 }
 
 func (s *Service) UpdateMessage(userID uuid.UUID, conversationIDStr, messageIDStr, newContent string) (*MessageResponse, error) {

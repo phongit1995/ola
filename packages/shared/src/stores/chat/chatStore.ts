@@ -46,6 +46,7 @@ export interface ChatState {
   peerCardRoll: boolean;
   messages: Message[];
   hasMore: boolean;
+  messagesCursor: string | null;
   loadingConversations: boolean;
   loadingMessages: boolean;
   loadingMore: boolean;
@@ -88,6 +89,7 @@ const initialState = {
   peerCardRoll: false,
   messages: [] as Message[],
   hasMore: false,
+  messagesCursor: null as string | null,
   loadingConversations: false,
   loadingMessages: false,
   loadingMore: false,
@@ -143,7 +145,8 @@ export const useChatStore = create<ChatState>((set, get) => {
         );
         set({
           messages: [...fetched, ...pending],
-          hasMore: result.messages.length >= MESSAGE_PAGE_SIZE,
+          hasMore: result.hasMore ?? result.messages.length >= MESSAGE_PAGE_SIZE,
+          messagesCursor: result.nextBefore ?? null,
         });
         const conversation = get().conversations.find((item) => item.id === conversationId);
         if ((conversation?.unreadCount ?? 0) > 0) void get().markRead(conversationId);
@@ -163,6 +166,7 @@ export const useChatStore = create<ChatState>((set, get) => {
         typingUsers: [],
         replyTarget: null,
         hasMore: false,
+        messagesCursor: null,
         loadingMore: false,
         loadingMessages: true,
       });
@@ -185,7 +189,8 @@ export const useChatStore = create<ChatState>((set, get) => {
         if (get().currentConversationId !== conversationId) return;
         set({
           messages: [...result.messages].reverse(),
-          hasMore: result.messages.length >= MESSAGE_PAGE_SIZE,
+          hasMore: result.hasMore ?? result.messages.length >= MESSAGE_PAGE_SIZE,
+          messagesCursor: result.nextBefore ?? null,
           loadingMessages: false,
         });
         if ((conversation?.unreadCount ?? 0) > 0) {
@@ -268,15 +273,15 @@ export const useChatStore = create<ChatState>((set, get) => {
     },
 
     loadMoreMessages: async () => {
-      const { currentConversationId, messages, hasMore, loadingMore } = get();
-      if (!currentConversationId || !hasMore || loadingMore || messages.length === 0) return;
-      const oldest = messages[0];
-      if (oldest == null) return;
+      const { currentConversationId, messages, hasMore, loadingMore, messagesCursor } = get();
+      if (!currentConversationId || !hasMore || loadingMore) return;
+      const before = messagesCursor ?? messages[0]?.id;
+      if (before == null) return;
       set({ loadingMore: true });
       try {
         const result = await MessageService.list(currentConversationId, {
           limit: MESSAGE_PAGE_SIZE,
-          before: oldest.id,
+          before,
         });
         if (get().currentConversationId !== currentConversationId) return;
         const older = [...result.messages].reverse();
@@ -284,7 +289,8 @@ export const useChatStore = create<ChatState>((set, get) => {
         const deduped = older.filter((item) => !existingIds.has(item.id));
         set({
           messages: [...deduped, ...get().messages],
-          hasMore: result.messages.length >= MESSAGE_PAGE_SIZE,
+          hasMore: result.hasMore ?? result.messages.length >= MESSAGE_PAGE_SIZE,
+          messagesCursor: result.nextBefore ?? null,
           loadingMore: false,
         });
       } catch {

@@ -42,18 +42,23 @@ func (c *CacheService) DeleteMessage(conversationID uuid.UUID, messageID gocql.U
 	return c.cache.Delete(key)
 }
 
-func (c *CacheService) GetConversationMessages(conversationID uuid.UUID, limit int) ([]Message, error) {
-	key := fmt.Sprintf(constants.CacheKeyMessageList, fmt.Sprintf("%s:limit_%d", conversationID.String(), limit))
-	var messages []Message
-	if err := c.cache.Get(key, &messages); err != nil {
-		return nil, err
-	}
-	return messages, nil
+type cachedMessagePage struct {
+	Messages  []Message
+	Exhausted bool
 }
 
-func (c *CacheService) SetConversationMessages(conversationID uuid.UUID, limit int, messages []Message) error {
+func (c *CacheService) GetConversationMessages(conversationID uuid.UUID, limit int) ([]Message, bool, error) {
 	key := fmt.Sprintf(constants.CacheKeyMessageList, fmt.Sprintf("%s:limit_%d", conversationID.String(), limit))
-	return c.cache.Set(key, messages, constants.CacheTTLMessageList*time.Second)
+	var page cachedMessagePage
+	if err := c.cache.Get(key, &page); err != nil {
+		return nil, false, err
+	}
+	return page.Messages, page.Exhausted, nil
+}
+
+func (c *CacheService) SetConversationMessages(conversationID uuid.UUID, limit int, messages []Message, exhausted bool) error {
+	key := fmt.Sprintf(constants.CacheKeyMessageList, fmt.Sprintf("%s:limit_%d", conversationID.String(), limit))
+	return c.cache.Set(key, cachedMessagePage{Messages: messages, Exhausted: exhausted}, constants.CacheTTLMessageList*time.Second)
 }
 
 func (c *CacheService) DeleteConversationMessages(conversationID uuid.UUID) error {
