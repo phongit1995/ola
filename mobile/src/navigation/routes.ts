@@ -23,6 +23,7 @@ export const ROOT_ROUTES = {
   KenStore: 'KenStore',
   BuyKen: 'BuyKen',
   MediaStore: 'MediaStore',
+  Notifications: 'Notifications',
   Settings: 'Settings',
   PenGame: 'PenGame',
   SpinWheel: 'SpinWheel',

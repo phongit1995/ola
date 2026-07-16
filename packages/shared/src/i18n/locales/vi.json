@@ -1005,7 +1005,10 @@
     "msg_like": "đã thích trạng thái của bạn",
     "msg_photo": "vừa đăng một ảnh mới",
     "msg_proposal": "muốn cầu hôn bạn",
-    "msg_divorce": "đã từ chối lời cầu hôn của bạn"
+    "msg_divorce": "đã từ chối lời cầu hôn của bạn",
+    "empty": "Không có thông báo",
+    "loadError": "Không tải được thông báo",
+    "actionError": "Thao tác thất bại, vui lòng thử lại"
   },
   "ken": {
     "title": "KEN",

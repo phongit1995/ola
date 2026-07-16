@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { HomeHeader } from '@components/HomeHeader';
+import { useAppNotificationStore } from '@ola/shared/stores/appNotificationStore';
 import { useGameOverlayStore } from '@/store/gameOverlayStore';
 import { useAppOverlayStore } from '@/store/appOverlayStore';
 import { useArcadeStore } from '@/store/arcadeStore';
@@ -11,10 +12,11 @@ interface PanelRowProps {
   icon: string;
   title: string;
   subtitle?: string;
+  badge?: number;
   onClick?: () => void;
 }
 
-function PanelRow({ icon, title, subtitle, onClick }: PanelRowProps) {
+function PanelRow({ icon, title, subtitle, badge, onClick }: PanelRowProps) {
   return (
     <li className="border-b border-black/12 last:border-b-0">
       <button
@@ -27,6 +29,11 @@ function PanelRow({ icon, title, subtitle, onClick }: PanelRowProps) {
           <span className="block truncate text-base font-bold text-black/87">{title}</span>
           {subtitle && <span className="block truncate text-sm text-black/54">{subtitle}</span>}
         </span>
+        {badge != null && badge > 0 && (
+          <span className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-ola-accent px-1.5 text-xs font-bold text-white">
+            {badge > 99 ? '99+' : badge}
+          </span>
+        )}
       </button>
     </li>
   );
@@ -39,6 +46,7 @@ export function AppsPanel() {
   const miniGames = useArcadeStore((s) => s.games);
   const fetchGames = useArcadeStore((s) => s.fetchGames);
   const openArcade = useArcadeStore((s) => s.open);
+  const notifUnread = useAppNotificationStore((s) => s.unreadCount);
 
   useEffect(() => {
     void fetchGames();
@@ -57,6 +65,7 @@ export function AppsPanel() {
         icon={item.icon}
         title={t(item.titleKey)}
         subtitle={item.subtitleKey ? t(item.subtitleKey) : undefined}
+        badge={item.app === 'notifications' ? notifUnread : undefined}
         onClick={handleOpen(item)}
       />
     );

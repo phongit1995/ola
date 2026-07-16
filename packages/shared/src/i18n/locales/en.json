@@ -1005,7 +1005,10 @@
     "msg_like": "liked your status",
     "msg_photo": "just posted a new photo",
     "msg_proposal": "wants to propose to you",
-    "msg_divorce": "declined your proposal"
+    "msg_divorce": "declined your proposal",
+    "empty": "No notification",
+    "loadError": "Failed to load notifications",
+    "actionError": "Action failed, please try again"
   },
   "ken": {
     "title": "KEN",

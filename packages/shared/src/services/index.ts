@@ -2,6 +2,7 @@ export * from './auth.service';
 export * from './user.service';
 export * from './settings.service';
 export * from './relationship.service';
+export * from './notification.service';
 export * from './presence.service';
 export * from './room.service';
 export * from './me.service';

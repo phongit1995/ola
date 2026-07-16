@@ -19,6 +19,7 @@ const (
 	KafkaTopicKenChestAvailable          = "CHAT.KEN.CHEST.AVAILABLE"
 	KafkaTopicKenChestClosed             = "CHAT.KEN.CHEST.CLOSED"
 	KafkaTopicMeNotification             = "CHAT.ME.NOTIFICATION"
+	KafkaTopicAppNotification            = "CHAT.APP.NOTIFICATION"
 	KafkaTopicUserBanned                 = "CHAT.USER.BANNED"
 )
 
@@ -42,6 +43,7 @@ func AllKafkaTopics() []string {
 		KafkaTopicKenChestAvailable,
 		KafkaTopicKenChestClosed,
 		KafkaTopicMeNotification,
+		KafkaTopicAppNotification,
 		KafkaTopicUserBanned,
 	}
 }
@@ -141,6 +143,7 @@ const (
 	WebSocketEventKenChestAvailable          = "KEN_CHEST_AVAILABLE"
 	WebSocketEventKenChestClosed             = "KEN_CHEST_CLOSED"
 	WebSocketEventMeNotification             = "ME_NOTIFICATION"
+	WebSocketEventAppNotification            = "APP_NOTIFICATION"
 	WebSocketEventForceLogout                = "FORCE_LOGOUT"
 )
 

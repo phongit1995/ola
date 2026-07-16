@@ -2,6 +2,7 @@ import { Suspense, useEffect, useState } from 'react';
 import { SocketService } from '@services';
 import { BottomTabBar, type TabKey } from '@components/BottomTabBar';
 import { KenBalanceBadge } from '@components';
+import { useAppNotificationStore } from '@ola/shared/stores/appNotificationStore';
 import { useAuthStore } from '@/store/authStore';
 import { useRoomChatStore } from '@/store/roomChatStore';
 import { useChatStore } from '@/store/chat/chatStore';
@@ -24,6 +25,7 @@ export function HomePage() {
   const chatUnread = useChatStore((state) =>
     state.conversations.reduce((sum, item) => sum + (item.unreadCount ?? 0), 0)
   );
+  const notifUnread = useAppNotificationStore((state) => state.unreadCount);
   const ActivePanel = PANELS[tab];
   const authReady = useAuthStore((state) => state.authReady);
   const ken = useAuthStore((state) => state.user?.ken);
@@ -59,7 +61,7 @@ export function HomePage() {
       <BottomTabBar
         active={tab}
         onChange={changeTab}
-        badges={{ chat: chatUnread }}
+        badges={{ chat: chatUnread, apps: notifUnread }}
         dots={{ room: roomUnread && tab !== 'room' }}
       />
 

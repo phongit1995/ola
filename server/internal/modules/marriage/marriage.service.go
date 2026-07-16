@@ -6,6 +6,7 @@ import (
 
 	"ola-chat-server/internal/apperr"
 	"ola-chat-server/internal/models"
+	"ola-chat-server/internal/modules/notification"
 	"ola-chat-server/internal/modules/relationships"
 	"ola-chat-server/internal/modules/user"
 
@@ -32,14 +33,16 @@ type Service struct {
 	repo      *Repository
 	relRepo   *relationships.Repository
 	userCache *user.CacheService
+	notifSvc  *notification.Service
 	logger    *zap.SugaredLogger
 }
 
-func NewService(repo *Repository, relRepo *relationships.Repository, userCache *user.CacheService, logger *zap.SugaredLogger) *Service {
+func NewService(repo *Repository, relRepo *relationships.Repository, userCache *user.CacheService, notifSvc *notification.Service, logger *zap.SugaredLogger) *Service {
 	return &Service{
 		repo:      repo,
 		relRepo:   relRepo,
 		userCache: userCache,
+		notifSvc:  notifSvc,
 		logger:    logger.Named("[marriage_service]"),
 	}
 }
@@ -114,6 +117,8 @@ func (s *Service) Propose(proposerID uuid.UUID, req ProposeRequest) (*ProposeRes
 		return nil, err
 	}
 
+	s.notifSvc.Create(addressee.ID, &proposerID, models.AppNotificationMarriageProposal, &p.ID, notification.Excerpt(req.Message))
+
 	return &ProposeResponse{
 		ProposalID:        p.ID.String(),
 		AddresseeUsername: addressee.Username,
@@ -145,6 +150,7 @@ func (s *Service) Accept(userID, proposalID uuid.UUID) (*MarriageStatusResponse,
 
 	s.invalidate(proposer.ID)
 	s.invalidate(addressee.ID)
+	s.notifSvc.Remove(userID, models.AppNotificationMarriageProposal, proposalID)
 
 	return statusFromUser(addressee, &marriedAt), nil
 }
@@ -166,6 +172,7 @@ func (s *Service) Reject(userID, proposalID uuid.UUID) error {
 	if err := s.repo.SetProposalStatus(proposalID, models.MarriageProposalRejected, time.Now()); err != nil {
 		return err
 	}
+	s.notifSvc.Remove(userID, models.AppNotificationMarriageProposal, proposalID)
 	return nil
 }
 
@@ -183,7 +190,11 @@ func (s *Service) Cancel(userID, proposalID uuid.UUID) error {
 	if p.Status != models.MarriageProposalPending {
 		return ErrProposalNotPending
 	}
-	return s.repo.SetProposalStatus(proposalID, models.MarriageProposalCancelled, time.Now())
+	if err := s.repo.SetProposalStatus(proposalID, models.MarriageProposalCancelled, time.Now()); err != nil {
+		return err
+	}
+	s.notifSvc.Remove(p.AddresseeID, models.AppNotificationMarriageProposal, proposalID)
+	return nil
 }
 
 func (s *Service) GetStatus(userID uuid.UUID) (*MarriageStatusResponse, error) {

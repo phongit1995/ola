@@ -7,6 +7,7 @@ import { useMediaViewerStore } from '@/store/mediaViewerStore';
 import { useKenTreasureStore } from '@/pages/games/ken-treasure/kenTreasureStore';
 import { useKenRealtime } from '@/pages/games/ken-treasure/useKenRealtime';
 import { useMeNotificationRealtime } from '@/pages/me/useMeNotificationRealtime';
+import { useAppNotificationRealtime } from '@/pages/apps/useAppNotificationRealtime';
 
 const MediaViewer = lazy(() =>
   import('@/pages/me/components/MediaViewer').then((m) => ({ default: m.MediaViewer })),
@@ -62,6 +63,7 @@ function App() {
   useReconnectOnVisible();
   useKenRealtime();
   useMeNotificationRealtime();
+  useAppNotificationRealtime();
 
   return (
     <>

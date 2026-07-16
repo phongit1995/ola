@@ -4,6 +4,7 @@ import { Image, Pressable, ScrollView, Text, View, type ImageSourcePropType } fr
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useAppNotificationStore } from '@ola/shared/stores/appNotificationStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { RootStackParamList } from '../../navigation/types';
 import { ROOT_ROUTES } from '../../navigation/routes';
@@ -16,10 +17,11 @@ interface PanelRowProps {
   icon: ImageSourcePropType;
   title: string;
   subtitle?: string;
+  badge?: number;
   onPress: () => void;
 }
 
-function PanelRow({ icon, title, subtitle, onPress }: PanelRowProps) {
+function PanelRow({ icon, title, subtitle, badge, onPress }: PanelRowProps) {
   return (
     <Pressable
       onPress={onPress}
@@ -41,6 +43,11 @@ function PanelRow({ icon, title, subtitle, onPress }: PanelRowProps) {
           </Text>
         )}
       </View>
+      {badge != null && badge > 0 && (
+        <View className="h-5 min-w-5 items-center justify-center rounded-full bg-ola-accent px-1.5">
+          <Text className="text-xs font-bold text-white">{badge > 99 ? '99+' : badge}</Text>
+        </View>
+      )}
     </Pressable>
   );
 }
@@ -52,12 +59,17 @@ export function AppsScreen() {
   const push = useToastStore((s) => s.push);
   const miniGames = useArcadeStore((s) => s.games);
   const fetchGames = useArcadeStore((s) => s.fetchGames);
+  const notifUnread = useAppNotificationStore((s) => s.unreadCount);
 
   useEffect(() => {
     void fetchGames();
   }, [fetchGames]);
 
   function handleOpen(item: AppItem) {
+    if (item.action === 'notifications') {
+      navigation.navigate(ROOT_ROUTES.Notifications);
+      return;
+    }
     if (item.action === 'profile') {
       navigation.navigate(ROOT_ROUTES.EditProfile);
       return;
@@ -100,6 +112,7 @@ export function AppsScreen() {
         icon={item.icon}
         title={t(item.titleKey)}
         subtitle={item.subtitleKey != null ? t(item.subtitleKey) : undefined}
+        badge={item.action === 'notifications' ? notifUnread : undefined}
         onPress={() => handleOpen(item)}
       />
     );

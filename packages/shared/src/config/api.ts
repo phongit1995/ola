@@ -38,6 +38,11 @@ export const API_PATH = {
     following: (id: string) => `/user/${id}/following`,
     myVisitors: '/user/me/visitors',
   },
+  notifications: {
+    base: '/notifications',
+    unread: '/notifications/unread-count',
+    readAll: '/notifications/read-all',
+  },
   relationships: {
     request: '/relationships/request',
     respond: (id: string) => `/relationships/${id}/respond`,

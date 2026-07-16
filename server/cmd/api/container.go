@@ -19,6 +19,7 @@ import (
 	"ola-chat-server/internal/modules/me"
 	"ola-chat-server/internal/modules/message"
 	minigame "ola-chat-server/internal/modules/mini-game"
+	"ola-chat-server/internal/modules/notification"
 	"ola-chat-server/internal/modules/pen"
 	"ola-chat-server/internal/modules/relationships"
 	"ola-chat-server/internal/modules/room"
@@ -74,6 +75,7 @@ func NewContainer() (*dig.Container, error) {
 		health.Provider,
 		user.Provider,
 		usersetting.Provider,
+		notification.Provider,
 		relationships.Provider,
 		conversation.Provider,
 		message.Provider,

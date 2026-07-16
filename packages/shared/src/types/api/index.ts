@@ -6,6 +6,7 @@ export * from './me.type';
 export * from './user.type';
 export * from './settings.type';
 export * from './relationship.type';
+export * from './notification.type';
 export * from './vip.type';
 export * from './egg.type';
 export * from './wheel.type';
