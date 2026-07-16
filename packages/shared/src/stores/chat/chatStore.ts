@@ -16,6 +16,7 @@ import {
   UserService,
 } from '../../services';
 import type { Conversation, Message, PublicProfile, ReactionType, RelationshipInfo } from '../../types';
+import { registerOnLogout } from '../authStore';
 import { upsertConversation } from './chatHelpers';
 import { clearTypingTimers, registerChatRealtime } from './chatRealtime';
 
@@ -583,3 +584,5 @@ export const useChatStore = create<ChatState>((set, get) => {
     },
   };
 });
+
+registerOnLogout(() => useChatStore.getState().reset());

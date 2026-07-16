@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { PresenceService } from '../services';
+import { registerOnLogout } from './authStore';
 
 export interface PresenceInfo {
   isOnline: boolean;
@@ -93,3 +94,5 @@ export const usePresenceStore = create<PresenceState>((set, get) => ({
     set({ presence: new Map() });
   },
 }));
+
+registerOnLogout(() => usePresenceStore.getState().reset());

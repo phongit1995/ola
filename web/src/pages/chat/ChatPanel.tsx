@@ -15,7 +15,6 @@ import { AuthService, RelationshipService, SocketService } from '@services';
 import { useAuthStore } from '@/store/authStore';
 import { useChatStore } from '@/store/chat/chatStore';
 import { useFriendsStore } from '@/store/friendsStore';
-import { usePresenceStore } from '@/store/presenceStore';
 import { ConversationList } from './components/ConversationList';
 import { ContactList } from './components/ContactList';
 import { BlockedListDialog } from './components/BlockedListDialog';
@@ -137,8 +136,6 @@ export function ChatPanel() {
       toast.error(t('chat.logoutError'));
     } finally {
       SocketService.disconnect();
-      useFriendsStore.getState().reset();
-      usePresenceStore.getState().reset();
       clearUser();
       navigate(ROUTES.login);
     }
