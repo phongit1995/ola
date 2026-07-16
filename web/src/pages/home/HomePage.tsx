@@ -12,6 +12,8 @@ import { ActiveConversationOverlay } from '../chat/ActiveConversationOverlay';
 import { GameOverlay } from '../games/GameOverlay';
 import { RoomChatOverlay } from '../room/RoomChatOverlay';
 import { AppOverlay } from '../apps/AppOverlay';
+import { ClanOverlayHost } from '../clan/ClanOverlayHost';
+import { useClanOverlayStore } from '@/store/clanOverlayStore';
 import { ACTIVE_TAB_KEY, PANELS } from './constants';
 
 function readStoredTab(): TabKey {
@@ -31,7 +33,8 @@ export function HomePage() {
   const ken = useAuthStore((state) => state.user?.ken);
   const gameActive = useGameOverlayStore((state) => state.active != null);
   const appActive = useAppOverlayStore((state) => state.stack.length > 0);
-  const hideKenBadge = gameActive || appActive;
+  const clanActive = useClanOverlayStore((state) => state.stack.length > 0);
+  const hideKenBadge = gameActive || appActive || clanActive;
 
   function changeTab(next: TabKey) {
     sessionStorage.setItem(ACTIVE_TAB_KEY, next);
@@ -68,6 +71,7 @@ export function HomePage() {
       <ActiveConversationOverlay />
       <GameOverlay />
       <AppOverlay />
+      <ClanOverlayHost />
     </div>
   );
 }

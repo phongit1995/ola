@@ -4,6 +4,8 @@ export type MeCheckIn = PostCheckIn;
 
 export interface MePost {
   id: string;
+  clanId?: string;
+  clanHandle?: string;
   authorId: string;
   author: string;
   fullName: string;

@@ -34,6 +34,8 @@ export interface PostAuthor {
 
 export interface Post {
   id: string;
+  clanId?: string;
+  clanHandle?: string;
   content?: string;
   images: PostImage[];
   mentions?: string[];

@@ -6,6 +6,7 @@ export * from './notification.service';
 export * from './presence.service';
 export * from './room.service';
 export * from './me.service';
+export * from './clan.service';
 export * from './socket.service';
 export * from './geo.service';
 export * from './conversation.service';

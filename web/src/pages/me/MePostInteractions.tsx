@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { toApiError, toast } from '@lib';
 import { MeService } from '@services';
 import { ConfirmDialog, ListOptionDialog, ReportDialog, type ListOption } from '@components';
-import type { PostReaction, ReportTarget } from '@app-types';
+import type { PostReaction, PostVisibility, ReportTarget } from '@app-types';
 import { MeComposerDialog, type ComposedPost } from './components/MeComposerDialog';
 import { MeCommentSheet } from './components/MeCommentSheet';
 import { QuickCommentBar } from './components/QuickCommentBar';
@@ -36,10 +36,22 @@ export interface MePostCardHandlers {
 
 interface MePostInteractionsProps {
   source: MePostSource;
+  extraMenuItems?: (post: MePost) => ListOption[];
+  composerPrivacyOptions?: PostVisibility[];
   children: (handlers: MePostCardHandlers) => ReactNode;
 }
 
-export function MePostInteractions({ source, children }: MePostInteractionsProps) {
+function isEditExpired(createdAt?: string): boolean {
+  const createdAtMs = createdAt != null ? new Date(createdAt).getTime() : 0;
+  return Date.now() - createdAtMs > EDIT_WINDOW_MS;
+}
+
+export function MePostInteractions({
+  source,
+  extraMenuItems,
+  composerPrivacyOptions,
+  children,
+}: MePostInteractionsProps) {
   const { t } = useTranslation();
   const { posts, meId, toggleReaction, adjustCommentCount, editPost, deletePost, togglePin } =
     source;
@@ -80,8 +92,7 @@ export function MePostInteractions({ source, children }: MePostInteractionsProps
     if (id == null) return;
     const post = posts.find((p) => p.id === id);
     if (post == null) return;
-    const createdAtMs = post.createdAt != null ? new Date(post.createdAt).getTime() : 0;
-    if (Date.now() - createdAtMs > EDIT_WINDOW_MS) {
+    if (isEditExpired(post.createdAt)) {
       toast.info(t('me.editExpired'));
       return;
     }
@@ -105,7 +116,9 @@ export function MePostInteractions({ source, children }: MePostInteractionsProps
     onSelect: () => setDeletePostId(menuPostId),
   });
 
-  const menuOptions: ListOption[] =
+  const extraOptions = menuPost != null && extraMenuItems != null ? extraMenuItems(menuPost) : [];
+
+  const baseMenuOptions: ListOption[] =
     isMenuPostMine && canManageOwn
       ? ownMenuOptions
       : [
@@ -130,6 +143,11 @@ export function MePostInteractions({ source, children }: MePostInteractionsProps
             onSelect: () => blockAndNotify(menuPost?.authorId),
           },
         ];
+
+  const dedupedExtras = extraOptions.filter(
+    (option) => !baseMenuOptions.some((item) => item.key === option.key)
+  );
+  const menuOptions: ListOption[] = [...baseMenuOptions, ...dedupedExtras];
 
   const editingPost = editPostId == null ? null : posts.find((p) => p.id === editPostId);
   const editInitial: ComposedPost | undefined =
@@ -156,9 +174,7 @@ export function MePostInteractions({ source, children }: MePostInteractionsProps
   const submitEdit = useCallback(
     (draft: ComposedPost) => {
       if (editPostId == null || editPost == null) return Promise.resolve(false);
-      const createdAtMs =
-        editingPost?.createdAt != null ? new Date(editingPost.createdAt).getTime() : 0;
-      if (Date.now() - createdAtMs > EDIT_WINDOW_MS) {
+      if (isEditExpired(editingPost?.createdAt)) {
         toast.info(t('me.editExpired'));
         return Promise.resolve(false);
       }
@@ -262,6 +278,7 @@ export function MePostInteractions({ source, children }: MePostInteractionsProps
           initial={editInitial}
           title={t('me.editTitle')}
           submitLabel={t('me.saveEdit')}
+          privacyOptions={composerPrivacyOptions}
           onClose={() => setEditPostId(null)}
           onPost={submitEdit}
         />

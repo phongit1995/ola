@@ -3,6 +3,7 @@ export * from './auth.type';
 export * from './room.type';
 export * from './chat.type';
 export * from './me.type';
+export * from './clan.type';
 export * from './user.type';
 export * from './settings.type';
 export * from './relationship.type';
