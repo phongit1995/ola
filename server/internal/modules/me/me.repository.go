@@ -58,15 +58,9 @@ func (r *Repository) paginate(db *gorm.DB, limit, offset int) ([]*models.Me, int
 	return posts, total, nil
 }
 
-const clanVisibleCond = `(me.clan_id IS NULL OR (me.visibility = 'public' AND EXISTS (
-	SELECT 1 FROM clans c
-	WHERE c.id = me.clan_id AND c.policy != 4 AND c.deleted_at IS NULL
-)))`
+const clanVisibleCond = "me.clan_id IS NULL"
 
-const clanVisibleCondAliasM = `(m.clan_id IS NULL OR (m.visibility = 'public' AND EXISTS (
-	SELECT 1 FROM clans c
-	WHERE c.id = m.clan_id AND c.policy != 4 AND c.deleted_at IS NULL
-)))`
+const clanVisibleCondAliasM = "m.clan_id IS NULL"
 
 func (r *Repository) SetPinned(authorID, postID uuid.UUID, pinned bool) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
