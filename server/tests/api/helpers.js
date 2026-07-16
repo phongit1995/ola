@@ -67,12 +67,17 @@ function randomPassword() {
 }
 
 async function registerUser(username, email, password, fullName) {
-  const r = await req('POST', '/auth/register', {
-    username,
-    email,
-    password,
-    full_name: fullName || username,
-  })
+  let r
+  for (let attempt = 0; attempt < 20; attempt++) {
+    r = await req('POST', '/auth/register', {
+      username,
+      email,
+      password,
+      full_name: fullName || username,
+    })
+    if (r.status !== 429) break
+    await new Promise((resolve) => setTimeout(resolve, 700))
+  }
   if (r.status !== 200 && r.status !== 201) {
     throw new Error(`register ${username} failed: ${r.status} ${JSON.stringify(r.body)}`)
   }
