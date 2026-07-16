@@ -5,6 +5,7 @@ import {
   AimOutlined,
   AppstoreOutlined,
   CommentOutlined,
+  FlagOutlined,
   CrownOutlined,
   DollarOutlined,
   FileSearchOutlined,
@@ -30,6 +31,7 @@ const MENU_ITEMS = [
   { key: '/', icon: <AppstoreOutlined />, label: 'Tổng quan' },
   { key: '/users', icon: <TeamOutlined />, label: 'Người dùng' },
   { key: '/rooms', icon: <CommentOutlined />, label: 'Phòng chat' },
+  { key: '/clans', icon: <FlagOutlined />, label: 'Clan' },
   {
     key: 'vip',
     icon: <CrownOutlined />,
@@ -73,6 +75,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/': 'Tổng quan',
   '/users': 'Quản lý người dùng',
   '/rooms': 'Quản lý phòng chat',
+  '/clans': 'Quản lý clan',
   '/vip-packages': 'Quản lý gói VIP',
   '/vip-shop': 'Shop VIP',
   '/vip-transfers': 'Lịch sử chuyển VIP',

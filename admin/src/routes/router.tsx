@@ -3,6 +3,7 @@ import { LoginPage } from '@/pages/LoginPage'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { UsersPage } from '@/pages/UsersPage'
 import { RoomsPage } from '@/pages/RoomsPage'
+import { ClansPage } from '@/pages/ClansPage'
 import { VipPackagesPage } from '@/pages/VipPackagesPage'
 import { VipShopPage } from '@/pages/VipShopPage'
 import { VipTransfersPage } from '@/pages/VipTransfersPage'
@@ -40,6 +41,7 @@ export const router = createBrowserRouter([
       { index: true, element: <DashboardPage /> },
       { path: 'users', element: <UsersPage /> },
       { path: 'rooms', element: <RoomsPage /> },
+      { path: 'clans', element: <ClansPage /> },
       { path: 'vip-packages', element: <VipPackagesPage /> },
       { path: 'vip-shop', element: <VipShopPage /> },
       { path: 'vip-transfers', element: <VipTransfersPage /> },
