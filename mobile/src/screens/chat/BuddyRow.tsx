@@ -1,6 +1,7 @@
 import { Image, Pressable, Text, View } from 'react-native';
 import { VipAvatar } from '../../components/VipAvatar';
-import { DEVICE_ICONS, type Contact } from './contacts';
+import type { Contact } from './contacts';
+import { DEVICE_ICONS } from '../../lib/deviceIcons';
 
 const birthdayIcon = require('../../assets/icons/chat/ic_buddy_birthday.png');
 const DIVIDER = 'rgba(0,0,0,0.12)';
