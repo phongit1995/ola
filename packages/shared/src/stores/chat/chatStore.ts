@@ -59,7 +59,7 @@ export interface ChatState {
   openConversation: (conversationId: string) => Promise<void>;
   startDirect: (recipientId: string) => Promise<Conversation | null>;
   closeConversation: () => void;
-  hideConversation: (conversationId: string) => Promise<void>;
+  hideConversation: (conversationId: string, options?: { clearMessages?: boolean }) => Promise<void>;
   loadMoreMessages: () => Promise<void>;
   sendText: (content: string) => Promise<void>;
   sendFirstToDraft: (content: string) => Promise<void>;
@@ -259,14 +259,14 @@ export const useChatStore = create<ChatState>((set, get) => {
 
     clearReplyTarget: () => set({ replyTarget: null }),
 
-    hideConversation: async (conversationId) => {
+    hideConversation: async (conversationId, options) => {
       const isCurrent = get().currentConversationId === conversationId;
       set((state) => ({
         conversations: state.conversations.filter((item) => item.id !== conversationId),
         ...(isCurrent ? { currentConversationId: null, messages: [], typingUsers: [] } : {}),
       }));
       try {
-        await ConversationService.hide(conversationId);
+        await ConversationService.hide(conversationId, options?.clearMessages === true);
       } catch {
         void get().loadConversations();
       }

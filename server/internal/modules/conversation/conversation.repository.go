@@ -114,6 +114,16 @@ func NewRepository(session *gocql.Session, logger *zap.SugaredLogger) *Repositor
 		WHERE user_id = ? AND conversation_id = ?
 	`
 
+	r.queries["get_cleared_marker"] = `
+		SELECT cleared_before FROM conversation_cleared_by_user
+		WHERE user_id = ? AND conversation_id = ?
+	`
+
+	r.queries["set_cleared_marker"] = `
+		INSERT INTO conversation_cleared_by_user (user_id, conversation_id, cleared_before, cleared_at)
+		VALUES (?, ?, ?, ?)
+	`
+
 	return r
 }
 
@@ -688,6 +698,27 @@ func (r *Repository) GetHiddenConversation(userID, conversationID uuid.UUID) (*H
 		IsArchived:     gocqlHidden.IsArchived,
 		IsMuted:        gocqlHidden.IsMuted,
 	}, nil
+}
+
+func (r *Repository) GetClearedMarker(userID, conversationID uuid.UUID) (*gocql.UUID, error) {
+	gocqlUserID, _ := utils.ToGocqlUUID(userID)
+	gocqlConvID, _ := utils.ToGocqlUUID(conversationID)
+
+	var marker gocql.UUID
+	err := r.session.Query(r.queries["get_cleared_marker"], gocqlUserID, gocqlConvID).Scan(&marker)
+	if err == gocql.ErrNotFound {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &marker, nil
+}
+
+func (r *Repository) SetClearedMarker(userID, conversationID uuid.UUID, marker gocql.UUID) error {
+	gocqlUserID, _ := utils.ToGocqlUUID(userID)
+	gocqlConvID, _ := utils.ToGocqlUUID(conversationID)
+	return r.session.Query(r.queries["set_cleared_marker"], gocqlUserID, gocqlConvID, marker, time.Now()).Exec()
 }
 
 func (r *Repository) SetMuted(userID, conversationID uuid.UUID, muted bool) (bool, error) {

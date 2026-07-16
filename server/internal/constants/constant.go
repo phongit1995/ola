@@ -79,6 +79,7 @@ const (
 	CacheKeyPasswordResetToken  = "PASSWORD:%s:RESET_TOKEN"
 	CacheKeyConversationPattern = "USER:*:CONVERSATIONS"
 	CacheKeyLastRead            = "LAST_READ:%s:%s"
+	CacheKeyClearedMarker       = "CLEARED:%s:%s"
 	CacheKeyRoomMembers         = "ROOM:%s:MEMBERS:Z"
 	CacheKeyRoomUserConn        = "ROOM:%s:USER:%s:CONN"
 	CacheKeyRoomMsgIndex        = "ROOM:%s:MSG_INDEX"
@@ -184,6 +185,7 @@ const (
 	CacheTTLPasswordResetToken  = 1800
 	CacheTTLClientMsgIDDedup    = 300
 	CacheTTLLastRead            = 31536000
+	CacheTTLClearedMarker       = 86400
 	CacheTTLVipPackages         = 3600
 	CacheTTLUserSettings        = 2592000
 )

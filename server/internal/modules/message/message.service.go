@@ -983,6 +983,23 @@ func (s *Service) GetMessages(userID, conversationID uuid.UUID, limit int, befor
 		})
 	}
 
+	if marker, markerErr := s.convCache.GetClearedMarkerCached(userID, conversationID); markerErr != nil {
+		s.logger.Warnw("Failed to get cleared marker", "user_id", userID, "conversation_id", conversationID, "error", markerErr)
+	} else if marker != nil {
+		markerTime := marker.Time()
+		cut := len(raws)
+		for i, msg := range raws {
+			if !msg.MessageID.Time().After(markerTime) {
+				cut = i
+				break
+			}
+		}
+		if cut < len(raws) {
+			raws = raws[:cut]
+			exhausted = true
+		}
+	}
+
 	visible := make([]Message, 0, limit)
 	for _, msg := range raws {
 		if msg.DeletedAt == nil {

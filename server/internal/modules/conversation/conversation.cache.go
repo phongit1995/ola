@@ -7,6 +7,7 @@ import (
 	"ola-chat-server/internal/utils"
 	"time"
 
+	"github.com/gocql/gocql"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
@@ -238,6 +239,41 @@ func (c *CacheService) SetLastRead(conversationID, userID uuid.UUID, messageID s
 func (c *CacheService) DeleteLastRead(conversationID, userID uuid.UUID) error {
 	key := fmt.Sprintf(constants.CacheKeyLastRead, conversationID.String(), userID.String())
 	return c.cache.Delete(key)
+}
+
+func (c *CacheService) GetClearedMarkerCached(userID, conversationID uuid.UUID) (*gocql.UUID, error) {
+	key := fmt.Sprintf(constants.CacheKeyClearedMarker, userID.String(), conversationID.String())
+	var cached string
+	if err := c.cache.Get(key, &cached); err == nil {
+		if cached == "" {
+			return nil, nil
+		}
+		if marker, parseErr := gocql.ParseUUID(cached); parseErr == nil {
+			return &marker, nil
+		}
+	}
+
+	marker, err := c.repo.GetClearedMarker(userID, conversationID)
+	if err != nil {
+		return nil, err
+	}
+
+	value := ""
+	if marker != nil {
+		value = marker.String()
+	}
+	utils.SafeGo(c.logger, func() {
+		if err := c.cache.Set(key, value, constants.CacheTTLClearedMarker*time.Second); err != nil {
+			c.logger.Warnw("Failed to cache cleared marker", "user_id", userID, "conversation_id", conversationID, "error", err)
+		}
+	})
+
+	return marker, nil
+}
+
+func (c *CacheService) SetClearedMarkerCache(userID, conversationID uuid.UUID, marker string) error {
+	key := fmt.Sprintf(constants.CacheKeyClearedMarker, userID.String(), conversationID.String())
+	return c.cache.Set(key, marker, constants.CacheTTLClearedMarker*time.Second)
 }
 
 func (c *CacheService) GetMembersCached(conversationID uuid.UUID) ([]ConversationMember, error) {

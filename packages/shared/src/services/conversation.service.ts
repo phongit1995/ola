@@ -29,8 +29,11 @@ export class ConversationService {
     return http.put<MessageResult>(API_PATH.conversations.read(id));
   }
 
-  static hide(id: string): Promise<MessageResult> {
-    return http.post<MessageResult>(API_PATH.conversations.hide(id));
+  static hide(id: string, clearMessages = false): Promise<MessageResult> {
+    return http.post<MessageResult>(
+      API_PATH.conversations.hide(id),
+      clearMessages ? { clearMessages: true } : undefined
+    );
   }
 
   static unhide(id: string): Promise<MessageResult> {

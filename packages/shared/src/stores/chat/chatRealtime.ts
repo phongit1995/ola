@@ -82,12 +82,27 @@ function handleNewMessage(get: ChatGet, set: ChatSet, event: NewMessageEvent) {
   const { conversations } = get();
   const existing = conversations.find((item) => item.id === message.conversationId);
   if (!existing) {
+    const senderInfo: Partial<Conversation> =
+      conversation.type === 'direct' && !fromMe && message.senderName != null
+        ? {
+            name: message.senderName,
+            avatar: message.senderAvatar ?? '',
+            otherUser: {
+              id: message.senderId,
+              username: message.senderName,
+              fullName: message.senderName,
+              avatar: message.senderAvatar,
+              isOnline: false,
+            },
+          }
+        : {};
     set({
       conversations: [
-        { ...conversation, ...patch, unreadCount: fromMe || isCurrent ? 0 : 1 },
+        { ...conversation, ...senderInfo, ...patch, unreadCount: fromMe || isCurrent ? 0 : 1 },
         ...conversations,
       ],
     });
+    void get().loadConversations();
   } else {
     const unreadCount = isCurrent
       ? 0

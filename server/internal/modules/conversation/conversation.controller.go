@@ -234,11 +234,13 @@ func (ctrl *Controller) MarkConversationAsRead(c *gin.Context) (interface{}, err
 
 // HideConversation godoc
 // @Summary      Hide conversation
-// @Description  Hide a conversation from the user's inbox. It will reappear when a new message arrives.
+// @Description  Hide a conversation from the user's inbox. It will reappear when a new message arrives. Optionally clears message history on the caller's side only.
 // @Tags         conversations
+// @Accept       json
 // @Produce      json
 // @Security     BearerAuth
 // @Param        id path string true "Conversation ID"
+// @Param        request body HideConversationRequest false "Options"
 // @Success      200  {object}  HideConversationResponse
 // @Failure      400  {object}  utils.APIError
 // @Failure      401  {object}  utils.APIError
@@ -255,7 +257,10 @@ func (ctrl *Controller) HideConversation(c *gin.Context) (interface{}, error) {
 		return nil, err
 	}
 
-	if err := ctrl.service.HideConversation(userID, conversationID); err != nil {
+	var req HideConversationRequest
+	_ = c.ShouldBindJSON(&req)
+
+	if err := ctrl.service.HideConversation(userID, conversationID, req.ClearMessages); err != nil {
 		ctrl.logger.Errorw("Failed to hide conversation", "error", err, "user_id", userID, "conversation_id", conversationID)
 		return nil, utils.NewHTTPError(http.StatusInternalServerError, "failed to hide conversation")
 	}

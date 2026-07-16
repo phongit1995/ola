@@ -836,13 +836,23 @@ func (s *Service) SetConversationMuted(userID, conversationID uuid.UUID, muted b
 	return nil
 }
 
-func (s *Service) HideConversation(userID, conversationID uuid.UUID) error {
+func (s *Service) HideConversation(userID, conversationID uuid.UUID, clearMessages bool) error {
 	members, err := s.GetMembersCached(conversationID)
 	if err != nil {
 		return fmt.Errorf("failed to get members: %w", err)
 	}
 	if !requireActiveMember(members, userID) {
 		return fmt.Errorf("user is not a member of this conversation")
+	}
+
+	if clearMessages {
+		marker := gocql.TimeUUID()
+		if err := s.repo.SetClearedMarker(userID, conversationID, marker); err != nil {
+			return fmt.Errorf("failed to set cleared marker: %w", err)
+		}
+		if err := s.cache.SetClearedMarkerCache(userID, conversationID, marker.String()); err != nil {
+			s.logger.Warnw("Failed to cache cleared marker", "user_id", userID, "conversation_id", conversationID, "error", err)
+		}
 	}
 
 	if err := s.repo.HideConversation(userID, conversationID); err != nil {
