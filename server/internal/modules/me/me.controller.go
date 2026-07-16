@@ -81,7 +81,7 @@ func (ctrl *Controller) Create(c *gin.Context) (interface{}, error) {
 // @Security     BearerAuth
 // @Param        limit query int false "Page size"
 // @Param        cursor query string false "Opaque keyset cursor from previous page's nextCursor"
-// @Param        filter query string false "Set to 'tagged' (posts with any @mention), 'mentions' (posts mentioning viewer), 'media' (posts with images) or 'following' (own posts + posts from users the viewer follows)"
+// @Param        filter query string false "Set to 'tagged' (posts with any @mention), 'mentions' (posts mentioning viewer), 'media' (posts with images), 'following' (own posts + posts from users the viewer follows) or 'clan' (public posts from all clans)"
 // @Success      200  {object}  utils.BaseResponse[MeFeedResponse]
 // @Router       /me [get]
 func (ctrl *Controller) Feed(c *gin.Context) (interface{}, error) {

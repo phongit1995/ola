@@ -7805,6 +7805,10 @@ paths:
         in: query
         name: method
         type: string
+      - description: Lọc theo route đã đăng ký (khớp phần đuôi)
+        in: query
+        name: route
+        type: string
       - description: Từ thời gian (RFC3339)
         in: query
         name: from
@@ -10955,8 +10959,9 @@ paths:
         name: cursor
         type: string
       - description: Set to 'tagged' (posts with any @mention), 'mentions' (posts
-          mentioning viewer), 'media' (posts with images) or 'following' (own posts
-          + posts from users the viewer follows)
+          mentioning viewer), 'media' (posts with images), 'following' (own posts
+          + posts from users the viewer follows) or 'clan' (public posts from all
+          clans)
         in: query
         name: filter
         type: string

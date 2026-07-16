@@ -29,6 +29,7 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 // @Param        adminId query string false "Lọc theo admin"
 // @Param        resource query string false "Lọc theo nhóm chức năng (users, rooms, vip...)"
 // @Param        method query string false "Lọc theo method (POST/PUT/PATCH/DELETE)"
+// @Param        route query string false "Lọc theo route đã đăng ký (khớp phần đuôi)"
 // @Param        from query string false "Từ thời gian (RFC3339)"
 // @Param        to query string false "Đến thời gian (RFC3339)"
 // @Param        limit query int false "Page size"
@@ -39,6 +40,7 @@ func (ctrl *Controller) List(c *gin.Context) (interface{}, error) {
 	f := ListFilter{
 		Resource: c.Query("resource"),
 		Method:   c.Query("method"),
+		Route:    c.Query("route"),
 		Limit:    utils.ParseLimit(c, 30, 100),
 		Offset:   utils.ParseOffset(c),
 	}

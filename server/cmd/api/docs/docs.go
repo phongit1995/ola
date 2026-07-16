@@ -1184,6 +1184,12 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
+                        "description": "Lọc theo route đã đăng ký (khớp phần đuôi)",
+                        "name": "route",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "description": "Từ thời gian (RFC3339)",
                         "name": "from",
                         "in": "query"
@@ -6196,7 +6202,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Set to 'tagged' (posts with any @mention), 'mentions' (posts mentioning viewer), 'media' (posts with images) or 'following' (own posts + posts from users the viewer follows)",
+                        "description": "Set to 'tagged' (posts with any @mention), 'mentions' (posts mentioning viewer), 'media' (posts with images), 'following' (own posts + posts from users the viewer follows) or 'clan' (public posts from all clans)",
                         "name": "filter",
                         "in": "query"
                     }

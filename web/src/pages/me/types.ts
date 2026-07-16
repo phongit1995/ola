@@ -27,4 +27,4 @@ export interface MePost {
   topLikers: { name: string; avatar: string | null; color: string }[];
 }
 
-export type MeTab = 'community' | 'personal';
+export type MeTab = 'community' | 'personal' | 'clan';

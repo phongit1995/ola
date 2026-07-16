@@ -187,8 +187,15 @@ func (r *Repository) FeedPage(viewerID uuid.UUID, filter string, cursorTime *tim
 		" OR (rel.addressee_id = @viewer AND rel.requester_id = m.author_id)))"
 
 	followeeCond := "m.author_id IN (SELECT f.followee_id FROM follows f WHERE f.follower_id = @viewer)"
+	clanPublicBranch := "(SELECT m.id, m.created_at FROM me m WHERE m.deleted_at IS NULL AND m.enabled = true" +
+		" AND m.clan_id IS NOT NULL AND m.visibility = 'public'" +
+		" AND EXISTS (SELECT 1 FROM clans c WHERE c.id = m.clan_id AND c.policy != 4 AND c.deleted_at IS NULL)" +
+		cursorFrag + " ORDER BY m.created_at DESC, m.id DESC LIMIT @lim)"
 	var query string
-	if filter == "following" {
+	if filter == "clan" {
+		query = "SELECT id, created_at FROM (" + clanPublicBranch +
+			") u ORDER BY created_at DESC, id DESC LIMIT @lim"
+	} else if filter == "following" {
 		query = "SELECT id, created_at FROM (" +
 			branch("m.author_id = @viewer") + " UNION " +
 			branch("m.visibility = 'public' AND "+followeeCond) + " UNION " +

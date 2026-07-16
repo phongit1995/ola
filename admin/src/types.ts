@@ -80,6 +80,7 @@ export interface AuditLogListParams {
   adminId?: string
   resource?: string
   method?: string
+  route?: string
   from?: string
   to?: string
   limit?: number
