@@ -5,6 +5,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useTranslation } from 'react-i18next';
 import { useAppNotificationStore } from '@ola/shared/stores/appNotificationStore';
 import { useAuthStore } from '@ola/shared/stores/authStore';
+import { totalUnreadOf } from '@ola/shared/stores/chat/chatHelpers';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import { useRoomChatStore } from '@ola/shared/stores/roomChatStore';
 import type {
@@ -96,9 +97,7 @@ function MainTabs() {
   const { t } = useTranslation();
   const [initialTab] = useState(readStoredTab);
   const [activeTab, setActiveTab] = useState<string>(initialTab);
-  const chatUnread = useChatStore((state) =>
-    state.conversations.reduce((sum, item) => sum + (item.unreadCount ?? 0), 0)
-  );
+  const chatUnread = useChatStore((state) => totalUnreadOf(state.conversations));
   const roomUnread = useRoomChatStore((state) => state.hasUnread);
   const notifUnread = useAppNotificationStore((state) => state.unreadCount);
   return (

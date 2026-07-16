@@ -13,6 +13,7 @@ import moreIcon from '@/assets/icons/chat/ic_more_white.png';
 import addFriendIcon from '@/assets/icons/chat/ic_add_friend.png';
 import { AuthService, RelationshipService, SocketService } from '@services';
 import { useAuthStore } from '@/store/authStore';
+import { totalUnreadOf } from '@ola/shared/stores/chat/chatHelpers';
 import { useChatStore } from '@/store/chat/chatStore';
 import { useFriendsStore } from '@/store/friendsStore';
 import { ConversationList } from './components/ConversationList';
@@ -160,7 +161,7 @@ export function ChatPanel() {
   ];
 
   const headerMenuOptions = sub === 'messages' ? messagesMenu : contactsMenu;
-  const totalUnread = conversations.reduce((sum, item) => sum + (item.unreadCount ?? 0), 0);
+  const totalUnread = totalUnreadOf(conversations);
 
   function renderTab(value: ChatSub, label: string, badge = 0) {
     const isActive = sub === value;

@@ -18,6 +18,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { formatClockHM } from '@ola/shared/lib';
 import { AuthService, SocketService } from '@ola/shared/services';
 import { useAuthStore } from '@ola/shared/stores/authStore';
+import { totalUnreadOf } from '@ola/shared/stores/chat/chatHelpers';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { Conversation } from '@ola/shared/types';
@@ -331,7 +332,7 @@ export function ChatListScreen() {
     },
   ];
 
-  const totalUnread = conversations.reduce((sum, item) => sum + (item.unreadCount ?? 0), 0);
+  const totalUnread = totalUnreadOf(conversations);
 
   return (
     <View className="flex-1 bg-white">

@@ -3,6 +3,7 @@ import { SocketService } from '@services';
 import { BottomTabBar, type TabKey } from '@components/BottomTabBar';
 import { KenBalanceBadge } from '@components';
 import { useAppNotificationStore } from '@ola/shared/stores/appNotificationStore';
+import { totalUnreadOf } from '@ola/shared/stores/chat/chatHelpers';
 import { useAuthStore } from '@/store/authStore';
 import { useRoomChatStore } from '@/store/roomChatStore';
 import { useChatStore } from '@/store/chat/chatStore';
@@ -24,9 +25,7 @@ function readStoredTab(): TabKey {
 export function HomePage() {
   const [tab, setTab] = useState<TabKey>(readStoredTab);
   const roomUnread = useRoomChatStore((state) => state.hasUnread);
-  const chatUnread = useChatStore((state) =>
-    state.conversations.reduce((sum, item) => sum + (item.unreadCount ?? 0), 0)
-  );
+  const chatUnread = useChatStore((state) => totalUnreadOf(state.conversations));
   const notifUnread = useAppNotificationStore((state) => state.unreadCount);
   const ActivePanel = PANELS[tab];
   const authReady = useAuthStore((state) => state.authReady);
