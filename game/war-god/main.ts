@@ -8,7 +8,7 @@ import {
   Texture,
   type Ticker,
 } from 'pixi.js';
-import { bridge } from '../src/sdk';
+import { bridge, joinGame, type GameSession, type UserInfoData } from '../src/sdk';
 import {
   CELLS,
   GRID,
@@ -26,14 +26,25 @@ import {
   ULT_DMG,
   applyTileEffects,
   botChooseMove,
+  botShouldUlt,
   castUltimate,
   createFighter,
+  type BotLevel,
   type Fighter,
 } from './battle';
 import { A, loadAssets, tex } from './assets';
 import { initKit, makeText, sleep, tween, addTick, removeTick } from './kit';
 import { buildHud, hud, showConfirm, showOverlay, updateFighter } from './hud';
 import { CHAT_W, buildChat, layoutChat, resetChat, setChatInputVisible } from './chat';
+import {
+  LEVEL_LABELS,
+  buildLobby,
+  layoutLobby,
+  lobbySetConnecting,
+  lobbySetError,
+  lobbySetReady,
+  lobbySetVisible,
+} from './lobby';
 
 const DESIGN_W = 520;
 const TURN_SECONDS = Number(new URLSearchParams(location.search).get('turnsec')) || 45;
@@ -75,6 +86,11 @@ let over = false;
 let turnNumber = 1;
 let selected: number | null = null;
 let turnDeadline = 0;
+let inGame = false;
+let botLevel: BotLevel = 'normal';
+let lobbyBox: Container;
+let session: GameSession | null = null;
+let userInfo: UserInfoData | null = null;
 
 function pos(i: number): { x: number; y: number } {
   return { x: (i % GRID) * tileSize, y: Math.floor(i / GRID) * tileSize };
@@ -249,6 +265,7 @@ function resetTurnClock(): void {
 }
 
 function renderTurnClock(): void {
+  if (!inGame) return;
   const left = Math.max(0, turnDeadline - performance.now());
   const total = Math.ceil(left / 1000);
   const mm = String(Math.floor(total / 60)).padStart(2, '0');
@@ -528,7 +545,7 @@ async function startBotTurn(): Promise<void> {
     await sleep(700);
     if (over) return;
 
-    if (foe.mp >= ULT_COST && (me.hp <= ULT_DMG + 10 || Math.random() < 0.5)) {
+    if (botShouldUlt(foe, me, botLevel)) {
       castUltimate(foe, me);
       setStatus(`Máy tung TUYỆT CHIÊU! -${ULT_DMG} HP`);
       updateHud();
@@ -537,7 +554,7 @@ async function startBotTurn(): Promise<void> {
       break;
     }
 
-    const move = botChooseMove(board, foe, me);
+    const move = botChooseMove(board, foe, me, botLevel);
     if (!move) {
       await ensurePlayable();
       continue;
@@ -560,7 +577,9 @@ async function startBotTurn(): Promise<void> {
   updateHud();
 }
 
-function startGame(): void {
+function startGame(level: BotLevel = botLevel): void {
+  botLevel = level;
+  inGame = true;
   me = createFighter();
   foe = createFighter();
   board = createBoard();
@@ -570,7 +589,10 @@ function startGame(): void {
   turnNumber = 1;
   setSelected(null);
   rebuildSprites();
+  lobbySetVisible(false);
   hud.overlay.visible = false;
+  if (userInfo) hud.me.name.text = `@${userInfo.username}`;
+  hud.foe.name.text = `@máy · ${LEVEL_LABELS[botLevel]}`;
   setChatInputVisible(true);
   resetChat('Chào! Chơi vui nhé 😄');
   setStatus('Chuẩn bị chiến đấu...');
@@ -581,6 +603,36 @@ function startGame(): void {
     setStatus('Lượt của bạn — ghép 3 ô để tấn công!');
     updateHud();
   });
+}
+
+function waitUserInfo(gameSession: GameSession, timeoutMs: number): Promise<UserInfoData> {
+  return new Promise((resolve, reject) => {
+    const cleanup = (): void => {
+      offInfo();
+      clearTimeout(timer);
+    };
+    const offInfo = gameSession.onUserInfo((data) => {
+      cleanup();
+      resolve(data);
+    });
+    const timer = setTimeout(() => {
+      cleanup();
+      reject(new Error('connect timeout'));
+    }, timeoutMs);
+  });
+}
+
+async function connectToServer(): Promise<void> {
+  lobbySetConnecting();
+  try {
+    session ??= await joinGame('war-god');
+    userInfo = await waitUserInfo(session, 8000);
+    lobbySetReady(userInfo);
+  } catch {
+    session?.disconnect();
+    session = null;
+    lobbySetError();
+  }
 }
 
 function layout(): void {
@@ -660,6 +712,8 @@ function layout(): void {
   const confirmCard = hud.confirm.getChildByLabel('confirm-card')!;
   confirmCard.x = (DESIGN_W - 300) / 2;
   confirmCard.y = designH / 2 - 75;
+
+  layoutLobby(designH);
 }
 
 async function main(): Promise<void> {
@@ -757,8 +811,13 @@ async function main(): Promise<void> {
       }
     },
   });
+  lobbyBox = buildLobby({
+    onPlay: (level) => startGame(level),
+    onRetry: () => void connectToServer(),
+  });
   root.addChild(chatBox);
-  root.addChild(hud.overlay, hud.confirm);
+  root.addChild(hud.overlay, hud.confirm, lobbyBox);
+  hud.overlay.visible = false;
 
   layout();
   window.addEventListener('resize', layout);
@@ -772,10 +831,24 @@ async function main(): Promise<void> {
   resetTurnClock();
   updateHud();
 
-  if (new URLSearchParams(location.search).has('autostart')) startGame();
+  if (new URLSearchParams(location.search).has('autostart')) {
+    startGame('normal');
+  } else {
+    void connectToServer();
+  }
 
   Object.defineProperty(window, '__wg', {
-    get: () => ({ myTurn, busy, over, turn: turnNumber, status: statusText.text, hint: hintPair }),
+    get: () => ({
+      myTurn,
+      busy,
+      over,
+      inGame,
+      botLevel,
+      userInfo,
+      turn: turnNumber,
+      status: statusText.text,
+      hint: hintPair,
+    }),
   });
 }
 

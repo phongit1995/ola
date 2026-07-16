@@ -8,8 +8,13 @@ import (
 )
 
 type GameConfigValidator struct {
-	JWTSecret string `validate:"required,min=32"`
-	GamePort  int    `validate:"required,min=1,max=65535"`
+	JWTSecret  string `validate:"required,min=32"`
+	GamePort   int    `validate:"required,min=1,max=65535"`
+	DBHost     string `validate:"required"`
+	DBName     string `validate:"required"`
+	DBUser     string `validate:"required"`
+	DBPassword string `validate:"required"`
+	RedisHost  string `validate:"required"`
 }
 
 func LoadGameConfig() (*config.Config, error) {
@@ -27,8 +32,13 @@ func LoadGameConfig() (*config.Config, error) {
 
 func validateGameConfig(cfg *config.Config) error {
 	v := &GameConfigValidator{
-		JWTSecret: cfg.JWTSecret,
-		GamePort:  cfg.GamePort,
+		JWTSecret:  cfg.JWTSecret,
+		GamePort:   cfg.GamePort,
+		DBHost:     cfg.DBHost,
+		DBName:     cfg.DBName,
+		DBUser:     cfg.DBUser,
+		DBPassword: cfg.DBPassword,
+		RedisHost:  cfg.RedisHost,
 	}
 
 	validate := validator.New()

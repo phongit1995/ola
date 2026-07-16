@@ -8,6 +8,7 @@ import {
   type MatchFoundData,
   type MatchOverData,
   type StateData,
+  type UserInfoData,
 } from './protocol';
 
 export type GameStatus = 'connecting' | 'idle' | 'queueing' | 'playing' | 'over';
@@ -18,6 +19,7 @@ export interface GameSession<TState = unknown, TMove = unknown> {
   leaveQueue(): void;
   sendMove(move: TMove): void;
   forfeit(): void;
+  onUserInfo(handler: (data: UserInfoData) => void): () => void;
   onQueueWaiting(handler: () => void): () => void;
   onMatchFound(handler: (data: MatchFoundData<TState>) => void): () => void;
   onState(handler: (data: StateData<TState, TMove>) => void): () => void;
@@ -62,6 +64,7 @@ export async function joinGame<TState = unknown, TMove = unknown>(
   });
   socket.on('connect', () => emitLocal('connection', true));
   socket.on('disconnect', () => emitLocal('connection', false));
+  socket.on('connect_error', () => emitLocal('connection', false));
 
   const send = (type: string, data?: unknown): void => {
     socket.emit('message', { type, data } satisfies Envelope);
@@ -73,6 +76,7 @@ export async function joinGame<TState = unknown, TMove = unknown>(
     leaveQueue: () => send(C2S.QueueLeave),
     sendMove: (move) => send(C2S.Move, move),
     forfeit: () => send(C2S.Forfeit),
+    onUserInfo: (handler) => on(S2C.UserInfo, handler as Handler),
     onQueueWaiting: (handler) => on(S2C.QueueWaiting, handler as Handler),
     onMatchFound: (handler) => on(S2C.MatchFound, handler as Handler),
     onState: (handler) => on(S2C.State, handler as Handler),

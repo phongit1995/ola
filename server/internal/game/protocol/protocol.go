@@ -8,6 +8,7 @@ const (
 	C2SMove       = "MOVE"
 	C2SForfeit    = "FORFEIT"
 
+	S2CUserInfo     = "USER_INFO"
 	S2CQueueWaiting = "QUEUE_WAITING"
 	S2CMatchFound   = "MATCH_FOUND"
 	S2CState        = "STATE"
@@ -28,6 +29,14 @@ type OutEnvelope struct {
 type PlayerInfo struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
+}
+
+type UserInfoData struct {
+	Username string  `json:"username"`
+	VipType  *string `json:"vipType,omitempty"`
+	VipDays  int     `json:"vipDays"`
+	Ken      int     `json:"ken"`
+	Guest    bool    `json:"guest,omitempty"`
 }
 
 type MatchFoundData struct {

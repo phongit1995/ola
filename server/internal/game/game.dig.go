@@ -17,5 +17,8 @@ func Provider(c *dig.Container) error {
 	}); err != nil {
 		return err
 	}
+	if err := c.Provide(NewRepository); err != nil {
+		return err
+	}
 	return c.Provide(NewServer)
 }

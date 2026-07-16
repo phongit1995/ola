@@ -14,6 +14,7 @@ export interface FighterUI {
   card: Container;
   border: Sprite;
   ring: Sprite;
+  name: Text;
   hp: BarUI;
   mp: BarUI;
   armor: Container;
@@ -200,6 +201,7 @@ function makeFighterCard(side: 'me' | 'foe', onUlt?: () => void): FighterUI {
     card,
     border,
     ring,
+    name,
     hp: hpRow.bar,
     mp: mpRow.bar,
     armor,

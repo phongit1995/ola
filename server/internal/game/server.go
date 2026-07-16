@@ -22,11 +22,13 @@ type SocketData struct {
 	UserID string
 	GameID string
 	Name   string
+	Guest  bool
 }
 
 type Server struct {
 	io     *socket.Server
 	engine *engine.Engine
+	repo   *Repository
 	logger *zap.SugaredLogger
 }
 
@@ -34,6 +36,7 @@ func NewServer(
 	cfg *config.Config,
 	jwtService *services.JWTService,
 	gameEngine *engine.Engine,
+	repo *Repository,
 	logger *zap.SugaredLogger,
 ) (*Server, error) {
 	opts := socket.DefaultServerOptions()
@@ -47,6 +50,7 @@ func NewServer(
 	server := &Server{
 		io:     io,
 		engine: gameEngine,
+		repo:   repo,
 		logger: logger.Named("[game-ws]"),
 	}
 	gameEngine.SetEmitter(server)
@@ -68,8 +72,10 @@ func NewServer(
 
 		var userID string
 		var name string
+		var guest bool
 
 		if cfg.GameAllowGuest && strings.HasPrefix(token, "guest:") {
+			guest = true
 			userID = strings.TrimPrefix(token, "guest:")
 			if userID == "" {
 				next(socket.NewExtendedError("invalid guest token", nil))
@@ -93,7 +99,7 @@ func NewServer(
 			}
 		}
 
-		s.SetData(&SocketData{UserID: userID, GameID: gameID, Name: name})
+		s.SetData(&SocketData{UserID: userID, GameID: gameID, Name: name, Guest: guest})
 		next(nil)
 	})
 
@@ -115,6 +121,7 @@ func (s *Server) handleConnection(client *socket.Socket) {
 		"game_id", data.GameID,
 		"socket_id", client.Id())
 
+	s.sendUserInfo(client, data)
 	s.engine.OnConnect(data.UserID)
 
 	client.On(messageEvent, func(args ...any) {
@@ -128,6 +135,28 @@ func (s *Server) handleConnection(client *socket.Socket) {
 		s.engine.LeaveQueue(data.GameID, data.UserID)
 		s.logger.Infow("Game socket disconnected", "user_id", data.UserID)
 	})
+}
+
+func (s *Server) sendUserInfo(client *socket.Socket, data *SocketData) {
+	if data.Guest {
+		client.Emit(messageEvent, protocol.OutEnvelope{
+			Type: protocol.S2CUserInfo,
+			Data: protocol.UserInfoData{Username: data.Name, Guest: true},
+		})
+		return
+	}
+
+	info, err := s.repo.GetUserInfo(data.UserID)
+	if err != nil {
+		s.logger.Warnw("Failed to load user info", "user_id", data.UserID, "error", err)
+		client.Emit(messageEvent, protocol.OutEnvelope{
+			Type: protocol.S2CError,
+			Data: protocol.ErrorData{Code: "USER_INFO_FAILED", Message: "failed to load user info"},
+		})
+		return
+	}
+
+	client.Emit(messageEvent, protocol.OutEnvelope{Type: protocol.S2CUserInfo, Data: *info})
 }
 
 func (s *Server) handleMessage(data *SocketData, raw any) {

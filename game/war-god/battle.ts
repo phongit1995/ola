@@ -85,16 +85,25 @@ export function castUltimate(attacker: Fighter, defender: Fighter): number {
   return ULT_DMG;
 }
 
+export type BotLevel = 'easy' | 'normal' | 'hard';
+
 export function botChooseMove(
   board: Board,
   bot: Fighter,
   player: Fighter,
+  level: BotLevel = 'normal',
 ): [number, number] | null {
   const moves = findValidMoves(board);
   if (moves.length === 0) return null;
 
+  if (level === 'easy') {
+    return moves[Math.floor(Math.random() * moves.length)];
+  }
+
   const heartWeight = bot.hp <= 50 ? 6.5 : 1.5;
   const waterWeight = bot.mp >= ULT_COST ? 1 : 5;
+  const comboBonus = level === 'hard' ? 14 : 8;
+  const jitter = level === 'hard' ? 0 : 2;
 
   let best: [number, number] = moves[0];
   let bestScore = -1;
@@ -113,8 +122,8 @@ export function botChooseMove(
       c.heart * heartWeight +
       c.water * waterWeight +
       c.shield * (player.hp > 60 ? 3.5 : 2);
-    if (match.maxRun >= 4) score += 8;
-    score += Math.random() * 2;
+    if (match.maxRun >= 4) score += comboBonus;
+    score += Math.random() * jitter;
 
     if (score > bestScore) {
       bestScore = score;
@@ -123,4 +132,11 @@ export function botChooseMove(
   }
 
   return best;
+}
+
+export function botShouldUlt(bot: Fighter, player: Fighter, level: BotLevel): boolean {
+  if (bot.mp < ULT_COST) return false;
+  if (level === 'easy') return player.hp <= ULT_DMG + 5 || Math.random() < 0.2;
+  if (level === 'hard') return true;
+  return player.hp <= ULT_DMG + 10 || Math.random() < 0.5;
 }

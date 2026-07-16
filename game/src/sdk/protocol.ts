@@ -6,6 +6,7 @@ export const C2S = {
 } as const;
 
 export const S2C = {
+  UserInfo: 'USER_INFO',
   QueueWaiting: 'QUEUE_WAITING',
   MatchFound: 'MATCH_FOUND',
   State: 'STATE',
@@ -21,6 +22,14 @@ export interface Envelope {
 export interface PlayerInfo {
   id: string;
   name: string;
+}
+
+export interface UserInfoData {
+  username: string;
+  vipType?: string | null;
+  vipDays: number;
+  ken: number;
+  guest?: boolean;
 }
 
 export interface MatchFoundData<TState = unknown> {

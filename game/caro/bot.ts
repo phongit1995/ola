@@ -164,6 +164,7 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
       if (playing) finish('bot', 'forfeit');
     },
 
+    onUserInfo: () => () => {},
     onQueueWaiting: (handler) => on('QUEUE_WAITING', handler as Handler),
     onMatchFound: (handler) => on('MATCH_FOUND', handler as Handler),
     onState: (handler) => on('STATE', handler as Handler),
