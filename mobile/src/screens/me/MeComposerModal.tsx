@@ -21,6 +21,7 @@ import { EDIT_WINDOW_MS } from '@ola/shared/constants';
 import { KUL_IMAGES, stickerImageForCode } from '../../lib/kul';
 import { imageSizeForHeight } from '../../lib/chatSmiley';
 import { ChatComposer, type ChatComposerHandle } from '../../components/ChatComposer';
+import { CloseIcon } from '../../components/CloseIcon';
 import { useBottomBarInset } from '../../hooks/useBottomBarInset';
 import { useLastKeyboardHeight } from '../../hooks/useKeyboardHeight';
 import { SmileyKulPanel, SMILEY_PANEL_MIN_CONTENT_HEIGHT } from '../room/SmileyKulPanel';
@@ -206,7 +207,7 @@ export function MeComposerModal({ visible, onClose, onSaved, editPost }: MeCompo
           style={{ paddingTop: insets.top + 8 }}
         >
           <Pressable onPress={close} className="h-9 w-9 items-center justify-center rounded-full active:bg-white/15">
-            <Text className="text-2xl leading-none text-white">×</Text>
+            <CloseIcon />
           </Pressable>
           <Text className="text-lg font-medium text-white">
             {isEdit ? t('me.editTitle') : t('me.composerTitle')}

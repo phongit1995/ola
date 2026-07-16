@@ -1,7 +1,7 @@
 import { Image, Modal, Pressable, ScrollView, useWindowDimensions, View } from 'react-native';
 import { useSafeInsets } from '../hooks/useSafeInsets';
-import { Text } from 'react-native';
 import { useMediaViewerStore } from '../store/mediaViewerStore';
+import { CloseIcon } from './CloseIcon';
 
 export function MediaViewerModal({
   images,
@@ -36,7 +36,7 @@ export function MediaViewerModal({
           className="absolute right-3 h-10 w-10 items-center justify-center rounded-full bg-white/15"
           style={{ top: insets.top + 8 }}
         >
-          <Text className="text-2xl leading-none text-white">×</Text>
+          <CloseIcon />
         </Pressable>
       </View>
     </Modal>
