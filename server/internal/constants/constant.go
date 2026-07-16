@@ -198,6 +198,8 @@ const (
 const (
 	MaxFriendsPerUser      = 100
 	MaxPendingSentRequests = 200
+
+	MaxConversationListLimit = 200
 )
 
 const (

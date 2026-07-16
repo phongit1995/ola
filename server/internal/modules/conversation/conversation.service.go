@@ -583,7 +583,7 @@ func (s *Service) publishGroupConversationCreated(convID uuid.UUID, name string,
 }
 
 func (s *Service) GetUserConversations(userID uuid.UUID, limit int) (*ConversationsListResponse, error) {
-	conversations, err := s.repo.GetUserConversations(userID, limit)
+	conversations, err := s.cache.GetUserConversationsCached(userID, limit)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user conversations: %w", err)
 	}

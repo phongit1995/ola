@@ -280,13 +280,10 @@ func (c *CacheService) GetConversationByIDCached(conversationID uuid.UUID) (*Con
 
 func (c *CacheService) GetUserConversationsCached(userID uuid.UUID, limit int) ([]ConversationByUser, error) {
 	if cached, err := c.GetUserConversations(userID); err == nil && len(cached) > 0 {
-		if len(cached) > limit {
-			return cached[:limit], nil
-		}
-		return cached, nil
+		return truncateConversations(cached, limit), nil
 	}
 
-	conversations, err := c.repo.GetUserConversations(userID, limit)
+	conversations, err := c.repo.GetUserConversations(userID, constants.MaxConversationListLimit)
 	if err != nil {
 		return nil, err
 	}
@@ -297,7 +294,14 @@ func (c *CacheService) GetUserConversationsCached(userID uuid.UUID, limit int) (
 		}
 	})
 
-	return conversations, nil
+	return truncateConversations(conversations, limit), nil
+}
+
+func truncateConversations(conversations []ConversationByUser, limit int) []ConversationByUser {
+	if limit > 0 && len(conversations) > limit {
+		return conversations[:limit]
+	}
+	return conversations
 }
 
 func (c *CacheService) CheckIfHiddenCached(userID, conversationID uuid.UUID) (bool, error) {
