@@ -159,6 +159,11 @@ func (s *Service) ListMembers(ctx context.Context, roomID uuid.UUID) (*RoomMembe
 	}
 
 	usersMap := s.userCache.GetUsersBatch(uuids, true)
+	memberIDs := make([]string, 0, len(uuids))
+	for _, uid := range uuids {
+		memberIDs = append(memberIDs, uid.String())
+	}
+	presenceMap := s.wsServer.GetPresenceService().GetPresenceBatch(memberIDs)
 	items := make([]RoomMemberResponse, 0, len(uuids))
 	for _, uid := range uuids {
 		u, ok := usersMap[uid]
@@ -166,14 +171,15 @@ func (s *Service) ListMembers(ctx context.Context, roomID uuid.UUID) (*RoomMembe
 			continue
 		}
 		member := RoomMemberResponse{
-			UserID:   uid.String(),
-			Username: u.Username,
-			FullName: u.FullName,
-			Avatar:   u.Avatar,
-			Gender:   u.Gender,
-			Bio:      u.Bio,
-			BioImage: u.BioImage,
-			VipUsed:  u.VipUsed,
+			UserID:     uid.String(),
+			Username:   u.Username,
+			FullName:   u.FullName,
+			Avatar:     u.Avatar,
+			Gender:     u.Gender,
+			Bio:        u.Bio,
+			BioImage:   u.BioImage,
+			VipUsed:    u.VipUsed,
+			DeviceType: presenceMap[uid.String()].DeviceType,
 		}
 		if u.VipEndTime != nil {
 			vipEnd := u.VipEndTime.Format(time.RFC3339)
