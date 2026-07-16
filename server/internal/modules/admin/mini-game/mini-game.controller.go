@@ -39,7 +39,7 @@ func (ctrl *Controller) List(c *gin.Context) (interface{}, error) {
 // @Produce      json
 // @Security     BearerAuth
 // @Param        request body minigame.CreateMiniGameRequest true "Mini game"
-// @Success      200  {object}  models.MiniGame
+// @Success      200  {object}  minigame.MiniGameResponse
 // @Router       /admin/mini-games [post]
 func (ctrl *Controller) Create(c *gin.Context) (interface{}, error) {
 	req, err := utils.BindJSON[minigame.CreateMiniGameRequest](c)
@@ -61,7 +61,7 @@ func (ctrl *Controller) Create(c *gin.Context) (interface{}, error) {
 // @Security     BearerAuth
 // @Param        id path string true "Mini game ID"
 // @Param        request body minigame.UpdateMiniGameRequest true "Mini game"
-// @Success      200  {object}  models.MiniGame
+// @Success      200  {object}  minigame.MiniGameResponse
 // @Failure      404  {object}  utils.APIError
 // @Router       /admin/mini-games/{id} [patch]
 func (ctrl *Controller) Update(c *gin.Context) (interface{}, error) {

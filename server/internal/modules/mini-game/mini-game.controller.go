@@ -21,7 +21,7 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 // @Tags         mini-game
 // @Produce      json
 // @Security     BearerAuth
-// @Success      200  {array}  models.MiniGame
+// @Success      200  {array}  MiniGameResponse
 // @Router       /mini-games [get]
 func (ctrl *Controller) List(c *gin.Context) (interface{}, error) {
 	games, err := ctrl.service.ListEnabled()

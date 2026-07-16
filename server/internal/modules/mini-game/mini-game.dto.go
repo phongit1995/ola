@@ -21,6 +21,8 @@ type UpdateMiniGameRequest struct {
 	SortOrder   *int    `json:"sortOrder"`
 }
 
+type MiniGameResponse = models.MiniGame
+
 type MiniGameListResponse struct {
 	Total int64             `json:"total"`
 	Items []models.MiniGame `json:"items"`
