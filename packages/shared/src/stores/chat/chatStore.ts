@@ -18,7 +18,7 @@ import {
 import type { Conversation, Message, PublicProfile, ReactionType, RelationshipInfo } from '../../types';
 import { registerOnLogout } from '../authStore';
 import { upsertConversation } from './chatHelpers';
-import { clearTypingTimers, registerChatRealtime } from './chatRealtime';
+import { clearMarkReadTimers, clearTypingTimers, registerChatRealtime } from './chatRealtime';
 
 const MESSAGE_PAGE_SIZE = 50;
 const TYPING_THROTTLE = 2000;
@@ -585,6 +585,7 @@ export const useChatStore = create<ChatState>((set, get) => {
 
     reset: () => {
       clearTypingTimers();
+      clearMarkReadTimers();
       lastTypingSentAt = 0;
       set({ ...initialState });
     },

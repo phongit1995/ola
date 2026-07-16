@@ -977,7 +977,7 @@ func (s *Service) GetMessages(userID, conversationID uuid.UUID, limit int, befor
 	if !fromCache && beforeTimeuuid == nil && len(raws) > 0 {
 		cacheRaws := raws
 		utils.SafeGo(s.logger, func() {
-			if err := s.cache.SetConversationMessages(conversationID, limit, cacheRaws, exhausted); err != nil {
+			if err := s.cache.SetConversationMessages(conversationID, cacheRaws, exhausted); err != nil {
 				s.logger.Warnw("Failed to cache messages", "conversation_id", conversationID, "error", err)
 			}
 		})
@@ -1061,7 +1061,7 @@ const messageFetchMaxRounds = 3
 
 func (s *Service) fetchRawMessages(conversationID uuid.UUID, limit int, before *gocql.UUID) ([]Message, bool, bool, error) {
 	if before == nil {
-		cached, exhausted, err := s.cache.GetConversationMessages(conversationID, limit)
+		cached, exhausted, err := s.cache.GetConversationMessages(conversationID)
 		if err == nil && (exhausted || countVisibleMessages(cached) >= limit) {
 			s.logger.Debugw("Cache HIT for messages", "conversation_id", conversationID)
 			return cached, exhausted, true, nil

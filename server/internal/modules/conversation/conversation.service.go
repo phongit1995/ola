@@ -106,7 +106,7 @@ func requireActiveMember(members []ConversationMember, userID uuid.UUID) bool {
 	return IsActiveMember(members, userID)
 }
 
-func (s *Service) buildConversationResponse(conv ConversationByUser, viewerID uuid.UUID, otherLastRead *gocql.UUID) ConversationResponse {
+func (s *Service) buildConversationResponse(conv ConversationByUser, viewerID uuid.UUID, otherLastRead *gocql.UUID, users map[uuid.UUID]*models.User) ConversationResponse {
 	resp := ConversationResponse{
 		ID:              conv.ConversationID.String(),
 		Type:            conv.ConversationType,
@@ -120,10 +120,13 @@ func (s *Service) buildConversationResponse(conv ConversationByUser, viewerID uu
 
 	if conv.ConversationType == constants.ConversationTypeDirect && conv.OtherUserID != nil {
 		if otherUserID, err := uuid.Parse(conv.OtherUserID.String()); err == nil {
-			u, err := s.userCache.GetUserCache(otherUserID, true)
-			if err != nil || u == nil {
+			u := users[otherUserID]
+			if u == nil {
+				u, _ = s.userCache.GetUserCache(otherUserID, true)
+			}
+			if u == nil {
 				s.logger.Warnw("buildConversationResponse: failed to fetch other user",
-					"conversation_id", conv.ConversationID, "other_user_id", otherUserID, "error", err)
+					"conversation_id", conv.ConversationID, "other_user_id", otherUserID)
 			} else {
 				resp.Name = userDisplayName(u)
 				resp.Avatar = u.Avatar
@@ -146,7 +149,11 @@ func (s *Service) buildConversationResponse(conv ConversationByUser, viewerID uu
 		resp.LastMessageSenderID = senderIDStr
 		resp.IsLastMessageFromMe = senderIDStr == viewerID.String()
 		if senderUUID, err := uuid.Parse(senderIDStr); err == nil {
-			if u, err := s.userCache.GetUserCache(senderUUID, false); err == nil && u != nil {
+			u := users[senderUUID]
+			if u == nil && users == nil {
+				u, _ = s.userCache.GetUserCache(senderUUID, false)
+			}
+			if u != nil {
 				resp.LastMessageSenderName = userDisplayName(u)
 			}
 		}
@@ -589,6 +596,7 @@ func (s *Service) GetUserConversations(userID uuid.UUID, limit int) (*Conversati
 	}
 
 	otherReads := s.resolveOtherReadStates(conversations, userID)
+	users := s.batchConversationUsers(conversations)
 
 	responses := make([]ConversationResponse, 0, len(conversations))
 	for _, conv := range conversations {
@@ -600,7 +608,7 @@ func (s *Service) GetUserConversations(userID uuid.UUID, limit int) (*Conversati
 				}
 			}
 		}
-		responses = append(responses, s.buildConversationResponse(conv, userID, otherLastRead))
+		responses = append(responses, s.buildConversationResponse(conv, userID, otherLastRead, users))
 	}
 
 	s.enrichPresence(responses)
@@ -609,6 +617,27 @@ func (s *Service) GetUserConversations(userID uuid.UUID, limit int) (*Conversati
 		Conversations: responses,
 		Total:         len(responses),
 	}, nil
+}
+
+func (s *Service) batchConversationUsers(conversations []ConversationByUser) map[uuid.UUID]*models.User {
+	idSet := make(map[uuid.UUID]struct{}, len(conversations)*2)
+	for _, conv := range conversations {
+		if conv.ConversationType == constants.ConversationTypeDirect && conv.OtherUserID != nil {
+			if id, err := uuid.Parse(conv.OtherUserID.String()); err == nil {
+				idSet[id] = struct{}{}
+			}
+		}
+		if conv.LastMessageSender != nil {
+			if id, err := uuid.Parse(conv.LastMessageSender.String()); err == nil {
+				idSet[id] = struct{}{}
+			}
+		}
+	}
+	ids := make([]uuid.UUID, 0, len(idSet))
+	for id := range idSet {
+		ids = append(ids, id)
+	}
+	return s.userCache.GetUsersBatch(ids, true)
 }
 
 func (s *Service) resolveOtherReadStates(conversations []ConversationByUser, userID uuid.UUID) map[string]*gocql.UUID {
@@ -708,9 +737,15 @@ func (s *Service) MarkConversationAsRead(userID, conversationID uuid.UUID) error
 		return fmt.Errorf("conversation not found in user inbox")
 	}
 
-	now := time.Now()
-
 	lastReadMessageID := userConv.LastMessageID
+
+	upToDate := lastReadMessageID == nil ||
+		(userConv.LastReadMessageID != nil && *userConv.LastReadMessageID == *lastReadMessageID)
+	if userConv.UnreadCount == 0 && upToDate {
+		return nil
+	}
+
+	now := time.Now()
 
 	applied, err := s.repo.MarkAsRead(conversationID, userID, lastReadMessageID, now)
 	if err != nil {
@@ -741,7 +776,7 @@ func (s *Service) MarkConversationAsRead(userID, conversationID uuid.UUID) error
 					"seen": true,
 				},
 			}
-			utils.PublishWithTimeout(s.logger, "conversation updated event for seen", func(ctx context.Context) error {
+			utils.PublishAsync(s.logger, "conversation updated event for seen", func(ctx context.Context) error {
 				return s.kafkaProducer.PublishConversationUpdated(ctx, event)
 			})
 		}
@@ -972,7 +1007,7 @@ func (s *Service) GetConversationDetail(userID, conversationID uuid.UUID) (*Conv
 		}
 	}
 
-	resp := s.buildConversationResponse(*conv, userID, otherLastRead)
+	resp := s.buildConversationResponse(*conv, userID, otherLastRead, nil)
 	resp.ParticipantCount = 0
 
 	if conv.ConversationType == constants.ConversationTypeDirect && conv.OtherUserID != nil && resp.OtherUser != nil {

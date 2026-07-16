@@ -1,6 +1,7 @@
 package user
 
 import (
+	"encoding/json"
 	"fmt"
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
@@ -142,12 +143,35 @@ func (c *CacheService) GetUsersBatch(userIDs []uuid.UUID, fallbackToDB bool) map
 		return result
 	}
 
+	keys := make([]string, len(userIDs))
+	for i, id := range userIDs {
+		keys[i] = fmt.Sprintf(constants.CacheKeyUserProfile, id.String())
+	}
+
 	var missing []uuid.UUID
-	for _, id := range userIDs {
-		if u, err := c.GetUser(id); err == nil && u != nil {
+	values, err := c.cache.GetMany(keys)
+	if err != nil || len(values) != len(userIDs) {
+		if err != nil {
+			c.logger.Warnw("Batch user fetch from cache failed", "error", err, "count", len(userIDs))
+		}
+		missing = userIDs
+	} else {
+		for i, id := range userIDs {
+			raw, ok := values[i].(string)
+			if !ok {
+				missing = append(missing, id)
+				continue
+			}
+			var cu cachedUser
+			if err := json.Unmarshal([]byte(raw), &cu); err != nil {
+				missing = append(missing, id)
+				continue
+			}
+			u := cu.toModel()
+			u.ID = id
+			u.CreatedAt = cu.CreatedAt
+			u.UpdatedAt = cu.UpdatedAt
 			result[id] = u
-		} else {
-			missing = append(missing, id)
 		}
 	}
 
@@ -162,14 +186,15 @@ func (c *CacheService) GetUsersBatch(userIDs []uuid.UUID, fallbackToDB bool) map
 	}
 
 	for i := range users {
-		u := &users[i]
-		result[u.ID] = u
-		utils.SafeGo(c.logger, func() {
-			if err := c.SetUser(u.ID, u); err != nil {
-				c.logger.Warnw("Failed to cache user after batch fetch", "user_id", u.ID, "error", err)
-			}
-		})
+		result[users[i].ID] = &users[i]
 	}
+	utils.SafeGo(c.logger, func() {
+		for i := range users {
+			if err := c.SetUser(users[i].ID, &users[i]); err != nil {
+				c.logger.Warnw("Failed to cache user after batch fetch", "user_id", users[i].ID, "error", err)
+			}
+		}
+	})
 
 	return result
 }
