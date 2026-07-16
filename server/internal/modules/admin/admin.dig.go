@@ -3,6 +3,7 @@ package admin
 import (
 	adminaudit "ola-chat-server/internal/modules/admin/audit"
 	adminauth "ola-chat-server/internal/modules/admin/auth"
+	adminclan "ola-chat-server/internal/modules/admin/clan"
 	admindashboard "ola-chat-server/internal/modules/admin/dashboard"
 	adminegg "ola-chat-server/internal/modules/admin/egg"
 	adminken "ola-chat-server/internal/modules/admin/ken"
@@ -28,6 +29,7 @@ func Provider(c *dig.Container) error {
 		adminuser.Provider,
 		adminme.Provider,
 		adminroom.Provider,
+		adminclan.Provider,
 		adminupload.Provider,
 		adminvip.Provider,
 		adminegg.Provider,
