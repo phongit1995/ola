@@ -99,4 +99,5 @@ export interface ConfirmVerifyEmailRequest {
 
 export interface ConfirmVerifyEmailResult {
   emailVerified: boolean;
+  vipRewardDays?: number;
 }

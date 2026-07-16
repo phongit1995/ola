@@ -509,6 +509,15 @@ func (s *Service) ListActivePackages() ([]PackageItem, error) {
 	return items, nil
 }
 
+func (s *Service) GrantDays(userID uuid.UUID, days int, source, name string) (*models.VipPurchase, error) {
+	purchase, err := s.repo.GrantDays(userID, days, source, name)
+	if err != nil {
+		return nil, err
+	}
+	s.invalidate(userID)
+	return purchase, nil
+}
+
 func (s *Service) BuyPackage(userID, packageID uuid.UUID) (*BuyPackageResponse, error) {
 	pkg, err := s.repo.FindActivePackage(packageID)
 	if err != nil {

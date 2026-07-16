@@ -748,6 +748,7 @@
     "resend": "Resend code",
     "resendIn": "Resend in {{seconds}}s",
     "success": "Email verified successfully",
+    "rewardToast": "Email verified! You received {{days}} days of VIP 🎉",
     "errEmailRequired": "Please enter an email.",
     "errEmailInvalid": "Invalid email address.",
     "errCodeRequired": "Please enter all 6 digits.",

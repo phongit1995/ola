@@ -748,6 +748,7 @@
     "resend": "Gửi lại mã",
     "resendIn": "Gửi lại sau {{seconds}}s",
     "success": "Xác thực email thành công",
+    "rewardToast": "Xác thực email thành công! Bạn được tặng {{days}} ngày VIP 🎉",
     "errEmailRequired": "Vui lòng nhập email.",
     "errEmailInvalid": "Email không hợp lệ.",
     "errCodeRequired": "Vui lòng nhập đủ 6 số.",

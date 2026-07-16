@@ -85,6 +85,7 @@ type ConfirmEmailVerifyRequest struct {
 
 type ConfirmEmailVerifyResponse struct {
 	EmailVerified bool `json:"emailVerified" example:"true"`
+	VipRewardDays int  `json:"vipRewardDays" example:"30"`
 }
 
 type SendEmailVerifySuccessResponse = utils.BaseResponse[SendEmailVerifyResponse]

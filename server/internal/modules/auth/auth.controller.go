@@ -151,11 +151,12 @@ func (ctrl *Controller) ConfirmEmailVerify(c *gin.Context) (interface{}, error) 
 		return nil, err
 	}
 
-	if err := ctrl.service.ConfirmEmailVerification(userID, req.VerifyID, req.Code); err != nil {
+	rewardDays, err := ctrl.service.ConfirmEmailVerification(userID, req.VerifyID, req.Code)
+	if err != nil {
 		return nil, utils.ServiceError(err)
 	}
 
-	return &ConfirmEmailVerifyResponse{EmailVerified: true}, nil
+	return &ConfirmEmailVerifyResponse{EmailVerified: true, VipRewardDays: rewardDays}, nil
 }
 
 // Login godoc

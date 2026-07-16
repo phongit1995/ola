@@ -70,6 +70,8 @@ type Config struct {
 	ResendAPIKey string `env:"RESEND_API_KEY" envDefault:"re_Qrsr5SLt_HR2pmoKUyENNmsMWjjMzyE6o"`
 	MailFrom     string `env:"MAIL_FROM" envDefault:"Ola Chat <noreply@olachat.net>"`
 
+	EmailVerifyVipRewardDays int `env:"EMAIL_VERIFY_VIP_REWARD_DAYS" envDefault:"30" validate:"min=0"`
+
 	LiveKitURL             string `env:"LIVEKIT_URL" envDefault:""`
 	LiveKitAPIKey          string `env:"LIVEKIT_API_KEY" envDefault:""`
 	LiveKitAPISecret       string `env:"LIVEKIT_API_SECRET" envDefault:""`
