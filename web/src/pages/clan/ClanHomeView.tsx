@@ -57,6 +57,7 @@ export function ClanHomeView({ onClose, onOpenClan }: ClanHomeViewProps) {
   const [name, setName] = useState('');
   const [checking, setChecking] = useState(false);
   const [result, setResult] = useState<ClanCheckNameResult | null>(null);
+  const [freshCheck, setFreshCheck] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [creating, setCreating] = useState(false);
   const [profileTarget, setProfileTarget] = useState<string | null>(null);
@@ -67,9 +68,7 @@ export function ClanHomeView({ onClose, onOpenClan }: ClanHomeViewProps) {
 
   function handleNameChange(value: string) {
     setName(value);
-    if (result != null && normalizeClanHandle(value) !== result.name) {
-      setResult(null);
-    }
+    setFreshCheck(false);
   }
 
   async function check() {
@@ -83,6 +82,7 @@ export function ClanHomeView({ onClose, onOpenClan }: ClanHomeViewProps) {
     try {
       const checked = await ClanService.checkName(handle);
       setResult(checked);
+      setFreshCheck(true);
     } catch (error) {
       toast.error(clanErrorText(error));
     } finally {
@@ -108,7 +108,10 @@ export function ClanHomeView({ onClose, onOpenClan }: ClanHomeViewProps) {
     }
   }
 
-  const preview = result?.clan;
+  const takenVisible =
+    result != null && !result.available && normalizeClanHandle(name) === result.name;
+  const availableVisible = result != null && result.available && freshCheck;
+  const preview = takenVisible ? result.clan : undefined;
 
   return (
     <FullScreenOverlay>
@@ -137,12 +140,12 @@ export function ClanHomeView({ onClose, onOpenClan }: ClanHomeViewProps) {
           <p className="mt-2 text-xs text-black/45">{t('clan.nameHint')}</p>
         </div>
 
-        {result != null && !result.available && (
+        {takenVisible && (
           <p className="mt-2 px-1 text-xs font-bold text-ola-error italic">
             {t('clan.nameTaken', { name: result.name })}
           </p>
         )}
-        {result != null && result.available && (
+        {availableVisible && result != null && (
           <>
             <p className="mt-2 px-1 text-xs font-bold text-blue-700 italic">
               {t('clan.nameAvailable')}
