@@ -4436,6 +4436,174 @@
                 }
             }
         },
+        "/clans/{id}/me": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clan"
+                ],
+                "summary": "Clan feed (pinned Me Top separate, keyset cursor)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Clan ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Opaque keyset cursor",
+                        "name": "cursor",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_ClanPostsResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clan"
+                ],
+                "summary": "Create a Me post inside the clan",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Clan ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Post content",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_me.CreateMeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_me_MeResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/clans/{id}/me/by-user/{userId}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clan"
+                ],
+                "summary": "Moderation: disable all posts by a user in this clan (owner/deputy only)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Clan ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Author user ID",
+                        "name": "userId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_MessageResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/clans/{id}/me/{postId}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clan"
+                ],
+                "summary": "Moderation: disable a clan post (owner/deputy only)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Clan ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Post ID",
+                        "name": "postId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_MessageResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/clans/{id}/members": {
             "get": {
                 "security": [
@@ -4549,174 +4717,6 @@
                         "type": "string",
                         "description": "Clan ID",
                         "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_MessageResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/clans/{id}/posts": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "clan"
-                ],
-                "summary": "Clan feed (pinned Me Top separate, keyset cursor)",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Clan ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Page size",
-                        "name": "limit",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Opaque keyset cursor",
-                        "name": "cursor",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_ClanPostsResponse"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "clan"
-                ],
-                "summary": "Create a Me post inside the clan",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Clan ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Post content",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/ola-chat-server_internal_modules_me.CreateMeRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_me_MeResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/clans/{id}/posts/by-user/{userId}": {
-            "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "clan"
-                ],
-                "summary": "Moderation: disable all posts by a user in this clan (owner/deputy only)",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Clan ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Author user ID",
-                        "name": "userId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_MessageResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/clans/{id}/posts/{postId}": {
-            "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "clan"
-                ],
-                "summary": "Moderation: disable a clan post (owner/deputy only)",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Clan ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Post ID",
-                        "name": "postId",
                         "in": "path",
                         "required": true
                     }

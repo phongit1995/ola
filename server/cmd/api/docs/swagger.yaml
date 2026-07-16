@@ -9802,6 +9802,112 @@ paths:
       summary: Join (follow) a clan
       tags:
       - clan
+  /clans/{id}/me:
+    get:
+      parameters:
+      - description: Clan ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Opaque keyset cursor
+        in: query
+        name: cursor
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_ClanPostsResponse'
+      security:
+      - BearerAuth: []
+      summary: Clan feed (pinned Me Top separate, keyset cursor)
+      tags:
+      - clan
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Clan ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Post content
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ola-chat-server_internal_modules_me.CreateMeRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_me_MeResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a Me post inside the clan
+      tags:
+      - clan
+  /clans/{id}/me/{postId}:
+    delete:
+      parameters:
+      - description: Clan ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Post ID
+        in: path
+        name: postId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_MessageResponse'
+      security:
+      - BearerAuth: []
+      summary: 'Moderation: disable a clan post (owner/deputy only)'
+      tags:
+      - clan
+  /clans/{id}/me/by-user/{userId}:
+    delete:
+      parameters:
+      - description: Clan ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Author user ID
+        in: path
+        name: userId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_MessageResponse'
+      security:
+      - BearerAuth: []
+      summary: 'Moderation: disable all posts by a user in this clan (owner/deputy
+        only)'
+      tags:
+      - clan
   /clans/{id}/members:
     get:
       parameters:
@@ -9879,112 +9985,6 @@ paths:
       security:
       - BearerAuth: []
       summary: Set a clan post as Me Top (owner/deputy only)
-      tags:
-      - clan
-  /clans/{id}/posts:
-    get:
-      parameters:
-      - description: Clan ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Page size
-        in: query
-        name: limit
-        type: integer
-      - description: Opaque keyset cursor
-        in: query
-        name: cursor
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_ClanPostsResponse'
-      security:
-      - BearerAuth: []
-      summary: Clan feed (pinned Me Top separate, keyset cursor)
-      tags:
-      - clan
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Clan ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Post content
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/ola-chat-server_internal_modules_me.CreateMeRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_me_MeResponse'
-      security:
-      - BearerAuth: []
-      summary: Create a Me post inside the clan
-      tags:
-      - clan
-  /clans/{id}/posts/{postId}:
-    delete:
-      parameters:
-      - description: Clan ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Post ID
-        in: path
-        name: postId
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_MessageResponse'
-      security:
-      - BearerAuth: []
-      summary: 'Moderation: disable a clan post (owner/deputy only)'
-      tags:
-      - clan
-  /clans/{id}/posts/by-user/{userId}:
-    delete:
-      parameters:
-      - description: Clan ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Author user ID
-        in: path
-        name: userId
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_MessageResponse'
-      security:
-      - BearerAuth: []
-      summary: 'Moderation: disable all posts by a user in this clan (owner/deputy
-        only)'
       tags:
       - clan
   /clans/{id}/roles:

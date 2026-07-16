@@ -90,10 +90,10 @@ export const API_PATH = {
     verify: (id: string) => `/clans/${id}/verify`,
     bans: (id: string) => `/clans/${id}/bans`,
     ban: (id: string, userId: string) => `/clans/${id}/bans/${userId}`,
-    posts: (id: string) => `/clans/${id}/posts`,
+    posts: (id: string) => `/clans/${id}/me`,
     pin: (id: string) => `/clans/${id}/pin`,
-    post: (id: string, postId: string) => `/clans/${id}/posts/${postId}`,
-    postsByUser: (id: string, userId: string) => `/clans/${id}/posts/by-user/${userId}`,
+    post: (id: string, postId: string) => `/clans/${id}/me/${postId}`,
+    postsByUser: (id: string, userId: string) => `/clans/${id}/me/by-user/${userId}`,
   },
   conversations: {
     base: '/conversations',

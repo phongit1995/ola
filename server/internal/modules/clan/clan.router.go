@@ -35,11 +35,11 @@ func (r *Router) Setup(api *utils.AppGroup) {
 		clans.GET("/:id/bans", r.controller.Bans)
 		clans.POST("/:id/bans", r.controller.Ban)
 		clans.DELETE("/:id/bans/:userId", r.controller.Unban)
-		clans.GET("/:id/posts", r.controller.Posts)
-		clans.POST("/:id/posts", r.controller.CreatePost)
+		clans.GET("/:id/me", r.controller.Posts)
+		clans.POST("/:id/me", r.controller.CreatePost)
 		clans.POST("/:id/pin", r.controller.Pin)
 		clans.DELETE("/:id/pin", r.controller.Unpin)
-		clans.DELETE("/:id/posts/:postId", r.controller.DeletePost)
-		clans.DELETE("/:id/posts/by-user/:userId", r.controller.DeletePostsByUser)
+		clans.DELETE("/:id/me/:postId", r.controller.DeletePost)
+		clans.DELETE("/:id/me/by-user/:userId", r.controller.DeletePostsByUser)
 	}
 }

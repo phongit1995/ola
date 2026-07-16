@@ -489,7 +489,7 @@ func (ctrl *Controller) Unban(c *gin.Context) (interface{}, error) {
 // @Param        limit query int false "Page size"
 // @Param        cursor query string false "Opaque keyset cursor"
 // @Success      200  {object}  utils.BaseResponse[ClanPostsResponse]
-// @Router       /clans/{id}/posts [get]
+// @Router       /clans/{id}/me [get]
 func (ctrl *Controller) Posts(c *gin.Context) (interface{}, error) {
 	userID, err := utils.RequireUserID(c)
 	if err != nil {
@@ -516,7 +516,7 @@ func (ctrl *Controller) Posts(c *gin.Context) (interface{}, error) {
 // @Param        id path string true "Clan ID"
 // @Param        request body me.CreateMeRequest true "Post content"
 // @Success      201  {object}  utils.BaseResponse[me.MeResponse]
-// @Router       /clans/{id}/posts [post]
+// @Router       /clans/{id}/me [post]
 func (ctrl *Controller) CreatePost(c *gin.Context) (interface{}, error) {
 	userID, err := utils.RequireUserID(c)
 	if err != nil {
@@ -601,7 +601,7 @@ func (ctrl *Controller) Unpin(c *gin.Context) (interface{}, error) {
 // @Param        id path string true "Clan ID"
 // @Param        postId path string true "Post ID"
 // @Success      200  {object}  utils.BaseResponse[MessageResponse]
-// @Router       /clans/{id}/posts/{postId} [delete]
+// @Router       /clans/{id}/me/{postId} [delete]
 func (ctrl *Controller) DeletePost(c *gin.Context) (interface{}, error) {
 	userID, err := utils.RequireUserID(c)
 	if err != nil {
@@ -629,7 +629,7 @@ func (ctrl *Controller) DeletePost(c *gin.Context) (interface{}, error) {
 // @Param        id path string true "Clan ID"
 // @Param        userId path string true "Author user ID"
 // @Success      200  {object}  utils.BaseResponse[MessageResponse]
-// @Router       /clans/{id}/posts/by-user/{userId} [delete]
+// @Router       /clans/{id}/me/by-user/{userId} [delete]
 func (ctrl *Controller) DeletePostsByUser(c *gin.Context) (interface{}, error) {
 	userID, err := utils.RequireUserID(c)
 	if err != nil {
