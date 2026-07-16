@@ -178,7 +178,7 @@ const (
 	CacheTTLMessageList         = 300
 	CacheTTLRelationship        = 3600
 	CacheTTLFriendList          = 60
-	CacheTTLUnreadCount         = 60
+	CacheTTLUnreadCount         = 2592000
 	CacheTTLRateLimit           = 60
 	CacheTTLOTP                 = 300
 	CacheTTLPasswordResetToken  = 1800

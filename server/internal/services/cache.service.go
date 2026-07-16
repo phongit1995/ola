@@ -109,6 +109,11 @@ func (s *CacheService) Increment(key string) (int64, error) {
 	return s.client.Incr(s.ctx, key).Result()
 }
 
+// IncrementBy increments a counter by n
+func (s *CacheService) IncrementBy(key string, n int64) (int64, error) {
+	return s.client.IncrBy(s.ctx, key, n).Result()
+}
+
 // Decrement decrements a counter
 func (s *CacheService) Decrement(key string) (int64, error) {
 	return s.client.Decr(s.ctx, key).Result()

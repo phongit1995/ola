@@ -70,6 +70,12 @@ func NewRepository(session *gocql.Session, logger *zap.SugaredLogger) *Repositor
 		VALUES (?, ?, ?, ?)
 	`
 
+	r.queries["mark_inbox_read"] = `
+		UPDATE conversations_by_user
+		SET unread_count = 0, last_read_message_id = ?, last_read_at = ?, updated_at = ?
+		WHERE user_id = ? AND conversation_id = ?
+	`
+
 	r.queries["get_read_status"] = `
 		SELECT last_read_message_id, last_read_at FROM conversation_read_by_user
 		WHERE conversation_id = ? AND user_id = ?
@@ -436,27 +442,14 @@ func (r *Repository) GetDirectConversationID(userA, userB uuid.UUID) (*uuid.UUID
 	return &resultUUID, nil
 }
 
-func (r *Repository) UpdateConversationInUserInbox(userID, conversationID uuid.UUID, conv *ConversationByUser) error {
-	query := `INSERT INTO conversations_by_user
-	          (user_id, conversation_id, conversation_type, display_name, display_avatar,
-	           other_user_id, other_user_name, other_user_avatar,
-	           last_message_at, last_message_id, last_message_preview, last_message_sender,
-	           unread_count, last_read_message_id, last_read_at, updated_at)
-	          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-
-	return r.session.Query(query,
-		conv.UserID, conv.ConversationID, conv.ConversationType, conv.DisplayName, conv.DisplayAvatar,
-		conv.OtherUserID, conv.OtherUserName, conv.OtherUserAvatar,
-		conv.LastMessageAt, conv.LastMessageID, conv.LastMessagePreview, conv.LastMessageSender,
-		conv.UnreadCount, conv.LastReadMessageID, conv.LastReadAt, conv.UpdatedAt,
-	).Exec()
-}
-
-func (r *Repository) MarkAsRead(conversationID, userID uuid.UUID, lastReadMessageID gocql.UUID, lastReadAt time.Time) error {
+func (r *Repository) MarkAsRead(conversationID, userID uuid.UUID, lastReadMessageID *gocql.UUID, lastReadAt time.Time) error {
 	gocqlConvID, _ := utils.ToGocqlUUID(conversationID)
 	gocqlUserID, _ := utils.ToGocqlUUID(userID)
 
-	return r.session.Query(r.queries["mark_as_read"], gocqlConvID, gocqlUserID, lastReadMessageID, lastReadAt).Exec()
+	batch := r.session.NewBatch(gocql.LoggedBatch)
+	batch.Query(r.queries["mark_inbox_read"], lastReadMessageID, lastReadAt, lastReadAt, gocqlUserID, gocqlConvID)
+	batch.Query(r.queries["mark_as_read"], gocqlConvID, gocqlUserID, lastReadMessageID, lastReadAt)
+	return r.session.ExecuteBatch(batch)
 }
 
 func (r *Repository) GetReadStatus(conversationID, userID uuid.UUID) (*gocql.UUID, *time.Time, error) {

@@ -124,13 +124,22 @@ func (c *CacheService) SetUnreadCount(conversationID, userID uuid.UUID, count in
 	return c.cache.Set(key, count, constants.CacheTTLUnreadCount*time.Second)
 }
 
-func (c *CacheService) IncrementUnreadCount(conversationID, userID uuid.UUID) error {
+func (c *CacheService) IncrementUnreadSeeded(conversationID, userID uuid.UUID, seed int) (int, error) {
 	key := fmt.Sprintf(constants.CacheKeyUnreadCount, conversationID.String(), userID.String())
-	_, err := c.cache.Increment(key)
+	count, err := c.cache.Increment(key)
 	if err != nil {
-		return c.SetUnreadCount(conversationID, userID, 1)
+		return 0, err
 	}
-	return c.cache.SetExpire(key, constants.CacheTTLUnreadCount*time.Second)
+	if count == 1 && seed > 0 {
+		count, err = c.cache.IncrementBy(key, int64(seed))
+		if err != nil {
+			return 0, err
+		}
+	}
+	if err := c.cache.SetExpire(key, constants.CacheTTLUnreadCount*time.Second); err != nil {
+		c.logger.Warnw("Failed to set unread counter TTL", "conversation_id", conversationID, "user_id", userID, "error", err)
+	}
+	return int(count), nil
 }
 
 func (c *CacheService) ResetUnreadCount(conversationID, userID uuid.UUID) error {

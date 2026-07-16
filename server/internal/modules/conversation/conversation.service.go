@@ -710,35 +710,7 @@ func (s *Service) MarkConversationAsRead(userID, conversationID uuid.UUID) error
 
 	now := time.Now()
 
-	var lastReadMessageID gocql.UUID
-	if userConv.LastMessageID != nil {
-		lastReadMessageID = *userConv.LastMessageID
-	} else {
-		lastReadMessageID = userConv.LastMessageAt
-	}
-
-	updatedEntry := &ConversationByUser{
-		UserID:             userConv.UserID,
-		ConversationID:     userConv.ConversationID,
-		ConversationType:   userConv.ConversationType,
-		DisplayName:        userConv.DisplayName,
-		DisplayAvatar:      userConv.DisplayAvatar,
-		OtherUserID:        userConv.OtherUserID,
-		OtherUserName:      userConv.OtherUserName,
-		OtherUserAvatar:    userConv.OtherUserAvatar,
-		LastMessageAt:      userConv.LastMessageAt,
-		LastMessageID:      userConv.LastMessageID,
-		LastMessagePreview: userConv.LastMessagePreview,
-		LastMessageSender:  userConv.LastMessageSender,
-		UnreadCount:        0,
-		LastReadMessageID:  &lastReadMessageID,
-		LastReadAt:         &now,
-		UpdatedAt:          &now,
-	}
-
-	if err := s.repo.UpdateConversationInUserInbox(userID, conversationID, updatedEntry); err != nil {
-		return fmt.Errorf("failed to update conversation inbox: %w", err)
-	}
+	lastReadMessageID := userConv.LastMessageID
 
 	if err := s.repo.MarkAsRead(conversationID, userID, lastReadMessageID, now); err != nil {
 		return fmt.Errorf("failed to mark as read: %w", err)
@@ -746,7 +718,9 @@ func (s *Service) MarkConversationAsRead(userID, conversationID uuid.UUID) error
 
 	utils.SafeGo(s.logger, func() {
 		s.cache.ResetUnreadCount(conversationID, userID)
-		s.cache.SetLastRead(conversationID, userID, lastReadMessageID.String())
+		if lastReadMessageID != nil {
+			s.cache.SetLastRead(conversationID, userID, lastReadMessageID.String())
+		}
 		s.InvalidateUserConversationsCache([]uuid.UUID{userID})
 	})
 
@@ -834,6 +808,7 @@ func (s *Service) HideConversation(userID, conversationID uuid.UUID) error {
 		if err := s.cache.AddHiddenConversation(userID, conversationID); err != nil {
 			s.logger.Warnw("Failed to update hidden cache", "user_id", userID, "conversation_id", conversationID, "error", err)
 		}
+		s.cache.ResetUnreadCount(conversationID, userID)
 		s.InvalidateUserConversationsCache([]uuid.UUID{userID})
 	})
 
@@ -871,6 +846,7 @@ func (s *Service) UnhideConversation(userID, conversationID uuid.UUID) error {
 		if err := s.cache.RemoveHiddenConversation(userID, conversationID); err != nil {
 			s.logger.Warnw("Failed to update hidden cache", "user_id", userID, "conversation_id", conversationID, "error", err)
 		}
+		s.cache.ResetUnreadCount(conversationID, userID)
 		s.InvalidateUserConversationsCache([]uuid.UUID{userID})
 	})
 

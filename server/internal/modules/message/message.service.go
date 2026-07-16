@@ -827,12 +827,6 @@ func toEventReplySnapshot(snapshot *ReplySnapshot) *messageEvents.ReplySnapshot 
 func (s *Service) applyInboxFanout(conversationID uuid.UUID, members []conversation.ConversationMember,
 	messageID gocql.UUID, shortContent string, senderID uuid.UUID, now time.Time) {
 
-	conv, err := s.getConversationByIDCached(conversationID)
-	if err != nil {
-		s.logger.Warnw("Failed to fetch conversation for inbox fanout, skipping hidden-member processing",
-			"conversation_id", conversationID, "error", err)
-	}
-
 	activeIDs := conversation.ActiveMemberIDs(members)
 
 	currentUnread, err := s.repo.GetUnreadCounts(activeIDs, conversationID)
@@ -870,7 +864,13 @@ func (s *Service) applyInboxFanout(conversationID uuid.UUID, members []conversat
 
 		newUnread := currentUnread[member.UserID]
 		if member.UserID != senderID {
-			newUnread++
+			if counted, incErr := s.convCache.IncrementUnreadSeeded(conversationID, member.UserID, newUnread); incErr == nil {
+				newUnread = counted
+			} else {
+				s.logger.Warnw("Redis unread increment failed, falling back to read-modify-write",
+					"user_id", member.UserID, "conversation_id", conversationID, "error", incErr)
+				newUnread++
+			}
 		}
 
 		inboxUpdates = append(inboxUpdates, &ConversationInboxUpdate{
@@ -891,7 +891,16 @@ func (s *Service) applyInboxFanout(conversationID uuid.UUID, members []conversat
 		}
 	}
 
-	if len(hiddenMembers) > 0 && conv != nil {
+	if len(hiddenMembers) > 0 {
+		conv, err := s.getConversationByIDCached(conversationID)
+		if err != nil || conv == nil {
+			conv, err = s.convRepo.GetConversationByID(conversationID)
+		}
+		if err != nil || conv == nil {
+			s.logger.Errorw("Failed to fetch conversation for hidden-member unhide, recipients will not see this message in their inbox until the next one",
+				"conversation_id", conversationID, "hidden_member_count", len(hiddenMembers), "error", err)
+			return
+		}
 		s.processHiddenMembers(hiddenMembers, conv, members, conversationID, messageID, shortContent, senderID)
 	}
 }
@@ -918,6 +927,7 @@ func (s *Service) processHiddenMembers(hiddenMembers []conversation.Conversation
 		}
 
 		s.convCache.RemoveHiddenConversation(m.UserID, conversationID)
+		s.convCache.SetUnreadCount(conversationID, m.UserID, unreadAfterUnhide)
 	}
 }
 
@@ -1492,7 +1502,10 @@ func (s *Service) recreateInboxEntry(userID, conversationID uuid.UUID, messageID
 		return fmt.Errorf("failed to add conversation to inbox: %w", err)
 	}
 
-	utils.SafeGo(s.logger, func() { s.convCache.DeleteUserConversations(userID) })
+	utils.SafeGo(s.logger, func() {
+		s.convCache.SetUnreadCount(conversationID, userID, initialUnread)
+		s.convCache.DeleteUserConversations(userID)
+	})
 
 	return nil
 }
