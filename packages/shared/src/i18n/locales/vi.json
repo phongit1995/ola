@@ -267,7 +267,8 @@
     "logoutMessage": "Bạn có muốn đăng xuất khỏi Ola?",
     "deleteConvTitle": "Xóa hội thoại",
     "deleteConvMessage": "Bạn có muốn xóa hội thoại với {{name}}?",
-    "deleteArchived": "Xóa tin nhắn đã lưu",
+    "deleteArchived": "Xóa cả tin nhắn phía bạn",
+    "deleteWithMessages": "Xóa cả tin nhắn",
     "deleteAria": "Xóa hội thoại với {{name}}",
     "yes": "Có",
     "close": "Đóng"

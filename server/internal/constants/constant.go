@@ -185,7 +185,7 @@ const (
 	CacheTTLPasswordResetToken  = 1800
 	CacheTTLClientMsgIDDedup    = 300
 	CacheTTLLastRead            = 31536000
-	CacheTTLClearedMarker       = 86400
+	CacheTTLClearedMarker       = 31536000
 	CacheTTLVipPackages         = 3600
 	CacheTTLUserSettings        = 2592000
 )

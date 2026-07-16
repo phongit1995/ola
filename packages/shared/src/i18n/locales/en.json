@@ -267,7 +267,8 @@
     "logoutMessage": "Do you want to sign out Ola?",
     "deleteConvTitle": "Delete conversation",
     "deleteConvMessage": "Do you want to delete the conversation with {{name}}?",
-    "deleteArchived": "Delete archived message",
+    "deleteArchived": "Also delete messages on your side",
+    "deleteWithMessages": "Also delete messages",
     "deleteAria": "Delete conversation with {{name}}",
     "yes": "Yes",
     "close": "Close"

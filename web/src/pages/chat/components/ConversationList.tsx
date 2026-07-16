@@ -13,7 +13,7 @@ import { SWIPE_MAX, SWIPE_TRIGGER } from '../constants';
 interface ConversationListProps {
   conversations: Conversation[];
   onSelect: (id: string) => void;
-  onDelete: (id: string) => void;
+  onDelete: (id: string, options?: { clearMessages?: boolean }) => void;
 }
 
 export function ConversationList({
@@ -31,7 +31,7 @@ export function ConversationList({
   }
 
   function confirmDelete() {
-    if (pendingDelete != null) onDelete(pendingDelete.id);
+    if (pendingDelete != null) onDelete(pendingDelete.id, { clearMessages: deleteArchived });
     setPendingDelete(null);
   }
 

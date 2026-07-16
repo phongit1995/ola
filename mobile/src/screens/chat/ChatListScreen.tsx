@@ -68,7 +68,7 @@ function headerTitle(conversation: Conversation): string {
 interface RowProps {
   conversation: Conversation;
   onPress: () => void;
-  onDelete: () => void;
+  onDelete: (options?: { clearMessages?: boolean }) => void;
 }
 
 function ConversationRow({ conversation, onPress, onDelete }: RowProps) {
@@ -109,7 +109,12 @@ function ConversationRow({ conversation, onPress, onDelete }: RowProps) {
             t('dialog.deleteConvMessage', { name }),
             [
               { text: t('dialog.cancel'), style: 'cancel' },
-              { text: t('dialog.delete'), style: 'destructive', onPress: onDelete },
+              { text: t('dialog.delete'), style: 'destructive', onPress: () => onDelete() },
+              {
+                text: t('dialog.deleteWithMessages'),
+                style: 'destructive',
+                onPress: () => onDelete({ clearMessages: true }),
+              },
             ]
           );
         } else {
@@ -382,7 +387,7 @@ export function ChatListScreen() {
             <ConversationRow
               conversation={item}
               onPress={() => openConversation(item.id)}
-              onDelete={() => void hideConversation(item.id)}
+              onDelete={(options) => void hideConversation(item.id, options)}
             />
           )}
         />
