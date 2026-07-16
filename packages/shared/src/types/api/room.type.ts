@@ -27,6 +27,7 @@ export interface RoomMember {
   vipUsed?: string | null;
   vipEndTime?: string | null;
   vipTypeId?: number | null;
+  deviceType?: string;
 }
 
 export interface RoomFilters {

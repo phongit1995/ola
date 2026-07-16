@@ -1,14 +1,8 @@
 import type { TFunction } from 'i18next';
 import { activeVipTypeId, colorForName, isVipActive } from '@lib';
 import type { Friend } from '@app-types';
-import type { Contact, ContactGroup, DeviceType } from './types';
-import { DEVICE_ALIASES, DEVICE_TYPES } from './constants';
-
-function normalizeDevice(value?: string): DeviceType {
-  if (value == null || value === '') return 'pc';
-  if (DEVICE_TYPES.includes(value as DeviceType)) return value as DeviceType;
-  return DEVICE_ALIASES[value] ?? 'pc';
-}
+import type { Contact, ContactGroup } from './types';
+import { normalizeDevice } from '@constants';
 
 function isBirthdayToday(dateOfBirth: string | undefined, now: Date): boolean {
   if (dateOfBirth == null || dateOfBirth === '') return false;
