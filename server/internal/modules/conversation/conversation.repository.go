@@ -458,10 +458,10 @@ func (r *Repository) MarkAsRead(conversationID, userID uuid.UUID, lastReadMessag
 	var err error
 	if lastReadMessageID != nil {
 		applied, err = r.session.Query(r.queries["mark_inbox_read"],
-			lastReadMessageID, lastReadAt, lastReadAt, gocqlUserID, gocqlConvID).ScanCAS()
+			lastReadMessageID, lastReadAt, lastReadAt, gocqlUserID, gocqlConvID).MapScanCAS(map[string]interface{}{})
 	} else {
 		applied, err = r.session.Query(r.queries["mark_inbox_read_no_marker"],
-			lastReadAt, lastReadAt, gocqlUserID, gocqlConvID).ScanCAS()
+			lastReadAt, lastReadAt, gocqlUserID, gocqlConvID).MapScanCAS(map[string]interface{}{})
 	}
 	if err != nil || !applied {
 		return applied, err
@@ -694,7 +694,7 @@ func (r *Repository) SetMuted(userID, conversationID uuid.UUID, muted bool) (boo
 	gocqlUserID, _ := utils.ToGocqlUUID(userID)
 	gocqlConvID, _ := utils.ToGocqlUUID(conversationID)
 	query := `UPDATE conversations_by_user SET is_muted = ? WHERE user_id = ? AND conversation_id = ? IF EXISTS`
-	return r.session.Query(query, muted, gocqlUserID, gocqlConvID).ScanCAS()
+	return r.session.Query(query, muted, gocqlUserID, gocqlConvID).MapScanCAS(map[string]interface{}{})
 }
 
 // HideConversation moves a conversation from inbox to hidden
