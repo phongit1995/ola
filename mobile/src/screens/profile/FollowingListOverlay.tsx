@@ -1,10 +1,17 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, FlatList, Modal, Pressable, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  Text,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { UserService } from '@ola/shared/services';
 import type { FollowUser } from '@ola/shared/types';
 import { Avatar } from '../../components/Avatar';
+import { OlaModal } from '../../components/OlaModal';
 import { ScreenHeader } from '../../components/ScreenHeader';
 
 const FOLLOW_PAGE_SIZE = 10;
@@ -19,7 +26,26 @@ interface FollowingListOverlayProps {
   title?: string;
 }
 
-export function FollowingListOverlay({ userId, kind, onSelect, onClose, title }: FollowingListOverlayProps) {
+export function FollowingListOverlay(props: FollowingListOverlayProps) {
+  return (
+    <OlaModal
+      visible
+      transparent
+      animationType="slide"
+      onRequestClose={props.onClose}
+    >
+      <FollowingListBody {...props} />
+    </OlaModal>
+  );
+}
+
+function FollowingListBody({
+  userId,
+  kind,
+  onSelect,
+  onClose,
+  title,
+}: FollowingListOverlayProps) {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const [rows, setRows] = useState<FollowUser[]>([]);
@@ -32,7 +58,7 @@ export function FollowingListOverlay({ userId, kind, onSelect, onClose, title }:
       kind === 'followers'
         ? UserService.followers(userId, { limit: FOLLOW_PAGE_SIZE, offset })
         : UserService.following(userId, { limit: FOLLOW_PAGE_SIZE, offset }),
-    [userId, kind]
+    [userId, kind],
   );
 
   useEffect(() => {
@@ -58,44 +84,65 @@ export function FollowingListOverlay({ userId, kind, onSelect, onClose, title }:
     setLoadingMore(true);
     const result = await loadPage(rows.length).catch(() => null);
     if (result != null) {
-      setRows((current) => [...current, ...result.users]);
+      setRows(current => [...current, ...result.users]);
       setTotal(result.total);
     }
     setLoadingMore(false);
   }, [loadPage, loading, loadingMore, hasMore, rows.length]);
 
   return (
-    <Modal visible transparent animationType="slide" onRequestClose={onClose}>
-      <View className="flex-1 bg-white">
-        <ScreenHeader title={title ?? t('profile.following')} centerTitle onBack={onClose} />
-        {loading ? (
-          <ActivityIndicator className="py-16" color="#7cb342" size="large" />
-        ) : (
-          <FlatList
-            data={rows}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={{ paddingBottom: insets.bottom }}
-            onEndReached={() => void loadMore()}
-            onEndReachedThreshold={0.4}
-            ListFooterComponent={loadingMore ? <ActivityIndicator className="py-3" color="#7cb342" /> : null}
-            renderItem={({ item }) => (
-              <Pressable
-                onPress={() => onSelect(item)}
-                className="flex-row items-center gap-3 px-4 py-2 active:bg-black/5"
-                style={{ borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.08)' }}
+    <View className="flex-1 bg-white">
+      <ScreenHeader
+        title={title ?? t('profile.following')}
+        centerTitle
+        onBack={onClose}
+      />
+      {loading ? (
+        <ActivityIndicator className="py-16" color="#7cb342" size="large" />
+      ) : (
+        <FlatList
+          data={rows}
+          keyExtractor={item => item.id}
+          contentContainerStyle={{ paddingBottom: insets.bottom }}
+          onEndReached={() => void loadMore()}
+          onEndReachedThreshold={0.4}
+          ListFooterComponent={
+            loadingMore ? (
+              <ActivityIndicator className="py-3" color="#7cb342" />
+            ) : null
+          }
+          renderItem={({ item }) => (
+            <Pressable
+              onPress={() => onSelect(item)}
+              className="flex-row items-center gap-3 px-4 py-2 active:bg-black/5"
+              style={{
+                borderBottomWidth: 1,
+                borderBottomColor: 'rgba(0,0,0,0.08)',
+              }}
+            >
+              <Avatar
+                name={item.username}
+                uri={item.avatar ?? undefined}
+                size={40}
+                rounded={false}
+              />
+              <Text
+                numberOfLines={1}
+                className="min-w-0 flex-1 text-base"
+                style={{ color: 'rgba(0,0,0,0.87)' }}
               >
-                <Avatar name={item.username} uri={item.avatar ?? undefined} size={40} rounded={false} />
-                <Text numberOfLines={1} className="min-w-0 flex-1 text-base" style={{ color: 'rgba(0,0,0,0.87)' }}>
-                  @{item.username}
-                  {item.fullName != null && item.fullName !== '' && (
-                    <Text style={{ color: 'rgba(0,0,0,0.54)' }}> · {item.fullName}</Text>
-                  )}
-                </Text>
-              </Pressable>
-            )}
-          />
-        )}
-      </View>
-    </Modal>
+                @{item.username}
+                {item.fullName != null && item.fullName !== '' && (
+                  <Text style={{ color: 'rgba(0,0,0,0.54)' }}>
+                    {' '}
+                    · {item.fullName}
+                  </Text>
+                )}
+              </Text>
+            </Pressable>
+          )}
+        />
+      )}
+    </View>
   );
 }
