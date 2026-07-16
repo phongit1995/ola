@@ -36,11 +36,12 @@ import { UserProfileScreen } from '../profile/UserProfileScreen';
 import type { RootStackParamList } from '../../navigation/types';
 import { ROOT_ROUTES } from '../../navigation/routes';
 
-type MeTab = 'community' | 'personal';
+type MeTab = 'community' | 'personal' | 'clan';
 
 const TAB_FILTER: Record<MeTab, MeFeedFilter | undefined> = {
   community: undefined,
   personal: 'following',
+  clan: 'clan',
 };
 
 const menuIcon = require('../../assets/icons/me/ic_more_white.png');
@@ -51,10 +52,12 @@ const tabOla = require('../../assets/icons/me/ic_action_tab_ola.png');
 const tabOlaActive = require('../../assets/icons/me/ic_action_tab_ola_selected.png');
 const tabFollower = require('../../assets/icons/me/ic_action_tab_follower.png');
 const tabFollowerActive = require('../../assets/icons/me/ic_action_tab_follower_selected.png');
+const tabClan = require('../../assets/icons/clan/ic_menu_clan.png');
 
 const ME_TABS = [
   { key: 'community' as const, labelKey: 'me.tabCommunity' as const, icon: tabOla, iconActive: tabOlaActive },
   { key: 'personal' as const, labelKey: 'me.tabPersonal' as const, icon: tabFollower, iconActive: tabFollowerActive },
+  { key: 'clan' as const, labelKey: 'me.tabClan' as const, icon: tabClan, iconActive: tabClan, invert: true },
 ];
 
 
@@ -269,7 +272,11 @@ export function MeFeedScreen() {
               >
                 <Image
                   source={active ? item.iconActive : item.icon}
-                  style={{ width: 24, height: 24 }}
+                  style={{
+                    width: 24,
+                    height: 24,
+                    tintColor: 'invert' in item && item.invert ? '#ffffff' : undefined,
+                  }}
                   resizeMode="contain"
                 />
               </Pressable>
@@ -354,6 +361,9 @@ export function MeFeedScreen() {
                 onOpenMenu={(id) => setMenuPostId(id)}
                 onOpenLikers={(id) => setLikersPostId(id)}
                 onOpenPhotos={(photos, index) => openViewer(photos, index)}
+                onOpenClan={(handle) =>
+                  useClanOverlayStore.getState().open({ kind: 'clan', handle })
+                }
               />
             )}
           />

@@ -16,7 +16,7 @@ import { launchImageLibrary } from 'react-native-image-picker';
 import { useMeFeedStore } from '@ola/shared/stores/meFeedStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { NativeUploadFile } from '@ola/shared/lib';
-import type { Post, PostVisibility } from '@ola/shared/types';
+import type { CreatePostRequest, Post, PostVisibility } from '@ola/shared/types';
 import { EDIT_WINDOW_MS } from '@ola/shared/constants';
 import { KUL_IMAGES, stickerImageForCode } from '../../lib/kul';
 import { imageSizeForHeight } from '../../lib/chatSmiley';
@@ -51,6 +51,13 @@ interface MeComposerModalProps {
   onClose: () => void;
   onSaved?: (post: Post) => void;
   editPost?: Post | null;
+  title?: string;
+  privacyOptions?: PostVisibility[];
+  submitPost?: (
+    payload: CreatePostRequest,
+    files: NativeUploadFile[],
+    imageUrls: string[],
+  ) => Promise<Post | null>;
 }
 
 function privacyKey(option: PostVisibility): 'me.privacy_public' {
@@ -77,6 +84,9 @@ function MeComposerBody({
   onClose,
   onSaved,
   editPost,
+  title,
+  privacyOptions,
+  submitPost,
   postingRef,
 }: MeComposerModalProps & { postingRef: { current: boolean } }) {
   const { t } = useTranslation();
@@ -109,7 +119,7 @@ function MeComposerBody({
   useEffect(() => {
     if (!visible) return;
     setContent(editPost?.content ?? '');
-    setPrivacy(editPost?.visibility ?? 'public');
+    setPrivacy(editPost?.visibility ?? (privacyOptions?.[0] ?? 'public'));
     setPhotos(
       (editPost?.images ?? []).map((image, index) => ({
         id: `e${index}`,
@@ -139,7 +149,7 @@ function MeComposerBody({
     if (editPost == null) {
       requestAnimationFrame(() => composerRef.current?.focus());
     }
-  }, [visible, editPost]);
+  }, [visible, editPost, privacyOptions]);
 
   function close() {
     if (posting) return;
@@ -235,10 +245,12 @@ function MeComposerBody({
     };
     const result = isEdit
       ? await updatePost(editPost.id, payload, files, imageUrls)
-      : await createPost(payload, files, imageUrls);
+      : submitPost != null
+        ? await submitPost(payload, files, imageUrls)
+        : await createPost(payload, files, imageUrls);
     setPosting(false);
     if (result != null) {
-      if (!isEdit) prependPost(result);
+      if (!isEdit && submitPost == null) prependPost(result);
       onSaved?.(result);
       onClose();
     }
@@ -266,7 +278,7 @@ function MeComposerBody({
           <CloseIcon />
         </Pressable>
         <Text className="text-lg font-medium text-white">
-          {isEdit ? t('me.editTitle') : t('me.composerTitle')}
+          {isEdit ? t('me.editTitle') : (title ?? t('me.composerTitle'))}
         </Text>
         <Pressable
           onPress={() => void submit()}
@@ -288,7 +300,7 @@ function MeComposerBody({
         <Text className="text-sm" style={{ color: 'rgba(0,0,0,0.54)' }}>
           {t('me.privacyTo')}
         </Text>
-        {PRIVACY_OPTIONS.map(option => {
+        {(privacyOptions ?? PRIVACY_OPTIONS).map(option => {
           const active = option === privacy;
           return (
             <Pressable

@@ -191,6 +191,7 @@ interface MePostCardProps {
   onOpenMenu?: (id: string) => void;
   onOpenLikers?: (id: string) => void;
   onOpenPhotos?: (photos: string[], index: number) => void;
+  onOpenClan?: (handle: string) => void;
 }
 
 function MePostCardComponent({
@@ -204,6 +205,7 @@ function MePostCardComponent({
   onOpenMenu,
   onOpenLikers,
   onOpenPhotos,
+  onOpenClan,
 }: MePostCardProps) {
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
@@ -287,6 +289,17 @@ function MePostCardComponent({
               </Text>
               {post.isPinned && (
                 <Image source={pinIcon} style={{ width: 14, height: 14 }} resizeMode="contain" />
+              )}
+              {post.clanHandle != null && post.clanHandle !== '' && (
+                <Text
+                  onPress={
+                    onOpenClan == null ? undefined : () => onOpenClan(post.clanHandle ?? '')
+                  }
+                  className="shrink-0 text-xs font-bold"
+                  style={{ color: '#33691e' }}
+                >
+                  #{post.clanHandle}
+                </Text>
               )}
             </View>
             <Text className="mt-0.5 text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>

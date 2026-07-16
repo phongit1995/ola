@@ -1,13 +1,12 @@
-import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
 import { OlaModal } from '../../components/OlaModal';
-import { ScreenHeader } from '../../components/ScreenHeader';
-import { ScreenPlaceholder } from '../../components/ScreenPlaceholder';
 import { useClanOverlayStore, type ClanOverlayEntry } from '../../store/clanOverlayStore';
 import { ClanHomeScreen } from './ClanHomeScreen';
+import { ClanScreen } from './ClanScreen';
+import { ClanMembersScreen } from './ClanMembersScreen';
+import { ClanManageScreen } from './ClanManageScreen';
+import { ClanBansScreen } from './ClanBansScreen';
 
 function ClanEntryScreen({ entry }: { entry: ClanOverlayEntry }) {
-  const { t } = useTranslation();
   const back = useClanOverlayStore((s) => s.back);
   const push = useClanOverlayStore((s) => s.push);
 
@@ -16,16 +15,30 @@ function ClanEntryScreen({ entry }: { entry: ClanOverlayEntry }) {
       return (
         <ClanHomeScreen onClose={back} onOpenClan={(handle) => push({ kind: 'clan', handle })} />
       );
-    default:
+    case 'clan':
       return (
-        <View className="flex-1 bg-white">
-          <ScreenHeader
-            title={entry.kind === 'clan' ? `#${entry.handle ?? ''}` : t('clan.title')}
-            onBack={back}
-          />
-          <ScreenPlaceholder title={t('me.comingSoon')} />
-        </View>
+        <ClanScreen
+          key={entry.handle ?? entry.id}
+          handle={entry.handle}
+          id={entry.id}
+          onClose={back}
+          onOpenManage={(clanId) => push({ kind: 'manage', clanId })}
+          onOpenMembers={(clanId) => push({ kind: 'members', clanId })}
+        />
       );
+    case 'manage':
+      return (
+        <ClanManageScreen
+          clanId={entry.clanId}
+          onClose={back}
+          onOpenMembers={(clanId) => push({ kind: 'members', clanId })}
+          onOpenBans={(clanId) => push({ kind: 'bans', clanId })}
+        />
+      );
+    case 'members':
+      return <ClanMembersScreen clanId={entry.clanId} onClose={back} />;
+    case 'bans':
+      return <ClanBansScreen clanId={entry.clanId} onClose={back} />;
   }
 }
 
