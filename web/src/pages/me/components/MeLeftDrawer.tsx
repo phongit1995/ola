@@ -6,6 +6,7 @@ import personalIcon from '@/assets/icons/me/ic_indicate_personal.png';
 import boxIcon from '@/assets/icons/me/ic_indicate_box.png';
 import likeIcon from '@/assets/icons/me/ic_section_like.png';
 import visitorIcon from '@/assets/icons/me/ic_action_tab_follower.png';
+import clanIcon from '@/assets/icons/clan/ic_menu_clan.png';
 // TODO: các mục chưa có action, ẩn tạm — bật lại khi làm xong
 // import eggIcon from '@/assets/icons/me/ic_indicate_broken_egg.png';
 // import androidIcon from '@/assets/icons/me/ic_indicate_android.png';
@@ -67,6 +68,7 @@ export function MeLeftDrawer({
       label: t('me.tabVisitors'),
       iconClassName: 'brightness-0 opacity-60',
     },
+    { key: 'clan', icon: clanIcon, label: t('me.drawerClan') },
     // TODO: các mục chưa có action, ẩn tạm — bật lại khi làm xong
     // { key: 'egg', icon: eggIcon, label: t('me.drawerEgg') },
     // { key: 'android', icon: androidIcon, label: '#Android' },

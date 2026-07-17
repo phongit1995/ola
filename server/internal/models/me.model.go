@@ -96,6 +96,7 @@ func (m *MentionIDs) Scan(value interface{}) error {
 type Me struct {
 	BaseModel
 	AuthorID     uuid.UUID    `gorm:"type:uuid;not null;index"`
+	ClanID       *uuid.UUID   `gorm:"type:uuid;index"`
 	Content      string       `gorm:"type:text"`
 	Images       MeImages     `gorm:"type:jsonb"`
 	Mentions     MentionIDs   `gorm:"type:jsonb"`
@@ -108,6 +109,7 @@ type Me struct {
 	CommentCount int          `gorm:"not null;default:0"`
 	PinnedAt     *time.Time   `gorm:"index"`
 	Author       *User        `gorm:"foreignKey:AuthorID;constraint:OnDelete:CASCADE"`
+	Clan         *Clan        `gorm:"foreignKey:ClanID"`
 }
 
 func (Me) TableName() string {

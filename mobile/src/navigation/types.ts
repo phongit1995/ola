@@ -1,3 +1,4 @@
+import type { MiniGame } from '@ola/shared/types';
 import { AUTH_ROUTES, ROOM_ROUTES, ROOT_ROUTES, TAB_ROUTES } from './routes';
 
 export type AuthStackParamList = {
@@ -25,10 +26,12 @@ export type RootStackParamList = {
   [ROOT_ROUTES.KenStore]: undefined;
   [ROOT_ROUTES.BuyKen]: undefined;
   [ROOT_ROUTES.MediaStore]: undefined;
+  [ROOT_ROUTES.Notifications]: undefined;
   [ROOT_ROUTES.Settings]: undefined;
   [ROOT_ROUTES.PenGame]: undefined;
   [ROOT_ROUTES.SpinWheel]: undefined;
   [ROOT_ROUTES.EggGame]: undefined;
+  [ROOT_ROUTES.ArcadeGame]: { game: MiniGame };
 };
 
 export type RoomStackParamList = {

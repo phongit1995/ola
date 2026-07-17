@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Text } from 'react-native';
 import { Dialog, DialogButton } from './Dialog';
 
-const infoIcon = require('../assets/icons/chat/ic_dialog_indicate_info.png');
+const infoIcon = require('@assets/icons/chat/ic_dialog_indicate_info.png');
 
 interface ConfirmDialogProps {
   visible: boolean;

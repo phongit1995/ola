@@ -27,6 +27,7 @@ interface MeComposerDialogProps {
   initial?: ComposedPost | null;
   title?: string;
   submitLabel?: string;
+  privacyOptions?: PostVisibility[];
 }
 
 export function MeComposerDialog({
@@ -36,10 +37,16 @@ export function MeComposerDialog({
   initial,
   title,
   submitLabel,
+  privacyOptions,
 }: MeComposerDialogProps) {
   const { t } = useTranslation();
+  const options = privacyOptions != null && privacyOptions.length > 0 ? privacyOptions : PRIVACY_OPTIONS;
+  const defaultPrivacy =
+    initial != null && options.includes(initial.visibility)
+      ? initial.visibility
+      : (options[0] ?? 'public');
   const [content, setContent] = useState(initial?.content ?? '');
-  const [privacy, setPrivacy] = useState<PostVisibility>(initial?.visibility ?? 'public');
+  const [privacy, setPrivacy] = useState<PostVisibility>(defaultPrivacy);
   const [photos, setPhotos] = useState<PickedPhoto[]>(() =>
     (initial?.imageUrls ?? []).map((url) => ({ url }))
   );
@@ -55,7 +62,7 @@ export function MeComposerDialog({
 
   function reset() {
     setContent('');
-    setPrivacy('public');
+    setPrivacy(defaultPrivacy);
     setPhotos([]);
     setCheckIn(null);
     setSticker(null);
@@ -165,7 +172,7 @@ export function MeComposerDialog({
             onChange={(event) => setPrivacy(event.target.value as PostVisibility)}
             className="rounded border border-black/12 px-2 py-1 text-black/87 outline-none"
           >
-            {PRIVACY_OPTIONS.map((option) => (
+            {options.map((option) => (
               <option key={option} value={option}>
                 {t(`me.privacy_${option}` as 'me.privacy_public')}
               </option>
@@ -205,7 +212,11 @@ export function MeComposerDialog({
                 panel === button.key ? 'text-ola-primary' : 'text-black/54'
               }`}
             >
-              <span className="text-2xl leading-none">{button.glyph}</span>
+              {'icon' in button ? (
+                <img src={button.icon} alt="" className="h-6 w-6 object-contain" />
+              ) : (
+                <span className="text-2xl leading-none">{button.glyph}</span>
+              )}
               {t(button.labelKey)}
             </button>
           ))}

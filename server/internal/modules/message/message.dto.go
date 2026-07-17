@@ -56,8 +56,10 @@ type ToggleReactionRequest struct {
 }
 
 type MessagesListResponse struct {
-	Messages []MessageResponse `json:"messages"`
-	Total    int               `json:"total" example:"50"`
+	Messages   []MessageResponse `json:"messages"`
+	Total      int               `json:"total" example:"50"`
+	HasMore    bool              `json:"hasMore"`
+	NextBefore string            `json:"nextBefore,omitempty"`
 }
 
 type SimpleSuccessResponse struct {

@@ -2,13 +2,13 @@ import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 're
 import { useTranslation } from 'react-i18next';
 import { Image, Keyboard, Pressable, Text, View } from 'react-native';
 import { useAuthStore } from '@ola/shared/stores/authStore';
-import { ChatComposer, type ChatComposerHandle } from '../../components/ChatComposer';
-import { useLastKeyboardHeight } from '../../hooks/useKeyboardHeight';
-import { SmileyKulPanel, SMILEY_PANEL_MIN_CONTENT_HEIGHT } from '../room/SmileyKulPanel';
-import { Avatar } from '../../components/Avatar';
+import { ChatComposer, type ChatComposerHandle } from '@components/ChatComposer';
+import { useLastKeyboardHeight } from '@hooks/useKeyboardHeight';
+import { SmileyKulPanel, SMILEY_PANEL_MIN_CONTENT_HEIGHT } from '@screens/room/SmileyKulPanel';
+import { Avatar } from '@components/Avatar';
 
-const smileyIcon = require('../../assets/icons/chat/ic_smiley.png');
-const smileyIconActive = require('../../assets/icons/chat/ic_smiley_selected.png');
+const smileyIcon = require('@assets/icons/chat/ic_smiley.png');
+const smileyIconActive = require('@assets/icons/chat/ic_smiley_selected.png');
 
 export interface MeCommentComposerHandle {
   closePanel: () => void;

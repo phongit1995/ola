@@ -140,6 +140,71 @@ async function main() {
   r = await req('GET', '/conversations', undefined, charlie.token)
   ok('conv back after unhide', (data(r)?.conversations ?? []).some(c => c.id === groupAlpha))
 
+  // ── 6b. Hide with clearMessages (xóa tin nhắn phía mình) ─────────────────
+  r = await req('POST', '/conversations/direct', { recipientId: dana.id }, charlie.token)
+  const directCD = data(r)?.id
+  ok('charlie ↔ dana direct created', !!directCD)
+
+  for (const text of ['clear-1', 'clear-2', 'clear-3']) {
+    await req('POST', '/messages', { conversationId: directCD, type: 'text', content: text }, charlie.token)
+  }
+  await sleep(600)
+
+  r = await req('GET', `/messages/${directCD}`, undefined, dana.token)
+  ok('dana sees 3 msgs before clear', (data(r)?.messages ?? []).length === 3)
+
+  r = await req('POST', `/conversations/${directCD}/hide`, { clearMessages: true }, dana.token)
+  ok('hide clearMessages → 2xx', is2xx(r.status))
+  await sleep(300)
+
+  r = await req('GET', '/conversations', undefined, dana.token)
+  ok('conv hidden from dana list', !(data(r)?.conversations ?? []).some(c => c.id === directCD))
+
+  r = await req('GET', `/messages/${directCD}`, undefined, dana.token)
+  ok('dana messages cleared → 0', (data(r)?.messages ?? []).length === 0)
+  ok('dana cleared hasMore=false', data(r)?.hasMore === false)
+
+  r = await req('GET', `/messages/${directCD}`, undefined, charlie.token)
+  ok('charlie still sees 3 msgs', (data(r)?.messages ?? []).length === 3)
+
+  await req('POST', '/messages', { conversationId: directCD, type: 'text', content: 'after-clear' }, charlie.token)
+  await sleep(600)
+
+  r = await req('GET', '/conversations', undefined, dana.token)
+  const danaReappeared = (data(r)?.conversations ?? []).find(c => c.id === directCD)
+  ok('conv reappears for dana after new msg', !!danaReappeared)
+  ok('dana unread = 1 after reappear', danaReappeared?.unreadCount === 1)
+
+  r = await req('GET', `/messages/${directCD}`, undefined, dana.token)
+  const danaMsgs = data(r)?.messages ?? []
+  ok('dana sees ONLY new msg', danaMsgs.length === 1 && danaMsgs[0]?.content === 'after-clear')
+
+  r = await req('GET', `/messages/${directCD}`, undefined, charlie.token)
+  ok('charlie sees 4 msgs', (data(r)?.messages ?? []).length === 4)
+
+  r = await req('POST', '/conversations/direct', { recipientId: dana.id }, charlie.token)
+  ok('direct pair still same id (no duplicate)', data(r)?.id === directCD)
+
+  // ── 6c. Hide WITHOUT clearMessages keeps history ─────────────────────────
+  r = await req('POST', `/conversations/${directCD}/hide`, {}, charlie.token)
+  ok('plain hide → 2xx', is2xx(r.status))
+  await sleep(300)
+
+  r = await req('GET', `/messages/${directCD}`, undefined, charlie.token)
+  ok('charlie history intact after plain hide', (data(r)?.messages ?? []).length === 4)
+
+  await req('POST', '/messages', { conversationId: directCD, type: 'text', content: 'wake-charlie' }, dana.token)
+  await sleep(600)
+
+  r = await req('GET', '/conversations', undefined, charlie.token)
+  ok('conv reappears for charlie', (data(r)?.conversations ?? []).some(c => c.id === directCD))
+
+  r = await req('GET', `/messages/${directCD}`, undefined, charlie.token)
+  ok('charlie sees full history (5)', (data(r)?.messages ?? []).length === 5)
+
+  r = await req('GET', `/messages/${directCD}`, undefined, dana.token)
+  ok('dana sees 2 msgs after her clear point', (data(r)?.messages ?? []).length === 2)
+
   // ── 7. No auth → 401 ─────────────────────────────────────────────────────
   r = await req('GET', '/conversations')
   ok('list no auth → 401', r.status === 401)

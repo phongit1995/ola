@@ -80,6 +80,7 @@ export interface AuditLogListParams {
   adminId?: string
   resource?: string
   method?: string
+  route?: string
   from?: string
   to?: string
   limit?: number
@@ -255,6 +256,13 @@ export interface UserListParams {
   sortDir?: string
 }
 
+export interface KenCounterparty {
+  id: string
+  username: string
+  fullName?: string
+  avatar?: string
+}
+
 export interface KenTransaction {
   id: string
   direction: 'credit' | 'debit'
@@ -267,6 +275,7 @@ export interface KenTransaction {
   refId?: string
   actorType?: string
   actorId?: string
+  counterparty?: KenCounterparty
   createdAt: string
 }
 
@@ -1056,4 +1065,65 @@ export interface DashboardOverview {
 export interface DashboardOverviewParams {
   from?: string
   to?: string
+}
+
+export interface MiniGame {
+  id: string
+  slug: string
+  name: string
+  description: string
+  iconUrl: string
+  gameUrl: string
+  isEnabled: boolean
+  sortOrder: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface CreateMiniGameRequest {
+  slug: string
+  name: string
+  description?: string
+  iconUrl?: string
+  gameUrl: string
+  isEnabled?: boolean
+  sortOrder?: number
+}
+
+export interface UpdateMiniGameRequest {
+  name?: string
+  description?: string
+  iconUrl?: string
+  gameUrl?: string
+  isEnabled?: boolean
+  sortOrder?: number
+}
+
+export interface ClanUser {
+  id: string
+  username: string
+  fullName?: string
+  avatar?: string
+}
+
+export interface Clan {
+  id: string
+  handle: string
+  description?: string
+  avatar?: string
+  cover?: string
+  policy: number
+  memberPublicPost: boolean
+  memberCount: number
+  visitCount: number
+  roomId?: string
+  owner?: ClanUser
+  createdAt: string
+}
+
+export interface ClanMember {
+  user?: ClanUser
+  role: 'owner' | 'deputy' | 'ambassador' | 'member'
+  verified: boolean
+  joinedAt: string
 }

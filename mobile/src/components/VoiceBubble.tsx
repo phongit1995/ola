@@ -2,10 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Image, Pressable, Text, View } from 'react-native';
 import Sound from 'react-native-sound';
 
-const playMediaIcon = require('../assets/icons/chat/ic_play_media.png');
-const pauseMediaIcon = require('../assets/icons/chat/ic_pause_media.png');
-const playMediaGrayIcon = require('../assets/icons/chat/ic_play_media_gray.png');
-const pauseMediaGrayIcon = require('../assets/icons/chat/ic_pause_media_gray.png');
+const playMediaIcon = require('@assets/icons/chat/ic_play_media.png');
+const pauseMediaIcon = require('@assets/icons/chat/ic_pause_media.png');
+const playMediaGrayIcon = require('@assets/icons/chat/ic_play_media_gray.png');
+const pauseMediaGrayIcon = require('@assets/icons/chat/ic_pause_media_gray.png');
 
 Sound.setCategory('Playback');
 

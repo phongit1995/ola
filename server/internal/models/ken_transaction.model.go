@@ -29,6 +29,7 @@ const (
 	KenTxTypePenWin       KenTxType = "PEN_WIN"
 	KenTxTypePenRefund    KenTxType = "PEN_REFUND"
 	KenTxTypeKenChest     KenTxType = "KEN_CHEST"
+	KenTxTypeClanCreate   KenTxType = "CLAN_CREATE"
 )
 
 type KenActorType string

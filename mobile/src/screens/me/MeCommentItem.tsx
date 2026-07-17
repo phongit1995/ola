@@ -3,16 +3,16 @@ import { useTranslation } from 'react-i18next';
 import { Image, Pressable, Text, View } from 'react-native';
 import { colorForName } from '@ola/shared/lib';
 import type { PostAuthor, PostComment } from '@ola/shared/types';
-import { renderRichText } from '../../lib/richText';
-import { Avatar } from '../../components/Avatar';
-import { ConfirmDialog } from '../../components/ConfirmDialog';
-import { ReportDialog } from '../../components/ReportDialog';
+import { renderRichText } from '@lib/richText';
+import { Avatar } from '@components/Avatar';
+import { ConfirmDialog } from '@components/ConfirmDialog';
+import { ReportDialog } from '@components/ReportDialog';
 import { MeLikersDialog } from './MeLikersDialog';
 
-const replyIcon = require('../../assets/icons/me/ic_action_reply_gray.png');
-const likeIcon = require('../../assets/icons/me/ic_like_gray.png');
-const likeIconActive = require('../../assets/icons/me/ic_like_selected.png');
-const deleteIcon = require('../../assets/icons/chat/ic_menu_delete.png');
+const replyIcon = require('@assets/icons/me/ic_action_reply_gray.png');
+const likeIcon = require('@assets/icons/me/ic_like_gray.png');
+const likeIconActive = require('@assets/icons/me/ic_like_selected.png');
+const deleteIcon = require('@assets/icons/chat/ic_menu_delete.png');
 
 function CommentLikerStack({ likers }: { likers: PostAuthor[] }) {
   if (likers.length === 0) return null;

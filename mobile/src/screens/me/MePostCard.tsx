@@ -12,20 +12,20 @@ import Animated, {
 } from 'react-native-reanimated';
 import { colorForName } from '@ola/shared/lib';
 import type { Post, PostAuthor, PostCheckIn } from '@ola/shared/types';
-import { imageSizeForHeight } from '../../lib/chatSmiley';
-import { renderRichText } from '../../lib/richText';
-import { stickerImageForCode } from '../../lib/kul';
-import { Avatar } from '../../components/Avatar';
+import { imageSizeForHeight } from '@lib/chatSmiley';
+import { renderRichText } from '@lib/richText';
+import { stickerImageForCode } from '@lib/kul';
+import { Avatar } from '@components/Avatar';
 
-const moreIcon = require('../../assets/icons/me/ic_more.png');
-const replyIcon = require('../../assets/icons/me/ic_action_reply_gray.png');
-const dislikeIcon = require('../../assets/icons/me/ic_dislike_gray.png');
-const dislikeIconActive = require('../../assets/icons/me/ic_dislike_black.png');
-const likeIcon = require('../../assets/icons/me/ic_like_gray.png');
-const likeIconActive = require('../../assets/icons/me/ic_like_selected.png');
-const likeStickerFly = require('../../assets/icons/me/sticker_like.png');
-const checkInIcon = require('../../assets/icons/me/ic_check_in.png');
-const pinIcon = require('../../assets/icons/me/ic_pin.png');
+const moreIcon = require('@assets/icons/me/ic_more.png');
+const replyIcon = require('@assets/icons/me/ic_action_reply_gray.png');
+const dislikeIcon = require('@assets/icons/me/ic_dislike_gray.png');
+const dislikeIconActive = require('@assets/icons/me/ic_dislike_black.png');
+const likeIcon = require('@assets/icons/me/ic_like_gray.png');
+const likeIconActive = require('@assets/icons/me/ic_like_selected.png');
+const likeStickerFly = require('@assets/icons/me/sticker_like.png');
+const checkInIcon = require('@assets/icons/me/ic_check_in.png');
+const pinIcon = require('@assets/icons/me/ic_pin.png');
 
 function formatLikeCount(count: number): string {
   return count > 9 ? '9+' : String(count);
@@ -191,6 +191,7 @@ interface MePostCardProps {
   onOpenMenu?: (id: string) => void;
   onOpenLikers?: (id: string) => void;
   onOpenPhotos?: (photos: string[], index: number) => void;
+  onOpenClan?: (handle: string) => void;
 }
 
 function MePostCardComponent({
@@ -204,6 +205,7 @@ function MePostCardComponent({
   onOpenMenu,
   onOpenLikers,
   onOpenPhotos,
+  onOpenClan,
 }: MePostCardProps) {
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
@@ -287,6 +289,17 @@ function MePostCardComponent({
               </Text>
               {post.isPinned && (
                 <Image source={pinIcon} style={{ width: 14, height: 14 }} resizeMode="contain" />
+              )}
+              {post.clanHandle != null && post.clanHandle !== '' && (
+                <Text
+                  onPress={
+                    onOpenClan == null ? undefined : () => onOpenClan(post.clanHandle ?? '')
+                  }
+                  className="shrink-0 text-xs font-bold"
+                  style={{ color: '#33691e' }}
+                >
+                  #{post.clanHandle}
+                </Text>
               )}
             </View>
             <Text className="mt-0.5 text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>

@@ -19,6 +19,7 @@ const (
 	KafkaTopicKenChestAvailable          = "CHAT.KEN.CHEST.AVAILABLE"
 	KafkaTopicKenChestClosed             = "CHAT.KEN.CHEST.CLOSED"
 	KafkaTopicMeNotification             = "CHAT.ME.NOTIFICATION"
+	KafkaTopicAppNotification            = "CHAT.APP.NOTIFICATION"
 	KafkaTopicUserBanned                 = "CHAT.USER.BANNED"
 )
 
@@ -42,6 +43,7 @@ func AllKafkaTopics() []string {
 		KafkaTopicKenChestAvailable,
 		KafkaTopicKenChestClosed,
 		KafkaTopicMeNotification,
+		KafkaTopicAppNotification,
 		KafkaTopicUserBanned,
 	}
 }
@@ -77,6 +79,7 @@ const (
 	CacheKeyPasswordResetToken  = "PASSWORD:%s:RESET_TOKEN"
 	CacheKeyConversationPattern = "USER:*:CONVERSATIONS"
 	CacheKeyLastRead            = "LAST_READ:%s:%s"
+	CacheKeyClearedMarker       = "CLEARED:%s:%s"
 	CacheKeyRoomMembers         = "ROOM:%s:MEMBERS:Z"
 	CacheKeyRoomUserConn        = "ROOM:%s:USER:%s:CONN"
 	CacheKeyRoomMsgIndex        = "ROOM:%s:MSG_INDEX"
@@ -141,6 +144,7 @@ const (
 	WebSocketEventKenChestAvailable          = "KEN_CHEST_AVAILABLE"
 	WebSocketEventKenChestClosed             = "KEN_CHEST_CLOSED"
 	WebSocketEventMeNotification             = "ME_NOTIFICATION"
+	WebSocketEventAppNotification            = "APP_NOTIFICATION"
 	WebSocketEventForceLogout                = "FORCE_LOGOUT"
 )
 
@@ -169,18 +173,19 @@ const (
 	CacheTTLUserProfile         = 3600
 	CacheTTLUserSession         = 86400
 	CacheTTLConversation        = 1800
-	CacheTTLConversationList    = 600
+	CacheTTLConversationList    = 120
 	CacheTTLHiddenConversations = 1800
 	CacheTTLMessage             = 3600
 	CacheTTLMessageList         = 300
 	CacheTTLRelationship        = 3600
 	CacheTTLFriendList          = 60
-	CacheTTLUnreadCount         = 60
+	CacheTTLUnreadCount         = 2592000
 	CacheTTLRateLimit           = 60
 	CacheTTLOTP                 = 300
 	CacheTTLPasswordResetToken  = 1800
 	CacheTTLClientMsgIDDedup    = 300
 	CacheTTLLastRead            = 31536000
+	CacheTTLClearedMarker       = 31536000
 	CacheTTLVipPackages         = 3600
 	CacheTTLUserSettings        = 2592000
 )
@@ -195,6 +200,8 @@ const (
 const (
 	MaxFriendsPerUser      = 100
 	MaxPendingSentRequests = 200
+
+	MaxConversationListLimit = 200
 )
 
 const (
@@ -254,12 +261,19 @@ const (
 	UploadFolderPosts            = "posts"
 	UploadFolderAvatar           = "avatar"
 	UploadFolderAdmin            = "admin"
+	UploadFolderClans            = "clans"
 	UploadDateLayout             = "02012006"
 	UploadDateLayoutDay          = "2006-01-02"
 	MaxPostImages                = 5
 	CacheKeyRateLimitUpload      = "RATE_LIMIT:%s:UPLOAD"
 	RateLimitUploadMaxRequests   = 30
 	RateLimitUploadWindowSeconds = 60
+)
+
+const (
+	CacheKeyClanVisitGuard   = "CLAN:%s:VISIT:%s"
+	ClanVisitGuardTTLSeconds = 21600
+	ClanHandleMaxLen         = 32
 )
 
 var AllowedImageMimes = []string{
@@ -312,6 +326,9 @@ const (
 	MeTopLikersTTLSeconds      = 86400
 	CacheKeyMeLikeLock         = "LOCK:ME_LIKE:%s"
 	CacheKeyRateLimitMeLike    = "RATE_LIMIT:%s:ME_LIKE"
+
+	CacheKeyMeNotifPushGuard   = "ME_NOTIF:PUSH_GUARD:%s:%s:%s"
+	MeNotifPushGuardTTLSeconds = 600
 
 	ReactionActionAdded   = "added"
 	ReactionActionRemoved = "removed"

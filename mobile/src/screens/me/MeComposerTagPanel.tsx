@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
-import { useFriendsStore } from '../../store/friendsStore';
-import { Avatar } from '../../components/Avatar';
+import { useFriendsStore } from '@store/friendsStore';
+import { Avatar } from '@components/Avatar';
 
 interface MeComposerTagPanelProps {
   onMention: (username: string) => void;

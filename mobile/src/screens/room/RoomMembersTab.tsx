@@ -3,10 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { Image, Modal, Pressable, Text, View } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import type { RoomMember } from '@ola/shared/types';
-import { VipAvatar } from '../../components/VipAvatar';
+import { VipAvatar } from '@components/VipAvatar';
+import { DEVICE_ICONS, normalizeDevice } from '@lib/deviceIcons';
 
-const maleIcon = require('../../assets/icons/chat/ic_indicate_male.png');
-const femaleIcon = require('../../assets/icons/chat/ic_indicate_female.png');
+const maleIcon = require('@assets/icons/chat/ic_indicate_male.png');
+const femaleIcon = require('@assets/icons/chat/ic_indicate_female.png');
 
 interface RoomMembersTabProps {
   members: RoomMember[];
@@ -45,7 +46,28 @@ function MemberRow({
       style={{ borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.12)' }}
     >
       <GenderIcon gender={member.gender} />
-      <VipAvatar typeId={member.vipTypeId} size={40} />
+      <View style={{ position: 'relative', width: 40, height: 40 }}>
+        <VipAvatar typeId={member.vipTypeId} size={40} />
+        <View
+          className="items-center justify-center bg-ola-primary"
+          style={{
+            position: 'absolute',
+            right: 0,
+            bottom: 0,
+            width: 14,
+            height: 14,
+            borderRadius: 7,
+            borderWidth: 1,
+            borderColor: '#fff',
+          }}
+        >
+          <Image
+            source={DEVICE_ICONS[normalizeDevice(member.deviceType)]}
+            style={{ width: 10, height: 10 }}
+            resizeMode="contain"
+          />
+        </View>
+      </View>
       <View className="min-w-0 flex-1">
         <View className="flex-row items-center gap-1">
           <Text numberOfLines={1} className="text-base" style={{ color: 'rgba(0,0,0,0.87)' }}>

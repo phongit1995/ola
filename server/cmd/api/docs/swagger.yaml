@@ -1,5 +1,53 @@
 basePath: /api/v1
 definitions:
+  gorm.DeletedAt:
+    properties:
+      time:
+        type: string
+      valid:
+        description: Valid is true if Time is not NULL
+        type: boolean
+    type: object
+  internal_modules_admin_audit.AuditLogItem:
+    properties:
+      adminFullName:
+        type: string
+      adminId:
+        type: string
+      adminUsername:
+        type: string
+      createdAt:
+        type: string
+      detail:
+        $ref: '#/definitions/ola-chat-server_internal_models.JSONB'
+      id:
+        type: string
+      ip:
+        type: string
+      method:
+        type: string
+      path:
+        type: string
+      resource:
+        type: string
+      route:
+        type: string
+      status:
+        type: integer
+    type: object
+  internal_modules_admin_audit.AuditLogListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_admin_audit.AuditLogItem'
+        type: array
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
   internal_modules_admin_auth.AdminDTO:
     properties:
       avatar:
@@ -69,6 +117,148 @@ definitions:
       token:
         type: string
     type: object
+  internal_modules_admin_dashboard.EngagementSection:
+    properties:
+      comments:
+        type: integer
+      dislikes:
+        type: integer
+      likes:
+        type: integer
+      newPosts:
+        type: integer
+    type: object
+  internal_modules_admin_dashboard.GamesSection:
+    properties:
+      eggDraws:
+        type: integer
+      penShots:
+        type: integer
+      wheelSpins:
+        type: integer
+    type: object
+  internal_modules_admin_dashboard.OverviewResponse:
+    properties:
+      bucket:
+        type: string
+      engagement:
+        $ref: '#/definitions/internal_modules_admin_dashboard.EngagementSection'
+      games:
+        $ref: '#/definitions/internal_modules_admin_dashboard.GamesSection'
+      range:
+        $ref: '#/definitions/internal_modules_admin_dashboard.RangeInfo'
+      registrations:
+        $ref: '#/definitions/internal_modules_admin_dashboard.RegistrationsSection'
+      revenue:
+        $ref: '#/definitions/internal_modules_admin_dashboard.RevenueSection'
+      social:
+        $ref: '#/definitions/internal_modules_admin_dashboard.SocialSection'
+      timeseries:
+        items:
+          $ref: '#/definitions/internal_modules_admin_dashboard.TimePoint'
+        type: array
+      totals:
+        $ref: '#/definitions/internal_modules_admin_dashboard.Totals'
+      users:
+        $ref: '#/definitions/internal_modules_admin_dashboard.UsersSection'
+    type: object
+  internal_modules_admin_dashboard.OverviewSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_dashboard.OverviewResponse'
+      success:
+        type: boolean
+    type: object
+  internal_modules_admin_dashboard.RangeInfo:
+    properties:
+      from:
+        type: string
+      to:
+        type: string
+    type: object
+  internal_modules_admin_dashboard.RegistrationsSection:
+    properties:
+      today:
+        type: integer
+      week:
+        type: integer
+    type: object
+  internal_modules_admin_dashboard.RevenueSection:
+    properties:
+      spendByType:
+        items:
+          $ref: '#/definitions/internal_modules_admin_dashboard.SpendByType'
+        type: array
+      topupCount:
+        type: integer
+      topupKen:
+        type: integer
+      vipPurchases:
+        type: integer
+      vipRevenueKen:
+        type: integer
+    type: object
+  internal_modules_admin_dashboard.SocialSection:
+    properties:
+      friendRequests:
+        type: integer
+      newFollows:
+        type: integer
+      newFriendships:
+        type: integer
+      newMarriages:
+        type: integer
+    type: object
+  internal_modules_admin_dashboard.SpendByType:
+    properties:
+      amount:
+        type: integer
+      count:
+        type: integer
+      type:
+        type: string
+    type: object
+  internal_modules_admin_dashboard.TimePoint:
+    properties:
+      date:
+        type: string
+      newUsers:
+        type: integer
+      posts:
+        type: integer
+      revenueKen:
+        type: integer
+      topupKen:
+        type: integer
+    type: object
+  internal_modules_admin_dashboard.Totals:
+    properties:
+      activeMarriages:
+        type: integer
+      kenInCirculation:
+        type: integer
+      kisses:
+        type: integer
+      posts:
+        type: integer
+      rooms:
+        type: integer
+      users:
+        type: integer
+    type: object
+  internal_modules_admin_dashboard.UsersSection:
+    properties:
+      active:
+        type: integer
+      female:
+        type: integer
+      male:
+        type: integer
+      new:
+        type: integer
+      verified:
+        type: integer
+    type: object
   internal_modules_admin_ken.AdjustRequest:
     properties:
       action:
@@ -133,6 +323,21 @@ definitions:
       traceId:
         type: string
     type: object
+  internal_modules_admin_ken.CounterpartyInfo:
+    properties:
+      avatar:
+        example: https://cdn.ola.vn/a.png
+        type: string
+      fullName:
+        example: John Doe
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      username:
+        example: john_doe
+        type: string
+    type: object
   internal_modules_admin_ken.TransactionItem:
     properties:
       actorId:
@@ -150,6 +355,8 @@ definitions:
       balanceBefore:
         example: 1000
         type: integer
+      counterparty:
+        $ref: '#/definitions/internal_modules_admin_ken.CounterpartyInfo'
       createdAt:
         example: "2026-06-22T10:00:00Z"
         type: string
@@ -653,6 +860,44 @@ definitions:
       traceId:
         type: string
     type: object
+  internal_modules_auth.ConfirmEmailVerifyRequest:
+    properties:
+      code:
+        example: "123456"
+        type: string
+      verifyId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+    required:
+    - code
+    - verifyId
+    type: object
+  internal_modules_auth.ConfirmEmailVerifyResponse:
+    properties:
+      emailVerified:
+        example: true
+        type: boolean
+      vipRewardDays:
+        example: 30
+        type: integer
+    type: object
+  internal_modules_auth.ConfirmEmailVerifySuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_auth.ConfirmEmailVerifyResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
   internal_modules_auth.DeviceInfo:
     properties:
       appVersion:
@@ -716,6 +961,41 @@ definitions:
     type: object
   internal_modules_auth.RegisterSuccessResponse:
     type: object
+  internal_modules_auth.SendEmailVerifyRequest:
+    properties:
+      email:
+        example: john@example.com
+        maxLength: 255
+        type: string
+    required:
+    - email
+    type: object
+  internal_modules_auth.SendEmailVerifyResponse:
+    properties:
+      message:
+        example: Verification code sent
+        type: string
+      verifyId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+    type: object
+  internal_modules_auth.SendEmailVerifySuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_auth.SendEmailVerifyResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
   internal_modules_auth.UserResponse:
     type: object
   internal_modules_call.CallTokenResponse:
@@ -777,6 +1057,204 @@ definitions:
     required:
     - callType
     - conversationId
+    type: object
+  internal_modules_clan.AssignRoleRequest:
+    properties:
+      role:
+        enum:
+        - deputy
+        - ambassador
+        example: deputy
+        type: string
+      username:
+        example: phobang02
+        type: string
+    required:
+    - role
+    - username
+    type: object
+  internal_modules_clan.BanListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_clan.BanResponse'
+        type: array
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  internal_modules_clan.BanResponse:
+    properties:
+      bannedAt:
+        type: string
+      user:
+        $ref: '#/definitions/internal_modules_clan.ClanUserResponse'
+    type: object
+  internal_modules_clan.CheckNameResponse:
+    properties:
+      available:
+        type: boolean
+      clan:
+        $ref: '#/definitions/internal_modules_clan.ClanPreviewResponse'
+      cost:
+        type: integer
+      name:
+        type: string
+    type: object
+  internal_modules_clan.ClanPostsResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_me.MeResponse'
+        type: array
+      nextCursor:
+        type: string
+      pinned:
+        $ref: '#/definitions/ola-chat-server_internal_modules_me.MeResponse'
+    type: object
+  internal_modules_clan.ClanPreviewResponse:
+    properties:
+      ambassador:
+        type: string
+      deputy:
+        type: string
+      handle:
+        type: string
+      memberCount:
+        type: integer
+      owner:
+        type: string
+      visitCount:
+        type: integer
+    type: object
+  internal_modules_clan.ClanResponse:
+    properties:
+      ambassador:
+        $ref: '#/definitions/internal_modules_clan.ClanUserResponse'
+      avatar:
+        type: string
+      cover:
+        type: string
+      createdAt:
+        type: string
+      deputy:
+        $ref: '#/definitions/internal_modules_clan.ClanUserResponse'
+      description:
+        type: string
+      handle:
+        type: string
+      id:
+        type: string
+      isBanned:
+        type: boolean
+      isMember:
+        type: boolean
+      kenBalance:
+        type: integer
+      meTopPostId:
+        type: string
+      memberCount:
+        type: integer
+      memberPublicPost:
+        type: boolean
+      myRole:
+        type: string
+      myVerified:
+        type: boolean
+      owner:
+        $ref: '#/definitions/internal_modules_clan.ClanUserResponse'
+      policy:
+        type: integer
+      visitCount:
+        type: integer
+    type: object
+  internal_modules_clan.ClanUserResponse:
+    properties:
+      avatar:
+        type: string
+      fullName:
+        type: string
+      id:
+        type: string
+      username:
+        type: string
+    type: object
+  internal_modules_clan.CreateClanRequest:
+    properties:
+      description:
+        maxLength: 1000
+        type: string
+      name:
+        example: teamviet
+        maxLength: 64
+        type: string
+    required:
+    - name
+    type: object
+  internal_modules_clan.MemberListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_clan.MemberResponse'
+        type: array
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  internal_modules_clan.MemberResponse:
+    properties:
+      joinedAt:
+        type: string
+      role:
+        type: string
+      user:
+        $ref: '#/definitions/internal_modules_clan.ClanUserResponse'
+      verified:
+        type: boolean
+    type: object
+  internal_modules_clan.MessageResponse:
+    properties:
+      message:
+        example: ok
+        type: string
+    type: object
+  internal_modules_clan.PinRequest:
+    properties:
+      postId:
+        type: string
+    required:
+    - postId
+    type: object
+  internal_modules_clan.UpdateClanRequest:
+    properties:
+      description:
+        maxLength: 1000
+        type: string
+      memberPublicPost:
+        type: boolean
+      policy:
+        maximum: 4
+        minimum: 0
+        type: integer
+    type: object
+  internal_modules_clan.UploadClanImageResponse:
+    properties:
+      url:
+        type: string
+    type: object
+  internal_modules_clan.UsernameRequest:
+    properties:
+      username:
+        example: member01
+        type: string
+    required:
+    - username
     type: object
   internal_modules_conversation.ConversationResponse:
     properties:
@@ -1809,6 +2287,10 @@ definitions:
         $ref: '#/definitions/internal_modules_me.AuthorResponse'
       checkIn:
         $ref: '#/definitions/internal_modules_me.CheckInResponse'
+      clanHandle:
+        type: string
+      clanId:
+        type: string
       commentCount:
         type: integer
       content:
@@ -1859,6 +2341,8 @@ definitions:
     properties:
       checkIn:
         $ref: '#/definitions/internal_modules_me.CheckInInput'
+      clearCheckIn:
+        type: boolean
       content:
         maxLength: 5000
         type: string
@@ -2101,6 +2585,70 @@ definitions:
         type: string
     required:
     - content
+    type: object
+  internal_modules_mini-game.MiniGameResponse:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      description:
+        type: string
+      gameUrl:
+        type: string
+      iconUrl:
+        type: string
+      id:
+        type: string
+      isEnabled:
+        type: boolean
+      name:
+        type: string
+      slug:
+        type: string
+      sortOrder:
+        type: integer
+      updatedAt:
+        type: string
+    type: object
+  internal_modules_notification.ActorResponse:
+    properties:
+      avatar:
+        type: string
+      fullName:
+        type: string
+      id:
+        type: string
+      username:
+        type: string
+    type: object
+  internal_modules_notification.AppNotificationListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_notification.AppNotificationResponse'
+        type: array
+      nextCursor:
+        type: string
+      unreadCount:
+        type: integer
+    type: object
+  internal_modules_notification.AppNotificationResponse:
+    properties:
+      actor:
+        $ref: '#/definitions/internal_modules_notification.ActorResponse'
+      createdAt:
+        type: string
+      id:
+        type: string
+      isRead:
+        type: boolean
+      preview:
+        type: string
+      refId:
+        type: string
+      type:
+        type: string
     type: object
   internal_modules_pen.CancelResponse:
     properties:
@@ -2977,6 +3525,9 @@ definitions:
       soundKen:
         example: true
         type: boolean
+      vipStorePrivacy:
+        example: 0
+        type: integer
       wallpaperUrl:
         example: ""
         type: string
@@ -3289,6 +3840,9 @@ definitions:
         example: https://example.com/bio.jpg
         type: string
       canViewInterested:
+        example: true
+        type: boolean
+      canViewVipStore:
         example: true
         type: boolean
       coverPhoto:
@@ -3929,6 +4483,31 @@ definitions:
   ola-chat-server_internal_models.JSONB:
     additionalProperties: true
     type: object
+  ola-chat-server_internal_models.MiniGame:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      description:
+        type: string
+      gameUrl:
+        type: string
+      iconUrl:
+        type: string
+      id:
+        type: string
+      isEnabled:
+        type: boolean
+      name:
+        type: string
+      slug:
+        type: string
+      sortOrder:
+        type: integer
+      updatedAt:
+        type: string
+    type: object
   ola-chat-server_internal_models.WheelSegmentKind:
     enum:
     - miss
@@ -4478,6 +5057,241 @@ definitions:
     properties:
       enabled:
         type: boolean
+    type: object
+  ola-chat-server_internal_modules_me.AuthorResponse:
+    properties:
+      avatar:
+        type: string
+      fullName:
+        type: string
+      id:
+        type: string
+      isFriend:
+        type: boolean
+      isSelf:
+        type: boolean
+      username:
+        type: string
+    type: object
+  ola-chat-server_internal_modules_me.CheckInInput:
+    properties:
+      action:
+        example: Đang ăn
+        maxLength: 100
+        type: string
+      actionIcon:
+        example: "\U0001F35C"
+        maxLength: 16
+        type: string
+      address:
+        example: 86-88 Cao Thắng, Q3
+        maxLength: 500
+        type: string
+      lat:
+        example: 10.771
+        type: number
+      lng:
+        example: 106.682
+        type: number
+      name:
+        example: The Coffee House
+        maxLength: 255
+        type: string
+    required:
+    - name
+    type: object
+  ola-chat-server_internal_modules_me.CheckInResponse:
+    properties:
+      action:
+        type: string
+      actionIcon:
+        type: string
+      address:
+        type: string
+      lat:
+        type: number
+      lng:
+        type: number
+      name:
+        type: string
+    type: object
+  ola-chat-server_internal_modules_me.CreateMeRequest:
+    properties:
+      checkIn:
+        $ref: '#/definitions/ola-chat-server_internal_modules_me.CheckInInput'
+      content:
+        example: Hôm nay trời đẹp quá!
+        maxLength: 5000
+        type: string
+      images:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_me.MeImageInput'
+        maxItems: 5
+        type: array
+      sticker:
+        maxLength: 500
+        type: string
+      visibility:
+        enum:
+        - public
+        - friend
+        - private
+        example: public
+        type: string
+    type: object
+  ola-chat-server_internal_modules_me.MeImageInput:
+    properties:
+      height:
+        minimum: 0
+        type: integer
+      mimeType:
+        type: string
+      url:
+        example: http://localhost:9000/chat-uploads/posts/abc.jpg
+        type: string
+      width:
+        minimum: 0
+        type: integer
+    required:
+    - url
+    type: object
+  ola-chat-server_internal_modules_me.MeImageResponse:
+    properties:
+      height:
+        type: integer
+      mimeType:
+        type: string
+      url:
+        type: string
+      width:
+        type: integer
+    type: object
+  ola-chat-server_internal_modules_me.MeResponse:
+    properties:
+      author:
+        $ref: '#/definitions/ola-chat-server_internal_modules_me.AuthorResponse'
+      checkIn:
+        $ref: '#/definitions/ola-chat-server_internal_modules_me.CheckInResponse'
+      clanHandle:
+        type: string
+      clanId:
+        type: string
+      commentCount:
+        type: integer
+      content:
+        type: string
+      createdAt:
+        type: string
+      dislikeCount:
+        type: integer
+      id:
+        type: string
+      images:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_me.MeImageResponse'
+        type: array
+      isPinned:
+        type: boolean
+      likeCount:
+        type: integer
+      mentions:
+        items:
+          type: string
+        type: array
+      myReaction:
+        type: string
+      sticker:
+        type: string
+      topLikers:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_modules_me.AuthorResponse'
+        type: array
+      updatedAt:
+        type: string
+      visibility:
+        type: string
+    type: object
+  ola-chat-server_internal_modules_mini-game.CreateMiniGameRequest:
+    properties:
+      description:
+        maxLength: 300
+        type: string
+      gameUrl:
+        maxLength: 500
+        type: string
+      iconUrl:
+        maxLength: 500
+        type: string
+      isEnabled:
+        type: boolean
+      name:
+        maxLength: 100
+        minLength: 1
+        type: string
+      slug:
+        maxLength: 50
+        minLength: 2
+        type: string
+      sortOrder:
+        type: integer
+    required:
+    - gameUrl
+    - name
+    - slug
+    type: object
+  ola-chat-server_internal_modules_mini-game.MiniGameListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/ola-chat-server_internal_models.MiniGame'
+        type: array
+      total:
+        type: integer
+    type: object
+  ola-chat-server_internal_modules_mini-game.MiniGameResponse:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      description:
+        type: string
+      gameUrl:
+        type: string
+      iconUrl:
+        type: string
+      id:
+        type: string
+      isEnabled:
+        type: boolean
+      name:
+        type: string
+      slug:
+        type: string
+      sortOrder:
+        type: integer
+      updatedAt:
+        type: string
+    type: object
+  ola-chat-server_internal_modules_mini-game.UpdateMiniGameRequest:
+    properties:
+      description:
+        maxLength: 300
+        type: string
+      gameUrl:
+        maxLength: 500
+        type: string
+      iconUrl:
+        maxLength: 500
+        type: string
+      isEnabled:
+        type: boolean
+      name:
+        maxLength: 100
+        minLength: 1
+        type: string
+      sortOrder:
+        type: integer
     type: object
   ola-chat-server_internal_modules_pen.AdminShotListSuccessResponse:
     properties:
@@ -5526,6 +6340,42 @@ definitions:
         example: 550e8400-e29b-41d4-a716-446655440000
         type: string
     type: object
+  ola-chat-server_internal_utils.BaseResponse-array_internal_modules_clan_ClanResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/internal_modules_clan.ClanResponse'
+        type: array
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_audit_AuditLogListResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_audit.AuditLogListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
   ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_auth_AdminDTO:
     properties:
       data:
@@ -5747,6 +6597,125 @@ definitions:
       traceId:
         type: string
     type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_BanListResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_clan.BanListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_CheckNameResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_clan.CheckNameResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_ClanPostsResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_clan.ClanPostsResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_ClanResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_clan.ClanResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_MemberListResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_clan.MemberListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_MessageResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_clan.MessageResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_UploadClanImageResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_clan.UploadClanImageResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
   ola-chat-server_internal_utils.BaseResponse-internal_modules_me_CommentListResponse:
     properties:
       data:
@@ -5900,6 +6869,23 @@ definitions:
       traceId:
         type: string
     type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_notification_AppNotificationListResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_notification.AppNotificationListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
   ola-chat-server_internal_utils.BaseResponse-internal_modules_room_JoinRoomResponse:
     properties:
       data:
@@ -6006,6 +6992,23 @@ definitions:
     properties:
       data:
         $ref: '#/definitions/map_string_int64'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_me_MeResponse:
+    properties:
+      data:
+        $ref: '#/definitions/ola-chat-server_internal_modules_me.MeResponse'
       error:
         type: string
       path:
@@ -6203,6 +7206,39 @@ paths:
       summary: Refresh admin token
       tags:
       - admin-auth
+  /admin/dashboard/overview:
+    get:
+      description: 'Số liệu tổng quan cho dashboard: người dùng, doanh thu KEN/VIP,
+        tương tác, xã hội, game và chuỗi thời gian'
+      parameters:
+      - description: Từ thời gian (RFC3339)
+        in: query
+        name: from
+        type: string
+      - description: Đến thời gian (RFC3339)
+        in: query
+        name: to
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_dashboard.OverviewSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Thống kê tổng quan (admin)
+      tags:
+      - admin-dashboard
   /admin/egg/draws:
     get:
       parameters:
@@ -6752,6 +7788,55 @@ paths:
       summary: Lịch sử giao dịch ken của user (admin)
       tags:
       - admin-ken
+  /admin/logs:
+    get:
+      description: Danh sách các thay đổi do admin thực hiện (tự động ghi mọi thao
+        tác POST/PUT/PATCH/DELETE)
+      parameters:
+      - description: Lọc theo admin
+        in: query
+        name: adminId
+        type: string
+      - description: Lọc theo nhóm chức năng (users, rooms, vip...)
+        in: query
+        name: resource
+        type: string
+      - description: Lọc theo method (POST/PUT/PATCH/DELETE)
+        in: query
+        name: method
+        type: string
+      - description: Lọc theo route đã đăng ký (khớp phần đuôi)
+        in: query
+        name: route
+        type: string
+      - description: Từ thời gian (RFC3339)
+        in: query
+        name: from
+        type: string
+      - description: Đến thời gian (RFC3339)
+        in: query
+        name: to
+        type: string
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_audit_AuditLogListResponse'
+      security:
+      - BearerAuth: []
+      summary: Nhật ký thao tác admin
+      tags:
+      - admin-audit
   /admin/me:
     get:
       parameters:
@@ -6910,6 +7995,99 @@ paths:
       summary: Enable/disable a post (admin)
       tags:
       - admin-me
+  /admin/mini-games:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_modules_mini-game.MiniGameListResponse'
+      security:
+      - BearerAuth: []
+      summary: Danh sách mini game (admin)
+      tags:
+      - admin-mini-game
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Mini game
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ola-chat-server_internal_modules_mini-game.CreateMiniGameRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_modules_mini-game.MiniGameResponse'
+      security:
+      - BearerAuth: []
+      summary: Tạo mini game (admin)
+      tags:
+      - admin-mini-game
+  /admin/mini-games/{id}:
+    delete:
+      parameters:
+      - description: Mini game ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Xoá mini game (admin)
+      tags:
+      - admin-mini-game
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Mini game ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Mini game
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ola-chat-server_internal_modules_mini-game.UpdateMiniGameRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_modules_mini-game.MiniGameResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Cập nhật mini game (admin)
+      tags:
+      - admin-mini-game
   /admin/pen/shots:
     get:
       parameters:
@@ -7112,6 +8290,33 @@ paths:
       security:
       - BearerAuth: []
       summary: Get room message history (admin, includes disabled rooms)
+      tags:
+      - admin-room
+  /admin/rooms/{id}/messages/{messageId}:
+    delete:
+      parameters:
+      - description: Room ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Message ID
+        in: path
+        name: messageId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete a room message (admin)
       tags:
       - admin-room
   /admin/settings:
@@ -8180,6 +9385,84 @@ paths:
       summary: Register a new user
       tags:
       - auth
+  /auth/verify-email/confirm:
+    post:
+      consumes:
+      - application/json
+      description: Verify the 6-digit code and mark the authenticated user's email
+        as verified
+      parameters:
+      - description: Confirm Email Verify Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_auth.ConfirmEmailVerifyRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_auth.ConfirmEmailVerifySuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Confirm email verification code
+      tags:
+      - auth
+  /auth/verify-email/send:
+    post:
+      consumes:
+      - application/json
+      description: Send a 6-digit verification code to the given email for the authenticated
+        user
+      parameters:
+      - description: Send Email Verify Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_auth.SendEmailVerifyRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_auth.SendEmailVerifySuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+        "429":
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Send email verification code
+      tags:
+      - auth
   /calls/{id}/answer:
     post:
       parameters:
@@ -8280,6 +9563,597 @@ paths:
       summary: Start a call
       tags:
       - calls
+  /clans:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Create clan
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_clan.CreateClanRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_ClanResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a clan (costs Ken)
+      tags:
+      - clan
+  /clans/{id}:
+    get:
+      parameters:
+      - description: Clan ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_ClanResponse'
+      security:
+      - BearerAuth: []
+      summary: Get clan info by id (increments visit count once per viewer per 6h)
+      tags:
+      - clan
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Clan ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update clan
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_clan.UpdateClanRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_ClanResponse'
+      security:
+      - BearerAuth: []
+      summary: Update clan description/policy (owner only)
+      tags:
+      - clan
+  /clans/{id}/avatar:
+    post:
+      consumes:
+      - multipart/form-data
+      parameters:
+      - description: Clan ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Image file (jpg, png, gif, webp)
+        in: formData
+        name: image
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_UploadClanImageResponse'
+      security:
+      - BearerAuth: []
+      summary: Upload clan avatar (owner only)
+      tags:
+      - clan
+  /clans/{id}/bans:
+    get:
+      parameters:
+      - description: Clan ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_BanListResponse'
+      security:
+      - BearerAuth: []
+      summary: List banned users (owner/deputy only)
+      tags:
+      - clan
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Clan ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Username to ban
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_clan.UsernameRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_MessageResponse'
+      security:
+      - BearerAuth: []
+      summary: Ban a user from the clan by username (owner/deputy only, also kicks)
+      tags:
+      - clan
+  /clans/{id}/bans/{userId}:
+    delete:
+      parameters:
+      - description: Clan ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_MessageResponse'
+      security:
+      - BearerAuth: []
+      summary: Unban a user (owner/deputy only)
+      tags:
+      - clan
+  /clans/{id}/cover:
+    post:
+      consumes:
+      - multipart/form-data
+      parameters:
+      - description: Clan ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Image file (jpg, png, gif, webp)
+        in: formData
+        name: image
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_UploadClanImageResponse'
+      security:
+      - BearerAuth: []
+      summary: Upload clan cover (owner only)
+      tags:
+      - clan
+  /clans/{id}/join:
+    delete:
+      parameters:
+      - description: Clan ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_ClanResponse'
+      security:
+      - BearerAuth: []
+      summary: Leave a clan (owner cannot leave)
+      tags:
+      - clan
+    post:
+      parameters:
+      - description: Clan ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_ClanResponse'
+      security:
+      - BearerAuth: []
+      summary: Join (follow) a clan
+      tags:
+      - clan
+  /clans/{id}/me:
+    get:
+      parameters:
+      - description: Clan ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Opaque keyset cursor
+        in: query
+        name: cursor
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_ClanPostsResponse'
+      security:
+      - BearerAuth: []
+      summary: Clan feed (pinned Me Top separate, keyset cursor)
+      tags:
+      - clan
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Clan ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Post content
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/ola-chat-server_internal_modules_me.CreateMeRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_me_MeResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a Me post inside the clan
+      tags:
+      - clan
+  /clans/{id}/me/{postId}:
+    delete:
+      parameters:
+      - description: Clan ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Post ID
+        in: path
+        name: postId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_MessageResponse'
+      security:
+      - BearerAuth: []
+      summary: 'Moderation: disable a clan post (owner/deputy only)'
+      tags:
+      - clan
+  /clans/{id}/me/by-user/{userId}:
+    delete:
+      parameters:
+      - description: Clan ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Author user ID
+        in: path
+        name: userId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_MessageResponse'
+      security:
+      - BearerAuth: []
+      summary: 'Moderation: disable all posts by a user in this clan (owner/deputy
+        only)'
+      tags:
+      - clan
+  /clans/{id}/members:
+    get:
+      parameters:
+      - description: Clan ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      - description: Only verified members
+        in: query
+        name: verified
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_MemberListResponse'
+      security:
+      - BearerAuth: []
+      summary: List clan members (staff first)
+      tags:
+      - clan
+  /clans/{id}/pin:
+    delete:
+      parameters:
+      - description: Clan ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_MessageResponse'
+      security:
+      - BearerAuth: []
+      summary: Remove clan Me Top (owner/deputy only)
+      tags:
+      - clan
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Clan ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Post to pin
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_clan.PinRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_MessageResponse'
+      security:
+      - BearerAuth: []
+      summary: Set a clan post as Me Top (owner/deputy only)
+      tags:
+      - clan
+  /clans/{id}/roles:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Clan ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Assign role
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_clan.AssignRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_ClanResponse'
+      security:
+      - BearerAuth: []
+      summary: Assign deputy/ambassador by username (owner only)
+      tags:
+      - clan
+  /clans/{id}/roles/{role}:
+    delete:
+      parameters:
+      - description: Clan ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Role (deputy | ambassador)
+        in: path
+        name: role
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_ClanResponse'
+      security:
+      - BearerAuth: []
+      summary: Revoke current deputy/ambassador (owner only)
+      tags:
+      - clan
+  /clans/{id}/verify:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Clan ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Member username
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_clan.UsernameRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_MessageResponse'
+      security:
+      - BearerAuth: []
+      summary: Unverify a member by username (owner only)
+      tags:
+      - clan
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Clan ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Member username
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_clan.UsernameRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_MessageResponse'
+      security:
+      - BearerAuth: []
+      summary: Verify a member by username (owner only)
+      tags:
+      - clan
+  /clans/by-handle/{handle}:
+    get:
+      parameters:
+      - description: Clan handle
+        in: path
+        name: handle
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_ClanResponse'
+      security:
+      - BearerAuth: []
+      summary: 'Get clan info by handle (#name without the #)'
+      tags:
+      - clan
+  /clans/check-name:
+    get:
+      parameters:
+      - description: 'Clan name (lowercase letters and digits, 2-32 chars, optional
+          # prefix)'
+        in: query
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_CheckNameResponse'
+      security:
+      - BearerAuth: []
+      summary: Check if a clan name is available (returns preview when taken)
+      tags:
+      - clan
+  /clans/mine:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-array_internal_modules_clan_ClanResponse'
+      security:
+      - BearerAuth: []
+      summary: List clans the current user has joined
+      tags:
+      - clan
   /conversations:
     get:
       description: Get all conversations for the authenticated user
@@ -9085,8 +10959,9 @@ paths:
         name: cursor
         type: string
       - description: Set to 'tagged' (posts with any @mention), 'mentions' (posts
-          mentioning viewer), 'media' (posts with images) or 'following' (own posts
-          + posts from users the viewer follows)
+          mentioning viewer), 'media' (posts with images), 'following' (own posts
+          + posts from users the viewer follows) or 'clan' (public posts from all
+          clans)
         in: query
         name: filter
         type: string
@@ -10000,6 +11875,75 @@ paths:
       summary: Send image message
       tags:
       - messages
+  /mini-games:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/internal_modules_mini-game.MiniGameResponse'
+            type: array
+      security:
+      - BearerAuth: []
+      summary: Danh sách mini game đang bật
+      tags:
+      - mini-game
+  /notifications:
+    get:
+      parameters:
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Opaque keyset cursor from previous page's nextCursor
+        in: query
+        name: cursor
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_notification_AppNotificationListResponse'
+      security:
+      - BearerAuth: []
+      summary: List my app notifications (friend requests, marriage proposals, ...)
+      tags:
+      - notifications
+  /notifications/read-all:
+    post:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Mark all my app notifications as read
+      tags:
+      - notifications
+  /notifications/unread-count:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-map_string_int64'
+      security:
+      - BearerAuth: []
+      summary: Count my unread app notifications
+      tags:
+      - notifications
   /pen/history:
     get:
       parameters:

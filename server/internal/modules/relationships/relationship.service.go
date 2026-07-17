@@ -7,6 +7,7 @@ import (
 	"hash/fnv"
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
+	"ola-chat-server/internal/modules/notification"
 	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/transport/websocket"
 	"sort"
@@ -107,15 +108,17 @@ type Service struct {
 	repo     *Repository
 	presence *websocket.PresenceService
 	cache    *services.CacheService
+	notifSvc *notification.Service
 	db       *gorm.DB
 	logger   *zap.SugaredLogger
 }
 
-func NewService(repo *Repository, presence *websocket.PresenceService, cache *services.CacheService, db *gorm.DB, logger *zap.SugaredLogger) *Service {
+func NewService(repo *Repository, presence *websocket.PresenceService, cache *services.CacheService, notifSvc *notification.Service, db *gorm.DB, logger *zap.SugaredLogger) *Service {
 	return &Service{
 		repo:     repo,
 		presence: presence,
 		cache:    cache,
+		notifSvc: notifSvc,
 		db:       db,
 		logger:   logger.Named("[relationship_service]"),
 	}
@@ -129,6 +132,9 @@ func (s *Service) SendFriendRequest(requesterID, addresseeID uuid.UUID) (*Relati
 	var result *RelationshipResponse
 	var autoAcceptedA, autoAcceptedB uuid.UUID
 	var didAutoAccept bool
+	var autoAcceptedRelID uuid.UUID
+	var createdRelID uuid.UUID
+	var didCreate bool
 	err := s.db.Transaction(func(tx *gorm.DB) error {
 		if err := lockPair(tx, requesterID, addresseeID); err != nil {
 			return err
@@ -175,6 +181,7 @@ func (s *Service) SendFriendRequest(requesterID, addresseeID uuid.UUID) (*Relati
 					"relationship_id", existing.ID, "requester_id", existing.RequesterID, "addressee_id", existing.AddresseeID)
 				autoAcceptedA, autoAcceptedB = existing.RequesterID, existing.AddresseeID
 				didAutoAccept = true
+				autoAcceptedRelID = existing.ID
 				result = s.buildRelationshipResponse(reloadOr(txRepo, existing))
 				return nil
 
@@ -209,6 +216,8 @@ func (s *Service) SendFriendRequest(requesterID, addresseeID uuid.UUID) (*Relati
 
 		s.logger.Infow("Friend request sent",
 			"relationship_id", relationship.ID, "requester_id", requesterID, "addressee_id", addresseeID)
+		createdRelID = relationship.ID
+		didCreate = true
 		result = s.buildRelationshipResponse(reloadOr(txRepo, relationship))
 		return nil
 	})
@@ -217,6 +226,10 @@ func (s *Service) SendFriendRequest(requesterID, addresseeID uuid.UUID) (*Relati
 	}
 	if didAutoAccept {
 		s.invalidateFriendList(autoAcceptedA, autoAcceptedB)
+		s.notifSvc.Remove(autoAcceptedB, models.AppNotificationFriendRequest, autoAcceptedRelID)
+	}
+	if didCreate {
+		s.notifSvc.Create(addresseeID, &requesterID, models.AppNotificationFriendRequest, &createdRelID, "")
 	}
 	return result, nil
 }
@@ -290,6 +303,7 @@ func (s *Service) AcceptFriendRequest(relationshipID, userID uuid.UUID) (*Relati
 		return nil, err
 	}
 	s.invalidateFriendList(friendA, friendB)
+	s.notifSvc.Remove(userID, models.AppNotificationFriendRequest, relationshipID)
 	return result, nil
 }
 
@@ -324,6 +338,7 @@ func (s *Service) RejectFriendRequest(relationshipID, userID uuid.UUID) error {
 	s.logger.Infow("Friend request rejected",
 		"relationship_id", relationshipID, "requester_id", relationship.RequesterID, "addressee_id", relationship.AddresseeID)
 
+	s.notifSvc.Remove(userID, models.AppNotificationFriendRequest, relationshipID)
 	return nil
 }
 
@@ -358,6 +373,7 @@ func (s *Service) CancelFriendRequest(relationshipID, userID uuid.UUID) error {
 		"addressee_id", relationship.AddresseeID,
 	)
 
+	s.notifSvc.Remove(relationship.AddresseeID, models.AppNotificationFriendRequest, relationshipID)
 	return nil
 }
 

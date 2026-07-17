@@ -64,6 +64,8 @@ type AuthorResponse struct {
 
 type MeResponse struct {
 	ID           string            `json:"id"`
+	ClanID       string            `json:"clanId,omitempty"`
+	ClanHandle   string            `json:"clanHandle,omitempty"`
 	Content      string            `json:"content,omitempty"`
 	Images       []MeImageResponse `json:"images"`
 	Mentions     []string          `json:"mentions,omitempty"`

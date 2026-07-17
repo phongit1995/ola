@@ -1,9 +1,9 @@
 import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, Pressable, Text, View } from 'react-native';
-import { ChatComposer, type ChatComposerHandle } from '../../components/ChatComposer';
+import { ChatComposer, type ChatComposerHandle } from '@components/ChatComposer';
 
-const likeIcon = require('../../assets/icons/chat/smiley/smiley_35.png');
+const likeIcon = require('@assets/icons/chat/smiley/smiley_35.png');
 
 const DIVIDER = 'rgba(0,0,0,0.12)';
 

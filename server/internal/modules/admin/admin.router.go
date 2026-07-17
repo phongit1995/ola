@@ -3,11 +3,13 @@ package admin
 import (
 	adminaudit "ola-chat-server/internal/modules/admin/audit"
 	adminauth "ola-chat-server/internal/modules/admin/auth"
+	adminclan "ola-chat-server/internal/modules/admin/clan"
 	admindashboard "ola-chat-server/internal/modules/admin/dashboard"
 	adminegg "ola-chat-server/internal/modules/admin/egg"
 	adminken "ola-chat-server/internal/modules/admin/ken"
 	adminkenchest "ola-chat-server/internal/modules/admin/kenchest"
 	adminme "ola-chat-server/internal/modules/admin/me"
+	adminminigame "ola-chat-server/internal/modules/admin/mini-game"
 	adminpen "ola-chat-server/internal/modules/admin/pen"
 	adminroom "ola-chat-server/internal/modules/admin/room"
 	adminsetting "ola-chat-server/internal/modules/admin/setting"
@@ -26,6 +28,7 @@ type Router struct {
 	userRouter      *adminuser.Router
 	meRouter        *adminme.Router
 	roomRouter      *adminroom.Router
+	clanRouter      *adminclan.Router
 	uploadRouter    *adminupload.Router
 	vipRouter       *adminvip.Router
 	eggRouter       *adminegg.Router
@@ -34,10 +37,11 @@ type Router struct {
 	kenChestRouter  *adminkenchest.Router
 	penRouter       *adminpen.Router
 	settingRouter   *adminsetting.Router
+	miniGameRouter  *adminminigame.Router
 }
 
-func NewRouter(auditMiddleware *adminaudit.Middleware, auditRouter *adminaudit.Router, dashboardRouter *admindashboard.Router, authRouter *adminauth.Router, userRouter *adminuser.Router, meRouter *adminme.Router, roomRouter *adminroom.Router, uploadRouter *adminupload.Router, vipRouter *adminvip.Router, eggRouter *adminegg.Router, wheelRouter *adminwheel.Router, kenRouter *adminken.Router, kenChestRouter *adminkenchest.Router, penRouter *adminpen.Router, settingRouter *adminsetting.Router) *Router {
-	return &Router{auditMiddleware: auditMiddleware, auditRouter: auditRouter, dashboardRouter: dashboardRouter, authRouter: authRouter, userRouter: userRouter, meRouter: meRouter, roomRouter: roomRouter, uploadRouter: uploadRouter, vipRouter: vipRouter, eggRouter: eggRouter, wheelRouter: wheelRouter, kenRouter: kenRouter, kenChestRouter: kenChestRouter, penRouter: penRouter, settingRouter: settingRouter}
+func NewRouter(auditMiddleware *adminaudit.Middleware, auditRouter *adminaudit.Router, dashboardRouter *admindashboard.Router, authRouter *adminauth.Router, userRouter *adminuser.Router, meRouter *adminme.Router, roomRouter *adminroom.Router, clanRouter *adminclan.Router, uploadRouter *adminupload.Router, vipRouter *adminvip.Router, eggRouter *adminegg.Router, wheelRouter *adminwheel.Router, kenRouter *adminken.Router, kenChestRouter *adminkenchest.Router, penRouter *adminpen.Router, settingRouter *adminsetting.Router, miniGameRouter *adminminigame.Router) *Router {
+	return &Router{auditMiddleware: auditMiddleware, auditRouter: auditRouter, dashboardRouter: dashboardRouter, authRouter: authRouter, userRouter: userRouter, meRouter: meRouter, roomRouter: roomRouter, clanRouter: clanRouter, uploadRouter: uploadRouter, vipRouter: vipRouter, eggRouter: eggRouter, wheelRouter: wheelRouter, kenRouter: kenRouter, kenChestRouter: kenChestRouter, penRouter: penRouter, settingRouter: settingRouter, miniGameRouter: miniGameRouter}
 }
 
 func (r *Router) Setup(api *utils.AppGroup) {
@@ -49,6 +53,7 @@ func (r *Router) Setup(api *utils.AppGroup) {
 		r.userRouter.Setup(admin)
 		r.meRouter.Setup(admin)
 		r.roomRouter.Setup(admin)
+		r.clanRouter.Setup(admin)
 		r.uploadRouter.Setup(admin)
 		r.vipRouter.Setup(admin)
 		r.eggRouter.Setup(admin)
@@ -57,5 +62,6 @@ func (r *Router) Setup(api *utils.AppGroup) {
 		r.kenChestRouter.Setup(admin)
 		r.penRouter.Setup(admin)
 		r.settingRouter.Setup(admin)
+		r.miniGameRouter.Setup(admin)
 	}
 }

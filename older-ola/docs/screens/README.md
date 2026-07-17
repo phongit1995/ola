@@ -12,7 +12,10 @@ screens/
 ├── images/                ← ẢNH ASSET DÙNG CHUNG (trích từ APK)
 │   ├── ola_logo_trans.png       logo mặt cười Ola
 │   ├── ic_input_clear.png       icon × xoá ô nhập
-│   └── ic_expander_show_span.png  icon ▾ dropdown
+│   ├── ic_expander_show_span.png  icon ▾ dropdown
+│   ├── ic_clan_*.png             bộ icon clan (role leader/vice/supporter, member, visit)
+│   ├── ic_manage_clan / ic_menu_clan  icon quản lý + placeholder avatar clan
+│   └── ic_action_* / ic_*_gray / ic_state_following …  icon action bar + cụm nút quan hệ (21 icon màn clan)
 ├── dang-nhap/             ← màn Đăng nhập
 │   ├── README.md                tài liệu chi tiết
 │   └── images/                  ảnh chụp riêng (01-login-prefilled, 02-login-empty)
@@ -75,9 +78,15 @@ screens/
 │   └── images/                  4 icon (camera, hủy, xoay, xong)
 ├── modal-dialog/          ← Modal/Dialog kiểu chung (confirm, nhập, progress…)
 │   └── README.md                khung 3 phần + màu/size/nút/icon + CSS
-└── marriage/              ← Box - Kết Hôn (cầu hôn / chấp nhận / ly hôn / box)
-    ├── README.md                composer cầu hôn + gating Box + dialog accept/deny/divorce + CSS
-    └── images/                  icon trái tim + khung tim avatar
+├── marriage/              ← Box - Kết Hôn (cầu hôn / chấp nhận / ly hôn / box)
+│   ├── README.md                composer cầu hôn + gating Box + dialog accept/deny/divorce + CSS
+│   └── images/                  icon trái tim + khung tim avatar
+├── trang-clan/            ← Trang Clan `#tên` (OlaClanMePageActivity)
+│   └── README.md                header clan + bộ máy/chính sách + feed + menu theo vai trò + CSS
+├── tao-clan/              ← Tạo Clan (CreateClanActivity)
+│   └── README.md                nhập tên + kiểm tra + preview clan tồn tại + confirm phí + CSS
+└── quan-ly-clan/          ← Quản lý Clan (ClanManagementActivity — chỉ bang chủ)
+    └── README.md                bổ nhiệm phó/đại sứ + 5 chính sách + chứng thực + 5 modal + CSS
 ```
 
 > Mỗi màn = **1 folder riêng** chứa `README.md` + folder `images/` (ảnh chụp của riêng màn đó). Ảnh **dùng chung** (logo, icon…) đặt ở [images/](images/) cấp screens.
@@ -110,6 +119,9 @@ screens/
 | — | Đổi ảnh đại diện / bìa (picker + crop) | [doi-anh-dai-dien/](doi-anh-dai-dien/README.md) | `OlaCropImageActivity` (vào từ `OlaClanMePageActivity`) | 📐 từ code/XML (chưa chụp) |
 | — | Modal / Dialog (kiểu chung) | [modal-dialog/](modal-dialog/README.md) | dùng chung (confirm, nhập, progress, chọn) | 📐 trích từ layout/style |
 | — | Box - Kết Hôn (Marriage) | [marriage/](marriage/README.md) | `MarriageRequestComposerActivity` (+ `me.c` / `OlaUserProfileActivity` / `m.k`) | 📐 từ code/XML (chưa chụp) |
+| 6 | Trang Clan (`#tên`) | [trang-clan/](trang-clan/README.md) | `me.OlaClanMePageActivity` | 📐 từ code/XML (chưa chụp) |
+| 6a | ↳ Tạo Clan | [tao-clan/](tao-clan/README.md) | `activity.CreateClanActivity` | 📐 từ code/XML (chưa chụp) |
+| 6b | ↳ Quản lý Clan (bang chủ) | [quan-ly-clan/](quan-ly-clan/README.md) | `activity.ClanManagementActivity` | 📐 từ code/XML (chưa chụp) |
 
 ## Quy ước trong tài liệu
 

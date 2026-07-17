@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Image, ScrollView, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { createTimeFormatter, formatKen } from '@ola/shared/lib';
 import type { PenShotView } from '@ola/shared/types';
-import { VipBadge } from '../../../components/VipBadge';
+import { VipBadge } from '@components/VipBadge';
 import { PenButton } from './PenButton';
 import { PenPagination } from './PenPagination';
 import { penAssets } from './penAssets';

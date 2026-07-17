@@ -19,6 +19,7 @@ import { MeVisitorsView } from './MeVisitorsView';
 import { MeNotificationsView } from './MeNotificationsView';
 import { MarriageView } from '../marriage/MarriageView';
 import { useMeNotificationStore } from '@ola/shared/stores/meNotificationStore';
+import { useClanOverlayStore } from '@/store/clanOverlayStore';
 import bellIcon from '@/assets/icons/me/ic_action_notification.png';
 import searchIcon from '@/assets/icons/me/ic_action_search.png';
 
@@ -161,6 +162,7 @@ export function MePanel() {
                 onQuickComment={handlers.onQuickComment}
                 onOpenMenu={handlers.onOpenMenu}
                 onOpenLikers={handlers.onOpenLikers}
+                onOpenClan={(handle) => useClanOverlayStore.getState().open({ kind: 'clan', handle })}
               />
             </PullToRefresh>
 
@@ -193,6 +195,9 @@ export function MePanel() {
                   } else if (key === 'visitors') {
                     setDrawerOpen(false);
                     setVisitorsOpen(true);
+                  } else if (key === 'clan') {
+                    setDrawerOpen(false);
+                    useClanOverlayStore.getState().open({ kind: 'home' });
                   } else {
                     toast.info(t('me.comingSoon'));
                   }

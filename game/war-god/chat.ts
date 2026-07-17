@@ -1,0 +1,229 @@
+import { Container, Graphics, Rectangle, Sprite } from 'pixi.js';
+import { A, tex } from './assets';
+import { HEADING, makeText } from './kit';
+
+export const CHAT_W = 492;
+const CHAT_PAD = 12;
+const BOT_LINES = [
+  'Hihi 😄',
+  'Cẩn thận nhé!',
+  'Xem chiêu này!',
+  'Bạn chơi hay đấy 👍',
+  'Tới lượt ta!',
+  'Không dễ đâu! 😤',
+  'Trận này gay cấn thật!',
+];
+
+interface ChatEntry {
+  from: 'me' | 'bot';
+  text: string;
+}
+
+interface ChatDeps {
+  isOver(): boolean;
+  onFocusChange(focused: boolean): void;
+}
+
+const chatLog: ChatEntry[] = [];
+let deps: ChatDeps;
+let chatBox: Container;
+let chatBg: Sprite;
+let msgLayer: Container;
+let msgMask: Graphics;
+let scrollZone: Container;
+let inputBg: Sprite;
+let sendBtn: Container;
+let smiley: Sprite;
+let input: HTMLInputElement;
+let chatH = 150;
+let contentH = 0;
+let scrollBack = 0;
+
+function viewH(): number {
+  return chatH - 62;
+}
+
+function applyScroll(): void {
+  const v = viewH();
+  const maxBack = Math.max(0, contentH - v);
+  scrollBack = Math.max(0, Math.min(maxBack, scrollBack));
+  msgLayer.y = 8 + Math.min(0, v - contentH) + scrollBack;
+}
+
+function renderChat(): void {
+  msgLayer.removeChildren().forEach((c) => c.destroy({ children: true }));
+  let y = 0;
+  for (const entry of chatLog) {
+    const name = makeText(
+      entry.from === 'me' ? '@bạn:' : '@máy:',
+      12,
+      entry.from === 'me' ? 0xffd75e : 0x6fd3ff,
+      '800',
+    );
+    name.anchor.set(0, 0);
+    const content = makeText(entry.text, 12, 0xffffff, '700');
+    content.anchor.set(0, 0);
+    content.style.wordWrap = true;
+    content.style.wordWrapWidth = CHAT_W - CHAT_PAD * 2 - name.width - 8;
+    name.x = CHAT_PAD;
+    name.y = y;
+    content.x = CHAT_PAD + name.width + 6;
+    content.y = y;
+    msgLayer.addChild(name, content);
+    y += Math.max(name.height, content.height) + 4;
+  }
+  contentH = y;
+  applyScroll();
+}
+
+function pushChat(from: 'me' | 'bot', text: string): void {
+  chatLog.push({ from, text });
+  if (chatLog.length > 50) chatLog.shift();
+  scrollBack = 0;
+  renderChat();
+}
+
+function sendChat(): void {
+  const value = input.value.trim();
+  if (!value) return;
+  input.value = '';
+  pushChat('me', value.slice(0, 120));
+  setTimeout(
+    () => {
+      if (!deps.isOver() && Math.random() < 0.75) {
+        pushChat('bot', BOT_LINES[Math.floor(Math.random() * BOT_LINES.length)]);
+      }
+    },
+    900 + Math.random() * 1200,
+  );
+}
+
+export function buildChat(chatDeps: ChatDeps): Container {
+  deps = chatDeps;
+  chatBox = new Container();
+  chatBg = new Sprite(tex[A.chat.frame]);
+  chatBg.width = CHAT_W;
+  chatBg.height = chatH;
+  chatBox.addChild(chatBg);
+
+  msgLayer = new Container();
+  chatBox.addChild(msgLayer);
+
+  msgMask = new Graphics();
+  chatBox.addChild(msgMask);
+  msgLayer.mask = msgMask;
+
+  scrollZone = new Container();
+  scrollZone.eventMode = 'static';
+  let dragY: number | null = null;
+  scrollZone.on('pointerdown', (e) => {
+    dragY = e.global.y;
+  });
+  scrollZone.on('pointermove', (e) => {
+    if (dragY == null) return;
+    const scale = chatBox.worldTransform.a || 1;
+    scrollBack += (e.global.y - dragY) / scale;
+    dragY = e.global.y;
+    applyScroll();
+  });
+  const endDrag = (): void => {
+    dragY = null;
+  };
+  scrollZone.on('pointerup', endDrag);
+  scrollZone.on('pointerupoutside', endDrag);
+  scrollZone.on('wheel', (e) => {
+    scrollBack -= e.deltaY / 3;
+    applyScroll();
+  });
+  chatBox.addChild(scrollZone);
+
+  inputBg = new Sprite(tex[A.chat.input]);
+  inputBg.width = CHAT_W - CHAT_PAD * 2 - 92;
+  inputBg.height = 34;
+  inputBg.x = CHAT_PAD;
+  chatBox.addChild(inputBg);
+
+  smiley = new Sprite(tex[A.chat.icSmiley]);
+  smiley.anchor.set(0.5);
+  smiley.scale.set(22 / Math.max(smiley.texture.width, smiley.texture.height));
+  smiley.eventMode = 'static';
+  smiley.cursor = 'pointer';
+  smiley.on('pointertap', () => {
+    input.value = `${input.value} 🙂`.trimStart();
+  });
+  chatBox.addChild(smiley);
+
+  sendBtn = new Container();
+  const sendBg = new Sprite(tex[A.chat.btnSend]);
+  sendBg.width = 84;
+  sendBg.height = 38;
+  sendBtn.addChild(sendBg);
+  const sendLabel = makeText('GỬI', 14, 0xffffff, '700', HEADING);
+  sendLabel.x = 42;
+  sendLabel.y = 19;
+  sendBtn.addChild(sendLabel);
+  sendBtn.eventMode = 'static';
+  sendBtn.cursor = 'pointer';
+  sendBtn.on('pointertap', () => sendChat());
+  sendBtn.on('pointerdown', () => sendBtn.scale.set(0.95));
+  sendBtn.on('pointerup', () => sendBtn.scale.set(1));
+  sendBtn.on('pointerupoutside', () => sendBtn.scale.set(1));
+  chatBox.addChild(sendBtn);
+
+  input = document.createElement('input');
+  input.type = 'text';
+  input.maxLength = 120;
+  input.placeholder = 'Nhập tin nhắn...';
+  Object.assign(input.style, {
+    position: 'absolute',
+    zIndex: '10',
+    background: 'transparent',
+    border: 'none',
+    outline: 'none',
+    color: '#fff',
+    fontFamily: "'Nunito', system-ui, sans-serif",
+    fontWeight: '700',
+    padding: '0 8px',
+  });
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') sendChat();
+  });
+  input.addEventListener('focus', () => deps.onFocusChange(true));
+  input.addEventListener('blur', () => deps.onFocusChange(false));
+  input.style.display = 'none';
+  document.getElementById('app')!.appendChild(input);
+
+  return chatBox;
+}
+
+export function layoutChat(x: number, y: number, h: number, rootX: number, scale: number): void {
+  chatBox.x = x;
+  chatBox.y = y;
+  chatH = h;
+  const inputY = chatH - 46;
+  chatBg.height = chatH;
+  msgMask.clear().rect(6, 8, CHAT_W - 12, viewH()).fill(0xffffff);
+  scrollZone.hitArea = new Rectangle(6, 8, CHAT_W - 12, viewH());
+  inputBg.y = inputY;
+  smiley.x = inputBg.x + inputBg.width - 20;
+  smiley.y = inputY + 17;
+  sendBtn.x = CHAT_W - CHAT_PAD - 84;
+  sendBtn.y = inputY - 2;
+
+  input.style.left = `${rootX + (x + CHAT_PAD + 6) * scale}px`;
+  input.style.top = `${(y + inputY) * scale}px`;
+  input.style.width = `${(inputBg.width - 46) * scale}px`;
+  input.style.height = `${34 * scale}px`;
+  input.style.fontSize = `${13 * scale}px`;
+  renderChat();
+}
+
+export function resetChat(greeting: string): void {
+  chatLog.length = 0;
+  input.value = '';
+  pushChat('bot', greeting);
+}
+
+export function setChatInputVisible(visible: boolean): void {
+  input.style.display = visible ? 'block' : 'none';
+}

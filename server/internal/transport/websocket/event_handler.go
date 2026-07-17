@@ -78,7 +78,7 @@ func (h *EventHandler) registerClientEvents(client *socket.Socket, userID string
 		}
 		if h.server.roomPresence != nil {
 			data := client.Data().(*SocketData)
-			for roomID := range data.JoinedRooms {
+			for _, roomID := range data.RoomIDs() {
 				h.server.roomPresence.Refresh(context.Background(), roomID, userID)
 			}
 		}
@@ -103,7 +103,7 @@ func (h *EventHandler) registerRoomEvents(client *socket.Socket, userID string) 
 		ctx := context.Background()
 		data := client.Data().(*SocketData)
 
-		if data.JoinedRooms[roomID] {
+		if data.HasRoom(roomID) {
 			count, _ := h.server.roomPresence.MemberCount(ctx, roomID)
 			replyAck(ack, map[string]any{"roomId": roomID, "memberCount": count}, "")
 			return
@@ -131,7 +131,7 @@ func (h *EventHandler) registerRoomEvents(client *socket.Socket, userID string) 
 			return
 		}
 
-		data.JoinedRooms[roomID] = true
+		data.JoinRoom(roomID)
 		client.Join(roomChannel(roomID))
 
 		count, _ := h.server.roomPresence.MemberCount(ctx, roomID)
@@ -161,11 +161,10 @@ func (h *EventHandler) registerRoomEvents(client *socket.Socket, userID string) 
 func (h *EventHandler) leaveRoom(ctx context.Context, client *socket.Socket, userID, roomID string) int {
 	data := client.Data().(*SocketData)
 	client.Leave(roomChannel(roomID))
-	if !data.JoinedRooms[roomID] {
+	if !data.LeaveRoom(roomID) {
 		count, _ := h.server.roomPresence.MemberCount(ctx, roomID)
 		return count
 	}
-	delete(data.JoinedRooms, roomID)
 	removed, err := h.server.roomPresence.Leave(ctx, roomID, userID)
 	if err != nil {
 		h.server.logger.Warnw("Failed to remove room presence", "room_id", roomID, "user_id", userID, "error", err)
@@ -231,7 +230,7 @@ func (h *EventHandler) handleDisconnect(client *socket.Socket, userID string) {
 	// if h.server.roomPresence != nil {
 	// 	ctx := context.Background()
 	// 	data := client.Data().(*SocketData)
-	// 	for roomID := range data.JoinedRooms {
+	// 	for _, roomID := range data.RoomIDs() {
 	// 		h.leaveRoom(ctx, client, userID, roomID)
 	// 	}
 	// }

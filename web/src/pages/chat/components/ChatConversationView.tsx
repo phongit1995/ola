@@ -32,6 +32,7 @@ import { chatQuoteExcerpt, toBubble } from '../chatView';
 import { formatLastActive } from '../friends';
 import { usePeerCard } from '../usePeerCard';
 import { useLongPress, useOutsideClick, useStickyScroll } from '@hooks';
+import { ChatReactionBalloons } from './ChatReactionBalloons';
 import { MessageRow } from './MessageRow';
 import { TransferKenDialog } from './TransferKenDialog';
 import { TradingVipDialog } from './TradingVipDialog';
@@ -404,6 +405,7 @@ export function ChatConversationView({
 
   return (
     <FullScreenOverlay z={50}>
+      <ChatReactionBalloons />
       <ScreenHeader
         title={title ?? name}
         subtitle={

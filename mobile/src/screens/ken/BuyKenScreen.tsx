@@ -7,9 +7,9 @@ import { buildVietQrImageUrl, fillMemoTemplate, formatKen, formatVnd } from '@ol
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { useTopupConfigStore } from '@ola/shared/stores/topupConfigStore';
-import type { RootStackParamList } from '../../navigation/types';
-import { ROOT_ROUTES } from '../../navigation/routes';
-import { ScreenHeader } from '../../components/ScreenHeader';
+import type { RootStackParamList } from '@navigation/types';
+import { ROOT_ROUTES } from '@navigation/routes';
+import { ScreenHeader } from '@components/ScreenHeader';
 
 const MIN_AMOUNT = 10_000;
 const STEP_AMOUNT = 1_000;

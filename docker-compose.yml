@@ -107,6 +107,38 @@ services:
     networks:
       - chat-network
 
+  game:
+    image: ${DOCKERHUB_USERNAME}/ola-chat-server-game${IMAGE_SUFFIX:-}:${GAME_VERSION:-latest}
+    container_name: ola-chat-server-game${CONTAINER_SUFFIX:-}
+    restart: unless-stopped
+    environment:
+      - JWT_SECRET=${JWT_SECRET:-your-jwt-secret-change-in-production-min-32-chars}
+      - JWT_EXPIRY=${JWT_EXPIRY:-24h}
+      - GAME_PORT=${GAME_PORT:-8082}
+      - GAME_ALLOW_GUEST=${GAME_ALLOW_GUEST:-false}
+      - GAME_TURN_SECONDS=${GAME_TURN_SECONDS:-45}
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-http://localhost:3000}
+      - KAFKA_BROKERS=${KAFKA_BROKERS:-kafka:9092}
+      - GIN_MODE=${GIN_MODE:-release}
+      - SERVICE_NAME=game
+    networks:
+      - chat-network
+
+  game-web:
+    image: ${DOCKERHUB_USERNAME}/ola-game-web${IMAGE_SUFFIX:-}:${GAME_WEB_VERSION:-latest}
+    container_name: ola-game-web${CONTAINER_SUFFIX:-}
+    restart: unless-stopped
+    labels:
+      - dockflare.enable=${GAME_DOCKFLARE_ENABLE:-false}
+      - dockflare.hostname=${GAME_DOMAIN:-game.ola-server.click}
+      - dockflare.service=http://${DEPLOY_HOST:-phong.local}:${GAME_WEB_PORT:-5085}
+    ports:
+      - "${GAME_WEB_PORT:-5085}:80"
+    depends_on:
+      - game
+    networks:
+      - chat-network
+
   web:
     image: ${DOCKERHUB_USERNAME}/ola-web${IMAGE_SUFFIX:-}:${WEB_VERSION:-latest}
     container_name: ola-web${CONTAINER_SUFFIX:-}

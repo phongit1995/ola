@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { colorForName } from '@ola/shared/lib';
 import type { SavedAccount } from '@ola/shared/stores/savedAccountsStore';
-import { ConfirmDialog } from '../../components/ConfirmDialog';
+import { ConfirmDialog } from '@components/ConfirmDialog';
 
 interface SavedAccountGalleryProps {
   accounts: SavedAccount[];

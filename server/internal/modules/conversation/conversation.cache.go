@@ -7,6 +7,7 @@ import (
 	"ola-chat-server/internal/utils"
 	"time"
 
+	"github.com/gocql/gocql"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
@@ -124,13 +125,22 @@ func (c *CacheService) SetUnreadCount(conversationID, userID uuid.UUID, count in
 	return c.cache.Set(key, count, constants.CacheTTLUnreadCount*time.Second)
 }
 
-func (c *CacheService) IncrementUnreadCount(conversationID, userID uuid.UUID) error {
+func (c *CacheService) IncrementUnreadSeeded(conversationID, userID uuid.UUID, seed int) (int, error) {
 	key := fmt.Sprintf(constants.CacheKeyUnreadCount, conversationID.String(), userID.String())
-	_, err := c.cache.Increment(key)
+	count, err := c.cache.Increment(key)
 	if err != nil {
-		return c.SetUnreadCount(conversationID, userID, 1)
+		return 0, err
 	}
-	return c.cache.SetExpire(key, constants.CacheTTLUnreadCount*time.Second)
+	if count == 1 && seed > 0 {
+		count, err = c.cache.IncrementBy(key, int64(seed))
+		if err != nil {
+			return 0, err
+		}
+	}
+	if err := c.cache.SetExpire(key, constants.CacheTTLUnreadCount*time.Second); err != nil {
+		c.logger.Warnw("Failed to set unread counter TTL", "conversation_id", conversationID, "user_id", userID, "error", err)
+	}
+	return int(count), nil
 }
 
 func (c *CacheService) ResetUnreadCount(conversationID, userID uuid.UUID) error {
@@ -231,6 +241,41 @@ func (c *CacheService) DeleteLastRead(conversationID, userID uuid.UUID) error {
 	return c.cache.Delete(key)
 }
 
+func (c *CacheService) GetClearedMarkerCached(userID, conversationID uuid.UUID) (*gocql.UUID, error) {
+	key := fmt.Sprintf(constants.CacheKeyClearedMarker, userID.String(), conversationID.String())
+	var cached string
+	if err := c.cache.Get(key, &cached); err == nil {
+		if cached == "" {
+			return nil, nil
+		}
+		if marker, parseErr := gocql.ParseUUID(cached); parseErr == nil {
+			return &marker, nil
+		}
+	}
+
+	marker, err := c.repo.GetClearedMarker(userID, conversationID)
+	if err != nil {
+		return nil, err
+	}
+
+	value := ""
+	if marker != nil {
+		value = marker.String()
+	}
+	utils.SafeGo(c.logger, func() {
+		if err := c.cache.Set(key, value, constants.CacheTTLClearedMarker*time.Second); err != nil {
+			c.logger.Warnw("Failed to cache cleared marker", "user_id", userID, "conversation_id", conversationID, "error", err)
+		}
+	})
+
+	return marker, nil
+}
+
+func (c *CacheService) SetClearedMarkerCache(userID, conversationID uuid.UUID, marker string) error {
+	key := fmt.Sprintf(constants.CacheKeyClearedMarker, userID.String(), conversationID.String())
+	return c.cache.Set(key, marker, constants.CacheTTLClearedMarker*time.Second)
+}
+
 func (c *CacheService) GetMembersCached(conversationID uuid.UUID) ([]ConversationMember, error) {
 	if cached, err := c.GetConversationMembers(conversationID); err == nil && len(cached) > 0 {
 		return cached, nil
@@ -271,13 +316,10 @@ func (c *CacheService) GetConversationByIDCached(conversationID uuid.UUID) (*Con
 
 func (c *CacheService) GetUserConversationsCached(userID uuid.UUID, limit int) ([]ConversationByUser, error) {
 	if cached, err := c.GetUserConversations(userID); err == nil && len(cached) > 0 {
-		if len(cached) > limit {
-			return cached[:limit], nil
-		}
-		return cached, nil
+		return truncateConversations(cached, limit), nil
 	}
 
-	conversations, err := c.repo.GetUserConversations(userID, limit)
+	conversations, err := c.repo.GetUserConversations(userID, constants.MaxConversationListLimit)
 	if err != nil {
 		return nil, err
 	}
@@ -288,7 +330,14 @@ func (c *CacheService) GetUserConversationsCached(userID uuid.UUID, limit int) (
 		}
 	})
 
-	return conversations, nil
+	return truncateConversations(conversations, limit), nil
+}
+
+func truncateConversations(conversations []ConversationByUser, limit int) []ConversationByUser {
+	if limit > 0 && len(conversations) > limit {
+		return conversations[:limit]
+	}
+	return conversations
 }
 
 func (c *CacheService) CheckIfHiddenCached(userID, conversationID uuid.UUID) (bool, error) {

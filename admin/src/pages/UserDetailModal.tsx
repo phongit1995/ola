@@ -11,6 +11,7 @@ import {
 } from '@ant-design/icons'
 import { useUserDetail } from '@/hooks/useUsers'
 import { formatDateTime } from '@/lib/format'
+import { vipIconUrl, vipName } from '@/lib/vipCatalog'
 import { GENDER } from './userMeta'
 import { KenAdjustModal } from './KenAdjustModal'
 import { KenHistoryModal } from './KenHistoryModal'
@@ -69,6 +70,14 @@ function Row({ label, value }: { label: string; value?: ReactNode }) {
       <span style={{ textAlign: 'right', wordBreak: 'break-word' }}>{value || '—'}</span>
     </div>
   )
+}
+
+function vipDaysLeft(vipEndTime?: string): number | null {
+  if (!vipEndTime) return null
+  const end = new Date(vipEndTime).getTime()
+  if (Number.isNaN(end)) return null
+  const diff = end - Date.now()
+  return diff <= 0 ? 0 : Math.ceil(diff / 86_400_000)
 }
 
 export function UserDetailModal({ userId, open, onClose }: UserDetailModalProps) {
@@ -189,16 +198,59 @@ export function UserDetailModal({ userId, open, onClose }: UserDetailModalProps)
             </Section>
           )}
 
-          {data.isVip && (
-            <Section title="VIP">
-              <Row label="Gói" value={data.vipUsed} />
-              <Row label="Hết hạn" value={formatDateTime(data.vipEndTime)} />
-            </Section>
-          )}
+          <Section title="VIP">
+            {(() => {
+              const days = vipDaysLeft(data.vipEndTime)
+              return (
+                <Row
+                  label="Còn hạn VIP"
+                  value={
+                    days && days > 0 ? (
+                      <Tag color="gold" style={{ margin: 0 }}>{`Còn ${days} ngày`}</Tag>
+                    ) : (
+                      <Tag style={{ margin: 0 }}>{data.vipEndTime ? 'Đã hết hạn' : 'Chưa có VIP'}</Tag>
+                    )
+                  }
+                />
+              )
+            })()}
+            {data.vipEndTime && <Row label="Hết hạn" value={formatDateTime(data.vipEndTime)} />}
+            <Row
+              label="Icon đang dùng"
+              value={
+                data.vipUsed ? (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                    <img
+                      src={vipIconUrl(Number(data.vipUsed))}
+                      alt={vipName(Number(data.vipUsed))}
+                      width={24}
+                      height={24}
+                      style={{ objectFit: 'contain' }}
+                      onError={(e) => {
+                        e.currentTarget.style.visibility = 'hidden'
+                      }}
+                    />
+                    <span>{vipName(Number(data.vipUsed))}</span>
+                  </span>
+                ) : (
+                  'Không dùng icon'
+                )
+              }
+            />
+          </Section>
 
           <Section title="Hoạt động">
             <Row label="Đăng nhập cuối" value={formatDateTime(data.lastLoginAt)} />
-            <Row label="IP đăng nhập cuối" value={data.lastLoginIp} />
+            <Row
+              label="IP đăng nhập cuối"
+              value={
+                data.lastLoginIp ? (
+                  <Typography.Text copyable style={{ fontSize: 13 }}>
+                    {data.lastLoginIp}
+                  </Typography.Text>
+                ) : undefined
+              }
+            />
             <Row label="Ngày tạo" value={formatDateTime(data.createdAt)} />
             <Row label="Cập nhật" value={formatDateTime(data.updatedAt)} />
             <Row

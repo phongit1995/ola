@@ -4,7 +4,7 @@ export type PostVisibility = 'public' | 'friend' | 'private';
 
 export type PostReaction = 'like' | 'dislike';
 
-export type MeFeedFilter = 'tagged' | 'mentions' | 'media' | 'following';
+export type MeFeedFilter = 'tagged' | 'mentions' | 'media' | 'following' | 'clan';
 
 export interface PostCheckIn {
   name: string;
@@ -34,6 +34,8 @@ export interface PostAuthor {
 
 export interface Post {
   id: string;
+  clanId?: string;
+  clanHandle?: string;
   content?: string;
   images: PostImage[];
   mentions?: string[];
@@ -149,7 +151,7 @@ export interface CreateCommentRequest {
   parentId?: string;
 }
 
-export type MeNotificationType = 'like' | 'comment' | 'reply' | 'mention';
+export type MeNotificationType = 'like' | 'comment' | 'reply' | 'mention' | 'comment_like';
 
 export interface MeNotification {
   id: string;

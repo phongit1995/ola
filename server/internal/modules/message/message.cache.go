@@ -42,37 +42,33 @@ func (c *CacheService) DeleteMessage(conversationID uuid.UUID, messageID gocql.U
 	return c.cache.Delete(key)
 }
 
-func (c *CacheService) GetConversationMessages(conversationID uuid.UUID, limit int) ([]Message, error) {
-	key := fmt.Sprintf(constants.CacheKeyMessageList, fmt.Sprintf("%s:limit_%d", conversationID.String(), limit))
-	var messages []Message
-	if err := c.cache.Get(key, &messages); err != nil {
-		return nil, err
-	}
-	return messages, nil
+type cachedMessagePage struct {
+	Messages  []Message
+	Exhausted bool
 }
 
-func (c *CacheService) SetConversationMessages(conversationID uuid.UUID, limit int, messages []Message) error {
-	key := fmt.Sprintf(constants.CacheKeyMessageList, fmt.Sprintf("%s:limit_%d", conversationID.String(), limit))
-	return c.cache.Set(key, messages, constants.CacheTTLMessageList*time.Second)
+func (c *CacheService) GetConversationMessages(conversationID uuid.UUID) ([]Message, bool, error) {
+	key := fmt.Sprintf(constants.CacheKeyMessageList, conversationID.String())
+	var page cachedMessagePage
+	if err := c.cache.Get(key, &page); err != nil {
+		return nil, false, err
+	}
+	return page.Messages, page.Exhausted, nil
+}
+
+func (c *CacheService) SetConversationMessages(conversationID uuid.UUID, messages []Message, exhausted bool) error {
+	key := fmt.Sprintf(constants.CacheKeyMessageList, conversationID.String())
+	return c.cache.Set(key, cachedMessagePage{Messages: messages, Exhausted: exhausted}, constants.CacheTTLMessageList*time.Second)
 }
 
 func (c *CacheService) DeleteConversationMessages(conversationID uuid.UUID) error {
-	pattern := fmt.Sprintf(constants.CacheKeyMessageList, conversationID.String()+"*")
-	return c.cache.DeletePattern(pattern)
-}
-
-func (c *CacheService) DeleteLastMessage(conversationID uuid.UUID) error {
-	key := fmt.Sprintf(constants.CacheKeyMessage, fmt.Sprintf("%s:last", conversationID.String()))
+	key := fmt.Sprintf(constants.CacheKeyMessageList, conversationID.String())
 	return c.cache.Delete(key)
 }
 
 func (c *CacheService) InvalidateConversationMessages(conversationID uuid.UUID) error {
 	if err := c.DeleteConversationMessages(conversationID); err != nil {
 		c.logger.Warnw("Failed to delete conversation messages cache", "conversation_id", conversationID, "error", err)
-	}
-
-	if err := c.DeleteLastMessage(conversationID); err != nil {
-		c.logger.Warnw("Failed to delete last message cache", "conversation_id", conversationID, "error", err)
 	}
 
 	return nil

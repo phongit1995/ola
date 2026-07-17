@@ -4,6 +4,8 @@ export type MeCheckIn = PostCheckIn;
 
 export interface MePost {
   id: string;
+  clanId?: string;
+  clanHandle?: string;
   authorId: string;
   author: string;
   fullName: string;
@@ -25,4 +27,4 @@ export interface MePost {
   topLikers: { name: string; avatar: string | null; color: string }[];
 }
 
-export type MeTab = 'community' | 'personal';
+export type MeTab = 'community' | 'personal' | 'clan';

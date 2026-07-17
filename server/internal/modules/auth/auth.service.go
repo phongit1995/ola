@@ -12,6 +12,7 @@ import (
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/session"
 	"ola-chat-server/internal/modules/user"
+	"ola-chat-server/internal/modules/vip"
 	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/utils"
 	"regexp"
@@ -39,11 +40,12 @@ type Service struct {
 	cache          *services.CacheService
 	sessionService *session.Service
 	mailService    *services.MailService
+	vipService     *vip.Service
 	cfg            *config.Config
 	logger         *zap.SugaredLogger
 }
 
-func NewService(repo *Repository, jwtService *services.JWTService, userCache *user.CacheService, cache *services.CacheService, sessionService *session.Service, mailService *services.MailService, cfg *config.Config, logger *zap.SugaredLogger) *Service {
+func NewService(repo *Repository, jwtService *services.JWTService, userCache *user.CacheService, cache *services.CacheService, sessionService *session.Service, mailService *services.MailService, vipService *vip.Service, cfg *config.Config, logger *zap.SugaredLogger) *Service {
 	return &Service{
 		repo:           repo,
 		jwtService:     jwtService,
@@ -51,6 +53,7 @@ func NewService(repo *Repository, jwtService *services.JWTService, userCache *us
 		cache:          cache,
 		sessionService: sessionService,
 		mailService:    mailService,
+		vipService:     vipService,
 		cfg:            cfg,
 		logger:         logger.Named("[auth_service]"),
 	}
@@ -436,16 +439,16 @@ func (s *Service) SendEmailVerification(userID uuid.UUID, email string) (string,
 	return verifyID, nil
 }
 
-func (s *Service) ConfirmEmailVerification(userID uuid.UUID, verifyID, code string) error {
+func (s *Service) ConfirmEmailVerification(userID uuid.UUID, verifyID, code string) (int, error) {
 	key := fmt.Sprintf(constants.CacheKeyEmailVerifyCode, userID)
 
 	var entry emailVerifyEntry
 	if err := s.cache.Get(key, &entry); err != nil {
-		return errors.New("verification code expired or not found")
+		return 0, errors.New("verification code expired or not found")
 	}
 
 	if entry.VerifyID != verifyID {
-		return errors.New("invalid verification request")
+		return 0, errors.New("invalid verification request")
 	}
 
 	email := entry.Email
@@ -454,30 +457,31 @@ func (s *Service) ConfirmEmailVerification(userID uuid.UUID, verifyID, code stri
 		entry.Attempts++
 		if entry.Attempts >= constants.EmailVerifyMaxAttempts {
 			_ = s.cache.Delete(key)
-			return errors.New("too many invalid attempts, please request a new code")
+			return 0, errors.New("too many invalid attempts, please request a new code")
 		}
 		ttl, err := s.cache.GetTTL(key)
 		if err != nil || ttl <= 0 {
 			ttl = constants.CacheTTLOTP * time.Second
 		}
 		_ = s.cache.Set(key, entry, ttl)
-		return errors.New("invalid verification code")
+		return 0, errors.New("invalid verification code")
 	}
 
 	taken, err := s.repo.EmailVerifiedByOther(email, userID)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	if taken {
-		return errors.New("email already exists")
+		return 0, errors.New("email already exists")
 	}
 
-	if err := s.repo.SetEmailVerified(userID, email); err != nil {
+	firstVerification, err := s.repo.SetEmailVerified(userID, email)
+	if err != nil {
 		if strings.Contains(err.Error(), "idx_users_email_verified_unique") {
-			return errors.New("email already exists")
+			return 0, errors.New("email already exists")
 		}
 		s.logger.Errorw("Failed to set email verified", "user_id", userID, "error", err.Error())
-		return err
+		return 0, err
 	}
 
 	_ = s.cache.Delete(key)
@@ -486,7 +490,17 @@ func (s *Service) ConfirmEmailVerification(userID uuid.UUID, verifyID, code stri
 	}
 
 	s.logger.Infow("Email verified", "user_id", userID, "email", email)
-	return nil
+
+	rewardDays := 0
+	if firstVerification && s.cfg.EmailVerifyVipRewardDays > 0 {
+		if _, err := s.vipService.GrantDays(userID, s.cfg.EmailVerifyVipRewardDays, "email_verify", "Thưởng xác thực email"); err != nil {
+			s.logger.Errorw("Failed to grant email verification vip reward", "user_id", userID, "days", s.cfg.EmailVerifyVipRewardDays, "error", err.Error())
+		} else {
+			rewardDays = s.cfg.EmailVerifyVipRewardDays
+			s.logger.Infow("Email verification vip reward granted", "user_id", userID, "days", rewardDays)
+		}
+	}
+	return rewardDays, nil
 }
 
 func resolveDeviceInfo(device *DeviceInfo, userAgent string) (name, platform, deviceID, appVersion string) {

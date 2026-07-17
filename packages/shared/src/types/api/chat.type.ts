@@ -72,6 +72,8 @@ export interface Message {
 export interface MessagesListResult {
   messages: Message[];
   total: number;
+  hasMore?: boolean;
+  nextBefore?: string;
 }
 
 export interface CreateDirectConversationRequest {
@@ -131,6 +133,16 @@ export interface MessageUpdatedEvent {
 export interface MessageDeletedEvent {
   conversation: Conversation;
   messageId: string;
+}
+
+export interface ConversationUpdatedEvent {
+  id?: string;
+  seen?: boolean;
+}
+
+export interface ChatReactionNotice {
+  seq: number;
+  type: string;
 }
 
 export interface MessageReactionUpdatedEvent {

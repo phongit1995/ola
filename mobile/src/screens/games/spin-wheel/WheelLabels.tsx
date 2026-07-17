@@ -1,8 +1,8 @@
 import { Image, Text, View } from 'react-native';
 import { WHEEL_LABEL_RADIUS, segmentTheme, wheelPolar } from '@ola/shared/lib';
 import type { WheelPlayerSegment } from '@ola/shared/types';
-import { VipIconImage } from '../../vip/VipIconImage';
-import { assetRatio } from '../pen/penUi';
+import { VipIconImage } from '@screens/vip/VipIconImage';
+import { assetRatio } from '@screens/games/pen/penUi';
 import { rewardVisual } from './spinWheelReward';
 import { segmentLabelTextStyle } from './spinWheelStyles';
 

@@ -63,6 +63,7 @@ interface MePostCardProps {
   onQuickComment?: (id: string) => void;
   onOpenMenu?: (id: string) => void;
   onOpenLikers?: (id: string) => void;
+  onOpenClan?: (handle: string) => void;
 }
 
 function MePostCardComponent({
@@ -74,6 +75,7 @@ function MePostCardComponent({
   onQuickComment,
   onOpenMenu,
   onOpenLikers,
+  onOpenClan,
 }: MePostCardProps) {
   const { t } = useTranslation();
   const openViewer = useMediaViewerStore((s) => s.openViewer);
@@ -132,6 +134,24 @@ function MePostCardComponent({
               />
               {post.pinned && (
                 <PinIcon className="h-3.5 w-3.5 shrink-0 text-ola-primary" title={t('me.pinned')} />
+              )}
+              {post.clanHandle != null && post.clanHandle !== '' && (
+                <span
+                  role={onOpenClan != null ? 'button' : undefined}
+                  onClick={
+                    onOpenClan == null
+                      ? undefined
+                      : (event) => {
+                          event.stopPropagation();
+                          onOpenClan(post.clanHandle!);
+                        }
+                  }
+                  className={`shrink-0 text-xs font-bold text-ola-primary-darker ${
+                    onOpenClan != null ? 'cursor-pointer hover:underline' : ''
+                  }`}
+                >
+                  #{post.clanHandle}
+                </span>
               )}
             </span>
             <span className="mt-0.5 block text-xs text-black/54">{post.time}</span>

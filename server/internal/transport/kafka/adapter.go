@@ -3,6 +3,7 @@ package kafka
 import (
 	"context"
 	"ola-chat-server/internal/constants"
+	appNotificationEvents "ola-chat-server/internal/domain/app-notification"
 	callEvents "ola-chat-server/internal/domain/call"
 	conversationEvents "ola-chat-server/internal/domain/conversation"
 	kenChestEvents "ola-chat-server/internal/domain/kenchest"
@@ -13,13 +14,14 @@ import (
 )
 
 type KafkaEventAdapter struct {
-	messageHandler        *messageEvents.EventHandler
-	conversationHandler   *conversationEvents.EventHandler
-	callHandler           *callEvents.EventHandler
-	roomHandler           *roomEvents.EventHandler
-	kenChestHandler       *kenChestEvents.EventHandler
-	meNotificationHandler *meNotificationEvents.EventHandler
-	userBanHandler        *userBanEvents.EventHandler
+	messageHandler         *messageEvents.EventHandler
+	conversationHandler    *conversationEvents.EventHandler
+	callHandler            *callEvents.EventHandler
+	roomHandler            *roomEvents.EventHandler
+	kenChestHandler        *kenChestEvents.EventHandler
+	meNotificationHandler  *meNotificationEvents.EventHandler
+	appNotificationHandler *appNotificationEvents.EventHandler
+	userBanHandler         *userBanEvents.EventHandler
 }
 
 func NewKafkaEventAdapter(
@@ -29,16 +31,18 @@ func NewKafkaEventAdapter(
 	roomHandler *roomEvents.EventHandler,
 	kenChestHandler *kenChestEvents.EventHandler,
 	meNotificationHandler *meNotificationEvents.EventHandler,
+	appNotificationHandler *appNotificationEvents.EventHandler,
 	userBanHandler *userBanEvents.EventHandler,
 ) *KafkaEventAdapter {
 	return &KafkaEventAdapter{
-		messageHandler:        messageHandler,
-		conversationHandler:   conversationHandler,
-		callHandler:           callHandler,
-		roomHandler:           roomHandler,
-		kenChestHandler:       kenChestHandler,
-		meNotificationHandler: meNotificationHandler,
-		userBanHandler:        userBanHandler,
+		messageHandler:         messageHandler,
+		conversationHandler:    conversationHandler,
+		callHandler:            callHandler,
+		roomHandler:            roomHandler,
+		kenChestHandler:        kenChestHandler,
+		meNotificationHandler:  meNotificationHandler,
+		appNotificationHandler: appNotificationHandler,
+		userBanHandler:         userBanHandler,
 	}
 }
 
@@ -114,6 +118,10 @@ func (a *KafkaEventAdapter) HandleMeNotification(ctx context.Context, message []
 	return a.meNotificationHandler.OnCreated(ctx, message)
 }
 
+func (a *KafkaEventAdapter) HandleAppNotification(ctx context.Context, message []byte) error {
+	return a.appNotificationHandler.OnCreated(ctx, message)
+}
+
 func (a *KafkaEventAdapter) HandleUserBanned(ctx context.Context, message []byte) error {
 	return a.userBanHandler.OnBanned(ctx, message)
 }
@@ -137,5 +145,6 @@ func RegisterEventHandlers(consumer *Consumer, adapter *KafkaEventAdapter) {
 	consumer.RegisterHandler(constants.KafkaTopicKenChestAvailable, adapter.HandleKenChestAvailable)
 	consumer.RegisterHandler(constants.KafkaTopicKenChestClosed, adapter.HandleKenChestClosed)
 	consumer.RegisterHandler(constants.KafkaTopicMeNotification, adapter.HandleMeNotification)
+	consumer.RegisterHandler(constants.KafkaTopicAppNotification, adapter.HandleAppNotification)
 	consumer.RegisterHandler(constants.KafkaTopicUserBanned, adapter.HandleUserBanned)
 }

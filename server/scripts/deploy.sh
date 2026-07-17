@@ -35,7 +35,7 @@ update_var() {
 
 declare -A TARGETS=()
 if [ "$SERVICES" = "all" ]; then
-  TARGETS[api]=1; TARGETS[chat]=1; TARGETS[web]=1; TARGETS[admin]=1; TARGETS[migrate]=1
+  TARGETS[api]=1; TARGETS[chat]=1; TARGETS[web]=1; TARGETS[admin]=1; TARGETS[migrate]=1; TARGETS[game]=1; TARGETS[game-web]=1
 else
   IFS=',' read -ra arr <<< "$SERVICES"
   for s in "${arr[@]}"; do TARGETS["$(echo "$s" | xargs)"]=1; done
@@ -47,6 +47,8 @@ log "Setting version=$VERSION for: ${!TARGETS[*]}"
 [ -n "${TARGETS[web]:-}" ]     && update_var WEB_VERSION     "$VERSION" "$ENV_FILE"
 [ -n "${TARGETS[admin]:-}" ]   && update_var ADMIN_VERSION   "$VERSION" "$ENV_FILE"
 [ -n "${TARGETS[migrate]:-}" ] && update_var MIGRATE_VERSION "$VERSION" "$ENV_FILE"
+[ -n "${TARGETS[game]:-}" ]     && update_var GAME_VERSION     "$VERSION" "$ENV_FILE"
+[ -n "${TARGETS[game-web]:-}" ] && update_var GAME_WEB_VERSION "$VERSION" "$ENV_FILE"
 
 log "Pulling images..."
 PULL_SVCS=()
@@ -58,10 +60,12 @@ rollback() {
   cp "$BACKUP_ENV" "$ENV_FILE"
   log "Restarting previous version..."
   local svcs=()
-  [ -n "${TARGETS[api]:-}" ]   && svcs+=(api)
-  [ -n "${TARGETS[chat]:-}" ]  && svcs+=(chat)
-  [ -n "${TARGETS[web]:-}" ]   && svcs+=(web)
-  [ -n "${TARGETS[admin]:-}" ] && svcs+=(admin)
+  [ -n "${TARGETS[api]:-}" ]      && svcs+=(api)
+  [ -n "${TARGETS[chat]:-}" ]     && svcs+=(chat)
+  [ -n "${TARGETS[web]:-}" ]      && svcs+=(web)
+  [ -n "${TARGETS[admin]:-}" ]    && svcs+=(admin)
+  [ -n "${TARGETS[game]:-}" ]     && svcs+=(game)
+  [ -n "${TARGETS[game-web]:-}" ] && svcs+=(game-web)
   if [ ${#svcs[@]} -gt 0 ]; then
     docker compose --env-file "$ENV_FILE" up -d --no-deps "${svcs[@]}" || true
   fi
@@ -69,13 +73,15 @@ rollback() {
 trap 'rc=$?; [ $rc -ne 0 ] && rollback; exit $rc' EXIT
 
 RESTART_SVCS=()
-[ -n "${TARGETS[api]:-}" ]   && RESTART_SVCS+=(api)
-[ -n "${TARGETS[chat]:-}" ]  && RESTART_SVCS+=(chat)
-[ -n "${TARGETS[web]:-}" ]   && RESTART_SVCS+=(web)
-[ -n "${TARGETS[admin]:-}" ] && RESTART_SVCS+=(admin)
+[ -n "${TARGETS[api]:-}" ]      && RESTART_SVCS+=(api)
+[ -n "${TARGETS[chat]:-}" ]     && RESTART_SVCS+=(chat)
+[ -n "${TARGETS[web]:-}" ]      && RESTART_SVCS+=(web)
+[ -n "${TARGETS[admin]:-}" ]    && RESTART_SVCS+=(admin)
+[ -n "${TARGETS[game]:-}" ]     && RESTART_SVCS+=(game)
+[ -n "${TARGETS[game-web]:-}" ] && RESTART_SVCS+=(game-web)
 
 CONTAINER_SUFFIX="$(grep -E '^CONTAINER_SUFFIX=' "$ENV_FILE" 2>/dev/null | head -1 | cut -d= -f2- | tr -d '\r' | xargs || true)"
-declare -A SVC_CONTAINER=( [api]="ola-chat-server-api" [chat]="ola-chat-server-chat" [web]="ola-web" [admin]="ola-admin" )
+declare -A SVC_CONTAINER=( [api]="ola-chat-server-api" [chat]="ola-chat-server-chat" [web]="ola-web" [admin]="ola-admin" [game]="ola-chat-server-game" [game-web]="ola-game-web" )
 for s in "${RESTART_SVCS[@]}"; do
   base="${SVC_CONTAINER[$s]:-}"
   [ -z "$base" ] && continue

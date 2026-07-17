@@ -106,7 +106,7 @@ func requireActiveMember(members []ConversationMember, userID uuid.UUID) bool {
 	return IsActiveMember(members, userID)
 }
 
-func (s *Service) buildConversationResponse(conv ConversationByUser, viewerID uuid.UUID, otherLastRead *gocql.UUID) ConversationResponse {
+func (s *Service) buildConversationResponse(conv ConversationByUser, viewerID uuid.UUID, otherLastRead *gocql.UUID, users map[uuid.UUID]*models.User) ConversationResponse {
 	resp := ConversationResponse{
 		ID:              conv.ConversationID.String(),
 		Type:            conv.ConversationType,
@@ -120,10 +120,13 @@ func (s *Service) buildConversationResponse(conv ConversationByUser, viewerID uu
 
 	if conv.ConversationType == constants.ConversationTypeDirect && conv.OtherUserID != nil {
 		if otherUserID, err := uuid.Parse(conv.OtherUserID.String()); err == nil {
-			u, err := s.userCache.GetUserCache(otherUserID, true)
-			if err != nil || u == nil {
+			u := users[otherUserID]
+			if u == nil {
+				u, _ = s.userCache.GetUserCache(otherUserID, true)
+			}
+			if u == nil {
 				s.logger.Warnw("buildConversationResponse: failed to fetch other user",
-					"conversation_id", conv.ConversationID, "other_user_id", otherUserID, "error", err)
+					"conversation_id", conv.ConversationID, "other_user_id", otherUserID)
 			} else {
 				resp.Name = userDisplayName(u)
 				resp.Avatar = u.Avatar
@@ -146,7 +149,11 @@ func (s *Service) buildConversationResponse(conv ConversationByUser, viewerID uu
 		resp.LastMessageSenderID = senderIDStr
 		resp.IsLastMessageFromMe = senderIDStr == viewerID.String()
 		if senderUUID, err := uuid.Parse(senderIDStr); err == nil {
-			if u, err := s.userCache.GetUserCache(senderUUID, false); err == nil && u != nil {
+			u := users[senderUUID]
+			if u == nil && users == nil {
+				u, _ = s.userCache.GetUserCache(senderUUID, false)
+			}
+			if u != nil {
 				resp.LastMessageSenderName = userDisplayName(u)
 			}
 		}
@@ -583,12 +590,13 @@ func (s *Service) publishGroupConversationCreated(convID uuid.UUID, name string,
 }
 
 func (s *Service) GetUserConversations(userID uuid.UUID, limit int) (*ConversationsListResponse, error) {
-	conversations, err := s.repo.GetUserConversations(userID, limit)
+	conversations, err := s.cache.GetUserConversationsCached(userID, limit)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user conversations: %w", err)
 	}
 
 	otherReads := s.resolveOtherReadStates(conversations, userID)
+	users := s.batchConversationUsers(conversations)
 
 	responses := make([]ConversationResponse, 0, len(conversations))
 	for _, conv := range conversations {
@@ -600,7 +608,7 @@ func (s *Service) GetUserConversations(userID uuid.UUID, limit int) (*Conversati
 				}
 			}
 		}
-		responses = append(responses, s.buildConversationResponse(conv, userID, otherLastRead))
+		responses = append(responses, s.buildConversationResponse(conv, userID, otherLastRead, users))
 	}
 
 	s.enrichPresence(responses)
@@ -609,6 +617,27 @@ func (s *Service) GetUserConversations(userID uuid.UUID, limit int) (*Conversati
 		Conversations: responses,
 		Total:         len(responses),
 	}, nil
+}
+
+func (s *Service) batchConversationUsers(conversations []ConversationByUser) map[uuid.UUID]*models.User {
+	idSet := make(map[uuid.UUID]struct{}, len(conversations)*2)
+	for _, conv := range conversations {
+		if conv.ConversationType == constants.ConversationTypeDirect && conv.OtherUserID != nil {
+			if id, err := uuid.Parse(conv.OtherUserID.String()); err == nil {
+				idSet[id] = struct{}{}
+			}
+		}
+		if conv.LastMessageSender != nil {
+			if id, err := uuid.Parse(conv.LastMessageSender.String()); err == nil {
+				idSet[id] = struct{}{}
+			}
+		}
+	}
+	ids := make([]uuid.UUID, 0, len(idSet))
+	for id := range idSet {
+		ids = append(ids, id)
+	}
+	return s.userCache.GetUsersBatch(ids, true)
 }
 
 func (s *Service) resolveOtherReadStates(conversations []ConversationByUser, userID uuid.UUID) map[string]*gocql.UUID {
@@ -708,45 +737,31 @@ func (s *Service) MarkConversationAsRead(userID, conversationID uuid.UUID) error
 		return fmt.Errorf("conversation not found in user inbox")
 	}
 
+	lastReadMessageID := userConv.LastMessageID
+
+	upToDate := lastReadMessageID == nil ||
+		(userConv.LastReadMessageID != nil && *userConv.LastReadMessageID == *lastReadMessageID)
+	if userConv.UnreadCount == 0 && upToDate {
+		return nil
+	}
+
 	now := time.Now()
 
-	var lastReadMessageID gocql.UUID
-	if userConv.LastMessageID != nil {
-		lastReadMessageID = *userConv.LastMessageID
-	} else {
-		lastReadMessageID = userConv.LastMessageAt
-	}
-
-	updatedEntry := &ConversationByUser{
-		UserID:             userConv.UserID,
-		ConversationID:     userConv.ConversationID,
-		ConversationType:   userConv.ConversationType,
-		DisplayName:        userConv.DisplayName,
-		DisplayAvatar:      userConv.DisplayAvatar,
-		OtherUserID:        userConv.OtherUserID,
-		OtherUserName:      userConv.OtherUserName,
-		OtherUserAvatar:    userConv.OtherUserAvatar,
-		LastMessageAt:      userConv.LastMessageAt,
-		LastMessageID:      userConv.LastMessageID,
-		LastMessagePreview: userConv.LastMessagePreview,
-		LastMessageSender:  userConv.LastMessageSender,
-		UnreadCount:        0,
-		LastReadMessageID:  &lastReadMessageID,
-		LastReadAt:         &now,
-		UpdatedAt:          &now,
-	}
-
-	if err := s.repo.UpdateConversationInUserInbox(userID, conversationID, updatedEntry); err != nil {
-		return fmt.Errorf("failed to update conversation inbox: %w", err)
-	}
-
-	if err := s.repo.MarkAsRead(conversationID, userID, lastReadMessageID, now); err != nil {
+	applied, err := s.repo.MarkAsRead(conversationID, userID, lastReadMessageID, now)
+	if err != nil {
 		return fmt.Errorf("failed to mark as read: %w", err)
+	}
+	if !applied {
+		s.logger.Infow("markRead skipped, inbox row no longer exists",
+			"user_id", userID, "conversation_id", conversationID)
+		return nil
 	}
 
 	utils.SafeGo(s.logger, func() {
 		s.cache.ResetUnreadCount(conversationID, userID)
-		s.cache.SetLastRead(conversationID, userID, lastReadMessageID.String())
+		if lastReadMessageID != nil {
+			s.cache.SetLastRead(conversationID, userID, lastReadMessageID.String())
+		}
 		s.InvalidateUserConversationsCache([]uuid.UUID{userID})
 	})
 
@@ -761,7 +776,7 @@ func (s *Service) MarkConversationAsRead(userID, conversationID uuid.UUID) error
 					"seen": true,
 				},
 			}
-			utils.PublishWithTimeout(s.logger, "conversation updated event for seen", func(ctx context.Context) error {
+			utils.PublishAsync(s.logger, "conversation updated event for seen", func(ctx context.Context) error {
 				return s.kafkaProducer.PublishConversationUpdated(ctx, event)
 			})
 		}
@@ -809,21 +824,35 @@ func (s *Service) SetConversationMuted(userID, conversationID uuid.UUID, muted b
 		return fmt.Errorf("user is not a member of this conversation")
 	}
 
-	if err := s.repo.SetMuted(userID, conversationID, muted); err != nil {
+	applied, err := s.repo.SetMuted(userID, conversationID, muted)
+	if err != nil {
 		return fmt.Errorf("failed to set mute state: %w", err)
+	}
+	if !applied {
+		return fmt.Errorf("conversation not found in inbox")
 	}
 
 	utils.SafeGo(s.logger, func() { s.InvalidateUserConversationsCache([]uuid.UUID{userID}) })
 	return nil
 }
 
-func (s *Service) HideConversation(userID, conversationID uuid.UUID) error {
+func (s *Service) HideConversation(userID, conversationID uuid.UUID, clearMessages bool) error {
 	members, err := s.GetMembersCached(conversationID)
 	if err != nil {
 		return fmt.Errorf("failed to get members: %w", err)
 	}
 	if !requireActiveMember(members, userID) {
 		return fmt.Errorf("user is not a member of this conversation")
+	}
+
+	if clearMessages {
+		marker := gocql.TimeUUID()
+		if err := s.repo.SetClearedMarker(userID, conversationID, marker); err != nil {
+			return fmt.Errorf("failed to set cleared marker: %w", err)
+		}
+		if err := s.cache.SetClearedMarkerCache(userID, conversationID, marker.String()); err != nil {
+			s.logger.Warnw("Failed to cache cleared marker", "user_id", userID, "conversation_id", conversationID, "error", err)
+		}
 	}
 
 	if err := s.repo.HideConversation(userID, conversationID); err != nil {
@@ -834,6 +863,7 @@ func (s *Service) HideConversation(userID, conversationID uuid.UUID) error {
 		if err := s.cache.AddHiddenConversation(userID, conversationID); err != nil {
 			s.logger.Warnw("Failed to update hidden cache", "user_id", userID, "conversation_id", conversationID, "error", err)
 		}
+		s.cache.ResetUnreadCount(conversationID, userID)
 		s.InvalidateUserConversationsCache([]uuid.UUID{userID})
 	})
 
@@ -871,6 +901,7 @@ func (s *Service) UnhideConversation(userID, conversationID uuid.UUID) error {
 		if err := s.cache.RemoveHiddenConversation(userID, conversationID); err != nil {
 			s.logger.Warnw("Failed to update hidden cache", "user_id", userID, "conversation_id", conversationID, "error", err)
 		}
+		s.cache.ResetUnreadCount(conversationID, userID)
 		s.InvalidateUserConversationsCache([]uuid.UUID{userID})
 	})
 
@@ -986,7 +1017,7 @@ func (s *Service) GetConversationDetail(userID, conversationID uuid.UUID) (*Conv
 		}
 	}
 
-	resp := s.buildConversationResponse(*conv, userID, otherLastRead)
+	resp := s.buildConversationResponse(*conv, userID, otherLastRead, nil)
 	resp.ParticipantCount = 0
 
 	if conv.ConversationType == constants.ConversationTypeDirect && conv.OtherUserID != nil && resp.OtherUser != nil {

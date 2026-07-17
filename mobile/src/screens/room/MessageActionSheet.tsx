@@ -15,9 +15,9 @@ import { BlurView } from '@react-native-community/blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { ImageSourcePropType, ViewStyle } from 'react-native';
 import type { ReactionType } from '@ola/shared/types';
-import { useKeyboardHeight } from '../../hooks/useKeyboardHeight';
-import { hapticImpact } from '../../lib/haptics';
-import { REACTION_IMAGE, REACTION_ORDER } from '../../lib/reactions';
+import { useKeyboardHeight } from '@hooks/useKeyboardHeight';
+import { hapticImpact } from '@lib/haptics';
+import { REACTION_IMAGE, REACTION_ORDER } from '@lib/reactions';
 
 export interface MessageSheetAction {
   key: string;

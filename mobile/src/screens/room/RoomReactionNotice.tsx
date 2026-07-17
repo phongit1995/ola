@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Animated, Easing, Image, Text, View } from 'react-native';
 import { useRoomChatStore } from '@ola/shared/stores/roomChatStore';
 import type { ReactionType } from '@ola/shared/types';
-import { REACTION_IMAGE } from '../../lib/reactions';
+import { REACTION_IMAGE } from '@lib/reactions';
 
 const NOTICE_DURATION_MS = 2500;
 const ENTER_MS = NOTICE_DURATION_MS * 0.15;

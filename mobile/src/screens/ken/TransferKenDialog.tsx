@@ -6,10 +6,10 @@ import { KenService, UserService } from '@ola/shared/services';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { UserSearchResult } from '@ola/shared/types';
-import { Avatar } from '../../components/Avatar';
-import { Dialog, DialogButton } from '../../components/Dialog';
+import { Avatar } from '@components/Avatar';
+import { Dialog, DialogButton } from '@components/Dialog';
 
-const kenIcon = require('../../assets/icons/apps/ken.png');
+const kenIcon = require('@assets/icons/apps/ken.png');
 
 const KEN_TRANSFER_MIN = 1000;
 const KEN_TRANSFER_MAX = 10_000_000;

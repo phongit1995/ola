@@ -7,7 +7,8 @@ import type { MeNotification } from '../types';
 const PAGE_SIZE = 30;
 
 interface MeNotificationIncoming {
-  notification: MeNotification;
+  notification?: MeNotification | null;
+  removedId?: string | null;
   unreadCount: number;
 }
 
@@ -95,7 +96,15 @@ export const useMeNotificationStore = create<MeNotificationState>((set, get) => 
       return;
     }
   },
-  handleIncoming: ({ notification, unreadCount }) => {
+  handleIncoming: ({ notification, removedId, unreadCount }) => {
+    if (removedId != null) {
+      set((state) => ({
+        items: state.items.filter((item) => item.id !== removedId),
+        unreadCount,
+      }));
+      return;
+    }
+    if (notification == null) return;
     set((state) => ({
       items: dedupe([notification, ...state.items]),
       unreadCount,

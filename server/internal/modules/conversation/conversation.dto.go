@@ -54,6 +54,10 @@ type SimpleSuccessResponse struct {
 	Message string `json:"message" example:"Operation completed successfully"`
 }
 
+type HideConversationRequest struct {
+	ClearMessages bool `json:"clearMessages" example:"false"`
+}
+
 type HideConversationResponse struct {
 	Success bool   `json:"success" example:"true"`
 	Message string `json:"message" example:"Conversation hidden successfully"`

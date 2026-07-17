@@ -2,33 +2,33 @@ import { Image, Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { ImageSourcePropType } from 'react-native';
 import { useToastStore } from '@ola/shared/stores/toastStore';
-import { useLastKeyboardHeight } from '../../hooks/useKeyboardHeight';
-import { SmileyKulPanel, SMILEY_PANEL_MIN_CONTENT_HEIGHT } from '../room/SmileyKulPanel';
+import { useLastKeyboardHeight } from '@hooks/useKeyboardHeight';
+import { SmileyKulPanel, SMILEY_PANEL_MIN_CONTENT_HEIGHT } from '@screens/room/SmileyKulPanel';
 import { VoicePanel } from './VoicePanel';
-import type { VoiceRecording } from '../../hooks/useVoiceRecorder';
+import type { VoiceRecording } from '@hooks/useVoiceRecorder';
 
 export type AttachTab = 'smiley' | 'camera' | 'photo' | 'voice' | 'more';
 
 const TAB_ICONS: Record<AttachTab, { icon: ImageSourcePropType; active: ImageSourcePropType }> = {
   smiley: {
-    icon: require('../../assets/icons/chat/ic_smiley.png'),
-    active: require('../../assets/icons/chat/ic_smiley_selected.png'),
+    icon: require('@assets/icons/chat/ic_smiley.png'),
+    active: require('@assets/icons/chat/ic_smiley_selected.png'),
   },
   camera: {
-    icon: require('../../assets/icons/chat/ic_camera.png'),
-    active: require('../../assets/icons/chat/ic_camera_selected.png'),
+    icon: require('@assets/icons/chat/ic_camera.png'),
+    active: require('@assets/icons/chat/ic_camera_selected.png'),
   },
   photo: {
-    icon: require('../../assets/icons/chat/ic_local.png'),
-    active: require('../../assets/icons/chat/ic_local_selected.png'),
+    icon: require('@assets/icons/chat/ic_local.png'),
+    active: require('@assets/icons/chat/ic_local_selected.png'),
   },
   voice: {
-    icon: require('../../assets/icons/chat/ic_voice.png'),
-    active: require('../../assets/icons/chat/ic_voice_selected.png'),
+    icon: require('@assets/icons/chat/ic_voice.png'),
+    active: require('@assets/icons/chat/ic_voice_selected.png'),
   },
   more: {
-    icon: require('../../assets/icons/chat/ic_more.png'),
-    active: require('../../assets/icons/chat/ic_more_selected.png'),
+    icon: require('@assets/icons/chat/ic_more.png'),
+    active: require('@assets/icons/chat/ic_more_selected.png'),
   },
 };
 

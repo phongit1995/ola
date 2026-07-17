@@ -177,27 +177,84 @@
       "flying": "Flying"
     },
     "rows": {
-      "sound": { "title": "Ringtone", "subtitle": "Toggle notification sound" },
-      "soundType": { "title": "Ringtone sound", "subtitle": "Message alert sound" },
-      "vibrate": { "title": "Vibration", "subtitle": "Vibrate on new events" },
-      "led": { "title": "Light", "subtitle": "Blink the LED light" },
-      "language": { "title": "Language", "subtitle": "Display language" },
-      "passcode": { "title": "Passcode", "subtitle": "Passcode to open Ola" },
-      "newMe": { "title": "Notify unread Me" },
-      "avatar": { "title": "Avatar", "subtitle": "Avatar frame style" },
-      "wallpaper": { "title": "Ola Wallpaper" },
-      "quickBrowser": { "title": "Quick browser", "subtitle": "Open links inside Ola" },
-      "video": { "title": "Play video" },
-      "typing": { "title": "Typing suggestion", "subtitle": "Suggest nick/clan when typing @ #" },
-      "popup": { "title": "Message notification" },
-      "quickReply": { "title": "Quick reply", "subtitle": "Preset replies" },
-      "effect": { "title": "Message effect" },
-      "rssHistory": { "title": "Remember RSS history" },
-      "fontSize": { "title": "Font size", "subtitle": "RSS reading font size" },
-      "rating": { "title": "Rating", "subtitle": "Rate Ola on Google Play" },
-      "beta": { "title": "Ola Beta", "subtitle": "Join the beta program" },
-      "version": { "title": "Version: 5.10.19", "subtitle": "Protocol 5.10.19 · Support 1900588883 · © 2007-2016 MicroGame Corp." },
-      "logoutAll": { "title": "Logout all sessions", "subtitle": "You will not receive messages from friends" }
+      "sound": {
+        "title": "Ringtone",
+        "subtitle": "Toggle notification sound"
+      },
+      "soundType": {
+        "title": "Ringtone sound",
+        "subtitle": "Message alert sound"
+      },
+      "vibrate": {
+        "title": "Vibration",
+        "subtitle": "Vibrate on new events"
+      },
+      "led": {
+        "title": "Light",
+        "subtitle": "Blink the LED light"
+      },
+      "language": {
+        "title": "Language",
+        "subtitle": "Display language"
+      },
+      "passcode": {
+        "title": "Passcode",
+        "subtitle": "Passcode to open Ola"
+      },
+      "newMe": {
+        "title": "Notify unread Me"
+      },
+      "avatar": {
+        "title": "Avatar",
+        "subtitle": "Avatar frame style"
+      },
+      "wallpaper": {
+        "title": "Ola Wallpaper"
+      },
+      "quickBrowser": {
+        "title": "Quick browser",
+        "subtitle": "Open links inside Ola"
+      },
+      "video": {
+        "title": "Play video"
+      },
+      "typing": {
+        "title": "Typing suggestion",
+        "subtitle": "Suggest nick/clan when typing @ #"
+      },
+      "popup": {
+        "title": "Message notification"
+      },
+      "quickReply": {
+        "title": "Quick reply",
+        "subtitle": "Preset replies"
+      },
+      "effect": {
+        "title": "Message effect"
+      },
+      "rssHistory": {
+        "title": "Remember RSS history"
+      },
+      "fontSize": {
+        "title": "Font size",
+        "subtitle": "RSS reading font size"
+      },
+      "rating": {
+        "title": "Rating",
+        "subtitle": "Rate Ola on Google Play"
+      },
+      "beta": {
+        "title": "Ola Beta",
+        "subtitle": "Join the beta program"
+      },
+      "version": {
+        "title": "Version: 5.10.19",
+        "subtitle": "Protocol 5.10.19 · Support 1900588883 · © 2007-2016 MicroGame Corp."
+      },
+      "logoutAll": {
+        "title": "Logout all sessions",
+        "subtitle": "You will not receive messages from friends"
+      }
     }
   },
   "dialog": {
@@ -210,7 +267,8 @@
     "logoutMessage": "Do you want to sign out Ola?",
     "deleteConvTitle": "Delete conversation",
     "deleteConvMessage": "Do you want to delete the conversation with {{name}}?",
-    "deleteArchived": "Delete archived message",
+    "deleteArchived": "Also delete messages on your side",
+    "deleteWithMessages": "Also delete messages",
     "deleteAria": "Delete conversation with {{name}}",
     "yes": "Yes",
     "close": "Close"
@@ -380,7 +438,6 @@
     "suggestEmpty": "No more suggestions",
     "friendRequests": "Friend requests",
     "friendRequestEmpty": "No friend requests",
-    "acceptRequest": "Accept",
     "declineRequest": "Decline",
     "requestAccepted": "Friend request accepted",
     "requestActionError": "Action failed, please try again",
@@ -493,6 +550,7 @@
     "tabFeed": "Newsfeed",
     "tabCommunity": "Community",
     "tabPersonal": "Personal",
+    "tabClan": "Clan Me",
     "tabTagged": "Tagged",
     "tabMentions": "Mentions",
     "tabVisitors": "Visitors",
@@ -605,6 +663,7 @@
     "reactionError": "Couldn't react, try again",
     "notifTitle": "Notifications",
     "notifLike": "liked your status",
+    "notifCommentLike": "liked your comment",
     "notifComment": "commented on your status",
     "notifReply": "replied to your comment",
     "notifMention": "mentioned you in a status",
@@ -622,7 +681,8 @@
     "clearHistoryConfirm": "Clear all recently viewed Me?",
     "searchHistoryEmpty": "No recently viewed Me yet",
     "searchEmpty": "No results found",
-    "searchError": "Couldn't search, try again"
+    "searchError": "Couldn't search, try again",
+    "drawerClan": "Clan"
   },
   "profile": {
     "makeFriend": "Add friend",
@@ -747,6 +807,7 @@
     "resend": "Resend code",
     "resendIn": "Resend in {{seconds}}s",
     "success": "Email verified successfully",
+    "rewardToast": "Email verified! You received {{days}} days of VIP 🎉",
     "errEmailRequired": "Please enter an email.",
     "errEmailInvalid": "Invalid email address.",
     "errCodeRequired": "Please enter all 6 digits.",
@@ -1004,7 +1065,10 @@
     "msg_like": "liked your status",
     "msg_photo": "just posted a new photo",
     "msg_proposal": "wants to propose to you",
-    "msg_divorce": "declined your proposal"
+    "msg_divorce": "declined your proposal",
+    "empty": "No notification",
+    "loadError": "Failed to load notifications",
+    "actionError": "Action failed, please try again"
   },
   "ken": {
     "title": "KEN",
@@ -1295,5 +1359,99 @@
       "colKenWon": "KEN WON",
       "empty": "No one on the leaderboard yet."
     }
+  },
+  "clan": {
+    "title": "Clan",
+    "searchPlaceholder": "Enter Clan name",
+    "validate": "Validate",
+    "nameHint": "Lowercase letters and digits only, no spaces or accents (5-32 chars)",
+    "nameTaken": "Clan #{{name}} is not available. Please choose another",
+    "nameAvailable": "Clan name is available. You can create it",
+    "create": "Create Clan",
+    "createConfirm": "You will pay {{cost}} Ken to create Clan #{{name}}",
+    "createSuccess": "Clan #{{name}} created",
+    "openClan": "Open Clan page",
+    "myClans": "My Clans",
+    "noClans": "You have not joined any clan yet",
+    "members": "Members",
+    "membersCount": "{{count}} Members",
+    "visits": "{{count}} Visits",
+    "createdAt": "Created {{date}}",
+    "follow": "Follow",
+    "following": "Joined",
+    "leaveConfirm": "Do you want to leave Clan #{{name}}?",
+    "leave": "Leave Clan",
+    "manage": "Manage Clan",
+    "writeMe": "Write Me",
+    "postedTitle": "Posted ME",
+    "meTop": "Me Top",
+    "emptyFeed": "No posts yet",
+    "verifiedOnlyFeed": "Verification required to view posts in this Clan",
+    "banned": "You are banned from this Clan",
+    "closedJoin": "This Clan is closed for joining",
+    "roleOwner": "Manager",
+    "roleDeputy": "Assistant",
+    "roleAmbassador": "Supervisor",
+    "roleMember": "Member",
+    "policy": "Policy",
+    "policy0": "Free to post",
+    "policy1": "Free to join",
+    "policy2": "Verification required to post Me",
+    "policy3": "Closed",
+    "policy4": "Verification required to view and post",
+    "memberPublicPost": "Members can post publicly",
+    "memberPublicPostOffConfirm": "Old public posts by members will become private. Continue?",
+    "none": "None",
+    "enterNick": "Enter Ola account",
+    "assignSuccess": "Assigned @{{username}}",
+    "revokeConfirmDeputy": "Do you want to deprive clan assistant @{{username}}?",
+    "revokeConfirmAmbassador": "Do you want to deprive clan supervisor @{{username}}?",
+    "revokeSuccess": "Role revoked",
+    "verifyMember": "Verify member",
+    "unverifyMember": "Unverify member",
+    "verifySuccess": "Verified @{{username}} in Clan #{{name}}",
+    "unverifySuccess": "Unverified @{{username}} in Clan #{{name}}",
+    "verified": "Verified",
+    "banList": "Ban list",
+    "banUser": "Ban from Clan",
+    "banConfirm": "Ban @{{username}} from the Clan? They will be removed and cannot rejoin",
+    "banSuccess": "Banned @{{username}}",
+    "unban": "Unban",
+    "unbanSuccess": "Unbanned",
+    "emptyBans": "No banned users",
+    "pinPost": "Pin as Me Top",
+    "unpinPost": "Unpin Me Top",
+    "pinSuccess": "Pinned as Me Top",
+    "unpinSuccess": "Me Top unpinned",
+    "deletePost": "Delete post",
+    "deletePostConfirm": "Delete this post from the Clan?",
+    "deletePostsByUser": "Delete all posts by this user",
+    "deletePostsByUserConfirm": "Delete ALL posts by @{{username}} in this Clan?",
+    "deleteSuccess": "Deleted",
+    "changeAvatar": "Change avatar",
+    "changeCover": "Change cover",
+    "uploadSuccess": "Image updated",
+    "loadMore": "Load more",
+    "visibilityPublic": "Public",
+    "visibilityPrivate": "Clan only",
+    "errors": {
+      "clan not found": "Clan not found",
+      "clan name is already taken": "Clan name is already taken",
+      "insufficient ken balance": "Not enough Ken",
+      "you are banned from this clan": "You are banned from this Clan",
+      "clan is closed for joining": "This Clan is closed",
+      "clan requires verification to view": "Verification required to view this Clan",
+      "you are not allowed to post in this clan": "You are not allowed to post in this Clan",
+      "only the clan owner or deputy can post public": "Only the Clan owner or deputy can post publicly",
+      "you are not a member of this clan": "You are not a member of this Clan",
+      "you are already a member of this clan": "You already joined this Clan",
+      "owner cannot leave the clan": "The owner cannot leave the Clan",
+      "cannot ban clan staff": "Cannot ban Clan staff",
+      "user not found": "Account not found",
+      "clan member not found": "Member not found",
+      "clan name must be 5-32 lowercase letters or digits, no spaces or accents": "Clan name must be 5-32 lowercase letters or digits, no spaces or accents",
+      "you have reached the maximum number of clans you can own": "You have reached the limit of clans you can create"
+    },
+    "createShort": "Create"
   }
 }

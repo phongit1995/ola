@@ -68,6 +68,8 @@ export function toMePost(post: Post, formatTime: (iso: string) => string): MePos
     : null;
   return {
     id: post.id,
+    clanId: post.clanId,
+    clanHandle: post.clanHandle,
     authorId: post.author?.id ?? '',
     author,
     fullName: post.author?.fullName ?? '',

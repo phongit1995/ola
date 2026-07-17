@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Pressable, Text, View } from 'react-native';
-import { SUPPORTED_LANGUAGES, setLanguage, type Language } from '../i18n';
+import { SUPPORTED_LANGUAGES, setLanguage, type Language } from '@i18n';
 
 const LABELS: Record<Language, string> = { vi: 'VI', en: 'EN' };
 

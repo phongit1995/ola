@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { RelationshipStatus } from '@ola/shared/types';
-import { hidePeerCard, isPeerCardHidden } from '../../store/chatLocalStore';
+import { hidePeerCard, isPeerCardHidden } from '@store/chatLocalStore';
 
 const STRANGER_STATUSES: RelationshipStatus[] = ['none', 'pending_outgoing', 'pending_incoming'];
 

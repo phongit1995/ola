@@ -1,11 +1,5 @@
 import type { ParseKeys } from 'i18next';
 import type { AppOverlayKind } from '@/store/appOverlayStore';
-import icFriend from '@/assets/icons/notify/ic_notification_add_friend.png';
-import icMention from '@/assets/icons/notify/ic_notification_mention.png';
-import icLike from '@/assets/icons/notify/ic_notification_like.png';
-import icPhoto from '@/assets/icons/notify/ic_notification_photo.png';
-import icHeart from '@/assets/icons/notify/ic_notification_heart.png';
-import icBrokenHeart from '@/assets/icons/notify/ic_notification_broken_heart.png';
 import iconNotify from '@/assets/icons/apps/notify.png';
 // TODO: mở lại các import icon dưới khi bật lại mục Kho game / Đăng quảng cáo / OlaMall / Lân cận
 // import iconGame from '@/assets/icons/apps/game.png';
@@ -20,7 +14,6 @@ import iconSetting from '@/assets/icons/apps/setting.png';
 import iconEgg from '@/assets/icons/apps/egg.png';
 import iconPen from '@/assets/games/pen/pen_icon.webp';
 import iconWheel from '@/assets/games/spin-wheel/wheel.webp';
-import type { NotificationType, NotificationItem } from './NotificationsPage';
 import type { Venue } from './NearbyPlacesPage';
 
 export interface AppItem {
@@ -30,24 +23,6 @@ export interface AppItem {
   overlay?: 'pen' | 'egg' | 'wheel';
   subtitleKey?: 'home.appGameSubtitle' | 'home.appMallSubtitle';
 }
-
-export const TYPE_ICON: Partial<Record<NotificationType, string>> = {
-  friend: icFriend,
-  mention: icMention,
-  like: icLike,
-  photo: icPhoto,
-  proposal: icHeart,
-  divorce: icBrokenHeart,
-};
-
-export const MOCK_NOTIFICATIONS: NotificationItem[] = [
-  { id: '1', sender: 'Minh Anh', type: 'friend', time: '5 phút trước' },
-  { id: '2', sender: 'Hoàng Nam', type: 'mention', time: '12 phút trước' },
-  { id: '3', sender: 'Lan Phương', type: 'like', time: '1 giờ trước' },
-  { id: '4', sender: 'Đức Huy', type: 'photo', time: '2 giờ trước' },
-  { id: '5', sender: 'Thu Trang', type: 'proposal', time: 'Hôm qua' },
-  { id: '6', sender: 'Bảo Ngọc', type: 'divorce', time: '3 ngày trước' },
-];
 
 export const APP_ITEMS: AppItem[] = [
   { icon: iconNotify, titleKey: 'home.apps.notifications', app: 'notifications' },

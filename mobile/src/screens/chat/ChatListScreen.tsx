@@ -18,27 +18,28 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { formatClockHM } from '@ola/shared/lib';
 import { AuthService, SocketService } from '@ola/shared/services';
 import { useAuthStore } from '@ola/shared/stores/authStore';
+import { totalUnreadOf } from '@ola/shared/stores/chat/chatHelpers';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { Conversation } from '@ola/shared/types';
-import type { RootStackParamList } from '../../navigation/types';
-import { ROOT_ROUTES } from '../../navigation/routes';
-import { Avatar } from '../../components/Avatar';
-import { ConfirmDialog } from '../../components/ConfirmDialog';
-import { kulImageForText } from '../../lib/kul';
-import { SmileyText } from '../../lib/richText';
-import { ListOptionDialog, type ListOption } from '../../components/ListOptionDialog';
+import type { RootStackParamList } from '@navigation/types';
+import { ROOT_ROUTES } from '@navigation/routes';
+import { Avatar } from '@components/Avatar';
+import { ConfirmDialog } from '@components/ConfirmDialog';
+import { kulImageForText } from '@lib/kul';
+import { SmileyText } from '@lib/richText';
+import { ListOptionDialog, type ListOption } from '@components/ListOptionDialog';
 import { BlockedListDialog } from './BlockedListDialog';
 import { ComposeDialog } from './ComposeDialog';
 import { ChangeAvatarDialog } from './ChangeAvatarDialog';
 import { ChangeCoverDialog } from './ChangeCoverDialog';
 import { ContactsPane } from './ContactsPane';
-import { useConversationsWithPresence, usePresenceListPolling } from '../../hooks/usePresence';
+import { useConversationsWithPresence, usePresenceListPolling } from '@hooks/usePresence';
 
-const sentIcon = require('../../assets/icons/chat/ic_message_sent.png');
-const kulIcon = require('../../assets/icons/chat/ic_kul.png');
-const moreIcon = require('../../assets/icons/chat/ic_more_white.png');
-const composeIcon = require('../../assets/icons/chat/ic_action_compose_message.png');
+const sentIcon = require('@assets/icons/chat/ic_message_sent.png');
+const kulIcon = require('@assets/icons/chat/ic_kul.png');
+const moreIcon = require('@assets/icons/chat/ic_more_white.png');
+const composeIcon = require('@assets/icons/chat/ic_action_compose_message.png');
 
 const SWIPE_MAX = 88;
 const SWIPE_TRIGGER = 56;
@@ -67,7 +68,7 @@ function headerTitle(conversation: Conversation): string {
 interface RowProps {
   conversation: Conversation;
   onPress: () => void;
-  onDelete: () => void;
+  onDelete: (options?: { clearMessages?: boolean }) => void;
 }
 
 function ConversationRow({ conversation, onPress, onDelete }: RowProps) {
@@ -108,7 +109,12 @@ function ConversationRow({ conversation, onPress, onDelete }: RowProps) {
             t('dialog.deleteConvMessage', { name }),
             [
               { text: t('dialog.cancel'), style: 'cancel' },
-              { text: t('dialog.delete'), style: 'destructive', onPress: onDelete },
+              { text: t('dialog.delete'), style: 'destructive', onPress: () => onDelete() },
+              {
+                text: t('dialog.deleteWithMessages'),
+                style: 'destructive',
+                onPress: () => onDelete({ clearMessages: true }),
+              },
             ]
           );
         } else {
@@ -331,7 +337,7 @@ export function ChatListScreen() {
     },
   ];
 
-  const totalUnread = conversations.reduce((sum, item) => sum + (item.unreadCount ?? 0), 0);
+  const totalUnread = totalUnreadOf(conversations);
 
   return (
     <View className="flex-1 bg-white">
@@ -381,7 +387,7 @@ export function ChatListScreen() {
             <ConversationRow
               conversation={item}
               onPress={() => openConversation(item.id)}
-              onDelete={() => void hideConversation(item.id)}
+              onDelete={(options) => void hideConversation(item.id, options)}
             />
           )}
         />

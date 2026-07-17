@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"ola-chat-server/internal/config"
 	"ola-chat-server/internal/constants"
+	appNotificationEvents "ola-chat-server/internal/domain/app-notification"
 	callEvents "ola-chat-server/internal/domain/call"
 	conversationEvents "ola-chat-server/internal/domain/conversation"
 	kenChestEvents "ola-chat-server/internal/domain/kenchest"
@@ -115,6 +116,10 @@ func (p *Producer) PublishKenChestClosed(ctx context.Context, event *kenChestEve
 
 func (p *Producer) PublishMeNotification(ctx context.Context, event *meNotificationEvents.Event) error {
 	return p.publishKeyed(ctx, constants.KafkaTopicMeNotification, event.RecipientID, event)
+}
+
+func (p *Producer) PublishAppNotification(ctx context.Context, event *appNotificationEvents.Event) error {
+	return p.publishKeyed(ctx, constants.KafkaTopicAppNotification, event.RecipientID, event)
 }
 
 func (p *Producer) PublishUserBanned(ctx context.Context, event *userBanEvents.Event) error {

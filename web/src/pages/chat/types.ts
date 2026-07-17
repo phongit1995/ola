@@ -1,4 +1,5 @@
 import type { ChatReplySnapshot } from '@app-types';
+import type { DeviceType } from '@constants';
 
 export interface Conversation {
   name: string;
@@ -8,7 +9,7 @@ export interface Conversation {
   unread: number;
 }
 
-export type DeviceType = 'phone' | 'pc' | 'apple' | 'android' | 'winphone';
+export type { DeviceType };
 
 export type ContactGroup = 'birthday' | 'new' | 'utility' | 'friend';
 

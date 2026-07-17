@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { Animated, Easing, Image, View } from 'react-native';
 import { SPIN_DURATION_MS, segmentAngle } from '@ola/shared/lib';
 import type { WheelPlayerSegment } from '@ola/shared/types';
-import { assetRatio } from '../pen/penUi';
+import { assetRatio } from '@screens/games/pen/penUi';
 import { wheelAssets } from './spinWheelAssets';
 import { WheelFace } from './WheelFace';
 import { WheelLabels } from './WheelLabels';

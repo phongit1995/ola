@@ -5,11 +5,11 @@ import { MeService, UserService } from '@ola/shared/services';
 import type { NativeUploadFile } from '@ola/shared/lib';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
-import { Avatar } from '../../components/Avatar';
-import { Dialog, DialogButton } from '../../components/Dialog';
-import { pickCroppedImage } from '../../lib/imagePicker';
+import { Avatar } from '@components/Avatar';
+import { Dialog, DialogButton } from '@components/Dialog';
+import { pickCroppedImage } from '@lib/imagePicker';
 
-const cameraIcon = require('../../assets/icons/profile/ic_action_camera.png');
+const cameraIcon = require('@assets/icons/profile/ic_action_camera.png');
 
 const AVATAR_OUTPUT = 800;
 const MIN_SOURCE_WIDTH = 100;

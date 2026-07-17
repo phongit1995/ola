@@ -3,10 +3,11 @@ package models
 import "github.com/google/uuid"
 
 const (
-	MeNotificationLike    = "like"
-	MeNotificationComment = "comment"
-	MeNotificationReply   = "reply"
-	MeNotificationMention = "mention"
+	MeNotificationLike        = "like"
+	MeNotificationComment     = "comment"
+	MeNotificationReply       = "reply"
+	MeNotificationMention     = "mention"
+	MeNotificationCommentLike = "comment_like"
 )
 
 type MeNotification struct {

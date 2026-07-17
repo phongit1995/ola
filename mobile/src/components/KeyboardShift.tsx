@@ -5,7 +5,7 @@ import {
   useReanimatedKeyboardAnimation,
   useWindowDimensions,
 } from 'react-native-keyboard-controller';
-import { useKeyboardHeight } from '../hooks/useKeyboardHeight';
+import { useKeyboardHeight } from '@hooks/useKeyboardHeight';
 
 interface KeyboardShiftProps {
   children: ReactNode;

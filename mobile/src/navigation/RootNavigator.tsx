@@ -3,7 +3,9 @@ import { ActivityIndicator, Image, View } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useTranslation } from 'react-i18next';
+import { useAppNotificationStore } from '@ola/shared/stores/appNotificationStore';
 import { useAuthStore } from '@ola/shared/stores/authStore';
+import { totalUnreadOf } from '@ola/shared/stores/chat/chatHelpers';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import { useRoomChatStore } from '@ola/shared/stores/roomChatStore';
 import type {
@@ -13,30 +15,32 @@ import type {
   RootStackParamList,
 } from './types';
 import { AUTH_ROUTES, ROOM_ROUTES, ROOT_ROUTES, TAB_ROUTES } from './routes';
-import { LoginScreen } from '../screens/auth/LoginScreen';
-import { RegisterScreen } from '../screens/auth/RegisterScreen';
-import { ForgotPasswordScreen } from '../screens/auth/ForgotPasswordScreen';
-import { TermsScreen } from '../screens/auth/TermsScreen';
-import { ChatListScreen } from '../screens/chat/ChatListScreen';
-import { ChatDetailScreen } from '../screens/chat/ChatDetailScreen';
-import { RoomListScreen } from '../screens/room/RoomListScreen';
-import { RoomChatScreen } from '../screens/room/RoomChatScreen';
-import { MeFeedScreen } from '../screens/me/MeFeedScreen';
-import { AppsScreen } from '../screens/apps/AppsScreen';
-import { ProfileViewScreen } from '../screens/profile/ProfileViewScreen';
-import { EditProfileScreen } from '../screens/profile/EditProfileScreen';
-import { VipStoreScreen } from '../screens/vip/VipStoreScreen';
-import { BuyVipScreen } from '../screens/vip/BuyVipScreen';
-import { KenStoreScreen } from '../screens/ken/KenStoreScreen';
-import { BuyKenScreen } from '../screens/ken/BuyKenScreen';
-import { MediaStoreScreen } from '../screens/media/MediaStoreScreen';
-import { SettingsScreen } from '../screens/settings/SettingsScreen';
-import { PenGameScreen } from '../screens/games/pen/PenGameScreen';
-import { SpinWheelGameScreen } from '../screens/games/spin-wheel/SpinWheelGameScreen';
-import { EggGameScreen } from '../screens/games/egg/EggGameScreen';
-import { TAB_ICONS } from '../assets/tabIcons';
-import { KenBalanceBadge } from '../components/KenBalanceBadge';
-import { mmkvStorage } from '../platform/storage';
+import { LoginScreen } from '@screens/auth/LoginScreen';
+import { RegisterScreen } from '@screens/auth/RegisterScreen';
+import { ForgotPasswordScreen } from '@screens/auth/ForgotPasswordScreen';
+import { TermsScreen } from '@screens/auth/TermsScreen';
+import { ChatListScreen } from '@screens/chat/ChatListScreen';
+import { ChatDetailScreen } from '@screens/chat/ChatDetailScreen';
+import { RoomListScreen } from '@screens/room/RoomListScreen';
+import { RoomChatScreen } from '@screens/room/RoomChatScreen';
+import { MeFeedScreen } from '@screens/me/MeFeedScreen';
+import { AppsScreen } from '@screens/apps/AppsScreen';
+import { ProfileViewScreen } from '@screens/profile/ProfileViewScreen';
+import { EditProfileScreen } from '@screens/profile/EditProfileScreen';
+import { VipStoreScreen } from '@screens/vip/VipStoreScreen';
+import { BuyVipScreen } from '@screens/vip/BuyVipScreen';
+import { KenStoreScreen } from '@screens/ken/KenStoreScreen';
+import { BuyKenScreen } from '@screens/ken/BuyKenScreen';
+import { MediaStoreScreen } from '@screens/media/MediaStoreScreen';
+import { NotificationsScreen } from '@screens/apps/NotificationsScreen';
+import { SettingsScreen } from '@screens/settings/SettingsScreen';
+import { PenGameScreen } from '@screens/games/pen/PenGameScreen';
+import { SpinWheelGameScreen } from '@screens/games/spin-wheel/SpinWheelGameScreen';
+import { EggGameScreen } from '@screens/games/egg/EggGameScreen';
+import { ArcadeGameScreen } from '@screens/apps/ArcadeGameScreen';
+import { TAB_ICONS } from '@assets/tabIcons';
+import { KenBalanceBadge } from '@components/KenBalanceBadge';
+import { mmkvStorage } from '@platform/storage';
 
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
 const Tabs = createBottomTabNavigator<MainTabParamList>();
@@ -93,10 +97,9 @@ function MainTabs() {
   const { t } = useTranslation();
   const [initialTab] = useState(readStoredTab);
   const [activeTab, setActiveTab] = useState<string>(initialTab);
-  const chatUnread = useChatStore((state) =>
-    state.conversations.reduce((sum, item) => sum + (item.unreadCount ?? 0), 0)
-  );
+  const chatUnread = useChatStore((state) => totalUnreadOf(state.conversations));
   const roomUnread = useRoomChatStore((state) => state.hasUnread);
+  const notifUnread = useAppNotificationStore((state) => state.unreadCount);
   return (
     <View style={{ flex: 1 }}>
       <Tabs.Navigator
@@ -164,7 +167,18 @@ function MainTabs() {
         <Tabs.Screen
           name={TAB_ROUTES.Apps}
           component={AppsScreen}
-          options={{ title: t('home.tabApps'), tabBarIcon: tabIcon('apps') }}
+          options={{
+            title: t('home.tabApps'),
+            tabBarIcon: tabIcon('apps'),
+            tabBarBadge:
+              notifUnread > 0 ? (notifUnread > 99 ? '99+' : notifUnread) : undefined,
+            tabBarBadgeStyle: {
+              backgroundColor: '#ff4081',
+              color: '#ffffff',
+              fontSize: 10,
+              fontWeight: 'bold',
+            },
+          }}
         />
       </Tabs.Navigator>
       <KenBalanceBadge />
@@ -199,10 +213,12 @@ export function RootNavigator() {
       <RootStack.Screen name={ROOT_ROUTES.KenStore} component={KenStoreScreen} />
       <RootStack.Screen name={ROOT_ROUTES.BuyKen} component={BuyKenScreen} />
       <RootStack.Screen name={ROOT_ROUTES.MediaStore} component={MediaStoreScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.Notifications} component={NotificationsScreen} />
       <RootStack.Screen name={ROOT_ROUTES.Settings} component={SettingsScreen} />
       <RootStack.Screen name={ROOT_ROUTES.PenGame} component={PenGameScreen} />
       <RootStack.Screen name={ROOT_ROUTES.SpinWheel} component={SpinWheelGameScreen} />
       <RootStack.Screen name={ROOT_ROUTES.EggGame} component={EggGameScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.ArcadeGame} component={ArcadeGameScreen} />
     </RootStack.Navigator>
   );
 }

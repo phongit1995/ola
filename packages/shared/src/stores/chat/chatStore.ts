@@ -15,9 +15,10 @@ import {
   SocketService,
   UserService,
 } from '../../services';
-import type { Conversation, Message, PublicProfile, ReactionType, RelationshipInfo } from '../../types';
+import type { ChatReactionNotice, Conversation, Message, PublicProfile, ReactionType, RelationshipInfo } from '../../types';
+import { registerOnLogout } from '../authStore';
 import { upsertConversation } from './chatHelpers';
-import { clearTypingTimers, registerChatRealtime } from './chatRealtime';
+import { clearMarkReadTimers, clearTypingTimers, registerChatRealtime } from './chatRealtime';
 
 const MESSAGE_PAGE_SIZE = 50;
 const TYPING_THROTTLE = 2000;
@@ -45,19 +46,22 @@ export interface ChatState {
   peerCardRoll: boolean;
   messages: Message[];
   hasMore: boolean;
+  messagesCursor: string | null;
   loadingConversations: boolean;
   loadingMessages: boolean;
   loadingMore: boolean;
   typingUsers: TypingUser[];
   replyTarget: Message | null;
+  reactionNotice: ChatReactionNotice | null;
   setReplyTarget: (message: Message) => void;
   clearReplyTarget: () => void;
+  clearReactionNotice: (seq: number) => void;
   loadConversations: () => Promise<void>;
   syncCurrentConversation: () => Promise<void>;
   openConversation: (conversationId: string) => Promise<void>;
   startDirect: (recipientId: string) => Promise<Conversation | null>;
   closeConversation: () => void;
-  hideConversation: (conversationId: string) => Promise<void>;
+  hideConversation: (conversationId: string, options?: { clearMessages?: boolean }) => Promise<void>;
   loadMoreMessages: () => Promise<void>;
   sendText: (content: string) => Promise<void>;
   sendFirstToDraft: (content: string) => Promise<void>;
@@ -87,11 +91,13 @@ const initialState = {
   peerCardRoll: false,
   messages: [] as Message[],
   hasMore: false,
+  messagesCursor: null as string | null,
   loadingConversations: false,
   loadingMessages: false,
   loadingMore: false,
   typingUsers: [] as TypingUser[],
   replyTarget: null as Message | null,
+  reactionNotice: null as ChatReactionNotice | null,
 };
 
 const clearedPeerView = {
@@ -142,7 +148,8 @@ export const useChatStore = create<ChatState>((set, get) => {
         );
         set({
           messages: [...fetched, ...pending],
-          hasMore: result.messages.length >= MESSAGE_PAGE_SIZE,
+          hasMore: result.hasMore ?? result.messages.length >= MESSAGE_PAGE_SIZE,
+          messagesCursor: result.nextBefore ?? null,
         });
         const conversation = get().conversations.find((item) => item.id === conversationId);
         if ((conversation?.unreadCount ?? 0) > 0) void get().markRead(conversationId);
@@ -162,6 +169,7 @@ export const useChatStore = create<ChatState>((set, get) => {
         typingUsers: [],
         replyTarget: null,
         hasMore: false,
+        messagesCursor: null,
         loadingMore: false,
         loadingMessages: true,
       });
@@ -184,7 +192,8 @@ export const useChatStore = create<ChatState>((set, get) => {
         if (get().currentConversationId !== conversationId) return;
         set({
           messages: [...result.messages].reverse(),
-          hasMore: result.messages.length >= MESSAGE_PAGE_SIZE,
+          hasMore: result.hasMore ?? result.messages.length >= MESSAGE_PAGE_SIZE,
+          messagesCursor: result.nextBefore ?? null,
           loadingMessages: false,
         });
         if ((conversation?.unreadCount ?? 0) > 0) {
@@ -253,29 +262,32 @@ export const useChatStore = create<ChatState>((set, get) => {
 
     clearReplyTarget: () => set({ replyTarget: null }),
 
-    hideConversation: async (conversationId) => {
+    clearReactionNotice: (seq) =>
+      set((state) => (state.reactionNotice?.seq === seq ? { reactionNotice: null } : {})),
+
+    hideConversation: async (conversationId, options) => {
       const isCurrent = get().currentConversationId === conversationId;
       set((state) => ({
         conversations: state.conversations.filter((item) => item.id !== conversationId),
         ...(isCurrent ? { currentConversationId: null, messages: [], typingUsers: [] } : {}),
       }));
       try {
-        await ConversationService.hide(conversationId);
+        await ConversationService.hide(conversationId, options?.clearMessages === true);
       } catch {
         void get().loadConversations();
       }
     },
 
     loadMoreMessages: async () => {
-      const { currentConversationId, messages, hasMore, loadingMore } = get();
-      if (!currentConversationId || !hasMore || loadingMore || messages.length === 0) return;
-      const oldest = messages[0];
-      if (oldest == null) return;
+      const { currentConversationId, messages, hasMore, loadingMore, messagesCursor } = get();
+      if (!currentConversationId || !hasMore || loadingMore) return;
+      const before = messagesCursor ?? messages[0]?.id;
+      if (before == null) return;
       set({ loadingMore: true });
       try {
         const result = await MessageService.list(currentConversationId, {
           limit: MESSAGE_PAGE_SIZE,
-          before: oldest.id,
+          before,
         });
         if (get().currentConversationId !== currentConversationId) return;
         const older = [...result.messages].reverse();
@@ -283,7 +295,8 @@ export const useChatStore = create<ChatState>((set, get) => {
         const deduped = older.filter((item) => !existingIds.has(item.id));
         set({
           messages: [...deduped, ...get().messages],
-          hasMore: result.messages.length >= MESSAGE_PAGE_SIZE,
+          hasMore: result.hasMore ?? result.messages.length >= MESSAGE_PAGE_SIZE,
+          messagesCursor: result.nextBefore ?? null,
           loadingMore: false,
         });
       } catch {
@@ -578,8 +591,11 @@ export const useChatStore = create<ChatState>((set, get) => {
 
     reset: () => {
       clearTypingTimers();
+      clearMarkReadTimers();
       lastTypingSentAt = 0;
       set({ ...initialState });
     },
   };
 });
+
+registerOnLogout(() => useChatStore.getState().reset());

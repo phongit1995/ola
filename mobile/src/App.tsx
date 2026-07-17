@@ -15,6 +15,7 @@ import { RootNavigator } from './navigation/RootNavigator';
 import { ToastHost } from './components/ToastHost';
 import { MediaViewer } from './components/MediaViewer';
 import { useMeNotificationRealtime } from './hooks/useMeNotificationRealtime';
+import { useAppNotificationRealtime } from './hooks/useAppNotificationRealtime';
 import { useKenRealtime } from './hooks/useKenRealtime';
 import { KenTreasureOverlay } from './screens/games/ken-treasure/KenTreasureOverlay';
 import { checkForOtaUpdate } from './services/otaUpdate';
@@ -28,6 +29,7 @@ function clearSession() {
 
 export default function App() {
   useMeNotificationRealtime();
+  useAppNotificationRealtime();
   useKenRealtime();
   const userId = useAuthStore((s) => s.user?.id);
   const navigationRef = useNavigationContainerRef<ParamListBase>();

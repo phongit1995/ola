@@ -29,6 +29,9 @@ func filterScope(f ListFilter) func(*gorm.DB) *gorm.DB {
 		if f.Method != "" {
 			db = db.Where("admin_audit_logs.method = ?", f.Method)
 		}
+		if f.Route != "" {
+			db = db.Where("admin_audit_logs.route LIKE ?", "%"+f.Route)
+		}
 		if f.From != nil {
 			db = db.Where("admin_audit_logs.created_at >= ?", *f.From)
 		}

@@ -3,19 +3,19 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Image, Pressable, Text, useWindowDimensions, View } from 'react-native';
 import { colorForName, formatClockHM } from '@ola/shared/lib';
 import type { RoomReplySnapshot } from '@ola/shared/types';
-import { kulImageForText } from '../../lib/kul';
-import { reactionChips } from '../../lib/reactions';
-import { imageSizeForHeight } from '../../lib/chatSmiley';
-import { RichTextView } from '../../components/RichTextView';
-import { VipAvatar } from '../../components/VipAvatar';
-import { useMediaViewerStore } from '../../store/mediaViewerStore';
+import { kulImageForText } from '@lib/kul';
+import { reactionChips } from '@lib/reactions';
+import { imageSizeForHeight } from '@lib/chatSmiley';
+import { RichTextView } from '@components/RichTextView';
+import { VipAvatar } from '@components/VipAvatar';
+import { useMediaViewerStore } from '@store/mediaViewerStore';
 import type { AnchorRect } from './MessageActionSheet';
 import type { BubblePosition, GroupedMessage, MessageGroup } from './messageGroups';
 import { OTHER_CORNERS, OWN_CORNERS, roomBubbleTextMaxWidth } from './roomConstants';
 
-const mentionIcon = require('../../assets/icons/room/ic_tag_people.png');
-const photoIcon = require('../../assets/icons/chat/ic_local.png');
-const resendIcon = require('../../assets/icons/chat/btn_resend_d.png');
+const mentionIcon = require('@assets/icons/room/ic_tag_people.png');
+const photoIcon = require('@assets/icons/chat/ic_local.png');
+const resendIcon = require('@assets/icons/chat/btn_resend_d.png');
 
 interface RoomMessageGroupProps {
   group: MessageGroup;

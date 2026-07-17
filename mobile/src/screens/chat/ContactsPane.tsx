@@ -17,11 +17,11 @@ import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { activeVipTypeId, colorForName, isVipActive } from '@ola/shared/lib';
 import type { Relationship } from '@ola/shared/types';
-import type { RootStackParamList } from '../../navigation/types';
-import { ROOT_ROUTES } from '../../navigation/routes';
-import { useMediaViewerStore } from '../../store/mediaViewerStore';
-import { VipAvatar } from '../../components/VipAvatar';
-import { MessageActionSheet, type MessageSheetAction } from '../room/MessageActionSheet';
+import type { RootStackParamList } from '@navigation/types';
+import { ROOT_ROUTES } from '@navigation/routes';
+import { useMediaViewerStore } from '@store/mediaViewerStore';
+import { VipAvatar } from '@components/VipAvatar';
+import { MessageActionSheet, type MessageSheetAction } from '@screens/room/MessageActionSheet';
 import { AddContactDialog } from './AddContactDialog';
 import { BuddyRow } from './BuddyRow';
 import { FriendRequestsScreen } from './FriendRequestsScreen';
@@ -29,15 +29,15 @@ import { StatusEditDialog } from './StatusEditDialog';
 import { SuggestedFriendsScreen } from './SuggestedFriendsScreen';
 import { mapFriendsToContacts, SUGGESTED_FRIENDS, type Contact } from './contacts';
 import { useFriendsStore } from '@ola/shared/stores/friendsStore';
-import { useFriendsWithPresence } from '../../hooks/usePresence';
-import { VipBadge } from '../../components/VipBadge';
+import { useFriendsWithPresence } from '@hooks/usePresence';
+import { VipBadge } from '@components/VipBadge';
 
-const smileyIcon = require('../../assets/icons/chat/ola_smiley_online.png');
-const snapPicIcon = require('../../assets/icons/chat/icon_snap_pic.png');
-const addFriendIcon = require('../../assets/icons/room/ic_add_friend.png');
-const groupIcon = require('../../assets/icons/room/ic_notify_new_chat_group_message.png');
-const searchIcon = require('../../assets/icons/chat/ic_search_gray.png');
-const peopleIcon = require('../../assets/icons/chat/ic_people_gray.png');
+const smileyIcon = require('@assets/icons/chat/ola_smiley_online.png');
+const snapPicIcon = require('@assets/icons/chat/icon_snap_pic.png');
+const addFriendIcon = require('@assets/icons/room/ic_add_friend.png');
+const groupIcon = require('@assets/icons/room/ic_notify_new_chat_group_message.png');
+const searchIcon = require('@assets/icons/chat/ic_search_gray.png');
+const peopleIcon = require('@assets/icons/chat/ic_people_gray.png');
 
 const DIVIDER = 'rgba(0,0,0,0.12)';
 
@@ -188,7 +188,7 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
             placeholder={t('chat.searchContacts')}
             placeholderTextColor="rgba(0,0,0,0.26)"
             className="flex-1 text-base"
-            style={{ color: 'rgba(0,0,0,0.87)' }}
+            style={{ color: 'rgba(0,0,0,0.87)', paddingVertical: 0 }}
           />
         </View>
       </View>

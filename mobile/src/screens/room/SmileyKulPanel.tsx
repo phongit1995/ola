@@ -1,16 +1,16 @@
 import { useState } from 'react';
 import { Image, Pressable, ScrollView, View } from 'react-native';
-import { SMILEY_PANEL } from '../../lib/chatSmiley';
-import { EMOJI_IMAGES, emojiToken } from '../../lib/emoji';
-import { KUL_IMAGES } from '../../lib/kul';
-import { imageSizeForHeight } from '../../lib/chatSmiley';
+import { SMILEY_PANEL } from '@lib/chatSmiley';
+import { EMOJI_IMAGES, emojiToken } from '@lib/emoji';
+import { KUL_IMAGES } from '@lib/kul';
+import { imageSizeForHeight } from '@lib/chatSmiley';
 
 type PanelTab = 'emoji' | 'smiley' | 'kul';
 
-const emojiTabIcon = require('../../assets/icons/chat/ic_tab_emoji.png');
-const smileyTabIcon = require('../../assets/icons/chat/ic_tab_smiley.png');
-const kulTabIcon = require('../../assets/icons/chat/ic_tab_kul.png');
-const backspaceIcon = require('../../assets/icons/chat/ic_backspace_selected.png');
+const emojiTabIcon = require('@assets/icons/chat/ic_tab_emoji.png');
+const smileyTabIcon = require('@assets/icons/chat/ic_tab_smiley.png');
+const kulTabIcon = require('@assets/icons/chat/ic_tab_kul.png');
+const backspaceIcon = require('@assets/icons/chat/ic_backspace_selected.png');
 
 export const SMILEY_PANEL_MIN_CONTENT_HEIGHT = 164;
 

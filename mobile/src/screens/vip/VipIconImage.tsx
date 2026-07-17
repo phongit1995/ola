@@ -1,5 +1,5 @@
 import { Image, View } from 'react-native';
-import { VIP_ICONS } from '../../lib/vipImages';
+import { VIP_ICONS } from '@lib/vipImages';
 
 interface VipIconImageProps {
   typeId: number;

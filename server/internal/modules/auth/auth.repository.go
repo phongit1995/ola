@@ -80,12 +80,25 @@ func (r *Repository) EmailVerifiedByOther(email string, excludeID uuid.UUID) (bo
 	return count > 0, nil
 }
 
-func (r *Repository) SetEmailVerified(userID uuid.UUID, email string) error {
-	return r.db.Model(&models.User{}).
+func (r *Repository) SetEmailVerified(userID uuid.UUID, email string) (bool, error) {
+	fields := map[string]interface{}{
+		"email":             email,
+		"email_verified":    true,
+		"email_verified_at": gorm.Expr("NOW()"),
+	}
+
+	res := r.db.Model(&models.User{}).
+		Where("id = ? AND email_verified_at IS NULL", userID).
+		Updates(fields)
+	if res.Error != nil {
+		return false, res.Error
+	}
+	if res.RowsAffected > 0 {
+		return true, nil
+	}
+
+	err := r.db.Model(&models.User{}).
 		Where("id = ?", userID).
-		Updates(map[string]interface{}{
-			"email":             email,
-			"email_verified":    true,
-			"email_verified_at": gorm.Expr("NOW()"),
-		}).Error
+		Updates(fields).Error
+	return false, err
 }

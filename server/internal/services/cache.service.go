@@ -74,6 +74,14 @@ func (s *CacheService) Delete(key string) error {
 	return s.client.Del(s.ctx, key).Err()
 }
 
+// GetMany retrieves multiple keys in one MGET round trip; missing keys are nil
+func (s *CacheService) GetMany(keys []string) ([]interface{}, error) {
+	if len(keys) == 0 {
+		return nil, nil
+	}
+	return s.client.MGet(s.ctx, keys...).Result()
+}
+
 // DeletePattern deletes all keys matching a pattern
 func (s *CacheService) DeletePattern(pattern string) error {
 	iter := s.client.Scan(s.ctx, 0, pattern, 0).Iterator()
@@ -107,6 +115,11 @@ func (s *CacheService) SetNX(key string, value interface{}, expiration time.Dura
 // Increment increments a counter
 func (s *CacheService) Increment(key string) (int64, error) {
 	return s.client.Incr(s.ctx, key).Result()
+}
+
+// IncrementBy increments a counter by n
+func (s *CacheService) IncrementBy(key string, n int64) (int64, error) {
+	return s.client.IncrBy(s.ctx, key, n).Result()
 }
 
 // Decrement decrements a counter

@@ -12,68 +12,68 @@ import (
 )
 
 type Repository struct {
-	session         *gocql.Session
-	logger          *zap.SugaredLogger
-	preparedQueries map[string]*gocql.Query
+	session *gocql.Session
+	logger  *zap.SugaredLogger
+	queries map[string]string
 }
 
 func NewRepository(session *gocql.Session, logger *zap.SugaredLogger) *Repository {
 	r := &Repository{
-		session:         session,
-		logger:          logger.Named("[message_repository]"),
-		preparedQueries: make(map[string]*gocql.Query),
+		session: session,
+		logger:  logger.Named("[message_repository]"),
+		queries: make(map[string]string),
 	}
 
-	r.preparedQueries["create_message"] = session.Query(`
+	r.queries["create_message"] = `
 		INSERT INTO messages_by_conversation
 		(conversation_id, message_id, sender_id, sender_name, sender_avatar, message_type, content, metadata, created_at, updated_at, reply_to_id, reply_snapshot)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-	`)
+	`
 
-	r.preparedQueries["get_messages"] = session.Query(`
+	r.queries["get_messages"] = `
 		SELECT conversation_id, message_id, sender_id, sender_name, sender_avatar, message_type, content, metadata, created_at, updated_at, deleted_at, reply_to_id, reply_snapshot, reactions, edited_at
 		FROM messages_by_conversation
 		WHERE conversation_id = ?
 		LIMIT ?
-	`)
+	`
 
-	r.preparedQueries["get_messages_before"] = session.Query(`
+	r.queries["get_messages_before"] = `
 		SELECT conversation_id, message_id, sender_id, sender_name, sender_avatar, message_type, content, metadata, created_at, updated_at, deleted_at, reply_to_id, reply_snapshot, reactions, edited_at
 		FROM messages_by_conversation
 		WHERE conversation_id = ? AND message_id < ?
 		LIMIT ?
-	`)
+	`
 
-	r.preparedQueries["get_message_by_id"] = session.Query(`
+	r.queries["get_message_by_id"] = `
 		SELECT conversation_id, message_id, sender_id, sender_name, sender_avatar, message_type, content, metadata, created_at, updated_at, deleted_at, reply_to_id, reply_snapshot, reactions, edited_at
 		FROM messages_by_conversation
 		WHERE conversation_id = ? AND message_id = ?
-	`)
+	`
 
-	r.preparedQueries["delete_message"] = session.Query(`
+	r.queries["delete_message"] = `
 		UPDATE messages_by_conversation SET deleted_at = ?, updated_at = ? WHERE conversation_id = ? AND message_id = ?
-	`)
+	`
 
-	r.preparedQueries["update_message"] = session.Query(`
+	r.queries["update_message"] = `
 		UPDATE messages_by_conversation SET content = ?, updated_at = ?, edited_at = ? WHERE conversation_id = ? AND message_id = ?
-	`)
+	`
 
-	r.preparedQueries["get_inbox_entry"] = session.Query(`
+	r.queries["get_inbox_entry"] = `
 		SELECT user_id, conversation_id, conversation_type, display_name, display_avatar,
 		       other_user_id, other_user_name, other_user_avatar,
 		       last_message_at, last_message_id, last_message_preview, last_message_sender,
 		       last_read_message_id, last_read_at, updated_at
 		FROM conversations_by_user
 		WHERE user_id = ? AND conversation_id = ?
-	`)
+	`
 
-	r.preparedQueries["insert_message_meta"] = session.Query(`
+	r.queries["insert_message_meta"] = `
 		INSERT INTO message_meta (conversation_id, message_id, bucket, sender_id) VALUES (?, ?, ?, ?)
-	`)
+	`
 
-	r.preparedQueries["get_message_meta"] = session.Query(`
+	r.queries["get_message_meta"] = `
 		SELECT bucket, sender_id FROM message_meta WHERE conversation_id = ? AND message_id = ?
-	`)
+	`
 
 	return r
 }
@@ -115,7 +115,7 @@ func (r *Repository) CreateMessage(msg *Message) error {
 		gocqlReplyToID = &gocqlReply
 	}
 
-	return r.preparedQueries["create_message"].Bind(
+	return r.session.Query(r.queries["create_message"],
 		gocqlConvID, msg.MessageID, gocqlSenderID, msg.SenderName, msg.SenderAvatar,
 		msg.MessageType, msg.Content, msg.Metadata, msg.CreatedAt, msg.UpdatedAt, gocqlReplyToID, msg.ReplySnapshot,
 	).Exec()
@@ -187,9 +187,9 @@ func (r *Repository) GetMessages(conversationID uuid.UUID, limit int, beforeMess
 	var iter *gocql.Iter
 
 	if beforeMessageID != nil {
-		iter = r.preparedQueries["get_messages_before"].Bind(gocqlConvID, *beforeMessageID, limit).Iter()
+		iter = r.session.Query(r.queries["get_messages_before"], gocqlConvID, *beforeMessageID, limit).Iter()
 	} else {
-		iter = r.preparedQueries["get_messages"].Bind(gocqlConvID, limit).Iter()
+		iter = r.session.Query(r.queries["get_messages"], gocqlConvID, limit).Iter()
 	}
 
 	var row scyllaMessageRow
@@ -222,7 +222,7 @@ func (r *Repository) GetMessageByID(conversationID uuid.UUID, messageID gocql.UU
 
 	var row scyllaMessageRow
 
-	err = r.preparedQueries["get_message_by_id"].Bind(gocqlConvID, messageID).Scan(
+	err = r.session.Query(r.queries["get_message_by_id"], gocqlConvID, messageID).Scan(
 		&row.ConversationID, &row.MessageID, &row.SenderID, &row.SenderName, &row.SenderAvatar,
 		&row.MessageType, &row.Content, &row.Metadata, &row.CreatedAt, &row.UpdatedAt,
 		&row.DeletedAt, &row.ReplyToID, &row.ReplySnapshot, &row.Reactions, &row.EditedAt,
@@ -252,7 +252,7 @@ func (r *Repository) UpdateMessage(conversationID uuid.UUID, messageID gocql.UUI
 		return fmt.Errorf("invalid conversation ID: %w", err)
 	}
 	now := time.Now()
-	return r.preparedQueries["update_message"].Bind(newContent, now, now, gocqlConvID, messageID).Exec()
+	return r.session.Query(r.queries["update_message"], newContent, now, now, gocqlConvID, messageID).Exec()
 }
 
 func (r *Repository) DeleteMessage(conversationID uuid.UUID, messageID gocql.UUID) error {
@@ -261,7 +261,7 @@ func (r *Repository) DeleteMessage(conversationID uuid.UUID, messageID gocql.UUI
 		return fmt.Errorf("invalid conversation ID: %w", err)
 	}
 	now := time.Now()
-	return r.preparedQueries["delete_message"].Bind(now, now, gocqlConvID, messageID).Exec()
+	return r.session.Query(r.queries["delete_message"], now, now, gocqlConvID, messageID).Exec()
 }
 
 func (r *Repository) UpdateConversationLastMessage(userID, conversationID uuid.UUID, newEntry *ConversationInboxUpdate) error {
@@ -615,5 +615,5 @@ func (r *Repository) InsertMessageMeta(conversationID uuid.UUID, messageID gocql
 	if err != nil {
 		return fmt.Errorf("invalid sender ID: %w", err)
 	}
-	return r.preparedQueries["insert_message_meta"].Bind(gocqlConvID, messageID, bucket, gocqlSenderID).Exec()
+	return r.session.Query(r.queries["insert_message_meta"], gocqlConvID, messageID, bucket, gocqlSenderID).Exec()
 }

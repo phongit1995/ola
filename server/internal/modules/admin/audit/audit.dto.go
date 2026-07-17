@@ -12,6 +12,7 @@ type ListFilter struct {
 	AdminID  *uuid.UUID
 	Resource string
 	Method   string
+	Route    string
 	From     *time.Time
 	To       *time.Time
 	Limit    int

@@ -11,9 +11,9 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
-import { KeyboardShift } from '../../components/KeyboardShift';
+import { KeyboardShift } from '@components/KeyboardShift';
 import { FlashList } from '@shopify/flash-list';
-import { useStickyBottomList } from '../../hooks/useStickyBottomList';
+import { useStickyBottomList } from '@hooks/useStickyBottomList';
 import { launchCamera, launchImageLibrary, type Asset } from 'react-native-image-picker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -23,37 +23,38 @@ import { currentUserId } from '@ola/shared/stores/chat/chatHelpers';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { colorForName, createDateFormatter, createTimeFormatter, isSameDay } from '@ola/shared/lib';
 import type { Message, ReactionType } from '@ola/shared/types';
-import type { RootStackParamList } from '../../navigation/types';
-import { ROOT_ROUTES } from '../../navigation/routes';
-import { Avatar } from '../../components/Avatar';
-import { ConfirmDialog } from '../../components/ConfirmDialog';
-import { useMediaViewerStore } from '../../store/mediaViewerStore';
+import type { RootStackParamList } from '@navigation/types';
+import { ROOT_ROUTES } from '@navigation/routes';
+import { Avatar } from '@components/Avatar';
+import { ConfirmDialog } from '@components/ConfirmDialog';
+import { useMediaViewerStore } from '@store/mediaViewerStore';
 import Clipboard from '@react-native-clipboard/clipboard';
-import { kulImageForText, kulToken } from '../../lib/kul';
+import { kulImageForText, kulToken } from '@lib/kul';
 import { ChatInputBar, type ChatInputBarHandle } from './ChatInputBar';
-import { RichTextView } from '../../components/RichTextView';
-import { useBottomBarInset } from '../../hooks/useBottomBarInset';
-import { useFocusPresence } from '../../hooks/usePresence';
-import { ListOptionDialog, type ListOption } from '../../components/ListOptionDialog';
-import { RoomReactionsDialog } from '../room/RoomReactionsDialog';
+import { RichTextView } from '@components/RichTextView';
+import { useBottomBarInset } from '@hooks/useBottomBarInset';
+import { useFocusPresence } from '@hooks/usePresence';
+import { ListOptionDialog, type ListOption } from '@components/ListOptionDialog';
+import { RoomReactionsDialog } from '@screens/room/RoomReactionsDialog';
 import { ChatBubble, ChatMessageRow } from './ChatMessageRow';
+import { ChatReactionBalloons } from './ChatReactionBalloons';
 import { AttachmentBar, type AttachTab } from './AttachmentBar';
 import { VoicePreviewBar } from './VoicePreviewBar';
-import type { VoiceRecording } from '../../hooks/useVoiceRecorder';
-import { TransferKenDialog } from '../ken/TransferKenDialog';
+import type { VoiceRecording } from '@hooks/useVoiceRecorder';
+import { TransferKenDialog } from '@screens/ken/TransferKenDialog';
 import { TradingVipDialog } from './TradingVipDialog';
 import { TransferVipDaysDialog } from './TransferVipDaysDialog';
 import { formatLastActive } from './contacts';
 import { PeerProfileCard } from './PeerProfileCard';
 import { usePeerCard } from './usePeerCard';
-import { MessageActionSheet, type AnchorRect, type MessageSheetAction } from '../room/MessageActionSheet';
+import { MessageActionSheet, type AnchorRect, type MessageSheetAction } from '@screens/room/MessageActionSheet';
 
-const backIcon = require('../../assets/icons/ic_back.png');
-const moreIcon = require('../../assets/icons/chat/ic_more_white.png');
-const deleteActionIcon = require('../../assets/icons/chat/ic_menu_delete.png');
-const editActionIcon = require('../../assets/icons/chat/ic_action_edit.png');
-const copyActionIcon = require('../../assets/icons/chat/ic_menu_copy.png');
-const replyActionIcon = require('../../assets/icons/me/ic_action_reply_gray.png');
+const backIcon = require('@assets/icons/ic_back.png');
+const moreIcon = require('@assets/icons/chat/ic_more_white.png');
+const deleteActionIcon = require('@assets/icons/chat/ic_menu_delete.png');
+const editActionIcon = require('@assets/icons/chat/ic_action_edit.png');
+const copyActionIcon = require('@assets/icons/chat/ic_menu_copy.png');
+const replyActionIcon = require('@assets/icons/me/ic_action_reply_gray.png');
 
 const CHAT_BG = '#ECE5DD';
 const DIVIDER = 'rgba(0,0,0,0.12)';
@@ -719,6 +720,8 @@ export function ChatDetailScreen({ navigation, route }: Props) {
       </>
       )}
       </KeyboardShift>
+
+      <ChatReactionBalloons />
 
       {transferKenOpen && peerId !== '' && (
         <TransferKenDialog

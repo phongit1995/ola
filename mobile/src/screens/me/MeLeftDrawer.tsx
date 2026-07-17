@@ -1,19 +1,21 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Animated, BackHandler, Image, ImageBackground, Pressable, ScrollView, Text, View } from 'react-native';
-import { Avatar } from '../../components/Avatar';
+import { Animated, BackHandler, Image, ImageBackground, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
+import { Avatar } from '@components/Avatar';
 
-const personalIcon = require('../../assets/icons/me/ic_indicate_personal.png');
-const boxIcon = require('../../assets/icons/me/ic_indicate_box.png');
-const likeIcon = require('../../assets/icons/me/ic_section_like.png');
-const visitorIcon = require('../../assets/icons/me/ic_action_tab_follower.png');
+const personalIcon = require('@assets/icons/me/ic_indicate_personal.png');
+const boxIcon = require('@assets/icons/me/ic_indicate_box.png');
+const likeIcon = require('@assets/icons/me/ic_section_like.png');
+const visitorIcon = require('@assets/icons/me/ic_action_tab_follower.png');
+const clanIcon = require('@assets/icons/clan/ic_menu_clan.png');
 // TODO: các mục chưa có action, ẩn tạm — bật lại khi làm xong
-// const eggIcon = require('../../assets/icons/me/ic_indicate_broken_egg.png');
-// const androidIcon = require('../../assets/icons/me/ic_indicate_android.png');
-// const olaIcon = require('../../assets/icons/me/ic_indicate_me.png');
-// const funnyIcon = require('../../assets/icons/me/ic_indicate_funny.png');
-// const publicIcon = require('../../assets/icons/me/ic_indicate_public.png');
-// const rssIcon = require('../../assets/icons/me/ic_indicate_rss.png');
+// const eggIcon = require('@assets/icons/me/ic_indicate_broken_egg.png');
+// const androidIcon = require('@assets/icons/me/ic_indicate_android.png');
+// const olaIcon = require('@assets/icons/me/ic_indicate_me.png');
+// const funnyIcon = require('@assets/icons/me/ic_indicate_funny.png');
+// const publicIcon = require('@assets/icons/me/ic_indicate_public.png');
+// const rssIcon = require('@assets/icons/me/ic_indicate_rss.png');
 
 const WIDTH = 240;
 
@@ -60,6 +62,7 @@ export function MeLeftDrawer({
     { key: 'marriage', icon: boxIcon, label: t('me.drawerMarriage'), tint: undefined },
     { key: 'likes', icon: likeIcon, label: t('me.drawerLikes'), tint: undefined },
     { key: 'visitors', icon: visitorIcon, label: t('me.tabVisitors'), tint: 'rgba(0,0,0,0.6)' },
+    { key: 'clan', icon: clanIcon, label: t('me.drawerClan'), tint: undefined },
     // TODO: các mục chưa có action, ẩn tạm — bật lại khi làm xong
     // { key: 'egg', icon: eggIcon, label: t('me.drawerEgg'), tint: undefined },
     // { key: 'android', icon: androidIcon, label: '#Android', tint: undefined },
@@ -84,12 +87,15 @@ export function MeLeftDrawer({
             className="flex-1 justify-end bg-ola-primary-dark"
           >
             <View>
-              <View className="absolute inset-0">
-                <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.05)' }} />
-                <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.25)' }} />
-                <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }} />
-                <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.7)' }} />
-              </View>
+              <Svg style={StyleSheet.absoluteFill} width="100%" height="100%">
+                <Defs>
+                  <LinearGradient id="me-drawer-cover-shade" x1="0" y1="0" x2="0" y2="1">
+                    <Stop offset="0" stopColor="#000000" stopOpacity="0" />
+                    <Stop offset="1" stopColor="#000000" stopOpacity="0.7" />
+                  </LinearGradient>
+                </Defs>
+                <Rect width="100%" height="100%" fill="url(#me-drawer-cover-shade)" />
+              </Svg>
               <View className="flex-row items-center gap-2 px-2 pb-2 pt-8">
                 <Avatar name={displayName} uri={avatarUrl} size={40} />
                 <Text numberOfLines={1} className="flex-1 text-base font-medium text-white">

@@ -6,11 +6,11 @@ import { VipService } from '@ola/shared/services';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { VipPackageItem } from '@ola/shared/types';
-import { Avatar } from '../../components/Avatar';
-import { Dialog, DialogButton } from '../../components/Dialog';
-import { ListOptionDialog } from '../../components/ListOptionDialog';
+import { Avatar } from '@components/Avatar';
+import { Dialog, DialogButton } from '@components/Dialog';
+import { ListOptionDialog } from '@components/ListOptionDialog';
 
-const vipIcon = require('../../assets/icons/apps/vip.png');
+const vipIcon = require('@assets/icons/apps/vip.png');
 
 const MUTED = 'rgba(0,0,0,0.54)';
 const BODY = 'rgba(0,0,0,0.87)';

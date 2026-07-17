@@ -5,7 +5,8 @@ import { useAuthStore } from '@/store/authStore';
 import type { MeNotification } from '@app-types';
 
 interface MeNotificationIncoming {
-  notification: MeNotification;
+  notification?: MeNotification | null;
+  removedId?: string | null;
   unreadCount: number;
 }
 
@@ -14,7 +15,7 @@ export function useMeNotificationRealtime() {
 
   useEffect(() => {
     return SocketService.on<MeNotificationIncoming>('ME_NOTIFICATION', (data) => {
-      if (data?.notification == null) return;
+      if (data?.notification == null && data?.removedId == null) return;
       useMeNotificationStore.getState().handleIncoming(data);
     });
   }, []);

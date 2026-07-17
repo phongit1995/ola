@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Ola Games</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        min-height: 100vh;
+        max-width: 520px;
+        margin: 0 auto;
+        background: #0f172a;
+        color: #e2e8f0;
+        font-family: system-ui, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 24px;
+      }
+      h1 {
+        font-size: 22px;
+      }
+      .games {
+        display: flex;
+        gap: 16px;
+      }
+      a.card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 16px;
+        padding: 24px 32px;
+        text-decoration: none;
+        color: inherit;
+        font-weight: 600;
+      }
+      a.card:hover {
+        border-color: #6366f1;
+      }
+      a.card span.icon {
+        font-size: 40px;
+      }
+      a.card small {
+        color: #94a3b8;
+        font-weight: 400;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🎮 Ola Games (mock)</h1>
+    <div class="games">
+      <a class="card" href="/caro/">
+        <span class="icon">⭕</span>
+        Cờ Caro
+        <small>Chơi được — PvP online</small>
+      </a>
+      <a class="card" href="/war-god/">
+        <span class="icon">⚔️</span>
+        War God
+        <small>Match-3 battle — coming soon</small>
+      </a>
+    </div>
+  </body>
+</html>

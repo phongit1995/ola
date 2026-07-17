@@ -40,8 +40,40 @@ const METHOD_OPTIONS = [
   { value: 'DELETE', label: 'Xoá' },
 ]
 
+const KEN_ADJUST_ROUTE = '/ken/users/:userId/adjust'
+
+const ACTION_OPTIONS = [
+  { value: KEN_ADJUST_ROUTE, label: 'Tặng / Trừ Ken' },
+  { value: '/users/:id/vips', label: 'Tặng VIP' },
+  { value: '/users/:id/username', label: 'Đổi username' },
+  { value: '/users/:id/password', label: 'Reset mật khẩu' },
+  { value: '/users/:id/status', label: 'Đổi trạng thái tài khoản' },
+  { value: '/users/:id', label: 'Xoá người dùng' },
+]
+
 function resourceLabel(resource: string) {
   return RESOURCE_LABELS[resource] ?? resource
+}
+
+function detailBody(log: AdminAuditLog): Record<string, unknown> | undefined {
+  const body = log.detail?.body
+  return typeof body === 'object' && body != null ? (body as Record<string, unknown>) : undefined
+}
+
+function actionLabel(log: AdminAuditLog): string | undefined {
+  const route = log.route ?? ''
+  if (route.endsWith(KEN_ADJUST_ROUTE)) {
+    const body = detailBody(log)
+    const verb = body?.action === 'deduct' ? 'Trừ Ken' : 'Tặng Ken'
+    const amount = body?.amount
+    return typeof amount === 'number' ? `${verb} (${amount.toLocaleString('vi-VN')})` : verb
+  }
+  if (route.endsWith('/users/:id/vips')) return 'Tặng VIP'
+  if (route.endsWith('/users/:id/username')) return 'Đổi username'
+  if (route.endsWith('/users/:id/password')) return 'Reset mật khẩu'
+  if (route.endsWith('/users/:id/status')) return 'Đổi trạng thái tài khoản'
+  if (log.method === 'DELETE' && route.endsWith('/users/:id')) return 'Xoá người dùng'
+  return undefined
 }
 
 function hasDetail(detail?: Record<string, unknown>) {
@@ -52,6 +84,7 @@ export function AuditLogsPage() {
   const [page, setPage] = useState(1)
   const [resource, setResource] = useState<string | undefined>(undefined)
   const [method, setMethod] = useState<string | undefined>(undefined)
+  const [route, setRoute] = useState<string | undefined>(undefined)
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
 
@@ -59,12 +92,13 @@ export function AuditLogsPage() {
     () => ({
       resource,
       method,
+      route,
       from: from ? new Date(`${from}T00:00:00`).toISOString() : undefined,
       to: to ? new Date(`${to}T23:59:59.999`).toISOString() : undefined,
       limit: PAGE_SIZE,
       offset: (page - 1) * PAGE_SIZE,
     }),
-    [resource, method, from, to, page],
+    [resource, method, route, from, to, page],
   )
   const { data, isFetching } = useAuditLogs(params)
 
@@ -94,7 +128,7 @@ export function AuditLogsPage() {
             <Tag color={meta?.color} style={{ margin: 0 }}>
               {meta?.label ?? r.method}
             </Tag>
-            <span>{resourceLabel(r.resource)}</span>
+            <span>{actionLabel(r) ?? resourceLabel(r.resource)}</span>
           </Space>
         )
       },
@@ -171,6 +205,17 @@ export function AuditLogsPage() {
             }}
             options={METHOD_OPTIONS}
             style={{ width: 170 }}
+          />
+          <Select
+            allowClear
+            placeholder="Tất cả hành động"
+            value={route}
+            onChange={(v) => {
+              setRoute(v)
+              setPage(1)
+            }}
+            options={ACTION_OPTIONS}
+            style={{ width: 220 }}
           />
         </Space>
       </Card>

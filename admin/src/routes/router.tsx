@@ -3,6 +3,7 @@ import { LoginPage } from '@/pages/LoginPage'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { UsersPage } from '@/pages/UsersPage'
 import { RoomsPage } from '@/pages/RoomsPage'
+import { ClansPage } from '@/pages/ClansPage'
 import { VipPackagesPage } from '@/pages/VipPackagesPage'
 import { VipShopPage } from '@/pages/VipShopPage'
 import { VipTransfersPage } from '@/pages/VipTransfersPage'
@@ -13,6 +14,7 @@ import { WheelStatsPage } from '@/pages/WheelStatsPage'
 import { PenShotsPage } from '@/pages/PenShotsPage'
 import { PenStatsPage } from '@/pages/PenStatsPage'
 import { KenChestsPage } from '@/pages/KenChestsPage'
+import { MiniGamePage } from '@/pages/MiniGamePage'
 import { MePage } from '@/pages/MePage'
 import { TopupSettingsPage } from '@/pages/TopupSettingsPage'
 import { AuditLogsPage } from '@/pages/AuditLogsPage'
@@ -39,6 +41,7 @@ export const router = createBrowserRouter([
       { index: true, element: <DashboardPage /> },
       { path: 'users', element: <UsersPage /> },
       { path: 'rooms', element: <RoomsPage /> },
+      { path: 'clans', element: <ClansPage /> },
       { path: 'vip-packages', element: <VipPackagesPage /> },
       { path: 'vip-shop', element: <VipShopPage /> },
       { path: 'vip-transfers', element: <VipTransfersPage /> },
@@ -49,6 +52,7 @@ export const router = createBrowserRouter([
       { path: 'games/pen', element: <PenShotsPage /> },
       { path: 'games/pen/stats', element: <PenStatsPage /> },
       { path: 'games/ken-treasure', element: <KenChestsPage /> },
+      { path: 'games/mini-game', element: <MiniGamePage /> },
       { path: 'me', element: <MePage /> },
       { path: 'settings/topup', element: <TopupSettingsPage /> },
       { path: 'audit-logs', element: <AuditLogsPage /> },

@@ -14,6 +14,13 @@ export function previewOf(message: Message): string {
   return '';
 }
 
+export function totalUnreadOf(conversations: Conversation[]): number {
+  return conversations.reduce(
+    (sum, item) => sum + (item.isMuted ? 0 : (item.unreadCount ?? 0)),
+    0
+  );
+}
+
 export function moveToTop(list: Conversation[], id: string): Conversation[] {
   const index = list.findIndex((item) => item.id === id);
   if (index <= 0) return list;

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { RelationshipService } from '../services';
 import type { Friend, Relationship } from '../types';
+import { registerOnLogout } from './authStore';
 
 interface FriendsState {
   friends: Friend[];
@@ -53,3 +54,5 @@ export const useFriendsStore = create<FriendsState>((set, get) => ({
   removeRequest: (id) => set((state) => ({ requests: state.requests.filter((item) => item.id !== id) })),
   reset: () => set({ ...initialState }),
 }));
+
+registerOnLogout(() => useFriendsStore.getState().reset());

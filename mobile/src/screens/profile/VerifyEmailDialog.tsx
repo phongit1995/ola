@@ -4,7 +4,7 @@ import { Pressable, Text, TextInput, View } from 'react-native';
 import { ApiError } from '@ola/shared/lib';
 import { AuthService } from '@ola/shared/services';
 import { useToastStore } from '@ola/shared/stores/toastStore';
-import { Dialog, DialogButton } from '../../components/Dialog';
+import { Dialog, DialogButton } from '@components/Dialog';
 import { OtpInput } from './OtpInput';
 
 const RESEND_SECONDS = 60;
@@ -100,8 +100,12 @@ export function VerifyEmailDialog({ visible, initialEmail, onClose, onVerified }
     }
     setSubmitting(true);
     try {
-      await AuthService.confirmVerifyEmail({ verifyId, code });
-      push('success', t('verifyEmail.success'));
+      const result = await AuthService.confirmVerifyEmail({ verifyId, code });
+      if (result.vipRewardDays != null && result.vipRewardDays > 0) {
+        push('success', t('verifyEmail.rewardToast', { days: result.vipRewardDays }));
+      } else {
+        push('success', t('verifyEmail.success'));
+      }
       onVerified();
       reset();
       onClose();

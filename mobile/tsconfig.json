@@ -3,7 +3,20 @@
   "compilerOptions": {
     "types": [
       "jest"
-    ]
+    ],
+    "paths": {
+      "@components/*": ["./src/components/*"],
+      "@screens/*": ["./src/screens/*"],
+      "@store/*": ["./src/store/*"],
+      "@lib/*": ["./src/lib/*"],
+      "@hooks/*": ["./src/hooks/*"],
+      "@services/*": ["./src/services/*"],
+      "@navigation/*": ["./src/navigation/*"],
+      "@assets/*": ["./src/assets/*"],
+      "@i18n": ["./src/i18n"],
+      "@i18n/*": ["./src/i18n/*"],
+      "@platform/*": ["./src/platform/*"]
+    }
   },
   "include": [
     "**/*.ts",

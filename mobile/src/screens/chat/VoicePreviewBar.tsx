@@ -3,10 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { Image, Pressable, Text, View } from 'react-native';
 import Sound from 'react-native-sound';
 
-const playIcon = require('../../assets/icons/chat/ic_play_media_gray.png');
-const pauseIcon = require('../../assets/icons/chat/ic_pause_media_gray.png');
-const sendIcon = require('../../assets/icons/chat/ic_action_send_white.png');
-const deleteIcon = require('../../assets/icons/chat/ic_menu_delete.png');
+const playIcon = require('@assets/icons/chat/ic_play_media_gray.png');
+const pauseIcon = require('@assets/icons/chat/ic_pause_media_gray.png');
+const sendIcon = require('@assets/icons/chat/ic_action_send_white.png');
+const deleteIcon = require('@assets/icons/chat/ic_menu_delete.png');
 
 function formatDurationSec(sec: number): string {
   const mm = Math.floor(sec / 60);

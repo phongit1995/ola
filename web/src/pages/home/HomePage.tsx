@@ -2,6 +2,8 @@ import { Suspense, useEffect, useState } from 'react';
 import { SocketService } from '@services';
 import { BottomTabBar, type TabKey } from '@components/BottomTabBar';
 import { KenBalanceBadge } from '@components';
+import { useAppNotificationStore } from '@ola/shared/stores/appNotificationStore';
+import { totalUnreadOf } from '@ola/shared/stores/chat/chatHelpers';
 import { useAuthStore } from '@/store/authStore';
 import { useRoomChatStore } from '@/store/roomChatStore';
 import { useChatStore } from '@/store/chat/chatStore';
@@ -11,6 +13,8 @@ import { ActiveConversationOverlay } from '../chat/ActiveConversationOverlay';
 import { GameOverlay } from '../games/GameOverlay';
 import { RoomChatOverlay } from '../room/RoomChatOverlay';
 import { AppOverlay } from '../apps/AppOverlay';
+import { ClanOverlayHost } from '../clan/ClanOverlayHost';
+import { useClanOverlayStore } from '@/store/clanOverlayStore';
 import { ACTIVE_TAB_KEY, PANELS } from './constants';
 
 function readStoredTab(): TabKey {
@@ -21,15 +25,15 @@ function readStoredTab(): TabKey {
 export function HomePage() {
   const [tab, setTab] = useState<TabKey>(readStoredTab);
   const roomUnread = useRoomChatStore((state) => state.hasUnread);
-  const chatUnread = useChatStore((state) =>
-    state.conversations.reduce((sum, item) => sum + (item.unreadCount ?? 0), 0)
-  );
+  const chatUnread = useChatStore((state) => totalUnreadOf(state.conversations));
+  const notifUnread = useAppNotificationStore((state) => state.unreadCount);
   const ActivePanel = PANELS[tab];
   const authReady = useAuthStore((state) => state.authReady);
   const ken = useAuthStore((state) => state.user?.ken);
   const gameActive = useGameOverlayStore((state) => state.active != null);
   const appActive = useAppOverlayStore((state) => state.stack.length > 0);
-  const hideKenBadge = gameActive || appActive;
+  const clanActive = useClanOverlayStore((state) => state.stack.length > 0);
+  const hideKenBadge = gameActive || appActive || clanActive;
 
   function changeTab(next: TabKey) {
     sessionStorage.setItem(ACTIVE_TAB_KEY, next);
@@ -59,13 +63,14 @@ export function HomePage() {
       <BottomTabBar
         active={tab}
         onChange={changeTab}
-        badges={{ chat: chatUnread }}
+        badges={{ chat: chatUnread, apps: notifUnread }}
         dots={{ room: roomUnread && tab !== 'room' }}
       />
 
       <ActiveConversationOverlay />
       <GameOverlay />
       <AppOverlay />
+      <ClanOverlayHost />
     </div>
   );
 }

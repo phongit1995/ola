@@ -177,27 +177,84 @@
       "flying": "Bay vào"
     },
     "rows": {
-      "sound": { "title": "Âm báo", "subtitle": "Bật tắt âm thanh thông báo" },
-      "soundType": { "title": "Kiểu âm báo", "subtitle": "Âm thanh báo tin nhắn" },
-      "vibrate": { "title": "Thông báo rung", "subtitle": "Rung khi có sự kiện mới" },
-      "led": { "title": "Thông báo đèn", "subtitle": "Nhấp nháy đèn LED" },
-      "language": { "title": "Ngôn ngữ", "subtitle": "Ngôn ngữ hiển thị" },
-      "passcode": { "title": "Mật khẩu", "subtitle": "Mật khẩu để mở Ola" },
-      "newMe": { "title": "Thông báo khi có Me mới" },
-      "avatar": { "title": "Ảnh đại diện", "subtitle": "Kiểu khung avatar" },
-      "wallpaper": { "title": "Hình nền Ola" },
-      "quickBrowser": { "title": "Trình duyệt nhanh", "subtitle": "Mở link trong Ola" },
-      "video": { "title": "Hiển thị video" },
-      "typing": { "title": "Gợi ý khi nhập liệu", "subtitle": "Gợi ý nick/clan khi gõ @ #" },
-      "popup": { "title": "Thông báo tin nhắn" },
-      "quickReply": { "title": "Trả lời nhanh", "subtitle": "Câu trả lời soạn sẵn" },
-      "effect": { "title": "Hiệu ứng tin nhắn" },
-      "rssHistory": { "title": "Ghi nhớ trang đã xem" },
-      "fontSize": { "title": "Cỡ chữ", "subtitle": "Cỡ chữ khi đọc RSS" },
-      "rating": { "title": "Đánh giá", "subtitle": "Đánh giá Ola trên Google Play" },
-      "beta": { "title": "Ola Beta", "subtitle": "Tham gia bản thử nghiệm" },
-      "version": { "title": "Phiên bản: 5.10.19", "subtitle": "Giao thức 5.10.19 · Hỗ trợ 1900588883 · © 2007-2016 MicroGame Corp." },
-      "logoutAll": { "title": "Đăng xuất mọi nơi", "subtitle": "Bạn sẽ không nhận được tin nhắn từ bạn bè" }
+      "sound": {
+        "title": "Âm báo",
+        "subtitle": "Bật tắt âm thanh thông báo"
+      },
+      "soundType": {
+        "title": "Kiểu âm báo",
+        "subtitle": "Âm thanh báo tin nhắn"
+      },
+      "vibrate": {
+        "title": "Thông báo rung",
+        "subtitle": "Rung khi có sự kiện mới"
+      },
+      "led": {
+        "title": "Thông báo đèn",
+        "subtitle": "Nhấp nháy đèn LED"
+      },
+      "language": {
+        "title": "Ngôn ngữ",
+        "subtitle": "Ngôn ngữ hiển thị"
+      },
+      "passcode": {
+        "title": "Mật khẩu",
+        "subtitle": "Mật khẩu để mở Ola"
+      },
+      "newMe": {
+        "title": "Thông báo khi có Me mới"
+      },
+      "avatar": {
+        "title": "Ảnh đại diện",
+        "subtitle": "Kiểu khung avatar"
+      },
+      "wallpaper": {
+        "title": "Hình nền Ola"
+      },
+      "quickBrowser": {
+        "title": "Trình duyệt nhanh",
+        "subtitle": "Mở link trong Ola"
+      },
+      "video": {
+        "title": "Hiển thị video"
+      },
+      "typing": {
+        "title": "Gợi ý khi nhập liệu",
+        "subtitle": "Gợi ý nick/clan khi gõ @ #"
+      },
+      "popup": {
+        "title": "Thông báo tin nhắn"
+      },
+      "quickReply": {
+        "title": "Trả lời nhanh",
+        "subtitle": "Câu trả lời soạn sẵn"
+      },
+      "effect": {
+        "title": "Hiệu ứng tin nhắn"
+      },
+      "rssHistory": {
+        "title": "Ghi nhớ trang đã xem"
+      },
+      "fontSize": {
+        "title": "Cỡ chữ",
+        "subtitle": "Cỡ chữ khi đọc RSS"
+      },
+      "rating": {
+        "title": "Đánh giá",
+        "subtitle": "Đánh giá Ola trên Google Play"
+      },
+      "beta": {
+        "title": "Ola Beta",
+        "subtitle": "Tham gia bản thử nghiệm"
+      },
+      "version": {
+        "title": "Phiên bản: 5.10.19",
+        "subtitle": "Giao thức 5.10.19 · Hỗ trợ 1900588883 · © 2007-2016 MicroGame Corp."
+      },
+      "logoutAll": {
+        "title": "Đăng xuất mọi nơi",
+        "subtitle": "Bạn sẽ không nhận được tin nhắn từ bạn bè"
+      }
     }
   },
   "dialog": {
@@ -210,7 +267,8 @@
     "logoutMessage": "Bạn có muốn đăng xuất khỏi Ola?",
     "deleteConvTitle": "Xóa hội thoại",
     "deleteConvMessage": "Bạn có muốn xóa hội thoại với {{name}}?",
-    "deleteArchived": "Xóa tin nhắn đã lưu",
+    "deleteArchived": "Xóa cả tin nhắn phía bạn",
+    "deleteWithMessages": "Xóa cả tin nhắn",
     "deleteAria": "Xóa hội thoại với {{name}}",
     "yes": "Có",
     "close": "Đóng"
@@ -347,7 +405,7 @@
     "friendRequestPending": "Lời mời kết bạn đang chờ",
     "friendRequestSent": "Đã gửi lời mời kết bạn",
     "cancelRequest": "Huỷ lời mời",
-    "acceptRequest": "Chấp nhận",
+    "acceptRequest": "Đồng ý",
     "unfriend": "Huỷ kết bạn",
     "requestCancelled": "Đã huỷ lời mời kết bạn",
     "friendAccepted": "Đã chấp nhận lời mời",
@@ -380,7 +438,6 @@
     "suggestEmpty": "Không còn gợi ý nào",
     "friendRequests": "Lời mời kết bạn",
     "friendRequestEmpty": "Không có lời mời nào",
-    "acceptRequest": "Đồng ý",
     "declineRequest": "Từ chối",
     "requestAccepted": "Đã chấp nhận lời mời",
     "requestActionError": "Không thực hiện được, thử lại",
@@ -493,6 +550,7 @@
     "tabFeed": "Bảng tin",
     "tabCommunity": "Me cộng đồng",
     "tabPersonal": "Cá nhân",
+    "tabClan": "Me Clan",
     "tabTagged": "Có tag",
     "tabMentions": "Nhắc đến",
     "tabVisitors": "Khách ghé thăm",
@@ -605,6 +663,7 @@
     "reactionError": "Không thực hiện được, thử lại",
     "notifTitle": "Thông báo",
     "notifLike": "đã thích trạng thái của bạn",
+    "notifCommentLike": "đã thích bình luận của bạn",
     "notifComment": "đã bình luận về trạng thái của bạn",
     "notifReply": "đã trả lời bình luận của bạn",
     "notifMention": "đã nhắc đến bạn trong một trạng thái",
@@ -622,7 +681,8 @@
     "clearHistoryConfirm": "Xoá toàn bộ danh sách Me đã xem?",
     "searchHistoryEmpty": "Chưa có Me nào đã xem",
     "searchEmpty": "Không tìm thấy kết quả",
-    "searchError": "Không tìm được, thử lại"
+    "searchError": "Không tìm được, thử lại",
+    "drawerClan": "Clan"
   },
   "profile": {
     "makeFriend": "Kết bạn",
@@ -747,6 +807,7 @@
     "resend": "Gửi lại mã",
     "resendIn": "Gửi lại sau {{seconds}}s",
     "success": "Xác thực email thành công",
+    "rewardToast": "Xác thực email thành công! Bạn được tặng {{days}} ngày VIP 🎉",
     "errEmailRequired": "Vui lòng nhập email.",
     "errEmailInvalid": "Email không hợp lệ.",
     "errCodeRequired": "Vui lòng nhập đủ 6 số.",
@@ -1004,7 +1065,10 @@
     "msg_like": "đã thích trạng thái của bạn",
     "msg_photo": "vừa đăng một ảnh mới",
     "msg_proposal": "muốn cầu hôn bạn",
-    "msg_divorce": "đã từ chối lời cầu hôn của bạn"
+    "msg_divorce": "đã từ chối lời cầu hôn của bạn",
+    "empty": "Không có thông báo",
+    "loadError": "Không tải được thông báo",
+    "actionError": "Thao tác thất bại, vui lòng thử lại"
   },
   "ken": {
     "title": "KEN",
@@ -1295,5 +1359,99 @@
       "colKenWon": "KEN ĐÃ THẮNG",
       "empty": "Chưa có ai trên bảng xếp hạng."
     }
+  },
+  "clan": {
+    "title": "Clan",
+    "searchPlaceholder": "Nhập tên Clan",
+    "validate": "Kiểm tra",
+    "nameHint": "Tên viết liền, không dấu, chỉ chữ thường và số (5-32 ký tự)",
+    "nameTaken": "Clan #{{name}} hiện đang có người sở hữu. Hãy chọn tên khác",
+    "nameAvailable": "Tên clan hợp lệ. Bạn có thể tạo clan này",
+    "create": "Tạo Clan",
+    "createConfirm": "Bạn sẽ tốn {{cost}} Ken để tạo Clan #{{name}}",
+    "createSuccess": "Tạo Clan #{{name}} thành công",
+    "openClan": "Mở trang Clan",
+    "myClans": "Clan của tôi",
+    "noClans": "Bạn chưa tham gia clan nào",
+    "members": "Thành viên",
+    "membersCount": "{{count}} Thành viên",
+    "visits": "{{count}} Lượt xem",
+    "createdAt": "Ngày lập Clan {{date}}",
+    "follow": "Quan tâm",
+    "following": "Đã tham gia",
+    "leaveConfirm": "Bạn có muốn rời Clan #{{name}} không?",
+    "leave": "Rời Clan",
+    "manage": "Quản lý Clan",
+    "writeMe": "Viết Me",
+    "postedTitle": "ME Đã Đăng",
+    "meTop": "Me Top",
+    "emptyFeed": "Chưa có bài viết nào",
+    "verifiedOnlyFeed": "Cần chứng thực để xem bài trong Clan này",
+    "banned": "Bạn đã bị cấm khỏi Clan này",
+    "closedJoin": "Clan đang đóng cửa, không thể tham gia",
+    "roleOwner": "Bang chủ",
+    "roleDeputy": "Phó bang chủ",
+    "roleAmbassador": "Đại sứ",
+    "roleMember": "Thành viên",
+    "policy": "Chính sách",
+    "policy0": "Tự do post Me",
+    "policy1": "Tự do gia nhập",
+    "policy2": "Được xem nhưng cần chứng thực để post Me",
+    "policy3": "Đóng cửa",
+    "policy4": "Chứng thực mới được xem và post",
+    "memberPublicPost": "Thành viên được đăng công khai",
+    "memberPublicPostOffConfirm": "Bài công khai cũ của thành viên sẽ chuyển về riêng tư. Tiếp tục?",
+    "none": "Chưa có",
+    "enterNick": "Nhập nick Ola",
+    "assignSuccess": "Đã bổ nhiệm @{{username}}",
+    "revokeConfirmDeputy": "Bạn có muốn cách chức phó bang chủ @{{username}}?",
+    "revokeConfirmAmbassador": "Bạn có muốn cách chức đại sứ @{{username}}?",
+    "revokeSuccess": "Đã cách chức",
+    "verifyMember": "Chứng thực thành viên",
+    "unverifyMember": "Hủy chứng thực thành viên",
+    "verifySuccess": "Đã xác thực @{{username}} trong Clan #{{name}}",
+    "unverifySuccess": "Đã hủy xác thực @{{username}} trong Clan #{{name}}",
+    "verified": "Đã chứng thực",
+    "banList": "Danh sách cấm",
+    "banUser": "Cấm khỏi Clan",
+    "banConfirm": "Cấm @{{username}} khỏi Clan? Người này sẽ bị xoá khỏi Clan và không thể tham gia lại",
+    "banSuccess": "Đã cấm @{{username}}",
+    "unban": "Bỏ cấm",
+    "unbanSuccess": "Đã bỏ cấm",
+    "emptyBans": "Chưa cấm ai",
+    "pinPost": "Ghim Me Top",
+    "unpinPost": "Bỏ ghim Me Top",
+    "pinSuccess": "Đã ghim Me Top",
+    "unpinSuccess": "Đã bỏ ghim Me Top",
+    "deletePost": "Xoá bài",
+    "deletePostConfirm": "Xoá bài này khỏi Clan?",
+    "deletePostsByUser": "Xoá tất cả bài của người này",
+    "deletePostsByUserConfirm": "Xoá TẤT CẢ bài của @{{username}} trong Clan?",
+    "deleteSuccess": "Đã xoá",
+    "changeAvatar": "Đổi ảnh đại diện",
+    "changeCover": "Đổi ảnh bìa",
+    "uploadSuccess": "Đã cập nhật ảnh",
+    "loadMore": "Tải thêm",
+    "visibilityPublic": "Công khai",
+    "visibilityPrivate": "Trong Clan",
+    "errors": {
+      "clan not found": "Không tìm thấy Clan",
+      "clan name is already taken": "Tên Clan đã có người sở hữu",
+      "insufficient ken balance": "Bạn không đủ Ken",
+      "you are banned from this clan": "Bạn đã bị cấm khỏi Clan này",
+      "clan is closed for joining": "Clan đang đóng cửa",
+      "clan requires verification to view": "Cần chứng thực để xem Clan này",
+      "you are not allowed to post in this clan": "Bạn không được đăng bài trong Clan này",
+      "only the clan owner or deputy can post public": "Chỉ bang chủ hoặc phó bang được đăng công khai",
+      "you are not a member of this clan": "Bạn chưa tham gia Clan này",
+      "you are already a member of this clan": "Bạn đã tham gia Clan này rồi",
+      "owner cannot leave the clan": "Bang chủ không thể rời Clan",
+      "cannot ban clan staff": "Không thể cấm ban quản trị",
+      "user not found": "Không tìm thấy tài khoản",
+      "clan member not found": "Không tìm thấy thành viên",
+      "clan name must be 5-32 lowercase letters or digits, no spaces or accents": "Tên Clan phải viết liền 5-32 ký tự thường/số, không dấu",
+      "you have reached the maximum number of clans you can own": "Bạn đã đạt giới hạn số Clan được tạo"
+    },
+    "createShort": "Tạo"
   }
 }

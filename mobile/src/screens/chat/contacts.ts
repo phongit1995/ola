@@ -1,9 +1,8 @@
-import type { ImageSourcePropType } from 'react-native';
 import type { TFunction } from 'i18next';
 import { activeVipTypeId, colorForName, isVipActive } from '@ola/shared/lib';
 import type { Friend } from '@ola/shared/types';
+import { normalizeDevice, type DeviceType } from '@lib/deviceIcons';
 
-export type DeviceType = 'phone' | 'pc' | 'apple' | 'android' | 'winphone';
 export type ContactGroup = 'birthday' | 'new' | 'utility' | 'friend';
 
 export interface Contact {
@@ -27,16 +26,6 @@ export interface SuggestedFriend {
   color: string;
 }
 
-const DEVICE_TYPES: DeviceType[] = ['phone', 'pc', 'apple', 'android', 'winphone'];
-
-export const DEVICE_ICONS: Record<DeviceType, ImageSourcePropType> = {
-  phone: require('../../assets/icons/chat/ic_device_type_phone.png'),
-  pc: require('../../assets/icons/chat/ic_device_type_pc.png'),
-  apple: require('../../assets/icons/chat/ic_device_type_apple.png'),
-  android: require('../../assets/icons/chat/ic_device_type_android.png'),
-  winphone: require('../../assets/icons/chat/ic_device_type_winphone.png'),
-};
-
 export const SUGGESTED_FRIENDS: SuggestedFriend[] = [
   { name: 'anhthu', color: '#ec407a' },
   { name: 'baolong', color: '#26a69a' },
@@ -51,18 +40,6 @@ export const SUGGESTED_FRIENDS: SuggestedFriend[] = [
   { name: 'phuongvy', color: '#5c6bc0' },
   { name: 'tuanvu', color: '#8d6e63' },
 ];
-
-const DEVICE_ALIASES: Record<string, DeviceType> = {
-  ios: 'apple',
-  android: 'android',
-  web: 'pc',
-};
-
-function normalizeDevice(value?: string): DeviceType {
-  if (value == null || value === '') return 'pc';
-  if (DEVICE_TYPES.includes(value as DeviceType)) return value as DeviceType;
-  return DEVICE_ALIASES[value] ?? 'pc';
-}
 
 function isBirthdayToday(dateOfBirth: string | undefined, now: Date): boolean {
   if (dateOfBirth == null || dateOfBirth === '') return false;

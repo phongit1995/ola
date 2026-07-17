@@ -4,6 +4,7 @@ import { playMessageSound } from '../../platform/sound';
 import {
   CHAT_SOCKET_EVENTS,
   type Conversation,
+  type ConversationUpdatedEvent,
   type MessageDeletedEvent,
   type MessageReactionUpdatedEvent,
   type MessageUpdatedEvent,
@@ -19,7 +20,30 @@ type ChatGet = StoreApi<ChatState>['getState'];
 
 const TYPING_TTL = 3000;
 const typingTimers = new Map<string, ReturnType<typeof setTimeout>>();
+const MARK_READ_DEBOUNCE = 400;
+const MARK_READ_MAX_WAIT = 1500;
+const markReadTimers = new Map<string, { timer: ReturnType<typeof setTimeout>; firstAt: number }>();
 let registered = false;
+
+function scheduleMarkRead(get: ChatGet, conversationId: string) {
+  const existing = markReadTimers.get(conversationId);
+  const firstAt = existing?.firstAt ?? Date.now();
+  if (existing) clearTimeout(existing.timer);
+  const fire = () => {
+    markReadTimers.delete(conversationId);
+    void get().markRead(conversationId);
+  };
+  if (Date.now() - firstAt >= MARK_READ_MAX_WAIT) {
+    fire();
+    return;
+  }
+  markReadTimers.set(conversationId, { timer: setTimeout(fire, MARK_READ_DEBOUNCE), firstAt });
+}
+
+export function clearMarkReadTimers() {
+  markReadTimers.forEach((entry) => clearTimeout(entry.timer));
+  markReadTimers.clear();
+}
 
 function handleNewMessage(get: ChatGet, set: ChatSet, event: NewMessageEvent) {
   const { conversation, message } = event;
@@ -58,12 +82,27 @@ function handleNewMessage(get: ChatGet, set: ChatSet, event: NewMessageEvent) {
   const { conversations } = get();
   const existing = conversations.find((item) => item.id === message.conversationId);
   if (!existing) {
+    const senderInfo: Partial<Conversation> =
+      conversation.type === 'direct' && !fromMe && message.senderName != null
+        ? {
+            name: message.senderName,
+            avatar: message.senderAvatar ?? '',
+            otherUser: {
+              id: message.senderId,
+              username: message.senderName,
+              fullName: message.senderName,
+              avatar: message.senderAvatar,
+              isOnline: false,
+            },
+          }
+        : {};
     set({
       conversations: [
-        { ...conversation, ...patch, unreadCount: fromMe || isCurrent ? 0 : 1 },
+        { ...conversation, ...senderInfo, ...patch, unreadCount: fromMe || isCurrent ? 0 : 1 },
         ...conversations,
       ],
     });
+    void get().loadConversations();
   } else {
     const unreadCount = isCurrent
       ? 0
@@ -81,7 +120,7 @@ function handleNewMessage(get: ChatGet, set: ChatSet, event: NewMessageEvent) {
   }
 
   if (isCurrent && !fromMe) {
-    void get().markRead(message.conversationId);
+    scheduleMarkRead(get, message.conversationId);
   }
 }
 
@@ -144,8 +183,18 @@ export function registerChatRealtime(set: ChatSet, get: ChatGet) {
 
   SocketService.on<MessageReactionUpdatedEvent>(CHAT_SOCKET_EVENTS.reactionUpdated, (data) => {
     if (data.conversationId !== get().currentConversationId) return;
+    const myId = currentUserId();
+    const target = get().messages.find((item) => item.id === data.messageId);
+    const notifyOwnMessageReaction =
+      data.action === 'added' &&
+      target?.senderId === myId &&
+      data.actorUserId !== myId &&
+      data.type !== '';
     set((state) => ({
       messages: markById(state.messages, data.messageId, { reactions: data.reactions }),
+      ...(notifyOwnMessageReaction
+        ? { reactionNotice: { seq: (state.reactionNotice?.seq ?? 0) + 1, type: data.type } }
+        : {}),
     }));
   });
 
@@ -161,7 +210,17 @@ export function registerChatRealtime(set: ChatSet, get: ChatGet) {
     void get().loadConversations();
   });
 
-  SocketService.on(CHAT_SOCKET_EVENTS.conversationUpdated, () => {
+  SocketService.on<ConversationUpdatedEvent>(CHAT_SOCKET_EVENTS.conversationUpdated, (data) => {
+    const conversationId = data?.id;
+    if (conversationId != null && conversationId !== '' && typeof data.seen === 'boolean') {
+      const seen = data.seen;
+      set((state) => ({
+        conversations: state.conversations.map((item) =>
+          item.id === conversationId ? { ...item, seen } : item
+        ),
+      }));
+      return;
+    }
     void get().loadConversations();
   });
 

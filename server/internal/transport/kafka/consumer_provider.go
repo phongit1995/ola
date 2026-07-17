@@ -1,6 +1,7 @@
 package kafka
 
 import (
+	appNotificationEvents "ola-chat-server/internal/domain/app-notification"
 	callEvents "ola-chat-server/internal/domain/call"
 	conversationEvents "ola-chat-server/internal/domain/conversation"
 	kenChestEvents "ola-chat-server/internal/domain/kenchest"
@@ -32,6 +33,7 @@ func ProvideConsumer(c *dig.Container) error {
 		roomEvents.Provider,
 		kenChestEvents.Provider,
 		meNotificationEvents.Provider,
+		appNotificationEvents.Provider,
 		userBanEvents.Provider,
 	}
 

@@ -16,89 +16,113 @@ import (
 )
 
 type Repository struct {
-	session         *gocql.Session
-	logger          *zap.SugaredLogger
-	preparedQueries map[string]*gocql.Query
+	session *gocql.Session
+	logger  *zap.SugaredLogger
+	queries map[string]string
 }
 
 func NewRepository(session *gocql.Session, logger *zap.SugaredLogger) *Repository {
 	r := &Repository{
-		session:         session,
-		logger:          logger.Named("[conversation_repository]"),
-		preparedQueries: make(map[string]*gocql.Query),
+		session: session,
+		logger:  logger.Named("[conversation_repository]"),
+		queries: make(map[string]string),
 	}
 
-	r.preparedQueries["create_conversation"] = session.Query(`
+	r.queries["create_conversation"] = `
 		INSERT INTO conversations (conversation_id, type, name, avatar, created_by, created_at, updated_at, participant_count)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-	`)
+	`
 
-	r.preparedQueries["get_conversation"] = session.Query(`
+	r.queries["get_conversation"] = `
 		SELECT conversation_id, type, name, avatar, created_by, created_at, updated_at, participant_count
 		FROM conversations WHERE conversation_id = ?
-	`)
+	`
 
-	r.preparedQueries["add_member"] = session.Query(`
+	r.queries["add_member"] = `
 		INSERT INTO conversation_members_by_conversation
 		(conversation_id, user_id, joined_at, is_active, role)
 		VALUES (?, ?, ?, ?, ?)
-	`)
+	`
 
-	r.preparedQueries["get_members"] = session.Query(`
+	r.queries["get_members"] = `
 		SELECT conversation_id, user_id, joined_at, left_at, is_active, role
 		FROM conversation_members_by_conversation WHERE conversation_id = ?
-	`)
+	`
 
-	r.preparedQueries["get_user_conversations"] = session.Query(`
+	r.queries["get_user_conversations"] = `
 		SELECT user_id, conversation_id, conversation_type, display_name, display_avatar,
 		       other_user_id, other_user_name, other_user_avatar,
 		       last_message_at, last_message_id, last_message_preview, last_message_sender,
 		       unread_count, last_read_message_id, last_read_at, updated_at, is_muted
 		FROM conversations_by_user WHERE user_id = ? AND conversation_id = ?
-	`)
+	`
 
-	r.preparedQueries["get_direct_conversation"] = session.Query(`
+	r.queries["get_direct_conversation"] = `
 		SELECT conversation_id FROM direct_conversations_by_user_pair WHERE user_a = ? AND user_b = ?
-	`)
+	`
 
-	r.preparedQueries["create_direct_pair"] = session.Query(`
+	r.queries["create_direct_pair"] = `
 		INSERT INTO direct_conversations_by_user_pair (user_a, user_b, conversation_id) VALUES (?, ?, ?)
-	`)
+	`
 
-	r.preparedQueries["mark_as_read"] = session.Query(`
+	r.queries["mark_as_read"] = `
 		INSERT INTO conversation_read_by_user (conversation_id, user_id, last_read_message_id, last_read_at)
 		VALUES (?, ?, ?, ?)
-	`)
+	`
 
-	r.preparedQueries["get_read_status"] = session.Query(`
+	r.queries["mark_inbox_read"] = `
+		UPDATE conversations_by_user
+		SET unread_count = 0, last_read_message_id = ?, last_read_at = ?, updated_at = ?
+		WHERE user_id = ? AND conversation_id = ?
+		IF EXISTS
+	`
+
+	r.queries["mark_inbox_read_no_marker"] = `
+		UPDATE conversations_by_user
+		SET unread_count = 0, last_read_at = ?, updated_at = ?
+		WHERE user_id = ? AND conversation_id = ?
+		IF EXISTS
+	`
+
+	r.queries["get_read_status"] = `
 		SELECT last_read_message_id, last_read_at FROM conversation_read_by_user
 		WHERE conversation_id = ? AND user_id = ?
-	`)
+	`
 
-	r.preparedQueries["check_hidden"] = session.Query(`
+	r.queries["check_hidden"] = `
 		SELECT conversation_id FROM hidden_conversations
 		WHERE user_id = ? AND conversation_id = ?
-	`)
+	`
 
-	r.preparedQueries["get_hidden_conversation"] = session.Query(`
+	r.queries["get_hidden_conversation"] = `
 		SELECT user_id, conversation_id, hidden_at, is_archived, is_muted
 		FROM hidden_conversations
 		WHERE user_id = ? AND conversation_id = ?
-	`)
+	`
 
-	r.preparedQueries["get_all_user_conversations"] = session.Query(`
+	r.queries["get_all_user_conversations"] = `
 		SELECT user_id, conversation_id, conversation_type, display_name, display_avatar,
 		       other_user_id, other_user_name, other_user_avatar,
 		       last_message_at, last_message_id, last_message_preview, last_message_sender,
 		       unread_count, last_read_message_id, last_read_at, updated_at, is_muted
 		FROM conversations_by_user
 		WHERE user_id = ?
-	`)
+	`
 
-	r.preparedQueries["get_user_last_read"] = session.Query(`
+	r.queries["get_user_last_read"] = `
 		SELECT last_read_message_id FROM conversations_by_user
 		WHERE user_id = ? AND conversation_id = ?
-	`)
+	`
+
+	r.queries["get_cleared_marker"] = `
+		SELECT cleared_before FROM conversation_cleared_by_user
+		WHERE user_id = ? AND conversation_id = ?
+	`
+
+	r.queries["set_cleared_marker"] = `
+		INSERT INTO conversation_cleared_by_user (user_id, conversation_id, cleared_before, cleared_at)
+		VALUES (?, ?, ?, ?)
+	`
 
 	return r
 }
@@ -161,7 +185,7 @@ func (r *Repository) CreateConversation(conv *Conversation) error {
 	gocqlConvID, _ := utils.ToGocqlUUID(conv.ConversationID)
 	gocqlCreatedBy, _ := utils.ToGocqlUUID(conv.CreatedBy)
 
-	return r.preparedQueries["create_conversation"].Bind(
+	return r.session.Query(r.queries["create_conversation"],
 		gocqlConvID, conv.Type, conv.Name, conv.Avatar,
 		gocqlCreatedBy, conv.CreatedAt, conv.UpdatedAt, conv.ParticipantCount,
 	).Exec()
@@ -181,7 +205,7 @@ func (r *Repository) GetConversationByID(conversationID uuid.UUID) (*Conversatio
 		ParticipantCount int
 	}
 
-	err := r.preparedQueries["get_conversation"].Bind(gocqlConvID).Scan(
+	err := r.session.Query(r.queries["get_conversation"], gocqlConvID).Scan(
 		&gocqlConv.ConversationID, &gocqlConv.Type, &gocqlConv.Name, &gocqlConv.Avatar,
 		&gocqlConv.CreatedBy, &gocqlConv.CreatedAt, &gocqlConv.UpdatedAt, &gocqlConv.ParticipantCount,
 	)
@@ -209,7 +233,7 @@ func (r *Repository) AddMember(member *ConversationMember) error {
 	gocqlConvID, _ := utils.ToGocqlUUID(member.ConversationID)
 	gocqlUserID, _ := utils.ToGocqlUUID(member.UserID)
 
-	return r.preparedQueries["add_member"].Bind(
+	return r.session.Query(r.queries["add_member"],
 		gocqlConvID, gocqlUserID, member.JoinedAt, member.IsActive, member.Role,
 	).Exec()
 }
@@ -218,7 +242,7 @@ func (r *Repository) GetMembers(conversationID uuid.UUID) ([]ConversationMember,
 	gocqlConvID, _ := utils.ToGocqlUUID(conversationID)
 
 	var members []ConversationMember
-	iter := r.preparedQueries["get_members"].Bind(gocqlConvID).Iter()
+	iter := r.session.Query(r.queries["get_members"], gocqlConvID).Iter()
 
 	var gocqlMember struct {
 		ConversationID gocql.UUID
@@ -322,8 +346,7 @@ func (r *Repository) GetOtherUsersLastRead(pairs []OtherUserReadState) (map[stri
 			}
 
 			var lastRead *gocql.UUID
-			err = r.preparedQueries["get_user_last_read"].
-				Bind(gocqlUserID, gocqlConvID).
+			err = r.session.Query(r.queries["get_user_last_read"], gocqlUserID, gocqlConvID).
 				WithContext(ctx).
 				Scan(&lastRead)
 			if err != nil && err != gocql.ErrNotFound {
@@ -353,7 +376,7 @@ func (r *Repository) GetUserConversations(userID uuid.UUID, limit int) ([]Conver
 	}
 
 	var conversations []ConversationByUser
-	iter := r.preparedQueries["get_all_user_conversations"].Bind(gocqlUserID).Iter()
+	iter := r.session.Query(r.queries["get_all_user_conversations"], gocqlUserID).Iter()
 
 	var conv ConversationByUser
 	for iter.Scan(
@@ -392,7 +415,7 @@ func (r *Repository) GetOrCreateDirectConversation(user1ID, user2ID uuid.UUID) (
 	gocqlUserB, _ := utils.ToGocqlUUID(userB)
 
 	var gocqlConvID gocql.UUID
-	err := r.preparedQueries["get_direct_conversation"].Bind(gocqlUserA, gocqlUserB).Scan(&gocqlConvID)
+	err := r.session.Query(r.queries["get_direct_conversation"], gocqlUserA, gocqlUserB).Scan(&gocqlConvID)
 
 	if err == nil {
 		conversationID, _ := uuid.Parse(gocqlConvID.String())
@@ -406,7 +429,7 @@ func (r *Repository) GetOrCreateDirectConversation(user1ID, user2ID uuid.UUID) (
 	conversationID := uuid.New()
 	gocqlNewConvID, _ := utils.ToGocqlUUID(conversationID)
 
-	if err := r.preparedQueries["create_direct_pair"].Bind(gocqlUserA, gocqlUserB, gocqlNewConvID).Exec(); err != nil {
+	if err := r.session.Query(r.queries["create_direct_pair"], gocqlUserA, gocqlUserB, gocqlNewConvID).Exec(); err != nil {
 		return uuid.Nil, false, fmt.Errorf("failed to create direct conversation pair: %w", err)
 	}
 
@@ -437,27 +460,29 @@ func (r *Repository) GetDirectConversationID(userA, userB uuid.UUID) (*uuid.UUID
 	return &resultUUID, nil
 }
 
-func (r *Repository) UpdateConversationInUserInbox(userID, conversationID uuid.UUID, conv *ConversationByUser) error {
-	query := `INSERT INTO conversations_by_user
-	          (user_id, conversation_id, conversation_type, display_name, display_avatar,
-	           other_user_id, other_user_name, other_user_avatar,
-	           last_message_at, last_message_id, last_message_preview, last_message_sender,
-	           unread_count, last_read_message_id, last_read_at, updated_at)
-	          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-
-	return r.session.Query(query,
-		conv.UserID, conv.ConversationID, conv.ConversationType, conv.DisplayName, conv.DisplayAvatar,
-		conv.OtherUserID, conv.OtherUserName, conv.OtherUserAvatar,
-		conv.LastMessageAt, conv.LastMessageID, conv.LastMessagePreview, conv.LastMessageSender,
-		conv.UnreadCount, conv.LastReadMessageID, conv.LastReadAt, conv.UpdatedAt,
-	).Exec()
-}
-
-func (r *Repository) MarkAsRead(conversationID, userID uuid.UUID, lastReadMessageID gocql.UUID, lastReadAt time.Time) error {
+func (r *Repository) MarkAsRead(conversationID, userID uuid.UUID, lastReadMessageID *gocql.UUID, lastReadAt time.Time) (bool, error) {
 	gocqlConvID, _ := utils.ToGocqlUUID(conversationID)
 	gocqlUserID, _ := utils.ToGocqlUUID(userID)
 
-	return r.preparedQueries["mark_as_read"].Bind(gocqlConvID, gocqlUserID, lastReadMessageID, lastReadAt).Exec()
+	var applied bool
+	var err error
+	if lastReadMessageID != nil {
+		applied, err = r.session.Query(r.queries["mark_inbox_read"],
+			lastReadMessageID, lastReadAt, lastReadAt, gocqlUserID, gocqlConvID).MapScanCAS(map[string]interface{}{})
+	} else {
+		applied, err = r.session.Query(r.queries["mark_inbox_read_no_marker"],
+			lastReadAt, lastReadAt, gocqlUserID, gocqlConvID).MapScanCAS(map[string]interface{}{})
+	}
+	if err != nil || !applied {
+		return applied, err
+	}
+
+	if lastReadMessageID != nil {
+		if err := r.session.Query(r.queries["mark_as_read"], gocqlConvID, gocqlUserID, lastReadMessageID, lastReadAt).Exec(); err != nil {
+			return true, err
+		}
+	}
+	return true, nil
 }
 
 func (r *Repository) GetReadStatus(conversationID, userID uuid.UUID) (*gocql.UUID, *time.Time, error) {
@@ -466,7 +491,7 @@ func (r *Repository) GetReadStatus(conversationID, userID uuid.UUID) (*gocql.UUI
 
 	var lastReadMessageID gocql.UUID
 	var lastReadAt time.Time
-	err := r.preparedQueries["get_read_status"].Bind(gocqlConvID, gocqlUserID).Scan(&lastReadMessageID, &lastReadAt)
+	err := r.session.Query(r.queries["get_read_status"], gocqlConvID, gocqlUserID).Scan(&lastReadMessageID, &lastReadAt)
 	if err == gocql.ErrNotFound {
 		return nil, nil, nil
 	}
@@ -629,7 +654,7 @@ func (r *Repository) CheckIfHidden(userID, conversationID uuid.UUID) (bool, erro
 	gocqlConvID, _ := utils.ToGocqlUUID(conversationID)
 
 	var gocqlResultConvID gocql.UUID
-	err := r.preparedQueries["check_hidden"].Bind(gocqlUserID, gocqlConvID).Scan(&gocqlResultConvID)
+	err := r.session.Query(r.queries["check_hidden"], gocqlUserID, gocqlConvID).Scan(&gocqlResultConvID)
 	if err == gocql.ErrNotFound {
 		return false, nil
 	}
@@ -652,7 +677,7 @@ func (r *Repository) GetHiddenConversation(userID, conversationID uuid.UUID) (*H
 		IsMuted        bool
 	}
 
-	err := r.preparedQueries["get_hidden_conversation"].Bind(gocqlUserID, gocqlConvID).Scan(
+	err := r.session.Query(r.queries["get_hidden_conversation"], gocqlUserID, gocqlConvID).Scan(
 		&gocqlHidden.UserID, &gocqlHidden.ConversationID, &gocqlHidden.HiddenAt,
 		&gocqlHidden.IsArchived, &gocqlHidden.IsMuted,
 	)
@@ -675,11 +700,32 @@ func (r *Repository) GetHiddenConversation(userID, conversationID uuid.UUID) (*H
 	}, nil
 }
 
-func (r *Repository) SetMuted(userID, conversationID uuid.UUID, muted bool) error {
+func (r *Repository) GetClearedMarker(userID, conversationID uuid.UUID) (*gocql.UUID, error) {
 	gocqlUserID, _ := utils.ToGocqlUUID(userID)
 	gocqlConvID, _ := utils.ToGocqlUUID(conversationID)
-	query := `UPDATE conversations_by_user SET is_muted = ? WHERE user_id = ? AND conversation_id = ?`
-	return r.session.Query(query, muted, gocqlUserID, gocqlConvID).Exec()
+
+	var marker gocql.UUID
+	err := r.session.Query(r.queries["get_cleared_marker"], gocqlUserID, gocqlConvID).Scan(&marker)
+	if err == gocql.ErrNotFound {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &marker, nil
+}
+
+func (r *Repository) SetClearedMarker(userID, conversationID uuid.UUID, marker gocql.UUID) error {
+	gocqlUserID, _ := utils.ToGocqlUUID(userID)
+	gocqlConvID, _ := utils.ToGocqlUUID(conversationID)
+	return r.session.Query(r.queries["set_cleared_marker"], gocqlUserID, gocqlConvID, marker, time.Now()).Exec()
+}
+
+func (r *Repository) SetMuted(userID, conversationID uuid.UUID, muted bool) (bool, error) {
+	gocqlUserID, _ := utils.ToGocqlUUID(userID)
+	gocqlConvID, _ := utils.ToGocqlUUID(conversationID)
+	query := `UPDATE conversations_by_user SET is_muted = ? WHERE user_id = ? AND conversation_id = ? IF EXISTS`
+	return r.session.Query(query, muted, gocqlUserID, gocqlConvID).MapScanCAS(map[string]interface{}{})
 }
 
 // HideConversation moves a conversation from inbox to hidden

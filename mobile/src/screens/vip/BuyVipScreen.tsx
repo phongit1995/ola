@@ -8,21 +8,21 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { KeyboardView } from '../../components/KeyboardView';
+import { KeyboardView } from '@components/KeyboardView';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { VipService, UserService } from '@ola/shared/services';
 import { ApiError, formatKen, vipById, vipName } from '@ola/shared/lib';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { VipIconCatalogItem, VipPackageItem, UserSearchResult } from '@ola/shared/types';
-import type { RootStackParamList } from '../../navigation/types';
-import { ROOT_ROUTES } from '../../navigation/routes';
-import { ConfirmDialog } from '../../components/ConfirmDialog';
-import { Dialog } from '../../components/Dialog';
-import { Avatar } from '../../components/Avatar';
-import { ListOptionDialog, type ListOption } from '../../components/ListOptionDialog';
+import type { RootStackParamList } from '@navigation/types';
+import { ROOT_ROUTES } from '@navigation/routes';
+import { ConfirmDialog } from '@components/ConfirmDialog';
+import { Dialog } from '@components/Dialog';
+import { Avatar } from '@components/Avatar';
+import { ListOptionDialog, type ListOption } from '@components/ListOptionDialog';
 import { VipIconImage } from './VipIconImage';
-import { ScreenHeader } from '../../components/ScreenHeader';
+import { ScreenHeader } from '@components/ScreenHeader';
 
 export type BuyVipMode = 'buy' | 'give' | 'giveDays' | 'extend';
 

@@ -14,15 +14,15 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { MeService } from '@ola/shared/services';
 import type { MePhoto } from '@ola/shared/types';
-import type { RootStackParamList } from '../../navigation/types';
-import { ROOT_ROUTES } from '../../navigation/routes';
-import { useMediaViewerStore } from '../../store/mediaViewerStore';
-import { ScreenHeader } from '../../components/ScreenHeader';
+import type { RootStackParamList } from '@navigation/types';
+import { ROOT_ROUTES } from '@navigation/routes';
+import { useMediaViewerStore } from '@store/mediaViewerStore';
+import { ScreenHeader } from '@components/ScreenHeader';
 
 const PAGE_SIZE = 50;
 const MUTED = 'rgba(0,0,0,0.45)';
 
-const mediaIcon = require('../../assets/icons/apps/media.png');
+const mediaIcon = require('@assets/icons/apps/media.png');
 
 interface PhotoGroup {
   key: string;

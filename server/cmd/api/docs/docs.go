@@ -212,6 +212,57 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/dashboard/overview": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Số liệu tổng quan cho dashboard: người dùng, doanh thu KEN/VIP, tương tác, xã hội, game và chuỗi thời gian",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-dashboard"
+                ],
+                "summary": "Thống kê tổng quan (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Từ thời gian (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến thời gian (RFC3339)",
+                        "name": "to",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_dashboard.OverviewSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/egg/draws": {
             "get": {
                 "security": [
@@ -1097,6 +1148,81 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/logs": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Danh sách các thay đổi do admin thực hiện (tự động ghi mọi thao tác POST/PUT/PATCH/DELETE)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-audit"
+                ],
+                "summary": "Nhật ký thao tác admin",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Lọc theo admin",
+                        "name": "adminId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Lọc theo nhóm chức năng (users, rooms, vip...)",
+                        "name": "resource",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Lọc theo method (POST/PUT/PATCH/DELETE)",
+                        "name": "method",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Lọc theo route đã đăng ký (khớp phần đuôi)",
+                        "name": "route",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Từ thời gian (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến thời gian (RFC3339)",
+                        "name": "to",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_audit_AuditLogListResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/me": {
             "get": {
                 "security": [
@@ -1344,6 +1470,157 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_me_MeDetail"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/mini-games": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-mini-game"
+                ],
+                "summary": "Danh sách mini game (admin)",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_mini-game.MiniGameListResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-mini-game"
+                ],
+                "summary": "Tạo mini game (admin)",
+                "parameters": [
+                    {
+                        "description": "Mini game",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_mini-game.CreateMiniGameRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_mini-game.MiniGameResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/mini-games/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-mini-game"
+                ],
+                "summary": "Xoá mini game (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Mini game ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-mini-game"
+                ],
+                "summary": "Cập nhật mini game (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Mini game ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Mini game",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_mini-game.UpdateMiniGameRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_mini-game.MiniGameResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     }
                 }
@@ -1672,6 +1949,49 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_room_RoomMessagesListResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/rooms/{id}/messages/{messageId}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-room"
+                ],
+                "summary": "Delete a room message (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Room ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Message ID",
+                        "name": "messageId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -3361,6 +3681,126 @@ const docTemplate = `{
                 }
             }
         },
+        "/auth/verify-email/confirm": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Verify the 6-digit code and mark the authenticated user's email as verified",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Confirm email verification code",
+                "parameters": [
+                    {
+                        "description": "Confirm Email Verify Request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_auth.ConfirmEmailVerifyRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_auth.ConfirmEmailVerifySuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/verify-email/send": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Send a 6-digit verification code to the given email for the authenticated user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Send email verification code",
+                "parameters": [
+                    {
+                        "description": "Send Email Verify Request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_auth.SendEmailVerifyRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_auth.SendEmailVerifySuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "429": {
+                        "description": "Too Many Requests",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/calls/start": {
             "post": {
                 "security": [
@@ -3518,6 +3958,956 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/internal_modules_call.SimpleSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/clans": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clan"
+                ],
+                "summary": "Create a clan (costs Ken)",
+                "parameters": [
+                    {
+                        "description": "Create clan",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_clan.CreateClanRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_ClanResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/clans/by-handle/{handle}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clan"
+                ],
+                "summary": "Get clan info by handle (#name without the #)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Clan handle",
+                        "name": "handle",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_ClanResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/clans/check-name": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clan"
+                ],
+                "summary": "Check if a clan name is available (returns preview when taken)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Clan name (lowercase letters and digits, 2-32 chars, optional # prefix)",
+                        "name": "name",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_CheckNameResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/clans/mine": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clan"
+                ],
+                "summary": "List clans the current user has joined",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-array_internal_modules_clan_ClanResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/clans/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clan"
+                ],
+                "summary": "Get clan info by id (increments visit count once per viewer per 6h)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Clan ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_ClanResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clan"
+                ],
+                "summary": "Update clan description/policy (owner only)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Clan ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update clan",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_clan.UpdateClanRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_ClanResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/clans/{id}/avatar": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clan"
+                ],
+                "summary": "Upload clan avatar (owner only)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Clan ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Image file (jpg, png, gif, webp)",
+                        "name": "image",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_UploadClanImageResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/clans/{id}/bans": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clan"
+                ],
+                "summary": "List banned users (owner/deputy only)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Clan ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_BanListResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clan"
+                ],
+                "summary": "Ban a user from the clan by username (owner/deputy only, also kicks)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Clan ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Username to ban",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_clan.UsernameRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_MessageResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/clans/{id}/bans/{userId}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clan"
+                ],
+                "summary": "Unban a user (owner/deputy only)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Clan ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "userId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_MessageResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/clans/{id}/cover": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clan"
+                ],
+                "summary": "Upload clan cover (owner only)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Clan ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Image file (jpg, png, gif, webp)",
+                        "name": "image",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_UploadClanImageResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/clans/{id}/join": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clan"
+                ],
+                "summary": "Join (follow) a clan",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Clan ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_ClanResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clan"
+                ],
+                "summary": "Leave a clan (owner cannot leave)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Clan ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_ClanResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/clans/{id}/me": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clan"
+                ],
+                "summary": "Clan feed (pinned Me Top separate, keyset cursor)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Clan ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Opaque keyset cursor",
+                        "name": "cursor",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_ClanPostsResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clan"
+                ],
+                "summary": "Create a Me post inside the clan",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Clan ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Post content",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_modules_me.CreateMeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_me_MeResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/clans/{id}/me/by-user/{userId}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clan"
+                ],
+                "summary": "Moderation: disable all posts by a user in this clan (owner/deputy only)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Clan ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Author user ID",
+                        "name": "userId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_MessageResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/clans/{id}/me/{postId}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clan"
+                ],
+                "summary": "Moderation: disable a clan post (owner/deputy only)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Clan ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Post ID",
+                        "name": "postId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_MessageResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/clans/{id}/members": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clan"
+                ],
+                "summary": "List clan members (staff first)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Clan ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Only verified members",
+                        "name": "verified",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_MemberListResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/clans/{id}/pin": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clan"
+                ],
+                "summary": "Set a clan post as Me Top (owner/deputy only)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Clan ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Post to pin",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_clan.PinRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_MessageResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clan"
+                ],
+                "summary": "Remove clan Me Top (owner/deputy only)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Clan ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_MessageResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/clans/{id}/roles": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clan"
+                ],
+                "summary": "Assign deputy/ambassador by username (owner only)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Clan ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Assign role",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_clan.AssignRoleRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_ClanResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/clans/{id}/roles/{role}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clan"
+                ],
+                "summary": "Revoke current deputy/ambassador (owner only)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Clan ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Role (deputy | ambassador)",
+                        "name": "role",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_ClanResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/clans/{id}/verify": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clan"
+                ],
+                "summary": "Verify a member by username (owner only)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Clan ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Member username",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_clan.UsernameRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_MessageResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clan"
+                ],
+                "summary": "Unverify a member by username (owner only)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Clan ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Member username",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_clan.UsernameRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_MessageResponse"
                         }
                     }
                 }
@@ -4812,7 +6202,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Set to 'tagged' (posts with any @mention), 'mentions' (posts mentioning viewer), 'media' (posts with images) or 'following' (own posts + posts from users the viewer follows)",
+                        "description": "Set to 'tagged' (posts with any @mention), 'mentions' (posts mentioning viewer), 'media' (posts with images), 'following' (own posts + posts from users the viewer follows) or 'clan' (public posts from all clans)",
                         "name": "filter",
                         "in": "query"
                     }
@@ -6241,6 +7631,122 @@ const docTemplate = `{
                         "description": "Too Many Requests",
                         "schema": {
                             "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/mini-games": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "mini-game"
+                ],
+                "summary": "Danh sách mini game đang bật",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/internal_modules_mini-game.MiniGameResponse"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/notifications": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "notifications"
+                ],
+                "summary": "List my app notifications (friend requests, marriage proposals, ...)",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Opaque keyset cursor from previous page's nextCursor",
+                        "name": "cursor",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_notification_AppNotificationListResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/notifications/read-all": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "notifications"
+                ],
+                "summary": "Mark all my app notifications as read",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/notifications/unread-count": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "notifications"
+                ],
+                "summary": "Count my unread app notifications",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-map_string_int64"
                         }
                     }
                 }
@@ -8919,6 +10425,79 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "gorm.DeletedAt": {
+            "type": "object",
+            "properties": {
+                "time": {
+                    "type": "string"
+                },
+                "valid": {
+                    "description": "Valid is true if Time is not NULL",
+                    "type": "boolean"
+                }
+            }
+        },
+        "internal_modules_admin_audit.AuditLogItem": {
+            "type": "object",
+            "properties": {
+                "adminFullName": {
+                    "type": "string"
+                },
+                "adminId": {
+                    "type": "string"
+                },
+                "adminUsername": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "detail": {
+                    "$ref": "#/definitions/ola-chat-server_internal_models.JSONB"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "ip": {
+                    "type": "string"
+                },
+                "method": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "resource": {
+                    "type": "string"
+                },
+                "route": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_audit.AuditLogListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_audit.AuditLogItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
         "internal_modules_admin_auth.AdminDTO": {
             "type": "object",
             "properties": {
@@ -9019,6 +10598,225 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_modules_admin_dashboard.EngagementSection": {
+            "type": "object",
+            "properties": {
+                "comments": {
+                    "type": "integer"
+                },
+                "dislikes": {
+                    "type": "integer"
+                },
+                "likes": {
+                    "type": "integer"
+                },
+                "newPosts": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_dashboard.GamesSection": {
+            "type": "object",
+            "properties": {
+                "eggDraws": {
+                    "type": "integer"
+                },
+                "penShots": {
+                    "type": "integer"
+                },
+                "wheelSpins": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_dashboard.OverviewResponse": {
+            "type": "object",
+            "properties": {
+                "bucket": {
+                    "type": "string"
+                },
+                "engagement": {
+                    "$ref": "#/definitions/internal_modules_admin_dashboard.EngagementSection"
+                },
+                "games": {
+                    "$ref": "#/definitions/internal_modules_admin_dashboard.GamesSection"
+                },
+                "range": {
+                    "$ref": "#/definitions/internal_modules_admin_dashboard.RangeInfo"
+                },
+                "registrations": {
+                    "$ref": "#/definitions/internal_modules_admin_dashboard.RegistrationsSection"
+                },
+                "revenue": {
+                    "$ref": "#/definitions/internal_modules_admin_dashboard.RevenueSection"
+                },
+                "social": {
+                    "$ref": "#/definitions/internal_modules_admin_dashboard.SocialSection"
+                },
+                "timeseries": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_dashboard.TimePoint"
+                    }
+                },
+                "totals": {
+                    "$ref": "#/definitions/internal_modules_admin_dashboard.Totals"
+                },
+                "users": {
+                    "$ref": "#/definitions/internal_modules_admin_dashboard.UsersSection"
+                }
+            }
+        },
+        "internal_modules_admin_dashboard.OverviewSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_dashboard.OverviewResponse"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "internal_modules_admin_dashboard.RangeInfo": {
+            "type": "object",
+            "properties": {
+                "from": {
+                    "type": "string"
+                },
+                "to": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_dashboard.RegistrationsSection": {
+            "type": "object",
+            "properties": {
+                "today": {
+                    "type": "integer"
+                },
+                "week": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_dashboard.RevenueSection": {
+            "type": "object",
+            "properties": {
+                "spendByType": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_dashboard.SpendByType"
+                    }
+                },
+                "topupCount": {
+                    "type": "integer"
+                },
+                "topupKen": {
+                    "type": "integer"
+                },
+                "vipPurchases": {
+                    "type": "integer"
+                },
+                "vipRevenueKen": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_dashboard.SocialSection": {
+            "type": "object",
+            "properties": {
+                "friendRequests": {
+                    "type": "integer"
+                },
+                "newFollows": {
+                    "type": "integer"
+                },
+                "newFriendships": {
+                    "type": "integer"
+                },
+                "newMarriages": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_dashboard.SpendByType": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "integer"
+                },
+                "count": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_dashboard.TimePoint": {
+            "type": "object",
+            "properties": {
+                "date": {
+                    "type": "string"
+                },
+                "newUsers": {
+                    "type": "integer"
+                },
+                "posts": {
+                    "type": "integer"
+                },
+                "revenueKen": {
+                    "type": "integer"
+                },
+                "topupKen": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_dashboard.Totals": {
+            "type": "object",
+            "properties": {
+                "activeMarriages": {
+                    "type": "integer"
+                },
+                "kenInCirculation": {
+                    "type": "integer"
+                },
+                "kisses": {
+                    "type": "integer"
+                },
+                "posts": {
+                    "type": "integer"
+                },
+                "rooms": {
+                    "type": "integer"
+                },
+                "users": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_dashboard.UsersSection": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "integer"
+                },
+                "female": {
+                    "type": "integer"
+                },
+                "male": {
+                    "type": "integer"
+                },
+                "new": {
+                    "type": "integer"
+                },
+                "verified": {
+                    "type": "integer"
+                }
+            }
+        },
         "internal_modules_admin_ken.AdjustRequest": {
             "type": "object",
             "required": [
@@ -9109,6 +10907,27 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_modules_admin_ken.CounterpartyInfo": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string",
+                    "example": "https://cdn.ola.vn/a.png"
+                },
+                "fullName": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "john_doe"
+                }
+            }
+        },
         "internal_modules_admin_ken.TransactionItem": {
             "type": "object",
             "properties": {
@@ -9131,6 +10950,9 @@ const docTemplate = `{
                 "balanceBefore": {
                     "type": "integer",
                     "example": 1000
+                },
+                "counterparty": {
+                    "$ref": "#/definitions/internal_modules_admin_ken.CounterpartyInfo"
                 },
                 "createdAt": {
                     "type": "string",
@@ -9891,6 +11713,62 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_modules_auth.ConfirmEmailVerifyRequest": {
+            "type": "object",
+            "required": [
+                "code",
+                "verifyId"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string",
+                    "example": "123456"
+                },
+                "verifyId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                }
+            }
+        },
+        "internal_modules_auth.ConfirmEmailVerifyResponse": {
+            "type": "object",
+            "properties": {
+                "emailVerified": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "vipRewardDays": {
+                    "type": "integer",
+                    "example": 30
+                }
+            }
+        },
+        "internal_modules_auth.ConfirmEmailVerifySuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_auth.ConfirmEmailVerifyResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
         "internal_modules_auth.DeviceInfo": {
             "type": "object",
             "properties": {
@@ -9979,6 +11857,58 @@ const docTemplate = `{
         },
         "internal_modules_auth.RegisterSuccessResponse": {
             "type": "object"
+        },
+        "internal_modules_auth.SendEmailVerifyRequest": {
+            "type": "object",
+            "required": [
+                "email"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "example": "john@example.com"
+                }
+            }
+        },
+        "internal_modules_auth.SendEmailVerifyResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "Verification code sent"
+                },
+                "verifyId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                }
+            }
+        },
+        "internal_modules_auth.SendEmailVerifySuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_auth.SendEmailVerifyResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
         },
         "internal_modules_auth.UserResponse": {
             "type": "object"
@@ -10070,6 +12000,305 @@ const docTemplate = `{
                 },
                 "conversationId": {
                     "type": "string"
+                }
+            }
+        },
+        "internal_modules_clan.AssignRoleRequest": {
+            "type": "object",
+            "required": [
+                "role",
+                "username"
+            ],
+            "properties": {
+                "role": {
+                    "type": "string",
+                    "enum": [
+                        "deputy",
+                        "ambassador"
+                    ],
+                    "example": "deputy"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "phobang02"
+                }
+            }
+        },
+        "internal_modules_clan.BanListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_clan.BanResponse"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_clan.BanResponse": {
+            "type": "object",
+            "properties": {
+                "bannedAt": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/internal_modules_clan.ClanUserResponse"
+                }
+            }
+        },
+        "internal_modules_clan.CheckNameResponse": {
+            "type": "object",
+            "properties": {
+                "available": {
+                    "type": "boolean"
+                },
+                "clan": {
+                    "$ref": "#/definitions/internal_modules_clan.ClanPreviewResponse"
+                },
+                "cost": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_clan.ClanPostsResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_me.MeResponse"
+                    }
+                },
+                "nextCursor": {
+                    "type": "string"
+                },
+                "pinned": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_me.MeResponse"
+                }
+            }
+        },
+        "internal_modules_clan.ClanPreviewResponse": {
+            "type": "object",
+            "properties": {
+                "ambassador": {
+                    "type": "string"
+                },
+                "deputy": {
+                    "type": "string"
+                },
+                "handle": {
+                    "type": "string"
+                },
+                "memberCount": {
+                    "type": "integer"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "visitCount": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_clan.ClanResponse": {
+            "type": "object",
+            "properties": {
+                "ambassador": {
+                    "$ref": "#/definitions/internal_modules_clan.ClanUserResponse"
+                },
+                "avatar": {
+                    "type": "string"
+                },
+                "cover": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "deputy": {
+                    "$ref": "#/definitions/internal_modules_clan.ClanUserResponse"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "handle": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isBanned": {
+                    "type": "boolean"
+                },
+                "isMember": {
+                    "type": "boolean"
+                },
+                "kenBalance": {
+                    "type": "integer"
+                },
+                "meTopPostId": {
+                    "type": "string"
+                },
+                "memberCount": {
+                    "type": "integer"
+                },
+                "memberPublicPost": {
+                    "type": "boolean"
+                },
+                "myRole": {
+                    "type": "string"
+                },
+                "myVerified": {
+                    "type": "boolean"
+                },
+                "owner": {
+                    "$ref": "#/definitions/internal_modules_clan.ClanUserResponse"
+                },
+                "policy": {
+                    "type": "integer"
+                },
+                "visitCount": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_clan.ClanUserResponse": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "fullName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_clan.CreateClanRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "maxLength": 1000
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 64,
+                    "example": "teamviet"
+                }
+            }
+        },
+        "internal_modules_clan.MemberListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_clan.MemberResponse"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_clan.MemberResponse": {
+            "type": "object",
+            "properties": {
+                "joinedAt": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/internal_modules_clan.ClanUserResponse"
+                },
+                "verified": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "internal_modules_clan.MessageResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "ok"
+                }
+            }
+        },
+        "internal_modules_clan.PinRequest": {
+            "type": "object",
+            "required": [
+                "postId"
+            ],
+            "properties": {
+                "postId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_clan.UpdateClanRequest": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "maxLength": 1000
+                },
+                "memberPublicPost": {
+                    "type": "boolean"
+                },
+                "policy": {
+                    "type": "integer",
+                    "maximum": 4,
+                    "minimum": 0
+                }
+            }
+        },
+        "internal_modules_clan.UploadClanImageResponse": {
+            "type": "object",
+            "properties": {
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_clan.UsernameRequest": {
+            "type": "object",
+            "required": [
+                "username"
+            ],
+            "properties": {
+                "username": {
+                    "type": "string",
+                    "example": "member01"
                 }
             }
         },
@@ -11590,6 +13819,12 @@ const docTemplate = `{
                 "checkIn": {
                     "$ref": "#/definitions/internal_modules_me.CheckInResponse"
                 },
+                "clanHandle": {
+                    "type": "string"
+                },
+                "clanId": {
+                    "type": "string"
+                },
                 "commentCount": {
                     "type": "integer"
                 },
@@ -11664,6 +13899,9 @@ const docTemplate = `{
             "properties": {
                 "checkIn": {
                     "$ref": "#/definitions/internal_modules_me.CheckInInput"
+                },
+                "clearCheckIn": {
+                    "type": "boolean"
                 },
                 "content": {
                     "type": "string",
@@ -12005,6 +14243,104 @@ const docTemplate = `{
                     "maxLength": 4000,
                     "minLength": 1,
                     "example": "Updated message content"
+                }
+            }
+        },
+        "internal_modules_mini-game.MiniGameResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "gameUrl": {
+                    "type": "string"
+                },
+                "iconUrl": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isEnabled": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "slug": {
+                    "type": "string"
+                },
+                "sortOrder": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_notification.ActorResponse": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "fullName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_notification.AppNotificationListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_notification.AppNotificationResponse"
+                    }
+                },
+                "nextCursor": {
+                    "type": "string"
+                },
+                "unreadCount": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_notification.AppNotificationResponse": {
+            "type": "object",
+            "properties": {
+                "actor": {
+                    "$ref": "#/definitions/internal_modules_notification.ActorResponse"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isRead": {
+                    "type": "boolean"
+                },
+                "preview": {
+                    "type": "string"
+                },
+                "refId": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
                 }
             }
         },
@@ -13281,6 +15617,10 @@ const docTemplate = `{
                     "type": "boolean",
                     "example": true
                 },
+                "vipStorePrivacy": {
+                    "type": "integer",
+                    "example": 0
+                },
                 "wallpaperUrl": {
                     "type": "string",
                     "example": ""
@@ -13731,6 +16071,10 @@ const docTemplate = `{
                     "example": "https://example.com/bio.jpg"
                 },
                 "canViewInterested": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "canViewVipStore": {
                     "type": "boolean",
                     "example": true
                 },
@@ -14661,6 +17005,44 @@ const docTemplate = `{
             "type": "object",
             "additionalProperties": true
         },
+        "ola-chat-server_internal_models.MiniGame": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "gameUrl": {
+                    "type": "string"
+                },
+                "iconUrl": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isEnabled": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "slug": {
+                    "type": "string"
+                },
+                "sortOrder": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
         "ola-chat-server_internal_models.WheelSegmentKind": {
             "type": "string",
             "enum": [
@@ -15488,6 +17870,347 @@ const docTemplate = `{
             "properties": {
                 "enabled": {
                     "type": "boolean"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_me.AuthorResponse": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "fullName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isFriend": {
+                    "type": "boolean"
+                },
+                "isSelf": {
+                    "type": "boolean"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_me.CheckInInput": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "action": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "example": "Đang ăn"
+                },
+                "actionIcon": {
+                    "type": "string",
+                    "maxLength": 16,
+                    "example": "🍜"
+                },
+                "address": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "example": "86-88 Cao Thắng, Q3"
+                },
+                "lat": {
+                    "type": "number",
+                    "example": 10.771
+                },
+                "lng": {
+                    "type": "number",
+                    "example": 106.682
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "example": "The Coffee House"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_me.CheckInResponse": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "type": "string"
+                },
+                "actionIcon": {
+                    "type": "string"
+                },
+                "address": {
+                    "type": "string"
+                },
+                "lat": {
+                    "type": "number"
+                },
+                "lng": {
+                    "type": "number"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_me.CreateMeRequest": {
+            "type": "object",
+            "properties": {
+                "checkIn": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_me.CheckInInput"
+                },
+                "content": {
+                    "type": "string",
+                    "maxLength": 5000,
+                    "example": "Hôm nay trời đẹp quá!"
+                },
+                "images": {
+                    "type": "array",
+                    "maxItems": 5,
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_me.MeImageInput"
+                    }
+                },
+                "sticker": {
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "visibility": {
+                    "type": "string",
+                    "enum": [
+                        "public",
+                        "friend",
+                        "private"
+                    ],
+                    "example": "public"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_me.MeImageInput": {
+            "type": "object",
+            "required": [
+                "url"
+            ],
+            "properties": {
+                "height": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "mimeType": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string",
+                    "example": "http://localhost:9000/chat-uploads/posts/abc.jpg"
+                },
+                "width": {
+                    "type": "integer",
+                    "minimum": 0
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_me.MeImageResponse": {
+            "type": "object",
+            "properties": {
+                "height": {
+                    "type": "integer"
+                },
+                "mimeType": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                },
+                "width": {
+                    "type": "integer"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_me.MeResponse": {
+            "type": "object",
+            "properties": {
+                "author": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_me.AuthorResponse"
+                },
+                "checkIn": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_me.CheckInResponse"
+                },
+                "clanHandle": {
+                    "type": "string"
+                },
+                "clanId": {
+                    "type": "string"
+                },
+                "commentCount": {
+                    "type": "integer"
+                },
+                "content": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "dislikeCount": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "images": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_me.MeImageResponse"
+                    }
+                },
+                "isPinned": {
+                    "type": "boolean"
+                },
+                "likeCount": {
+                    "type": "integer"
+                },
+                "mentions": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "myReaction": {
+                    "type": "string"
+                },
+                "sticker": {
+                    "type": "string"
+                },
+                "topLikers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_modules_me.AuthorResponse"
+                    }
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "visibility": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_mini-game.CreateMiniGameRequest": {
+            "type": "object",
+            "required": [
+                "gameUrl",
+                "name",
+                "slug"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "maxLength": 300
+                },
+                "gameUrl": {
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "iconUrl": {
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "isEnabled": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1
+                },
+                "slug": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 2
+                },
+                "sortOrder": {
+                    "type": "integer"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_mini-game.MiniGameListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ola-chat-server_internal_models.MiniGame"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_mini-game.MiniGameResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "gameUrl": {
+                    "type": "string"
+                },
+                "iconUrl": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isEnabled": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "slug": {
+                    "type": "string"
+                },
+                "sortOrder": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_modules_mini-game.UpdateMiniGameRequest": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "maxLength": 300
+                },
+                "gameUrl": {
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "iconUrl": {
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "isEnabled": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1
+                },
+                "sortOrder": {
+                    "type": "integer"
                 }
             }
         },
@@ -17034,6 +19757,61 @@ const docTemplate = `{
                 }
             }
         },
+        "ola-chat-server_internal_utils.BaseResponse-array_internal_modules_clan_ClanResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_clan.ClanResponse"
+                    }
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_audit_AuditLogListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_audit.AuditLogListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
         "ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_auth_AdminDTO": {
             "type": "object",
             "properties": {
@@ -17372,6 +20150,188 @@ const docTemplate = `{
                 }
             }
         },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_BanListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_clan.BanListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_CheckNameResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_clan.CheckNameResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_ClanPostsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_clan.ClanPostsResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_ClanResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_clan.ClanResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_MemberListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_clan.MemberListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_MessageResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_clan.MessageResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_clan_UploadClanImageResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_clan.UploadClanImageResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
         "ola-chat-server_internal_utils.BaseResponse-internal_modules_me_CommentListResponse": {
             "type": "object",
             "properties": {
@@ -17606,6 +20566,32 @@ const docTemplate = `{
                 }
             }
         },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_notification_AppNotificationListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_notification.AppNotificationListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
         "ola-chat-server_internal_utils.BaseResponse-internal_modules_room_JoinRoomResponse": {
             "type": "object",
             "properties": {
@@ -17767,6 +20753,32 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "$ref": "#/definitions/map_string_int64"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-ola-chat-server_internal_modules_me_MeResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/ola-chat-server_internal_modules_me.MeResponse"
                 },
                 "error": {
                     "type": "string"

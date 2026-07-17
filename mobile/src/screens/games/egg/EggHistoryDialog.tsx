@@ -4,8 +4,8 @@ import { ActivityIndicator, Image, Pressable, ScrollView, Text, View } from 'rea
 import { createTimeFormatter } from '@ola/shared/lib';
 import { EggService } from '@ola/shared/services';
 import type { EggDrawHistoryFilter, EggDrawHistoryItem } from '@ola/shared/types';
-import { Dialog, DialogButton } from '../../../components/Dialog';
-import { VipIconImage } from '../../vip/VipIconImage';
+import { Dialog, DialogButton } from '@components/Dialog';
+import { VipIconImage } from '@screens/vip/VipIconImage';
 import { eggAssets } from './eggAssets';
 
 const PAGE_SIZE = 20;

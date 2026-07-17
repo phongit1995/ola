@@ -53,6 +53,7 @@ type RoomMemberResponse struct {
 	BioImage   *string `json:"bioImage,omitempty"`
 	VipUsed    *string `json:"vipUsed,omitempty"`
 	VipEndTime *string `json:"vipEndTime,omitempty"`
+	DeviceType string  `json:"deviceType,omitempty"`
 }
 
 type RoomMembersResponse struct {

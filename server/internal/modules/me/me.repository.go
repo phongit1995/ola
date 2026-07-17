@@ -35,7 +35,7 @@ func (r *Repository) UpdateEditable(post *models.Me) error {
 
 func (r *Repository) GetByID(id uuid.UUID) (*models.Me, error) {
 	var post models.Me
-	if err := r.db.Preload("Author").First(&post, "id = ?", id).Error; err != nil {
+	if err := r.db.Preload("Author").Preload("Clan").First(&post, "id = ?", id).Error; err != nil {
 		return nil, err
 	}
 	return &post, nil
@@ -52,11 +52,15 @@ func (r *Repository) paginate(db *gorm.DB, limit, offset int) ([]*models.Me, int
 	}
 
 	var posts []*models.Me
-	if err := db.Preload("Author").Order("pinned_at DESC NULLS LAST").Order("created_at DESC").Limit(limit).Offset(offset).Find(&posts).Error; err != nil {
+	if err := db.Preload("Author").Preload("Clan").Order("pinned_at DESC NULLS LAST").Order("created_at DESC").Limit(limit).Offset(offset).Find(&posts).Error; err != nil {
 		return nil, 0, err
 	}
 	return posts, total, nil
 }
+
+const clanVisibleCond = "me.clan_id IS NULL"
+
+const clanVisibleCondAliasM = "m.clan_id IS NULL"
 
 func (r *Repository) SetPinned(authorID, postID uuid.UUID, pinned bool) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
@@ -76,7 +80,9 @@ func (r *Repository) SetPinned(authorID, postID uuid.UUID, pinned bool) error {
 }
 
 func (r *Repository) ListByAuthor(authorID uuid.UUID, visibilities []models.MeVisibility, limit, offset int) ([]*models.Me, int64, error) {
-	db := r.db.Model(&models.Me{}).Where("author_id = ? AND enabled = ? AND visibility IN ?", authorID, true, visibilities)
+	db := r.db.Model(&models.Me{}).
+		Where("author_id = ? AND enabled = ? AND visibility IN ?", authorID, true, visibilities).
+		Where(clanVisibleCond)
 	return r.paginate(db, limit, offset)
 }
 
@@ -90,7 +96,7 @@ type PhotoRow struct {
 }
 
 func (r *Repository) ListPhotosByAuthor(authorID uuid.UUID, visibilities []models.MeVisibility, limit, offset int) ([]PhotoRow, int64, error) {
-	where := "m.author_id = ? AND m.enabled = ? AND m.visibility IN ? AND m.deleted_at IS NULL"
+	where := "m.author_id = ? AND m.enabled = ? AND m.visibility IN ? AND m.deleted_at IS NULL AND " + clanVisibleCondAliasM
 
 	var total int64
 	if err := r.db.Table("me AS m").
@@ -129,7 +135,8 @@ func (r *Repository) ListLikedByUser(userID uuid.UUID, limit, offset int) ([]*mo
 	db := r.db.Model(&models.Me{}).
 		Joins("JOIN me_reactions mr ON mr.post_id = me.id AND mr.user_id = ? AND mr.type = ?", userID, models.MeReactionLike).
 		Where("me.enabled = ?", true).
-		Where(likedVisibilityCond, models.MeVisibilityPublic, userID, models.MeVisibilityFriend, models.RelationshipStatusAccepted, userID, userID)
+		Where(likedVisibilityCond, models.MeVisibilityPublic, userID, models.MeVisibilityFriend, models.RelationshipStatusAccepted, userID, userID).
+		Where(clanVisibleCond)
 
 	var total int64
 	if err := db.Count(&total).Error; err != nil {
@@ -137,7 +144,7 @@ func (r *Repository) ListLikedByUser(userID uuid.UUID, limit, offset int) ([]*mo
 	}
 
 	var posts []*models.Me
-	if err := db.Select("me.*").Preload("Author").
+	if err := db.Select("me.*").Preload("Author").Preload("Clan").
 		Order("mr.created_at DESC").
 		Limit(limit).Offset(offset).
 		Find(&posts).Error; err != nil {
@@ -172,7 +179,7 @@ func (r *Repository) FeedPage(viewerID uuid.UUID, filter string, cursorTime *tim
 	}
 
 	branch := func(cond string) string {
-		return "(SELECT m.id, m.created_at FROM me m WHERE m.deleted_at IS NULL AND m.enabled = true AND " + cond + filterFrag + cursorFrag +
+		return "(SELECT m.id, m.created_at FROM me m WHERE m.deleted_at IS NULL AND m.enabled = true AND " + clanVisibleCondAliasM + " AND " + cond + filterFrag + cursorFrag +
 			" ORDER BY m.created_at DESC, m.id DESC LIMIT @lim)"
 	}
 	friendCond := "m.visibility = 'friend' AND EXISTS (SELECT 1 FROM relationships rel WHERE rel.status = 'accepted'" +
@@ -180,8 +187,15 @@ func (r *Repository) FeedPage(viewerID uuid.UUID, filter string, cursorTime *tim
 		" OR (rel.addressee_id = @viewer AND rel.requester_id = m.author_id)))"
 
 	followeeCond := "m.author_id IN (SELECT f.followee_id FROM follows f WHERE f.follower_id = @viewer)"
+	clanPublicBranch := "(SELECT m.id, m.created_at FROM me m WHERE m.deleted_at IS NULL AND m.enabled = true" +
+		" AND m.clan_id IS NOT NULL AND m.visibility = 'public'" +
+		" AND EXISTS (SELECT 1 FROM clans c WHERE c.id = m.clan_id AND c.policy != 4 AND c.deleted_at IS NULL)" +
+		cursorFrag + " ORDER BY m.created_at DESC, m.id DESC LIMIT @lim)"
 	var query string
-	if filter == "following" {
+	if filter == "clan" {
+		query = "SELECT id, created_at FROM (" + clanPublicBranch +
+			") u ORDER BY created_at DESC, id DESC LIMIT @lim"
+	} else if filter == "following" {
 		query = "SELECT id, created_at FROM (" +
 			branch("m.author_id = @viewer") + " UNION " +
 			branch("m.visibility = 'public' AND "+followeeCond) + " UNION " +
@@ -227,7 +241,7 @@ func (r *Repository) FeedPage(viewerID uuid.UUID, filter string, cursorTime *tim
 	}
 
 	var posts []*models.Me
-	if err := r.db.Preload("Author").Where("id IN ?", ids).Find(&posts).Error; err != nil {
+	if err := r.db.Preload("Author").Preload("Clan").Where("id IN ?", ids).Find(&posts).Error; err != nil {
 		return nil, false, err
 	}
 
@@ -242,6 +256,46 @@ func (r *Repository) FeedPage(viewerID uuid.UUID, filter string, cursorTime *tim
 		}
 	}
 	return ordered, hasMore, nil
+}
+
+func (r *Repository) ListByClanPage(clanID, viewerID uuid.UUID, excludeID *uuid.UUID, cursorTime *time.Time, cursorID *uuid.UUID, limit int) ([]*models.Me, bool, error) {
+	db := r.db.Model(&models.Me{}).
+		Where("me.clan_id = ? AND me.enabled = ?", clanID, true)
+	if excludeID != nil {
+		db = db.Where("me.id != ?", *excludeID)
+	}
+	if cursorTime != nil && cursorID != nil {
+		db = db.Where("(me.created_at, me.id) < (?, ?)", *cursorTime, *cursorID)
+	}
+
+	var posts []*models.Me
+	if err := db.Preload("Author").Preload("Clan").
+		Order("me.created_at DESC").Order("me.id DESC").
+		Limit(limit + 1).
+		Find(&posts).Error; err != nil {
+		return nil, false, err
+	}
+
+	hasMore := len(posts) > limit
+	if hasMore {
+		posts = posts[:limit]
+	}
+	return posts, hasMore, nil
+}
+
+func (r *Repository) DowngradeClanPublicPosts(clanID uuid.UUID, keepAuthorIDs []uuid.UUID) error {
+	db := r.db.Model(&models.Me{}).
+		Where("clan_id = ? AND visibility = ?", clanID, models.MeVisibilityPublic)
+	if len(keepAuthorIDs) > 0 {
+		db = db.Where("author_id NOT IN ?", keepAuthorIDs)
+	}
+	return db.Update("visibility", models.MeVisibilityPrivate).Error
+}
+
+func (r *Repository) DisableAllByClanAuthor(clanID, authorID uuid.UUID) error {
+	return r.db.Model(&models.Me{}).
+		Where("clan_id = ? AND author_id = ? AND enabled = ?", clanID, authorID, true).
+		Update("enabled", false).Error
 }
 
 type LikerRow struct {
@@ -628,11 +682,22 @@ func (r *Repository) ListCommentLikers(viewerID, commentID uuid.UUID, limit, off
 	return rows, total, nil
 }
 
+func isDedupedMeNotificationType(ntype string) bool {
+	return ntype == models.MeNotificationLike || ntype == models.MeNotificationCommentLike
+}
+
+func meNotificationDedupScope(db *gorm.DB, n *models.MeNotification) *gorm.DB {
+	q := db.Where("recipient_id = ? AND actor_id = ? AND post_id = ? AND type = ?",
+		n.RecipientID, n.ActorID, n.PostID, n.Type)
+	if n.CommentID != nil {
+		q = q.Where("comment_id = ?", *n.CommentID)
+	}
+	return q
+}
+
 func (r *Repository) CreateMeNotification(n *models.MeNotification) (*models.MeNotification, error) {
-	if n.Type == models.MeNotificationLike {
-		res := r.db.Model(&models.MeNotification{}).
-			Where("recipient_id = ? AND actor_id = ? AND post_id = ? AND type = ?",
-				n.RecipientID, n.ActorID, n.PostID, models.MeNotificationLike).
+	if isDedupedMeNotificationType(n.Type) {
+		res := meNotificationDedupScope(r.db.Model(&models.MeNotification{}), n).
 			Updates(map[string]interface{}{
 				"is_read":    false,
 				"created_at": time.Now(),
@@ -647,10 +712,7 @@ func (r *Repository) CreateMeNotification(n *models.MeNotification) (*models.MeN
 			}
 		}
 		var row models.MeNotification
-		if err := r.db.Preload("Actor").
-			Where("recipient_id = ? AND actor_id = ? AND post_id = ? AND type = ?",
-				n.RecipientID, n.ActorID, n.PostID, models.MeNotificationLike).
-			First(&row).Error; err != nil {
+		if err := meNotificationDedupScope(r.db.Preload("Actor"), n).First(&row).Error; err != nil {
 			return nil, err
 		}
 		return &row, nil
@@ -664,6 +726,39 @@ func (r *Repository) CreateMeNotification(n *models.MeNotification) (*models.MeN
 		return nil, err
 	}
 	return &row, nil
+}
+
+func (r *Repository) DeleteMeNotification(recipientID, actorID uuid.UUID, ntype string, postID uuid.UUID, commentID *uuid.UUID) (*models.MeNotification, error) {
+	q := r.db.Where("recipient_id = ? AND actor_id = ? AND post_id = ? AND type = ?",
+		recipientID, actorID, postID, ntype)
+	if commentID != nil {
+		q = q.Where("comment_id = ?", *commentID)
+	}
+	var row models.MeNotification
+	if err := q.First(&row).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	if err := r.db.Unscoped().Delete(&models.MeNotification{}, "id = ?", row.ID).Error; err != nil {
+		return nil, err
+	}
+	return &row, nil
+}
+
+func (r *Repository) DeleteMeNotificationsByComment(commentID uuid.UUID) ([]*models.MeNotification, error) {
+	var rows []*models.MeNotification
+	if err := r.db.Where("comment_id = ?", commentID).Find(&rows).Error; err != nil {
+		return nil, err
+	}
+	if len(rows) == 0 {
+		return rows, nil
+	}
+	if err := r.db.Unscoped().Where("comment_id = ?", commentID).Delete(&models.MeNotification{}).Error; err != nil {
+		return nil, err
+	}
+	return rows, nil
 }
 
 func (r *Repository) ListMeNotificationsPage(recipientID uuid.UUID, cursorTime *time.Time, cursorID *uuid.UUID, limit int) ([]*models.MeNotification, bool, error) {

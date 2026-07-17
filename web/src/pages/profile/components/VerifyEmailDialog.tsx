@@ -96,8 +96,12 @@ export function VerifyEmailDialog({ open, initialEmail, onClose, onVerified }: V
     }
     setSubmitting(true);
     try {
-      await AuthService.confirmVerifyEmail({ verifyId, code });
-      toast.success(t('verifyEmail.success'));
+      const result = await AuthService.confirmVerifyEmail({ verifyId, code });
+      if (result.vipRewardDays != null && result.vipRewardDays > 0) {
+        toast.success(t('verifyEmail.rewardToast', { days: result.vipRewardDays }));
+      } else {
+        toast.success(t('verifyEmail.success'));
+      }
       onVerified();
       reset();
       onClose();

@@ -38,6 +38,11 @@ export const API_PATH = {
     following: (id: string) => `/user/${id}/following`,
     myVisitors: '/user/me/visitors',
   },
+  notifications: {
+    base: '/notifications',
+    unread: '/notifications/unread-count',
+    readAll: '/notifications/read-all',
+  },
   relationships: {
     request: '/relationships/request',
     respond: (id: string) => `/relationships/${id}/respond`,
@@ -69,6 +74,26 @@ export const API_PATH = {
     notifications: '/me/notifications',
     notificationsUnread: '/me/notifications/unread-count',
     notificationsReadAll: '/me/notifications/read-all',
+  },
+  clans: {
+    base: '/clans',
+    checkName: '/clans/check-name',
+    mine: '/clans/mine',
+    byHandle: (handle: string) => `/clans/by-handle/${handle}`,
+    detail: (id: string) => `/clans/${id}`,
+    avatar: (id: string) => `/clans/${id}/avatar`,
+    cover: (id: string) => `/clans/${id}/cover`,
+    join: (id: string) => `/clans/${id}/join`,
+    members: (id: string) => `/clans/${id}/members`,
+    roles: (id: string) => `/clans/${id}/roles`,
+    role: (id: string, role: string) => `/clans/${id}/roles/${role}`,
+    verify: (id: string) => `/clans/${id}/verify`,
+    bans: (id: string) => `/clans/${id}/bans`,
+    ban: (id: string, userId: string) => `/clans/${id}/bans/${userId}`,
+    posts: (id: string) => `/clans/${id}/me`,
+    pin: (id: string) => `/clans/${id}/pin`,
+    post: (id: string, postId: string) => `/clans/${id}/me/${postId}`,
+    postsByUser: (id: string, userId: string) => `/clans/${id}/me/by-user/${userId}`,
   },
   conversations: {
     base: '/conversations',
@@ -107,6 +132,9 @@ export const API_PATH = {
   wheel: {
     config: '/wheel',
     spins: '/wheel/spins',
+  },
+  miniGame: {
+    list: '/mini-games',
   },
   ken: {
     transfer: '/ken/transfer',

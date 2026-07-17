@@ -2,10 +2,14 @@ packages:
   - web
   - admin
   - mobile
+  - game
   - packages/*
 
 allowBuilds:
   '@firebase/util': false
   protobufjs: false
+
+overrides:
+  firebase: 12.16.0
 
 nodeLinker: hoisted

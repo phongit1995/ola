@@ -6,10 +6,10 @@ import { ApiError } from '@ola/shared/lib';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { UpdateProfileRequest } from '@ola/shared/types';
-import { pickSingleImage } from '../../lib/imagePicker';
-import { Dialog, DialogButton } from '../../components/Dialog';
+import { pickSingleImage } from '@lib/imagePicker';
+import { Dialog, DialogButton } from '@components/Dialog';
 
-const snapPicIcon = require('../../assets/icons/chat/icon_snap_pic.png');
+const snapPicIcon = require('@assets/icons/chat/icon_snap_pic.png');
 
 export function StatusEditDialog({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();

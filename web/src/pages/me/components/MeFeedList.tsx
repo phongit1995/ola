@@ -19,6 +19,7 @@ interface MeFeedListProps {
   onQuickComment: (id: string) => void;
   onOpenMenu: (id: string) => void;
   onOpenLikers: (id: string) => void;
+  onOpenClan?: (handle: string) => void;
 }
 
 export function MeFeedList({
@@ -36,6 +37,7 @@ export function MeFeedList({
   onQuickComment,
   onOpenMenu,
   onOpenLikers,
+  onOpenClan,
 }: MeFeedListProps) {
   const { t } = useTranslation();
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -90,6 +92,7 @@ export function MeFeedList({
           onQuickComment={onQuickComment}
           onOpenMenu={onOpenMenu}
           onOpenLikers={onOpenLikers}
+          onOpenClan={onOpenClan}
         />
       ))}
       <div ref={sentinelRef} className="h-1" />

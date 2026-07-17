@@ -6,6 +6,7 @@ import (
 	"ola-chat-server/internal/modules/admin"
 	"ola-chat-server/internal/modules/auth"
 	"ola-chat-server/internal/modules/call"
+	"ola-chat-server/internal/modules/clan"
 	"ola-chat-server/internal/modules/conversation"
 	"ola-chat-server/internal/modules/egg"
 	"ola-chat-server/internal/modules/health"
@@ -15,6 +16,8 @@ import (
 	marriagediary "ola-chat-server/internal/modules/marriage-diary"
 	"ola-chat-server/internal/modules/me"
 	"ola-chat-server/internal/modules/message"
+	minigame "ola-chat-server/internal/modules/mini-game"
+	"ola-chat-server/internal/modules/notification"
 	"ola-chat-server/internal/modules/pen"
 	"ola-chat-server/internal/modules/relationships"
 	"ola-chat-server/internal/modules/room"
@@ -53,6 +56,7 @@ func CreateServer(
 	roomService *room.Service,
 	settingRouter *setting.Router,
 	meRouter *me.Router,
+	clanRouter *clan.Router,
 	sessionRouter *session.Router,
 	vipRouter *vip.Router,
 	kenRouter *ken.Router,
@@ -62,6 +66,8 @@ func CreateServer(
 	marriageRouter *marriage.Router,
 	marriageDiaryRouter *marriagediary.Router,
 	penRouter *pen.Router,
+	miniGameRouter *minigame.Router,
+	notificationRouter *notification.Router,
 	wsServer *websocket.Server,
 	apiGuard *middleware.ApiGuardMiddleware,
 	cfg *config.Config,
@@ -109,6 +115,7 @@ func CreateServer(
 		callRouter.Setup(api)
 		roomRouter.Setup(api)
 		meRouter.Setup(api)
+		clanRouter.Setup(api)
 		sessionRouter.Setup(api)
 		vipRouter.Setup(api)
 		kenRouter.Setup(api)
@@ -118,6 +125,8 @@ func CreateServer(
 		marriageRouter.Setup(api)
 		marriageDiaryRouter.Setup(api)
 		penRouter.Setup(api)
+		miniGameRouter.Setup(api)
+		notificationRouter.Setup(api)
 	}
 
 	r.NoRoute(func(c *gin.Context) {

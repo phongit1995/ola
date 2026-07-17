@@ -24,7 +24,7 @@ import {
   useKenTreasurePositionStore,
   type KenTreasureChest,
 } from '@ola/shared/stores/kenTreasureStore';
-import { assetRatio } from '../pen/penUi';
+import { assetRatio } from '@screens/games/pen/penUi';
 import { kenTreasureAssets, openingFrames } from './kenTreasureAssets';
 
 const STACK_OFFSET_PX = 150;
