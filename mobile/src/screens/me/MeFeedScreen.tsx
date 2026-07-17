@@ -10,7 +10,7 @@ import { useMeNotificationStore } from '@ola/shared/stores/meNotificationStore';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { AuthService, MeService, SocketService } from '@ola/shared/services';
-import { createTimeFormatter, filterVisiblePosts, formatDateDMY, isSameDay, toApiError } from '@ola/shared/lib';
+import { createTimeFormatter, filterVisiblePosts, postTimeLabel, toApiError } from '@ola/shared/lib';
 import type { MeFeedFilter, Post, PostReaction } from '@ola/shared/types';
 import { EDIT_WINDOW_MS } from '@ola/shared/constants';
 import { useMeLocalStore } from '@store/meLocalStore';
@@ -130,13 +130,6 @@ export function MeFeedScreen() {
   }, [refreshUnread]);
 
   const timeFormatter = useMemo(() => createTimeFormatter(i18n.language), [i18n.language]);
-
-  function timeLabelOf(post: Post): string {
-    const now = new Date().toISOString();
-    return isSameDay(post.createdAt, now)
-      ? timeFormatter(post.createdAt)
-      : formatDateDMY(post.createdAt);
-  }
 
   function confirmLogout() {
     Alert.alert(t('home.logout'), '', [
@@ -347,7 +340,7 @@ export function MeFeedScreen() {
             renderItem={({ item }) => (
               <MePostCard
                 post={item}
-                timeLabel={timeLabelOf(item)}
+                timeLabel={postTimeLabel(item.createdAt, timeFormatter)}
                 onToggleLike={(id) => handleReaction(id, 'like')}
                 onToggleDislike={(id) => handleReaction(id, 'dislike')}
                 onOpenProfile={openProfile}

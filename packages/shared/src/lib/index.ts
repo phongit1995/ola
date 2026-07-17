@@ -20,3 +20,5 @@ export * from './vietqr';
 export * from './spinWheel';
 export * from './eggGame';
 export * from './relationshipLabels';
+export * from './vipPurchase';
+export * from './presence';

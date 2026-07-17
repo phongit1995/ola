@@ -11,7 +11,7 @@ import {
 import { KeyboardView } from '@components/KeyboardView';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { VipService, UserService } from '@ola/shared/services';
-import { ApiError, formatKen, vipById, vipName } from '@ola/shared/lib';
+import { formatKen, vipBuyErrorText, vipConfirmMessage, vipPackageLabel, vipById, vipName, type BuyVipMode } from '@ola/shared/lib';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { VipIconCatalogItem, VipPackageItem, UserSearchResult } from '@ola/shared/types';
@@ -24,7 +24,7 @@ import { ListOptionDialog, type ListOption } from '@components/ListOptionDialog'
 import { VipIconImage } from './VipIconImage';
 import { ScreenHeader } from '@components/ScreenHeader';
 
-export type BuyVipMode = 'buy' | 'give' | 'giveDays' | 'extend';
+export type { BuyVipMode };
 
 const MOCK_KEN_BALANCE = 12_345;
 const DEFAULT_VIP_ID = 4;
@@ -53,25 +53,6 @@ const MODE_TAB = {
   giveDays: 'vip.buy.modeGiveDays',
   extend: 'vip.buy.modeExtend',
 } as const;
-
-type BuyErrorKey =
-  | 'vip.buy.errInsufficientKen'
-  | 'vip.buy.errItemUnavailable'
-  | 'vip.buy.errPackageUnavailable'
-  | 'vip.buy.errReceiverNotFound'
-  | 'vip.buy.errGiftSelf'
-  | 'vip.buy.errBlocked'
-  | 'vip.buy.errWrongPassword';
-
-const BUY_ERROR_KEYS: Record<string, BuyErrorKey> = {
-  'insufficient ken balance': 'vip.buy.errInsufficientKen',
-  'vip shop item not found': 'vip.buy.errItemUnavailable',
-  'vip package not found': 'vip.buy.errPackageUnavailable',
-  'receiver not found': 'vip.buy.errReceiverNotFound',
-  'cannot gift to yourself': 'vip.buy.errGiftSelf',
-  'cannot gift to blocked user': 'vip.buy.errBlocked',
-  'invalid transfer password': 'vip.buy.errWrongPassword',
-};
 
 interface PickerItem {
   key: string;
@@ -284,23 +265,11 @@ export function BuyVipScreen({ navigation, route }: Props) {
     setGiftPassword('');
   }
 
-  function packageLabel(pkg: VipPackageItem): string {
-    return t('vip.buy.kenPrice', { ken: formatKen(pkg.kenPrice), days: pkg.days });
-  }
-
   const packageOptions: ListOption[] = packages.map((pkg) => ({
     key: pkg.id,
-    label: packageLabel(pkg),
+    label: vipPackageLabel(t, pkg),
     onSelect: () => setSelectedPackageId(pkg.id),
   }));
-
-  function buyErrorText(error: unknown): string {
-    if (error instanceof ApiError) {
-      const key = BUY_ERROR_KEYS[error.message];
-      if (key != null) return t(key);
-    }
-    return t('vip.buy.failed');
-  }
 
   function changeMode(next: BuyVipMode) {
     setMode(next);
@@ -341,7 +310,7 @@ export function BuyVipScreen({ navigation, route }: Props) {
       push('success', successText(result));
       navigation.goBack();
     } catch (error) {
-      push('info', buyErrorText(error));
+      push('info', vipBuyErrorText(t, error));
     } finally {
       setPurchasing(false);
     }
@@ -411,22 +380,13 @@ export function BuyVipScreen({ navigation, route }: Props) {
   }
 
   function confirmMessage(): string {
-    const days = selectedPackage?.days ?? 0;
-    const ken = formatKen(selectedPackage?.kenPrice ?? 0);
-    switch (mode) {
-      case 'buy':
-        return t('vip.buy.confirmBuyIcon', {
-          name: selectedVip?.name ?? '',
-          ken: formatKen(selectedShopItem?.kenPrice ?? 0),
-        });
-      case 'give':
-        return t('vip.buy.confirmGiveIcon', { name: selectedVip?.name ?? '', receiver });
-      case 'giveDays':
-        return t('vip.buy.confirmGiveDays', { days, ken, receiver });
-      case 'extend':
-      default:
-        return t('vip.buy.confirmExtend', { days, ken });
-    }
+    return vipConfirmMessage(t, {
+      mode,
+      selectedPackage,
+      vipName: selectedVip?.name ?? '',
+      shopItemKenPrice: selectedShopItem?.kenPrice ?? 0,
+      receiver,
+    });
   }
 
   return (
@@ -555,7 +515,7 @@ export function BuyVipScreen({ navigation, route }: Props) {
               style={{ borderWidth: 1, borderColor: DIVIDER }}
             >
               <Text className="flex-1 text-sm" style={{ color: BODY }}>
-                {selectedPackage != null ? packageLabel(selectedPackage) : t('vip.buy.packagesEmpty')}
+                {selectedPackage != null ? vipPackageLabel(t, selectedPackage) : t('vip.buy.packagesEmpty')}
               </Text>
               <Text className="text-base" style={{ color: 'rgba(0,0,0,0.4)' }}>▾</Text>
             </Pressable>

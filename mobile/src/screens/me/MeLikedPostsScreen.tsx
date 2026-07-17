@@ -5,7 +5,7 @@ import { FlashList } from '@shopify/flash-list';
 import { MeService } from '@ola/shared/services';
 import { applyPostReaction } from '@ola/shared/stores/postHelpers';
 import { useToastStore } from '@ola/shared/stores/toastStore';
-import { createTimeFormatter, formatDateDMY, isSameDay } from '@ola/shared/lib';
+import { createTimeFormatter, postTimeLabel } from '@ola/shared/lib';
 import type { Post } from '@ola/shared/types';
 import { MePostCard } from './MePostCard';
 import { MeCommentSheet } from './MeCommentSheet';
@@ -72,12 +72,6 @@ export function MeLikedPostsScreen({ language, onClose, onOpenProfile }: MeLiked
 
   const commentPost = commentPostId != null ? posts.find((p) => p.id === commentPostId) ?? null : null;
 
-  function timeLabelOf(post: Post): string {
-    return isSameDay(post.createdAt, new Date().toISOString())
-      ? formatTime(post.createdAt)
-      : formatDateDMY(post.createdAt);
-  }
-
   return (
     <Modal visible transparent animationType="slide" onRequestClose={onClose}>
       <View className="flex-1 bg-[#eceff1]">
@@ -96,7 +90,7 @@ export function MeLikedPostsScreen({ language, onClose, onOpenProfile }: MeLiked
                         renderItem={({ item }) => (
               <MePostCard
                 post={item}
-                timeLabel={timeLabelOf(item)}
+                timeLabel={postTimeLabel(item.createdAt, formatTime)}
                 onToggleLike={(id) => void toggleReaction(id, 'like')}
                 onToggleDislike={(id) => void toggleReaction(id, 'dislike')}
                 onOpenProfile={onOpenProfile}

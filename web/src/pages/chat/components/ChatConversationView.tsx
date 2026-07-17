@@ -17,7 +17,7 @@ import {
   type SmileyInputHandle,
   type ListOption,
 } from '@components';
-import { chatFriendActionLabel, colorForName, compressImageForUpload, ImageTooLargeError, isSameDay, kulToken, parseMessageMetadata, SmileyText, toast } from '@lib';
+import { chatFriendActionLabel, colorForName, compressImageForUpload, formatLastActive, ImageTooLargeError, isSameDay, kulToken, parseMessageMetadata, SmileyText, toast } from '@lib';
 import moreIcon from '@/assets/icons/chat/ic_more_white.png';
 import likeIcon from '@/assets/icons/chat/smiley_35.png';
 import replyActionIcon from '@/assets/icons/me/ic_action_reply_gray.png';
@@ -29,7 +29,6 @@ import { useAuthStore } from '@/store/authStore';
 import type { RelationshipStatus } from '@app-types';
 import type { ChatMessage } from '../types';
 import { chatMessageAbilities, chatQuoteExcerpt, toBubble } from '../chatView';
-import { formatLastActive } from '../friends';
 import { usePeerCard } from '../usePeerCard';
 import { useLongPress, useOutsideClick, useStickyScroll } from '@hooks';
 import { ChatReactionBalloons } from './ChatReactionBalloons';

@@ -25,8 +25,7 @@ import {
   colorForName,
   createDateFormatter,
   createTimeFormatter,
-  formatDateDMY,
-  isSameDay,
+  postTimeLabel,
   profileFriendLabel,
   toApiError,
 } from '@ola/shared/lib';
@@ -542,12 +541,6 @@ function UserProfileBody({
       ? posts.find(p => p.id === quickCommentPostId) ?? null
       : null;
 
-  function timeLabelOf(post: Post): string {
-    return isSameDay(post.createdAt, new Date().toISOString())
-      ? formatTime(post.createdAt)
-      : formatDateDMY(post.createdAt);
-  }
-
   const nick =
     profile?.fullName != null && profile.fullName !== ''
       ? profile.fullName
@@ -1004,7 +997,7 @@ function UserProfileBody({
               <MePostCard
                 key={post.id}
                 post={post}
-                timeLabel={timeLabelOf(post)}
+                timeLabel={postTimeLabel(post.createdAt, formatTime)}
                 onToggleLike={id => void toggleReaction(id, 'like')}
                 onToggleDislike={id => void toggleReaction(id, 'dislike')}
                 onOpenProfile={onOpenProfile}

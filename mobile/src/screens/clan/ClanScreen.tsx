@@ -12,11 +12,10 @@ import {
 } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import {
-  colorForName,
   filterVisiblePosts,
   formatDateDMY,
   isPostVisible,
-  isSameDay,
+  postTimeLabel,
   createTimeFormatter,
   toApiError,
 } from '@ola/shared/lib';
@@ -158,7 +157,6 @@ export function ClanScreen({ handle, id, onClose, onOpenManage, onOpenMembers }:
   const feedLoading = useClanFeedStore((s) => s.loading);
   const feedLoadingMore = useClanFeedStore((s) => s.loadingMore);
   const feedError = useClanFeedStore((s) => s.error);
-  const feedNextCursor = useClanFeedStore((s) => s.nextCursor);
   const toggleReaction = useClanFeedStore((s) => s.toggleReaction);
   const adjustCommentCount = useClanFeedStore((s) => s.adjustCommentCount);
 
@@ -228,13 +226,6 @@ export function ClanScreen({ handle, id, onClose, onOpenManage, onOpenMembers }:
     () => (visiblePinned != null ? [visiblePinned, ...visiblePosts] : visiblePosts),
     [visiblePinned, visiblePosts]
   );
-
-  function timeLabelOf(post: Post): string {
-    const now = new Date().toISOString();
-    return isSameDay(post.createdAt, now)
-      ? timeFormatter(post.createdAt)
-      : formatDateDMY(post.createdAt);
-  }
 
   const commentPost =
     commentPostId != null ? allPosts.find((p) => p.id === commentPostId) ?? null : null;
@@ -686,7 +677,7 @@ export function ClanScreen({ handle, id, onClose, onOpenManage, onOpenMembers }:
             )}
             <MePostCard
               post={item}
-              timeLabel={timeLabelOf(item)}
+              timeLabel={postTimeLabel(item.createdAt, timeFormatter)}
               onToggleLike={(postId) => handleReaction(postId, 'like')}
               onToggleDislike={(postId) => handleReaction(postId, 'dislike')}
               onOpenProfile={openProfile}
