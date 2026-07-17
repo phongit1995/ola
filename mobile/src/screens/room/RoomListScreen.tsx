@@ -11,6 +11,7 @@ import type { Room } from '@ola/shared/types';
 import type { RoomStackParamList } from '@navigation/types';
 import { ROOM_ROUTES } from '@navigation/routes';
 import { DIVIDER } from '@constants';
+import { ROOM_BROWSE_LIMIT } from './roomConstants';
 
 const membersIcon = require('@assets/icons/room/ic_indicate_privacy_friends.png');
 const quickJoinIcon = require('@assets/icons/room/ic_action_auto_join_room.png');
@@ -131,7 +132,7 @@ export function RoomListScreen() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const result = await RoomService.browse({ limit: 50 });
+      const result = await RoomService.browse({ limit: ROOM_BROWSE_LIMIT });
       setRooms(result.items);
     } catch {
       setRooms([]);

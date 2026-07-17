@@ -9,6 +9,7 @@ import { Avatar } from '@components/ui/Avatar';
 import { VipBadge } from '@components/ui/VipBadge';
 import { Dialog, DialogButton } from '@components/ui/Dialog';
 import { DIVIDER, PRIMARY, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
+import { TRADING_VIP_PAGE_SIZE } from '../constants';
 
 export interface TradingVipReceiver {
   id: string;
@@ -56,7 +57,7 @@ export function TradingVipDialog({ visible, onClose, receiver }: TradingVipDialo
     if (!visible) return;
     let active = true;
     setLoading(true);
-    VipService.store({ limit: 100 })
+    VipService.store({ limit: TRADING_VIP_PAGE_SIZE })
       .then((res) => {
         if (active) setVips(res.items.filter((item) => !item.isUsing && !item.isLocked));
       })

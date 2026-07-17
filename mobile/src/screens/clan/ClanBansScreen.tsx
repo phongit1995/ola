@@ -9,6 +9,7 @@ import { useToastStore } from '@ola/shared/stores/toastStore';
 import { Avatar } from '@components/ui/Avatar';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { clanErrorText } from '@lib/clanHelpers';
+import { BANS_PAGE_SIZE } from './constants';
 
 interface ClanBansScreenProps {
   clanId: string;
@@ -23,7 +24,7 @@ export function ClanBansScreen({ clanId, onClose }: ClanBansScreenProps) {
   const [refreshing, setRefreshing] = useState(false);
 
   const fetchBans = useCallback(async () => {
-    const result = await ClanService.bans(clanId, { limit: 100, offset: 0 });
+    const result = await ClanService.bans(clanId, { limit: BANS_PAGE_SIZE, offset: 0 });
     setBans(result.items);
   }, [clanId]);
 

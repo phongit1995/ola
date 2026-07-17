@@ -8,6 +8,7 @@ import { activeVipTypeId } from '@ola/shared/lib';
 import { MIN_IMAGE_SOURCE, RELATIONSHIP_STATUS } from '@ola/shared/constants';
 import type { FollowUser, Post, PublicProfile } from '@ola/shared/types';
 import { pickSingleImage } from '@lib/imagePicker';
+import { FOLLOWING_PREVIEW_LIMIT, POSTS_PAGE_SIZE } from './constants';
 
 export function useProfileActions(username: string) {
   const { t } = useTranslation();
@@ -52,9 +53,9 @@ export function useProfileActions(username: string) {
         }
         const canView = data.canViewInterested !== false;
         const [postsResult, followingResult] = await Promise.all([
-          MeService.byUser(data.id, { limit: 30 }).catch(() => null),
+          MeService.byUser(data.id, { limit: POSTS_PAGE_SIZE }).catch(() => null),
           canView
-            ? UserService.following(data.id, { limit: 12 }).catch(() => null)
+            ? UserService.following(data.id, { limit: FOLLOWING_PREVIEW_LIMIT }).catch(() => null)
             : Promise.resolve(null),
         ]);
         if (!active) return;
@@ -119,7 +120,7 @@ export function useProfileActions(username: string) {
 
   const reloadPosts = useCallback(async () => {
     if (profile == null) return;
-    const result = await MeService.byUser(profile.id, { limit: 30 }).catch(
+    const result = await MeService.byUser(profile.id, { limit: POSTS_PAGE_SIZE }).catch(
       () => null,
     );
     if (result != null) setPosts(result.items);

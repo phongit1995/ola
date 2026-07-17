@@ -6,6 +6,7 @@ import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { Relationship } from '@ola/shared/types';
 import { Avatar } from '@components/ui/Avatar';
 import { UserListDialog } from '@components/ui/UserListDialog';
+import { BLOCKED_PAGE_SIZE } from '../constants';
 
 function blockedName(relationship: Relationship): string {
   return relationship.addressee?.fullName || relationship.addressee?.username || '';
@@ -20,7 +21,7 @@ export function BlockedListDialog({ onClose }: { onClose: () => void }) {
 
   useEffect(() => {
     let active = true;
-    RelationshipService.blocked({ limit: 100 })
+    RelationshipService.blocked({ limit: BLOCKED_PAGE_SIZE })
       .then((result) => {
         if (active) setItems(result.relationships);
       })
