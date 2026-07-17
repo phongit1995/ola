@@ -6,26 +6,11 @@ import { colorForName, compressImageForUpload, toast } from '@lib';
 import { useAuthStore } from '@/store/authStore';
 import { MIN_SOURCE_WIDTH } from '../constants';
 import { CoverCropOverlay } from '../../profile/components/CoverCropOverlay';
+import { CameraIcon, CheckIcon } from './Icons';
 
 interface ChangeAvatarScreenProps {
   open: boolean;
   onClose: () => void;
-}
-
-function CameraIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" aria-hidden="true">
-      <path d="M9 3 7.17 5H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.17L15 3H9zm3 5a5 5 0 1 1 0 10 5 5 0 0 1 0-10z" />
-    </svg>
-  );
-}
-
-function CheckIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 text-white" fill="currentColor" aria-hidden="true">
-      <path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
-    </svg>
-  );
 }
 
 function readImageSize(url: string): Promise<{ width: number; height: number }> {

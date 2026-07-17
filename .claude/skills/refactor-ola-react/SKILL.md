@@ -61,6 +61,9 @@ mobile/src                      ← UI React Native; import thẳng @ola/shared/
 - **KHÔNG đổi hành vi**: nếu 2 bản khác nhau có chủ đích (vd web room check `type !== 'image'` còn mobile chat check `type === 'text'`; canReply web có `!blocked` mobile không) → GIỮ NGUYÊN từng biến thể, đừng "chuẩn hoá chéo". Chỉ được nâng cấp lên bản chuẩn (guard, reconcile) khi bản chuẩn đã tồn tại trong store shared và khác biệt chỉ là thiếu sót.
 - Hàm nhận `t: TFunction` (import type từ `i18next`) làm tham số ĐẦU, theo mẫu `chatQuoteExcerpt(t, ...)`.
 - `interface.ts` / `types.ts` per-folder (chuẩn mới, `web/pages/chat` đã theo): `interface.ts` = interface export, `types.ts` = type alias, file view-mapper chỉ chứa HÀM, `XxxProps` không export để tại component.
+- **Icon SVG inline** (`function CameraIcon() { <svg>... }` trong component): gom về `components/Icons.tsx` cùng folder, mỗi icon nhận `className` (+ `strokeWidth` nếu stroke) với default đúng chỗ dùng phổ biến — KHÔNG để icon trùng 2 file (vd CheckIcon từng lặp ở ChangeAvatar + ChangeCover). Mẫu: `web/pages/chat/components/Icons.tsx`.
+- **Magic constant** module-level trong component (`const MAX_BALLOONS = 12`, min/max, duration...): dời về `constants.ts` cùng cấp folder page/screen và import vào.
+- **KHÔNG hardcode string literal của union domain** trong so sánh (`status === 'pending_incoming'`): dùng const map trong `@ola/shared/constants` — đã có `RELATIONSHIP_STATUS` (relationship.ts, `as const satisfies Record<string, RelationshipStatus>`); union mới thì tạo const map tương tự cạnh đó.
 - KHÔNG comment trong code (cả web, mobile, shared) — tên hàm tự diễn giải.
 
 ## 6. Checklist verify (PHẢI sạch trước khi xong)

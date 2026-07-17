@@ -7,18 +7,11 @@ import { useAuthStore } from '@/store/authStore';
 import { MIN_SOURCE_WIDTH } from '../constants';
 import { COVER_ASPECT } from '../../profile/constants';
 import { CoverCropOverlay } from '../../profile/components/CoverCropOverlay';
+import { CheckIcon } from './Icons';
 
 interface ChangeCoverScreenProps {
   open: boolean;
   onClose: () => void;
-}
-
-function CheckIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 text-white" fill="currentColor" aria-hidden="true">
-      <path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
-    </svg>
-  );
 }
 
 function readImageSize(url: string): Promise<{ width: number; height: number }> {

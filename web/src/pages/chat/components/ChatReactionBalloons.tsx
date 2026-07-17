@@ -3,6 +3,7 @@ import type { CSSProperties } from 'react';
 import { useChatStore } from '@/store/chat/chatStore';
 import { REACTION_IMAGE } from '@lib';
 import type { ReactionType } from '@app-types';
+import { MAX_BALLOONS } from '../constants';
 
 interface Balloon {
   id: number;
@@ -15,8 +16,6 @@ interface Balloon {
   delay: number;
   duration: number;
 }
-
-const MAX_BALLOONS = 12;
 
 let nextBalloonId = 0;
 

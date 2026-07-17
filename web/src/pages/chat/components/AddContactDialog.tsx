@@ -5,6 +5,7 @@ import { ActionButton, UserListDialog, UserRow } from '@components';
 import { colorForName, toast } from '@lib';
 import { RelationshipService, UserService } from '@services';
 import type { UserSearchResult } from '@app-types';
+import { RELATIONSHIP_STATUS } from '@ola/shared/constants';
 
 interface AddContactDialogProps {
   open: boolean;
@@ -68,23 +69,23 @@ export function AddContactDialog({ open, onClose, onOpenProfile }: AddContactDia
 
   function relationButton(user: UserSearchResult) {
     const busy = busyId === user.id;
-    if (acceptedIds.includes(user.id) || user.relationship === 'friend') {
+    if (acceptedIds.includes(user.id) || user.relationship === RELATIONSHIP_STATUS.friend) {
       return <ActionButton disabled>{t('chat.alreadyFriendShort')}</ActionButton>;
     }
-    if (sentIds.includes(user.id) || user.relationship === 'pending_outgoing') {
+    if (sentIds.includes(user.id) || user.relationship === RELATIONSHIP_STATUS.pendingOutgoing) {
       return <ActionButton disabled>{t('chat.friendRequestSentShort')}</ActionButton>;
     }
-    if (user.relationship === 'pending_incoming') {
+    if (user.relationship === RELATIONSHIP_STATUS.pendingIncoming) {
       return (
         <ActionButton disabled={busy} onClick={() => void acceptRequest(user)}>
           {t('chat.acceptRequest')}
         </ActionButton>
       );
     }
-    if (user.relationship === 'blocked_by_me') {
+    if (user.relationship === RELATIONSHIP_STATUS.blockedByMe) {
       return <ActionButton disabled>{t('chat.blocked')}</ActionButton>;
     }
-    if (user.relationship === 'blocked_by_them') {
+    if (user.relationship === RELATIONSHIP_STATUS.blockedByThem) {
       return null;
     }
     return (

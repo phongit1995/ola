@@ -40,6 +40,7 @@ import { VoicePreviewBar } from './VoicePreviewBar';
 import { PeerProfileCard } from './PeerProfileCard';
 import { UserProfileView } from '../../profile/UserProfileView';
 import { useMediaViewerStore } from '@/store/mediaViewerStore';
+import { RELATIONSHIP_STATUS } from '@ola/shared/constants';
 
 interface ChatConversationViewProps {
   name: string;
@@ -65,8 +66,8 @@ export function ChatConversationView({
   onClose,
 }: ChatConversationViewProps) {
   const { t } = useTranslation();
-  const blockedByMe = blockStatus === 'blocked_by_me';
-  const blockedByThem = blockStatus === 'blocked_by_them';
+  const blockedByMe = blockStatus === RELATIONSHIP_STATUS.blockedByMe;
+  const blockedByThem = blockStatus === RELATIONSHIP_STATUS.blockedByThem;
   const blocked = blockedByMe || blockedByThem;
 
   const myId = useAuthStore((s) => s.user?.id ?? '');

@@ -6,6 +6,7 @@ import type { AuthUser, Relationship } from '@app-types';
 import type { Contact } from '../interface';
 import { SUGGESTED_FRIENDS } from '../data';
 import { BuddyRow } from './BuddyRow';
+import { PeopleIcon } from './Icons';
 import smileyIcon from '@/assets/icons/chat/ola_smiley_online.png';
 import vipIcon from '@/assets/icons/apps/vip.png';
 import snapPicIcon from '@/assets/icons/chat/icon_snap_pic.png';
@@ -219,9 +220,7 @@ export function ContactList({
         className="flex w-full items-center gap-3 border-b border-black/12 bg-white/80 px-4 py-2 text-left"
       >
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#e0e0e0]">
-          <svg viewBox="0 0 24 24" className="h-6 w-6 text-black/54" fill="currentColor" aria-hidden="true">
-            <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
-          </svg>
+          <PeopleIcon />
         </span>
         <span className="min-w-0 flex-1">
           <span className="block text-base text-black/87">{t('chat.suggestFriends')}</span>

@@ -6,6 +6,7 @@ import { ApiError, compressImageForUpload, toast } from '@lib';
 import type { UpdateProfileRequest } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
 import snapPicIcon from '@/assets/icons/chat/icon_snap_pic.png';
+import { CloseIcon } from './Icons';
 
 interface StatusEditDialogProps {
   open: boolean;
@@ -97,9 +98,7 @@ export function StatusEditDialog({ open, onClose }: StatusEditDialogProps) {
                 aria-label={t('statusDialog.removePhoto')}
                 className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full border border-white bg-black/60 text-white"
               >
-                <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
-                  <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
-                </svg>
+                <CloseIcon className="h-3.5 w-3.5" strokeWidth={2.5} />
               </button>
             )}
           </div>

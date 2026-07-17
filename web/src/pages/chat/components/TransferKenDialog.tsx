@@ -7,9 +7,7 @@ import { KenService, UserService } from '@services';
 import type { UserSearchResult } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
 import kenIcon from '@/assets/icons/apps/ken.png';
-
-const KEN_TRANSFER_MIN = 1000;
-const KEN_TRANSFER_MAX = 10_000_000;
+import { KEN_TRANSFER_MAX, KEN_TRANSFER_MIN } from '../constants';
 
 interface TransferKenReceiver {
   id: string;
