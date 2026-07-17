@@ -78,6 +78,32 @@ export function chatQuoteExcerpt(
   return replyTo.excerpt;
 }
 
+export function isCopyableText(message: ChatMessage): boolean {
+  return (
+    message.kind === 'text' &&
+    message.text != null &&
+    message.text.trim() !== '' &&
+    kulImageForText(message.text) == null
+  );
+}
+
+export interface ChatMessageAbilities {
+  canReply: boolean;
+  canCopy: boolean;
+  canEdit: boolean;
+  canDelete: boolean;
+}
+
+export function chatMessageAbilities(message: ChatMessage, blocked: boolean): ChatMessageAbilities {
+  const isOwn = message.direction === 'out';
+  return {
+    canReply: !isOwn && !blocked,
+    canCopy: isCopyableText(message),
+    canEdit: isOwn && message.kind === 'text',
+    canDelete: isOwn,
+  };
+}
+
 export function toBubble(message: Message, myId: string): ChatMessage {
   const isImage = message.type === 'image';
   const isAudio = message.type === 'audio';

@@ -27,6 +27,7 @@ import {
   createTimeFormatter,
   formatDateDMY,
   isSameDay,
+  profileFriendLabel,
   toApiError,
 } from '@ola/shared/lib';
 import type { FollowUser, Post, PublicProfile } from '@ola/shared/types';
@@ -554,13 +555,7 @@ function UserProfileBody({
   const friendStatus = profile?.relationship?.status;
   const isFriend = friendStatus === 'friend';
   const blockedByMe = friendStatus === 'blocked_by_me';
-  const friendLabel = isFriend
-    ? t('profile.alreadyFriend')
-    : friendStatus === 'pending_outgoing'
-    ? t('profile.requestSent')
-    : friendStatus === 'pending_incoming'
-    ? t('profile.acceptFriend')
-    : t('profile.makeFriend');
+  const friendLabel = profileFriendLabel(t, friendStatus);
 
   const gender = profile?.gender === 'female' ? 'female' : 'male';
   const vipTypeId =

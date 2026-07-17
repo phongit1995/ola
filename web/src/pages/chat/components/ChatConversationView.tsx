@@ -17,7 +17,7 @@ import {
   type SmileyInputHandle,
   type ListOption,
 } from '@components';
-import { colorForName, compressImageForUpload, ImageTooLargeError, isSameDay, kulImageForText, kulToken, parseMessageMetadata, SmileyText, toast } from '@lib';
+import { chatFriendActionLabel, colorForName, compressImageForUpload, ImageTooLargeError, isSameDay, kulToken, parseMessageMetadata, SmileyText, toast } from '@lib';
 import moreIcon from '@/assets/icons/chat/ic_more_white.png';
 import likeIcon from '@/assets/icons/chat/smiley_35.png';
 import replyActionIcon from '@/assets/icons/me/ic_action_reply_gray.png';
@@ -28,7 +28,7 @@ import { useChatStore } from '@/store/chat/chatStore';
 import { useAuthStore } from '@/store/authStore';
 import type { RelationshipStatus } from '@app-types';
 import type { ChatMessage } from '../types';
-import { chatQuoteExcerpt, toBubble } from '../chatView';
+import { chatMessageAbilities, chatQuoteExcerpt, toBubble } from '../chatView';
 import { formatLastActive } from '../friends';
 import { usePeerCard } from '../usePeerCard';
 import { useLongPress, useOutsideClick, useStickyScroll } from '@hooks';
@@ -269,28 +269,19 @@ export function ChatConversationView({
     }
   }
 
-  function isCopyableText(message: ChatMessage): boolean {
-    return (
-      message.kind === 'text' &&
-      message.text != null &&
-      message.text.trim() !== '' &&
-      kulImageForText(message.text) == null
-    );
-  }
-
   function messageSheetActions(message: ChatMessage): MessageSheetAction[] {
-    const isOwn = message.direction === 'out';
+    const abilities = chatMessageAbilities(message, blocked);
     const actions: MessageSheetAction[] = [];
-    if (!isOwn && !blocked) {
+    if (abilities.canReply) {
       actions.push({ key: 'reply', label: t('chat.actionReply'), icon: replyActionIcon, onSelect: () => startReply(message) });
     }
-    if (isCopyableText(message)) {
+    if (abilities.canCopy) {
       actions.push({ key: 'copy', label: t('chat.actionCopy'), icon: copyActionIcon, onSelect: () => void copyMessage(message.text ?? '') });
     }
-    if (isOwn && message.kind === 'text') {
+    if (abilities.canEdit) {
       actions.push({ key: 'edit', label: t('chat.actionEdit'), icon: editActionIcon, onSelect: () => startEdit(message) });
     }
-    if (isOwn) {
+    if (abilities.canDelete) {
       actions.push({
         key: 'delete',
         label: t('chat.actionDelete'),
@@ -366,14 +357,7 @@ export function ChatConversationView({
     else if (result === 'unfriend') toast.success(t('chat.unfriendDone'));
   }
 
-  const friendLabel =
-    blockStatus === 'pending_outgoing'
-      ? t('chat.cancelRequest')
-      : blockStatus === 'pending_incoming'
-        ? t('chat.acceptRequest')
-        : blockStatus === 'friend'
-          ? t('chat.unfriend')
-          : t('chat.menuMakeFriend');
+  const friendLabel = chatFriendActionLabel(t, blockStatus);
 
   const menuOptions: ListOption[] = [
     { key: 'make-friend', label: friendLabel, onSelect: () => void handleFriendAction() },

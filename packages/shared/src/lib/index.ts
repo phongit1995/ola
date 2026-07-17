@@ -19,3 +19,4 @@ export * from './upload';
 export * from './vietqr';
 export * from './spinWheel';
 export * from './eggGame';
+export * from './relationshipLabels';

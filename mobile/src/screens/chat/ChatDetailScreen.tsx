@@ -21,7 +21,7 @@ import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import { currentUserId } from '@ola/shared/stores/chat/chatHelpers';
 import { useToastStore } from '@ola/shared/stores/toastStore';
-import { colorForName, createDateFormatter, createTimeFormatter, isSameDay } from '@ola/shared/lib';
+import { chatFriendActionLabel, colorForName, createDateFormatter, createTimeFormatter, isSameDay } from '@ola/shared/lib';
 import type { Message, ReactionType } from '@ola/shared/types';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
@@ -29,7 +29,7 @@ import { Avatar } from '@components/Avatar';
 import { ConfirmDialog } from '@components/ConfirmDialog';
 import { useMediaViewerStore } from '@store/mediaViewerStore';
 import Clipboard from '@react-native-clipboard/clipboard';
-import { kulImageForText, kulToken } from '@lib/kul';
+import { kulToken } from '@lib/kul';
 import { ChatInputBar, type ChatInputBarHandle } from './ChatInputBar';
 import { RichTextView } from '@components/RichTextView';
 import { useBottomBarInset } from '@hooks/useBottomBarInset';
@@ -37,6 +37,7 @@ import { useFocusPresence } from '@hooks/usePresence';
 import { ListOptionDialog, type ListOption } from '@components/ListOptionDialog';
 import { RoomReactionsDialog } from '@screens/room/RoomReactionsDialog';
 import { ChatBubble, ChatMessageRow } from './ChatMessageRow';
+import { chatMessageAbilities, replyExcerpt } from './chatMessageView';
 import { ChatReactionBalloons } from './ChatReactionBalloons';
 import { AttachmentBar, type AttachTab } from './AttachmentBar';
 import { VoicePreviewBar } from './VoicePreviewBar';
@@ -322,14 +323,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     push(ok ? 'success' : 'error', ok ? t('chat.unblockDone', { name: title }) : t('chat.actionError'));
   }
 
-  const friendLabel =
-    blockStatus === 'pending_outgoing'
-      ? t('chat.cancelRequest')
-      : blockStatus === 'pending_incoming'
-        ? t('chat.acceptRequest')
-        : blockStatus === 'friend'
-          ? t('chat.unfriend')
-          : t('chat.menuMakeFriend');
+  const friendLabel = chatFriendActionLabel(t, blockStatus);
 
   const menuOptions: ListOption[] = [
     { key: 'make-friend', label: friendLabel, onSelect: () => void handleFriendAction() },
@@ -379,24 +373,10 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     push('success', t('chat.copied'));
   }
 
-  function isCopyableText(message: Message): boolean {
-    return (
-      message.type === 'text' &&
-      message.content.trim() !== '' &&
-      kulImageForText(message.content) == null
-    );
-  }
-
-  function replyExcerpt(message: Message): string {
-    if (message.type === 'image') return t('chat.replyImage');
-    if (message.type === 'audio') return t('chat.replyAudio');
-    return kulImageForText(message.content) != null ? t('chat.replySticker') : message.content;
-  }
-
   function sheetActions(message: Message): MessageSheetAction[] {
-    const isOwn = message.senderId === myId;
+    const abilities = chatMessageAbilities(message, myId);
     const actions: MessageSheetAction[] = [];
-    if (!isOwn) {
+    if (abilities.canReply) {
       actions.push({
         key: 'reply',
         label: t('chat.actionReply'),
@@ -404,7 +384,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         onSelect: () => startReply(message),
       });
     }
-    if (isCopyableText(message)) {
+    if (abilities.canCopy) {
       actions.push({
         key: 'copy',
         label: t('chat.actionCopy'),
@@ -413,7 +393,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         onSelect: () => copyMessage(message.content),
       });
     }
-    if (isOwn && message.type === 'text') {
+    if (abilities.canEdit) {
       actions.push({
         key: 'edit',
         label: t('chat.actionEdit'),
@@ -422,7 +402,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         onSelect: () => startEdit(message),
       });
     }
-    if (isOwn) {
+    if (abilities.canDelete) {
       actions.push({
         key: 'delete',
         label: t('chat.actionDelete'),
@@ -630,7 +610,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
               {t('chat.replyingTo', { name: replyTarget.senderName ?? title })}
             </Text>
             <RichTextView
-              content={replyExcerpt(replyTarget)}
+              content={replyExcerpt(t, replyTarget)}
               own={false}
               color="rgba(0,0,0,0.54)"
               maxWidth={windowWidth - 70}

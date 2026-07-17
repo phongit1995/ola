@@ -16,10 +16,10 @@ import type { NativeUploadFile } from '@ola/shared/lib';
 import { createTimeFormatter } from '@ola/shared/lib';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { useRoomFilterStore } from '@ola/shared/stores/roomFilterStore';
-import { kulImageForText } from '@lib/kul';
 import { RichTextView } from '@components/RichTextView';
 import { ConfirmDialog } from '@components/ConfirmDialog';
 import { buildRoomFeed, type GroupedMessage, type RoomFeedItem } from './messageGroups';
+import { replyExcerpt, roomMessageAbilities } from './roomMessageView';
 import { RoomBubbleBody, RoomMessageGroup } from './RoomMessageGroup';
 import { RoomComposerBar, type RoomComposerHandle } from './RoomComposerBar';
 import { RoomReactionNotice } from './RoomReactionNotice';
@@ -149,34 +149,27 @@ export function RoomMessagesTab({
     [feed, pushToast, t, listRef, unstick]
   );
 
-  function isCopyableText(message: RoomMessage): boolean {
-    return (
-      message.type !== 'image' &&
-      kulImageForText(message.content) == null &&
-      message.content.trim() !== ''
-    );
-  }
-
   function copyMessage(content: string) {
     Clipboard.setString(content);
     pushToast('success', t('room.copied'));
   }
 
   function sheetActions(message: RoomMessage): MessageSheetAction[] {
+    const { isOwn, canCopy } = roomMessageAbilities(message, currentUserId);
     const actions: MessageSheetAction[] = [];
     const copyAction: MessageSheetAction = {
       key: 'copy',
       label: t('room.actionCopy'),
       onSelect: () => copyMessage(message.content),
     };
-    if (message.senderId !== currentUserId) {
+    if (!isOwn) {
       actions.push({
         key: 'reply',
         label: t('room.actionReply'),
         icon: replyActionIcon,
         onSelect: () => onSetReplyTarget(message),
       });
-      if (isCopyableText(message)) actions.push(copyAction);
+      if (canCopy) actions.push(copyAction);
       actions.push({
         key: 'block',
         label: t('room.actionBlock'),
@@ -184,7 +177,7 @@ export function RoomMessagesTab({
         onSelect: () => setBlockTarget(message),
       });
     } else {
-      if (isCopyableText(message)) actions.push(copyAction);
+      if (canCopy) actions.push(copyAction);
       actions.push({
         key: 'delete',
         label: t('chat.actionDelete'),
@@ -199,11 +192,6 @@ export function RoomMessagesTab({
   function handleScroll(event: NativeSyntheticEvent<NativeScrollEvent>) {
     onScroll(event);
     if (event.nativeEvent.contentOffset.y < 80 && hasMore && !loadingMore) onLoadMore();
-  }
-
-  function replyExcerpt(message: RoomMessage): string {
-    if (message.type === 'image') return t('room.replyImage');
-    return kulImageForText(message.content) != null ? t('room.replySticker') : message.content;
   }
 
   return (
@@ -288,7 +276,7 @@ export function RoomMessagesTab({
               {t('room.replyingTo', { name: replyTarget.senderName ?? '' })}
             </Text>
             <RichTextView
-              content={replyExcerpt(replyTarget)}
+              content={replyExcerpt(t, replyTarget)}
               own={false}
               color="rgba(0,0,0,0.54)"
               maxWidth={windowWidth - 70}
