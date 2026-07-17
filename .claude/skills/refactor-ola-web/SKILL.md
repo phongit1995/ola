@@ -80,5 +80,6 @@ Trước khi tự viết util, kiểm tra `src/shared/lib` (export qua `@lib`):
 - Mock `data.ts` (chat/room/profile) là tàn dư — không dựa vào để suy luận hành vi thật.
 
 ## 7. Tham chiếu chéo
+- Refactor đụng **mobile RN hoặc `packages/shared`**, hoặc gom code trùng web↔mobile → skill `refactor-ola-react` (quy tắc chọn shared vs per-platform, inventory helper shared, checklist 3 package).
 - Refactor/đánh giá **UI/UX** sâu hơn (style, layout, component design) → dùng skill `ui-ux-pro-max`.
 - Cần biết màn hình gốc hiển thị/logic thế nào → skill `docs-screens-apk` (đọc APK trong `older-ola/`).
