@@ -24,7 +24,7 @@ import type { Gender, UpdateProfileRequest } from '@ola/shared/types';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { Avatar } from '@components/Avatar';
-import { pickCroppedImage } from '@lib/imagePicker';
+import { AVATAR_OUTPUT, COVER_OUTPUT, pickCroppedImage, pickValidatedCroppedImage } from '@lib/imagePicker';
 import { ChangePasswordDialog } from './ChangePasswordDialog';
 import { VerifyEmailDialog } from './VerifyEmailDialog';
 import { CoverPreviewOverlay } from './CoverPreviewOverlay';
@@ -37,10 +37,7 @@ const femaleIcon = require('@assets/icons/profile/ic_indicate_female.png');
 
 const DIVIDER = 'rgba(0,0,0,0.12)';
 const PHONE_PATTERN = /^[0-9+\-() ]{6,20}$/;
-const MIN_AVATAR_SOURCE = 100;
 const PLACEHOLDER_COLOR = '#e34545';
-const AVATAR_OUTPUT = 800;
-const COVER_OUTPUT = { width: 1600, height: 900 };
 const DEFAULT_BIRTHDAY = new Date(2000, 0, 1);
 
 function formatDateOnly(date: Date): string {
@@ -121,21 +118,14 @@ export function EditProfileScreen({ navigation }: Props) {
 
   async function pickAvatar() {
     if (uploading) return;
-    let picked;
-    try {
-      picked = await pickCroppedImage(AVATAR_OUTPUT, AVATAR_OUTPUT);
-    } catch {
-      push('error', t('avatar.error'));
-      return;
-    }
+    const picked = await pickValidatedCroppedImage(AVATAR_OUTPUT, AVATAR_OUTPUT, {
+      tooSmall: t('avatar.tooSmall'),
+      error: t('avatar.error'),
+    });
     if (picked == null) return;
-    if (Math.min(picked.sourceWidth, picked.sourceHeight) < MIN_AVATAR_SOURCE) {
-      push('error', t('avatar.tooSmall'));
-      return;
-    }
     setUploading(true);
     try {
-      const result = await UserService.uploadAvatar(picked.file);
+      const result = await UserService.uploadAvatar(picked);
       setAvatar(result.url);
       push('success', t('profileEdit.avatarUpdated'));
     } catch {

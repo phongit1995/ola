@@ -29,7 +29,7 @@ import {
   toApiError,
 } from '@ola/shared/lib';
 import type { FollowUser, Post, PublicProfile } from '@ola/shared/types';
-import { EDIT_WINDOW_MS } from '@ola/shared/constants';
+import { EDIT_WINDOW_MS, MIN_IMAGE_SOURCE } from '@ola/shared/constants';
 import { useMeLocalStore } from '@store/meLocalStore';
 import { pickSingleImage } from '@lib/imagePicker';
 import { MediaViewerModal } from '@components/MediaViewer';
@@ -69,7 +69,6 @@ const composeIcon = require('@assets/icons/chat/ic_action_compose_message.png');
 const cameraIcon = require('@assets/icons/profile/ic_action_camera.png');
 
 const DEFAULT_COVER_COLOR = '#33691e';
-const MIN_AVATAR_SOURCE = 100;
 
 const CARD_SHADOW = {
   shadowColor: '#000',
@@ -375,7 +374,7 @@ function UserProfileBody({
     if (
       picked.width > 0 &&
       picked.height > 0 &&
-      Math.min(picked.width, picked.height) < MIN_AVATAR_SOURCE
+      Math.min(picked.width, picked.height) < MIN_IMAGE_SOURCE
     ) {
       push('error', t('avatar.tooSmall'));
       return;
