@@ -8,6 +8,8 @@ export const TEXT_FAINT = 'rgba(0,0,0,0.38)';
 
 export const PRIMARY = '#7cb342';
 
+export const PRIMARY_LIGHT = '#f1f8e9';
+
 export const BUTTON = '#9ccc65';
 
 export const ERROR = '#e34545';
