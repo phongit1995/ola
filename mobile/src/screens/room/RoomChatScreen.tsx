@@ -221,7 +221,7 @@ export function RoomChatScreen({ navigation, route }: Props) {
       ) : status !== 'joined' ? (
         <View className="flex-1 items-center justify-center gap-3">
           <ActivityIndicator color="#7cb342" size="large" />
-          <Text className="text-sm" style={{ color: 'rgba(0,0,0,0.54)' }}>{t('room.joining')}</Text>
+          <Text className="text-sm text-ola-ink-soft">{t('room.joining')}</Text>
         </View>
       ) : activeTab === 'members' ? (
         <RoomMembersTab members={visibleMembers} onOpenUser={openUser} />

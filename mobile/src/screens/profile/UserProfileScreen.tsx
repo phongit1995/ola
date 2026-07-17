@@ -144,8 +144,7 @@ function UserProfileBody({
         <ActivityIndicator className="py-16" color="#7cb342" size="large" />
       ) : notFound || profile == null ? (
         <Text
-          className="py-16 text-center text-sm"
-          style={{ color: 'rgba(0,0,0,0.54)' }}
+          className="py-16 text-center text-sm text-ola-ink-soft"
         >
           {t('profile.notFound')}
         </Text>

@@ -70,17 +70,17 @@ function MemberRow({
       </View>
       <View className="min-w-0 flex-1">
         <View className="flex-row items-center gap-1">
-          <Text numberOfLines={1} className="text-base" style={{ color: 'rgba(0,0,0,0.87)' }}>
+          <Text numberOfLines={1} className="text-base text-ola-ink">
             {member.username}
           </Text>
           {subName != null && (
-            <Text numberOfLines={1} className="text-sm" style={{ color: 'rgba(0,0,0,0.54)' }}>
+            <Text numberOfLines={1} className="text-sm text-ola-ink-soft">
               {subName}
             </Text>
           )}
         </View>
         {member.bio != null && member.bio !== '' && (
-          <Text numberOfLines={1} className="text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>
+          <Text numberOfLines={1} className="text-xs text-ola-ink-soft">
             {member.bio}
           </Text>
         )}
@@ -111,7 +111,7 @@ export function RoomMembersTab({ members, onOpenUser }: RoomMembersTabProps) {
   if (members.length === 0) {
     return (
       <View className="flex-1 items-center justify-center bg-white px-8">
-        <Text className="text-center text-sm" style={{ color: 'rgba(0,0,0,0.54)' }}>
+        <Text className="text-center text-sm text-ola-ink-soft">
           {t('room.noMembers')}
         </Text>
       </View>

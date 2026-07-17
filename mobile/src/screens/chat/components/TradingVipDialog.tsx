@@ -8,10 +8,10 @@ import type { VipIconInstance } from '@ola/shared/types';
 import { Avatar } from '@components/ui/Avatar';
 import { VipBadge } from '@components/ui/VipBadge';
 import { Dialog, DialogButton } from '@components/ui/Dialog';
+import { DIVIDER } from '@constants';
 
 const MUTED = 'rgba(0,0,0,0.54)';
 const BODY = 'rgba(0,0,0,0.87)';
-const DIVIDER = 'rgba(0,0,0,0.12)';
 const PRIMARY = '#7cb342';
 
 export interface TradingVipReceiver {

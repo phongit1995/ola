@@ -150,7 +150,7 @@ export function VerifyEmailDialog({ visible, initialEmail, onClose, onVerified }
     >
       {step === 'email' ? (
         <View className="gap-2">
-          <Text className="text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>{t('verifyEmail.emailLabel')}</Text>
+          <Text className="text-xs text-ola-ink-soft">{t('verifyEmail.emailLabel')}</Text>
           <TextInput
             value={email}
             onChangeText={setEmail}
@@ -165,7 +165,7 @@ export function VerifyEmailDialog({ visible, initialEmail, onClose, onVerified }
         </View>
       ) : (
         <View className="gap-3">
-          <Text className="text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>
+          <Text className="text-xs text-ola-ink-soft">
             {t('verifyEmail.codeSentTo', { email })}
           </Text>
           <OtpInput value={code} onChange={setCode} disabled={submitting} autoFocus />

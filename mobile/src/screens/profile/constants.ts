@@ -1,7 +1,5 @@
 export const DEFAULT_COVER_COLOR = '#33691e';
 
-export const DIVIDER = 'rgba(0,0,0,0.12)';
-
 export const PLACEHOLDER_COLOR = '#e34545';
 
 export const PHONE_PATTERN = /^[0-9+\-() ]{6,20}$/;

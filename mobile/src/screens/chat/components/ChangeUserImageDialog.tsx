@@ -127,7 +127,7 @@ export function ChangeUserImageDialog({
       <View className="items-center py-2">
         {renderPicker({ shownUri: file?.uri ?? currentUrl, saving, openPicker: () => void pick() })}
 
-        <Text className="mt-3 text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>
+        <Text className="mt-3 text-xs text-ola-ink-soft">
           {texts.changeHint}
         </Text>
 
@@ -137,7 +137,7 @@ export function ChangeUserImageDialog({
           disabled={saving}
         >
           <CheckBox checked={postToMe} />
-          <Text className="text-sm" style={{ color: 'rgba(0,0,0,0.87)' }}>
+          <Text className="text-sm text-ola-ink">
             {texts.postToMe}
           </Text>
         </Pressable>

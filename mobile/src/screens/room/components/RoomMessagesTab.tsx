@@ -200,7 +200,7 @@ export function RoomMessagesTab({
       <RoomReactionBalloons />
       {status !== 'joined' && (
         <View className="bg-black/5 py-1.5">
-          <Text className="text-center text-sm" style={{ color: 'rgba(0,0,0,0.54)' }}>
+          <Text className="text-center text-sm text-ola-ink-soft">
             {status === 'connecting' ? t('room.connecting') : t('room.joinError')}
           </Text>
         </View>
@@ -289,7 +289,7 @@ export function RoomMessagesTab({
             onPress={onClearReplyTarget}
             className="h-7 w-7 items-center justify-center rounded-full"
           >
-            <Text className="text-lg" style={{ color: 'rgba(0,0,0,0.54)' }}>
+            <Text className="text-lg text-ola-ink-soft">
               ×
             </Text>
           </Pressable>

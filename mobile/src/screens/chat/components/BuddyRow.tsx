@@ -2,10 +2,9 @@ import { Image, Pressable, Text, View } from 'react-native';
 import { VipAvatar } from '@components/ui/VipAvatar';
 import type { Contact } from '../contacts';
 import { DEVICE_ICONS } from '@lib/deviceIcons';
+import { DIVIDER } from '@constants';
 
 const birthdayIcon = require('@assets/icons/chat/ic_buddy_birthday.png');
-const DIVIDER = 'rgba(0,0,0,0.12)';
-
 function SquareAvatar({ name, color, uri, size = 40 }: { name: string; color: string; uri?: string; size?: number }) {
   const style = { width: size, height: size, borderRadius: 4 } as const;
   if (uri != null && uri !== '') {
@@ -74,7 +73,7 @@ export function BuddyRow({ contact, highlight, onSelect, onLongPress, onOpenProf
       <View className="ml-4 min-w-0 flex-1">
         <View className="flex-row items-center gap-1">
           {showVip && <VipAvatar typeId={contact.vipTypeId} size={20} />}
-          <Text className="text-base" style={{ color: 'rgba(0,0,0,0.87)' }} numberOfLines={1}>
+          <Text className="text-base text-ola-ink" numberOfLines={1}>
             {contact.name}
             {contact.fullName != null && contact.fullName !== '' && (
               <Text style={{ color: 'rgba(0,0,0,0.45)' }}> · {contact.fullName}</Text>
@@ -82,13 +81,13 @@ export function BuddyRow({ contact, highlight, onSelect, onLongPress, onOpenProf
           </Text>
         </View>
         {contact.status != null && contact.status !== '' && (
-          <Text className="text-xs" style={{ color: 'rgba(0,0,0,0.54)' }} numberOfLines={1}>
+          <Text className="text-xs text-ola-ink-soft" numberOfLines={1}>
             {contact.status}
           </Text>
         )}
       </View>
       {!contact.online && contact.lastActive != null && contact.lastActive !== '' && (
-        <Text className="ml-2 text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>
+        <Text className="ml-2 text-xs text-ola-ink-soft">
           {contact.lastActive}
         </Text>
       )}

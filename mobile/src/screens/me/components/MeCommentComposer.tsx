@@ -70,7 +70,7 @@ export const MeCommentComposer = forwardRef<MeCommentComposerHandle, MeCommentCo
           className="flex-row items-center gap-2 bg-[#eceff1] px-4 py-1.5"
           style={{ borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.12)' }}
         >
-          <Text numberOfLines={1} className="min-w-0 flex-1 text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>
+          <Text numberOfLines={1} className="min-w-0 flex-1 text-xs text-ola-ink-soft">
             {t('me.replyingTo', { name: `@${replyingTo}` })}
           </Text>
           <Pressable onPress={onCancelReply} className="h-6 w-6 items-center justify-center">

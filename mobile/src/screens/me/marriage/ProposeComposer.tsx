@@ -35,7 +35,7 @@ function UserRowName({ user }: { user: UserSearchResult }) {
       <Text numberOfLines={1} className="text-sm" style={{ color: 'rgba(0,0,0,0.8)' }}>
         <Text className="font-semibold">{user.username}</Text>
         {user.fullName != null && user.fullName !== '' && (
-          <Text style={{ color: 'rgba(0,0,0,0.54)' }}> {user.fullName}</Text>
+          <Text className="text-ola-ink-soft"> {user.fullName}</Text>
         )}
       </Text>
       {user.bio != null && user.bio !== '' && (

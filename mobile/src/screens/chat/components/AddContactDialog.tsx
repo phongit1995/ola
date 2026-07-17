@@ -72,14 +72,14 @@ export function AddContactDialog({ onClose, onOpenProfile }: AddContactDialogPro
     if (acceptedIds.includes(user.id) || user.relationship === 'friend') {
       return (
         <View className="rounded px-3 py-1.5" style={disabledStyle}>
-          <Text className="text-sm" style={{ color: 'rgba(0,0,0,0.38)' }}>{t('chat.alreadyFriendShort')}</Text>
+          <Text className="text-sm text-ola-ink-faint">{t('chat.alreadyFriendShort')}</Text>
         </View>
       );
     }
     if (sentIds.includes(user.id) || user.relationship === 'pending_outgoing') {
       return (
         <View className="rounded px-3 py-1.5" style={disabledStyle}>
-          <Text className="text-sm" style={{ color: 'rgba(0,0,0,0.38)' }}>{t('chat.friendRequestSentShort')}</Text>
+          <Text className="text-sm text-ola-ink-faint">{t('chat.friendRequestSentShort')}</Text>
         </View>
       );
     }
@@ -98,7 +98,7 @@ export function AddContactDialog({ onClose, onOpenProfile }: AddContactDialogPro
     if (user.relationship === 'blocked_by_me') {
       return (
         <View className="rounded px-3 py-1.5" style={disabledStyle}>
-          <Text className="text-sm" style={{ color: 'rgba(0,0,0,0.38)' }}>{t('chat.blocked')}</Text>
+          <Text className="text-sm text-ola-ink-faint">{t('chat.blocked')}</Text>
         </View>
       );
     }
@@ -127,7 +127,7 @@ export function AddContactDialog({ onClose, onOpenProfile }: AddContactDialogPro
       loading={loading}
       isEmpty={results.length === 0}
       empty={
-        <Text className="py-6 text-center text-sm" style={{ color: 'rgba(0,0,0,0.54)' }}>
+        <Text className="py-6 text-center text-sm text-ola-ink-soft">
           {emptyMessage}
         </Text>
       }
@@ -155,10 +155,10 @@ export function AddContactDialog({ onClose, onOpenProfile }: AddContactDialogPro
               )}
             </View>
             <View className="min-w-0 flex-1">
-              <Text numberOfLines={1} className="text-base" style={{ color: 'rgba(0,0,0,0.87)' }}>
+              <Text numberOfLines={1} className="text-base text-ola-ink">
                 {item.fullName || item.username}
               </Text>
-              <Text numberOfLines={1} className="text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>
+              <Text numberOfLines={1} className="text-xs text-ola-ink-soft">
                 @{item.username}
               </Text>
             </View>

@@ -77,11 +77,11 @@ function CheckInCard({ checkIn }: { checkIn: PostCheckIn }) {
     >
       <Image source={checkInIcon} style={{ width: 28, height: 28 }} resizeMode="contain" />
       <View className="min-w-0 flex-1">
-        <Text numberOfLines={1} className="text-sm" style={{ color: 'rgba(0,0,0,0.87)' }}>
+        <Text numberOfLines={1} className="text-sm text-ola-ink">
           {primary}
         </Text>
         {secondary !== '' && (
-          <Text numberOfLines={1} className="text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>
+          <Text numberOfLines={1} className="text-xs text-ola-ink-soft">
             {secondary}
           </Text>
         )}
@@ -281,10 +281,10 @@ function MePostCardComponent({
           <Avatar name={author} uri={post.author?.avatar ?? undefined} size={40} />
           <View className="min-w-0 flex-1">
             <View className="flex-row items-center gap-1">
-              <Text numberOfLines={1} className="min-w-0 shrink text-base" style={{ color: 'rgba(0,0,0,0.87)' }}>
+              <Text numberOfLines={1} className="min-w-0 shrink text-base text-ola-ink">
                 {author}
                 {showFullName && (
-                  <Text style={{ color: 'rgba(0,0,0,0.54)' }}> · {fullName}</Text>
+                  <Text className="text-ola-ink-soft"> · {fullName}</Text>
                 )}
               </Text>
               {post.isPinned && (
@@ -302,7 +302,7 @@ function MePostCardComponent({
                 </Text>
               )}
             </View>
-            <Text className="mt-0.5 text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>
+            <Text className="mt-0.5 text-xs text-ola-ink-soft">
               {timeLabel}
             </Text>
           </View>
@@ -323,8 +323,7 @@ function MePostCardComponent({
             <Text
               onTextLayout={onTextLayout}
               numberOfLines={expanded ? undefined : 5}
-              className="text-sm leading-relaxed"
-              style={{ color: 'rgba(0,0,0,0.87)' }}
+              className="text-sm leading-relaxed text-ola-ink"
             >
               {renderRichText(post.content ?? '', {
                 own: false,
@@ -355,7 +354,7 @@ function MePostCardComponent({
           onPress={() => onOpenComments?.(post.id)}
           className="flex-1"
         >
-          <Text className="text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>
+          <Text className="text-xs text-ola-ink-soft">
             {t('me.commentCount', { count: comments })}
           </Text>
         </Pressable>
@@ -365,7 +364,7 @@ function MePostCardComponent({
             className="ml-2 flex-row items-center gap-1"
           >
             <LikerStack likers={topLikers} />
-            <Text className="text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>
+            <Text className="text-xs text-ola-ink-soft">
               {t('me.likeCount', { value: formatLikeCount(likes) })}
             </Text>
           </Pressable>
@@ -380,7 +379,7 @@ function MePostCardComponent({
           className="h-7 flex-1 flex-row items-center justify-center gap-1"
         >
           <Image source={replyIcon} style={{ width: 28, height: 28 }} resizeMode="contain" />
-          <Text className="text-sm" style={{ color: 'rgba(0,0,0,0.26)' }}>{t('me.comment')}</Text>
+          <Text className="text-sm text-ola-ink-hint">{t('me.comment')}</Text>
         </Pressable>
         <Pressable
           onPress={handleDislike}

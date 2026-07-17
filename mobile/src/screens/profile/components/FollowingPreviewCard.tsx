@@ -21,10 +21,10 @@ export function FollowingPreviewCard({ users, onViewAll, onOpenFriend }: Followi
         onPress={onViewAll}
         className="flex-row items-center justify-between px-4 py-2 active:bg-black/5"
       >
-        <Text className="text-base" style={{ color: 'rgba(0,0,0,0.87)' }}>
+        <Text className="text-base text-ola-ink">
           {t('profile.following')}
         </Text>
-        <Text className="text-sm" style={{ color: 'rgba(0,0,0,0.38)' }}>
+        <Text className="text-sm text-ola-ink-faint">
           {t('profile.viewAll')} ›
         </Text>
       </Pressable>

@@ -5,7 +5,8 @@ import { activeVipTypeId, colorForName, createDateFormatter } from '@ola/shared/
 import type { PublicProfile } from '@ola/shared/types';
 import { Avatar } from '@components/ui/Avatar';
 import { VipAvatar } from '@components/ui/VipAvatar';
-import { CARD_SHADOW, DEFAULT_COVER_COLOR, DIVIDER } from '../constants';
+import { DIVIDER } from '@constants';
+import { CARD_SHADOW, DEFAULT_COVER_COLOR } from '../constants';
 import type { OpenProfileHandler, OpenViewerHandler } from '../types';
 import { RelationButtons } from './RelationButtons';
 
@@ -196,12 +197,11 @@ export function ProfileCard({
       <View className="flex-row items-center justify-center gap-1 p-2">
         <Text
           numberOfLines={1}
-          className="min-w-0 shrink text-lg"
-          style={{ color: 'rgba(0,0,0,0.87)' }}
+          className="min-w-0 shrink text-lg text-ola-ink"
         >
           @{profile.username}
           {profile.fullName != null && profile.fullName !== '' && (
-            <Text style={{ color: 'rgba(0,0,0,0.54)' }}> · {profile.fullName}</Text>
+            <Text className="text-ola-ink-soft"> · {profile.fullName}</Text>
           )}
         </Text>
         {profile.verified && (
@@ -237,7 +237,7 @@ export function ProfileCard({
         <Text className="text-xl font-bold" style={{ color: '#000' }}>
           {fans}
         </Text>
-        <Text className="text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>
+        <Text className="text-xs text-ola-ink-soft">
           {t('profile.peopleCare')}
         </Text>
       </Pressable>
@@ -258,8 +258,7 @@ export function ProfileCard({
       {profile.bio != null && profile.bio !== '' && (
         <Text
           numberOfLines={5}
-          className="mt-3 px-4 text-center text-xs"
-          style={{ color: 'rgba(0,0,0,0.54)' }}
+          className="mt-3 px-4 text-center text-xs text-ola-ink-soft"
         >
           {profile.bio}
         </Text>
@@ -298,7 +297,7 @@ export function ProfileCard({
         />
         <InfoRow icon={birthdayIcon} text={birthday} />
         <View className="ml-4 mt-2">
-          <Text className="text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>
+          <Text className="text-xs text-ola-ink-soft">
             {joinDate}
           </Text>
         </View>

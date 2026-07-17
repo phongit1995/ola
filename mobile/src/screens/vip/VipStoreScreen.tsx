@@ -14,10 +14,10 @@ import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { ListOptionDialog, type ListOption } from '@components/ui/ListOptionDialog';
 import { VipIconImage } from './components/VipIconImage';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
+import { DIVIDER } from '@constants';
 
 const PRIVACY_KEYS = ['privacyPublic', 'privacyFriends', 'privacyPrivate'] as const;
 const VIP_PAGE_SIZE = 100;
-const DIVIDER = 'rgba(0,0,0,0.12)';
 const MUTED = 'rgba(0,0,0,0.54)';
 const BODY = 'rgba(0,0,0,0.87)';
 

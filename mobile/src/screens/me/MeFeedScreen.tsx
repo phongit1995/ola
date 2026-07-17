@@ -320,7 +320,7 @@ export function MeFeedScreen() {
           </View>
         ) : visiblePosts.length === 0 ? (
           <View className="flex-1 items-center justify-center px-8">
-            <Text className="text-center text-sm" style={{ color: 'rgba(0,0,0,0.54)' }}>
+            <Text className="text-center text-sm text-ola-ink-soft">
               {t('me.empty')}
             </Text>
           </View>

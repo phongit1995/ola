@@ -21,7 +21,7 @@ function DrawerEmpty({ message }: { message: string }) {
         style={{ width: 40, height: 40, tintColor: 'rgba(0,0,0,0.12)' }}
         resizeMode="contain"
       />
-      <Text className="text-center text-sm" style={{ color: 'rgba(0,0,0,0.38)' }}>
+      <Text className="text-center text-sm text-ola-ink-faint">
         {message}
       </Text>
     </View>
@@ -51,12 +51,12 @@ function MeProfileRow({
       <View className="min-w-0 flex-1">
         <View className="flex-row items-center gap-1">
           <VipBadge typeId={profile.vipTypeId} size={16} />
-          <Text numberOfLines={1} className="min-w-0 shrink text-base" style={{ color: 'rgba(0,0,0,0.87)' }}>
+          <Text numberOfLines={1} className="min-w-0 shrink text-base text-ola-ink">
             {title}
           </Text>
         </View>
         {hasFullName && (
-          <Text numberOfLines={1} className="text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>
+          <Text numberOfLines={1} className="text-xs text-ola-ink-soft">
             @{profile.username}
           </Text>
         )}
@@ -164,11 +164,11 @@ export function MeRightDrawer({ onClose, onOpenProfile }: MeRightDrawerProps) {
 
         {!searching && viewedProfiles.length > 0 && (
           <View className="flex-row items-center justify-between bg-white px-4 py-2">
-            <Text className="text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>
+            <Text className="text-xs text-ola-ink-soft">
               {t('me.recentlyViewed')}
             </Text>
             <Pressable onPress={() => setConfirmClear(true)}>
-              <Text className="text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>
+              <Text className="text-xs text-ola-ink-soft">
                 {t('me.clearHistory')}
               </Text>
             </Pressable>

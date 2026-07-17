@@ -81,7 +81,7 @@ function MeCommentItemComponent({
         <View className="min-w-0 flex-1">
           <View className="flex-row items-center gap-2">
             <Pressable onPress={() => onOpenProfile?.(name, color)} className="min-w-0 shrink">
-              <Text numberOfLines={1} className="text-sm font-semibold" style={{ color: 'rgba(0,0,0,0.87)' }}>
+              <Text numberOfLines={1} className="text-sm font-semibold text-ola-ink">
                 {name}
               </Text>
             </Pressable>
@@ -96,7 +96,7 @@ function MeCommentItemComponent({
               </Pressable>
             )}
           </View>
-          <Text className="mt-0.5 text-sm leading-relaxed" style={{ color: 'rgba(0,0,0,0.87)' }}>
+          <Text className="mt-0.5 text-sm leading-relaxed text-ola-ink">
             {renderRichText(comment.content, {
               own: false,
               fontSize: 14,

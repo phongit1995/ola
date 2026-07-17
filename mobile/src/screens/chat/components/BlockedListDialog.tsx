@@ -56,7 +56,7 @@ export function BlockedListDialog({ onClose }: { onClose: () => void }) {
       loading={loading}
       isEmpty={items.length === 0}
       empty={
-        <Text className="py-2 text-center text-base" style={{ color: 'rgba(0,0,0,0.54)' }}>
+        <Text className="py-2 text-center text-base text-ola-ink-soft">
           {t('chat.blockListEmpty')}
         </Text>
       }
@@ -70,8 +70,7 @@ export function BlockedListDialog({ onClose }: { onClose: () => void }) {
             <Avatar name={name} uri={item.addressee?.avatar ?? undefined} size={40} />
             <Text
               numberOfLines={1}
-              className="min-w-0 flex-1 text-base"
-              style={{ color: 'rgba(0,0,0,0.87)' }}
+              className="min-w-0 flex-1 text-base text-ola-ink"
             >
               {name}
             </Text>

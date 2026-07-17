@@ -77,7 +77,7 @@ export function MeComposerCheckInPanel({ onSelect }: MeComposerCheckInPanelProps
   return (
     <View style={{ borderWidth: 1, borderColor: 'rgba(0,0,0,0.12)', borderRadius: 6, overflow: 'hidden' }}>
       <View className="p-2" style={{ borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.12)' }}>
-        <Text className="text-sm font-medium" style={{ color: 'rgba(0,0,0,0.87)' }}>
+        <Text className="text-sm font-medium text-ola-ink">
           {t('me.checkInWhat')}
         </Text>
         <View className="mt-2 flex-row flex-wrap gap-1">
@@ -163,7 +163,7 @@ export function MeComposerCheckInPanel({ onSelect }: MeComposerCheckInPanelProps
               >
                 <Text style={{ fontSize: 14 }}>📍</Text>
                 <View className="min-w-0 flex-1">
-                  <Text numberOfLines={1} className="text-sm" style={{ color: 'rgba(0,0,0,0.87)' }}>
+                  <Text numberOfLines={1} className="text-sm text-ola-ink">
                     {venue.name}
                   </Text>
                   {venue.address !== '' && (

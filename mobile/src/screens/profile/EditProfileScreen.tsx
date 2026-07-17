@@ -29,7 +29,8 @@ import { ChangePasswordDialog } from './components/ChangePasswordDialog';
 import { VerifyEmailDialog } from './components/VerifyEmailDialog';
 import { CoverPreviewOverlay } from './components/CoverPreviewOverlay';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
-import { DEFAULT_BIRTHDAY, DIVIDER, PHONE_PATTERN, PLACEHOLDER_COLOR } from './constants';
+import { DIVIDER } from '@constants';
+import { DEFAULT_BIRTHDAY, PHONE_PATTERN, PLACEHOLDER_COLOR } from './constants';
 
 const cameraIcon = require('@assets/icons/profile/ic_action_camera.png');
 const lockIcon = require('@assets/icons/profile/ic_lock.png');
@@ -52,7 +53,7 @@ function parseBirthday(value: string): Date {
 function Field({ label, first, children }: { label: string; first?: boolean; children: React.ReactNode }) {
   return (
     <View className={first ? '' : 'mt-4'}>
-      <Text className="text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>{label}</Text>
+      <Text className="text-xs text-ola-ink-soft">{label}</Text>
       <View className="mt-1">{children}</View>
       <View className="mt-4" style={{ height: 1, backgroundColor: DIVIDER }} />
     </View>
@@ -250,7 +251,7 @@ export function EditProfileScreen({ navigation }: Props) {
                 </View>
               </Pressable>
               {uploading && (
-                <Text className="mt-2 text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>{t('common.loading')}</Text>
+                <Text className="mt-2 text-xs text-ola-ink-soft">{t('common.loading')}</Text>
               )}
             </View>
 
@@ -319,11 +320,11 @@ export function EditProfileScreen({ navigation }: Props) {
 
             <View className="mt-4">
               <View className="flex-row items-center gap-1">
-                <Text className="text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>{t('verifyEmail.fieldLabel')}</Text>
+                <Text className="text-xs text-ola-ink-soft">{t('verifyEmail.fieldLabel')}</Text>
                 <EmailStatusIcon verified={!!user.emailVerified} />
               </View>
               <View className="mt-1 flex-row items-center gap-2">
-                <Text className="flex-1 text-sm" numberOfLines={1} style={{ color: 'rgba(0,0,0,0.87)' }}>
+                <Text className="flex-1 text-sm text-ola-ink" numberOfLines={1}>
                   {user.email !== '' ? user.email : t('verifyEmail.empty')}
                 </Text>
                 {!user.emailVerified && (
@@ -344,7 +345,7 @@ export function EditProfileScreen({ navigation }: Props) {
             className="flex-1 items-center rounded py-2.5"
             style={{ borderWidth: 1, borderColor: DIVIDER }}
           >
-            <Text className="text-sm font-medium" style={{ color: 'rgba(0,0,0,0.54)' }}>{t('common.cancel')}</Text>
+            <Text className="text-sm font-medium text-ola-ink-soft">{t('common.cancel')}</Text>
           </Pressable>
           <Pressable
             onPress={() => void save()}
@@ -391,7 +392,7 @@ export function EditProfileScreen({ navigation }: Props) {
                   style={{ borderBottomWidth: 1, borderBottomColor: DIVIDER }}
                 >
                   <Pressable onPress={() => setBirthdayPickerDate(null)}>
-                    <Text className="text-base" style={{ color: 'rgba(0,0,0,0.54)' }}>
+                    <Text className="text-base text-ola-ink-soft">
                       {t('dialog.cancel')}
                     </Text>
                   </Pressable>

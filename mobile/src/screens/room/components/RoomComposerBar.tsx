@@ -191,7 +191,7 @@ export const RoomComposerBar = forwardRef<RoomComposerHandle, RoomComposerBarPro
                 className="ml-1 h-9 items-center justify-center rounded-full px-3"
                 style={{ borderWidth: 1, borderColor: 'rgba(0,0,0,0.12)' }}
               >
-                <Text className="text-sm font-medium" style={{ color: 'rgba(0,0,0,0.54)' }}>
+                <Text className="text-sm font-medium text-ola-ink-soft">
                   {t('dialog.cancel')}
                 </Text>
               </Pressable>

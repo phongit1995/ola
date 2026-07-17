@@ -47,7 +47,7 @@ export function ComposeDialog({ onClose, onStart }: ComposeDialogProps) {
       loading={searching}
       isEmpty={results.length === 0}
       empty={
-        <Text className="py-6 text-center text-sm" style={{ color: 'rgba(0,0,0,0.54)' }}>
+        <Text className="py-6 text-center text-sm text-ola-ink-soft">
           {emptyMessage}
         </Text>
       }
@@ -74,10 +74,10 @@ export function ComposeDialog({ onClose, onStart }: ComposeDialogProps) {
             )}
           </View>
           <View className="min-w-0 flex-1">
-            <Text numberOfLines={1} className="text-base" style={{ color: 'rgba(0,0,0,0.87)' }}>
+            <Text numberOfLines={1} className="text-base text-ola-ink">
               {item.fullName || item.username}
             </Text>
-            <Text numberOfLines={1} className="text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>
+            <Text numberOfLines={1} className="text-xs text-ola-ink-soft">
               @{item.username}
             </Text>
           </View>

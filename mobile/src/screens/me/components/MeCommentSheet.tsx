@@ -115,8 +115,7 @@ function MeCommentSheetBody({
           )}
           {!loading && !error && comments.length === 0 && (
             <Text
-              className="py-8 text-center text-sm"
-              style={{ color: 'rgba(0,0,0,0.54)' }}
+              className="py-8 text-center text-sm text-ola-ink-soft"
             >
               {t('me.commentEmpty')}
             </Text>

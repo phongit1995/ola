@@ -227,7 +227,7 @@ export function ChatMessageRow({
               />
             </Pressable>
             {showTime && (
-              <Text className="text-[10px]" style={{ color: 'rgba(0,0,0,0.38)' }}>
+              <Text className="text-[10px] text-ola-ink-faint">
                 {timeLabel}
               </Text>
             )}

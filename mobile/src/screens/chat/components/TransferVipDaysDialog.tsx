@@ -9,12 +9,12 @@ import type { VipPackageItem } from '@ola/shared/types';
 import { Avatar } from '@components/ui/Avatar';
 import { Dialog, DialogButton } from '@components/ui/Dialog';
 import { ListOptionDialog } from '@components/ui/ListOptionDialog';
+import { DIVIDER } from '@constants';
 
 const vipIcon = require('@assets/icons/apps/vip.png');
 
 const MUTED = 'rgba(0,0,0,0.54)';
 const BODY = 'rgba(0,0,0,0.87)';
-const DIVIDER = 'rgba(0,0,0,0.12)';
 const PRIMARY = '#7cb342';
 
 export interface TransferVipDaysReceiver {

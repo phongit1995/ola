@@ -43,13 +43,12 @@ function MeQuickCommentBody({
             className="flex-row items-center gap-2 bg-white/95 px-3 py-1.5"
             style={{ borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.12)' }}
           >
-            <Text className="text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>
+            <Text className="text-xs text-ola-ink-soft">
               {t('me.commentingOn')}
             </Text>
             <Text
               numberOfLines={1}
-              className="min-w-0 flex-1 text-xs"
-              style={{ color: 'rgba(0,0,0,0.87)' }}
+              className="min-w-0 flex-1 text-xs text-ola-ink"
             >
               {contextLabel}
             </Text>

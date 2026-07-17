@@ -88,7 +88,7 @@ function MorePanel({
           className="h-10 w-full items-center justify-center rounded bg-white active:bg-black/5"
           style={{ borderWidth: 1, borderColor: 'rgba(0,0,0,0.15)' }}
         >
-          <Text className="text-sm font-medium" style={{ color: 'rgba(0,0,0,0.87)' }}>
+          <Text className="text-sm font-medium text-ola-ink">
             {button.label}
           </Text>
         </Pressable>

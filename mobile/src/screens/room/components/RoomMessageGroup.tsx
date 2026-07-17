@@ -312,7 +312,7 @@ function RoomMessageGroupComponent({
   return (
     <View className="gap-0.5">
       {group.showTime && (
-        <Text className="text-center text-xs" style={{ color: 'rgba(0,0,0,0.26)' }}>
+        <Text className="text-center text-xs text-ola-ink-hint">
           {time}
         </Text>
       )}
@@ -326,7 +326,7 @@ function RoomMessageGroupComponent({
         </Text>
       ) : (
         <Pressable onPress={openSender} className="ml-12 self-start" style={{ maxWidth: '85%' }}>
-          <Text numberOfLines={1} className="text-sm" style={{ color: 'rgba(0,0,0,0.54)' }}>
+          <Text numberOfLines={1} className="text-sm text-ola-ink-soft">
             {senderName}
           </Text>
         </Pressable>

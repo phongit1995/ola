@@ -102,7 +102,7 @@ export function MeLikersDialog({ postId, commentId, onClose, onOpenProfile }: Me
               {t('me.likersError')}
             </Text>
           ) : likers.length === 0 ? (
-            <Text className="py-6 text-center text-sm" style={{ color: 'rgba(0,0,0,0.54)' }}>
+            <Text className="py-6 text-center text-sm text-ola-ink-soft">
               {t('me.likersEmpty')}
             </Text>
           ) : (
@@ -133,7 +133,7 @@ export function MeLikersDialog({ postId, commentId, onClose, onOpenProfile }: Me
                     >
                       <Avatar name={item.username} uri={item.avatar ?? undefined} size={44} rounded={false} />
                       <View className="min-w-0 flex-1">
-                        <Text numberOfLines={1} className="text-base font-medium" style={{ color: 'rgba(0,0,0,0.87)' }}>
+                        <Text numberOfLines={1} className="text-base font-medium text-ola-ink">
                           {title}
                         </Text>
                         {item.fullName != null && item.fullName !== '' && (

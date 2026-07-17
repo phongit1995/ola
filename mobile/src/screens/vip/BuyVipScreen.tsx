@@ -23,13 +23,13 @@ import { Avatar } from '@components/ui/Avatar';
 import { ListOptionDialog, type ListOption } from '@components/ui/ListOptionDialog';
 import { VipIconImage } from './components/VipIconImage';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
+import { DIVIDER } from '@constants';
 
 export type { BuyVipMode };
 
 const MOCK_KEN_BALANCE = 12_345;
 const DEFAULT_VIP_ID = 4;
 const MODE_ORDER: BuyVipMode[] = ['buy', 'give', 'giveDays', 'extend'];
-const DIVIDER = 'rgba(0,0,0,0.12)';
 const MUTED = 'rgba(0,0,0,0.54)';
 const BODY = 'rgba(0,0,0,0.87)';
 

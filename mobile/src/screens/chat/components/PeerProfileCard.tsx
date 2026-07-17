@@ -4,12 +4,11 @@ import { activeVipTypeId, daysSince, monthsSince, yearsSince } from '@ola/shared
 import type { PublicProfile } from '@ola/shared/types';
 import { Avatar } from '@components/ui/Avatar';
 import { VipAvatar } from '@components/ui/VipAvatar';
+import { DIVIDER } from '@constants';
 
 const checkedIcon = require('@assets/icons/profile/ic_checked.png');
 const maleIcon = require('@assets/icons/profile/ic_indicate_male.png');
 const femaleIcon = require('@assets/icons/profile/ic_indicate_female.png');
-
-const DIVIDER = 'rgba(0,0,0,0.12)';
 
 interface PeerProfileCardProps {
   profile: PublicProfile;
@@ -69,10 +68,10 @@ export function PeerProfileCard({
           <View className="min-w-0 flex-1">
             <View className="flex-row items-center gap-1">
               <VipAvatar typeId={vipTypeId} size={24} />
-              <Text numberOfLines={1} className="min-w-0 shrink text-base" style={{ color: 'rgba(0,0,0,0.87)' }}>
+              <Text numberOfLines={1} className="min-w-0 shrink text-base text-ola-ink">
                 {name}
                 {profile.fullName != null && profile.fullName !== '' && (
-                  <Text style={{ color: 'rgba(0,0,0,0.54)' }}> · {profile.fullName}</Text>
+                  <Text className="text-ola-ink-soft"> · {profile.fullName}</Text>
                 )}
               </Text>
               {profile.verified && (
@@ -81,18 +80,18 @@ export function PeerProfileCard({
             </View>
             <View className="mt-1 flex-row items-center gap-1">
               <Image source={genderIcon} style={{ width: 14, height: 14 }} resizeMode="contain" />
-              <Text numberOfLines={1} className="text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>
+              <Text numberOfLines={1} className="text-xs text-ola-ink-soft">
                 {joinedText}
               </Text>
             </View>
-            <Text numberOfLines={1} className="mt-1 text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>
+            <Text numberOfLines={1} className="mt-1 text-xs text-ola-ink-soft">
               {t('chat.fanCount', { n: profile.followerCount })}
             </Text>
-            <Text numberOfLines={1} className="mt-1 text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>
+            <Text numberOfLines={1} className="mt-1 text-xs text-ola-ink-soft">
               {t('chat.antiCount', { n: profile.antiCount ?? 0 })}
             </Text>
             {profile.bio != null && profile.bio !== '' && (
-              <Text numberOfLines={3} className="mt-2 text-sm" style={{ color: 'rgba(0,0,0,0.87)' }}>
+              <Text numberOfLines={3} className="mt-2 text-sm text-ola-ink">
                 {profile.bio}
               </Text>
             )}
@@ -106,14 +105,14 @@ export function PeerProfileCard({
           className="rounded-sm bg-white px-3 py-1"
           style={{ borderWidth: 1, borderColor: DIVIDER }}
         >
-          <Text className="text-sm uppercase" style={{ color: 'rgba(0,0,0,0.54)' }}>{t('chat.hide')}</Text>
+          <Text className="text-sm uppercase text-ola-ink-soft">{t('chat.hide')}</Text>
         </Pressable>
         <Pressable
           onPress={onBlock}
           className="rounded-sm bg-white px-3 py-1"
           style={{ borderWidth: 1, borderColor: DIVIDER }}
         >
-          <Text className="text-sm uppercase" style={{ color: 'rgba(0,0,0,0.54)' }}>{t('chat.block')}</Text>
+          <Text className="text-sm uppercase text-ola-ink-soft">{t('chat.block')}</Text>
         </Pressable>
         <View className="flex-1" />
         <Pressable

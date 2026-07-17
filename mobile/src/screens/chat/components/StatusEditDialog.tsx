@@ -97,7 +97,7 @@ export function StatusEditDialog({ onClose }: { onClose: () => void }) {
           )}
         </View>
         <Pressable className="flex-1" onPress={() => void pickImage()} disabled={uploading}>
-          <Text className="text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>
+          <Text className="text-xs text-ola-ink-soft">
             {uploading
               ? t('common.loading')
               : imageUrl !== ''

@@ -169,7 +169,7 @@ export function ClanHomeScreen({ onClose, onOpenClan }: ClanHomeScreenProps) {
         className="flex-1 p-2"
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
-        <Text className="px-1 text-base" style={{ color: 'rgba(0,0,0,0.87)' }}>
+        <Text className="px-1 text-base text-ola-ink">
           {t('clan.myClans')}
         </Text>
         {mineLoading && myClans.length === 0 ? (
@@ -200,10 +200,10 @@ export function ClanHomeScreen({ onClose, onOpenClan }: ClanHomeScreenProps) {
                   rounded={false}
                 />
                 <View className="min-w-0 flex-1">
-                  <Text numberOfLines={1} className="text-base" style={{ color: 'rgba(0,0,0,0.87)' }}>
+                  <Text numberOfLines={1} className="text-base text-ola-ink">
                     #{clan.handle}
                   </Text>
-                  <Text numberOfLines={1} className="text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>
+                  <Text numberOfLines={1} className="text-xs text-ola-ink-soft">
                     {clanRoleLabel(clan.myRole ?? 'member')} ·{' '}
                     {t('clan.membersCount', { count: clan.memberCount })}
                   </Text>
@@ -287,7 +287,7 @@ export function ClanHomeScreen({ onClose, onOpenClan }: ClanHomeScreenProps) {
             className="mt-3 rounded-md bg-white p-4"
             style={{ borderWidth: 1, borderColor: 'rgba(0,0,0,0.12)' }}
           >
-            <Text className="text-center text-sm font-bold" style={{ color: 'rgba(0,0,0,0.87)' }}>
+            <Text className="text-center text-sm font-bold text-ola-ink">
               #{preview.handle}
             </Text>
             {preview.owner != null && preview.owner !== '' && (

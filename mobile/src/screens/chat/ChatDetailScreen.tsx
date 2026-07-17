@@ -48,6 +48,7 @@ import { TransferVipDaysDialog } from './components/TransferVipDaysDialog';
 import { PeerProfileCard } from './components/PeerProfileCard';
 import { usePeerCard } from './usePeerCard';
 import { MessageActionSheet, type AnchorRect, type MessageSheetAction } from '@screens/room/components/MessageActionSheet';
+import { DIVIDER } from '@constants';
 
 const backIcon = require('@assets/icons/ic_back.png');
 const moreIcon = require('@assets/icons/chat/ic_more_white.png');
@@ -57,7 +58,6 @@ const copyActionIcon = require('@assets/icons/chat/ic_menu_copy.png');
 const replyActionIcon = require('@assets/icons/me/ic_action_reply_gray.png');
 
 const CHAT_BG = '#ECE5DD';
-const DIVIDER = 'rgba(0,0,0,0.12)';
 const MAX_UPLOAD_BYTES = 2 * 1024 * 1024;
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ChatDetail'>;
@@ -572,7 +572,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
           className="flex-row items-center justify-center gap-3 bg-white px-4 py-3"
           style={{ borderTopWidth: 1, borderTopColor: DIVIDER }}
         >
-          <Text className="text-center text-sm" style={{ color: 'rgba(0,0,0,0.54)' }}>
+          <Text className="text-center text-sm text-ola-ink-soft">
             {blockedByMe ? t('chat.blockedByMe') : t('chat.blockedByThem')}
           </Text>
           {blockedByMe && (
@@ -594,7 +594,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         >
           <Text className="flex-1 text-sm" style={{ color: 'rgba(0,0,0,0.7)' }}>{t('chat.editingHint')}</Text>
           <Pressable onPress={cancelEdit} className="px-2">
-            <Text className="text-base" style={{ color: 'rgba(0,0,0,0.54)' }}>✕</Text>
+            <Text className="text-base text-ola-ink-soft">✕</Text>
           </Pressable>
         </View>
       )}
@@ -622,7 +622,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
             onPress={clearReplyTarget}
             className="h-7 w-7 items-center justify-center rounded-full"
           >
-            <Text className="text-lg" style={{ color: 'rgba(0,0,0,0.54)' }}>×</Text>
+            <Text className="text-lg text-ola-ink-soft">×</Text>
           </Pressable>
         </View>
       )}

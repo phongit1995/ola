@@ -297,7 +297,7 @@ function MeComposerBody({
       </View>
 
       <View className="flex-row items-center gap-2 px-4 pt-3">
-        <Text className="text-sm" style={{ color: 'rgba(0,0,0,0.54)' }}>
+        <Text className="text-sm text-ola-ink-soft">
           {t('me.privacyTo')}
         </Text>
         {(privacyOptions ?? PRIVACY_OPTIONS).map(option => {
@@ -379,7 +379,7 @@ function MeComposerBody({
                 resizeMode="contain"
               />
             ) : (
-              <Text className="text-sm" style={{ color: 'rgba(0,0,0,0.54)' }}>
+              <Text className="text-sm text-ola-ink-soft">
                 {sticker}
               </Text>
             )}
@@ -408,8 +408,7 @@ function MeComposerBody({
               {(checkIn.action ?? '') !== '' && (
                 <Text
                   numberOfLines={1}
-                  className="text-sm"
-                  style={{ color: 'rgba(0,0,0,0.87)' }}
+                  className="text-sm text-ola-ink"
                 >
                   {checkIn.actionIcon} {checkIn.action}
                 </Text>

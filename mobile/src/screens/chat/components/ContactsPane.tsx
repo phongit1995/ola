@@ -31,6 +31,7 @@ import { mapFriendsToContacts, SUGGESTED_FRIENDS, type Contact } from '../contac
 import { useFriendsStore } from '@ola/shared/stores/friendsStore';
 import { useFriendsWithPresence } from '@hooks/usePresence';
 import { VipBadge } from '@components/ui/VipBadge';
+import { DIVIDER } from '@constants';
 
 const smileyIcon = require('@assets/icons/chat/ola_smiley_online.png');
 const snapPicIcon = require('@assets/icons/chat/icon_snap_pic.png');
@@ -38,8 +39,6 @@ const addFriendIcon = require('@assets/icons/room/ic_add_friend.png');
 const groupIcon = require('@assets/icons/room/ic_notify_new_chat_group_message.png');
 const searchIcon = require('@assets/icons/chat/ic_search_gray.png');
 const peopleIcon = require('@assets/icons/chat/ic_people_gray.png');
-
-const DIVIDER = 'rgba(0,0,0,0.12)';
 
 function ActionRow({
   badge,
@@ -62,10 +61,10 @@ function ActionRow({
     >
       {badge}
       <View className="min-w-0 flex-1">
-        <Text className="text-base" style={{ color: 'rgba(0,0,0,0.87)' }}>{title}</Text>
-        <Text className="text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>{subtitle}</Text>
+        <Text className="text-base text-ola-ink">{title}</Text>
+        <Text className="text-xs text-ola-ink-soft">{subtitle}</Text>
       </View>
-      {showChevron && <Text className="text-xl" style={{ color: 'rgba(0,0,0,0.26)' }}>›</Text>}
+      {showChevron && <Text className="text-xl text-ola-ink-hint">›</Text>}
     </Pressable>
   );
 }
@@ -204,7 +203,7 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
                   style={{ borderWidth: 1, borderColor: '#ff8f00' }}
                 >
                   <Text className="text-sm font-medium text-ola-accent">{t('chat.vipBannerTitle')}</Text>
-                  <Text className="text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>{t('chat.vipBannerSub')}</Text>
+                  <Text className="text-xs text-ola-ink-soft">{t('chat.vipBannerSub')}</Text>
                 </Pressable>
               </View>
             )}
@@ -250,7 +249,7 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
               <Image source={addFriendIcon} style={{ width: 24, height: 24, tintColor: '#fff' }} resizeMode="contain" />
             </View>
             <View className="min-w-0 flex-1">
-              <Text className="text-base" style={{ color: 'rgba(0,0,0,0.87)' }}>{t('chat.friendRequests')}</Text>
+              <Text className="text-base text-ola-ink">{t('chat.friendRequests')}</Text>
               <View className="mt-1 flex-row items-center gap-2">
                 {requests.slice(0, 3).map((rel) => {
                   const requester = rel.requester;
@@ -283,7 +282,7 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
             <View className="h-5 min-w-5 items-center justify-center rounded-full bg-ola-accent px-1">
               <Text className="text-[10px] font-bold text-white">{requests.length}</Text>
             </View>
-            <Text className="text-xl" style={{ color: 'rgba(0,0,0,0.26)' }}>›</Text>
+            <Text className="text-xl text-ola-ink-hint">›</Text>
           </Pressable>
         )}
 
@@ -296,7 +295,7 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
             <Image source={peopleIcon} style={{ width: 24, height: 24 }} resizeMode="contain" />
           </View>
           <View className="min-w-0 flex-1">
-            <Text className="text-base" style={{ color: 'rgba(0,0,0,0.87)' }}>{t('chat.suggestFriends')}</Text>
+            <Text className="text-base text-ola-ink">{t('chat.suggestFriends')}</Text>
             <View className="mt-1 flex-row items-center gap-2">
               {SUGGESTED_FRIENDS.slice(0, 3).map((friend) => (
                 <View
@@ -312,7 +311,7 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
           <View className="h-5 min-w-5 items-center justify-center rounded-full bg-ola-accent px-1">
             <Text className="text-[10px] font-bold text-white">{SUGGESTED_FRIENDS.length}</Text>
           </View>
-          <Text className="text-xl" style={{ color: 'rgba(0,0,0,0.26)' }}>›</Text>
+          <Text className="text-xl text-ola-ink-hint">›</Text>
         </Pressable>
 
         <ActionRow

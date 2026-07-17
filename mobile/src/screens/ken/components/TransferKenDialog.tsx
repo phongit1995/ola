@@ -8,6 +8,7 @@ import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { UserSearchResult } from '@ola/shared/types';
 import { Avatar } from '@components/ui/Avatar';
 import { Dialog, DialogButton } from '@components/ui/Dialog';
+import { DIVIDER } from '@constants';
 
 const kenIcon = require('@assets/icons/apps/ken.png');
 
@@ -15,8 +16,6 @@ const KEN_TRANSFER_MIN = 1000;
 const KEN_TRANSFER_MAX = 10_000_000;
 const MUTED = 'rgba(0,0,0,0.54)';
 const BODY = 'rgba(0,0,0,0.87)';
-const DIVIDER = 'rgba(0,0,0,0.12)';
-
 export interface TransferKenReceiver {
   id: string;
   name: string;

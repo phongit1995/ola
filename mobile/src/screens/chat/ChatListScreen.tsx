@@ -35,6 +35,7 @@ import { ChangeAvatarDialog } from './components/ChangeAvatarDialog';
 import { ChangeCoverDialog } from './components/ChangeCoverDialog';
 import { ContactsPane } from './components/ContactsPane';
 import { useConversationsWithPresence, usePresenceListPolling } from '@hooks/usePresence';
+import { DIVIDER } from '@constants';
 
 const sentIcon = require('@assets/icons/chat/ic_message_sent.png');
 const kulIcon = require('@assets/icons/chat/ic_kul.png');
@@ -43,8 +44,6 @@ const composeIcon = require('@assets/icons/chat/ic_action_compose_message.png');
 
 const SWIPE_MAX = 88;
 const SWIPE_TRIGGER = 56;
-const DIVIDER = 'rgba(0,0,0,0.12)';
-
 function ConversationSeparator() {
   return <View style={{ marginHorizontal: 16, height: 1, backgroundColor: DIVIDER }} />;
 }
@@ -144,8 +143,7 @@ function ConversationRow({ conversation, onPress, onDelete }: RowProps) {
           <View className="min-w-0 flex-1">
             <View className="flex-row items-center justify-between gap-2">
               <Text
-                className={`flex-1 text-base ${unread ? 'font-bold' : ''}`}
-                style={{ color: 'rgba(0,0,0,0.87)' }}
+                className={`flex-1 text-base text-ola-ink ${unread ? 'font-bold' : ''}`}
                 numberOfLines={1}
               >
                 {title}
@@ -160,19 +158,19 @@ function ConversationRow({ conversation, onPress, onDelete }: RowProps) {
             <View className="mt-0.5 flex-row items-center gap-1">
               <View className="min-w-0 flex-1 flex-row items-center">
                 {prefix !== '' && (
-                  <Text className="text-sm" style={{ color: 'rgba(0,0,0,0.87)' }} numberOfLines={1}>
+                  <Text className="text-sm text-ola-ink" numberOfLines={1}>
                     {prefix}
                   </Text>
                 )}
                 {isSticker ? (
                   <View className="flex-row items-center gap-1">
                     <Image source={kulIcon} style={{ width: 16, height: 16 }} resizeMode="contain" />
-                    <Text className="text-sm" style={{ color: 'rgba(0,0,0,0.87)' }}>
+                    <Text className="text-sm text-ola-ink">
                       {t('chat.stickerPreview')}
                     </Text>
                   </View>
                 ) : (
-                  <Text className="flex-1 text-sm" style={{ color: 'rgba(0,0,0,0.87)' }} numberOfLines={1}>
+                  <Text className="flex-1 text-sm text-ola-ink" numberOfLines={1}>
                     <SmileyText text={lastText} fontSize={14} />
                   </Text>
                 )}

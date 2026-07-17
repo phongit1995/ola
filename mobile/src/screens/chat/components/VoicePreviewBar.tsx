@@ -95,7 +95,7 @@ export function VoicePreviewBar({ uri, duration, onSend, onDiscard }: VoicePrevi
           style={{ width: `${Math.round(progress * 100)}%`, backgroundColor: '#7cb342' }}
         />
       </View>
-      <Text className="text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>
+      <Text className="text-xs text-ola-ink-soft">
         {formatDurationSec(duration)}
       </Text>
       <Pressable onPress={onDiscard} className="h-9 w-9 items-center justify-center" accessibilityLabel={t('chat.voiceDiscard')}>

@@ -188,12 +188,11 @@ export function ClanMembersScreen({ clanId, onClose }: ClanMembersScreenProps) {
                     <View className="flex-row items-center gap-1.5">
                       <Text
                         numberOfLines={1}
-                        className="text-sm"
-                        style={{ color: 'rgba(0,0,0,0.87)' }}
+                        className="text-sm text-ola-ink"
                       >
                         {username}
                         {fullName !== '' && fullName !== username && (
-                          <Text style={{ color: 'rgba(0,0,0,0.54)' }}> · {fullName}</Text>
+                          <Text className="text-ola-ink-soft"> · {fullName}</Text>
                         )}
                       </Text>
                       {item.role !== 'member' && (
@@ -204,7 +203,7 @@ export function ClanMembersScreen({ clanId, onClose }: ClanMembersScreenProps) {
                         />
                       )}
                     </View>
-                    <Text className="text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>
+                    <Text className="text-xs text-ola-ink-soft">
                       {clanRoleLabel(item.role)}
                       {item.verified ? ` · ${t('clan.verified')}` : ''}
                     </Text>
@@ -212,7 +211,7 @@ export function ClanMembersScreen({ clanId, onClose }: ClanMembersScreenProps) {
                 </Pressable>
                 {staff && item.role !== 'owner' && (owner || bannable(item)) && (
                   <Pressable onPress={() => setMenuTarget(item)} className="px-2 py-1" hitSlop={6}>
-                    <Text className="text-lg" style={{ color: 'rgba(0,0,0,0.54)' }}>
+                    <Text className="text-lg text-ola-ink-soft">
                       ⋯
                     </Text>
                   </Pressable>

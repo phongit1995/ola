@@ -46,7 +46,7 @@ export function MeComposerTagPanel({ onMention }: MeComposerTagPanelProps) {
             <ActivityIndicator color="#7cb342" />
           </View>
         ) : filtered.length === 0 ? (
-          <Text className="py-4 text-center text-sm" style={{ color: 'rgba(0,0,0,0.54)' }}>
+          <Text className="py-4 text-center text-sm text-ola-ink-soft">
             {t('me.tagEmpty')}
           </Text>
         ) : (
@@ -62,11 +62,11 @@ export function MeComposerTagPanel({ onMention }: MeComposerTagPanelProps) {
                 <Text numberOfLines={1} className="min-w-0 flex-1 text-sm">
                   {fullName !== '' ? (
                     <>
-                      <Text style={{ color: 'rgba(0,0,0,0.87)' }}>{fullName}</Text>
+                      <Text className="text-ola-ink">{fullName}</Text>
                       <Text style={{ color: 'rgba(0,0,0,0.45)' }}> @{friend.username}</Text>
                     </>
                   ) : (
-                    <Text style={{ color: 'rgba(0,0,0,0.87)' }}>@{friend.username}</Text>
+                    <Text className="text-ola-ink">@{friend.username}</Text>
                   )}
                 </Text>
               </Pressable>

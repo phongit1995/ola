@@ -19,7 +19,7 @@ export function RoomReactionsDialog({ visible, reactions, onClose }: RoomReactio
   return (
     <Dialog visible={visible} title={t('room.reactionsTitle')} onClose={onClose}>
       {rows.length === 0 ? (
-        <Text className="py-4 text-center text-sm" style={{ color: 'rgba(0,0,0,0.54)' }}>
+        <Text className="py-4 text-center text-sm text-ola-ink-soft">
           {t('room.reactionsEmpty')}
         </Text>
       ) : (
@@ -39,8 +39,7 @@ export function RoomReactionsDialog({ visible, reactions, onClose }: RoomReactio
               )}
               <Text
                 numberOfLines={1}
-                className="flex-1 text-base"
-                style={{ color: 'rgba(0,0,0,0.87)' }}
+                className="flex-1 text-base text-ola-ink"
               >
                 @{reactor.username}
               </Text>

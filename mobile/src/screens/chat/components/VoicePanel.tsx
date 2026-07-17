@@ -45,7 +45,7 @@ export function VoicePanel({ onRecorded }: VoicePanelProps) {
 
   return (
     <View className="items-center gap-3 px-4 py-6">
-      <Text className="text-lg font-semibold" style={{ color: 'rgba(0,0,0,0.87)' }}>
+      <Text className="text-lg font-semibold text-ola-ink">
         {recorder.isRecording ? formatElapsed(recorder.elapsedMs) : t('chat.attachTabVoice')}
       </Text>
       <Pressable
@@ -61,7 +61,7 @@ export function VoicePanel({ onRecorded }: VoicePanelProps) {
           }
         />
       </Pressable>
-      <Text className="text-sm" style={{ color: 'rgba(0,0,0,0.54)' }}>
+      <Text className="text-sm text-ola-ink-soft">
         {recorder.isRecording ? t('chat.voiceTapStop') : t('chat.voiceTapStart')}
       </Text>
     </View>

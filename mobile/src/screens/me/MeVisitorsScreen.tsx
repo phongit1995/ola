@@ -81,7 +81,7 @@ export function MeVisitorsScreen({ language, onClose, onOpenProfile }: MeVisitor
         ) : error ? (
           <Text className="py-6 text-center text-sm" style={{ color: '#e34545' }}>{t('me.visitorsError')}</Text>
         ) : rows.length === 0 ? (
-          <Text className="py-10 text-center text-sm" style={{ color: 'rgba(0,0,0,0.54)' }}>{t('me.followerEmpty')}</Text>
+          <Text className="py-10 text-center text-sm text-ola-ink-soft">{t('me.followerEmpty')}</Text>
         ) : (
           <FlatList
             data={rows}
@@ -105,7 +105,7 @@ export function MeVisitorsScreen({ language, onClose, onOpenProfile }: MeVisitor
                     <Pressable onPress={openProfile}>
                       <View className="flex-row items-center gap-1">
                         <VipBadge typeId={activeVipTypeId(item.vipUsed, item.vipEndTime)} size={16} />
-                        <Text numberOfLines={1} className="min-w-0 shrink text-base font-medium" style={{ color: 'rgba(0,0,0,0.87)' }}>
+                        <Text numberOfLines={1} className="min-w-0 shrink text-base font-medium text-ola-ink">
                           @{item.username}
                           {item.fullName != null && item.fullName !== '' && (
                             <Text style={{ color: 'rgba(0,0,0,0.45)' }}> · {item.fullName}</Text>

@@ -67,7 +67,7 @@ export function ReportDialog({ onClose }: ReportDialogProps) {
                   />
                 )}
               </View>
-              <Text className="flex-1 text-sm" style={{ color: 'rgba(0,0,0,0.87)' }}>
+              <Text className="flex-1 text-sm text-ola-ink">
                 {t(item.labelKey)}
               </Text>
             </Pressable>

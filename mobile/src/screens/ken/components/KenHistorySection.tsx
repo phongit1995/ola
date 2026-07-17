@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import { formatKen } from '@ola/shared/lib';
 import type { KenTxType } from '@ola/shared/types';
+import { DIVIDER } from '@constants';
 import {
   KEN_HISTORY_PAGE,
   useKenHistoryStore,
@@ -41,8 +42,6 @@ const TABS: {
 
 const MUTED = 'rgba(0,0,0,0.54)';
 const BODY = 'rgba(0,0,0,0.87)';
-const DIVIDER = 'rgba(0,0,0,0.12)';
-
 function TransactionRow({ row }: { row: KenHistoryRow }) {
   const { t } = useTranslation();
   const meta = KEN_TX_META[row.type];

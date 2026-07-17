@@ -58,7 +58,7 @@ export function UserListDialog({
       <View style={{ maxHeight: listMaxHeight, marginTop: search != null ? 12 : 0 }}>
         {loading ? (
           loadingText != null ? (
-            <Text className="py-6 text-center text-sm" style={{ color: 'rgba(0,0,0,0.54)' }}>
+            <Text className="py-6 text-center text-sm text-ola-ink-soft">
               {loadingText}
             </Text>
           ) : (

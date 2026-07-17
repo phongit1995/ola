@@ -104,7 +104,7 @@ export function MeNotificationsScreen({ language, onClose, onOpenProfile }: MeNo
         {loading && items.length === 0 ? (
           <ActivityIndicator className="py-10" color="#7cb342" />
         ) : items.length === 0 ? (
-          <Text className="py-16 text-center text-sm" style={{ color: 'rgba(0,0,0,0.54)' }}>
+          <Text className="py-16 text-center text-sm text-ola-ink-soft">
             {t('me.notifEmpty')}
           </Text>
         ) : (
@@ -124,11 +124,11 @@ export function MeNotificationsScreen({ language, onClose, onOpenProfile }: MeNo
                 >
                   <Avatar name={name} uri={item.actor?.avatar ?? undefined} size={40} />
                   <View className="min-w-0 flex-1">
-                    <Text className="text-sm leading-snug" style={{ color: 'rgba(0,0,0,0.87)' }}>
+                    <Text className="text-sm leading-snug text-ola-ink">
                       <Text className="font-bold">{name}</Text> {labelFor(item.type)}
                     </Text>
                     {(item.type === 'comment' || item.type === 'comment_like') && item.preview != null && item.preview !== '' && (
-                      <Text numberOfLines={1} className="mt-0.5 text-sm" style={{ color: 'rgba(0,0,0,0.54)' }}>
+                      <Text numberOfLines={1} className="mt-0.5 text-sm text-ola-ink-soft">
                         {item.preview}
                       </Text>
                     )}

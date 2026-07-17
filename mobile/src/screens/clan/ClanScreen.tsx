@@ -80,7 +80,7 @@ function InfoRow({
   const body = (
     <>
       <Image source={icon} style={{ width: 17, height: 15 }} resizeMode="contain" />
-      <Text numberOfLines={1} className="text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>
+      <Text numberOfLines={1} className="text-xs text-ola-ink-soft">
         {text}
       </Text>
     </>
@@ -443,7 +443,7 @@ export function ClanScreen({ handle, id, onClose, onOpenManage, onOpenMembers }:
         <ScreenHeader title={handle != null ? `#${handle}` : t('clan.title')} onBack={onClose} />
         <View className="flex-1 items-center justify-center px-8">
           {loadError != null ? (
-            <Text className="text-center text-sm" style={{ color: 'rgba(0,0,0,0.54)' }}>
+            <Text className="text-center text-sm text-ola-ink-soft">
               {loadError}
             </Text>
           ) : (
@@ -552,7 +552,7 @@ export function ClanScreen({ handle, id, onClose, onOpenManage, onOpenMembers }:
           </View>
         </View>
 
-        <Text className="py-2 text-center text-2xl" style={{ color: 'rgba(0,0,0,0.54)' }}>
+        <Text className="py-2 text-center text-2xl text-ola-ink-soft">
           #{clan.handle}
         </Text>
         <View className="mx-4" style={{ height: 1, backgroundColor: 'rgba(0,0,0,0.12)' }} />
@@ -594,14 +594,14 @@ export function ClanScreen({ handle, id, onClose, onOpenManage, onOpenMembers }:
             <Text className="text-xl font-bold" style={{ color: '#000' }}>
               {clan.memberCount.toLocaleString()}
             </Text>
-            <Text className="text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>
+            <Text className="text-xs text-ola-ink-soft">
               {'  '}
               {t('clan.members')}
             </Text>
           </Text>
         </Pressable>
 
-        <Text className="ml-4 text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>
+        <Text className="ml-4 text-xs text-ola-ink-soft">
           {t('clan.createdAt', { date: formatDateDMY(clan.createdAt) })}
         </Text>
         {clan.owner != null && (
@@ -634,7 +634,7 @@ export function ClanScreen({ handle, id, onClose, onOpenManage, onOpenMembers }:
         />
       </View>
 
-      <Text className="px-4 pb-2 pt-1 text-base" style={{ color: 'rgba(0,0,0,0.87)' }}>
+      <Text className="px-4 pb-2 pt-1 text-base text-ola-ink">
         {t('clan.postedTitle')}
       </Text>
 

@@ -69,8 +69,7 @@ function SuggestedFriendsBody({ onClose }: { onClose: () => void }) {
 
       {list.length === 0 ? (
         <Text
-          className="px-4 py-10 text-center text-sm"
-          style={{ color: 'rgba(0,0,0,0.54)' }}
+          className="px-4 py-10 text-center text-sm text-ola-ink-soft"
         >
           {t('chat.suggestEmpty')}
         </Text>
@@ -98,8 +97,7 @@ function SuggestedFriendsBody({ onClose }: { onClose: () => void }) {
               <View className="min-w-0 flex-1">
                 <Text
                   numberOfLines={1}
-                  className="text-base"
-                  style={{ color: 'rgba(0,0,0,0.87)' }}
+                  className="text-base text-ola-ink"
                 >
                   {item.name}
                 </Text>
@@ -116,7 +114,7 @@ function SuggestedFriendsBody({ onClose }: { onClose: () => void }) {
                 onPress={() => remove(item.name)}
                 className="h-10 w-10 shrink-0 items-center justify-center rounded-full active:bg-black/5"
               >
-                <Text className="text-xl" style={{ color: 'rgba(0,0,0,0.38)' }}>
+                <Text className="text-xl text-ola-ink-faint">
                   ×
                 </Text>
               </Pressable>

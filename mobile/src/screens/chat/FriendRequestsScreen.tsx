@@ -76,8 +76,7 @@ function FriendRequestsBody({
         <ActivityIndicator className="py-10" color="#7cb342" size="large" />
       ) : requests.length === 0 ? (
         <Text
-          className="px-4 py-10 text-center text-sm"
-          style={{ color: 'rgba(0,0,0,0.54)' }}
+          className="px-4 py-10 text-center text-sm text-ola-ink-soft"
         >
           {t('chat.friendRequestEmpty')}
         </Text>
@@ -114,8 +113,7 @@ function FriendRequestsBody({
                     )}
                     <Text
                       numberOfLines={1}
-                      className="min-w-0 shrink text-base"
-                      style={{ color: 'rgba(0,0,0,0.87)' }}
+                      className="min-w-0 shrink text-base text-ola-ink"
                     >
                       @{requester?.username ?? ''}
                       {requester?.fullName != null &&
@@ -129,8 +127,7 @@ function FriendRequestsBody({
                   </View>
                   <Text
                     numberOfLines={1}
-                    className="text-xs"
-                    style={{ color: 'rgba(0,0,0,0.54)' }}
+                    className="text-xs text-ola-ink-soft"
                   >
                     {formatTime(item.createdAt)}
                   </Text>

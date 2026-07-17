@@ -147,7 +147,7 @@ export function NotificationsScreen() {
       {loading && items.length === 0 ? (
         <ActivityIndicator className="py-10" color="#7cb342" />
       ) : items.length === 0 ? (
-        <Text className="py-16 text-center text-sm" style={{ color: 'rgba(0,0,0,0.54)' }}>
+        <Text className="py-16 text-center text-sm text-ola-ink-soft">
           {t('notify.empty')}
         </Text>
       ) : (
@@ -167,15 +167,15 @@ export function NotificationsScreen() {
                 <Avatar name={name} uri={item.actor?.avatar ?? undefined} size={40} />
                 <View className="ml-4 min-w-0 flex-1">
                   {name !== '' && (
-                    <Text numberOfLines={1} className="text-base font-bold" style={{ color: 'rgba(0,0,0,0.87)' }}>
+                    <Text numberOfLines={1} className="text-base font-bold text-ola-ink">
                       {name}
                     </Text>
                   )}
-                  <Text className="mt-1 text-sm leading-snug" style={{ color: 'rgba(0,0,0,0.87)' }}>
+                  <Text className="mt-1 text-sm leading-snug text-ola-ink">
                     {message}
                   </Text>
                   {config != null && item.preview != null && item.preview !== '' && (
-                    <Text numberOfLines={1} className="mt-0.5 text-sm" style={{ color: 'rgba(0,0,0,0.54)' }}>
+                    <Text numberOfLines={1} className="mt-0.5 text-sm text-ola-ink-soft">
                       {item.preview}
                     </Text>
                   )}
@@ -186,7 +186,7 @@ export function NotificationsScreen() {
                     {config != null && (
                       <Image source={config.icon} style={{ width: 18, height: 18 }} resizeMode="contain" />
                     )}
-                    <Text className="text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>
+                    <Text className="text-xs text-ola-ink-soft">
                       {formatTime(item.createdAt)}
                     </Text>
                   </View>

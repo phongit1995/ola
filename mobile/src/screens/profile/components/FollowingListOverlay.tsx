@@ -128,12 +128,11 @@ function FollowingListBody({
               />
               <Text
                 numberOfLines={1}
-                className="min-w-0 flex-1 text-base"
-                style={{ color: 'rgba(0,0,0,0.87)' }}
+                className="min-w-0 flex-1 text-base text-ola-ink"
               >
                 @{item.username}
                 {item.fullName != null && item.fullName !== '' && (
-                  <Text style={{ color: 'rgba(0,0,0,0.54)' }}>
+                  <Text className="text-ola-ink-soft">
                     {' '}
                     · {item.fullName}
                   </Text>

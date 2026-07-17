@@ -13,12 +13,11 @@ import { KenCoin } from './components/KenCoin';
 import { KenHistorySection } from './components/KenHistorySection';
 import { TransferKenDialog } from './components/TransferKenDialog';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
+import { DIVIDER } from '@constants';
 
 const KEN_LOW_THRESHOLD = 10_000;
 const MUTED = 'rgba(0,0,0,0.54)';
 const BODY = 'rgba(0,0,0,0.87)';
-const DIVIDER = 'rgba(0,0,0,0.12)';
-
 interface RowActionProps {
   icon: ReactNode;
   label: string;

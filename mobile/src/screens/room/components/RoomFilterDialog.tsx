@@ -67,7 +67,7 @@ export function RoomFilterDialog({ visible, value, onApply, onClose }: RoomFilte
           className="flex-row items-center gap-2 py-2"
         >
           <Checkbox checked={draft[key]} />
-          <Text className="text-sm" style={{ color: 'rgba(0,0,0,0.87)' }}>
+          <Text className="text-sm text-ola-ink">
             {t(labelKey)}
           </Text>
         </Pressable>

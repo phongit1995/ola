@@ -396,7 +396,7 @@ function BottomSheet({
             onPress={onClose}
             className="items-center justify-center px-5 py-3 active:bg-neutral-100"
           >
-            <Text className="text-base font-medium" style={{ color: 'rgba(0,0,0,0.54)' }}>
+            <Text className="text-base font-medium text-ola-ink-soft">
               {t('dialog.cancel')}
             </Text>
           </Pressable>

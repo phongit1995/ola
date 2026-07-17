@@ -10,6 +10,7 @@ import { useTopupConfigStore } from '@ola/shared/stores/topupConfigStore';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
+import { DIVIDER } from '@constants';
 
 const MIN_AMOUNT = 10_000;
 const STEP_AMOUNT = 1_000;
@@ -17,8 +18,6 @@ const PRESET_AMOUNTS = [10_000, 20_000, 50_000, 100_000, 200_000, 500_000];
 const QR_SIZE = 224;
 const MUTED = 'rgba(0,0,0,0.54)';
 const BODY = 'rgba(0,0,0,0.87)';
-const DIVIDER = 'rgba(0,0,0,0.12)';
-
 function CopyRow({ label, value }: { label: string; value: string }) {
   const { t } = useTranslation();
   const push = useToastStore((s) => s.push);
@@ -268,7 +267,7 @@ export function BuyKenScreen({ navigation }: Props) {
                     >
                       <Text className="text-sm font-medium text-white">{t('ken.buy.paid')}</Text>
                     </Pressable>
-                    <Text className="mt-2 text-center text-[11px]" style={{ color: 'rgba(0,0,0,0.38)' }}>
+                    <Text className="mt-2 text-center text-[11px] text-ola-ink-faint">
                       {t('ken.buy.memoHint')}
                     </Text>
                   </>

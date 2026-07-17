@@ -46,7 +46,7 @@ function ManageRow({
 }) {
   const body = (
     <>
-      <Text className="text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>
+      <Text className="text-xs text-ola-ink-soft">
         {label}
       </Text>
       <View className="mt-1 flex-row items-center gap-2">
@@ -248,7 +248,7 @@ export function ClanManageScreen({
             />
             {divider}
             <View className="flex-row items-center px-2 py-3">
-              <Text className="flex-1 text-sm" style={{ color: 'rgba(0,0,0,0.87)' }}>
+              <Text className="flex-1 text-sm text-ola-ink">
                 {t('clan.memberPublicPost')}
               </Text>
               <Switch
@@ -297,10 +297,10 @@ export function ClanManageScreen({
               onPress={() => onOpenMembers(clan.id)}
               className="flex-row items-center justify-between px-4 py-3 active:bg-black/5"
             >
-              <Text className="text-sm" style={{ color: 'rgba(0,0,0,0.87)' }}>
+              <Text className="text-sm text-ola-ink">
                 {t('clan.members')}
               </Text>
-              <Text className="text-sm" style={{ color: 'rgba(0,0,0,0.54)' }}>
+              <Text className="text-sm text-ola-ink-soft">
                 {clan.memberCount.toLocaleString()}
               </Text>
             </Pressable>
@@ -309,10 +309,10 @@ export function ClanManageScreen({
               onPress={() => onOpenBans(clan.id)}
               className="flex-row items-center justify-between px-4 py-3 active:bg-black/5"
             >
-              <Text className="text-sm" style={{ color: 'rgba(0,0,0,0.87)' }}>
+              <Text className="text-sm text-ola-ink">
                 {t('clan.banList')}
               </Text>
-              <Text className="text-sm" style={{ color: 'rgba(0,0,0,0.54)' }}>
+              <Text className="text-sm text-ola-ink-soft">
                 ›
               </Text>
             </Pressable>

@@ -120,7 +120,7 @@ export function MeLeftDrawer({
                   resizeMode="contain"
                 />
               </View>
-              <Text numberOfLines={1} className="flex-1 text-base" style={{ color: 'rgba(0,0,0,0.87)' }}>
+              <Text numberOfLines={1} className="flex-1 text-base text-ola-ink">
                 {item.label}
               </Text>
             </Pressable>

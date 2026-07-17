@@ -168,8 +168,7 @@ export function ProfilePostList({
   return (
     <>
       <Text
-        className="mx-4 mb-1 mt-2 text-base font-medium"
-        style={{ color: 'rgba(0,0,0,0.87)' }}
+        className="mx-4 mb-1 mt-2 text-base font-medium text-ola-ink"
       >
         {t('profile.mePosts')}
       </Text>
