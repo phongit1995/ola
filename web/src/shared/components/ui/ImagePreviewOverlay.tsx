@@ -1,14 +1,14 @@
 import { useTranslation } from 'react-i18next';
-import { FullScreenOverlay } from '@components';
+import { FullScreenOverlay } from './FullScreenOverlay';
 
-interface CoverPreviewOverlayProps {
+interface ImagePreviewOverlayProps {
   url: string;
   uploading: boolean;
   onCancel: () => void;
   onConfirm: () => void;
 }
 
-export function CoverPreviewOverlay({ url, uploading, onCancel, onConfirm }: CoverPreviewOverlayProps) {
+export function ImagePreviewOverlay({ url, uploading, onCancel, onConfirm }: ImagePreviewOverlayProps) {
   const { t } = useTranslation();
 
   return (

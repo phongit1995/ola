@@ -8,16 +8,13 @@ import femaleIcon from '@/assets/icons/profile/ic_indicate_female.png';
 import marriageIcon from '@/assets/icons/profile/ic_profile_marriage.png';
 import birthdayIcon from '@/assets/icons/profile/ic_profile_birthday.png';
 import vipStoreIcon from '@/assets/icons/me/icon_vip.webp';
-import { Avatar, UserName, VipIcon } from '@components';
-import { colorForName, toast } from '@lib';
+import { Avatar, ImageCropEditor, ImageCropOverlay, UserName, VipIcon } from '@components';
+import { colorForName, validatedImageObjectUrl } from '@lib';
+import { AVATAR_ASPECT, COVER_ASPECT, MIN_IMAGE_SOURCE } from '@constants';
 import { useMediaViewerStore } from '@/store/mediaViewerStore';
 import type { ProfileActions, UserProfile } from '../types';
 import type { RelationshipInfo } from '@app-types';
 import { RelationButtons } from './RelationButtons';
-import { CoverImageEditor } from './CoverImageEditor';
-import { CoverCropOverlay } from './CoverCropOverlay';
-import { readImageSize } from '../imageSize';
-import { AVATAR_ASPECT, COVER_ASPECT, MIN_AVATAR_SOURCE } from '../constants';
 
 interface ProfileCardProps {
   userId: string;
@@ -100,19 +97,11 @@ export function ProfileCard({
     const file = event.target.files?.[0];
     event.target.value = '';
     if (!file) return;
-    const url = URL.createObjectURL(file);
-    try {
-      const size = await readImageSize(url);
-      if (Math.min(size.width, size.height) < MIN_AVATAR_SOURCE) {
-        URL.revokeObjectURL(url);
-        toast.error(t('avatar.tooSmall'));
-        return;
-      }
-    } catch {
-      URL.revokeObjectURL(url);
-      toast.error(t('avatar.error'));
-      return;
-    }
+    const url = await validatedImageObjectUrl(file, MIN_IMAGE_SOURCE, {
+      tooSmall: t('avatar.tooSmall'),
+      error: t('avatar.error'),
+    });
+    if (!url) return;
     clearAvatarCrop();
     setAvatarCropSrc(url);
   }
@@ -200,7 +189,7 @@ export function ProfileCard({
       </div>
 
       {coverPreview && (
-        <CoverImageEditor
+        <ImageCropEditor
           src={coverPreview.url}
           aspect={COVER_ASPECT}
           busy={uploadingCover}
@@ -221,7 +210,7 @@ export function ProfileCard({
       )}
 
       {avatarCropSrc && (
-        <CoverCropOverlay
+        <ImageCropOverlay
           src={avatarCropSrc}
           aspect={AVATAR_ASPECT}
           busy={uploadingAvatar}

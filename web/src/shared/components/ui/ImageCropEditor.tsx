@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
-import { CoverCropOverlay } from './CoverCropOverlay';
-import { CoverPreviewOverlay } from './CoverPreviewOverlay';
+import { ImageCropOverlay } from './ImageCropOverlay';
+import { ImagePreviewOverlay } from './ImagePreviewOverlay';
 
-interface CoverImageEditorProps {
+interface ImageCropEditorProps {
   src: string;
   aspect: number;
   busy?: boolean;
@@ -10,7 +10,7 @@ interface CoverImageEditorProps {
   onApply: (file: File) => void | Promise<void>;
 }
 
-export function CoverImageEditor({ src, aspect, busy, onCancel, onApply }: CoverImageEditorProps) {
+export function ImageCropEditor({ src, aspect, busy, onCancel, onApply }: ImageCropEditorProps) {
   const [cropped, setCropped] = useState<{ url: string; file: File } | null>(null);
 
   const clearCropped = useCallback(() => {
@@ -24,7 +24,7 @@ export function CoverImageEditor({ src, aspect, busy, onCancel, onApply }: Cover
 
   if (cropped) {
     return (
-      <CoverPreviewOverlay
+      <ImagePreviewOverlay
         url={cropped.url}
         uploading={busy ?? false}
         onCancel={clearCropped}
@@ -34,7 +34,7 @@ export function CoverImageEditor({ src, aspect, busy, onCancel, onApply }: Cover
   }
 
   return (
-    <CoverCropOverlay
+    <ImageCropOverlay
       src={src}
       aspect={aspect}
       onCancel={onCancel}

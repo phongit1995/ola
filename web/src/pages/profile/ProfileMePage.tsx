@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { ROUTES } from '@constants';
+import { COVER_ASPECT, ROUTES } from '@constants';
 import { MeService, UserService } from '@services';
 import { activeVipTypeId, colorForName, createDateFormatter, createTimeFormatter, toast } from '@lib';
 import type { Post } from '@app-types';
@@ -11,11 +11,9 @@ import genderIcon from '@/assets/icons/profile/ic_indicate_dynamic_gender.png';
 import birthdayIcon from '@/assets/icons/profile/ic_profile_birthday.png';
 import marriageIcon from '@/assets/icons/profile/ic_profile_marriage.png';
 import cameraIcon from '@/assets/icons/profile/ic_action_camera.png';
-import { Avatar, ScreenHeader, FullScreenOverlay, UserName, VipIcon } from '@components';
-import { CoverImageEditor } from './components/CoverImageEditor';
+import { Avatar, ImageCropEditor, ScreenHeader, FullScreenOverlay, UserName, VipIcon } from '@components';
 import { FollowingListOverlay } from './components/FollowingListOverlay';
 import { UserProfileView } from './UserProfileView';
-import { COVER_ASPECT } from './constants';
 import { MePostCard } from '../me/components/MePostCard';
 import { MePostInteractions, type MePostSource } from '../me/MePostInteractions';
 import { toMePost } from '../me/mappers';
@@ -186,7 +184,7 @@ export function ProfileMePage() {
           </div>
 
           {coverPreview && (
-            <CoverImageEditor
+            <ImageCropEditor
               src={coverPreview.url}
               aspect={COVER_ASPECT}
               busy={uploadingCover}

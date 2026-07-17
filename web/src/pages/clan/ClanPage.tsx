@@ -17,7 +17,7 @@ import { useClanFeedStore } from '@ola/shared/stores/clanFeedStore';
 import { useClanStore } from '@ola/shared/stores/clanStore';
 import { useAuthStore } from '@/store/authStore';
 import { useMeLocalStore } from '@/store/meLocalStore';
-import { CoverImageEditor } from '../profile/components/CoverImageEditor';
+import { ImageCropEditor } from '@components';
 import { MeComposerDialog, type ComposedPost } from '../me/components/MeComposerDialog';
 import { MeFeedList } from '../me/components/MeFeedList';
 import { MePostCard } from '../me/components/MePostCard';
@@ -621,7 +621,7 @@ export function ClanPage({ handle, id, onClose, onOpenManage, onOpenMembers }: C
       <input ref={coverInputRef} type="file" accept="image/*" hidden onChange={(e) => pickImage(e, 'cover')} />
 
       {imageEdit != null && (
-        <CoverImageEditor
+        <ImageCropEditor
           src={imageEdit.src}
           aspect={imageEdit.field === 'avatar' ? 1 : 2}
           busy={imageUploading}

@@ -2,10 +2,10 @@ import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Cropper from 'react-easy-crop';
 import type { Area, Point } from 'react-easy-crop';
-import { FullScreenOverlay } from '@components';
 import { getCroppedImageFile, toast } from '@lib';
+import { FullScreenOverlay } from './FullScreenOverlay';
 
-interface CoverCropOverlayProps {
+interface ImageCropOverlayProps {
   src: string;
   aspect: number;
   busy?: boolean;
@@ -21,7 +21,7 @@ function RotateIcon() {
   );
 }
 
-export function CoverCropOverlay({ src, aspect, busy, onCancel, onApply }: CoverCropOverlayProps) {
+export function ImageCropOverlay({ src, aspect, busy, onCancel, onApply }: ImageCropOverlayProps) {
   const { t } = useTranslation();
   const [crop, setCrop] = useState<Point>({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
