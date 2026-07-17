@@ -7,8 +7,7 @@ import type { VipIconInstance } from '@ola/shared/types';
 import { Dialog } from '@components/ui/Dialog';
 import { VipIconImage } from '@screens/vip/components/VipIconImage';
 import { PRIMARY, TEXT_SECONDARY } from '@constants';
-
-const PAGE_SIZE = 100;
+import { PEER_VIP_PAGE_SIZE } from '../constants';
 
 type LoadState = 'loading' | 'private' | 'error' | 'ready';
 
@@ -27,7 +26,7 @@ export function PeerVipStoreDialog({ userId, name, onClose }: PeerVipStoreDialog
 
   useEffect(() => {
     let active = true;
-    VipService.userStore(userId, { limit: PAGE_SIZE, offset: 0 })
+    VipService.userStore(userId, { limit: PEER_VIP_PAGE_SIZE, offset: 0 })
       .then((res) => {
         if (!active) return;
         setItems(res.items);
@@ -48,7 +47,7 @@ export function PeerVipStoreDialog({ userId, name, onClose }: PeerVipStoreDialog
   function loadMore() {
     if (loadingMore || !hasMore) return;
     setLoadingMore(true);
-    VipService.userStore(userId, { limit: PAGE_SIZE, offset: items.length })
+    VipService.userStore(userId, { limit: PEER_VIP_PAGE_SIZE, offset: items.length })
       .then((res) => setItems((prev) => [...prev, ...res.items]))
       .catch(() => {})
       .finally(() => setLoadingMore(false));

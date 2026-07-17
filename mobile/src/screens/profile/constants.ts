@@ -13,3 +13,7 @@ export const CARD_SHADOW = {
   shadowOffset: { width: 0, height: 1 },
   elevation: 2,
 } as const;
+
+export const FOLLOW_PAGE_SIZE = 10;
+
+export const PEER_VIP_PAGE_SIZE = 100;

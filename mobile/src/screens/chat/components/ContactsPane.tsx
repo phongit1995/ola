@@ -23,7 +23,8 @@ import { MessageActionSheet, type MessageSheetAction } from '@screens/room/compo
 import { AddContactDialog } from './AddContactDialog';
 import { BuddyRow } from './BuddyRow';
 import { StatusEditDialog } from './StatusEditDialog';
-import { mapFriendsToContacts, SUGGESTED_FRIENDS, type Contact } from '../contacts';
+import { mapFriendsToContacts, type Contact } from '../contacts';
+import { SUGGESTED_FRIENDS } from '@screens/friends/constants';
 import { useFriendsStore } from '@ola/shared/stores/friendsStore';
 import { useFriendsWithPresence } from '@hooks/usePresence';
 import { VipBadge } from '@components/ui/VipBadge';

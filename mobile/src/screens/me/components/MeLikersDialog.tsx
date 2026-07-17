@@ -7,8 +7,7 @@ import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { PostAuthor } from '@ola/shared/types';
 import { Avatar } from '@components/ui/Avatar';
 import { Dialog } from '@components/ui/Dialog';
-
-const PAGE_SIZE = 30;
+import { LIKERS_PAGE_SIZE } from '../constants';
 
 interface MeLikersDialogProps {
   postId: string;
@@ -31,8 +30,8 @@ export function MeLikersDialog({ postId, commentId, onClose, onOpenProfile }: Me
   const fetchPage = useCallback(
     (offset: number) =>
       commentId != null
-        ? MeService.commentLikers(postId, commentId, { limit: PAGE_SIZE, offset })
-        : MeService.likers(postId, { limit: PAGE_SIZE, offset }),
+        ? MeService.commentLikers(postId, commentId, { limit: LIKERS_PAGE_SIZE, offset })
+        : MeService.likers(postId, { limit: LIKERS_PAGE_SIZE, offset }),
     [postId, commentId]
   );
 
@@ -44,7 +43,7 @@ export function MeLikersDialog({ postId, commentId, onClose, onOpenProfile }: Me
         if (!active) return;
         setLikers(result.items);
         setTotal(result.total);
-        if (result.items.length < PAGE_SIZE) setReachedEnd(true);
+        if (result.items.length < LIKERS_PAGE_SIZE) setReachedEnd(true);
       } catch {
         if (active) setError(true);
       } finally {
@@ -65,7 +64,7 @@ export function MeLikersDialog({ postId, commentId, onClose, onOpenProfile }: Me
       const result = await fetchPage(likers.length);
       setLikers((current) => [...current, ...result.items]);
       setTotal(result.total);
-      if (result.items.length < PAGE_SIZE) setReachedEnd(true);
+      if (result.items.length < LIKERS_PAGE_SIZE) setReachedEnd(true);
     } catch {
       return;
     } finally {

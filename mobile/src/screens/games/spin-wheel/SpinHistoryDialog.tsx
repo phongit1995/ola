@@ -17,13 +17,12 @@ import { VipIconImage } from '@screens/vip/components/VipIconImage';
 import { VerticalGradient, assetRatio } from '@screens/games/pen/penUi';
 import { wheelAssets, wheelHistoryAssets } from './spinWheelAssets';
 import { formatRewardKen, isKenKind, isVipDaysKind } from './spinWheelReward';
+import { HISTORY_PAGE_SIZE } from './constants';
 import {
   HISTORY_LABEL_STYLE,
   HISTORY_TAB_INACTIVE_STYLE,
   HISTORY_TITLE_STYLE,
 } from './spinWheelStyles';
-
-const PAGE_SIZE = 8;
 const FILTERS: WheelSpinHistoryFilter[] = ['all', 'win', 'miss'];
 
 interface SpinHistoryDialogProps {
@@ -85,7 +84,7 @@ export function SpinHistoryDialog({ onClose }: SpinHistoryDialogProps) {
     let cancelled = false;
     setLoading(true);
     setError(false);
-    WheelService.listSpins(PAGE_SIZE, page * PAGE_SIZE, filter)
+    WheelService.listSpins(HISTORY_PAGE_SIZE, page * HISTORY_PAGE_SIZE, filter)
       .then((result) => {
         if (cancelled) return;
         setTotal(result.total);
@@ -107,10 +106,10 @@ export function SpinHistoryDialog({ onClose }: SpinHistoryDialogProps) {
     setPage(0);
   };
 
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(total / HISTORY_PAGE_SIZE));
   const canPrev = page > 0 && !loading;
   const canNext = page < totalPages - 1 && !loading;
-  const placeholders = Math.max(0, PAGE_SIZE - items.length);
+  const placeholders = Math.max(0, HISTORY_PAGE_SIZE - items.length);
 
   const panelWidth = Math.min(windowWidth * 0.9, (windowHeight * 0.62 * 1043) / 1458);
   const panelHeight = (panelWidth * 1458) / 1043;

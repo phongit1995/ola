@@ -15,13 +15,12 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { CLAN_ROLE_ICONS, clanErrorText, clanRoleLabel, isClanStaff } from '@lib/clanHelpers';
+import { MEMBERS_PAGE_SIZE } from './constants';
 
 interface ClanMembersScreenProps {
   clanId: string;
   onClose: () => void;
 }
-
-const PAGE_SIZE = 50;
 
 export function ClanMembersScreen({ clanId, onClose }: ClanMembersScreenProps) {
   const { t } = useTranslation();
@@ -43,7 +42,7 @@ export function ClanMembersScreen({ clanId, onClose }: ClanMembersScreenProps) {
   const fetchFirst = useCallback(async () => {
     const [clanResult, memberResult] = await Promise.all([
       ClanService.get(clanId),
-      ClanService.members(clanId, { limit: PAGE_SIZE, offset: 0 }),
+      ClanService.members(clanId, { limit: MEMBERS_PAGE_SIZE, offset: 0 }),
     ]);
     setClan(clanResult);
     setMembers(memberResult.items);
@@ -77,7 +76,7 @@ export function ClanMembersScreen({ clanId, onClose }: ClanMembersScreenProps) {
     setLoadingMore(true);
     try {
       const result = await ClanService.members(clanId, {
-        limit: PAGE_SIZE,
+        limit: MEMBERS_PAGE_SIZE,
         offset: members.length,
       });
       setMembers((current) => [...current, ...result.items]);

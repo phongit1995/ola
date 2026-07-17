@@ -18,8 +18,7 @@ import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { useMediaViewerStore } from '@store/mediaViewerStore';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
-
-const PAGE_SIZE = 50;
+import { PHOTOS_PAGE_SIZE } from './constants';
 const MUTED = 'rgba(0,0,0,0.45)';
 
 const mediaIcon = require('@assets/icons/apps/media.png');
@@ -109,7 +108,7 @@ export function MediaStoreScreen({ navigation }: Props) {
     loadingRef.current = true;
     const offset = reset ? 0 : offsetRef.current;
     try {
-      const result = await MeService.photos({ limit: PAGE_SIZE, offset });
+      const result = await MeService.photos({ limit: PHOTOS_PAGE_SIZE, offset });
       setPhotos((prev) => (reset ? result.items : [...prev, ...result.items]));
       setTotal(result.total);
       const loaded = offset + result.items.length;

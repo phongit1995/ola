@@ -12,8 +12,7 @@ import { VipBadge } from '@components/ui/VipBadge';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
-
-const PAGE_SIZE = 40;
+import { VISITORS_PAGE_SIZE } from './constants';
 
 export function MeVisitorsScreen() {
   const { t, i18n } = useTranslation();
@@ -32,7 +31,7 @@ export function MeVisitorsScreen() {
     let active = true;
     (async () => {
       try {
-        const result = await UserService.myVisitors({ limit: PAGE_SIZE });
+        const result = await UserService.myVisitors({ limit: VISITORS_PAGE_SIZE });
         if (!active) return;
         setRows(result.users);
         setNextCursor(result.nextCursor);
@@ -51,7 +50,7 @@ export function MeVisitorsScreen() {
     if (loading || loadingMore || nextCursor == null) return;
     setLoadingMore(true);
     try {
-      const result = await UserService.myVisitors({ limit: PAGE_SIZE, cursor: nextCursor });
+      const result = await UserService.myVisitors({ limit: VISITORS_PAGE_SIZE, cursor: nextCursor });
       setRows((current) => [...current, ...result.users]);
       setNextCursor(result.nextCursor);
     } catch {

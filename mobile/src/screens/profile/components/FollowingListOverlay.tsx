@@ -13,8 +13,7 @@ import type { FollowUser } from '@ola/shared/types';
 import { Avatar } from '@components/ui/Avatar';
 import { OlaModal } from '@components/ui/OlaModal';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
-
-const FOLLOW_PAGE_SIZE = 10;
+import { FOLLOW_PAGE_SIZE } from '../constants';
 
 type FollowListKind = 'following' | 'followers';
 

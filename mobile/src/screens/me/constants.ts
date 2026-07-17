@@ -10,3 +10,7 @@ export const TAB_FILTER: Record<MeTab, MeFeedFilter | undefined> = {
 export const COMPOSER_MAX_IMAGES = 5;
 
 export const COMPOSER_PRIVACY_OPTIONS: PostVisibility[] = ['public', 'friend', 'private'];
+
+export const VISITORS_PAGE_SIZE = 40;
+
+export const LIKERS_PAGE_SIZE = 30;

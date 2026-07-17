@@ -49,8 +49,8 @@ import {
   ClanMembersRouteScreen,
   ClanRouteScreen,
 } from '@screens/clan/ClanRoutes';
-import { FriendRequestsScreen } from '@screens/chat/FriendRequestsScreen';
-import { SuggestedFriendsScreen } from '@screens/chat/SuggestedFriendsScreen';
+import { FriendRequestsScreen } from '@screens/friends/FriendRequestsScreen';
+import { SuggestedFriendsScreen } from '@screens/friends/SuggestedFriendsScreen';
 import { TAB_ICONS } from '@assets/tabIcons';
 import { KenBalanceBadge } from '@components/ui/KenBalanceBadge';
 import { mmkvStorage } from '@platform/storage';
