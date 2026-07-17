@@ -112,6 +112,7 @@ class OlaChatComposerManager :
     "topComposerHeight" to mapOf("registrationName" to "onComposerHeight"),
     "topComposerFocus" to mapOf("registrationName" to "onComposerFocus"),
     "topComposerBlur" to mapOf("registrationName" to "onComposerBlur"),
+    "topPasteImage" to mapOf("registrationName" to "onPasteImage"),
   )
 
   companion object {

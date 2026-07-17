@@ -24,6 +24,7 @@ import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { useMediaViewerStore } from '@store/mediaViewerStore';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { kulToken } from '@lib/kul';
+import { pastedImageFile } from '@lib/imagePicker';
 import { ListOptionDialog, type ListOption } from '@components/ui/ListOptionDialog';
 import { RoomReactionsDialog } from '@screens/room/components/RoomReactionsDialog';
 import { MessageActionSheet, type AnchorRect, type MessageSheetAction } from '@screens/room/components/MessageActionSheet';
@@ -502,6 +503,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         onSend={(text) => void send(text)}
         onTyping={notifyTyping}
         onFocusInput={closeAttachTab}
+        onPasteImage={(uri) => void sendImage(pastedImageFile(uri))}
       />
 
       <AttachmentBar

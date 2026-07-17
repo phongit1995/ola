@@ -5,6 +5,7 @@ import { launchImageLibrary } from 'react-native-image-picker';
 import type { NativeUploadFile } from '@ola/shared/lib';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { kulToken } from '@lib/kul';
+import { pastedImageFile } from '@lib/imagePicker';
 import { ChatComposer, type ChatComposerHandle } from '@components/ChatComposer';
 import { useLastKeyboardHeight } from '@hooks/useKeyboardHeight';
 import { SmileyKulPanel, SMILEY_PANEL_MIN_CONTENT_HEIGHT } from './SmileyKulPanel';
@@ -117,6 +118,13 @@ export const RoomComposerBar = forwardRef<RoomComposerHandle, RoomComposerBarPro
       setPendingImages((current) => current.filter((image) => image.id !== id));
     }
 
+    function addPastedImage(uri: string) {
+      if (disabled) return;
+      imageIdRef.current += 1;
+      const id = String(imageIdRef.current);
+      setPendingImages((current) => [...current, { id, uri, file: pastedImageFile(uri) }]);
+    }
+
     function clearPendingImages() {
       setPendingImages([]);
     }
@@ -208,6 +216,7 @@ export const RoomComposerBar = forwardRef<RoomComposerHandle, RoomComposerBarPro
                 editable={!disabled}
                 placeholder={t('room.chatInputHint')}
                 onFocus={() => setPanelOpen(false)}
+                onPasteImage={addPastedImage}
               />
             </View>
           )}

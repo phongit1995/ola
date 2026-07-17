@@ -22,11 +22,21 @@ interface ChatInputBarProps {
   onSend: (text: string) => void;
   onTyping: () => void;
   onFocusInput: () => void;
+  onPasteImage?: (uri: string) => void;
 }
 
 export const ChatInputBar = forwardRef<ChatInputBarHandle, ChatInputBarProps>(
   function ChatInputBarInner(
-    { placeholder, editing, hidden = false, refocusOnSend = true, onSend, onTyping, onFocusInput },
+    {
+      placeholder,
+      editing,
+      hidden = false,
+      refocusOnSend = true,
+      onSend,
+      onTyping,
+      onFocusInput,
+      onPasteImage,
+    },
     ref
   ) {
     const { t } = useTranslation();
@@ -74,6 +84,7 @@ export const ChatInputBar = forwardRef<ChatInputBarHandle, ChatInputBarProps>(
             paddingH={8}
             paddingV={6}
             onFocus={onFocusInput}
+            onPasteImage={onPasteImage}
           />
         </View>
         {isTyping ? (

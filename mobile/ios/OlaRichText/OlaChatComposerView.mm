@@ -9,11 +9,65 @@
 
 using namespace facebook::react;
 
+@interface OlaComposerTextView : UITextView
+@property (nonatomic, copy) void (^onPasteImageBlock)(NSString *uri);
+@end
+
+@implementation OlaComposerTextView
+
+- (BOOL)canPerformAction:(SEL)action withSender:(id)sender
+{
+  if (action == @selector(paste:) && [UIPasteboard generalPasteboard].hasImages) {
+    return YES;
+  }
+  return [super canPerformAction:action withSender:sender];
+}
+
+static UIImage *OlaScaledPasteImage(UIImage *image)
+{
+  static const CGFloat kMaxDimension = 1920;
+  CGFloat width = image.size.width * image.scale;
+  CGFloat height = image.size.height * image.scale;
+  CGFloat largest = MAX(width, height);
+  if (largest <= kMaxDimension) return image;
+  CGFloat ratio = kMaxDimension / largest;
+  CGSize target = CGSizeMake(floor(width * ratio), floor(height * ratio));
+  UIGraphicsImageRendererFormat *format = [UIGraphicsImageRendererFormat defaultFormat];
+  format.scale = 1;
+  UIGraphicsImageRenderer *renderer =
+      [[UIGraphicsImageRenderer alloc] initWithSize:target format:format];
+  return [renderer imageWithActions:^(UIGraphicsImageRendererContext *context) {
+    [image drawInRect:CGRectMake(0, 0, target.width, target.height)];
+  }];
+}
+
+- (void)paste:(id)sender
+{
+  UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
+  if (pasteboard.hasImages && self.onPasteImageBlock != nil) {
+    UIImage *image = pasteboard.image;
+    if (image != nil) image = OlaScaledPasteImage(image);
+    NSData *data = image != nil ? UIImageJPEGRepresentation(image, 0.9) : nil;
+    if (data != nil) {
+      NSString *fileName =
+          [NSString stringWithFormat:@"paste-%@.jpg", NSUUID.UUID.UUIDString];
+      NSString *path = [NSTemporaryDirectory() stringByAppendingPathComponent:fileName];
+      if ([data writeToFile:path atomically:YES]) {
+        self.onPasteImageBlock([NSURL fileURLWithPath:path].absoluteString);
+        return;
+      }
+    }
+  }
+  [super paste:sender];
+}
+
+@end
+
 @interface OlaChatComposerView () <RCTOlaChatComposerViewProtocol, UITextViewDelegate>
 @end
 
 @implementation OlaChatComposerView {
-  UITextView *_textView;
+  OlaComposerTextView *_textView;
   UILabel *_placeholderLabel;
   CGFloat _fontSize;
   CGFloat _paddingH;
@@ -43,9 +97,13 @@ using namespace facebook::react;
     _suppressChangeEvent = NO;
     _initialTextApplied = NO;
 
-    _textView = [[UITextView alloc] initWithFrame:CGRectZero];
+    _textView = [[OlaComposerTextView alloc] initWithFrame:CGRectZero];
     _textView.backgroundColor = [UIColor clearColor];
     _textView.delegate = self;
+    __weak OlaChatComposerView *weakSelf = self;
+    _textView.onPasteImageBlock = ^(NSString *uri) {
+      [weakSelf emitPasteImage:uri];
+    };
     _textView.font = [UIFont systemFontOfSize:_fontSize];
     _textView.textContainerInset = UIEdgeInsetsMake(_paddingV, _paddingH, _paddingV, _paddingH);
     _textView.textContainer.lineFragmentPadding = 0;
@@ -196,6 +254,13 @@ using namespace facebook::react;
   if (_suppressChangeEvent || _eventEmitter == nullptr) return;
   const auto emitter = std::static_pointer_cast<const OlaChatComposerEventEmitter>(_eventEmitter);
   emitter->onChangeText({.text = std::string([[self serializedText] UTF8String])});
+}
+
+- (void)emitPasteImage:(NSString *)uri
+{
+  if (_eventEmitter == nullptr) return;
+  std::static_pointer_cast<const OlaChatComposerEventEmitter>(_eventEmitter)
+      ->onPasteImage({.uri = std::string([uri UTF8String])});
 }
 
 - (void)emitHeightIfNeeded

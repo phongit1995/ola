@@ -95,3 +95,15 @@ export async function pickSingleImage(): Promise<PickedImage | null> {
     height: asset.height ?? 0,
   };
 }
+
+const PASTE_EXTENSION_TYPES: Record<string, string> = {
+  png: 'image/png',
+  gif: 'image/gif',
+  webp: 'image/webp',
+};
+
+export function pastedImageFile(uri: string): NativeUploadFile {
+  const extension = uri.split('.').pop()?.toLowerCase() ?? 'jpg';
+  const type = PASTE_EXTENSION_TYPES[extension] ?? 'image/jpeg';
+  return { uri, name: `pasted.${type === 'image/jpeg' ? 'jpg' : extension}`, type };
+}

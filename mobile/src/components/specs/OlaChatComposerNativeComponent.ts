@@ -10,6 +10,10 @@ interface ComposerHeightEvent {
   height: CodegenTypes.Float;
 }
 
+interface PasteImageEvent {
+  uri: string;
+}
+
 export interface NativeProps extends ViewProps {
   fontSize: CodegenTypes.Float;
   maxHeight: CodegenTypes.Float;
@@ -26,6 +30,7 @@ export interface NativeProps extends ViewProps {
   onComposerHeight?: CodegenTypes.DirectEventHandler<ComposerHeightEvent>;
   onComposerFocus?: CodegenTypes.DirectEventHandler<null>;
   onComposerBlur?: CodegenTypes.DirectEventHandler<null>;
+  onPasteImage?: CodegenTypes.DirectEventHandler<PasteImageEvent>;
 }
 
 type ComposerComponent = HostComponent<NativeProps>;
