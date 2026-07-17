@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ActionButton, Avatar, FullScreenOverlay, ScreenHeader } from '@components';
 import { toast } from '@lib';
 import { SUGGESTED_FRIENDS } from '../data';
-import type { SuggestedFriend } from '../types';
+import type { SuggestedFriend } from '../interface';
 
 interface SuggestedFriendsScreenProps {
   onClose: () => void;

@@ -8,26 +8,8 @@ import {
   kulImageForText,
   parseMessageMetadata,
 } from '@lib';
-import type { ChatMessage } from './types';
+import type { ChatMessage, ChatMessageAbilities, ConversationView } from './interface';
 import { STATUS_MAP } from './constants';
-
-export interface ConversationView {
-  id: string;
-  name: string;
-  username: string;
-  title: string;
-  avatar?: string;
-  color: string;
-  preview: string;
-  previewIsSticker: boolean;
-  fromMe: boolean;
-  seen: boolean;
-  senderName?: string;
-  isGroup: boolean;
-  time: string;
-  unread: number;
-  online: boolean;
-}
 
 export function conversationDisplayName(conversation: Conversation): string {
   return (
@@ -85,13 +67,6 @@ export function isCopyableText(message: ChatMessage): boolean {
     message.text.trim() !== '' &&
     kulImageForText(message.text) == null
   );
-}
-
-export interface ChatMessageAbilities {
-  canReply: boolean;
-  canCopy: boolean;
-  canEdit: boolean;
-  canDelete: boolean;
 }
 
 export function chatMessageAbilities(message: ChatMessage, blocked: boolean): ChatMessageAbilities {

@@ -27,7 +27,7 @@ import deleteActionIcon from '@/assets/icons/chat/ic_menu_delete.png';
 import { useChatStore } from '@/store/chat/chatStore';
 import { useAuthStore } from '@/store/authStore';
 import type { RelationshipStatus } from '@app-types';
-import type { ChatMessage } from '../types';
+import type { ChatMessage } from '../interface';
 import { chatMessageAbilities, chatQuoteExcerpt, toBubble } from '../chatView';
 import { usePeerCard } from '../usePeerCard';
 import { useLongPress, useOutsideClick, useStickyScroll } from '@hooks';

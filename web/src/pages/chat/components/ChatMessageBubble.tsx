@@ -8,7 +8,7 @@ import addFriendIcon from '@/assets/icons/chat/ic_add_friend.png';
 import photoIcon from '@/assets/icons/chat/ic_local.png';
 import { kulImageForText, renderRichText, SmileyText } from '@lib';
 import type { ChatReplySnapshot } from '@app-types';
-import type { ChatMessage } from '../types';
+import type { ChatMessage } from '../interface';
 import { chatQuoteExcerpt } from '../chatView';
 import { VoiceBubble } from './VoiceBubble';
 

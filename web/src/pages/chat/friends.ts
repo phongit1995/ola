@@ -1,7 +1,8 @@
 import type { TFunction } from 'i18next';
 import { activeVipTypeId, colorForName, formatLastActive, isBirthdayToday, isVipActive } from '@lib';
 import type { Friend } from '@app-types';
-import type { Contact, ContactGroup } from './types';
+import type { ContactGroup } from './types';
+import type { Contact } from './interface';
 import { normalizeDevice } from '@constants';
 
 function groupOf(friend: Friend, now: Date): ContactGroup {

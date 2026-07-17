@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Avatar, ListOptionDialog, SearchIcon, VipIcon, type ListOption } from '@components';
 import { vipIconUrl, isVipActive, activeVipTypeId, colorForName } from '@lib';
 import type { AuthUser, Relationship } from '@app-types';
-import type { Contact } from '../types';
+import type { Contact } from '../interface';
 import { SUGGESTED_FRIENDS } from '../data';
 import { BuddyRow } from './BuddyRow';
 import smileyIcon from '@/assets/icons/chat/ola_smiley_online.png';

@@ -7,7 +7,8 @@ import { SmileyText } from '@lib';
 import sentIcon from '@/assets/icons/chat/ic_message_sent.png';
 import kulIcon from '@/assets/icons/chat/ic_kul.png';
 import { EmptyMessages } from './EmptyMessages';
-import { toConversationView, type ConversationView } from '../chatView';
+import { toConversationView } from '../chatView';
+import type { ConversationView } from '../interface';
 import { SWIPE_MAX, SWIPE_TRIGGER } from '../constants';
 
 interface ConversationListProps {
