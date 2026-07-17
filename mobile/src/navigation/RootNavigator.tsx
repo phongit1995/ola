@@ -42,6 +42,13 @@ import { MeVisitorsScreen } from '@screens/me/MeVisitorsScreen';
 import { MeLikedPostsScreen } from '@screens/me/MeLikedPostsScreen';
 import { MeNotificationsScreen } from '@screens/me/MeNotificationsScreen';
 import { MarriageScreen } from '@screens/me/marriage/MarriageScreen';
+import {
+  ClanBansRouteScreen,
+  ClanHomeRouteScreen,
+  ClanManageRouteScreen,
+  ClanMembersRouteScreen,
+  ClanRouteScreen,
+} from '@screens/clan/ClanRoutes';
 import { TAB_ICONS } from '@assets/tabIcons';
 import { KenBalanceBadge } from '@components/ui/KenBalanceBadge';
 import { mmkvStorage } from '@platform/storage';
@@ -227,6 +234,11 @@ export function RootNavigator() {
       <RootStack.Screen name={ROOT_ROUTES.MeLikedPosts} component={MeLikedPostsScreen} />
       <RootStack.Screen name={ROOT_ROUTES.MeNotifications} component={MeNotificationsScreen} />
       <RootStack.Screen name={ROOT_ROUTES.Marriage} component={MarriageScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.ClanHome} component={ClanHomeRouteScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.Clan} component={ClanRouteScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.ClanManage} component={ClanManageRouteScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.ClanMembers} component={ClanMembersRouteScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.ClanBans} component={ClanBansRouteScreen} />
     </RootStack.Navigator>
   );
 }

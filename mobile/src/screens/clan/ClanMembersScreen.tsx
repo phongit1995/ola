@@ -10,7 +10,10 @@ import { Avatar } from '@components/ui/Avatar';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { ListOptionDialog, type ListOption } from '@components/ui/ListOptionDialog';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
-import { UserProfileScreen } from '@screens/profile/UserProfileScreen';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '@navigation/types';
+import { ROOT_ROUTES } from '@navigation/routes';
 import { CLAN_ROLE_ICONS, clanErrorText, clanRoleLabel, isClanStaff } from '@lib/clanHelpers';
 
 interface ClanMembersScreenProps {
@@ -21,7 +24,8 @@ interface ClanMembersScreenProps {
 const PAGE_SIZE = 50;
 
 export function ClanMembersScreen({ clanId, onClose }: ClanMembersScreenProps) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const pushToast = useToastStore((s) => s.push);
   const [clan, setClan] = useState<Clan | null>(null);
   const [members, setMembers] = useState<ClanMember[]>([]);
@@ -31,7 +35,10 @@ export function ClanMembersScreen({ clanId, onClose }: ClanMembersScreenProps) {
   const [refreshing, setRefreshing] = useState(false);
   const [menuTarget, setMenuTarget] = useState<ClanMember | null>(null);
   const [banTarget, setBanTarget] = useState<ClanMember | null>(null);
-  const [profileTarget, setProfileTarget] = useState<string | null>(null);
+
+  function openProfile(nick: string) {
+    navigation.navigate(ROOT_ROUTES.ProfileView, { userId: nick });
+  }
 
   const fetchFirst = useCallback(async () => {
     const [clanResult, memberResult] = await Promise.all([
@@ -175,7 +182,7 @@ export function ClanMembersScreen({ clanId, onClose }: ClanMembersScreenProps) {
                 }
               >
                 <Pressable
-                  onPress={() => username !== '' && setProfileTarget(username)}
+                  onPress={() => username !== '' && openProfile(username)}
                   className="min-w-0 flex-1 flex-row items-center gap-3"
                 >
                   <Avatar
@@ -239,16 +246,6 @@ export function ClanMembersScreen({ clanId, onClose }: ClanMembersScreenProps) {
         onCancel={() => setBanTarget(null)}
         onConfirm={() => void banMember()}
       />
-
-      {profileTarget != null && (
-        <UserProfileScreen
-          key={profileTarget}
-          username={profileTarget}
-          language={i18n.language}
-          onClose={() => setProfileTarget(null)}
-          onOpenProfile={(nick) => setProfileTarget(nick)}
-        />
-      )}
     </View>
   );
 }

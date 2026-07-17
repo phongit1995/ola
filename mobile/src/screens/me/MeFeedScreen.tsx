@@ -23,8 +23,6 @@ import { MeQuickCommentBar } from './components/MeQuickCommentBar';
 import { MeComposerModal } from './components/MeComposerModal';
 import { MeLeftDrawer } from './components/MeLeftDrawer';
 import { MeRightDrawer } from './components/MeRightDrawer';
-import { ClanOverlayHost } from '@screens/clan/components/ClanOverlayHost';
-import { useClanOverlayStore } from '@store/clanOverlayStore';
 import { MeCommentSheet } from './components/MeCommentSheet';
 import { MeLikersDialog } from './components/MeLikersDialog';
 import { UserProfileScreen } from '@screens/profile/UserProfileScreen';
@@ -243,9 +241,7 @@ export function MeFeedScreen() {
                 onOpenMenu={(id) => setMenuPostId(id)}
                 onOpenLikers={(id) => setLikersPostId(id)}
                 onOpenPhotos={(photos, index) => openViewer(photos, index)}
-                onOpenClan={(handle) =>
-                  useClanOverlayStore.getState().open({ kind: 'clan', handle })
-                }
+                onOpenClan={(handle) => navigation.navigate(ROOT_ROUTES.Clan, { handle })}
               />
             )}
           />
@@ -285,7 +281,7 @@ export function MeFeedScreen() {
               else if (key === 'marriage') navigation.navigate(ROOT_ROUTES.Marriage);
               else if (key === 'likes') navigation.navigate(ROOT_ROUTES.MeLikedPosts);
               else if (key === 'visitors') navigation.navigate(ROOT_ROUTES.MeVisitors);
-              else if (key === 'clan') useClanOverlayStore.getState().open({ kind: 'home' });
+              else if (key === 'clan') navigation.navigate(ROOT_ROUTES.ClanHome);
               else comingSoon();
             }}
             onLogout={() => {
@@ -368,8 +364,6 @@ export function MeFeedScreen() {
           onOpenProfile={openProfile}
         />
       )}
-
-      <ClanOverlayHost />
 
       {profileUsername != null && (
         <UserProfileScreen

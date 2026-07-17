@@ -20,7 +20,10 @@ import { Avatar } from '@components/ui/Avatar';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { Dialog, DialogButton } from '@components/ui/Dialog';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
-import { UserProfileScreen } from '@screens/profile/UserProfileScreen';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '@navigation/types';
+import { ROOT_ROUTES } from '@navigation/routes';
 import {
   CLAN_HANDLE_PATTERN,
   CLAN_ROLE_ICONS,
@@ -66,7 +69,8 @@ function PreviewRow({
 }
 
 export function ClanHomeScreen({ onClose, onOpenClan }: ClanHomeScreenProps) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const myClans = useClanStore((s) => s.myClans);
   const mineLoading = useClanStore((s) => s.mineLoading);
   const ensureMine = useClanStore((s) => s.ensureMine);
@@ -86,7 +90,11 @@ export function ClanHomeScreen({ onClose, onOpenClan }: ClanHomeScreenProps) {
   const [freshCheck, setFreshCheck] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [creating, setCreating] = useState(false);
-  const [profileTarget, setProfileTarget] = useState<string | null>(null);
+
+  function openProfile(nick: string) {
+    setCreateOpen(false);
+    navigation.navigate(ROOT_ROUTES.ProfileView, { userId: nick });
+  }
 
   useEffect(() => {
     void ensureMine();
@@ -294,21 +302,21 @@ export function ClanHomeScreen({ onClose, onOpenClan }: ClanHomeScreenProps) {
               <PreviewRow
                 icon={CLAN_ROLE_ICONS.owner}
                 text={preview.owner}
-                onPress={() => setProfileTarget(preview.owner!)}
+                onPress={() => openProfile(preview.owner!)}
               />
             )}
             {preview.deputy != null && preview.deputy !== '' && (
               <PreviewRow
                 icon={CLAN_ROLE_ICONS.deputy}
                 text={preview.deputy}
-                onPress={() => setProfileTarget(preview.deputy!)}
+                onPress={() => openProfile(preview.deputy!)}
               />
             )}
             {preview.ambassador != null && preview.ambassador !== '' && (
               <PreviewRow
                 icon={CLAN_ROLE_ICONS.ambassador}
                 text={preview.ambassador}
-                onPress={() => setProfileTarget(preview.ambassador!)}
+                onPress={() => openProfile(preview.ambassador!)}
               />
             )}
             <PreviewRow
@@ -341,16 +349,6 @@ export function ClanHomeScreen({ onClose, onOpenClan }: ClanHomeScreenProps) {
         onCancel={() => setConfirmOpen(false)}
         onConfirm={() => void create()}
       />
-
-      {profileTarget != null && (
-        <UserProfileScreen
-          key={profileTarget}
-          username={profileTarget}
-          language={i18n.language}
-          onClose={() => setProfileTarget(null)}
-          onOpenProfile={(nick) => setProfileTarget(nick)}
-        />
-      )}
     </View>
   );
 }

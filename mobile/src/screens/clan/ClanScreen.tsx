@@ -25,7 +25,10 @@ import { MeCommentSheet } from '@screens/me/components/MeCommentSheet';
 import { MeQuickCommentBar } from '@screens/me/components/MeQuickCommentBar';
 import { MeLikersDialog } from '@screens/me/components/MeLikersDialog';
 import { useQuickComment } from '@screens/me/useQuickComment';
-import { UserProfileScreen } from '@screens/profile/UserProfileScreen';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '@navigation/types';
+import { ROOT_ROUTES } from '@navigation/routes';
 import { canPostPublicInClan, clanFeedErrorText, isClanStaff } from '@lib/clanHelpers';
 import { useClanScreen } from './useClanScreen';
 import { ClanHeaderCard } from './components/ClanHeaderCard';
@@ -40,6 +43,7 @@ interface ClanScreenProps {
 
 export function ClanScreen({ handle, id, onClose, onOpenManage, onOpenMembers }: ClanScreenProps) {
   const { t, i18n } = useTranslation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const pushToast = useToastStore((s) => s.push);
   const meId = useAuthStore((s) => s.user?.id ?? null);
   const hiddenPostIds = useMeLocalStore((s) => s.hiddenPostIds);
@@ -74,7 +78,6 @@ export function ClanScreen({ handle, id, onClose, onOpenManage, onOpenMembers }:
   const [reportPostId, setReportPostId] = useState<string | null>(null);
   const [deletePostId, setDeletePostId] = useState<string | null>(null);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
-  const [profileUsername, setProfileUsername] = useState<string | null>(null);
   const [viewer, setViewer] = useState<{ images: string[]; index: number } | null>(null);
 
   const feedPinned = useClanFeedStore((s) => s.pinned);
@@ -118,7 +121,11 @@ export function ClanScreen({ handle, id, onClose, onOpenManage, onOpenMembers }:
   const menuPost = menuPostId != null ? allPosts.find((p) => p.id === menuPostId) ?? null : null;
 
   const handleReaction = (postId: string, type: PostReaction) => void toggleReaction(postId, type);
-  const openProfile = (nick: string) => setProfileUsername(nick);
+  const openProfile = (nick: string) => {
+    setCommentPostId(null);
+    setLikersPostId(null);
+    navigation.navigate(ROOT_ROUTES.ProfileView, { userId: nick });
+  };
 
   function openComments(postId: string, focusInput?: boolean) {
     setCommentFocusInput(focusInput === true);
@@ -402,16 +409,6 @@ export function ClanScreen({ handle, id, onClose, onOpenManage, onOpenMembers }:
           images={viewer.images}
           index={viewer.index}
           onClose={() => setViewer(null)}
-        />
-      )}
-
-      {profileUsername != null && (
-        <UserProfileScreen
-          key={profileUsername}
-          username={profileUsername}
-          language={i18n.language}
-          onClose={() => setProfileUsername(null)}
-          onOpenProfile={openProfile}
         />
       )}
     </View>
