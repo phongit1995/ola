@@ -1,11 +1,10 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Text } from 'react-native';
-import { MeService } from '@ola/shared/services';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { usePostListActions } from '@ola/shared/stores/usePostListActions';
-import { createTimeFormatter, postTimeLabel, toApiError } from '@ola/shared/lib';
+import { createTimeFormatter, postTimeLabel } from '@ola/shared/lib';
 import { EDIT_WINDOW_MS } from '@ola/shared/constants';
 import type { Post } from '@ola/shared/types';
 import { useMeLocalStore } from '@store/meLocalStore';
@@ -16,6 +15,7 @@ import { MeCommentSheet } from '@screens/me/components/MeCommentSheet';
 import { MeLikersDialog } from '@screens/me/components/MeLikersDialog';
 import { MeQuickCommentBar } from '@screens/me/components/MeQuickCommentBar';
 import { MeComposerModal } from '@screens/me/components/MeComposerModal';
+import { useQuickComment } from '@screens/me/useQuickComment';
 import type { OpenProfileHandler, OpenViewerHandler } from '../types';
 
 interface ProfilePostListProps {
@@ -48,8 +48,6 @@ export function ProfilePostList({
   const [commentFocusInput, setCommentFocusInput] = useState(false);
   const [likersPostId, setLikersPostId] = useState<string | null>(null);
   const [menuPostId, setMenuPostId] = useState<string | null>(null);
-  const [quickCommentPostId, setQuickCommentPostId] = useState<string | null>(null);
-  const [quickSubmitting, setQuickSubmitting] = useState(false);
   const [deletePostId, setDeletePostId] = useState<string | null>(null);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
 
@@ -66,6 +64,14 @@ export function ProfilePostList({
     setPosts,
     reloadAfterPin: reloadPosts,
   });
+
+  const {
+    quickCommentPostId,
+    setQuickCommentPostId,
+    quickSubmitting,
+    submitQuickComment,
+    quickContextLabel,
+  } = useQuickComment(posts, adjustCommentCount);
 
   function requestEdit(post: Post) {
     const createdAtMs =
@@ -132,38 +138,10 @@ export function ProfilePostList({
     ];
   }
 
-  async function submitQuickComment(text: string): Promise<boolean> {
-    const id = quickCommentPostId;
-    const content = text.trim();
-    if (id == null || content === '') return false;
-    setQuickSubmitting(true);
-    try {
-      await MeService.addComment(id, { content });
-      adjustCommentCount(id, 1);
-      push('success', t('me.commentSent'));
-      setQuickCommentPostId(null);
-      return true;
-    } catch (err) {
-      push(
-        'error',
-        toApiError(err).status === 403
-          ? t('me.commentErrFriendsOnly')
-          : t('me.commentSendError'),
-      );
-      return false;
-    } finally {
-      setQuickSubmitting(false);
-    }
-  }
-
   const commentPost =
     commentPostId != null ? posts.find(p => p.id === commentPostId) ?? null : null;
   const menuPost =
     menuPostId != null ? posts.find(p => p.id === menuPostId) ?? null : null;
-  const quickPost =
-    quickCommentPostId != null
-      ? posts.find(p => p.id === quickCommentPostId) ?? null
-      : null;
 
   return (
     <>
@@ -226,13 +204,7 @@ export function ProfilePostList({
 
       {quickCommentPostId != null && (
         <MeQuickCommentBar
-          contextLabel={
-            quickPost == null
-              ? undefined
-              : quickPost.content != null && quickPost.content !== ''
-              ? quickPost.content
-              : quickPost.author?.username
-          }
+          contextLabel={quickContextLabel}
           submitting={quickSubmitting}
           onSubmit={submitQuickComment}
           onClose={() => setQuickCommentPostId(null)}

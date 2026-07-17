@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Modal, Text, View } from 'react-native';
+import { OlaModal } from '@components/ui/OlaModal';
+import { ActivityIndicator, Text, View } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { MeService } from '@ola/shared/services';
 import { applyPostReaction } from '@ola/shared/stores/postHelpers';
@@ -73,7 +74,7 @@ export function MeLikedPostsScreen({ language, onClose, onOpenProfile }: MeLiked
   const commentPost = commentPostId != null ? posts.find((p) => p.id === commentPostId) ?? null : null;
 
   return (
-    <Modal visible transparent animationType="slide" onRequestClose={onClose}>
+    <OlaModal visible transparent animationType="slide" onRequestClose={onClose}>
       <View className="flex-1 bg-[#eceff1]">
         <ScreenHeader title={t('me.drawerLikes')} onBack={onClose} />
 
@@ -126,6 +127,6 @@ export function MeLikedPostsScreen({ language, onClose, onOpenProfile }: MeLiked
           />
         )}
       </View>
-    </Modal>
+    </OlaModal>
   );
 }

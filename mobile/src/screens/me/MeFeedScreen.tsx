@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Alert, Image, Pressable, RefreshControl, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -9,9 +8,9 @@ import { useMeFeedStore } from '@ola/shared/stores/meFeedStore';
 import { useMeNotificationStore } from '@ola/shared/stores/meNotificationStore';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
-import { AuthService, MeService, SocketService } from '@ola/shared/services';
-import { createTimeFormatter, filterVisiblePosts, postTimeLabel, toApiError } from '@ola/shared/lib';
-import type { MeFeedFilter, Post, PostReaction } from '@ola/shared/types';
+import { AuthService, SocketService } from '@ola/shared/services';
+import { createTimeFormatter, filterVisiblePosts, postTimeLabel } from '@ola/shared/lib';
+import type { Post, PostReaction } from '@ola/shared/types';
 import { EDIT_WINDOW_MS } from '@ola/shared/constants';
 import { useMeLocalStore } from '@store/meLocalStore';
 import { useMediaViewerStore } from '@store/mediaViewerStore';
@@ -35,35 +34,16 @@ import { MeNotificationsScreen } from './MeNotificationsScreen';
 import { UserProfileScreen } from '@screens/profile/UserProfileScreen';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
+import { MeFeedHeader } from './components/MeFeedHeader';
+import { useQuickComment } from './useQuickComment';
+import { TAB_FILTER } from './constants';
+import type { MeTab } from './types';
 
-type MeTab = 'community' | 'personal' | 'clan';
-
-const TAB_FILTER: Record<MeTab, MeFeedFilter | undefined> = {
-  community: undefined,
-  personal: 'following',
-  clan: 'clan',
-};
-
-const menuIcon = require('@assets/icons/me/ic_more_white.png');
-const bellIcon = require('@assets/icons/me/ic_action_notification.png');
-const searchIcon = require('@assets/icons/me/ic_action_search.png');
 const editIcon = require('@assets/icons/me/ic_action_edit.png');
-const tabOla = require('@assets/icons/me/ic_action_tab_ola.png');
-const tabOlaActive = require('@assets/icons/me/ic_action_tab_ola_selected.png');
-const tabFollower = require('@assets/icons/me/ic_action_tab_follower.png');
-const tabFollowerActive = require('@assets/icons/me/ic_action_tab_follower_selected.png');
-const tabClan = require('@assets/icons/clan/ic_menu_clan.png');
-
-const ME_TABS = [
-  { key: 'community' as const, labelKey: 'me.tabCommunity' as const, icon: tabOla, iconActive: tabOlaActive },
-  { key: 'personal' as const, labelKey: 'me.tabPersonal' as const, icon: tabFollower, iconActive: tabFollowerActive },
-  { key: 'clan' as const, labelKey: 'me.tabClan' as const, icon: tabClan, iconActive: tabClan, invert: true },
-];
 
 
 export function MeFeedScreen() {
   const { t, i18n } = useTranslation();
-  const insets = useSafeAreaInsets();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const pushToast = useToastStore((s) => s.push);
 
@@ -106,15 +86,18 @@ export function MeFeedScreen() {
   const [marriageOpen, setMarriageOpen] = useState(false);
   const [menuPostId, setMenuPostId] = useState<string | null>(null);
   const [reportPostId, setReportPostId] = useState<string | null>(null);
-  const [quickCommentPostId, setQuickCommentPostId] = useState<string | null>(null);
-  const [quickSubmitting, setQuickSubmitting] = useState(false);
   const [deletePostId, setDeletePostId] = useState<string | null>(null);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
+  const {
+    quickCommentPostId,
+    setQuickCommentPostId,
+    quickSubmitting,
+    submitQuickComment,
+    quickContextLabel,
+  } = useQuickComment(posts, adjustCommentCount);
   const openProfile = (nick: string) => setProfileUsername(nick);
   const commentPost = commentPostId != null ? posts.find((p) => p.id === commentPostId) ?? null : null;
   const menuPost = menuPostId != null ? posts.find((p) => p.id === menuPostId) ?? null : null;
-  const quickPost =
-    quickCommentPostId != null ? posts.find((p) => p.id === quickCommentPostId) ?? null : null;
 
   const visiblePosts = useMemo(
     () => filterVisiblePosts(posts, hiddenPostIds, blockedAuthorIds),
@@ -209,97 +192,16 @@ export function MeFeedScreen() {
     ];
   }
 
-  async function submitQuickComment(text: string): Promise<boolean> {
-    const id = quickCommentPostId;
-    const content = text.trim();
-    if (id == null || content === '') return false;
-    setQuickSubmitting(true);
-    try {
-      await MeService.addComment(id, { content });
-      adjustCommentCount(id, 1);
-      pushToast('success', t('me.commentSent'));
-      setQuickCommentPostId(null);
-      return true;
-    } catch (err) {
-      pushToast(
-        'error',
-        toApiError(err).status === 403 ? t('me.commentErrFriendsOnly') : t('me.commentSendError')
-      );
-      return false;
-    } finally {
-      setQuickSubmitting(false);
-    }
-  }
-
   return (
     <View className="flex-1 bg-[#f3f3f3]">
-      <View
-        className="flex-row items-center bg-ola-primary px-2"
-        style={{ paddingTop: insets.top, borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.12)' }}
-      >
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('me.openMenu')}
-          onPress={() => setDrawerOpen(true)}
-          className="h-12 w-10 items-center justify-center"
-        >
-          <Image source={menuIcon} style={{ width: 20, height: 20 }} resizeMode="contain" />
-        </Pressable>
-        <View className="flex-1 flex-row items-center justify-center gap-8">
-          {ME_TABS.map((item) => {
-            const active = item.key === tab;
-            return (
-              <Pressable
-                key={item.key}
-                accessibilityRole="button"
-                accessibilityLabel={t(item.labelKey)}
-                accessibilityState={{ selected: active }}
-                onPress={() => setTab(item.key)}
-                className="h-12 w-12 items-center justify-center"
-                style={{ opacity: active ? 1 : 0.6 }}
-              >
-                <Image
-                  source={active ? item.iconActive : item.icon}
-                  style={{
-                    width: 24,
-                    height: 24,
-                    tintColor: 'invert' in item && item.invert ? '#ffffff' : undefined,
-                  }}
-                  resizeMode="contain"
-                />
-              </Pressable>
-            );
-          })}
-        </View>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('me.notifTitle')}
-          onPress={() => setNotifOpen(true)}
-          className="h-12 w-10 items-center justify-center"
-        >
-          <View>
-            <Image source={bellIcon} style={{ width: 24, height: 24, tintColor: '#ffffff' }} resizeMode="contain" />
-            {unreadCount > 0 && (
-              <View
-                className="absolute h-4 min-w-4 items-center justify-center rounded-full bg-ola-accent px-1"
-                style={{ top: -4, right: 0, borderWidth: 2, borderColor: '#ffffff' }}
-              >
-                <Text className="text-[10px] font-bold text-white">
-                  {unreadCount > 99 ? '99+' : unreadCount}
-                </Text>
-              </View>
-            )}
-          </View>
-        </Pressable>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('me.openSearch')}
-          onPress={() => setSearchOpen(true)}
-          className="h-12 w-10 items-center justify-center"
-        >
-          <Image source={searchIcon} style={{ width: 24, height: 24, tintColor: '#ffffff' }} resizeMode="contain" />
-        </Pressable>
-      </View>
+      <MeFeedHeader
+        tab={tab}
+        unreadCount={unreadCount}
+        onChangeTab={setTab}
+        onOpenDrawer={() => setDrawerOpen(true)}
+        onOpenNotif={() => setNotifOpen(true)}
+        onOpenSearch={() => setSearchOpen(true)}
+      />
 
       <View
         className="relative flex-1"
@@ -431,13 +333,7 @@ export function MeFeedScreen() {
 
       {quickCommentPostId != null && (
         <MeQuickCommentBar
-          contextLabel={
-            quickPost == null
-              ? undefined
-              : quickPost.content != null && quickPost.content !== ''
-                ? quickPost.content
-                : quickPost.author?.username
-          }
+          contextLabel={quickContextLabel}
           submitting={quickSubmitting}
           onSubmit={submitQuickComment}
           onClose={() => setQuickCommentPostId(null)}

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, FlatList, Modal, Pressable, Text, View } from 'react-native';
+import { OlaModal } from '@components/ui/OlaModal';
+import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native';
 import { RelationshipService, UserService } from '@ola/shared/services';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { activeVipTypeId, colorForName, createTimeFormatter } from '@ola/shared/lib';
@@ -72,7 +73,7 @@ export function MeVisitorsScreen({ language, onClose, onOpenProfile }: MeVisitor
   }
 
   return (
-    <Modal visible transparent animationType="slide" onRequestClose={onClose}>
+    <OlaModal visible transparent animationType="slide" onRequestClose={onClose}>
       <View className="flex-1 bg-white">
         <ScreenHeader title={t('me.tabVisitors')} onBack={onClose} />
 
@@ -136,6 +137,6 @@ export function MeVisitorsScreen({ language, onClose, onOpenProfile }: MeVisitor
           />
         )}
       </View>
-    </Modal>
+    </OlaModal>
   );
 }

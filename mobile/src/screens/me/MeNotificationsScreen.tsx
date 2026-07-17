@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Image, Modal, Pressable, Text, View } from 'react-native';
+import { OlaModal } from '@components/ui/OlaModal';
+import { ActivityIndicator, Image, Pressable, Text, View } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { useMeNotificationStore } from '@ola/shared/stores/meNotificationStore';
 import { useMeFeedStore } from '@ola/shared/stores/meFeedStore';
@@ -97,7 +98,7 @@ export function MeNotificationsScreen({ language, onClose, onOpenProfile }: MeNo
   }
 
   return (
-    <Modal visible transparent animationType="slide" onRequestClose={onClose}>
+    <OlaModal visible transparent animationType="slide" onRequestClose={onClose}>
       <View className="flex-1 bg-[#f3f3f3]">
         <ScreenHeader title={t('me.notifTitle')} onBack={onClose} />
 
@@ -159,6 +160,6 @@ export function MeNotificationsScreen({ language, onClose, onOpenProfile }: MeNo
           />
         )}
       </View>
-    </Modal>
+    </OlaModal>
   );
 }
