@@ -1,19 +1,16 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FullScreenOverlay, ScreenHeader, Spinner } from '@components';
 import { createTimeFormatter, toast } from '@lib';
 import { MeService } from '@services';
-import type { Post, PostReaction } from '@app-types';
+import type { Post } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
 import { useMeLocalStore } from '@/store/meLocalStore';
 import { MePostCard } from './components/MePostCard';
 import { MePostInteractions, type MePostSource } from './MePostInteractions';
-import { composedToImages, composedToUpdatePayload } from './composer';
-import { useMeFeedStore } from './meFeedStore';
-import { selfLiker } from '@ola/shared/stores/selfLiker';
-import { reconcileTopLikers } from '@ola/shared/stores/postHelpers';
-import { applyPostReaction, toMePost } from './mappers';
-import type { ComposedPost } from './components/MeComposerDialog';
+import { toMePost } from './mappers';
+import { useEditMePost } from './useEditMePost';
+import { usePostListActions } from '@ola/shared/stores/usePostListActions';
 
 interface MeLikedPostsViewProps {
   onClose: () => void;
@@ -27,7 +24,6 @@ export function MeLikedPostsView({ onClose }: MeLikedPostsViewProps) {
   const blockAuthor = useMeLocalStore((s) => s.blockAuthor);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
-  const reactingRef = useRef<Set<string>>(new Set());
 
   const formatTime = useMemo(() => createTimeFormatter(i18n.language), [i18n.language]);
 
@@ -48,76 +44,13 @@ export function MeLikedPostsView({ onClose }: MeLikedPostsViewProps) {
     };
   }, [t]);
 
-  const toggleReaction = useCallback(
-    async (id: string, type: PostReaction) => {
-      const post = posts.find((item) => item.id === id);
-      if (post == null || reactingRef.current.has(id)) return;
-      const isActive = post.myReaction === type;
-      const self = selfLiker();
-      reactingRef.current.add(id);
-      setPosts((current) =>
-        current.map((item) => (item.id === id ? applyPostReaction(item, isActive ? null : type, self) : item))
-      );
-      try {
-        const updated = isActive
-          ? await MeService.removeReaction(id)
-          : await MeService.react(id, type);
-        setPosts((current) => {
-          const next = current.map((item) =>
-            item.id === id ? reconcileTopLikers(updated, item) : item
-          );
-          return updated.myReaction === 'like' ? next : next.filter((item) => item.id !== id);
-        });
-      } catch {
-        setPosts((current) =>
-          current.map((item) => (item.id === id ? applyPostReaction(item, post.myReaction, self) : item))
-        );
-        toast.error(t('me.reactionError'));
-      } finally {
-        reactingRef.current.delete(id);
-      }
-    },
-    [posts, t]
-  );
+  const { toggleReaction, adjustCommentCount, deletePost } = usePostListActions({
+    posts,
+    setPosts,
+    keepOnlyLiked: true,
+  });
 
-  const adjustCommentCount = useCallback((id: string, delta: number) => {
-    setPosts((current) =>
-      current.map((item) =>
-        item.id === id ? { ...item, commentCount: Math.max(0, item.commentCount + delta) } : item
-      )
-    );
-  }, []);
-
-  const editPost = useCallback(
-    async (id: string, draft: ComposedPost): Promise<boolean> => {
-      try {
-        const existing = posts.find((item) => item.id === id)?.images ?? [];
-        const images = await composedToImages(draft, 'existingFirst', existing);
-        const updated = await MeService.update(id, { ...composedToUpdatePayload(draft), images });
-        setPosts((current) => current.map((item) => (item.id === id ? updated : item)));
-        useMeFeedStore.getState().syncPost(updated);
-        toast.success(t('me.editSuccess'));
-        return true;
-      } catch {
-        toast.error(t('me.editError'));
-        return false;
-      }
-    },
-    [t, posts]
-  );
-
-  const deletePost = useCallback(
-    async (id: string) => {
-      try {
-        await MeService.remove(id);
-        setPosts((current) => current.filter((item) => item.id !== id));
-        toast.success(t('me.deleteSuccess'));
-      } catch {
-        toast.error(t('me.deleteError'));
-      }
-    },
-    [t]
-  );
+  const editPost = useEditMePost(posts, setPosts);
 
   const mePosts = posts
     .map((post) => toMePost(post, formatTime))

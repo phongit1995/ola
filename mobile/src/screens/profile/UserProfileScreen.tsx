@@ -18,8 +18,7 @@ import {
 } from '@ola/shared/services';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
-import { applyPostReaction } from '@ola/shared/stores/postHelpers';
-import { selfLiker } from '@ola/shared/stores/selfLiker';
+import { usePostListActions } from '@ola/shared/stores/usePostListActions';
 import {
   activeVipTypeId,
   colorForName,
@@ -395,40 +394,11 @@ function UserProfileBody({
     }
   }
 
-  const toggleReaction = useCallback(
-    async (id: string, type: 'like' | 'dislike') => {
-      const current = posts.find(p => p.id === id);
-      if (current == null) return;
-      const active = current.myReaction === type;
-      setPosts(prev =>
-        prev.map(p =>
-          p.id === id
-            ? applyPostReaction(p, active ? null : type, selfLiker())
-            : p,
-        ),
-      );
-      try {
-        const updated = active
-          ? await MeService.removeReaction(id)
-          : await MeService.react(id, type);
-        setPosts(prev => prev.map(p => (p.id === id ? updated : p)));
-      } catch {
-        setPosts(prev => prev.map(p => (p.id === id ? current : p)));
-        push('error', t('me.reactionError'));
-      }
-    },
-    [posts, push, t],
-  );
-
-  const adjustCommentCount = useCallback((id: string, delta: number) => {
-    setPosts(prev =>
-      prev.map(p =>
-        p.id === id
-          ? { ...p, commentCount: Math.max(0, p.commentCount + delta) }
-          : p,
-      ),
-    );
-  }, []);
+  const { toggleReaction, adjustCommentCount, deletePost, togglePin } = usePostListActions({
+    posts,
+    setPosts,
+    reloadAfterPin: reloadPosts,
+  });
 
   function requestEdit(post: Post) {
     const createdAtMs =
@@ -441,14 +411,7 @@ function UserProfileBody({
   }
 
   function togglePinAction(post: Post) {
-    const next = !post.isPinned;
-    const call = next ? MeService.pin(post.id) : MeService.unpin(post.id);
-    call
-      .then(async () => {
-        await reloadPosts();
-        push('success', t(next ? 'me.pinSuccess' : 'me.unpinSuccess'));
-      })
-      .catch(() => push('error', t('me.pinError')));
+    void togglePin(post.id, !post.isPinned);
   }
 
   function buildPostMenuOptions(post: Post): ListOption[] {
@@ -1100,12 +1063,7 @@ function UserProfileBody({
           const id = deletePostId;
           setDeletePostId(null);
           if (id == null) return;
-          MeService.remove(id)
-            .then(() => {
-              setPosts(prev => prev.filter(p => p.id !== id));
-              push('success', t('me.deleteSuccess'));
-            })
-            .catch(() => push('error', t('me.deleteError')));
+          void deletePost(id);
         }}
         onCancel={() => setDeletePostId(null)}
       />
