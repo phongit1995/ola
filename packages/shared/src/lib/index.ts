@@ -10,6 +10,7 @@ export * from './vipIcon';
 export * from './vipCatalog';
 export * from './vip';
 export * from './messageMetadata';
+export * from './postVisibility';
 export * from './duration';
 export * from './number';
 export * from './base64';

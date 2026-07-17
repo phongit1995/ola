@@ -1447,6 +1447,8 @@
       "you are already a member of this clan": "Bạn đã tham gia Clan này rồi",
       "owner cannot leave the clan": "Bang chủ không thể rời Clan",
       "cannot ban clan staff": "Không thể cấm ban quản trị",
+      "clan role is already assigned": "Vai trò này vừa được gán cho người khác, hãy thử lại",
+      "cannot delete the clan owner's posts": "Không thể xoá bài của bang chủ",
       "user not found": "Không tìm thấy tài khoản",
       "clan member not found": "Không tìm thấy thành viên",
       "clan name must be 5-32 lowercase letters or digits, no spaces or accents": "Tên Clan phải viết liền 5-32 ký tự thường/số, không dấu",

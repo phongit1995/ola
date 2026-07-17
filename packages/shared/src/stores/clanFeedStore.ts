@@ -4,6 +4,7 @@ import { ClanService, MeService } from '../services';
 import { toast, type UploadFile } from '../lib';
 import type { CreatePostRequest, Post, PostReaction } from '../types';
 import { applyPostReaction, reconcileTopLikers } from './postHelpers';
+import { registerOnLogout } from './authStore';
 import { selfLiker } from './selfLiker';
 
 interface ClanFeedState {
@@ -16,6 +17,7 @@ interface ClanFeedState {
   nextCursor: string | null;
   reacting: Set<string>;
   load: (clanId: string) => Promise<void>;
+  refresh: (clanId: string) => Promise<void>;
   loadMore: () => Promise<void>;
   toggleReaction: (id: string, type: PostReaction) => Promise<void>;
   createPost: (
@@ -71,6 +73,24 @@ export const useClanFeedStore = create<ClanFeedState>((set, get) => ({
     } catch (error) {
       if (requestId !== feedRequestId) return;
       set({ loading: false, error: errorMessage(error) });
+    }
+  },
+  refresh: async (clanId) => {
+    const requestId = ++feedRequestId;
+    try {
+      const result = await ClanService.posts(clanId, { limit: FEED_PAGE_SIZE });
+      if (requestId !== feedRequestId) return;
+      set({
+        clanId,
+        pinned: result.pinned ?? null,
+        posts: result.items,
+        nextCursor: result.nextCursor ?? null,
+        loading: false,
+        error: null,
+      });
+    } catch (error) {
+      if (requestId !== feedRequestId) return;
+      throw error;
     }
   },
   loadMore: async () => {
@@ -186,7 +206,8 @@ export const useClanFeedStore = create<ClanFeedState>((set, get) => ({
       pinned: state.pinned != null ? bump(state.pinned) : null,
     }));
   },
-  reset: () =>
+  reset: () => {
+    feedRequestId += 1;
     set({
       clanId: null,
       pinned: null,
@@ -196,5 +217,8 @@ export const useClanFeedStore = create<ClanFeedState>((set, get) => ({
       error: null,
       nextCursor: null,
       reacting: new Set(),
-    }),
+    });
+  },
 }));
+
+registerOnLogout(() => useClanFeedStore.getState().reset());

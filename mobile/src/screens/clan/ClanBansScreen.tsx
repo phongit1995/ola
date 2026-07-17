@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, RefreshControl, Text, View } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { colorForName } from '@ola/shared/lib';
 import { ClanService } from '@ola/shared/services';
@@ -20,21 +20,25 @@ export function ClanBansScreen({ clanId, onClose }: ClanBansScreenProps) {
   const pushToast = useToastStore((s) => s.push);
   const [bans, setBans] = useState<ClanBan[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchBans = useCallback(async () => {
+    const result = await ClanService.bans(clanId, { limit: 100, offset: 0 });
+    setBans(result.items);
+  }, [clanId]);
 
   useEffect(() => {
-    let active = true;
-    ClanService.bans(clanId, { limit: 100, offset: 0 })
-      .then((result) => {
-        if (active) setBans(result.items);
-      })
+    fetchBans()
       .catch((error) => pushToast('error', clanErrorText(error)))
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-    return () => {
-      active = false;
-    };
-  }, [clanId, pushToast]);
+      .finally(() => setLoading(false));
+  }, [fetchBans, pushToast]);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchBans()
+      .catch((error) => pushToast('error', clanErrorText(error)))
+      .finally(() => setRefreshing(false));
+  }, [fetchBans, pushToast]);
 
   async function unban(ban: ClanBan) {
     if (ban.user == null) return;
@@ -63,6 +67,7 @@ export function ClanBansScreen({ clanId, onClose }: ClanBansScreenProps) {
           data={bans}
           keyExtractor={(item, index) => `${item.user?.id ?? ''}-${index}`}
           contentContainerClassName="p-2"
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
           renderItem={({ item, index }) => {
             const username = item.user?.username ?? '';
             const fullName = item.user?.fullName ?? '';

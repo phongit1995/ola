@@ -4,13 +4,22 @@ import {
   ActivityIndicator,
   Image,
   Pressable,
+  RefreshControl,
   Text,
   View,
   useWindowDimensions,
   type ImageSourcePropType,
 } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
-import { colorForName, formatDateDMY, isSameDay, createTimeFormatter, toApiError } from '@ola/shared/lib';
+import {
+  colorForName,
+  filterVisiblePosts,
+  formatDateDMY,
+  isPostVisible,
+  isSameDay,
+  createTimeFormatter,
+  toApiError,
+} from '@ola/shared/lib';
 import { ClanService, MeService } from '@ola/shared/services';
 import type { Clan, Post, PostReaction, PostVisibility } from '@ola/shared/types';
 import { EDIT_WINDOW_MS } from '@ola/shared/constants';
@@ -142,6 +151,7 @@ export function ClanScreen({ handle, id, onClose, onOpenManage, onOpenMembers }:
   const [profileUsername, setProfileUsername] = useState<string | null>(null);
   const [viewer, setViewer] = useState<{ images: string[]; index: number } | null>(null);
   const [imageUploading, setImageUploading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const feedPinned = useClanFeedStore((s) => s.pinned);
   const feedPosts = useClanFeedStore((s) => s.posts);
@@ -187,23 +197,36 @@ export function ClanScreen({ handle, id, onClose, onOpenManage, onOpenMembers }:
   }, [handle, id]);
 
   const refreshAll = useCallback(async () => {
-    const loaded = await loadClan();
-    if (loaded != null) {
-      void useClanFeedStore.getState().load(loaded.id);
-    }
-  }, [loadClan]);
+    const loaded =
+      handle != null ? await ClanService.byHandle(handle) : await ClanService.get(id ?? '');
+    setClan(loaded);
+    setLoadError(null);
+    await useClanFeedStore.getState().refresh(loaded.id);
+  }, [handle, id]);
 
-  const visiblePosts = useMemo(() => {
-    const hidden = new Set(hiddenPostIds);
-    const blocked = new Set(blockedAuthorIds);
-    return feedPosts.filter(
-      (item) => !hidden.has(item.id) && !(item.author?.id != null && blocked.has(item.author.id))
-    );
-  }, [feedPosts, hiddenPostIds, blockedAuthorIds]);
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    refreshAll()
+      .catch((error) => pushToast('error', clanErrorText(error)))
+      .finally(() => setRefreshing(false));
+  }, [refreshAll, pushToast]);
+
+  const visiblePosts = useMemo(
+    () => filterVisiblePosts(feedPosts, hiddenPostIds, blockedAuthorIds),
+    [feedPosts, hiddenPostIds, blockedAuthorIds]
+  );
+
+  const visiblePinned = useMemo(
+    () =>
+      feedPinned != null && isPostVisible(feedPinned, hiddenPostIds, blockedAuthorIds)
+        ? feedPinned
+        : null,
+    [feedPinned, hiddenPostIds, blockedAuthorIds]
+  );
 
   const allPosts = useMemo(
-    () => (feedPinned != null ? [feedPinned, ...visiblePosts] : visiblePosts),
-    [feedPinned, visiblePosts]
+    () => (visiblePinned != null ? [visiblePinned, ...visiblePosts] : visiblePosts),
+    [visiblePinned, visiblePosts]
   );
 
   function timeLabelOf(post: Post): string {
@@ -383,11 +406,11 @@ export function ClanScreen({ handle, id, onClose, onOpenManage, onOpenMembers }:
 
   async function changeImage(field: 'avatar' | 'cover') {
     if (clan == null || imageUploading) return;
-    const picked =
-      field === 'avatar' ? await pickCroppedImage(512, 512) : await pickCroppedImage(1024, 512);
-    if (picked == null) return;
-    setImageUploading(true);
     try {
+      const picked =
+        field === 'avatar' ? await pickCroppedImage(512, 512) : await pickCroppedImage(1024, 512);
+      if (picked == null) return;
+      setImageUploading(true);
       const result =
         field === 'avatar'
           ? await ClanService.uploadAvatar(clan.id, picked.file)
@@ -646,6 +669,7 @@ export function ClanScreen({ handle, id, onClose, onOpenManage, onOpenMembers }:
         keyExtractor={(item) => item.id}
         ListHeaderComponent={header}
         contentContainerClassName="pb-2"
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         onEndReached={() => void useClanFeedStore.getState().loadMore()}
         onEndReachedThreshold={0.4}
         ListFooterComponent={
@@ -653,7 +677,7 @@ export function ClanScreen({ handle, id, onClose, onOpenManage, onOpenMembers }:
         }
         renderItem={({ item, index }) => (
           <View>
-            {feedPinned != null && index === 0 && (
+            {visiblePinned != null && index === 0 && (
               <View className="bg-[#dcedc8] px-4 py-1">
                 <Text className="text-xs font-bold" style={{ color: '#33691e' }}>
                   {t('clan.meTop')}

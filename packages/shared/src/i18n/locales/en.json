@@ -1447,6 +1447,8 @@
       "you are already a member of this clan": "You already joined this Clan",
       "owner cannot leave the clan": "The owner cannot leave the Clan",
       "cannot ban clan staff": "Cannot ban Clan staff",
+      "clan role is already assigned": "This role has just been assigned to someone else, please retry",
+      "cannot delete the clan owner's posts": "Cannot delete the Clan owner's posts",
       "user not found": "Account not found",
       "clan member not found": "Member not found",
       "clan name must be 5-32 lowercase letters or digits, no spaces or accents": "Clan name must be 5-32 lowercase letters or digits, no spaces or accents",

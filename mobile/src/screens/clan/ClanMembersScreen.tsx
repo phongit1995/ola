@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Image, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, RefreshControl, Text, View } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { colorForName } from '@ola/shared/lib';
 import { ClanService } from '@ola/shared/services';
@@ -28,26 +28,38 @@ export function ClanMembersScreen({ clanId, onClose }: ClanMembersScreenProps) {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [menuTarget, setMenuTarget] = useState<ClanMember | null>(null);
   const [banTarget, setBanTarget] = useState<ClanMember | null>(null);
   const [profileTarget, setProfileTarget] = useState<string | null>(null);
 
+  const fetchFirst = useCallback(async () => {
+    const [clanResult, memberResult] = await Promise.all([
+      ClanService.get(clanId),
+      ClanService.members(clanId, { limit: PAGE_SIZE, offset: 0 }),
+    ]);
+    setClan(clanResult);
+    setMembers(memberResult.items);
+    setTotal(memberResult.total);
+  }, [clanId]);
+
   const loadFirst = useCallback(async () => {
     setLoading(true);
     try {
-      const [clanResult, memberResult] = await Promise.all([
-        ClanService.get(clanId),
-        ClanService.members(clanId, { limit: PAGE_SIZE, offset: 0 }),
-      ]);
-      setClan(clanResult);
-      setMembers(memberResult.items);
-      setTotal(memberResult.total);
+      await fetchFirst();
     } catch (error) {
       pushToast('error', clanErrorText(error));
     } finally {
       setLoading(false);
     }
-  }, [clanId, pushToast]);
+  }, [fetchFirst, pushToast]);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchFirst()
+      .catch((error) => pushToast('error', clanErrorText(error)))
+      .finally(() => setRefreshing(false));
+  }, [fetchFirst, pushToast]);
 
   useEffect(() => {
     void loadFirst();
@@ -106,17 +118,23 @@ export function ClanMembersScreen({ clanId, onClose }: ClanMembersScreenProps) {
   }
 
   const staff = clan != null && isClanStaff(clan);
+  const owner = clan?.myRole === 'owner';
+  const bannable = (member: ClanMember) => member.role === 'member';
 
   const menuOptions: ListOption[] =
     menuTarget == null
       ? []
       : [
-          {
-            key: 'verify',
-            label: menuTarget.verified ? t('clan.unverifyMember') : t('clan.verifyMember'),
-            onSelect: () => void toggleVerify(menuTarget),
-          },
-          ...(menuTarget.role === 'member' || menuTarget.role === 'ambassador'
+          ...(owner
+            ? [
+                {
+                  key: 'verify',
+                  label: menuTarget.verified ? t('clan.unverifyMember') : t('clan.verifyMember'),
+                  onSelect: () => void toggleVerify(menuTarget),
+                },
+              ]
+            : []),
+          ...(bannable(menuTarget)
             ? [
                 {
                   key: 'ban',
@@ -140,6 +158,7 @@ export function ClanMembersScreen({ clanId, onClose }: ClanMembersScreenProps) {
           data={members}
           keyExtractor={(item, index) => `${item.user?.id ?? ''}-${index}`}
           contentContainerClassName="p-2"
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
           onEndReached={() => void loadMore()}
           onEndReachedThreshold={0.4}
           ListFooterComponent={
@@ -191,7 +210,7 @@ export function ClanMembersScreen({ clanId, onClose }: ClanMembersScreenProps) {
                     </Text>
                   </View>
                 </Pressable>
-                {staff && item.role !== 'owner' && (
+                {staff && item.role !== 'owner' && (owner || bannable(item)) && (
                   <Pressable onPress={() => setMenuTarget(item)} className="px-2 py-1" hitSlop={6}>
                     <Text className="text-lg" style={{ color: 'rgba(0,0,0,0.54)' }}>
                       ⋯

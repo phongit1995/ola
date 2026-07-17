@@ -189,6 +189,7 @@ var (
 		"clan name is already taken":                                     true,
 		"you have reached the maximum number of clans you can own":       true,
 		"you are already a member of this clan":                          true,
+		"clan role is already assigned":                                  true,
 	}
 
 	errorsForbidden = map[string]bool{
@@ -225,6 +226,7 @@ var (
 		"only clan staff can do this":                   true,
 		"not a post of this clan":                       true,
 		"cannot pin a clan post":                        true,
+		"cannot delete the clan owner's posts":          true,
 	}
 
 	errorsTooManyRequests = map[string]bool{
@@ -246,33 +248,37 @@ func matchKnownError(msg string, table map[string]bool) bool {
 	return false
 }
 
+func knownStatusFromMessage(msg string) (int, bool) {
+	if matchKnownError(msg, errorsUnauthorized) {
+		return http.StatusUnauthorized, true
+	}
+
+	if matchKnownError(msg, errorsNotFound) {
+		return http.StatusNotFound, true
+	}
+
+	if matchKnownError(msg, errorsConflict) {
+		return http.StatusConflict, true
+	}
+
+	if matchKnownError(msg, errorsForbidden) {
+		return http.StatusForbidden, true
+	}
+
+	if matchKnownError(msg, errorsTooManyRequests) {
+		return http.StatusTooManyRequests, true
+	}
+
+	return 0, false
+}
+
 func HTTPStatusFromError(err error) int {
 	if err == nil {
 		return http.StatusOK
 	}
-
-	msg := err.Error()
-
-	if matchKnownError(msg, errorsUnauthorized) {
-		return http.StatusUnauthorized
+	if status, known := knownStatusFromMessage(err.Error()); known {
+		return status
 	}
-
-	if matchKnownError(msg, errorsNotFound) {
-		return http.StatusNotFound
-	}
-
-	if matchKnownError(msg, errorsConflict) {
-		return http.StatusConflict
-	}
-
-	if matchKnownError(msg, errorsForbidden) {
-		return http.StatusForbidden
-	}
-
-	if matchKnownError(msg, errorsTooManyRequests) {
-		return http.StatusTooManyRequests
-	}
-
 	return http.StatusBadRequest
 }
 

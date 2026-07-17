@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   Image,
   Pressable,
+  RefreshControl,
   ScrollView,
   Text,
   TextInput,
@@ -69,7 +70,14 @@ export function ClanHomeScreen({ onClose, onOpenClan }: ClanHomeScreenProps) {
   const myClans = useClanStore((s) => s.myClans);
   const mineLoading = useClanStore((s) => s.mineLoading);
   const ensureMine = useClanStore((s) => s.ensureMine);
+  const refreshMine = useClanStore((s) => s.refreshMine);
   const pushToast = useToastStore((s) => s.push);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    void refreshMine().finally(() => setRefreshing(false));
+  }, [refreshMine]);
 
   const [createOpen, setCreateOpen] = useState(false);
   const [name, setName] = useState('');
@@ -157,7 +165,10 @@ export function ClanHomeScreen({ onClose, onOpenClan }: ClanHomeScreenProps) {
         }
       />
 
-      <ScrollView className="flex-1 p-2">
+      <ScrollView
+        className="flex-1 p-2"
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      >
         <Text className="px-1 text-base" style={{ color: 'rgba(0,0,0,0.87)' }}>
           {t('clan.myClans')}
         </Text>

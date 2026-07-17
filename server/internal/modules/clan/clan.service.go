@@ -38,6 +38,7 @@ var (
 	errOnlyOwner        = errors.New("only the clan owner can do this")
 	errOnlyStaff        = errors.New("only clan staff can do this")
 	errCannotBanOwner   = errors.New("cannot ban clan staff")
+	errOwnerPostsOnly   = errors.New("cannot delete the clan owner's posts")
 	errClanImageMissing = errors.New("image file is required")
 )
 
@@ -239,13 +240,8 @@ func (s *Service) Update(userID, clanID uuid.UUID, req *UpdateClanRequest) (*Cla
 	if req.MemberPublicPost != nil {
 		updates["member_public_post"] = *req.MemberPublicPost
 	}
-	if len(updates) > 0 {
-		if err := s.repo.UpdateFields(clan.ID, updates); err != nil {
-			return nil, err
-		}
-	}
-
-	if req.MemberPublicPost != nil && !*req.MemberPublicPost && clan.MemberPublicPost {
+	downgradePublic := req.MemberPublicPost != nil && !*req.MemberPublicPost
+	if downgradePublic {
 		staff, err := s.repo.GetStaff(clan.ID)
 		if err != nil {
 			return nil, err
@@ -256,7 +252,11 @@ func (s *Service) Update(userID, clanID uuid.UUID, req *UpdateClanRequest) (*Cla
 				keep = append(keep, staff[i].UserID)
 			}
 		}
-		if err := s.meRepo.DowngradeClanPublicPosts(clan.ID, keep); err != nil {
+		if err := s.repo.UpdateFieldsAndDowngradePublicPosts(clan.ID, updates, keep); err != nil {
+			return nil, err
+		}
+	} else if len(updates) > 0 {
+		if err := s.repo.UpdateFields(clan.ID, updates); err != nil {
 			return nil, err
 		}
 	}
@@ -515,7 +515,8 @@ func (s *Service) Unpin(userID, clanID uuid.UUID) error {
 }
 
 func (s *Service) DeletePost(userID, clanID, postID uuid.UUID) error {
-	if _, err := s.requireStaff(userID, clanID); err != nil {
+	clan, err := s.requireStaff(userID, clanID)
+	if err != nil {
 		return err
 	}
 	post, err := s.meRepo.GetByID(postID)
@@ -524,6 +525,9 @@ func (s *Service) DeletePost(userID, clanID, postID uuid.UUID) error {
 	}
 	if post.ClanID == nil || *post.ClanID != clanID {
 		return ErrNotClanPost
+	}
+	if userID != clan.OwnerID && post.AuthorID == clan.OwnerID {
+		return errOwnerPostsOnly
 	}
 	if err := s.meRepo.Disable(postID); err != nil {
 		return err
@@ -536,6 +540,9 @@ func (s *Service) DeletePostsByUser(userID, clanID, authorID uuid.UUID) error {
 	clan, err := s.requireStaff(userID, clanID)
 	if err != nil {
 		return err
+	}
+	if userID != clan.OwnerID && authorID == clan.OwnerID {
+		return errOwnerPostsOnly
 	}
 	if err := s.meRepo.DisableAllByClanAuthor(clanID, authorID); err != nil {
 		return err

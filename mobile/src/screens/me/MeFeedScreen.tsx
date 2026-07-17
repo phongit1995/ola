@@ -10,7 +10,7 @@ import { useMeNotificationStore } from '@ola/shared/stores/meNotificationStore';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { AuthService, MeService, SocketService } from '@ola/shared/services';
-import { createTimeFormatter, formatDateDMY, isSameDay, toApiError } from '@ola/shared/lib';
+import { createTimeFormatter, filterVisiblePosts, formatDateDMY, isSameDay, toApiError } from '@ola/shared/lib';
 import type { MeFeedFilter, Post, PostReaction } from '@ola/shared/types';
 import { EDIT_WINDOW_MS } from '@ola/shared/constants';
 import { useMeLocalStore } from '@store/meLocalStore';
@@ -116,15 +116,10 @@ export function MeFeedScreen() {
   const quickPost =
     quickCommentPostId != null ? posts.find((p) => p.id === quickCommentPostId) ?? null : null;
 
-  const visiblePosts = useMemo(() => {
-    const hidden = new Set(hiddenPostIds);
-    const blocked = new Set(blockedAuthorIds);
-    if (hidden.size === 0 && blocked.size === 0) return posts;
-    return posts.filter(
-      (item) =>
-        !hidden.has(item.id) && !(item.author?.id != null && blocked.has(item.author.id))
-    );
-  }, [posts, hiddenPostIds, blockedAuthorIds]);
+  const visiblePosts = useMemo(
+    () => filterVisiblePosts(posts, hiddenPostIds, blockedAuthorIds),
+    [posts, hiddenPostIds, blockedAuthorIds]
+  );
 
   useEffect(() => {
     void loadFeed(TAB_FILTER[tab]);

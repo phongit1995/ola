@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMeFeedStore } from './meFeedStore';
 import { useMeLocalStore } from '@/store/meLocalStore';
-import { compressImagesForUpload, createTimeFormatter, toast } from '@lib';
+import { compressImagesForUpload, createTimeFormatter, filterVisiblePosts, toast } from '@lib';
 import { toMePost } from './mappers';
 import { composedToPayload } from './composer';
 import { TAB_FILTER } from './constants';
@@ -45,12 +45,9 @@ export function useMeFeed() {
 
   const posts = useMemo(
     () =>
-      rawPosts
-        .map((post) => toMePost(post, formatTime))
-        .filter(
-          (post) =>
-            !hiddenPostIds.includes(post.id) && !blockedAuthorIds.includes(post.authorId)
-        ),
+      filterVisiblePosts(rawPosts, hiddenPostIds, blockedAuthorIds).map((post) =>
+        toMePost(post, formatTime)
+      ),
     [rawPosts, formatTime, hiddenPostIds, blockedAuthorIds]
   );
 
