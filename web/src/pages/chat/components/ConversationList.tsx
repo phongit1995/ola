@@ -40,16 +40,18 @@ export function ConversationList({
 
   return (
     <>
-      <ul>
-        {conversations.map((conversation) => (
-          <ConversationRow
-            key={conversation.id}
-            view={toConversationView(conversation)}
-            onSelect={onSelect}
-            onRequestDelete={requestDelete}
-          />
-        ))}
-      </ul>
+      <div className="h-full overflow-y-auto">
+        <ul>
+          {conversations.map((conversation) => (
+            <ConversationRow
+              key={conversation.id}
+              view={toConversationView(conversation)}
+              onSelect={onSelect}
+              onRequestDelete={requestDelete}
+            />
+          ))}
+        </ul>
+      </div>
       <ConfirmDialog
         open={pendingDelete != null}
         danger
