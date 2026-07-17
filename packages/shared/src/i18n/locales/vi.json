@@ -1109,7 +1109,9 @@
         "PEN_CATCH": "Bắt Pen",
         "PEN_WIN": "Thắng Pen",
         "PEN_REFUND": "Hoàn Pen",
-        "KEN_CHEST": "Rương KEN"
+        "KEN_CHEST": "Rương KEN",
+        "CLAN_CREATE": "Tạo Clan",
+        "UNKNOWN": "Giao dịch KEN"
       }
     },
     "buy": {

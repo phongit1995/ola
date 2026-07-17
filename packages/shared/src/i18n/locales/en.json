@@ -1109,7 +1109,9 @@
         "PEN_CATCH": "Pen catch",
         "PEN_WIN": "Pen win",
         "PEN_REFUND": "Pen refund",
-        "KEN_CHEST": "KEN chest"
+        "KEN_CHEST": "KEN chest",
+        "CLAN_CREATE": "Clan creation",
+        "UNKNOWN": "KEN transaction"
       }
     },
     "buy": {

@@ -29,7 +29,10 @@ const KEN_TX_META = {
   PEN_WIN: { icon: '🏆', labelKey: 'ken.historyScreen.types.PEN_WIN' },
   PEN_REFUND: { icon: '↩️', labelKey: 'ken.historyScreen.types.PEN_REFUND' },
   KEN_CHEST: { icon: '🧰', labelKey: 'ken.historyScreen.types.KEN_CHEST' },
+  CLAN_CREATE: { icon: '🛡️', labelKey: 'ken.historyScreen.types.CLAN_CREATE' },
 } as const satisfies Record<KenTxType, { icon: string; labelKey: string }>;
+
+const KEN_TX_META_FALLBACK = { icon: '🪙', labelKey: 'ken.historyScreen.types.UNKNOWN' } as const;
 
 const TABS: {
   key: KenHistoryTab;
@@ -42,7 +45,7 @@ const TABS: {
 
 function TransactionRow({ row }: { row: KenHistoryRow }) {
   const { t } = useTranslation();
-  const meta = KEN_TX_META[row.type];
+  const meta = KEN_TX_META[row.type] ?? KEN_TX_META_FALLBACK;
   const credit = row.direction === 'credit';
   const subtitle =
     row.counterpartyName != null && row.counterpartyName !== ''
