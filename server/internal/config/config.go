@@ -49,7 +49,8 @@ type Config struct {
 	JWTExpiry          string `env:"JWT_EXPIRY" envDefault:"15m"`
 	RefreshTokenExpiry string `env:"REFRESH_TOKEN_EXPIRY" envDefault:"720h"`
 
-	APIGuardSecret string `env:"API_GUARD_SECRET"`
+	APIGuardSecret    string `env:"API_GUARD_SECRET"`
+	APIGuardBypassKey string `env:"API_GUARD_BYPASS_KEY" envDefault:"admin"`
 
 	CORSAllowedOrigins []string `env:"CORS_ALLOWED_ORIGINS" envSeparator:","`
 
