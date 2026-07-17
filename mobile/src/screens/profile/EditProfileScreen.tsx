@@ -25,20 +25,17 @@ import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { Avatar } from '@components/ui/Avatar';
 import { AVATAR_OUTPUT, COVER_OUTPUT, pickCroppedImage, pickValidatedCroppedImage } from '@lib/imagePicker';
-import { ChangePasswordDialog } from './ChangePasswordDialog';
-import { VerifyEmailDialog } from './VerifyEmailDialog';
-import { CoverPreviewOverlay } from './CoverPreviewOverlay';
+import { ChangePasswordDialog } from './components/ChangePasswordDialog';
+import { VerifyEmailDialog } from './components/VerifyEmailDialog';
+import { CoverPreviewOverlay } from './components/CoverPreviewOverlay';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
+import { DEFAULT_BIRTHDAY, DIVIDER, PHONE_PATTERN, PLACEHOLDER_COLOR } from './constants';
 
 const cameraIcon = require('@assets/icons/profile/ic_action_camera.png');
 const lockIcon = require('@assets/icons/profile/ic_lock.png');
 const maleIcon = require('@assets/icons/profile/ic_indicate_male.png');
 const femaleIcon = require('@assets/icons/profile/ic_indicate_female.png');
 
-const DIVIDER = 'rgba(0,0,0,0.12)';
-const PHONE_PATTERN = /^[0-9+\-() ]{6,20}$/;
-const PLACEHOLDER_COLOR = '#e34545';
-const DEFAULT_BIRTHDAY = new Date(2000, 0, 1);
 
 function formatDateOnly(date: Date): string {
   const month = String(date.getMonth() + 1).padStart(2, '0');
