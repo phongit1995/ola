@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import { formatKen } from '@ola/shared/lib';
 import type { KenTxType } from '@ola/shared/types';
-import { DIVIDER } from '@constants';
+import { DIVIDER, PRIMARY, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
 import {
   KEN_HISTORY_PAGE,
   useKenHistoryStore,
@@ -40,8 +40,6 @@ const TABS: {
   { key: 'debit', labelKey: 'ken.historyScreen.tabDebit' },
 ];
 
-const MUTED = 'rgba(0,0,0,0.54)';
-const BODY = 'rgba(0,0,0,0.87)';
 function TransactionRow({ row }: { row: KenHistoryRow }) {
   const { t } = useTranslation();
   const meta = KEN_TX_META[row.type];
@@ -61,7 +59,7 @@ function TransactionRow({ row }: { row: KenHistoryRow }) {
         <Text className="text-lg">{meta.icon}</Text>
       </View>
       <View className="min-w-0 flex-1">
-        <Text numberOfLines={1} className="text-sm" style={{ color: BODY }}>
+        <Text numberOfLines={1} className="text-sm" style={{ color: TEXT_PRIMARY }}>
           {t(meta.labelKey)}
         </Text>
         {subtitle != null && subtitle !== '' && (
@@ -115,7 +113,7 @@ export function KenHistorySection() {
             >
               <Text
                 className={active ? 'text-sm font-semibold' : 'text-sm'}
-                style={{ color: active ? '#7cb342' : MUTED }}
+                style={{ color: active ? PRIMARY : TEXT_SECONDARY }}
               >
                 {t(item.labelKey)}
               </Text>
@@ -125,7 +123,7 @@ export function KenHistorySection() {
       </View>
 
       {section.loading && section.groups.length === 0 ? (
-        <ActivityIndicator className="py-8" color="#7cb342" />
+        <ActivityIndicator className="py-8" color={PRIMARY} />
       ) : isEmpty ? (
         <Text className="py-10 text-center text-sm" style={{ color: 'rgba(0,0,0,0.45)' }}>
           {t('ken.historyScreen.empty')}
@@ -171,7 +169,7 @@ export function KenHistorySection() {
               >
                 <Text style={{ color: 'rgba(0,0,0,0.7)' }}>‹</Text>
               </Pressable>
-              <Text className="text-sm" style={{ color: MUTED }}>
+              <Text className="text-sm" style={{ color: TEXT_SECONDARY }}>
                 {section.page + 1}/{pageCount}
               </Text>
               <Pressable

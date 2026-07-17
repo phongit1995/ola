@@ -8,11 +8,7 @@ import type { VipIconInstance } from '@ola/shared/types';
 import { Avatar } from '@components/ui/Avatar';
 import { VipBadge } from '@components/ui/VipBadge';
 import { Dialog, DialogButton } from '@components/ui/Dialog';
-import { DIVIDER } from '@constants';
-
-const MUTED = 'rgba(0,0,0,0.54)';
-const BODY = 'rgba(0,0,0,0.87)';
-const PRIMARY = '#7cb342';
+import { DIVIDER, PRIMARY, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
 
 export interface TradingVipReceiver {
   id: string;
@@ -32,11 +28,11 @@ function ReceiverRow({ receiver }: { receiver: TradingVipReceiver }) {
     <View className="flex-row items-center gap-3 py-2">
       <Avatar name={receiver.name} uri={receiver.avatar ?? undefined} size={40} />
       <View className="min-w-0 flex-1">
-        <Text numberOfLines={1} className="text-base" style={{ color: BODY }}>
+        <Text numberOfLines={1} className="text-base" style={{ color: TEXT_PRIMARY }}>
           {receiver.name}
         </Text>
         {receiver.username != null && (
-          <Text numberOfLines={1} className="text-xs" style={{ color: MUTED }}>
+          <Text numberOfLines={1} className="text-xs" style={{ color: TEXT_SECONDARY }}>
             @{receiver.username}
           </Text>
         )}
@@ -130,14 +126,14 @@ export function TradingVipDialog({ visible, onClose, receiver }: TradingVipDialo
     <Dialog visible={visible} onClose={onClose} title={t('chat.tradingVipTitle')} footer={footer}>
       {step === 'select' ? (
         <View className="px-1 py-1">
-          <Text className="text-base" style={{ color: MUTED }}>
+          <Text className="text-base" style={{ color: TEXT_SECONDARY }}>
             {t('chat.tradingVipReceiverLabel')}
           </Text>
           <View className="mt-1 rounded px-3" style={{ borderWidth: 1, borderColor: DIVIDER }}>
             <ReceiverRow receiver={receiver} />
           </View>
 
-          <Text className="mt-4 text-base" style={{ color: BODY }}>
+          <Text className="mt-4 text-base" style={{ color: TEXT_PRIMARY }}>
             {t('chat.tradingVipSelectLabel')}
           </Text>
           {loading ? (
@@ -145,7 +141,7 @@ export function TradingVipDialog({ visible, onClose, receiver }: TradingVipDialo
               <ActivityIndicator color={PRIMARY} />
             </View>
           ) : vips.length === 0 ? (
-            <Text className="mt-2 text-sm" style={{ color: MUTED }}>
+            <Text className="mt-2 text-sm" style={{ color: TEXT_SECONDARY }}>
               {t('chat.tradingVipEmpty')}
             </Text>
           ) : (
@@ -166,7 +162,7 @@ export function TradingVipDialog({ visible, onClose, receiver }: TradingVipDialo
                       <Text
                         numberOfLines={1}
                         className="w-full text-center"
-                        style={{ fontSize: 10, color: MUTED }}
+                        style={{ fontSize: 10, color: TEXT_SECONDARY }}
                       >
                         {vipName(vip.typeId)}
                       </Text>
@@ -179,24 +175,24 @@ export function TradingVipDialog({ visible, onClose, receiver }: TradingVipDialo
         </View>
       ) : (
         <View className="px-1 py-1">
-          <Text className="text-base" style={{ color: MUTED }}>
+          <Text className="text-base" style={{ color: TEXT_SECONDARY }}>
             {t('chat.tradingVipReceiverLabel')}
           </Text>
           <ReceiverRow receiver={receiver} />
 
-          <Text className="mt-4 text-base" style={{ color: MUTED }}>
+          <Text className="mt-4 text-base" style={{ color: TEXT_SECONDARY }}>
             {t('chat.tradingVipSelectLabel')}
           </Text>
           {selected != null && (
             <View className="mt-2 flex-row items-center gap-2">
               <VipBadge typeId={selected.typeId} size={40} />
-              <Text className="text-sm font-semibold" style={{ color: BODY }}>
+              <Text className="text-sm font-semibold" style={{ color: TEXT_PRIMARY }}>
                 {vipName(selected.typeId)}
               </Text>
             </View>
           )}
 
-          <Text className="mt-4 text-base" style={{ color: BODY }}>
+          <Text className="mt-4 text-base" style={{ color: TEXT_PRIMARY }}>
             {t('chat.tradingVipPasswordLabel')}
           </Text>
           <TextInput
@@ -207,7 +203,7 @@ export function TradingVipDialog({ visible, onClose, receiver }: TradingVipDialo
             placeholder={t('chat.tradingVipPasswordPlaceholder')}
             placeholderTextColor="rgba(0,0,0,0.38)"
             className="mt-1 w-full rounded px-3 py-2 text-base"
-            style={{ borderWidth: 1, borderColor: DIVIDER, color: BODY }}
+            style={{ borderWidth: 1, borderColor: DIVIDER, color: TEXT_PRIMARY }}
           />
         </View>
       )}

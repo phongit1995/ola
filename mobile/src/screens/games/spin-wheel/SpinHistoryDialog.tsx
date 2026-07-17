@@ -3,13 +3,13 @@ import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   Image,
-  Modal,
   Pressable,
   StyleSheet,
   Text,
   View,
   useWindowDimensions,
 } from 'react-native';
+import { OlaModal } from '@components/ui/OlaModal';
 import { createTimeFormatter, formatKen } from '@ola/shared/lib';
 import { WheelService } from '@ola/shared/services';
 import type { WheelSpinHistoryFilter, WheelSpinHistoryItem } from '@ola/shared/types';
@@ -125,7 +125,7 @@ export function SpinHistoryDialog({ onClose }: SpinHistoryDialogProps) {
   const closeMarkWidth = closeWidth * 0.46;
 
   return (
-    <Modal transparent animationType="fade" visible onRequestClose={onClose}>
+    <OlaModal transparent animationType="fade" visible onRequestClose={onClose}>
       <View
         style={{
           flex: 1,
@@ -483,6 +483,6 @@ export function SpinHistoryDialog({ onClose }: SpinHistoryDialogProps) {
           </Pressable>
         </View>
       </View>
-    </Modal>
+    </OlaModal>
   );
 }

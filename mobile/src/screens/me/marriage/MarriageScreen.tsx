@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Modal, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
+import { OlaModal } from '@components/ui/OlaModal';
 import { useMarriageStore } from '@ola/shared/stores/marriageStore';
 import { MarriageBoxView } from './MarriageBoxView';
 import { MarriageLockedView } from './MarriageLockedView';
@@ -24,7 +25,7 @@ export function MarriageScreen({ onClose }: MarriageScreenProps) {
   }, [load]);
 
   return (
-    <Modal visible transparent animationType="slide" onRequestClose={onClose}>
+    <OlaModal visible transparent animationType="slide" onRequestClose={onClose}>
       {composeOpen ? (
         <ProposeComposer onClose={() => setComposeOpen(false)} />
       ) : (
@@ -49,6 +50,6 @@ export function MarriageScreen({ onClose }: MarriageScreenProps) {
           )}
         </View>
       )}
-    </Modal>
+    </OlaModal>
   );
 }

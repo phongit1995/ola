@@ -8,14 +8,12 @@ import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { UserSearchResult } from '@ola/shared/types';
 import { Avatar } from '@components/ui/Avatar';
 import { Dialog, DialogButton } from '@components/ui/Dialog';
-import { DIVIDER } from '@constants';
+import { DIVIDER, PRIMARY, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
 
 const kenIcon = require('@assets/icons/apps/ken.png');
 
 const KEN_TRANSFER_MIN = 1000;
 const KEN_TRANSFER_MAX = 10_000_000;
-const MUTED = 'rgba(0,0,0,0.54)';
-const BODY = 'rgba(0,0,0,0.87)';
 export interface TransferKenReceiver {
   id: string;
   name: string;
@@ -55,11 +53,11 @@ function ReceiverRow({ receiver, onPress }: { receiver: TransferKenReceiver; onP
     >
       <Avatar name={receiver.name} uri={receiver.avatar ?? undefined} size={40} />
       <View className="min-w-0 flex-1">
-        <Text numberOfLines={1} className="text-base" style={{ color: BODY }}>
+        <Text numberOfLines={1} className="text-base" style={{ color: TEXT_PRIMARY }}>
           {receiver.name}
         </Text>
         {receiver.username != null && (
-          <Text numberOfLines={1} className="text-xs" style={{ color: MUTED }}>
+          <Text numberOfLines={1} className="text-xs" style={{ color: TEXT_SECONDARY }}>
             @{receiver.username}
           </Text>
         )}
@@ -194,7 +192,7 @@ export function TransferKenDialog({ visible, onClose, receiver }: TransferKenDia
     <Dialog visible={visible} onClose={onClose} title={title} icon={kenIcon} footer={footer}>
       {step === 'recipient' ? (
         <View className="px-1 py-1">
-          <Text className="text-base" style={{ color: BODY }}>{t('chat.transferKenReceiver')}</Text>
+          <Text className="text-base" style={{ color: TEXT_PRIMARY }}>{t('chat.transferKenReceiver')}</Text>
           <TextInput
             autoFocus
             value={query}
@@ -203,16 +201,16 @@ export function TransferKenDialog({ visible, onClose, receiver }: TransferKenDia
             placeholderTextColor="rgba(0,0,0,0.38)"
             autoCapitalize="none"
             className="mt-1 w-full rounded px-3 py-2 text-base"
-            style={{ borderWidth: 1, borderColor: DIVIDER, color: BODY }}
+            style={{ borderWidth: 1, borderColor: DIVIDER, color: TEXT_PRIMARY }}
           />
           {query.trim() !== '' && (
             <View className="mt-2 rounded" style={{ borderWidth: 1, borderColor: DIVIDER, maxHeight: 224 }}>
               {searching ? (
-                <Text className="py-3 text-center text-sm" style={{ color: MUTED }}>
+                <Text className="py-3 text-center text-sm" style={{ color: TEXT_SECONDARY }}>
                   {t('common.loading')}
                 </Text>
               ) : results.length === 0 ? (
-                <Text className="py-3 text-center text-sm" style={{ color: MUTED }}>
+                <Text className="py-3 text-center text-sm" style={{ color: TEXT_SECONDARY }}>
                   {t('chat.composeSearchEmpty')}
                 </Text>
               ) : (
@@ -233,19 +231,19 @@ export function TransferKenDialog({ visible, onClose, receiver }: TransferKenDia
       ) : step === 'input' ? (
         <View className="px-1 py-1">
           <View className="flex-row items-center justify-center gap-2">
-            <Text className="text-lg font-bold" style={{ color: MUTED }}>
+            <Text className="text-lg font-bold" style={{ color: TEXT_SECONDARY }}>
               {t('chat.transferKenBalance')}
             </Text>
-            <Text className="text-lg font-bold" style={{ color: BODY }}>
+            <Text className="text-lg font-bold" style={{ color: TEXT_PRIMARY }}>
               {formatKen(balance)} {t('chat.transferKenUnit')}
             </Text>
           </View>
           <View className="my-2" style={{ height: 1, backgroundColor: DIVIDER }} />
           <View className="flex-row items-center justify-between">
-            <Text className="text-base" style={{ color: BODY }}>{t('chat.transferKenReceiver')}</Text>
+            <Text className="text-base" style={{ color: TEXT_PRIMARY }}>{t('chat.transferKenReceiver')}</Text>
             {receiver == null && (
               <Pressable onPress={changeReceiver} className="active:opacity-70">
-                <Text className="text-sm font-medium" style={{ color: '#7cb342' }}>
+                <Text className="text-sm font-medium" style={{ color: PRIMARY }}>
                   {t('chat.transferKenChangeReceiver')}
                 </Text>
               </Pressable>
@@ -256,7 +254,7 @@ export function TransferKenDialog({ visible, onClose, receiver }: TransferKenDia
               <ReceiverRow receiver={activeReceiver} />
             </View>
           )}
-          <Text className="mt-4 text-base" style={{ color: BODY }}>
+          <Text className="mt-4 text-base" style={{ color: TEXT_PRIMARY }}>
             {t('chat.transferKenAmountLabel')}
           </Text>
           <TextInput
@@ -267,17 +265,17 @@ export function TransferKenDialog({ visible, onClose, receiver }: TransferKenDia
             placeholder={t('chat.transferKenAmountPlaceholder')}
             placeholderTextColor="rgba(0,0,0,0.38)"
             className="mt-1 w-full rounded px-3 py-2 text-base"
-            style={{ borderWidth: 1, borderColor: DIVIDER, color: BODY }}
+            style={{ borderWidth: 1, borderColor: DIVIDER, color: TEXT_PRIMARY }}
           />
         </View>
       ) : (
         <View className="px-1 py-1">
-          <Text className="text-base" style={{ color: MUTED }}>{t('chat.transferKenReceiver')}</Text>
+          <Text className="text-base" style={{ color: TEXT_SECONDARY }}>{t('chat.transferKenReceiver')}</Text>
           {activeReceiver != null && <ReceiverRow receiver={activeReceiver} />}
-          <Text className="mt-4 text-base" style={{ color: MUTED }}>
+          <Text className="mt-4 text-base" style={{ color: TEXT_SECONDARY }}>
             {t('chat.transferKenConfirmAmountLabel')}
           </Text>
-          <Text className="mt-2 text-lg font-bold" style={{ color: BODY }}>
+          <Text className="mt-2 text-lg font-bold" style={{ color: TEXT_PRIMARY }}>
             {formatKen(amount)} {t('chat.transferKenUnit')}
           </Text>
           <View
@@ -292,7 +290,7 @@ export function TransferKenDialog({ visible, onClose, receiver }: TransferKenDia
               {t('chat.transferKenWarning')}
             </Text>
           </View>
-          <Text className="mt-4 text-base" style={{ color: BODY }}>
+          <Text className="mt-4 text-base" style={{ color: TEXT_PRIMARY }}>
             {t('chat.transferKenPassword')}
           </Text>
           <TextInput
@@ -303,7 +301,7 @@ export function TransferKenDialog({ visible, onClose, receiver }: TransferKenDia
             placeholder={t('chat.transferKenPasswordPlaceholder')}
             placeholderTextColor="rgba(0,0,0,0.38)"
             className="mt-1 w-full rounded px-3 py-2 text-base"
-            style={{ borderWidth: 1, borderColor: DIVIDER, color: BODY }}
+            style={{ borderWidth: 1, borderColor: DIVIDER, color: TEXT_PRIMARY }}
           />
         </View>
       )}

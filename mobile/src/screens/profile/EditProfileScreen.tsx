@@ -4,7 +4,6 @@ import {
   ActivityIndicator,
   Image,
   ImageBackground,
-  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -13,6 +12,7 @@ import {
   View,
 } from 'react-native';
 import { KeyboardView } from '@components/KeyboardView';
+import { OlaModal } from '@components/ui/OlaModal';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -376,7 +376,7 @@ export function EditProfileScreen({ navigation }: Props) {
         />
 
         {Platform.OS === 'ios' && birthdayPickerDate != null && (
-          <Modal transparent animationType="fade" onRequestClose={() => setBirthdayPickerDate(null)}>
+          <OlaModal transparent animationType="fade" onRequestClose={() => setBirthdayPickerDate(null)}>
             <Pressable
               className="flex-1 justify-end"
               style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}
@@ -419,7 +419,7 @@ export function EditProfileScreen({ navigation }: Props) {
                 />
               </Pressable>
             </Pressable>
-          </Modal>
+          </OlaModal>
         )}
 
         {Platform.OS === 'android' && birthdayPickerDate != null && (

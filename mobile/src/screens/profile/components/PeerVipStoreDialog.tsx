@@ -6,9 +6,8 @@ import { ApiError, vipName } from '@ola/shared/lib';
 import type { VipIconInstance } from '@ola/shared/types';
 import { Dialog } from '@components/ui/Dialog';
 import { VipIconImage } from '@screens/vip/components/VipIconImage';
+import { PRIMARY, TEXT_SECONDARY } from '@constants';
 
-const MUTED = 'rgba(0,0,0,0.54)';
-const PRIMARY = '#7cb342';
 const PAGE_SIZE = 100;
 
 type LoadState = 'loading' | 'private' | 'error' | 'ready';
@@ -66,24 +65,24 @@ export function PeerVipStoreDialog({ userId, name, onClose }: PeerVipStoreDialog
       <View style={{ minHeight: 120, maxHeight: 360 }}>
         {state === 'loading' ? (
           <View className="items-center justify-center" style={{ height: 112 }}>
-            <Text className="text-sm" style={{ color: MUTED }}>{t('common.loading')}</Text>
+            <Text className="text-sm" style={{ color: TEXT_SECONDARY }}>{t('common.loading')}</Text>
           </View>
         ) : state === 'private' ? (
           <View className="items-center justify-center px-4" style={{ height: 112 }}>
-            <Text className="text-center text-sm" style={{ color: MUTED }}>{t('vip.storePrivate')}</Text>
+            <Text className="text-center text-sm" style={{ color: TEXT_SECONDARY }}>{t('vip.storePrivate')}</Text>
           </View>
         ) : state === 'error' ? (
           <View className="items-center justify-center" style={{ height: 112 }}>
-            <Text className="text-sm" style={{ color: MUTED }}>{t('common.error')}</Text>
+            <Text className="text-sm" style={{ color: TEXT_SECONDARY }}>{t('common.error')}</Text>
           </View>
         ) : (
           <ScrollView onScroll={handleScroll} scrollEventThrottle={16}>
-            <Text className="mb-1 text-xs" style={{ color: MUTED }}>
+            <Text className="mb-1 text-xs" style={{ color: TEXT_SECONDARY }}>
               {t('vip.collection')} ({total})
             </Text>
             {items.length === 0 ? (
               <View className="items-center justify-center" style={{ height: 80 }}>
-                <Text className="text-sm" style={{ color: MUTED }}>{t('vip.empty')}</Text>
+                <Text className="text-sm" style={{ color: TEXT_SECONDARY }}>{t('vip.empty')}</Text>
               </View>
             ) : (
               <View className="flex-row flex-wrap">
@@ -110,7 +109,7 @@ export function PeerVipStoreDialog({ userId, name, onClose }: PeerVipStoreDialog
                         width: '100%',
                         textAlign: 'center',
                         fontSize: 11,
-                        color: icon.isUsing ? PRIMARY : MUTED,
+                        color: icon.isUsing ? PRIMARY : TEXT_SECONDARY,
                         fontWeight: icon.isUsing ? '700' : '400',
                       }}
                     >
@@ -122,7 +121,7 @@ export function PeerVipStoreDialog({ userId, name, onClose }: PeerVipStoreDialog
             )}
             {loadingMore && (
               <View className="items-center justify-center" style={{ height: 40 }}>
-                <Text className="text-xs" style={{ color: MUTED }}>{t('common.loading')}</Text>
+                <Text className="text-xs" style={{ color: TEXT_SECONDARY }}>{t('common.loading')}</Text>
               </View>
             )}
           </ScrollView>
