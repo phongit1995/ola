@@ -143,6 +143,12 @@ export function ProfilePostList({
   const menuPost =
     menuPostId != null ? posts.find(p => p.id === menuPostId) ?? null : null;
 
+  const openProfile: OpenProfileHandler = (nick, color) => {
+    setCommentPostId(null);
+    setLikersPostId(null);
+    onOpenProfile(nick, color);
+  };
+
   return (
     <>
       <Text
@@ -160,7 +166,7 @@ export function ProfilePostList({
             timeLabel={postTimeLabel(post.createdAt, formatTime)}
             onToggleLike={id => void toggleReaction(id, 'like')}
             onToggleDislike={id => void toggleReaction(id, 'dislike')}
-            onOpenProfile={onOpenProfile}
+            onOpenProfile={openProfile}
             onOpenComments={(id, focusInput) => {
               setCommentFocusInput(focusInput === true);
               setCommentPostId(id);
@@ -181,7 +187,7 @@ export function ProfilePostList({
           onClose={() => setCommentPostId(null)}
           onToggleLike={id => void toggleReaction(id, 'like')}
           onToggleDislike={id => void toggleReaction(id, 'dislike')}
-          onOpenProfile={onOpenProfile}
+          onOpenProfile={openProfile}
           onOpenLikers={id => setLikersPostId(id)}
           onCommentDelta={adjustCommentCount}
         />
@@ -191,7 +197,7 @@ export function ProfilePostList({
         <MeLikersDialog
           postId={likersPostId}
           onClose={() => setLikersPostId(null)}
-          onOpenProfile={onOpenProfile}
+          onOpenProfile={openProfile}
         />
       )}
 
