@@ -298,9 +298,7 @@ export function ChatConversationView({
     setDraft('');
   }
 
-  async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(event.target.files ?? []);
-    event.target.value = '';
+  async function sendImageFiles(files: File[]) {
     if (files.length === 0) return;
     setOpenTab(null);
     for (const file of files) {
@@ -311,6 +309,12 @@ export function ChatConversationView({
         toast.error(error instanceof ImageTooLargeError ? t('chat.imageTooLarge') : t('chat.imageError'));
       }
     }
+  }
+
+  async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(event.target.files ?? []);
+    event.target.value = '';
+    await sendImageFiles(files);
   }
 
   const isTyping = draft.trim() !== '';
@@ -555,6 +559,7 @@ export function ChatConversationView({
           onChange={handleDraftChange}
           onEnter={submitComposer}
           onFocus={() => setOpenTab(null)}
+          onImagePaste={(files) => void sendImageFiles(files)}
           placeholder={t('chat.messageInputPlaceholder', { name })}
           multiline
           className="max-h-32 min-h-9 flex-1 overflow-y-auto bg-transparent px-2 py-1.5 text-base text-black/87"
