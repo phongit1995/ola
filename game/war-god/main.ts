@@ -713,7 +713,7 @@ function layout(): void {
   confirmCard.x = (DESIGN_W - 300) / 2;
   confirmCard.y = designH / 2 - 75;
 
-  layoutLobby(designH);
+  layoutLobby(designH, insetTop, insetBottom);
 }
 
 async function main(): Promise<void> {

@@ -32,6 +32,23 @@ import chatInput from './assets/chat/input.png';
 import chatBtnSend from './assets/chat/btn-send.png';
 import chatIcSmiley from './assets/chat/ic-smiley.png';
 import fxUlt from './assets/fx/ult.png';
+import lobbyBg from './assets/lobby/bg.png';
+import lobbyLogo from './assets/lobby/logo.png';
+import lobbyAvatarFrame from './assets/lobby/avatar-frame.png';
+import lobbyNameFrame from './assets/lobby/name-frame.png';
+import lobbyKenFrame from './assets/lobby/ken-frame.png';
+import lobbyCoin from './assets/lobby/coin.png';
+import lobbyBtnPlus from './assets/lobby/btn-plus.png';
+import lobbyIcPlus from './assets/lobby/ic-plus.png';
+import lobbyBtnWood from './assets/lobby/btn-wood.png';
+import lobbyIcBot from './assets/lobby/ic-bot.png';
+import lobbyIcPvp from './assets/lobby/ic-pvp.png';
+import lobbyMenuPill from './assets/lobby/menu-pill.png';
+import lobbyRing from './assets/lobby/ring.png';
+import lobbyIcHistory from './assets/lobby/ic-history.png';
+import lobbyIcSoundOn from './assets/lobby/ic-sound-on.png';
+import lobbyIcSoundOff from './assets/lobby/ic-sound-off.png';
+import lobbyIcGuide from './assets/lobby/ic-guide.png';
 
 export const A = {
   bg,
@@ -74,6 +91,25 @@ export const A = {
     icSmiley: chatIcSmiley,
   },
   fx: { ult: fxUlt },
+  lobby: {
+    bg: lobbyBg,
+    logo: lobbyLogo,
+    avatarFrame: lobbyAvatarFrame,
+    nameFrame: lobbyNameFrame,
+    kenFrame: lobbyKenFrame,
+    coin: lobbyCoin,
+    btnPlus: lobbyBtnPlus,
+    icPlus: lobbyIcPlus,
+    btnWood: lobbyBtnWood,
+    icBot: lobbyIcBot,
+    icPvp: lobbyIcPvp,
+    menuPill: lobbyMenuPill,
+    ring: lobbyRing,
+    icHistory: lobbyIcHistory,
+    icSoundOn: lobbyIcSoundOn,
+    icSoundOff: lobbyIcSoundOff,
+    icGuide: lobbyIcGuide,
+  },
 } as const;
 
 function collectUrls(node: unknown): string[] {
