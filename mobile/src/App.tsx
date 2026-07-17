@@ -6,8 +6,9 @@ import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer, useNavigationContainerRef } from '@react-navigation/native';
 import type { ParamListBase } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import { setOnUnauthorized } from '@ola/shared/api';
-import { authTokens } from '@ola/shared/lib';
+import { authTokens, toast } from '@ola/shared/lib';
 import { SocketService } from '@ola/shared/services';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useSettingsStore } from '@ola/shared/stores/settingsStore';
@@ -32,12 +33,20 @@ export default function App() {
   useAppNotificationRealtime();
   useKenRealtime();
   const userId = useAuthStore((s) => s.user?.id);
+  const { t } = useTranslation();
   const navigationRef = useNavigationContainerRef<ParamListBase>();
   const routeNameRef = useRef<string | null>(null);
   useEffect(() => {
     if (userId != null) void useSettingsStore.getState().hydrate();
     setTelemetryUser(userId ?? null);
   }, [userId]);
+  useEffect(() => {
+    return SocketService.onForceLogout(({ reason }) => {
+      clearSession();
+      if (reason === 'banned') toast.error(t('auth.banned'));
+      else if (reason !== 'logged_out') toast.info(t('auth.sessionEnded'));
+    });
+  }, [t]);
   useEffect(() => {
     initTelemetry();
     if (!__DEV__) void checkForOtaUpdate();

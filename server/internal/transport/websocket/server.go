@@ -129,8 +129,10 @@ func NewServer(
 			return
 		}
 
+		sessionID := ""
 		if sid, sidErr := jwtService.GetSessionIDFromToken(token); sidErr == nil && sid != uuid.Nil {
-			revokedKey := fmt.Sprintf(constants.CacheKeySessionRevoked, sid.String())
+			sessionID = sid.String()
+			revokedKey := fmt.Sprintf(constants.CacheKeySessionRevoked, sessionID)
 			if revoked, _ := server.cache.Exists(revokedKey); revoked {
 				server.logger.Warnw("WebSocket rejected: session revoked", "user_id", userID, "session_id", sid)
 				next(socket.NewExtendedError("session revoked", nil))
@@ -150,7 +152,7 @@ func NewServer(
 		}
 
 		platform := resolveSocketPlatform(auth, s.Request().Headers().Peek("User-Agent"))
-		data := NewSocketData(userID.String(), platform)
+		data := NewSocketData(userID.String(), platform, sessionID)
 		s.SetData(data)
 
 		server.logger.Infow("WebSocket authenticated", "user_id", userID)
@@ -190,6 +192,13 @@ func (s *Server) DisconnectUser(userID string) {
 	s.logger.Infow("🔌 Force-disconnected user sockets", "user_id", userID)
 }
 
+func (s *Server) DisconnectSession(sessionID, reason string) {
+	room := sessionRoom(sessionID)
+	s.io.To(room).Emit(constants.WebSocketEventForceLogout, map[string]any{"reason": reason})
+	s.io.To(room).DisconnectSockets(true)
+	s.logger.Infow("🔌 Force-disconnected session sockets", "session_id", sessionID, "reason", reason)
+}
+
 func (s *Server) EmitToUsers(userIDs []string, event string, data any) {
 	s.logger.Infow("📤 Emitting WebSocket event to multiple users",
 		"event", event,
@@ -223,6 +232,10 @@ const broadcastRoom = socket.Room("broadcast:online")
 
 func roomChannel(roomID string) socket.Room {
 	return socket.Room("room:" + roomID)
+}
+
+func sessionRoom(sessionID string) socket.Room {
+	return socket.Room("session:" + sessionID)
 }
 
 func (s *Server) BroadcastToAll(eventType string, data any) {

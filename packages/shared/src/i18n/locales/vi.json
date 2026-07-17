@@ -37,7 +37,9 @@
   "auth": {
     "errGeneric": "Đã có lỗi xảy ra, vui lòng thử lại.",
     "errNetwork": "Không kết nối được tới máy chủ. Vui lòng kiểm tra mạng.",
-    "sessionReplaced": "Tài khoản của bạn vừa đăng nhập trên thiết bị khác."
+    "sessionReplaced": "Tài khoản của bạn vừa đăng nhập trên thiết bị khác.",
+    "sessionEnded": "Phiên đăng nhập đã kết thúc, vui lòng đăng nhập lại.",
+    "banned": "Tài khoản của bạn đã bị khóa."
   },
   "connection": {
     "reconnecting": "Đang kết nối lại…"

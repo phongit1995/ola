@@ -37,7 +37,9 @@
   "auth": {
     "errGeneric": "Something went wrong, please try again.",
     "errNetwork": "Unable to connect to the server. Please check your network.",
-    "sessionReplaced": "Your account just signed in on another device."
+    "sessionReplaced": "Your account just signed in on another device.",
+    "sessionEnded": "Your session has ended, please log in again.",
+    "banned": "Your account has been suspended."
   },
   "connection": {
     "reconnecting": "Reconnecting…"

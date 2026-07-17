@@ -8,6 +8,7 @@ import (
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/services"
+	"ola-chat-server/internal/transport/websocket"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -29,14 +30,16 @@ type Service struct {
 	repo   *Repository
 	cache  *services.CacheService
 	cfg    *config.Config
+	ws     *websocket.Server
 	logger *zap.SugaredLogger
 }
 
-func NewService(repo *Repository, cache *services.CacheService, cfg *config.Config, logger *zap.SugaredLogger) *Service {
+func NewService(repo *Repository, cache *services.CacheService, cfg *config.Config, ws *websocket.Server, logger *zap.SugaredLogger) *Service {
 	return &Service{
 		repo:   repo,
 		cache:  cache,
 		cfg:    cfg,
+		ws:     ws,
 		logger: logger.Named("[session_service]"),
 	}
 }
@@ -74,6 +77,7 @@ func (s *Service) Revoke(sessionID uuid.UUID) error {
 		return err
 	}
 	s.markRevoked(sessionID)
+	s.kickSession(sessionID, "logged_out")
 	return nil
 }
 
@@ -88,6 +92,7 @@ func (s *Service) RevokeForUser(userID, sessionID uuid.UUID) (bool, error) {
 	}
 	if found {
 		s.markRevoked(sessionID)
+		s.kickSession(sessionID, "session_revoked")
 	}
 	return found, nil
 }
@@ -119,7 +124,17 @@ func (s *Service) RevokeOthers(userID, keepID uuid.UUID) (int, error) {
 	if err != nil {
 		return 0, err
 	}
+	for _, id := range ids {
+		s.kickSession(id, "session_revoked")
+	}
 	return int(revoked), nil
+}
+
+func (s *Service) kickSession(sessionID uuid.UUID, reason string) {
+	if s.ws == nil {
+		return
+	}
+	s.ws.DisconnectSession(sessionID.String(), reason)
 }
 
 func (s *Service) markRevoked(sessionID uuid.UUID) {
