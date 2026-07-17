@@ -23,14 +23,10 @@ import { MeQuickCommentBar } from './components/MeQuickCommentBar';
 import { MeComposerModal } from './components/MeComposerModal';
 import { MeLeftDrawer } from './components/MeLeftDrawer';
 import { MeRightDrawer } from './components/MeRightDrawer';
-import { MeVisitorsScreen } from './MeVisitorsScreen';
-import { MeLikedPostsScreen } from './MeLikedPostsScreen';
-import { MarriageScreen } from './marriage/MarriageScreen';
 import { ClanOverlayHost } from '@screens/clan/components/ClanOverlayHost';
 import { useClanOverlayStore } from '@store/clanOverlayStore';
 import { MeCommentSheet } from './components/MeCommentSheet';
 import { MeLikersDialog } from './components/MeLikersDialog';
-import { MeNotificationsScreen } from './MeNotificationsScreen';
 import { UserProfileScreen } from '@screens/profile/UserProfileScreen';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
@@ -78,12 +74,8 @@ export function MeFeedScreen() {
   const [commentPostId, setCommentPostId] = useState<string | null>(null);
   const [commentFocusInput, setCommentFocusInput] = useState(false);
   const [likersPostId, setLikersPostId] = useState<string | null>(null);
-  const [notifOpen, setNotifOpen] = useState(false);
   const [profileUsername, setProfileUsername] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [visitorsOpen, setVisitorsOpen] = useState(false);
-  const [likedOpen, setLikedOpen] = useState(false);
-  const [marriageOpen, setMarriageOpen] = useState(false);
   const [menuPostId, setMenuPostId] = useState<string | null>(null);
   const [reportPostId, setReportPostId] = useState<string | null>(null);
   const [deletePostId, setDeletePostId] = useState<string | null>(null);
@@ -199,7 +191,7 @@ export function MeFeedScreen() {
         unreadCount={unreadCount}
         onChangeTab={setTab}
         onOpenDrawer={() => setDrawerOpen(true)}
-        onOpenNotif={() => setNotifOpen(true)}
+        onOpenNotif={() => navigation.navigate(ROOT_ROUTES.MeNotifications)}
         onOpenSearch={() => setSearchOpen(true)}
       />
 
@@ -290,9 +282,9 @@ export function MeFeedScreen() {
             onSelect={(key) => {
               setDrawerOpen(false);
               if (key === 'personal') openProfile(displayName);
-              else if (key === 'marriage') setMarriageOpen(true);
-              else if (key === 'likes') setLikedOpen(true);
-              else if (key === 'visitors') setVisitorsOpen(true);
+              else if (key === 'marriage') navigation.navigate(ROOT_ROUTES.Marriage);
+              else if (key === 'likes') navigation.navigate(ROOT_ROUTES.MeLikedPosts);
+              else if (key === 'visitors') navigation.navigate(ROOT_ROUTES.MeVisitors);
               else if (key === 'clan') useClanOverlayStore.getState().open({ kind: 'home' });
               else comingSoon();
             }}
@@ -376,32 +368,6 @@ export function MeFeedScreen() {
           onOpenProfile={openProfile}
         />
       )}
-
-      {notifOpen && (
-        <MeNotificationsScreen
-          language={i18n.language}
-          onClose={() => setNotifOpen(false)}
-          onOpenProfile={openProfile}
-        />
-      )}
-
-      {visitorsOpen && (
-        <MeVisitorsScreen
-          language={i18n.language}
-          onClose={() => setVisitorsOpen(false)}
-          onOpenProfile={openProfile}
-        />
-      )}
-
-      {likedOpen && (
-        <MeLikedPostsScreen
-          language={i18n.language}
-          onClose={() => setLikedOpen(false)}
-          onOpenProfile={openProfile}
-        />
-      )}
-
-      {marriageOpen && <MarriageScreen onClose={() => setMarriageOpen(false)} />}
 
       <ClanOverlayHost />
 

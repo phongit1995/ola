@@ -1,25 +1,24 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { OlaModal } from '@components/ui/OlaModal';
 import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RelationshipService, UserService } from '@ola/shared/services';
 import { useToastStore } from '@ola/shared/stores/toastStore';
-import { activeVipTypeId, colorForName, createTimeFormatter } from '@ola/shared/lib';
+import { activeVipTypeId, createTimeFormatter } from '@ola/shared/lib';
 import type { VisitorUser } from '@ola/shared/types';
 import { Avatar } from '@components/ui/Avatar';
 import { VipBadge } from '@components/ui/VipBadge';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
+import type { RootStackParamList } from '@navigation/types';
+import { ROOT_ROUTES } from '@navigation/routes';
 
 const PAGE_SIZE = 40;
 
-interface MeVisitorsScreenProps {
-  language: string;
-  onClose: () => void;
-  onOpenProfile: (nick: string, color: string) => void;
-}
-
-export function MeVisitorsScreen({ language, onClose, onOpenProfile }: MeVisitorsScreenProps) {
-  const { t } = useTranslation();
+export function MeVisitorsScreen() {
+  const { t, i18n } = useTranslation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const language = i18n.language;
   const push = useToastStore((s) => s.push);
   const [rows, setRows] = useState<VisitorUser[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
@@ -73,9 +72,8 @@ export function MeVisitorsScreen({ language, onClose, onOpenProfile }: MeVisitor
   }
 
   return (
-    <OlaModal visible transparent animationType="slide" onRequestClose={onClose}>
-      <View className="flex-1 bg-white">
-        <ScreenHeader title={t('me.tabVisitors')} onBack={onClose} />
+    <View className="flex-1 bg-white">
+      <ScreenHeader title={t('me.tabVisitors')} onBack={() => navigation.goBack()} />
 
         {loading ? (
           <ActivityIndicator className="py-6" color="#7cb342" />
@@ -93,7 +91,8 @@ export function MeVisitorsScreen({ language, onClose, onOpenProfile }: MeVisitor
             renderItem={({ item }) => {
               const status = item.relationship?.status ?? 'none';
               const sent = status === 'pending_outgoing' || requested[item.id] === true;
-              const openProfile = () => onOpenProfile(item.username, colorForName(item.username));
+              const openProfile = () =>
+                navigation.navigate(ROOT_ROUTES.ProfileView, { userId: item.username });
               return (
                 <View
                   className="flex-row items-start gap-3 px-4 py-3"
@@ -136,7 +135,6 @@ export function MeVisitorsScreen({ language, onClose, onOpenProfile }: MeVisitor
             }}
           />
         )}
-      </View>
-    </OlaModal>
+    </View>
   );
 }

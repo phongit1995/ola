@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { OlaModal } from '@components/ui/OlaModal';
 import { ActivityIndicator, Text, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { FlashList } from '@shopify/flash-list';
 import { MeService } from '@ola/shared/services';
 import { applyPostReaction } from '@ola/shared/stores/postHelpers';
@@ -12,15 +13,13 @@ import { MePostCard } from './components/MePostCard';
 import { MeCommentSheet } from './components/MeCommentSheet';
 import { MeLikersDialog } from './components/MeLikersDialog';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
+import type { RootStackParamList } from '@navigation/types';
+import { ROOT_ROUTES } from '@navigation/routes';
 
-interface MeLikedPostsScreenProps {
-  language: string;
-  onClose: () => void;
-  onOpenProfile: (nick: string, color: string) => void;
-}
-
-export function MeLikedPostsScreen({ language, onClose, onOpenProfile }: MeLikedPostsScreenProps) {
-  const { t } = useTranslation();
+export function MeLikedPostsScreen() {
+  const { t, i18n } = useTranslation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const language = i18n.language;
   const push = useToastStore((s) => s.push);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
@@ -73,10 +72,15 @@ export function MeLikedPostsScreen({ language, onClose, onOpenProfile }: MeLiked
 
   const commentPost = commentPostId != null ? posts.find((p) => p.id === commentPostId) ?? null : null;
 
+  function openProfile(nick: string) {
+    setCommentPostId(null);
+    setLikersPostId(null);
+    navigation.navigate(ROOT_ROUTES.ProfileView, { userId: nick });
+  }
+
   return (
-    <OlaModal visible transparent animationType="slide" onRequestClose={onClose}>
-      <View className="flex-1 bg-[#eceff1]">
-        <ScreenHeader title={t('me.drawerLikes')} onBack={onClose} />
+    <View className="flex-1 bg-[#eceff1]">
+      <ScreenHeader title={t('me.drawerLikes')} onBack={() => navigation.goBack()} />
 
         {loading && posts.length === 0 ? (
           <ActivityIndicator className="py-10" color="#7cb342" size="large" />
@@ -94,7 +98,7 @@ export function MeLikedPostsScreen({ language, onClose, onOpenProfile }: MeLiked
                 timeLabel={postTimeLabel(item.createdAt, formatTime)}
                 onToggleLike={(id) => void toggleReaction(id, 'like')}
                 onToggleDislike={(id) => void toggleReaction(id, 'dislike')}
-                onOpenProfile={onOpenProfile}
+                onOpenProfile={openProfile}
                 onOpenComments={(id, focusInput) => {
                   setCommentFocusInput(focusInput === true);
                   setCommentPostId(id);
@@ -113,7 +117,7 @@ export function MeLikedPostsScreen({ language, onClose, onOpenProfile }: MeLiked
             onClose={() => setCommentPostId(null)}
             onToggleLike={(id) => void toggleReaction(id, 'like')}
             onToggleDislike={(id) => void toggleReaction(id, 'dislike')}
-            onOpenProfile={onOpenProfile}
+            onOpenProfile={openProfile}
             onOpenLikers={(id) => setLikersPostId(id)}
             onCommentDelta={adjustCommentCount}
           />
@@ -123,10 +127,9 @@ export function MeLikedPostsScreen({ language, onClose, onOpenProfile }: MeLiked
           <MeLikersDialog
             postId={likersPostId}
             onClose={() => setLikersPostId(null)}
-            onOpenProfile={onOpenProfile}
+            onOpenProfile={openProfile}
           />
         )}
-      </View>
-    </OlaModal>
+    </View>
   );
 }

@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { OlaModal } from '@components/ui/OlaModal';
 import { ActivityIndicator, Image, Pressable, Text, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { FlashList } from '@shopify/flash-list';
 import { useMeNotificationStore } from '@ola/shared/stores/meNotificationStore';
 import { useMeFeedStore } from '@ola/shared/stores/meFeedStore';
@@ -13,6 +14,8 @@ import type { MeNotification, MeNotificationType, Post } from '@ola/shared/types
 import { Avatar } from '@components/ui/Avatar';
 import { MeCommentSheet } from './components/MeCommentSheet';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
+import type { RootStackParamList } from '@navigation/types';
+import { ROOT_ROUTES } from '@navigation/routes';
 
 const likeIcon = require('@assets/icons/notify/ic_notification_like.png');
 const commentIcon = require('@assets/icons/notify/ic_notification_comment.png');
@@ -30,14 +33,10 @@ function NotificationSeparator() {
   return <View style={{ height: 1, marginHorizontal: 16, backgroundColor: 'rgba(0,0,0,0.12)' }} />;
 }
 
-interface MeNotificationsScreenProps {
-  language: string;
-  onClose: () => void;
-  onOpenProfile: (nick: string, color: string) => void;
-}
-
-export function MeNotificationsScreen({ language, onClose, onOpenProfile }: MeNotificationsScreenProps) {
-  const { t } = useTranslation();
+export function MeNotificationsScreen() {
+  const { t, i18n } = useTranslation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const language = i18n.language;
   const push = useToastStore((s) => s.push);
   const items = useMeNotificationStore((s) => s.items);
   const loading = useMeNotificationStore((s) => s.loading);
@@ -97,10 +96,14 @@ export function MeNotificationsScreen({ language, onClose, onOpenProfile }: MeNo
     );
   }
 
+  function openProfile(nick: string) {
+    setOpenPost(null);
+    navigation.navigate(ROOT_ROUTES.ProfileView, { userId: nick });
+  }
+
   return (
-    <OlaModal visible transparent animationType="slide" onRequestClose={onClose}>
-      <View className="flex-1 bg-[#f3f3f3]">
-        <ScreenHeader title={t('me.notifTitle')} onBack={onClose} />
+    <View className="flex-1 bg-[#f3f3f3]">
+      <ScreenHeader title={t('me.notifTitle')} onBack={() => navigation.goBack()} />
 
         {loading && items.length === 0 ? (
           <ActivityIndicator className="py-10" color="#7cb342" />
@@ -154,12 +157,11 @@ export function MeNotificationsScreen({ language, onClose, onOpenProfile }: MeNo
             onClose={() => setOpenPost(null)}
             onToggleLike={(id) => toggleReaction(id, 'like')}
             onToggleDislike={(id) => toggleReaction(id, 'dislike')}
-            onOpenProfile={onOpenProfile}
+            onOpenProfile={openProfile}
             onOpenLikers={() => push('info', t('me.comingSoon'))}
             onCommentDelta={adjustCommentCount}
           />
         )}
-      </View>
-    </OlaModal>
+    </View>
   );
 }

@@ -38,6 +38,10 @@ import { PenGameScreen } from '@screens/games/pen/PenGameScreen';
 import { SpinWheelGameScreen } from '@screens/games/spin-wheel/SpinWheelGameScreen';
 import { EggGameScreen } from '@screens/games/egg/EggGameScreen';
 import { ArcadeGameScreen } from '@screens/apps/ArcadeGameScreen';
+import { MeVisitorsScreen } from '@screens/me/MeVisitorsScreen';
+import { MeLikedPostsScreen } from '@screens/me/MeLikedPostsScreen';
+import { MeNotificationsScreen } from '@screens/me/MeNotificationsScreen';
+import { MarriageScreen } from '@screens/me/marriage/MarriageScreen';
 import { TAB_ICONS } from '@assets/tabIcons';
 import { KenBalanceBadge } from '@components/ui/KenBalanceBadge';
 import { mmkvStorage } from '@platform/storage';
@@ -219,6 +223,10 @@ export function RootNavigator() {
       <RootStack.Screen name={ROOT_ROUTES.SpinWheel} component={SpinWheelGameScreen} />
       <RootStack.Screen name={ROOT_ROUTES.EggGame} component={EggGameScreen} />
       <RootStack.Screen name={ROOT_ROUTES.ArcadeGame} component={ArcadeGameScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.MeVisitors} component={MeVisitorsScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.MeLikedPosts} component={MeLikedPostsScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.MeNotifications} component={MeNotificationsScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.Marriage} component={MarriageScreen} />
     </RootStack.Navigator>
   );
 }
