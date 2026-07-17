@@ -14,7 +14,7 @@ import {
   MeCommentComposer,
   type MeCommentComposerHandle,
 } from './MeCommentComposer';
-import { useMeComments } from './useMeComments';
+import { useMeComments } from '../useMeComments';
 
 interface MeCommentSheetProps {
   post: Post;

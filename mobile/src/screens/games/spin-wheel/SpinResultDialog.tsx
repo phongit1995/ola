@@ -11,7 +11,7 @@ import {
   type ImageSourcePropType,
 } from 'react-native';
 import type { WheelSpinResult } from '@ola/shared/types';
-import { VipIconImage } from '@screens/vip/VipIconImage';
+import { VipIconImage } from '@screens/vip/components/VipIconImage';
 import { assetRatio } from '@screens/games/pen/penUi';
 import { wheelAssets } from './spinWheelAssets';
 import { formatRewardKen, isKenKind, isVipDaysKind } from './spinWheelReward';

@@ -13,7 +13,7 @@ import {
 import { createTimeFormatter, formatKen } from '@ola/shared/lib';
 import { WheelService } from '@ola/shared/services';
 import type { WheelSpinHistoryFilter, WheelSpinHistoryItem } from '@ola/shared/types';
-import { VipIconImage } from '@screens/vip/VipIconImage';
+import { VipIconImage } from '@screens/vip/components/VipIconImage';
 import { VerticalGradient, assetRatio } from '@screens/games/pen/penUi';
 import { wheelAssets, wheelHistoryAssets } from './spinWheelAssets';
 import { formatRewardKen, isKenKind, isVipDaysKind } from './spinWheelReward';

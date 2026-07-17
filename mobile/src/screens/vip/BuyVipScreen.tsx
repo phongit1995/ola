@@ -21,7 +21,7 @@ import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { Dialog } from '@components/ui/Dialog';
 import { Avatar } from '@components/ui/Avatar';
 import { ListOptionDialog, type ListOption } from '@components/ui/ListOptionDialog';
-import { VipIconImage } from './VipIconImage';
+import { VipIconImage } from './components/VipIconImage';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 
 export type { BuyVipMode };

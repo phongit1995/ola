@@ -29,11 +29,11 @@ import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { kulImageForText } from '@lib/kul';
 import { SmileyText } from '@lib/richText';
 import { ListOptionDialog, type ListOption } from '@components/ui/ListOptionDialog';
-import { BlockedListDialog } from './BlockedListDialog';
-import { ComposeDialog } from './ComposeDialog';
-import { ChangeAvatarDialog } from './ChangeAvatarDialog';
-import { ChangeCoverDialog } from './ChangeCoverDialog';
-import { ContactsPane } from './ContactsPane';
+import { BlockedListDialog } from './components/BlockedListDialog';
+import { ComposeDialog } from './components/ComposeDialog';
+import { ChangeAvatarDialog } from './components/ChangeAvatarDialog';
+import { ChangeCoverDialog } from './components/ChangeCoverDialog';
+import { ContactsPane } from './components/ContactsPane';
 import { useConversationsWithPresence, usePresenceListPolling } from '@hooks/usePresence';
 
 const sentIcon = require('@assets/icons/chat/ic_message_sent.png');

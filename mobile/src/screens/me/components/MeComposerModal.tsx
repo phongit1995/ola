@@ -30,7 +30,7 @@ import { useLastKeyboardHeight } from '@hooks/useKeyboardHeight';
 import {
   SmileyKulPanel,
   SMILEY_PANEL_MIN_CONTENT_HEIGHT,
-} from '@screens/room/SmileyKulPanel';
+} from '@screens/room/components/SmileyKulPanel';
 import { MeComposerTagPanel } from './MeComposerTagPanel';
 import {
   MeComposerCheckInPanel,

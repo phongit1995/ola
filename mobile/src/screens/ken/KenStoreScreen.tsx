@@ -9,9 +9,9 @@ import { useToastStore } from '@ola/shared/stores/toastStore';
 import { selectTopupEnabled, useTopupConfigStore } from '@ola/shared/stores/topupConfigStore';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
-import { KenCoin } from './KenCoin';
-import { KenHistorySection } from './KenHistorySection';
-import { TransferKenDialog } from './TransferKenDialog';
+import { KenCoin } from './components/KenCoin';
+import { KenHistorySection } from './components/KenHistorySection';
+import { TransferKenDialog } from './components/TransferKenDialog';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 
 const KEN_LOW_THRESHOLD = 10_000;

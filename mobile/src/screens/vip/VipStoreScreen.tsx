@@ -12,7 +12,7 @@ import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { ListOptionDialog, type ListOption } from '@components/ui/ListOptionDialog';
-import { VipIconImage } from './VipIconImage';
+import { VipIconImage } from './components/VipIconImage';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 
 const PRIVACY_KEYS = ['privacyPublic', 'privacyFriends', 'privacyPrivate'] as const;

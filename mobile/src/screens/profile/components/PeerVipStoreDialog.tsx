@@ -5,7 +5,7 @@ import { VipService } from '@ola/shared/services';
 import { ApiError, vipName } from '@ola/shared/lib';
 import type { VipIconInstance } from '@ola/shared/types';
 import { Dialog } from '@components/ui/Dialog';
-import { VipIconImage } from '@screens/vip/VipIconImage';
+import { VipIconImage } from '@screens/vip/components/VipIconImage';
 
 const MUTED = 'rgba(0,0,0,0.54)';
 const PRIMARY = '#7cb342';

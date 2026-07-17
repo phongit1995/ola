@@ -5,7 +5,7 @@ import { createTimeFormatter } from '@ola/shared/lib';
 import { EggService } from '@ola/shared/services';
 import type { EggDrawHistoryFilter, EggDrawHistoryItem } from '@ola/shared/types';
 import { Dialog, DialogButton } from '@components/ui/Dialog';
-import { VipIconImage } from '@screens/vip/VipIconImage';
+import { VipIconImage } from '@screens/vip/components/VipIconImage';
 import { eggAssets } from './eggAssets';
 
 const PAGE_SIZE = 20;

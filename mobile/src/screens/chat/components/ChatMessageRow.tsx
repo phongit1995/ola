@@ -9,7 +9,7 @@ import { kulImageForText } from '@lib/kul';
 import { reactionChips } from '@lib/reactions';
 import { imageSizeForHeight } from '@lib/chatSmiley';
 import { RichTextView } from '@components/ui/RichTextView';
-import type { AnchorRect } from '@screens/room/MessageActionSheet';
+import type { AnchorRect } from '@screens/room/components/MessageActionSheet';
 
 function chatBubbleTextMaxWidth(windowWidth: number, fromMe: boolean): number {
   const rowWidth = windowWidth - 24 - (fromMe ? 0 : 36);

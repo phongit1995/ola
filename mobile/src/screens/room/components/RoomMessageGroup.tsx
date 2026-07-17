@@ -10,8 +10,8 @@ import { RichTextView } from '@components/ui/RichTextView';
 import { VipAvatar } from '@components/ui/VipAvatar';
 import { useMediaViewerStore } from '@store/mediaViewerStore';
 import type { AnchorRect } from './MessageActionSheet';
-import type { BubblePosition, GroupedMessage, MessageGroup } from './messageGroups';
-import { OTHER_CORNERS, OWN_CORNERS, roomBubbleTextMaxWidth } from './roomConstants';
+import type { BubblePosition, GroupedMessage, MessageGroup } from '../messageGroups';
+import { OTHER_CORNERS, OWN_CORNERS, roomBubbleTextMaxWidth } from '../roomConstants';
 
 const mentionIcon = require('@assets/icons/room/ic_tag_people.png');
 const photoIcon = require('@assets/icons/chat/ic_local.png');

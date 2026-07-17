@@ -1,10 +1,10 @@
 import { OlaModal } from '@components/ui/OlaModal';
 import { useClanOverlayStore, type ClanOverlayEntry } from '@store/clanOverlayStore';
-import { ClanHomeScreen } from './ClanHomeScreen';
-import { ClanScreen } from './ClanScreen';
-import { ClanMembersScreen } from './ClanMembersScreen';
-import { ClanManageScreen } from './ClanManageScreen';
-import { ClanBansScreen } from './ClanBansScreen';
+import { ClanHomeScreen } from '../ClanHomeScreen';
+import { ClanScreen } from '../ClanScreen';
+import { ClanMembersScreen } from '../ClanMembersScreen';
+import { ClanManageScreen } from '../ClanManageScreen';
+import { ClanBansScreen } from '../ClanBansScreen';
 
 function ClanEntryScreen({ entry }: { entry: ClanOverlayEntry }) {
   const back = useClanOverlayStore((s) => s.back);

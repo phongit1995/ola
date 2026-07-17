@@ -33,11 +33,11 @@ import { ListOptionDialog, type ListOption } from '@components/ui/ListOptionDial
 import { ReportDialog } from '@components/ui/ReportDialog';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { MediaViewerModal } from '@components/ui/MediaViewer';
-import { MePostCard } from '@screens/me/MePostCard';
-import { MeComposerModal } from '@screens/me/MeComposerModal';
-import { MeCommentSheet } from '@screens/me/MeCommentSheet';
-import { MeQuickCommentBar } from '@screens/me/MeQuickCommentBar';
-import { MeLikersDialog } from '@screens/me/MeLikersDialog';
+import { MePostCard } from '@screens/me/components/MePostCard';
+import { MeComposerModal } from '@screens/me/components/MeComposerModal';
+import { MeCommentSheet } from '@screens/me/components/MeCommentSheet';
+import { MeQuickCommentBar } from '@screens/me/components/MeQuickCommentBar';
+import { MeLikersDialog } from '@screens/me/components/MeLikersDialog';
 import { UserProfileScreen } from '@screens/profile/UserProfileScreen';
 import {
   CLAN_ROLE_ICONS,

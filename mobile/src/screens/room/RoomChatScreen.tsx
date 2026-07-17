@@ -14,9 +14,9 @@ import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { ReactionType } from '@ola/shared/types';
 import type { MainTabParamList, RoomStackParamList, RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES, TAB_ROUTES } from '@navigation/routes';
-import { RoomMessagesTab } from './RoomMessagesTab';
-import { RoomMembersTab } from './RoomMembersTab';
-import { RoomFilterDialog } from './RoomFilterDialog';
+import { RoomMessagesTab } from './components/RoomMessagesTab';
+import { RoomMembersTab } from './components/RoomMembersTab';
+import { RoomFilterDialog } from './components/RoomFilterDialog';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 
 type Props = CompositeScreenProps<

@@ -11,11 +11,11 @@ import type { Post } from '@ola/shared/types';
 import { useMeLocalStore } from '@store/meLocalStore';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { ListOptionDialog, type ListOption } from '@components/ui/ListOptionDialog';
-import { MePostCard } from '@screens/me/MePostCard';
-import { MeCommentSheet } from '@screens/me/MeCommentSheet';
-import { MeLikersDialog } from '@screens/me/MeLikersDialog';
-import { MeQuickCommentBar } from '@screens/me/MeQuickCommentBar';
-import { MeComposerModal } from '@screens/me/MeComposerModal';
+import { MePostCard } from '@screens/me/components/MePostCard';
+import { MeCommentSheet } from '@screens/me/components/MeCommentSheet';
+import { MeLikersDialog } from '@screens/me/components/MeLikersDialog';
+import { MeQuickCommentBar } from '@screens/me/components/MeQuickCommentBar';
+import { MeComposerModal } from '@screens/me/components/MeComposerModal';
 import type { OpenProfileHandler, OpenViewerHandler } from '../types';
 
 interface ProfilePostListProps {

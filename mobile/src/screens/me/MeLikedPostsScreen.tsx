@@ -7,9 +7,9 @@ import { applyPostReaction } from '@ola/shared/stores/postHelpers';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { createTimeFormatter, postTimeLabel } from '@ola/shared/lib';
 import type { Post } from '@ola/shared/types';
-import { MePostCard } from './MePostCard';
-import { MeCommentSheet } from './MeCommentSheet';
-import { MeLikersDialog } from './MeLikersDialog';
+import { MePostCard } from './components/MePostCard';
+import { MeCommentSheet } from './components/MeCommentSheet';
+import { MeLikersDialog } from './components/MeLikersDialog';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 
 interface MeLikedPostsScreenProps {

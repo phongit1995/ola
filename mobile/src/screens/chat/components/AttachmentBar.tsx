@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { ImageSourcePropType } from 'react-native';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { useLastKeyboardHeight } from '@hooks/useKeyboardHeight';
-import { SmileyKulPanel, SMILEY_PANEL_MIN_CONTENT_HEIGHT } from '@screens/room/SmileyKulPanel';
+import { SmileyKulPanel, SMILEY_PANEL_MIN_CONTENT_HEIGHT } from '@screens/room/components/SmileyKulPanel';
 import { VoicePanel } from './VoicePanel';
 import type { VoiceRecording } from '@hooks/useVoiceRecorder';
 

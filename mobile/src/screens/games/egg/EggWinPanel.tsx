@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Animated, Easing, Image, Pressable, Text, View } from 'react-native';
 import type { EggDrawResult } from '@ola/shared/types';
 import { useEggGameStore } from '@ola/shared/stores/eggGameStore';
-import { VipIconImage } from '@screens/vip/VipIconImage';
+import { VipIconImage } from '@screens/vip/components/VipIconImage';
 import { eggAssets } from './eggAssets';
 
 const CARD_H = 250;
