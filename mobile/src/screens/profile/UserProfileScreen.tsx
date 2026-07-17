@@ -32,24 +32,24 @@ import type { FollowUser, Post, PublicProfile } from '@ola/shared/types';
 import { EDIT_WINDOW_MS, MIN_IMAGE_SOURCE } from '@ola/shared/constants';
 import { useMeLocalStore } from '@store/meLocalStore';
 import { pickSingleImage } from '@lib/imagePicker';
-import { MediaViewerModal } from '@components/MediaViewer';
-import { Avatar } from '@components/Avatar';
-import { VipAvatar } from '@components/VipAvatar';
-import { ConfirmDialog } from '@components/ConfirmDialog';
+import { MediaViewerModal } from '@components/ui/MediaViewer';
+import { Avatar } from '@components/ui/Avatar';
+import { VipAvatar } from '@components/ui/VipAvatar';
+import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { MePostCard } from '@screens/me/MePostCard';
 import { MeCommentSheet } from '@screens/me/MeCommentSheet';
 import { MeLikersDialog } from '@screens/me/MeLikersDialog';
 import {
   ListOptionDialog,
   type ListOption,
-} from '@components/ListOptionDialog';
-import { ReportDialog } from '@components/ReportDialog';
+} from '@components/ui/ListOptionDialog';
+import { ReportDialog } from '@components/ui/ReportDialog';
 import { MeQuickCommentBar } from '@screens/me/MeQuickCommentBar';
 import { MeComposerModal } from '@screens/me/MeComposerModal';
 import { FollowingListOverlay } from './FollowingListOverlay';
 import { PeerVipStoreDialog } from './PeerVipStoreDialog';
-import { OlaModal } from '@components/OlaModal';
-import { ScreenHeader } from '@components/ScreenHeader';
+import { OlaModal } from '@components/ui/OlaModal';
+import { ScreenHeader } from '@components/ui/ScreenHeader';
 
 const checkedIcon = require('@assets/icons/profile/ic_checked.png');
 const kissIcon = require('@assets/icons/profile/sticker_kiss.png');

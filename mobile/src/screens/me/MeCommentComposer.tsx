@@ -5,7 +5,7 @@ import { useAuthStore } from '@ola/shared/stores/authStore';
 import { ChatComposer, type ChatComposerHandle } from '@components/ChatComposer';
 import { useLastKeyboardHeight } from '@hooks/useKeyboardHeight';
 import { SmileyKulPanel, SMILEY_PANEL_MIN_CONTENT_HEIGHT } from '@screens/room/SmileyKulPanel';
-import { Avatar } from '@components/Avatar';
+import { Avatar } from '@components/ui/Avatar';
 
 const smileyIcon = require('@assets/icons/chat/ic_smiley.png');
 const smileyIconActive = require('@assets/icons/chat/ic_smiley_selected.png');

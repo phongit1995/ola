@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, Text, View } from 'react-native';
 import type { RoomFilters } from '@ola/shared/types';
-import { Dialog, DialogButton } from '@components/Dialog';
+import { Dialog, DialogButton } from '@components/ui/Dialog';
 
 const FILTER_KEYS = [
   { key: 'showAll', labelKey: 'room.filterShowAll' },

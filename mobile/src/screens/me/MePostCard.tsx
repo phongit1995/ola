@@ -15,7 +15,7 @@ import type { Post, PostAuthor, PostCheckIn } from '@ola/shared/types';
 import { imageSizeForHeight } from '@lib/chatSmiley';
 import { renderRichText } from '@lib/richText';
 import { stickerImageForCode } from '@lib/kul';
-import { Avatar } from '@components/Avatar';
+import { Avatar } from '@components/ui/Avatar';
 
 const moreIcon = require('@assets/icons/me/ic_more.png');
 const replyIcon = require('@assets/icons/me/ic_action_reply_gray.png');

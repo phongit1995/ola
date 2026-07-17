@@ -5,9 +5,9 @@ import { toApiError, vipName } from '@ola/shared/lib';
 import { VipService } from '@ola/shared/services';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { VipIconInstance } from '@ola/shared/types';
-import { Avatar } from '@components/Avatar';
-import { VipBadge } from '@components/VipBadge';
-import { Dialog, DialogButton } from '@components/Dialog';
+import { Avatar } from '@components/ui/Avatar';
+import { VipBadge } from '@components/ui/VipBadge';
+import { Dialog, DialogButton } from '@components/ui/Dialog';
 
 const MUTED = 'rgba(0,0,0,0.54)';
 const BODY = 'rgba(0,0,0,0.87)';

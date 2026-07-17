@@ -6,8 +6,8 @@ import { colorForName } from '@ola/shared/lib';
 import { ClanService } from '@ola/shared/services';
 import type { ClanBan } from '@ola/shared/types';
 import { useToastStore } from '@ola/shared/stores/toastStore';
-import { Avatar } from '@components/Avatar';
-import { ScreenHeader } from '@components/ScreenHeader';
+import { Avatar } from '@components/ui/Avatar';
+import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { clanErrorText } from '@lib/clanHelpers';
 
 interface ClanBansScreenProps {

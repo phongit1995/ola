@@ -1,5 +1,5 @@
 import { Image, Pressable, Text, View } from 'react-native';
-import { VipAvatar } from '@components/VipAvatar';
+import { VipAvatar } from '@components/ui/VipAvatar';
 import type { Contact } from './contacts';
 import { DEVICE_ICONS } from '@lib/deviceIcons';
 

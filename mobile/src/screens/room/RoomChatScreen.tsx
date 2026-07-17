@@ -17,7 +17,7 @@ import { ROOT_ROUTES, TAB_ROUTES } from '@navigation/routes';
 import { RoomMessagesTab } from './RoomMessagesTab';
 import { RoomMembersTab } from './RoomMembersTab';
 import { RoomFilterDialog } from './RoomFilterDialog';
-import { ConfirmDialog } from '@components/ConfirmDialog';
+import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 
 type Props = CompositeScreenProps<
   NativeStackScreenProps<RoomStackParamList, 'RoomChat'>,

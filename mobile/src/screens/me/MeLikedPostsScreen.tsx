@@ -10,7 +10,7 @@ import type { Post } from '@ola/shared/types';
 import { MePostCard } from './MePostCard';
 import { MeCommentSheet } from './MeCommentSheet';
 import { MeLikersDialog } from './MeLikersDialog';
-import { ScreenHeader } from '@components/ScreenHeader';
+import { ScreenHeader } from '@components/ui/ScreenHeader';
 
 interface MeLikedPostsScreenProps {
   language: string;

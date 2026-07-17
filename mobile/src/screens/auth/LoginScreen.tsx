@@ -21,7 +21,7 @@ import {
   useSavedAccountsStore,
   type SavedAccount,
 } from '@ola/shared/stores/savedAccountsStore';
-import { ClearableInput } from '@components/ClearableInput';
+import { ClearableInput } from '@components/form/ClearableInput';
 import { LanguageSwitcher } from '@components/LanguageSwitcher';
 import { SavedAccountGallery } from './SavedAccountGallery';
 import type { AuthStackParamList } from '@navigation/types';

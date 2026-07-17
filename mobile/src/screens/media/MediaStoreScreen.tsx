@@ -17,7 +17,7 @@ import type { MePhoto } from '@ola/shared/types';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { useMediaViewerStore } from '@store/mediaViewerStore';
-import { ScreenHeader } from '@components/ScreenHeader';
+import { ScreenHeader } from '@components/ui/ScreenHeader';
 
 const PAGE_SIZE = 50;
 const MUTED = 'rgba(0,0,0,0.45)';

@@ -3,12 +3,12 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Image, Pressable, Text, useWindowDimensions, View } from 'react-native';
 import { formatDuration, parseMessageMetadata } from '@ola/shared/lib';
 import type { ChatReplySnapshot, Message } from '@ola/shared/types';
-import { Avatar } from '@components/Avatar';
-import { VoiceBubble } from '@components/VoiceBubble';
+import { Avatar } from '@components/ui/Avatar';
+import { VoiceBubble } from '@components/ui/VoiceBubble';
 import { kulImageForText } from '@lib/kul';
 import { reactionChips } from '@lib/reactions';
 import { imageSizeForHeight } from '@lib/chatSmiley';
-import { RichTextView } from '@components/RichTextView';
+import { RichTextView } from '@components/ui/RichTextView';
 import type { AnchorRect } from '@screens/room/MessageActionSheet';
 
 function chatBubbleTextMaxWidth(windowWidth: number, fromMe: boolean): number {

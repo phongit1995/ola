@@ -4,9 +4,9 @@ import { Image, Pressable, Text, View } from 'react-native';
 import { colorForName } from '@ola/shared/lib';
 import type { PostAuthor, PostComment } from '@ola/shared/types';
 import { renderRichText } from '@lib/richText';
-import { Avatar } from '@components/Avatar';
-import { ConfirmDialog } from '@components/ConfirmDialog';
-import { ReportDialog } from '@components/ReportDialog';
+import { Avatar } from '@components/ui/Avatar';
+import { ConfirmDialog } from '@components/ui/ConfirmDialog';
+import { ReportDialog } from '@components/ui/ReportDialog';
 import { MeLikersDialog } from './MeLikersDialog';
 
 const replyIcon = require('@assets/icons/me/ic_action_reply_gray.png');

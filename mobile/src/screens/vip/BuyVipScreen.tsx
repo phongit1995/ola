@@ -17,12 +17,12 @@ import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { VipIconCatalogItem, VipPackageItem, UserSearchResult } from '@ola/shared/types';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
-import { ConfirmDialog } from '@components/ConfirmDialog';
-import { Dialog } from '@components/Dialog';
-import { Avatar } from '@components/Avatar';
-import { ListOptionDialog, type ListOption } from '@components/ListOptionDialog';
+import { ConfirmDialog } from '@components/ui/ConfirmDialog';
+import { Dialog } from '@components/ui/Dialog';
+import { Avatar } from '@components/ui/Avatar';
+import { ListOptionDialog, type ListOption } from '@components/ui/ListOptionDialog';
 import { VipIconImage } from './VipIconImage';
-import { ScreenHeader } from '@components/ScreenHeader';
+import { ScreenHeader } from '@components/ui/ScreenHeader';
 
 export type { BuyVipMode };
 

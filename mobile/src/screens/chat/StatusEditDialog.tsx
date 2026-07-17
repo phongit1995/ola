@@ -7,7 +7,7 @@ import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { UpdateProfileRequest } from '@ola/shared/types';
 import { pickSingleImage } from '@lib/imagePicker';
-import { Dialog, DialogButton } from '@components/Dialog';
+import { Dialog, DialogButton } from '@components/ui/Dialog';
 
 const snapPicIcon = require('@assets/icons/chat/icon_snap_pic.png');
 

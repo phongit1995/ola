@@ -2,7 +2,7 @@ import { Linking, Text } from 'react-native';
 import { splitSmileys } from '@lib/chatSmiley';
 import { renderRichText } from '@lib/richText';
 import { measureRichText, richTextNativeAvailable } from '@lib/richTextNativeConfig';
-import OlaRichTextViewNative from '../specs/OlaRichTextViewNativeComponent';
+import OlaRichTextViewNative from '../../specs/OlaRichTextViewNativeComponent';
 
 let nativeRichTextEnabled = true;
 

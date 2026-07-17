@@ -16,7 +16,7 @@ import { VipService } from '@ola/shared/services';
 import type { UserSettings } from '@ola/shared/types';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
-import { ScreenHeader } from '@components/ScreenHeader';
+import { ScreenHeader } from '@components/ui/ScreenHeader';
 
 const PRIMARY = '#7cb342';
 const ROW_BORDER = 'rgba(0,0,0,0.06)';

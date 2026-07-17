@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Animated, BackHandler, Image, ImageBackground, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
-import { Avatar } from '@components/Avatar';
+import { Avatar } from '@components/ui/Avatar';
 
 const personalIcon = require('@assets/icons/me/ic_indicate_personal.png');
 const boxIcon = require('@assets/icons/me/ic_indicate_box.png');

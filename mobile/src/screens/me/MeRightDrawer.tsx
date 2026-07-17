@@ -5,9 +5,9 @@ import { UserService } from '@ola/shared/services';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { activeVipTypeId, colorForName } from '@ola/shared/lib';
 import { useMeLocalStore, type ViewedProfile } from '@store/meLocalStore';
-import { Avatar } from '@components/Avatar';
-import { VipBadge } from '@components/VipBadge';
-import { ConfirmDialog } from '@components/ConfirmDialog';
+import { Avatar } from '@components/ui/Avatar';
+import { VipBadge } from '@components/ui/VipBadge';
+import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 
 const searchEmptyIcon = require('@assets/icons/me/ic_action_search.png');
 

@@ -5,8 +5,8 @@ import { colorForName } from '@ola/shared/lib';
 import { MeService, RelationshipService } from '@ola/shared/services';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { PostAuthor } from '@ola/shared/types';
-import { Avatar } from '@components/Avatar';
-import { Dialog } from '@components/Dialog';
+import { Avatar } from '@components/ui/Avatar';
+import { Dialog } from '@components/ui/Dialog';
 
 const PAGE_SIZE = 30;
 

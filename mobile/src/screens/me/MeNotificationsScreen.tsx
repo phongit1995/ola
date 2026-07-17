@@ -9,9 +9,9 @@ import { useToastStore } from '@ola/shared/stores/toastStore';
 import { MeService } from '@ola/shared/services';
 import { createTimeFormatter } from '@ola/shared/lib';
 import type { MeNotification, MeNotificationType, Post } from '@ola/shared/types';
-import { Avatar } from '@components/Avatar';
+import { Avatar } from '@components/ui/Avatar';
 import { MeCommentSheet } from './MeCommentSheet';
-import { ScreenHeader } from '@components/ScreenHeader';
+import { ScreenHeader } from '@components/ui/ScreenHeader';
 
 const likeIcon = require('@assets/icons/notify/ic_notification_like.png');
 const commentIcon = require('@assets/icons/notify/ic_notification_comment.png');

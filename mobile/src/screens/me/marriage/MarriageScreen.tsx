@@ -5,7 +5,7 @@ import { useMarriageStore } from '@ola/shared/stores/marriageStore';
 import { MarriageBoxView } from './MarriageBoxView';
 import { MarriageLockedView } from './MarriageLockedView';
 import { ProposeComposer } from './ProposeComposer';
-import { ScreenHeader } from '@components/ScreenHeader';
+import { ScreenHeader } from '@components/ui/ScreenHeader';
 
 interface MarriageScreenProps {
   onClose: () => void;

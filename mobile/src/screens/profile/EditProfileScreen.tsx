@@ -23,12 +23,12 @@ import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { Gender, UpdateProfileRequest } from '@ola/shared/types';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
-import { Avatar } from '@components/Avatar';
+import { Avatar } from '@components/ui/Avatar';
 import { AVATAR_OUTPUT, COVER_OUTPUT, pickCroppedImage, pickValidatedCroppedImage } from '@lib/imagePicker';
 import { ChangePasswordDialog } from './ChangePasswordDialog';
 import { VerifyEmailDialog } from './VerifyEmailDialog';
 import { CoverPreviewOverlay } from './CoverPreviewOverlay';
-import { ScreenHeader } from '@components/ScreenHeader';
+import { ScreenHeader } from '@components/ui/ScreenHeader';
 
 const cameraIcon = require('@assets/icons/profile/ic_action_camera.png');
 const lockIcon = require('@assets/icons/profile/ic_lock.png');

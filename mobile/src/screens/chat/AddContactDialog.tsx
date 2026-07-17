@@ -4,8 +4,8 @@ import { Pressable, Text, View } from 'react-native';
 import { RelationshipService, UserService } from '@ola/shared/services';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { UserSearchResult } from '@ola/shared/types';
-import { Avatar } from '@components/Avatar';
-import { UserListDialog } from '@components/UserListDialog';
+import { Avatar } from '@components/ui/Avatar';
+import { UserListDialog } from '@components/ui/UserListDialog';
 
 interface AddContactDialogProps {
   onClose: () => void;

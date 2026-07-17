@@ -10,10 +10,10 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { activeVipTypeId, createTimeFormatter } from '@ola/shared/lib';
 import type { Relationship } from '@ola/shared/types';
-import { Avatar } from '@components/Avatar';
-import { VipAvatar } from '@components/VipAvatar';
-import { OlaModal } from '@components/OlaModal';
-import { ScreenHeader } from '@components/ScreenHeader';
+import { Avatar } from '@components/ui/Avatar';
+import { VipAvatar } from '@components/ui/VipAvatar';
+import { OlaModal } from '@components/ui/OlaModal';
+import { ScreenHeader } from '@components/ui/ScreenHeader';
 
 interface FriendRequestsScreenProps {
   requests: Relationship[];

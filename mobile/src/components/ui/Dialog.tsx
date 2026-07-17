@@ -7,7 +7,7 @@ import {
   View,
   type ImageSourcePropType,
 } from 'react-native';
-import { KeyboardView } from './KeyboardView';
+import { KeyboardView } from '../KeyboardView';
 
 interface DialogProps {
   visible: boolean;

@@ -5,9 +5,9 @@ import { RelationshipService, UserService } from '@ola/shared/services';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { activeVipTypeId, colorForName, createTimeFormatter } from '@ola/shared/lib';
 import type { VisitorUser } from '@ola/shared/types';
-import { Avatar } from '@components/Avatar';
-import { VipBadge } from '@components/VipBadge';
-import { ScreenHeader } from '@components/ScreenHeader';
+import { Avatar } from '@components/ui/Avatar';
+import { VipBadge } from '@components/ui/VipBadge';
+import { ScreenHeader } from '@components/ui/ScreenHeader';
 
 const PAGE_SIZE = 40;
 

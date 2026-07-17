@@ -10,7 +10,7 @@ import {
   View,
 } from 'react-native';
 import { KeyboardView } from '@components/KeyboardView';
-import { OlaModal } from '@components/OlaModal';
+import { OlaModal } from '@components/ui/OlaModal';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { useMeFeedStore } from '@ola/shared/stores/meFeedStore';
@@ -24,7 +24,7 @@ import {
   ChatComposer,
   type ChatComposerHandle,
 } from '@components/ChatComposer';
-import { CloseIcon } from '@components/CloseIcon';
+import { CloseIcon } from '@components/ui/CloseIcon';
 import { useBottomBarInset } from '@hooks/useBottomBarInset';
 import { useLastKeyboardHeight } from '@hooks/useKeyboardHeight';
 import {

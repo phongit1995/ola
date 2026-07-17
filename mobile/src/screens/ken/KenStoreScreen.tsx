@@ -12,7 +12,7 @@ import { ROOT_ROUTES } from '@navigation/routes';
 import { KenCoin } from './KenCoin';
 import { KenHistorySection } from './KenHistorySection';
 import { TransferKenDialog } from './TransferKenDialog';
-import { ScreenHeader } from '@components/ScreenHeader';
+import { ScreenHeader } from '@components/ui/ScreenHeader';
 
 const KEN_LOW_THRESHOLD = 10_000;
 const MUTED = 'rgba(0,0,0,0.54)';

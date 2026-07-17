@@ -14,8 +14,8 @@ import { toast } from '@ola/shared/lib';
 import { UserService } from '@ola/shared/services';
 import { useMarriageStore } from '@ola/shared/stores/marriageStore';
 import type { UserSearchResult } from '@ola/shared/types';
-import { VipAvatar } from '@components/VipAvatar';
-import { ScreenHeader } from '@components/ScreenHeader';
+import { VipAvatar } from '@components/ui/VipAvatar';
+import { ScreenHeader } from '@components/ui/ScreenHeader';
 
 const MESSAGE_LIMIT = 500;
 

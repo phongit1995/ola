@@ -39,7 +39,7 @@ import { SpinWheelGameScreen } from '@screens/games/spin-wheel/SpinWheelGameScre
 import { EggGameScreen } from '@screens/games/egg/EggGameScreen';
 import { ArcadeGameScreen } from '@screens/apps/ArcadeGameScreen';
 import { TAB_ICONS } from '@assets/tabIcons';
-import { KenBalanceBadge } from '@components/KenBalanceBadge';
+import { KenBalanceBadge } from '@components/ui/KenBalanceBadge';
 import { mmkvStorage } from '@platform/storage';
 
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();

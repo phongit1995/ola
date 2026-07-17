@@ -6,8 +6,8 @@ import { KenService, UserService } from '@ola/shared/services';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { UserSearchResult } from '@ola/shared/types';
-import { Avatar } from '@components/Avatar';
-import { Dialog, DialogButton } from '@components/Dialog';
+import { Avatar } from '@components/ui/Avatar';
+import { Dialog, DialogButton } from '@components/ui/Dialog';
 
 const kenIcon = require('@assets/icons/apps/ken.png');
 

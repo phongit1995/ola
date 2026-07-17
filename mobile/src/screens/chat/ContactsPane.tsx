@@ -20,7 +20,7 @@ import type { Relationship } from '@ola/shared/types';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { useMediaViewerStore } from '@store/mediaViewerStore';
-import { VipAvatar } from '@components/VipAvatar';
+import { VipAvatar } from '@components/ui/VipAvatar';
 import { MessageActionSheet, type MessageSheetAction } from '@screens/room/MessageActionSheet';
 import { AddContactDialog } from './AddContactDialog';
 import { BuddyRow } from './BuddyRow';
@@ -30,7 +30,7 @@ import { SuggestedFriendsScreen } from './SuggestedFriendsScreen';
 import { mapFriendsToContacts, SUGGESTED_FRIENDS, type Contact } from './contacts';
 import { useFriendsStore } from '@ola/shared/stores/friendsStore';
 import { useFriendsWithPresence } from '@hooks/usePresence';
-import { VipBadge } from '@components/VipBadge';
+import { VipBadge } from '@components/ui/VipBadge';
 
 const smileyIcon = require('@assets/icons/chat/ola_smiley_online.png');
 const snapPicIcon = require('@assets/icons/chat/icon_snap_pic.png');

@@ -5,7 +5,7 @@ import { MeService, UserService } from '@ola/shared/services';
 import { toast } from '@ola/shared/lib';
 import type { NativeUploadFile } from '@ola/shared/lib';
 import { useAuthStore } from '@ola/shared/stores/authStore';
-import { Dialog, DialogButton } from '@components/Dialog';
+import { Dialog, DialogButton } from '@components/ui/Dialog';
 import { pickValidatedCroppedImage } from '@lib/imagePicker';
 
 interface ChangeUserImageTexts {

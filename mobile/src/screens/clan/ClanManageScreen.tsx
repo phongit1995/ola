@@ -13,10 +13,10 @@ import {
 import { ClanService } from '@ola/shared/services';
 import type { Clan, ClanPolicy } from '@ola/shared/types';
 import { useToastStore } from '@ola/shared/stores/toastStore';
-import { ConfirmDialog } from '@components/ConfirmDialog';
-import { Dialog, DialogButton } from '@components/Dialog';
-import { ListOptionDialog, type ListOption } from '@components/ListOptionDialog';
-import { ScreenHeader } from '@components/ScreenHeader';
+import { ConfirmDialog } from '@components/ui/ConfirmDialog';
+import { Dialog, DialogButton } from '@components/ui/Dialog';
+import { ListOptionDialog, type ListOption } from '@components/ui/ListOptionDialog';
+import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { clanErrorText, clanPolicyLabel } from '@lib/clanHelpers';
 
 const editIcon = require('@assets/icons/me/ic_action_edit.png');

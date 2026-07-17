@@ -6,7 +6,7 @@ import { PASSWORD_MAX, PASSWORD_MIN } from '@ola/shared/constants';
 import { ApiError } from '@ola/shared/lib';
 import { AuthService } from '@ola/shared/services';
 import { useToastStore } from '@ola/shared/stores/toastStore';
-import { Dialog, DialogButton } from '@components/Dialog';
+import { Dialog, DialogButton } from '@components/ui/Dialog';
 
 interface ChangePasswordForm {
   current: string;

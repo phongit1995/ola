@@ -16,10 +16,10 @@ import { ClanService } from '@ola/shared/services';
 import type { ClanCheckNameResult } from '@ola/shared/types';
 import { useClanStore } from '@ola/shared/stores/clanStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
-import { Avatar } from '@components/Avatar';
-import { ConfirmDialog } from '@components/ConfirmDialog';
-import { Dialog, DialogButton } from '@components/Dialog';
-import { ScreenHeader } from '@components/ScreenHeader';
+import { Avatar } from '@components/ui/Avatar';
+import { ConfirmDialog } from '@components/ui/ConfirmDialog';
+import { Dialog, DialogButton } from '@components/ui/Dialog';
+import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { UserProfileScreen } from '@screens/profile/UserProfileScreen';
 import {
   CLAN_HANDLE_PATTERN,

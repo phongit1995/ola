@@ -6,10 +6,10 @@ import { colorForName } from '@ola/shared/lib';
 import { ClanService } from '@ola/shared/services';
 import type { Clan, ClanMember } from '@ola/shared/types';
 import { useToastStore } from '@ola/shared/stores/toastStore';
-import { Avatar } from '@components/Avatar';
-import { ConfirmDialog } from '@components/ConfirmDialog';
-import { ListOptionDialog, type ListOption } from '@components/ListOptionDialog';
-import { ScreenHeader } from '@components/ScreenHeader';
+import { Avatar } from '@components/ui/Avatar';
+import { ConfirmDialog } from '@components/ui/ConfirmDialog';
+import { ListOptionDialog, type ListOption } from '@components/ui/ListOptionDialog';
+import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { UserProfileScreen } from '@screens/profile/UserProfileScreen';
 import { CLAN_ROLE_ICONS, clanErrorText, clanRoleLabel, isClanStaff } from '@lib/clanHelpers';
 
