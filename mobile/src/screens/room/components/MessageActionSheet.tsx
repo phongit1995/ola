@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useRef, type ReactNode } from 'react';
+import { OlaModal } from '@components/ui/OlaModal';
 import { useTranslation } from 'react-i18next';
 import {
   Animated,
   Image,
-  Modal,
+
   Platform,
   Pressable,
   StyleSheet,
@@ -413,7 +414,7 @@ export function MessageActionSheet({ anchor, preview, ...props }: MessageActionS
   }, [props.visible, hasAnchor]);
 
   return (
-    <Modal
+    <OlaModal
       visible={props.visible}
       transparent
       statusBarTranslucent
@@ -429,6 +430,6 @@ export function MessageActionSheet({ anchor, preview, ...props }: MessageActionS
       ) : (
         <BottomSheet {...props} />
       )}
-    </Modal>
+    </OlaModal>
   );
 }

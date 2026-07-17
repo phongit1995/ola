@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Image, Modal, Pressable, Text, View } from 'react-native';
+import { Image, Pressable, Text, View } from 'react-native';
+import { OlaModal } from '@components/ui/OlaModal';
 import { FlashList } from '@shopify/flash-list';
 import type { RoomMember } from '@ola/shared/types';
 import { VipAvatar } from '@components/ui/VipAvatar';
@@ -126,7 +127,7 @@ export function RoomMembersTab({ members, onOpenUser }: RoomMembersTabProps) {
           <MemberRow member={item} onOpenUser={onOpenUser} onViewImage={setPreviewImage} />
         )}
       />
-      <Modal
+      <OlaModal
         visible={previewImage != null}
         transparent
         animationType="fade"
@@ -144,7 +145,7 @@ export function RoomMembersTab({ members, onOpenUser }: RoomMembersTabProps) {
             />
           )}
         </Pressable>
-      </Modal>
+      </OlaModal>
     </View>
   );
 }
