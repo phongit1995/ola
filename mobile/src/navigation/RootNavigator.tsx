@@ -49,6 +49,8 @@ import {
   ClanMembersRouteScreen,
   ClanRouteScreen,
 } from '@screens/clan/ClanRoutes';
+import { FriendRequestsScreen } from '@screens/chat/FriendRequestsScreen';
+import { SuggestedFriendsScreen } from '@screens/chat/SuggestedFriendsScreen';
 import { TAB_ICONS } from '@assets/tabIcons';
 import { KenBalanceBadge } from '@components/ui/KenBalanceBadge';
 import { mmkvStorage } from '@platform/storage';
@@ -239,6 +241,8 @@ export function RootNavigator() {
       <RootStack.Screen name={ROOT_ROUTES.ClanManage} component={ClanManageRouteScreen} />
       <RootStack.Screen name={ROOT_ROUTES.ClanMembers} component={ClanMembersRouteScreen} />
       <RootStack.Screen name={ROOT_ROUTES.ClanBans} component={ClanBansRouteScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.FriendRequests} component={FriendRequestsScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.SuggestedFriends} component={SuggestedFriendsScreen} />
     </RootStack.Navigator>
   );
 }

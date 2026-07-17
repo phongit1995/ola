@@ -11,12 +11,10 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RelationshipService } from '@ola/shared/services';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { activeVipTypeId, colorForName, isVipActive } from '@ola/shared/lib';
-import type { Relationship } from '@ola/shared/types';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { useMediaViewerStore } from '@store/mediaViewerStore';
@@ -24,9 +22,7 @@ import { VipAvatar } from '@components/ui/VipAvatar';
 import { MessageActionSheet, type MessageSheetAction } from '@screens/room/components/MessageActionSheet';
 import { AddContactDialog } from './AddContactDialog';
 import { BuddyRow } from './BuddyRow';
-import { FriendRequestsScreen } from '../FriendRequestsScreen';
 import { StatusEditDialog } from './StatusEditDialog';
-import { SuggestedFriendsScreen } from '../SuggestedFriendsScreen';
 import { mapFriendsToContacts, SUGGESTED_FRIENDS, type Contact } from '../contacts';
 import { useFriendsStore } from '@ola/shared/stores/friendsStore';
 import { useFriendsWithPresence } from '@hooks/usePresence';
@@ -89,11 +85,8 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
   const requests = useFriendsStore((s) => s.requests);
   const friendsLoading = useFriendsStore((s) => s.loading);
   const friendsLoaded = useFriendsStore((s) => s.loaded);
-  const requestsLoading = useFriendsStore((s) => s.requestsLoading);
   const [query, setQuery] = useState('');
   const [menuContact, setMenuContact] = useState<Contact | null>(null);
-  const [requestsOpen, setRequestsOpen] = useState(false);
-  const [suggestedOpen, setSuggestedOpen] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
   const [statusOpen, setStatusOpen] = useState(false);
   const [now, setNow] = useState(() => Date.now());
@@ -138,26 +131,6 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
       navigation.navigate(ROOT_ROUTES.ChatDetail, {});
     } else {
       push('error', t('chat.actionError'));
-    }
-  }
-
-  async function acceptRequest(relationship: Relationship) {
-    try {
-      await RelationshipService.respond(relationship.id, 'accept');
-      useFriendsStore.getState().removeRequest(relationship.id);
-      void useFriendsStore.getState().loadFriends();
-      push('success', t('chat.requestAccepted'));
-    } catch {
-      push('error', t('chat.requestActionError'));
-    }
-  }
-
-  async function declineRequest(relationship: Relationship) {
-    try {
-      await RelationshipService.respond(relationship.id, 'reject');
-      useFriendsStore.getState().removeRequest(relationship.id);
-    } catch {
-      push('error', t('chat.requestActionError'));
     }
   }
 
@@ -241,7 +214,7 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
 
         {requests.length > 0 && (
           <Pressable
-            onPress={() => setRequestsOpen(true)}
+            onPress={() => navigation.navigate(ROOT_ROUTES.FriendRequests)}
             className="flex-row items-center gap-3 bg-white px-4 py-2"
             style={{ borderBottomWidth: 1, borderBottomColor: DIVIDER }}
           >
@@ -287,7 +260,7 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
         )}
 
         <Pressable
-          onPress={() => setSuggestedOpen(true)}
+          onPress={() => navigation.navigate(ROOT_ROUTES.SuggestedFriends)}
           className="flex-row items-center gap-3 bg-white px-4 py-2"
           style={{ borderBottomWidth: 1, borderBottomColor: DIVIDER }}
         >
@@ -385,18 +358,6 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
         onReact={() => undefined}
         onClose={() => setMenuContact(null)}
       />
-
-      {requestsOpen && (
-        <FriendRequestsScreen
-          requests={requests}
-          loading={requestsLoading}
-          onAccept={acceptRequest}
-          onDecline={declineRequest}
-          onClose={() => setRequestsOpen(false)}
-        />
-      )}
-
-      {suggestedOpen && <SuggestedFriendsScreen onClose={() => setSuggestedOpen(false)} />}
 
       {addOpen && (
         <AddContactDialog

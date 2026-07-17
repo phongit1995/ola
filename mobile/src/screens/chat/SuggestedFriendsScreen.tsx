@@ -2,26 +2,14 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FlatList, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { SUGGESTED_FRIENDS, type SuggestedFriend } from './contacts';
-import { OlaModal } from '@components/ui/OlaModal';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 
-export function SuggestedFriendsScreen({ onClose }: { onClose: () => void }) {
-  return (
-    <OlaModal
-      visible
-      transparent
-      animationType="slide"
-      onRequestClose={onClose}
-    >
-      <SuggestedFriendsBody onClose={onClose} />
-    </OlaModal>
-  );
-}
-
-function SuggestedFriendsBody({ onClose }: { onClose: () => void }) {
+export function SuggestedFriendsScreen() {
   const { t } = useTranslation();
+  const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const push = useToastStore(s => s.push);
   const [list, setList] = useState<SuggestedFriend[]>(SUGGESTED_FRIENDS);
@@ -45,7 +33,7 @@ function SuggestedFriendsBody({ onClose }: { onClose: () => void }) {
       <ScreenHeader
         title={t('chat.suggestFriends')}
         centerTitle
-        onBack={onClose}
+        onBack={() => navigation.goBack()}
       />
 
       {list.length > 0 && (

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
@@ -8,48 +8,52 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import { activeVipTypeId, createTimeFormatter } from '@ola/shared/lib';
+import { RelationshipService } from '@ola/shared/services';
+import { useFriendsStore } from '@ola/shared/stores/friendsStore';
+import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { Relationship } from '@ola/shared/types';
 import { Avatar } from '@components/ui/Avatar';
 import { VipAvatar } from '@components/ui/VipAvatar';
-import { OlaModal } from '@components/ui/OlaModal';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 
-interface FriendRequestsScreenProps {
-  requests: Relationship[];
-  loading: boolean;
-  onAccept: (relationship: Relationship) => Promise<void>;
-  onDecline: (relationship: Relationship) => Promise<void>;
-  onClose: () => void;
-}
-
-export function FriendRequestsScreen(props: FriendRequestsScreenProps) {
-  return (
-    <OlaModal
-      visible
-      transparent
-      animationType="slide"
-      onRequestClose={props.onClose}
-    >
-      <FriendRequestsBody {...props} />
-    </OlaModal>
-  );
-}
-
-function FriendRequestsBody({
-  requests,
-  loading,
-  onAccept,
-  onDecline,
-  onClose,
-}: FriendRequestsScreenProps) {
+export function FriendRequestsScreen() {
   const { t, i18n } = useTranslation();
+  const navigation = useNavigation();
   const insets = useSafeAreaInsets();
+  const push = useToastStore(s => s.push);
+  const requests = useFriendsStore(s => s.requests);
+  const loading = useFriendsStore(s => s.requestsLoading);
   const formatTime = useMemo(
     () => createTimeFormatter(i18n.language),
     [i18n.language],
   );
   const [busyIds, setBusyIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    void useFriendsStore.getState().loadRequests();
+  }, []);
+
+  async function onAccept(relationship: Relationship) {
+    try {
+      await RelationshipService.respond(relationship.id, 'accept');
+      useFriendsStore.getState().removeRequest(relationship.id);
+      void useFriendsStore.getState().loadFriends();
+      push('success', t('chat.requestAccepted'));
+    } catch {
+      push('error', t('chat.requestActionError'));
+    }
+  }
+
+  async function onDecline(relationship: Relationship) {
+    try {
+      await RelationshipService.respond(relationship.id, 'reject');
+      useFriendsStore.getState().removeRequest(relationship.id);
+    } catch {
+      push('error', t('chat.requestActionError'));
+    }
+  }
 
   async function run(
     relationship: Relationship,
@@ -69,7 +73,7 @@ function FriendRequestsBody({
       <ScreenHeader
         title={t('chat.friendRequests')}
         centerTitle
-        onBack={onClose}
+        onBack={() => navigation.goBack()}
       />
 
       {loading ? (
