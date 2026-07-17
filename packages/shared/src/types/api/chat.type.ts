@@ -140,6 +140,11 @@ export interface ConversationUpdatedEvent {
   seen?: boolean;
 }
 
+export interface ChatReactionNotice {
+  seq: number;
+  type: string;
+}
+
 export interface MessageReactionUpdatedEvent {
   conversationId: string;
   messageId: string;

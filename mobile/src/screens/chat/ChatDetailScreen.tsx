@@ -37,6 +37,7 @@ import { useFocusPresence } from '@hooks/usePresence';
 import { ListOptionDialog, type ListOption } from '@components/ListOptionDialog';
 import { RoomReactionsDialog } from '@screens/room/RoomReactionsDialog';
 import { ChatBubble, ChatMessageRow } from './ChatMessageRow';
+import { ChatReactionBalloons } from './ChatReactionBalloons';
 import { AttachmentBar, type AttachTab } from './AttachmentBar';
 import { VoicePreviewBar } from './VoicePreviewBar';
 import type { VoiceRecording } from '@hooks/useVoiceRecorder';
@@ -719,6 +720,8 @@ export function ChatDetailScreen({ navigation, route }: Props) {
       </>
       )}
       </KeyboardShift>
+
+      <ChatReactionBalloons />
 
       {transferKenOpen && peerId !== '' && (
         <TransferKenDialog

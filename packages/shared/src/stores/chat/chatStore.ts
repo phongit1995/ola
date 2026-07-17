@@ -15,7 +15,7 @@ import {
   SocketService,
   UserService,
 } from '../../services';
-import type { Conversation, Message, PublicProfile, ReactionType, RelationshipInfo } from '../../types';
+import type { ChatReactionNotice, Conversation, Message, PublicProfile, ReactionType, RelationshipInfo } from '../../types';
 import { registerOnLogout } from '../authStore';
 import { upsertConversation } from './chatHelpers';
 import { clearMarkReadTimers, clearTypingTimers, registerChatRealtime } from './chatRealtime';
@@ -52,8 +52,10 @@ export interface ChatState {
   loadingMore: boolean;
   typingUsers: TypingUser[];
   replyTarget: Message | null;
+  reactionNotice: ChatReactionNotice | null;
   setReplyTarget: (message: Message) => void;
   clearReplyTarget: () => void;
+  clearReactionNotice: (seq: number) => void;
   loadConversations: () => Promise<void>;
   syncCurrentConversation: () => Promise<void>;
   openConversation: (conversationId: string) => Promise<void>;
@@ -95,6 +97,7 @@ const initialState = {
   loadingMore: false,
   typingUsers: [] as TypingUser[],
   replyTarget: null as Message | null,
+  reactionNotice: null as ChatReactionNotice | null,
 };
 
 const clearedPeerView = {
@@ -258,6 +261,9 @@ export const useChatStore = create<ChatState>((set, get) => {
     setReplyTarget: (message) => set({ replyTarget: message }),
 
     clearReplyTarget: () => set({ replyTarget: null }),
+
+    clearReactionNotice: (seq) =>
+      set((state) => (state.reactionNotice?.seq === seq ? { reactionNotice: null } : {})),
 
     hideConversation: async (conversationId, options) => {
       const isCurrent = get().currentConversationId === conversationId;

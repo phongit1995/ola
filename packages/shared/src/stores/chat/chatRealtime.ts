@@ -183,8 +183,18 @@ export function registerChatRealtime(set: ChatSet, get: ChatGet) {
 
   SocketService.on<MessageReactionUpdatedEvent>(CHAT_SOCKET_EVENTS.reactionUpdated, (data) => {
     if (data.conversationId !== get().currentConversationId) return;
+    const myId = currentUserId();
+    const target = get().messages.find((item) => item.id === data.messageId);
+    const notifyOwnMessageReaction =
+      data.action === 'added' &&
+      target?.senderId === myId &&
+      data.actorUserId !== myId &&
+      data.type !== '';
     set((state) => ({
       messages: markById(state.messages, data.messageId, { reactions: data.reactions }),
+      ...(notifyOwnMessageReaction
+        ? { reactionNotice: { seq: (state.reactionNotice?.seq ?? 0) + 1, type: data.type } }
+        : {}),
     }));
   });
 
