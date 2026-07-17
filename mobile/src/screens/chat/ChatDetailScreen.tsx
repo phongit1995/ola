@@ -1,101 +1,105 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
-  Image,
   Keyboard,
   NativeScrollEvent,
   NativeSyntheticEvent,
   Pressable,
   Text,
-  useWindowDimensions,
   View,
 } from 'react-native';
 import { KeyboardShift } from '@components/KeyboardShift';
 import { FlashList } from '@shopify/flash-list';
 import { useStickyBottomList } from '@hooks/useStickyBottomList';
 import { launchCamera, launchImageLibrary, type Asset } from 'react-native-image-picker';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useAuthStore } from '@ola/shared/stores/authStore';
-import { useChatStore } from '@ola/shared/stores/chat/chatStore';
-import { currentUserId } from '@ola/shared/stores/chat/chatHelpers';
 import { useToastStore } from '@ola/shared/stores/toastStore';
-import { chatFriendActionLabel, colorForName, createDateFormatter, createTimeFormatter, formatLastActive, isSameDay } from '@ola/shared/lib';
+import { colorForName, isSameDay } from '@ola/shared/lib';
 import type { Message, ReactionType } from '@ola/shared/types';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
-import { Avatar } from '@components/ui/Avatar';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { useMediaViewerStore } from '@store/mediaViewerStore';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { kulToken } from '@lib/kul';
-import { ChatInputBar, type ChatInputBarHandle } from './components/ChatInputBar';
-import { RichTextView } from '@components/ui/RichTextView';
-import { useBottomBarInset } from '@hooks/useBottomBarInset';
-import { useFocusPresence } from '@hooks/usePresence';
 import { ListOptionDialog, type ListOption } from '@components/ui/ListOptionDialog';
 import { RoomReactionsDialog } from '@screens/room/components/RoomReactionsDialog';
+import { MessageActionSheet, type AnchorRect, type MessageSheetAction } from '@screens/room/components/MessageActionSheet';
+import { TransferKenDialog } from '@screens/ken/components/TransferKenDialog';
+import type { VoiceRecording } from '@hooks/useVoiceRecorder';
+import { DIVIDER } from '@constants';
+import { useChatDetail } from './useChatDetail';
+import { usePeerCard } from './usePeerCard';
+import { chatMessageAbilities } from './chatMessageView';
+import { CHAT_BG, MAX_UPLOAD_BYTES } from './constants';
+import { ChatInputBar, type ChatInputBarHandle } from './components/ChatInputBar';
 import { ChatBubble, ChatMessageRow } from './components/ChatMessageRow';
-import { chatMessageAbilities, replyExcerpt } from './chatMessageView';
 import { ChatReactionBalloons } from './components/ChatReactionBalloons';
 import { AttachmentBar, type AttachTab } from './components/AttachmentBar';
 import { VoicePreviewBar } from './components/VoicePreviewBar';
-import type { VoiceRecording } from '@hooks/useVoiceRecorder';
-import { TransferKenDialog } from '@screens/ken/components/TransferKenDialog';
 import { TradingVipDialog } from './components/TradingVipDialog';
 import { TransferVipDaysDialog } from './components/TransferVipDaysDialog';
 import { PeerProfileCard } from './components/PeerProfileCard';
-import { usePeerCard } from './usePeerCard';
-import { MessageActionSheet, type AnchorRect, type MessageSheetAction } from '@screens/room/components/MessageActionSheet';
-import { DIVIDER } from '@constants';
+import { ChatHeader } from './components/ChatHeader';
+import { TypingIndicator } from './components/TypingIndicator';
+import { ReplyPreviewBar } from './components/ReplyPreviewBar';
+import { EditingNotice } from './components/EditingNotice';
+import { useBottomBarInset } from '@hooks/useBottomBarInset';
 
-const backIcon = require('@assets/icons/ic_back.png');
-const moreIcon = require('@assets/icons/chat/ic_more_white.png');
 const deleteActionIcon = require('@assets/icons/chat/ic_menu_delete.png');
 const editActionIcon = require('@assets/icons/chat/ic_action_edit.png');
 const copyActionIcon = require('@assets/icons/chat/ic_menu_copy.png');
 const replyActionIcon = require('@assets/icons/me/ic_action_reply_gray.png');
 
-const CHAT_BG = '#ECE5DD';
-const MAX_UPLOAD_BYTES = 2 * 1024 * 1024;
-
 type Props = NativeStackScreenProps<RootStackParamList, 'ChatDetail'>;
 
 export function ChatDetailScreen({ navigation, route }: Props) {
   const { conversationId } = route.params;
-  const { t, i18n } = useTranslation();
-  const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
   const bottomBarInset = useBottomBarInset();
-  const { width: windowWidth } = useWindowDimensions();
-
-  const conversations = useChatStore((s) => s.conversations);
-  const messages = useChatStore((s) => s.messages);
-  const loadingMessages = useChatStore((s) => s.loadingMessages);
-  const hasMore = useChatStore((s) => s.hasMore);
-  const typingUsers = useChatStore((s) => s.typingUsers);
-  const openConversation = useChatStore((s) => s.openConversation);
-  const closeConversation = useChatStore((s) => s.closeConversation);
-  const loadMoreMessages = useChatStore((s) => s.loadMoreMessages);
-  const sendText = useChatStore((s) => s.sendText);
-  const sendImage = useChatStore((s) => s.sendImage);
-  const sendAudio = useChatStore((s) => s.sendAudio);
-  const resendMessage = useChatStore((s) => s.resendMessage);
-  const reactToMessage = useChatStore((s) => s.reactToMessage);
-  const deleteMessage = useChatStore((s) => s.deleteMessage);
-  const editMessage = useChatStore((s) => s.editMessage);
-  const replyTarget = useChatStore((s) => s.replyTarget);
-  const setReplyTarget = useChatStore((s) => s.setReplyTarget);
-  const clearReplyTarget = useChatStore((s) => s.clearReplyTarget);
-  const blockPeer = useChatStore((s) => s.blockPeer);
-  const unblockPeer = useChatStore((s) => s.unblockPeer);
-  const friendAction = useChatStore((s) => s.friendAction);
-  const peerProfile = useChatStore((s) => s.peerProfile);
-  const peerRelationship = useChatStore((s) => s.peerRelationship);
-  const peerCardRoll = useChatStore((s) => s.peerCardRoll);
-  const notifyTyping = useChatStore((s) => s.notifyTyping);
   const push = useToastStore((s) => s.push);
   const openViewer = useMediaViewerStore((s) => s.openViewer);
+  const myName = useAuthStore((s) => s.user?.username) ?? '';
+
+  const {
+    conversation,
+    title,
+    peerAvatar,
+    myId,
+    peerId,
+    peerProfile,
+    peerCardRoll,
+    messages,
+    loadingMessages,
+    hasMore,
+    typingUsers,
+    replyTarget,
+    timeFormatter,
+    dateFormatter,
+    subtitle,
+    conversationSeen,
+    blocked,
+    blockedByMe,
+    blockStatus,
+    friendLabel,
+    lastOwnId,
+    loadMoreMessages,
+    sendText,
+    sendImage,
+    sendAudio,
+    resendMessage,
+    reactToMessage,
+    deleteMessage,
+    editMessage,
+    setReplyTarget,
+    clearReplyTarget,
+    notifyTyping,
+    handleFriendAction,
+    handleBlock,
+    handleUnblock,
+  } = useChatDetail(conversationId);
 
   const [openTab, setOpenTab] = useState<AttachTab | null>(null);
   const [transferKenOpen, setTransferKenOpen] = useState(false);
@@ -129,56 +133,6 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   } = useStickyBottomList<Message>();
   const composerRef = useRef<ChatInputBarHandle>(null);
 
-  useEffect(() => {
-    if (conversationId != null) void openConversation(conversationId);
-    return () => closeConversation();
-  }, [conversationId, openConversation, closeConversation]);
-
-  const currentConversationId = useChatStore((s) => s.currentConversationId);
-  const draftRecipient = useChatStore((s) => s.draftRecipient);
-  const activeConversationId = conversationId ?? currentConversationId ?? null;
-  const conversation = conversations.find((item) => item.id === activeConversationId);
-  const title =
-    conversation?.otherUser?.fullName ??
-    conversation?.otherUser?.username ??
-    conversation?.name ??
-    draftRecipient?.name ??
-    peerProfile?.fullName ??
-    peerProfile?.username ??
-    '';
-  const peerAvatar = conversation?.otherUser?.avatar ?? draftRecipient?.avatar ?? peerProfile?.avatar;
-  const myId = currentUserId();
-  const timeFormatter = useMemo(() => createTimeFormatter(i18n.language), [i18n.language]);
-  const dateFormatter = useMemo(() => createDateFormatter(i18n.language), [i18n.language]);
-
-  const peerId = peerProfile?.id ?? '';
-  const livePresence = useFocusPresence(peerId !== '' ? peerId : null);
-  const peerOnline =
-    (livePresence?.isOnline ?? peerProfile?.isOnline ?? conversation?.otherUser?.isOnline) === true;
-  const peerLastActiveAt =
-    livePresence?.lastActiveAt ?? peerProfile?.lastActiveAt ?? conversation?.otherUser?.lastActiveAt;
-  const [now, setNow] = useState(() => Date.now());
-
-  useEffect(() => {
-    const interval = setInterval(() => setNow(Date.now()), 60_000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const subtitle =
-    typingUsers.length > 0
-      ? t('chat.typing', { name: typingUsers[0]?.username ?? '' })
-      : peerOnline
-        ? t('chat.statusActive')
-        : formatLastActive(t, peerLastActiveAt, now) ?? '';
-
-  const conversationSeen =
-    conversation == null ? false : !conversation.isLastMessageFromMe ? true : conversation.seen;
-
-  const blockStatus = peerRelationship?.status ?? null;
-  const blockedByMe = blockStatus === 'blocked_by_me';
-  const blockedByThem = blockStatus === 'blocked_by_them';
-  const blocked = blockedByMe || blockedByThem;
-
   const {
     anchorId: peerCardAnchorId,
     visible: peerCardVisible,
@@ -194,13 +148,6 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     peerCardRoll,
     lastMessageId: messages[messages.length - 1]?.id,
   });
-
-  const lastOwnId = useMemo(() => {
-    for (let i = messages.length - 1; i >= 0; i -= 1) {
-      if (messages[i]!.senderId === myId) return messages[i]!.id;
-    }
-    return null;
-  }, [messages, myId]);
 
   const closeAttachTab = useCallback(() => setOpenTab(null), []);
 
@@ -295,35 +242,6 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     await sendPickedAssets(result.assets ?? []);
   }
 
-  async function handleFriendAction() {
-    if (blocked) {
-      push('info', t('chat.makeFriendBlocked'));
-      return;
-    }
-    const result = await friendAction();
-    if (result === 'error') {
-      push('error', t('chat.actionError'));
-      return;
-    }
-    if (result === 'request') push('success', t('chat.friendRequestSent'));
-    else if (result === 'cancel') push('success', t('chat.requestCancelled'));
-    else if (result === 'accept') push('success', t('chat.friendAccepted'));
-    else if (result === 'unfriend') push('success', t('chat.unfriendDone'));
-  }
-
-  async function handleBlock() {
-    setBlockOpen(false);
-    const ok = await blockPeer();
-    push(ok ? 'success' : 'error', ok ? t('chat.blockDone', { name: title }) : t('chat.actionError'));
-  }
-
-  async function handleUnblock() {
-    const ok = await unblockPeer();
-    push(ok ? 'success' : 'error', ok ? t('chat.unblockDone', { name: title }) : t('chat.actionError'));
-  }
-
-  const friendLabel = chatFriendActionLabel(t, blockStatus);
-
   const menuOptions: ListOption[] = [
     { key: 'make-friend', label: friendLabel, onSelect: () => void handleFriendAction() },
     { key: 'view-me', label: t('chat.menuViewMe'), onSelect: openPeerProfile },
@@ -333,7 +251,6 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     { key: 'chat-group', label: t('chat.menuChatGroup'), onSelect: () => push('info', t('chat.comingSoon')) },
   ];
 
-  const myName = useAuthStore((s) => s.user?.username) ?? '';
   const reactionsTarget =
     reactionsTargetId != null
       ? messages.find((item) => item.id === reactionsTargetId)
@@ -413,36 +330,37 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     return actions;
   }
 
+  const transferReceiver = {
+    id: peerId,
+    name: title,
+    username: conversation?.otherUser?.username,
+    avatar: peerProfile?.avatar ?? peerAvatar,
+  };
+
+  const renderPeerCard = () => (
+    <PeerProfileCard
+      profile={peerProfile!}
+      name={title}
+      avatar={peerAvatar}
+      friendLabel={friendLabel}
+      onHide={hidePeerCardNow}
+      onBlock={() => setBlockOpen(true)}
+      onFriendAction={() => void handleFriendAction()}
+      onShowAvatar={showPeerAvatar}
+    />
+  );
+
   return (
     <View className="flex-1" style={{ backgroundColor: CHAT_BG }}>
-      <View className="bg-ola-primary px-2 pb-2" style={{ paddingTop: insets.top + 8 }}>
-        <View className="h-9 flex-row items-center gap-2">
-          <Pressable
-            className="h-9 w-9 items-center justify-center rounded-full active:bg-white/15"
-            onPress={() => navigation.goBack()}
-          >
-            <Image source={backIcon} style={{ width: 24, height: 24 }} resizeMode="contain" />
-          </Pressable>
-          <Pressable onPress={showPeerAvatar}>
-            <Avatar name={title} uri={peerAvatar} size={32} />
-          </Pressable>
-          <Pressable className="flex-1 flex-row items-center gap-2" onPress={openPeerProfile}>
-            <View className="flex-1">
-              <Text className="text-sm font-bold text-white" numberOfLines={1}>
-                {title}
-              </Text>
-              {subtitle !== '' && (
-                <Text className="text-xs text-white/70" numberOfLines={1}>
-                  {subtitle}
-                </Text>
-              )}
-            </View>
-          </Pressable>
-          <Pressable className="h-9 w-9 items-center justify-center rounded-full active:bg-white/15" onPress={() => setMenuOpen(true)}>
-            <Image source={moreIcon} style={{ width: 20, height: 20, tintColor: '#fff' }} resizeMode="contain" />
-          </Pressable>
-        </View>
-      </View>
+      <ChatHeader
+        title={title}
+        subtitle={subtitle}
+        avatar={peerAvatar}
+        onBack={() => navigation.goBack()}
+        onShowAvatar={showPeerAvatar}
+        onOpenProfile={openPeerProfile}
+        onMore={() => setMenuOpen(true)}
+      />
 
       <KeyboardShift>
       <View
@@ -476,33 +394,12 @@ export function ChatDetailScreen({ navigation, route }: Props) {
           onContentSizeChange={onContentSizeChange}
           onLayout={onListLayout}
           ListHeaderComponent={
-            peerCardVisible && peerCardAnchorId === '' && peerProfile != null ? (
-              <PeerProfileCard
-                profile={peerProfile}
-                name={title}
-                avatar={peerAvatar}
-                friendLabel={friendLabel}
-                onHide={hidePeerCardNow}
-                onBlock={() => setBlockOpen(true)}
-                onFriendAction={() => void handleFriendAction()}
-                onShowAvatar={showPeerAvatar}
-              />
-            ) : null
+            peerCardVisible && peerCardAnchorId === '' && peerProfile != null
+              ? renderPeerCard()
+              : null
           }
           ListFooterComponent={
-            typingUsers.length > 0 ? (
-              <View className="mt-1 flex-row items-end gap-1 px-3">
-                <Avatar name={title} uri={peerAvatar} size={32} />
-                <View
-                  className="flex-row items-center gap-1 rounded-2xl rounded-tl-sm bg-white px-3 py-3"
-                  style={{ shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 2, shadowOffset: { width: 0, height: 1 }, elevation: 1 }}
-                >
-                  <View className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: 'rgba(0,0,0,0.25)' }} />
-                  <View className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: 'rgba(0,0,0,0.4)' }} />
-                  <View className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: 'rgba(0,0,0,0.55)' }} />
-                </View>
-              </View>
-            ) : null
+            typingUsers.length > 0 ? <TypingIndicator name={title} avatar={peerAvatar} /> : null
           }
           renderItem={({ item, index }) => {
             const prev = messages[index - 1];
@@ -548,18 +445,8 @@ export function ChatDetailScreen({ navigation, route }: Props) {
                   onShowReactions={setReactionsTargetId}
                   onQuoteClick={scrollToMessage}
                 />
-                {peerCardVisible && item.id === peerCardAnchorId && peerProfile != null && (
-                  <PeerProfileCard
-                    profile={peerProfile}
-                    name={title}
-                    avatar={peerAvatar}
-                    friendLabel={friendLabel}
-                    onHide={hidePeerCardNow}
-                    onBlock={() => setBlockOpen(true)}
-                    onFriendAction={() => void handleFriendAction()}
-                    onShowAvatar={showPeerAvatar}
-                  />
-                )}
+                {peerCardVisible && item.id === peerCardAnchorId && peerProfile != null &&
+                  renderPeerCard()}
               </>
             );
           }}
@@ -587,44 +474,9 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         </View>
       ) : (
       <>
-      {editing != null && (
-        <View
-          className="flex-row items-center gap-2 px-3 py-1.5"
-          style={{ borderTopWidth: 1, borderTopColor: DIVIDER, backgroundColor: '#f1f8e9' }}
-        >
-          <Text className="flex-1 text-sm" style={{ color: 'rgba(0,0,0,0.7)' }}>{t('chat.editingHint')}</Text>
-          <Pressable onPress={cancelEdit} className="px-2">
-            <Text className="text-base text-ola-ink-soft">✕</Text>
-          </Pressable>
-        </View>
-      )}
+      {editing != null && <EditingNotice onCancel={cancelEdit} />}
       {editing == null && replyTarget != null && (
-        <View
-          className="flex-row items-center gap-2 bg-black/5 px-3 py-1.5"
-          style={{ borderTopWidth: 1, borderTopColor: DIVIDER }}
-        >
-          <View className="h-8 w-0.5 rounded bg-ola-primary" />
-          <View className="min-w-0 flex-1">
-            <Text numberOfLines={1} className="text-xs font-semibold text-ola-primary">
-              {t('chat.replyingTo', { name: replyTarget.senderName ?? title })}
-            </Text>
-            <RichTextView
-              content={replyExcerpt(t, replyTarget)}
-              own={false}
-              color="rgba(0,0,0,0.54)"
-              maxWidth={windowWidth - 70}
-              fontSize={12}
-              maxLines={1}
-              onMention={() => undefined}
-            />
-          </View>
-          <Pressable
-            onPress={clearReplyTarget}
-            className="h-7 w-7 items-center justify-center rounded-full"
-          >
-            <Text className="text-lg text-ola-ink-soft">×</Text>
-          </Pressable>
-        </View>
+        <ReplyPreviewBar replyTarget={replyTarget} fallbackName={title} onClear={clearReplyTarget} />
       )}
       {pendingAudio != null && (
         <VoicePreviewBar
@@ -707,10 +559,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
           visible
           onClose={() => setTransferKenOpen(false)}
           receiver={{
-            id: peerId,
-            name: title,
-            username: conversation?.otherUser?.username,
-            avatar: peerProfile?.avatar ?? peerAvatar,
+            ...transferReceiver,
             color: colorForName(conversation?.otherUser?.username ?? title),
           }}
         />
@@ -720,12 +569,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         <TransferVipDaysDialog
           visible
           onClose={() => setTransferVipDaysOpen(false)}
-          receiver={{
-            id: peerId,
-            name: title,
-            username: conversation?.otherUser?.username,
-            avatar: peerProfile?.avatar ?? peerAvatar,
-          }}
+          receiver={transferReceiver}
         />
       )}
 
@@ -733,12 +577,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         <TradingVipDialog
           visible
           onClose={() => setTradingVipOpen(false)}
-          receiver={{
-            id: peerId,
-            name: title,
-            username: conversation?.otherUser?.username,
-            avatar: peerProfile?.avatar ?? peerAvatar,
-          }}
+          receiver={transferReceiver}
         />
       )}
 
@@ -802,7 +641,10 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         message={t('chat.blockMessage', { name: title })}
         confirmLabel={t('chat.block')}
         cancelLabel={t('dialog.cancel')}
-        onConfirm={() => void handleBlock()}
+        onConfirm={() => {
+          setBlockOpen(false);
+          void handleBlock();
+        }}
         onCancel={() => setBlockOpen(false)}
       />
     </View>

@@ -36,14 +36,13 @@ import { ChangeCoverDialog } from './components/ChangeCoverDialog';
 import { ContactsPane } from './components/ContactsPane';
 import { useConversationsWithPresence, usePresenceListPolling } from '@hooks/usePresence';
 import { DIVIDER } from '@constants';
+import { SWIPE_MAX, SWIPE_TRIGGER } from './constants';
 
 const sentIcon = require('@assets/icons/chat/ic_message_sent.png');
 const kulIcon = require('@assets/icons/chat/ic_kul.png');
 const moreIcon = require('@assets/icons/chat/ic_more_white.png');
 const composeIcon = require('@assets/icons/chat/ic_action_compose_message.png');
 
-const SWIPE_MAX = 88;
-const SWIPE_TRIGGER = 56;
 function ConversationSeparator() {
   return <View style={{ marginHorizontal: 16, height: 1, backgroundColor: DIVIDER }} />;
 }
