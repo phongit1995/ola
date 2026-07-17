@@ -192,20 +192,61 @@ class OlaChatComposerView(private val reactContext: ThemedReactContext) :
   }
 
   private fun copyImageToCache(uri: Uri, mime: String): String? = try {
-    val extension = when {
-      mime.contains("png") -> "png"
-      mime.contains("gif") -> "gif"
-      mime.contains("webp") -> "webp"
-      else -> "jpg"
+    if (mime.contains("gif") || mime.contains("webp")) {
+      copyRawToCache(uri, if (mime.contains("gif")) "gif" else "webp")
+    } else {
+      copyScaledToCache(uri)
     }
+  } catch (error: Exception) {
+    null
+  }
+
+  private fun copyRawToCache(uri: Uri, extension: String): String? {
     val file = File(context.cacheDir, "paste-${System.currentTimeMillis()}.$extension")
     val copied = context.contentResolver.openInputStream(uri)?.use { input ->
       FileOutputStream(file).use { output -> input.copyTo(output) }
       true
     } ?: false
-    if (copied) Uri.fromFile(file).toString() else null
-  } catch (error: Exception) {
-    null
+    return if (copied) Uri.fromFile(file).toString() else null
+  }
+
+  private fun copyScaledToCache(uri: Uri): String? {
+    val maxDimension = 1920
+    val bounds = android.graphics.BitmapFactory.Options().apply { inJustDecodeBounds = true }
+    context.contentResolver.openInputStream(uri)?.use { input ->
+      android.graphics.BitmapFactory.decodeStream(input, null, bounds)
+    } ?: return null
+    if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null
+    var sampleSize = 1
+    while (
+      bounds.outWidth / (sampleSize * 2) >= maxDimension ||
+      bounds.outHeight / (sampleSize * 2) >= maxDimension
+    ) {
+      sampleSize *= 2
+    }
+    val decodeOptions = android.graphics.BitmapFactory.Options().apply { inSampleSize = sampleSize }
+    val decoded = context.contentResolver.openInputStream(uri)?.use { input ->
+      android.graphics.BitmapFactory.decodeStream(input, null, decodeOptions)
+    } ?: return null
+    val largest = maxOf(decoded.width, decoded.height)
+    val bitmap = if (largest > maxDimension) {
+      val ratio = maxDimension.toFloat() / largest
+      android.graphics.Bitmap.createScaledBitmap(
+        decoded,
+        (decoded.width * ratio).toInt().coerceAtLeast(1),
+        (decoded.height * ratio).toInt().coerceAtLeast(1),
+        true,
+      )
+    } else {
+      decoded
+    }
+    val file = File(context.cacheDir, "paste-${System.currentTimeMillis()}.jpg")
+    FileOutputStream(file).use { output ->
+      bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 90, output)
+    }
+    if (bitmap !== decoded) bitmap.recycle()
+    decoded.recycle()
+    return Uri.fromFile(file).toString()
   }
 
   private fun emitPasteImage(uri: String) {
