@@ -8,7 +8,6 @@ import { colorForName } from '@ola/shared/lib';
 import { RELATIONSHIP_STATUS } from '@ola/shared/constants';
 import type { FollowUser } from '@ola/shared/types';
 import { MediaViewerModal } from '@components/ui/MediaViewer';
-import { OlaModal } from '@components/ui/OlaModal';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { ReportDialog } from '@components/ui/ReportDialog';
 import { ListOptionDialog, type ListOption } from '@components/ui/ListOptionDialog';
@@ -31,20 +30,7 @@ interface UserProfileScreenProps {
   onEditProfile?: () => void;
 }
 
-export function UserProfileScreen(props: UserProfileScreenProps) {
-  return (
-    <OlaModal
-      visible
-      transparent
-      animationType="slide"
-      onRequestClose={props.onClose}
-    >
-      <UserProfileBody {...props} />
-    </OlaModal>
-  );
-}
-
-function UserProfileBody({
+export function UserProfileScreen({
   username,
   language,
   onClose,

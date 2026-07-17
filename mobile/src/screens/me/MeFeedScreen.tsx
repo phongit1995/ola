@@ -25,7 +25,6 @@ import { MeLeftDrawer } from './components/MeLeftDrawer';
 import { MeRightDrawer } from './components/MeRightDrawer';
 import { MeCommentSheet } from './components/MeCommentSheet';
 import { MeLikersDialog } from './components/MeLikersDialog';
-import { UserProfileScreen } from '@screens/profile/UserProfileScreen';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { MeFeedHeader } from './components/MeFeedHeader';
@@ -72,7 +71,6 @@ export function MeFeedScreen() {
   const [commentPostId, setCommentPostId] = useState<string | null>(null);
   const [commentFocusInput, setCommentFocusInput] = useState(false);
   const [likersPostId, setLikersPostId] = useState<string | null>(null);
-  const [profileUsername, setProfileUsername] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [menuPostId, setMenuPostId] = useState<string | null>(null);
   const [reportPostId, setReportPostId] = useState<string | null>(null);
@@ -85,7 +83,11 @@ export function MeFeedScreen() {
     submitQuickComment,
     quickContextLabel,
   } = useQuickComment(posts, adjustCommentCount);
-  const openProfile = (nick: string) => setProfileUsername(nick);
+  const openProfile = (nick: string) => {
+    setCommentPostId(null);
+    setLikersPostId(null);
+    navigation.navigate(ROOT_ROUTES.ProfileView, { userId: nick });
+  };
   const commentPost = commentPostId != null ? posts.find((p) => p.id === commentPostId) ?? null : null;
   const menuPost = menuPostId != null ? posts.find((p) => p.id === menuPostId) ?? null : null;
 
@@ -365,16 +367,6 @@ export function MeFeedScreen() {
         />
       )}
 
-      {profileUsername != null && (
-        <UserProfileScreen
-          key={profileUsername}
-          username={profileUsername}
-          language={i18n.language}
-          onClose={() => setProfileUsername(null)}
-          onOpenProfile={openProfile}
-          onEditProfile={() => navigation.navigate(ROOT_ROUTES.EditProfile)}
-        />
-      )}
     </View>
   );
 }
