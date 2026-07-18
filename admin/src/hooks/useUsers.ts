@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AdminUserService } from '@/services/adminUser.service'
-import type { GrantVipRequest, ListParams, UserListParams } from '@/types'
+import type { AddVipDaysRequest, GrantVipRequest, ListParams, UserListParams } from '@/types'
 
 const USERS_KEY = 'admin-users'
 
@@ -73,6 +73,18 @@ export function useGrantVip() {
       AdminUserService.grantVip(id, payload),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: [USERS_KEY] })
+    },
+  })
+}
+
+export function useAddVipDays() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: AddVipDaysRequest }) =>
+      AdminUserService.addVipDays(id, payload),
+    onSuccess: (_data, { id }) => {
+      void queryClient.invalidateQueries({ queryKey: [USERS_KEY] })
+      void queryClient.invalidateQueries({ queryKey: [USERS_KEY, 'detail', id] })
     },
   })
 }

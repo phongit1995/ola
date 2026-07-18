@@ -6,6 +6,7 @@ import {
   FileTextOutlined,
   HistoryOutlined,
   LockOutlined,
+  PlusOutlined,
   UserOutlined,
   WalletOutlined,
 } from '@ant-design/icons'
@@ -21,6 +22,7 @@ import { UserVipHistoryModal } from './UserVipHistoryModal'
 import { UserSessionsModal } from './UserSessionsModal'
 import { EditUsernameModal } from './EditUsernameModal'
 import { ResetPasswordModal } from './ResetPasswordModal'
+import { AddVipDaysModal } from './AddVipDaysModal'
 
 interface UserDetailModalProps {
   userId: string | null
@@ -29,17 +31,17 @@ interface UserDetailModalProps {
 }
 
 const labelStyle: React.CSSProperties = {
-  fontSize: 12,
+  fontSize: 11,
   fontWeight: 600,
   color: '#8c98a4',
   textTransform: 'uppercase',
   letterSpacing: 0.4,
-  marginBottom: 8,
+  marginBottom: 4,
 }
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div style={{ marginTop: 20 }}>
+    <div style={{ marginTop: 14 }}>
       <div style={labelStyle}>{title}</div>
       {children}
     </div>
@@ -52,12 +54,12 @@ function StatBox({ label, value }: { label: string; value: number }) {
       style={{
         flex: 1,
         textAlign: 'center',
-        padding: '12px 8px',
+        padding: '8px 8px',
         background: '#f6f8fa',
         borderRadius: 10,
       }}
     >
-      <div style={{ fontSize: 20, fontWeight: 700 }}>{value.toLocaleString('vi-VN')}</div>
+      <div style={{ fontSize: 18, fontWeight: 700 }}>{value.toLocaleString('vi-VN')}</div>
       <div style={{ fontSize: 12, color: '#6b7785' }}>{label}</div>
     </div>
   )
@@ -65,7 +67,7 @@ function StatBox({ label, value }: { label: string; value: number }) {
 
 function Row({ label, value }: { label: string; value?: ReactNode }) {
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, padding: '6px 0' }}>
+    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, padding: '3px 0' }}>
       <span style={{ color: '#6b7785' }}>{label}</span>
       <span style={{ textAlign: 'right', wordBreak: 'break-word' }}>{value || '—'}</span>
     </div>
@@ -91,6 +93,7 @@ export function UserDetailModal({ userId, open, onClose }: UserDetailModalProps)
   const [vipHistoryOpen, setVipHistoryOpen] = useState(false)
   const [usernameOpen, setUsernameOpen] = useState(false)
   const [passwordOpen, setPasswordOpen] = useState(false)
+  const [vipDaysOpen, setVipDaysOpen] = useState(false)
 
   return (
     <>
@@ -185,7 +188,24 @@ export function UserDetailModal({ userId, open, onClose }: UserDetailModalProps)
           </Section>
 
           <Section title="Liên hệ">
-            <Row label="Email" value={data.email} />
+            <Row
+              label="Email"
+              value={
+                data.email ? (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ wordBreak: 'break-all' }}>{data.email}</span>
+                    {data.emailVerified ? (
+                      <Tag color="green" style={{ margin: 0 }}>Đã xác thực</Tag>
+                    ) : (
+                      <Tag style={{ margin: 0 }}>Chưa xác thực</Tag>
+                    )}
+                  </span>
+                ) : undefined
+              }
+            />
+            {data.emailVerified && (
+              <Row label="Ngày xác thực email" value={formatDateTime(data.emailVerifiedAt)} />
+            )}
             <Row label="Số điện thoại" value={data.phone} />
             <Row label="Ngày sinh" value={data.dateOfBirth} />
           </Section>
@@ -202,19 +222,32 @@ export function UserDetailModal({ userId, open, onClose }: UserDetailModalProps)
             {(() => {
               const days = vipDaysLeft(data.vipEndTime)
               return (
-                <Row
-                  label="Còn hạn VIP"
-                  value={
-                    days && days > 0 ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '3px 0' }}>
+                  <span style={{ color: '#6b7785' }}>Còn hạn VIP</span>
+                  {days && days > 0 ? (
+                    <>
                       <Tag color="gold" style={{ margin: 0 }}>{`Còn ${days} ngày`}</Tag>
-                    ) : (
-                      <Tag style={{ margin: 0 }}>{data.vipEndTime ? 'Đã hết hạn' : 'Chưa có VIP'}</Tag>
-                    )
-                  }
-                />
+                      <span style={{ color: '#8c98a4', fontSize: 12 }}>
+                        {formatDateTime(data.vipEndTime)}
+                      </span>
+                    </>
+                  ) : (
+                    <Tag style={{ margin: 0 }}>{data.vipEndTime ? 'Đã hết hạn' : 'Chưa có VIP'}</Tag>
+                  )}
+                  <Button
+                    type="primary"
+                    ghost
+                    size="small"
+                    icon={<PlusOutlined />}
+                    disabled={!userId}
+                    onClick={() => setVipDaysOpen(true)}
+                    style={{ marginLeft: 'auto' }}
+                  >
+                    Cộng ngày
+                  </Button>
+                </div>
               )
             })()}
-            {data.vipEndTime && <Row label="Hết hạn" value={formatDateTime(data.vipEndTime)} />}
             <Row
               label="Icon đang dùng"
               value={
@@ -313,6 +346,12 @@ export function UserDetailModal({ userId, open, onClose }: UserDetailModalProps)
       userId={userId}
       username={data?.username}
       onClose={() => setPasswordOpen(false)}
+    />
+    <AddVipDaysModal
+      open={vipDaysOpen}
+      userId={userId}
+      username={data?.username}
+      onClose={() => setVipDaysOpen(false)}
     />
     </>
   )

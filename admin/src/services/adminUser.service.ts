@@ -1,6 +1,8 @@
 import http from '@/api/http'
 import type {
   ApiResponse,
+  AddVipDaysRequest,
+  AddVipDaysResult,
   AdminUserDetail,
   AdminUserListItem,
   AdminUserSession,
@@ -45,6 +47,14 @@ export const AdminUserService = {
   async grantVip(id: string, payload: GrantVipRequest): Promise<AdminUserVipIcon> {
     const { data } = await http.post<ApiResponse<AdminUserVipIcon>>(
       `/admin/users/${id}/vips`,
+      payload,
+    )
+    return data.data
+  },
+
+  async addVipDays(id: string, payload: AddVipDaysRequest): Promise<AddVipDaysResult> {
+    const { data } = await http.post<ApiResponse<AddVipDaysResult>>(
+      `/admin/users/${id}/vip-days`,
       payload,
     )
     return data.data

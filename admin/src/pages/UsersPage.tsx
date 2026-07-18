@@ -48,6 +48,7 @@ export function UsersPage() {
   const [status, setStatus] = useState<'all' | 'active' | 'banned'>('all')
   const [gender, setGender] = useState<string>('all')
   const [vip, setVip] = useState<'all' | 'vip' | 'normal'>('all')
+  const [verified, setVerified] = useState<'all' | 'verified' | 'unverified'>('all')
   const [sort, setSort] = useState('newest')
 
   const [detailId, setDetailId] = useState<string | null>(null)
@@ -66,6 +67,7 @@ export function UsersPage() {
     status !== 'all' ||
     gender !== 'all' ||
     vip !== 'all' ||
+    verified !== 'all' ||
     sort !== 'newest'
 
   function clearFilters() {
@@ -74,6 +76,7 @@ export function UsersPage() {
     setStatus('all')
     setGender('all')
     setVip('all')
+    setVerified('all')
     setSort('newest')
     setPage(1)
   }
@@ -86,6 +89,7 @@ export function UsersPage() {
     isActive: status === 'all' ? undefined : status === 'active',
     gender: gender === 'all' ? undefined : gender,
     vip: vip === 'all' ? undefined : vip === 'vip',
+    emailVerified: verified === 'all' ? undefined : verified === 'verified',
     ...sortParams,
     limit: PAGE_SIZE,
     offset: (page - 1) * PAGE_SIZE,
@@ -178,6 +182,13 @@ export function UsersPage() {
       width: 130,
       render: (isActive: boolean) =>
         isActive ? <Tag color="green">Hoạt động</Tag> : <Tag color="red">Đã khoá</Tag>,
+    },
+    {
+      title: 'Email',
+      dataIndex: 'emailVerified',
+      width: 130,
+      render: (v: boolean) =>
+        v ? <Tag color="green">Đã xác thực</Tag> : <Tag>Chưa xác thực</Tag>,
     },
     {
       title: 'Đăng nhập cuối',
@@ -274,6 +285,16 @@ export function UsersPage() {
             { value: 'all', label: 'VIP: tất cả' },
             { value: 'vip', label: 'VIP' },
             { value: 'normal', label: 'Thường' },
+          ]}
+        />
+        <Select
+          value={verified}
+          onChange={resetPage(setVerified)}
+          style={{ width: 160 }}
+          options={[
+            { value: 'all', label: 'Email: tất cả' },
+            { value: 'verified', label: 'Đã xác thực' },
+            { value: 'unverified', label: 'Chưa xác thực' },
           ]}
         />
         <Select

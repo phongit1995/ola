@@ -202,6 +202,7 @@ export interface AdminUserListItem {
   ken: number
   isVip: boolean
   isActive: boolean
+  emailVerified: boolean
   createdAt: string
   lastLoginAt?: string | null
 }
@@ -212,6 +213,7 @@ export interface AdminUserDetail extends AdminUserListItem {
   dateOfBirth?: string
   vipUsed?: string
   vipEndTime?: string
+  emailVerifiedAt?: string
   followerCount?: number
   followingCount?: number
   lastLoginIp?: string
@@ -244,6 +246,15 @@ export interface GrantVipRequest {
   vipTypeId: number
 }
 
+export interface AddVipDaysRequest {
+  days: number
+}
+
+export interface AddVipDaysResult {
+  days: number
+  vipEndTime: string
+}
+
 export interface UserListParams {
   q?: string
   ip?: string
@@ -252,6 +263,7 @@ export interface UserListParams {
   isActive?: boolean
   gender?: string
   vip?: boolean
+  emailVerified?: boolean
   sortBy?: string
   sortDir?: string
 }
