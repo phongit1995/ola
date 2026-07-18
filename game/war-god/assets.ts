@@ -57,6 +57,11 @@ import pickCloseX from './assets/pick/close-x.png';
 import pickLevelEasy from './assets/pick/level-easy.png';
 import pickLevelMid from './assets/pick/level-mid.png';
 import pickLevelHard from './assets/pick/level-hard.png';
+import confirmPanel from './assets/confirm/panel.png';
+import confirmHeader from './assets/confirm/header.png';
+import confirmBtnCancel from './assets/confirm/btn-cancel.png';
+import confirmBtnOk from './assets/confirm/btn-ok.png';
+import serifFontUrl from './assets/fonts/DejaVuSerif-Bold.ttf';
 
 export const A = {
   bg,
@@ -128,6 +133,12 @@ export const A = {
     levelMid: pickLevelMid,
     levelHard: pickLevelHard,
   },
+  confirm: {
+    panel: confirmPanel,
+    header: confirmHeader,
+    btnCancel: confirmBtnCancel,
+    btnOk: confirmBtnOk,
+  },
 } as const;
 
 function collectUrls(node: unknown): string[] {
@@ -138,7 +149,11 @@ function collectUrls(node: unknown): string[] {
 export const tex: Record<string, Texture> = {};
 
 export async function loadAssets(): Promise<void> {
-  const loaded: Record<string, Texture> = await Assets.load(collectUrls(A));
+  const font = new FontFace('DejaVuSerif', `url(${serifFontUrl})`);
+  const [loaded] = await Promise.all([
+    Assets.load(collectUrls(A)) as Promise<Record<string, Texture>>,
+    font.load().then((f) => document.fonts.add(f)),
+  ]);
   Object.assign(tex, loaded);
   for (const t of Object.values(tex)) {
     t.source.autoGenerateMipmaps = true;

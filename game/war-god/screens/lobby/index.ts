@@ -6,6 +6,12 @@ import type { BotLevel } from '../../logic/battle';
 import { PILL_W, makePill, makeWoodBtn } from './ui';
 import { buildPickPopup, hidePickPopup, layoutPickPopup, openPickPopup } from './pick-popup';
 import { buildGuidePopup, hideGuidePopup, layoutGuidePopup, openGuidePopup } from './guide-popup';
+import {
+  buildConfirmPopup,
+  hideConfirmPopup,
+  layoutConfirmPopup,
+  openConfirmPopup,
+} from './confirm-popup';
 
 const DESIGN_W = 520;
 const VIP_FIT_W = 150;
@@ -68,6 +74,7 @@ let toastText: Text;
 let toastTimer: number | undefined;
 let pickBox: Container;
 let guideBox: Container;
+let confirmBox: Container;
 let spinnerStep: ((ticker: Ticker) => void) | null = null;
 let lastDesignH = 980;
 let lastInsetTop = 0;
@@ -143,7 +150,9 @@ export function buildLobby(lobbyDeps: LobbyDeps): Container {
 
   exitBtn = new Container();
   exitBtn.addChild(iconSprite(A.lobby.btnExit, 56));
-  pressable(exitBtn, () => deps.onExit());
+  pressable(exitBtn, () => {
+    openConfirmPopup('Bạn có chắc muốn\nthoát game?', () => deps.onExit());
+  });
   box.addChild(exitBtn);
 
   content = new Container();
@@ -261,6 +270,8 @@ export function buildLobby(lobbyDeps: LobbyDeps): Container {
   box.addChild(pickBox);
   guideBox = buildGuidePopup();
   box.addChild(guideBox);
+  confirmBox = buildConfirmPopup();
+  box.addChild(confirmBox);
 
   return box;
 }
@@ -329,6 +340,7 @@ export function layoutLobby(designH: number, insetTop: number, insetBottom: numb
 
   layoutPickPopup(designH, insetTop, insetBottom);
   layoutGuidePopup(designH);
+  layoutConfirmPopup(designH);
 }
 
 function layoutNameRow(): void {
@@ -420,6 +432,7 @@ export function lobbySetVisible(visible: boolean): void {
     kenText.text = kenValue > 0 ? kenValue.toLocaleString('vi-VN') : kenText.text;
     hidePickPopup();
     hideGuidePopup();
+    hideConfirmPopup();
     toastText.visible = false;
     if (toastTimer) window.clearTimeout(toastTimer);
   }

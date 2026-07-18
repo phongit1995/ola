@@ -3,6 +3,7 @@ import { tex } from './assets';
 
 export const HEADING = 'Fredoka, system-ui, sans-serif';
 export const BODY = 'Nunito, system-ui, sans-serif';
+export const SERIF = 'DejaVuSerif, Georgia, serif';
 
 let appRef: Application;
 
