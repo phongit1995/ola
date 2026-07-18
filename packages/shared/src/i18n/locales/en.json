@@ -835,7 +835,7 @@
     "title": "VIP Store",
     "history": "History",
     "historyDialog": {
-      "title": "VIP history",
+      "title": "History",
       "empty": "No VIP transactions yet",
       "loadMore": "Load more",
       "close": "Close",

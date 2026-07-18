@@ -220,7 +220,7 @@ export function VipStorePage({ onClose }: { onClose: () => void }) {
         <button
           type="button"
           onClick={() => setHistoryOpen(true)}
-          className="rounded px-2 py-1 text-sm font-medium text-white hover:bg-white/15"
+          className="rounded bg-white/15 px-2 py-1 text-sm font-medium text-white hover:bg-white/25"
         >
           {t('vip.history')}
         </button>
