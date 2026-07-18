@@ -108,8 +108,8 @@ async function main() {
   const saved = data(r)
   ok('result = saved', saved.result === 'saved')
   ok('keeper (B) wins', saved.winnerId === B.id && saved.win === true)
-  ok('pot/commission/payout = 2000/100/1900', saved.pot === 2000 && saved.commission === 100 && saved.payout === 1900)
-  ok('keeper net +900', saved.kenBalance === bBefore - 1000 + 1900)
+  ok('pot/commission/payout = 2000/50/1950', saved.pot === 2000 && saved.commission === 50 && saved.payout === 1950)
+  ok('keeper net +950', saved.kenBalance === bBefore - 1000 + 1950)
   ok('shooter (A) gets nothing on loss', (await getKen(A.token)) === aAfterShootSaved)
 
   r = await req('POST', `/pen/shots/${sSaved}/catch`, { side: 'right' }, C.token)
@@ -134,9 +134,9 @@ async function main() {
   const goal = data(r)
   ok('result = goal', goal.result === 'goal')
   ok('shooter (A) wins, caller(C) lost', goal.winnerId === A.id && goal.win === false)
-  ok('pot/commission/payout = 4000/200/3800', goal.pot === 4000 && goal.commission === 200 && goal.payout === 3800)
+  ok('pot/commission/payout = 4000/100/3900', goal.pot === 4000 && goal.commission === 100 && goal.payout === 3900)
   ok('keeper (C) net -2000', goal.kenBalance === cBefore - 2000)
-  ok('shooter (A) credited payout 3800', (await getKen(A.token)) === aAfterShootGoal + 3800)
+  ok('shooter (A) credited payout 3900', (await getKen(A.token)) === aAfterShootGoal + 3900)
 
   // ── insufficient ken to catch ──
   const poor2 = await registerUser(uniqueUsername('penPoor2'), undefined, randomPassword())

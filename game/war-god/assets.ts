@@ -49,6 +49,7 @@ import lobbyIcHistory from './assets/lobby/ic-history.png';
 import lobbyIcSoundOn from './assets/lobby/ic-sound-on.png';
 import lobbyIcSoundOff from './assets/lobby/ic-sound-off.png';
 import lobbyIcGuide from './assets/lobby/ic-guide.png';
+import lobbyBtnExit from './assets/lobby/btn-exit.png';
 import pickPanel from './assets/pick/panel.png';
 import pickTitle from './assets/pick/title.png';
 import pickCloseBase from './assets/pick/close-base.png';
@@ -56,6 +57,11 @@ import pickCloseX from './assets/pick/close-x.png';
 import pickLevelEasy from './assets/pick/level-easy.png';
 import pickLevelMid from './assets/pick/level-mid.png';
 import pickLevelHard from './assets/pick/level-hard.png';
+import confirmPanel from './assets/confirm/panel.png';
+import confirmHeader from './assets/confirm/header.png';
+import confirmBtnCancel from './assets/confirm/btn-cancel.png';
+import confirmBtnOk from './assets/confirm/btn-ok.png';
+import serifFontUrl from './assets/fonts/DejaVuSerif-Bold.ttf';
 
 export const A = {
   bg,
@@ -116,6 +122,7 @@ export const A = {
     icSoundOn: lobbyIcSoundOn,
     icSoundOff: lobbyIcSoundOff,
     icGuide: lobbyIcGuide,
+    btnExit: lobbyBtnExit,
   },
   pick: {
     panel: pickPanel,
@@ -125,6 +132,12 @@ export const A = {
     levelEasy: pickLevelEasy,
     levelMid: pickLevelMid,
     levelHard: pickLevelHard,
+  },
+  confirm: {
+    panel: confirmPanel,
+    header: confirmHeader,
+    btnCancel: confirmBtnCancel,
+    btnOk: confirmBtnOk,
   },
 } as const;
 
@@ -136,7 +149,11 @@ function collectUrls(node: unknown): string[] {
 export const tex: Record<string, Texture> = {};
 
 export async function loadAssets(): Promise<void> {
-  const loaded: Record<string, Texture> = await Assets.load(collectUrls(A));
+  const font = new FontFace('DejaVuSerif', `url(${serifFontUrl})`);
+  const [loaded] = await Promise.all([
+    Assets.load(collectUrls(A)) as Promise<Record<string, Texture>>,
+    font.load().then((f) => document.fonts.add(f)),
+  ]);
   Object.assign(tex, loaded);
   for (const t of Object.values(tex)) {
     t.source.autoGenerateMipmaps = true;

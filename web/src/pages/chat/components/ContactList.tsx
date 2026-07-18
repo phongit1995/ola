@@ -1,14 +1,12 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Avatar, ListOptionDialog, SearchIcon, VipIcon, type ListOption } from '@components';
-import { vipIconUrl, isVipActive, activeVipTypeId, colorForName } from '@lib';
+import { Avatar, ListOptionDialog, SearchIcon, VipAvatar, VipIcon, type ListOption } from '@components';
+import { isVipActive, activeVipTypeId, colorForName } from '@lib';
 import type { AuthUser, Relationship } from '@app-types';
 import type { Contact } from '../interface';
 import { SUGGESTED_FRIENDS } from '../data';
 import { BuddyRow } from './BuddyRow';
 import { PeopleIcon } from './Icons';
-import smileyIcon from '@/assets/icons/chat/ola_smiley_online.png';
-import vipIcon from '@/assets/icons/apps/vip.png';
 import snapPicIcon from '@/assets/icons/chat/icon_snap_pic.png';
 import groupIcon from '@/assets/icons/room/ic_notify_new_chat_group_message.png';
 import addFriendIcon from '@/assets/icons/chat/ic_add_friend.png';
@@ -85,7 +83,6 @@ export function ContactList({
   const hasStatus = me?.bio != null && me.bio !== '';
   const hasVip = isVipActive(me?.vipEndTime);
   const meVipTypeId = activeVipTypeId(me?.vipUsed, me?.vipEndTime);
-  const meVipIconSrc = meVipTypeId != null ? vipIconUrl(meVipTypeId) : vipIcon;
   const hasBioImage = me?.bioImage != null && me.bioImage !== '';
 
   const filtered = useMemo(() => {
@@ -145,7 +142,7 @@ export function ContactList({
           )}
           <div className="flex min-h-[72px] items-center gap-2 px-4 py-2">
             <button type="button" onClick={onAccountMenu} aria-label={t('chat.myAccount')} className="shrink-0">
-              <img src={hasVip ? meVipIconSrc : smileyIcon} alt="" className="h-10 w-10 object-contain" />
+              <VipAvatar typeId={meVipTypeId} />
             </button>
             <button type="button" onClick={onEditStatus} className="min-w-0 flex-1 text-left">
               <span

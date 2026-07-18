@@ -30,7 +30,6 @@ import { useFriendsWithPresence } from '@hooks/usePresence';
 import { VipBadge } from '@components/ui/VipBadge';
 import { DIVIDER } from '@constants';
 
-const smileyIcon = require('@assets/icons/chat/ola_smiley_online.png');
 const snapPicIcon = require('@assets/icons/chat/icon_snap_pic.png');
 const addFriendIcon = require('@assets/icons/room/ic_add_friend.png');
 const groupIcon = require('@assets/icons/room/ic_notify_new_chat_group_message.png');
@@ -183,11 +182,7 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
             )}
             <View className="flex-row items-center gap-2 px-4 py-2" style={{ minHeight: 72 }}>
               <Pressable onPress={onAccountMenu}>
-                {hasVip ? (
-                  <VipAvatar typeId={meVipTypeId} size={40} />
-                ) : (
-                  <Image source={smileyIcon} style={{ width: 40, height: 40 }} resizeMode="contain" />
-                )}
+                <VipAvatar typeId={meVipTypeId} size={40} />
               </Pressable>
               <Pressable className="min-w-0 flex-1" onPress={() => setStatusOpen(true)}>
                 <Text

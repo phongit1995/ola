@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"ola-chat-server/internal/config"
 	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/user"
@@ -25,18 +26,20 @@ var (
 )
 
 type Service struct {
-	repo      *Repository
-	userCache *user.CacheService
-	wsServer  *websocket.Server
-	logger    *zap.SugaredLogger
+	repo              *Repository
+	userCache         *user.CacheService
+	wsServer          *websocket.Server
+	logger            *zap.SugaredLogger
+	commissionPercent int
 }
 
-func NewService(repo *Repository, userCache *user.CacheService, wsServer *websocket.Server, logger *zap.SugaredLogger) *Service {
+func NewService(repo *Repository, userCache *user.CacheService, wsServer *websocket.Server, logger *zap.SugaredLogger, cfg *config.Config) *Service {
 	return &Service{
-		repo:      repo,
-		userCache: userCache,
-		wsServer:  wsServer,
-		logger:    logger.Named("[pen_service]"),
+		repo:              repo,
+		userCache:         userCache,
+		wsServer:          wsServer,
+		logger:            logger.Named("[pen_service]"),
+		commissionPercent: cfg.PenCommissionPercent,
 	}
 }
 
@@ -116,7 +119,7 @@ func (s *Service) ListAllHistory(limit, offset int) (*ShotListResponse, error) {
 }
 
 func (s *Service) CatchShot(userID, shotID uuid.UUID, req CatchRequest) (*CatchResult, error) {
-	shot, shooterKen, keeperKen, err := s.repo.CatchShot(userID, shotID, models.PenSide(req.Side), penCommissionPercent)
+	shot, shooterKen, keeperKen, err := s.repo.CatchShot(userID, shotID, models.PenSide(req.Side), s.commissionPercent)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrShotNotFound

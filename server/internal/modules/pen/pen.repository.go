@@ -274,7 +274,7 @@ func (r *Repository) CatchShot(keeperID, shotID uuid.UUID, keeperSide models.Pen
 		}
 
 		pot := bet * 2
-		commission := pot * commissionPercent / 100
+		commission := bet * commissionPercent / 100
 		payout := pot - commission
 
 		if err := applyDelta(winner, models.KenDirectionCredit, models.KenTxTypePenWin, payout, "PEN thắng cược", models.KenActorSystem); err != nil {
