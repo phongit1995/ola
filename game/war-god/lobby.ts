@@ -1,7 +1,7 @@
 import { Assets, Container, Graphics, Sprite, Text, Texture, type Ticker } from 'pixi.js';
 import type { UserInfoData } from '../src/sdk';
 import { A, tex } from './assets';
-import { HEADING, addTick, makeText, removeTick } from './kit';
+import { HEADING, addTick, makeText, removeTick, tween } from './kit';
 import { attachShimmer } from './shimmer';
 import type { BotLevel } from './battle';
 
@@ -78,6 +78,7 @@ let pickBox: Container;
 let pickDim: Graphics;
 let pickCard: Container;
 let pickPanelH = 0;
+let pickBars: Container[] = [];
 let guideBox: Container;
 let guideDim: Graphics;
 let guideCard: Container;
@@ -248,6 +249,14 @@ function makeLevelBar(
 
 const PANEL_W = 312;
 
+function openPickBox(): void {
+  pickBox.visible = true;
+  pickDim.alpha = 0;
+  void tween(pickDim, { alpha: 1 }, 200);
+  popIn(pickCard, 0, 380);
+  pickBars.forEach((bar, i) => popIn(bar, 130 + i * 95, 300));
+}
+
 function buildPickBox(): Container {
   const wrap = new Container();
   pickDim = new Graphics();
@@ -311,6 +320,7 @@ function buildPickBox(): Container {
   let startY = (areaTop + areaBottom) / 2 - blockH / 2 + barH / 2 + bias;
   const maxStartY = areaBottom - blockH + barH / 2;
   if (startY > maxStartY) startY = maxStartY;
+  pickBars = [];
   levels.forEach((level, idx) => {
     const bar = makeLevelBar(level, barW, barFont, idx * 320, () => wrap.visible, () => {
       wrap.visible = false;
@@ -318,6 +328,7 @@ function buildPickBox(): Container {
     });
     bar.y = startY + idx * (barH + gap);
     pickCard.addChild(bar);
+    pickBars.push(bar);
   });
 
   wrap.addChild(pickCard);
@@ -336,6 +347,13 @@ const GUIDE_LINES = [
   'Đủ 50 nội lực tung tuyệt chiêu gây 25 sát thương.',
   'Mỗi lượt có 45 giây — hạ gục đối thủ để thắng!',
 ].join('\n');
+
+function openGuideBox(): void {
+  guideBox.visible = true;
+  guideDim.alpha = 0;
+  void tween(guideDim, { alpha: 1 }, 200);
+  popIn(guideCard, 0, 380);
+}
 
 function buildGuideBox(): Container {
   const wrap = new Container();
@@ -443,10 +461,7 @@ export function buildLobby(lobbyDeps: LobbyDeps): Container {
   pressable(plusBtn, () => showToast('Nạp Ken trong app Ola nhé!'));
   box.addChild(plusBtn);
 
-  btnBot = makeWoodBtn('ĐẤU VỚI MÁY', WOOD_W, WOOD_H, A.lobby.icBot, () => {
-    pickBox.visible = true;
-    popIn(pickCard, 0, 320);
-  });
+  btnBot = makeWoodBtn('ĐẤU VỚI MÁY', WOOD_W, WOOD_H, A.lobby.icBot, openPickBox);
   btnBotWrap = new Container();
   btnBotWrap.x = DESIGN_W / 2;
   btnBotWrap.addChild(btnBot);
@@ -479,9 +494,7 @@ export function buildLobby(lobbyDeps: LobbyDeps): Container {
   soundIcon = sound.children[2] as Sprite;
   menuRow.addChild(sound);
 
-  const guide = makePill('HƯỚNG DẪN', A.lobby.icGuide, () => {
-    guideBox.visible = true;
-  });
+  const guide = makePill('HƯỚNG DẪN', A.lobby.icGuide, openGuideBox);
   guide.x = PILL_W + 10;
   menuRow.addChild(guide);
   menuRow.x = DESIGN_W / 2;
