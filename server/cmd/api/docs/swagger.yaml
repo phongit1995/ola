@@ -688,6 +688,23 @@ definitions:
       url:
         type: string
     type: object
+  internal_modules_admin_user.AddVipDaysRequest:
+    properties:
+      days:
+        example: 30
+        maximum: 3650
+        minimum: 1
+        type: integer
+    required:
+    - days
+    type: object
+  internal_modules_admin_user.AddVipDaysResponse:
+    properties:
+      days:
+        type: integer
+      vipEndTime:
+        type: string
+    type: object
   internal_modules_admin_user.GrantVipRequest:
     properties:
       vipTypeId:
@@ -785,6 +802,10 @@ definitions:
         type: string
       email:
         type: string
+      emailVerified:
+        type: boolean
+      emailVerifiedAt:
+        type: string
       followerCount:
         type: integer
       followingCount:
@@ -826,6 +847,8 @@ definitions:
         type: string
       email:
         type: string
+      emailVerified:
+        type: boolean
       fullName:
         type: string
       gender:
@@ -6679,6 +6702,23 @@ definitions:
       traceId:
         type: string
     type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_user_AddVipDaysResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_user.AddVipDaysResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
   ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_user_ListUsersResponse:
     properties:
       data:
@@ -8958,6 +8998,34 @@ paths:
       security:
       - BearerAuth: []
       summary: Update username
+      tags:
+      - admin-user
+  /admin/users/{id}/vip-days:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Số ngày VIP cần cộng
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_admin_user.AddVipDaysRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_user_AddVipDaysResponse'
+      security:
+      - BearerAuth: []
+      summary: Cộng ngày VIP cho user
       tags:
       - admin-user
   /admin/users/{id}/vips:

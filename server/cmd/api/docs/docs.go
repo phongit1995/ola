@@ -2715,6 +2715,51 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/users/{id}/vip-days": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-user"
+                ],
+                "summary": "Cộng ngày VIP cho user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Số ngày VIP cần cộng",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_user.AddVipDaysRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_user_AddVipDaysResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/users/{id}/vips": {
             "get": {
                 "security": [
@@ -11630,6 +11675,31 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_modules_admin_user.AddVipDaysRequest": {
+            "type": "object",
+            "required": [
+                "days"
+            ],
+            "properties": {
+                "days": {
+                    "type": "integer",
+                    "maximum": 3650,
+                    "minimum": 1,
+                    "example": 30
+                }
+            }
+        },
+        "internal_modules_admin_user.AddVipDaysResponse": {
+            "type": "object",
+            "properties": {
+                "days": {
+                    "type": "integer"
+                },
+                "vipEndTime": {
+                    "type": "string"
+                }
+            }
+        },
         "internal_modules_admin_user.GrantVipRequest": {
             "type": "object",
             "required": [
@@ -11776,6 +11846,12 @@ const docTemplate = `{
                 "email": {
                     "type": "string"
                 },
+                "emailVerified": {
+                    "type": "boolean"
+                },
+                "emailVerifiedAt": {
+                    "type": "string"
+                },
                 "followerCount": {
                     "type": "integer"
                 },
@@ -11837,6 +11913,9 @@ const docTemplate = `{
                 },
                 "email": {
                     "type": "string"
+                },
+                "emailVerified": {
+                    "type": "boolean"
                 },
                 "fullName": {
                     "type": "string"
@@ -20422,6 +20501,32 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "$ref": "#/definitions/internal_modules_admin_upload.UploadResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_user_AddVipDaysResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_user.AddVipDaysResponse"
                 },
                 "error": {
                     "type": "string"

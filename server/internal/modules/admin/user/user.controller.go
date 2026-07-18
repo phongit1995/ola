@@ -1,8 +1,8 @@
 package adminuser
 
 import (
-	"ola-chat-server/internal/utils"
 	"net/http"
+	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -44,6 +44,7 @@ func (ctrl *Controller) ListUsers(c *gin.Context) (interface{}, error) {
 		IsActive:       parseBoolQuery(c, "isActive"),
 		Gender:         parseGenderQuery(c.Query("gender")),
 		Vip:            parseBoolQuery(c, "vip"),
+		EmailVerified:  parseBoolQuery(c, "emailVerified"),
 		IncludeDeleted: c.Query("includeDeleted") != "false",
 		SortBy:         c.Query("sortBy"),
 		SortDir:        c.Query("sortDir"),
@@ -186,6 +187,34 @@ func (ctrl *Controller) GrantVip(c *gin.Context) (interface{}, error) {
 	}
 
 	resp, err := ctrl.service.GrantVip(id, req.VipTypeID)
+	if err != nil {
+		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
+	}
+	return resp, nil
+}
+
+// AddVipDays godoc
+// @Summary      Cộng ngày VIP cho user
+// @Tags         admin-user
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id      path string             true "User ID"
+// @Param        request body AddVipDaysRequest   true "Số ngày VIP cần cộng"
+// @Success      200  {object}  utils.BaseResponse[AddVipDaysResponse]
+// @Router       /admin/users/{id}/vip-days [post]
+func (ctrl *Controller) AddVipDays(c *gin.Context) (interface{}, error) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid user id")
+	}
+
+	var req AddVipDaysRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	resp, err := ctrl.service.AddVipDays(id, req.Days)
 	if err != nil {
 		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
 	}

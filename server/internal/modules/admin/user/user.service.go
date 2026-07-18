@@ -9,6 +9,7 @@ import (
 	userBanEvents "ola-chat-server/internal/domain/user-ban"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/session"
+	"ola-chat-server/internal/modules/vip"
 	"ola-chat-server/internal/services"
 	"ola-chat-server/internal/transport/kafka"
 	"ola-chat-server/internal/utils"
@@ -37,15 +38,17 @@ type Service struct {
 	cache          *services.CacheService
 	sessionService *session.Service
 	producer       *kafka.Producer
+	vipService     *vip.Service
 	logger         *zap.SugaredLogger
 }
 
-func NewService(repo *Repository, cache *services.CacheService, sessionService *session.Service, producer *kafka.Producer, logger *zap.SugaredLogger) *Service {
+func NewService(repo *Repository, cache *services.CacheService, sessionService *session.Service, producer *kafka.Producer, vipService *vip.Service, logger *zap.SugaredLogger) *Service {
 	return &Service{
 		repo:           repo,
 		cache:          cache,
 		sessionService: sessionService,
 		producer:       producer,
+		vipService:     vipService,
 		logger:         logger.Named("[admin_user_service]"),
 	}
 }
@@ -59,18 +62,19 @@ func (s *Service) List(f ListFilter) (*ListUsersResponse, error) {
 	items := make([]UserListItem, 0, len(users))
 	for _, u := range users {
 		items = append(items, UserListItem{
-			ID:          u.ID.String(),
-			Username:    u.Username,
-			FullName:    u.FullName,
-			Email:       u.Email,
-			Avatar:      u.Avatar,
-			Gender:      u.Gender,
-			Ken:         u.Ken,
-			IsVip:       isVip(u),
-			IsActive:    u.IsActive,
-			CreatedAt:   u.CreatedAt.UTC().Format(time.RFC3339),
-			LastLoginAt: formatTime(u.LastLoginAt),
-			DeletedAt:   formatDeletedAt(u.DeletedAt),
+			ID:            u.ID.String(),
+			Username:      u.Username,
+			FullName:      u.FullName,
+			Email:         u.Email,
+			Avatar:        u.Avatar,
+			Gender:        u.Gender,
+			Ken:           u.Ken,
+			IsVip:         isVip(u),
+			IsActive:      u.IsActive,
+			EmailVerified: u.EmailVerified,
+			CreatedAt:     u.CreatedAt.UTC().Format(time.RFC3339),
+			LastLoginAt:   formatTime(u.LastLoginAt),
+			DeletedAt:     formatDeletedAt(u.DeletedAt),
 		})
 	}
 
@@ -263,6 +267,31 @@ func (s *Service) GrantVip(id uuid.UUID, typeID int16) (*VipIconItem, error) {
 	return &item, nil
 }
 
+func (s *Service) AddVipDays(id uuid.UUID, days int) (*AddVipDaysResponse, error) {
+	if _, err := s.repo.FindByID(id); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, apperr.ErrUserNotFound
+		}
+		return nil, err
+	}
+
+	purchase, err := s.vipService.GrantDays(id, days, "admin", fmt.Sprintf("Admin tặng %d ngày VIP", days))
+	if err != nil {
+		return nil, err
+	}
+
+	if err := s.cache.Delete(fmt.Sprintf(constants.CacheKeyUserProfile, id.String())); err != nil {
+		s.logger.Warnw("Failed to invalidate user profile cache", "user_id", id, "error", err.Error())
+	}
+
+	s.logger.Infow("Admin added vip days", "user_id", id, "days", days)
+
+	return &AddVipDaysResponse{
+		Days:       days,
+		VipEndTime: purchase.VipEndTimeAfter.UTC().Format(time.RFC3339),
+	}, nil
+}
+
 func (s *Service) ListSessions(id uuid.UUID, limit, offset int) (*SessionListResponse, error) {
 	if _, err := s.repo.FindByIDUnscoped(id); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -312,26 +341,28 @@ func (s *Service) Delete(id uuid.UUID) error {
 
 func toDetail(u *models.User) *UserDetail {
 	d := &UserDetail{
-		ID:             u.ID.String(),
-		Username:       u.Username,
-		FullName:       u.FullName,
-		Email:          u.Email,
-		Avatar:         u.Avatar,
-		Phone:          u.Phone,
-		Bio:            u.Bio,
-		Gender:         u.Gender,
-		DateOfBirth:    formatDate(u.DateOfBirth),
-		Ken:            u.Ken,
-		IsVip:          isVip(u),
-		VipEndTime:     formatTime(u.VipEndTime),
-		FollowerCount:  u.FollowerCount,
-		FollowingCount: u.FollowingCount,
-		IsActive:       u.IsActive,
-		LastLoginIP:    u.LastLoginIP,
-		LastLoginAt:    formatTime(u.LastLoginAt),
-		CreatedAt:      u.CreatedAt.UTC().Format(time.RFC3339),
-		UpdatedAt:      u.UpdatedAt.UTC().Format(time.RFC3339),
-		DeletedAt:      formatDeletedAt(u.DeletedAt),
+		ID:              u.ID.String(),
+		Username:        u.Username,
+		FullName:        u.FullName,
+		Email:           u.Email,
+		Avatar:          u.Avatar,
+		Phone:           u.Phone,
+		Bio:             u.Bio,
+		Gender:          u.Gender,
+		DateOfBirth:     formatDate(u.DateOfBirth),
+		Ken:             u.Ken,
+		IsVip:           isVip(u),
+		VipEndTime:      formatTime(u.VipEndTime),
+		FollowerCount:   u.FollowerCount,
+		FollowingCount:  u.FollowingCount,
+		IsActive:        u.IsActive,
+		EmailVerified:   u.EmailVerified,
+		EmailVerifiedAt: formatTime(u.EmailVerifiedAt),
+		LastLoginIP:     u.LastLoginIP,
+		LastLoginAt:     formatTime(u.LastLoginAt),
+		CreatedAt:       u.CreatedAt.UTC().Format(time.RFC3339),
+		UpdatedAt:       u.UpdatedAt.UTC().Format(time.RFC3339),
+		DeletedAt:       formatDeletedAt(u.DeletedAt),
 	}
 	if u.VipUsed != nil {
 		d.VipUsed = *u.VipUsed

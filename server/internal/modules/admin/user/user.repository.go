@@ -41,6 +41,9 @@ func (r *Repository) List(f ListFilter) ([]*models.User, int64, error) {
 			db = db.Where("vip_end_time IS NULL OR vip_end_time <= NOW()")
 		}
 	}
+	if f.EmailVerified != nil {
+		db = db.Where("email_verified = ?", *f.EmailVerified)
+	}
 
 	var total int64
 	if err := db.Count(&total).Error; err != nil {
