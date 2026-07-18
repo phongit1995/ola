@@ -5,7 +5,8 @@ import { HEADING, addTick, makeText, removeTick } from './kit';
 import type { BotLevel } from './battle';
 
 const DESIGN_W = 520;
-const VIP_ICON_H = 24;
+const VIP_FIT_W = 150;
+const VIP_FIT_H = 132;
 const NAME_W = 400;
 const KEN_W = 330;
 const WOOD_W = 310;
@@ -47,12 +48,17 @@ let nameText: Text;
 let vipIcon: Sprite;
 let kenFrame: Sprite;
 let coin: Sprite;
+let coinBaseScale = 1;
 let kenText: Text;
+let kenValue = 0;
+let kenAnimStep: ((ticker: Ticker) => void) | null = null;
 let plusBtn: Container;
 let plusBg: Sprite;
 let plusIc: Sprite;
 let btnBot: Container;
 let btnPvp: Container;
+let btnBotWrap: Container;
+let btnPvpWrap: Container;
 let menuRow: Container;
 let soundIcon: Sprite;
 let soundOn = true;
@@ -137,6 +143,61 @@ function makePill(label: string, iconUrl: string, onTap: () => void): Container 
   b.addChild(t);
   pressable(b, onTap);
   return b;
+}
+
+function popIn(target: Container, delay: number, dur = 420): void {
+  const base = target.scale.x;
+  target.alpha = 0;
+  target.scale.set(base * 0.6);
+  let t = -delay;
+  const step = (ticker: Ticker): void => {
+    t += ticker.deltaMS;
+    if (t < 0) return;
+    const k = Math.min(1, t / dur);
+    const c1 = 1.70158;
+    const e = 1 + (c1 + 1) * Math.pow(k - 1, 3) + c1 * Math.pow(k - 1, 2);
+    target.scale.set(base * (0.6 + 0.4 * e));
+    target.alpha = Math.min(1, k * 2.5);
+    if (k >= 1) {
+      target.scale.set(base);
+      target.alpha = 1;
+      removeTick(step);
+    }
+  };
+  addTick(step);
+}
+
+function stopKenAnim(): void {
+  if (kenAnimStep) {
+    removeTick(kenAnimStep);
+    kenAnimStep = null;
+  }
+  kenText.scale.set(1);
+  coin.scale.set(coinBaseScale);
+}
+
+function animateKen(target: number): void {
+  stopKenAnim();
+  kenValue = target;
+  if (target <= 0) {
+    kenText.text = '0';
+    return;
+  }
+  const dur = 1100;
+  let t = 0;
+  kenAnimStep = (ticker: Ticker) => {
+    t += ticker.deltaMS;
+    const k = Math.min(1, t / dur);
+    const e = 1 - Math.pow(1 - k, 3);
+    kenText.text = Math.round(target * e).toLocaleString('vi-VN');
+    kenText.scale.set(1 + 0.1 * Math.sin(k * Math.PI));
+    coin.scale.set(coinBaseScale * (1 + 0.16 * Math.abs(Math.sin(t / 130)) * (1 - k)));
+    if (k >= 1) {
+      stopKenAnim();
+      kenText.text = target.toLocaleString('vi-VN');
+    }
+  };
+  addTick(kenAnimStep);
 }
 
 function showToast(message: string): void {
@@ -254,11 +315,6 @@ export function buildLobby(lobbyDeps: LobbyDeps): Container {
   nameFrame.x = DESIGN_W / 2;
   box.addChild(nameFrame);
 
-  vipIcon = new Sprite(Texture.EMPTY);
-  vipIcon.anchor.set(0.5);
-  vipIcon.visible = false;
-  box.addChild(vipIcon);
-
   nameText = makeText('', 23, 0xffe9a8, '800');
   box.addChild(nameText);
 
@@ -269,6 +325,11 @@ export function buildLobby(lobbyDeps: LobbyDeps): Container {
   avatarFrame.x = DESIGN_W / 2;
   box.addChild(avatarFrame);
 
+  vipIcon = new Sprite(Texture.EMPTY);
+  vipIcon.anchor.set(0.5);
+  vipIcon.visible = false;
+  box.addChild(vipIcon);
+
   kenFrame = new Sprite(tex[A.lobby.kenFrame]);
   kenFrame.anchor.set(0.5);
   kenFrame.width = KEN_W;
@@ -277,6 +338,7 @@ export function buildLobby(lobbyDeps: LobbyDeps): Container {
   box.addChild(kenFrame);
 
   coin = iconSprite(A.lobby.coin, 72);
+  coinBaseScale = coin.scale.x;
   box.addChild(coin);
 
   kenText = makeText('', 27, 0xffd84d, '800');
@@ -294,14 +356,21 @@ export function buildLobby(lobbyDeps: LobbyDeps): Container {
   btnBot = makeWoodBtn('ĐẤU VỚI MÁY', WOOD_W, WOOD_H, A.lobby.icBot, () => {
     pickBox.visible = true;
   });
-  btnBot.x = DESIGN_W / 2;
-  box.addChild(btnBot);
+  btnBotWrap = new Container();
+  btnBotWrap.x = DESIGN_W / 2;
+  btnBotWrap.addChild(btnBot);
+  box.addChild(btnBotWrap);
 
   btnPvp = makeWoodBtn('ĐẤU 1V1', WOOD_W, WOOD_H, A.lobby.icPvp, () => {
     showToast('Đấu 1v1 đang phát triển, sắp ra mắt!');
   });
-  btnPvp.x = DESIGN_W / 2;
-  box.addChild(btnPvp);
+  btnPvpWrap = new Container();
+  btnPvpWrap.x = DESIGN_W / 2;
+  btnPvpWrap.addChild(btnPvp);
+  box.addChild(btnPvpWrap);
+
+  popIn(btnBot, 150);
+  popIn(btnPvp, 300);
 
   menuRow = new Container();
   const history = makePill('LỊCH SỬ', A.lobby.icHistory, () =>
@@ -377,6 +446,8 @@ export function layoutLobby(designH: number, insetTop: number, insetBottom: numb
   logo.y = insetTop + 100;
   nameFrame.y = insetTop + 338;
   avatarFrame.y = nameFrame.y - 106;
+  vipIcon.x = DESIGN_W / 2;
+  vipIcon.y = avatarFrame.y - 8;
   layoutNameRow();
   kenFrame.y = insetTop + 438;
   const kenH = kenFrame.height;
@@ -393,12 +464,29 @@ export function layoutLobby(designH: number, insetTop: number, insetBottom: numb
   const menuY = designH - insetBottom - 44;
   menuRow.y = menuY;
   toastText.y = menuY - 64;
-  btnPvp.y = menuY - 104;
-  btnBot.y = btnPvp.y - 104;
 
-  const gapTop = insetTop + 438 + kenH / 2;
-  const gapBottom = btnBot.y - WOOD_H / 2;
-  statusPanel.y = (gapTop + gapBottom) / 2;
+  const kenBottom = kenFrame.y + kenH / 2;
+  const menuTop = menuY - 41;
+  let btnScale = 1;
+  let pvpY = menuY - 104;
+  let botY = pvpY - 104;
+  if (botY - WOOD_H / 2 < kenBottom + 12) {
+    const availTop = kenBottom + 10;
+    const availBot = menuTop - 10;
+    const span = Math.max(80, availBot - availTop);
+    const need = WOOD_H * 2 + 14;
+    btnScale = Math.min(1, span / need);
+    const blockTop = (availTop + availBot) / 2 - (need * btnScale) / 2;
+    botY = blockTop + (WOOD_H * btnScale) / 2;
+    pvpY = botY + (WOOD_H + 14) * btnScale;
+  }
+  btnBotWrap.scale.set(btnScale);
+  btnPvpWrap.scale.set(btnScale);
+  btnBotWrap.y = botY;
+  btnPvpWrap.y = pvpY;
+
+  const gapBottom = botY - (WOOD_H * btnScale) / 2;
+  statusPanel.y = btnScale < 1 ? (kenBottom + menuTop) / 2 : (kenBottom + gapBottom) / 2;
   retryBtn.y = statusPanel.y + 78;
 
   pickDim.clear().rect(0, 0, DESIGN_W, designH).fill({ color: 0x080814, alpha: 0.72 });
@@ -410,17 +498,10 @@ export function layoutLobby(designH: number, insetTop: number, insetBottom: numb
 }
 
 function layoutNameRow(): void {
-  const iconW = vipIcon.visible ? vipIcon.width : 0;
-  const gap = vipIcon.visible ? 8 : 0;
   nameText.scale.set(1);
-  const maxW = NAME_W - 110 - iconW - gap;
+  const maxW = NAME_W - 110;
   if (nameText.width > maxW) nameText.scale.set(maxW / nameText.width);
-  const textW = nameText.width;
-  const total = iconW + gap + textW;
-  const left = (DESIGN_W - total) / 2;
-  vipIcon.x = left + iconW / 2;
-  vipIcon.y = nameFrame.y;
-  nameText.x = left + iconW + gap + textW / 2;
+  nameText.x = DESIGN_W / 2;
   nameText.y = nameFrame.y;
 }
 
@@ -462,21 +543,23 @@ export function lobbySetReady(info: UserInfoData): void {
     void Assets.load<Texture>(vipIconUrl(vipId))
       .then((texture) => {
         vipIcon.texture = texture;
-        vipIcon.scale.set(VIP_ICON_H / texture.height);
+        vipIcon.scale.set(Math.min(VIP_FIT_W / texture.width, VIP_FIT_H / texture.height));
         vipIcon.visible = true;
-        layoutNameRow();
+        popIn(vipIcon, 120);
       })
       .catch(() => {});
   }
 
-  kenText.text = info.ken.toLocaleString('vi-VN');
   layoutLobby(lastDesignH, lastInsetTop, lastInsetBottom);
+  animateKen(info.ken);
 }
 
 export function lobbySetVisible(visible: boolean): void {
   box.visible = visible;
   if (!visible) {
     stopSpinner();
+    stopKenAnim();
+    kenText.text = kenValue > 0 ? kenValue.toLocaleString('vi-VN') : kenText.text;
     pickBox.visible = false;
     guideBox.visible = false;
     toastText.visible = false;
