@@ -833,6 +833,31 @@
   },
   "vip": {
     "title": "VIP Store",
+    "history": "History",
+    "historyDialog": {
+      "title": "History",
+      "empty": "No VIP transactions yet",
+      "loadMore": "Load more",
+      "close": "Close",
+      "days": "+{{count}} days",
+      "until": "Valid until {{date}}",
+      "free": "Free",
+      "tabPurchases": "Transactions",
+      "tabTransfers": "VIP transfers",
+      "sentTo": "Sent to @{{name}}",
+      "receivedFrom": "Received from @{{name}}",
+      "source": {
+        "package": "Package",
+        "purchase": "Purchase",
+        "icon": "Icon purchase",
+        "gift": "Gift received",
+        "email_verify": "Email verification reward",
+        "egg": "Egg game",
+        "wheel": "Lucky wheel",
+        "admin": "System reward",
+        "other": "Other"
+      }
+    },
     "storeOf": "VIP STORE @{{name}}",
     "storePrivate": "This VIP store is private",
     "usingIcon": "Using VIP icon",

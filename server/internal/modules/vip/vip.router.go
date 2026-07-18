@@ -27,6 +27,7 @@ func (r *Router) Setup(api *utils.AppGroup) {
 		vip.POST("/packages/:id/buy", r.controller.BuyPackage)
 		vip.POST("/packages/:id/gift", r.controller.GiftPackage)
 		vip.GET("/history", r.controller.GetHistory)
+		vip.GET("/transfers", r.controller.GetTransfers)
 		vip.POST("/icons/:id/use", r.controller.Use)
 		vip.POST("/icons/:id/lock", r.controller.Lock)
 		vip.POST("/icons/:id/unlock", r.controller.Unlock)

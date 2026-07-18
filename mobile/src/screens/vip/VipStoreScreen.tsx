@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FlatList, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -11,6 +12,7 @@ import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { DIVIDER, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
 import { PRIVACY_KEYS } from './constants';
 import { useVipStoreScreen } from './useVipStoreScreen';
+import { VipHistoryDialog } from './components/VipHistoryDialog';
 import { VipIconImage } from './components/VipIconImage';
 import { VipRow } from './components/VipRow';
 
@@ -20,6 +22,7 @@ export function VipStoreScreen({ navigation }: Props) {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const vm = useVipStoreScreen();
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   function openBuy(mode: 'buy' | 'give' | 'extend') {
     navigation.navigate(ROOT_ROUTES.BuyVip, { mode });
@@ -101,7 +104,19 @@ export function VipStoreScreen({ navigation }: Props) {
 
   return (
     <View className="flex-1 bg-white">
-      <ScreenHeader title={t('vip.title')} onBack={() => navigation.goBack()} />
+      <ScreenHeader
+        title={t('vip.title')}
+        onBack={() => navigation.goBack()}
+        right={
+          <Pressable
+            onPress={() => setHistoryOpen(true)}
+            className="rounded px-2 py-1 active:opacity-80"
+            style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}
+          >
+            <Text className="text-sm font-medium text-white">{t('vip.history')}</Text>
+          </Pressable>
+        }
+      />
 
       <FlatList
         className="flex-1"
@@ -143,6 +158,8 @@ export function VipStoreScreen({ navigation }: Props) {
           <Text className="text-sm font-medium text-white">{t('vip.extendVip')}</Text>
         </Pressable>
       </View>
+
+      <VipHistoryDialog visible={historyOpen} onClose={() => setHistoryOpen(false)} />
 
       <ListOptionDialog
         visible={vm.privacyOpen}

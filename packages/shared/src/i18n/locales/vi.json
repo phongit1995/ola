@@ -833,6 +833,31 @@
   },
   "vip": {
     "title": "Kho VIP",
+    "history": "Lịch sử",
+    "historyDialog": {
+      "title": "Lịch sử",
+      "empty": "Chưa có giao dịch VIP nào",
+      "loadMore": "Xem thêm",
+      "close": "Đóng",
+      "days": "+{{count}} ngày",
+      "until": "Hạn tới {{date}}",
+      "free": "Miễn phí",
+      "tabPurchases": "Giao dịch",
+      "tabTransfers": "Chuyển nhận VIP",
+      "sentTo": "Chuyển cho @{{name}}",
+      "receivedFrom": "Nhận từ @{{name}}",
+      "source": {
+        "package": "Mua gói",
+        "purchase": "Mua VIP",
+        "icon": "Mua icon",
+        "gift": "Được tặng",
+        "email_verify": "Thưởng xác thực email",
+        "egg": "Đập trứng",
+        "wheel": "Vòng quay",
+        "admin": "Hệ thống tặng",
+        "other": "Khác"
+      }
+    },
     "storeOf": "KHO VIP @{{name}}",
     "storePrivate": "Kho VIP này đang ở chế độ riêng tư",
     "usingIcon": "VIP đang dùng",
