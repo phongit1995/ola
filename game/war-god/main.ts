@@ -13,6 +13,7 @@ import {
 import {
   buildLobby,
   layoutLobby,
+  lobbyEnterAnimated,
   lobbySetConnecting,
   lobbySetError,
   lobbySetReady,
@@ -142,6 +143,10 @@ async function main(): Promise<void> {
     getUserInfo: () => userInfo,
     onGameStart: () => lobbySetVisible(false),
     onRequestLayout: layout,
+    onExitToLobby: () => {
+      lobbyEnterAnimated();
+      if (!userInfo && !session) void connectToServer();
+    },
   });
 
   lobbyBox = buildLobby({

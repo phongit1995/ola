@@ -47,6 +47,7 @@ export interface BattleDeps {
   getUserInfo(): UserInfoData | null;
   onGameStart(): void;
   onRequestLayout(): void;
+  onExitToLobby(): void;
 }
 
 export interface BattleLayoutOpts {
@@ -593,6 +594,18 @@ export function startBattle(level: BotLevel = botLevel): void {
   });
 }
 
+function exitToLobby(): void {
+  over = true;
+  inGame = false;
+  busy = false;
+  clearHint();
+  setSelected(null);
+  hud.overlay.visible = false;
+  hud.confirm.visible = false;
+  setChatInputVisible(false);
+  deps.onExitToLobby();
+}
+
 export function battleChatFocused(): boolean {
   return chatFocused;
 }
@@ -670,7 +683,13 @@ export function buildBattleScreen(root: Container, battleDeps: BattleDeps): void
       if (over || !myTurn || busy) return;
       showConfirm('Bỏ cuộc trận này?', () => finish(false, 'forfeit', 'Bạn đã bỏ cuộc'));
     },
-    onExit: () => bridge.exit(),
+    onExit: () => {
+      if (over || !inGame) {
+        exitToLobby();
+        return;
+      }
+      showConfirm('Thoát trận về sảnh?', exitToLobby);
+    },
   });
 
   chatBox = buildChat({

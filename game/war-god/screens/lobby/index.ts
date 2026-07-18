@@ -355,6 +355,7 @@ function revealContent(): void {
   content.visible = true;
   if (contentShown) return;
   contentShown = true;
+  if (vipIcon.visible) popIn(vipIcon, 40);
   popIn(avatarFrame, 0);
   popIn(nameFrame, 90);
   popIn(nameText, 90);
@@ -422,6 +423,12 @@ export function lobbySetReady(info: UserInfoData): void {
   window.setTimeout(() => {
     if (box.visible && content.visible) animateKen(info.ken);
   }, 380);
+}
+
+export function lobbyEnterAnimated(): void {
+  box.visible = true;
+  contentShown = false;
+  revealContent();
 }
 
 export function lobbySetVisible(visible: boolean): void {
