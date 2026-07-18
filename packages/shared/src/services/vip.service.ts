@@ -7,7 +7,9 @@ import type {
   GiftVipPackageResult,
   VipIconCatalogResult,
   VipPackageListResult,
+  VipPurchaseHistoryResult,
   VipStoreResult,
+  VipTransferHistoryResult,
 } from '../types';
 
 export class VipService {
@@ -79,5 +81,13 @@ export class VipService {
 
   static transferIcon(instanceId: string, body: { toUserId: string; password: string }): Promise<unknown> {
     return http.post<unknown>(API_PATH.vip.iconTransfer(instanceId), body);
+  }
+
+  static getHistory(params?: { limit?: number; offset?: number }): Promise<VipPurchaseHistoryResult> {
+    return http.get<VipPurchaseHistoryResult>(API_PATH.vip.history, { params });
+  }
+
+  static getTransfers(params?: { limit?: number; offset?: number }): Promise<VipTransferHistoryResult> {
+    return http.get<VipTransferHistoryResult>(API_PATH.vip.transfers, { params });
   }
 }

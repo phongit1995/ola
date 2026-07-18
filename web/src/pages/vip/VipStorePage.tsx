@@ -14,6 +14,7 @@ import { formatDateDMY, vipName } from '@lib';
 import { VipService } from '@services';
 import type { VipIconInstance, VipStoreResult } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
+import { VipHistoryDialog } from './VipHistoryDialog';
 
 const PRIVACY_KEYS = ['privacyPublic', 'privacyFriends', 'privacyPrivate'] as const;
 const VIP_PAGE_SIZE = 100;
@@ -57,6 +58,7 @@ export function VipStorePage({ onClose }: { onClose: () => void }) {
   const [loadingMore, setLoadingMore] = useState(false);
   const [busy, setBusy] = useState(false);
   const [privacyOpen, setPrivacyOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const [menuIcon, setMenuIcon] = useState<VipIconInstance | null>(null);
   const [useTarget, setUseTarget] = useState<VipIconInstance | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<VipIconInstance | null>(null);
@@ -214,7 +216,15 @@ export function VipStorePage({ onClose }: { onClose: () => void }) {
 
   return (
     <FullScreenOverlay>
-      <ScreenHeader title={t('vip.title')} onBack={onClose} />
+      <ScreenHeader title={t('vip.title')} onBack={onClose}>
+        <button
+          type="button"
+          onClick={() => setHistoryOpen(true)}
+          className="rounded px-2 py-1 text-sm font-medium text-white hover:bg-white/15"
+        >
+          {t('vip.history')}
+        </button>
+      </ScreenHeader>
 
       <div className="flex-1 overflow-y-auto" onScroll={handleScroll}>
         <div className="bg-white/80">
@@ -307,6 +317,8 @@ export function VipStorePage({ onClose }: { onClose: () => void }) {
           {t('vip.extendVip')}
         </button>
       </div>
+
+      <VipHistoryDialog open={historyOpen} onClose={() => setHistoryOpen(false)} />
 
       <ListOptionDialog
         open={privacyOpen}

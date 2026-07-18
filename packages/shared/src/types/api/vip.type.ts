@@ -62,6 +62,43 @@ export interface GiftVipIconResult {
   kenBalance: number;
 }
 
+export interface VipPurchaseHistoryItem {
+  id: string;
+  packageName: string;
+  days: number;
+  kenPrice: number;
+  kenBalanceAfter: number;
+  vipEndTime: string;
+  source: string;
+  createdAt: string;
+}
+
+export interface VipPurchaseHistoryResult {
+  total: number;
+  limit: number;
+  offset: number;
+  items: VipPurchaseHistoryItem[];
+}
+
+export interface VipTransferHistoryItem {
+  id: string;
+  fromUserId: string;
+  fromUsername: string;
+  fromFullName: string;
+  toUserId: string;
+  toUsername: string;
+  toFullName: string;
+  vipIconId: number;
+  createdAt: string;
+}
+
+export interface VipTransferHistoryResult {
+  total: number;
+  limit: number;
+  offset: number;
+  items: VipTransferHistoryItem[];
+}
+
 export interface VipStoreResult {
   userId: string;
   activeTypeId: number | null;
