@@ -259,7 +259,7 @@ function renderTurnClock(): void {
   const mm = String(Math.floor(total / 60)).padStart(2, '0');
   const ss = String(total % 60).padStart(2, '0');
   hud.timer.text = `${mm}:${ss}`;
-  if (!over && myTurn && !busy) {
+  if (!over && myTurn && !busy && !hud.confirm.visible) {
     if (left <= 0) {
       setStatus('Hết giờ — mất lượt!');
       void startBotTurn();
@@ -525,6 +525,7 @@ async function castMyUltimate(): Promise<void> {
 async function startBotTurn(): Promise<void> {
   myTurn = false;
   busy = true;
+  setSelected(null);
   resetTurnClock();
   updateHud();
   setStatus('Máy đang nghĩ...');
