@@ -2,14 +2,22 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } f
 import { useTranslation } from 'react-i18next';
 import { ConfirmDialog, FullScreenOverlay, ScreenHeader, Spinner } from '@components';
 import type { ListOption } from '@components';
-import { colorForName, compressImagesForUpload, createTimeFormatter, formatDateDMY, toast } from '@lib';
+import {
+  colorForName,
+  compressImagesForUpload,
+  createTimeFormatter,
+  filterVisiblePosts,
+  formatDateDMY,
+  isPostVisible,
+  toast,
+} from '@lib';
 import { ClanService, MeService } from '@services';
 import type { Clan, PostReaction, PostVisibility } from '@app-types';
 import { useClanFeedStore } from '@ola/shared/stores/clanFeedStore';
 import { useClanStore } from '@ola/shared/stores/clanStore';
 import { useAuthStore } from '@/store/authStore';
 import { useMeLocalStore } from '@/store/meLocalStore';
-import { CoverImageEditor } from '../profile/components/CoverImageEditor';
+import { ImageCropEditor } from '@components';
 import { MeComposerDialog, type ComposedPost } from '../me/components/MeComposerDialog';
 import { MeFeedList } from '../me/components/MeFeedList';
 import { MePostCard } from '../me/components/MePostCard';
@@ -76,6 +84,7 @@ export function ClanPage({ handle, id, onClose, onOpenManage, onOpenMembers }: C
   const { t, i18n } = useTranslation();
   const meId = useAuthStore((s) => s.user?.id ?? null);
   const hiddenPostIds = useMeLocalStore((s) => s.hiddenPostIds);
+  const blockedAuthorIds = useMeLocalStore((s) => s.blockedAuthorIds);
   const hidePostLocal = useMeLocalStore((s) => s.hidePost);
   const blockAuthorLocal = useMeLocalStore((s) => s.blockAuthor);
 
@@ -132,22 +141,25 @@ export function ClanPage({ handle, id, onClose, onOpenManage, onOpenMembers }: C
   }, [handle, id]);
 
   const refreshAll = useCallback(async () => {
-    const loaded = await loadClan();
-    if (loaded != null) {
-      void useClanFeedStore.getState().load(loaded.id);
-    }
-  }, [loadClan]);
+    const loaded = handle != null ? await ClanService.byHandle(handle) : await ClanService.get(id ?? '');
+    setClan(loaded);
+    setLoadError(null);
+    await useClanFeedStore.getState().refresh(loaded.id);
+  }, [handle, id]);
 
   const pinnedPost = useMemo(
-    () => (feedPinned == null ? null : toMePost(feedPinned, formatTime)),
-    [feedPinned, formatTime]
+    () =>
+      feedPinned != null && isPostVisible(feedPinned, hiddenPostIds, blockedAuthorIds)
+        ? toMePost(feedPinned, formatTime)
+        : null,
+    [feedPinned, formatTime, hiddenPostIds, blockedAuthorIds]
   );
   const listPosts = useMemo(
     () =>
-      feedPosts
-        .map((post) => toMePost(post, formatTime))
-        .filter((post) => !hiddenPostIds.includes(post.id)),
-    [feedPosts, formatTime, hiddenPostIds]
+      filterVisiblePosts(feedPosts, hiddenPostIds, blockedAuthorIds).map((post) =>
+        toMePost(post, formatTime)
+      ),
+    [feedPosts, formatTime, hiddenPostIds, blockedAuthorIds]
   );
   const allPosts = useMemo(
     () => (pinnedPost != null ? [pinnedPost, ...listPosts] : listPosts),
@@ -609,7 +621,7 @@ export function ClanPage({ handle, id, onClose, onOpenManage, onOpenMembers }: C
       <input ref={coverInputRef} type="file" accept="image/*" hidden onChange={(e) => pickImage(e, 'cover')} />
 
       {imageEdit != null && (
-        <CoverImageEditor
+        <ImageCropEditor
           src={imageEdit.src}
           aspect={imageEdit.field === 'avatar' ? 1 : 2}
           busy={imageUploading}

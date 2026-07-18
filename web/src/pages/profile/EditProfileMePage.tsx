@@ -1,19 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { UserService } from '@services';
-import { ApiError, colorForName, compressImageForUpload, toast } from '@lib';
+import { ApiError, colorForName, compressImageForUpload, toast, validatedImageObjectUrl } from '@lib';
 import type { Gender, UpdateProfileRequest } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
 import maleIcon from '@/assets/icons/chat/ic_indicate_male.png';
 import femaleIcon from '@/assets/icons/chat/ic_indicate_female.png';
 import cameraIcon from '@/assets/icons/profile/ic_action_camera.png';
-import { Avatar } from '@components';
-import { CoverImageEditor } from './components/CoverImageEditor';
-import { CoverCropOverlay } from './components/CoverCropOverlay';
+import { Avatar, ImageCropEditor, ImageCropOverlay } from '@components';
+import { AVATAR_ASPECT, COVER_ASPECT, MIN_IMAGE_SOURCE } from '@constants';
 import { ChangePasswordDialog } from './components/ChangePasswordDialog';
 import { VerifyEmailDialog } from './components/VerifyEmailDialog';
-import { readImageSize } from './imageSize';
-import { AVATAR_ASPECT, COVER_ASPECT, INPUT_CLASS, MIN_AVATAR_SOURCE, PHONE_PATTERN } from './constants';
+import { INPUT_CLASS, PHONE_PATTERN } from './constants';
 
 function LockIcon({ className = 'h-4 w-4' }: { className?: string }) {
   return (
@@ -74,19 +72,11 @@ function AvatarPicker({ avatar, nick, uploading, onPick }: AvatarPickerProps) {
     const file = event.target.files?.[0];
     event.target.value = '';
     if (!file) return;
-    const url = URL.createObjectURL(file);
-    try {
-      const size = await readImageSize(url);
-      if (Math.min(size.width, size.height) < MIN_AVATAR_SOURCE) {
-        URL.revokeObjectURL(url);
-        toast.error(t('avatar.tooSmall'));
-        return;
-      }
-    } catch {
-      URL.revokeObjectURL(url);
-      toast.error(t('avatar.error'));
-      return;
-    }
+    const url = await validatedImageObjectUrl(file, MIN_IMAGE_SOURCE, {
+      tooSmall: t('avatar.tooSmall'),
+      error: t('avatar.error'),
+    });
+    if (!url) return;
     clearCrop();
     setCropSrc(url);
   }
@@ -113,7 +103,7 @@ function AvatarPicker({ avatar, nick, uploading, onPick }: AvatarPickerProps) {
       {uploading ? <span className="mt-2 text-xs text-black/54">{t('common.loading')}</span> : null}
       <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleChange} />
       {cropSrc && (
-        <CoverCropOverlay
+        <ImageCropOverlay
           src={cropSrc}
           aspect={AVATAR_ASPECT}
           onCancel={clearCrop}
@@ -317,7 +307,7 @@ export function EditProfileMePage({ onClose }: { onClose: () => void }) {
         </div>
 
         {coverPreview && (
-          <CoverImageEditor
+          <ImageCropEditor
             src={coverPreview.url}
             aspect={COVER_ASPECT}
             busy={uploadingCover}

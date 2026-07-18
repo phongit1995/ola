@@ -4,7 +4,6 @@ import {
   ActivityIndicator,
   Image,
   ImageBackground,
-  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -13,6 +12,7 @@ import {
   View,
 } from 'react-native';
 import { KeyboardView } from '@components/KeyboardView';
+import { OlaModal } from '@components/ui/OlaModal';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -23,25 +23,20 @@ import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { Gender, UpdateProfileRequest } from '@ola/shared/types';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
-import { Avatar } from '@components/Avatar';
-import { pickCroppedImage } from '@lib/imagePicker';
-import { ChangePasswordDialog } from './ChangePasswordDialog';
-import { VerifyEmailDialog } from './VerifyEmailDialog';
-import { CoverPreviewOverlay } from './CoverPreviewOverlay';
-import { ScreenHeader } from '@components/ScreenHeader';
+import { Avatar } from '@components/ui/Avatar';
+import { AVATAR_OUTPUT, COVER_OUTPUT, pickCroppedImage, pickValidatedCroppedImage } from '@lib/imagePicker';
+import { ChangePasswordDialog } from './components/ChangePasswordDialog';
+import { VerifyEmailDialog } from './components/VerifyEmailDialog';
+import { CoverPreviewOverlay } from './components/CoverPreviewOverlay';
+import { ScreenHeader } from '@components/ui/ScreenHeader';
+import { DIVIDER } from '@constants';
+import { DEFAULT_BIRTHDAY, PHONE_PATTERN, PLACEHOLDER_COLOR } from './constants';
 
 const cameraIcon = require('@assets/icons/profile/ic_action_camera.png');
 const lockIcon = require('@assets/icons/profile/ic_lock.png');
 const maleIcon = require('@assets/icons/profile/ic_indicate_male.png');
 const femaleIcon = require('@assets/icons/profile/ic_indicate_female.png');
 
-const DIVIDER = 'rgba(0,0,0,0.12)';
-const PHONE_PATTERN = /^[0-9+\-() ]{6,20}$/;
-const MIN_AVATAR_SOURCE = 100;
-const PLACEHOLDER_COLOR = '#e34545';
-const AVATAR_OUTPUT = 800;
-const COVER_OUTPUT = { width: 1600, height: 900 };
-const DEFAULT_BIRTHDAY = new Date(2000, 0, 1);
 
 function formatDateOnly(date: Date): string {
   const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -58,7 +53,7 @@ function parseBirthday(value: string): Date {
 function Field({ label, first, children }: { label: string; first?: boolean; children: React.ReactNode }) {
   return (
     <View className={first ? '' : 'mt-4'}>
-      <Text className="text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>{label}</Text>
+      <Text className="text-xs text-ola-ink-soft">{label}</Text>
       <View className="mt-1">{children}</View>
       <View className="mt-4" style={{ height: 1, backgroundColor: DIVIDER }} />
     </View>
@@ -121,21 +116,14 @@ export function EditProfileScreen({ navigation }: Props) {
 
   async function pickAvatar() {
     if (uploading) return;
-    let picked;
-    try {
-      picked = await pickCroppedImage(AVATAR_OUTPUT, AVATAR_OUTPUT);
-    } catch {
-      push('error', t('avatar.error'));
-      return;
-    }
+    const picked = await pickValidatedCroppedImage(AVATAR_OUTPUT, AVATAR_OUTPUT, {
+      tooSmall: t('avatar.tooSmall'),
+      error: t('avatar.error'),
+    });
     if (picked == null) return;
-    if (Math.min(picked.sourceWidth, picked.sourceHeight) < MIN_AVATAR_SOURCE) {
-      push('error', t('avatar.tooSmall'));
-      return;
-    }
     setUploading(true);
     try {
-      const result = await UserService.uploadAvatar(picked.file);
+      const result = await UserService.uploadAvatar(picked);
       setAvatar(result.url);
       push('success', t('profileEdit.avatarUpdated'));
     } catch {
@@ -263,7 +251,7 @@ export function EditProfileScreen({ navigation }: Props) {
                 </View>
               </Pressable>
               {uploading && (
-                <Text className="mt-2 text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>{t('common.loading')}</Text>
+                <Text className="mt-2 text-xs text-ola-ink-soft">{t('common.loading')}</Text>
               )}
             </View>
 
@@ -332,11 +320,11 @@ export function EditProfileScreen({ navigation }: Props) {
 
             <View className="mt-4">
               <View className="flex-row items-center gap-1">
-                <Text className="text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>{t('verifyEmail.fieldLabel')}</Text>
+                <Text className="text-xs text-ola-ink-soft">{t('verifyEmail.fieldLabel')}</Text>
                 <EmailStatusIcon verified={!!user.emailVerified} />
               </View>
               <View className="mt-1 flex-row items-center gap-2">
-                <Text className="flex-1 text-sm" numberOfLines={1} style={{ color: 'rgba(0,0,0,0.87)' }}>
+                <Text className="flex-1 text-sm text-ola-ink" numberOfLines={1}>
                   {user.email !== '' ? user.email : t('verifyEmail.empty')}
                 </Text>
                 {!user.emailVerified && (
@@ -357,7 +345,7 @@ export function EditProfileScreen({ navigation }: Props) {
             className="flex-1 items-center rounded py-2.5"
             style={{ borderWidth: 1, borderColor: DIVIDER }}
           >
-            <Text className="text-sm font-medium" style={{ color: 'rgba(0,0,0,0.54)' }}>{t('common.cancel')}</Text>
+            <Text className="text-sm font-medium text-ola-ink-soft">{t('common.cancel')}</Text>
           </Pressable>
           <Pressable
             onPress={() => void save()}
@@ -388,7 +376,7 @@ export function EditProfileScreen({ navigation }: Props) {
         />
 
         {Platform.OS === 'ios' && birthdayPickerDate != null && (
-          <Modal transparent animationType="fade" onRequestClose={() => setBirthdayPickerDate(null)}>
+          <OlaModal transparent animationType="fade" onRequestClose={() => setBirthdayPickerDate(null)}>
             <Pressable
               className="flex-1 justify-end"
               style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}
@@ -404,7 +392,7 @@ export function EditProfileScreen({ navigation }: Props) {
                   style={{ borderBottomWidth: 1, borderBottomColor: DIVIDER }}
                 >
                   <Pressable onPress={() => setBirthdayPickerDate(null)}>
-                    <Text className="text-base" style={{ color: 'rgba(0,0,0,0.54)' }}>
+                    <Text className="text-base text-ola-ink-soft">
                       {t('dialog.cancel')}
                     </Text>
                   </Pressable>
@@ -431,7 +419,7 @@ export function EditProfileScreen({ navigation }: Props) {
                 />
               </Pressable>
             </Pressable>
-          </Modal>
+          </OlaModal>
         )}
 
         {Platform.OS === 'android' && birthdayPickerDate != null && (

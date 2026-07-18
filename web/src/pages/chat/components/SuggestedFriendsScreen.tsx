@@ -3,25 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { ActionButton, Avatar, FullScreenOverlay, ScreenHeader } from '@components';
 import { toast } from '@lib';
 import { SUGGESTED_FRIENDS } from '../data';
-import type { SuggestedFriend } from '../types';
+import type { SuggestedFriend } from '../interface';
+import { CloseIcon } from './Icons';
 
 interface SuggestedFriendsScreenProps {
   onClose: () => void;
-}
-
-function IgnoreIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className="h-5 w-5"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      aria-hidden="true"
-    >
-      <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
-    </svg>
-  );
 }
 
 export function SuggestedFriendsScreen({ onClose }: SuggestedFriendsScreenProps) {
@@ -80,7 +66,7 @@ export function SuggestedFriendsScreen({ onClose }: SuggestedFriendsScreenProps)
                   onClick={() => remove(friend.name)}
                   className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-black/38 hover:bg-black/5"
                 >
-                  <IgnoreIcon />
+                  <CloseIcon />
                 </button>
               </li>
             ))}

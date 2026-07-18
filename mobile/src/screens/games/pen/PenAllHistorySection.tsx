@@ -4,7 +4,7 @@ import { Image, Text, View } from 'react-native';
 import { formatVnd } from '@ola/shared/lib';
 import { PEN_HISTORY_PAGE, usePenHistoryStore } from '@ola/shared/stores/penHistoryStore';
 import type { PenUserBrief } from '@ola/shared/types';
-import { VipBadge } from '@components/VipBadge';
+import { VipBadge } from '@components/ui/VipBadge';
 import { penAssets } from './penAssets';
 import { toAllHistoryRow } from './penHistory';
 import { PenHistoryTable, PenColHeader } from './PenHistoryTable';

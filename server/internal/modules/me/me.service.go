@@ -503,11 +503,14 @@ func (s *Service) AddComment(viewerID, postID uuid.UUID, req *CreateCommentReque
 		return nil, err
 	}
 	commentID := created.ID
+	directRecipient := post.AuthorID
 	if parent != nil {
+		directRecipient = parent.AuthorID
 		s.createMeNotification(parent.AuthorID, viewerID, models.MeNotificationReply, postID, &commentID, excerptText(created.Content))
 	} else {
 		s.createMeNotification(post.AuthorID, viewerID, models.MeNotificationComment, postID, &commentID, excerptText(created.Content))
 	}
+	s.notifyCommentMentions(viewerID, directRecipient, postID, commentID, created.Content)
 	resp := toCommentResponse(created)
 	resp.ReplyTo = replySnapshotFrom(parent)
 	return &resp, nil
@@ -1080,6 +1083,16 @@ func (s *Service) notifyMentions(authorID, postID uuid.UUID, mentions models.Men
 			continue
 		}
 		s.createMeNotification(mentionedID, authorID, models.MeNotificationMention, postID, nil, preview)
+	}
+}
+
+func (s *Service) notifyCommentMentions(actorID, directRecipient uuid.UUID, postID, commentID uuid.UUID, content string) {
+	for _, idStr := range s.resolveMentions(content) {
+		mentionedID, err := uuid.Parse(idStr)
+		if err != nil || mentionedID == directRecipient {
+			continue
+		}
+		s.createMeNotification(mentionedID, actorID, models.MeNotificationMention, postID, &commentID, excerptText(content))
 	}
 }
 

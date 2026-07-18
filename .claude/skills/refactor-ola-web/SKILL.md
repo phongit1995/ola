@@ -58,7 +58,12 @@ Trước khi tự viết util, kiểm tra `src/shared/lib` (export qua `@lib`):
 
 ## 4. Cấu trúc & nơi đặt code
 - `shared/` = hạ tầng dùng chung (api, config, constants, components/ui, lib, hooks, services, types). Logic/UI dùng ở ≥2 màn → đưa vào đây.
-- `pages/<feature>/` = màn + component riêng đặt cạnh; `components/`, `*.ts` view-mapper (vd `chatView.ts`), `types.ts`.
+- `pages/<feature>/` = màn + component riêng đặt cạnh; `components/`, `*.ts` view-mapper (vd `chatView.ts`), `interface.ts` + `types.ts`.
+- **Tách interface/type theo file** (chuẩn mới, `pages/chat` đã theo — folder khác áp dụng dần khi refactor):
+  - `interface.ts` = mọi `interface` EXPORT của folder (shape dữ liệu/view: `ChatMessage`, `ConversationView`, `Contact`...).
+  - `types.ts` = chỉ `type` alias (union/literal: `ChatMessageKind`, `ContactGroup`...) — `interface.ts` import alias từ đây.
+  - File view-mapper (`chatView.ts`...) chỉ chứa HÀM, không khai báo interface export — dời sang `interface.ts`.
+  - `XxxProps` KHÔNG export của component vẫn để ngay tại file component, đừng gom.
 - `store/` = zustand. `routes/AppRouter.tsx` + `ROUTES` (`@constants`) — KHÔNG hardcode path.
 - Tách UI lặp thành component ở `shared/components/ui` (vd hàng avatar + `username · fullName`, badge online, dialog search+list).
 
@@ -75,5 +80,6 @@ Trước khi tự viết util, kiểm tra `src/shared/lib` (export qua `@lib`):
 - Mock `data.ts` (chat/room/profile) là tàn dư — không dựa vào để suy luận hành vi thật.
 
 ## 7. Tham chiếu chéo
+- Refactor đụng **mobile RN hoặc `packages/shared`**, hoặc gom code trùng web↔mobile → skill `refactor-ola-react` (quy tắc chọn shared vs per-platform, inventory helper shared, checklist 3 package).
 - Refactor/đánh giá **UI/UX** sâu hơn (style, layout, component design) → dùng skill `ui-ux-pro-max`.
 - Cần biết màn hình gốc hiển thị/logic thế nào → skill `docs-screens-apk` (đọc APK trong `older-ola/`).

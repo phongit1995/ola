@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ListOptionDialog, ReportDialog, type ListOption } from '@components';
-import { toast } from '@lib';
+import { profileFriendLabel, toast } from '@lib';
 import type { RelationshipInfo } from '@app-types';
 import type { ProfileActions } from '../types';
 import addFriendIcon from '@/assets/icons/profile/ic_add_friend_black_disable.png';
@@ -71,14 +71,7 @@ export function RelationButtons({
 
   const comingSoon = () => toast.info(t('profile.comingSoon'));
 
-  const friendLabel =
-    status === 'friend'
-      ? t('profile.alreadyFriend')
-      : status === 'pending_outgoing'
-        ? t('profile.requestSent')
-        : status === 'pending_incoming'
-          ? t('profile.acceptFriend')
-          : t('profile.makeFriend');
+  const friendLabel = profileFriendLabel(t, status);
   const friendActive = isFriend || status === 'pending_outgoing';
   const friendIcon = isFriend ? friendsActiveIcon : addFriendIcon;
   const followIconSrc = following ? followingActiveIcon : followIcon;

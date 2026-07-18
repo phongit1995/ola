@@ -1,14 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, RefreshControl, Text, View } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { colorForName } from '@ola/shared/lib';
 import { ClanService } from '@ola/shared/services';
 import type { ClanBan } from '@ola/shared/types';
 import { useToastStore } from '@ola/shared/stores/toastStore';
-import { Avatar } from '@components/Avatar';
-import { ScreenHeader } from '@components/ScreenHeader';
+import { Avatar } from '@components/ui/Avatar';
+import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { clanErrorText } from '@lib/clanHelpers';
+import { BANS_PAGE_SIZE } from './constants';
 
 interface ClanBansScreenProps {
   clanId: string;
@@ -20,21 +21,25 @@ export function ClanBansScreen({ clanId, onClose }: ClanBansScreenProps) {
   const pushToast = useToastStore((s) => s.push);
   const [bans, setBans] = useState<ClanBan[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchBans = useCallback(async () => {
+    const result = await ClanService.bans(clanId, { limit: BANS_PAGE_SIZE, offset: 0 });
+    setBans(result.items);
+  }, [clanId]);
 
   useEffect(() => {
-    let active = true;
-    ClanService.bans(clanId, { limit: 100, offset: 0 })
-      .then((result) => {
-        if (active) setBans(result.items);
-      })
+    fetchBans()
       .catch((error) => pushToast('error', clanErrorText(error)))
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-    return () => {
-      active = false;
-    };
-  }, [clanId, pushToast]);
+      .finally(() => setLoading(false));
+  }, [fetchBans, pushToast]);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchBans()
+      .catch((error) => pushToast('error', clanErrorText(error)))
+      .finally(() => setRefreshing(false));
+  }, [fetchBans, pushToast]);
 
   async function unban(ban: ClanBan) {
     if (ban.user == null) return;
@@ -63,6 +68,7 @@ export function ClanBansScreen({ clanId, onClose }: ClanBansScreenProps) {
           data={bans}
           keyExtractor={(item, index) => `${item.user?.id ?? ''}-${index}`}
           contentContainerClassName="p-2"
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
           renderItem={({ item, index }) => {
             const username = item.user?.username ?? '';
             const fullName = item.user?.fullName ?? '';
@@ -81,12 +87,11 @@ export function ClanBansScreen({ clanId, onClose }: ClanBansScreenProps) {
                 />
                 <Text
                   numberOfLines={1}
-                  className="min-w-0 flex-1 text-sm"
-                  style={{ color: 'rgba(0,0,0,0.87)' }}
+                  className="min-w-0 flex-1 text-sm text-ola-ink"
                 >
                   {username}
                   {fullName !== '' && fullName !== username && (
-                    <Text style={{ color: 'rgba(0,0,0,0.54)' }}> · {fullName}</Text>
+                    <Text className="text-ola-ink-soft"> · {fullName}</Text>
                   )}
                 </Text>
                 <Pressable

@@ -4,11 +4,10 @@ import { ActivityIndicator, Image, Pressable, ScrollView, Text, View } from 'rea
 import { createTimeFormatter } from '@ola/shared/lib';
 import { EggService } from '@ola/shared/services';
 import type { EggDrawHistoryFilter, EggDrawHistoryItem } from '@ola/shared/types';
-import { Dialog, DialogButton } from '@components/Dialog';
-import { VipIconImage } from '@screens/vip/VipIconImage';
+import { Dialog, DialogButton } from '@components/ui/Dialog';
+import { VipIconImage } from '@screens/vip/components/VipIconImage';
 import { eggAssets } from './eggAssets';
-
-const PAGE_SIZE = 20;
+import { DRAWS_PAGE_SIZE } from './constants';
 const FILTERS: EggDrawHistoryFilter[] = ['all', 'win', 'miss'];
 
 interface EggHistoryDialogProps {
@@ -75,7 +74,7 @@ export function EggHistoryDialog({ onClose }: EggHistoryDialogProps) {
     setLoading(true);
     setError(false);
     try {
-      const result = await EggService.listDraws(PAGE_SIZE, offset, outcome);
+      const result = await EggService.listDraws(DRAWS_PAGE_SIZE, offset, outcome);
       setTotal(result.total);
       setItems((prev) => (offset === 0 ? result.items : [...prev, ...result.items]));
     } catch {

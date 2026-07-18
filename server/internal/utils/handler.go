@@ -1,10 +1,14 @@
 package utils
 
 import (
+	"errors"
 	"net/http"
+
+	"ola-chat-server/internal/apperr"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 func RequireUserID(c *gin.Context) (uuid.UUID, error) {
@@ -36,5 +40,18 @@ func BindJSON[T any](c *gin.Context) (*T, error) {
 }
 
 func ServiceError(err error) error {
-	return NewHTTPError(HTTPStatusFromError(err), err.Error())
+	var httpErr *HTTPError
+	if errors.As(err, &httpErr) {
+		return httpErr
+	}
+	if status, known := knownStatusFromMessage(err.Error()); known {
+		return NewHTTPError(status, err.Error())
+	}
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return NewHTTPError(http.StatusNotFound, "resource not found")
+	}
+	if apperr.IsDatabaseError(err) {
+		return NewHTTPError(http.StatusInternalServerError, "internal server error")
+	}
+	return NewHTTPError(http.StatusBadRequest, err.Error())
 }

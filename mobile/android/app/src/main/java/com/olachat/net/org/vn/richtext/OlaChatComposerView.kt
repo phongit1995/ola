@@ -1,6 +1,9 @@
 package com.olachat.net.org.vn.richtext
 
+import android.content.ClipboardManager
+import android.content.Context
 import android.graphics.Color
+import android.net.Uri
 import android.os.Build
 import android.text.Editable
 import android.util.TypedValue
@@ -9,13 +12,19 @@ import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.TextWatcher
 import android.view.Gravity
+import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputConnection
 import androidx.appcompat.widget.AppCompatEditText
+import androidx.core.view.inputmethod.EditorInfoCompat
+import androidx.core.view.inputmethod.InputConnectionCompat
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.uimanager.PixelUtil
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.UIManagerHelper
 import com.facebook.react.uimanager.events.Event
+import java.io.File
+import java.io.FileOutputStream
 import kotlin.math.roundToInt
 
 class ComposerTextEvent(
@@ -44,6 +53,15 @@ class ComposerFocusEvent(
 ) : Event<ComposerFocusEvent>(surfaceId, viewId) {
   override fun getEventName(): String = focusEventName
   override fun getEventData(): WritableMap = Arguments.createMap()
+}
+
+class ComposerPasteImageEvent(
+  surfaceId: Int,
+  viewId: Int,
+  private val uri: String,
+) : Event<ComposerPasteImageEvent>(surfaceId, viewId) {
+  override fun getEventName(): String = "topPasteImage"
+  override fun getEventData(): WritableMap = Arguments.createMap().apply { putString("uri", uri) }
 }
 
 class OlaChatComposerView(private val reactContext: ThemedReactContext) :
@@ -124,6 +142,118 @@ class OlaChatComposerView(private val reactContext: ThemedReactContext) :
     for ((start, end) in ranges) {
       if (start in 0 until end && end <= editable.length) editable.delete(start, end)
     }
+  }
+
+  override fun onTextContextMenuItem(id: Int): Boolean {
+    if (id == android.R.id.paste || id == android.R.id.pasteAsPlainText) {
+      if (tryPasteImageFromClipboard()) return true
+    }
+    return super.onTextContextMenuItem(id)
+  }
+
+  private fun tryPasteImageFromClipboard(): Boolean {
+    val clipboard =
+      context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager ?: return false
+    val clip = clipboard.primaryClip ?: return false
+    for (index in 0 until clip.itemCount) {
+      val uri = clip.getItemAt(index).uri ?: continue
+      val mime = context.contentResolver.getType(uri) ?: continue
+      if (!mime.startsWith("image/")) continue
+      val cachedUri = copyImageToCache(uri, mime) ?: continue
+      emitPasteImage(cachedUri)
+      return true
+    }
+    return false
+  }
+
+  override fun onCreateInputConnection(outAttrs: EditorInfo): InputConnection? {
+    val connection = super.onCreateInputConnection(outAttrs) ?: return null
+    EditorInfoCompat.setContentMimeTypes(outAttrs, arrayOf("image/*"))
+    return InputConnectionCompat.createWrapper(connection, outAttrs) { contentInfo, flags, _ ->
+      try {
+        if ((flags and InputConnectionCompat.INPUT_CONTENT_GRANT_READ_URI_PERMISSION) != 0) {
+          contentInfo.requestPermission()
+        }
+        val mime = context.contentResolver.getType(contentInfo.contentUri)
+          ?: contentInfo.description.getMimeType(0)
+          ?: "image/jpeg"
+        val cachedUri = copyImageToCache(contentInfo.contentUri, mime)
+        contentInfo.releasePermission()
+        if (cachedUri != null) {
+          emitPasteImage(cachedUri)
+          true
+        } else {
+          false
+        }
+      } catch (error: Exception) {
+        false
+      }
+    }
+  }
+
+  private fun copyImageToCache(uri: Uri, mime: String): String? = try {
+    if (mime.contains("gif") || mime.contains("webp")) {
+      copyRawToCache(uri, if (mime.contains("gif")) "gif" else "webp")
+    } else {
+      copyScaledToCache(uri)
+    }
+  } catch (error: Exception) {
+    null
+  }
+
+  private fun copyRawToCache(uri: Uri, extension: String): String? {
+    val file = File(context.cacheDir, "paste-${System.currentTimeMillis()}.$extension")
+    val copied = context.contentResolver.openInputStream(uri)?.use { input ->
+      FileOutputStream(file).use { output -> input.copyTo(output) }
+      true
+    } ?: false
+    return if (copied) Uri.fromFile(file).toString() else null
+  }
+
+  private fun copyScaledToCache(uri: Uri): String? {
+    val maxDimension = 1920
+    val bounds = android.graphics.BitmapFactory.Options().apply { inJustDecodeBounds = true }
+    context.contentResolver.openInputStream(uri)?.use { input ->
+      android.graphics.BitmapFactory.decodeStream(input, null, bounds)
+    } ?: return null
+    if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null
+    var sampleSize = 1
+    while (
+      bounds.outWidth / (sampleSize * 2) >= maxDimension ||
+      bounds.outHeight / (sampleSize * 2) >= maxDimension
+    ) {
+      sampleSize *= 2
+    }
+    val decodeOptions = android.graphics.BitmapFactory.Options().apply { inSampleSize = sampleSize }
+    val decoded = context.contentResolver.openInputStream(uri)?.use { input ->
+      android.graphics.BitmapFactory.decodeStream(input, null, decodeOptions)
+    } ?: return null
+    val largest = maxOf(decoded.width, decoded.height)
+    val bitmap = if (largest > maxDimension) {
+      val ratio = maxDimension.toFloat() / largest
+      android.graphics.Bitmap.createScaledBitmap(
+        decoded,
+        (decoded.width * ratio).toInt().coerceAtLeast(1),
+        (decoded.height * ratio).toInt().coerceAtLeast(1),
+        true,
+      )
+    } else {
+      decoded
+    }
+    val file = File(context.cacheDir, "paste-${System.currentTimeMillis()}.jpg")
+    FileOutputStream(file).use { output ->
+      bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 90, output)
+    }
+    if (bitmap !== decoded) bitmap.recycle()
+    decoded.recycle()
+    return Uri.fromFile(file).toString()
+  }
+
+  private fun emitPasteImage(uri: String) {
+    val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(reactContext, id) ?: return
+    dispatcher.dispatchEvent(
+      ComposerPasteImageEvent(UIManagerHelper.getSurfaceId(reactContext), id, uri)
+    )
   }
 
   override fun onSelectionChanged(selStart: Int, selEnd: Int) {

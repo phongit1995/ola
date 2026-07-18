@@ -2,7 +2,6 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Image,
-  Modal,
   Pressable,
   StyleSheet,
   Text,
@@ -10,8 +9,9 @@ import {
   useWindowDimensions,
   type ImageSourcePropType,
 } from 'react-native';
+import { OlaModal } from '@components/ui/OlaModal';
 import type { WheelSpinResult } from '@ola/shared/types';
-import { VipIconImage } from '@screens/vip/VipIconImage';
+import { VipIconImage } from '@screens/vip/components/VipIconImage';
 import { assetRatio } from '@screens/games/pen/penUi';
 import { wheelAssets } from './spinWheelAssets';
 import { formatRewardKen, isKenKind, isVipDaysKind } from './spinWheelReward';
@@ -83,7 +83,7 @@ export function SpinResultDialog({ result, onClose }: SpinResultDialogProps) {
   const markWidth = 44 * 0.42;
 
   return (
-    <Modal transparent animationType="fade" visible onRequestClose={onClose}>
+    <OlaModal transparent animationType="fade" visible onRequestClose={onClose}>
       <View
         style={{
           flex: 1,
@@ -177,6 +177,6 @@ export function SpinResultDialog({ result, onClose }: SpinResultDialogProps) {
           </View>
         </View>
       </View>
-    </Modal>
+    </OlaModal>
   );
 }

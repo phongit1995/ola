@@ -1,24 +1,23 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, FlatList, Modal, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RelationshipService, UserService } from '@ola/shared/services';
 import { useToastStore } from '@ola/shared/stores/toastStore';
-import { activeVipTypeId, colorForName, createTimeFormatter } from '@ola/shared/lib';
+import { activeVipTypeId, createTimeFormatter } from '@ola/shared/lib';
 import type { VisitorUser } from '@ola/shared/types';
-import { Avatar } from '@components/Avatar';
-import { VipBadge } from '@components/VipBadge';
-import { ScreenHeader } from '@components/ScreenHeader';
+import { Avatar } from '@components/ui/Avatar';
+import { VipBadge } from '@components/ui/VipBadge';
+import { ScreenHeader } from '@components/ui/ScreenHeader';
+import type { RootStackParamList } from '@navigation/types';
+import { ROOT_ROUTES } from '@navigation/routes';
+import { VISITORS_PAGE_SIZE } from './constants';
 
-const PAGE_SIZE = 40;
-
-interface MeVisitorsScreenProps {
-  language: string;
-  onClose: () => void;
-  onOpenProfile: (nick: string, color: string) => void;
-}
-
-export function MeVisitorsScreen({ language, onClose, onOpenProfile }: MeVisitorsScreenProps) {
-  const { t } = useTranslation();
+export function MeVisitorsScreen() {
+  const { t, i18n } = useTranslation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const language = i18n.language;
   const push = useToastStore((s) => s.push);
   const [rows, setRows] = useState<VisitorUser[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
@@ -32,7 +31,7 @@ export function MeVisitorsScreen({ language, onClose, onOpenProfile }: MeVisitor
     let active = true;
     (async () => {
       try {
-        const result = await UserService.myVisitors({ limit: PAGE_SIZE });
+        const result = await UserService.myVisitors({ limit: VISITORS_PAGE_SIZE });
         if (!active) return;
         setRows(result.users);
         setNextCursor(result.nextCursor);
@@ -51,7 +50,7 @@ export function MeVisitorsScreen({ language, onClose, onOpenProfile }: MeVisitor
     if (loading || loadingMore || nextCursor == null) return;
     setLoadingMore(true);
     try {
-      const result = await UserService.myVisitors({ limit: PAGE_SIZE, cursor: nextCursor });
+      const result = await UserService.myVisitors({ limit: VISITORS_PAGE_SIZE, cursor: nextCursor });
       setRows((current) => [...current, ...result.users]);
       setNextCursor(result.nextCursor);
     } catch {
@@ -72,16 +71,15 @@ export function MeVisitorsScreen({ language, onClose, onOpenProfile }: MeVisitor
   }
 
   return (
-    <Modal visible transparent animationType="slide" onRequestClose={onClose}>
-      <View className="flex-1 bg-white">
-        <ScreenHeader title={t('me.tabVisitors')} onBack={onClose} />
+    <View className="flex-1 bg-white">
+      <ScreenHeader title={t('me.tabVisitors')} onBack={() => navigation.goBack()} />
 
         {loading ? (
           <ActivityIndicator className="py-6" color="#7cb342" />
         ) : error ? (
           <Text className="py-6 text-center text-sm" style={{ color: '#e34545' }}>{t('me.visitorsError')}</Text>
         ) : rows.length === 0 ? (
-          <Text className="py-10 text-center text-sm" style={{ color: 'rgba(0,0,0,0.54)' }}>{t('me.followerEmpty')}</Text>
+          <Text className="py-10 text-center text-sm text-ola-ink-soft">{t('me.followerEmpty')}</Text>
         ) : (
           <FlatList
             data={rows}
@@ -92,7 +90,8 @@ export function MeVisitorsScreen({ language, onClose, onOpenProfile }: MeVisitor
             renderItem={({ item }) => {
               const status = item.relationship?.status ?? 'none';
               const sent = status === 'pending_outgoing' || requested[item.id] === true;
-              const openProfile = () => onOpenProfile(item.username, colorForName(item.username));
+              const openProfile = () =>
+                navigation.navigate(ROOT_ROUTES.ProfileView, { userId: item.username });
               return (
                 <View
                   className="flex-row items-start gap-3 px-4 py-3"
@@ -105,7 +104,7 @@ export function MeVisitorsScreen({ language, onClose, onOpenProfile }: MeVisitor
                     <Pressable onPress={openProfile}>
                       <View className="flex-row items-center gap-1">
                         <VipBadge typeId={activeVipTypeId(item.vipUsed, item.vipEndTime)} size={16} />
-                        <Text numberOfLines={1} className="min-w-0 shrink text-base font-medium" style={{ color: 'rgba(0,0,0,0.87)' }}>
+                        <Text numberOfLines={1} className="min-w-0 shrink text-base font-medium text-ola-ink">
                           @{item.username}
                           {item.fullName != null && item.fullName !== '' && (
                             <Text style={{ color: 'rgba(0,0,0,0.45)' }}> · {item.fullName}</Text>
@@ -135,7 +134,6 @@ export function MeVisitorsScreen({ language, onClose, onOpenProfile }: MeVisitor
             }}
           />
         )}
-      </View>
-    </Modal>
+    </View>
   );
 }

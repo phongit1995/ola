@@ -283,15 +283,6 @@ func (r *Repository) ListByClanPage(clanID, viewerID uuid.UUID, excludeID *uuid.
 	return posts, hasMore, nil
 }
 
-func (r *Repository) DowngradeClanPublicPosts(clanID uuid.UUID, keepAuthorIDs []uuid.UUID) error {
-	db := r.db.Model(&models.Me{}).
-		Where("clan_id = ? AND visibility = ?", clanID, models.MeVisibilityPublic)
-	if len(keepAuthorIDs) > 0 {
-		db = db.Where("author_id NOT IN ?", keepAuthorIDs)
-	}
-	return db.Update("visibility", models.MeVisibilityPrivate).Error
-}
-
 func (r *Repository) DisableAllByClanAuthor(clanID, authorID uuid.UUID) error {
 	return r.db.Model(&models.Me{}).
 		Where("clan_id = ? AND author_id = ? AND enabled = ?", clanID, authorID, true).

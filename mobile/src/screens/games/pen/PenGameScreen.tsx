@@ -24,7 +24,7 @@ import type { PenSettledEvent, PenSide, PenShotView } from '@ola/shared/types';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { playKenShotFailSound } from '@lib/sound';
-import { AnimatedKen } from '@components/AnimatedKen';
+import { AnimatedKen } from '@components/ui/AnimatedKen';
 import { PenButton } from './PenButton';
 import { PenShotList } from './PenShotList';
 import { PenShootModal } from './PenShootModal';

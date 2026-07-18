@@ -29,6 +29,17 @@ export const ROOT_ROUTES = {
   SpinWheel: 'SpinWheel',
   EggGame: 'EggGame',
   ArcadeGame: 'ArcadeGame',
+  MeVisitors: 'MeVisitors',
+  MeLikedPosts: 'MeLikedPosts',
+  MeNotifications: 'MeNotifications',
+  Marriage: 'Marriage',
+  ClanHome: 'ClanHome',
+  Clan: 'Clan',
+  ClanManage: 'ClanManage',
+  ClanMembers: 'ClanMembers',
+  ClanBans: 'ClanBans',
+  FriendRequests: 'FriendRequests',
+  SuggestedFriends: 'SuggestedFriends',
 } as const;
 
 export const ROOM_ROUTES = {

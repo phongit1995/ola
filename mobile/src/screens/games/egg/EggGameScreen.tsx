@@ -9,7 +9,7 @@ import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useEggGameStore } from '@ola/shared/stores/eggGameStore';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
-import { AnimatedKen } from '@components/AnimatedKen';
+import { AnimatedKen } from '@components/ui/AnimatedKen';
 import { EggScene } from './EggScene';
 import { EggHistoryDialog } from './EggHistoryDialog';
 import { useEggGame } from './useEggGame';

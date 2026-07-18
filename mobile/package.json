@@ -5,7 +5,7 @@
   "codegenConfig": {
     "name": "OlaNativeSpec",
     "type": "all",
-    "jsSrcsDir": "src/specs",
+    "jsSrcsDir": "src/components/specs",
     "android": {
       "javaPackageName": "com.olachat.net.org.vn.richtext"
     },

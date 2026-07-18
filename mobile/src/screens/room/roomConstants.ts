@@ -24,3 +24,5 @@ export function roomBubbleTextMaxWidth(windowWidth: number, isOwn: boolean): num
   const rowWidth = (windowWidth - LIST_PADDING) * (isOwn ? 0.8 : 0.85);
   return Math.floor(rowWidth - AVATAR_WITH_GAP - BUBBLE_PADDING) - 2;
 }
+
+export const ROOM_BROWSE_LIMIT = 50;

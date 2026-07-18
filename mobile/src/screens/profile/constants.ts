@@ -1,0 +1,23 @@
+export const DEFAULT_COVER_COLOR = '#33691e';
+
+export const PLACEHOLDER_COLOR = '#e34545';
+
+export const PHONE_PATTERN = /^[0-9+\-() ]{6,20}$/;
+
+export const DEFAULT_BIRTHDAY = new Date(2000, 0, 1);
+
+export const CARD_SHADOW = {
+  shadowColor: '#000',
+  shadowOpacity: 0.18,
+  shadowRadius: 2,
+  shadowOffset: { width: 0, height: 1 },
+  elevation: 2,
+} as const;
+
+export const FOLLOW_PAGE_SIZE = 10;
+
+export const PEER_VIP_PAGE_SIZE = 100;
+
+export const POSTS_PAGE_SIZE = 30;
+
+export const FOLLOWING_PREVIEW_LIMIT = 12;

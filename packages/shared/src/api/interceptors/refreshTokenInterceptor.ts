@@ -1,7 +1,7 @@
 import type { AxiosError, AxiosInstance } from 'axios';
 import type { IApiResponse, ApiErrorBody, RefreshTokenResult } from '../../types';
 import { API_PATH } from '../../config';
-import { authTokens, toApiError } from '../../lib';
+import { ApiError, authTokens, toApiError } from '../../lib';
 import { base64DecodeToString } from '../../lib/base64';
 
 const TOKEN_REFRESH_BUFFER_MS = 30_000;
@@ -53,15 +53,31 @@ function accessTokenExpMs(token: string): number | null {
   }
 }
 
+export function handleAuthExpired(): void {
+  authTokens.clear();
+  onUnauthorized?.();
+}
+
+function isAuthRejection(error: unknown): boolean {
+  return error instanceof ApiError && error.status === 401;
+}
+
 export async function ensureFreshToken(): Promise<string> {
   const token = authTokens.getAccessToken();
   if (token == null || token === '') return '';
   const expMs = accessTokenExpMs(token);
   if (expMs != null && expMs > Date.now() + TOKEN_REFRESH_BUFFER_MS) return token;
-  if (authTokens.getRefreshToken() == null) return token;
+  if (authTokens.getRefreshToken() == null) {
+    handleAuthExpired();
+    return '';
+  }
   try {
     return await refreshAccessToken();
-  } catch {
+  } catch (error) {
+    if (isAuthRejection(error)) {
+      handleAuthExpired();
+      return '';
+    }
     return token;
   }
 }
@@ -83,6 +99,14 @@ export function registerRefreshTokenInterceptor(http: AxiosInstance): void {
         authTokens.getRefreshToken() != null;
 
       if (!canRefresh || config == null) {
+        const sessionDead =
+          status === 401 &&
+          config != null &&
+          !config.skipAuth &&
+          !config.skipAuthRefresh &&
+          authTokens.getAccessToken() != null &&
+          authTokens.getRefreshToken() == null;
+        if (sessionDead) handleAuthExpired();
         return Promise.reject(toApiError(error));
       }
 
@@ -93,8 +117,9 @@ export function registerRefreshTokenInterceptor(http: AxiosInstance): void {
         config.headers.Authorization = `Bearer ${newAccessToken}`;
         return http(config);
       } catch (refreshError) {
-        authTokens.clear();
-        onUnauthorized?.();
+        if (isAuthRejection(refreshError) || !(refreshError instanceof ApiError)) {
+          handleAuthExpired();
+        }
         return Promise.reject(toApiError(refreshError));
       }
     }

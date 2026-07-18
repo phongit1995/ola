@@ -8,6 +8,7 @@ export * from './urlText';
 export * from './richText';
 export * from './portal';
 export * from './cropImage';
+export * from './imageSize';
 export * from './compressImage';
 export * from './reactions';
 export * from './hiddenPeerCards';

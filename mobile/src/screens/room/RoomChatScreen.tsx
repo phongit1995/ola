@@ -14,10 +14,10 @@ import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { ReactionType } from '@ola/shared/types';
 import type { MainTabParamList, RoomStackParamList, RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES, TAB_ROUTES } from '@navigation/routes';
-import { RoomMessagesTab } from './RoomMessagesTab';
-import { RoomMembersTab } from './RoomMembersTab';
-import { RoomFilterDialog } from './RoomFilterDialog';
-import { ConfirmDialog } from '@components/ConfirmDialog';
+import { RoomMessagesTab } from './components/RoomMessagesTab';
+import { RoomMembersTab } from './components/RoomMembersTab';
+import { RoomFilterDialog } from './components/RoomFilterDialog';
+import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 
 type Props = CompositeScreenProps<
   NativeStackScreenProps<RoomStackParamList, 'RoomChat'>,
@@ -221,7 +221,7 @@ export function RoomChatScreen({ navigation, route }: Props) {
       ) : status !== 'joined' ? (
         <View className="flex-1 items-center justify-center gap-3">
           <ActivityIndicator color="#7cb342" size="large" />
-          <Text className="text-sm" style={{ color: 'rgba(0,0,0,0.54)' }}>{t('room.joining')}</Text>
+          <Text className="text-sm text-ola-ink-soft">{t('room.joining')}</Text>
         </View>
       ) : activeTab === 'members' ? (
         <RoomMembersTab members={visibleMembers} onOpenUser={openUser} />

@@ -38,8 +38,21 @@ import { PenGameScreen } from '@screens/games/pen/PenGameScreen';
 import { SpinWheelGameScreen } from '@screens/games/spin-wheel/SpinWheelGameScreen';
 import { EggGameScreen } from '@screens/games/egg/EggGameScreen';
 import { ArcadeGameScreen } from '@screens/apps/ArcadeGameScreen';
+import { MeVisitorsScreen } from '@screens/me/MeVisitorsScreen';
+import { MeLikedPostsScreen } from '@screens/me/MeLikedPostsScreen';
+import { MeNotificationsScreen } from '@screens/me/MeNotificationsScreen';
+import { MarriageScreen } from '@screens/me/marriage/MarriageScreen';
+import {
+  ClanBansRouteScreen,
+  ClanHomeRouteScreen,
+  ClanManageRouteScreen,
+  ClanMembersRouteScreen,
+  ClanRouteScreen,
+} from '@screens/clan/ClanRoutes';
+import { FriendRequestsScreen } from '@screens/friends/FriendRequestsScreen';
+import { SuggestedFriendsScreen } from '@screens/friends/SuggestedFriendsScreen';
 import { TAB_ICONS } from '@assets/tabIcons';
-import { KenBalanceBadge } from '@components/KenBalanceBadge';
+import { KenBalanceBadge } from '@components/ui/KenBalanceBadge';
 import { mmkvStorage } from '@platform/storage';
 
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -219,6 +232,17 @@ export function RootNavigator() {
       <RootStack.Screen name={ROOT_ROUTES.SpinWheel} component={SpinWheelGameScreen} />
       <RootStack.Screen name={ROOT_ROUTES.EggGame} component={EggGameScreen} />
       <RootStack.Screen name={ROOT_ROUTES.ArcadeGame} component={ArcadeGameScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.MeVisitors} component={MeVisitorsScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.MeLikedPosts} component={MeLikedPostsScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.MeNotifications} component={MeNotificationsScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.Marriage} component={MarriageScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.ClanHome} component={ClanHomeRouteScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.Clan} component={ClanRouteScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.ClanManage} component={ClanManageRouteScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.ClanMembers} component={ClanMembersRouteScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.ClanBans} component={ClanBansRouteScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.FriendRequests} component={FriendRequestsScreen} />
+      <RootStack.Screen name={ROOT_ROUTES.SuggestedFriends} component={SuggestedFriendsScreen} />
     </RootStack.Navigator>
   );
 }

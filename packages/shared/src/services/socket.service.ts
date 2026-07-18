@@ -1,6 +1,7 @@
 import { io, type Socket } from 'socket.io-client';
 import { env } from '../config';
-import { ensureFreshToken, signApiGuard } from '../api';
+import { ensureFreshToken, refreshAccessToken, signApiGuard } from '../api';
+import { ApiError, authTokens } from '../lib';
 import { getDeviceInfo } from '../platform';
 
 const SOCKET_GUARD_PATH = '/socket.io/';
@@ -10,6 +11,12 @@ const PING_EVENT = 'ping';
 const PING_INTERVAL_MS = 60_000;
 const STALE_SILENCE_MS = 30_000;
 const SESSION_REPLACED_EVENT = 'SESSION_REPLACED';
+const FORCE_LOGOUT_EVENT = 'FORCE_LOGOUT';
+const AUTH_CONNECT_ERRORS = new Set([
+  'Unauthorized',
+  'session revoked',
+  'access_token is required',
+]);
 
 type EnvelopeHandler = (data: unknown) => void;
 type ReconnectHandler = () => void;
@@ -23,11 +30,19 @@ export interface SessionReplacedData {
 
 type SessionReplacedHandler = (data: SessionReplacedData) => void;
 
+export interface ForceLogoutData {
+  reason?: string;
+}
+
+type ForceLogoutHandler = (data: ForceLogoutData) => void;
+
 export class SocketService {
   private static socket: Socket | null = null;
   private static listeners = new Map<string, Set<EnvelopeHandler>>();
   private static pingTimer: ReturnType<typeof setInterval> | null = null;
   private static sessionReplacedHandler: SessionReplacedHandler | null = null;
+  private static forceLogoutHandler: ForceLogoutHandler | null = null;
+  private static recoveringAuth = false;
   private static reconnectHandlers = new Set<ReconnectHandler>();
   private static hasConnected = false;
   private static status: ConnectionStatus = 'offline';
@@ -57,9 +72,16 @@ export class SocketService {
     socket.on(SESSION_REPLACED_EVENT, (data: SessionReplacedData) => {
       this.sessionReplacedHandler?.(data ?? {});
     });
+    socket.on(FORCE_LOGOUT_EVENT, (data: ForceLogoutData) => {
+      this.handleForceLogout(data ?? {});
+    });
     socket.on('connect', () => this.handleConnect());
     socket.on('disconnect', () => this.handleDisconnect());
-    socket.on('connect_error', () => {
+    socket.on('connect_error', (error) => {
+      if (AUTH_CONNECT_ERRORS.has(error.message)) {
+        void this.recoverAuth();
+        return;
+      }
       if (this.hasConnected) this.setStatus('reconnecting');
     });
     socket.io.on('ping', () => {
@@ -108,6 +130,40 @@ export class SocketService {
     return () => {
       if (this.sessionReplacedHandler === handler) this.sessionReplacedHandler = null;
     };
+  }
+
+  static onForceLogout(handler: ForceLogoutHandler): () => void {
+    this.forceLogoutHandler = handler;
+    return () => {
+      if (this.forceLogoutHandler === handler) this.forceLogoutHandler = null;
+    };
+  }
+
+  private static handleForceLogout(data: ForceLogoutData): void {
+    const handler = this.forceLogoutHandler;
+    this.disconnect();
+    handler?.(data);
+  }
+
+  private static async recoverAuth(): Promise<void> {
+    if (this.recoveringAuth) return;
+    this.recoveringAuth = true;
+    try {
+      await refreshAccessToken();
+      if (this.hasConnected) this.setStatus('reconnecting');
+    } catch (error) {
+      const sessionDead =
+        (error instanceof ApiError && error.status === 401) ||
+        authTokens.getRefreshToken() == null;
+      if (sessionDead) {
+        authTokens.clear();
+        this.handleForceLogout({ reason: 'session_expired' });
+      } else if (this.hasConnected) {
+        this.setStatus('reconnecting');
+      }
+    } finally {
+      this.recoveringAuth = false;
+    }
   }
 
   static onReconnect(handler: ReconnectHandler): () => void {

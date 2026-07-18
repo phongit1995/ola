@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 import { useTranslation } from 'react-i18next';
-import { toast, ApiError, formatKen, colorForName, vipById, vipName } from '@lib';
+import { toast, formatKen, colorForName, vipBuyErrorText, vipConfirmMessage, vipPackageLabel, vipById, vipName, type BuyVipMode } from '@lib';
 import {
   ScreenHeader,
   FullScreenOverlay,
@@ -15,8 +15,6 @@ import type { ListOption } from '@components';
 import { VipService, UserService } from '@services';
 import type { VipIconCatalogItem, VipPackageItem, UserSearchResult } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
-
-type BuyVipMode = 'buy' | 'give' | 'giveDays' | 'extend';
 
 const MOCK_KEN_BALANCE = 12_345;
 const DEFAULT_VIP_ID = 4;
@@ -35,25 +33,6 @@ const MODE_ACTION = {
   giveDays: 'vip.buy.actionGive',
   extend: 'vip.extendVip',
 } as const;
-
-type BuyErrorKey =
-  | 'vip.buy.errInsufficientKen'
-  | 'vip.buy.errItemUnavailable'
-  | 'vip.buy.errPackageUnavailable'
-  | 'vip.buy.errReceiverNotFound'
-  | 'vip.buy.errGiftSelf'
-  | 'vip.buy.errBlocked'
-  | 'vip.buy.errWrongPassword';
-
-const BUY_ERROR_KEYS: Record<string, BuyErrorKey> = {
-  'insufficient ken balance': 'vip.buy.errInsufficientKen',
-  'vip shop item not found': 'vip.buy.errItemUnavailable',
-  'vip package not found': 'vip.buy.errPackageUnavailable',
-  'receiver not found': 'vip.buy.errReceiverNotFound',
-  'cannot gift to yourself': 'vip.buy.errGiftSelf',
-  'cannot gift to blocked user': 'vip.buy.errBlocked',
-  'invalid transfer password': 'vip.buy.errWrongPassword',
-};
 
 const MODE_TAB = {
   buy: 'vip.buy.modeBuy',
@@ -245,23 +224,11 @@ export function BuyVipPage({ mode: initialMode = 'buy', onClose }: { mode?: BuyV
     setGiftPassword('');
   }
 
-  function packageLabel(pkg: VipPackageItem): string {
-    return t('vip.buy.kenPrice', { ken: formatKen(pkg.kenPrice), days: pkg.days });
-  }
-
   const packageOptions: ListOption[] = packages.map((pkg) => ({
     key: pkg.id,
-    label: packageLabel(pkg),
+    label: vipPackageLabel(t, pkg),
     onSelect: () => setSelectedPackageId(pkg.id),
   }));
-
-  function buyErrorText(error: unknown): string {
-    if (error instanceof ApiError) {
-      const key = BUY_ERROR_KEYS[error.message];
-      if (key) return t(key);
-    }
-    return t('vip.buy.failed');
-  }
 
   function changeMode(next: BuyVipMode) {
     setMode(next);
@@ -306,7 +273,7 @@ export function BuyVipPage({ mode: initialMode = 'buy', onClose }: { mode?: BuyV
         toast.success(t('vip.buy.bought', { name: selectedVip?.name ?? '' }));
         onClose();
       } catch (error) {
-        toast.info(buyErrorText(error));
+        toast.info(vipBuyErrorText(t, error));
       } finally {
         setPurchasing(false);
       }
@@ -327,7 +294,7 @@ export function BuyVipPage({ mode: initialMode = 'buy', onClose }: { mode?: BuyV
         toast.success(t('vip.buy.extended', { days: result.days }));
         onClose();
       } catch (error) {
-        toast.info(buyErrorText(error));
+        toast.info(vipBuyErrorText(t, error));
       } finally {
         setPurchasing(false);
       }
@@ -354,7 +321,7 @@ export function BuyVipPage({ mode: initialMode = 'buy', onClose }: { mode?: BuyV
         );
         onClose();
       } catch (error) {
-        toast.info(buyErrorText(error));
+        toast.info(vipBuyErrorText(t, error));
       } finally {
         setPurchasing(false);
       }
@@ -379,7 +346,7 @@ export function BuyVipPage({ mode: initialMode = 'buy', onClose }: { mode?: BuyV
         toast.success(t('vip.buy.gifted', { days: result.days, name: result.receiverUsername }));
         onClose();
       } catch (error) {
-        toast.info(buyErrorText(error));
+        toast.info(vipBuyErrorText(t, error));
       } finally {
         setPurchasing(false);
       }
@@ -390,22 +357,13 @@ export function BuyVipPage({ mode: initialMode = 'buy', onClose }: { mode?: BuyV
   }
 
   function confirmMessage(): string {
-    const days = selectedPackage?.days ?? 0;
-    const ken = formatKen(selectedPackage?.kenPrice ?? 0);
-    switch (mode) {
-      case 'buy':
-        return t('vip.buy.confirmBuyIcon', {
-          name: selectedVip?.name ?? '',
-          ken: formatKen(selectedShopItem?.kenPrice ?? 0),
-        });
-      case 'give':
-        return t('vip.buy.confirmGiveIcon', { name: selectedVip?.name ?? '', receiver });
-      case 'giveDays':
-        return t('vip.buy.confirmGiveDays', { days, ken, receiver });
-      case 'extend':
-      default:
-        return t('vip.buy.confirmExtend', { days, ken });
-    }
+    return vipConfirmMessage(t, {
+      mode,
+      selectedPackage,
+      vipName: selectedVip?.name ?? '',
+      shopItemKenPrice: selectedShopItem?.kenPrice ?? 0,
+      receiver,
+    });
   }
 
   return (
@@ -532,7 +490,7 @@ export function BuyVipPage({ mode: initialMode = 'buy', onClose }: { mode?: BuyV
               className="mt-1 flex w-full items-center rounded border border-black/12 px-3 py-2 text-left active:bg-black/5"
             >
               <span className="flex-1 text-sm text-black/87">
-                {selectedPackage ? packageLabel(selectedPackage) : t('vip.buy.packagesEmpty')}
+                {selectedPackage ? vipPackageLabel(t, selectedPackage) : t('vip.buy.packagesEmpty')}
               </span>
               <ChevronIcon />
             </button>

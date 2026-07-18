@@ -16,7 +16,7 @@ import { AuthService } from '@ola/shared/services';
 import { resolveAuthError, USERNAME_MAX, USERNAME_PATTERN } from '@ola/shared/lib';
 import { PASSWORD_MAX, PASSWORD_MIN } from '@ola/shared/constants';
 import { LanguageSwitcher } from '@components/LanguageSwitcher';
-import { TextField } from '@components/TextField';
+import { TextField } from '@components/form/TextField';
 import type { AuthStackParamList } from '@navigation/types';
 import { AUTH_ROUTES } from '@navigation/routes';
 import { REGISTER_USERNAME_MIN } from './constants';

@@ -8,26 +8,8 @@ import {
   kulImageForText,
   parseMessageMetadata,
 } from '@lib';
-import type { ChatMessage } from './types';
+import type { ChatMessage, ChatMessageAbilities, ConversationView } from './interface';
 import { STATUS_MAP } from './constants';
-
-export interface ConversationView {
-  id: string;
-  name: string;
-  username: string;
-  title: string;
-  avatar?: string;
-  color: string;
-  preview: string;
-  previewIsSticker: boolean;
-  fromMe: boolean;
-  seen: boolean;
-  senderName?: string;
-  isGroup: boolean;
-  time: string;
-  unread: number;
-  online: boolean;
-}
 
 export function conversationDisplayName(conversation: Conversation): string {
   return (
@@ -76,6 +58,25 @@ export function chatQuoteExcerpt(
   if (replyTo.type === 'audio') return t('chat.replyAudio');
   if (kulImageForText(replyTo.excerpt) != null) return t('chat.replySticker');
   return replyTo.excerpt;
+}
+
+export function isCopyableText(message: ChatMessage): boolean {
+  return (
+    message.kind === 'text' &&
+    message.text != null &&
+    message.text.trim() !== '' &&
+    kulImageForText(message.text) == null
+  );
+}
+
+export function chatMessageAbilities(message: ChatMessage, blocked: boolean): ChatMessageAbilities {
+  const isOwn = message.direction === 'out';
+  return {
+    canReply: !isOwn && !blocked,
+    canCopy: isCopyableText(message),
+    canEdit: isOwn && message.kind === 'text',
+    canDelete: isOwn,
+  };
 }
 
 export function toBubble(message: Message, myId: string): ChatMessage {

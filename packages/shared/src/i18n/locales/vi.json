@@ -37,7 +37,9 @@
   "auth": {
     "errGeneric": "Đã có lỗi xảy ra, vui lòng thử lại.",
     "errNetwork": "Không kết nối được tới máy chủ. Vui lòng kiểm tra mạng.",
-    "sessionReplaced": "Tài khoản của bạn vừa đăng nhập trên thiết bị khác."
+    "sessionReplaced": "Tài khoản của bạn vừa đăng nhập trên thiết bị khác.",
+    "sessionEnded": "Phiên đăng nhập đã kết thúc, vui lòng đăng nhập lại.",
+    "banned": "Tài khoản của bạn đã bị khóa."
   },
   "connection": {
     "reconnecting": "Đang kết nối lại…"
@@ -810,6 +812,7 @@
     "rewardToast": "Xác thực email thành công! Bạn được tặng {{days}} ngày VIP 🎉",
     "errEmailRequired": "Vui lòng nhập email.",
     "errEmailInvalid": "Email không hợp lệ.",
+    "errDomainNotAllowed": "Chỉ hỗ trợ email Gmail, Yahoo hoặc iCloud.",
     "errCodeRequired": "Vui lòng nhập đủ 6 số.",
     "errCodeInvalid": "Mã không đúng, vui lòng thử lại.",
     "errCodeExpired": "Mã đã hết hạn, vui lòng gửi lại.",
@@ -1107,7 +1110,9 @@
         "PEN_CATCH": "Bắt Pen",
         "PEN_WIN": "Thắng Pen",
         "PEN_REFUND": "Hoàn Pen",
-        "KEN_CHEST": "Rương KEN"
+        "KEN_CHEST": "Rương KEN",
+        "CLAN_CREATE": "Tạo Clan",
+        "UNKNOWN": "Giao dịch KEN"
       }
     },
     "buy": {
@@ -1447,6 +1452,8 @@
       "you are already a member of this clan": "Bạn đã tham gia Clan này rồi",
       "owner cannot leave the clan": "Bang chủ không thể rời Clan",
       "cannot ban clan staff": "Không thể cấm ban quản trị",
+      "clan role is already assigned": "Vai trò này vừa được gán cho người khác, hãy thử lại",
+      "cannot delete the clan owner's posts": "Không thể xoá bài của bang chủ",
       "user not found": "Không tìm thấy tài khoản",
       "clan member not found": "Không tìm thấy thành viên",
       "clan name must be 5-32 lowercase letters or digits, no spaces or accents": "Tên Clan phải viết liền 5-32 ký tự thường/số, không dấu",

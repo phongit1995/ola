@@ -18,7 +18,7 @@ import { useSpinWheelStore } from '@ola/shared/stores/spinWheelStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
-import { AnimatedKen } from '@components/AnimatedKen';
+import { AnimatedKen } from '@components/ui/AnimatedKen';
 import { assetRatio, sizeByHeight } from '@screens/games/pen/penUi';
 import { wheelAssets } from './spinWheelAssets';
 import { SpinWheel } from './SpinWheel';

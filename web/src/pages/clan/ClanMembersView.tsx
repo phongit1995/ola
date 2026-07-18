@@ -120,17 +120,23 @@ export function ClanMembersView({ clanId, onClose }: ClanMembersViewProps) {
   }
 
   const staff = clan != null && isClanStaff(clan);
+  const owner = clan?.myRole === 'owner';
+  const bannable = (member: ClanMember) => member.role === 'member';
 
   const menuOptions: ListOption[] =
     menuTarget == null
       ? []
       : [
-          {
-            key: 'verify',
-            label: menuTarget.verified ? t('clan.unverifyMember') : t('clan.verifyMember'),
-            onSelect: () => void toggleVerify(menuTarget),
-          },
-          ...(menuTarget.role === 'member' || menuTarget.role === 'ambassador'
+          ...(owner
+            ? [
+                {
+                  key: 'verify',
+                  label: menuTarget.verified ? t('clan.unverifyMember') : t('clan.verifyMember'),
+                  onSelect: () => void toggleVerify(menuTarget),
+                },
+              ]
+            : []),
+          ...(bannable(menuTarget)
             ? [
                 {
                   key: 'ban',
@@ -192,7 +198,7 @@ export function ClanMembersView({ clanId, onClose }: ClanMembersViewProps) {
                       </span>
                     </span>
                   </button>
-                  {staff && member.role !== 'owner' && (
+                  {staff && member.role !== 'owner' && (owner || bannable(member)) && (
                     <button
                       type="button"
                       aria-label={t('clan.manage')}

@@ -7,7 +7,8 @@ import { SmileyText } from '@lib';
 import sentIcon from '@/assets/icons/chat/ic_message_sent.png';
 import kulIcon from '@/assets/icons/chat/ic_kul.png';
 import { EmptyMessages } from './EmptyMessages';
-import { toConversationView, type ConversationView } from '../chatView';
+import { toConversationView } from '../chatView';
+import type { ConversationView } from '../interface';
 import { SWIPE_MAX, SWIPE_TRIGGER } from '../constants';
 
 interface ConversationListProps {
@@ -39,16 +40,18 @@ export function ConversationList({
 
   return (
     <>
-      <ul>
-        {conversations.map((conversation) => (
-          <ConversationRow
-            key={conversation.id}
-            view={toConversationView(conversation)}
-            onSelect={onSelect}
-            onRequestDelete={requestDelete}
-          />
-        ))}
-      </ul>
+      <div className="h-full overflow-y-auto">
+        <ul>
+          {conversations.map((conversation) => (
+            <ConversationRow
+              key={conversation.id}
+              view={toConversationView(conversation)}
+              onSelect={onSelect}
+              onRequestDelete={requestDelete}
+            />
+          ))}
+        </ul>
+      </div>
       <ConfirmDialog
         open={pendingDelete != null}
         danger

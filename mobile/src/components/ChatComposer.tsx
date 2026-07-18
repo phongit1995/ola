@@ -11,7 +11,7 @@ import { TextInput } from 'react-native';
 import TextInputState from 'react-native/Libraries/Components/TextInput/TextInputState';
 import OlaChatComposerNative, {
   Commands as ComposerCommands,
-} from '../specs/OlaChatComposerNativeComponent';
+} from './specs/OlaChatComposerNativeComponent';
 import { richTextNativeAvailable } from '@lib/richTextNativeConfig';
 
 export interface ChatComposerHandle {
@@ -38,6 +38,7 @@ interface ChatComposerProps {
   textColor?: string;
   placeholderTextColor?: string;
   selectionColor?: string;
+  onPasteImage?: (uri: string) => void;
 }
 
 let nativeComposerEnabled = true;
@@ -63,6 +64,7 @@ const NativeComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(functio
     textColor = 'rgba(0,0,0,0.87)',
     placeholderTextColor = 'rgba(0,0,0,0.38)',
     selectionColor = '#7cb342',
+    onPasteImage,
   },
   ref
 ) {
@@ -134,6 +136,7 @@ const NativeComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(functio
         if (nativeRef.current != null) TextInputState.blurInput(nativeRef.current);
         onBlur?.();
       }}
+      onPasteImage={(event) => onPasteImage?.(event.nativeEvent.uri)}
     />
   );
 });

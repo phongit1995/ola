@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { ClanService } from '../services';
+import { registerOnLogout } from './authStore';
 import type { Clan, UpdateClanRequest } from '../types';
 
 interface ClanState {
@@ -115,3 +116,5 @@ export const useClanStore = create<ClanState>((set, get) => ({
       currentError: null,
     }),
 }));
+
+registerOnLogout(() => useClanStore.getState().reset());

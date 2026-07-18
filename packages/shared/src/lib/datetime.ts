@@ -34,6 +34,12 @@ export function isSameDay(a: string, b: string): boolean {
   );
 }
 
+export function postTimeLabel(createdAt: string, timeFormatter: (iso: string) => string): string {
+  return isSameDay(createdAt, new Date().toISOString())
+    ? timeFormatter(createdAt)
+    : formatDateDMY(createdAt);
+}
+
 export function yearsSince(iso: string): number {
   const then = dayjs(iso);
   if (!then.isValid()) return 0;

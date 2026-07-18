@@ -101,6 +101,13 @@ const (
 	EmailVerifyDailyWindow     = 24 * 60 * 60
 )
 
+var EmailVerifyAllowedDomains = map[string]struct{}{
+	"gmail.com":    {},
+	"yahoo.com":    {},
+	"yahoo.com.vn": {},
+	"icloud.com":   {},
+}
+
 const (
 	// RoomPresenceTTLSeconds: giữ chỗ trong phòng khi disconnect/đăng xuất (chỉ room:leave mới xoá ngay).
 	// 43200 = 12h. Đổi về 300 (5 phút) nếu muốn rớt khỏi phòng nhanh như trước.

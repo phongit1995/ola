@@ -1,3 +1,4 @@
+import type { BuyVipMode } from '@ola/shared/lib';
 import type { MiniGame } from '@ola/shared/types';
 import { AUTH_ROUTES, ROOM_ROUTES, ROOT_ROUTES, TAB_ROUTES } from './routes';
 
@@ -22,7 +23,7 @@ export type RootStackParamList = {
   [ROOT_ROUTES.ProfileView]: { userId: string; color?: string };
   [ROOT_ROUTES.EditProfile]: undefined;
   [ROOT_ROUTES.VipStore]: undefined;
-  [ROOT_ROUTES.BuyVip]: { mode?: 'buy' | 'give' | 'giveDays' | 'extend' } | undefined;
+  [ROOT_ROUTES.BuyVip]: { mode?: BuyVipMode } | undefined;
   [ROOT_ROUTES.KenStore]: undefined;
   [ROOT_ROUTES.BuyKen]: undefined;
   [ROOT_ROUTES.MediaStore]: undefined;
@@ -32,6 +33,17 @@ export type RootStackParamList = {
   [ROOT_ROUTES.SpinWheel]: undefined;
   [ROOT_ROUTES.EggGame]: undefined;
   [ROOT_ROUTES.ArcadeGame]: { game: MiniGame };
+  [ROOT_ROUTES.MeVisitors]: undefined;
+  [ROOT_ROUTES.MeLikedPosts]: undefined;
+  [ROOT_ROUTES.MeNotifications]: undefined;
+  [ROOT_ROUTES.Marriage]: undefined;
+  [ROOT_ROUTES.ClanHome]: undefined;
+  [ROOT_ROUTES.Clan]: { handle?: string; id?: string };
+  [ROOT_ROUTES.ClanManage]: { clanId: string };
+  [ROOT_ROUTES.ClanMembers]: { clanId: string };
+  [ROOT_ROUTES.ClanBans]: { clanId: string };
+  [ROOT_ROUTES.FriendRequests]: undefined;
+  [ROOT_ROUTES.SuggestedFriends]: undefined;
 };
 
 export type RoomStackParamList = {

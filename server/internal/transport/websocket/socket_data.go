@@ -3,15 +3,16 @@ package websocket
 import "sync"
 
 type SocketData struct {
-	UserID   string
-	Platform string
+	UserID    string
+	Platform  string
+	SessionID string
 
 	mu          sync.Mutex
 	joinedRooms map[string]bool
 }
 
-func NewSocketData(userID, platform string) *SocketData {
-	return &SocketData{UserID: userID, Platform: platform, joinedRooms: make(map[string]bool)}
+func NewSocketData(userID, platform, sessionID string) *SocketData {
+	return &SocketData{UserID: userID, Platform: platform, SessionID: sessionID, joinedRooms: make(map[string]bool)}
 }
 
 func (d *SocketData) JoinRoom(roomID string) {

@@ -1,28 +1,24 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { ROUTES } from '@constants';
+import { COVER_ASPECT, ROUTES } from '@constants';
 import { MeService, UserService } from '@services';
 import { activeVipTypeId, colorForName, createDateFormatter, createTimeFormatter, toast } from '@lib';
-import type { Post, PostReaction } from '@app-types';
+import type { Post } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
 import { useMeLocalStore } from '@/store/meLocalStore';
 import genderIcon from '@/assets/icons/profile/ic_indicate_dynamic_gender.png';
 import birthdayIcon from '@/assets/icons/profile/ic_profile_birthday.png';
 import marriageIcon from '@/assets/icons/profile/ic_profile_marriage.png';
 import cameraIcon from '@/assets/icons/profile/ic_action_camera.png';
-import { Avatar, ScreenHeader, FullScreenOverlay, UserName, VipIcon } from '@components';
-import { CoverImageEditor } from './components/CoverImageEditor';
+import { Avatar, ImageCropEditor, ScreenHeader, FullScreenOverlay, UserName, VipIcon } from '@components';
 import { FollowingListOverlay } from './components/FollowingListOverlay';
 import { UserProfileView } from './UserProfileView';
-import { COVER_ASPECT } from './constants';
 import { MePostCard } from '../me/components/MePostCard';
 import { MePostInteractions, type MePostSource } from '../me/MePostInteractions';
-import { composedToImages, composedToUpdatePayload } from '../me/composer';
-import { useMeFeedStore } from '../me/meFeedStore';
-import { applyPostReaction, toMePost } from '../me/mappers';
-import { reconcileTopLikers } from '@ola/shared/stores/postHelpers';
-import type { ComposedPost } from '../me/components/MeComposerDialog';
+import { toMePost } from '../me/mappers';
+import { useEditMePost } from '../me/useEditMePost';
+import { usePostListActions } from '@ola/shared/stores/usePostListActions';
 
 export function ProfileMePage() {
   const { t, i18n } = useTranslation();
@@ -56,82 +52,18 @@ export function ProfileMePage() {
     };
   }, []);
 
-  const toggleReaction = useCallback(
-    async (id: string, type: PostReaction) => {
-      const post = posts.find((item) => item.id === id);
-      if (post == null || user == null) return;
-      const isActive = post.myReaction === type;
-      const self = { id: user.id, username: user.username, fullName: user.fullName, avatar: user.avatar };
-      const optimistic = applyPostReaction(post, isActive ? null : type, self);
-      setPosts((current) => current.map((item) => (item.id === id ? optimistic : item)));
-      try {
-        const updated = isActive
-          ? await MeService.removeReaction(id)
-          : await MeService.react(id, type);
-        setPosts((current) =>
-          current.map((item) => (item.id === id ? reconcileTopLikers(updated, item) : item))
-        );
-      } catch {
-        setPosts((current) => current.map((item) => (item.id === id ? post : item)));
-        toast.error(t('me.reactionError'));
-      }
-    },
-    [posts, user, t]
-  );
-
-  const adjustCommentCount = useCallback((id: string, delta: number) => {
-    setPosts((current) =>
-      current.map((item) =>
-        item.id === id ? { ...item, commentCount: Math.max(0, item.commentCount + delta) } : item
-      )
-    );
+  const reloadAfterPin = useCallback(async () => {
+    const result = await MeService.mine({ limit: 30 });
+    setPosts(() => result.items);
   }, []);
 
-  const editPost = useCallback(
-    async (id: string, draft: ComposedPost): Promise<boolean> => {
-      try {
-        const existing = posts.find((item) => item.id === id)?.images ?? [];
-        const images = await composedToImages(draft, 'existingFirst', existing);
-        const updated = await MeService.update(id, { ...composedToUpdatePayload(draft), images });
-        setPosts((current) => current.map((item) => (item.id === id ? updated : item)));
-        useMeFeedStore.getState().syncPost(updated);
-        toast.success(t('me.editSuccess'));
-        return true;
-      } catch {
-        toast.error(t('me.editError'));
-        return false;
-      }
-    },
-    [t, posts]
-  );
+  const { toggleReaction, adjustCommentCount, deletePost, togglePin } = usePostListActions({
+    posts,
+    setPosts,
+    reloadAfterPin,
+  });
 
-  const deletePost = useCallback(
-    async (id: string) => {
-      try {
-        await MeService.remove(id);
-        setPosts((current) => current.filter((item) => item.id !== id));
-        toast.success(t('me.deleteSuccess'));
-      } catch {
-        toast.error(t('me.deleteError'));
-      }
-    },
-    [t]
-  );
-
-  const togglePin = useCallback(
-    async (id: string, pinned: boolean) => {
-      try {
-        if (pinned) await MeService.pin(id);
-        else await MeService.unpin(id);
-        const result = await MeService.mine({ limit: 30 });
-        setPosts(result.items);
-        toast.success(t(pinned ? 'me.pinSuccess' : 'me.unpinSuccess'));
-      } catch {
-        toast.error(t('me.pinError'));
-      }
-    },
-    [t]
-  );
+  const editPost = useEditMePost(posts, setPosts);
 
   const uploadCover = useCallback(
     async (file: File) => {
@@ -252,7 +184,7 @@ export function ProfileMePage() {
           </div>
 
           {coverPreview && (
-            <CoverImageEditor
+            <ImageCropEditor
               src={coverPreview.url}
               aspect={COVER_ASPECT}
               busy={uploadingCover}

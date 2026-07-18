@@ -27,6 +27,14 @@ export function useAuthSessionSync() {
   }, [t]);
 
   useEffect(() => {
+    return SocketService.onForceLogout(({ reason }) => {
+      clearSession();
+      if (reason === 'banned') toast.error(t('auth.banned'));
+      else if (reason !== 'logged_out') toast.info(t('auth.sessionEnded'));
+    });
+  }, [t]);
+
+  useEffect(() => {
     useAuthStore.getState().refreshUser();
   }, []);
 }

@@ -28,6 +28,7 @@ var (
 	ErrCannotBanStaff           = errors.New("cannot ban clan staff")
 	ErrMemberNotFound           = errors.New("clan member not found")
 	ErrNotClanPost              = errors.New("not a post of this clan")
+	ErrRoleTaken                = errors.New("clan role is already assigned")
 )
 
 type Repository struct {
@@ -36,10 +37,6 @@ type Repository struct {
 
 func NewRepository(db *gorm.DB) *Repository {
 	return &Repository{db: db}
-}
-
-func isUniqueViolation(err error) bool {
-	return err != nil && strings.Contains(err.Error(), "duplicate key value")
 }
 
 type CreateClanParams struct {
@@ -86,7 +83,7 @@ func (r *Repository) CreateClan(p CreateClanParams) (*CreateClanResult, error) {
 			MemberCount: 1,
 		}
 		if err := tx.Create(clan).Error; err != nil {
-			if isUniqueViolation(err) {
+			if apperr.IsUniqueViolation(err) {
 				return ErrClanNameTaken
 			}
 			return err
@@ -162,6 +159,27 @@ func (r *Repository) UpdateFields(id uuid.UUID, updates map[string]interface{}) 
 	return r.db.Model(&models.Clan{}).Where("id = ?", id).Updates(updates).Error
 }
 
+func (r *Repository) UpdateFieldsAndDowngradePublicPosts(id uuid.UUID, updates map[string]interface{}, keepAuthorIDs []uuid.UUID) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		clan, err := r.lockClan(tx, id)
+		if err != nil {
+			return err
+		}
+		if err := tx.Model(&models.Clan{}).Where("id = ?", id).Updates(updates).Error; err != nil {
+			return err
+		}
+		if !clan.MemberPublicPost {
+			return nil
+		}
+		db := tx.Model(&models.Me{}).
+			Where("clan_id = ? AND visibility = ?", id, models.MeVisibilityPublic)
+		if len(keepAuthorIDs) > 0 {
+			db = db.Where("author_id NOT IN ?", keepAuthorIDs)
+		}
+		return db.Update("visibility", models.MeVisibilityPrivate).Error
+	})
+}
+
 func (r *Repository) IncrementVisit(id uuid.UUID) error {
 	return r.db.Model(&models.Clan{}).Where("id = ?", id).
 		Update("visit_count", gorm.Expr("visit_count + ?", 1)).Error
@@ -216,15 +234,44 @@ func (r *Repository) IsBanned(clanID, userID uuid.UUID) (bool, error) {
 	return count > 0, err
 }
 
+func (r *Repository) lockClan(tx *gorm.DB, clanID uuid.UUID) (*models.Clan, error) {
+	var clan models.Clan
+	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&clan, "id = ?", clanID).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrClanNotFound
+		}
+		return nil, err
+	}
+	return &clan, nil
+}
+
+func (r *Repository) bannedInTx(tx *gorm.DB, clanID, userID uuid.UUID) (bool, error) {
+	var count int64
+	err := tx.Model(&models.ClanBan{}).
+		Where("clan_id = ? AND user_id = ?", clanID, userID).
+		Count(&count).Error
+	return count > 0, err
+}
+
 func (r *Repository) Join(clanID, userID uuid.UUID) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
+		if _, err := r.lockClan(tx, clanID); err != nil {
+			return err
+		}
+		banned, err := r.bannedInTx(tx, clanID, userID)
+		if err != nil {
+			return err
+		}
+		if banned {
+			return ErrClanBanned
+		}
 		member := &models.ClanMember{
 			ClanID: clanID,
 			UserID: userID,
 			Role:   models.ClanRoleMember,
 		}
 		if err := tx.Create(member).Error; err != nil {
-			if isUniqueViolation(err) {
+			if apperr.IsUniqueViolation(err) {
 				return ErrAlreadyClanMember
 			}
 			return err
@@ -236,6 +283,9 @@ func (r *Repository) Join(clanID, userID uuid.UUID) error {
 
 func (r *Repository) Leave(clanID, userID uuid.UUID) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
+		if _, err := r.lockClan(tx, clanID); err != nil {
+			return err
+		}
 		res := tx.Where("clan_id = ? AND user_id = ? AND role != ?", clanID, userID, models.ClanRoleOwner).
 			Delete(&models.ClanMember{})
 		if res.Error != nil {
@@ -274,6 +324,16 @@ func (r *Repository) ListMembers(clanID uuid.UUID, verifiedOnly bool, limit, off
 
 func (r *Repository) AssignRole(clanID, userID uuid.UUID, role models.ClanRole) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
+		if _, err := r.lockClan(tx, clanID); err != nil {
+			return err
+		}
+		banned, err := r.bannedInTx(tx, clanID, userID)
+		if err != nil {
+			return err
+		}
+		if banned {
+			return ErrClanBanned
+		}
 		if err := tx.Model(&models.ClanMember{}).
 			Where("clan_id = ? AND role = ?", clanID, role).
 			Update("role", models.ClanRoleMember).Error; err != nil {
@@ -284,6 +344,9 @@ func (r *Repository) AssignRole(clanID, userID uuid.UUID, role models.ClanRole) 
 			Where("clan_id = ? AND user_id = ? AND role != ?", clanID, userID, models.ClanRoleOwner).
 			Update("role", role)
 		if res.Error != nil {
+			if apperr.IsUniqueViolation(res.Error) {
+				return ErrRoleTaken
+			}
 			return res.Error
 		}
 		if res.RowsAffected == 0 {
@@ -293,8 +356,8 @@ func (r *Repository) AssignRole(clanID, userID uuid.UUID, role models.ClanRole) 
 				Role:   role,
 			}
 			if err := tx.Create(member).Error; err != nil {
-				if isUniqueViolation(err) {
-					return ErrMemberNotFound
+				if apperr.IsUniqueViolation(err) {
+					return ErrRoleTaken
 				}
 				return err
 			}
@@ -338,6 +401,9 @@ func (r *Repository) SetVerified(clanID, userID uuid.UUID, verified bool) error 
 
 func (r *Repository) Ban(clanID, userID, bannedBy uuid.UUID) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
+		if _, err := r.lockClan(tx, clanID); err != nil {
+			return err
+		}
 		var member models.ClanMember
 		err := tx.First(&member, "clan_id = ? AND user_id = ?", clanID, userID).Error
 		switch {
@@ -361,7 +427,7 @@ func (r *Repository) Ban(clanID, userID, bannedBy uuid.UUID) error {
 
 		ban := &models.ClanBan{ClanID: clanID, UserID: userID, BannedBy: bannedBy}
 		if err := tx.Create(ban).Error; err != nil {
-			if isUniqueViolation(err) {
+			if apperr.IsUniqueViolation(err) {
 				return nil
 			}
 			return err

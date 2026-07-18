@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ReactionType, RoomMessage } from '@app-types';
-import { kulImageForText, SmileyText, toast } from '@lib';
+import { SmileyText, toast } from '@lib';
 import { useStickyScroll } from '@hooks';
 import {
   ConfirmDialog,
@@ -14,6 +14,7 @@ import copyActionIcon from '@/assets/icons/chat/ic_menu_copy.svg';
 import deleteActionIcon from '@/assets/icons/chat/ic_menu_delete.png';
 import blockActionIcon from '@/assets/icons/chat/ic_menu_block.svg';
 import { buildRoomFeed } from '../messageGroups';
+import { replyExcerpt, roomMessageAbilities } from '../roomMessageView';
 import { RoomMessageGroup } from './RoomMessageGroup';
 import { RoomComposerBar, type RoomComposerHandle } from './RoomComposerBar';
 import { RoomReactionsDialog } from './RoomReactionsDialog';
@@ -138,15 +139,8 @@ export function RoomMessagesTab({
     }
   }
 
-  function isCopyableText(message: RoomMessage): boolean {
-    return (
-      message.type !== 'image' &&
-      kulImageForText(message.content) == null &&
-      message.content.trim() !== ''
-    );
-  }
-
   function sheetActions(message: RoomMessage): MessageSheetAction[] {
+    const { isOwn, canCopy } = roomMessageAbilities(message, currentUserId);
     const actions: MessageSheetAction[] = [];
     const copyAction: MessageSheetAction = {
       key: 'copy',
@@ -154,14 +148,14 @@ export function RoomMessagesTab({
       icon: copyActionIcon,
       onSelect: () => void copyMessage(message.content),
     };
-    if (message.senderId !== currentUserId) {
+    if (!isOwn) {
       actions.push({
         key: 'reply',
         label: t('room.actionReply'),
         icon: replyActionIcon,
         onSelect: () => onSetReplyTarget(message),
       });
-      if (isCopyableText(message)) actions.push(copyAction);
+      if (canCopy) actions.push(copyAction);
       actions.push({
         key: 'block',
         label: t('room.actionBlock'),
@@ -170,7 +164,7 @@ export function RoomMessagesTab({
         onSelect: () => setBlockTarget(message),
       });
     } else {
-      if (isCopyableText(message)) actions.push(copyAction);
+      if (canCopy) actions.push(copyAction);
       actions.push({
         key: 'delete',
         label: t('chat.actionDelete'),
@@ -180,11 +174,6 @@ export function RoomMessagesTab({
       });
     }
     return actions;
-  }
-
-  function replyExcerpt(message: RoomMessage): string {
-    if (message.type === 'image') return t('room.replyImage');
-    return kulImageForText(message.content) != null ? t('room.replySticker') : message.content;
   }
 
   const feed = useMemo(() => {
@@ -242,7 +231,7 @@ export function RoomMessagesTab({
               {t('room.replyingTo', { name: replyTarget.senderName ?? '' })}
             </span>
             <span className="block truncate text-xs text-black/54">
-              <SmileyText text={replyExcerpt(replyTarget)} />
+              <SmileyText text={replyExcerpt(t, replyTarget)} />
             </span>
           </span>
           <button

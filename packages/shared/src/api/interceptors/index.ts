@@ -5,7 +5,7 @@ import { registerRefreshTokenInterceptor } from './refreshTokenInterceptor';
 import { registerApiGuardInterceptor } from './apiGuardInterceptor';
 import { registerLoggingInterceptor } from './loggingInterceptor';
 
-export { setOnUnauthorized, ensureFreshToken } from './refreshTokenInterceptor';
+export { setOnUnauthorized, ensureFreshToken, refreshAccessToken } from './refreshTokenInterceptor';
 
 export function registerInterceptors(http: AxiosInstance): void {
   registerAuthTokenInterceptor(http);

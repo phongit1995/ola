@@ -26,7 +26,7 @@ interface PersistedAuthState {
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       user: null,
       authReady: false,
       setUser: (user) => set({ user }),
@@ -36,6 +36,7 @@ export const useAuthStore = create<AuthState>()(
       },
       refreshUser: async () => {
         if (!authTokens.getAccessToken()) {
+          if (get().user != null) get().clearUser();
           set({ authReady: true });
           return;
         }

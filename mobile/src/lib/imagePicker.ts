@@ -1,6 +1,12 @@
 import { launchImageLibrary } from 'react-native-image-picker';
 import ImageCropPicker from 'react-native-image-crop-picker';
+import { toast } from '@ola/shared/lib';
 import type { NativeUploadFile } from '@ola/shared/lib';
+import { MIN_IMAGE_SOURCE } from '@ola/shared/constants';
+
+export const AVATAR_OUTPUT = 800;
+
+export const COVER_OUTPUT = { width: 1600, height: 900 };
 
 export interface PickedImage {
   file: NativeUploadFile;
@@ -53,6 +59,26 @@ export async function pickCroppedImage(width: number, height: number): Promise<C
   }
 }
 
+export async function pickValidatedCroppedImage(
+  width: number,
+  height: number,
+  messages: { tooSmall: string; error: string }
+): Promise<NativeUploadFile | null> {
+  let picked: CroppedImage | null;
+  try {
+    picked = await pickCroppedImage(width, height);
+  } catch {
+    toast.error(messages.error);
+    return null;
+  }
+  if (picked == null) return null;
+  if (Math.min(picked.sourceWidth, picked.sourceHeight) < MIN_IMAGE_SOURCE) {
+    toast.error(messages.tooSmall);
+    return null;
+  }
+  return picked.file;
+}
+
 export async function pickSingleImage(): Promise<PickedImage | null> {
   const result = await launchImageLibrary({
     mediaType: 'photo',
@@ -68,4 +94,16 @@ export async function pickSingleImage(): Promise<PickedImage | null> {
     width: asset.width ?? 0,
     height: asset.height ?? 0,
   };
+}
+
+const PASTE_EXTENSION_TYPES: Record<string, string> = {
+  png: 'image/png',
+  gif: 'image/gif',
+  webp: 'image/webp',
+};
+
+export function pastedImageFile(uri: string): NativeUploadFile {
+  const extension = uri.split('.').pop()?.toLowerCase() ?? 'jpg';
+  const type = PASTE_EXTENSION_TYPES[extension] ?? 'image/jpeg';
+  return { uri, name: `pasted.${type === 'image/jpeg' ? 'jpg' : extension}`, type };
 }

@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   Image,
   Pressable,
+  RefreshControl,
   ScrollView,
   Text,
   TextInput,
@@ -15,11 +16,14 @@ import { ClanService } from '@ola/shared/services';
 import type { ClanCheckNameResult } from '@ola/shared/types';
 import { useClanStore } from '@ola/shared/stores/clanStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
-import { Avatar } from '@components/Avatar';
-import { ConfirmDialog } from '@components/ConfirmDialog';
-import { Dialog, DialogButton } from '@components/Dialog';
-import { ScreenHeader } from '@components/ScreenHeader';
-import { UserProfileScreen } from '@screens/profile/UserProfileScreen';
+import { Avatar } from '@components/ui/Avatar';
+import { ConfirmDialog } from '@components/ui/ConfirmDialog';
+import { Dialog, DialogButton } from '@components/ui/Dialog';
+import { ScreenHeader } from '@components/ui/ScreenHeader';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '@navigation/types';
+import { ROOT_ROUTES } from '@navigation/routes';
 import {
   CLAN_HANDLE_PATTERN,
   CLAN_ROLE_ICONS,
@@ -65,11 +69,19 @@ function PreviewRow({
 }
 
 export function ClanHomeScreen({ onClose, onOpenClan }: ClanHomeScreenProps) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const myClans = useClanStore((s) => s.myClans);
   const mineLoading = useClanStore((s) => s.mineLoading);
   const ensureMine = useClanStore((s) => s.ensureMine);
+  const refreshMine = useClanStore((s) => s.refreshMine);
   const pushToast = useToastStore((s) => s.push);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    void refreshMine().finally(() => setRefreshing(false));
+  }, [refreshMine]);
 
   const [createOpen, setCreateOpen] = useState(false);
   const [name, setName] = useState('');
@@ -78,7 +90,11 @@ export function ClanHomeScreen({ onClose, onOpenClan }: ClanHomeScreenProps) {
   const [freshCheck, setFreshCheck] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [creating, setCreating] = useState(false);
-  const [profileTarget, setProfileTarget] = useState<string | null>(null);
+
+  function openProfile(nick: string) {
+    setCreateOpen(false);
+    navigation.navigate(ROOT_ROUTES.ProfileView, { userId: nick });
+  }
 
   useEffect(() => {
     void ensureMine();
@@ -157,8 +173,11 @@ export function ClanHomeScreen({ onClose, onOpenClan }: ClanHomeScreenProps) {
         }
       />
 
-      <ScrollView className="flex-1 p-2">
-        <Text className="px-1 text-base" style={{ color: 'rgba(0,0,0,0.87)' }}>
+      <ScrollView
+        className="flex-1 p-2"
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      >
+        <Text className="px-1 text-base text-ola-ink">
           {t('clan.myClans')}
         </Text>
         {mineLoading && myClans.length === 0 ? (
@@ -189,10 +208,10 @@ export function ClanHomeScreen({ onClose, onOpenClan }: ClanHomeScreenProps) {
                   rounded={false}
                 />
                 <View className="min-w-0 flex-1">
-                  <Text numberOfLines={1} className="text-base" style={{ color: 'rgba(0,0,0,0.87)' }}>
+                  <Text numberOfLines={1} className="text-base text-ola-ink">
                     #{clan.handle}
                   </Text>
-                  <Text numberOfLines={1} className="text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>
+                  <Text numberOfLines={1} className="text-xs text-ola-ink-soft">
                     {clanRoleLabel(clan.myRole ?? 'member')} ·{' '}
                     {t('clan.membersCount', { count: clan.memberCount })}
                   </Text>
@@ -276,28 +295,28 @@ export function ClanHomeScreen({ onClose, onOpenClan }: ClanHomeScreenProps) {
             className="mt-3 rounded-md bg-white p-4"
             style={{ borderWidth: 1, borderColor: 'rgba(0,0,0,0.12)' }}
           >
-            <Text className="text-center text-sm font-bold" style={{ color: 'rgba(0,0,0,0.87)' }}>
+            <Text className="text-center text-sm font-bold text-ola-ink">
               #{preview.handle}
             </Text>
             {preview.owner != null && preview.owner !== '' && (
               <PreviewRow
                 icon={CLAN_ROLE_ICONS.owner}
                 text={preview.owner}
-                onPress={() => setProfileTarget(preview.owner!)}
+                onPress={() => openProfile(preview.owner!)}
               />
             )}
             {preview.deputy != null && preview.deputy !== '' && (
               <PreviewRow
                 icon={CLAN_ROLE_ICONS.deputy}
                 text={preview.deputy}
-                onPress={() => setProfileTarget(preview.deputy!)}
+                onPress={() => openProfile(preview.deputy!)}
               />
             )}
             {preview.ambassador != null && preview.ambassador !== '' && (
               <PreviewRow
                 icon={CLAN_ROLE_ICONS.ambassador}
                 text={preview.ambassador}
-                onPress={() => setProfileTarget(preview.ambassador!)}
+                onPress={() => openProfile(preview.ambassador!)}
               />
             )}
             <PreviewRow
@@ -330,16 +349,6 @@ export function ClanHomeScreen({ onClose, onOpenClan }: ClanHomeScreenProps) {
         onCancel={() => setConfirmOpen(false)}
         onConfirm={() => void create()}
       />
-
-      {profileTarget != null && (
-        <UserProfileScreen
-          key={profileTarget}
-          username={profileTarget}
-          language={i18n.language}
-          onClose={() => setProfileTarget(null)}
-          onOpenProfile={(nick) => setProfileTarget(nick)}
-        />
-      )}
     </View>
   );
 }

@@ -9,15 +9,12 @@ import { useToastStore } from '@ola/shared/stores/toastStore';
 import { selectTopupEnabled, useTopupConfigStore } from '@ola/shared/stores/topupConfigStore';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
-import { KenCoin } from './KenCoin';
-import { KenHistorySection } from './KenHistorySection';
-import { TransferKenDialog } from './TransferKenDialog';
-import { ScreenHeader } from '@components/ScreenHeader';
-
-const KEN_LOW_THRESHOLD = 10_000;
-const MUTED = 'rgba(0,0,0,0.54)';
-const BODY = 'rgba(0,0,0,0.87)';
-const DIVIDER = 'rgba(0,0,0,0.12)';
+import { KenCoin } from './components/KenCoin';
+import { KenHistorySection } from './components/KenHistorySection';
+import { TransferKenDialog } from './components/TransferKenDialog';
+import { ScreenHeader } from '@components/ui/ScreenHeader';
+import { DIVIDER, ERROR, PRIMARY, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
+import { KEN_LOW_THRESHOLD } from './constants';
 
 interface RowActionProps {
   icon: ReactNode;
@@ -34,7 +31,7 @@ function RowAction({ icon, label, onPress }: RowActionProps) {
       <View className="mr-2.5 items-center justify-center" style={{ width: 18, height: 18 }}>
         {icon}
       </View>
-      <Text className="text-sm" style={{ color: BODY }}>{label}</Text>
+      <Text className="text-sm" style={{ color: TEXT_PRIMARY }}>{label}</Text>
     </Pressable>
   );
 }
@@ -76,16 +73,16 @@ export function KenStoreScreen({ navigation }: Props) {
             className="mx-2 mb-2 rounded-sm bg-white px-3 py-2.5"
             style={{ borderWidth: 1, borderColor: DIVIDER }}
           >
-            <Text className="text-xs" style={{ color: '#e34545' }}>{t('ken.lowWarning')}</Text>
+            <Text className="text-xs" style={{ color: ERROR }}>{t('ken.lowWarning')}</Text>
           </View>
         )}
 
         <View className="mx-2 rounded-sm bg-white p-2" style={{ borderWidth: 1, borderColor: DIVIDER }}>
           <View className="flex-row items-center px-1 py-1.5">
-            <Text className="text-sm" style={{ color: MUTED }}>{t('ken.balance')}</Text>
+            <Text className="text-sm" style={{ color: TEXT_SECONDARY }}>{t('ken.balance')}</Text>
             <View className="ml-2 flex-1 flex-row items-center gap-1">
               <KenCoin />
-              <Text className="text-lg font-bold" style={{ color: '#7cb342' }}>{balanceText}</Text>
+              <Text className="text-lg font-bold" style={{ color: PRIMARY }}>{balanceText}</Text>
             </View>
           </View>
 
@@ -111,8 +108,7 @@ export function KenStoreScreen({ navigation }: Props) {
       >
         <Pressable
           onPress={comingSoon}
-          className="h-9 w-full items-center justify-center rounded-sm border border-ola-primary-dark active:opacity-90"
-          style={{ backgroundColor: '#9ccc65' }}
+          className="h-9 w-full items-center justify-center rounded-sm border border-ola-primary-dark bg-ola-button active:opacity-90"
         >
           <Text className="text-sm text-white">{t('ken.support')}</Text>
         </Pressable>

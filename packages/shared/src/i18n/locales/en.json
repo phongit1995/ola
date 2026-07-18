@@ -37,7 +37,9 @@
   "auth": {
     "errGeneric": "Something went wrong, please try again.",
     "errNetwork": "Unable to connect to the server. Please check your network.",
-    "sessionReplaced": "Your account just signed in on another device."
+    "sessionReplaced": "Your account just signed in on another device.",
+    "sessionEnded": "Your session has ended, please log in again.",
+    "banned": "Your account has been suspended."
   },
   "connection": {
     "reconnecting": "Reconnecting…"
@@ -810,6 +812,7 @@
     "rewardToast": "Email verified! You received {{days}} days of VIP 🎉",
     "errEmailRequired": "Please enter an email.",
     "errEmailInvalid": "Invalid email address.",
+    "errDomainNotAllowed": "Only Gmail, Yahoo or iCloud email addresses are supported.",
     "errCodeRequired": "Please enter all 6 digits.",
     "errCodeInvalid": "Incorrect code, please try again.",
     "errCodeExpired": "The code has expired, please resend.",
@@ -1107,7 +1110,9 @@
         "PEN_CATCH": "Pen catch",
         "PEN_WIN": "Pen win",
         "PEN_REFUND": "Pen refund",
-        "KEN_CHEST": "KEN chest"
+        "KEN_CHEST": "KEN chest",
+        "CLAN_CREATE": "Clan creation",
+        "UNKNOWN": "KEN transaction"
       }
     },
     "buy": {
@@ -1447,6 +1452,8 @@
       "you are already a member of this clan": "You already joined this Clan",
       "owner cannot leave the clan": "The owner cannot leave the Clan",
       "cannot ban clan staff": "Cannot ban Clan staff",
+      "clan role is already assigned": "This role has just been assigned to someone else, please retry",
+      "cannot delete the clan owner's posts": "Cannot delete the Clan owner's posts",
       "user not found": "Account not found",
       "clan member not found": "Member not found",
       "clan name must be 5-32 lowercase letters or digits, no spaces or accents": "Clan name must be 5-32 lowercase letters or digits, no spaces or accents",

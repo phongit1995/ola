@@ -1,53 +1,71 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Image, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, RefreshControl, Text, View } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { colorForName } from '@ola/shared/lib';
 import { ClanService } from '@ola/shared/services';
 import type { Clan, ClanMember } from '@ola/shared/types';
 import { useToastStore } from '@ola/shared/stores/toastStore';
-import { Avatar } from '@components/Avatar';
-import { ConfirmDialog } from '@components/ConfirmDialog';
-import { ListOptionDialog, type ListOption } from '@components/ListOptionDialog';
-import { ScreenHeader } from '@components/ScreenHeader';
-import { UserProfileScreen } from '@screens/profile/UserProfileScreen';
+import { Avatar } from '@components/ui/Avatar';
+import { ConfirmDialog } from '@components/ui/ConfirmDialog';
+import { ListOptionDialog, type ListOption } from '@components/ui/ListOptionDialog';
+import { ScreenHeader } from '@components/ui/ScreenHeader';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '@navigation/types';
+import { ROOT_ROUTES } from '@navigation/routes';
 import { CLAN_ROLE_ICONS, clanErrorText, clanRoleLabel, isClanStaff } from '@lib/clanHelpers';
+import { MEMBERS_PAGE_SIZE } from './constants';
 
 interface ClanMembersScreenProps {
   clanId: string;
   onClose: () => void;
 }
 
-const PAGE_SIZE = 50;
-
 export function ClanMembersScreen({ clanId, onClose }: ClanMembersScreenProps) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const pushToast = useToastStore((s) => s.push);
   const [clan, setClan] = useState<Clan | null>(null);
   const [members, setMembers] = useState<ClanMember[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [menuTarget, setMenuTarget] = useState<ClanMember | null>(null);
   const [banTarget, setBanTarget] = useState<ClanMember | null>(null);
-  const [profileTarget, setProfileTarget] = useState<string | null>(null);
+
+  function openProfile(nick: string) {
+    navigation.navigate(ROOT_ROUTES.ProfileView, { userId: nick });
+  }
+
+  const fetchFirst = useCallback(async () => {
+    const [clanResult, memberResult] = await Promise.all([
+      ClanService.get(clanId),
+      ClanService.members(clanId, { limit: MEMBERS_PAGE_SIZE, offset: 0 }),
+    ]);
+    setClan(clanResult);
+    setMembers(memberResult.items);
+    setTotal(memberResult.total);
+  }, [clanId]);
 
   const loadFirst = useCallback(async () => {
     setLoading(true);
     try {
-      const [clanResult, memberResult] = await Promise.all([
-        ClanService.get(clanId),
-        ClanService.members(clanId, { limit: PAGE_SIZE, offset: 0 }),
-      ]);
-      setClan(clanResult);
-      setMembers(memberResult.items);
-      setTotal(memberResult.total);
+      await fetchFirst();
     } catch (error) {
       pushToast('error', clanErrorText(error));
     } finally {
       setLoading(false);
     }
-  }, [clanId, pushToast]);
+  }, [fetchFirst, pushToast]);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchFirst()
+      .catch((error) => pushToast('error', clanErrorText(error)))
+      .finally(() => setRefreshing(false));
+  }, [fetchFirst, pushToast]);
 
   useEffect(() => {
     void loadFirst();
@@ -58,7 +76,7 @@ export function ClanMembersScreen({ clanId, onClose }: ClanMembersScreenProps) {
     setLoadingMore(true);
     try {
       const result = await ClanService.members(clanId, {
-        limit: PAGE_SIZE,
+        limit: MEMBERS_PAGE_SIZE,
         offset: members.length,
       });
       setMembers((current) => [...current, ...result.items]);
@@ -106,17 +124,23 @@ export function ClanMembersScreen({ clanId, onClose }: ClanMembersScreenProps) {
   }
 
   const staff = clan != null && isClanStaff(clan);
+  const owner = clan?.myRole === 'owner';
+  const bannable = (member: ClanMember) => member.role === 'member';
 
   const menuOptions: ListOption[] =
     menuTarget == null
       ? []
       : [
-          {
-            key: 'verify',
-            label: menuTarget.verified ? t('clan.unverifyMember') : t('clan.verifyMember'),
-            onSelect: () => void toggleVerify(menuTarget),
-          },
-          ...(menuTarget.role === 'member' || menuTarget.role === 'ambassador'
+          ...(owner
+            ? [
+                {
+                  key: 'verify',
+                  label: menuTarget.verified ? t('clan.unverifyMember') : t('clan.verifyMember'),
+                  onSelect: () => void toggleVerify(menuTarget),
+                },
+              ]
+            : []),
+          ...(bannable(menuTarget)
             ? [
                 {
                   key: 'ban',
@@ -140,6 +164,7 @@ export function ClanMembersScreen({ clanId, onClose }: ClanMembersScreenProps) {
           data={members}
           keyExtractor={(item, index) => `${item.user?.id ?? ''}-${index}`}
           contentContainerClassName="p-2"
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
           onEndReached={() => void loadMore()}
           onEndReachedThreshold={0.4}
           ListFooterComponent={
@@ -156,7 +181,7 @@ export function ClanMembersScreen({ clanId, onClose }: ClanMembersScreenProps) {
                 }
               >
                 <Pressable
-                  onPress={() => username !== '' && setProfileTarget(username)}
+                  onPress={() => username !== '' && openProfile(username)}
                   className="min-w-0 flex-1 flex-row items-center gap-3"
                 >
                   <Avatar
@@ -169,12 +194,11 @@ export function ClanMembersScreen({ clanId, onClose }: ClanMembersScreenProps) {
                     <View className="flex-row items-center gap-1.5">
                       <Text
                         numberOfLines={1}
-                        className="text-sm"
-                        style={{ color: 'rgba(0,0,0,0.87)' }}
+                        className="text-sm text-ola-ink"
                       >
                         {username}
                         {fullName !== '' && fullName !== username && (
-                          <Text style={{ color: 'rgba(0,0,0,0.54)' }}> · {fullName}</Text>
+                          <Text className="text-ola-ink-soft"> · {fullName}</Text>
                         )}
                       </Text>
                       {item.role !== 'member' && (
@@ -185,15 +209,15 @@ export function ClanMembersScreen({ clanId, onClose }: ClanMembersScreenProps) {
                         />
                       )}
                     </View>
-                    <Text className="text-xs" style={{ color: 'rgba(0,0,0,0.54)' }}>
+                    <Text className="text-xs text-ola-ink-soft">
                       {clanRoleLabel(item.role)}
                       {item.verified ? ` · ${t('clan.verified')}` : ''}
                     </Text>
                   </View>
                 </Pressable>
-                {staff && item.role !== 'owner' && (
+                {staff && item.role !== 'owner' && (owner || bannable(item)) && (
                   <Pressable onPress={() => setMenuTarget(item)} className="px-2 py-1" hitSlop={6}>
-                    <Text className="text-lg" style={{ color: 'rgba(0,0,0,0.54)' }}>
+                    <Text className="text-lg text-ola-ink-soft">
                       ⋯
                     </Text>
                   </Pressable>
@@ -221,16 +245,6 @@ export function ClanMembersScreen({ clanId, onClose }: ClanMembersScreenProps) {
         onCancel={() => setBanTarget(null)}
         onConfirm={() => void banMember()}
       />
-
-      {profileTarget != null && (
-        <UserProfileScreen
-          key={profileTarget}
-          username={profileTarget}
-          language={i18n.language}
-          onClose={() => setProfileTarget(null)}
-          onOpenProfile={(nick) => setProfileTarget(nick)}
-        />
-      )}
     </View>
   );
 }

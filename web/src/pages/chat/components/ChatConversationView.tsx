@@ -17,7 +17,7 @@ import {
   type SmileyInputHandle,
   type ListOption,
 } from '@components';
-import { colorForName, compressImageForUpload, ImageTooLargeError, isSameDay, kulImageForText, kulToken, parseMessageMetadata, SmileyText, toast } from '@lib';
+import { chatFriendActionLabel, colorForName, compressImageForUpload, formatLastActive, ImageTooLargeError, isSameDay, kulToken, parseMessageMetadata, SmileyText, toast } from '@lib';
 import moreIcon from '@/assets/icons/chat/ic_more_white.png';
 import likeIcon from '@/assets/icons/chat/smiley_35.png';
 import replyActionIcon from '@/assets/icons/me/ic_action_reply_gray.png';
@@ -27,9 +27,8 @@ import deleteActionIcon from '@/assets/icons/chat/ic_menu_delete.png';
 import { useChatStore } from '@/store/chat/chatStore';
 import { useAuthStore } from '@/store/authStore';
 import type { RelationshipStatus } from '@app-types';
-import type { ChatMessage } from '../types';
-import { chatQuoteExcerpt, toBubble } from '../chatView';
-import { formatLastActive } from '../friends';
+import type { ChatMessage } from '../interface';
+import { chatMessageAbilities, chatQuoteExcerpt, toBubble } from '../chatView';
 import { usePeerCard } from '../usePeerCard';
 import { useLongPress, useOutsideClick, useStickyScroll } from '@hooks';
 import { ChatReactionBalloons } from './ChatReactionBalloons';
@@ -41,6 +40,7 @@ import { VoicePreviewBar } from './VoicePreviewBar';
 import { PeerProfileCard } from './PeerProfileCard';
 import { UserProfileView } from '../../profile/UserProfileView';
 import { useMediaViewerStore } from '@/store/mediaViewerStore';
+import { RELATIONSHIP_STATUS } from '@ola/shared/constants';
 
 interface ChatConversationViewProps {
   name: string;
@@ -66,8 +66,8 @@ export function ChatConversationView({
   onClose,
 }: ChatConversationViewProps) {
   const { t } = useTranslation();
-  const blockedByMe = blockStatus === 'blocked_by_me';
-  const blockedByThem = blockStatus === 'blocked_by_them';
+  const blockedByMe = blockStatus === RELATIONSHIP_STATUS.blockedByMe;
+  const blockedByThem = blockStatus === RELATIONSHIP_STATUS.blockedByThem;
   const blocked = blockedByMe || blockedByThem;
 
   const myId = useAuthStore((s) => s.user?.id ?? '');
@@ -269,28 +269,19 @@ export function ChatConversationView({
     }
   }
 
-  function isCopyableText(message: ChatMessage): boolean {
-    return (
-      message.kind === 'text' &&
-      message.text != null &&
-      message.text.trim() !== '' &&
-      kulImageForText(message.text) == null
-    );
-  }
-
   function messageSheetActions(message: ChatMessage): MessageSheetAction[] {
-    const isOwn = message.direction === 'out';
+    const abilities = chatMessageAbilities(message, blocked);
     const actions: MessageSheetAction[] = [];
-    if (!isOwn && !blocked) {
+    if (abilities.canReply) {
       actions.push({ key: 'reply', label: t('chat.actionReply'), icon: replyActionIcon, onSelect: () => startReply(message) });
     }
-    if (isCopyableText(message)) {
+    if (abilities.canCopy) {
       actions.push({ key: 'copy', label: t('chat.actionCopy'), icon: copyActionIcon, onSelect: () => void copyMessage(message.text ?? '') });
     }
-    if (isOwn && message.kind === 'text') {
+    if (abilities.canEdit) {
       actions.push({ key: 'edit', label: t('chat.actionEdit'), icon: editActionIcon, onSelect: () => startEdit(message) });
     }
-    if (isOwn) {
+    if (abilities.canDelete) {
       actions.push({
         key: 'delete',
         label: t('chat.actionDelete'),
@@ -307,9 +298,7 @@ export function ChatConversationView({
     setDraft('');
   }
 
-  async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(event.target.files ?? []);
-    event.target.value = '';
+  async function sendImageFiles(files: File[]) {
     if (files.length === 0) return;
     setOpenTab(null);
     for (const file of files) {
@@ -320,6 +309,12 @@ export function ChatConversationView({
         toast.error(error instanceof ImageTooLargeError ? t('chat.imageTooLarge') : t('chat.imageError'));
       }
     }
+  }
+
+  async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(event.target.files ?? []);
+    event.target.value = '';
+    await sendImageFiles(files);
   }
 
   const isTyping = draft.trim() !== '';
@@ -366,14 +361,7 @@ export function ChatConversationView({
     else if (result === 'unfriend') toast.success(t('chat.unfriendDone'));
   }
 
-  const friendLabel =
-    blockStatus === 'pending_outgoing'
-      ? t('chat.cancelRequest')
-      : blockStatus === 'pending_incoming'
-        ? t('chat.acceptRequest')
-        : blockStatus === 'friend'
-          ? t('chat.unfriend')
-          : t('chat.menuMakeFriend');
+  const friendLabel = chatFriendActionLabel(t, blockStatus);
 
   const menuOptions: ListOption[] = [
     { key: 'make-friend', label: friendLabel, onSelect: () => void handleFriendAction() },
@@ -571,6 +559,7 @@ export function ChatConversationView({
           onChange={handleDraftChange}
           onEnter={submitComposer}
           onFocus={() => setOpenTab(null)}
+          onImagePaste={(files) => void sendImageFiles(files)}
           placeholder={t('chat.messageInputPlaceholder', { name })}
           multiline
           className="max-h-32 min-h-9 flex-1 overflow-y-auto bg-transparent px-2 py-1.5 text-base text-black/87"

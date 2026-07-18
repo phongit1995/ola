@@ -10,6 +10,8 @@ import { useRoomChatStore } from '@ola/shared/stores/roomChatStore';
 import type { Room } from '@ola/shared/types';
 import type { RoomStackParamList } from '@navigation/types';
 import { ROOM_ROUTES } from '@navigation/routes';
+import { DIVIDER } from '@constants';
+import { ROOM_BROWSE_LIMIT } from './roomConstants';
 
 const membersIcon = require('@assets/icons/room/ic_indicate_privacy_friends.png');
 const quickJoinIcon = require('@assets/icons/room/ic_action_auto_join_room.png');
@@ -17,8 +19,6 @@ const refreshIcon = require('@assets/icons/room/ic_refresh.png');
 
 const ROOM_COLORS = ['#ef5350', '#ec407a', '#5c6bc0', '#26a69a', '#7e57c2', '#ffa726'];
 const ROOM_CAPACITY = 200;
-const DIVIDER = 'rgba(0,0,0,0.12)';
-
 function membersBadgeColor(members: number): string {
   if (members >= ROOM_CAPACITY) return '#ff4081';
   if (members >= 100) return 'rgba(0,0,0,0.54)';
@@ -69,11 +69,11 @@ function RoomRow({
         </View>
       )}
       <View className="min-w-0 flex-1 pl-2">
-        <Text numberOfLines={1} className="text-base" style={{ color: 'rgba(0,0,0,0.87)' }}>
+        <Text numberOfLines={1} className="text-base text-ola-ink">
           {room.name}
         </Text>
         {room.description != null && room.description !== '' && (
-          <Text numberOfLines={1} className="mt-1 text-sm" style={{ color: 'rgba(0,0,0,0.54)' }}>
+          <Text numberOfLines={1} className="mt-1 text-sm text-ola-ink-soft">
             {room.description}
           </Text>
         )}
@@ -98,10 +98,10 @@ function QuickJoinRow({ onPress }: { onPress: () => void }) {
         <Image source={quickJoinIcon} style={{ width: 48, height: 48 }} resizeMode="contain" />
       </View>
       <View className="min-w-0 flex-1 pl-2">
-        <Text numberOfLines={1} className="text-base" style={{ color: 'rgba(0,0,0,0.87)' }}>
+        <Text numberOfLines={1} className="text-base text-ola-ink">
           {t('room.quickJoin')}
         </Text>
-        <Text numberOfLines={1} className="mt-1 text-sm" style={{ color: 'rgba(0,0,0,0.54)' }}>
+        <Text numberOfLines={1} className="mt-1 text-sm text-ola-ink-soft">
           {t('room.quickJoinDesc')}
         </Text>
       </View>
@@ -132,7 +132,7 @@ export function RoomListScreen() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const result = await RoomService.browse({ limit: 50 });
+      const result = await RoomService.browse({ limit: ROOM_BROWSE_LIMIT });
       setRooms(result.items);
     } catch {
       setRooms([]);
@@ -260,7 +260,7 @@ export function RoomListScreen() {
             ) : (
               <>
                 <ActivityIndicator color="#7cb342" size="large" />
-                <Text className="text-sm" style={{ color: 'rgba(0,0,0,0.54)' }}>
+                <Text className="text-sm text-ola-ink-soft">
                   {t('room.joining')}
                 </Text>
               </>
