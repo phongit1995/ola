@@ -371,6 +371,15 @@ type emailVerifyEntry struct {
 	Attempts int    `json:"attempts"`
 }
 
+func isAllowedEmailDomain(email string) bool {
+	at := strings.LastIndex(email, "@")
+	if at < 0 {
+		return false
+	}
+	_, ok := constants.EmailVerifyAllowedDomains[email[at+1:]]
+	return ok
+}
+
 func generateNumericCode(n int) (string, error) {
 	const digits = "0123456789"
 	buf := make([]byte, n)
@@ -386,6 +395,9 @@ func generateNumericCode(n int) (string, error) {
 
 func (s *Service) SendEmailVerification(userID uuid.UUID, email string) (string, error) {
 	email = strings.ToLower(strings.TrimSpace(email))
+	if !isAllowedEmailDomain(email) {
+		return "", errors.New("email domain not allowed")
+	}
 
 	user, err := s.repo.FindByID(userID)
 	if err != nil {

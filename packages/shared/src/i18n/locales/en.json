@@ -812,6 +812,7 @@
     "rewardToast": "Email verified! You received {{days}} days of VIP 🎉",
     "errEmailRequired": "Please enter an email.",
     "errEmailInvalid": "Invalid email address.",
+    "errDomainNotAllowed": "Only Gmail, Yahoo or iCloud email addresses are supported.",
     "errCodeRequired": "Please enter all 6 digits.",
     "errCodeInvalid": "Incorrect code, please try again.",
     "errCodeExpired": "The code has expired, please resend.",

@@ -812,6 +812,7 @@
     "rewardToast": "Xác thực email thành công! Bạn được tặng {{days}} ngày VIP 🎉",
     "errEmailRequired": "Vui lòng nhập email.",
     "errEmailInvalid": "Email không hợp lệ.",
+    "errDomainNotAllowed": "Chỉ hỗ trợ email Gmail, Yahoo hoặc iCloud.",
     "errCodeRequired": "Vui lòng nhập đủ 6 số.",
     "errCodeInvalid": "Mã không đúng, vui lòng thử lại.",
     "errCodeExpired": "Mã đã hết hạn, vui lòng gửi lại.",
