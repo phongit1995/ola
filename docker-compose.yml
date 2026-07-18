@@ -119,6 +119,16 @@ services:
       - GAME_TURN_SECONDS=${GAME_TURN_SECONDS:-45}
       - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-http://localhost:3000}
       - KAFKA_BROKERS=${KAFKA_BROKERS:-kafka:9092}
+      - DB_HOST=${DB_HOST:-postgres}
+      - DB_PORT=${DB_PORT:-5432}
+      - DB_NAME=${DB_NAME:-ola_chat_server}
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-postgres123}
+      - DB_SSL_MODE=${DB_SSL_MODE:-disable}
+      - REDIS_HOST=${REDIS_HOST:-redis}
+      - REDIS_PORT=${REDIS_PORT:-6379}
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-redis123}
+      - REDIS_DB=${REDIS_DB:-0}
       - GIN_MODE=${GIN_MODE:-release}
       - SERVICE_NAME=game
     networks:

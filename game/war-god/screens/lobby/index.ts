@@ -35,6 +35,8 @@ interface LobbyDeps {
 
 let deps: LobbyDeps;
 let box: Container;
+let content: Container;
+let contentShown = false;
 let bgSprite: Sprite;
 let bgMask: Graphics;
 let logo: Sprite;
@@ -144,41 +146,46 @@ export function buildLobby(lobbyDeps: LobbyDeps): Container {
   pressable(exitBtn, () => deps.onExit());
   box.addChild(exitBtn);
 
+  content = new Container();
+  content.visible = false;
+  contentShown = false;
+  box.addChild(content);
+
   nameFrame = new Sprite(tex[A.lobby.nameFrame]);
   nameFrame.anchor.set(0.5);
   nameFrame.width = NAME_W;
   nameFrame.scale.y = nameFrame.scale.x;
   nameFrame.x = DESIGN_W / 2;
-  box.addChild(nameFrame);
+  content.addChild(nameFrame);
 
   nameText = makeText('', 23, 0xffe9a8, '800');
-  box.addChild(nameText);
+  content.addChild(nameText);
 
   avatarFrame = new Sprite(tex[A.lobby.avatarFrame]);
   avatarFrame.anchor.set(0.5);
   avatarFrame.width = 235;
   avatarFrame.scale.y = avatarFrame.scale.x;
   avatarFrame.x = DESIGN_W / 2;
-  box.addChild(avatarFrame);
+  content.addChild(avatarFrame);
 
   vipIcon = new Sprite(Texture.EMPTY);
   vipIcon.anchor.set(0.5);
   vipIcon.visible = false;
-  box.addChild(vipIcon);
+  content.addChild(vipIcon);
 
   kenFrame = new Sprite(tex[A.lobby.kenFrame]);
   kenFrame.anchor.set(0.5);
   kenFrame.width = KEN_W;
   kenFrame.scale.y = kenFrame.scale.x;
   kenFrame.x = DESIGN_W / 2;
-  box.addChild(kenFrame);
+  content.addChild(kenFrame);
 
   coin = iconSprite(A.lobby.coin, 72);
   coinBaseScale = coin.scale.x;
-  box.addChild(coin);
+  content.addChild(coin);
 
   kenText = makeText('', 27, 0xffd84d, '800');
-  box.addChild(kenText);
+  content.addChild(kenText);
 
   plusBtn = new Container();
   plusBg = new Sprite(tex[A.lobby.btnPlus]);
@@ -187,13 +194,13 @@ export function buildLobby(lobbyDeps: LobbyDeps): Container {
   plusIc = iconSprite(A.lobby.icPlus, 30);
   plusBtn.addChild(plusIc);
   pressable(plusBtn, () => showToast('Nạp Ken trong app Ola nhé!'));
-  box.addChild(plusBtn);
+  content.addChild(plusBtn);
 
   btnBot = makeWoodBtn('ĐẤU VỚI MÁY', WOOD_W, WOOD_H, A.lobby.icBot, openPickPopup);
   btnBotWrap = new Container();
   btnBotWrap.x = DESIGN_W / 2;
   btnBotWrap.addChild(btnBot);
-  box.addChild(btnBotWrap);
+  content.addChild(btnBotWrap);
 
   btnPvp = makeWoodBtn('ĐẤU 1V1', WOOD_W, WOOD_H, A.lobby.icPvp, () => {
     showToast('Đấu 1v1 đang phát triển, sắp ra mắt!');
@@ -201,10 +208,7 @@ export function buildLobby(lobbyDeps: LobbyDeps): Container {
   btnPvpWrap = new Container();
   btnPvpWrap.x = DESIGN_W / 2;
   btnPvpWrap.addChild(btnPvp);
-  box.addChild(btnPvpWrap);
-
-  popIn(btnBot, 150);
-  popIn(btnPvp, 300);
+  content.addChild(btnPvpWrap);
 
   menuRow = new Container();
   const history = makePill('LỊCH SỬ', A.lobby.icHistory, () =>
@@ -226,7 +230,7 @@ export function buildLobby(lobbyDeps: LobbyDeps): Container {
   guide.x = PILL_W + 10;
   menuRow.addChild(guide);
   menuRow.x = DESIGN_W / 2;
-  box.addChild(menuRow);
+  content.addChild(menuRow);
 
   statusPanel = new Container();
   const statusBg = new Graphics()
@@ -335,9 +339,27 @@ function layoutNameRow(): void {
   nameText.y = nameFrame.y;
 }
 
+function revealContent(): void {
+  content.visible = true;
+  if (contentShown) return;
+  contentShown = true;
+  popIn(avatarFrame, 0);
+  popIn(nameFrame, 90);
+  popIn(nameText, 90);
+  popIn(kenFrame, 180);
+  popIn(coin, 210);
+  popIn(kenText, 210);
+  popIn(plusBtn, 210);
+  popIn(btnBot, 320);
+  popIn(btnPvp, 440);
+  popIn(menuRow, 560);
+}
+
 export function lobbySetConnecting(): void {
   stopSpinner();
   box.visible = true;
+  content.visible = false;
+  contentShown = false;
   retryBtn.visible = false;
   statusPanel.visible = true;
   let t = 0;
@@ -353,6 +375,7 @@ export function lobbySetConnecting(): void {
 export function lobbySetError(): void {
   stopSpinner();
   box.visible = true;
+  revealContent();
   statusPanel.visible = true;
   statusText.text = 'Không thể kết nối máy chủ.\nBạn vẫn có thể đấu với máy!';
   retryBtn.visible = true;
@@ -381,7 +404,12 @@ export function lobbySetReady(info: UserInfoData): void {
   }
 
   layoutLobby(lastDesignH, lastInsetTop, lastInsetBottom);
-  animateKen(info.ken);
+  revealContent();
+  kenValue = info.ken;
+  kenText.text = '';
+  window.setTimeout(() => {
+    if (box.visible && content.visible) animateKen(info.ken);
+  }, 380);
 }
 
 export function lobbySetVisible(visible: boolean): void {
