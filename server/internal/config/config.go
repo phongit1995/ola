@@ -76,6 +76,8 @@ type Config struct {
 	ClanCreateCost int `env:"CLAN_CREATE_COST" envDefault:"20000" validate:"min=0"`
 	ClanMaxOwned   int `env:"CLAN_MAX_OWNED" envDefault:"1" validate:"min=1"`
 
+	PenCommissionPercent int `env:"PEN_COMMISSION_PERCENT" envDefault:"5" validate:"min=0,max=100"`
+
 	LiveKitURL             string `env:"LIVEKIT_URL" envDefault:""`
 	LiveKitAPIKey          string `env:"LIVEKIT_API_KEY" envDefault:""`
 	LiveKitAPISecret       string `env:"LIVEKIT_API_SECRET" envDefault:""`

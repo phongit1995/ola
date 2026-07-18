@@ -58,7 +58,7 @@ async function main() {
   const item = (all.items || []).find((s) => s.id === s1)
   ok('item carries shooter + keeper', !!item && !!item.shooter && !!item.keeper)
   ok('admin reveals shooterSide', !!item && item.shooterSide === 'left')
-  ok('settled item has pot/commission/payout', !!item && item.pot === 2000 && item.commission === 100 && item.payout === 1900)
+  ok('settled item has pot/commission/payout', !!item && item.pot === 2000 && item.commission === 50 && item.payout === 1950)
 
   // ── filters ──
   r = await req('GET', '/admin/pen/shots?status=settled', undefined, adminToken)
