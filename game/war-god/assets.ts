@@ -49,6 +49,7 @@ import lobbyIcHistory from './assets/lobby/ic-history.png';
 import lobbyIcSoundOn from './assets/lobby/ic-sound-on.png';
 import lobbyIcSoundOff from './assets/lobby/ic-sound-off.png';
 import lobbyIcGuide from './assets/lobby/ic-guide.png';
+import lobbyBtnExit from './assets/lobby/btn-exit.png';
 import pickPanel from './assets/pick/panel.png';
 import pickTitle from './assets/pick/title.png';
 import pickCloseBase from './assets/pick/close-base.png';
@@ -116,6 +117,7 @@ export const A = {
     icSoundOn: lobbyIcSoundOn,
     icSoundOff: lobbyIcSoundOff,
     icGuide: lobbyIcGuide,
+    btnExit: lobbyBtnExit,
   },
   pick: {
     panel: pickPanel,

@@ -1,9 +1,11 @@
 import { Assets, Container, Graphics, Sprite, Text, Texture, type Ticker } from 'pixi.js';
-import type { UserInfoData } from '../src/sdk';
-import { A, tex } from './assets';
-import { HEADING, addTick, makeText, removeTick, tween } from './kit';
-import { attachShimmer } from './shimmer';
-import type { BotLevel } from './battle';
+import type { UserInfoData } from '../../../src/sdk';
+import { A, tex } from '../../assets';
+import { addTick, iconSprite, makeText, popIn, pressable, removeTick } from '../../kit';
+import type { BotLevel } from '../../logic/battle';
+import { PILL_W, makePill, makeWoodBtn } from './ui';
+import { buildPickPopup, hidePickPopup, layoutPickPopup, openPickPopup } from './pick-popup';
+import { buildGuidePopup, hideGuidePopup, layoutGuidePopup, openGuidePopup } from './guide-popup';
 
 const DESIGN_W = 520;
 const VIP_FIT_W = 150;
@@ -12,8 +14,6 @@ const NAME_W = 400;
 const KEN_W = 330;
 const WOOD_W = 310;
 const WOOD_H = 86;
-const PILL_W = 160;
-const PILL_H = 61;
 const SOUND_KEY = 'wg-sound-on';
 
 function parseVipTypeId(vipType: string | null | undefined): number | null {
@@ -27,21 +27,10 @@ function vipIconUrl(id: number): string {
   return `/vip-icons/vip_${String(id).padStart(3, '0')}.png`;
 }
 
-export const LEVEL_LABELS: Record<BotLevel, string> = {
-  easy: 'DỄ',
-  normal: 'VỪA',
-  hard: 'KHÓ',
-};
-
-const LEVEL_BARS: Record<BotLevel, string> = {
-  easy: A.pick.levelEasy,
-  normal: A.pick.levelMid,
-  hard: A.pick.levelHard,
-};
-
 interface LobbyDeps {
   onPlay(level: BotLevel): void;
   onRetry(): void;
+  onExit(): void;
 }
 
 let deps: LobbyDeps;
@@ -49,6 +38,7 @@ let box: Container;
 let bgSprite: Sprite;
 let bgMask: Graphics;
 let logo: Sprite;
+let exitBtn: Container;
 let avatarFrame: Sprite;
 let nameFrame: Sprite;
 let nameText: Text;
@@ -75,13 +65,7 @@ let retryBtn: Container;
 let toastText: Text;
 let toastTimer: number | undefined;
 let pickBox: Container;
-let pickDim: Graphics;
-let pickCard: Container;
-let pickPanelH = 0;
-let pickBars: Container[] = [];
 let guideBox: Container;
-let guideDim: Graphics;
-let guideCard: Container;
 let spinnerStep: ((ticker: Ticker) => void) | null = null;
 let lastDesignH = 980;
 let lastInsetTop = 0;
@@ -92,88 +76,6 @@ function stopSpinner(): void {
     removeTick(spinnerStep);
     spinnerStep = null;
   }
-}
-
-function pressable(target: Container, onTap: () => void): void {
-  target.eventMode = 'static';
-  target.cursor = 'pointer';
-  target.on('pointertap', onTap);
-  target.on('pointerdown', () => target.scale.set(0.95));
-  target.on('pointerup', () => target.scale.set(1));
-  target.on('pointerupoutside', () => target.scale.set(1));
-}
-
-function iconSprite(url: string, height: number): Sprite {
-  const s = new Sprite(tex[url]);
-  s.anchor.set(0.5);
-  s.scale.set(height / s.texture.height);
-  return s;
-}
-
-function makeWoodBtn(label: string, w: number, h: number, iconUrl: string | null, onTap: () => void): Container {
-  const b = new Container();
-  const bg = new Sprite(tex[A.lobby.btnWood]);
-  bg.anchor.set(0.5);
-  bg.width = w;
-  bg.height = h;
-  b.addChild(bg);
-  let labelX = 0;
-  if (iconUrl) {
-    const ring = iconSprite(A.lobby.ring, h * 0.72);
-    ring.x = -w / 2 + h * 0.7;
-    b.addChild(ring);
-    const icon = iconSprite(iconUrl, h * 0.46);
-    icon.x = ring.x;
-    b.addChild(icon);
-    labelX = h * 0.4;
-  }
-  const t = makeText(label, Math.round(h * 0.31), 0xffd84d, '700', HEADING);
-  t.x = labelX;
-  b.addChild(t);
-  pressable(b, onTap);
-  return b;
-}
-
-function makePill(label: string, iconUrl: string, onTap: () => void): Container {
-  const b = new Container();
-  const bg = new Sprite(tex[A.lobby.menuPill]);
-  bg.anchor.set(0.5);
-  bg.width = PILL_W;
-  bg.height = PILL_H;
-  b.addChild(bg);
-  const ring = iconSprite(A.lobby.ring, 44);
-  ring.x = -PILL_W / 2 + 34;
-  b.addChild(ring);
-  const icon = iconSprite(iconUrl, 26);
-  icon.x = ring.x;
-  b.addChild(icon);
-  const t = makeText(label, 13, 0xffe9a8, '700', HEADING);
-  t.x = 20;
-  b.addChild(t);
-  pressable(b, onTap);
-  return b;
-}
-
-function popIn(target: Container, delay: number, dur = 420): void {
-  const base = target.scale.x;
-  target.alpha = 0;
-  target.scale.set(base * 0.6);
-  let t = -delay;
-  const step = (ticker: Ticker): void => {
-    t += ticker.deltaMS;
-    if (t < 0) return;
-    const k = Math.min(1, t / dur);
-    const c1 = 1.70158;
-    const e = 1 + (c1 + 1) * Math.pow(k - 1, 3) + c1 * Math.pow(k - 1, 2);
-    target.scale.set(base * (0.6 + 0.4 * e));
-    target.alpha = Math.min(1, k * 2.5);
-    if (k >= 1) {
-      target.scale.set(base);
-      target.alpha = 1;
-      removeTick(step);
-    }
-  };
-  addTick(step);
 }
 
 function stopKenAnim(): void {
@@ -218,185 +120,6 @@ function showToast(message: string): void {
   }, 2200);
 }
 
-function makeLevelBar(
-  level: BotLevel,
-  w: number,
-  fontSize: number,
-  delay: number,
-  isActive: () => boolean,
-  onTap: () => void,
-): Container {
-  const b = new Container();
-  const bg = new Sprite(tex[LEVEL_BARS[level]]);
-  bg.anchor.set(0.5);
-  bg.width = w;
-  bg.scale.y = bg.scale.x;
-  b.addChild(bg);
-  const t = makeText(LEVEL_LABELS[level], fontSize, 0xffffff, '800', HEADING);
-  b.addChild(t);
-  attachShimmer(b, bg, {
-    thickness: w * 0.14,
-    length: bg.height * 1.9,
-    rotation: -0.42,
-    period: 1900,
-    sweep: 650,
-    delay,
-    isActive,
-  });
-  pressable(b, onTap);
-  return b;
-}
-
-const PANEL_W = 312;
-
-function openPickBox(): void {
-  pickBox.visible = true;
-  pickDim.alpha = 0;
-  void tween(pickDim, { alpha: 1 }, 200);
-  popIn(pickCard, 0, 380);
-  pickBars.forEach((bar, i) => popIn(bar, 130 + i * 95, 300));
-}
-
-function buildPickBox(): Container {
-  const wrap = new Container();
-  pickDim = new Graphics();
-  pickDim.eventMode = 'static';
-  pickDim.on('pointertap', () => {
-    wrap.visible = false;
-  });
-  wrap.addChild(pickDim);
-
-  pickCard = new Container();
-
-  const panel = new Sprite(tex[A.pick.panel]);
-  panel.anchor.set(0.5);
-  panel.width = PANEL_W;
-  panel.scale.y = panel.scale.x;
-  pickCard.addChild(panel);
-  const panelH = panel.height;
-  pickPanelH = panelH;
-  const halfH = panelH / 2;
-
-  const banner = new Sprite(tex[A.pick.title]);
-  banner.anchor.set(0.5);
-  banner.width = PANEL_W * 0.76;
-  banner.scale.y = banner.scale.x;
-  banner.y = -halfH + banner.height / 2 + panelH * 0.115;
-  pickCard.addChild(banner);
-  const bannerLabel = makeText('ĐẤU VỚI MÁY', Math.round(PANEL_W * 0.064), 0xffe36b, '800', HEADING);
-  const bannerMax = banner.width * 0.64;
-  if (bannerLabel.width > bannerMax) bannerLabel.scale.set(bannerMax / bannerLabel.width);
-  bannerLabel.y = banner.y - banner.height * 0.04;
-  pickCard.addChild(bannerLabel);
-
-  const close = new Container();
-  const closeBase = new Sprite(tex[A.pick.closeBase]);
-  closeBase.anchor.set(0.5);
-  closeBase.width = PANEL_W * 0.145;
-  closeBase.scale.y = closeBase.scale.x;
-  close.addChild(closeBase);
-  const closeX = new Sprite(tex[A.pick.closeX]);
-  closeX.anchor.set(0.5);
-  closeX.width = PANEL_W * 0.07;
-  closeX.scale.y = closeX.scale.x;
-  close.addChild(closeX);
-  close.x = PANEL_W / 2 - PANEL_W * 0.078;
-  close.y = -halfH + PANEL_W * 0.082;
-  pressable(close, () => {
-    wrap.visible = false;
-  });
-  pickCard.addChild(close);
-
-  const levels = Object.keys(LEVEL_LABELS) as BotLevel[];
-  const barW = PANEL_W * 0.62;
-  const barFont = Math.round(PANEL_W * 0.062);
-  const firstBar = new Sprite(tex[LEVEL_BARS.easy]);
-  const barH = (firstBar.height / firstBar.width) * barW;
-  const gap = barH * 0.14;
-  const blockH = levels.length * barH + (levels.length - 1) * gap;
-  const areaTop = banner.y + banner.height / 2 + panelH * 0.02;
-  const areaBottom = halfH - panelH * 0.06;
-  const bias = panelH * 0.06;
-  let startY = (areaTop + areaBottom) / 2 - blockH / 2 + barH / 2 + bias;
-  const maxStartY = areaBottom - blockH + barH / 2;
-  if (startY > maxStartY) startY = maxStartY;
-  pickBars = [];
-  levels.forEach((level, idx) => {
-    const bar = makeLevelBar(level, barW, barFont, idx * 320, () => wrap.visible, () => {
-      wrap.visible = false;
-      deps.onPlay(level);
-    });
-    bar.y = startY + idx * (barH + gap);
-    pickCard.addChild(bar);
-    pickBars.push(bar);
-  });
-
-  wrap.addChild(pickCard);
-  wrap.visible = false;
-  return wrap;
-}
-
-const GUIDE_LINES = [
-  'Ghép 3 ô cùng loại để kích hoạt hiệu ứng:',
-  '⚔️ Kiếm 5 · 🪨 Đá 3 sát thương (giáp chặn được)',
-  '🔥 Lửa 4 sát thương phép, xuyên giáp',
-  '❤️ Tim hồi 4 máu · 💧 Nước +7 nội lực',
-  '🛡️ Khiên +4 giáp (tối đa 30)',
-  '',
-  'Ghép 4 ô trở lên được đánh thêm lượt.',
-  'Đủ 50 nội lực tung tuyệt chiêu gây 25 sát thương.',
-  'Mỗi lượt có 45 giây — hạ gục đối thủ để thắng!',
-].join('\n');
-
-function openGuideBox(): void {
-  guideBox.visible = true;
-  guideDim.alpha = 0;
-  void tween(guideDim, { alpha: 1 }, 200);
-  popIn(guideCard, 0, 380);
-}
-
-function buildGuideBox(): Container {
-  const wrap = new Container();
-  guideDim = new Graphics();
-  guideDim.eventMode = 'static';
-  guideDim.on('pointertap', () => {
-    wrap.visible = false;
-  });
-  wrap.addChild(guideDim);
-
-  guideCard = new Container();
-  const cardW = 440;
-  const cardH = 400;
-  const bg = new Graphics()
-    .roundRect(-cardW / 2, -cardH / 2, cardW, cardH, 18)
-    .fill({ color: 0x101c2c, alpha: 0.96 })
-    .stroke({ width: 2, color: 0xf6c445 });
-  bg.eventMode = 'static';
-  guideCard.addChild(bg);
-
-  const title = makeText('HƯỚNG DẪN', 24, 0xffd84d, '700', HEADING);
-  title.y = -cardH / 2 + 44;
-  guideCard.addChild(title);
-
-  const body = makeText(GUIDE_LINES, 15, 0xffffff, '700');
-  body.style.wordWrap = true;
-  body.style.wordWrapWidth = cardW - 56;
-  body.style.align = 'left';
-  body.style.lineHeight = 24;
-  body.y = 4;
-  guideCard.addChild(body);
-
-  const ok = makeWoodBtn('ĐÃ HIỂU', 200, 62, null, () => {
-    wrap.visible = false;
-  });
-  ok.y = cardH / 2 - 52;
-  guideCard.addChild(ok);
-
-  wrap.addChild(guideCard);
-  wrap.visible = false;
-  return wrap;
-}
-
 export function buildLobby(lobbyDeps: LobbyDeps): Container {
   deps = lobbyDeps;
   soundOn = localStorage.getItem(SOUND_KEY) !== '0';
@@ -415,6 +138,11 @@ export function buildLobby(lobbyDeps: LobbyDeps): Container {
   logo.width = 380;
   logo.scale.y = logo.scale.x;
   box.addChild(logo);
+
+  exitBtn = new Container();
+  exitBtn.addChild(iconSprite(A.lobby.btnExit, 56));
+  pressable(exitBtn, () => deps.onExit());
+  box.addChild(exitBtn);
 
   nameFrame = new Sprite(tex[A.lobby.nameFrame]);
   nameFrame.anchor.set(0.5);
@@ -461,7 +189,7 @@ export function buildLobby(lobbyDeps: LobbyDeps): Container {
   pressable(plusBtn, () => showToast('Nạp Ken trong app Ola nhé!'));
   box.addChild(plusBtn);
 
-  btnBot = makeWoodBtn('ĐẤU VỚI MÁY', WOOD_W, WOOD_H, A.lobby.icBot, openPickBox);
+  btnBot = makeWoodBtn('ĐẤU VỚI MÁY', WOOD_W, WOOD_H, A.lobby.icBot, openPickPopup);
   btnBotWrap = new Container();
   btnBotWrap.x = DESIGN_W / 2;
   btnBotWrap.addChild(btnBot);
@@ -494,7 +222,7 @@ export function buildLobby(lobbyDeps: LobbyDeps): Container {
   soundIcon = sound.children[2] as Sprite;
   menuRow.addChild(sound);
 
-  const guide = makePill('HƯỚNG DẪN', A.lobby.icGuide, openGuideBox);
+  const guide = makePill('HƯỚNG DẪN', A.lobby.icGuide, openGuidePopup);
   guide.x = PILL_W + 10;
   menuRow.addChild(guide);
   menuRow.x = DESIGN_W / 2;
@@ -525,9 +253,9 @@ export function buildLobby(lobbyDeps: LobbyDeps): Container {
   toastText.visible = false;
   box.addChild(toastText);
 
-  pickBox = buildPickBox();
+  pickBox = buildPickPopup((level) => deps.onPlay(level));
   box.addChild(pickBox);
-  guideBox = buildGuideBox();
+  guideBox = buildGuidePopup();
   box.addChild(guideBox);
 
   return box;
@@ -548,6 +276,8 @@ export function layoutLobby(designH: number, insetTop: number, insetBottom: numb
 
   logo.x = DESIGN_W / 2;
   logo.y = insetTop + 100;
+  exitBtn.x = DESIGN_W - 42;
+  exitBtn.y = insetTop + 42;
   nameFrame.y = insetTop + 338;
   avatarFrame.y = nameFrame.y - 106;
   vipIcon.x = DESIGN_W / 2;
@@ -593,16 +323,8 @@ export function layoutLobby(designH: number, insetTop: number, insetBottom: numb
   statusPanel.y = btnScale < 1 ? (kenBottom + menuTop) / 2 : (kenBottom + gapBottom) / 2;
   retryBtn.y = statusPanel.y + 78;
 
-  pickDim.clear().rect(0, 0, DESIGN_W, designH).fill({ color: 0x080814, alpha: 0.72 });
-  const availW = DESIGN_W * 0.94;
-  const availH = designH - insetTop - insetBottom - 24;
-  const fitScale = Math.min(1, availW / PANEL_W, availH / pickPanelH);
-  pickCard.scale.set(fitScale);
-  pickCard.x = DESIGN_W / 2;
-  pickCard.y = insetTop + (designH - insetTop - insetBottom) / 2;
-  guideDim.clear().rect(0, 0, DESIGN_W, designH).fill({ color: 0x080814, alpha: 0.72 });
-  guideCard.x = DESIGN_W / 2;
-  guideCard.y = designH / 2;
+  layoutPickPopup(designH, insetTop, insetBottom);
+  layoutGuidePopup(designH);
 }
 
 function layoutNameRow(): void {
@@ -668,8 +390,8 @@ export function lobbySetVisible(visible: boolean): void {
     stopSpinner();
     stopKenAnim();
     kenText.text = kenValue > 0 ? kenValue.toLocaleString('vi-VN') : kenText.text;
-    pickBox.visible = false;
-    guideBox.visible = false;
+    hidePickPopup();
+    hideGuidePopup();
     toastText.visible = false;
     if (toastTimer) window.clearTimeout(toastTimer);
   }

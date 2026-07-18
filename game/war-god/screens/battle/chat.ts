@@ -1,6 +1,6 @@
 import { Container, Graphics, Rectangle, Sprite } from 'pixi.js';
-import { A, tex } from './assets';
-import { HEADING, makeText } from './kit';
+import { A, tex } from '../../assets';
+import { HEADING, makeText } from '../../kit';
 
 export const CHAT_W = 492;
 const CHAT_PAD = 12;

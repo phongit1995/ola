@@ -87,6 +87,12 @@ export function castUltimate(attacker: Fighter, defender: Fighter): number {
 
 export type BotLevel = 'easy' | 'normal' | 'hard';
 
+export const LEVEL_LABELS: Record<BotLevel, string> = {
+  easy: 'DỄ',
+  normal: 'VỪA',
+  hard: 'KHÓ',
+};
+
 export function botChooseMove(
   board: Board,
   bot: Fighter,

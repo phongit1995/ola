@@ -1,7 +1,7 @@
 import { Container, Graphics, Sprite, Text, Texture } from 'pixi.js';
-import { MAX_HP, MAX_MP, type Fighter } from './battle';
-import { A, tex } from './assets';
-import { HEADING, makeText } from './kit';
+import { MAX_HP, MAX_MP, type Fighter } from '../../logic/battle';
+import { A, tex } from '../../assets';
+import { HEADING, makeText } from '../../kit';
 
 export interface BarUI {
   fill: Graphics;

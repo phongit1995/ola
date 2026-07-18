@@ -1,4 +1,5 @@
-import { Application, Container, Text, type Ticker } from 'pixi.js';
+import { Application, Container, Sprite, Text, type Ticker } from 'pixi.js';
+import { tex } from './assets';
 
 export const HEADING = 'Fredoka, system-ui, sans-serif';
 export const BODY = 'Nunito, system-ui, sans-serif';
@@ -44,6 +45,44 @@ export function addTick(step: (ticker: Ticker) => void): void {
 
 export function removeTick(step: (ticker: Ticker) => void): void {
   appRef.ticker.remove(step);
+}
+
+export function pressable(target: Container, onTap: () => void): void {
+  target.eventMode = 'static';
+  target.cursor = 'pointer';
+  target.on('pointertap', onTap);
+  target.on('pointerdown', () => target.scale.set(0.95));
+  target.on('pointerup', () => target.scale.set(1));
+  target.on('pointerupoutside', () => target.scale.set(1));
+}
+
+export function iconSprite(url: string, height: number): Sprite {
+  const s = new Sprite(tex[url]);
+  s.anchor.set(0.5);
+  s.scale.set(height / s.texture.height);
+  return s;
+}
+
+export function popIn(target: Container, delay: number, dur = 420): void {
+  const base = target.scale.x;
+  target.alpha = 0;
+  target.scale.set(base * 0.6);
+  let t = -delay;
+  const step = (ticker: Ticker): void => {
+    t += ticker.deltaMS;
+    if (t < 0) return;
+    const k = Math.min(1, t / dur);
+    const c1 = 1.70158;
+    const e = 1 + (c1 + 1) * Math.pow(k - 1, 3) + c1 * Math.pow(k - 1, 2);
+    target.scale.set(base * (0.6 + 0.4 * e));
+    target.alpha = Math.min(1, k * 2.5);
+    if (k >= 1) {
+      target.scale.set(base);
+      target.alpha = 1;
+      removeTick(step);
+    }
+  };
+  addTick(step);
 }
 
 export function makeText(
