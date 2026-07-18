@@ -2,6 +2,7 @@ import { Assets, Container, Graphics, Sprite, Text, Texture, type Ticker } from 
 import type { UserInfoData } from '../src/sdk';
 import { A, tex } from './assets';
 import { HEADING, addTick, makeText, removeTick } from './kit';
+import { attachShimmer } from './shimmer';
 import type { BotLevel } from './battle';
 
 const DESIGN_W = 520;
@@ -28,8 +29,14 @@ function vipIconUrl(id: number): string {
 
 export const LEVEL_LABELS: Record<BotLevel, string> = {
   easy: 'DỄ',
-  normal: 'THƯỜNG',
+  normal: 'VỪA',
   hard: 'KHÓ',
+};
+
+const LEVEL_BARS: Record<BotLevel, string> = {
+  easy: A.pick.levelEasy,
+  normal: A.pick.levelMid,
+  hard: A.pick.levelHard,
 };
 
 interface LobbyDeps {
@@ -70,6 +77,7 @@ let toastTimer: number | undefined;
 let pickBox: Container;
 let pickDim: Graphics;
 let pickCard: Container;
+let pickPanelH = 0;
 let guideBox: Container;
 let guideDim: Graphics;
 let guideCard: Container;
@@ -209,6 +217,37 @@ function showToast(message: string): void {
   }, 2200);
 }
 
+function makeLevelBar(
+  level: BotLevel,
+  w: number,
+  fontSize: number,
+  delay: number,
+  isActive: () => boolean,
+  onTap: () => void,
+): Container {
+  const b = new Container();
+  const bg = new Sprite(tex[LEVEL_BARS[level]]);
+  bg.anchor.set(0.5);
+  bg.width = w;
+  bg.scale.y = bg.scale.x;
+  b.addChild(bg);
+  const t = makeText(LEVEL_LABELS[level], fontSize, 0xffffff, '800', HEADING);
+  b.addChild(t);
+  attachShimmer(b, bg, {
+    thickness: w * 0.14,
+    length: bg.height * 1.9,
+    rotation: -0.42,
+    period: 1900,
+    sweep: 650,
+    delay,
+    isActive,
+  });
+  pressable(b, onTap);
+  return b;
+}
+
+const PANEL_W = 312;
+
 function buildPickBox(): Container {
   const wrap = new Container();
   pickDim = new Graphics();
@@ -219,17 +258,68 @@ function buildPickBox(): Container {
   wrap.addChild(pickDim);
 
   pickCard = new Container();
-  const title = makeText('CHỌN ĐỘ KHÓ', 24, 0xffd84d, '700', HEADING);
-  title.y = -140;
-  pickCard.addChild(title);
-  (Object.keys(LEVEL_LABELS) as BotLevel[]).forEach((level, idx) => {
-    const btn = makeWoodBtn(LEVEL_LABELS[level], 300, 84, null, () => {
+
+  const panel = new Sprite(tex[A.pick.panel]);
+  panel.anchor.set(0.5);
+  panel.width = PANEL_W;
+  panel.scale.y = panel.scale.x;
+  pickCard.addChild(panel);
+  const panelH = panel.height;
+  pickPanelH = panelH;
+  const halfH = panelH / 2;
+
+  const banner = new Sprite(tex[A.pick.title]);
+  banner.anchor.set(0.5);
+  banner.width = PANEL_W * 0.76;
+  banner.scale.y = banner.scale.x;
+  banner.y = -halfH + banner.height / 2 + panelH * 0.115;
+  pickCard.addChild(banner);
+  const bannerLabel = makeText('ĐẤU VỚI MÁY', Math.round(PANEL_W * 0.064), 0xffe36b, '800', HEADING);
+  const bannerMax = banner.width * 0.64;
+  if (bannerLabel.width > bannerMax) bannerLabel.scale.set(bannerMax / bannerLabel.width);
+  bannerLabel.y = banner.y - banner.height * 0.04;
+  pickCard.addChild(bannerLabel);
+
+  const close = new Container();
+  const closeBase = new Sprite(tex[A.pick.closeBase]);
+  closeBase.anchor.set(0.5);
+  closeBase.width = PANEL_W * 0.145;
+  closeBase.scale.y = closeBase.scale.x;
+  close.addChild(closeBase);
+  const closeX = new Sprite(tex[A.pick.closeX]);
+  closeX.anchor.set(0.5);
+  closeX.width = PANEL_W * 0.07;
+  closeX.scale.y = closeX.scale.x;
+  close.addChild(closeX);
+  close.x = PANEL_W / 2 - PANEL_W * 0.078;
+  close.y = -halfH + PANEL_W * 0.082;
+  pressable(close, () => {
+    wrap.visible = false;
+  });
+  pickCard.addChild(close);
+
+  const levels = Object.keys(LEVEL_LABELS) as BotLevel[];
+  const barW = PANEL_W * 0.62;
+  const barFont = Math.round(PANEL_W * 0.062);
+  const firstBar = new Sprite(tex[LEVEL_BARS.easy]);
+  const barH = (firstBar.height / firstBar.width) * barW;
+  const gap = barH * 0.14;
+  const blockH = levels.length * barH + (levels.length - 1) * gap;
+  const areaTop = banner.y + banner.height / 2 + panelH * 0.02;
+  const areaBottom = halfH - panelH * 0.06;
+  const bias = panelH * 0.06;
+  let startY = (areaTop + areaBottom) / 2 - blockH / 2 + barH / 2 + bias;
+  const maxStartY = areaBottom - blockH + barH / 2;
+  if (startY > maxStartY) startY = maxStartY;
+  levels.forEach((level, idx) => {
+    const bar = makeLevelBar(level, barW, barFont, idx * 320, () => wrap.visible, () => {
       wrap.visible = false;
       deps.onPlay(level);
     });
-    btn.y = -60 + idx * 100;
-    pickCard.addChild(btn);
+    bar.y = startY + idx * (barH + gap);
+    pickCard.addChild(bar);
   });
+
   wrap.addChild(pickCard);
   wrap.visible = false;
   return wrap;
@@ -355,6 +445,7 @@ export function buildLobby(lobbyDeps: LobbyDeps): Container {
 
   btnBot = makeWoodBtn('ĐẤU VỚI MÁY', WOOD_W, WOOD_H, A.lobby.icBot, () => {
     pickBox.visible = true;
+    popIn(pickCard, 0, 320);
   });
   btnBotWrap = new Container();
   btnBotWrap.x = DESIGN_W / 2;
@@ -490,8 +581,12 @@ export function layoutLobby(designH: number, insetTop: number, insetBottom: numb
   retryBtn.y = statusPanel.y + 78;
 
   pickDim.clear().rect(0, 0, DESIGN_W, designH).fill({ color: 0x080814, alpha: 0.72 });
+  const availW = DESIGN_W * 0.94;
+  const availH = designH - insetTop - insetBottom - 24;
+  const fitScale = Math.min(1, availW / PANEL_W, availH / pickPanelH);
+  pickCard.scale.set(fitScale);
   pickCard.x = DESIGN_W / 2;
-  pickCard.y = designH / 2;
+  pickCard.y = insetTop + (designH - insetTop - insetBottom) / 2;
   guideDim.clear().rect(0, 0, DESIGN_W, designH).fill({ color: 0x080814, alpha: 0.72 });
   guideCard.x = DESIGN_W / 2;
   guideCard.y = designH / 2;

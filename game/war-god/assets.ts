@@ -49,6 +49,13 @@ import lobbyIcHistory from './assets/lobby/ic-history.png';
 import lobbyIcSoundOn from './assets/lobby/ic-sound-on.png';
 import lobbyIcSoundOff from './assets/lobby/ic-sound-off.png';
 import lobbyIcGuide from './assets/lobby/ic-guide.png';
+import pickPanel from './assets/pick/panel.png';
+import pickTitle from './assets/pick/title.png';
+import pickCloseBase from './assets/pick/close-base.png';
+import pickCloseX from './assets/pick/close-x.png';
+import pickLevelEasy from './assets/pick/level-easy.png';
+import pickLevelMid from './assets/pick/level-mid.png';
+import pickLevelHard from './assets/pick/level-hard.png';
 
 export const A = {
   bg,
@@ -109,6 +116,15 @@ export const A = {
     icSoundOn: lobbyIcSoundOn,
     icSoundOff: lobbyIcSoundOff,
     icGuide: lobbyIcGuide,
+  },
+  pick: {
+    panel: pickPanel,
+    title: pickTitle,
+    closeBase: pickCloseBase,
+    closeX: pickCloseX,
+    levelEasy: pickLevelEasy,
+    levelMid: pickLevelMid,
+    levelHard: pickLevelHard,
   },
 } as const;
 
