@@ -117,6 +117,81 @@ definitions:
       token:
         type: string
     type: object
+  internal_modules_admin_clan.ClanListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_admin_clan.ClanResponse'
+        type: array
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  internal_modules_admin_clan.ClanResponse:
+    properties:
+      avatar:
+        type: string
+      cover:
+        type: string
+      createdAt:
+        type: string
+      description:
+        type: string
+      handle:
+        type: string
+      id:
+        type: string
+      memberCount:
+        type: integer
+      memberPublicPost:
+        type: boolean
+      owner:
+        $ref: '#/definitions/internal_modules_admin_clan.ClanUserResponse'
+      policy:
+        type: integer
+      roomId:
+        type: string
+      visitCount:
+        type: integer
+    type: object
+  internal_modules_admin_clan.ClanUserResponse:
+    properties:
+      avatar:
+        type: string
+      fullName:
+        type: string
+      id:
+        type: string
+      username:
+        type: string
+    type: object
+  internal_modules_admin_clan.MemberListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_admin_clan.MemberResponse'
+        type: array
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  internal_modules_admin_clan.MemberResponse:
+    properties:
+      joinedAt:
+        type: string
+      role:
+        type: string
+      user:
+        $ref: '#/definitions/internal_modules_admin_clan.ClanUserResponse'
+      verified:
+        type: boolean
+    type: object
   internal_modules_admin_dashboard.EngagementSection:
     properties:
       comments:
@@ -1380,6 +1455,12 @@ definitions:
     - name
     - participantIds
     type: object
+  internal_modules_conversation.HideConversationRequest:
+    properties:
+      clearMessages:
+        example: false
+        type: boolean
+    type: object
   internal_modules_conversation.HideConversationResponse:
     properties:
       message:
@@ -2451,10 +2532,14 @@ definitions:
     type: object
   internal_modules_message.MessagesListResponse:
     properties:
+      hasMore:
+        type: boolean
       messages:
         items:
           $ref: '#/definitions/internal_modules_message.MessageResponse'
         type: array
+      nextBefore:
+        type: string
       total:
         example: 50
         type: integer
@@ -3146,6 +3231,8 @@ definitions:
       bio:
         type: string
       bioImage:
+        type: string
+      deviceType:
         type: string
       fullName:
         type: string
@@ -4291,6 +4378,69 @@ definitions:
     properties:
       data:
         $ref: '#/definitions/internal_modules_vip.StoreResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_vip.TransferHistoryItem:
+    properties:
+      createdAt:
+        example: "2026-06-19T10:00:00Z"
+        type: string
+      fromFullName:
+        example: Phong Phan
+        type: string
+      fromUserId:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      fromUsername:
+        example: phong
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      toFullName:
+        example: Minh Anh
+        type: string
+      toUserId:
+        example: 660e8400-e29b-41d4-a716-446655440000
+        type: string
+      toUsername:
+        example: minhanh
+        type: string
+      vipIconId:
+        example: 4
+        type: integer
+    type: object
+  internal_modules_vip.TransferHistoryListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_vip.TransferHistoryItem'
+        type: array
+      limit:
+        example: 50
+        type: integer
+      offset:
+        example: 0
+        type: integer
+      total:
+        example: 1
+        type: integer
+    type: object
+  internal_modules_vip.TransferHistoryListSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_vip.TransferHistoryListResponse'
       error:
         type: string
       path:
@@ -6427,6 +6577,40 @@ definitions:
       traceId:
         type: string
     type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_clan_ClanListResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_clan.ClanListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_clan_MemberListResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_clan.MemberListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
   ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_me_CommentListResponse:
     properties:
       data:
@@ -7206,6 +7390,83 @@ paths:
       summary: Refresh admin token
       tags:
       - admin-auth
+  /admin/clans:
+    get:
+      parameters:
+      - description: Search by handle
+        in: query
+        name: q
+        type: string
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_clan_ClanListResponse'
+      security:
+      - BearerAuth: []
+      summary: List clans (admin)
+      tags:
+      - admin-clan
+  /admin/clans/{id}:
+    delete:
+      parameters:
+      - description: Clan ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete clan (admin)
+      tags:
+      - admin-clan
+  /admin/clans/{id}/members:
+    get:
+      parameters:
+      - description: Clan ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_clan_MemberListResponse'
+      security:
+      - BearerAuth: []
+      summary: List clan members (admin)
+      tags:
+      - admin-clan
   /admin/dashboard/overview:
     get:
       description: 'Số liệu tổng quan cho dashboard: người dùng, doanh thu KEN/VIP,
@@ -10215,14 +10476,22 @@ paths:
       - conversations
   /conversations/{id}/hide:
     post:
+      consumes:
+      - application/json
       description: Hide a conversation from the user's inbox. It will reappear when
-        a new message arrives.
+        a new message arrives. Optionally clears message history on the caller's side
+        only.
       parameters:
       - description: Conversation ID
         in: path
         name: id
         required: true
         type: string
+      - description: Options
+        in: body
+        name: request
+        schema:
+          $ref: '#/definitions/internal_modules_conversation.HideConversationRequest'
       produces:
       - application/json
       responses:
@@ -13524,6 +13793,29 @@ paths:
       security:
       - BearerAuth: []
       summary: Đổi quyền xem kho VIP (0 public, 1 friends, 2 private)
+      tags:
+      - vip
+  /vip/transfers:
+    get:
+      parameters:
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_vip.TransferHistoryListSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Lịch sử chuyển/nhận icon VIP của tôi
       tags:
       - vip
   /vip/users/{userId}/store:

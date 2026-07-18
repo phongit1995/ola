@@ -209,6 +209,131 @@
                 }
             }
         },
+        "/admin/clans": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-clan"
+                ],
+                "summary": "List clans (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Search by handle",
+                        "name": "q",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_clan_ClanListResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/clans/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-clan"
+                ],
+                "summary": "Delete clan (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Clan ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/clans/{id}/members": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-clan"
+                ],
+                "summary": "List clan members (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Clan ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_clan_MemberListResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/dashboard/overview": {
             "get": {
                 "security": [
@@ -5220,7 +5345,10 @@
                         "BearerAuth": []
                     }
                 ],
-                "description": "Hide a conversation from the user's inbox. It will reappear when a new message arrives.",
+                "description": "Hide a conversation from the user's inbox. It will reappear when a new message arrives. Optionally clears message history on the caller's side only.",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -5235,6 +5363,14 @@
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": "Options",
+                        "name": "request",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_conversation.HideConversationRequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -10260,6 +10396,44 @@
                 }
             }
         },
+        "/vip/transfers": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vip"
+                ],
+                "summary": "Lịch sử chuyển/nhận icon VIP của tôi",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_vip.TransferHistoryListSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/vip/users/{userId}/store": {
             "get": {
                 "security": [
@@ -10592,6 +10766,121 @@
                 },
                 "token": {
                     "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_clan.ClanListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_clan.ClanResponse"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_clan.ClanResponse": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "cover": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "handle": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "memberCount": {
+                    "type": "integer"
+                },
+                "memberPublicPost": {
+                    "type": "boolean"
+                },
+                "owner": {
+                    "$ref": "#/definitions/internal_modules_admin_clan.ClanUserResponse"
+                },
+                "policy": {
+                    "type": "integer"
+                },
+                "roomId": {
+                    "type": "string"
+                },
+                "visitCount": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_clan.ClanUserResponse": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "fullName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_clan.MemberListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_clan.MemberResponse"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_clan.MemberResponse": {
+            "type": "object",
+            "properties": {
+                "joinedAt": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/internal_modules_admin_clan.ClanUserResponse"
+                },
+                "verified": {
+                    "type": "boolean"
                 }
             }
         },
@@ -12476,6 +12765,15 @@
                 }
             }
         },
+        "internal_modules_conversation.HideConversationRequest": {
+            "type": "object",
+            "properties": {
+                "clearMessages": {
+                    "type": "boolean",
+                    "example": false
+                }
+            }
+        },
         "internal_modules_conversation.HideConversationResponse": {
             "type": "object",
             "properties": {
@@ -14055,11 +14353,17 @@
         "internal_modules_message.MessagesListResponse": {
             "type": "object",
             "properties": {
+                "hasMore": {
+                    "type": "boolean"
+                },
                 "messages": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/internal_modules_message.MessageResponse"
                     }
+                },
+                "nextBefore": {
+                    "type": "string"
                 },
                 "total": {
                     "type": "integer",
@@ -15061,6 +15365,9 @@
                     "type": "string"
                 },
                 "bioImage": {
+                    "type": "string"
+                },
+                "deviceType": {
                     "type": "string"
                 },
                 "fullName": {
@@ -16716,6 +17023,96 @@
             "properties": {
                 "data": {
                     "$ref": "#/definitions/internal_modules_vip.StoreResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_vip.TransferHistoryItem": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string",
+                    "example": "2026-06-19T10:00:00Z"
+                },
+                "fromFullName": {
+                    "type": "string",
+                    "example": "Phong Phan"
+                },
+                "fromUserId": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "fromUsername": {
+                    "type": "string",
+                    "example": "phong"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "toFullName": {
+                    "type": "string",
+                    "example": "Minh Anh"
+                },
+                "toUserId": {
+                    "type": "string",
+                    "example": "660e8400-e29b-41d4-a716-446655440000"
+                },
+                "toUsername": {
+                    "type": "string",
+                    "example": "minhanh"
+                },
+                "vipIconId": {
+                    "type": "integer",
+                    "example": 4
+                }
+            }
+        },
+        "internal_modules_vip.TransferHistoryListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_vip.TransferHistoryItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 50
+                },
+                "offset": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "internal_modules_vip.TransferHistoryListSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_vip.TransferHistoryListResponse"
                 },
                 "error": {
                     "type": "string"
@@ -19866,6 +20263,58 @@
             "properties": {
                 "data": {
                     "$ref": "#/definitions/internal_modules_admin_auth.RefreshTokenResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_clan_ClanListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_clan.ClanListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_clan_MemberListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_clan.MemberListResponse"
                 },
                 "error": {
                     "type": "string"

@@ -356,6 +356,29 @@ func (ctrl *Controller) GetHistory(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
+// GetTransfers godoc
+// @Summary      Lịch sử chuyển/nhận icon VIP của tôi
+// @Tags         vip
+// @Produce      json
+// @Security     BearerAuth
+// @Param        limit query int false "Page size"
+// @Param        offset query int false "Offset"
+// @Success      200  {object}  TransferHistoryListSuccessResponse
+// @Router       /vip/transfers [get]
+func (ctrl *Controller) GetTransfers(c *gin.Context) (interface{}, error) {
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+	limit := utils.ParseLimit(c, 50, 100)
+	offset := utils.ParseOffset(c)
+	resp, err := ctrl.service.ListTransfers(&userID, "", limit, offset)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
 // SetPrivacy godoc
 // @Summary      Đổi quyền xem kho VIP (0 public, 1 friends, 2 private)
 // @Tags         vip
