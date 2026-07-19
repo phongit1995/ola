@@ -33,7 +33,7 @@ import {
   type Fighter,
 } from '../../logic/battle';
 import { A, tex } from '../../assets';
-import { addTick, makeText, removeTick, sleep, tween } from '../../kit';
+import { HEADING, addTick, makeText, removeTick, sleep, tween } from '../../kit';
 import { buildHud, hud, showConfirm, showOverlay, updateFighter } from './hud';
 import { CHAT_W, buildChat, layoutChat, resetChat, setChatInputVisible } from './chat';
 
@@ -91,6 +91,13 @@ let selected: number | null = null;
 let turnDeadline = 0;
 let inGame = false;
 let botLevel: BotLevel = 'normal';
+
+let turnAnnounce: Container;
+let turnAnnounceBg: Graphics;
+let turnAnnounceLabel: ReturnType<typeof makeText>;
+let announceStep: ((ticker: Ticker) => void) | null = null;
+let announceBaseX = DESIGN_W / 2;
+let announceBaseY = 0;
 
 function pos(i: number): { x: number; y: number } {
   return { x: (i % GRID) * tileSize, y: Math.floor(i / GRID) * tileSize };
@@ -250,6 +257,66 @@ function setStatus(text: string): void {
 function resetTurnClock(): void {
   turnDeadline = performance.now() + TURN_SECONDS * 1000;
   clearHint();
+}
+
+function drawAnnounceBg(color: number): void {
+  turnAnnounceBg
+    .clear()
+    .roundRect(-155, -34, 310, 68, 34)
+    .fill({ color: 0x0a1120, alpha: 0.9 })
+    .stroke({ width: 2.5, color });
+}
+
+function announceTurn(side: 'me' | 'foe'): void {
+  if (!turnAnnounce) return;
+  if (announceStep) {
+    removeTick(announceStep);
+    announceStep = null;
+  }
+  const color = side === 'me' ? 0xffe07a : 0xff7a6e;
+  turnAnnounceLabel.text = side === 'me' ? 'ĐẾN LƯỢT BẠN' : 'ĐẾN LƯỢT MÁY';
+  turnAnnounceLabel.style.fill = color;
+  drawAnnounceBg(color);
+  turnAnnounce.visible = true;
+
+  const IN = 170;
+  const HOLD = 500;
+  const OUT = 240;
+  const END = IN + HOLD + OUT;
+  let t = 0;
+  announceStep = (ticker: Ticker): void => {
+    t += ticker.deltaMS;
+    if (t >= END) {
+      turnAnnounce.visible = false;
+      if (announceStep) removeTick(announceStep);
+      announceStep = null;
+      return;
+    }
+    let alpha: number;
+    let scale: number;
+    let dy: number;
+    if (t < IN) {
+      const k = t / IN;
+      const e = 1 - (1 - k) * (1 - k);
+      alpha = e;
+      scale = 0.6 + 0.4 * e;
+      dy = (1 - e) * -28;
+    } else if (t < IN + HOLD) {
+      alpha = 1;
+      scale = 1;
+      dy = 0;
+    } else {
+      const k = (t - IN - HOLD) / OUT;
+      alpha = 1 - k;
+      scale = 1 + 0.16 * k;
+      dy = k * 28;
+    }
+    turnAnnounce.alpha = alpha;
+    turnAnnounce.scale.set(scale);
+    turnAnnounce.x = announceBaseX;
+    turnAnnounce.y = announceBaseY + dy;
+  };
+  addTick(announceStep);
 }
 
 function renderTurnClock(): void {
@@ -528,6 +595,7 @@ async function startBotTurn(): Promise<void> {
   setSelected(null);
   resetTurnClock();
   updateHud();
+  announceTurn('foe');
   setStatus('Máy đang nghĩ...');
 
   for (;;) {
@@ -562,6 +630,7 @@ async function startBotTurn(): Promise<void> {
   endBusy();
   turnNumber++;
   resetTurnClock();
+  announceTurn('me');
   setStatus('Lượt của bạn — ghép 3 ô để tấn công!');
   updateHud();
 }
@@ -590,6 +659,7 @@ export function startBattle(level: BotLevel = botLevel): void {
   void dropInBoard().then(() => {
     endBusy();
     resetTurnClock();
+    announceTurn('me');
     setStatus('Lượt của bạn — ghép 3 ô để tấn công!');
     updateHud();
   });
@@ -625,6 +695,7 @@ export function battleDebug(): Record<string, unknown> {
     turn: turnNumber,
     status: statusText.text,
     hint: hintPair,
+    announce: turnAnnounce?.visible ? turnAnnounceLabel.text : null,
   };
 }
 
@@ -704,6 +775,14 @@ export function buildBattleScreen(root: Container, battleDeps: BattleDeps): void
     },
   });
   root.addChild(chatBox);
+
+  turnAnnounce = new Container();
+  turnAnnounceBg = new Graphics();
+  turnAnnounceLabel = makeText('', 25, 0xffe07a, '800', HEADING);
+  turnAnnounce.addChild(turnAnnounceBg, turnAnnounceLabel);
+  turnAnnounce.visible = false;
+  root.addChild(turnAnnounce);
+
   root.addChild(hud.overlay, hud.confirm);
   hud.overlay.visible = false;
 
@@ -761,6 +840,12 @@ export function layoutBattleScreen(opts: BattleLayoutOpts): void {
   const blockTop = topStart + Math.max(0, Math.round(slack / 2));
   boardBox.x = Math.round((DESIGN_W - boardW) / 2);
   boardBox.y = blockTop + HINT_SPACE + overhang;
+  announceBaseX = DESIGN_W / 2;
+  announceBaseY = boardBox.y + boardW / 2;
+  if (turnAnnounce && !announceStep) {
+    turnAnnounce.x = announceBaseX;
+    turnAnnounce.y = announceBaseY;
+  }
   const chatY = boardBox.y + boardW + overhang + GAP_BOARD_CHAT;
   layoutChat(Math.round((DESIGN_W - CHAT_W) / 2), chatY, chatH, opts.rootX, opts.scale);
 
