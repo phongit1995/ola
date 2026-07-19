@@ -169,6 +169,9 @@ export function VerifyEmailDialog({ visible, initialEmail, onClose, onVerified }
             className="rounded bg-white px-3 py-2 text-sm"
             style={{ borderWidth: 1, borderColor: 'rgba(0,0,0,0.15)', color: 'rgba(0,0,0,0.87)' }}
           />
+          <Text className="text-xs" style={{ color: 'rgba(0,0,0,0.4)' }}>
+            {t('verifyEmail.domainHint')}
+          </Text>
         </View>
       ) : (
         <View className="gap-3">
