@@ -62,6 +62,7 @@ import confirmHeader from './assets/confirm/header.png';
 import confirmBtnCancel from './assets/confirm/btn-cancel.png';
 import confirmBtnOk from './assets/confirm/btn-ok.png';
 import serifFontUrl from './assets/fonts/DejaVuSerif-Bold.ttf';
+import robotoCondensedUrl from './assets/fonts/RobotoCondensed-VF.ttf';
 
 export const A = {
   bg,
@@ -149,10 +150,14 @@ function collectUrls(node: unknown): string[] {
 export const tex: Record<string, Texture> = {};
 
 export async function loadAssets(): Promise<void> {
-  const font = new FontFace('DejaVuSerif', `url(${serifFontUrl})`);
+  const serifFont = new FontFace('DejaVuSerif', `url(${serifFontUrl})`);
+  const robotoFont = new FontFace('RobotoCondensed', `url(${robotoCondensedUrl})`, {
+    weight: '100 900',
+  });
   const [loaded] = await Promise.all([
     Assets.load(collectUrls(A)) as Promise<Record<string, Texture>>,
-    font.load().then((f) => document.fonts.add(f)),
+    serifFont.load().then((f) => document.fonts.add(f)),
+    robotoFont.load().then((f) => document.fonts.add(f)),
   ]);
   Object.assign(tex, loaded);
   for (const t of Object.values(tex)) {

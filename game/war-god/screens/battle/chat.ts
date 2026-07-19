@@ -181,7 +181,7 @@ export function buildChat(chatDeps: ChatDeps): Container {
     border: 'none',
     outline: 'none',
     color: '#fff',
-    fontFamily: "'Nunito', system-ui, sans-serif",
+    fontFamily: "'RobotoCondensed', system-ui, sans-serif",
     fontWeight: '700',
     padding: '0 8px',
   });
