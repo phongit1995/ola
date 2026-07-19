@@ -22,14 +22,17 @@ export function KenBalanceBadge() {
 
   useEffect(() => {
     if (!visible) return;
-    Animated.timing(opacity, { toValue: 1, duration: FADE_MS, useNativeDriver: true }).start();
-    const id = setTimeout(() => {
-      Animated.timing(opacity, { toValue: 0, duration: FADE_MS, useNativeDriver: true }).start(
-        () => setVisible(false)
-      );
-    }, SHOW_MS);
+    const id = setTimeout(() => setVisible(false), SHOW_MS);
     return () => clearTimeout(id);
-  }, [visible, ken, opacity]);
+  }, [visible, ken]);
+
+  useEffect(() => {
+    Animated.timing(opacity, {
+      toValue: visible ? 1 : 0,
+      duration: FADE_MS,
+      useNativeDriver: true,
+    }).start();
+  }, [visible, opacity]);
 
   if (typeof ken !== 'number') return null;
 
