@@ -13,7 +13,7 @@ import { FlashList } from '@shopify/flash-list';
 import { useStickyBottomList } from '@hooks/useStickyBottomList';
 import type { ReactionType, RoomMessage } from '@ola/shared/types';
 import type { NativeUploadFile } from '@ola/shared/lib';
-import { createTimeFormatter } from '@ola/shared/lib';
+import { createDateFormatter } from '@ola/shared/lib';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { useRoomFilterStore } from '@ola/shared/stores/roomFilterStore';
 import { RichTextView } from '@components/ui/RichTextView';
@@ -102,7 +102,7 @@ export function RoomMessagesTab({
   const composerRef = useRef<RoomComposerHandle>(null);
 
   const canSend = status === 'joined';
-  const timeFormatter = useMemo(() => createTimeFormatter(language), [language]);
+  const dateFormatter = useMemo(() => createDateFormatter(language), [language]);
   const feed = useMemo(() => {
     const blocked = new Set(blockedUserIds);
     const visible =
@@ -241,9 +241,12 @@ export function RoomMessagesTab({
         }
         renderItem={({ item }) =>
           item.kind === 'date' ? (
-            <View className="items-center py-2">
-              <Text className="text-xs" style={{ color: 'rgba(0,0,0,0.4)' }}>
-                {timeFormatter(item.createdAt)}
+            <View className="items-center py-1">
+              <Text
+                className="rounded-full px-3 py-0.5 text-xs text-white"
+                style={{ backgroundColor: 'rgba(0,0,0,0.35)' }}
+              >
+                {dateFormatter(item.createdAt)}
               </Text>
             </View>
           ) : (
