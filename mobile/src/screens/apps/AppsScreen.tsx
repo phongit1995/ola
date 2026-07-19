@@ -4,7 +4,9 @@ import { Image, Pressable, ScrollView, Text, View, type ImageSourcePropType } fr
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { formatKen } from '@ola/shared/lib';
 import { useAppNotificationStore } from '@ola/shared/stores/appNotificationStore';
+import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
@@ -12,6 +14,7 @@ import { useArcadeStore } from '@store/arcadeStore';
 import { APP_ITEMS, type AppItem } from './constants';
 
 const iconGameDefault = require('@assets/icons/apps/game.png');
+const kenIcon = require('@assets/icons/apps/ken.png');
 
 interface PanelRowProps {
   icon: ImageSourcePropType;
@@ -60,6 +63,7 @@ export function AppsScreen() {
   const miniGames = useArcadeStore((s) => s.games);
   const fetchGames = useArcadeStore((s) => s.fetchGames);
   const notifUnread = useAppNotificationStore((s) => s.unreadCount);
+  const user = useAuthStore((s) => s.user);
 
   useEffect(() => {
     void fetchGames();
@@ -121,8 +125,21 @@ export function AppsScreen() {
   return (
     <View className="flex-1" style={{ backgroundColor: '#d5d5d5' }}>
       <View className="bg-ola-primary" style={{ paddingTop: insets.top }}>
-        <View className="h-12 items-center justify-center px-2">
+        <View className="h-12 flex-row items-center gap-2 px-3">
+          <Text numberOfLines={1} className="min-w-0 flex-1 text-sm font-medium text-white">
+            {user?.username != null ? `@${user.username}` : ''}
+          </Text>
           <Text className="text-lg font-medium text-white">{t('home.tabApps')}</Text>
+          <View className="min-w-0 flex-1 flex-row justify-end">
+            <Pressable
+              onPress={() => navigation.navigate(ROOT_ROUTES.KenStore)}
+              className="flex-row items-center gap-1 rounded-full px-3 py-1 active:opacity-80"
+              style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}
+            >
+              <Image source={kenIcon} className="h-4 w-4" resizeMode="contain" />
+              <Text className="text-sm font-bold text-white">{formatKen(user?.ken ?? 0)}</Text>
+            </Pressable>
+          </View>
         </View>
       </View>
       <ScrollView className="flex-1">

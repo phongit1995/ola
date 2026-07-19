@@ -1,11 +1,14 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { HomeHeader } from '@components/HomeHeader';
+import { formatKen } from '@lib';
 import { useAppNotificationStore } from '@ola/shared/stores/appNotificationStore';
 import { useGameOverlayStore } from '@/store/gameOverlayStore';
 import { useAppOverlayStore } from '@/store/appOverlayStore';
 import { useArcadeStore } from '@/store/arcadeStore';
+import { useAuthStore } from '@/store/authStore';
 import iconGameDefault from '@/assets/icons/apps/game.png';
+import kenIcon from '@/assets/icons/apps/ken.png';
 import { APP_ITEMS, type AppItem } from './constants';
 
 interface PanelRowProps {
@@ -47,6 +50,7 @@ export function AppsPanel() {
   const fetchGames = useArcadeStore((s) => s.fetchGames);
   const openArcade = useArcadeStore((s) => s.open);
   const notifUnread = useAppNotificationStore((s) => s.unreadCount);
+  const user = useAuthStore((s) => s.user);
 
   useEffect(() => {
     void fetchGames();
@@ -74,9 +78,22 @@ export function AppsPanel() {
   return (
     <>
       <HomeHeader>
-        <span className="flex-1 text-center text-lg font-medium">
-          {t('home.tabApps')}
-        </span>
+        <div className="flex w-full items-center gap-2 px-1">
+          <span className="min-w-0 flex-1 truncate text-sm font-medium">
+            {user?.username ? `@${user.username}` : ''}
+          </span>
+          <span className="shrink-0 text-lg font-medium">{t('home.tabApps')}</span>
+          <div className="flex min-w-0 flex-1 justify-end">
+            <button
+              type="button"
+              onClick={() => openApp('ken')}
+              className="flex shrink-0 items-center gap-1 rounded-full bg-white/15 px-3 py-1 hover:bg-white/25"
+            >
+              <img src={kenIcon} alt="" className="h-4 w-4 object-contain" />
+              <span className="text-sm font-bold">{formatKen(user?.ken ?? 0)}</span>
+            </button>
+          </div>
+        </div>
       </HomeHeader>
       <main className="relative flex-1 overflow-y-auto">
         <ul className="min-h-full bg-[#d5d5d5]">
