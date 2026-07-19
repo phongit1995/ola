@@ -802,6 +802,7 @@
     "title": "Verify email",
     "emailLabel": "Email address",
     "emailPlaceholder": "Enter your email",
+    "domainHint": "Only @gmail, @yahoo and @icloud emails are supported.",
     "sendCode": "Send code",
     "codeLabel": "Enter the 6-digit code sent to your email",
     "codeSentTo": "Code sent to {{email}}",
