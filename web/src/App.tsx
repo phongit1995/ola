@@ -45,13 +45,13 @@ function GlobalKenTreasure() {
 
 function GlobalMediaViewer() {
   const open = useMediaViewerStore((s) => s.open);
-  const photos = useMediaViewerStore((s) => s.photos);
+  const images = useMediaViewerStore((s) => s.images);
   const index = useMediaViewerStore((s) => s.index);
-  const closeViewer = useMediaViewerStore((s) => s.closeViewer);
-  if (!open || photos.length === 0) return null;
+  const close = useMediaViewerStore((s) => s.close);
+  if (!open || images.length === 0) return null;
   return (
     <Suspense fallback={null}>
-      <MediaViewer key={`${index}-${photos[0]}`} photos={photos} index={index} onClose={closeViewer} />
+      <MediaViewer key={`${index}-${images[0]}`} photos={images} index={index} onClose={close} />
     </Suspense>
   );
 }
