@@ -2,7 +2,7 @@ import { lazy, Suspense } from 'react';
 import { ReconnectingBanner, ToastViewport } from '@components';
 import { useSoundUnlock, useAuthSessionSync, useReconnectOnVisible, useSettingsSync } from '@hooks';
 import { AppRouter } from '@/routes';
-import { useArcadeStore } from '@/store/arcadeStore';
+import { useArcadeOverlayStore } from '@/store/arcadeOverlayStore';
 import { useMediaViewerStore } from '@/store/mediaViewerStore';
 import { useKenTreasureStore } from '@/pages/games/ken-treasure/kenTreasureStore';
 import { useKenRealtime } from '@/pages/games/ken-treasure/useKenRealtime';
@@ -24,7 +24,7 @@ const ArcadeOverlay = lazy(() =>
 );
 
 function GlobalArcade() {
-  const hasActive = useArcadeStore((s) => s.active != null);
+  const hasActive = useArcadeOverlayStore((s) => s.active != null);
   if (!hasActive) return null;
   return (
     <Suspense fallback={null}>

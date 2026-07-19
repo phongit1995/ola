@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { ensureFreshToken } from '@ola/shared/api';
-import { useArcadeStore } from '@/store/arcadeStore';
+import { useArcadeOverlayStore } from '@/store/arcadeOverlayStore';
 
 interface GameBridgeMessage {
   source?: string;
@@ -8,8 +8,8 @@ interface GameBridgeMessage {
 }
 
 export function ArcadeOverlay() {
-  const active = useArcadeStore((s) => s.active);
-  const close = useArcadeStore((s) => s.close);
+  const active = useArcadeOverlayStore((s) => s.active);
+  const close = useArcadeOverlayStore((s) => s.close);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {

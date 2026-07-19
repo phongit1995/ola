@@ -6,6 +6,7 @@ import { useAppNotificationStore } from '@ola/shared/stores/appNotificationStore
 import { useGameOverlayStore } from '@/store/gameOverlayStore';
 import { useAppOverlayStore } from '@/store/appOverlayStore';
 import { useArcadeStore } from '@/store/arcadeStore';
+import { useArcadeOverlayStore } from '@/store/arcadeOverlayStore';
 import { useAuthStore } from '@/store/authStore';
 import iconGameDefault from '@/assets/icons/apps/game.png';
 import kenIcon from '@/assets/icons/apps/ken.png';
@@ -48,7 +49,7 @@ export function AppsPanel() {
   const openApp = useAppOverlayStore((s) => s.push);
   const miniGames = useArcadeStore((s) => s.games);
   const fetchGames = useArcadeStore((s) => s.fetchGames);
-  const openArcade = useArcadeStore((s) => s.open);
+  const openArcade = useArcadeOverlayStore((s) => s.open);
   const notifUnread = useAppNotificationStore((s) => s.unreadCount);
   const user = useAuthStore((s) => s.user);
 
