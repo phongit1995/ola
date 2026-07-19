@@ -1,13 +1,15 @@
-import { Container, Graphics, Sprite, Text, Texture } from 'pixi.js';
+import { Container, Graphics, Sprite, Text, Texture, type Ticker } from 'pixi.js';
 import { MAX_HP, MAX_MP, type Fighter } from '../../logic/battle';
 import { A, tex } from '../../assets';
-import { HEADING, makeText } from '../../kit';
+import { HEADING, addTick, makeText, removeTick } from '../../kit';
 
 export interface BarUI {
   fill: Graphics;
   label: Text;
   width: number;
   color: number;
+  shown?: number;
+  anim?: ((ticker: Ticker) => void) | null;
 }
 
 export interface FighterUI {
@@ -90,14 +92,42 @@ function makeBar(
   return { view: c, bar: { fill, label, width, color } };
 }
 
-function updateBar(bar: BarUI, cur: number, max: number): void {
-  const frac = Math.max(0, Math.min(1, cur / max));
+function drawBar(bar: BarUI, val: number, max: number): void {
+  const frac = Math.max(0, Math.min(1, val / max));
   const w = bar.width * frac;
   bar.fill.clear();
   if (w > 1) {
     bar.fill.roundRect(0, 0, w, 14, Math.min(7, w / 2)).fill(bar.color);
   }
-  bar.label.text = `${cur}/${max}`;
+  bar.label.text = `${Math.round(val)}/${max}`;
+}
+
+function updateBar(bar: BarUI, cur: number, max: number): void {
+  if (bar.anim) {
+    removeTick(bar.anim);
+    bar.anim = null;
+  }
+  const from = bar.shown ?? cur;
+  if (from === cur) {
+    bar.shown = cur;
+    drawBar(bar, cur, max);
+    return;
+  }
+  const DUR = 380;
+  let t = 0;
+  bar.anim = (ticker: Ticker): void => {
+    t += ticker.deltaMS;
+    const k = Math.min(1, t / DUR);
+    const e = 1 - (1 - k) * (1 - k);
+    bar.shown = from + (cur - from) * e;
+    drawBar(bar, bar.shown, max);
+    if (k >= 1 && bar.anim) {
+      bar.shown = cur;
+      removeTick(bar.anim);
+      bar.anim = null;
+    }
+  };
+  addTick(bar.anim);
 }
 
 function makeFighterCard(side: 'me' | 'foe', onUlt?: () => void): FighterUI {

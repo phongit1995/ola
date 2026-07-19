@@ -93,8 +93,8 @@ let inGame = false;
 let botLevel: BotLevel = 'normal';
 
 let turnAnnounce: Container;
-let turnAnnounceBg: Graphics;
 let turnAnnounceLabel: ReturnType<typeof makeText>;
+let flyLayer: Container;
 let announceStep: ((ticker: Ticker) => void) | null = null;
 let announceBaseX = DESIGN_W / 2;
 let announceBaseY = 0;
@@ -257,30 +257,20 @@ function resetTurnClock(): void {
   clearHint();
 }
 
-function drawAnnounceBg(color: number): void {
-  turnAnnounceBg
-    .clear()
-    .roundRect(-155, -34, 310, 68, 34)
-    .fill({ color: 0x0a1120, alpha: 0.9 })
-    .stroke({ width: 2.5, color });
-}
-
-function announceTurn(side: 'me' | 'foe'): void {
+function announce(text: string, color: number): void {
   if (!turnAnnounce) return;
   if (announceStep) {
     removeTick(announceStep);
     announceStep = null;
   }
-  const color = side === 'me' ? 0xffe07a : 0xff7a6e;
-  turnAnnounceLabel.text = side === 'me' ? 'ĐẾN LƯỢT BẠN' : 'ĐẾN LƯỢT MÁY';
+  turnAnnounceLabel.text = text;
   turnAnnounceLabel.style.fill = color;
-  drawAnnounceBg(color);
   turnAnnounce.visible = true;
 
-  const IN = 170;
-  const HOLD = 500;
-  const OUT = 240;
-  const END = IN + HOLD + OUT;
+  const IN = 160;
+  const HOLD = 420;
+  const RISE = 430;
+  const END = IN + HOLD + RISE;
   let t = 0;
   announceStep = (ticker: Ticker): void => {
     t += ticker.deltaMS;
@@ -297,17 +287,18 @@ function announceTurn(side: 'me' | 'foe'): void {
       const k = t / IN;
       const e = 1 - (1 - k) * (1 - k);
       alpha = e;
-      scale = 0.6 + 0.4 * e;
-      dy = (1 - e) * -28;
+      scale = 0.7 + 0.3 * e;
+      dy = 0;
     } else if (t < IN + HOLD) {
       alpha = 1;
       scale = 1;
       dy = 0;
     } else {
-      const k = (t - IN - HOLD) / OUT;
-      alpha = 1 - k;
-      scale = 1 + 0.16 * k;
-      dy = k * 28;
+      const k = (t - IN - HOLD) / RISE;
+      const e = k * k;
+      alpha = 1 - e;
+      scale = 1;
+      dy = -k * 120;
     }
     turnAnnounce.alpha = alpha;
     turnAnnounce.scale.set(scale);
@@ -315,6 +306,105 @@ function announceTurn(side: 'me' | 'foe'): void {
     turnAnnounce.y = announceBaseY + dy;
   };
   addTick(announceStep);
+}
+
+function announceTurn(side: 'me' | 'foe'): void {
+  if (side === 'me') announce('ĐẾN LƯỢT BẠN', 0xffd75e);
+  else announce('ĐẾN LƯỢT MÁY', 0xff6b5e);
+}
+
+function cellRootPos(i: number): { x: number; y: number } {
+  const p = pos(i);
+  return { x: boardBox.x + p.x + tileSize / 2, y: boardBox.y + p.y + tileSize / 2 };
+}
+
+function flyMatched(cells: Set<number>, side: 'me' | 'foe'): Promise<void> {
+  const defCard = side === 'me' ? hud.foe.card : hud.me.card;
+  const swords: number[] = [];
+  cells.forEach((i) => {
+    if (board[i] === 'sword') swords.push(i);
+  });
+  if (swords.length === 0) return Promise.resolve();
+  const jobs = swords.map((i, idx) =>
+    sleep(idx * 110).then(() => flySword(cellRootPos(i), defCard)),
+  );
+  return Promise.all(jobs).then(() => undefined);
+}
+
+function spawnTrailDot(x: number, y: number): void {
+  const g = new Graphics();
+  const r = tileSize * 0.19;
+  g.circle(0, 0, r).fill({ color: 0xff8a2a, alpha: 0.4 });
+  g.circle(0, 0, r * 0.55).fill({ color: 0xffd75e, alpha: 0.8 });
+  g.position.set(x, y);
+  flyLayer.addChildAt(g, 0);
+  void tween(g, { alpha: 0, scale: 0.2 }, 380).then(() => g.destroy());
+}
+
+function flySword(from: { x: number; y: number }, card: Container): Promise<void> {
+  return new Promise((resolve) => {
+    const icon = new Sprite(tex[A.items.sword]);
+    icon.anchor.set(0.5);
+    const scale0 = (tileSize * 0.68) / Math.max(icon.texture.width, icon.texture.height);
+    icon.scale.set(scale0);
+    icon.position.set(from.x, from.y);
+    flyLayer.addChild(icon);
+
+    const to = {
+      x: card.x + 28 + Math.random() * 134,
+      y: card.y + 30 + Math.random() * 84,
+    };
+    const mx = (from.x + to.x) / 2;
+    const my = (from.y + to.y) / 2;
+    const dx = to.x - from.x;
+    const dy = to.y - from.y;
+    const len = Math.hypot(dx, dy) || 1;
+    const amp = len * (0.09 + Math.random() * 0.08) * (Math.random() < 0.5 ? -1 : 1);
+    const cx = mx - (dy / len) * amp;
+    const cy = my + (dx / len) * amp;
+    const SWORD_BASE_ANGLE = (-3 * Math.PI) / 4;
+    icon.rotation = Math.atan2(cy - from.y, cx - from.x) - SWORD_BASE_ANGLE;
+    const DUR = 460;
+    let t = 0;
+    let trailAcc = 0;
+    const step = (ticker: Ticker): void => {
+      t += ticker.deltaMS;
+      const k = Math.min(1, t / DUR);
+      const e = k * k * (3 - 2 * k);
+      const u = 1 - e;
+      icon.x = u * u * from.x + 2 * u * e * cx + e * e * to.x;
+      icon.y = u * u * from.y + 2 * u * e * cy + e * e * to.y;
+      const tanX = u * (cx - from.x) + e * (to.x - cx);
+      const tanY = u * (cy - from.y) + e * (to.y - cy);
+      icon.rotation = Math.atan2(tanY, tanX) - SWORD_BASE_ANGLE;
+      trailAcc += ticker.deltaMS;
+      if (trailAcc >= 24 && k < 0.96) {
+        trailAcc = 0;
+        spawnTrailDot(icon.x, icon.y);
+      }
+      if (k >= 1) {
+        removeTick(step);
+        void tween(icon, { alpha: 0, scale: scale0 * 0.5 }, 130).then(() => {
+          icon.destroy();
+          resolve();
+        });
+      }
+    };
+    addTick(step);
+  });
+}
+
+function floatNumber(card: Container, text: string, color: number, line: number): void {
+  const t = makeText(text, 15, color, '800');
+  t.style.stroke = { color: 0x120d02, width: 4, join: 'round' };
+  t.x = card.x + 95;
+  t.y = card.y + 108 + line * 18;
+  flyLayer.addChild(t);
+  void (async () => {
+    await tween(t, { y: t.y - 34 }, 450);
+    await tween(t, { y: t.y - 56, alpha: 0 }, 420);
+    t.destroy();
+  })();
 }
 
 function renderTurnClock(): void {
@@ -425,18 +515,46 @@ async function animateSwap(a: number, b: number): Promise<void> {
   retargetTaps();
 }
 
+function centerPivot(sprite: Container): void {
+  sprite.pivot.set(tileSize / 2, tileSize / 2);
+  sprite.position.set(sprite.x + tileSize / 2, sprite.y + tileSize / 2);
+}
+
+async function animateSwordEat(sprite: Container, order: number, count: number): Promise<void> {
+  centerPivot(sprite);
+  const flash = new Graphics()
+    .roundRect(0, 0, tileSize, tileSize, tileSize * 0.2)
+    .fill({ color: 0xffffff, alpha: 0.85 });
+  sprite.addChild(flash);
+
+  const boardW = tileSize * GRID;
+  const spread = (order - (count - 1) / 2) * tileSize * 0.3;
+  const dest = { x: boardW / 2 + spread, y: -tileSize * 1.5 };
+
+  await tween(sprite, { scale: 1.4 }, 120);
+  void tween(flash, { alpha: 0 }, 140);
+  await tween(sprite, { x: dest.x, y: dest.y, alpha: 0, scale: 0.5 }, 280);
+}
+
 async function animateRemove(cells: Set<number>): Promise<void> {
   const jobs: Promise<void>[] = [];
+  const swords: number[] = [];
+  cells.forEach((i) => {
+    if (board[i] === 'sword') swords.push(i);
+  });
   cells.forEach((i) => {
     const sprite = sprites[i];
     if (!sprite) return;
-    sprite.pivot.set(tileSize / 2, tileSize / 2);
-    sprite.position.set(sprite.x + tileSize / 2, sprite.y + tileSize / 2);
+    if (board[i] === 'sword') {
+      jobs.push(animateSwordEat(sprite, swords.indexOf(i), swords.length));
+      return;
+    }
+    centerPivot(sprite);
     jobs.push(tween(sprite, { alpha: 0, scale: 0.2 }, 180));
   });
   await Promise.all(jobs);
   cells.forEach((i) => {
-    sprites[i]?.destroy();
+    sprites[i]?.destroy({ children: true });
     sprites[i] = null;
   });
 }
@@ -493,9 +611,17 @@ async function resolveCascades(side: 'me' | 'foe'): Promise<boolean> {
     if (parts.length > 0) {
       setStatus(`${side === 'me' ? 'Bạn' : 'Máy'}: ${parts.join('  ')}`);
     }
-    updateHud();
 
-    await animateRemove(match.cells);
+    await Promise.all([animateRemove(match.cells), flyMatched(match.cells, side)]);
+    updateHud();
+    const atkCard = side === 'me' ? hud.me.card : hud.foe.card;
+    const defCard = side === 'me' ? hud.foe.card : hud.me.card;
+    let atkLine = 0;
+    if (result.damage > 0) floatNumber(defCard, `-${result.damage} HP`, 0xff6b5e, 0);
+    if (result.heal > 0) floatNumber(atkCard, `+${result.heal} HP`, 0x7dff8a, atkLine++);
+    if (result.mana > 0) floatNumber(atkCard, `+${result.mana} MP`, 0x6ec1ff, atkLine++);
+    if (result.armor > 0) floatNumber(atkCard, `+${result.armor} giáp`, 0x9fd0ff, atkLine++);
+
     const gravity = applyGravity(board, match.cells);
     await animateGravity(gravity.falls, gravity.spawns);
 
@@ -564,6 +690,7 @@ async function onTileTap(i: number): Promise<void> {
   if (checkEnd()) return;
 
   if (extraTurn) {
+    announce('BẠN THÊM LƯỢT!', 0x7dff8a);
     setStatus('Combo 4+ — bạn được thêm lượt!');
     endBusy();
     resetTurnClock();
@@ -625,6 +752,7 @@ async function startBotTurn(): Promise<void> {
     const extraTurn = await resolveCascades('foe');
     if (checkEnd()) return;
     if (!extraTurn) break;
+    announce('MÁY THÊM LƯỢT!', 0xffa94d);
     setStatus('Máy được thêm lượt!');
   }
 
@@ -701,6 +829,9 @@ export function battleDebug(): Record<string, unknown> {
     hint: hintPair,
     announce: turnAnnounce?.visible ? turnAnnounceLabel.text : null,
     botPick: !!botSelectorA?.visible,
+    selected,
+    selectorVisible: !!selector?.visible,
+    flying: flyLayer ? flyLayer.children.filter((c) => c instanceof Sprite).length : 0,
   };
 }
 
@@ -781,10 +912,20 @@ export function buildBattleScreen(root: Container, battleDeps: BattleDeps): void
   });
   root.addChild(chatBox);
 
+  flyLayer = new Container();
+  root.addChild(flyLayer);
+
   turnAnnounce = new Container();
-  turnAnnounceBg = new Graphics();
-  turnAnnounceLabel = makeText('', 25, 0xffe07a, '800', HEADING);
-  turnAnnounce.addChild(turnAnnounceBg, turnAnnounceLabel);
+  turnAnnounceLabel = makeText('', 30, 0xffd75e, '800', HEADING);
+  turnAnnounceLabel.style.stroke = { color: 0x120d02, width: 6, join: 'round' };
+  turnAnnounceLabel.style.dropShadow = {
+    distance: 3,
+    blur: 5,
+    alpha: 0.7,
+    color: 0x000000,
+    angle: Math.PI / 2,
+  };
+  turnAnnounce.addChild(turnAnnounceLabel);
   turnAnnounce.visible = false;
   root.addChild(turnAnnounce);
 
