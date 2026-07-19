@@ -34,6 +34,7 @@ func (s *Scheduler) loop(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case <-time.After(sleep):
+		case <-s.service.wake:
 		}
 		s.service.RunDueAutoJobs(ctx)
 	}

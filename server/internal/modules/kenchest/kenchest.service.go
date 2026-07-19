@@ -30,6 +30,7 @@ type Service struct {
 	wsServer  *websocket.Server
 	producer  *kafka.Producer
 	logger    *zap.SugaredLogger
+	wake      chan struct{}
 }
 
 func NewService(repo *Repository, userCache *user.CacheService, wsServer *websocket.Server, producer *kafka.Producer, logger *zap.SugaredLogger) *Service {
@@ -39,6 +40,14 @@ func NewService(repo *Repository, userCache *user.CacheService, wsServer *websoc
 		wsServer:  wsServer,
 		producer:  producer,
 		logger:    logger.Named("[ken_chest_service]"),
+		wake:      make(chan struct{}, 1),
+	}
+}
+
+func (s *Service) notifyWake() {
+	select {
+	case s.wake <- struct{}{}:
+	default:
 	}
 }
 

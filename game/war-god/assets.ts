@@ -2,6 +2,8 @@ import { Assets, Texture } from 'pixi.js';
 import bg from './assets/bg.png';
 import boardFrame from './assets/board/frame.png';
 import boardCell from './assets/board/cell.png';
+import boardSelMine from './assets/board/sel-mine.png';
+import boardSelFoe from './assets/board/sel-foe.png';
 import itemSword from './assets/items/sword.png';
 import itemFire from './assets/items/fire.png';
 import itemHeart from './assets/items/heart.png';
@@ -66,7 +68,7 @@ import robotoCondensedUrl from './assets/fonts/RobotoCondensed-VF.ttf';
 
 export const A = {
   bg,
-  board: { frame: boardFrame, cell: boardCell },
+  board: { frame: boardFrame, cell: boardCell, selMine: boardSelMine, selFoe: boardSelFoe },
   items: {
     sword: itemSword,
     fire: itemFire,

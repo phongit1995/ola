@@ -67,8 +67,8 @@ let fxLayer: Container;
 let boardFrame: Sprite;
 let cellLayer: Container;
 let boardMask: Graphics;
-let selector: Graphics;
-let botSelectorA: Graphics;
+let selector: Sprite;
+let botSelectorA: Sprite;
 let hintBox: Container;
 let statusText: ReturnType<typeof makeText>;
 let chatBox: Container;
@@ -103,17 +103,15 @@ function pos(i: number): { x: number; y: number } {
   return { x: (i % GRID) * tileSize, y: Math.floor(i / GRID) * tileSize };
 }
 
-function redrawSelector(g: Graphics, color: number): void {
-  g.clear()
-    .roundRect(1, 1, tileSize - 2, tileSize - 2, tileSize * 0.24)
-    .stroke({ width: 3, color });
+function makeSelector(url: string): Sprite {
+  const s = new Sprite(tex[url]);
+  s.visible = false;
+  return s;
 }
 
-function makeSelector(color: number): Graphics {
-  const g = new Graphics();
-  redrawSelector(g, color);
-  g.visible = false;
-  return g;
+function sizeSelector(s: Sprite): void {
+  s.width = tileSize;
+  s.height = tileSize;
 }
 
 function computeTileSize(): number {
@@ -150,8 +148,8 @@ function rebuildBoardVisuals(): void {
     .clear()
     .roundRect(-tileSize * 0.05, -tileSize * 0.05, boardW + tileSize * 0.1, boardW + tileSize * 0.1, 8)
     .fill(0xffffff);
-  redrawSelector(selector, 0xffd75e);
-  redrawSelector(botSelectorA, 0xff5a4d);
+  sizeSelector(selector);
+  sizeSelector(botSelectorA);
   setSelected(null);
   botSelectorA.visible = false;
   placeHint();
@@ -394,8 +392,7 @@ async function showBotPick(a: number): Promise<void> {
   const pa = pos(a);
   botSelectorA.position.set(pa.x, pa.y);
   botSelectorA.visible = true;
-  await sleep(550);
-  botSelectorA.visible = false;
+  await sleep(500);
 }
 
 async function dropInBoard(): Promise<void> {
@@ -619,7 +616,12 @@ async function startBotTurn(): Promise<void> {
     await showBotPick(move[0]);
     if (over) return;
     swapCells(board, move[0], move[1]);
-    await animateSwap(move[0], move[1]);
+    await Promise.all([
+      tween(botSelectorA, pos(move[1]), 180),
+      animateSwap(move[0], move[1]),
+    ]);
+    await sleep(160);
+    botSelectorA.visible = false;
     const extraTurn = await resolveCascades('foe');
     if (checkEnd()) return;
     if (!extraTurn) break;
@@ -647,6 +649,7 @@ export function startBattle(level: BotLevel = botLevel): void {
   over = false;
   turnNumber = 1;
   setSelected(null);
+  botSelectorA.visible = false;
   rebuildSprites();
   hud.overlay.visible = false;
   const userInfo = deps.getUserInfo();
@@ -671,6 +674,7 @@ function exitToLobby(): void {
   busy = false;
   clearHint();
   setSelected(null);
+  botSelectorA.visible = false;
   hud.overlay.visible = false;
   hud.confirm.visible = false;
   setChatInputVisible(false);
@@ -696,6 +700,7 @@ export function battleDebug(): Record<string, unknown> {
     status: statusText.text,
     hint: hintPair,
     announce: turnAnnounce?.visible ? turnAnnounceLabel.text : null,
+    botPick: !!botSelectorA?.visible,
   };
 }
 
@@ -712,18 +717,18 @@ export function buildBattleScreen(root: Container, battleDeps: BattleDeps): void
   cellLayer = new Container();
   boardBox.addChild(cellLayer);
 
+  selector = makeSelector(A.board.selMine);
+  botSelectorA = makeSelector(A.board.selFoe);
+  const selectorLayer = new Container();
+  selectorLayer.addChild(selector, botSelectorA);
+  boardBox.addChild(selectorLayer);
+
   boardLayer = new Container();
   boardBox.addChild(boardLayer);
 
   boardMask = new Graphics();
   boardBox.addChild(boardMask);
   boardLayer.mask = boardMask;
-
-  selector = makeSelector(0xffd75e);
-  botSelectorA = makeSelector(0xff5a4d);
-  const selectorLayer = new Container();
-  selectorLayer.addChild(selector, botSelectorA);
-  boardBox.addChild(selectorLayer);
 
   fxLayer = new Container();
   boardBox.addChild(fxLayer);
