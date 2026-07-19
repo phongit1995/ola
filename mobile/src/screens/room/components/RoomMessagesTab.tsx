@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  AppState,
   NativeSyntheticEvent,
   Pressable,
   Text,
@@ -116,6 +117,14 @@ export function RoomMessagesTab({
     if (replyTarget != null) composerRef.current?.focus();
   }, [replyTarget]);
 
+  const [foregroundEpoch, setForegroundEpoch] = useState(0);
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (next) => {
+      if (next === 'active') setForegroundEpoch((value) => value + 1);
+    });
+    return () => subscription.remove();
+  }, []);
+
   const insertMention = useCallback((name: string) => {
     composerRef.current?.insertMention(name);
   }, []);
@@ -214,6 +223,7 @@ export function RoomMessagesTab({
         }}
       >
       <FlashList
+        key={foregroundEpoch}
         ref={listRef}
         data={feed}
         keyExtractor={(item) => item.key}
