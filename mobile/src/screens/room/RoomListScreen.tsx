@@ -5,8 +5,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RoomService } from '@ola/shared/services';
 import { useRoomChatStore } from '@ola/shared/stores/roomChatStore';
+import { useRoomListStore } from '@ola/shared/stores/roomListStore';
 import type { Room } from '@ola/shared/types';
 import type { RoomStackParamList } from '@navigation/types';
 import { ROOM_ROUTES } from '@navigation/routes';
@@ -126,25 +126,22 @@ export function RoomListScreen() {
   const { t } = useTranslation();
   const navigation = useNavigation<NativeStackNavigationProp<RoomStackParamList>>();
   const insets = useSafeAreaInsets();
-  const [rooms, setRooms] = useState<Room[]>([]);
-  const [loading, setLoading] = useState(false);
+  const rooms = useRoomListStore((s) => s.rooms);
+  const loading = useRoomListStore((s) => s.loading);
+  const fetchRooms = useRoomListStore((s) => s.fetchRooms);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const result = await RoomService.browse({ limit: ROOM_BROWSE_LIMIT });
-      setRooms(result.items);
-    } catch {
-      setRooms([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const load = useCallback(
+    () => fetchRooms({ limit: ROOM_BROWSE_LIMIT }),
+    [fetchRooms]
+  );
 
   useFocusEffect(
     useCallback(() => {
-      void load();
-    }, [load])
+      void fetchRooms(
+        { limit: ROOM_BROWSE_LIMIT },
+        { silent: useRoomListStore.getState().loaded }
+      );
+    }, [fetchRooms])
   );
 
   const joinStatus = useRoomChatStore((s) => s.status);
