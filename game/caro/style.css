@@ -1025,10 +1025,14 @@ button:focus-visible,
 }
 
 .rr-join {
-  gap: 4%;
+  position: relative;
 }
 
 .rr-lock {
+  position: absolute;
+  top: 50%;
+  left: 10%;
+  transform: translateY(-50%);
   height: min(clamp(11px, 5cqw, 20px), 4.5cqh);
   width: auto;
 }
@@ -1208,10 +1212,10 @@ button:focus-visible,
 
 .create-title {
   position: absolute;
-  top: 3.2%;
-  left: 4%;
-  width: 88%;
-  aspect-ratio: 2136 / 662;
+  top: 0;
+  left: 0;
+  width: 100%;
+  aspect-ratio: 2136 / 540;
   background-size: 100% 100%;
   display: flex;
   align-items: center;
@@ -1224,7 +1228,7 @@ button:focus-visible,
   font-size: clamp(18px, 9cqw, 34px);
   text-transform: uppercase;
   letter-spacing: 1px;
-  transform: translateY(-14%);
+  transform: translateY(-2%);
 }
 
 #create-close {
@@ -1253,7 +1257,7 @@ button:focus-visible,
 
 .create-body {
   position: absolute;
-  inset: 24% 10% 6%;
+  inset: 24% 10% 20%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1307,7 +1311,10 @@ button:focus-visible,
 }
 
 #create-ok {
-  width: 38%;
+  position: absolute;
+  bottom: 4%;
+  left: 33.5%;
+  width: 33%;
   aspect-ratio: 1447 / 793;
   border: none;
   background-color: transparent;
@@ -1316,7 +1323,6 @@ button:focus-visible,
   align-items: center;
   justify-content: center;
   padding: 0;
-  margin-top: 2cqw;
   flex-shrink: 0;
 }
 

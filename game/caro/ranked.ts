@@ -66,7 +66,7 @@ function renderRows(): void {
 
     const owner = document.createElement('span');
     owner.className = 'rr-owner';
-    owner.textContent = room.owner;
+    owner.textContent = `@${room.owner}`;
 
     const bet = document.createElement('span');
     bet.className = 'rr-bet';
@@ -116,7 +116,7 @@ function closePassModal(): void {
 }
 
 function openCreateModal(): void {
-  el.createBet.value = '';
+  el.createBet.value = '0';
   el.createPassword.value = '';
   el.createModal.classList.remove('hidden');
   el.createBet.focus();
@@ -181,12 +181,17 @@ export function buildRanked(d: RankedDeps): void {
   el.refresh.addEventListener('click', () => deps.onRefresh());
   el.exit.addEventListener('click', () => deps.onExit());
 
+  el.createBet.addEventListener('input', () => {
+    const digits = el.createBet.value.replace(/\D/g, '');
+    el.createBet.value = digits ? formatKen(Number(digits)) : '0';
+  });
+
   el.createClose.addEventListener('click', () => el.createModal.classList.add('hidden'));
   el.createModal.addEventListener('click', (event) => {
     if (event.target === el.createModal) el.createModal.classList.add('hidden');
   });
   el.createOk.addEventListener('click', () => {
-    const bet = Math.max(0, Math.floor(Number(el.createBet.value) || 0));
+    const bet = Number(el.createBet.value.replace(/\D/g, '')) || 0;
     el.createModal.classList.add('hidden');
     deps.onCreate(bet, el.createPassword.value.trim());
   });
