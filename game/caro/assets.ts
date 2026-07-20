@@ -56,6 +56,15 @@ import createInputFrame from './assets/create/input-frame.png';
 import createBtnOk from './assets/create/btn-ok.png';
 import createBtnClose from './assets/create/btn-close.png';
 import createIcX from './assets/create/ic-x.png';
+import resultBg from './assets/result/bg.png';
+import resultTitleFrame from './assets/result/title-frame.png';
+import resultCupWin from './assets/result/cup-win.png';
+import resultCupLose from './assets/result/cup-lose.png';
+import resultBrushWin from './assets/result/brush-win.png';
+import resultBrushLose from './assets/result/brush-lose.png';
+import resultKenFrame from './assets/result/ken-frame.png';
+import resultIcKen from './assets/result/ic-ken.png';
+import resultBtnClose from './assets/result/btn-close.png';
 import boardBg from './assets/board/bg.png';
 import boardFrame from './assets/board/board-frame.png';
 import boardX from './assets/board/x.png';
@@ -97,7 +106,19 @@ export const RANKED_ASSETS = {
   createIcX,
 } as const;
 
-const ALL_ASSETS = { ...LOBBY_ASSETS, ...BOARD_ASSETS, ...RANKED_ASSETS } as const;
+export const RESULT_ASSETS = {
+  resultBg,
+  resultTitleFrame,
+  resultCupWin,
+  resultCupLose,
+  resultBrushWin,
+  resultBrushLose,
+  resultKenFrame,
+  resultIcKen,
+  resultBtnClose,
+} as const;
+
+const ALL_ASSETS = { ...LOBBY_ASSETS, ...BOARD_ASSETS, ...RANKED_ASSETS, ...RESULT_ASSETS } as const;
 
 export type AssetKey = keyof typeof ALL_ASSETS;
 

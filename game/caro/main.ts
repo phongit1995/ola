@@ -7,6 +7,7 @@ import {
   rankedShowWaiting,
   rankedToast,
 } from './ranked';
+import { buildResult, showResult, hideResult } from './result';
 import { createBotSession, type BotLevel } from './bot';
 import {
   buildLobby,
@@ -62,6 +63,7 @@ let onlineSession: GameSession<CaroState, CaroMove> | null = null;
 let botSession: GameSession<CaroState, CaroMove> | null = null;
 let botSessionLevel: BotLevel | null = null;
 let match: MatchFoundData<CaroState> | null = null;
+let matchBet = 0;
 let userInfo: UserInfoData | null = null;
 let connecting = false;
 let myTurn = false;
@@ -89,6 +91,7 @@ function hideOverlay(): void {
 
 function backToLobby(): void {
   hideOverlay();
+  hideResult();
   lobbyEnterAnimated();
   if (!userInfo && !connecting) void connectToServer();
 }
@@ -193,15 +196,12 @@ function wireSession(target: GameSession<CaroState, CaroMove>): void {
     renderBoard(data.state);
     const won = match != null && data.winnerId === match.players[match.you].id;
     const draw = data.winnerId == null || data.winnerId === '';
-    const reasonText =
-      data.reason === 'timeout' ? 'Hết giờ' : data.reason === 'forfeit' ? 'Bỏ cuộc' : '';
-    showOverlay(
-      draw ? 'Hòa!' : won ? 'Bạn thắng!' : 'Bạn thua',
-      reasonText,
-      draw ? 'draw' : won ? 'win' : 'lose',
-      ['again', 'lobby'],
-    );
-    el.status.textContent = 'Chơi ván mới?';
+    if (draw) {
+      showOverlay('Hòa!', '', 'draw', ['again', 'lobby']);
+      el.status.textContent = 'Chơi ván mới?';
+    } else {
+      showResult(won, matchBet > 0 ? (won ? matchBet : -matchBet) : null);
+    }
     bridge.gameOver({ matchId: data.matchId, winnerId: data.winnerId, reason: data.reason, won });
     match = null;
   });
@@ -344,6 +344,8 @@ buildRanked({
     lobbyEnterAnimated();
   },
 });
+
+buildResult({ onClose: backToLobby });
 
 bridge.ready();
 
