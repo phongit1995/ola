@@ -24,7 +24,8 @@ export function ClearableInput({
   return (
     <View className="flex-row items-center">
       <TextInput
-        className="h-14 flex-1 px-4 text-base text-ola-ink"
+        className="h-14 flex-1 px-4 text-base"
+        style={{ color: 'rgba(0,0,0,0.87)' }}
         placeholder={placeholder}
         placeholderTextColor="rgba(0,0,0,0.38)"
         secureTextEntry={secureTextEntry}
@@ -40,7 +41,7 @@ export function ClearableInput({
           onPress={onClear}
           className="mr-1.5 h-9 w-9 items-center justify-center"
         >
-          <Text className="text-xl text-ola-ink-soft">×</Text>
+          <Text className="text-xl" style={{ color: 'rgba(0,0,0,0.54)' }}>×</Text>
         </Pressable>
       )}
     </View>
