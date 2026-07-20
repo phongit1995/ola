@@ -12,6 +12,11 @@ import lobbyBottomFrame from './assets/lobby/bottom-frame.png';
 import lobbyIcHistory from './assets/lobby/ic-history.png';
 import lobbyIcLeaderboard from './assets/lobby/ic-leaderboard.png';
 import lobbyIcExit from './assets/lobby/ic-exit.png';
+import lobbyPickBg from './assets/lobby/pick-bg.png';
+import lobbyPickTitle from './assets/lobby/pick-title.png';
+import lobbyPickLevel from './assets/lobby/pick-level.png';
+import lobbyPickClose from './assets/lobby/pick-close.png';
+import lobbyPickX from './assets/lobby/pick-x.png';
 
 export const LOBBY_ASSETS = {
   bg: lobbyBg,
@@ -28,6 +33,11 @@ export const LOBBY_ASSETS = {
   icHistory: lobbyIcHistory,
   icLeaderboard: lobbyIcLeaderboard,
   icExit: lobbyIcExit,
+  pickBg: lobbyPickBg,
+  pickTitle: lobbyPickTitle,
+  pickLevel: lobbyPickLevel,
+  pickClose: lobbyPickClose,
+  pickX: lobbyPickX,
 } as const;
 
 import boardBg from './assets/board/bg.png';
@@ -69,14 +79,26 @@ export function applyAssets(root: ParentNode): void {
   document.documentElement.style.setProperty('--asset-board-o', `url('${BOARD_ASSETS.boardO}')`);
 }
 
-export function preloadAssets(timeoutMs = 6000): Promise<void> {
+export function preloadAssets(
+  onProgress?: (loaded: number, total: number) => void,
+  timeoutMs = 15000,
+): Promise<void> {
+  const urls = Object.values(ALL_ASSETS);
+  const total = urls.length;
+  let loaded = 0;
+  onProgress?.(0, total);
   const loadAll = Promise.all(
-    Object.values(ALL_ASSETS).map(
+    urls.map(
       (url) =>
         new Promise<void>((resolve) => {
+          const done = (): void => {
+            loaded++;
+            onProgress?.(loaded, total);
+            resolve();
+          };
           const img = new Image();
-          img.onload = () => resolve();
-          img.onerror = () => resolve();
+          img.onload = done;
+          img.onerror = done;
           img.src = url;
         }),
     ),

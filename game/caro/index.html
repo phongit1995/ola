@@ -68,7 +68,7 @@
       </footer>
     </div>
 
-    <div id="lobby" class="loading">
+    <div id="lobby" class="loading" data-loading="Đang tải...">
       <div id="lobby-inner" data-asset-bg="bg">
         <div class="lobby-top-space"></div>
         <div id="lobby-content">
@@ -115,15 +115,20 @@
         <div id="lobby-toast" class="hidden"></div>
       </div>
       <div id="lobby-pick" class="hidden">
-        <div id="lobby-pick-card">
-          <h3>Đấu với máy</h3>
-          <p>Chọn độ khó</p>
-          <div id="lobby-pick-levels">
-            <button type="button" data-level="easy">Dễ</button>
-            <button type="button" data-level="normal">Thường</button>
-            <button type="button" data-level="hard">Khó</button>
+        <div id="lobby-pick-card" data-asset-bg="pickBg">
+          <div class="pick-body">
+            <div id="lobby-pick-title" data-asset-bg="pickTitle">
+              <span>Chơi với máy</span>
+            </div>
+            <div id="lobby-pick-levels">
+              <button type="button" data-level="easy" data-asset-bg="pickLevel"><span>Dễ</span></button>
+              <button type="button" data-level="normal" data-asset-bg="pickLevel"><span>Vừa</span></button>
+              <button type="button" data-level="hard" data-asset-bg="pickLevel"><span>Khó</span></button>
+            </div>
           </div>
-          <button type="button" id="lobby-pick-close" aria-label="Đóng">✕</button>
+          <button type="button" id="lobby-pick-close" data-asset-bg="pickClose" aria-label="Đóng">
+            <img data-asset="pickX" alt="Đóng" />
+          </button>
         </div>
       </div>
     </div>

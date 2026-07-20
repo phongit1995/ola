@@ -82,6 +82,11 @@ function closePickPopup(): void {
   el.pick.classList.add('hidden');
 }
 
+export function lobbySetProgress(loaded: number, total: number): void {
+  const pct = total === 0 ? 100 : Math.round((loaded / total) * 100);
+  el.box.dataset.loading = `Đang tải... ${pct}%`;
+}
+
 export function lobbySetLoaded(): void {
   el.box.classList.remove('loading');
 }
@@ -117,14 +122,11 @@ export function lobbySetConnecting(): void {
 }
 
 export function lobbySetError(): void {
-  el.box.classList.remove('connecting');
+  el.box.classList.add('connecting');
+  contentShown = false;
   el.status.classList.remove('hidden');
-  el.statusText.textContent = 'Không kết nối được máy chủ. Vẫn chơi được với máy nhé!';
+  el.statusText.textContent = 'Không kết nối được máy chủ';
   el.retryBtn.classList.remove('hidden');
-  if (!contentShown) {
-    contentShown = true;
-    replayShowAnimation();
-  }
 }
 
 export function lobbySetReady(info: UserInfoData): void {
@@ -134,7 +136,7 @@ export function lobbySetReady(info: UserInfoData): void {
     contentShown = true;
     replayShowAnimation();
   }
-  el.nameText.textContent = info.guest ? 'Khách' : info.username;
+  el.nameText.textContent = info.guest ? 'Khách' : `@${info.username}`;
   const vipUrl = vipIconUrl(info.vipType);
   if (vipUrl) {
     el.vipIcon.src = vipUrl;

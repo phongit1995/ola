@@ -7,6 +7,7 @@ import {
   lobbySetConnecting,
   lobbySetError,
   lobbySetLoaded,
+  lobbySetProgress,
   lobbySetReady,
   lobbySetVisible,
   lobbyToast,
@@ -309,7 +310,7 @@ buildLobby({
 bridge.ready();
 
 void (async () => {
-  await preloadAssets();
+  await preloadAssets(lobbySetProgress);
   lobbySetLoaded();
   await connectToServer();
 })();

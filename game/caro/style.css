@@ -476,7 +476,7 @@ button:focus-visible,
 }
 
 #lobby.loading::after {
-  content: 'Đang tải...';
+  content: attr(data-loading);
   position: absolute;
   top: 50%;
   left: 50%;
@@ -504,6 +504,7 @@ button:focus-visible,
   flex-direction: column;
   align-items: center;
   width: 100%;
+  transform: translateX(2%);
 }
 
 #lobby.connecting #lobby-content {
@@ -782,68 +783,111 @@ button:focus-visible,
 
 #lobby-pick-card {
   position: relative;
-  width: min(340px, 100%);
-  background: var(--lobby-cream);
-  border: 3px solid var(--lobby-navy);
-  border-radius: 18px;
-  padding: 24px 20px;
-  text-align: center;
-  color: var(--lobby-navy);
+  width: min(76%, 380px);
+  aspect-ratio: 1033 / 1380;
+  max-height: 90%;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  container-type: inline-size;
   animation: rise 220ms ease-out;
 }
 
-#lobby-pick-card h3 {
-  font-size: 22px;
-  font-weight: 900;
-  text-transform: uppercase;
+.pick-body {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4cqw;
+  padding: 15cqw 8cqw 8cqw;
 }
 
-#lobby-pick-card p {
-  margin: 4px 0 16px;
-  font-weight: 700;
-  font-size: 14px;
-  opacity: 0.75;
+#lobby-pick-title {
+  flex-shrink: 0;
+  width: 100%;
+  aspect-ratio: 1664 / 659;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#lobby-pick-title span {
+  color: var(--lobby-cream);
+  font-weight: 900;
+  font-size: clamp(14px, 7cqw, 30px);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  transform: translateY(-6%);
 }
 
 #lobby-pick-levels {
+  flex-shrink: 0;
+  width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  align-items: center;
+  gap: 3.5cqw;
 }
 
 #lobby-pick-levels button {
-  min-height: 52px;
-  border: 3px solid var(--lobby-navy);
-  border-radius: 14px;
-  background: #fdf6e7;
-  color: var(--lobby-navy);
+  flex-shrink: 0;
+  position: relative;
+  width: 84%;
+  aspect-ratio: 1702 / 535;
+  border: none;
+  background-color: transparent;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 100ms ease-out, filter 100ms ease-out;
+}
+
+#lobby-pick-levels button span {
+  color: var(--lobby-cream);
   font-weight: 900;
-  font-size: 17px;
+  font-size: clamp(13px, 6cqw, 26px);
   text-transform: uppercase;
   letter-spacing: 1px;
-  transition: background 120ms, color 120ms;
 }
 
 #lobby-pick-levels button:active {
-  background: var(--lobby-navy);
-  color: var(--lobby-cream);
+  transform: scale(0.96);
+  filter: brightness(1.12);
 }
 
 #lobby-pick-close {
   position: absolute;
-  top: -14px;
-  right: -14px;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: 3px solid var(--lobby-cream);
-  background: var(--lobby-navy);
-  color: var(--lobby-cream);
-  font-size: 17px;
-  font-weight: 800;
+  right: 4%;
+  top: 3%;
+  width: 11%;
+  aspect-ratio: 1020 / 1028;
+  border: none;
+  background-color: transparent;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+  transition: transform 100ms ease-out;
+  z-index: 2;
+}
+
+#lobby-pick-close img {
+  width: 52%;
+  height: 52%;
+  object-fit: contain;
+}
+
+#lobby-pick-close:active {
+  transform: scale(0.92);
 }
 
 @media (prefers-reduced-motion: reduce) {
