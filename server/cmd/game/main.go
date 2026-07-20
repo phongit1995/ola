@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -13,6 +15,23 @@ import (
 	"ola-chat-server/internal/config"
 	"ola-chat-server/internal/game"
 )
+
+type filteredWriter struct {
+	out    io.Writer
+	ignore []byte
+}
+
+func (w filteredWriter) Write(p []byte) (int, error) {
+	if bytes.Contains(p, w.ignore) {
+		return len(p), nil
+	}
+	return w.out.Write(p)
+}
+
+func newHTTPErrorLog() *log.Logger {
+	w := filteredWriter{out: os.Stderr, ignore: []byte("superfluous response.WriteHeader call")}
+	return log.New(w, "", log.LstdFlags)
+}
 
 func main() {
 	time.Local = time.UTC
@@ -44,8 +63,9 @@ func main() {
 
 			addr := fmt.Sprintf(":%d", cfg.GamePort)
 			srv = &http.Server{
-				Addr:    addr,
-				Handler: mux,
+				Addr:     addr,
+				Handler:  mux,
+				ErrorLog: newHTTPErrorLog(),
 			}
 
 			log.Println("🚀 Game Service started")
