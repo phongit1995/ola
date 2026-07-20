@@ -711,13 +711,15 @@ button:focus-visible,
 
 .lobby-bottom {
   margin-top: auto;
-  width: 90%;
+  position: relative;
+  left: 4%;
+  width: 84%;
   aspect-ratio: 2347 / 464;
   background-size: 100% 100%;
   background-repeat: no-repeat;
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  padding: 1.5% 2%;
+  grid-template-columns: 31.3fr 34.2fr 31.6fr;
+  padding: 1.5% 1.35% 1.5% 1.26%;
   flex-shrink: 0;
 }
 
