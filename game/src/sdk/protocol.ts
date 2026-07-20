@@ -3,6 +3,10 @@ export const C2S = {
   QueueLeave: 'QUEUE_LEAVE',
   Move: 'MOVE',
   Forfeit: 'FORFEIT',
+  RoomCreate: 'ROOM_CREATE',
+  RoomJoin: 'ROOM_JOIN',
+  RoomLeave: 'ROOM_LEAVE',
+  RoomList: 'ROOM_LIST',
 } as const;
 
 export const S2C = {
@@ -12,6 +16,8 @@ export const S2C = {
   State: 'STATE',
   MatchOver: 'MATCH_OVER',
   Error: 'ERROR',
+  RoomList: 'ROOM_LIST',
+  RoomWaiting: 'ROOM_WAITING',
 } as const;
 
 export interface Envelope {
@@ -62,4 +68,23 @@ export interface MatchOverData<TState = unknown> {
 export interface ErrorData {
   code: string;
   message: string;
+}
+
+export interface RoomInfo {
+  id: string;
+  owner: string;
+  bet: number;
+  locked: boolean;
+  players: number;
+  full?: boolean;
+}
+
+export interface RoomListData {
+  rooms: RoomInfo[];
+}
+
+export interface RoomWaitingData {
+  roomId: string;
+  bet: number;
+  locked: boolean;
 }

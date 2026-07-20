@@ -132,6 +132,71 @@
         </div>
       </div>
     </div>
+    <div id="ranked" class="hidden">
+      <div id="ranked-inner" data-asset-bg="rankedBg">
+        <div class="ranked-title" data-asset-bg="rankedTitleFrame">
+          <span>Chơi xếp hạng</span>
+          <img data-asset="rankedCup" alt="" />
+        </div>
+        <div class="ranked-table-wrap">
+          <div class="ranked-table" data-asset-bg="rankedTable">
+            <div class="ranked-head">
+              <span>Chủ bàn</span>
+              <span>Ken cược</span>
+              <span>Tham gia</span>
+            </div>
+            <div id="ranked-rows"></div>
+            <div id="ranked-empty" class="hidden">Chưa có bàn nào,<br />tạo bàn mới nhé!</div>
+          </div>
+        </div>
+        <div class="ranked-pager">
+          <button type="button" id="ranked-prev" data-asset-bg="rankedPageBtn">&lt;</button>
+          <span id="ranked-page" data-asset-bg="rankedPageBtn">1</span>
+          <button type="button" id="ranked-next" data-asset-bg="rankedPageBtn">&gt;</button>
+        </div>
+        <div class="ranked-menu">
+          <button type="button" id="ranked-create" data-asset-bg="rankedMenuBtn">Tạo bàn</button>
+          <button type="button" id="ranked-refresh" data-asset-bg="rankedMenuBtn">Làm mới</button>
+          <button type="button" id="ranked-exit" data-asset-bg="rankedMenuBtn">Thoát</button>
+        </div>
+        <div id="ranked-waiting" class="hidden">
+          <span id="ranked-waiting-text">Đang đợi đối thủ vào bàn...</span>
+          <button type="button" id="ranked-waiting-cancel">Hủy bàn</button>
+        </div>
+        <div id="ranked-toast" class="hidden"></div>
+      </div>
+      <div id="ranked-create-modal" class="hidden">
+        <div id="create-card" data-asset-bg="createPanel">
+          <div class="create-title" data-asset-bg="createTitleFrame"><span>Tạo bàn</span></div>
+          <button type="button" id="create-close" data-asset-bg="createBtnClose" aria-label="Đóng">
+            <img data-asset="createIcX" alt="" />
+          </button>
+          <div class="create-body">
+            <div class="create-label" data-asset-bg="createLabelFrame"><span>Số Ken</span></div>
+            <div class="create-input" data-asset-bg="createInputFrame">
+              <input id="create-bet" type="number" inputmode="numeric" min="0" placeholder="0" />
+            </div>
+            <div class="create-label" data-asset-bg="createLabelFrame"><span>Mật khẩu</span></div>
+            <div class="create-input" data-asset-bg="createInputFrame">
+              <input id="create-password" type="text" autocomplete="off" placeholder="Để trống nếu không khóa" />
+            </div>
+            <button type="button" id="create-ok" data-asset-bg="createBtnOk"><span>OK</span></button>
+          </div>
+        </div>
+      </div>
+      <div id="ranked-pass-modal" class="hidden">
+        <div id="pass-card">
+          <h3>Bàn có khóa</h3>
+          <div class="create-input" data-asset-bg="createInputFrame">
+            <input id="pass-input" type="text" autocomplete="off" placeholder="Nhập mật khẩu" />
+          </div>
+          <div class="pass-actions">
+            <button type="button" id="pass-ok">Vào bàn</button>
+            <button type="button" id="pass-cancel">Hủy</button>
+          </div>
+        </div>
+      </div>
+    </div>
     <script type="module" src="./main.ts"></script>
   </body>
 </html>

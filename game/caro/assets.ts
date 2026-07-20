@@ -40,6 +40,22 @@ export const LOBBY_ASSETS = {
   pickX: lobbyPickX,
 } as const;
 
+import rankedBg from './assets/ranked/bg.png';
+import rankedTitleFrame from './assets/ranked/title-frame.png';
+import rankedCup from './assets/ranked/ic-cup.png';
+import rankedTable from './assets/ranked/table.png';
+import rankedSlotOpen from './assets/ranked/slot-open.png';
+import rankedSlotFull from './assets/ranked/slot-full.png';
+import rankedLock from './assets/ranked/ic-lock.png';
+import rankedPageBtn from './assets/ranked/page-btn.png';
+import rankedMenuBtn from './assets/ranked/menu-btn.png';
+import createPanel from './assets/create/panel.png';
+import createTitleFrame from './assets/create/title-frame.png';
+import createLabelFrame from './assets/create/label-frame.png';
+import createInputFrame from './assets/create/input-frame.png';
+import createBtnOk from './assets/create/btn-ok.png';
+import createBtnClose from './assets/create/btn-close.png';
+import createIcX from './assets/create/ic-x.png';
 import boardBg from './assets/board/bg.png';
 import boardFrame from './assets/board/board-frame.png';
 import boardX from './assets/board/x.png';
@@ -62,7 +78,26 @@ export const BOARD_ASSETS = {
   boardMenuBtn,
 } as const;
 
-const ALL_ASSETS = { ...LOBBY_ASSETS, ...BOARD_ASSETS } as const;
+export const RANKED_ASSETS = {
+  rankedBg,
+  rankedTitleFrame,
+  rankedCup,
+  rankedTable,
+  rankedSlotOpen,
+  rankedSlotFull,
+  rankedLock,
+  rankedPageBtn,
+  rankedMenuBtn,
+  createPanel,
+  createTitleFrame,
+  createLabelFrame,
+  createInputFrame,
+  createBtnOk,
+  createBtnClose,
+  createIcX,
+} as const;
+
+const ALL_ASSETS = { ...LOBBY_ASSETS, ...BOARD_ASSETS, ...RANKED_ASSETS } as const;
 
 export type AssetKey = keyof typeof ALL_ASSETS;
 
