@@ -1,4 +1,4 @@
-import { memo, useRef } from 'react';
+import { memo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Image, Pressable, Text, useWindowDimensions, View } from 'react-native';
 import { colorForName, formatClockHM } from '@ola/shared/lib';
@@ -16,6 +16,23 @@ import { OTHER_CORNERS, OWN_CORNERS, roomBubbleTextMaxWidth } from '../roomConst
 const mentionIcon = require('@assets/icons/room/ic_tag_people.png');
 const photoIcon = require('@assets/icons/chat/ic_local.png');
 const resendIcon = require('@assets/icons/chat/btn_resend_d.png');
+
+const IMAGE_MAX_WIDTH = 208;
+const IMAGE_MAX_HEIGHT = 176;
+const IMAGE_RADIUS = 8;
+
+function fitImageSize(ratio: number | null) {
+  if (ratio == null || ratio <= 0) {
+    return { width: IMAGE_MAX_HEIGHT, height: IMAGE_MAX_HEIGHT };
+  }
+  let width = IMAGE_MAX_WIDTH;
+  let height = width / ratio;
+  if (height > IMAGE_MAX_HEIGHT) {
+    height = IMAGE_MAX_HEIGHT;
+    width = height * ratio;
+  }
+  return { width, height };
+}
 
 interface RoomMessageGroupProps {
   group: MessageGroup;
@@ -101,11 +118,13 @@ function BubbleContent({
 }) {
   const openViewer = useMediaViewerStore((s) => s.openViewer);
   const { width: windowWidth } = useWindowDimensions();
+  const [imageRatio, setImageRatio] = useState<number | null>(null);
   const isImage = message.type === 'image' && message.imageUrl != null && message.imageUrl !== '';
   const uploading = message.status === 'uploading';
   const failed = message.status === 'failed';
 
   if (isImage) {
+    const size = fitImageSize(imageRatio);
     return (
       <Pressable
         onPress={() => {
@@ -114,19 +133,23 @@ function BubbleContent({
       >
         <Image
           source={{ uri: message.imageUrl }}
-          style={{ width: 200, height: 200, borderRadius: 12, opacity: uploading || failed ? 0.6 : 1 }}
+          onLoad={(event) => {
+            const src = event.nativeEvent.source;
+            if (src != null && src.height > 0) setImageRatio(src.width / src.height);
+          }}
+          style={{ ...size, borderRadius: IMAGE_RADIUS, opacity: uploading || failed ? 0.6 : 1 }}
           resizeMode="cover"
         />
         {uploading && (
           <View className="absolute inset-0 items-center justify-center">
-            <ActivityIndicator color="#ffffff" />
+            <ActivityIndicator color="#7cb342" />
           </View>
         )}
         {failed && (
           <Pressable
             onPress={() => onResendImage?.(message.id)}
-            className="absolute inset-0 items-center justify-center rounded-xl"
-            style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}
+            className="absolute inset-0 items-center justify-center"
+            style={{ backgroundColor: 'rgba(0,0,0,0.4)', borderRadius: IMAGE_RADIUS }}
           >
             <Image source={resendIcon} style={{ width: 28, height: 28 }} resizeMode="contain" />
           </Pressable>
