@@ -1410,7 +1410,7 @@ button:focus-visible,
 
 #result-card {
   position: relative;
-  width: min(82%, 400px);
+  width: min(68%, 330px);
   aspect-ratio: 1082 / 1437;
   background-size: 100% 100%;
   container-type: inline-size;
