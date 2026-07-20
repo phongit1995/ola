@@ -1,10 +1,10 @@
 import { create } from 'zustand';
-import { RoomService } from '@services';
-import { toast } from '@lib';
-import type { BrowseRoomsParams, Room } from '@app-types';
-import i18n from '@/i18n';
+import i18n from 'i18next';
+import { RoomService } from '../services';
+import { toast } from '../lib';
+import type { BrowseRoomsParams, Room } from '../types';
 
-interface RoomState {
+interface RoomListState {
   rooms: Room[];
   total: number;
   loading: boolean;
@@ -22,7 +22,7 @@ const initialState = {
   loaded: false,
 };
 
-export const useRoomStore = create<RoomState>((set) => ({
+export const useRoomListStore = create<RoomListState>((set) => ({
   ...initialState,
   fetchRooms: async (params, options) => {
     const silent = options?.silent ?? false;

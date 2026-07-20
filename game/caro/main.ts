@@ -1,5 +1,16 @@
-import { bridge, joinGame, type GameSession, type MatchFoundData, type PlayerInfo } from '../src/sdk';
+import { bridge, joinGame, type GameSession, type MatchFoundData, type PlayerInfo, type UserInfoData } from '../src/sdk';
+import { BOARD_ASSETS, preloadAssets } from './assets';
 import { createBotSession, type BotLevel } from './bot';
+import {
+  buildLobby,
+  lobbyEnterAnimated,
+  lobbySetConnecting,
+  lobbySetError,
+  lobbySetLoaded,
+  lobbySetReady,
+  lobbySetVisible,
+  lobbyToast,
+} from './lobby';
 import { SIZE, type CaroMove, type CaroState } from './types';
 
 const el = {
@@ -8,11 +19,9 @@ const el = {
   overlay: document.getElementById('overlay')!,
   overlayTitle: document.getElementById('overlay-title')!,
   overlaySub: document.getElementById('overlay-sub')!,
-  overlayActions: document.getElementById('overlay-actions')!,
-  levelPicker: document.getElementById('level-picker')!,
-  levelOptions: [...document.querySelectorAll<HTMLButtonElement>('#level-options button')],
-  btnBot: document.getElementById('btn-bot') as HTMLButtonElement,
-  btnOnline: document.getElementById('btn-online') as HTMLButtonElement,
+  btnAgain: document.getElementById('btn-again') as HTMLButtonElement,
+  btnCancel: document.getElementById('btn-cancel') as HTMLButtonElement,
+  btnLobby: document.getElementById('btn-lobby') as HTMLButtonElement,
   meName: document.querySelector('#player-me .name')!,
   opName: document.querySelector('#player-op .name')!,
   meMark: document.querySelector('#player-me .mark')!,
@@ -21,6 +30,8 @@ const el = {
   op: document.getElementById('player-op')!,
   timer: document.getElementById('timer')!,
   timerVal: document.getElementById('timer-val')!,
+  turnArrow: document.getElementById('turn-arrow') as HTMLImageElement,
+  btnReplay: document.getElementById('btn-replay') as HTMLButtonElement,
   btnForfeit: document.getElementById('btn-forfeit') as HTMLButtonElement,
   btnExit: document.getElementById('btn-exit')!,
 };
@@ -37,38 +48,57 @@ for (let y = 0; y < SIZE; y++) {
   }
 }
 
+type OverlayAction = 'again' | 'cancel' | 'lobby';
+
 let session: GameSession<CaroState, CaroMove> | null = null;
 let onlineSession: GameSession<CaroState, CaroMove> | null = null;
 let botSession: GameSession<CaroState, CaroMove> | null = null;
 let botSessionLevel: BotLevel | null = null;
-let botLevel: BotLevel = 'normal';
 let match: MatchFoundData<CaroState> | null = null;
+let userInfo: UserInfoData | null = null;
+let connecting = false;
 let myTurn = false;
 let deadline = 0;
 let timerHandle: number | undefined;
 
-function showOverlay(title: string, sub: string, resultKind?: 'win' | 'lose' | 'draw'): void {
+function showOverlay(
+  title: string,
+  sub: string,
+  resultKind?: 'win' | 'lose' | 'draw',
+  actions: OverlayAction[] = [],
+): void {
   el.overlay.classList.remove('hidden');
   el.overlayTitle.textContent = title;
   el.overlayTitle.className = resultKind === 'win' ? 'win' : resultKind === 'lose' ? 'lose' : '';
   el.overlaySub.textContent = sub;
-  el.btnBot.disabled = false;
-  el.btnOnline.disabled = false;
+  el.btnAgain.classList.toggle('hidden', !actions.includes('again'));
+  el.btnCancel.classList.toggle('hidden', !actions.includes('cancel'));
+  el.btnLobby.classList.toggle('hidden', !actions.includes('lobby'));
 }
 
 function hideOverlay(): void {
   el.overlay.classList.add('hidden');
 }
 
+function backToLobby(): void {
+  hideOverlay();
+  lobbyEnterAnimated();
+  if (!userInfo && !connecting) void connectToServer();
+}
+
 function renderBoard(state: CaroState): void {
   state.board.forEach((mark, i) => {
-    const cell = cells[i];
-    cell.textContent = mark === 1 ? 'X' : mark === 2 ? 'O' : '';
-    cell.className = 'cell' + (mark ? ` p${mark}` : '');
+    cells[i].className = 'cell' + (mark ? ` p${mark}` : '');
   });
   if (state.lastX >= 0) {
     cells[state.lastY * SIZE + state.lastX].classList.add('last');
   }
+}
+
+function formatClock(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
 function setTurn(turn: number, deadlineMs: number): void {
@@ -80,14 +110,18 @@ function setTurn(turn: number, deadlineMs: number): void {
   el.op.classList.toggle('active', !myTurn);
   el.board.classList.toggle('playable', myTurn);
   el.timer.classList.remove('hidden');
+  el.turnArrow.src = myTurn ? BOARD_ASSETS.boardTurnLeft : BOARD_ASSETS.boardTurnRight;
+  el.turnArrow.classList.remove('hidden');
   bridge.turnChanged({ yourTurn: myTurn, deadline: deadlineMs });
   if (timerHandle) window.clearInterval(timerHandle);
-  timerHandle = window.setInterval(() => {
+  const tick = (): void => {
     const left = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
-    el.timerVal.textContent = `${left}s`;
+    el.timerVal.textContent = formatClock(left);
     el.timer.classList.toggle('urgent', left <= 10);
     if (left === 0 && timerHandle) window.clearInterval(timerHandle);
-  }, 250);
+  };
+  tick();
+  timerHandle = window.setInterval(tick, 250);
 }
 
 function clearMatchUi(): void {
@@ -98,6 +132,7 @@ function clearMatchUi(): void {
   el.op.classList.remove('active');
   el.timer.classList.add('hidden');
   el.timer.classList.remove('urgent');
+  el.turnArrow.classList.add('hidden');
 }
 
 function opponentOf(players: PlayerInfo[], you: number): PlayerInfo {
@@ -105,6 +140,11 @@ function opponentOf(players: PlayerInfo[], you: number): PlayerInfo {
 }
 
 function wireSession(target: GameSession<CaroState, CaroMove>): void {
+  target.onUserInfo((info) => {
+    userInfo = info;
+    lobbySetReady(info);
+  });
+
   target.onConnectionChange((connected) => {
     if (session === target && !connected) {
       el.status.textContent = 'Mất kết nối, đang thử lại...';
@@ -113,21 +153,22 @@ function wireSession(target: GameSession<CaroState, CaroMove>): void {
 
   target.onQueueWaiting(() => {
     if (session !== target) return;
-    showOverlay('Đang tìm trận...', 'Đợi người chơi khác vào hàng chờ');
+    lobbySetVisible(false);
+    showOverlay('Đang tìm trận...', 'Đợi người chơi khác vào hàng chờ', undefined, ['cancel']);
     el.status.textContent = 'Đang tìm trận';
   });
 
   target.onMatchFound((data) => {
     if (session !== target) return;
     match = data;
+    lobbySetVisible(false);
     hideOverlay();
     el.meName.textContent = data.players[data.you].name;
     el.opName.textContent = opponentOf(data.players, data.you).name;
-    el.meMark.textContent = data.you === 0 ? 'X' : 'O';
     el.meMark.className = data.you === 0 ? 'mark x' : 'mark o';
-    el.opMark.textContent = data.you === 0 ? 'O' : 'X';
     el.opMark.className = data.you === 0 ? 'mark o' : 'mark x';
     el.btnForfeit.disabled = false;
+    el.btnReplay.classList.toggle('hidden', target !== botSession);
     renderBoard(data.state);
     setTurn(data.turn, data.deadline);
     if (data.resumed) el.status.textContent = 'Đã vào lại trận đấu';
@@ -151,6 +192,7 @@ function wireSession(target: GameSession<CaroState, CaroMove>): void {
       draw ? 'Hòa!' : won ? 'Bạn thắng!' : 'Bạn thua',
       reasonText,
       draw ? 'draw' : won ? 'win' : 'lose',
+      ['again', 'lobby'],
     );
     el.status.textContent = 'Chơi ván mới?';
     bridge.gameOver({ matchId: data.matchId, winnerId: data.winnerId, reason: data.reason, won });
@@ -162,58 +204,92 @@ function wireSession(target: GameSession<CaroState, CaroMove>): void {
   });
 }
 
-function selectLevel(level: BotLevel): void {
-  botLevel = level;
-  el.levelOptions.forEach((btn) => {
-    const selected = btn.dataset.level === level;
-    btn.classList.toggle('selected', selected);
-    btn.setAttribute('aria-checked', String(selected));
+function waitUserInfo(target: GameSession<CaroState, CaroMove>, timeoutMs: number): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const cleanup = (): void => {
+      offInfo();
+      clearTimeout(timer);
+    };
+    const offInfo = target.onUserInfo(() => {
+      cleanup();
+      resolve();
+    });
+    const timer = setTimeout(() => {
+      cleanup();
+      reject(new Error('connect timeout'));
+    }, timeoutMs);
   });
 }
 
-function startBotGame(): void {
-  if (!botSession || botSessionLevel !== botLevel) {
+async function connectToServer(): Promise<void> {
+  if (connecting) return;
+  connecting = true;
+  lobbySetConnecting();
+  try {
+    if (!onlineSession) {
+      onlineSession = await joinGame<CaroState, CaroMove>('caro');
+      wireSession(onlineSession);
+    }
+    await waitUserInfo(onlineSession, 8000);
+  } catch {
+    onlineSession?.disconnect();
+    onlineSession = null;
+    userInfo = null;
+    lobbySetError();
+  } finally {
+    connecting = false;
+  }
+}
+
+function startBotGame(level: BotLevel): void {
+  if (!botSession || botSessionLevel !== level) {
     botSession?.disconnect();
-    botSession = createBotSession(botLevel);
-    botSessionLevel = botLevel;
+    botSession = createBotSession(level);
+    botSessionLevel = level;
     wireSession(botSession);
   }
   session = botSession;
   session.joinQueue();
 }
 
-const btnOnlineContent = el.btnOnline.innerHTML;
-
-async function startOnlineGame(): Promise<void> {
-  el.btnOnline.disabled = true;
-  el.btnOnline.textContent = 'Đang kết nối...';
-  try {
-    if (!onlineSession) {
-      onlineSession = await joinGame<CaroState, CaroMove>('caro');
-      wireSession(onlineSession);
-    }
-    session = onlineSession;
-    session.joinQueue();
-  } finally {
-    el.btnOnline.innerHTML = btnOnlineContent;
-    el.btnOnline.disabled = false;
+async function startRankedGame(): Promise<void> {
+  if (!onlineSession || !userInfo) {
+    await connectToServer();
   }
+  if (!onlineSession || !userInfo) {
+    lobbyToast('Không kết nối được máy chủ, thử lại nhé!');
+    return;
+  }
+  session = onlineSession;
+  session.joinQueue();
 }
 
-el.levelOptions.forEach((btn) => {
-  btn.addEventListener('click', () => selectLevel(btn.dataset.level as BotLevel));
+el.btnAgain.addEventListener('click', () => session?.joinQueue());
+
+el.btnReplay.addEventListener('click', () => {
+  if (match && !window.confirm('Chơi lại ván mới?')) return;
+  session?.joinQueue();
 });
 
-el.btnBot.addEventListener('click', startBotGame);
-el.btnOnline.addEventListener('click', () => void startOnlineGame());
+el.btnCancel.addEventListener('click', () => {
+  session?.leaveQueue();
+  backToLobby();
+});
+
+el.btnLobby.addEventListener('click', backToLobby);
 
 el.btnForfeit.addEventListener('click', () => {
   if (match && window.confirm('Bỏ cuộc trận này?')) session?.forfeit();
 });
 
 el.btnExit.addEventListener('click', () => {
-  if (match) session?.forfeit();
-  bridge.exit();
+  if (match) {
+    if (!window.confirm('Thoát sẽ bị xử thua trận này, thoát chứ?')) return;
+    session?.forfeit();
+  }
+  match = null;
+  clearMatchUi();
+  backToLobby();
 });
 
 el.board.addEventListener('click', (event) => {
@@ -223,5 +299,17 @@ el.board.addEventListener('click', (event) => {
   session?.sendMove({ x: Number(target.dataset.x), y: Number(target.dataset.y) });
 });
 
+buildLobby({
+  onPlayBot: startBotGame,
+  onPlayRanked: () => void startRankedGame(),
+  onRetry: () => void connectToServer(),
+  onExit: () => bridge.exit(),
+});
+
 bridge.ready();
-showOverlay('Cờ Caro', '5 quân liên tiếp để thắng');
+
+void (async () => {
+  await preloadAssets();
+  lobbySetLoaded();
+  await connectToServer();
+})();

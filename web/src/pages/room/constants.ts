@@ -5,8 +5,6 @@ export const ROOM_CAPACITY = 200;
 
 export const ROOM_COLORS = ['#ef5350', '#ec407a', '#5c6bc0', '#26a69a', '#7e57c2', '#ffa726'];
 
-export const GROUP_GAP_MS = 5 * 60 * 1000;
-
 export const OWN_CORNERS: Record<BubblePosition, string> = {
   single: 'rounded-2xl',
   first: 'rounded-2xl rounded-br-none',

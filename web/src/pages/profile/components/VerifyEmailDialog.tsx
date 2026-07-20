@@ -164,6 +164,7 @@ export function VerifyEmailDialog({ open, initialEmail, onClose, onVerified }: V
             placeholder={t('verifyEmail.emailPlaceholder')}
             className="w-full rounded border border-black/15 bg-white px-3 py-2 text-sm text-black/87 outline-none focus:border-ola-primary"
           />
+          <p className="text-xs text-black/40">{t('verifyEmail.domainHint')}</p>
         </div>
       ) : (
         <div className="flex flex-col gap-3">

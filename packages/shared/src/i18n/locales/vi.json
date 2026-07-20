@@ -802,6 +802,7 @@
     "title": "Xác thực email",
     "emailLabel": "Địa chỉ email",
     "emailPlaceholder": "Nhập email của bạn",
+    "domainHint": "Chỉ hỗ trợ email @gmail, @yahoo và @icloud.",
     "sendCode": "Gửi mã",
     "codeLabel": "Nhập mã 6 số đã gửi tới email",
     "codeSentTo": "Đã gửi mã tới {{email}}",

@@ -42,6 +42,12 @@ import { UserProfileView } from '../../profile/UserProfileView';
 import { useMediaViewerStore } from '@/store/mediaViewerStore';
 import { RELATIONSHIP_STATUS } from '@ola/shared/constants';
 
+interface PendingImage {
+  id: string;
+  file: File;
+  url: string;
+}
+
 interface ChatConversationViewProps {
   name: string;
   username?: string;
@@ -109,6 +115,7 @@ export function ChatConversationView({
   const [tradingVipOpen, setTradingVipOpen] = useState(false);
   const [transferVipDaysOpen, setTransferVipDaysOpen] = useState(false);
   const [pendingAudio, setPendingAudio] = useState<{ blob: Blob; duration: number } | null>(null);
+  const [pendingImage, setPendingImage] = useState<PendingImage | null>(null);
   const [actionTarget, setActionTarget] = useState<{
     message: ChatMessage;
     anchor: DOMRect | null;
@@ -126,6 +133,8 @@ export function ChatConversationView({
   const composerAreaRef = useRef<HTMLDivElement>(null);
   const composerRef = useRef<SmileyInputHandle>(null);
   const suppressLikeClick = useRef(false);
+  const imageIdRef = useRef(0);
+  const pendingImageRef = useRef(pendingImage);
   const likeLongPress = useLongPress(() => {
     suppressLikeClick.current = true;
     void sendText('(Y)');
@@ -144,6 +153,16 @@ export function ChatConversationView({
       clearInterval(interval);
     };
   }, []);
+
+  useEffect(() => {
+    pendingImageRef.current = pendingImage;
+  }, [pendingImage]);
+  useEffect(
+    () => () => {
+      if (pendingImageRef.current != null) URL.revokeObjectURL(pendingImageRef.current.url);
+    },
+    []
+  );
 
   const lastActiveText =
     now != null && !online && !peerTyping ? formatLastActive(t, lastActiveAt, now) : undefined;
@@ -216,6 +235,10 @@ export function ChatConversationView({
   }, [peerTyping, openTab, peerCardVisible, scrollToBottomIfPinned]);
 
   function submitComposer() {
+    if (pendingImage != null) {
+      void sendPendingImage();
+      return;
+    }
     const trimmed = draft.trim();
     if (trimmed === '') return;
     if (editing != null) {
@@ -298,23 +321,47 @@ export function ChatConversationView({
     setDraft('');
   }
 
-  async function sendImageFiles(files: File[]) {
-    if (files.length === 0) return;
+  async function addImageFile(files: File[]) {
+    const file = files[0];
+    if (file == null) return;
     setOpenTab(null);
-    for (const file of files) {
-      try {
-        const prepared = await compressImageForUpload(file);
-        await sendImage(prepared);
-      } catch (error) {
-        toast.error(error instanceof ImageTooLargeError ? t('chat.imageTooLarge') : t('chat.imageError'));
-      }
+    setEditing(null);
+    setDraft('');
+    composerRef.current?.reset();
+    try {
+      const prepared = await compressImageForUpload(file);
+      const url = URL.createObjectURL(prepared);
+      imageIdRef.current += 1;
+      const id = String(imageIdRef.current);
+      setPendingImage((current) => {
+        if (current != null) URL.revokeObjectURL(current.url);
+        return { id, file: prepared, url };
+      });
+    } catch (error) {
+      toast.error(error instanceof ImageTooLargeError ? t('chat.imageTooLarge') : t('chat.imageError'));
     }
+  }
+
+  function clearPendingImage() {
+    setPendingImage((current) => {
+      if (current != null) URL.revokeObjectURL(current.url);
+      return null;
+    });
+  }
+
+  async function sendPendingImage() {
+    const image = pendingImage;
+    if (image == null) return;
+    setPendingImage(null);
+    setOpenTab(null);
+    await sendImage(image.file);
+    URL.revokeObjectURL(image.url);
   }
 
   async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(event.target.files ?? []);
     event.target.value = '';
-    await sendImageFiles(files);
+    await addImageFile(files);
   }
 
   const isTyping = draft.trim() !== '';
@@ -553,18 +600,34 @@ export function ChatConversationView({
         }}
         className="flex shrink-0 items-end gap-1 border-t border-black/12 bg-white px-2 py-1.5"
       >
-        <SmileyInput
-          ref={composerRef}
-          value={draft}
-          onChange={handleDraftChange}
-          onEnter={submitComposer}
-          onFocus={() => setOpenTab(null)}
-          onImagePaste={(files) => void sendImageFiles(files)}
-          placeholder={t('chat.messageInputPlaceholder', { name })}
-          multiline
-          className="max-h-32 min-h-9 flex-1 overflow-y-auto bg-transparent px-2 py-1.5 text-base text-black/87"
-        />
-        {isTyping ? (
+        {pendingImage != null ? (
+          <div className="flex min-h-9 flex-1 items-center py-1">
+            <div className="relative shrink-0">
+              <img src={pendingImage.url} alt="" className="h-11 w-11 rounded-lg object-cover" />
+              <button
+                type="button"
+                aria-label={t('dialog.cancel')}
+                onClick={clearPendingImage}
+                className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-xs leading-none text-white"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        ) : (
+          <SmileyInput
+            ref={composerRef}
+            value={draft}
+            onChange={handleDraftChange}
+            onEnter={submitComposer}
+            onFocus={() => setOpenTab(null)}
+            onImagePaste={(files) => void addImageFile(files)}
+            placeholder={t('chat.messageInputPlaceholder', { name })}
+            multiline
+            className="max-h-32 min-h-9 flex-1 overflow-y-auto bg-transparent px-2 py-1.5 text-base text-black/87"
+          />
+        )}
+        {isTyping || pendingImage != null ? (
           <button
             type="submit"
             className="h-9 shrink-0 rounded-full bg-ola-primary px-4 text-sm font-semibold text-white shadow-sm transition active:scale-95"
@@ -646,7 +709,6 @@ export function ChatConversationView({
         ref={fileInputRef}
         type="file"
         accept="image/*"
-        multiple
         className="hidden"
         onChange={handleFileChange}
       />

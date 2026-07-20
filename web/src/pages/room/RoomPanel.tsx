@@ -4,22 +4,22 @@ import { ConfirmDialog, PullToRefresh } from '@components';
 import { HomeHeader } from '@components/HomeHeader';
 import { RoomList } from './components/RoomList';
 import type { RoomListItem } from './types';
-import { useRoomStore } from './roomStore';
+import { useRoomListStore } from '@ola/shared/stores/roomListStore';
 import { useRoomChatStore } from '@/store/roomChatStore';
 import { ROOM_CAPACITY, ROOM_COLORS } from './constants';
 
 export function RoomPanel() {
   const { t } = useTranslation();
-  const apiRooms = useRoomStore((state) => state.rooms);
-  const loadingRooms = useRoomStore((state) => state.loading);
-  const roomsLoaded = useRoomStore((state) => state.loaded);
-  const fetchRooms = useRoomStore((state) => state.fetchRooms);
+  const apiRooms = useRoomListStore((state) => state.rooms);
+  const loadingRooms = useRoomListStore((state) => state.loading);
+  const roomsLoaded = useRoomListStore((state) => state.loaded);
+  const fetchRooms = useRoomListStore((state) => state.fetchRooms);
   const activeRoom = useRoomChatStore((state) => state.activeRoom);
   const openRoom = useRoomChatStore((state) => state.open);
   const [fullRoom, setFullRoom] = useState<RoomListItem | null>(null);
 
   useEffect(() => {
-    void fetchRooms(undefined, { silent: useRoomStore.getState().loaded });
+    void fetchRooms(undefined, { silent: useRoomListStore.getState().loaded });
   }, [fetchRooms]);
 
   const rooms = useMemo<RoomListItem[]>(

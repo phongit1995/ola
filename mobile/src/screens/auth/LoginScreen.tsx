@@ -161,7 +161,7 @@ export function LoginScreen({ navigation }: Props) {
               />
             )}
           />
-          <View className="mx-1 h-px bg-black/[0.12]" />
+          <View className="mx-1 h-px bg-ola-divider" />
           <Controller
             control={control}
             name="password"

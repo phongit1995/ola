@@ -21,7 +21,7 @@ import { RoomReactionsDialog } from './RoomReactionsDialog';
 import { RoomReactionNotice } from './RoomReactionNotice';
 import { RoomReactionBalloons } from './RoomReactionBalloons';
 import type { RoomChatStatus } from '@/store/roomChatStore';
-import { useRoomFilterStore } from '../roomFilterStore';
+import { useRoomFilterStore } from '@ola/shared/stores/roomFilterStore';
 
 interface RoomMessagesTabProps {
   currentUserId: string;

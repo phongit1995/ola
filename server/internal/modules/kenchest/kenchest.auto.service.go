@@ -36,6 +36,7 @@ func (s *Service) CreateAutoJob(adminID uuid.UUID, req AutoJobRequest) (*AutoJob
 	if err := s.repo.CreateAutoJob(&job); err != nil {
 		return nil, err
 	}
+	s.notifyWake()
 	view := toAutoJobView(&job)
 	return &view, nil
 }
@@ -58,12 +59,17 @@ func (s *Service) UpdateAutoJob(id uuid.UUID, req AutoJobRequest) (*AutoJobView,
 	if err := s.repo.UpdateAutoJob(&updated); err != nil {
 		return nil, err
 	}
+	s.notifyWake()
 	view := toAutoJobView(&updated)
 	return &view, nil
 }
 
 func (s *Service) DeleteAutoJob(id uuid.UUID) error {
-	return s.repo.DeleteAutoJob(id)
+	if err := s.repo.DeleteAutoJob(id); err != nil {
+		return err
+	}
+	s.notifyWake()
+	return nil
 }
 
 func (s *Service) GetAutoSettings() (*AutoSettingsView, error) {
@@ -78,6 +84,7 @@ func (s *Service) UpdateAutoSettings(adminID uuid.UUID, enabled bool) (*AutoSett
 	if err := s.repo.UpdateAutoSettings(enabled, &adminID); err != nil {
 		return nil, err
 	}
+	s.notifyWake()
 	return s.GetAutoSettings()
 }
 

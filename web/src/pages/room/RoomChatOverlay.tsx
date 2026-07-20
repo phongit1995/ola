@@ -5,14 +5,14 @@ import { toast } from '@lib';
 import { RoomChatView } from './components/RoomChatView';
 import { RoomJoiningOverlay } from './components/RoomJoiningOverlay';
 import { useRoomChatStore, type ActiveRoom } from '@/store/roomChatStore';
-import { useRoomStore } from './roomStore';
+import { useRoomListStore } from '@ola/shared/stores/roomListStore';
 
 export function RoomChatOverlay({ visible }: { visible: boolean }) {
   const { t } = useTranslation();
   const activeRoom = useRoomChatStore((state) => state.activeRoom);
   const joinStatus = useRoomChatStore((state) => state.status);
   const closeRoom = useRoomChatStore((state) => state.close);
-  const fetchRooms = useRoomStore((state) => state.fetchRooms);
+  const fetchRooms = useRoomListStore((state) => state.fetchRooms);
   const [pendingQuit, setPendingQuit] = useState<ActiveRoom | null>(null);
 
   if (activeRoom == null) return null;

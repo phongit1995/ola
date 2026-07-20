@@ -5,29 +5,18 @@ import groupMessageIcon from '@/assets/icons/room/ic_notify_new_chat_group_messa
 import filterIcon from '@/assets/icons/room/ic_filter_unselected.png';
 import { useRoomChatStore } from '@/store/roomChatStore';
 import { useAuthStore } from '@/store/authStore';
-import { useRoomFilterStore } from '../roomFilterStore';
+import { useRoomFilterStore, memberMatchesFilter } from '@ola/shared/stores/roomFilterStore';
 import { ScreenHeader, FullScreenOverlay } from '@components';
-import type { ReactionType, RoomMember } from '@app-types';
+import type { ReactionType } from '@app-types';
 import { RoomTabBar, type RoomTabItem } from './RoomTabBar';
 import { RoomMessagesTab } from './RoomMessagesTab';
 import { RoomMembersTab } from './RoomMembersTab';
 import { RoomFilterDialog } from './RoomFilterDialog';
-import type { RoomFilters } from '../types';
 import { UserProfileView } from '../../profile/UserProfileView';
 
 interface ProfileTarget {
   username: string;
   color: string;
-}
-
-function memberMatchesFilter(member: RoomMember, filters: RoomFilters): boolean {
-  if (filters.showAll) return true;
-  const anyGender = filters.female || filters.male || filters.flexible;
-  if (!anyGender) return true;
-  if (filters.female && member.gender === 'female') return true;
-  if (filters.male && member.gender === 'male') return true;
-  if (filters.flexible && member.gender !== 'female' && member.gender !== 'male') return true;
-  return false;
 }
 
 interface RoomChatViewProps {

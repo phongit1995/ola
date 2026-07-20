@@ -210,6 +210,7 @@ function MePostCardComponent({
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const [clamped, setClamped] = useState(false);
+  const [measured, setMeasured] = useState(false);
 
   const author = post.author?.username ?? '';
   const fullName = post.author?.fullName ?? '';
@@ -222,6 +223,11 @@ function MePostCardComponent({
   const photos = post.images.map((image) => image.url);
   const sticker = post.sticker != null && post.sticker !== '' ? post.sticker : null;
   const stickerImg = stickerImageForCode(post.sticker);
+  const contentNodes = renderRichText(post.content ?? '', {
+    own: false,
+    fontSize: 14,
+    onMention: (nick) => onOpenProfile?.(nick, colorForName(nick)),
+  });
 
   function handleCommentIcon() {
     if (onQuickComment != null) onQuickComment(post.id);
@@ -269,7 +275,8 @@ function MePostCardComponent({
   }));
 
   function onTextLayout(event: NativeSyntheticEvent<TextLayoutEventData>) {
-    if (!clamped && event.nativeEvent.lines.length > 5) setClamped(true);
+    if (event.nativeEvent.lines.length > 5) setClamped(true);
+    setMeasured(true);
   }
 
   const openAuthor = () => onOpenProfile?.(author, colorForName(author));
@@ -321,16 +328,18 @@ function MePostCardComponent({
           ) : null}
           <View className="min-w-0 flex-1">
             <Text
-              onTextLayout={onTextLayout}
               numberOfLines={expanded ? undefined : 5}
               className="text-sm leading-relaxed text-ola-ink"
             >
-              {renderRichText(post.content ?? '', {
-                own: false,
-                fontSize: 14,
-                onMention: (nick) => onOpenProfile?.(nick, colorForName(nick)),
-              })}
+              {contentNodes}
             </Text>
+            {!measured && (
+              <View pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, opacity: 0 }}>
+                <Text onTextLayout={onTextLayout} className="text-sm leading-relaxed text-ola-ink">
+                  {contentNodes}
+                </Text>
+              </View>
+            )}
             {clamped && !expanded && (
               <Pressable onPress={() => setExpanded(true)}>
                 <Text className="mt-0.5 text-sm" style={{ color: '#558b2f' }}>

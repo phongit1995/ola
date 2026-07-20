@@ -539,13 +539,13 @@ func (r *Repository) Leaderboard(from, to time.Time, limit int) ([]LeaderboardRo
 	toStr := to.UTC().Format("2006-01-02 15:04:05")
 	sub := `
 		SELECT shooter_id AS uid,
-			(CASE WHEN winner_id = shooter_id THEN payout ELSE 0 END) - bet_amount AS net
+			CASE WHEN winner_id = shooter_id THEN payout - bet_amount ELSE 0 END AS net
 		FROM pen_shots
 		WHERE status = 'settled' AND deleted_at IS NULL
 			AND settled_at >= ?::timestamp AND settled_at < ?::timestamp
 		UNION ALL
 		SELECT keeper_id AS uid,
-			(CASE WHEN winner_id = keeper_id THEN payout ELSE 0 END) - bet_amount AS net
+			CASE WHEN winner_id = keeper_id THEN payout - bet_amount ELSE 0 END AS net
 		FROM pen_shots
 		WHERE status = 'settled' AND keeper_id IS NOT NULL AND deleted_at IS NULL
 			AND settled_at >= ?::timestamp AND settled_at < ?::timestamp`

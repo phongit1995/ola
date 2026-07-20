@@ -2,7 +2,7 @@ import { lazy, Suspense } from 'react';
 import { ReconnectingBanner, ToastViewport } from '@components';
 import { useSoundUnlock, useAuthSessionSync, useReconnectOnVisible, useSettingsSync } from '@hooks';
 import { AppRouter } from '@/routes';
-import { useArcadeStore } from '@/store/arcadeStore';
+import { useArcadeOverlayStore } from '@/store/arcadeOverlayStore';
 import { useMediaViewerStore } from '@/store/mediaViewerStore';
 import { useKenTreasureStore } from '@/pages/games/ken-treasure/kenTreasureStore';
 import { useKenRealtime } from '@/pages/games/ken-treasure/useKenRealtime';
@@ -24,7 +24,7 @@ const ArcadeOverlay = lazy(() =>
 );
 
 function GlobalArcade() {
-  const hasActive = useArcadeStore((s) => s.active != null);
+  const hasActive = useArcadeOverlayStore((s) => s.active != null);
   if (!hasActive) return null;
   return (
     <Suspense fallback={null}>
@@ -45,13 +45,13 @@ function GlobalKenTreasure() {
 
 function GlobalMediaViewer() {
   const open = useMediaViewerStore((s) => s.open);
-  const photos = useMediaViewerStore((s) => s.photos);
+  const images = useMediaViewerStore((s) => s.images);
   const index = useMediaViewerStore((s) => s.index);
-  const closeViewer = useMediaViewerStore((s) => s.closeViewer);
-  if (!open || photos.length === 0) return null;
+  const close = useMediaViewerStore((s) => s.close);
+  if (!open || images.length === 0) return null;
   return (
     <Suspense fallback={null}>
-      <MediaViewer key={`${index}-${photos[0]}`} photos={photos} index={index} onClose={closeViewer} />
+      <MediaViewer key={`${index}-${images[0]}`} photos={images} index={index} onClose={close} />
     </Suspense>
   );
 }
