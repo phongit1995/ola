@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Image, Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { colorForName } from '@ola/shared/lib';
 import type { SavedAccount } from '@ola/shared/stores/savedAccountsStore';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
+import { CachedImage } from '@components/ui/CachedImage';
 
 interface SavedAccountGalleryProps {
   accounts: SavedAccount[];
@@ -32,9 +33,9 @@ export function SavedAccountGallery({ accounts, onPick, onRemove }: SavedAccount
                 style={{ backgroundColor: colorForName(account.username) }}
               >
                 {account.avatar != null && account.avatar !== '' ? (
-                  <Image
-                    source={{ uri: account.avatar }}
-                    className="h-24 w-24"
+                  <CachedImage
+                    uri={account.avatar}
+                    style={{ width: 96, height: 96 }}
                     resizeMode="cover"
                   />
                 ) : (

@@ -6,6 +6,7 @@ import type { RoomReplySnapshot } from '@ola/shared/types';
 import { kulImageForText } from '@lib/kul';
 import { reactionChips } from '@lib/reactions';
 import { imageSizeForHeight } from '@lib/chatSmiley';
+import { CachedImage } from '@components/ui/CachedImage';
 import { RichTextView } from '@components/ui/RichTextView';
 import { VipAvatar } from '@components/ui/VipAvatar';
 import { useMediaViewerStore } from '@store/mediaViewerStore';
@@ -131,11 +132,10 @@ function BubbleContent({
           if (!uploading && !failed) openViewer([message.imageUrl!]);
         }}
       >
-        <Image
-          source={{ uri: message.imageUrl }}
-          onLoad={(event) => {
-            const src = event.nativeEvent.source;
-            if (src != null && src.height > 0) setImageRatio(src.width / src.height);
+        <CachedImage
+          uri={message.imageUrl}
+          onSize={({ width, height }) => {
+            if (height > 0) setImageRatio(width / height);
           }}
           style={{ ...size, borderRadius: IMAGE_RADIUS, opacity: uploading || failed ? 0.6 : 1 }}
           resizeMode="cover"

@@ -18,6 +18,7 @@ import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { useMediaViewerStore } from '@store/mediaViewerStore';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
+import { CachedImage } from '@components/ui/CachedImage';
 import { PHOTOS_PAGE_SIZE } from './constants';
 const MUTED = 'rgba(0,0,0,0.45)';
 
@@ -73,7 +74,7 @@ function PhotoTile({ url, label, onOpen }: { url: string; label?: string; onOpen
       className="overflow-hidden rounded-sm active:opacity-90"
       style={{ aspectRatio: 1, backgroundColor: 'rgba(0,0,0,0.05)' }}
     >
-      <Image source={{ uri: url }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+      <CachedImage uri={url} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
       {label != null && (
         <View
           className="absolute inset-x-0 bottom-0 px-1.5 py-1"

@@ -1,7 +1,8 @@
 import { useTranslation } from 'react-i18next';
-import { Image, Pressable, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { colorForName } from '@ola/shared/lib';
 import type { FollowUser } from '@ola/shared/types';
+import { CachedImage } from '@components/ui/CachedImage';
 import { CARD_SHADOW } from '../constants';
 
 interface FollowingPreviewCardProps {
@@ -37,8 +38,8 @@ export function FollowingPreviewCard({ users, onViewAll, onOpenFriend }: Followi
             style={{ aspectRatio: 1 }}
           >
             {friend.avatar != null && friend.avatar !== '' ? (
-              <Image
-                source={{ uri: friend.avatar }}
+              <CachedImage
+                uri={friend.avatar}
                 style={{ width: '100%', height: '100%' }}
                 resizeMode="cover"
               />

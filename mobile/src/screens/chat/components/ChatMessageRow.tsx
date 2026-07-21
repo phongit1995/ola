@@ -4,6 +4,7 @@ import { ActivityIndicator, Image, Pressable, Text, useWindowDimensions, View } 
 import { formatDuration, parseMessageMetadata } from '@ola/shared/lib';
 import type { ChatReplySnapshot, Message } from '@ola/shared/types';
 import { Avatar } from '@components/ui/Avatar';
+import { CachedImage } from '@components/ui/CachedImage';
 import { VoiceBubble } from '@components/ui/VoiceBubble';
 import { kulImageForText } from '@lib/kul';
 import { reactionChips } from '@lib/reactions';
@@ -161,11 +162,10 @@ export function ChatBubble({
   if (message.type === 'image' && meta.url != null && meta.url !== '') {
     return quotedWrap(
       <Pressable onPress={() => onOpenImage(meta.url!)}>
-        <Image
-          source={{ uri: meta.url }}
-          onLoad={(event) => {
-            const src = event.nativeEvent.source;
-            if (src != null && src.height > 0) setImageRatio(src.width / src.height);
+        <CachedImage
+          uri={meta.url}
+          onSize={({ width, height }) => {
+            if (height > 0) setImageRatio(width / height);
           }}
           style={{ ...fitChatImageSize(imageRatio), borderRadius: 8 }}
           resizeMode="cover"

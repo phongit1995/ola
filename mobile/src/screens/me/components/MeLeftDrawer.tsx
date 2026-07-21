@@ -1,8 +1,9 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Animated, BackHandler, Image, ImageBackground, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Animated, BackHandler, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { Avatar } from '@components/ui/Avatar';
+import { CachedImageBackground } from '@components/ui/CachedImage';
 
 const personalIcon = require('@assets/icons/me/ic_indicate_personal.png');
 const boxIcon = require('@assets/icons/me/ic_indicate_box.png');
@@ -82,9 +83,9 @@ export function MeLeftDrawer({
         style={{ width: WIDTH, transform: [{ translateX }] }}
       >
         <Pressable onPress={onViewProfile} style={{ height: 112 }}>
-          <ImageBackground
-            source={coverUrl != null ? { uri: coverUrl } : undefined}
-            className="flex-1 justify-end bg-ola-primary-dark"
+          <CachedImageBackground
+            uri={coverUrl}
+            style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: '#558b2f' }}
           >
             <View>
               <Svg style={StyleSheet.absoluteFill} width="100%" height="100%">
@@ -103,7 +104,7 @@ export function MeLeftDrawer({
                 </Text>
               </View>
             </View>
-          </ImageBackground>
+          </CachedImageBackground>
         </Pressable>
 
         <ScrollView className="flex-1">

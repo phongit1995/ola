@@ -11,6 +11,7 @@ import type { Room } from '@ola/shared/types';
 import type { RoomStackParamList } from '@navigation/types';
 import { ROOM_ROUTES } from '@navigation/routes';
 import { DIVIDER } from '@constants';
+import { CachedImage } from '@components/ui/CachedImage';
 import { ROOM_BROWSE_LIMIT } from './roomConstants';
 
 const membersIcon = require('@assets/icons/room/ic_indicate_privacy_friends.png');
@@ -53,8 +54,8 @@ function RoomRow({
       style={{ borderBottomWidth: 1, borderBottomColor: DIVIDER }}
     >
       {room.imageUrl != null && room.imageUrl !== '' ? (
-        <Image
-          source={{ uri: room.imageUrl }}
+        <CachedImage
+          uri={room.imageUrl}
           style={{ width: 64, height: 64, borderRadius: 4 }}
           resizeMode="cover"
         />

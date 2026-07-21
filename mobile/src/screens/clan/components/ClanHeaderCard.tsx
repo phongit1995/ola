@@ -11,6 +11,7 @@ import {
 import { formatDateDMY } from '@ola/shared/lib';
 import type { Clan } from '@ola/shared/types';
 import { DIVIDER } from '@constants';
+import { CachedImage } from '@components/ui/CachedImage';
 import { CLAN_ROLE_ICONS, clanPolicyLabel } from '@lib/clanHelpers';
 
 const manageIcon = require('@assets/icons/clan/ic_manage_clan.png');
@@ -118,8 +119,8 @@ export function ClanHeaderCard({
       <View style={{ position: 'relative' }}>
         <View style={{ width: '100%', height: coverHeight, backgroundColor: '#33691e' }}>
           {clan.cover != null && clan.cover !== '' && (
-            <Image
-              source={{ uri: clan.cover }}
+            <CachedImage
+              uri={clan.cover}
               style={{ width: '100%', height: '100%' }}
               resizeMode="cover"
             />
@@ -158,8 +159,8 @@ export function ClanHeaderCard({
         >
           <View style={{ width: 96, height: 96, backgroundColor: '#eceff1' }}>
             {clan.avatar != null && clan.avatar !== '' && (
-              <Image
-                source={{ uri: clan.avatar }}
+              <CachedImage
+                uri={clan.avatar}
                 style={{ width: '100%', height: '100%' }}
                 resizeMode="cover"
               />

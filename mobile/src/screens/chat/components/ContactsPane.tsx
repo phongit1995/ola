@@ -19,6 +19,7 @@ import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { useMediaViewerStore } from '@store/mediaViewerStore';
 import { VipAvatar } from '@components/ui/VipAvatar';
+import { CachedImage } from '@components/ui/CachedImage';
 import { MessageActionSheet, type MessageSheetAction } from '@screens/room/components/MessageActionSheet';
 import { AddContactDialog } from './AddContactDialog';
 import { BuddyRow } from './BuddyRow';
@@ -198,10 +199,12 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
                   if (hasBioImage) openViewer([me.bioImage!]);
                 }}
               >
-                <Image
-                  source={hasBioImage ? { uri: me.bioImage! } : snapPicIcon}
+                <CachedImage
+                  uri={hasBioImage ? me.bioImage! : undefined}
+                  placeholder={snapPicIcon}
                   style={{ width: 36, height: 36 }}
-                  resizeMode={hasBioImage ? 'cover' : 'contain'}
+                  resizeMode="cover"
+                  placeholderResizeMode="contain"
                 />
               </Pressable>
             </View>
@@ -227,7 +230,7 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
                   return (
                     <View key={rel.id} className="relative">
                       {requester?.avatar ? (
-                        <Image source={{ uri: requester.avatar }} style={{ width: 28, height: 28, borderRadius: 4 }} />
+                        <CachedImage uri={requester.avatar} style={{ width: 28, height: 28, borderRadius: 4 }} />
                       ) : (
                         <View
                           className="h-7 w-7 items-center justify-center rounded"
