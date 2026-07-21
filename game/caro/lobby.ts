@@ -1,5 +1,5 @@
 import type { UserInfoData } from '../src/sdk';
-import { applyAssets, vipIconUrl } from './assets';
+import { applyAssets, vipIconUrl, VIP_DEFAULT_ICON } from './assets';
 import type { BotLevel } from './bot';
 
 export interface LobbyDeps {
@@ -137,13 +137,8 @@ export function lobbySetReady(info: UserInfoData): void {
     replayShowAnimation();
   }
   el.nameText.textContent = info.guest ? 'Khách' : `@${info.username}`;
-  const vipUrl = vipIconUrl(info.vipType);
-  if (vipUrl) {
-    el.vipIcon.src = vipUrl;
-    el.vipIcon.classList.remove('hidden');
-  } else {
-    el.vipIcon.classList.add('hidden');
-  }
+  el.vipIcon.src = vipIconUrl(info.vipType) ?? VIP_DEFAULT_ICON;
+  el.vipIcon.classList.remove('hidden');
   animateKen(info.ken ?? 0);
 }
 
