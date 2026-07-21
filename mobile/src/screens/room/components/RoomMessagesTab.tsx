@@ -257,6 +257,7 @@ export function RoomMessagesTab({
         data={feed}
         keyExtractor={(item) => item.key}
         getItemType={(item) => item.kind}
+        drawDistance={1500}
         maintainVisibleContentPosition={{
           startRenderingFromBottom: true,
           autoscrollToBottomThreshold: 0.2,

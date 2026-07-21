@@ -379,6 +379,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
           ref={listRef}
           data={messages}
           keyExtractor={(item) => item.clientMsgId ?? item.id}
+          drawDistance={1500}
           maintainVisibleContentPosition={{
             startRenderingFromBottom: true,
             autoscrollToBottomThreshold: 0.2,
