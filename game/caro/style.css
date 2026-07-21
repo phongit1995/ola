@@ -92,6 +92,14 @@ button:focus-visible,
   transition: filter 200ms, transform 200ms;
 }
 
+.name-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 100%;
+  min-width: 0;
+}
+
 .player .name {
   font-weight: 800;
   font-size: clamp(13px, 3.8vw, 18px);
@@ -99,14 +107,12 @@ button:focus-visible,
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 100%;
+  min-width: 0;
 }
 
 .mark {
-  position: absolute;
-  bottom: -2px;
-  right: -6px;
-  width: clamp(18px, 5.5vw, 26px);
+  flex-shrink: 0;
+  width: clamp(15px, 4.4vw, 22px);
   aspect-ratio: 1;
   font-size: 0;
   background-size: contain;
@@ -781,6 +787,9 @@ button:focus-visible,
   align-items: center;
   justify-content: center;
   padding: 24px;
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  animation: pick-backdrop 320ms ease-out;
 }
 
 #lobby-pick-card {
@@ -791,7 +800,37 @@ button:focus-visible,
   background-size: 100% 100%;
   background-repeat: no-repeat;
   container-type: inline-size;
-  animation: rise 220ms ease-out;
+  transform-origin: 50% 0;
+  animation: pick-drop 560ms cubic-bezier(0.2, 1.15, 0.4, 1) backwards;
+}
+
+@keyframes pick-backdrop {
+  from {
+    background-color: rgba(9, 24, 43, 0);
+    -webkit-backdrop-filter: blur(0);
+    backdrop-filter: blur(0);
+  }
+}
+
+@keyframes pick-drop {
+  0% {
+    opacity: 0;
+    transform: perspective(1000px) rotateX(-26deg) translateY(-22px) scale(0.92);
+  }
+  55% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: perspective(1000px) rotateX(0deg) translateY(0) scale(1);
+  }
+}
+
+@keyframes pick-item {
+  from {
+    transform: translateY(16px) scale(0.96);
+    opacity: 0;
+  }
 }
 
 .pick-body {
@@ -808,12 +847,13 @@ button:focus-visible,
 #lobby-pick-title {
   flex-shrink: 0;
   width: 100%;
-  aspect-ratio: 1664 / 659;
+  aspect-ratio: 1664 / 720;
   background-size: 100% 100%;
   background-repeat: no-repeat;
   display: flex;
   align-items: center;
   justify-content: center;
+  animation: pick-item 420ms ease-out 130ms backwards;
 }
 
 #lobby-pick-title span {
@@ -838,7 +878,7 @@ button:focus-visible,
 #lobby-pick-levels button {
   flex-shrink: 0;
   position: relative;
-  width: 84%;
+  width: 70%;
   aspect-ratio: 1702 / 535;
   border: none;
   background-color: transparent;
@@ -849,6 +889,19 @@ button:focus-visible,
   justify-content: center;
   cursor: pointer;
   transition: transform 100ms ease-out, filter 100ms ease-out;
+  animation: pick-item 420ms ease-out backwards;
+}
+
+#lobby-pick-levels button:nth-child(1) {
+  animation-delay: 210ms;
+}
+
+#lobby-pick-levels button:nth-child(2) {
+  animation-delay: 280ms;
+}
+
+#lobby-pick-levels button:nth-child(3) {
+  animation-delay: 350ms;
 }
 
 #lobby-pick-levels button span {
@@ -866,7 +919,7 @@ button:focus-visible,
 
 #lobby-pick-close {
   position: absolute;
-  right: 4%;
+  right: 5%;
   top: 3%;
   width: 11%;
   aspect-ratio: 1020 / 1028;
@@ -880,6 +933,7 @@ button:focus-visible,
   cursor: pointer;
   transition: transform 100ms ease-out;
   z-index: 2;
+  animation: pick-item 420ms ease-out 300ms backwards;
 }
 
 #lobby-pick-close img {

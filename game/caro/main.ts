@@ -173,7 +173,7 @@ function wireSession(target: GameSession<CaroState, CaroMove>): void {
     match = data;
     lobbySetVisible(false);
     hideOverlay();
-    el.meName.textContent = data.players[data.you].name;
+    el.meName.textContent = userInfo ? `@${userInfo.username}` : data.players[data.you].name;
     el.opName.textContent = opponentOf(data.players, data.you).name;
     el.meMark.className = data.you === 0 ? 'mark x' : 'mark o';
     el.opMark.className = data.you === 0 ? 'mark o' : 'mark x';
