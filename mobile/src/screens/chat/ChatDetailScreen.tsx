@@ -358,7 +358,6 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         subtitle={subtitle}
         avatar={peerAvatar}
         onBack={() => navigation.goBack()}
-        onShowAvatar={showPeerAvatar}
         onOpenProfile={openPeerProfile}
         onMore={() => setMenuOpen(true)}
       />
