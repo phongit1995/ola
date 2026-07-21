@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Image, Pressable, Text, useWindowDimensions, View } from 'react-native';
 import { formatDuration, parseMessageMetadata } from '@ola/shared/lib';
@@ -14,6 +14,22 @@ import type { AnchorRect } from '@screens/room/components/MessageActionSheet';
 function chatBubbleTextMaxWidth(windowWidth: number, fromMe: boolean): number {
   const rowWidth = windowWidth - 24 - (fromMe ? 0 : 36);
   return Math.floor(rowWidth * 0.78 - 24) - 2;
+}
+
+const CHAT_IMAGE_MAX_WIDTH = 220;
+const CHAT_IMAGE_MAX_HEIGHT = 240;
+
+function fitChatImageSize(ratio: number | null) {
+  if (ratio == null || ratio <= 0) {
+    return { width: CHAT_IMAGE_MAX_WIDTH, height: CHAT_IMAGE_MAX_HEIGHT };
+  }
+  let width = CHAT_IMAGE_MAX_WIDTH;
+  let height = width / ratio;
+  if (height > CHAT_IMAGE_MAX_HEIGHT) {
+    height = CHAT_IMAGE_MAX_HEIGHT;
+    width = height * ratio;
+  }
+  return { width, height };
 }
 
 const sentIcon = require('@assets/icons/chat/ic_message_sent.png');
@@ -105,17 +121,55 @@ export function ChatBubble({
 }) {
   const meta = parseMessageMetadata(message.metadata);
   const { width: windowWidth } = useWindowDimensions();
+  const [imageRatio, setImageRatio] = useState<number | null>(null);
   const failed = message.status === 'failed';
+  const bg = failed ? '#f8d7d7' : fromMe ? '#dcedc8' : '#ffffff';
+  const cornerClass = fromMe
+    ? `${firstInGroup ? '' : 'rounded-tr-sm'} ${lastInGroup ? '' : 'rounded-br-sm'}`
+    : `${firstInGroup ? '' : 'rounded-tl-sm'} ${lastInGroup ? '' : 'rounded-bl-sm'}`;
+
+  const quotedWrap = (content: ReactNode) =>
+    message.replyTo != null ? (
+      <View
+        className={`rounded-2xl px-3 py-2 ${cornerClass}`}
+        style={[
+          { backgroundColor: bg },
+          fromMe
+            ? null
+            : { shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 2, shadowOffset: { width: 0, height: 1 }, elevation: 1 },
+        ]}
+      >
+        <ChatQuoteBlock
+          replyTo={message.replyTo}
+          maxWidth={chatBubbleTextMaxWidth(windowWidth, fromMe)}
+          onQuoteClick={onQuoteClick}
+        />
+        {content}
+      </View>
+    ) : (
+      content
+    );
+
   const kul = message.type === 'text' ? kulImageForText(message.content) : null;
 
   if (kul != null) {
-    return <Image source={kul} style={imageSizeForHeight(kul, 120)} resizeMode="contain" />;
+    return quotedWrap(
+      <Image source={kul} style={imageSizeForHeight(kul, 120)} resizeMode="contain" />
+    );
   }
 
   if (message.type === 'image' && meta.url != null && meta.url !== '') {
-    return (
+    return quotedWrap(
       <Pressable onPress={() => onOpenImage(meta.url!)}>
-        <Image source={{ uri: meta.url }} style={{ width: 200, height: 200, borderRadius: 8 }} resizeMode="cover" />
+        <Image
+          source={{ uri: meta.url }}
+          onLoad={(event) => {
+            const src = event.nativeEvent.source;
+            if (src != null && src.height > 0) setImageRatio(src.width / src.height);
+          }}
+          style={{ ...fitChatImageSize(imageRatio), borderRadius: 8 }}
+          resizeMode="cover"
+        />
       </Pressable>
     );
   }
@@ -130,11 +184,6 @@ export function ChatBubble({
       />
     );
   }
-
-  const bg = failed ? '#f8d7d7' : fromMe ? '#dcedc8' : '#ffffff';
-  const cornerClass = fromMe
-    ? `${firstInGroup ? '' : 'rounded-tr-sm'} ${lastInGroup ? '' : 'rounded-br-sm'}`
-    : `${firstInGroup ? '' : 'rounded-tl-sm'} ${lastInGroup ? '' : 'rounded-bl-sm'}`;
 
   return (
     <View

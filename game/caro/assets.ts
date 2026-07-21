@@ -12,6 +12,11 @@ import lobbyBottomFrame from './assets/lobby/bottom-frame.png';
 import lobbyIcHistory from './assets/lobby/ic-history.png';
 import lobbyIcLeaderboard from './assets/lobby/ic-leaderboard.png';
 import lobbyIcExit from './assets/lobby/ic-exit.png';
+import lobbyPickBg from './assets/lobby/pick-bg.png';
+import lobbyPickTitle from './assets/lobby/pick-title.png';
+import lobbyPickLevel from './assets/lobby/pick-level.png';
+import lobbyPickClose from './assets/lobby/pick-close.png';
+import lobbyPickX from './assets/lobby/pick-x.png';
 
 export const LOBBY_ASSETS = {
   bg: lobbyBg,
@@ -28,8 +33,38 @@ export const LOBBY_ASSETS = {
   icHistory: lobbyIcHistory,
   icLeaderboard: lobbyIcLeaderboard,
   icExit: lobbyIcExit,
+  pickBg: lobbyPickBg,
+  pickTitle: lobbyPickTitle,
+  pickLevel: lobbyPickLevel,
+  pickClose: lobbyPickClose,
+  pickX: lobbyPickX,
 } as const;
 
+import rankedBg from './assets/ranked/bg.png';
+import rankedTitleFrame from './assets/ranked/title-frame.png';
+import rankedCup from './assets/ranked/ic-cup.png';
+import rankedTable from './assets/ranked/table.png';
+import rankedSlotOpen from './assets/ranked/slot-open.png';
+import rankedSlotFull from './assets/ranked/slot-full.png';
+import rankedLock from './assets/ranked/ic-lock.png';
+import rankedPageBtn from './assets/ranked/page-btn.png';
+import rankedMenuBtn from './assets/ranked/menu-btn.png';
+import createPanel from './assets/create/panel.png';
+import createTitleFrame from './assets/create/title-frame.png';
+import createLabelFrame from './assets/create/label-frame.png';
+import createInputFrame from './assets/create/input-frame.png';
+import createBtnOk from './assets/create/btn-ok.png';
+import createBtnClose from './assets/create/btn-close.png';
+import createIcX from './assets/create/ic-x.png';
+import resultBg from './assets/result/bg.png';
+import resultTitleFrame from './assets/result/title-frame.png';
+import resultCupWin from './assets/result/cup-win.png';
+import resultCupLose from './assets/result/cup-lose.png';
+import resultBrushWin from './assets/result/brush-win.png';
+import resultBrushLose from './assets/result/brush-lose.png';
+import resultKenFrame from './assets/result/ken-frame.png';
+import resultIcKen from './assets/result/ic-ken.png';
+import resultBtnClose from './assets/result/btn-close.png';
 import boardBg from './assets/board/bg.png';
 import boardFrame from './assets/board/board-frame.png';
 import boardX from './assets/board/x.png';
@@ -52,7 +87,38 @@ export const BOARD_ASSETS = {
   boardMenuBtn,
 } as const;
 
-const ALL_ASSETS = { ...LOBBY_ASSETS, ...BOARD_ASSETS } as const;
+export const RANKED_ASSETS = {
+  rankedBg,
+  rankedTitleFrame,
+  rankedCup,
+  rankedTable,
+  rankedSlotOpen,
+  rankedSlotFull,
+  rankedLock,
+  rankedPageBtn,
+  rankedMenuBtn,
+  createPanel,
+  createTitleFrame,
+  createLabelFrame,
+  createInputFrame,
+  createBtnOk,
+  createBtnClose,
+  createIcX,
+} as const;
+
+export const RESULT_ASSETS = {
+  resultBg,
+  resultTitleFrame,
+  resultCupWin,
+  resultCupLose,
+  resultBrushWin,
+  resultBrushLose,
+  resultKenFrame,
+  resultIcKen,
+  resultBtnClose,
+} as const;
+
+const ALL_ASSETS = { ...LOBBY_ASSETS, ...BOARD_ASSETS, ...RANKED_ASSETS, ...RESULT_ASSETS } as const;
 
 export type AssetKey = keyof typeof ALL_ASSETS;
 
@@ -69,14 +135,26 @@ export function applyAssets(root: ParentNode): void {
   document.documentElement.style.setProperty('--asset-board-o', `url('${BOARD_ASSETS.boardO}')`);
 }
 
-export function preloadAssets(timeoutMs = 6000): Promise<void> {
+export function preloadAssets(
+  onProgress?: (loaded: number, total: number) => void,
+  timeoutMs = 15000,
+): Promise<void> {
+  const urls = Object.values(ALL_ASSETS);
+  const total = urls.length;
+  let loaded = 0;
+  onProgress?.(0, total);
   const loadAll = Promise.all(
-    Object.values(ALL_ASSETS).map(
+    urls.map(
       (url) =>
         new Promise<void>((resolve) => {
+          const done = (): void => {
+            loaded++;
+            onProgress?.(loaded, total);
+            resolve();
+          };
           const img = new Image();
-          img.onload = () => resolve();
-          img.onerror = () => resolve();
+          img.onload = done;
+          img.onerror = done;
           img.src = url;
         }),
     ),

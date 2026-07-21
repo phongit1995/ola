@@ -1,5 +1,13 @@
-import { bridge, joinGame, type GameSession, type MatchFoundData, type PlayerInfo, type UserInfoData } from '../src/sdk';
+import { bridge, joinGame, type GameSession, type MatchFoundData, type PlayerInfo, type RoomInfo, type UserInfoData } from '../src/sdk';
 import { BOARD_ASSETS, preloadAssets } from './assets';
+import {
+  buildRanked,
+  rankedSetRooms,
+  rankedSetVisible,
+  rankedShowWaiting,
+  rankedToast,
+} from './ranked';
+import { buildResult, showResult, hideResult } from './result';
 import { createBotSession, type BotLevel } from './bot';
 import {
   buildLobby,
@@ -7,9 +15,9 @@ import {
   lobbySetConnecting,
   lobbySetError,
   lobbySetLoaded,
+  lobbySetProgress,
   lobbySetReady,
   lobbySetVisible,
-  lobbyToast,
 } from './lobby';
 import { SIZE, type CaroMove, type CaroState } from './types';
 
@@ -55,6 +63,7 @@ let onlineSession: GameSession<CaroState, CaroMove> | null = null;
 let botSession: GameSession<CaroState, CaroMove> | null = null;
 let botSessionLevel: BotLevel | null = null;
 let match: MatchFoundData<CaroState> | null = null;
+let matchBet = 0;
 let userInfo: UserInfoData | null = null;
 let connecting = false;
 let myTurn = false;
@@ -82,6 +91,7 @@ function hideOverlay(): void {
 
 function backToLobby(): void {
   hideOverlay();
+  hideResult();
   lobbyEnterAnimated();
   if (!userInfo && !connecting) void connectToServer();
 }
@@ -163,7 +173,7 @@ function wireSession(target: GameSession<CaroState, CaroMove>): void {
     match = data;
     lobbySetVisible(false);
     hideOverlay();
-    el.meName.textContent = data.players[data.you].name;
+    el.meName.textContent = userInfo ? `@${userInfo.username}` : data.players[data.you].name;
     el.opName.textContent = opponentOf(data.players, data.you).name;
     el.meMark.className = data.you === 0 ? 'mark x' : 'mark o';
     el.opMark.className = data.you === 0 ? 'mark o' : 'mark x';
@@ -186,15 +196,12 @@ function wireSession(target: GameSession<CaroState, CaroMove>): void {
     renderBoard(data.state);
     const won = match != null && data.winnerId === match.players[match.you].id;
     const draw = data.winnerId == null || data.winnerId === '';
-    const reasonText =
-      data.reason === 'timeout' ? 'Hết giờ' : data.reason === 'forfeit' ? 'Bỏ cuộc' : '';
-    showOverlay(
-      draw ? 'Hòa!' : won ? 'Bạn thắng!' : 'Bạn thua',
-      reasonText,
-      draw ? 'draw' : won ? 'win' : 'lose',
-      ['again', 'lobby'],
-    );
-    el.status.textContent = 'Chơi ván mới?';
+    if (draw) {
+      showOverlay('Hòa!', '', 'draw', ['again', 'lobby']);
+      el.status.textContent = 'Chơi ván mới?';
+    } else {
+      showResult(won, matchBet > 0 ? (won ? matchBet : -matchBet) : null);
+    }
     bridge.gameOver({ matchId: data.matchId, winnerId: data.winnerId, reason: data.reason, won });
     match = null;
   });
@@ -252,16 +259,25 @@ function startBotGame(level: BotLevel): void {
   session.joinQueue();
 }
 
-async function startRankedGame(): Promise<void> {
-  if (!onlineSession || !userInfo) {
-    await connectToServer();
-  }
-  if (!onlineSession || !userInfo) {
-    lobbyToast('Không kết nối được máy chủ, thử lại nhé!');
-    return;
-  }
-  session = onlineSession;
-  session.joinQueue();
+const MOCK_ROOMS: RoomInfo[] = [
+  { id: 'm1', owner: 'toilabot', bet: 1000, locked: false, players: 1 },
+  { id: 'm2', owner: 'pain', bet: 5000, locked: true, players: 1 },
+  { id: 'm3', owner: 'vua_caro', bet: 20000, locked: false, players: 2, full: true },
+  { id: 'm4', owner: 'meomeo', bet: 0, locked: false, players: 1 },
+  { id: 'm5', owner: 'songlong', bet: 12345, locked: true, players: 2, full: true },
+  { id: 'm6', owner: 'caro_pro', bet: 500, locked: false, players: 1 },
+  { id: 'm7', owner: 'hoa_mua_he', bet: 2000, locked: true, players: 1 },
+  { id: 'm8', owner: 'bot_hunter', bet: 99999, locked: false, players: 1 },
+  { id: 'm9', owner: 'kien_con', bet: 100, locked: false, players: 1 },
+  { id: 'm10', owner: 'thach_dau', bet: 7777, locked: false, players: 1 },
+  { id: 'm11', owner: 'tay_choi_moi', bet: 0, locked: false, players: 1 },
+  { id: 'm12', owner: 'co_thu_lang', bet: 3000, locked: true, players: 1 },
+];
+
+function openRanked(): void {
+  lobbySetVisible(false);
+  rankedSetVisible(true);
+  rankedSetRooms(MOCK_ROOMS);
 }
 
 el.btnAgain.addEventListener('click', () => session?.joinQueue());
@@ -301,15 +317,40 @@ el.board.addEventListener('click', (event) => {
 
 buildLobby({
   onPlayBot: startBotGame,
-  onPlayRanked: () => void startRankedGame(),
+  onPlayRanked: openRanked,
   onRetry: () => void connectToServer(),
   onExit: () => bridge.exit(),
 });
 
+buildRanked({
+  onJoin: (room, password) => {
+    rankedToast(
+      password != null
+        ? `(mock) Vào bàn của ${room.owner} — mật khẩu "${password}"`
+        : `(mock) Vào bàn của ${room.owner}`,
+    );
+  },
+  onCreate: (bet, password) => {
+    rankedShowWaiting(true, bet);
+    rankedToast(password ? '(mock) Đã tạo bàn có khóa' : '(mock) Đã tạo bàn');
+  },
+  onCancelRoom: () => rankedToast('(mock) Đã hủy bàn'),
+  onRefresh: () => {
+    rankedSetRooms(MOCK_ROOMS);
+    rankedToast('Đã làm mới danh sách');
+  },
+  onExit: () => {
+    rankedSetVisible(false);
+    lobbyEnterAnimated();
+  },
+});
+
+buildResult({ onClose: backToLobby });
+
 bridge.ready();
 
 void (async () => {
-  await preloadAssets();
+  await preloadAssets(lobbySetProgress);
   lobbySetLoaded();
   await connectToServer();
 })();

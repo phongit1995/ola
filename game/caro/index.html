@@ -10,10 +10,11 @@
     <div id="app" data-asset-bg="boardBg">
       <header id="topbar">
         <div class="player" id="player-me">
-          <div class="p-avatar" data-asset-bg="boardAvatarFrame">
+          <div class="p-avatar" data-asset-bg="boardAvatarFrame"></div>
+          <div class="name-row">
+            <span class="name">Bạn</span>
             <span class="mark x">X</span>
           </div>
-          <span class="name">Bạn</span>
         </div>
         <div id="center">
           <div id="timer" class="hidden" data-asset-bg="boardTimerFrame">
@@ -23,10 +24,11 @@
           <div id="status">Sẵn sàng</div>
         </div>
         <div class="player right" id="player-op">
-          <div class="p-avatar" data-asset-bg="boardAvatarFrame">
+          <div class="p-avatar" data-asset-bg="boardAvatarFrame"></div>
+          <div class="name-row">
+            <span class="name">---</span>
             <span class="mark o">O</span>
           </div>
-          <span class="name">---</span>
         </div>
       </header>
 
@@ -68,7 +70,7 @@
       </footer>
     </div>
 
-    <div id="lobby" class="loading">
+    <div id="lobby" class="loading" data-loading="Đang tải...">
       <div id="lobby-inner" data-asset-bg="bg">
         <div class="lobby-top-space"></div>
         <div id="lobby-content">
@@ -115,16 +117,100 @@
         <div id="lobby-toast" class="hidden"></div>
       </div>
       <div id="lobby-pick" class="hidden">
-        <div id="lobby-pick-card">
-          <h3>Đấu với máy</h3>
-          <p>Chọn độ khó</p>
-          <div id="lobby-pick-levels">
-            <button type="button" data-level="easy">Dễ</button>
-            <button type="button" data-level="normal">Thường</button>
-            <button type="button" data-level="hard">Khó</button>
+        <div id="lobby-pick-card" data-asset-bg="pickBg">
+          <div class="pick-body">
+            <div id="lobby-pick-title" data-asset-bg="pickTitle">
+              <span>Chơi với máy</span>
+            </div>
+            <div id="lobby-pick-levels">
+              <button type="button" data-level="easy" data-asset-bg="pickLevel"><span>Dễ</span></button>
+              <button type="button" data-level="normal" data-asset-bg="pickLevel"><span>Vừa</span></button>
+              <button type="button" data-level="hard" data-asset-bg="pickLevel"><span>Khó</span></button>
+            </div>
           </div>
-          <button type="button" id="lobby-pick-close" aria-label="Đóng">✕</button>
+          <button type="button" id="lobby-pick-close" data-asset-bg="pickClose" aria-label="Đóng">
+            <img data-asset="pickX" alt="Đóng" />
+          </button>
         </div>
+      </div>
+    </div>
+    <div id="ranked" class="hidden">
+      <div id="ranked-inner" data-asset-bg="rankedBg">
+        <div class="ranked-title" data-asset-bg="rankedTitleFrame">
+          <span>Chơi xếp hạng</span>
+          <img data-asset="rankedCup" alt="" />
+        </div>
+        <div class="ranked-table-wrap">
+          <div class="ranked-table" data-asset-bg="rankedTable">
+            <div class="ranked-head">
+              <span>Chủ bàn</span>
+              <span>Ken cược</span>
+              <span>Tham gia</span>
+            </div>
+            <div id="ranked-rows"></div>
+            <div id="ranked-empty" class="hidden">Chưa có bàn nào,<br />tạo bàn mới nhé!</div>
+          </div>
+        </div>
+        <div class="ranked-pager">
+          <button type="button" id="ranked-prev" data-asset-bg="rankedPageBtn">&lt;</button>
+          <span id="ranked-page" data-asset-bg="rankedPageBtn">1</span>
+          <button type="button" id="ranked-next" data-asset-bg="rankedPageBtn">&gt;</button>
+        </div>
+        <div class="ranked-menu">
+          <button type="button" id="ranked-create" data-asset-bg="rankedMenuBtn">Tạo bàn</button>
+          <button type="button" id="ranked-refresh" data-asset-bg="rankedMenuBtn">Làm mới</button>
+          <button type="button" id="ranked-exit" data-asset-bg="rankedMenuBtn">Thoát</button>
+        </div>
+        <div id="ranked-waiting" class="hidden">
+          <span id="ranked-waiting-text">Đang đợi đối thủ vào bàn...</span>
+          <button type="button" id="ranked-waiting-cancel">Hủy bàn</button>
+        </div>
+        <div id="ranked-toast" class="hidden"></div>
+      </div>
+      <div id="ranked-create-modal" class="hidden">
+        <div id="create-card" data-asset-bg="createPanel">
+          <div class="create-title" data-asset-bg="createTitleFrame"><span>Tạo bàn</span></div>
+          <button type="button" id="create-close" data-asset-bg="createBtnClose" aria-label="Đóng">
+            <img data-asset="createIcX" alt="" />
+          </button>
+          <div class="create-body">
+            <div class="create-label" data-asset-bg="createLabelFrame"><span>Số Ken</span></div>
+            <div class="create-input" data-asset-bg="createInputFrame">
+              <input id="create-bet" type="text" inputmode="numeric" value="0" />
+            </div>
+            <div class="create-label" data-asset-bg="createLabelFrame"><span>Mật khẩu</span></div>
+            <div class="create-input" data-asset-bg="createInputFrame">
+              <input id="create-password" type="text" autocomplete="off" placeholder="Để trống nếu không khóa" />
+            </div>
+          </div>
+          <button type="button" id="create-ok" data-asset-bg="createBtnOk"><span>OK</span></button>
+        </div>
+      </div>
+      <div id="ranked-pass-modal" class="hidden">
+        <div id="pass-card">
+          <h3>Bàn có khóa</h3>
+          <div class="create-input" data-asset-bg="createInputFrame">
+            <input id="pass-input" type="text" autocomplete="off" placeholder="Nhập mật khẩu" />
+          </div>
+          <div class="pass-actions">
+            <button type="button" id="pass-ok">Vào bàn</button>
+            <button type="button" id="pass-cancel">Hủy</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="result" class="hidden">
+      <div id="result-card" data-asset-bg="resultBg">
+        <div class="result-title" data-asset-bg="resultTitleFrame"><span>Kết quả</span></div>
+        <img id="result-cup" data-asset="resultCupWin" alt="" />
+        <div id="result-brush">
+          <span id="result-verdict">Thắng</span>
+        </div>
+        <div id="result-ken" data-asset-bg="resultKenFrame">
+          <img data-asset="resultIcKen" alt="" />
+          <span id="result-ken-text">+500.000 KEN</span>
+        </div>
+        <button type="button" id="result-close" data-asset-bg="resultBtnClose"><span>Đóng</span></button>
       </div>
     </div>
     <script type="module" src="./main.ts"></script>

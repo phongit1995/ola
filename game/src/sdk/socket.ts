@@ -7,6 +7,8 @@ import {
   type ErrorData,
   type MatchFoundData,
   type MatchOverData,
+  type RoomListData,
+  type RoomWaitingData,
   type StateData,
   type UserInfoData,
 } from './protocol';
@@ -19,8 +21,14 @@ export interface GameSession<TState = unknown, TMove = unknown> {
   leaveQueue(): void;
   sendMove(move: TMove): void;
   forfeit(): void;
+  createRoom(bet: number, password?: string): void;
+  joinRoom(roomId: string, password?: string): void;
+  leaveRoom(): void;
+  listRooms(): void;
   onUserInfo(handler: (data: UserInfoData) => void): () => void;
   onQueueWaiting(handler: () => void): () => void;
+  onRoomList(handler: (data: RoomListData) => void): () => void;
+  onRoomWaiting(handler: (data: RoomWaitingData) => void): () => void;
   onMatchFound(handler: (data: MatchFoundData<TState>) => void): () => void;
   onState(handler: (data: StateData<TState, TMove>) => void): () => void;
   onMatchOver(handler: (data: MatchOverData<TState>) => void): () => void;
@@ -76,8 +84,14 @@ export async function joinGame<TState = unknown, TMove = unknown>(
     leaveQueue: () => send(C2S.QueueLeave),
     sendMove: (move) => send(C2S.Move, move),
     forfeit: () => send(C2S.Forfeit),
+    createRoom: (bet, password) => send(C2S.RoomCreate, { bet, password }),
+    joinRoom: (roomId, password) => send(C2S.RoomJoin, { roomId, password }),
+    leaveRoom: () => send(C2S.RoomLeave),
+    listRooms: () => send(C2S.RoomList),
     onUserInfo: (handler) => on(S2C.UserInfo, handler as Handler),
     onQueueWaiting: (handler) => on(S2C.QueueWaiting, handler as Handler),
+    onRoomList: (handler) => on(S2C.RoomList, handler as Handler),
+    onRoomWaiting: (handler) => on(S2C.RoomWaiting, handler as Handler),
     onMatchFound: (handler) => on(S2C.MatchFound, handler as Handler),
     onState: (handler) => on(S2C.State, handler as Handler),
     onMatchOver: (handler) => on(S2C.MatchOver, handler as Handler),
