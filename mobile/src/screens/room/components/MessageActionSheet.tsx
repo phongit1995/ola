@@ -7,6 +7,7 @@ import {
 
   Platform,
   Pressable,
+  StatusBar,
   StyleSheet,
   Text,
   useWindowDimensions,
@@ -145,6 +146,9 @@ function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
 }
 
+const ANCHOR_TOP_OFFSET =
+  Platform.OS === 'android' ? StatusBar.currentHeight ?? 0 : 0;
+
 function popupHeight(actionCount: number, showReactions: boolean): number {
   const menu = actionCount > 0 ? MENU_PADDING_V * 2 + actionCount * MENU_ITEM_HEIGHT : 0;
   if (!showReactions) return menu;
@@ -213,9 +217,10 @@ function MessengerPopup({
   const usableBottom = winH - kbAdjust;
   const bottomInset = kbAdjust > 0 ? POPUP_MARGIN : Math.max(POPUP_MARGIN, insets.bottom);
 
+  const anchorY = anchor.y + ANCHOR_TOP_OFFSET;
   const minBubbleTop = Math.max(POPUP_MARGIN, insets.top) + topNeed;
   const maxBubbleTop = usableBottom - bottomInset - anchor.height - bottomNeed;
-  const bubbleTop = clamp(anchor.y, minBubbleTop, maxBubbleTop);
+  const bubbleTop = clamp(anchorY, minBubbleTop, maxBubbleTop);
 
   const alignRight = anchor.x + anchor.width / 2 > winW / 2;
   const barWidth = Math.min(BAR_WIDTH, winW - POPUP_MARGIN * 2);
@@ -302,9 +307,10 @@ function AnchoredPopup({
   const usableBottom = winH - kbAdjust;
   const bottomInset = kbAdjust > 0 ? POPUP_MARGIN : Math.max(POPUP_MARGIN, insets.bottom);
 
-  const spaceBelow = usableBottom - (anchor.y + anchor.height) - POPUP_MARGIN;
-  const placeBelow = spaceBelow >= height + POPUP_GAP || spaceBelow >= anchor.y - POPUP_MARGIN;
-  const rawTop = placeBelow ? anchor.y + anchor.height + POPUP_GAP : anchor.y - POPUP_GAP - height;
+  const anchorY = anchor.y + ANCHOR_TOP_OFFSET;
+  const spaceBelow = usableBottom - (anchorY + anchor.height) - POPUP_MARGIN;
+  const placeBelow = spaceBelow >= height + POPUP_GAP || spaceBelow >= anchorY - POPUP_MARGIN;
+  const rawTop = placeBelow ? anchorY + anchor.height + POPUP_GAP : anchorY - POPUP_GAP - height;
   const minTop = Math.max(POPUP_MARGIN, insets.top);
   const top = clamp(rawTop, minTop, usableBottom - bottomInset - height);
 
