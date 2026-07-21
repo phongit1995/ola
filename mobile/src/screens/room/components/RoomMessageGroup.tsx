@@ -1,6 +1,14 @@
 import { memo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Image, Pressable, Text, useWindowDimensions, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Image,
+  type ImageSourcePropType,
+  Pressable,
+  Text,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 import { colorForName, formatClockHM } from '@ola/shared/lib';
 import type { RoomReplySnapshot } from '@ola/shared/types';
 import { kulImageForText } from '@lib/kul';
@@ -21,6 +29,8 @@ const resendIcon = require('@assets/icons/chat/btn_resend_d.png');
 const IMAGE_MAX_WIDTH = 208;
 const IMAGE_MAX_HEIGHT = 176;
 const IMAGE_RADIUS = 8;
+
+const imageRatioCache = new Map<string, number>();
 
 function fitImageSize(ratio: number | null) {
   if (ratio == null || ratio <= 0) {
@@ -109,17 +119,21 @@ function QuoteBlock({
 function BubbleContent({
   message,
   isOwn,
+  kul,
   onMention,
   onResendImage,
 }: {
   message: GroupedMessage;
   isOwn: boolean;
+  kul: ImageSourcePropType | null;
   onMention: (nick: string) => void;
   onResendImage?: (id: string) => void;
 }) {
   const openViewer = useMediaViewerStore((s) => s.openViewer);
   const { width: windowWidth } = useWindowDimensions();
-  const [imageRatio, setImageRatio] = useState<number | null>(null);
+  const [imageRatio, setImageRatio] = useState<number | null>(() =>
+    message.imageUrl != null ? (imageRatioCache.get(message.imageUrl) ?? null) : null
+  );
   const isImage = message.type === 'image' && message.imageUrl != null && message.imageUrl !== '';
   const uploading = message.status === 'uploading';
   const failed = message.status === 'failed';
@@ -135,7 +149,11 @@ function BubbleContent({
         <CachedImage
           uri={message.imageUrl}
           onSize={({ width, height }) => {
-            if (height > 0) setImageRatio(width / height);
+            if (height > 0) {
+              const ratio = width / height;
+              if (message.imageUrl != null) imageRatioCache.set(message.imageUrl, ratio);
+              setImageRatio(ratio);
+            }
           }}
           style={{ ...size, borderRadius: IMAGE_RADIUS, opacity: uploading || failed ? 0.6 : 1 }}
           resizeMode="cover"
@@ -158,7 +176,6 @@ function BubbleContent({
     );
   }
 
-  const kul = kulImageForText(message.content);
   if (kul != null) {
     return <Image source={kul} style={imageSizeForHeight(kul, 112)} resizeMode="contain" />;
   }
@@ -192,7 +209,7 @@ export function RoomBubbleBody({
   onResendImage?: (id: string) => void;
 }) {
   const isImage = message.type === 'image' && message.imageUrl != null && message.imageUrl !== '';
-  const kul = kulImageForText(message.content);
+  const kul = isImage ? null : kulImageForText(message.content);
   const corners = isOwn ? OWN_CORNERS[position] : OTHER_CORNERS[position];
   const bare = (isImage || kul != null) && message.replyTo == null;
 
@@ -210,6 +227,7 @@ export function RoomBubbleBody({
       <BubbleContent
         message={message}
         isOwn={isOwn}
+        kul={kul}
         onMention={onMention}
         onResendImage={onResendImage}
       />
@@ -414,4 +432,66 @@ function RoomMessageGroupComponent({
   );
 }
 
-export const RoomMessageGroup = memo(RoomMessageGroupComponent);
+function sameReply(
+  a: RoomReplySnapshot | null | undefined,
+  b: RoomReplySnapshot | null | undefined
+): boolean {
+  if (a == null || b == null) return a == null && b == null;
+  return (
+    a.messageId === b.messageId &&
+    a.excerpt === b.excerpt &&
+    a.senderName === b.senderName &&
+    a.type === b.type
+  );
+}
+
+function sameMessages(a: GroupedMessage[], b: GroupedMessage[]): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    const x = a[i]!;
+    const y = b[i]!;
+    if (
+      x.id !== y.id ||
+      x.key !== y.key ||
+      x.content !== y.content ||
+      x.type !== y.type ||
+      x.imageUrl !== y.imageUrl ||
+      x.status !== y.status ||
+      x.position !== y.position ||
+      x.reactions !== y.reactions ||
+      !sameReply(x.replyTo, y.replyTo)
+    ) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function groupHasMessage(group: MessageGroup, id: string | null | undefined): boolean {
+  return id != null && group.messages.some((message) => message.id === id);
+}
+
+function areGroupPropsEqual(prev: RoomMessageGroupProps, next: RoomMessageGroupProps): boolean {
+  const pg = prev.group;
+  const ng = next.group;
+  if (
+    pg.key !== ng.key ||
+    pg.isOwn !== ng.isOwn ||
+    pg.senderId !== ng.senderId ||
+    pg.senderName !== ng.senderName ||
+    pg.senderVipTypeId !== ng.senderVipTypeId ||
+    pg.showTime !== ng.showTime
+  ) {
+    return false;
+  }
+  if (!sameMessages(pg.messages, ng.messages)) return false;
+  if (
+    prev.highlightedId !== next.highlightedId &&
+    (groupHasMessage(pg, prev.highlightedId) || groupHasMessage(ng, next.highlightedId))
+  ) {
+    return false;
+  }
+  return true;
+}
+
+export const RoomMessageGroup = memo(RoomMessageGroupComponent, areGroupPropsEqual);

@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Linking, Text } from 'react-native';
 import { splitSmileys } from '@lib/chatSmiley';
 import { renderRichText } from '@lib/richText';
@@ -24,7 +25,7 @@ function hasInlineImages(content: string): boolean {
   return splitSmileys(content).some((segment) => segment.kind === 'image');
 }
 
-export function RichTextView({
+function RichTextViewComponent({
   content,
   own,
   color,
@@ -65,3 +66,14 @@ export function RichTextView({
     />
   );
 }
+
+export const RichTextView = memo(
+  RichTextViewComponent,
+  (prev, next) =>
+    prev.content === next.content &&
+    prev.own === next.own &&
+    prev.color === next.color &&
+    prev.maxWidth === next.maxWidth &&
+    prev.fontSize === next.fontSize &&
+    prev.maxLines === next.maxLines
+);

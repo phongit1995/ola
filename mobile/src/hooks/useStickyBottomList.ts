@@ -40,28 +40,18 @@ export function useStickyBottomList<T>() {
       if (forceNextRef.current) {
         forceNextRef.current = false;
         pin();
-        return;
       }
-      if (shouldPin()) pin();
-    },
-    [pin, shouldPin]
-  );
-
-  const onScroll = useCallback(
-    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-      const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
-      contentHeightRef.current = contentSize.height;
-      viewportHeightRef.current = layoutMeasurement.height;
-      const distanceFromBottom =
-        contentSize.height - contentOffset.y - layoutMeasurement.height;
-      if (draggingRef.current || momentumRef.current) {
-        stickRef.current = distanceFromBottom < STICK_THRESHOLD;
-        return;
-      }
-      if (stickRef.current && !suspendRef.current && distanceFromBottom > 1) pin();
     },
     [pin]
   );
+
+  const onScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
+    contentHeightRef.current = contentSize.height;
+    viewportHeightRef.current = layoutMeasurement.height;
+    const distanceFromBottom = contentSize.height - contentOffset.y - layoutMeasurement.height;
+    stickRef.current = distanceFromBottom < STICK_THRESHOLD;
+  }, []);
 
   const onScrollBeginDrag = useCallback(() => {
     draggingRef.current = true;

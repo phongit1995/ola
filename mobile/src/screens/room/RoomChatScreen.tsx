@@ -163,6 +163,7 @@ export function RoomChatScreen({ navigation, route }: Props) {
     (nick: string, color: string) => navigation.navigate(ROOT_ROUTES.ProfileView, { userId: nick, color }),
     [navigation]
   );
+  const onResendImage = useCallback((id: string) => void resendRoomImage(id), [resendRoomImage]);
 
   return (
     <View className="flex-1 bg-white">
@@ -236,7 +237,7 @@ export function RoomChatScreen({ navigation, route }: Props) {
           replyTarget={replyTarget}
           onSend={sendMessage}
           onSendImage={sendImage}
-          onResendImage={(id) => void resendRoomImage(id)}
+          onResendImage={onResendImage}
           onLoadMore={loadMoreMessages}
           onOpenUser={openUser}
           onOpenProfile={openProfileByNick}
