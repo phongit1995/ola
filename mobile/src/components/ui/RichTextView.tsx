@@ -34,7 +34,8 @@ function RichTextViewComponent({
   maxLines = 0,
   onMention,
 }: RichTextViewProps) {
-  const accentColor = own ? '#ffffff' : '#33691e';
+  // Match web: accent (mention/hashtag/url) luôn xanh đậm #33691e, kể cả tin của mình.
+  const accentColor = '#33691e';
   const useNative =
     richTextNativeAvailable && nativeRichTextEnabled && hasInlineImages(content);
   const size = useNative ? measureRichText(content, maxWidth, fontSize, maxLines) : null;
