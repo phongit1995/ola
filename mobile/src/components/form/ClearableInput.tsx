@@ -1,5 +1,9 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, Text, TextInput, View } from 'react-native';
+import { Image, Pressable, Text, TextInput, View } from 'react-native';
+
+const EYE_SHOW = require('@assets/icons/form/eye.png');
+const EYE_HIDE = require('@assets/icons/form/eye-off.png');
 
 interface ClearableInputProps {
   value: string;
@@ -21,6 +25,8 @@ export function ClearableInput({
   autoCapitalize = 'none',
 }: ClearableInputProps) {
   const { t } = useTranslation();
+  const [revealed, setRevealed] = useState(false);
+  const isPassword = secureTextEntry === true;
   return (
     <View className="flex-row items-center">
       <TextInput
@@ -28,22 +34,35 @@ export function ClearableInput({
         style={{ color: 'rgba(0,0,0,0.87)' }}
         placeholder={placeholder}
         placeholderTextColor="rgba(0,0,0,0.38)"
-        secureTextEntry={secureTextEntry}
+        secureTextEntry={isPassword && !revealed}
         autoCapitalize={autoCapitalize}
         autoCorrect={false}
         value={value}
         onChangeText={onChangeText}
         onBlur={onBlur}
       />
-      {value !== '' && (
-        <Pressable
-          accessibilityLabel={t('common.clear')}
-          onPress={onClear}
-          className="mr-1.5 h-9 w-9 items-center justify-center"
-        >
-          <Text className="text-xl" style={{ color: 'rgba(0,0,0,0.54)' }}>×</Text>
-        </Pressable>
-      )}
+      {value !== '' &&
+        (isPassword ? (
+          <Pressable
+            accessibilityLabel={t(revealed ? 'common.hidePassword' : 'common.showPassword')}
+            onPress={() => setRevealed((prev) => !prev)}
+            className="mr-1.5 h-9 w-9 items-center justify-center"
+          >
+            <Image
+              source={revealed ? EYE_HIDE : EYE_SHOW}
+              style={{ width: 22, height: 22, tintColor: 'rgba(0,0,0,0.5)' }}
+              resizeMode="contain"
+            />
+          </Pressable>
+        ) : (
+          <Pressable
+            accessibilityLabel={t('common.clear')}
+            onPress={onClear}
+            className="mr-1.5 h-9 w-9 items-center justify-center"
+          >
+            <Text className="text-xl" style={{ color: 'rgba(0,0,0,0.54)' }}>×</Text>
+          </Pressable>
+        ))}
     </View>
   );
 }

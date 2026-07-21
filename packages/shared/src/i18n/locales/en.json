@@ -1,6 +1,8 @@
 {
   "common": {
     "clear": "Clear",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
     "delete": "Delete",
     "cancel": "Cancel",
     "copy": "Copy",

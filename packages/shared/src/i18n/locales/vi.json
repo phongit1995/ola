@@ -1,6 +1,8 @@
 {
   "common": {
     "clear": "Xoá",
+    "showPassword": "Hiện mật khẩu",
+    "hidePassword": "Ẩn mật khẩu",
     "delete": "Xoá",
     "cancel": "Huỷ",
     "copy": "Sao chép",
