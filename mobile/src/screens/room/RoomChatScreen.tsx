@@ -224,28 +224,37 @@ export function RoomChatScreen({ navigation, route }: Props) {
           <ActivityIndicator color="#7cb342" size="large" />
           <Text className="text-sm text-ola-ink-soft">{t('room.joining')}</Text>
         </View>
-      ) : activeTab === 'members' ? (
-        <RoomMembersTab members={visibleMembers} onOpenUser={openUser} />
       ) : (
-        <RoomMessagesTab
-          currentUserId={currentUserId}
-          language={i18n.language}
-          messages={messages}
-          status={status}
-          hasMore={hasMore}
-          loadingMore={loadingMore}
-          replyTarget={replyTarget}
-          onSend={sendMessage}
-          onSendImage={sendImage}
-          onResendImage={onResendImage}
-          onLoadMore={loadMoreMessages}
-          onOpenUser={openUser}
-          onOpenProfile={openProfileByNick}
-          onSetReplyTarget={setReplyTarget}
-          onClearReplyTarget={clearReplyTarget}
-          onReact={handleReact}
-          onDeleteMessage={deleteRoomMessage}
-        />
+        <>
+          <View
+            style={{ flex: 1, display: activeTab === 'members' ? 'flex' : 'none' }}
+          >
+            <RoomMembersTab members={visibleMembers} onOpenUser={openUser} />
+          </View>
+          <View
+            style={{ flex: 1, display: activeTab === 'messages' ? 'flex' : 'none' }}
+          >
+            <RoomMessagesTab
+              currentUserId={currentUserId}
+              language={i18n.language}
+              messages={messages}
+              status={status}
+              hasMore={hasMore}
+              loadingMore={loadingMore}
+              replyTarget={replyTarget}
+              onSend={sendMessage}
+              onSendImage={sendImage}
+              onResendImage={onResendImage}
+              onLoadMore={loadMoreMessages}
+              onOpenUser={openUser}
+              onOpenProfile={openProfileByNick}
+              onSetReplyTarget={setReplyTarget}
+              onClearReplyTarget={clearReplyTarget}
+              onReact={handleReact}
+              onDeleteMessage={deleteRoomMessage}
+            />
+          </View>
+        </>
       )}
       </KeyboardShift>
 
