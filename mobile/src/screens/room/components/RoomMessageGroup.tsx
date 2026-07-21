@@ -121,12 +121,14 @@ function BubbleContent({
   isOwn,
   kul,
   onMention,
+  onLongPress,
   onResendImage,
 }: {
   message: GroupedMessage;
   isOwn: boolean;
   kul: ImageSourcePropType | null;
   onMention: (nick: string) => void;
+  onLongPress?: () => void;
   onResendImage?: (id: string) => void;
 }) {
   const openViewer = useMediaViewerStore((s) => s.openViewer);
@@ -145,6 +147,8 @@ function BubbleContent({
         onPress={() => {
           if (!uploading && !failed) openViewer([message.imageUrl!]);
         }}
+        onLongPress={onLongPress}
+        delayLongPress={300}
       >
         <CachedImage
           uri={message.imageUrl}
@@ -197,6 +201,7 @@ export function RoomBubbleBody({
   position,
   highlighted = false,
   onMention,
+  onLongPress,
   onQuoteClick,
   onResendImage,
 }: {
@@ -205,6 +210,7 @@ export function RoomBubbleBody({
   position: BubblePosition;
   highlighted?: boolean;
   onMention: (nick: string) => void;
+  onLongPress?: () => void;
   onQuoteClick?: (messageId: string) => void;
   onResendImage?: (id: string) => void;
 }) {
@@ -229,6 +235,7 @@ export function RoomBubbleBody({
         isOwn={isOwn}
         kul={kul}
         onMention={onMention}
+        onLongPress={onLongPress}
         onResendImage={onResendImage}
       />
     </View>
@@ -283,6 +290,7 @@ function RoomBubble({
         position={position}
         highlighted={highlighted}
         onMention={onMention}
+        onLongPress={handleLongPress}
         onQuoteClick={onQuoteClick}
         onResendImage={onResendImage}
       />
