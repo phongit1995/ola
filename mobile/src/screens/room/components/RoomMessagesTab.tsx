@@ -36,6 +36,7 @@ interface RoomMessagesTabProps {
   language: string;
   messages: RoomMessage[];
   status: RoomChatStatus;
+  active: boolean;
   hasMore: boolean;
   loadingMore: boolean;
   replyTarget: RoomMessage | null;
@@ -56,6 +57,7 @@ export function RoomMessagesTab({
   language,
   messages,
   status,
+  active,
   hasMore,
   loadingMore,
   replyTarget,
@@ -96,6 +98,7 @@ export function RoomMessagesTab({
     onMomentumScrollBegin,
     onMomentumScrollEnd,
     pinOnNextContent,
+    requestScrollToBottom,
     unstick,
   } = useStickyBottomList<RoomFeedItem>();
   const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -111,6 +114,15 @@ export function RoomMessagesTab({
   }, [messages, currentUserId, blockedUserIds]);
   const messageById = useMemo(() => new Map(messages.map((item) => [item.id, item])), [messages]);
 
+
+  const [rendered, setRendered] = useState(active);
+  useEffect(() => {
+    if (active && !rendered) setRendered(true);
+  }, [active, rendered]);
+
+  useEffect(() => {
+    if (active && rendered) requestScrollToBottom();
+  }, [active, rendered, requestScrollToBottom]);
 
   useEffect(() => {
     if (replyTarget != null) composerRef.current?.focus();
@@ -191,7 +203,10 @@ export function RoomMessagesTab({
 
   function handleScroll(event: NativeSyntheticEvent<NativeScrollEvent>) {
     onScroll(event);
-    if (event.nativeEvent.contentOffset.y < 80 && hasMore && !loadingMore) onLoadMore();
+    if (event.nativeEvent.contentOffset.y < 80 && hasMore && !loadingMore) {
+      unstick();
+      onLoadMore();
+    }
   }
 
   const renderItem = useCallback(
@@ -252,6 +267,7 @@ export function RoomMessagesTab({
           return false;
         }}
       >
+      {rendered && (
       <FlashList
         ref={listRef}
         data={feed}
@@ -279,6 +295,7 @@ export function RoomMessagesTab({
         }
         renderItem={renderItem}
       />
+      )}
       </View>
 
       {replyTarget != null && (

@@ -125,7 +125,7 @@ export function buildRoomFeed(messages: RoomMessage[], currentUserId: string): R
 
     if (day !== lastDay) {
       flush();
-      items.push({ kind: 'date', key: `date-${day}-${message.id}`, createdAt: message.createdAt });
+      items.push({ kind: 'date', key: `date-${day}`, createdAt: message.createdAt });
       lastDay = day;
       lastTime = 0;
       lastShownMinute = -1;

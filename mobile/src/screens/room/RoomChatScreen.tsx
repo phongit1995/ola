@@ -239,6 +239,7 @@ export function RoomChatScreen({ navigation, route }: Props) {
               language={i18n.language}
               messages={messages}
               status={status}
+              active={activeTab === 'messages'}
               hasMore={hasMore}
               loadingMore={loadingMore}
               replyTarget={replyTarget}
