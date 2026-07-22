@@ -15,6 +15,10 @@ export function useStickyBottomList<T>() {
   const contentHeightRef = useRef(0);
 
   const pin = useCallback(() => {
+    if (contentHeightRef.current <= 0) {
+      forceNextRef.current = true;
+      return;
+    }
     listRef.current?.scrollToOffset({
       offset: Math.max(0, contentHeightRef.current - viewportHeightRef.current),
       animated: false,
@@ -36,13 +40,16 @@ export function useStickyBottomList<T>() {
 
   const onContentSizeChange = useCallback(
     (_width: number, height: number) => {
+      const grew = height > contentHeightRef.current;
       contentHeightRef.current = height;
       if (forceNextRef.current) {
         forceNextRef.current = false;
         pin();
+        return;
       }
+      if (grew && shouldPin()) pin();
     },
-    [pin]
+    [pin, shouldPin]
   );
 
   const onScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {

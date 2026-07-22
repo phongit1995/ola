@@ -382,8 +382,6 @@ export function ChatDetailScreen({ navigation, route }: Props) {
           drawDistance={1500}
           maintainVisibleContentPosition={{
             startRenderingFromBottom: true,
-            autoscrollToBottomThreshold: 0.2,
-            animateAutoScrollToBottom: false,
           }}
           onScroll={handleScroll}
           onScrollBeginDrag={onScrollBeginDrag}
