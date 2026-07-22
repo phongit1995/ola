@@ -20,13 +20,20 @@ export interface ReactionChip {
   count: number;
 }
 
+const EMPTY_CHIPS: ReactionChip[] = [];
+const chipsCache = new WeakMap<object, ReactionChip[]>();
+
 export function reactionChips(reactions?: Record<string, readonly unknown[]>): ReactionChip[] {
-  if (reactions == null) return [];
-  return Object.entries(reactions)
+  if (reactions == null) return EMPTY_CHIPS;
+  const cached = chipsCache.get(reactions);
+  if (cached != null) return cached;
+  const chips = Object.entries(reactions)
     .filter(([, users]) => users.length > 0)
     .map(([type, users]) => ({
       type,
       image: REACTION_IMAGE[type as ReactionType] ?? null,
       count: users.length,
     }));
+  chipsCache.set(reactions, chips);
+  return chips;
 }

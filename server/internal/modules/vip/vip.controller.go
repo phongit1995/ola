@@ -169,6 +169,45 @@ func (ctrl *Controller) Delete(c *gin.Context) (interface{}, error) {
 	return MessageResponse{Message: "vip deleted"}, nil
 }
 
+// BatchDelete godoc
+// @Summary      Xoá nhiều VIP cùng lúc (nguyên tử; chặn nếu có cái đang khoá hoặc đang dùng)
+// @Tags         vip
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        request body BatchDeleteRequest true "Danh sách instance ID"
+// @Success      200  {object}  BatchDeleteSuccessResponse
+// @Failure      403  {object}  utils.APIError
+// @Router       /vip/icons/batch-delete [post]
+func (ctrl *Controller) BatchDelete(c *gin.Context) (interface{}, error) {
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+	req, err := utils.BindJSON[BatchDeleteRequest](c)
+	if err != nil {
+		return nil, err
+	}
+	seen := make(map[uuid.UUID]struct{}, len(req.IDs))
+	ids := make([]uuid.UUID, 0, len(req.IDs))
+	for _, raw := range req.IDs {
+		id, err := uuid.Parse(raw)
+		if err != nil {
+			return nil, utils.NewHTTPError(400, "invalid vip id")
+		}
+		if _, ok := seen[id]; ok {
+			continue
+		}
+		seen[id] = struct{}{}
+		ids = append(ids, id)
+	}
+	deleted, err := ctrl.service.BatchDelete(userID, ids)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return BatchDeleteResponse{Deleted: deleted}, nil
+}
+
 // Transfer godoc
 // @Summary      Tặng/chuyển một VIP cho người khác (cần mật khẩu; chặn nếu đang dùng hoặc đã khoá)
 // @Tags         vip

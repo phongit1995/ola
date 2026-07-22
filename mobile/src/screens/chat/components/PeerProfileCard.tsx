@@ -1,8 +1,9 @@
 import { useTranslation } from 'react-i18next';
-import { Image, ImageBackground, Pressable, Text, View } from 'react-native';
+import { Image, Pressable, Text, View } from 'react-native';
 import { activeVipTypeId, daysSince, monthsSince, yearsSince } from '@ola/shared/lib';
 import type { PublicProfile } from '@ola/shared/types';
 import { Avatar } from '@components/ui/Avatar';
+import { CachedImageBackground } from '@components/ui/CachedImage';
 import { VipAvatar } from '@components/ui/VipAvatar';
 import { DIVIDER } from '@constants';
 
@@ -52,8 +53,8 @@ export function PeerProfileCard({
 
   return (
     <View className="mt-2 bg-white" style={{ borderTopWidth: 1, borderBottomWidth: 1, borderColor: DIVIDER }}>
-      <ImageBackground
-        source={cover !== '' ? { uri: cover } : undefined}
+      <CachedImageBackground
+        uri={cover !== '' ? cover : undefined}
         style={{ backgroundColor: '#f1f8e9' }}
       >
         <View
@@ -97,7 +98,7 @@ export function PeerProfileCard({
             )}
           </View>
         </View>
-      </ImageBackground>
+      </CachedImageBackground>
 
       <View className="flex-row items-center gap-4 p-2">
         <Pressable

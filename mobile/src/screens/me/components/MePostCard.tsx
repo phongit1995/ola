@@ -16,6 +16,7 @@ import { imageSizeForHeight } from '@lib/chatSmiley';
 import { renderRichText } from '@lib/richText';
 import { stickerImageForCode } from '@lib/kul';
 import { Avatar } from '@components/ui/Avatar';
+import { CachedImage } from '@components/ui/CachedImage';
 
 const moreIcon = require('@assets/icons/me/ic_more.png');
 const replyIcon = require('@assets/icons/me/ic_action_reply_gray.png');
@@ -104,7 +105,7 @@ function MediaCell({
 }) {
   return (
     <Pressable onPress={onOpen} className="flex-1">
-      <Image source={{ uri: url }} style={{ height, borderRadius: 4 }} resizeMode="cover" />
+      <CachedImage uri={url} style={{ height, borderRadius: 4 }} resizeMode="cover" />
       {extra != null && extra > 0 && (
         <View
           className="absolute inset-0 items-center justify-center rounded"
@@ -124,7 +125,7 @@ function MediaGrid({ photos, onOpen }: { photos: string[]; onOpen?: (index: numb
   if (count === 1) {
     return (
       <Pressable onPress={() => onOpen?.(0)} className="mx-4 mt-3">
-        <Image source={{ uri: photos[0] }} style={{ height: 384, borderRadius: 4 }} resizeMode="cover" />
+        <CachedImage uri={photos[0]} style={{ height: 384, borderRadius: 4 }} resizeMode="cover" />
       </Pressable>
     );
   }

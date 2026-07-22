@@ -1,9 +1,10 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Image, ImageBackground, Pressable, Text, View } from 'react-native';
+import { Image, Pressable, Text, View } from 'react-native';
 import { activeVipTypeId, colorForName, createDateFormatter } from '@ola/shared/lib';
 import type { PublicProfile } from '@ola/shared/types';
 import { Avatar } from '@components/ui/Avatar';
+import { CachedImageBackground } from '@components/ui/CachedImage';
 import { VipAvatar } from '@components/ui/VipAvatar';
 import { DIVIDER } from '@constants';
 import { CARD_SHADOW, DEFAULT_COVER_COLOR } from '../constants';
@@ -115,10 +116,8 @@ export function ProfileCard({
   return (
     <View className="mb-2 bg-white" style={CARD_SHADOW}>
       <View style={{ paddingBottom: 48 }}>
-        <ImageBackground
-          source={
-            profile.coverPhoto != null ? { uri: profile.coverPhoto } : undefined
-          }
+        <CachedImageBackground
+          uri={profile.coverPhoto}
           style={{
             width: '100%',
             aspectRatio: 16 / 9,
@@ -156,7 +155,7 @@ export function ProfileCard({
               <Text className="text-sm text-white">{t('common.loading')}</Text>
             </View>
           )}
-        </ImageBackground>
+        </CachedImageBackground>
         <View
           className="absolute bottom-0 left-0 right-0 items-center"
           pointerEvents="box-none"

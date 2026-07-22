@@ -1,7 +1,8 @@
 import { useTranslation } from 'react-i18next';
-import { Image, Pressable, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { OlaModal } from '@components/ui/OlaModal';
+import { CachedImage } from '@components/ui/CachedImage';
 
 interface CoverPreviewOverlayProps {
   visible: boolean;
@@ -42,9 +43,9 @@ function CoverPreviewBody({
 
       <View className="min-h-0 flex-1 items-center justify-center p-4">
         {url !== '' && (
-          <Image
-            source={{ uri: url }}
-            className="h-full w-full"
+          <CachedImage
+            uri={url}
+            style={{ width: '100%', height: '100%' }}
             resizeMode="contain"
           />
         )}

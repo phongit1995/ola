@@ -79,6 +79,10 @@ export class VipService {
     return http.del<unknown>(API_PATH.vip.iconDelete(instanceId));
   }
 
+  static batchDeleteIcons(ids: string[]): Promise<{ deleted: number }> {
+    return http.post<{ deleted: number }>(API_PATH.vip.iconBatchDelete, { ids });
+  }
+
   static transferIcon(instanceId: string, body: { toUserId: string; password: string }): Promise<unknown> {
     return http.post<unknown>(API_PATH.vip.iconTransfer(instanceId), body);
   }

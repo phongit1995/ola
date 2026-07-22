@@ -163,9 +163,4 @@ export function preloadAssets(
   return Promise.race([loadAll, timeout]);
 }
 
-export function vipIconUrl(vipType: string | null | undefined): string | null {
-  if (vipType == null || vipType === '') return null;
-  const id = Number(vipType);
-  if (!Number.isFinite(id) || id <= 0) return null;
-  return `/vip-icons/vip_${String(id).padStart(3, '0')}.png`;
-}
+export const VIP_DEFAULT_ICON = '/ola_smiley_online.png';

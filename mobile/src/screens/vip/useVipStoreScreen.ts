@@ -57,6 +57,9 @@ export function useVipStoreScreen() {
   const [menuIcon, setMenuIcon] = useState<VipIconInstance | null>(null);
   const [useTarget, setUseTarget] = useState<VipIconInstance | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<VipIconInstance | null>(null);
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [batchDeleteOpen, setBatchDeleteOpen] = useState(false);
 
   const loadPage = useCallback(async (offset: number) => {
     const res = await VipService.store({ limit: VIP_PAGE_SIZE, offset });
@@ -147,6 +150,36 @@ export function useVipStoreScreen() {
     );
   }
 
+  function isSelectable(icon: VipIconInstance): boolean {
+    return !icon.isLocked && !icon.isUsing;
+  }
+
+  function toggleSelect(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function exitSelectMode() {
+    setSelectMode(false);
+    setSelectedIds(new Set());
+  }
+
+  function confirmBatchDelete() {
+    const ids = [...selectedIds];
+    setBatchDeleteOpen(false);
+    if (ids.length === 0) return;
+    exitSelectMode();
+    void runAction(
+      () => VipService.batchDeleteIcons(ids),
+      t('vip.toastDeletedMany', { count: ids.length }),
+      true,
+    );
+  }
+
   function buildMenuOptions(icon: VipIconInstance, onTransfer: () => void): ListOption[] {
     const options: ListOption[] = [];
     if (!icon.isUsing) {
@@ -198,5 +231,15 @@ export function useVipStoreScreen() {
     confirmDelete,
     buildMenuOptions,
     changePrivacyOptions,
+    busy,
+    selectMode,
+    setSelectMode,
+    selectedIds,
+    isSelectable,
+    toggleSelect,
+    exitSelectMode,
+    batchDeleteOpen,
+    setBatchDeleteOpen,
+    confirmBatchDelete,
   };
 }

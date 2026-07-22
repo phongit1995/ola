@@ -1,7 +1,24 @@
 import { resolve } from 'path';
-import { defineConfig } from 'vite';
+import { defineConfig, normalizePath } from 'vite';
+import { viteStaticCopy } from 'vite-plugin-static-copy';
+
+// Nguồn gốc duy nhất cho asset dùng chung (xem packages/shared/assets).
+const sharedAssets = resolve(__dirname, '../packages/shared/assets');
 
 export default defineConfig({
+  plugins: [
+    viteStaticCopy({
+      targets: [
+        { src: normalizePath(`${sharedAssets}/vip-icons/*`), dest: 'vip-icons', rename: { stripBase: true } },
+        { src: normalizePath(`${sharedAssets}/ola_smiley_online.png`), dest: '.', rename: { stripBase: true } },
+      ],
+    }),
+  ],
+  resolve: {
+    alias: {
+      '@ola/shared': resolve(__dirname, '../packages/shared/src'),
+    },
+  },
   build: {
     rollupOptions: {
       input: {

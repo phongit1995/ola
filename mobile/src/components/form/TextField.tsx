@@ -28,9 +28,8 @@ export function TextField({
     <View className="mt-3 w-full max-w-md">
       <Text className="px-1 pb-1 text-xs font-medium tracking-wide text-white/90">{label}</Text>
       <View
-        className={`overflow-hidden rounded-sm bg-white shadow ${
-          error != null ? 'border border-ola-error' : ''
-        }`}
+        className="overflow-hidden rounded-sm bg-white shadow"
+        style={{ borderWidth: 1, borderColor: error != null ? '#e34545' : 'transparent' }}
       >
         <ClearableInput
           value={value}

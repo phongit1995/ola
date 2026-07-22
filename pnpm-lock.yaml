@@ -95,6 +95,9 @@ importers:
       vite-plugin-javascript-obfuscator:
         specifier: ^3.1.0
         version: 3.1.0
+      vite-plugin-static-copy:
+        specifier: ^4.1.1
+        version: 4.1.1(vite@8.0.16(@types/node@24.13.1)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0))
 
   game:
     dependencies:
@@ -111,9 +114,15 @@ importers:
       vite:
         specifier: ^8.0.12
         version: 8.0.16(@types/node@24.13.1)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0)
+      vite-plugin-static-copy:
+        specifier: ^4.1.1
+        version: 4.1.1(vite@8.0.16(@types/node@24.13.1)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0))
 
   mobile:
     dependencies:
+      '@d11/react-native-fast-image':
+        specifier: ^8.13.0
+        version: 8.13.0(react-native@0.86.0(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@6.0.3))(@react-native/metro-config@0.86.0(@babel/core@7.29.7))(@types/react@19.2.17)(react@19.2.7))(react@19.2.7)
       '@ola/shared':
         specifier: workspace:*
         version: link:../packages/shared
@@ -459,6 +468,9 @@ importers:
       vite-plugin-javascript-obfuscator:
         specifier: ^3.1.0
         version: 3.1.0
+      vite-plugin-static-copy:
+        specifier: ^4.1.1
+        version: 4.1.1(vite@8.0.16(@types/node@24.13.1)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0))
 
 packages:
 
@@ -1167,6 +1179,12 @@ packages:
 
   '@bcoe/v8-coverage@0.2.3':
     resolution: {integrity: sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==}
+
+  '@d11/react-native-fast-image@8.13.0':
+    resolution: {integrity: sha512-zfsBtYNttiZVV/NwEnN/PzgW3PGlGYqn0/6DUOQ/tCv1lO0gO7+S0GiANmNDl35oVmh8o0DK81lF8xAhYz/aNA==}
+    peerDependencies:
+      react: '*'
+      react-native: '*'
 
   '@dnd-kit/accessibility@3.1.1':
     resolution: {integrity: sha512-2P+YgaXF+gRsIihwwY1gCsQSYnu9Zyj2py8kY5fFvUM1qm2WA2u639R6YNVfU4GWr+ZM5mqEsfHZZLoRONbemw==}
@@ -5034,6 +5052,10 @@ packages:
     resolution: {integrity: sha512-LaNjtRWUBY++zB5nE/NwcaoMylSPk+S+ZHNB1TzdbMJMny6dynpAGt7X/tl/QYq3TIeE6nxHppbo2LGymrG5Pw==}
     engines: {node: '>=10'}
 
+  p-map@7.0.6:
+    resolution: {integrity: sha512-I4Prw6ivkd6p8PiYR1tXASOAOBzIJwu0TB7fqaX0c/8c3QAehNYmX57EijyGGGBt3c/BIowGwV03RVBtXvHEVg==}
+    engines: {node: '>=18'}
+
   p-try@2.2.0:
     resolution: {integrity: sha512-R4nPAVTAU0B9D35/Gk3uJf/7XYbQcyohSKdvAxIRSNghFl4e71hVoGnBNQz9cWaXxO2I10KTC+3jMdvvoKw6dQ==}
     engines: {node: '>=6'}
@@ -6199,6 +6221,12 @@ packages:
   vite-plugin-javascript-obfuscator@3.1.0:
     resolution: {integrity: sha512-sf4JFlG1iUPl7bLXHGOy+bKWOQUFyXzJFWa+n2S2xMMvyfM+V9R40HhpZoIF1eAjifArM1SF7fbSFIaTuUIbPA==}
 
+  vite-plugin-static-copy@4.1.1:
+    resolution: {integrity: sha512-GrlA8YklrAfSyxJ4M3fdQLOo9oNkp56IM9FYgX/WtEgeIFkPwhu4wzpufBCIuNKCa6Fn77FkRdYxkHqV0FwjAw==}
+    engines: {node: ^22.0.0 || >=24.0.0}
+    peerDependencies:
+      vite: ^6.0.0 || ^7.0.0 || ^8.0.0
+
   vite@8.0.16:
     resolution: {integrity: sha512-h9bXPmJichP5fLmVQo3PyaGSDE2n3aPuomeAlVRm0JLmt4rY6zmPKd59HYI4LNW8oTK7tlTsuC7l/m7awx9Jcw==}
     engines: {node: ^20.19.0 || >=22.12.0}
@@ -7307,6 +7335,11 @@ snapshots:
       '@babel/helper-validator-identifier': 7.29.7
 
   '@bcoe/v8-coverage@0.2.3': {}
+
+  '@d11/react-native-fast-image@8.13.0(react-native@0.86.0(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@6.0.3))(@react-native/metro-config@0.86.0(@babel/core@7.29.7))(@types/react@19.2.17)(react@19.2.7))(react@19.2.7)':
+    dependencies:
+      react: 19.2.7
+      react-native: 0.86.0(@babel/core@7.29.7)(@react-native-community/cli@20.1.0(typescript@6.0.3))(@react-native/metro-config@0.86.0(@babel/core@7.29.7))(@types/react@19.2.17)(react@19.2.7)
 
   '@dnd-kit/accessibility@3.1.1(react@19.2.7)':
     dependencies:
@@ -12177,6 +12210,8 @@ snapshots:
     dependencies:
       p-limit: 3.1.0
 
+  p-map@7.0.6: {}
+
   p-try@2.2.0: {}
 
   pako@1.0.11: {}
@@ -13458,6 +13493,14 @@ snapshots:
     dependencies:
       anymatch: 3.1.3
       javascript-obfuscator: 4.2.2
+
+  vite-plugin-static-copy@4.1.1(vite@8.0.16(@types/node@24.13.1)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0)):
+    dependencies:
+      chokidar: 3.6.0
+      p-map: 7.0.6
+      picocolors: 1.1.1
+      tinyglobby: 0.2.17
+      vite: 8.0.16(@types/node@24.13.1)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0)
 
   vite@8.0.16(@types/node@24.13.1)(jiti@2.7.0)(terser@5.48.0)(yaml@2.9.0):
     dependencies:

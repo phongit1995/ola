@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, Pressable, Text, View } from 'react-native';
 import { OlaModal } from '@components/ui/OlaModal';
+import { CachedImage } from '@components/ui/CachedImage';
 import { FlashList } from '@shopify/flash-list';
 import type { RoomMember } from '@ola/shared/types';
 import { VipAvatar } from '@components/ui/VipAvatar';
@@ -88,8 +89,8 @@ function MemberRow({
       </View>
       {bioImage != null && (
         <Pressable onPress={() => onViewImage(bioImage)} hitSlop={4}>
-          <Image
-            source={{ uri: bioImage }}
+          <CachedImage
+            uri={bioImage}
             style={{
               width: 40,
               height: 40,
@@ -138,8 +139,8 @@ export function RoomMembersTab({ members, onOpenUser }: RoomMembersTabProps) {
           onPress={() => setPreviewImage(null)}
         >
           {previewImage != null && (
-            <Image
-              source={{ uri: previewImage }}
+            <CachedImage
+              uri={previewImage}
               style={{ width: '100%', height: '80%' }}
               resizeMode="contain"
             />

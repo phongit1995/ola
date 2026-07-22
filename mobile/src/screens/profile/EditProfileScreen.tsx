@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   Image,
-  ImageBackground,
   Platform,
   Pressable,
   ScrollView,
@@ -24,6 +23,7 @@ import type { Gender, UpdateProfileRequest } from '@ola/shared/types';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { Avatar } from '@components/ui/Avatar';
+import { CachedImage, CachedImageBackground } from '@components/ui/CachedImage';
 import { AVATAR_OUTPUT, COVER_OUTPUT, pickCroppedImage, pickValidatedCroppedImage } from '@lib/imagePicker';
 import { ChangePasswordDialog } from './components/ChangePasswordDialog';
 import { VerifyEmailDialog } from './components/VerifyEmailDialog';
@@ -207,8 +207,8 @@ export function EditProfileScreen({ navigation }: Props) {
       />
 
         <ScrollView className="flex-1" keyboardShouldPersistTaps="handled">
-          <ImageBackground
-            source={cover !== '' ? { uri: cover } : undefined}
+          <CachedImageBackground
+            uri={cover !== '' ? cover : undefined}
             style={{ width: '100%', height: 176, backgroundColor: '#f1f8e9' }}
           >
             <Pressable
@@ -224,7 +224,7 @@ export function EditProfileScreen({ navigation }: Props) {
                 <Text className="text-sm text-white">{t('common.loading')}</Text>
               </View>
             )}
-          </ImageBackground>
+          </CachedImageBackground>
 
           <View className="p-4">
             {error != null && (
@@ -236,8 +236,8 @@ export function EditProfileScreen({ navigation }: Props) {
             <View className="-mt-12 mb-4 items-center">
               <Pressable onPress={() => void pickAvatar()} disabled={uploading} className="relative">
                 {avatar !== '' ? (
-                  <Image
-                    source={{ uri: avatar }}
+                  <CachedImage
+                    uri={avatar}
                     style={{ width: 96, height: 96, borderRadius: 48, borderWidth: 4, borderColor: '#fff' }}
                   />
                 ) : (

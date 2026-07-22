@@ -7,6 +7,7 @@ import {
 
   Platform,
   Pressable,
+  StatusBar,
   StyleSheet,
   Text,
   useWindowDimensions,
@@ -145,6 +146,9 @@ function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
 }
 
+const ANCHOR_TOP_OFFSET =
+  Platform.OS === 'android' ? StatusBar.currentHeight ?? 0 : 0;
+
 function popupHeight(actionCount: number, showReactions: boolean): number {
   const menu = actionCount > 0 ? MENU_PADDING_V * 2 + actionCount * MENU_ITEM_HEIGHT : 0;
   if (!showReactions) return menu;
@@ -206,16 +210,32 @@ function MessengerPopup({
 
   const menuH = actions.length > 0 ? MENU_PADDING_V * 2 + actions.length * MENU_ITEM_HEIGHT : 0;
   const barH = showReactions ? BAR_HEIGHT : 0;
-  const topNeed = barH > 0 ? barH + POPUP_GAP : 0;
-  const bottomNeed = menuH > 0 ? menuH + POPUP_GAP : 0;
+  const barStack = barH > 0 ? barH + POPUP_GAP : 0;
+  const menuStack = menuH > 0 ? menuH + POPUP_GAP : 0;
 
   const kbAdjust = Platform.OS === 'ios' ? kbHeight : 0;
   const usableBottom = winH - kbAdjust;
   const bottomInset = kbAdjust > 0 ? POPUP_MARGIN : Math.max(POPUP_MARGIN, insets.bottom);
+  const topInset = Math.max(POPUP_MARGIN, insets.top);
 
-  const minBubbleTop = Math.max(POPUP_MARGIN, insets.top) + topNeed;
-  const maxBubbleTop = usableBottom - bottomInset - anchor.height - bottomNeed;
-  const bubbleTop = clamp(anchor.y, minBubbleTop, maxBubbleTop);
+  const anchorY = anchor.y + ANCHOR_TOP_OFFSET;
+
+  // Giữ preview trùng vị trí tin thật. Nếu bên dưới không đủ chỗ cho menu thì
+  // lật menu lên trên (menu trên preview, reaction bar trên menu) thay vì kéo
+  // preview dịch lên — nhờ vậy tin ở sát đáy vẫn không bị lệch.
+  const spaceBelow = usableBottom - bottomInset - (anchorY + anchor.height);
+  const menuBelow = menuH === 0 || spaceBelow >= menuStack;
+
+  const topStack = barStack + (menuBelow ? 0 : menuStack);
+  const bottomStack = menuBelow ? menuStack : 0;
+  const minBubbleTop = topInset + topStack;
+  const maxBubbleTop = usableBottom - bottomInset - anchor.height - bottomStack;
+  const bubbleTop = clamp(anchorY, minBubbleTop, maxBubbleTop);
+
+  const menuTop = menuBelow
+    ? bubbleTop + anchor.height + POPUP_GAP
+    : bubbleTop - POPUP_GAP - menuH;
+  const barTop = (menuBelow ? bubbleTop : menuTop) - POPUP_GAP - BAR_HEIGHT;
 
   const alignRight = anchor.x + anchor.width / 2 > winW / 2;
   const barWidth = Math.min(BAR_WIDTH, winW - POPUP_MARGIN * 2);
@@ -262,7 +282,7 @@ function MessengerPopup({
       {showReactions && (
         <Animated.View
           style={[
-            { position: 'absolute', top: bubbleTop - POPUP_GAP - BAR_HEIGHT, ...barPos },
+            { position: 'absolute', top: barTop, ...barPos },
             popStyle(progress),
           ]}
         >
@@ -272,7 +292,7 @@ function MessengerPopup({
       {actions.length > 0 && (
         <Animated.View
           style={[
-            { position: 'absolute', top: bubbleTop + anchor.height + POPUP_GAP, ...menuPos },
+            { position: 'absolute', top: menuTop, ...menuPos },
             popStyle(progress),
           ]}
         >
@@ -302,9 +322,10 @@ function AnchoredPopup({
   const usableBottom = winH - kbAdjust;
   const bottomInset = kbAdjust > 0 ? POPUP_MARGIN : Math.max(POPUP_MARGIN, insets.bottom);
 
-  const spaceBelow = usableBottom - (anchor.y + anchor.height) - POPUP_MARGIN;
-  const placeBelow = spaceBelow >= height + POPUP_GAP || spaceBelow >= anchor.y - POPUP_MARGIN;
-  const rawTop = placeBelow ? anchor.y + anchor.height + POPUP_GAP : anchor.y - POPUP_GAP - height;
+  const anchorY = anchor.y + ANCHOR_TOP_OFFSET;
+  const spaceBelow = usableBottom - (anchorY + anchor.height) - POPUP_MARGIN;
+  const placeBelow = spaceBelow >= height + POPUP_GAP || spaceBelow >= anchorY - POPUP_MARGIN;
+  const rawTop = placeBelow ? anchorY + anchor.height + POPUP_GAP : anchorY - POPUP_GAP - height;
   const minTop = Math.max(POPUP_MARGIN, insets.top);
   const top = clamp(rawTop, minTop, usableBottom - bottomInset - height);
 

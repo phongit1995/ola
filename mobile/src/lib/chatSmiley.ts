@@ -114,7 +114,10 @@ export type SmileySegment =
   | { kind: 'text'; value: string }
   | { kind: 'image'; src: ImageSourcePropType; code: string; variant: SmileyVariant };
 
-export function splitSmileys(text: string): SmileySegment[] {
+const smileyCache = new Map<string, SmileySegment[]>();
+const SMILEY_CACHE_LIMIT = 600;
+
+function computeSplitSmileys(text: string): SmileySegment[] {
   const segments: SmileySegment[] = [];
   let lastIndex = 0;
   SMILEY_REGEX.lastIndex = 0;
@@ -135,5 +138,14 @@ export function splitSmileys(text: string): SmileySegment[] {
   if (lastIndex < text.length) {
     segments.push({ kind: 'text', value: text.slice(lastIndex) });
   }
+  return segments;
+}
+
+export function splitSmileys(text: string): SmileySegment[] {
+  const cached = smileyCache.get(text);
+  if (cached != null) return cached;
+  const segments = computeSplitSmileys(text);
+  if (smileyCache.size >= SMILEY_CACHE_LIMIT) smileyCache.clear();
+  smileyCache.set(text, segments);
   return segments;
 }

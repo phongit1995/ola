@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Image, Pressable, Text, TextInput, View } from 'react-native';
+import { Pressable, Text, TextInput, View } from 'react-native';
 import { UserService } from '@ola/shared/services';
 import { ApiError } from '@ola/shared/lib';
 import { useAuthStore } from '@ola/shared/stores/authStore';
@@ -8,6 +8,7 @@ import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { UpdateProfileRequest } from '@ola/shared/types';
 import { pickSingleImage } from '@lib/imagePicker';
 import { Dialog, DialogButton } from '@components/ui/Dialog';
+import { CachedImage } from '@components/ui/CachedImage';
 
 const snapPicIcon = require('@assets/icons/chat/icon_snap_pic.png');
 
@@ -74,8 +75,9 @@ export function StatusEditDialog({ onClose }: { onClose: () => void }) {
       <View className="flex-row items-center gap-3">
         <View className="relative shrink-0">
           <Pressable onPress={() => void pickImage()} disabled={uploading}>
-            <Image
-              source={imageUrl !== '' ? { uri: imageUrl } : snapPicIcon}
+            <CachedImage
+              uri={imageUrl !== '' ? imageUrl : undefined}
+              placeholder={snapPicIcon}
               style={{
                 width: 56,
                 height: 56,
@@ -83,7 +85,8 @@ export function StatusEditDialog({ onClose }: { onClose: () => void }) {
                 borderWidth: 1,
                 borderColor: 'rgba(0,0,0,0.12)',
               }}
-              resizeMode={imageUrl !== '' ? 'cover' : 'contain'}
+              resizeMode="cover"
+              placeholderResizeMode="contain"
             />
           </Pressable>
           {imageUrl !== '' && (

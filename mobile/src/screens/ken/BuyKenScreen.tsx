@@ -1,11 +1,12 @@
 import { useTranslation } from 'react-i18next';
-import { Image, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { formatKen, formatVnd } from '@ola/shared/lib';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
+import { CachedImage } from '@components/ui/CachedImage';
 import { DIVIDER, ERROR, PRIMARY, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
 import { QR_SIZE } from './constants';
 import { useBuyKen } from './useBuyKen';
@@ -150,8 +151,8 @@ export function BuyKenScreen({ navigation }: Props) {
                           className="rounded p-2"
                           style={{ borderWidth: 1, borderColor: DIVIDER, backgroundColor: '#ffffff' }}
                         >
-                          <Image
-                            source={{ uri: vm.qrImageUrl }}
+                          <CachedImage
+                            uri={vm.qrImageUrl}
                             style={{ width: QR_SIZE, height: QR_SIZE }}
                             resizeMode="contain"
                           />

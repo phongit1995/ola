@@ -10,7 +10,6 @@ interface ChatHeaderProps {
   subtitle: string;
   avatar?: string;
   onBack: () => void;
-  onShowAvatar: () => void;
   onOpenProfile: () => void;
   onMore: () => void;
 }
@@ -20,7 +19,6 @@ export function ChatHeader({
   subtitle,
   avatar,
   onBack,
-  onShowAvatar,
   onOpenProfile,
   onMore,
 }: ChatHeaderProps) {
@@ -35,10 +33,8 @@ export function ChatHeader({
         >
           <Image source={backIcon} style={{ width: 24, height: 24 }} resizeMode="contain" />
         </Pressable>
-        <Pressable onPress={onShowAvatar}>
-          <Avatar name={title} uri={avatar} size={32} />
-        </Pressable>
         <Pressable className="flex-1 flex-row items-center gap-2" onPress={onOpenProfile}>
+          <Avatar name={title} uri={avatar} size={32} />
           <View className="flex-1">
             <Text className="text-sm font-bold text-white" numberOfLines={1}>
               {title}

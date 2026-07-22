@@ -1,6 +1,8 @@
 {
   "common": {
     "clear": "Clear",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
     "delete": "Delete",
     "cancel": "Cancel",
     "copy": "Copy",
@@ -900,6 +902,12 @@
     "toastLocked": "Locked VIP {{name}}",
     "toastUnlocked": "Unlocked VIP {{name}}",
     "toastDeleted": "Deleted VIP {{name}}",
+    "select": "Select",
+    "selectedCount": "Selected {{count}}",
+    "deleteSelected": "Delete ({{count}})",
+    "confirmDeleteManyTitle": "Delete VIP icons?",
+    "confirmDeleteMany": "Do you want to delete {{count}} selected VIP icons?",
+    "toastDeletedMany": "Deleted {{count}} VIP icons",
     "buy": {
       "titleBuy": "Buy VIP",
       "titleGive": "Send VIP",

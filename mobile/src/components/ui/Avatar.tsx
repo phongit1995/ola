@@ -1,5 +1,6 @@
-import { Image, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { colorForName } from '@ola/shared/lib';
+import { CachedImage } from './CachedImage';
 
 interface AvatarProps {
   name: string;
@@ -12,7 +13,7 @@ interface AvatarProps {
 export function Avatar({ name, uri, size = 48, rounded = true, color }: AvatarProps) {
   const style = { width: size, height: size, borderRadius: rounded ? size / 2 : 0 };
   if (uri != null && uri !== '') {
-    return <Image source={{ uri }} style={style} />;
+    return <CachedImage uri={uri} style={style} resizeMode="cover" />;
   }
   const initial = name.trim().charAt(0).toUpperCase() || '?';
   return (

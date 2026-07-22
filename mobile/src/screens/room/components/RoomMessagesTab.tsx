@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  AppState,
   NativeSyntheticEvent,
   Pressable,
   Text,
@@ -117,14 +116,6 @@ export function RoomMessagesTab({
     if (replyTarget != null) composerRef.current?.focus();
   }, [replyTarget]);
 
-  const [foregroundEpoch, setForegroundEpoch] = useState(0);
-  useEffect(() => {
-    const subscription = AppState.addEventListener('change', (next) => {
-      if (next === 'active') setForegroundEpoch((value) => value + 1);
-    });
-    return () => subscription.remove();
-  }, []);
-
   const insertMention = useCallback((name: string) => {
     composerRef.current?.insertMention(name);
   }, []);
@@ -203,6 +194,45 @@ export function RoomMessagesTab({
     if (event.nativeEvent.contentOffset.y < 80 && hasMore && !loadingMore) onLoadMore();
   }
 
+  const renderItem = useCallback(
+    ({ item }: { item: RoomFeedItem }) =>
+      item.kind === 'date' ? (
+        <View className="items-center py-1">
+          <Text
+            className="rounded-full px-3 py-0.5 text-xs text-white"
+            style={{ backgroundColor: 'rgba(0,0,0,0.35)' }}
+          >
+            {dateFormatter(item.createdAt)}
+          </Text>
+        </View>
+      ) : (
+        <View className="pb-2">
+          <RoomMessageGroup
+            group={item}
+            highlightedId={highlightedId}
+            onOpenProfile={onOpenProfile}
+            onOpenUser={onOpenUser}
+            onQuickMention={insertMention}
+            onLongPressMessage={handleLongPressMessage}
+            onQuoteClick={scrollToMessage}
+            onShowReactions={setReactionsTargetId}
+            onResendImage={onResendImage}
+          />
+        </View>
+      ),
+    [
+      dateFormatter,
+      highlightedId,
+      onOpenProfile,
+      onOpenUser,
+      insertMention,
+      handleLongPressMessage,
+      scrollToMessage,
+      setReactionsTargetId,
+      onResendImage,
+    ]
+  );
+
   return (
     <View className="flex-1">
       <RoomReactionNotice />
@@ -223,15 +253,13 @@ export function RoomMessagesTab({
         }}
       >
       <FlashList
-        key={foregroundEpoch}
         ref={listRef}
         data={feed}
         keyExtractor={(item) => item.key}
         getItemType={(item) => item.kind}
+        drawDistance={1500}
         maintainVisibleContentPosition={{
           startRenderingFromBottom: true,
-          autoscrollToBottomThreshold: 0.2,
-          animateAutoScrollToBottom: false,
         }}
         onScroll={handleScroll}
         onScrollBeginDrag={onScrollBeginDrag}
@@ -249,32 +277,7 @@ export function RoomMessagesTab({
             </Text>
           ) : null
         }
-        renderItem={({ item }) =>
-          item.kind === 'date' ? (
-            <View className="items-center py-1">
-              <Text
-                className="rounded-full px-3 py-0.5 text-xs text-white"
-                style={{ backgroundColor: 'rgba(0,0,0,0.35)' }}
-              >
-                {dateFormatter(item.createdAt)}
-              </Text>
-            </View>
-          ) : (
-            <View className="pb-2">
-              <RoomMessageGroup
-                group={item}
-                highlightedId={highlightedId}
-                onOpenProfile={onOpenProfile}
-                onOpenUser={onOpenUser}
-                onQuickMention={insertMention}
-                onLongPressMessage={handleLongPressMessage}
-                onQuoteClick={scrollToMessage}
-                onShowReactions={setReactionsTargetId}
-                onResendImage={onResendImage}
-              />
-            </View>
-          )
-        }
+        renderItem={renderItem}
       />
       </View>
 

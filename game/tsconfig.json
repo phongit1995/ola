@@ -10,7 +10,10 @@
     "skipLibCheck": true,
     "useDefineForClassFields": true,
     "noUnusedLocals": true,
-    "noUnusedParameters": true
+    "noUnusedParameters": true,
+    "paths": {
+      "@ola/shared/*": ["../packages/shared/src/*"]
+    }
   },
   "include": ["src", "caro", "war-god"]
 }

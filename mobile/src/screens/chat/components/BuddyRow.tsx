@@ -1,5 +1,6 @@
 import { Image, Pressable, Text, View } from 'react-native';
 import { VipAvatar } from '@components/ui/VipAvatar';
+import { CachedImage } from '@components/ui/CachedImage';
 import type { Contact } from '../contacts';
 import { DEVICE_ICONS } from '@lib/deviceIcons';
 import { DIVIDER } from '@constants';
@@ -8,7 +9,7 @@ const birthdayIcon = require('@assets/icons/chat/ic_buddy_birthday.png');
 function SquareAvatar({ name, color, uri, size = 40 }: { name: string; color: string; uri?: string; size?: number }) {
   const style = { width: size, height: size, borderRadius: 4 } as const;
   if (uri != null && uri !== '') {
-    return <Image source={{ uri }} style={style} />;
+    return <CachedImage uri={uri} style={style} />;
   }
   const initial = name.trim().charAt(0).toUpperCase() || '?';
   return (
@@ -93,8 +94,8 @@ export function BuddyRow({ contact, highlight, onSelect, onLongPress, onOpenProf
       )}
       {contact.statusImage != null && contact.statusImage !== '' && (
         <Pressable className="ml-2" onPress={() => onPreviewImage?.(contact.statusImage!)}>
-          <Image
-            source={{ uri: contact.statusImage }}
+          <CachedImage
+            uri={contact.statusImage}
             style={{ width: 40, height: 40, borderRadius: 4, borderWidth: 1, borderColor: DIVIDER }}
           />
         </Pressable>

@@ -4,6 +4,7 @@ import { ActivityIndicator, Image, Pressable, Text, useWindowDimensions, View } 
 import { formatDuration, parseMessageMetadata } from '@ola/shared/lib';
 import type { ChatReplySnapshot, Message } from '@ola/shared/types';
 import { Avatar } from '@components/ui/Avatar';
+import { CachedImage } from '@components/ui/CachedImage';
 import { VoiceBubble } from '@components/ui/VoiceBubble';
 import { kulImageForText } from '@lib/kul';
 import { reactionChips } from '@lib/reactions';
@@ -100,6 +101,7 @@ interface ChatMessageRowProps {
   onMention: (nick: string) => void;
   onShowReactions?: (id: string) => void;
   onQuoteClick?: (messageId: string) => void;
+  onOpenProfile?: () => void;
 }
 
 export function ChatBubble({
@@ -161,11 +163,10 @@ export function ChatBubble({
   if (message.type === 'image' && meta.url != null && meta.url !== '') {
     return quotedWrap(
       <Pressable onPress={() => onOpenImage(meta.url!)}>
-        <Image
-          source={{ uri: meta.url }}
-          onLoad={(event) => {
-            const src = event.nativeEvent.source;
-            if (src != null && src.height > 0) setImageRatio(src.width / src.height);
+        <CachedImage
+          uri={meta.url}
+          onSize={({ width, height }) => {
+            if (height > 0) setImageRatio(width / height);
           }}
           style={{ ...fitChatImageSize(imageRatio), borderRadius: 8 }}
           resizeMode="cover"
@@ -230,6 +231,7 @@ export function ChatMessageRow({
   onMention,
   onShowReactions,
   onQuoteClick,
+  onOpenProfile,
 }: ChatMessageRowProps) {
   const chips = reactionChips(message.reactions);
   const bubbleRef = useRef<View>(null);
@@ -248,14 +250,14 @@ export function ChatMessageRow({
   return (
     <View className={firstInGroup ? 'mt-2' : 'mt-0.5'}>
       <View
-        className="flex-row items-end gap-1 px-3"
+        className="flex-row items-end gap-1 px-2"
         style={{ flexDirection: fromMe ? 'row-reverse' : 'row' }}
       >
         {!fromMe &&
           (showAvatar ? (
-            <View className="self-start">
+            <Pressable className="self-start" onPress={onOpenProfile} disabled={onOpenProfile == null}>
               <Avatar name={peerName} uri={peerAvatar} size={32} />
-            </View>
+            </Pressable>
           ) : (
             <View style={{ width: 32 }} />
           ))}

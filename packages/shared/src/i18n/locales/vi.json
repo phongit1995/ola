@@ -1,6 +1,8 @@
 {
   "common": {
     "clear": "Xoá",
+    "showPassword": "Hiện mật khẩu",
+    "hidePassword": "Ẩn mật khẩu",
     "delete": "Xoá",
     "cancel": "Huỷ",
     "copy": "Sao chép",
@@ -900,6 +902,12 @@
     "toastLocked": "Đã khoá VIP {{name}}",
     "toastUnlocked": "Đã mở khoá VIP {{name}}",
     "toastDeleted": "Đã xoá VIP {{name}}",
+    "select": "Chọn",
+    "selectedCount": "Đã chọn {{count}}",
+    "deleteSelected": "Xoá ({{count}})",
+    "confirmDeleteManyTitle": "Xoá các biểu tượng VIP?",
+    "confirmDeleteMany": "Bạn có muốn xoá {{count}} biểu tượng VIP đã chọn?",
+    "toastDeletedMany": "Đã xoá {{count}} biểu tượng VIP",
     "buy": {
       "titleBuy": "Mua VIP",
       "titleGive": "Tặng VIP",

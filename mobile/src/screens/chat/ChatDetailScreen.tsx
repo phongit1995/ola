@@ -358,7 +358,6 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         subtitle={subtitle}
         avatar={peerAvatar}
         onBack={() => navigation.goBack()}
-        onShowAvatar={showPeerAvatar}
         onOpenProfile={openPeerProfile}
         onMore={() => setMenuOpen(true)}
       />
@@ -380,10 +379,9 @@ export function ChatDetailScreen({ navigation, route }: Props) {
           ref={listRef}
           data={messages}
           keyExtractor={(item) => item.clientMsgId ?? item.id}
+          drawDistance={1500}
           maintainVisibleContentPosition={{
             startRenderingFromBottom: true,
-            autoscrollToBottomThreshold: 0.2,
-            animateAutoScrollToBottom: false,
           }}
           onScroll={handleScroll}
           onScrollBeginDrag={onScrollBeginDrag}
@@ -445,6 +443,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
                   onMention={(nick) => navigation.navigate(ROOT_ROUTES.ProfileView, { userId: nick })}
                   onShowReactions={setReactionsTargetId}
                   onQuoteClick={scrollToMessage}
+                  onOpenProfile={openPeerProfile}
                 />
                 {peerCardVisible && item.id === peerCardAnchorId && peerProfile != null &&
                   renderPeerCard()}

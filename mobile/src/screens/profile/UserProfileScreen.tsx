@@ -124,7 +124,7 @@ export function UserProfileScreen({
 
   return (
     <View className="flex-1 bg-[#f3f3f3]">
-      <ScreenHeader title={nick} onBack={onClose} />
+      <ScreenHeader title={profile != null ? nick : ''} onBack={onClose} />
 
       {loading ? (
         <ActivityIndicator className="py-16" color="#7cb342" size="large" />

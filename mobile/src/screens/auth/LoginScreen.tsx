@@ -136,9 +136,8 @@ export function LoginScreen({ navigation }: Props) {
           )}
 
         <View
-          className={`w-full max-w-md overflow-hidden rounded-sm bg-white shadow ${
-            hasFieldError ? 'border border-ola-error' : ''
-          }`}
+          className="w-full max-w-md overflow-hidden rounded-sm bg-white shadow"
+          style={{ borderWidth: 1, borderColor: hasFieldError ? '#e34545' : 'transparent' }}
         >
           <Controller
             control={control}

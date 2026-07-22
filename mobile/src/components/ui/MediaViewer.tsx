@@ -1,5 +1,4 @@
 import {
-  Image,
   Pressable,
   ScrollView,
   useWindowDimensions,
@@ -7,6 +6,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useMediaViewerStore } from '@store/mediaViewerStore';
+import { CachedImage } from './CachedImage';
 import { CloseIcon } from './CloseIcon';
 import { OlaModal } from './OlaModal';
 
@@ -49,8 +49,8 @@ function MediaViewerBody({ images, index, onClose }: MediaViewerModalProps) {
             style={{ width, height }}
             className="items-center justify-center"
           >
-            <Image
-              source={{ uri }}
+            <CachedImage
+              uri={uri}
               style={{ width, height }}
               resizeMode="contain"
             />
