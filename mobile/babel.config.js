@@ -17,6 +17,7 @@ module.exports = {
           '@services': './src/services',
           '@navigation': './src/navigation',
           '@assets': './src/assets',
+          '@shared-assets': '../packages/shared/assets',
           '@i18n': './src/i18n',
           '@platform': './src/platform',
         },

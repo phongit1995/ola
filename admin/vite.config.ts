@@ -1,7 +1,12 @@
 import { fileURLToPath, URL } from 'node:url'
-import { defineConfig } from 'vite'
+import path from 'node:path'
+import { defineConfig, normalizePath } from 'vite'
 import react from '@vitejs/plugin-react'
 import obfuscator from 'vite-plugin-javascript-obfuscator'
+import { viteStaticCopy } from 'vite-plugin-static-copy'
+
+// Nguồn gốc duy nhất cho VIP icons, dùng chung cho web/admin/game (xem packages/shared/assets).
+const sharedVipIcons = normalizePath(path.resolve(__dirname, '../packages/shared/assets/vip-icons/*'))
 
 const obfuscatorPlugin = obfuscator({
   apply: 'build',
@@ -25,7 +30,11 @@ const obfuscatorPlugin = obfuscator({
 })
 
 export default defineConfig({
-  plugins: [react(), obfuscatorPlugin],
+  plugins: [
+    react(),
+    obfuscatorPlugin,
+    viteStaticCopy({ targets: [{ src: sharedVipIcons, dest: 'vip-icons', rename: { stripBase: true } }] }),
+  ],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
