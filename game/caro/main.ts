@@ -1,5 +1,6 @@
 import { bridge, joinGame, type GameSession, type MatchFoundData, type PlayerInfo, type RoomInfo, type UserInfoData } from '../src/sdk';
-import { BOARD_ASSETS, preloadAssets } from './assets';
+import { BOARD_ASSETS, preloadAssets, VIP_DEFAULT_ICON } from './assets';
+import { parseVipTypeId, vipIconUrl } from '@ola/shared/lib/vip';
 import {
   buildRanked,
   rankedSetRooms,
@@ -34,6 +35,8 @@ const el = {
   opName: document.querySelector('#player-op .name')!,
   meMark: document.querySelector('#player-me .mark')!,
   opMark: document.querySelector('#player-op .mark')!,
+  meVip: document.querySelector('#player-me .p-vip') as HTMLImageElement,
+  opVip: document.querySelector('#player-op .p-vip') as HTMLImageElement,
   me: document.getElementById('player-me')!,
   op: document.getElementById('player-op')!,
   timer: document.getElementById('timer')!,
@@ -149,6 +152,13 @@ function opponentOf(players: PlayerInfo[], you: number): PlayerInfo {
   return players[1 - you];
 }
 
+function avatarIconSrc(vipType?: string | null): string {
+  const id = parseVipTypeId(vipType);
+  return id != null ? vipIconUrl(id) : VIP_DEFAULT_ICON;
+}
+
+const BOT_VIP_ID: Record<BotLevel, number> = { easy: 1, normal: 2, hard: 3 };
+
 function wireSession(target: GameSession<CaroState, CaroMove>): void {
   target.onUserInfo((info) => {
     userInfo = info;
@@ -175,6 +185,9 @@ function wireSession(target: GameSession<CaroState, CaroMove>): void {
     hideOverlay();
     el.meName.textContent = userInfo ? `@${userInfo.username}` : data.players[data.you].name;
     el.opName.textContent = opponentOf(data.players, data.you).name;
+    el.meVip.src = userInfo ? avatarIconSrc(userInfo.vipType) : VIP_DEFAULT_ICON;
+    const botVipId = target === botSession && botSessionLevel ? BOT_VIP_ID[botSessionLevel] : null;
+    el.opVip.src = botVipId != null ? vipIconUrl(botVipId) : VIP_DEFAULT_ICON;
     el.meMark.className = data.you === 0 ? 'mark x' : 'mark o';
     el.opMark.className = data.you === 0 ? 'mark o' : 'mark x';
     el.btnForfeit.disabled = false;

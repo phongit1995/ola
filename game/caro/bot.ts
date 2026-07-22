@@ -225,12 +225,16 @@ function pickBotMove(board: number[], level: BotLevel): CaroMove | null {
   }
 
   if (level === 'normal') {
-    return bestBy(scored, (s) => s.attack + s.defend * 0.9 + Math.random() * 10);
+    const winNow = scored.find((s) => s.attack >= WIN_SCORE);
+    if (winNow) return winNow;
+    const blockWin = scored.find((s) => s.defend >= WIN_SCORE);
+    if (blockWin) return blockWin;
+    return bestBy(scored, (s) => s.attack + s.defend * 0.85 + Math.random() * 1500);
   }
 
   const blockObvious = scored.find((s) => s.defend >= WIN_SCORE);
-  if (blockObvious && Math.random() < 0.7) return blockObvious;
-  return bestBy(scored, (s) => s.attack * 0.7 + s.defend * 0.45 + Math.random() * 600);
+  if (blockObvious && Math.random() < 0.5) return blockObvious;
+  return bestBy(scored, (s) => s.attack * 0.4 + s.defend * 0.25 + Math.random() * 8000);
 }
 
 function bestBy(moves: ScoredMove[], score: (move: ScoredMove) => number): ScoredMove | null {
