@@ -84,6 +84,19 @@ func (r *Repository) SoftDelete(id uuid.UUID) error {
 	return r.db.Delete(&models.UserVipIcon{}, "id = ?", id).Error
 }
 
+func (r *Repository) FindInstances(ids []uuid.UUID) ([]models.UserVipIcon, error) {
+	var items []models.UserVipIcon
+	err := r.db.Where("id IN ?", ids).Find(&items).Error
+	return items, err
+}
+
+func (r *Repository) SoftDeleteMany(userID uuid.UUID, ids []uuid.UUID) (int64, error) {
+	res := r.db.
+		Where("user_id = ? AND is_locked = ?", userID, false).
+		Delete(&models.UserVipIcon{}, "id IN ?", ids)
+	return res.RowsAffected, res.Error
+}
+
 func (r *Repository) SetLocked(id uuid.UUID, locked bool) error {
 	return r.db.Model(&models.UserVipIcon{}).
 		Where("id = ?", id).

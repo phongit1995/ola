@@ -257,6 +257,39 @@ func (s *Service) Delete(userID, instanceID uuid.UUID) error {
 	return s.clearActiveIfGone(userID, instanceID, item.VipIconID)
 }
 
+func (s *Service) BatchDelete(userID uuid.UUID, instanceIDs []uuid.UUID) (int, error) {
+	if len(instanceIDs) == 0 {
+		return 0, nil
+	}
+	u, err := s.repo.GetUser(userID)
+	if err != nil {
+		return 0, err
+	}
+	items, err := s.repo.FindInstances(instanceIDs)
+	if err != nil {
+		return 0, err
+	}
+	if len(items) != len(instanceIDs) {
+		return 0, ErrVipNotFound
+	}
+	for i := range items {
+		if items[i].UserID != userID {
+			return 0, ErrVipNotOwned
+		}
+		if items[i].IsLocked {
+			return 0, ErrVipLocked
+		}
+		if u.VipUsedInstanceID != nil && *u.VipUsedInstanceID == items[i].ID {
+			return 0, ErrVipInUse
+		}
+	}
+	deleted, err := s.repo.SoftDeleteMany(userID, instanceIDs)
+	if err != nil {
+		return 0, err
+	}
+	return int(deleted), nil
+}
+
 func (s *Service) Transfer(userID, instanceID, toUserID uuid.UUID, password string) error {
 	if toUserID == userID {
 		return ErrCannotTransferSelf

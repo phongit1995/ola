@@ -32,6 +32,7 @@ func (r *Router) Setup(api *utils.AppGroup) {
 		vip.POST("/icons/:id/lock", r.controller.Lock)
 		vip.POST("/icons/:id/unlock", r.controller.Unlock)
 		vip.POST("/icons/:id/transfer", r.controller.Transfer)
+		vip.POST("/icons/batch-delete", r.controller.BatchDelete)
 		vip.DELETE("/icons/:id", r.controller.Delete)
 	}
 }

@@ -21,20 +21,41 @@ const VIP_PAGE_SIZE = 100;
 
 interface VipRowProps {
   icon: VipIconInstance;
+  selectMode: boolean;
+  selected: boolean;
+  selectable: boolean;
   onSelect: () => void;
+  onToggle: () => void;
 }
 
-function VipRow({ icon, onSelect }: VipRowProps) {
+function VipRow({ icon, selectMode, selected, selectable, onSelect, onToggle }: VipRowProps) {
   const { t } = useTranslation();
   const stateKey =
     icon.isUsing ? 'vip.stateInUse' : icon.isLocked ? 'vip.stateLocked' : 'vip.stateAvailable';
+  const disabled = selectMode && !selectable;
   return (
     <button
       type="button"
-      onClick={onSelect}
-      className="flex h-[72px] w-full flex-col bg-white/80 text-left active:bg-black/5"
+      onClick={selectMode ? onToggle : onSelect}
+      disabled={disabled}
+      className={`flex h-[72px] w-full flex-col bg-white/80 text-left ${
+        disabled ? 'opacity-50' : 'active:bg-black/5'
+      }`}
     >
       <div className="flex flex-1 items-center px-4">
+        {selectMode && (
+          <span
+            className={`mr-3 flex h-5 w-5 shrink-0 items-center justify-center rounded border ${
+              selected ? 'border-ola-primary bg-ola-primary' : 'border-black/30 bg-white'
+            }`}
+          >
+            {selected && (
+              <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 text-white" fill="none" stroke="currentColor" strokeWidth={3} aria-hidden="true">
+                <path d="M5 12l5 5 9-11" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            )}
+          </span>
+        )}
         <VipIcon typeId={icon.typeId} size={40} rounded alt={vipName(icon.typeId)} />
         <div className="ml-2 flex flex-col justify-center">
           <span className="text-base text-black/87">{vipName(icon.typeId)}</span>
@@ -62,6 +83,9 @@ export function VipStorePage({ onClose }: { onClose: () => void }) {
   const [menuIcon, setMenuIcon] = useState<VipIconInstance | null>(null);
   const [useTarget, setUseTarget] = useState<VipIconInstance | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<VipIconInstance | null>(null);
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [batchDeleteOpen, setBatchDeleteOpen] = useState(false);
 
   const loadPage = useCallback(async (offset: number) => {
     const res = await VipService.store({ limit: VIP_PAGE_SIZE, offset });
@@ -182,6 +206,36 @@ export function VipStorePage({ onClose }: { onClose: () => void }) {
     );
   }
 
+  function isSelectable(icon: VipIconInstance): boolean {
+    return !icon.isLocked && !icon.isUsing;
+  }
+
+  function toggleSelect(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function exitSelectMode() {
+    setSelectMode(false);
+    setSelectedIds(new Set());
+  }
+
+  function confirmBatchDelete() {
+    const ids = [...selectedIds];
+    setBatchDeleteOpen(false);
+    if (ids.length === 0) return;
+    exitSelectMode();
+    void runAction(
+      () => VipService.batchDeleteIcons(ids),
+      t('vip.toastDeletedMany', { count: ids.length }),
+      true,
+    );
+  }
+
   function buildMenuOptions(icon: VipIconInstance): ListOption[] {
     const options: ListOption[] = [];
     if (!icon.isUsing) {
@@ -281,8 +335,34 @@ export function VipStorePage({ onClose }: { onClose: () => void }) {
             {t('vip.extendVip')}
           </button>
 
-          <div className="flex h-9 items-center justify-center bg-[#d5d5d5] text-base text-white">
-            {t('vip.collection')}
+          <div className="flex h-9 items-center bg-[#d5d5d5] px-3 text-white">
+            {selectMode ? (
+              <>
+                <span className="flex-1 text-sm">
+                  {t('vip.selectedCount', { count: selectedIds.size })}
+                </span>
+                <button type="button" onClick={exitSelectMode} className="px-2 text-sm">
+                  {t('vip.cancel')}
+                </button>
+                <button
+                  type="button"
+                  disabled={selectedIds.size === 0 || busy}
+                  onClick={() => setBatchDeleteOpen(true)}
+                  className="ml-1 rounded bg-ola-error px-3 py-0.5 text-sm font-medium text-white disabled:opacity-50"
+                >
+                  {t('vip.deleteSelected', { count: selectedIds.size })}
+                </button>
+              </>
+            ) : (
+              <>
+                <span className="flex-1 text-center text-base">{t('vip.collection')}</span>
+                {items.length > 0 && (
+                  <button type="button" onClick={() => setSelectMode(true)} className="text-sm">
+                    {t('vip.select')}
+                  </button>
+                )}
+              </>
+            )}
           </div>
         </div>
 
@@ -296,7 +376,15 @@ export function VipStorePage({ onClose }: { onClose: () => void }) {
           </div>
         ) : (
           items.map((icon) => (
-            <VipRow key={icon.instanceId} icon={icon} onSelect={() => setMenuIcon(icon)} />
+            <VipRow
+              key={icon.instanceId}
+              icon={icon}
+              selectMode={selectMode}
+              selected={selectedIds.has(icon.instanceId)}
+              selectable={isSelectable(icon)}
+              onSelect={() => setMenuIcon(icon)}
+              onToggle={() => toggleSelect(icon.instanceId)}
+            />
           ))
         )}
         {loadingMore && (
@@ -353,6 +441,17 @@ export function VipStorePage({ onClose }: { onClose: () => void }) {
         cancelLabel={t('vip.cancel')}
         onConfirm={confirmDelete}
         onCancel={() => setDeleteTarget(null)}
+      />
+
+      <ConfirmDialog
+        open={batchDeleteOpen}
+        danger
+        title={t('vip.confirmDeleteManyTitle')}
+        message={t('vip.confirmDeleteMany', { count: selectedIds.size })}
+        confirmLabel={t('vip.actionDelete')}
+        cancelLabel={t('vip.cancel')}
+        onConfirm={confirmBatchDelete}
+        onCancel={() => setBatchDeleteOpen(false)}
       />
     </FullScreenOverlay>
   );

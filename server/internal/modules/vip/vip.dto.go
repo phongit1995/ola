@@ -41,6 +41,14 @@ type PrivacyRequest struct {
 	Privacy int16 `json:"privacy" binding:"min=0,max=2" example:"0"`
 }
 
+type BatchDeleteRequest struct {
+	IDs []string `json:"ids" binding:"required,min=1,max=100,dive,uuid" example:"550e8400-e29b-41d4-a716-446655440000"`
+}
+
+type BatchDeleteResponse struct {
+	Deleted int `json:"deleted" example:"3"`
+}
+
 type MessageResponse struct {
 	Message string `json:"message" example:"ok"`
 }
@@ -193,6 +201,7 @@ type UpdateShopItemRequest struct {
 type StoreSuccessResponse = utils.BaseResponse[StoreResponse]
 type VipItemSuccessResponse = utils.BaseResponse[VipItem]
 type MessageSuccessResponse = utils.BaseResponse[MessageResponse]
+type BatchDeleteSuccessResponse = utils.BaseResponse[BatchDeleteResponse]
 type PackageListSuccessResponse = utils.BaseResponse[PackageListResponse]
 type PackageItemSuccessResponse = utils.BaseResponse[PackageItem]
 type BuyPackageSuccessResponse = utils.BaseResponse[BuyPackageResponse]
