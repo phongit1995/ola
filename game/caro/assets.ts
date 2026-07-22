@@ -164,10 +164,3 @@ export function preloadAssets(
 }
 
 export const VIP_DEFAULT_ICON = '/ola_smiley_online.png';
-
-export function vipIconUrl(vipType: string | null | undefined): string | null {
-  if (vipType == null || vipType === '') return null;
-  const id = Number(vipType);
-  if (!Number.isInteger(id) || id < 1 || id > 133) return null;
-  return `/vip-icons/vip_${String(id).padStart(3, '0')}.png`;
-}

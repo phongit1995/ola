@@ -2,6 +2,11 @@ import { resolve } from 'path';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      '@ola/shared': resolve(__dirname, '../packages/shared/src'),
+    },
+  },
   build: {
     rollupOptions: {
       input: {
