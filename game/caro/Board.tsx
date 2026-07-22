@@ -9,7 +9,7 @@ export function Board({ game }: { game: CaroGame }) {
   return (
     <div id="app" style={assetBg('boardBg')}>
       <header id="topbar">
-        <div className="player" id="player-me">
+        <div className={'player' + (me.active ? ' active' : '')} id="player-me">
           <div className="p-avatar" style={assetBg('boardAvatarFrame')}>
             <img className="p-vip" src={me.vip} alt="" />
           </div>
@@ -25,7 +25,7 @@ export function Board({ game }: { game: CaroGame }) {
           <img id="turn-arrow" className={game.turnArrowSrc ? '' : 'hidden'} src={game.turnArrowSrc ?? undefined} alt="" />
           <div id="status">{game.status}</div>
         </div>
-        <div className="player right" id="player-op">
+        <div className={'player right' + (op.active ? ' active' : '')} id="player-op">
           <div className="p-avatar" style={assetBg('boardAvatarFrame')}>
             <img className="p-vip" src={op.vip} alt="" />
           </div>
