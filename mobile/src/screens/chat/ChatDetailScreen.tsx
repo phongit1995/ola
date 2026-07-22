@@ -443,6 +443,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
                   onMention={(nick) => navigation.navigate(ROOT_ROUTES.ProfileView, { userId: nick })}
                   onShowReactions={setReactionsTargetId}
                   onQuoteClick={scrollToMessage}
+                  onOpenProfile={openPeerProfile}
                 />
                 {peerCardVisible && item.id === peerCardAnchorId && peerProfile != null &&
                   renderPeerCard()}

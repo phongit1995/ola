@@ -101,6 +101,7 @@ interface ChatMessageRowProps {
   onMention: (nick: string) => void;
   onShowReactions?: (id: string) => void;
   onQuoteClick?: (messageId: string) => void;
+  onOpenProfile?: () => void;
 }
 
 export function ChatBubble({
@@ -230,6 +231,7 @@ export function ChatMessageRow({
   onMention,
   onShowReactions,
   onQuoteClick,
+  onOpenProfile,
 }: ChatMessageRowProps) {
   const chips = reactionChips(message.reactions);
   const bubbleRef = useRef<View>(null);
@@ -253,9 +255,9 @@ export function ChatMessageRow({
       >
         {!fromMe &&
           (showAvatar ? (
-            <View className="self-start">
+            <Pressable className="self-start" onPress={onOpenProfile} disabled={onOpenProfile == null}>
               <Avatar name={peerName} uri={peerAvatar} size={32} />
-            </View>
+            </Pressable>
           ) : (
             <View style={{ width: 32 }} />
           ))}
