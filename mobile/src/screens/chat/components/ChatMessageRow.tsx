@@ -111,6 +111,7 @@ export function ChatBubble({
   lastInGroup,
   onOpenImage,
   onMention,
+  onLongPress,
   onQuoteClick,
 }: {
   message: Message;
@@ -119,6 +120,7 @@ export function ChatBubble({
   lastInGroup: boolean;
   onOpenImage: (url: string) => void;
   onMention: (nick: string) => void;
+  onLongPress?: () => void;
   onQuoteClick?: (messageId: string) => void;
 }) {
   const meta = parseMessageMetadata(message.metadata);
@@ -162,7 +164,11 @@ export function ChatBubble({
 
   if (message.type === 'image' && meta.url != null && meta.url !== '') {
     return quotedWrap(
-      <Pressable onPress={() => onOpenImage(meta.url!)}>
+      <Pressable
+        onPress={() => onOpenImage(meta.url!)}
+        onLongPress={onLongPress}
+        delayLongPress={300}
+      >
         <CachedImage
           uri={meta.url}
           onSize={({ width, height }) => {
@@ -274,6 +280,7 @@ export function ChatMessageRow({
                 lastInGroup={lastInGroup}
                 onOpenImage={onOpenImage}
                 onMention={onMention}
+                onLongPress={handleLongPress}
                 onQuoteClick={onQuoteClick}
               />
             </Pressable>
