@@ -1,5 +1,6 @@
 import { resolve } from 'path';
 import { defineConfig, normalizePath } from 'vite';
+import react from '@vitejs/plugin-react';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 // Nguồn gốc duy nhất cho asset dùng chung (xem packages/shared/assets).
@@ -7,6 +8,7 @@ const sharedAssets = resolve(__dirname, '../packages/shared/assets');
 
 export default defineConfig({
   plugins: [
+    react(),
     viteStaticCopy({
       targets: [
         { src: normalizePath(`${sharedAssets}/vip-icons/*`), dest: 'vip-icons', rename: { stripBase: true } },

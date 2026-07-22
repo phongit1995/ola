@@ -122,17 +122,12 @@ const ALL_ASSETS = { ...LOBBY_ASSETS, ...BOARD_ASSETS, ...RANKED_ASSETS, ...RESU
 
 export type AssetKey = keyof typeof ALL_ASSETS;
 
-export function applyAssets(root: ParentNode): void {
-  root.querySelectorAll<HTMLImageElement>('img[data-asset]').forEach((img) => {
-    const key = img.dataset.asset as AssetKey;
-    if (ALL_ASSETS[key]) img.src = ALL_ASSETS[key];
-  });
-  root.querySelectorAll<HTMLElement>('[data-asset-bg]').forEach((node) => {
-    const key = node.dataset.assetBg as AssetKey;
-    if (ALL_ASSETS[key]) node.style.backgroundImage = `url('${ALL_ASSETS[key]}')`;
-  });
-  document.documentElement.style.setProperty('--asset-board-x', `url('${BOARD_ASSETS.boardX}')`);
-  document.documentElement.style.setProperty('--asset-board-o', `url('${BOARD_ASSETS.boardO}')`);
+export function assetSrc(key: AssetKey): string {
+  return ALL_ASSETS[key];
+}
+
+export function assetBg(key: AssetKey): { backgroundImage: string } {
+  return { backgroundImage: `url('${ALL_ASSETS[key]}')` };
 }
 
 export function preloadAssets(
