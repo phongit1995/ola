@@ -86,10 +86,41 @@ export function VipStoreScreen({ navigation }: Props) {
       </Pressable>
 
       <View
-        className="items-center justify-center"
+        className="flex-row items-center px-3"
         style={{ height: 36, backgroundColor: '#d5d5d5' }}
       >
-        <Text className="text-base text-white">{t('vip.collection')}</Text>
+        {vm.selectMode ? (
+          <>
+            <Text className="flex-1 text-sm text-white">
+              {t('vip.selectedCount', { count: vm.selectedIds.size })}
+            </Text>
+            <Pressable onPress={vm.exitSelectMode} className="px-2 active:opacity-70">
+              <Text className="text-sm text-white">{t('vip.cancel')}</Text>
+            </Pressable>
+            <Pressable
+              onPress={() => vm.setBatchDeleteOpen(true)}
+              disabled={vm.selectedIds.size === 0 || vm.busy}
+              className="ml-1 rounded px-3 py-0.5 active:opacity-90"
+              style={{
+                backgroundColor: '#e34545',
+                opacity: vm.selectedIds.size === 0 || vm.busy ? 0.5 : 1,
+              }}
+            >
+              <Text className="text-sm font-medium text-white">
+                {t('vip.deleteSelected', { count: vm.selectedIds.size })}
+              </Text>
+            </Pressable>
+          </>
+        ) : (
+          <>
+            <Text className="flex-1 text-center text-base text-white">{t('vip.collection')}</Text>
+            {vm.items.length > 0 && (
+              <Pressable onPress={() => vm.setSelectMode(true)} className="px-1 active:opacity-70">
+                <Text className="text-sm text-white">{t('vip.select')}</Text>
+              </Pressable>
+            )}
+          </>
+        )}
       </View>
     </View>
   );
@@ -121,8 +152,18 @@ export function VipStoreScreen({ navigation }: Props) {
       <FlatList
         className="flex-1"
         data={vm.items}
+        extraData={vm.selectMode ? vm.selectedIds : null}
         keyExtractor={(item) => item.instanceId}
-        renderItem={({ item }) => <VipRow icon={item} onSelect={() => vm.setMenuIcon(item)} />}
+        renderItem={({ item }) => (
+          <VipRow
+            icon={item}
+            selectMode={vm.selectMode}
+            selected={vm.selectedIds.has(item.instanceId)}
+            selectable={vm.isSelectable(item)}
+            onSelect={() => vm.setMenuIcon(item)}
+            onToggle={() => vm.toggleSelect(item.instanceId)}
+          />
+        )}
         ListHeaderComponent={listHeader}
         ListEmptyComponent={listEmpty}
         ListFooterComponent={
@@ -198,6 +239,17 @@ export function VipStoreScreen({ navigation }: Props) {
         cancelLabel={t('vip.cancel')}
         onConfirm={vm.confirmDelete}
         onCancel={() => vm.setDeleteTarget(null)}
+      />
+
+      <ConfirmDialog
+        visible={vm.batchDeleteOpen}
+        danger
+        title={t('vip.confirmDeleteManyTitle')}
+        message={t('vip.confirmDeleteMany', { count: vm.selectedIds.size })}
+        confirmLabel={t('vip.actionDelete')}
+        cancelLabel={t('vip.cancel')}
+        onConfirm={vm.confirmBatchDelete}
+        onCancel={() => vm.setBatchDeleteOpen(false)}
       />
     </View>
   );
