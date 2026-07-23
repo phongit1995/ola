@@ -211,6 +211,48 @@ button:focus-visible,
   padding: 14px 10px 8px;
 }
 
+.turn-announce {
+  position: absolute;
+  left: 50%;
+  top: 38%;
+  z-index: 6;
+  pointer-events: none;
+  font-weight: 900;
+  font-size: clamp(26px, 8.5vw, 46px);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  text-shadow: 0 2px 0 rgba(9, 24, 43, 0.35), 0 0 14px rgba(9, 24, 43, 0.25);
+  animation: turn-announce 1010ms ease-out forwards;
+}
+
+.turn-announce.mine {
+  color: #f2c14e;
+}
+
+.turn-announce.foe {
+  color: #e0554b;
+}
+
+@keyframes turn-announce {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 0) scale(0.7);
+  }
+  16% {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+  57% {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -120px) scale(1);
+  }
+}
+
 #board-frame {
   width: min(100%, 92vw);
   max-width: 480px;
@@ -221,7 +263,7 @@ button:focus-visible,
 }
 
 #board-frame.urgent {
-  animation: board-warn 800ms ease-in-out infinite, board-shake 260ms ease-in-out infinite;
+  animation: board-warn 800ms ease-in-out infinite;
 }
 
 @keyframes board-warn {
@@ -231,19 +273,6 @@ button:focus-visible,
   }
   50% {
     box-shadow: 0 0 0 1.5px rgba(224, 58, 46, 0.7), 0 0 7px 0 rgba(224, 58, 46, 0.35);
-  }
-}
-
-@keyframes board-shake {
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-  25% {
-    transform: translateX(-2px);
-  }
-  75% {
-    transform: translateX(2px);
   }
 }
 

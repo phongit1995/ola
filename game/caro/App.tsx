@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { bridge } from '../src/sdk';
 import { BOARD_ASSETS, preloadAssets } from './assets';
-import { useCaroGame } from './useCaroGame';
+import { useCaroStore } from './store';
 import { Board } from './Board';
 import { Lobby } from './Lobby';
 import { Ranked } from './Ranked';
@@ -10,7 +10,9 @@ import { Result } from './Result';
 export function App() {
   const [progress, setProgress] = useState('Đang tải...');
   const [ready, setReady] = useState(false);
-  const game = useCaroGame(ready);
+  const lobbyAnimKey = useCaroStore((s) => s.lobbyAnimKey);
+  const init = useCaroStore((s) => s.init);
+  const dispose = useCaroStore((s) => s.dispose);
 
   useEffect(() => {
     document.documentElement.style.setProperty('--asset-board-x', `url('${BOARD_ASSETS.boardX}')`);
@@ -25,15 +27,20 @@ export function App() {
     });
     return () => {
       cancelled = true;
+      dispose();
     };
-  }, []);
+  }, [dispose]);
+
+  useEffect(() => {
+    init(ready);
+  }, [ready, init]);
 
   return (
     <>
-      <Board game={game} />
-      <Lobby key={game.lobbyAnimKey} game={game} progress={progress} />
-      <Ranked visible={game.rankedVisible} onExit={game.toLobby} />
-      <Result game={game} />
+      <Board />
+      <Lobby key={lobbyAnimKey} progress={progress} />
+      <Ranked />
+      <Result />
     </>
   );
 }

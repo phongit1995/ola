@@ -1,23 +1,42 @@
 import { useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { parseVipTypeId, vipIconUrl } from '@ola/shared/lib/vip';
 import { assetBg, assetSrc, VIP_DEFAULT_ICON } from './assets';
 import type { BotLevel } from './bot';
-import type { CaroGame } from './useCaroGame';
+import { useCaroStore } from './store';
 
 function formatKen(value: number): string {
   return Math.round(value).toLocaleString('vi-VN');
 }
 
-export function Lobby({ game, progress }: { game: CaroGame; progress: string }) {
+export function Lobby({ progress }: { progress: string }) {
   const [pickOpen, setPickOpen] = useState(false);
-  const { lobbyPhase: phase, userInfo } = game;
+  const { lobbyVisible, lobbyPhase: phase, lobbyAnimKey, userInfo, ken, toast } = useCaroStore(
+    useShallow((s) => ({
+      lobbyVisible: s.lobbyVisible,
+      lobbyPhase: s.lobbyPhase,
+      lobbyAnimKey: s.lobbyAnimKey,
+      userInfo: s.userInfo,
+      ken: s.ken,
+      toast: s.toast,
+    })),
+  );
+  const { playBot, playRanked, retry, exitApp, showToast } = useCaroStore(
+    useShallow((s) => ({
+      playBot: s.playBot,
+      playRanked: s.playRanked,
+      retry: s.retry,
+      exitApp: s.exitApp,
+      showToast: s.showToast,
+    })),
+  );
 
   const cls = [
-    !game.lobbyVisible && 'hidden',
+    !lobbyVisible && 'hidden',
     phase === 'loading' && 'loading',
     (phase === 'connecting' || phase === 'error') && 'connecting',
     phase === 'ready' && 'show',
-    phase === 'ready' && game.lobbyAnimKey > 1 && 'enter',
+    phase === 'ready' && lobbyAnimKey > 1 && 'enter',
   ]
     .filter(Boolean)
     .join(' ');
@@ -27,7 +46,7 @@ export function Lobby({ game, progress }: { game: CaroGame; progress: string }) 
 
   const choose = (level: BotLevel): void => {
     setPickOpen(false);
-    game.playBot(level);
+    playBot(level);
   };
 
   return (
@@ -43,8 +62,8 @@ export function Lobby({ game, progress }: { game: CaroGame; progress: string }) 
           </div>
           <div className="lobby-ken" style={assetBg('kenFrame')}>
             <img className="lobby-ken-icon" src={assetSrc('icKen')} alt="Ken" />
-            <span id="lobby-ken-text">{formatKen(game.ken)}</span>
-            <button type="button" id="lobby-plus" style={assetBg('btnPlus')} aria-label="Nạp Ken" onClick={() => game.showToast('Nạp Ken trong app Ola nhé!')}>
+            <span id="lobby-ken-text">{formatKen(ken)}</span>
+            <button type="button" id="lobby-plus" style={assetBg('btnPlus')} aria-label="Nạp Ken" onClick={() => showToast('Nạp Ken trong app Ola nhé!')}>
               <img src={assetSrc('icPlus')} alt="" />
             </button>
           </div>
@@ -52,33 +71,33 @@ export function Lobby({ game, progress }: { game: CaroGame; progress: string }) 
             <img src={assetSrc('icBot')} alt="" />
             <span>Chơi với máy</span>
           </button>
-          <button type="button" className="lobby-mode" id="lobby-ranked" style={assetBg('modeFrame')} onClick={game.playRanked}>
+          <button type="button" className="lobby-mode" id="lobby-ranked" style={assetBg('modeFrame')} onClick={playRanked}>
             <img src={assetSrc('icRanked')} alt="" />
             <span>Chơi xếp hạng</span>
           </button>
         </div>
         <div id="lobby-status" className={phase === 'connecting' || phase === 'error' ? '' : 'hidden'}>
           <span id="lobby-status-text">{phase === 'error' ? 'Không kết nối được máy chủ' : 'Đang kết nối máy chủ...'}</span>
-          <button type="button" id="lobby-retry" className={phase === 'error' ? '' : 'hidden'} onClick={game.retry}>
+          <button type="button" id="lobby-retry" className={phase === 'error' ? '' : 'hidden'} onClick={retry}>
             Thử lại
           </button>
         </div>
         <div className="lobby-bottom" style={assetBg('bottomFrame')}>
-          <button type="button" id="lobby-history" onClick={() => game.showToast('Tính năng đang phát triển')}>
+          <button type="button" id="lobby-history" onClick={() => showToast('Tính năng đang phát triển')}>
             <img src={assetSrc('icHistory')} alt="" />
             <span>Lịch sử</span>
           </button>
-          <button type="button" id="lobby-leaderboard" onClick={() => game.showToast('Tính năng đang phát triển')}>
+          <button type="button" id="lobby-leaderboard" onClick={() => showToast('Tính năng đang phát triển')}>
             <img src={assetSrc('icLeaderboard')} alt="" />
             <span>Bảng xếp hạng</span>
           </button>
-          <button type="button" id="lobby-exit" onClick={game.exitApp}>
+          <button type="button" id="lobby-exit" onClick={exitApp}>
             <img src={assetSrc('icExit')} alt="" />
             <span>Thoát</span>
           </button>
         </div>
-        <div id="lobby-toast" className={game.toast ? 'show' : 'hidden'}>
-          {game.toast}
+        <div id="lobby-toast" className={toast ? 'show' : 'hidden'}>
+          {toast}
         </div>
       </div>
       <div id="lobby-pick" className={pickOpen ? '' : 'hidden'} onClick={(e) => e.target === e.currentTarget && setPickOpen(false)}>

@@ -1,12 +1,13 @@
 import { assetBg, assetSrc } from './assets';
-import type { CaroGame } from './useCaroGame';
+import { useCaroStore } from './store';
 
 function formatKen(value: number): string {
   return value.toLocaleString('vi-VN');
 }
 
-export function Result({ game }: { game: CaroGame }) {
-  const result = game.result;
+export function Result() {
+  const result = useCaroStore((s) => s.result);
+  const closeResult = useCaroStore((s) => s.closeResult);
   const win = result?.win ?? true;
   const delta = result?.kenDelta ?? null;
   const showKen = delta != null && delta !== 0;
@@ -27,7 +28,7 @@ export function Result({ game }: { game: CaroGame }) {
             {showKen ? `${delta > 0 ? '+' : '-'}${formatKen(Math.abs(delta))} KEN` : ''}
           </span>
         </div>
-        <button type="button" id="result-close" style={assetBg('resultBtnClose')} onClick={game.closeResult}>
+        <button type="button" id="result-close" style={assetBg('resultBtnClose')} onClick={closeResult}>
           <span>Đóng</span>
         </button>
       </div>

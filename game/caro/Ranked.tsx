@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import type { RoomInfo } from '../src/sdk';
 import { assetBg, assetSrc } from './assets';
+import { useCaroStore } from './store';
 
 const PAGE_SIZE = 9;
 const HEAD_BOTTOM = 10.5;
@@ -25,7 +26,9 @@ function formatKen(value: number): string {
   return value.toLocaleString('vi-VN');
 }
 
-export function Ranked({ visible, onExit }: { visible: boolean; onExit: () => void }) {
+export function Ranked() {
+  const visible = useCaroStore((s) => s.rankedVisible);
+  const onExit = useCaroStore((s) => s.toLobby);
   const [page, setPage] = useState(0);
   const [createOpen, setCreateOpen] = useState(false);
   const [passRoom, setPassRoom] = useState<RoomInfo | null>(null);

@@ -1,31 +1,69 @@
 import { useEffect, useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { assetBg, assetSrc } from './assets';
 import { SIZE } from './types';
-import type { CaroGame } from './useCaroGame';
+import { useCaroStore } from './store';
 
 const CELLS = Array.from({ length: SIZE * SIZE }, (_, i) => i);
 
-interface ChatMsg {
-  id: number;
-  who: string;
-  text: string;
-}
-
-export function Board({ game }: { game: CaroGame }) {
-  const { me, op, overlay } = game;
+export function Board() {
   const [chatInput, setChatInput] = useState('');
-  const [messages, setMessages] = useState<ChatMsg[]>([]);
+  const {
+    me,
+    op,
+    overlay,
+    status,
+    myTurn,
+    showTimer,
+    timerText,
+    timerUrgent,
+    turnArrowSrc,
+    board,
+    lastIdx,
+    turnAnnounce,
+    replayVisible,
+    forfeitDisabled,
+    messages,
+    matchSeq,
+  } = useCaroStore(
+    useShallow((s) => ({
+      me: s.me,
+      op: s.op,
+      overlay: s.overlay,
+      status: s.status,
+      myTurn: s.myTurn,
+      showTimer: s.showTimer,
+      timerText: s.timerText,
+      timerUrgent: s.timerUrgent,
+      turnArrowSrc: s.turnArrowSrc,
+      board: s.board,
+      lastIdx: s.lastIdx,
+      turnAnnounce: s.turnAnnounce,
+      replayVisible: s.replayVisible,
+      forfeitDisabled: s.forfeitDisabled,
+      messages: s.messages,
+      matchSeq: s.matchSeq,
+    })),
+  );
+  const { placeMove, again, cancelSearch, toLobby, replay, forfeit, exitMatch, sendChat } = useCaroStore(
+    useShallow((s) => ({
+      placeMove: s.placeMove,
+      again: s.again,
+      cancelSearch: s.cancelSearch,
+      toLobby: s.toLobby,
+      replay: s.replay,
+      forfeit: s.forfeit,
+      exitMatch: s.exitMatch,
+      sendChat: s.sendChat,
+    })),
+  );
 
   useEffect(() => {
-    setMessages([]);
     setChatInput('');
-  }, [game.matchSeq]);
+  }, [matchSeq]);
 
-  const sendChat = (): void => {
-    const text = chatInput.trim();
-    if (!text) return;
-    const who = me.name && me.name !== '---' ? me.name : 'Bạn';
-    setMessages((prev) => [...prev, { id: Date.now(), who, text }]);
+  const send = (): void => {
+    sendChat(chatInput);
     setChatInput('');
   };
   return (
@@ -41,11 +79,11 @@ export function Board({ game }: { game: CaroGame }) {
           </div>
         </div>
         <div id="center">
-          <div id="timer" className={game.showTimer ? (game.timerUrgent ? 'urgent' : '') : 'hidden'} style={assetBg('boardTimerFrame')}>
-            <span id="timer-val">{game.timerText}</span>
+          <div id="timer" className={showTimer ? (timerUrgent ? 'urgent' : '') : 'hidden'} style={assetBg('boardTimerFrame')}>
+            <span id="timer-val">{timerText}</span>
           </div>
-          <img id="turn-arrow" className={game.turnArrowSrc ? '' : 'hidden'} src={game.turnArrowSrc ?? undefined} alt="" />
-          <div id="status">{game.status}</div>
+          <img id="turn-arrow" className={turnArrowSrc ? '' : 'hidden'} src={turnArrowSrc ?? undefined} alt="" />
+          <div id="status">{status}</div>
         </div>
         <div className={'player right' + (op.active ? ' active' : '')} id="player-op">
           <div className="p-avatar" style={assetBg('boardAvatarFrame')}>
@@ -59,14 +97,19 @@ export function Board({ game }: { game: CaroGame }) {
       </header>
 
       <main id="board-wrap">
-        <div id="board-frame" className={game.timerUrgent && game.myTurn ? 'urgent' : ''} style={assetBg('boardFrame')}>
-          <div id="board" className={game.myTurn ? 'playable' : ''}>
+        {turnAnnounce && (
+          <div key={turnAnnounce.id} className={'turn-announce ' + (turnAnnounce.mine ? 'mine' : 'foe')}>
+            {turnAnnounce.text}
+          </div>
+        )}
+        <div id="board-frame" className={timerUrgent && myTurn ? 'urgent' : ''} style={assetBg('boardFrame')}>
+          <div id="board" className={myTurn ? 'playable' : ''}>
             {CELLS.map((i) => {
-              const mark = game.board[i];
-              const cls = 'cell' + (mark ? ` p${mark}` : '') + (i === game.lastIdx ? ' last' : '');
+              const mark = board[i];
+              const cls = 'cell' + (mark ? ` p${mark}` : '') + (i === lastIdx ? ' last' : '');
               const x = i % SIZE;
               const y = Math.floor(i / SIZE);
-              return <div key={i} className={cls} onClick={() => game.placeMove(x, y)} />;
+              return <div key={i} className={cls} onClick={() => placeMove(x, y)} />;
             })}
           </div>
         </div>
@@ -84,17 +127,17 @@ export function Board({ game }: { game: CaroGame }) {
             </h2>
             <p id="overlay-sub">{overlay?.sub ?? '5 quân liên tiếp để thắng'}</p>
             <div id="overlay-actions">
-              <button type="button" id="btn-again" className={overlay?.actions.includes('again') ? '' : 'hidden'} onClick={game.again}>
+              <button type="button" id="btn-again" className={overlay?.actions.includes('again') ? '' : 'hidden'} onClick={again}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="M3 12a9 9 0 1 0 2.6-6.3L3 8" />
                   <path d="M3 3v5h5" />
                 </svg>
                 Chơi lại
               </button>
-              <button type="button" id="btn-cancel" className={`secondary ${overlay?.actions.includes('cancel') ? '' : 'hidden'}`} onClick={game.cancelSearch}>
+              <button type="button" id="btn-cancel" className={`secondary ${overlay?.actions.includes('cancel') ? '' : 'hidden'}`} onClick={cancelSearch}>
                 Hủy tìm trận
               </button>
-              <button type="button" id="btn-lobby" className={`secondary ${overlay?.actions.includes('lobby') ? '' : 'hidden'}`} onClick={game.toLobby}>
+              <button type="button" id="btn-lobby" className={`secondary ${overlay?.actions.includes('lobby') ? '' : 'hidden'}`} onClick={toLobby}>
                 Về sảnh
               </button>
             </div>
@@ -115,7 +158,7 @@ export function Board({ game }: { game: CaroGame }) {
           id="chat-input-row"
           onSubmit={(e) => {
             e.preventDefault();
-            sendChat();
+            send();
           }}
         >
           <input
@@ -133,13 +176,13 @@ export function Board({ game }: { game: CaroGame }) {
       </div>
 
       <footer id="bottombar">
-        <button type="button" id="btn-replay" className={game.replayVisible ? '' : 'hidden'} style={assetBg('boardMenuBtn')} onClick={game.replay}>
+        <button type="button" id="btn-replay" className={replayVisible ? '' : 'hidden'} style={assetBg('boardMenuBtn')} onClick={replay}>
           Chơi lại
         </button>
-        <button type="button" id="btn-forfeit" style={assetBg('boardMenuBtn')} disabled={game.forfeitDisabled} onClick={game.forfeit}>
+        <button type="button" id="btn-forfeit" style={assetBg('boardMenuBtn')} disabled={forfeitDisabled} onClick={forfeit}>
           Bỏ cuộc
         </button>
-        <button type="button" id="btn-exit" style={assetBg('boardMenuBtn')} onClick={game.exitMatch}>
+        <button type="button" id="btn-exit" style={assetBg('boardMenuBtn')} onClick={exitMatch}>
           Thoát
         </button>
       </footer>
