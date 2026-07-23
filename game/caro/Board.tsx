@@ -3,11 +3,13 @@ import { useShallow } from 'zustand/react/shallow';
 import { assetBg, assetSrc } from './assets';
 import { SIZE } from './types';
 import { useCaroStore } from './store';
+import { ConfirmModal } from './ConfirmModal';
 
 const CELLS = Array.from({ length: SIZE * SIZE }, (_, i) => i);
 
 export function Board() {
   const [chatInput, setChatInput] = useState('');
+  const [exitOpen, setExitOpen] = useState(false);
   const {
     me,
     op,
@@ -182,10 +184,20 @@ export function Board() {
         <button type="button" id="btn-forfeit" style={assetBg('boardMenuBtn')} disabled={forfeitDisabled} onClick={forfeit}>
           Bỏ cuộc
         </button>
-        <button type="button" id="btn-exit" style={assetBg('boardMenuBtn')} onClick={exitMatch}>
+        <button type="button" id="btn-exit" style={assetBg('boardMenuBtn')} onClick={() => setExitOpen(true)}>
           Thoát
         </button>
       </footer>
+
+      <ConfirmModal
+        open={exitOpen}
+        text="Thoát sẽ bị xử thua trận này. Thoát chứ?"
+        onConfirm={() => {
+          setExitOpen(false);
+          exitMatch();
+        }}
+        onCancel={() => setExitOpen(false)}
+      />
     </div>
   );
 }

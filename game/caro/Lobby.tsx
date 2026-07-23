@@ -4,6 +4,7 @@ import { parseVipTypeId, vipIconUrl } from '@ola/shared/lib/vip';
 import { assetBg, assetSrc, VIP_DEFAULT_ICON } from './assets';
 import type { BotLevel } from './bot';
 import { useCaroStore } from './store';
+import { ConfirmModal } from './ConfirmModal';
 
 function formatKen(value: number): string {
   return Math.round(value).toLocaleString('vi-VN');
@@ -124,25 +125,12 @@ export function Lobby({ progress }: { progress: string }) {
           </button>
         </div>
       </div>
-      <div id="lobby-exit-modal" className={exitOpen ? '' : 'hidden'} onClick={(e) => e.target === e.currentTarget && setExitOpen(false)}>
-        <div id="lobby-exit-card" style={assetBg('confirmBg')}>
-          <div id="lobby-exit-title" style={assetBg('confirmTitle')}>
-            <span>Xác nhận</span>
-          </div>
-          <div className="exit-body">
-            <div id="lobby-exit-door" style={assetBg('confirmDoor')} />
-            <p id="lobby-exit-text">Bạn có chắc muốn thoát trò chơi?</p>
-            <div id="lobby-exit-actions">
-              <button type="button" className="exit-btn danger" style={assetBg('btnRed')} onClick={exitApp}>
-                <span>Thoát</span>
-              </button>
-              <button type="button" className="exit-btn" style={assetBg('btnNavy')} onClick={() => setExitOpen(false)}>
-                <span>Hủy</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <ConfirmModal
+        open={exitOpen}
+        text="Bạn có chắc muốn thoát trò chơi?"
+        onConfirm={exitApp}
+        onCancel={() => setExitOpen(false)}
+      />
     </div>
   );
 }

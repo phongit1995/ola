@@ -4,6 +4,7 @@ import { SIZE, checkWin, emptyState, scorePlacement, type CaroMove, type CaroSta
 const TURN_MS = (Number(import.meta.env.VITE_GAME_TURN_SECONDS) || 45) * 1000;
 const PLAYER_MARK = 1;
 const BOT_MARK = 2;
+const TURN_ANNOUNCE_MS = 1080;
 
 export type BotLevel = 'easy' | 'normal' | 'hard';
 
@@ -169,7 +170,7 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
         return;
       }
       pushState(1, move, 0);
-      botTimer = window.setTimeout(botMove, BOT_LEVELS[level].thinkMs);
+      botTimer = window.setTimeout(botMove, TURN_ANNOUNCE_MS + BOT_LEVELS[level].thinkMs);
     },
 
     forfeit() {

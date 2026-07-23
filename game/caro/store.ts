@@ -389,10 +389,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     },
 
     exitMatch() {
-      if (refs.match) {
-        if (!window.confirm('Thoát sẽ bị xử thua trận này, thoát chứ?')) return;
-        refs.session?.forfeit();
-      }
+      if (refs.match) refs.session?.forfeit();
       refs.match = null;
       clearMatchUi();
       toLobby();
