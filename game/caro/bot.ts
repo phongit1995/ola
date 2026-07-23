@@ -4,6 +4,7 @@ import { SIZE, checkWin, emptyState, scorePlacement, type CaroMove, type CaroSta
 const TURN_MS = (Number(import.meta.env.VITE_GAME_TURN_SECONDS) || 45) * 1000;
 const PLAYER_MARK = 1;
 const BOT_MARK = 2;
+const TURN_ANNOUNCE_MS = 1080;
 
 export type BotLevel = 'easy' | 'normal' | 'hard';
 
@@ -24,6 +25,9 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
   let playerTurn = true;
   let turnTimer: number | undefined;
   let botTimer: number | undefined;
+  let overTimer: number | undefined;
+
+  const WIN_REVEAL_MS = 1300;
 
   const on = (type: string, handler: Handler): (() => void) => {
     let set = listeners.get(type);
@@ -42,8 +46,10 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
   const clearTimers = (): void => {
     if (turnTimer) window.clearTimeout(turnTimer);
     if (botTimer) window.clearTimeout(botTimer);
+    if (overTimer) window.clearTimeout(overTimer);
     turnTimer = undefined;
     botTimer = undefined;
+    overTimer = undefined;
   };
 
   const deadline = (): number => Date.now() + TURN_MS;
@@ -53,15 +59,22 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
     turnTimer = window.setTimeout(() => finish('bot', 'timeout'), TURN_MS);
   };
 
-  const finish = (winner: 'you' | 'bot' | null, reason: MatchOverData['reason']): void => {
+  const finish = (
+    winner: 'you' | 'bot' | null,
+    reason: MatchOverData['reason'],
+    delayMs = 0,
+  ): void => {
     playing = false;
     clearTimers();
-    emit('MATCH_OVER', {
-      matchId,
-      winnerId: winner ?? '',
-      reason,
-      state,
-    } satisfies MatchOverData<CaroState>);
+    const emitOver = (): void =>
+      emit('MATCH_OVER', {
+        matchId,
+        winnerId: winner ?? '',
+        reason,
+        state,
+      } satisfies MatchOverData<CaroState>);
+    if (delayMs > 0) overTimer = window.setTimeout(emitOver, delayMs);
+    else emitOver();
   };
 
   const pushState = (turn: number, lastMove: CaroMove, lastBy: number): void => {
@@ -90,13 +103,13 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
     }
     applyMove(move, BOT_MARK);
     if (checkWin(state.board, move.x, move.y, BOT_MARK)) {
-      pushState(0, move, 1);
-      finish('bot', 'win');
+      pushState(-1, move, 1);
+      finish('bot', 'win', WIN_REVEAL_MS);
       return;
     }
     if (state.moveCount === SIZE * SIZE) {
-      pushState(0, move, 1);
-      finish(null, 'win');
+      pushState(-1, move, 1);
+      finish(null, 'win', WIN_REVEAL_MS);
       return;
     }
     playerTurn = true;
@@ -147,17 +160,17 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
       if (turnTimer) window.clearTimeout(turnTimer);
       applyMove(move, PLAYER_MARK);
       if (checkWin(state.board, move.x, move.y, PLAYER_MARK)) {
-        pushState(1, move, 0);
-        finish('you', 'win');
+        pushState(-1, move, 0);
+        finish('you', 'win', WIN_REVEAL_MS);
         return;
       }
       if (state.moveCount === SIZE * SIZE) {
-        pushState(1, move, 0);
-        finish(null, 'win');
+        pushState(-1, move, 0);
+        finish(null, 'win', WIN_REVEAL_MS);
         return;
       }
       pushState(1, move, 0);
-      botTimer = window.setTimeout(botMove, BOT_LEVELS[level].thinkMs);
+      botTimer = window.setTimeout(botMove, TURN_ANNOUNCE_MS + BOT_LEVELS[level].thinkMs);
     },
 
     forfeit() {
@@ -225,12 +238,16 @@ function pickBotMove(board: number[], level: BotLevel): CaroMove | null {
   }
 
   if (level === 'normal') {
-    return bestBy(scored, (s) => s.attack + s.defend * 0.9 + Math.random() * 10);
+    const winNow = scored.find((s) => s.attack >= WIN_SCORE);
+    if (winNow) return winNow;
+    const blockWin = scored.find((s) => s.defend >= WIN_SCORE);
+    if (blockWin) return blockWin;
+    return bestBy(scored, (s) => s.attack + s.defend * 0.85 + Math.random() * 1500);
   }
 
   const blockObvious = scored.find((s) => s.defend >= WIN_SCORE);
-  if (blockObvious && Math.random() < 0.7) return blockObvious;
-  return bestBy(scored, (s) => s.attack * 0.7 + s.defend * 0.45 + Math.random() * 600);
+  if (blockObvious && Math.random() < 0.5) return blockObvious;
+  return bestBy(scored, (s) => s.attack * 0.4 + s.defend * 0.25 + Math.random() * 8000);
 }
 
 function bestBy(moves: ScoredMove[], score: (move: ScoredMove) => number): ScoredMove | null {

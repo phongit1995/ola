@@ -116,7 +116,8 @@ type GrantVipRequest struct {
 }
 
 type AddVipDaysRequest struct {
-	Days int `json:"days" binding:"required,min=1,max=3650" example:"30"`
+	Action string `json:"action" binding:"omitempty,oneof=add subtract" example:"add"`
+	Days   int    `json:"days" binding:"required,min=1,max=3650" example:"30"`
 }
 
 type AddVipDaysResponse struct {

@@ -194,13 +194,13 @@ func (ctrl *Controller) GrantVip(c *gin.Context) (interface{}, error) {
 }
 
 // AddVipDays godoc
-// @Summary      Cộng ngày VIP cho user
+// @Summary      Cộng / trừ ngày VIP cho user
 // @Tags         admin-user
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
 // @Param        id      path string             true "User ID"
-// @Param        request body AddVipDaysRequest   true "Số ngày VIP cần cộng"
+// @Param        request body AddVipDaysRequest   true "Số ngày VIP cần cộng/trừ (action: add|subtract)"
 // @Success      200  {object}  utils.BaseResponse[AddVipDaysResponse]
 // @Router       /admin/users/{id}/vip-days [post]
 func (ctrl *Controller) AddVipDays(c *gin.Context) (interface{}, error) {
@@ -214,7 +214,7 @@ func (ctrl *Controller) AddVipDays(c *gin.Context) (interface{}, error) {
 		return nil, utils.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	resp, err := ctrl.service.AddVipDays(id, req.Days)
+	resp, err := ctrl.service.AddVipDays(id, req.Action, req.Days)
 	if err != nil {
 		return nil, utils.NewHTTPError(utils.HTTPStatusFromError(err), err.Error())
 	}

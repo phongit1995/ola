@@ -9,6 +9,7 @@
     "isolatedModules": true,
     "skipLibCheck": true,
     "useDefineForClassFields": true,
+    "jsx": "react-jsx",
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "paths": {

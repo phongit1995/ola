@@ -2731,7 +2731,7 @@ const docTemplate = `{
                 "tags": [
                     "admin-user"
                 ],
-                "summary": "Cộng ngày VIP cho user",
+                "summary": "Cộng / trừ ngày VIP cho user",
                 "parameters": [
                     {
                         "type": "string",
@@ -2741,7 +2741,7 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Số ngày VIP cần cộng",
+                        "description": "Số ngày VIP cần cộng/trừ (action: add|subtract)",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -10094,6 +10094,50 @@ const docTemplate = `{
                 }
             }
         },
+        "/vip/icons/batch-delete": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "vip"
+                ],
+                "summary": "Xoá nhiều VIP cùng lúc (nguyên tử; chặn nếu có cái đang khoá hoặc đang dùng)",
+                "parameters": [
+                    {
+                        "description": "Danh sách instance ID",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_vip.BatchDeleteRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_vip.BatchDeleteSuccessResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/vip/icons/catalog": {
             "get": {
                 "security": [
@@ -11681,6 +11725,14 @@ const docTemplate = `{
                 "days"
             ],
             "properties": {
+                "action": {
+                    "type": "string",
+                    "enum": [
+                        "add",
+                        "subtract"
+                    ],
+                    "example": "add"
+                },
                 "days": {
                     "type": "integer",
                     "maximum": 3650,
@@ -11708,7 +11760,7 @@ const docTemplate = `{
             "properties": {
                 "vipTypeId": {
                     "type": "integer",
-                    "maximum": 132,
+                    "maximum": 133,
                     "minimum": 1,
                     "example": 4
                 }
@@ -16684,6 +16736,60 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_modules_vip.BatchDeleteRequest": {
+            "type": "object",
+            "required": [
+                "ids"
+            ],
+            "properties": {
+                "ids": {
+                    "type": "array",
+                    "maxItems": 100,
+                    "minItems": 1,
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "550e8400-e29b-41d4-a716-446655440000"
+                    ]
+                }
+            }
+        },
+        "internal_modules_vip.BatchDeleteResponse": {
+            "type": "object",
+            "properties": {
+                "deleted": {
+                    "type": "integer",
+                    "example": 3
+                }
+            }
+        },
+        "internal_modules_vip.BatchDeleteSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_vip.BatchDeleteResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
         "internal_modules_vip.BuyIconResponse": {
             "type": "object",
             "properties": {
@@ -19269,7 +19375,7 @@ const docTemplate = `{
                 },
                 "vipTypeId": {
                     "type": "integer",
-                    "maximum": 132,
+                    "maximum": 133,
                     "minimum": 1,
                     "example": 4
                 }

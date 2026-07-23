@@ -694,3 +694,43 @@ func (r *Repository) GrantDays(userID uuid.UUID, days int, source, name string) 
 	}
 	return &purchase, nil
 }
+
+func (r *Repository) DeductDays(userID uuid.UUID, days int, source, name string) (*models.VipPurchase, error) {
+	var purchase models.VipPurchase
+
+	err := r.db.Transaction(func(tx *gorm.DB) error {
+		var u models.User
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&u, "id = ?", userID).Error; err != nil {
+			return err
+		}
+
+		now := time.Now()
+		base := now
+		if u.VipEndTime != nil && u.VipEndTime.After(now) {
+			base = *u.VipEndTime
+		}
+		newEnd := base.Add(-time.Duration(days) * 24 * time.Hour)
+		if newEnd.Before(now) {
+			newEnd = now
+		}
+
+		if err := tx.Model(&models.User{}).Where("id = ?", userID).Update("vip_end_time", newEnd).Error; err != nil {
+			return err
+		}
+
+		purchase = models.VipPurchase{
+			UserID:          userID,
+			PackageName:     name,
+			Days:            -days,
+			KenPrice:        0,
+			KenBalanceAfter: u.Ken,
+			VipEndTimeAfter: newEnd,
+			Source:          source,
+		}
+		return tx.Create(&purchase).Error
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &purchase, nil
+}

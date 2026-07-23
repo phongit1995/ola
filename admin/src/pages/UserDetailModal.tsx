@@ -243,7 +243,7 @@ export function UserDetailModal({ userId, open, onClose }: UserDetailModalProps)
                     onClick={() => setVipDaysOpen(true)}
                     style={{ marginLeft: 'auto' }}
                   >
-                    Cộng ngày
+                    Cộng / Trừ ngày
                   </Button>
                 </div>
               )

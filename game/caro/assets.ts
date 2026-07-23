@@ -17,6 +17,11 @@ import lobbyPickTitle from './assets/lobby/pick-title.png';
 import lobbyPickLevel from './assets/lobby/pick-level.png';
 import lobbyPickClose from './assets/lobby/pick-close.png';
 import lobbyPickX from './assets/lobby/pick-x.png';
+import lobbyConfirmBg from './assets/lobby/confirm-bg.png';
+import lobbyConfirmTitle from './assets/lobby/confirm-title.png';
+import lobbyConfirmDoor from './assets/lobby/confirm-door.png';
+import lobbyBtnRed from './assets/lobby/btn-red.png';
+import lobbyBtnNavy from './assets/lobby/btn-navy.png';
 
 export const LOBBY_ASSETS = {
   bg: lobbyBg,
@@ -38,6 +43,11 @@ export const LOBBY_ASSETS = {
   pickLevel: lobbyPickLevel,
   pickClose: lobbyPickClose,
   pickX: lobbyPickX,
+  confirmBg: lobbyConfirmBg,
+  confirmTitle: lobbyConfirmTitle,
+  confirmDoor: lobbyConfirmDoor,
+  btnRed: lobbyBtnRed,
+  btnNavy: lobbyBtnNavy,
 } as const;
 
 import rankedBg from './assets/ranked/bg.png';
@@ -74,6 +84,8 @@ import boardTurnLeft from './assets/board/turn-left.png';
 import boardTurnRight from './assets/board/turn-right.png';
 import boardAvatarFrame from './assets/board/avatar-frame.png';
 import boardMenuBtn from './assets/board/menu-btn.png';
+import boardChatFrame from './assets/board/chat-frame.png';
+import boardSendIcon from './assets/board/send-icon.png';
 
 export const BOARD_ASSETS = {
   boardBg,
@@ -85,6 +97,8 @@ export const BOARD_ASSETS = {
   boardTurnRight,
   boardAvatarFrame,
   boardMenuBtn,
+  chatFrame: boardChatFrame,
+  sendIcon: boardSendIcon,
 } as const;
 
 export const RANKED_ASSETS = {
@@ -122,17 +136,12 @@ const ALL_ASSETS = { ...LOBBY_ASSETS, ...BOARD_ASSETS, ...RANKED_ASSETS, ...RESU
 
 export type AssetKey = keyof typeof ALL_ASSETS;
 
-export function applyAssets(root: ParentNode): void {
-  root.querySelectorAll<HTMLImageElement>('img[data-asset]').forEach((img) => {
-    const key = img.dataset.asset as AssetKey;
-    if (ALL_ASSETS[key]) img.src = ALL_ASSETS[key];
-  });
-  root.querySelectorAll<HTMLElement>('[data-asset-bg]').forEach((node) => {
-    const key = node.dataset.assetBg as AssetKey;
-    if (ALL_ASSETS[key]) node.style.backgroundImage = `url('${ALL_ASSETS[key]}')`;
-  });
-  document.documentElement.style.setProperty('--asset-board-x', `url('${BOARD_ASSETS.boardX}')`);
-  document.documentElement.style.setProperty('--asset-board-o', `url('${BOARD_ASSETS.boardO}')`);
+export function assetSrc(key: AssetKey): string {
+  return ALL_ASSETS[key];
+}
+
+export function assetBg(key: AssetKey): { backgroundImage: string } {
+  return { backgroundImage: `url('${ALL_ASSETS[key]}')` };
 }
 
 export function preloadAssets(
