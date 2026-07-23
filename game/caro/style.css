@@ -95,7 +95,7 @@ button:focus-visible,
 }
 
 .p-avatar .p-vip {
-  width: 68%;
+  width: 58%;
   aspect-ratio: 1;
   object-fit: contain;
 }
@@ -606,13 +606,13 @@ button:focus-visible,
 }
 
 .lobby-ken {
-  margin-top: 1.5%;
-  width: 53%;
+  margin-top: 2.5%;
+  width: 60%;
   aspect-ratio: 1302 / 354;
   background-size: 100% 100%;
   display: flex;
   align-items: center;
-  padding: 0 3.5%;
+  padding: 0 2.5%;
 }
 
 .lobby-ken-icon {
@@ -646,7 +646,7 @@ button:focus-visible,
 }
 
 .lobby-mode {
-  margin-top: 5%;
+  margin-top: 17%;
   width: 56%;
   aspect-ratio: 1693 / 622;
   border: none;
