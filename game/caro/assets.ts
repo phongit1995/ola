@@ -88,7 +88,7 @@ import boardTurnLeft from './assets/board/turn-left.png';
 import boardTurnRight from './assets/board/turn-right.png';
 import boardAvatarFrame from './assets/board/avatar-frame.png';
 import boardMenuBtn from './assets/board/menu-btn.png';
-import boardChatFrame from './assets/board/chat-frame.png';
+import boardChatFrame from './assets/board/chat-frame-clean.png';
 import boardSendIcon from './assets/board/send-icon.png';
 import leaderboardTitleFrame from './assets/leaderboard/title-frame.webp';
 import leaderboardCup from './assets/leaderboard/cup.webp';
