@@ -75,6 +75,10 @@ import resultBrushLose from './assets/result/brush-lose.png';
 import resultKenFrame from './assets/result/ken-frame.png';
 import resultIcKen from './assets/result/ic-ken.png';
 import resultBtnClose from './assets/result/btn-close.png';
+import resultBtnReplayWin from './assets/result/btn-replay-win.png';
+import resultBtnCloseWin from './assets/result/btn-close-win.png';
+import resultBtnReplayLose from './assets/result/btn-replay-lose.png';
+import resultBtnCloseLose from './assets/result/btn-close-lose.png';
 import boardBg from './assets/board/bg.png';
 import boardFrame from './assets/board/board-frame.png';
 import boardX from './assets/board/x.png';
@@ -130,6 +134,10 @@ export const RESULT_ASSETS = {
   resultKenFrame,
   resultIcKen,
   resultBtnClose,
+  resultBtnReplayWin,
+  resultBtnCloseWin,
+  resultBtnReplayLose,
+  resultBtnCloseLose,
 } as const;
 
 const ALL_ASSETS = { ...LOBBY_ASSETS, ...BOARD_ASSETS, ...RANKED_ASSETS, ...RESULT_ASSETS } as const;

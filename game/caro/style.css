@@ -1872,33 +1872,67 @@ button:focus-visible,
   color: var(--lobby-navy);
 }
 
-#result-close {
+#result-actions {
   position: absolute;
-  bottom: 3%;
-  left: 27%;
-  width: 46%;
-  aspect-ratio: 1726 / 528;
+  bottom: 3.2%;
+  left: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3cqw;
+}
+
+.result-btn {
+  height: clamp(32px, 12cqw, 54px);
   border: none;
   background-color: transparent;
   background-size: 100% 100%;
+  background-repeat: no-repeat;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0;
+  cursor: pointer;
+  transition: transform 100ms ease-out, filter 100ms ease-out;
 }
 
-#result-close span {
-  color: var(--lobby-cream);
+#result-replay {
+  aspect-ratio: 1811 / 507;
+}
+
+#result-close {
+  aspect-ratio: 1475 / 554;
+}
+
+#result.lose #result-replay {
+  aspect-ratio: 1895 / 529;
+}
+
+#result.lose #result-close {
+  aspect-ratio: 1579 / 506;
+}
+
+.result-btn span {
   font-family: var(--body);
   font-weight: 800;
-  font-size: clamp(14px, 6cqw, 24px);
+  font-size: clamp(13px, 5.5cqw, 22px);
   text-transform: uppercase;
   letter-spacing: 1px;
   transform: translateY(-6%);
 }
 
-#result-close:active {
-  transform: scale(0.96);
+#result-replay span {
+  color: var(--lobby-cream);
+}
+
+#result-close span {
+  color: var(--lobby-navy);
+}
+
+.result-btn:active {
+  transform: scale(0.95);
+  filter: brightness(1.08);
 }
 
 @media (prefers-reduced-motion: reduce) {
