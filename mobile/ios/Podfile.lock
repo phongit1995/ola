@@ -1672,6 +1672,28 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
+  - react-native-cameraroll (7.10.2):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - Yoga
   - react-native-config (1.6.1):
     - react-native-config/App (= 1.6.1)
   - react-native-config/App (1.6.1):
@@ -2926,6 +2948,7 @@ DEPENDENCIES:
   - React-mutationobservernativemodule (from `../../node_modules/react-native/ReactCommon/react/nativemodule/mutationobserver`)
   - react-native-blob-util (from `../../node_modules/react-native-blob-util`)
   - "react-native-blur (from `../../node_modules/@react-native-community/blur`)"
+  - "react-native-cameraroll (from `../../node_modules/@react-native-camera-roll/camera-roll`)"
   - react-native-config (from `../../node_modules/react-native-config`)
   - "react-native-geolocation (from `../../node_modules/@react-native-community/geolocation`)"
   - react-native-get-random-values (from `../../node_modules/react-native-get-random-values`)
@@ -3107,6 +3130,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/react-native-blob-util"
   react-native-blur:
     :path: "../../node_modules/@react-native-community/blur"
+  react-native-cameraroll:
+    :path: "../../node_modules/@react-native-camera-roll/camera-roll"
   react-native-config:
     :path: "../../node_modules/react-native-config"
   react-native-geolocation:
@@ -3293,6 +3318,7 @@ SPEC CHECKSUMS:
   React-mutationobservernativemodule: f53ad06cbe4b44d2a33df6aa3f01ca8e9b57e83b
   react-native-blob-util: 4bbe44ed5eff3697228a3645c3761c90b7160f90
   react-native-blur: 2c15b7e68450a2aa01a064f99d6045b86ee42fe0
+  react-native-cameraroll: d7e55dae97acb52c4ce88a32deb02841fa15de12
   react-native-config: 92071878d2f74a8f4b942bef9c48af9fd08df58b
   react-native-geolocation: aba0b4dbf0f9a84c328059efd93af22e9e6190d7
   react-native-get-random-values: 7db8eaf5e8cf979eea17e141007609341d8fc391

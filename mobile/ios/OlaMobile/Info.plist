@@ -41,6 +41,8 @@
 	<string>Ola cần truy cập micro để bạn ghi và gửi tin nhắn thoại.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Ola cần truy cập thư viện ảnh để bạn gửi ảnh trong phòng chat.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Ola cần quyền lưu ảnh để bạn tải ảnh về thư viện ảnh.</string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

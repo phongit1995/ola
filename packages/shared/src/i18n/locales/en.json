@@ -1176,7 +1176,10 @@
     "title": "Photos",
     "count": "{{count}} photos",
     "empty": "You haven't shared any photos yet.",
-    "comingSoon": "Feature coming soon"
+    "comingSoon": "Feature coming soon",
+    "save": "Save image",
+    "saved": "Image saved to your library",
+    "saveFailed": "Couldn't save image"
   },
   "nearby": {
     "title": "Nearby places",

@@ -30,6 +30,7 @@
   "dependencies": {
     "@d11/react-native-fast-image": "^8.13.0",
     "@ola/shared": "workspace:*",
+    "@react-native-camera-roll/camera-roll": "^7.10.2",
     "@react-native-clipboard/clipboard": "^1.16.3",
     "@react-native-community/blur": "^4.4.1",
     "@react-native-community/datetimepicker": "^9.1.0",
