@@ -690,6 +690,12 @@ definitions:
     type: object
   internal_modules_admin_user.AddVipDaysRequest:
     properties:
+      action:
+        enum:
+        - add
+        - subtract
+        example: add
+        type: string
       days:
         example: 30
         maximum: 3650
@@ -709,7 +715,7 @@ definitions:
     properties:
       vipTypeId:
         example: 4
-        maximum: 132
+        maximum: 133
         minimum: 1
         type: integer
     required:
@@ -4111,6 +4117,42 @@ definitions:
         example: gold
         type: string
     type: object
+  internal_modules_vip.BatchDeleteRequest:
+    properties:
+      ids:
+        example:
+        - 550e8400-e29b-41d4-a716-446655440000
+        items:
+          type: string
+        maxItems: 100
+        minItems: 1
+        type: array
+    required:
+    - ids
+    type: object
+  internal_modules_vip.BatchDeleteResponse:
+    properties:
+      deleted:
+        example: 3
+        type: integer
+    type: object
+  internal_modules_vip.BatchDeleteSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_vip.BatchDeleteResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
   internal_modules_vip.BuyIconResponse:
     properties:
       item:
@@ -5859,7 +5901,7 @@ definitions:
         type: integer
       vipTypeId:
         example: 4
-        maximum: 132
+        maximum: 133
         minimum: 1
         type: integer
     required:
@@ -9010,7 +9052,7 @@ paths:
         name: id
         required: true
         type: string
-      - description: Số ngày VIP cần cộng
+      - description: 'Số ngày VIP cần cộng/trừ (action: add|subtract)'
         in: body
         name: request
         required: true
@@ -9025,7 +9067,7 @@ paths:
             $ref: '#/definitions/ola-chat-server_internal_utils.BaseResponse-internal_modules_admin_user_AddVipDaysResponse'
       security:
       - BearerAuth: []
-      summary: Cộng ngày VIP cho user
+      summary: Cộng / trừ ngày VIP cho user
       tags:
       - admin-user
   /admin/users/{id}/vips:
@@ -13768,6 +13810,34 @@ paths:
       security:
       - BearerAuth: []
       summary: Dùng (đeo) một VIP, tốn 1 ngày VIP
+      tags:
+      - vip
+  /vip/icons/batch-delete:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Danh sách instance ID
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_modules_vip.BatchDeleteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_vip.BatchDeleteSuccessResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Xoá nhiều VIP cùng lúc (nguyên tử; chặn nếu có cái đang khoá hoặc đang
+        dùng)
       tags:
       - vip
   /vip/icons/catalog:

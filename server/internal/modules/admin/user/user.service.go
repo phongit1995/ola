@@ -267,7 +267,7 @@ func (s *Service) GrantVip(id uuid.UUID, typeID int16) (*VipIconItem, error) {
 	return &item, nil
 }
 
-func (s *Service) AddVipDays(id uuid.UUID, days int) (*AddVipDaysResponse, error) {
+func (s *Service) AddVipDays(id uuid.UUID, action string, days int) (*AddVipDaysResponse, error) {
 	if _, err := s.repo.FindByID(id); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, apperr.ErrUserNotFound
@@ -275,7 +275,13 @@ func (s *Service) AddVipDays(id uuid.UUID, days int) (*AddVipDaysResponse, error
 		return nil, err
 	}
 
-	purchase, err := s.vipService.GrantDays(id, days, "admin", fmt.Sprintf("Admin tặng %d ngày VIP", days))
+	var purchase *models.VipPurchase
+	var err error
+	if action == "subtract" {
+		purchase, err = s.vipService.DeductDays(id, days, "admin", fmt.Sprintf("Admin trừ %d ngày VIP", days))
+	} else {
+		purchase, err = s.vipService.GrantDays(id, days, "admin", fmt.Sprintf("Admin tặng %d ngày VIP", days))
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -284,10 +290,10 @@ func (s *Service) AddVipDays(id uuid.UUID, days int) (*AddVipDaysResponse, error
 		s.logger.Warnw("Failed to invalidate user profile cache", "user_id", id, "error", err.Error())
 	}
 
-	s.logger.Infow("Admin added vip days", "user_id", id, "days", days)
+	s.logger.Infow("Admin adjusted vip days", "user_id", id, "action", action, "days", days)
 
 	return &AddVipDaysResponse{
-		Days:       days,
+		Days:       purchase.Days,
 		VipEndTime: purchase.VipEndTimeAfter.UTC().Format(time.RFC3339),
 	}, nil
 }

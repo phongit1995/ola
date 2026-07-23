@@ -247,6 +247,7 @@ export interface GrantVipRequest {
 }
 
 export interface AddVipDaysRequest {
+  action?: 'add' | 'subtract'
   days: number
 }
 
