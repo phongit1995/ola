@@ -1940,6 +1940,9 @@ button:focus-visible,
 
 .leaderboard-tabs button {
   aspect-ratio: 1581 / 564;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border: none;
   background-color: transparent;
   background-position: center;
@@ -1950,7 +1953,7 @@ button:focus-visible,
   font-weight: 900;
   line-height: 1;
   text-transform: uppercase;
-  padding: 0 6% 3%;
+  padding: 0;
   transition: filter 120ms ease-out, transform 120ms ease-out;
 }
 

@@ -1,7 +1,11 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { ConfirmDialog } from '@components';
 import { HomeHeader } from '@components/HomeHeader';
-import { formatKen } from '@lib';
+import { ROUTES } from '@constants';
+import { formatKen, toast } from '@lib';
+import { AuthService, SocketService } from '@services';
 import { useAppNotificationStore } from '@ola/shared/stores/appNotificationStore';
 import { useGameOverlayStore } from '@/store/gameOverlayStore';
 import { useAppOverlayStore } from '@/store/appOverlayStore';
@@ -45,6 +49,7 @@ function PanelRow({ icon, title, subtitle, badge, onClick }: PanelRowProps) {
 
 export function AppsPanel() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const openGame = useGameOverlayStore((s) => s.open);
   const openApp = useAppOverlayStore((s) => s.push);
   const miniGames = useArcadeStore((s) => s.games);
@@ -52,15 +57,30 @@ export function AppsPanel() {
   const openArcade = useArcadeOverlayStore((s) => s.open);
   const notifUnread = useAppNotificationStore((s) => s.unreadCount);
   const user = useAuthStore((s) => s.user);
+  const [logoutOpen, setLogoutOpen] = useState(false);
 
   useEffect(() => {
     void fetchGames();
   }, [fetchGames]);
 
   function handleOpen(item: AppItem): (() => void) | undefined {
+    if (item.action === 'logout') return () => setLogoutOpen(true);
     if (item.overlay) return () => openGame(item.overlay!);
     if (item.app) return () => openApp(item.app!);
     return undefined;
+  }
+
+  async function confirmLogout() {
+    setLogoutOpen(false);
+    try {
+      await AuthService.logout();
+    } catch {
+      toast.error(t('chat.logoutError'));
+    } finally {
+      SocketService.disconnect();
+      useAuthStore.getState().clearUser();
+      navigate(ROUTES.login);
+    }
   }
 
   function renderAppItem(item: AppItem) {
@@ -111,6 +131,17 @@ export function AppsPanel() {
           {APP_ITEMS.slice(1).map(renderAppItem)}
         </ul>
       </main>
+      <ConfirmDialog
+        open={logoutOpen}
+        showIcon={false}
+        danger
+        title={t('dialog.logoutTitle')}
+        message={t('dialog.logoutMessage')}
+        confirmLabel={t('dialog.logoutButton')}
+        cancelLabel={t('dialog.no')}
+        onConfirm={() => void confirmLogout()}
+        onCancel={() => setLogoutOpen(false)}
+      />
     </>
   );
 }

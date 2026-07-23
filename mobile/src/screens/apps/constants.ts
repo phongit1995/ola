@@ -9,7 +9,8 @@ export type AppItemAction =
   | 'vip'
   | 'ken'
   | 'media'
-  | 'settings';
+  | 'settings'
+  | 'logout';
 
 export interface AppItem {
   icon: number;
@@ -47,5 +48,10 @@ export const APP_ITEMS: AppItem[] = [
     icon: require('@assets/icons/apps/setting.png'),
     titleKey: 'home.apps.settings',
     action: 'settings',
+  },
+  {
+    icon: require('@assets/icons/apps/logout.png'),
+    titleKey: 'home.logout',
+    action: 'logout',
   },
 ];
