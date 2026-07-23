@@ -22,6 +22,10 @@ export function ProfileViewScreen({ navigation, route }: Props) {
         const conversation = await useChatStore.getState().startDirect(uid);
         if (conversation != null && conversation.id !== '') {
           navigation.navigate(ROOT_ROUTES.ChatDetail, { conversationId: conversation.id });
+          return;
+        }
+        if (useChatStore.getState().draftRecipient != null) {
+          navigation.navigate(ROOT_ROUTES.ChatDetail, {});
         }
       }}
     />
