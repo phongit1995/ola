@@ -132,7 +132,7 @@ func (s *Server) handleConnection(client *socket.Socket) {
 	})
 
 	client.On("disconnect", func(args ...any) {
-		s.engine.LeaveQueue(data.GameID, data.UserID)
+		s.engine.OnDisconnect(data.GameID, data.UserID)
 		s.logger.Infow("Game socket disconnected", "user_id", data.UserID)
 	})
 }
@@ -178,6 +178,20 @@ func (s *Server) handleMessage(data *SocketData, raw any) {
 		s.engine.Move(data.UserID, env.Data)
 	case protocol.C2SForfeit:
 		s.engine.Forfeit(data.UserID)
+	case protocol.C2SRoomCreate:
+		var d protocol.RoomCreateData
+		_ = json.Unmarshal(env.Data, &d)
+		s.engine.CreateRoom(data.GameID, protocol.PlayerInfo{ID: data.UserID, Name: data.Name}, d.Bet, d.Password)
+	case protocol.C2SRoomJoin:
+		var d protocol.RoomJoinData
+		if err := json.Unmarshal(env.Data, &d); err != nil {
+			return
+		}
+		s.engine.JoinRoom(data.GameID, protocol.PlayerInfo{ID: data.UserID, Name: data.Name}, d.RoomID, d.Password)
+	case protocol.C2SRoomLeave:
+		s.engine.LeaveRoom(data.UserID)
+	case protocol.C2SRoomList:
+		s.engine.ListRooms(data.GameID, data.UserID)
 	default:
 		s.logger.Debugw("Unknown game message type", "type", env.Type, "user_id", data.UserID)
 	}

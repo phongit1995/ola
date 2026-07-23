@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { RoomInfo } from '../src/sdk';
 import { assetBg, assetSrc } from './assets';
 import { useCaroStore } from './store';
@@ -7,47 +7,38 @@ const PAGE_SIZE = 9;
 const HEAD_BOTTOM = 10.5;
 const ROW_HEIGHT = 8.85;
 
-const MOCK_ROOMS: RoomInfo[] = [
-  { id: 'm1', owner: 'toilabot', bet: 1000, locked: false, players: 1 },
-  { id: 'm2', owner: 'pain', bet: 5000, locked: true, players: 1 },
-  { id: 'm3', owner: 'vua_caro', bet: 20000, locked: false, players: 2, full: true },
-  { id: 'm4', owner: 'meomeo', bet: 0, locked: false, players: 1 },
-  { id: 'm5', owner: 'songlong', bet: 12345, locked: true, players: 2, full: true },
-  { id: 'm6', owner: 'caro_pro', bet: 500, locked: false, players: 1 },
-  { id: 'm7', owner: 'hoa_mua_he', bet: 2000, locked: true, players: 1 },
-  { id: 'm8', owner: 'bot_hunter', bet: 99999, locked: false, players: 1 },
-  { id: 'm9', owner: 'kien_con', bet: 100, locked: false, players: 1 },
-  { id: 'm10', owner: 'thach_dau', bet: 7777, locked: false, players: 1 },
-  { id: 'm11', owner: 'tay_choi_moi', bet: 0, locked: false, players: 1 },
-  { id: 'm12', owner: 'co_thu_lang', bet: 3000, locked: true, players: 1 },
-];
-
 function formatKen(value: number): string {
   return value.toLocaleString('vi-VN');
 }
 
 export function Ranked() {
   const visible = useCaroStore((s) => s.rankedVisible);
+  const rooms = useCaroStore((s) => s.rooms);
+  const roomWaiting = useCaroStore((s) => s.roomWaiting);
+  const toast = useCaroStore((s) => s.toast);
   const onExit = useCaroStore((s) => s.toLobby);
+  const createRoom = useCaroStore((s) => s.createRoom);
+  const joinRoom = useCaroStore((s) => s.joinRoom);
+  const refreshRooms = useCaroStore((s) => s.refreshRooms);
+  const cancelRoom = useCaroStore((s) => s.cancelRoom);
+
   const [page, setPage] = useState(0);
   const [createOpen, setCreateOpen] = useState(false);
   const [passRoom, setPassRoom] = useState<RoomInfo | null>(null);
-  const [waiting, setWaiting] = useState<{ show: boolean; bet: number }>({ show: false, bet: 0 });
   const [bet, setBet] = useState('0');
   const [createPassword, setCreatePassword] = useState('');
   const [passInput, setPassInput] = useState('');
-  const [toast, setToast] = useState<string | null>(null);
-  const toastTimer = useRef<number | undefined>(undefined);
 
-  const rooms = MOCK_ROOMS;
   const pageCount = Math.max(1, Math.ceil(rooms.length / PAGE_SIZE));
   const visibleRooms = rooms.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
 
-  const showToast = (message: string): void => {
-    setToast(message);
-    window.clearTimeout(toastTimer.current);
-    toastTimer.current = window.setTimeout(() => setToast(null), 2200);
-  };
+  useEffect(() => {
+    if (visible) refreshRooms();
+  }, [visible, refreshRooms]);
+
+  useEffect(() => {
+    setPage((p) => Math.min(p, Math.max(0, Math.ceil(rooms.length / PAGE_SIZE) - 1)));
+  }, [rooms.length]);
 
   const attemptJoin = (room: RoomInfo): void => {
     if (room.locked) {
@@ -55,20 +46,19 @@ export function Ranked() {
       setPassInput('');
       return;
     }
-    showToast(`(mock) Vào bàn của ${room.owner}`);
+    joinRoom(room.id);
   };
 
   const submitPass = (): void => {
     if (!passRoom) return;
-    showToast(`(mock) Vào bàn của ${passRoom.owner} — mật khẩu "${passInput}"`);
+    joinRoom(passRoom.id, passInput);
     setPassRoom(null);
   };
 
   const onCreateOk = (): void => {
     const amount = Number(bet.replace(/\D/g, '')) || 0;
     setCreateOpen(false);
-    setWaiting({ show: true, bet: amount });
-    showToast(createPassword.trim() ? '(mock) Đã tạo bàn có khóa' : '(mock) Đã tạo bàn');
+    createRoom(amount, createPassword.trim() || undefined);
   };
 
   return (
@@ -129,18 +119,20 @@ export function Ranked() {
           <button type="button" id="ranked-create" style={assetBg('rankedMenuBtn')} onClick={() => { setBet('0'); setCreatePassword(''); setCreateOpen(true); }}>
             Tạo bàn
           </button>
-          <button type="button" id="ranked-refresh" style={assetBg('rankedMenuBtn')} onClick={() => showToast('Đã làm mới danh sách')}>
+          <button type="button" id="ranked-refresh" style={assetBg('rankedMenuBtn')} onClick={() => refreshRooms()}>
             Làm mới
           </button>
           <button type="button" id="ranked-exit" style={assetBg('rankedMenuBtn')} onClick={onExit}>
             Thoát
           </button>
         </div>
-        <div id="ranked-waiting" className={waiting.show ? '' : 'hidden'}>
+        <div id="ranked-waiting" className={roomWaiting ? '' : 'hidden'}>
           <span id="ranked-waiting-text">
-            {waiting.bet > 0 ? `Đang đợi đối thủ vào bàn (cược ${formatKen(waiting.bet)} Ken)...` : 'Đang đợi đối thủ vào bàn...'}
+            {roomWaiting && roomWaiting.bet > 0
+              ? `Đang đợi đối thủ vào bàn (cược ${formatKen(roomWaiting.bet)} Ken)...`
+              : 'Đang đợi đối thủ vào bàn...'}
           </span>
-          <button type="button" id="ranked-waiting-cancel" onClick={() => { setWaiting({ show: false, bet: 0 }); showToast('(mock) Đã hủy bàn'); }}>
+          <button type="button" id="ranked-waiting-cancel" onClick={() => cancelRoom()}>
             Hủy bàn
           </button>
         </div>

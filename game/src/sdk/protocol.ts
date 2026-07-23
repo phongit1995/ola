@@ -18,6 +18,8 @@ export const S2C = {
   Error: 'ERROR',
   RoomList: 'ROOM_LIST',
   RoomWaiting: 'ROOM_WAITING',
+  OpponentDisconnected: 'OPPONENT_DISCONNECTED',
+  OpponentReconnected: 'OPPONENT_RECONNECTED',
 } as const;
 
 export interface Envelope {
@@ -47,6 +49,7 @@ export interface MatchFoundData<TState = unknown> {
   turn: number;
   deadline: number;
   resumed?: boolean;
+  bet?: number;
 }
 
 export interface StateData<TState = unknown, TMove = unknown> {
@@ -61,8 +64,9 @@ export interface StateData<TState = unknown, TMove = unknown> {
 export interface MatchOverData<TState = unknown> {
   matchId: string;
   winnerId?: string;
-  reason: 'win' | 'forfeit' | 'timeout';
+  reason: 'win' | 'forfeit' | 'timeout' | 'disconnect';
   state: TState;
+  bet?: number;
 }
 
 export interface ErrorData {
@@ -87,4 +91,8 @@ export interface RoomWaitingData {
   roomId: string;
   bet: number;
   locked: boolean;
+}
+
+export interface OpponentDisconnectedData {
+  graceDeadline: number;
 }

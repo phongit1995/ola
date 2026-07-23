@@ -7,6 +7,7 @@ import {
   type ErrorData,
   type MatchFoundData,
   type MatchOverData,
+  type OpponentDisconnectedData,
   type RoomListData,
   type RoomWaitingData,
   type StateData,
@@ -33,6 +34,8 @@ export interface GameSession<TState = unknown, TMove = unknown> {
   onState(handler: (data: StateData<TState, TMove>) => void): () => void;
   onMatchOver(handler: (data: MatchOverData<TState>) => void): () => void;
   onError(handler: (data: ErrorData) => void): () => void;
+  onOpponentDisconnected(handler: (data: OpponentDisconnectedData) => void): () => void;
+  onOpponentReconnected(handler: () => void): () => void;
   onConnectionChange(handler: (connected: boolean) => void): () => void;
   disconnect(): void;
 }
@@ -96,6 +99,8 @@ export async function joinGame<TState = unknown, TMove = unknown>(
     onState: (handler) => on(S2C.State, handler as Handler),
     onMatchOver: (handler) => on(S2C.MatchOver, handler as Handler),
     onError: (handler) => on(S2C.Error, handler as Handler),
+    onOpponentDisconnected: (handler) => on(S2C.OpponentDisconnected, handler as Handler),
+    onOpponentReconnected: (handler) => on(S2C.OpponentReconnected, handler as Handler),
     onConnectionChange: (handler) => on('connection', handler as Handler),
     disconnect: () => socket.disconnect(),
   };

@@ -3,6 +3,7 @@ package game
 import (
 	"ola-chat-server/internal/config"
 	"ola-chat-server/internal/game/engine"
+	"ola-chat-server/internal/services"
 
 	_ "ola-chat-server/internal/game/games/caro"
 	_ "ola-chat-server/internal/game/games/war-god"
@@ -12,8 +13,8 @@ import (
 )
 
 func Provider(c *dig.Container) error {
-	if err := c.Provide(func(cfg *config.Config, logger *zap.SugaredLogger) *engine.Engine {
-		return engine.NewEngine(logger, cfg.GameTurnSeconds)
+	if err := c.Provide(func(cfg *config.Config, logger *zap.SugaredLogger, cache *services.CacheService) *engine.Engine {
+		return engine.NewEngine(logger, cfg.GameTurnSeconds, cfg.GameReconnectGraceSeconds, engine.NewRoomStore(cache))
 	}); err != nil {
 		return err
 	}

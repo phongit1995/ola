@@ -5,6 +5,7 @@ import {
   type GameSession,
   type MatchFoundData,
   type PlayerInfo,
+  type RoomInfo,
   type UserInfoData,
 } from '../src/sdk';
 import { parseVipTypeId, vipIconUrl } from '@ola/shared/lib/vip';
@@ -53,6 +54,19 @@ function formatClock(seconds: number): string {
 
 const EMPTY_PLAYER: PlayerDisplay = { name: '---', vip: VIP_DEFAULT_ICON, mark: 'x', active: false };
 
+function roomErrorText(code: string): string | null {
+  switch (code) {
+    case 'WRONG_PASSWORD':
+      return 'Sai mật khẩu';
+    case 'ROOM_NOT_FOUND':
+      return 'Bàn không còn nữa';
+    case 'OWN_ROOM':
+      return 'Không thể vào bàn của bạn';
+    default:
+      return null;
+  }
+}
+
 export interface CaroStore {
   lobbyVisible: boolean;
   lobbyPhase: 'loading' | 'connecting' | 'error' | 'ready';
@@ -62,6 +76,9 @@ export interface CaroStore {
 
   rankedVisible: boolean;
   leaderboardVisible: boolean;
+  rooms: RoomInfo[];
+  roomWaiting: { roomId: string; bet: number; locked: boolean } | null;
+  oppAway: number | null;
 
   board: number[];
   lastIdx: number;
@@ -88,6 +105,10 @@ export interface CaroStore {
   dispose(): void;
   playBot(level: BotLevel): void;
   playRanked(): void;
+  refreshRooms(): void;
+  createRoom(bet: number, password?: string): void;
+  joinRoom(roomId: string, password?: string): void;
+  cancelRoom(): void;
   showLeaderboard(): void;
   hideLeaderboard(): void;
   retry(): void;
@@ -159,6 +180,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
       turnArrowSrc: null,
       turnAnnounce: null,
       winLine: null,
+      oppAway: null,
     }));
   };
 
@@ -218,9 +240,36 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
       });
     });
 
-    target.onMatchFound((data) => {
+    target.onRoomList((data) => {
       if (refs.session !== target) return;
+      set({ rooms: data.rooms });
+    });
+
+    target.onRoomWaiting((data) => {
+      if (refs.session !== target) return;
+      refs.matchBet = data.bet;
+      set({ roomWaiting: { roomId: data.roomId, bet: data.bet, locked: data.locked } });
+    });
+
+    target.onOpponentDisconnected((data) => {
+      if (refs.session !== target) return;
+      set({ oppAway: data.graceDeadline, status: 'Đối thủ mất kết nối, đang chờ...' });
+      showToast('Đối thủ mất kết nối');
+    });
+
+    target.onOpponentReconnected(() => {
+      if (refs.session !== target) return;
+      set({ oppAway: null, status: 'Đối thủ đã kết nối lại' });
+      showToast('Đối thủ đã kết nối lại');
+    });
+
+    target.onMatchFound((data) => {
+      if (refs.session !== target) {
+        if (target !== refs.online || !data.resumed) return;
+        refs.session = refs.online;
+      }
       refs.match = data;
+      refs.matchBet = data.bet ?? refs.matchBet;
       refs.opponentIsBot = target === refs.bot;
       const isBot = target === refs.bot && refs.botLevel != null;
       const botVip = isBot ? vipIconUrl(BOT_VIP_ID[refs.botLevel as BotLevel]) : VIP_DEFAULT_ICON;
@@ -234,6 +283,8 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
         overlay: null,
         result: null,
         winLine: null,
+        roomWaiting: null,
+        oppAway: null,
         messages: [],
         me: {
           name: user ? `@${user.username}` : data.players[data.you].name,
@@ -286,7 +337,12 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     });
 
     target.onError((err) => {
-      if (refs.session === target) set({ status: err.message });
+      if (refs.session !== target) return;
+      if (!refs.match) {
+        showToast(roomErrorText(err.code) ?? err.message);
+        return;
+      }
+      set({ status: err.message });
     });
   };
 
@@ -340,6 +396,9 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     ken: 0,
     rankedVisible: false,
     leaderboardVisible: false,
+    rooms: [],
+    roomWaiting: null,
+    oppAway: null,
     board: emptyState().board,
     lastIdx: -1,
     status: 'Sẵn sàng',
@@ -385,7 +444,37 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     },
 
     playRanked() {
-      set({ lobbyVisible: false, leaderboardVisible: false, rankedVisible: true });
+      set({ lobbyVisible: false, leaderboardVisible: false, rankedVisible: true, rooms: [], roomWaiting: null });
+      const enter = (): void => {
+        if (!refs.online) return;
+        refs.session = refs.online;
+        refs.online.listRooms();
+      };
+      if (refs.online) enter();
+      else void connectToServer().then(enter);
+    },
+
+    refreshRooms() {
+      refs.online?.listRooms();
+    },
+
+    createRoom(bet, password) {
+      if (!refs.online) return;
+      refs.session = refs.online;
+      refs.matchBet = bet;
+      refs.online.createRoom(bet, password || undefined);
+    },
+
+    joinRoom(roomId, password) {
+      if (!refs.online) return;
+      refs.session = refs.online;
+      refs.online.joinRoom(roomId, password || undefined);
+    },
+
+    cancelRoom() {
+      refs.online?.leaveRoom();
+      set({ roomWaiting: null });
+      refs.online?.listRooms();
     },
 
     showLeaderboard() {
@@ -402,7 +491,12 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     },
 
     again() {
-      refs.session?.joinQueue();
+      if (refs.session === refs.bot) {
+        refs.session?.joinQueue();
+        return;
+      }
+      set({ overlay: null });
+      get().playRanked();
     },
 
     replay() {

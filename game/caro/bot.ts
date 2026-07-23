@@ -190,6 +190,8 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
     onState: (handler) => on('STATE', handler as Handler),
     onMatchOver: (handler) => on('MATCH_OVER', handler as Handler),
     onError: (handler) => on('ERROR', handler as Handler),
+    onOpponentDisconnected: () => () => {},
+    onOpponentReconnected: () => () => {},
     onConnectionChange: (handler) => {
       (handler as (c: boolean) => void)(true);
       return () => {};
