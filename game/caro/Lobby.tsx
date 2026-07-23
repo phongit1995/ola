@@ -11,6 +11,7 @@ function formatKen(value: number): string {
 
 export function Lobby({ progress }: { progress: string }) {
   const [pickOpen, setPickOpen] = useState(false);
+  const [exitOpen, setExitOpen] = useState(false);
   const { lobbyVisible, lobbyPhase: phase, lobbyAnimKey, userInfo, ken, toast } = useCaroStore(
     useShallow((s) => ({
       lobbyVisible: s.lobbyVisible,
@@ -91,7 +92,7 @@ export function Lobby({ progress }: { progress: string }) {
             <img src={assetSrc('icLeaderboard')} alt="" />
             <span>Bảng xếp hạng</span>
           </button>
-          <button type="button" id="lobby-exit" onClick={exitApp}>
+          <button type="button" id="lobby-exit" onClick={() => setExitOpen(true)}>
             <img src={assetSrc('icExit')} alt="" />
             <span>Thoát</span>
           </button>
@@ -121,6 +122,25 @@ export function Lobby({ progress }: { progress: string }) {
           <button type="button" id="lobby-pick-close" style={assetBg('pickClose')} aria-label="Đóng" onClick={() => setPickOpen(false)}>
             <img src={assetSrc('pickX')} alt="Đóng" />
           </button>
+        </div>
+      </div>
+      <div id="lobby-exit-modal" className={exitOpen ? '' : 'hidden'} onClick={(e) => e.target === e.currentTarget && setExitOpen(false)}>
+        <div id="lobby-exit-card" style={assetBg('confirmBg')}>
+          <div id="lobby-exit-title" style={assetBg('confirmTitle')}>
+            <span>Xác nhận</span>
+          </div>
+          <div className="exit-body">
+            <div id="lobby-exit-door" style={assetBg('confirmDoor')} />
+            <p id="lobby-exit-text">Bạn có chắc muốn thoát trò chơi?</p>
+            <div id="lobby-exit-actions">
+              <button type="button" className="exit-btn danger" style={assetBg('btnRed')} onClick={exitApp}>
+                <span>Thoát</span>
+              </button>
+              <button type="button" className="exit-btn" style={assetBg('btnNavy')} onClick={() => setExitOpen(false)}>
+                <span>Hủy</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

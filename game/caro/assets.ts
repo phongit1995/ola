@@ -17,6 +17,11 @@ import lobbyPickTitle from './assets/lobby/pick-title.png';
 import lobbyPickLevel from './assets/lobby/pick-level.png';
 import lobbyPickClose from './assets/lobby/pick-close.png';
 import lobbyPickX from './assets/lobby/pick-x.png';
+import lobbyConfirmBg from './assets/lobby/confirm-bg.png';
+import lobbyConfirmTitle from './assets/lobby/confirm-title.png';
+import lobbyConfirmDoor from './assets/lobby/confirm-door.png';
+import lobbyBtnRed from './assets/lobby/btn-red.png';
+import lobbyBtnNavy from './assets/lobby/btn-navy.png';
 
 export const LOBBY_ASSETS = {
   bg: lobbyBg,
@@ -38,6 +43,11 @@ export const LOBBY_ASSETS = {
   pickLevel: lobbyPickLevel,
   pickClose: lobbyPickClose,
   pickX: lobbyPickX,
+  confirmBg: lobbyConfirmBg,
+  confirmTitle: lobbyConfirmTitle,
+  confirmDoor: lobbyConfirmDoor,
+  btnRed: lobbyBtnRed,
+  btnNavy: lobbyBtnNavy,
 } as const;
 
 import rankedBg from './assets/ranked/bg.png';
