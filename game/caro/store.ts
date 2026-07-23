@@ -61,6 +61,7 @@ export interface CaroStore {
   ken: number;
 
   rankedVisible: boolean;
+  leaderboardVisible: boolean;
 
   board: number[];
   lastIdx: number;
@@ -87,6 +88,8 @@ export interface CaroStore {
   dispose(): void;
   playBot(level: BotLevel): void;
   playRanked(): void;
+  showLeaderboard(): void;
+  hideLeaderboard(): void;
   retry(): void;
   exitApp(): void;
   placeMove(x: number, y: number): void;
@@ -227,6 +230,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
         matchSeq: s.matchSeq + 1,
         lobbyVisible: false,
         rankedVisible: false,
+        leaderboardVisible: false,
         overlay: null,
         result: null,
         winLine: null,
@@ -317,7 +321,14 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
   };
 
   const toLobby = (): void => {
-    set((s) => ({ overlay: null, result: null, rankedVisible: false, lobbyVisible: true, lobbyAnimKey: s.lobbyAnimKey + 1 }));
+    set((s) => ({
+      overlay: null,
+      result: null,
+      rankedVisible: false,
+      leaderboardVisible: false,
+      lobbyVisible: true,
+      lobbyAnimKey: s.lobbyAnimKey + 1,
+    }));
     if (!refs.user && !refs.connecting) void connectToServer();
   };
 
@@ -328,6 +339,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     userInfo: null,
     ken: 0,
     rankedVisible: false,
+    leaderboardVisible: false,
     board: emptyState().board,
     lastIdx: -1,
     status: 'Sẵn sàng',
@@ -373,7 +385,15 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     },
 
     playRanked() {
-      set({ lobbyVisible: false, rankedVisible: true });
+      set({ lobbyVisible: false, leaderboardVisible: false, rankedVisible: true });
+    },
+
+    showLeaderboard() {
+      set({ lobbyVisible: true, rankedVisible: false, leaderboardVisible: true });
+    },
+
+    hideLeaderboard() {
+      set({ leaderboardVisible: false });
     },
 
     placeMove(x, y) {

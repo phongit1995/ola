@@ -23,10 +23,11 @@ export function Lobby({ progress }: { progress: string }) {
       toast: s.toast,
     })),
   );
-  const { playBot, playRanked, retry, exitApp, showToast } = useCaroStore(
+  const { playBot, playRanked, showLeaderboard, retry, exitApp, showToast } = useCaroStore(
     useShallow((s) => ({
       playBot: s.playBot,
       playRanked: s.playRanked,
+      showLeaderboard: s.showLeaderboard,
       retry: s.retry,
       exitApp: s.exitApp,
       showToast: s.showToast,
@@ -89,7 +90,7 @@ export function Lobby({ progress }: { progress: string }) {
             <img src={assetSrc('icHistory')} alt="" />
             <span>Lịch sử</span>
           </button>
-          <button type="button" id="lobby-leaderboard" onClick={() => showToast('Tính năng đang phát triển')}>
+          <button type="button" id="lobby-leaderboard" onClick={showLeaderboard}>
             <img src={assetSrc('icLeaderboard')} alt="" />
             <span>Bảng xếp hạng</span>
           </button>

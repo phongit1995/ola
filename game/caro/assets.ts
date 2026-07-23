@@ -90,6 +90,27 @@ import boardAvatarFrame from './assets/board/avatar-frame.png';
 import boardMenuBtn from './assets/board/menu-btn.png';
 import boardChatFrame from './assets/board/chat-frame.png';
 import boardSendIcon from './assets/board/send-icon.png';
+import leaderboardTitleFrame from './assets/leaderboard/title-frame.webp';
+import leaderboardCup from './assets/leaderboard/cup.webp';
+import leaderboardCloseFrame from './assets/leaderboard/close-frame.webp';
+import leaderboardCloseX from './assets/leaderboard/close-x.webp';
+import leaderboardTabActive from './assets/leaderboard/tab-active.webp';
+import leaderboardTabInactive from './assets/leaderboard/tab-inactive.webp';
+import leaderboardRank1 from './assets/leaderboard/rank-1.webp';
+import leaderboardRank2 from './assets/leaderboard/rank-2.webp';
+import leaderboardRank3 from './assets/leaderboard/rank-3.webp';
+import leaderboardRank4 from './assets/leaderboard/rank-4.webp';
+import leaderboardRank5 from './assets/leaderboard/rank-5-violet.webp';
+import leaderboardRank6 from './assets/leaderboard/rank-6-emerald.webp';
+import leaderboardRank7 from './assets/leaderboard/rank-7-crimson.webp';
+import leaderboardRank8 from './assets/leaderboard/rank-8-cyan.webp';
+import leaderboardRank9 from './assets/leaderboard/rank-9-magenta.webp';
+import leaderboardRank10 from './assets/leaderboard/rank-10-graphite.webp';
+import leaderboardPageArrow from './assets/leaderboard/page-arrow.webp';
+import leaderboardPageNumber from './assets/leaderboard/page-number.webp';
+import leaderboardPanel from './assets/leaderboard/panel.webp';
+import leaderboardDivider from './assets/leaderboard/divider.webp';
+import leaderboardKen from './assets/leaderboard/ken.webp';
 
 export const BOARD_ASSETS = {
   boardBg,
@@ -140,7 +161,37 @@ export const RESULT_ASSETS = {
   resultBtnCloseLose,
 } as const;
 
-const ALL_ASSETS = { ...LOBBY_ASSETS, ...BOARD_ASSETS, ...RANKED_ASSETS, ...RESULT_ASSETS } as const;
+export const LEADERBOARD_ASSETS = {
+  leaderboardTitleFrame,
+  leaderboardCup,
+  leaderboardCloseFrame,
+  leaderboardCloseX,
+  leaderboardTabActive,
+  leaderboardTabInactive,
+  leaderboardRank1,
+  leaderboardRank2,
+  leaderboardRank3,
+  leaderboardRank4,
+  leaderboardRank5,
+  leaderboardRank6,
+  leaderboardRank7,
+  leaderboardRank8,
+  leaderboardRank9,
+  leaderboardRank10,
+  leaderboardPageArrow,
+  leaderboardPageNumber,
+  leaderboardPanel,
+  leaderboardDivider,
+  leaderboardKen,
+} as const;
+
+const ALL_ASSETS = {
+  ...LOBBY_ASSETS,
+  ...BOARD_ASSETS,
+  ...RANKED_ASSETS,
+  ...RESULT_ASSETS,
+  ...LEADERBOARD_ASSETS,
+} as const;
 
 export type AssetKey = keyof typeof ALL_ASSETS;
 

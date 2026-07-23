@@ -4,6 +4,7 @@ import { BOARD_ASSETS, preloadAssets } from './assets';
 import { useCaroStore } from './store';
 import { Board } from './Board';
 import { Lobby } from './Lobby';
+import { Leaderboard } from './Leaderboard';
 import { Ranked } from './Ranked';
 import { Result } from './Result';
 
@@ -39,6 +40,7 @@ export function App() {
     <>
       <Board />
       <Lobby key={lobbyAnimKey} progress={progress} />
+      <Leaderboard />
       <Ranked />
       <Result />
     </>
