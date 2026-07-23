@@ -23,6 +23,7 @@ export function Board() {
     board,
     lastIdx,
     turnAnnounce,
+    winLine,
     replayVisible,
     forfeitDisabled,
     messages,
@@ -41,6 +42,7 @@ export function Board() {
       board: s.board,
       lastIdx: s.lastIdx,
       turnAnnounce: s.turnAnnounce,
+      winLine: s.winLine,
       replayVisible: s.replayVisible,
       forfeitDisabled: s.forfeitDisabled,
       messages: s.messages,
@@ -113,6 +115,26 @@ export function Board() {
               const y = Math.floor(i / SIZE);
               return <div key={i} className={cls} onClick={() => placeMove(x, y)} />;
             })}
+            {winLine && (
+              <svg className="win-line-svg" viewBox={`0 0 ${SIZE} ${SIZE}`} preserveAspectRatio="none" aria-hidden="true">
+                <line
+                  className="win-line-bg"
+                  x1={winLine.x1 + 0.5}
+                  y1={winLine.y1 + 0.5}
+                  x2={winLine.x2 + 0.5}
+                  y2={winLine.y2 + 0.5}
+                  pathLength={1}
+                />
+                <line
+                  className="win-line-fg"
+                  x1={winLine.x1 + 0.5}
+                  y1={winLine.y1 + 0.5}
+                  x2={winLine.x2 + 0.5}
+                  y2={winLine.y2 + 0.5}
+                  pathLength={1}
+                />
+              </svg>
+            )}
           </div>
         </div>
         <div id="overlay" className={overlay ? '' : 'hidden'}>

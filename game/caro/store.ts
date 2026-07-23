@@ -10,7 +10,7 @@ import {
 import { parseVipTypeId, vipIconUrl } from '@ola/shared/lib/vip';
 import { BOARD_ASSETS, VIP_DEFAULT_ICON } from './assets';
 import { createBotSession, type BotLevel } from './bot';
-import { SIZE, emptyState, type CaroMove, type CaroState } from './types';
+import { SIZE, emptyState, findWinLine, type CaroMove, type CaroState, type WinLine } from './types';
 
 export type OverlayAction = 'again' | 'cancel' | 'lobby';
 
@@ -80,6 +80,7 @@ export interface CaroStore {
   toast: string | null;
   matchSeq: number;
   turnAnnounce: { id: number; text: string; mine: boolean } | null;
+  winLine: WinLine | null;
   messages: ChatMsg[];
 
   init(ready: boolean): void;
@@ -154,6 +155,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
       timerUrgent: false,
       turnArrowSrc: null,
       turnAnnounce: null,
+      winLine: null,
     }));
   };
 
@@ -227,6 +229,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
         rankedVisible: false,
         overlay: null,
         result: null,
+        winLine: null,
         messages: [],
         me: {
           name: user ? `@${user.username}` : data.players[data.you].name,
@@ -251,6 +254,13 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     target.onState((data) => {
       if (refs.session !== target) return;
       renderState(data.state);
+      if (data.turn < 0) {
+        stopTimer();
+        const { lastX, lastY, board } = data.state;
+        const line = lastX >= 0 ? findWinLine(board, lastX, lastY, board[lastY * SIZE + lastX]) : null;
+        set({ myTurn: false, showTimer: false, timerUrgent: false, turnAnnounce: null, winLine: line });
+        return;
+      }
       applyTurn(data.turn, data.deadline);
     });
 
@@ -335,6 +345,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     toast: null,
     matchSeq: 0,
     turnAnnounce: null,
+    winLine: null,
     messages: [],
 
     init(ready) {
@@ -420,3 +431,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     },
   };
 });
+
+if (import.meta.env.DEV) {
+  (window as unknown as { caroStore?: typeof useCaroStore }).caroStore = useCaroStore;
+}

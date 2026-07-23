@@ -41,6 +41,41 @@ export function checkWin(board: number[], x: number, y: number, mark: number): b
   return false;
 }
 
+export interface WinLine {
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+}
+
+export function findWinLine(board: number[], x: number, y: number, mark: number): WinLine | null {
+  for (const [dx, dy] of DIRECTIONS) {
+    let sx = x;
+    let sy = y;
+    let cx = x - dx;
+    let cy = y - dy;
+    while (cx >= 0 && cx < SIZE && cy >= 0 && cy < SIZE && board[cy * SIZE + cx] === mark) {
+      sx = cx;
+      sy = cy;
+      cx -= dx;
+      cy -= dy;
+    }
+    let ex = x;
+    let ey = y;
+    cx = x + dx;
+    cy = y + dy;
+    while (cx >= 0 && cx < SIZE && cy >= 0 && cy < SIZE && board[cy * SIZE + cx] === mark) {
+      ex = cx;
+      ey = cy;
+      cx += dx;
+      cy += dy;
+    }
+    const count = Math.max(Math.abs(ex - sx), Math.abs(ey - sy)) + 1;
+    if (count >= WIN_LEN) return { x1: sx, y1: sy, x2: ex, y2: ey };
+  }
+  return null;
+}
+
 export function lineMetrics(
   board: number[],
   x: number,

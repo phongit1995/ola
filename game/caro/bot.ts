@@ -103,12 +103,12 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
     }
     applyMove(move, BOT_MARK);
     if (checkWin(state.board, move.x, move.y, BOT_MARK)) {
-      pushState(0, move, 1);
+      pushState(-1, move, 1);
       finish('bot', 'win', WIN_REVEAL_MS);
       return;
     }
     if (state.moveCount === SIZE * SIZE) {
-      pushState(0, move, 1);
+      pushState(-1, move, 1);
       finish(null, 'win', WIN_REVEAL_MS);
       return;
     }
@@ -160,12 +160,12 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
       if (turnTimer) window.clearTimeout(turnTimer);
       applyMove(move, PLAYER_MARK);
       if (checkWin(state.board, move.x, move.y, PLAYER_MARK)) {
-        pushState(1, move, 0);
+        pushState(-1, move, 0);
         finish('you', 'win', WIN_REVEAL_MS);
         return;
       }
       if (state.moveCount === SIZE * SIZE) {
-        pushState(1, move, 0);
+        pushState(-1, move, 0);
         finish(null, 'win', WIN_REVEAL_MS);
         return;
       }
