@@ -1,11 +1,33 @@
-import { assetBg } from './assets';
+import { useEffect, useState } from 'react';
+import { assetBg, assetSrc } from './assets';
 import { SIZE } from './types';
 import type { CaroGame } from './useCaroGame';
 
 const CELLS = Array.from({ length: SIZE * SIZE }, (_, i) => i);
 
+interface ChatMsg {
+  id: number;
+  who: string;
+  text: string;
+}
+
 export function Board({ game }: { game: CaroGame }) {
   const { me, op, overlay } = game;
+  const [chatInput, setChatInput] = useState('');
+  const [messages, setMessages] = useState<ChatMsg[]>([]);
+
+  useEffect(() => {
+    setMessages([]);
+    setChatInput('');
+  }, [game.matchSeq]);
+
+  const sendChat = (): void => {
+    const text = chatInput.trim();
+    if (!text) return;
+    const who = me.name && me.name !== '---' ? me.name : 'Bạn';
+    setMessages((prev) => [...prev, { id: Date.now(), who, text }]);
+    setChatInput('');
+  };
   return (
     <div id="app" style={assetBg('boardBg')}>
       <header id="topbar">
@@ -37,7 +59,7 @@ export function Board({ game }: { game: CaroGame }) {
       </header>
 
       <main id="board-wrap">
-        <div id="board-frame" style={assetBg('boardFrame')}>
+        <div id="board-frame" className={game.timerUrgent && game.myTurn ? 'urgent' : ''} style={assetBg('boardFrame')}>
           <div id="board" className={game.myTurn ? 'playable' : ''}>
             {CELLS.map((i) => {
               const mark = game.board[i];
@@ -79,6 +101,36 @@ export function Board({ game }: { game: CaroGame }) {
           </div>
         </div>
       </main>
+
+      <div id="chatbox" style={assetBg('chatFrame')}>
+        <div id="chat-log">
+          {messages.map((m) => (
+            <div key={m.id} className="chat-msg">
+              {m.who && <span className="chat-who">{m.who}: </span>}
+              {m.text}
+            </div>
+          ))}
+        </div>
+        <form
+          id="chat-input-row"
+          onSubmit={(e) => {
+            e.preventDefault();
+            sendChat();
+          }}
+        >
+          <input
+            id="chat-input"
+            type="text"
+            autoComplete="off"
+            placeholder="NHẬP TIN NHẮN..."
+            value={chatInput}
+            onChange={(e) => setChatInput(e.target.value)}
+          />
+          <button type="submit" className="chat-send" aria-label="Gửi">
+            <img src={assetSrc('sendIcon')} alt="" />
+          </button>
+        </form>
+      </div>
 
       <footer id="bottombar">
         <button type="button" id="btn-replay" className={game.replayVisible ? '' : 'hidden'} style={assetBg('boardMenuBtn')} onClick={game.replay}>

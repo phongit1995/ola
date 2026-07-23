@@ -70,6 +70,7 @@ export interface CaroGame {
 
   result: { win: boolean; kenDelta: number | null } | null;
   toast: string | null;
+  matchSeq: number;
 
   playBot(level: BotLevel): void;
   playRanked(): void;
@@ -111,6 +112,7 @@ export function useCaroGame(ready: boolean): CaroGame {
   const [replayVisible, setReplayVisible] = useState(false);
   const [forfeitDisabled, setForfeitDisabled] = useState(true);
   const [result, setResult] = useState<CaroGame['result']>(null);
+  const [matchSeq, setMatchSeq] = useState(0);
   const [toast, setToast] = useState<string | null>(null);
 
   const onlineRef = useRef<GameSession<CaroState, CaroMove> | null>(null);
@@ -219,6 +221,7 @@ export function useCaroGame(ready: boolean): CaroGame {
       target.onMatchFound((data) => {
         if (sessionRef.current !== target) return;
         matchRef.current = data;
+        setMatchSeq((n) => n + 1);
         setLobbyVisible(false);
         setRankedVisible(false);
         setOverlay(null);
@@ -414,6 +417,7 @@ export function useCaroGame(ready: boolean): CaroGame {
     forfeitDisabled,
     result,
     toast,
+    matchSeq,
     playBot,
     playRanked,
     retry,

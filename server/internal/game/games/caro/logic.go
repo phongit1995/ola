@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	Size    = 15
+	Size    = 20
 	WinLen  = 5
 	noneWin = -1
 	drawWin = -2

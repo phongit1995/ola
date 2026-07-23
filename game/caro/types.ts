@@ -1,4 +1,4 @@
-export const SIZE = 15;
+export const SIZE = 20;
 export const WIN_LEN = 5;
 
 export interface CaroState {
