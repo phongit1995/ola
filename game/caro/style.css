@@ -267,7 +267,7 @@ button:focus-visible,
   align-items: flex-start;
   justify-content: center;
   overflow: hidden;
-  padding: 14px 10px 8px;
+  padding: clamp(42px, 11vw, 52px) 10px 8px;
 }
 
 .turn-announce {
@@ -313,12 +313,50 @@ button:focus-visible,
 }
 
 #board-frame {
+  position: relative;
   width: min(100%, 92vw);
   max-width: 480px;
   aspect-ratio: 1168 / 1170;
   background-size: 100% 100%;
   padding: 2%;
   border-radius: 10px;
+}
+
+.board-bet-badge {
+  position: absolute;
+  bottom: calc(100% - 4px);
+  left: 50%;
+  z-index: 7;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3%;
+  width: clamp(108px, 31vw, 150px);
+  aspect-ratio: 1302 / 354;
+  padding: 0 8%;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  color: var(--lobby-cream);
+  pointer-events: none;
+  filter: drop-shadow(0 3px 5px rgba(9, 24, 43, 0.32));
+}
+
+.board-bet-badge img {
+  width: auto;
+  height: 48%;
+  flex: 0 0 auto;
+}
+
+.board-bet-badge span {
+  min-width: 0;
+  color: var(--lobby-cream);
+  font-size: clamp(14px, 4vw, 20px);
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  white-space: nowrap;
+  text-shadow: 0 2px 2px rgba(9, 24, 43, 0.45);
 }
 
 #board-frame.urgent {
@@ -365,11 +403,6 @@ button:focus-visible,
   text-align: center;
   -webkit-backdrop-filter: blur(1px);
   backdrop-filter: blur(1px);
-}
-
-.room-pregame-panel strong {
-  font-size: clamp(17px, 5vw, 25px);
-  font-weight: 900;
 }
 
 .room-pregame-panel span {

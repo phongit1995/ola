@@ -111,6 +111,7 @@ export interface CaroStore {
   lobbyAnimKey: number;
   userInfo: UserInfoData | null;
   ken: number;
+  bet: number;
 
   rankedVisible: boolean;
   leaderboardVisible: boolean;
@@ -251,6 +252,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
       overlay: null,
       result: null,
       roomWaiting: null,
+      bet: refs.matchBet,
       board: emptyState().board,
       lastIdx: -1,
       status,
@@ -312,6 +314,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
       overlay: preserveOutcome ? s.overlay : null,
       result: preserveOutcome ? s.result : null,
       roomWaiting: room,
+      bet: room.bet,
       board: preserveOutcome ? s.board : firstRoomState ? emptyState().board : s.board,
       lastIdx: preserveOutcome ? s.lastIdx : firstRoomState ? -1 : s.lastIdx,
       status: preserveOutcome ? s.status : status,
@@ -413,10 +416,12 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
       if (target === refs.online && refs.roomConnectionLost && get().boardMode === 'pregame') {
         refs.roomConnectionLost = false;
         refs.pendingRoomId = null;
+        refs.matchBet = 0;
         set({
           boardMode: 'idle',
           roomActionPending: null,
           roomWaiting: null,
+          bet: 0,
           rankedVisible: true,
           lobbyVisible: false,
           leaderboardVisible: false,
@@ -464,6 +469,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
       refs.pendingRoomId = data.roomId;
       set((s) => ({
         boardMode: s.result != null || s.overlay?.kind != null ? s.boardMode : 'pregame',
+        bet: data.bet,
         lobbyVisible: false,
         rankedVisible: false,
         leaderboardVisible: false,
@@ -487,10 +493,12 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
       refs.pendingRoomId = null;
       refs.chatOpponentId = null;
       refs.chatSeq = 0;
+      refs.matchBet = 0;
       set({
         boardMode: 'idle',
         roomActionPending: null,
         roomWaiting: null,
+        bet: 0,
         rankedVisible: true,
         lobbyVisible: false,
         leaderboardVisible: false,
@@ -518,10 +526,12 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
       refs.pendingRoomId = null;
       refs.chatOpponentId = null;
       refs.chatSeq = 0;
+      refs.matchBet = 0;
       set({
         boardMode: 'idle',
         roomActionPending: null,
         roomWaiting: null,
+        bet: 0,
         rankedVisible: true,
         lobbyVisible: false,
         leaderboardVisible: false,
@@ -556,7 +566,8 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
       }
       refs.match = data;
       refs.exitingMatch = null;
-      refs.matchBet = data.bet ?? refs.matchBet;
+      const matchBet = data.bet ?? refs.matchBet;
+      refs.matchBet = matchBet;
       refs.opponentIsBot = target === refs.bot;
       const isBot = target === refs.bot && refs.botLevel != null;
       const mePlayer = data.players[data.you];
@@ -581,6 +592,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
         result: null,
         winLine: null,
         roomWaiting: null,
+        bet: matchBet,
         oppAway: null,
         messages: preserveChat ? s.messages : [],
         me: {
@@ -687,6 +699,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
             ...(returnToRooms
               ? {
                   boardMode: 'idle' as const,
+                  bet: 0,
                   rankedVisible: true,
                   lobbyVisible: false,
                   leaderboardVisible: false,
@@ -695,6 +708,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
           });
         }
         if (returnToRooms) refs.pendingRoomId = null;
+        if (returnToRooms) refs.matchBet = 0;
         showToast(roomErrorText(err.code) ?? err.message);
         return;
       }
@@ -744,6 +758,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     refs.pendingRoomId = null;
     refs.chatOpponentId = null;
     refs.chatSeq = 0;
+    refs.matchBet = 0;
     set((s) => ({
       boardMode: 'idle',
       roomActionPending: null,
@@ -753,6 +768,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
       leaderboardVisible: false,
       lobbyVisible: true,
       roomWaiting: null,
+      bet: 0,
       board: emptyState().board,
       lastIdx: -1,
       winLine: null,
@@ -768,6 +784,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     lobbyAnimKey: 0,
     userInfo: null,
     ken: 0,
+    bet: 0,
     rankedVisible: false,
     leaderboardVisible: false,
     rooms: [],
@@ -816,6 +833,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
         wireSession(refs.bot);
       }
       refs.matchBet = 0;
+      set({ bet: 0 });
       refs.session = refs.bot;
       refs.session.joinQueue();
     },
@@ -826,9 +844,11 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
         applyRoomState(activeRoom);
         return;
       }
+      refs.matchBet = 0;
       set({
         boardMode: 'idle',
         roomActionPending: null,
+        bet: 0,
         lobbyVisible: false,
         leaderboardVisible: false,
         rankedVisible: true,
@@ -858,6 +878,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     joinRoom(roomId, password) {
       if (!refs.online) return;
       refs.session = refs.online;
+      refs.matchBet = get().rooms.find((room) => room.id === roomId)?.bet ?? 0;
       enterPendingRoom('joining', 'Đang vào bàn...');
       refs.pendingRoomId = roomId;
       refs.online.joinRoom(roomId, password || undefined);

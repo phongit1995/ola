@@ -7,6 +7,10 @@ import { ConfirmModal } from './ConfirmModal';
 
 const CELLS = Array.from({ length: SIZE * SIZE }, (_, i) => i);
 
+function formatKen(value: number): string {
+  return value.toLocaleString('vi-VN', { maximumFractionDigits: 0 });
+}
+
 function RoomOwnerIcon() {
   return (
     <span className="room-owner-icon" role="img" aria-label="Chủ phòng" title="Chủ phòng">
@@ -44,6 +48,7 @@ export function Board() {
     boardMode,
     roomWaiting,
     roomActionPending,
+    bet,
     result,
     toast,
   } = useCaroStore(
@@ -68,6 +73,7 @@ export function Board() {
       boardMode: s.boardMode,
       roomWaiting: s.roomWaiting,
       roomActionPending: s.roomActionPending,
+      bet: s.bet,
       result: s.result,
       toast: s.toast,
     })),
@@ -110,6 +116,7 @@ export function Board() {
   const roomCanStart = roomFull === true && roomWaiting.members.some((member) => !member.owner && member.ready);
   const chatEnabled = result == null && (playing || (pregame && roomFull === true));
   const roomBusy = roomActionPending != null;
+  const betText = formatKen(bet);
 
   useEffect(() => {
     setChatInput('');
@@ -169,7 +176,7 @@ export function Board() {
             <span id="timer-val">{timerText}</span>
           </div>
           <img id="turn-arrow" className={turnArrowSrc ? '' : 'hidden'} src={turnArrowSrc ?? undefined} alt="" />
-          <div id="status">{status}</div>
+          {!pregame && <div id="status">{status}</div>}
         </div>
         <div className={'player right' + (me.active ? ' active' : '')} id="player-me">
           <div className="player-avatar">
@@ -195,6 +202,17 @@ export function Board() {
           </div>
         )}
         <div id="board-frame" className={timerUrgent && myTurn ? 'urgent' : ''} style={assetBg('boardFrame')}>
+          {boardMode !== 'idle' && (
+            <div
+              className="board-bet-badge"
+              style={assetBg('kenFrame')}
+              role="status"
+              aria-label={`Cược ${betText} Ken`}
+            >
+              <span>{betText}</span>
+              <img src={assetSrc('icKen')} alt="" />
+            </div>
+          )}
           <div id="board" className={myTurn ? 'playable' : ''}>
             {CELLS.map((i) => {
               const mark = board[i];
@@ -225,7 +243,6 @@ export function Board() {
             )}
             {pregame && !result && (
               <div className="room-pregame-panel">
-                <strong>{roomWaiting ? `Bàn cược ${roomWaiting.bet.toLocaleString('vi-VN')} Ken` : 'Đang kết nối bàn...'}</strong>
                 <span>{status}</span>
                 {roomFull && !isRoomOwner && (
                   <button
