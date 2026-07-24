@@ -9,6 +9,7 @@ import type { CreatePostRequest, Post, PostVisibility } from '@ola/shared/types'
 import { EDIT_WINDOW_MS } from '@ola/shared/constants';
 import type { ChatComposerHandle } from '@components/ChatComposer';
 import { findActionIcon } from '@lib/checkInActions';
+import { compressImagesForUpload } from '@lib/compressImage';
 import type { ComposedCheckIn } from './components/MeComposerCheckInPanel';
 import { COMPOSER_MAX_IMAGES } from './constants';
 import type { PickedPhoto } from './interface';
@@ -157,9 +158,18 @@ export function useMeComposer({
       return;
     }
     setPosting(true);
-    const files = photos
-      .filter(item => item.file != null)
-      .map(item => item.file as NativeUploadFile);
+    let files: NativeUploadFile[];
+    try {
+      files = await compressImagesForUpload(
+        photos
+          .filter(item => item.file != null)
+          .map(item => item.file as NativeUploadFile),
+      );
+    } catch {
+      setPosting(false);
+      pushToast('error', isEdit ? t('me.editError') : t('me.postError'));
+      return;
+    }
     const imageUrls = photos
       .filter(item => item.file == null)
       .map(item => item.uri);

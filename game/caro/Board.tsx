@@ -29,6 +29,10 @@ export function Board() {
     forfeitDisabled,
     messages,
     matchSeq,
+    boardMode,
+    roomWaiting,
+    roomActionPending,
+    toast,
   } = useCaroStore(
     useShallow((s) => ({
       me: s.me,
@@ -48,9 +52,26 @@ export function Board() {
       forfeitDisabled: s.forfeitDisabled,
       messages: s.messages,
       matchSeq: s.matchSeq,
+      boardMode: s.boardMode,
+      roomWaiting: s.roomWaiting,
+      roomActionPending: s.roomActionPending,
+      toast: s.toast,
     })),
   );
-  const { placeMove, again, cancelSearch, toLobby, replay, forfeit, exitMatch, sendChat } = useCaroStore(
+  const {
+    placeMove,
+    again,
+    cancelSearch,
+    toLobby,
+    replay,
+    forfeit,
+    exitMatch,
+    sendChat,
+    cancelRoom,
+    toggleRoomReady,
+    startRoom,
+    kickRoomGuest,
+  } = useCaroStore(
     useShallow((s) => ({
       placeMove: s.placeMove,
       again: s.again,
@@ -60,8 +81,20 @@ export function Board() {
       forfeit: s.forfeit,
       exitMatch: s.exitMatch,
       sendChat: s.sendChat,
+      cancelRoom: s.cancelRoom,
+      toggleRoomReady: s.toggleRoomReady,
+      startRoom: s.startRoom,
+      kickRoomGuest: s.kickRoomGuest,
     })),
   );
+  const pregame = boardMode === 'pregame';
+  const playing = boardMode === 'playing';
+  const meInRoom = roomWaiting?.members.find((member) => member.id === roomWaiting.youId);
+  const opponentInRoom = roomWaiting?.members.find((member) => member.id !== roomWaiting.youId);
+  const isRoomOwner = roomWaiting != null && roomWaiting.ownerId === roomWaiting.youId;
+  const roomFull = roomWaiting?.members.length === 2;
+  const roomCanStart = roomFull === true && roomWaiting.members.every((member) => member.ready);
+  const roomBusy = roomActionPending != null;
 
   useEffect(() => {
     setChatInput('');
@@ -85,8 +118,9 @@ export function Board() {
           </div>
           <div className="name-row">
             <span className="name">{me.name}</span>
-            <span className={`mark ${me.mark}`}>{me.mark === 'x' ? 'X' : 'O'}</span>
+            {playing && <span className={`mark ${me.mark}`}>{me.mark === 'x' ? 'X' : 'O'}</span>}
           </div>
+          {pregame && meInRoom && <span className={'room-ready-state' + (meInRoom.ready ? ' ready' : '')}>{meInRoom.ready ? 'Sẵn sàng' : 'Chưa sẵn sàng'}</span>}
         </div>
         <div id="center">
           <div id="timer" className={showTimer ? (timerUrgent ? 'urgent' : '') : 'hidden'} style={assetBg('boardTimerFrame')}>
@@ -101,8 +135,9 @@ export function Board() {
           </div>
           <div className="name-row">
             <span className="name">{op.name}</span>
-            <span className={`mark ${op.mark}`}>{op.mark === 'x' ? 'X' : 'O'}</span>
+            {playing && <span className={`mark ${op.mark}`}>{op.mark === 'x' ? 'X' : 'O'}</span>}
           </div>
+          {pregame && opponentInRoom && <span className={'room-ready-state' + (opponentInRoom.ready ? ' ready' : '')}>{opponentInRoom.ready ? 'Sẵn sàng' : 'Chưa sẵn sàng'}</span>}
         </div>
       </header>
 
@@ -140,6 +175,12 @@ export function Board() {
                   pathLength={1}
                 />
               </svg>
+            )}
+            {pregame && (
+              <div className="room-pregame-panel">
+                <strong>{roomWaiting ? `Bàn cược ${roomWaiting.bet.toLocaleString('vi-VN')} Ken` : 'Đang kết nối bàn...'}</strong>
+                <span>{opponentInRoom ? 'Đã đủ hai người chơi' : 'Đang chờ người chơi thứ hai...'}</span>
+              </div>
             )}
           </div>
         </div>
@@ -196,34 +237,65 @@ export function Board() {
             type="text"
             autoComplete="off"
             maxLength={120}
-            placeholder="NHẬP TIN NHẮN..."
+            disabled={!playing}
+            placeholder={pregame ? 'CHAT SAU KHI BẮT ĐẦU...' : 'NHẬP TIN NHẮN...'}
             value={chatInput}
             onChange={(e) => setChatInput(e.target.value)}
           />
-          <button type="submit" className="chat-send" aria-label="Gửi">
+          <button type="submit" className="chat-send" aria-label="Gửi" disabled={!playing}>
             <img src={assetSrc('sendIcon')} alt="" />
           </button>
         </form>
       </div>
 
-      <footer id="bottombar">
-        <button type="button" id="btn-replay" className={replayVisible ? '' : 'hidden'} style={assetBg('boardMenuBtn')} onClick={replay}>
-          Chơi lại
-        </button>
-        <button type="button" id="btn-forfeit" style={assetBg('boardMenuBtn')} disabled={forfeitDisabled} onClick={forfeit}>
-          Bỏ cuộc
-        </button>
-        <button type="button" id="btn-exit" style={assetBg('boardMenuBtn')} onClick={() => setExitOpen(true)}>
-          Thoát
-        </button>
+      <footer id="bottombar" className={pregame ? 'pregame' : ''}>
+        {pregame ? (
+          <>
+            {roomFull && !isRoomOwner && (
+              <button type="button" style={assetBg('boardMenuBtn')} disabled={roomBusy} onClick={toggleRoomReady}>
+                {meInRoom?.ready ? 'Hủy sẵn sàng' : 'Sẵn sàng'}
+              </button>
+            )}
+            {isRoomOwner && opponentInRoom && (
+              <button type="button" style={assetBg('boardMenuBtn')} disabled={roomBusy} onClick={kickRoomGuest}>
+                Mời ra
+              </button>
+            )}
+            {isRoomOwner && roomFull && (
+              <button type="button" style={assetBg('boardMenuBtn')} disabled={roomBusy || !roomCanStart} onClick={startRoom}>
+                Bắt đầu
+              </button>
+            )}
+            <button type="button" id="btn-exit" style={assetBg('boardMenuBtn')} disabled={roomBusy || !roomWaiting} onClick={() => setExitOpen(true)}>
+              Thoát bàn
+            </button>
+          </>
+        ) : (
+          <>
+            <button type="button" id="btn-replay" className={replayVisible ? '' : 'hidden'} style={assetBg('boardMenuBtn')} onClick={replay}>
+              Chơi lại
+            </button>
+            <button type="button" id="btn-forfeit" style={assetBg('boardMenuBtn')} disabled={forfeitDisabled} onClick={forfeit}>
+              Bỏ cuộc
+            </button>
+            <button type="button" id="btn-exit" style={assetBg('boardMenuBtn')} onClick={() => setExitOpen(true)}>
+              Thoát
+            </button>
+          </>
+        )}
       </footer>
+
+      <div id="board-toast" className={toast && boardMode !== 'idle' ? 'show' : 'hidden'}>
+        {toast}
+      </div>
 
       <ConfirmModal
         open={exitOpen}
-        text="Thoát sẽ bị xử thua trận này. Thoát chứ?"
+        text={pregame ? 'Thoát bàn sẽ hủy phòng cho cả hai người. Thoát chứ?' : 'Thoát sẽ bị xử thua trận này. Thoát chứ?'}
         onConfirm={() => {
           setExitOpen(false);
-          exitMatch();
+          if (pregame) cancelRoom();
+          else exitMatch();
         }}
         onCancel={() => setExitOpen(false)}
       />

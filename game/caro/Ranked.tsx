@@ -16,16 +16,11 @@ function formatKen(value: number): string {
 export function Ranked() {
   const visible = useCaroStore((s) => s.rankedVisible);
   const rooms = useCaroStore((s) => s.rooms);
-  const roomWaiting = useCaroStore((s) => s.roomWaiting);
   const toast = useCaroStore((s) => s.toast);
   const onExit = useCaroStore((s) => s.toLobby);
   const createRoom = useCaroStore((s) => s.createRoom);
   const joinRoom = useCaroStore((s) => s.joinRoom);
   const refreshRooms = useCaroStore((s) => s.refreshRooms);
-  const cancelRoom = useCaroStore((s) => s.cancelRoom);
-  const toggleRoomReady = useCaroStore((s) => s.toggleRoomReady);
-  const startRoom = useCaroStore((s) => s.startRoom);
-  const kickRoomGuest = useCaroStore((s) => s.kickRoomGuest);
 
   const [page, setPage] = useState(0);
   const [createOpen, setCreateOpen] = useState(false);
@@ -36,11 +31,6 @@ export function Ranked() {
 
   const pageCount = Math.max(1, Math.ceil(rooms.length / PAGE_SIZE));
   const visibleRooms = rooms.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
-  const meInRoom = roomWaiting?.members.find((member) => member.id === roomWaiting.youId);
-  const guestInRoom = roomWaiting?.members.find((member) => !member.owner);
-  const isRoomOwner = roomWaiting != null && roomWaiting.ownerId === roomWaiting.youId;
-  const roomCanStart =
-    roomWaiting != null && roomWaiting.members.length === 2 && roomWaiting.members.every((member) => member.ready);
 
   useEffect(() => {
     if (!visible) return;
@@ -109,7 +99,7 @@ export function Ranked() {
                     {room.locked && <img src={assetSrc('rankedLock')} alt="" className="rr-lock" />}
                     <span
                       className="rr-badge"
-                      style={{ backgroundImage: `url('${assetSrc(room.full ? 'rankedSlotFull' : 'rankedSlotOpen')}')` }}
+					  style={{ backgroundImage: `url('${assetSrc(room.full ? 'rankedSlotFull' : 'rankedSlotOpen')}')` }}
                     >
                       {room.players}/2
                     </span>
@@ -136,7 +126,7 @@ export function Ranked() {
           </button>
         </div>
         <div className="ranked-menu">
-          <button type="button" id="ranked-create" style={assetBg('rankedMenuBtn')} onClick={() => { setBet('0'); setCreatePassword(''); setCreateOpen(true); }}>
+		  <button type="button" id="ranked-create" style={assetBg('rankedMenuBtn')} onClick={() => { setBet('0'); setCreatePassword(''); setCreateOpen(true); }}>
             Tạo bàn
           </button>
           <button type="button" id="ranked-refresh" style={assetBg('rankedMenuBtn')} onClick={() => refreshRooms()}>
@@ -145,45 +135,6 @@ export function Ranked() {
           <button type="button" id="ranked-exit" style={assetBg('rankedMenuBtn')} onClick={onExit}>
             Thoát
           </button>
-        </div>
-        <div id="ranked-waiting" className={roomWaiting ? '' : 'hidden'}>
-          <span id="ranked-waiting-text">
-            {roomWaiting?.members.length === 2
-              ? roomCanStart
-                ? isRoomOwner
-                  ? 'Cả hai đã sẵn sàng, bạn có thể bắt đầu'
-                  : 'Cả hai đã sẵn sàng, đang chờ chủ phòng bắt đầu'
-                : 'Đang chờ hai người sẵn sàng'
-              : roomWaiting && roomWaiting.bet > 0
-                ? `Đang đợi đối thủ vào phòng (cược ${formatKen(roomWaiting.bet)} Ken)...`
-                : 'Đang đợi đối thủ vào phòng...'}
-          </span>
-          <div className="ranked-room-members">
-            {roomWaiting?.members.map((member) => (
-              <div key={member.id} className="ranked-room-member">
-                <span>{member.owner ? 'Chủ phòng' : 'Khách'}: @{member.name}</span>
-                <strong className={member.ready ? 'ready' : ''}>{member.ready ? 'Sẵn sàng' : 'Chưa sẵn sàng'}</strong>
-              </div>
-            ))}
-          </div>
-          <div className="ranked-waiting-actions">
-            <button type="button" className="ranked-room-ready" onClick={toggleRoomReady}>
-              {meInRoom?.ready ? 'Hủy sẵn sàng' : 'Sẵn sàng'}
-            </button>
-            {isRoomOwner && guestInRoom && (
-              <button type="button" className="ranked-room-kick" onClick={kickRoomGuest}>
-                Mời ra
-              </button>
-            )}
-            {isRoomOwner && (
-              <button type="button" className="ranked-room-start" disabled={!roomCanStart} onClick={startRoom}>
-                Bắt đầu
-              </button>
-            )}
-            <button type="button" id="ranked-waiting-cancel" onClick={() => cancelRoom()}>
-              {isRoomOwner ? 'Đóng phòng' : 'Rời phòng'}
-            </button>
-          </div>
         </div>
         <div id="ranked-toast" className={toast ? 'show' : 'hidden'}>
           {toast}
