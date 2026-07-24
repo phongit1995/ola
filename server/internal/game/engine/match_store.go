@@ -18,13 +18,6 @@ const (
 	matchStatusFinished = "finished"
 )
 
-type MatchAction struct {
-	Sequence    int             `json:"sequence"`
-	PlayerIndex int             `json:"playerIndex"`
-	Move        json.RawMessage `json:"move"`
-	CreatedAt   int64           `json:"createdAt"`
-}
-
 type ActiveMatchSnapshot struct {
 	ID                 string                `json:"id"`
 	GameID             string                `json:"gameId"`
@@ -39,7 +32,6 @@ type ActiveMatchSnapshot struct {
 	WinnerID           string                `json:"winnerId,omitempty"`
 	ResultReason       string                `json:"resultReason,omitempty"`
 	FinishedAt         int64                 `json:"finishedAt,omitempty"`
-	Actions            []MatchAction         `json:"actions,omitempty"`
 	Disconnected       map[int]bool          `json:"disconnected,omitempty"`
 	GraceDeadline      int64                 `json:"graceDeadline,omitempty"`
 	PausedRemainMillis int64                 `json:"pausedRemainMillis,omitempty"`
@@ -65,7 +57,8 @@ func (s *MatchStore) Save(snapshot ActiveMatchSnapshot) error {
 		return fmt.Errorf("marshal active match: %w", err)
 	}
 
-	ctx := s.cache.GetContext()
+	ctx, cancel := gameRedisContext(s.cache)
+	defer cancel()
 	pipe := s.cache.GetClient().TxPipeline()
 	matchKey := fmt.Sprintf(activeMatchKey, snapshot.GameID, snapshot.ID)
 	setKey := fmt.Sprintf(activeMatchesKey, snapshot.GameID)
@@ -84,7 +77,8 @@ func (s *MatchStore) Save(snapshot ActiveMatchSnapshot) error {
 }
 
 func (s *MatchStore) Delete(gameID, matchID string, userIDs ...string) error {
-	ctx := s.cache.GetContext()
+	ctx, cancel := gameRedisContext(s.cache)
+	defer cancel()
 	keys := []string{
 		fmt.Sprintf(activeMatchKey, gameID, matchID),
 		fmt.Sprintf(activeMatchesKey, gameID),
@@ -110,7 +104,8 @@ return 1`
 }
 
 func (s *MatchStore) List(gameID string) ([]ActiveMatchSnapshot, error) {
-	ctx := s.cache.GetContext()
+	ctx, cancel := gameRedisContext(s.cache)
+	defer cancel()
 	client := s.cache.GetClient()
 	setKey := fmt.Sprintf(activeMatchesKey, gameID)
 	ids, err := client.SMembers(ctx, setKey).Result()

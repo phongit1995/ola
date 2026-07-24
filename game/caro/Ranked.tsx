@@ -6,6 +6,8 @@ import { useCaroStore } from './store';
 const PAGE_SIZE = 9;
 const HEAD_BOTTOM = 10.5;
 const ROW_HEIGHT = 8.85;
+const ROOM_RESYNC_MIN_MS = 90_000;
+const ROOM_RESYNC_JITTER_MS = 30_000;
 
 function formatKen(value: number): string {
   return value.toLocaleString('vi-VN');
@@ -42,8 +44,16 @@ export function Ranked() {
 
   useEffect(() => {
     if (!visible) return;
-    const timer = window.setInterval(refreshRooms, 30_000);
-    return () => window.clearInterval(timer);
+    let timer: number;
+    const schedule = (): void => {
+      const delay = ROOM_RESYNC_MIN_MS + Math.random() * ROOM_RESYNC_JITTER_MS;
+      timer = window.setTimeout(() => {
+        refreshRooms();
+        schedule();
+      }, delay);
+    };
+    schedule();
+    return () => window.clearTimeout(timer);
   }, [visible, refreshRooms]);
 
   useEffect(() => {

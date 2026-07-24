@@ -568,14 +568,14 @@ func TestMoveGuardCases(t *testing.T) {
 
 	emitter.clear()
 	gameEngine.Move(match.GameID, current, "different-match", json.RawMessage(`{"win":false}`))
-	if emitter.count(current, protocol.S2CState) != 0 || match.actions != nil {
+	if emitter.count(current, protocol.S2CState) != 0 || match.state.(*persistenceTestState).MoveCount != 0 {
 		t.Fatal("move for a different match was applied")
 	}
 
 	gameEngine.Move(match.GameID, current, match.ID, json.RawMessage(`{`))
 	requireErrorCode(t, emitter, current, "INVALID_MOVE")
-	if match.actions != nil {
-		t.Fatal("invalid move was recorded")
+	if match.state.(*persistenceTestState).MoveCount != 0 {
+		t.Fatal("invalid move changed state")
 	}
 
 	emitter.clear()
@@ -584,7 +584,98 @@ func TestMoveGuardCases(t *testing.T) {
 	}
 	match.deadline = time.Now().Add(-time.Second)
 	gameEngine.Move(match.GameID, current, match.ID, json.RawMessage(`{"win":false}`))
-	if emitter.count(current, protocol.S2CState) != 0 || match.actions != nil {
+	if emitter.count(current, protocol.S2CState) != 0 || match.state.(*persistenceTestState).MoveCount != 0 {
 		t.Fatal("move after deadline was applied")
+	}
+}
+
+func TestMatchChatValidationAndBroadcast(t *testing.T) {
+	t.Run("broadcasts server-owned sender data to both players", func(t *testing.T) {
+		gameEngine, _, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		defer stopEngineTimers(gameEngine)
+		match := startPersistenceTestMatch(t, gameEngine)
+		sender := match.players[0]
+
+		gameEngine.Chat(match.GameID, sender.ID, match.ID, "  chào đối thủ  ")
+		for _, player := range match.players {
+			envelope, ok := emitter.last(player.ID, protocol.S2CChatMessage)
+			if !ok {
+				t.Fatalf("%s did not receive chat message", player.ID)
+			}
+			data, ok := envelope.Data.(protocol.ChatMessageData)
+			if !ok || data.MatchID != match.ID || data.UserID != sender.ID || data.Name != sender.Name ||
+				data.Text != "chào đối thủ" || data.SentAt <= 0 {
+				t.Fatalf("unexpected chat data for %s: %#v", player.ID, envelope.Data)
+			}
+		}
+	})
+
+	t.Run("rate limits repeated messages from the same player", func(t *testing.T) {
+		gameEngine, _, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		defer stopEngineTimers(gameEngine)
+		match := startPersistenceTestMatch(t, gameEngine)
+		sender := match.players[0]
+
+		gameEngine.Chat(match.GameID, sender.ID, match.ID, "first")
+		gameEngine.Chat(match.GameID, sender.ID, match.ID, "second")
+		requireErrorCode(t, emitter, sender.ID, "CHAT_RATE_LIMITED")
+		gameEngine.Chat(match.GameID, match.players[1].ID, match.ID, "opponent message")
+		for _, player := range match.players {
+			if count := emitter.count(player.ID, protocol.S2CChatMessage); count != 2 {
+				t.Fatalf("%s received %d chat messages, want 2", player.ID, count)
+			}
+		}
+	})
+
+	tests := []struct {
+		name  string
+		setup func(*Engine, *Match) (string, string, string, string)
+		code  string
+	}{
+		{
+			name: "no active match",
+			setup: func(_ *Engine, _ *Match) (string, string, string, string) {
+				return persistenceTestGameID, "missing", "missing-match", "hello"
+			},
+			code: "NO_MATCH",
+		},
+		{
+			name: "wrong match",
+			setup: func(_ *Engine, match *Match) (string, string, string, string) {
+				return match.GameID, match.players[0].ID, "different-match", "hello"
+			},
+			code: "MATCH_MISMATCH",
+		},
+		{
+			name: "empty message",
+			setup: func(_ *Engine, match *Match) (string, string, string, string) {
+				return match.GameID, match.players[0].ID, match.ID, "   "
+			},
+			code: "INVALID_CHAT",
+		},
+		{
+			name: "message over rune limit",
+			setup: func(_ *Engine, match *Match) (string, string, string, string) {
+				return match.GameID, match.players[0].ID, match.ID, strings.Repeat("á", maxChatRunes+1)
+			},
+			code: "CHAT_TOO_LONG",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			gameEngine, _, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+			defer stopEngineTimers(gameEngine)
+			match := startPersistenceTestMatch(t, gameEngine)
+			gameID, userID, matchID, message := test.setup(gameEngine, match)
+
+			gameEngine.Chat(gameID, userID, matchID, message)
+			requireErrorCode(t, emitter, userID, test.code)
+			for _, player := range match.players {
+				if emitter.count(player.ID, protocol.S2CChatMessage) != 0 {
+					t.Fatal("invalid chat was broadcast")
+				}
+			}
+		})
 	}
 }

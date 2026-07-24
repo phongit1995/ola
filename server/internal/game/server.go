@@ -223,6 +223,12 @@ func (s *Server) handleMessage(data *SocketData, raw any) {
 			return
 		}
 		s.engine.Move(data.GameID, data.UserID, d.MatchID, d.Move)
+	case protocol.C2SChatSend:
+		var d protocol.ChatSendData
+		if err := json.Unmarshal(env.Data, &d); err != nil {
+			return
+		}
+		s.engine.Chat(data.GameID, data.UserID, d.MatchID, d.Text)
 	case protocol.C2SForfeit:
 		var d protocol.ForfeitData
 		if err := json.Unmarshal(env.Data, &d); err != nil {

@@ -47,7 +47,6 @@ func redisStoreSnapshot(gameID, matchID string) ActiveMatchSnapshot {
 		State:   json.RawMessage(`{"moveCount":1,"winner":-1}`), StateVersion: 1,
 		TurnIndex: 1, TurnDeadline: time.Now().Add(time.Minute).UnixMilli(),
 		Bet: 10, StartedAt: time.Now().UnixMilli(), Status: matchStatusPlaying,
-		Actions: []MatchAction{{Sequence: 1, PlayerIndex: 0, Move: json.RawMessage(`{"win":false}`), CreatedAt: time.Now().UnixMilli()}},
 	}
 }
 
@@ -75,19 +74,16 @@ func TestMatchStoreSaveListUpdateAndDelete(t *testing.T) {
 	if err != nil {
 		t.Fatalf("list snapshots: %v", err)
 	}
-	if len(loaded) != 1 || loaded[0].ID != snapshot.ID || len(loaded[0].Actions) != 1 {
+	if len(loaded) != 1 || loaded[0].ID != snapshot.ID {
 		t.Fatalf("unexpected loaded snapshot: %+v", loaded)
 	}
 
 	snapshot.TurnIndex = 0
-	snapshot.Actions = append(snapshot.Actions, MatchAction{
-		Sequence: 2, PlayerIndex: 1, Move: json.RawMessage(`{"win":false}`), CreatedAt: time.Now().UnixMilli(),
-	})
 	if err := store.Save(snapshot); err != nil {
 		t.Fatalf("update snapshot: %v", err)
 	}
 	loaded, err = store.List("caro")
-	if err != nil || len(loaded) != 1 || loaded[0].TurnIndex != 0 || len(loaded[0].Actions) != 2 {
+	if err != nil || len(loaded) != 1 || loaded[0].TurnIndex != 0 {
 		t.Fatalf("updated snapshot was not returned: %+v, %v", loaded, err)
 	}
 

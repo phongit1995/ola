@@ -160,21 +160,24 @@ func TestCaroEngineRejectsOccupiedAndOutOfBoundsMoves(t *testing.T) {
 			beforeState := match.state.(*caro.State)
 			beforeMoves := beforeState.MoveCount
 			beforeTurn := match.turnIdx
-			beforeActions := len(match.actions)
 			playerID := match.players[match.turnIdx].ID
 
 			gameEngine.Move(match.GameID, playerID, match.ID, test.move)
 			state := match.state.(*caro.State)
-			if state.MoveCount != beforeMoves || match.turnIdx != beforeTurn || len(match.actions) != beforeActions {
-				t.Fatal("invalid move changed match state, turn, or action history")
+			if state.MoveCount != beforeMoves || match.turnIdx != beforeTurn {
+				t.Fatal("invalid move changed match state or turn")
 			}
 			envelope, ok := emitter.last(playerID, protocol.S2CError)
 			if !ok || envelope.Data.(protocol.ErrorData).Code != "INVALID_MOVE" {
 				t.Fatal("invalid Caro move did not emit INVALID_MOVE")
 			}
 			snapshot, ok := activeStore.get(match.GameID, match.ID)
-			if !ok || snapshot.TurnIndex != beforeTurn || len(snapshot.Actions) != beforeActions {
+			if !ok || snapshot.TurnIndex != beforeTurn {
 				t.Fatalf("invalid move changed persisted snapshot: %+v", snapshot)
+			}
+			persisted, err := caro.Logic{}.DecodeState(snapshot.State)
+			if err != nil || persisted.(*caro.State).MoveCount != beforeMoves {
+				t.Fatalf("invalid move changed persisted state: %+v", snapshot)
 			}
 		})
 	}

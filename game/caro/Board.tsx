@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { assetBg, assetSrc } from './assets';
 import { SIZE } from './types';
@@ -10,6 +10,7 @@ const CELLS = Array.from({ length: SIZE * SIZE }, (_, i) => i);
 export function Board() {
   const [chatInput, setChatInput] = useState('');
   const [exitOpen, setExitOpen] = useState(false);
+  const chatLogRef = useRef<HTMLDivElement>(null);
   const {
     me,
     op,
@@ -65,6 +66,11 @@ export function Board() {
   useEffect(() => {
     setChatInput('');
   }, [matchSeq]);
+
+  useEffect(() => {
+    const log = chatLogRef.current;
+    if (log) log.scrollTop = log.scrollHeight;
+  }, [messages.length]);
 
   const send = (): void => {
     sendChat(chatInput);
@@ -170,7 +176,7 @@ export function Board() {
       </main>
 
       <div id="chatbox" style={assetBg('chatFrame')}>
-        <div id="chat-log">
+        <div id="chat-log" ref={chatLogRef}>
           {messages.map((m) => (
             <div key={m.id} className="chat-msg">
               {m.who && <span className="chat-who">{m.who}: </span>}
@@ -189,6 +195,7 @@ export function Board() {
             id="chat-input"
             type="text"
             autoComplete="off"
+            maxLength={120}
             placeholder="NHẬP TIN NHẮN..."
             value={chatInput}
             onChange={(e) => setChatInput(e.target.value)}

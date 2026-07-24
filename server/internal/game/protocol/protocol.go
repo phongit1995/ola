@@ -6,6 +6,7 @@ const (
 	C2SQueueJoin  = "QUEUE_JOIN"
 	C2SQueueLeave = "QUEUE_LEAVE"
 	C2SMove       = "MOVE"
+	C2SChatSend   = "CHAT_SEND"
 	C2SForfeit    = "FORFEIT"
 	C2SRoomCreate = "ROOM_CREATE"
 	C2SRoomJoin   = "ROOM_JOIN"
@@ -19,6 +20,7 @@ const (
 	S2CQueueWaiting         = "QUEUE_WAITING"
 	S2CMatchFound           = "MATCH_FOUND"
 	S2CState                = "STATE"
+	S2CChatMessage          = "CHAT_MESSAGE"
 	S2CMatchOver            = "MATCH_OVER"
 	S2CError                = "ERROR"
 	S2CRoomList             = "ROOM_LIST"
@@ -92,6 +94,19 @@ type ErrorData struct {
 type MoveCommand struct {
 	MatchID string          `json:"matchId"`
 	Move    json.RawMessage `json:"move"`
+}
+
+type ChatSendData struct {
+	MatchID string `json:"matchId"`
+	Text    string `json:"text"`
+}
+
+type ChatMessageData struct {
+	MatchID string `json:"matchId"`
+	UserID  string `json:"userId"`
+	Name    string `json:"name"`
+	Text    string `json:"text"`
+	SentAt  int64  `json:"sentAt"`
 }
 
 type ForfeitData struct {

@@ -2,6 +2,7 @@ export const C2S = {
   QueueJoin: 'QUEUE_JOIN',
   QueueLeave: 'QUEUE_LEAVE',
   Move: 'MOVE',
+  ChatSend: 'CHAT_SEND',
   Forfeit: 'FORFEIT',
   RoomCreate: 'ROOM_CREATE',
   RoomJoin: 'ROOM_JOIN',
@@ -17,6 +18,7 @@ export const S2C = {
   QueueWaiting: 'QUEUE_WAITING',
   MatchFound: 'MATCH_FOUND',
   State: 'STATE',
+  ChatMessage: 'CHAT_MESSAGE',
   MatchOver: 'MATCH_OVER',
   Error: 'ERROR',
   RoomList: 'ROOM_LIST',
@@ -67,6 +69,14 @@ export interface StateData<TState = unknown, TMove = unknown> {
   deadline: number;
   lastMove?: TMove;
   lastBy: number;
+}
+
+export interface ChatMessageData {
+  matchId: string;
+  userId: string;
+  name: string;
+  text: string;
+  sentAt: number;
 }
 
 export interface MatchOverData<TState = unknown> {

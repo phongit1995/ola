@@ -1,10 +1,11 @@
-import type { GameSession, MatchFoundData, MatchOverData, StateData, ErrorData } from '../src/sdk';
+import type { ChatMessageData, ErrorData, GameSession, MatchFoundData, MatchOverData, StateData } from '../src/sdk';
 import { SIZE, checkWin, emptyState, scorePlacement, type CaroMove, type CaroState } from './types';
 
 const TURN_MS = (Number(import.meta.env.VITE_GAME_TURN_SECONDS) || 45) * 1000;
 const PLAYER_MARK = 1;
 const BOT_MARK = 2;
 const TURN_ANNOUNCE_MS = 1080;
+const MAX_CHAT_LENGTH = 120;
 
 export type BotLevel = 'easy' | 'normal' | 'hard';
 
@@ -13,6 +14,22 @@ export const BOT_LEVELS: Record<BotLevel, { name: string; thinkMs: number }> = {
   normal: { name: 'Máy · Thường', thinkMs: 500 },
   hard: { name: 'Máy · Khó', thinkMs: 650 },
 };
+
+const BOT_GREETINGS: Record<BotLevel, string[]> = {
+  easy: ['Chào bạn! Mình mới tập chơi thôi 😄', 'Chơi vui nhé, nhẹ tay với mình nha!'],
+  normal: ['Chào bạn, bắt đầu nhé!', 'Một ván Caro thật hay nào!'],
+  hard: ['Chào đối thủ. Mình sẽ chơi nghiêm túc đấy!', 'Sẵn sàng chưa? Đừng để mình có bốn quân nhé.'],
+};
+
+const BOT_REPLIES = [
+  'Hay đấy!',
+  'Mình đang suy nghĩ đây 🤔',
+  'Chúc bạn may mắn!',
+  'Nước đi thú vị đó.',
+  'Cẩn thận nhé, mình sắp phản công rồi!',
+];
+
+const BOT_MOVE_LINES = ['Đến lượt bạn đó!', 'Mình đi xong rồi nhé.', 'Thử chặn nước này xem!'];
 
 type Handler = (data: never) => void;
 
@@ -26,6 +43,8 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
   let turnTimer: number | undefined;
   let botTimer: number | undefined;
   let overTimer: number | undefined;
+  let lastPlayerChatAt = 0;
+  const chatTimers = new Set<number>();
 
   const WIN_REVEAL_MS = 1300;
 
@@ -50,6 +69,38 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
     turnTimer = undefined;
     botTimer = undefined;
     overTimer = undefined;
+    chatTimers.forEach((timer) => window.clearTimeout(timer));
+    chatTimers.clear();
+  };
+
+  const randomLine = (lines: string[]): string => lines[Math.floor(Math.random() * lines.length)];
+
+  const emitChat = (userId: 'you' | 'bot', name: string, text: string): void => {
+    emit('CHAT_MESSAGE', {
+      matchId,
+      userId,
+      name,
+      text,
+      sentAt: Date.now(),
+    } satisfies ChatMessageData);
+  };
+
+  const scheduleBotChat = (text: string, delayMs: number): void => {
+    const scheduledMatchID = matchId;
+    const timer = window.setTimeout(() => {
+      chatTimers.delete(timer);
+      if (!playing || matchId !== scheduledMatchID) return;
+      emitChat('bot', BOT_LEVELS[level].name, text);
+    }, delayMs);
+    chatTimers.add(timer);
+  };
+
+  const botReply = (message: string): string => {
+    const normalized = message.toLocaleLowerCase('vi-VN');
+    if (/\b(chào|hello|hi)\b/u.test(normalized)) return 'Chào bạn! Chúng ta chơi vui nhé 😄';
+    if (normalized.includes('khó')) return level === 'hard' ? 'Khó mới vui chứ!' : 'Mình cũng đang cố hết sức đây!';
+    if (normalized.includes('hay')) return 'Cảm ơn bạn, nước của bạn cũng hay lắm!';
+    return randomLine(BOT_REPLIES);
   };
 
   const deadline = (): number => Date.now() + TURN_MS;
@@ -115,6 +166,7 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
     playerTurn = true;
     armPlayerTimeout();
     pushState(0, move, 1);
+    if (Math.random() < 0.25) scheduleBotChat(randomLine(BOT_MOVE_LINES), 350);
   };
 
   return {
@@ -127,6 +179,7 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
       matchId = `local-${matchCount}`;
       playing = true;
       playerTurn = true;
+      lastPlayerChatAt = 0;
       armPlayerTimeout();
       emit('MATCH_FOUND', {
         matchId,
@@ -140,6 +193,7 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
         turn: 0,
         deadline: deadline(),
       } satisfies MatchFoundData<CaroState>);
+      scheduleBotChat(randomLine(BOT_GREETINGS[level]), 650 + Math.floor(Math.random() * 500));
     },
 
     leaveQueue() {},
@@ -173,6 +227,25 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
       botTimer = window.setTimeout(botMove, TURN_ANNOUNCE_MS + BOT_LEVELS[level].thinkMs);
     },
 
+    sendChat(requestMatchID: string, text: string) {
+      if (!playing || requestMatchID !== matchId) return;
+      const characters = Array.from(text.trim());
+      if (characters.length === 0) return;
+      if (characters.length > MAX_CHAT_LENGTH) {
+        emit('ERROR', { code: 'CHAT_TOO_LONG', message: 'Tin nhắn tối đa 120 ký tự' } satisfies ErrorData);
+        return;
+      }
+      const now = Date.now();
+      if (now - lastPlayerChatAt < 500) {
+        emit('ERROR', { code: 'CHAT_RATE_LIMITED', message: 'Bạn gửi tin nhắn quá nhanh' } satisfies ErrorData);
+        return;
+      }
+      lastPlayerChatAt = now;
+      const message = characters.join('');
+      emitChat('you', 'Bạn', message);
+      scheduleBotChat(botReply(message), 700 + Math.floor(Math.random() * 900));
+    },
+
     forfeit(_matchId: string) {
       if (playing) finish('bot', 'forfeit');
     },
@@ -196,6 +269,7 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
     onQueueWaiting: (handler) => on('QUEUE_WAITING', handler as Handler),
     onMatchFound: (handler) => on('MATCH_FOUND', handler as Handler),
     onState: (handler) => on('STATE', handler as Handler),
+    onChat: (handler) => on('CHAT_MESSAGE', handler as Handler),
     onMatchOver: (handler) => on('MATCH_OVER', handler as Handler),
     onError: (handler) => on('ERROR', handler as Handler),
     onOpponentDisconnected: () => () => {},

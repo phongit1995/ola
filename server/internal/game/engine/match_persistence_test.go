@@ -72,12 +72,33 @@ func init() {
 }
 
 type memoryRoomStore struct {
-	rooms      map[string]Room
-	refs       map[string]userRoomRef
-	failSave   bool
-	failDelete bool
-	failList   bool
-	claimOK    bool
+	rooms           map[string]Room
+	refs            map[string]userRoomRef
+	failSave        bool
+	failDelete      bool
+	failList        bool
+	claimOK         bool
+	roomByUserCalls int
+}
+
+type blockingListRoomStore struct {
+	*memoryRoomStore
+	entered chan struct{}
+	release chan struct{}
+}
+
+func newBlockingListRoomStore() *blockingListRoomStore {
+	return &blockingListRoomStore{
+		memoryRoomStore: newMemoryRoomStore(),
+		entered:         make(chan struct{}),
+		release:         make(chan struct{}),
+	}
+}
+
+func (s *blockingListRoomStore) List(gameID string) ([]Room, error) {
+	close(s.entered)
+	<-s.release
+	return s.memoryRoomStore.List(gameID)
 }
 
 func newMemoryRoomStore() *memoryRoomStore {
@@ -141,6 +162,7 @@ func (s *memoryRoomStore) List(gameID string) ([]Room, error) {
 }
 
 func (s *memoryRoomStore) RoomByUser(gameID, userID string) (userRoomRef, bool) {
+	s.roomByUserCalls++
 	ref, ok := s.refs[memoryRoomKey(gameID, userID)]
 	return ref, ok
 }
@@ -154,6 +176,48 @@ type memoryActiveMatchStore struct {
 	matches    map[string]ActiveMatchSnapshot
 	failSave   bool
 	failDelete bool
+}
+
+type blockingActiveMatchStore struct {
+	base      *memoryActiveMatchStore
+	mu        sync.Mutex
+	matchID   string
+	entered   chan struct{}
+	release   chan struct{}
+	enterOnce sync.Once
+}
+
+func newBlockingActiveMatchStore() *blockingActiveMatchStore {
+	return &blockingActiveMatchStore{
+		base:    newMemoryActiveMatchStore(),
+		entered: make(chan struct{}),
+		release: make(chan struct{}),
+	}
+}
+
+func (s *blockingActiveMatchStore) block(matchID string) {
+	s.mu.Lock()
+	s.matchID = matchID
+	s.mu.Unlock()
+}
+
+func (s *blockingActiveMatchStore) Save(snapshot ActiveMatchSnapshot) error {
+	s.mu.Lock()
+	blocked := snapshot.ID == s.matchID
+	s.mu.Unlock()
+	if blocked {
+		s.enterOnce.Do(func() { close(s.entered) })
+		<-s.release
+	}
+	return s.base.Save(snapshot)
+}
+
+func (s *blockingActiveMatchStore) Delete(gameID, matchID string, userIDs ...string) error {
+	return s.base.Delete(gameID, matchID, userIDs...)
+}
+
+func (s *blockingActiveMatchStore) List(gameID string) ([]ActiveMatchSnapshot, error) {
+	return s.base.List(gameID)
 }
 
 func newMemoryActiveMatchStore() *memoryActiveMatchStore {
@@ -266,6 +330,8 @@ func startPersistenceTestMatch(t *testing.T, gameEngine *Engine) *Match {
 	); err != nil {
 		t.Fatalf("start match: %v", err)
 	}
+	gameEngine.mu.RLock()
+	defer gameEngine.mu.RUnlock()
 	for _, match := range gameEngine.matches {
 		return match
 	}
@@ -274,15 +340,21 @@ func startPersistenceTestMatch(t *testing.T, gameEngine *Engine) *Match {
 }
 
 func stopEngineTimers(gameEngine *Engine) {
-	gameEngine.mu.Lock()
-	defer gameEngine.mu.Unlock()
+	gameEngine.mu.RLock()
+	matches := make([]*Match, 0, len(gameEngine.matches))
 	for _, match := range gameEngine.matches {
+		matches = append(matches, match)
+	}
+	gameEngine.mu.RUnlock()
+	for _, match := range matches {
+		match.mu.Lock()
 		if match.timer != nil {
 			match.timer.Stop()
 		}
 		if match.graceTimer != nil {
 			match.graceTimer.Stop()
 		}
+		match.mu.Unlock()
 	}
 }
 
@@ -299,8 +371,8 @@ func TestStartMatchPersistsInitialSnapshot(t *testing.T) {
 	if snapshot.Status != matchStatusPlaying || snapshot.StateVersion != 1 {
 		t.Fatalf("unexpected snapshot metadata: %+v", snapshot)
 	}
-	if len(snapshot.Players) != 2 || len(snapshot.Actions) != 0 {
-		t.Fatalf("unexpected players/actions: %+v", snapshot)
+	if len(snapshot.Players) != 2 {
+		t.Fatalf("unexpected players: %+v", snapshot)
 	}
 	if snapshot.TurnDeadline <= time.Now().UnixMilli() || snapshot.StartedAt <= 0 {
 		t.Fatal("initial timer metadata was not persisted")
@@ -328,7 +400,7 @@ func TestStartMatchFailsWhenInitialSnapshotCannotBeSaved(t *testing.T) {
 	}
 }
 
-func TestMovePersistsStateAndPlayerAction(t *testing.T) {
+func TestMovePersistsStateAndTurn(t *testing.T) {
 	activeStore := newMemoryActiveMatchStore()
 	gameEngine, _, _ := newPersistenceTestEngine(activeStore)
 	defer stopEngineTimers(gameEngine)
@@ -348,8 +420,97 @@ func TestMovePersistsStateAndPlayerAction(t *testing.T) {
 	if state.(*persistenceTestState).MoveCount != 1 || snapshot.TurnIndex != 1 {
 		t.Fatalf("move state was not persisted: %+v", snapshot)
 	}
-	if len(snapshot.Actions) != 1 || snapshot.Actions[0].PlayerIndex != 0 || snapshot.Actions[0].Sequence != 1 {
-		t.Fatalf("player action was not persisted: %+v", snapshot.Actions)
+}
+
+func TestSlowPersistenceInOneMatchDoesNotBlockAnotherMatch(t *testing.T) {
+	activeStore := newBlockingActiveMatchStore()
+	gameEngine, _, _ := newPersistenceTestEngine(activeStore)
+	defer stopEngineTimers(gameEngine)
+	gameLogic, _ := logic.Get(persistenceTestGameID)
+	for _, players := range [][2]string{{"a", "b"}, {"c", "d"}} {
+		if err := gameEngine.startMatch(
+			persistenceTestGameID,
+			gameLogic,
+			protocol.PlayerInfo{ID: players[0], Name: players[0]},
+			protocol.PlayerInfo{ID: players[1], Name: players[1]},
+			0,
+		); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	first := gameEngine.matchForUser(persistenceTestGameID, "a")
+	second := gameEngine.matchForUser(persistenceTestGameID, "c")
+	if first == nil || second == nil || first == second {
+		t.Fatal("two independent matches were not installed")
+	}
+	activeStore.block(first.ID)
+	firstDone := make(chan struct{})
+	go func() {
+		gameEngine.Move(first.GameID, first.players[first.turnIdx].ID, first.ID, json.RawMessage(`{"win":false}`))
+		close(firstDone)
+	}()
+	select {
+	case <-activeStore.entered:
+	case <-time.After(time.Second):
+		t.Fatal("first match did not reach blocked persistence")
+	}
+
+	secondDone := make(chan struct{})
+	go func() {
+		gameEngine.Move(second.GameID, second.players[second.turnIdx].ID, second.ID, json.RawMessage(`{"win":false}`))
+		close(secondDone)
+	}()
+	select {
+	case <-secondDone:
+	case <-time.After(time.Second):
+		close(activeStore.release)
+		t.Fatal("slow persistence in one match blocked an unrelated match")
+	}
+	close(activeStore.release)
+	select {
+	case <-firstDone:
+	case <-time.After(time.Second):
+		t.Fatal("first match did not resume after persistence was released")
+	}
+}
+
+func TestSlowRoomListDoesNotBlockActiveMatch(t *testing.T) {
+	rooms := newBlockingListRoomStore()
+	activeStore := newMemoryActiveMatchStore()
+	emitter := &captureEmitter{}
+	gameEngine := NewEngine(zap.NewNop().Sugar(), 300, 30, rooms, activeStore)
+	gameEngine.SetEmitter(emitter)
+	defer stopEngineTimers(gameEngine)
+	match := startPersistenceTestMatch(t, gameEngine)
+
+	listDone := make(chan struct{})
+	go func() {
+		gameEngine.ListRooms(match.GameID, "viewer")
+		close(listDone)
+	}()
+	select {
+	case <-rooms.entered:
+	case <-time.After(time.Second):
+		t.Fatal("room listing did not start")
+	}
+
+	moveDone := make(chan struct{})
+	go func() {
+		gameEngine.Move(match.GameID, match.players[match.turnIdx].ID, match.ID, json.RawMessage(`{"win":false}`))
+		close(moveDone)
+	}()
+	select {
+	case <-moveDone:
+	case <-time.After(time.Second):
+		close(rooms.release)
+		t.Fatal("slow room listing blocked an active match")
+	}
+	close(rooms.release)
+	select {
+	case <-listDone:
+	case <-time.After(time.Second):
+		t.Fatal("room listing did not finish after release")
 	}
 }
 
@@ -365,7 +526,7 @@ func TestMoveRollsBackWhenSnapshotSaveFails(t *testing.T) {
 	gameEngine.Move(match.GameID, playerID, match.ID, json.RawMessage(`{"win":false}`))
 
 	state := match.state.(*persistenceTestState)
-	if state.MoveCount != 0 || match.turnIdx != 0 || len(match.actions) != 0 || !match.deadline.Equal(previousDeadline) {
+	if state.MoveCount != 0 || match.turnIdx != 0 || !match.deadline.Equal(previousDeadline) {
 		t.Fatal("failed move changed in-memory match state")
 	}
 	env, ok := emitter.last(playerID, protocol.S2CError)
@@ -391,6 +552,19 @@ func TestDisconnectAndReconnectArePersisted(t *testing.T) {
 	snapshot, _ = activeStore.get(match.GameID, match.ID)
 	if len(snapshot.Disconnected) != 0 || snapshot.GraceDeadline != 0 || snapshot.PausedRemainMillis != 0 {
 		t.Fatalf("reconnect state was not cleared: %+v", snapshot)
+	}
+}
+
+func TestActiveMatchDisconnectSkipsRoomLookup(t *testing.T) {
+	activeStore := newMemoryActiveMatchStore()
+	gameEngine, rooms, _ := newPersistenceTestEngine(activeStore)
+	defer stopEngineTimers(gameEngine)
+	match := startPersistenceTestMatch(t, gameEngine)
+	playerID := match.players[match.turnIdx].ID
+
+	gameEngine.OnDisconnect(match.GameID, playerID)
+	if rooms.roomByUserCalls != 0 {
+		t.Fatalf("active match disconnect performed %d unnecessary room lookups", rooms.roomByUserCalls)
 	}
 }
 
@@ -482,8 +656,8 @@ func TestRestoreActiveMatchAndResumeAfterBothPlayersReconnect(t *testing.T) {
 	if restored == nil {
 		t.Fatal("active match was not restored")
 	}
-	if restored.state.(*persistenceTestState).MoveCount != 1 || len(restored.actions) != 1 {
-		t.Fatal("restored state/actions do not match the saved snapshot")
+	if restored.state.(*persistenceTestState).MoveCount != 1 {
+		t.Fatal("restored state does not match the saved snapshot")
 	}
 	if len(restored.disconnected) != 2 || restored.pausedRemain <= 0 || restored.graceTimer == nil {
 		t.Fatal("restored match did not wait for both players to reconnect")

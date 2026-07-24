@@ -37,6 +37,7 @@ export interface ChatMsg {
 }
 
 const BOT_VIP_ID: Record<BotLevel, number> = { easy: 1, normal: 2, hard: 3 };
+const CHAT_HISTORY_LIMIT = 100;
 
 function avatarIconSrc(vipType?: string | null): string {
   const id = parseVipTypeId(vipType);
@@ -63,6 +64,19 @@ function roomErrorText(code: string): string | null {
       return 'Bàn không còn nữa';
     case 'OWN_ROOM':
       return 'Không thể vào bàn của bạn';
+    default:
+      return null;
+  }
+}
+
+function chatErrorText(code: string): string | null {
+  switch (code) {
+    case 'CHAT_RATE_LIMITED':
+      return 'Bạn gửi tin nhắn quá nhanh';
+    case 'CHAT_TOO_LONG':
+      return 'Tin nhắn tối đa 120 ký tự';
+    case 'INVALID_CHAT':
+      return 'Tin nhắn không hợp lệ';
     default:
       return null;
   }
@@ -145,6 +159,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     kenRaf: undefined as number | undefined,
     announceId: 0,
     opponentIsBot: false,
+    chatSeq: 0,
   };
 
   const showToast = (message: string): void => {
@@ -321,6 +336,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
         refs.session = refs.online;
       }
       refs.match = data;
+      refs.chatSeq = 0;
       refs.matchBet = data.bet ?? refs.matchBet;
       refs.opponentIsBot = target === refs.bot;
       const isBot = target === refs.bot && refs.botLevel != null;
@@ -371,6 +387,18 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
       applyTurn(data.turn, data.deadline);
     });
 
+    target.onChat((data) => {
+      if (refs.session !== target || refs.match?.matchId !== data.matchId) return;
+      const match = refs.match;
+      const myID = match.players[match.you].id;
+      const opponentID = match.players[1 - match.you].id;
+      const who = data.userId === myID ? get().me.name : data.userId === opponentID ? get().op.name : data.name;
+      refs.chatSeq += 1;
+      set((state) => ({
+        messages: [...state.messages, { id: refs.chatSeq, who, text: data.text }].slice(-CHAT_HISTORY_LIMIT),
+      }));
+    });
+
     target.onMatchOver((data) => {
       if (refs.session !== target) return;
       clearMatchUi();
@@ -390,6 +418,11 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
 
     target.onError((err) => {
       if (refs.session !== target) return;
+      const chatMessage = chatErrorText(err.code);
+      if (chatMessage) {
+        showToast(chatMessage);
+        return;
+      }
       if (!refs.match) {
         showToast(roomErrorText(err.code) ?? err.message);
         return;
@@ -613,10 +646,8 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
 
     sendChat(text) {
       const trimmed = text.trim();
-      if (!trimmed) return;
-      const me = get().me;
-      const who = me.name && me.name !== '---' ? me.name : 'Bạn';
-      set((s) => ({ messages: [...s.messages, { id: Date.now(), who, text: trimmed }] }));
+      if (!trimmed || !refs.match) return;
+      refs.session?.sendChat(refs.match.matchId, trimmed);
     },
   };
 });

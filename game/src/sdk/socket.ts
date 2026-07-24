@@ -3,6 +3,7 @@ import { bridge } from './bridge';
 import {
   C2S,
   S2C,
+  type ChatMessageData,
   type Envelope,
   type ErrorData,
   type MatchFoundData,
@@ -26,6 +27,7 @@ export interface GameSession<TState = unknown, TMove = unknown> {
   joinQueue(): void;
   leaveQueue(): void;
   sendMove(matchId: string, move: TMove): void;
+  sendChat(matchId: string, text: string): void;
   forfeit(matchId: string): void;
   createRoom(bet: number, password?: string): void;
   joinRoom(roomId: string, password?: string): void;
@@ -45,6 +47,7 @@ export interface GameSession<TState = unknown, TMove = unknown> {
   onRoomKicked(handler: (data: RoomKickedData) => void): () => void;
   onMatchFound(handler: (data: MatchFoundData<TState>) => void): () => void;
   onState(handler: (data: StateData<TState, TMove>) => void): () => void;
+  onChat(handler: (data: ChatMessageData) => void): () => void;
   onMatchOver(handler: (data: MatchOverData<TState>) => void): () => void;
   onError(handler: (data: ErrorData) => void): () => void;
   onOpponentDisconnected(handler: (data: OpponentDisconnectedData) => void): () => void;
@@ -99,6 +102,7 @@ export async function joinGame<TState = unknown, TMove = unknown>(
     joinQueue: () => send(C2S.QueueJoin),
     leaveQueue: () => send(C2S.QueueLeave),
     sendMove: (matchId, move) => send(C2S.Move, { matchId, move }),
+    sendChat: (matchId, text) => send(C2S.ChatSend, { matchId, text }),
     forfeit: (matchId) => send(C2S.Forfeit, { matchId }),
     createRoom: (bet, password) => send(C2S.RoomCreate, { bet, password }),
     joinRoom: (roomId, password) => send(C2S.RoomJoin, { roomId, password }),
@@ -118,6 +122,7 @@ export async function joinGame<TState = unknown, TMove = unknown>(
     onRoomKicked: (handler) => on(S2C.RoomKicked, handler as Handler),
     onMatchFound: (handler) => on(S2C.MatchFound, handler as Handler),
     onState: (handler) => on(S2C.State, handler as Handler),
+    onChat: (handler) => on(S2C.ChatMessage, handler as Handler),
     onMatchOver: (handler) => on(S2C.MatchOver, handler as Handler),
     onError: (handler) => on(S2C.Error, handler as Handler),
     onOpponentDisconnected: (handler) => on(S2C.OpponentDisconnected, handler as Handler),
