@@ -187,6 +187,8 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
 
     onUserInfo: () => () => {},
     onRoomList: () => () => {},
+    onRoomUpsert: () => () => {},
+    onRoomRemoved: () => () => {},
     onRoomWaiting: () => () => {},
     onRoomState: () => () => {},
     onRoomClosed: () => () => {},

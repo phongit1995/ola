@@ -76,6 +76,7 @@ type memoryRoomStore struct {
 	refs       map[string]userRoomRef
 	failSave   bool
 	failDelete bool
+	failList   bool
 	claimOK    bool
 }
 
@@ -118,19 +119,25 @@ func (s *memoryRoomStore) Delete(gameID, roomID string, userIDs ...string) error
 	return nil
 }
 
-func (s *memoryRoomStore) DeleteUserRef(gameID, userID string) error {
-	delete(s.refs, memoryRoomKey(gameID, userID))
+func (s *memoryRoomStore) DeleteUserRef(gameID, userID, roomID string) error {
+	key := memoryRoomKey(gameID, userID)
+	if ref, ok := s.refs[key]; ok && ref.RoomID == roomID {
+		delete(s.refs, key)
+	}
 	return nil
 }
 
-func (s *memoryRoomStore) List(gameID string) []Room {
+func (s *memoryRoomStore) List(gameID string) ([]Room, error) {
+	if s.failList {
+		return nil, errors.New("list rooms failed")
+	}
 	rooms := make([]Room, 0)
 	for _, room := range s.rooms {
 		if room.GameID == gameID {
 			rooms = append(rooms, room)
 		}
 	}
-	return rooms
+	return rooms, nil
 }
 
 func (s *memoryRoomStore) RoomByUser(gameID, userID string) (userRoomRef, bool) {
@@ -216,6 +223,12 @@ func (e *captureEmitter) ToUser(gameID, userID string, env protocol.OutEnvelope)
 	e.mu.Lock()
 	defer e.mu.Unlock()
 	e.messages = append(e.messages, capturedMessage{gameID: gameID, userID: userID, env: env})
+}
+
+func (e *captureEmitter) ToGame(gameID string, env protocol.OutEnvelope) {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	e.messages = append(e.messages, capturedMessage{gameID: gameID, env: env})
 }
 
 func (e *captureEmitter) last(userID, messageType string) (protocol.OutEnvelope, bool) {
@@ -381,6 +394,78 @@ func TestDisconnectAndReconnectArePersisted(t *testing.T) {
 	}
 }
 
+func TestMovePausesTurnWhenItPassesToDisconnectedOpponent(t *testing.T) {
+	activeStore := newMemoryActiveMatchStore()
+	gameEngine, _, emitter := newPersistenceTestEngine(activeStore)
+	defer stopEngineTimers(gameEngine)
+	match := startPersistenceTestMatch(t, gameEngine)
+	currentIdx := match.turnIdx
+	disconnectedIdx := 1 - currentIdx
+	currentID := match.players[currentIdx].ID
+	disconnectedID := match.players[disconnectedIdx].ID
+
+	gameEngine.OnDisconnect(match.GameID, disconnectedID)
+	if match.pausedRemain != 0 || match.timer == nil {
+		t.Fatal("current player's timer should continue until the turn changes")
+	}
+
+	gameEngine.Move(match.GameID, currentID, match.ID, json.RawMessage(`{"win":false}`))
+	if match.turnIdx != disconnectedIdx {
+		t.Fatalf("turn = %d, want disconnected player %d", match.turnIdx, disconnectedIdx)
+	}
+	if match.pausedRemain <= 0 || match.timer != nil {
+		t.Fatal("turn timer was not paused for the disconnected player")
+	}
+	snapshot, ok := activeStore.get(match.GameID, match.ID)
+	if !ok || snapshot.TurnIndex != disconnectedIdx || snapshot.PausedRemainMillis <= 0 || !snapshot.Disconnected[disconnectedIdx] {
+		t.Fatalf("paused disconnected turn was not persisted: %+v", snapshot)
+	}
+
+	gameEngine.onTimeout(match.ID, match.turnIdx, match.turnGen)
+	if match.over || gameEngine.matches[match.ID] == nil || emitter.count(currentID, protocol.S2CMatchOver) != 0 {
+		t.Fatal("paused disconnected turn was incorrectly finished by timeout")
+	}
+
+	gameEngine.OnConnect(match.GameID, disconnectedID)
+	if match.pausedRemain != 0 || match.timer == nil || len(match.disconnected) != 0 {
+		t.Fatal("turn timer did not resume after the disconnected player returned")
+	}
+}
+
+func TestStaleTurnTimerCallbackIsIgnoredAfterPauseAndResume(t *testing.T) {
+	activeStore := newMemoryActiveMatchStore()
+	gameEngine, _, emitter := newPersistenceTestEngine(activeStore)
+	defer stopEngineTimers(gameEngine)
+	match := startPersistenceTestMatch(t, gameEngine)
+	currentID := match.players[match.turnIdx].ID
+	oldTurn := match.turnIdx
+	oldGeneration := match.turnGen
+
+	gameEngine.OnDisconnect(match.GameID, currentID)
+	if match.turnGen == oldGeneration || match.pausedRemain <= 0 || match.timer != nil {
+		t.Fatal("disconnect did not invalidate and pause the current timer")
+	}
+	gameEngine.OnConnect(match.GameID, currentID)
+	resumedGeneration := match.turnGen
+	if resumedGeneration == oldGeneration || match.timer == nil || match.pausedRemain != 0 {
+		t.Fatal("reconnect did not arm a new timer generation")
+	}
+
+	gameEngine.onTimeout(match.ID, oldTurn, oldGeneration)
+	if match.over || gameEngine.matches[match.ID] == nil || emitter.count(currentID, protocol.S2CMatchOver) != 0 {
+		t.Fatal("stale pre-pause timer callback finished the resumed match")
+	}
+
+	gameEngine.onTimeout(match.ID, oldTurn, resumedGeneration)
+	if !match.over || gameEngine.matches[match.ID] != nil {
+		t.Fatal("current timer generation did not finish the timed-out match")
+	}
+	envelope, ok := emitter.last(currentID, protocol.S2CMatchOver)
+	if !ok || envelope.Data.(protocol.MatchOverData).Reason != "timeout" {
+		t.Fatal("current timer callback did not emit timeout result")
+	}
+}
+
 func TestRestoreActiveMatchAndResumeAfterBothPlayersReconnect(t *testing.T) {
 	activeStore := newMemoryActiveMatchStore()
 	firstEngine, _, _ := newPersistenceTestEngine(activeStore)
@@ -506,7 +591,7 @@ func TestFinishPathsDeleteActiveSnapshot(t *testing.T) {
 				if match.timer != nil {
 					match.timer.Stop()
 				}
-				gameEngine.onTimeout(match.ID, match.turnIdx)
+				gameEngine.onTimeout(match.ID, match.turnIdx, match.turnGen)
 			},
 			reason: "timeout", winnerMode: "present",
 		},
@@ -617,6 +702,7 @@ func TestQueueAndRoomStartRecoverWhenRedisSaveFails(t *testing.T) {
 		if !ok || env.Data.(protocol.ErrorData).Code != "ROOM_START_FAILED" {
 			t.Fatal("room owner did not receive ROOM_START_FAILED")
 		}
+		requireRoomUpsert(t, emitter, room.ID, 2)
 	})
 }
 

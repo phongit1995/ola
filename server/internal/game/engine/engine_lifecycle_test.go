@@ -39,6 +39,30 @@ func requireErrorCode(t *testing.T, emitter *captureEmitter, userID, code string
 	}
 }
 
+func requireRoomUpsert(t *testing.T, emitter *captureEmitter, roomID string, players int) {
+	t.Helper()
+	envelope, ok := emitter.last("", protocol.S2CRoomUpsert)
+	if !ok {
+		t.Fatalf("expected ROOM_UPSERT for %s", roomID)
+	}
+	data, ok := envelope.Data.(protocol.RoomUpsertData)
+	if !ok || data.Room.ID != roomID || data.Room.Players != players {
+		t.Fatalf("unexpected room upsert: %#v", envelope.Data)
+	}
+}
+
+func requireRoomRemoved(t *testing.T, emitter *captureEmitter, roomID string) {
+	t.Helper()
+	envelope, ok := emitter.last("", protocol.S2CRoomRemoved)
+	if !ok {
+		t.Fatalf("expected ROOM_REMOVED for %s", roomID)
+	}
+	data, ok := envelope.Data.(protocol.RoomRemovedData)
+	if !ok || data.RoomID != roomID {
+		t.Fatalf("unexpected room removal: %#v", envelope.Data)
+	}
+}
+
 func lifecyclePlayer(id string) protocol.PlayerInfo {
 	return protocol.PlayerInfo{ID: id, Name: strings.ToUpper(id)}
 }
@@ -56,7 +80,10 @@ func lifecycleRoom(id string) Room {
 
 func onlyRoom(t *testing.T, store *memoryRoomStore) Room {
 	t.Helper()
-	rooms := store.List(persistenceTestGameID)
+	rooms, err := store.List(persistenceTestGameID)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if len(rooms) != 1 {
 		t.Fatalf("expected one room, got %d", len(rooms))
 	}
@@ -106,6 +133,7 @@ func TestCreateRoomValidationAndIdempotency(t *testing.T) {
 		if emitter.count("owner", protocol.S2CRoomWaiting) != 1 || emitter.count("owner", protocol.S2CRoomState) != 1 {
 			t.Fatal("owner did not receive initial room events")
 		}
+		requireRoomUpsert(t, emitter, room.ID, 1)
 
 		gameEngine.CreateRoom(persistenceTestGameID, lifecyclePlayer("owner"), 999, "different")
 		if repeated := onlyRoom(t, rooms); repeated.ID != room.ID || repeated.Bet != room.Bet {
@@ -198,6 +226,7 @@ func TestJoinRoomValidationAndSuccess(t *testing.T) {
 		if emitter.count("owner", protocol.S2CRoomState) != 1 || emitter.count("guest", protocol.S2CRoomState) != 1 {
 			t.Fatal("room state was not broadcast to both players")
 		}
+		requireRoomUpsert(t, emitter, room.ID, 2)
 
 		emitter.clear()
 		gameEngine.JoinRoom(persistenceTestGameID, lifecyclePlayer("guest"), room.ID, "secret")
@@ -257,8 +286,10 @@ func TestRoomLeaveAndDisconnectLifecycle(t *testing.T) {
 				if emitter.count("guest", protocol.S2CRoomClosed) != wantGuestClose {
 					t.Fatal("unexpected guest close event count")
 				}
+				requireRoomUpsert(t, emitter, room.ID, 1)
 				return
 			}
+			requireRoomRemoved(t, emitter, room.ID)
 
 			for _, userID := range []string{"owner", "guest"} {
 				if _, ok := rooms.RoomByUser(room.GameID, userID); ok {
@@ -271,6 +302,24 @@ func TestRoomLeaveAndDisconnectLifecycle(t *testing.T) {
 			}
 		})
 	}
+
+	t.Run("owner delete failure keeps room visible", func(t *testing.T) {
+		gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		room := lifecycleRoom("room-delete-failure")
+		room.GuestID = "guest"
+		room.GuestName = "GUEST"
+		_ = rooms.Save(room)
+		rooms.failDelete = true
+
+		gameEngine.LeaveRoom(room.GameID, room.OwnerID, room.ID)
+		if _, exists := rooms.Get(room.GameID, room.ID); !exists {
+			t.Fatal("room disappeared after failed Redis delete")
+		}
+		requireErrorCode(t, emitter, room.OwnerID, "ROOM_LEAVE_FAILED")
+		if emitter.count("", protocol.S2CRoomRemoved) != 0 || emitter.count(room.GuestID, protocol.S2CRoomClosed) != 0 {
+			t.Fatal("failed room delete emitted a false removal")
+		}
+	})
 }
 
 func TestRoomReadyKickAndActionErrors(t *testing.T) {
@@ -339,6 +388,7 @@ func TestRoomReadyKickAndActionErrors(t *testing.T) {
 		if emitter.count("guest", protocol.S2CRoomKicked) != 1 || emitter.count("owner", protocol.S2CRoomState) != 1 {
 			t.Fatal("kick events were not sent")
 		}
+		requireRoomUpsert(t, emitter, room.ID, 1)
 	})
 }
 
@@ -400,6 +450,7 @@ func TestStartRoomValidationAndSuccess(t *testing.T) {
 				t.Fatalf("room bet was not carried into match: %d", match.bet)
 			}
 		}
+		requireRoomRemoved(t, emitter, room.ID)
 	})
 }
 
@@ -453,6 +504,7 @@ func TestRoomListAndReconnectView(t *testing.T) {
 	gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
 	open := lifecycleRoom("open")
 	locked := lifecycleRoom("locked")
+	open.CreatedAt = time.Now().Add(-time.Minute).UnixMilli()
 	locked.OwnerID = "other-owner"
 	locked.OwnerName = "OTHER"
 	locked.Password = "secret"
@@ -470,6 +522,9 @@ func TestRoomListAndReconnectView(t *testing.T) {
 	if len(data.Rooms) != 2 {
 		t.Fatalf("unexpected room list: %+v", data.Rooms)
 	}
+	if data.Rooms[0].ID != locked.ID || data.Rooms[1].ID != open.ID {
+		t.Fatalf("rooms are not sorted newest first: %+v", data.Rooms)
+	}
 	foundLocked := false
 	for _, room := range data.Rooms {
 		if room.ID == locked.ID {
@@ -484,6 +539,16 @@ func TestRoomListAndReconnectView(t *testing.T) {
 	gameEngine.OnConnect(open.GameID, open.OwnerID)
 	if emitter.count(open.OwnerID, protocol.S2CRoomWaiting) != 1 || emitter.count(open.OwnerID, protocol.S2CRoomState) != 1 {
 		t.Fatal("room owner did not recover room view on reconnect")
+	}
+}
+
+func TestRoomListFailureDoesNotLookLikeAnEmptyLobby(t *testing.T) {
+	gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+	rooms.failList = true
+	gameEngine.ListRooms(persistenceTestGameID, "viewer")
+	requireErrorCode(t, emitter, "viewer", "ROOM_LIST_FAILED")
+	if emitter.count("viewer", protocol.S2CRoomList) != 0 {
+		t.Fatal("room list failure emitted an empty authoritative list")
 	}
 }
 

@@ -41,7 +41,9 @@ export function Ranked() {
     roomWaiting != null && roomWaiting.members.length === 2 && roomWaiting.members.every((member) => member.ready);
 
   useEffect(() => {
-    if (visible) refreshRooms();
+    if (!visible) return;
+    const timer = window.setInterval(refreshRooms, 30_000);
+    return () => window.clearInterval(timer);
   }, [visible, refreshRooms]);
 
   useEffect(() => {

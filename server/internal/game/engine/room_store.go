@@ -31,6 +31,7 @@ type Room struct {
 	Bet        int    `json:"bet"`
 	Password   string `json:"password"`
 	CreatedAt  int64  `json:"createdAt"`
+	UpdatedAt  int64  `json:"updatedAt"`
 }
 
 type userRoomRef struct {
@@ -42,8 +43,8 @@ type RoomRepository interface {
 	Save(room Room) error
 	Get(gameID, roomID string) (Room, bool)
 	Delete(gameID, roomID string, userIDs ...string) error
-	DeleteUserRef(gameID, userID string) error
-	List(gameID string) []Room
+	DeleteUserRef(gameID, userID, roomID string) error
+	List(gameID string) ([]Room, error)
 	RoomByUser(gameID, userID string) (userRoomRef, bool)
 	Claim(gameID, roomID string) (release func(), ok bool)
 }
@@ -57,6 +58,11 @@ func NewRoomStore(cache *services.CacheService) *RoomStore {
 }
 
 func (s *RoomStore) Save(room Room) error {
+	now := time.Now().UnixMilli()
+	if room.CreatedAt <= 0 {
+		room.CreatedAt = now
+	}
+	room.UpdatedAt = now
 	roomData, err := json.Marshal(room)
 	if err != nil {
 		return fmt.Errorf("marshal room: %w", err)
@@ -88,7 +94,7 @@ func (s *RoomStore) Get(gameID, roomID string) (Room, bool) {
 	if err := s.cache.GetHash(fmt.Sprintf(roomsHashKey, gameID), roomID, &room); err != nil {
 		return Room{}, false
 	}
-	if room.CreatedAt < time.Now().Add(-roomTTL).UnixMilli() {
+	if roomLastActivity(room) < time.Now().Add(-roomTTL).UnixMilli() {
 		_ = s.Delete(gameID, roomID, room.OwnerID, room.GuestID)
 		return Room{}, false
 	}
@@ -96,37 +102,64 @@ func (s *RoomStore) Get(gameID, roomID string) (Room, bool) {
 }
 
 func (s *RoomStore) Delete(gameID, roomID string, userIDs ...string) error {
+	refData, err := json.Marshal(userRoomRef{GameID: gameID, RoomID: roomID})
+	if err != nil {
+		return fmt.Errorf("marshal room reference: %w", err)
+	}
 	ctx := s.cache.GetContext()
-	pipe := s.cache.GetClient().TxPipeline()
-	pipe.HDel(ctx, fmt.Sprintf(roomsHashKey, gameID), roomID)
+	keys := []string{fmt.Sprintf(roomsHashKey, gameID)}
 	for _, userID := range userIDs {
 		if userID != "" {
-			pipe.Del(ctx, fmt.Sprintf(userRoomKey, gameID, userID))
-			pipe.Del(ctx, fmt.Sprintf(legacyUserRoomKey, userID))
+			keys = append(keys,
+				fmt.Sprintf(userRoomKey, gameID, userID),
+				fmt.Sprintf(legacyUserRoomKey, userID),
+			)
 		}
 	}
-	if _, err := pipe.Exec(ctx); err != nil {
+	const deleteRoomScript = `
+redis.call("HDEL", KEYS[1], ARGV[1])
+for i = 2, #KEYS do
+  if redis.call("GET", KEYS[i]) == ARGV[2] then
+    redis.call("DEL", KEYS[i])
+  end
+end
+return 1`
+	if _, err := s.cache.GetClient().Eval(ctx, deleteRoomScript, keys, roomID, string(refData)).Result(); err != nil {
 		return fmt.Errorf("delete room: %w", err)
 	}
 	return nil
 }
 
-func (s *RoomStore) DeleteUserRef(gameID, userID string) error {
-	if userID == "" {
+func (s *RoomStore) DeleteUserRef(gameID, userID, roomID string) error {
+	if userID == "" || roomID == "" {
 		return nil
 	}
+	refData, err := json.Marshal(userRoomRef{GameID: gameID, RoomID: roomID})
+	if err != nil {
+		return fmt.Errorf("marshal room reference: %w", err)
+	}
 	ctx := s.cache.GetContext()
-	return s.cache.GetClient().Del(
-		ctx,
+	keys := []string{
 		fmt.Sprintf(userRoomKey, gameID, userID),
 		fmt.Sprintf(legacyUserRoomKey, userID),
-	).Err()
+	}
+	const deleteRoomRefScript = `
+for i = 1, #KEYS do
+  if redis.call("GET", KEYS[i]) == ARGV[1] then
+    redis.call("DEL", KEYS[i])
+  end
+end
+return 1`
+	if _, err := s.cache.GetClient().Eval(ctx, deleteRoomRefScript, keys, string(refData)).Result(); err != nil {
+		return fmt.Errorf("delete room reference: %w", err)
+	}
+	return nil
 }
 
-func (s *RoomStore) List(gameID string) []Room {
+func (s *RoomStore) List(gameID string) ([]Room, error) {
 	all, err := s.cache.GetAllHash(fmt.Sprintf(roomsHashKey, gameID))
 	if err != nil {
-		return nil
+		return nil, fmt.Errorf("list rooms: %w", err)
 	}
 	cutoff := time.Now().Add(-roomTTL).UnixMilli()
 	rooms := make([]Room, 0, len(all))
@@ -135,13 +168,20 @@ func (s *RoomStore) List(gameID string) []Room {
 		if json.Unmarshal([]byte(raw), &room) != nil {
 			continue
 		}
-		if room.CreatedAt < cutoff {
+		if roomLastActivity(room) < cutoff {
 			_ = s.Delete(gameID, id, room.OwnerID, room.GuestID)
 			continue
 		}
 		rooms = append(rooms, room)
 	}
-	return rooms
+	return rooms, nil
+}
+
+func roomLastActivity(room Room) int64 {
+	if room.UpdatedAt > 0 {
+		return room.UpdatedAt
+	}
+	return room.CreatedAt
 }
 
 func (s *RoomStore) RoomByUser(gameID, userID string) (userRoomRef, bool) {

@@ -85,15 +85,25 @@ func (s *MatchStore) Save(snapshot ActiveMatchSnapshot) error {
 
 func (s *MatchStore) Delete(gameID, matchID string, userIDs ...string) error {
 	ctx := s.cache.GetContext()
-	pipe := s.cache.GetClient().TxPipeline()
-	pipe.Del(ctx, fmt.Sprintf(activeMatchKey, gameID, matchID))
-	pipe.SRem(ctx, fmt.Sprintf(activeMatchesKey, gameID), matchID)
+	keys := []string{
+		fmt.Sprintf(activeMatchKey, gameID, matchID),
+		fmt.Sprintf(activeMatchesKey, gameID),
+	}
 	for _, userID := range userIDs {
 		if userID != "" {
-			pipe.Del(ctx, fmt.Sprintf(userMatchKey, gameID, userID))
+			keys = append(keys, fmt.Sprintf(userMatchKey, gameID, userID))
 		}
 	}
-	if _, err := pipe.Exec(ctx); err != nil {
+	const deleteMatchScript = `
+redis.call("DEL", KEYS[1])
+redis.call("SREM", KEYS[2], ARGV[1])
+for i = 3, #KEYS do
+  if redis.call("GET", KEYS[i]) == ARGV[1] then
+    redis.call("DEL", KEYS[i])
+  end
+end
+return 1`
+	if _, err := s.cache.GetClient().Eval(ctx, deleteMatchScript, keys, matchID).Result(); err != nil {
 		return fmt.Errorf("delete active match: %w", err)
 	}
 	return nil

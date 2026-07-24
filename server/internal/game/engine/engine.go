@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"sort"
 	"sync"
 	"time"
 
@@ -16,6 +17,7 @@ import (
 
 type Emitter interface {
 	ToUser(gameID string, userID string, envelope protocol.OutEnvelope)
+	ToGame(gameID string, envelope protocol.OutEnvelope)
 }
 
 const finishedResultTTL = 2 * time.Minute
@@ -44,6 +46,7 @@ type Match struct {
 	turnIdx       int
 	deadline      time.Time
 	timer         *time.Timer
+	turnGen       int
 	over          bool
 	bet           int
 	graceTimer    *time.Timer
@@ -108,7 +111,7 @@ func (e *Engine) OnConnect(gameID, userID string) {
 				e.emitRoomWaiting(gameID, userID, room)
 				e.emitRoomStateTo(room, userID)
 			} else {
-				_ = e.store.DeleteUserRef(gameID, userID)
+				_ = e.store.DeleteUserRef(gameID, userID, ref.RoomID)
 			}
 		}
 		return
@@ -153,7 +156,7 @@ func (e *Engine) JoinQueue(gameID string, player protocol.PlayerInfo) {
 			e.sendError(gameID, player.ID, "IN_ROOM", "leave the current room before joining queue")
 			return
 		}
-		_ = e.store.DeleteUserRef(gameID, player.ID)
+		_ = e.store.DeleteUserRef(gameID, player.ID, ref.RoomID)
 	}
 
 	gameLogic, err := logic.Get(gameID)
@@ -235,7 +238,7 @@ func (e *Engine) CreateRoom(gameID string, owner protocol.PlayerInfo, bet int, p
 			e.emitRoomStateTo(room, owner.ID)
 			return
 		}
-		_ = e.store.DeleteUserRef(gameID, owner.ID)
+		_ = e.store.DeleteUserRef(gameID, owner.ID, ref.RoomID)
 	}
 	e.leaveQueueLocked(gameID, owner.ID)
 
@@ -253,6 +256,7 @@ func (e *Engine) CreateRoom(gameID string, owner protocol.PlayerInfo, bet int, p
 		return
 	}
 	delete(e.finished, userKey(gameID, owner.ID))
+	e.emitRoomUpsert(room)
 	e.emitRoomWaiting(gameID, owner.ID, room)
 	e.emitRoomStateTo(room, owner.ID)
 	e.logger.Infow("Room created", "room_id", room.ID, "owner", owner.ID, "bet", bet)
@@ -281,7 +285,7 @@ func (e *Engine) JoinRoom(gameID string, joiner protocol.PlayerInfo, roomID, pas
 			e.sendError(gameID, joiner.ID, "ALREADY_IN_ROOM", "leave the current room before joining another")
 			return
 		}
-		_ = e.store.DeleteUserRef(gameID, joiner.ID)
+		_ = e.store.DeleteUserRef(gameID, joiner.ID, ref.RoomID)
 	}
 
 	release, claimed := e.store.Claim(gameID, roomID)
@@ -309,7 +313,12 @@ func (e *Engine) JoinRoom(gameID string, joiner protocol.PlayerInfo, roomID, pas
 		return
 	}
 	if m, busy := e.byUser[userKey(gameID, room.OwnerID)]; busy && !m.over {
-		_ = e.store.Delete(gameID, room.ID, room.OwnerID, room.GuestID)
+		if err := e.store.Delete(gameID, room.ID, room.OwnerID, room.GuestID); err != nil {
+			e.logger.Errorw("Failed to delete room whose owner is busy", "room_id", room.ID, "error", err)
+			e.sendError(gameID, joiner.ID, "ROOM_UPDATE_FAILED", "failed to close unavailable room")
+			return
+		}
+		e.emitRoomRemoved(room.GameID, room.ID)
 		e.emitRoomClosed(room, "owner_busy")
 		e.sendError(gameID, joiner.ID, "ROOM_NOT_FOUND", "room owner busy")
 		return
@@ -324,6 +333,7 @@ func (e *Engine) JoinRoom(gameID string, joiner protocol.PlayerInfo, roomID, pas
 	}
 	delete(e.finished, userKey(gameID, joiner.ID))
 	e.leaveQueueLocked(gameID, joiner.ID)
+	e.emitRoomUpsert(room)
 	e.emitRoomWaiting(gameID, joiner.ID, room)
 	e.emitRoomState(room)
 }
@@ -353,16 +363,21 @@ func (e *Engine) leaveRoomLocked(gameID, userID, roomID string, disconnected boo
 
 	room, exists := e.store.Get(gameID, ref.RoomID)
 	if !exists || !room.hasMember(userID) {
-		_ = e.store.DeleteUserRef(gameID, userID)
+		_ = e.store.DeleteUserRef(gameID, userID, ref.RoomID)
 		return
 	}
 
 	if room.OwnerID == userID {
-		_ = e.store.Delete(gameID, room.ID, room.OwnerID, room.GuestID)
+		if err := e.store.Delete(gameID, room.ID, room.OwnerID, room.GuestID); err != nil {
+			e.logger.Errorw("Failed to close room", "room_id", room.ID, "error", err)
+			e.sendError(gameID, userID, "ROOM_LEAVE_FAILED", err.Error())
+			return
+		}
 		reason := "owner_left"
 		if disconnected {
 			reason = "owner_disconnected"
 		}
+		e.emitRoomRemoved(room.GameID, room.ID)
 		e.emitRoomClosed(room, reason)
 		return
 	}
@@ -375,7 +390,8 @@ func (e *Engine) leaveRoomLocked(gameID, userID, roomID string, disconnected boo
 		e.sendError(gameID, userID, "ROOM_LEAVE_FAILED", err.Error())
 		return
 	}
-	_ = e.store.DeleteUserRef(gameID, guestID)
+	_ = e.store.DeleteUserRef(gameID, guestID, room.ID)
+	e.emitRoomUpsert(room)
 	if !disconnected {
 		e.emitter.ToUser(gameID, userID, protocol.OutEnvelope{
 			Type: protocol.S2CRoomClosed,
@@ -432,7 +448,8 @@ func (e *Engine) KickRoomMember(gameID, ownerID, roomID, targetID string) {
 		e.sendError(gameID, ownerID, "ROOM_UPDATE_FAILED", err.Error())
 		return
 	}
-	_ = e.store.DeleteUserRef(gameID, kickedID)
+	_ = e.store.DeleteUserRef(gameID, kickedID, room.ID)
+	e.emitRoomUpsert(room)
 	e.emitter.ToUser(gameID, kickedID, protocol.OutEnvelope{
 		Type: protocol.S2CRoomKicked,
 		Data: protocol.RoomKickedData{RoomID: room.ID, ByUserID: ownerID},
@@ -479,32 +496,66 @@ func (e *Engine) StartRoom(gameID, ownerID, roomID string) {
 	); err != nil {
 		if restoreErr := e.store.Save(room); restoreErr != nil {
 			e.logger.Errorw("Failed to restore room after match start failure", "room_id", room.ID, "error", restoreErr)
+			e.emitRoomRemoved(room.GameID, room.ID)
+		} else {
+			e.emitRoomUpsert(room)
 		}
 		e.sendError(gameID, ownerID, "ROOM_START_FAILED", err.Error())
 		e.sendError(gameID, room.GuestID, "ROOM_START_FAILED", err.Error())
+		return
 	}
+	e.emitRoomRemoved(room.GameID, room.ID)
 }
 
 func (e *Engine) ListRooms(gameID, userID string) {
 	e.mu.Lock()
 	defer e.mu.Unlock()
-	rooms := e.store.List(gameID)
+	rooms, err := e.store.List(gameID)
+	if err != nil {
+		e.logger.Errorw("Failed to list rooms", "game_id", gameID, "error", err)
+		e.sendError(gameID, userID, "ROOM_LIST_FAILED", "failed to load rooms")
+		return
+	}
+	sort.Slice(rooms, func(i, j int) bool {
+		if rooms[i].CreatedAt == rooms[j].CreatedAt {
+			return rooms[i].ID < rooms[j].ID
+		}
+		return rooms[i].CreatedAt > rooms[j].CreatedAt
+	})
 	infos := make([]protocol.RoomInfo, 0, len(rooms))
 	for _, r := range rooms {
-		players := 1
-		if r.GuestID != "" {
-			players = 2
-		}
-		infos = append(infos, protocol.RoomInfo{
-			ID:      r.ID,
-			Owner:   r.OwnerName,
-			Bet:     r.Bet,
-			Locked:  r.Password != "",
-			Players: players,
-			Full:    players == 2,
-		})
+		infos = append(infos, roomInfo(r))
 	}
 	e.emitter.ToUser(gameID, userID, protocol.OutEnvelope{Type: protocol.S2CRoomList, Data: protocol.RoomListData{Rooms: infos}})
+}
+
+func roomInfo(room Room) protocol.RoomInfo {
+	players := 1
+	if room.GuestID != "" {
+		players = 2
+	}
+	return protocol.RoomInfo{
+		ID:      room.ID,
+		Owner:   room.OwnerName,
+		Bet:     room.Bet,
+		Locked:  room.Password != "",
+		Players: players,
+		Full:    players == 2,
+	}
+}
+
+func (e *Engine) emitRoomUpsert(room Room) {
+	e.emitter.ToGame(room.GameID, protocol.OutEnvelope{
+		Type: protocol.S2CRoomUpsert,
+		Data: protocol.RoomUpsertData{Room: roomInfo(room)},
+	})
+}
+
+func (e *Engine) emitRoomRemoved(gameID, roomID string) {
+	e.emitter.ToGame(gameID, protocol.OutEnvelope{
+		Type: protocol.S2CRoomRemoved,
+		Data: protocol.RoomRemovedData{RoomID: roomID},
+	})
 }
 
 func (e *Engine) emitRoomWaiting(gameID, userID string, room Room) {
@@ -565,7 +616,7 @@ func (e *Engine) roomForAction(gameID, userID, roomID string) (Room, func(), boo
 	room, exists := e.store.Get(gameID, roomID)
 	if !exists || !room.hasMember(userID) {
 		release()
-		_ = e.store.DeleteUserRef(gameID, userID)
+		_ = e.store.DeleteUserRef(gameID, userID, ref.RoomID)
 		e.sendError(gameID, userID, "ROOM_NOT_FOUND", "room not found")
 		return Room{}, nil, false
 	}
@@ -601,9 +652,7 @@ func (e *Engine) OnDisconnect(gameID, userID string) {
 	m.disconnected[idx] = true
 
 	if m.turnIdx == idx && m.pausedRemain == 0 {
-		if m.timer != nil {
-			m.timer.Stop()
-		}
+		e.invalidateTurnTimer(m)
 		remain := time.Until(m.deadline)
 		if remain < time.Second {
 			remain = time.Second
@@ -695,6 +744,7 @@ func (e *Engine) Move(gameID, userID, matchID string, move json.RawMessage) {
 	previousState := m.state
 	previousTurn := m.turnIdx
 	previousDeadline := m.deadline
+	previousPausedRemain := m.pausedRemain
 	m.state = state
 	m.actions = append(m.actions, MatchAction{
 		Sequence:    len(m.actions) + 1,
@@ -717,16 +767,29 @@ func (e *Engine) Move(gameID, userID, matchID string, move json.RawMessage) {
 
 	m.turnIdx = 1 - m.turnIdx
 	m.deadline = time.Now().Add(time.Duration(e.turnSeconds) * time.Second)
+	if m.disconnected[m.turnIdx] {
+		e.invalidateTurnTimer(m)
+		m.pausedRemain = time.Until(m.deadline)
+		if m.pausedRemain < time.Second {
+			m.pausedRemain = time.Second
+		}
+	}
 	if err := e.persistMatch(m); err != nil {
 		m.state = previousState
 		m.turnIdx = previousTurn
 		m.deadline = previousDeadline
+		m.pausedRemain = previousPausedRemain
 		m.actions = m.actions[:len(m.actions)-1]
+		if m.pausedRemain == 0 {
+			e.scheduleTurnTimer(m)
+		}
 		e.logger.Errorw("Failed to persist match move", "match_id", m.ID, "user_id", userID, "error", err)
 		e.sendError(gameID, userID, "STATE_SAVE_FAILED", "failed to save the move, please retry")
 		return
 	}
-	e.scheduleTurnTimer(m)
+	if m.pausedRemain == 0 {
+		e.scheduleTurnTimer(m)
+	}
 
 	data := protocol.StateData{
 		MatchID:  m.ID,
@@ -821,18 +884,29 @@ func (e *Engine) scheduleTurnTimer(m *Match) {
 	if m.timer != nil {
 		m.timer.Stop()
 	}
+	m.turnGen++
 	matchID := m.ID
 	turnAtArm := m.turnIdx
+	genAtArm := m.turnGen
 	m.timer = time.AfterFunc(time.Until(m.deadline), func() {
-		e.onTimeout(matchID, turnAtArm)
+		e.onTimeout(matchID, turnAtArm, genAtArm)
 	})
 }
 
-func (e *Engine) onTimeout(matchID string, expectedTurn int) {
+func (e *Engine) invalidateTurnTimer(m *Match) {
+	if m.timer != nil {
+		m.timer.Stop()
+		m.timer = nil
+	}
+	m.turnGen++
+}
+
+func (e *Engine) onTimeout(matchID string, expectedTurn, expectedGen int) {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 	m, ok := e.matches[matchID]
-	if !ok || m.over || m.turnIdx != expectedTurn {
+	if !ok || m.over || m.turnIdx != expectedTurn || m.turnGen != expectedGen ||
+		m.pausedRemain > 0 || m.disconnected[m.turnIdx] {
 		return
 	}
 	winnerIdx := 1 - m.turnIdx

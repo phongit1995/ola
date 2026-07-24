@@ -20,6 +20,8 @@ export const S2C = {
   MatchOver: 'MATCH_OVER',
   Error: 'ERROR',
   RoomList: 'ROOM_LIST',
+  RoomUpsert: 'ROOM_UPSERT',
+  RoomRemoved: 'ROOM_REMOVED',
   RoomWaiting: 'ROOM_WAITING',
   RoomState: 'ROOM_STATE',
   RoomClosed: 'ROOM_CLOSED',
@@ -91,6 +93,14 @@ export interface RoomInfo {
 
 export interface RoomListData {
   rooms: RoomInfo[];
+}
+
+export interface RoomUpsertData {
+  room: RoomInfo;
+}
+
+export interface RoomRemovedData {
+  roomId: string;
 }
 
 export interface RoomWaitingData {

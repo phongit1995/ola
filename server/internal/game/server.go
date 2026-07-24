@@ -42,6 +42,10 @@ func userRoom(gameID, userID string) string {
 	return "game:" + gameID + ":user:" + userID
 }
 
+func lobbyRoom(gameID string) string {
+	return "game:" + gameID + ":lobby"
+}
+
 func NewServer(
 	cfg *config.Config,
 	jwtService *services.JWTService,
@@ -136,6 +140,7 @@ func NewServer(
 func (s *Server) handleConnection(client *socket.Socket) {
 	data := client.Data().(*SocketData)
 	client.Join(socket.Room(userRoom(data.GameID, data.UserID)))
+	client.Join(socket.Room(lobbyRoom(data.GameID)))
 
 	s.logger.Infow("Game socket connected",
 		"user_id", data.UserID,
@@ -271,6 +276,10 @@ func (s *Server) handleMessage(data *SocketData, raw any) {
 
 func (s *Server) ToUser(gameID string, userID string, envelope protocol.OutEnvelope) {
 	s.io.To(socket.Room(userRoom(gameID, userID))).Emit(messageEvent, envelope)
+}
+
+func (s *Server) ToGame(gameID string, envelope protocol.OutEnvelope) {
+	s.io.To(socket.Room(lobbyRoom(gameID))).Emit(messageEvent, envelope)
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {

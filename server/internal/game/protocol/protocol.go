@@ -22,6 +22,8 @@ const (
 	S2CMatchOver            = "MATCH_OVER"
 	S2CError                = "ERROR"
 	S2CRoomList             = "ROOM_LIST"
+	S2CRoomUpsert           = "ROOM_UPSERT"
+	S2CRoomRemoved          = "ROOM_REMOVED"
 	S2CRoomWaiting          = "ROOM_WAITING"
 	S2CRoomState            = "ROOM_STATE"
 	S2CRoomClosed           = "ROOM_CLOSED"
@@ -131,6 +133,14 @@ type RoomInfo struct {
 
 type RoomListData struct {
 	Rooms []RoomInfo `json:"rooms"`
+}
+
+type RoomUpsertData struct {
+	Room RoomInfo `json:"room"`
+}
+
+type RoomRemovedData struct {
+	RoomID string `json:"roomId"`
 }
 
 type RoomWaitingData struct {

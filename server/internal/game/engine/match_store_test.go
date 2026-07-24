@@ -182,3 +182,37 @@ func TestMatchStoreRejectsInvalidJSONState(t *testing.T) {
 		t.Fatal("invalid JSON state was accepted")
 	}
 }
+
+func TestMatchStoreStaleCleanupPreservesNewUserReference(t *testing.T) {
+	store, server, cache := newRedisMatchStoreTest(t)
+	oldSnapshot := redisStoreSnapshot("caro", "old-match")
+	newSnapshot := redisStoreSnapshot("caro", "new-match")
+	if err := store.Save(oldSnapshot); err != nil {
+		t.Fatal(err)
+	}
+	if err := store.Save(newSnapshot); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := store.Delete(oldSnapshot.GameID, oldSnapshot.ID, "player-a", "player-b"); err != nil {
+		t.Fatal(err)
+	}
+	for _, userID := range []string{"player-a", "player-b"} {
+		key := "GAME:caro:USERMATCH:" + userID
+		value, err := cache.GetClient().Get(cache.GetContext(), key).Result()
+		if err != nil || value != newSnapshot.ID {
+			t.Fatalf("late old-match cleanup changed %s to %q: %v", key, value, err)
+		}
+	}
+	if server.Exists("GAME:caro:MATCH:old-match") {
+		t.Fatal("old match was not deleted")
+	}
+	if !server.Exists("GAME:caro:MATCH:new-match") {
+		t.Fatal("new match was deleted by old cleanup")
+	}
+	oldMember, _ := server.SIsMember("GAME:caro:ACTIVE_MATCHES", oldSnapshot.ID)
+	newMember, _ := server.SIsMember("GAME:caro:ACTIVE_MATCHES", newSnapshot.ID)
+	if oldMember || !newMember {
+		t.Fatal("active match set was corrupted by old cleanup")
+	}
+}

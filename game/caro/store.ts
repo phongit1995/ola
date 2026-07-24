@@ -230,9 +230,12 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     });
 
     target.onConnectionChange((connected) => {
-      if (refs.session === target && !connected) {
+      if (refs.session !== target) return;
+      if (!connected) {
         set({ status: 'Mất kết nối, đang thử lại...' });
+        return;
       }
+      if (target === refs.online && get().rankedVisible) target.listRooms();
     });
 
     target.onQueueWaiting(() => {
@@ -247,6 +250,22 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     target.onRoomList((data) => {
       if (refs.session !== target) return;
       set({ rooms: data.rooms });
+    });
+
+    target.onRoomUpsert((data) => {
+      if (refs.session !== target) return;
+      set((state) => {
+        const index = state.rooms.findIndex((room) => room.id === data.room.id);
+        if (index < 0) return { rooms: [data.room, ...state.rooms] };
+        const rooms = [...state.rooms];
+        rooms[index] = data.room;
+        return { rooms };
+      });
+    });
+
+    target.onRoomRemoved((data) => {
+      if (refs.session !== target) return;
+      set((state) => ({ rooms: state.rooms.filter((room) => room.id !== data.roomId) }));
     });
 
     target.onRoomWaiting((data) => {
