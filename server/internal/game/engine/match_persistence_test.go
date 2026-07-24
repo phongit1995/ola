@@ -1,0 +1,656 @@
+package engine
+
+import (
+	"encoding/json"
+	"errors"
+	"sync"
+	"testing"
+	"time"
+
+	"ola-chat-server/internal/game/logic"
+	"ola-chat-server/internal/game/protocol"
+
+	"go.uber.org/zap"
+)
+
+const persistenceTestGameID = "persistence-test"
+
+type persistenceTestState struct {
+	MoveCount int `json:"moveCount"`
+	Winner    int `json:"winner"`
+}
+
+type persistenceTestMove struct {
+	Win  bool `json:"win"`
+	Draw bool `json:"draw"`
+}
+
+type persistenceTestLogic struct{}
+
+func (persistenceTestLogic) ID() string          { return persistenceTestGameID }
+func (persistenceTestLogic) StateVersion() int   { return 1 }
+func (persistenceTestLogic) Init(seed int64) any { return &persistenceTestState{Winner: -1} }
+func (persistenceTestLogic) DecodeState(data json.RawMessage) (any, error) {
+	var state persistenceTestState
+	if err := json.Unmarshal(data, &state); err != nil {
+		return nil, err
+	}
+	return &state, nil
+}
+func (persistenceTestLogic) ValidateMove(state any, playerIdx int, move json.RawMessage) error {
+	var command persistenceTestMove
+	return json.Unmarshal(move, &command)
+}
+func (persistenceTestLogic) Apply(state any, playerIdx int, move json.RawMessage) (any, error) {
+	var command persistenceTestMove
+	if err := json.Unmarshal(move, &command); err != nil {
+		return state, err
+	}
+	current := state.(*persistenceTestState)
+	next := &persistenceTestState{MoveCount: current.MoveCount + 1, Winner: -1}
+	if command.Win {
+		next.Winner = playerIdx
+	} else if command.Draw {
+		next.Winner = -2
+	}
+	return next, nil
+}
+func (persistenceTestLogic) Result(state any) (bool, int) {
+	winner := state.(*persistenceTestState).Winner
+	switch winner {
+	case -1:
+		return false, -1
+	case -2:
+		return true, -1
+	default:
+		return true, winner
+	}
+}
+
+func init() {
+	logic.Register(persistenceTestLogic{})
+}
+
+type memoryRoomStore struct {
+	rooms map[string]Room
+	refs  map[string]userRoomRef
+}
+
+func newMemoryRoomStore() *memoryRoomStore {
+	return &memoryRoomStore{rooms: make(map[string]Room), refs: make(map[string]userRoomRef)}
+}
+
+func memoryRoomKey(gameID, value string) string { return gameID + ":" + value }
+
+func (s *memoryRoomStore) Save(room Room) error {
+	s.rooms[memoryRoomKey(room.GameID, room.ID)] = room
+	ref := userRoomRef{GameID: room.GameID, RoomID: room.ID}
+	s.refs[memoryRoomKey(room.GameID, room.OwnerID)] = ref
+	if room.GuestID != "" {
+		s.refs[memoryRoomKey(room.GameID, room.GuestID)] = ref
+	}
+	return nil
+}
+
+func (s *memoryRoomStore) Get(gameID, roomID string) (Room, bool) {
+	room, ok := s.rooms[memoryRoomKey(gameID, roomID)]
+	return room, ok
+}
+
+func (s *memoryRoomStore) Delete(gameID, roomID string, userIDs ...string) error {
+	delete(s.rooms, memoryRoomKey(gameID, roomID))
+	for _, userID := range userIDs {
+		delete(s.refs, memoryRoomKey(gameID, userID))
+	}
+	return nil
+}
+
+func (s *memoryRoomStore) DeleteUserRef(gameID, userID string) error {
+	delete(s.refs, memoryRoomKey(gameID, userID))
+	return nil
+}
+
+func (s *memoryRoomStore) List(gameID string) []Room {
+	rooms := make([]Room, 0)
+	for _, room := range s.rooms {
+		if room.GameID == gameID {
+			rooms = append(rooms, room)
+		}
+	}
+	return rooms
+}
+
+func (s *memoryRoomStore) RoomByUser(gameID, userID string) (userRoomRef, bool) {
+	ref, ok := s.refs[memoryRoomKey(gameID, userID)]
+	return ref, ok
+}
+
+func (s *memoryRoomStore) Claim(gameID, roomID string) (func(), bool) {
+	return func() {}, true
+}
+
+type memoryActiveMatchStore struct {
+	mu         sync.Mutex
+	matches    map[string]ActiveMatchSnapshot
+	failSave   bool
+	failDelete bool
+}
+
+func newMemoryActiveMatchStore() *memoryActiveMatchStore {
+	return &memoryActiveMatchStore{matches: make(map[string]ActiveMatchSnapshot)}
+}
+
+func activeSnapshotKey(gameID, matchID string) string { return gameID + ":" + matchID }
+
+func cloneSnapshot(snapshot ActiveMatchSnapshot) ActiveMatchSnapshot {
+	data, _ := json.Marshal(snapshot)
+	var cloned ActiveMatchSnapshot
+	_ = json.Unmarshal(data, &cloned)
+	return cloned
+}
+
+func (s *memoryActiveMatchStore) Save(snapshot ActiveMatchSnapshot) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.failSave {
+		return errors.New("save failed")
+	}
+	s.matches[activeSnapshotKey(snapshot.GameID, snapshot.ID)] = cloneSnapshot(snapshot)
+	return nil
+}
+
+func (s *memoryActiveMatchStore) Delete(gameID, matchID string, userIDs ...string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.failDelete {
+		return errors.New("delete failed")
+	}
+	delete(s.matches, activeSnapshotKey(gameID, matchID))
+	return nil
+}
+
+func (s *memoryActiveMatchStore) List(gameID string) ([]ActiveMatchSnapshot, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	matches := make([]ActiveMatchSnapshot, 0)
+	for _, snapshot := range s.matches {
+		if snapshot.GameID == gameID {
+			matches = append(matches, cloneSnapshot(snapshot))
+		}
+	}
+	return matches, nil
+}
+
+func (s *memoryActiveMatchStore) get(gameID, matchID string) (ActiveMatchSnapshot, bool) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	snapshot, ok := s.matches[activeSnapshotKey(gameID, matchID)]
+	return cloneSnapshot(snapshot), ok
+}
+
+type capturedMessage struct {
+	gameID string
+	userID string
+	env    protocol.OutEnvelope
+}
+
+type captureEmitter struct {
+	mu       sync.Mutex
+	messages []capturedMessage
+}
+
+func (e *captureEmitter) ToUser(gameID, userID string, env protocol.OutEnvelope) {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	e.messages = append(e.messages, capturedMessage{gameID: gameID, userID: userID, env: env})
+}
+
+func (e *captureEmitter) last(userID, messageType string) (protocol.OutEnvelope, bool) {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	for i := len(e.messages) - 1; i >= 0; i-- {
+		message := e.messages[i]
+		if message.userID == userID && message.env.Type == messageType {
+			return message.env, true
+		}
+	}
+	return protocol.OutEnvelope{}, false
+}
+
+func newPersistenceTestEngine(activeStore ActiveMatchRepository) (*Engine, *memoryRoomStore, *captureEmitter) {
+	rooms := newMemoryRoomStore()
+	emitter := &captureEmitter{}
+	gameEngine := NewEngine(zap.NewNop().Sugar(), 300, 30, rooms, activeStore)
+	gameEngine.SetEmitter(emitter)
+	return gameEngine, rooms, emitter
+}
+
+func startPersistenceTestMatch(t *testing.T, gameEngine *Engine) *Match {
+	t.Helper()
+	gameLogic, err := logic.Get(persistenceTestGameID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := gameEngine.startMatch(
+		persistenceTestGameID,
+		gameLogic,
+		protocol.PlayerInfo{ID: "player-a", Name: "Player A"},
+		protocol.PlayerInfo{ID: "player-b", Name: "Player B"},
+		10,
+	); err != nil {
+		t.Fatalf("start match: %v", err)
+	}
+	for _, match := range gameEngine.matches {
+		return match
+	}
+	t.Fatal("match was not created")
+	return nil
+}
+
+func stopEngineTimers(gameEngine *Engine) {
+	gameEngine.mu.Lock()
+	defer gameEngine.mu.Unlock()
+	for _, match := range gameEngine.matches {
+		if match.timer != nil {
+			match.timer.Stop()
+		}
+		if match.graceTimer != nil {
+			match.graceTimer.Stop()
+		}
+	}
+}
+
+func TestStartMatchPersistsInitialSnapshot(t *testing.T) {
+	activeStore := newMemoryActiveMatchStore()
+	gameEngine, _, _ := newPersistenceTestEngine(activeStore)
+	defer stopEngineTimers(gameEngine)
+
+	match := startPersistenceTestMatch(t, gameEngine)
+	snapshot, ok := activeStore.get(match.GameID, match.ID)
+	if !ok {
+		t.Fatal("initial snapshot was not saved")
+	}
+	if snapshot.Status != matchStatusPlaying || snapshot.StateVersion != 1 {
+		t.Fatalf("unexpected snapshot metadata: %+v", snapshot)
+	}
+	if len(snapshot.Players) != 2 || len(snapshot.Actions) != 0 {
+		t.Fatalf("unexpected players/actions: %+v", snapshot)
+	}
+	if snapshot.TurnDeadline <= time.Now().UnixMilli() || snapshot.StartedAt <= 0 {
+		t.Fatal("initial timer metadata was not persisted")
+	}
+}
+
+func TestStartMatchFailsWhenInitialSnapshotCannotBeSaved(t *testing.T) {
+	activeStore := newMemoryActiveMatchStore()
+	activeStore.failSave = true
+	gameEngine, _, _ := newPersistenceTestEngine(activeStore)
+	gameLogic, _ := logic.Get(persistenceTestGameID)
+
+	err := gameEngine.startMatch(
+		persistenceTestGameID,
+		gameLogic,
+		protocol.PlayerInfo{ID: "player-a", Name: "Player A"},
+		protocol.PlayerInfo{ID: "player-b", Name: "Player B"},
+		0,
+	)
+	if err == nil {
+		t.Fatal("start match succeeded while Redis save failed")
+	}
+	if len(gameEngine.matches) != 0 || len(gameEngine.byUser) != 0 {
+		t.Fatal("failed match was installed into the engine")
+	}
+}
+
+func TestMovePersistsStateAndPlayerAction(t *testing.T) {
+	activeStore := newMemoryActiveMatchStore()
+	gameEngine, _, _ := newPersistenceTestEngine(activeStore)
+	defer stopEngineTimers(gameEngine)
+	match := startPersistenceTestMatch(t, gameEngine)
+	playerID := match.players[match.turnIdx].ID
+
+	gameEngine.Move(match.GameID, playerID, match.ID, json.RawMessage(`{"win":false}`))
+
+	snapshot, ok := activeStore.get(match.GameID, match.ID)
+	if !ok {
+		t.Fatal("snapshot disappeared after move")
+	}
+	state, err := persistenceTestLogic{}.DecodeState(snapshot.State)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if state.(*persistenceTestState).MoveCount != 1 || snapshot.TurnIndex != 1 {
+		t.Fatalf("move state was not persisted: %+v", snapshot)
+	}
+	if len(snapshot.Actions) != 1 || snapshot.Actions[0].PlayerIndex != 0 || snapshot.Actions[0].Sequence != 1 {
+		t.Fatalf("player action was not persisted: %+v", snapshot.Actions)
+	}
+}
+
+func TestMoveRollsBackWhenSnapshotSaveFails(t *testing.T) {
+	activeStore := newMemoryActiveMatchStore()
+	gameEngine, _, emitter := newPersistenceTestEngine(activeStore)
+	defer stopEngineTimers(gameEngine)
+	match := startPersistenceTestMatch(t, gameEngine)
+	playerID := match.players[match.turnIdx].ID
+	previousDeadline := match.deadline
+	activeStore.failSave = true
+
+	gameEngine.Move(match.GameID, playerID, match.ID, json.RawMessage(`{"win":false}`))
+
+	state := match.state.(*persistenceTestState)
+	if state.MoveCount != 0 || match.turnIdx != 0 || len(match.actions) != 0 || !match.deadline.Equal(previousDeadline) {
+		t.Fatal("failed move changed in-memory match state")
+	}
+	env, ok := emitter.last(playerID, protocol.S2CError)
+	if !ok || env.Data.(protocol.ErrorData).Code != "STATE_SAVE_FAILED" {
+		t.Fatal("player did not receive STATE_SAVE_FAILED")
+	}
+}
+
+func TestDisconnectAndReconnectArePersisted(t *testing.T) {
+	activeStore := newMemoryActiveMatchStore()
+	gameEngine, _, _ := newPersistenceTestEngine(activeStore)
+	defer stopEngineTimers(gameEngine)
+	match := startPersistenceTestMatch(t, gameEngine)
+	playerID := match.players[match.turnIdx].ID
+
+	gameEngine.OnDisconnect(match.GameID, playerID)
+	snapshot, _ := activeStore.get(match.GameID, match.ID)
+	if !snapshot.Disconnected[match.turnIdx] || snapshot.GraceDeadline <= 0 || snapshot.PausedRemainMillis <= 0 {
+		t.Fatalf("disconnect state was not persisted: %+v", snapshot)
+	}
+
+	gameEngine.OnConnect(match.GameID, playerID)
+	snapshot, _ = activeStore.get(match.GameID, match.ID)
+	if len(snapshot.Disconnected) != 0 || snapshot.GraceDeadline != 0 || snapshot.PausedRemainMillis != 0 {
+		t.Fatalf("reconnect state was not cleared: %+v", snapshot)
+	}
+}
+
+func TestRestoreActiveMatchAndResumeAfterBothPlayersReconnect(t *testing.T) {
+	activeStore := newMemoryActiveMatchStore()
+	firstEngine, _, _ := newPersistenceTestEngine(activeStore)
+	match := startPersistenceTestMatch(t, firstEngine)
+	firstPlayer := match.players[match.turnIdx].ID
+	gameEngineID := match.GameID
+	matchID := match.ID
+	firstEngine.Move(gameEngineID, firstPlayer, matchID, json.RawMessage(`{"win":false}`))
+	stopEngineTimers(firstEngine)
+
+	secondEngine, _, emitter := newPersistenceTestEngine(activeStore)
+	defer stopEngineTimers(secondEngine)
+	restored := secondEngine.matches[matchID]
+	if restored == nil {
+		t.Fatal("active match was not restored")
+	}
+	if restored.state.(*persistenceTestState).MoveCount != 1 || len(restored.actions) != 1 {
+		t.Fatal("restored state/actions do not match the saved snapshot")
+	}
+	if len(restored.disconnected) != 2 || restored.pausedRemain <= 0 || restored.graceTimer == nil {
+		t.Fatal("restored match did not wait for both players to reconnect")
+	}
+
+	secondEngine.OnConnect(restored.GameID, restored.players[0].ID)
+	if _, ok := emitter.last(restored.players[0].ID, protocol.S2COpponentDisconnected); !ok {
+		t.Fatal("first returning player was not told that the opponent is disconnected")
+	}
+	if len(restored.disconnected) != 1 || restored.timer != nil {
+		t.Fatal("turn timer resumed before both players reconnected")
+	}
+
+	secondEngine.OnConnect(restored.GameID, restored.players[1].ID)
+	if len(restored.disconnected) != 0 || restored.timer == nil || restored.graceTimer != nil {
+		t.Fatal("turn timer did not resume after both players reconnected")
+	}
+	if _, ok := emitter.last(restored.players[1].ID, protocol.S2CMatchFound); !ok {
+		t.Fatal("returning player did not receive resumed MATCH_FOUND")
+	}
+}
+
+func TestRestoreFinishedSnapshotMakesResultAvailableOnReconnect(t *testing.T) {
+	activeStore := newMemoryActiveMatchStore()
+	state, _ := json.Marshal(&persistenceTestState{MoveCount: 3, Winner: 0})
+	snapshot := ActiveMatchSnapshot{
+		ID: "finished-match", GameID: persistenceTestGameID,
+		Players: []protocol.PlayerInfo{{ID: "player-a", Name: "A"}, {ID: "player-b", Name: "B"}},
+		State:   state, StateVersion: 1, Status: matchStatusFinished,
+		WinnerID: "player-a", ResultReason: "win", Bet: 5,
+	}
+	if err := activeStore.Save(snapshot); err != nil {
+		t.Fatal(err)
+	}
+	gameEngine, _, emitter := newPersistenceTestEngine(activeStore)
+	if _, exists := activeStore.get(snapshot.GameID, snapshot.ID); exists {
+		t.Fatal("finished tombstone was not removed after restore")
+	}
+
+	gameEngine.OnConnect(snapshot.GameID, "player-a")
+	env, ok := emitter.last("player-a", protocol.S2CMatchOver)
+	if !ok || env.Data.(protocol.MatchOverData).WinnerID != "player-a" {
+		t.Fatal("finished result was not delivered after reconnect")
+	}
+}
+
+func TestFinishedTombstoneSurvivesDeleteFailureAndIsRecovered(t *testing.T) {
+	activeStore := newMemoryActiveMatchStore()
+	gameEngine, _, _ := newPersistenceTestEngine(activeStore)
+	match := startPersistenceTestMatch(t, gameEngine)
+	matchID := match.ID
+	gameID := match.GameID
+	winnerID := match.players[match.turnIdx].ID
+	activeStore.failDelete = true
+
+	gameEngine.Move(gameID, winnerID, matchID, json.RawMessage(`{"win":true}`))
+	snapshot, exists := activeStore.get(gameID, matchID)
+	if !exists || snapshot.Status != matchStatusFinished || snapshot.WinnerID != winnerID {
+		t.Fatalf("finished tombstone was not retained: %+v", snapshot)
+	}
+
+	activeStore.failDelete = false
+	restoredEngine, _, emitter := newPersistenceTestEngine(activeStore)
+	if _, exists := activeStore.get(gameID, matchID); exists {
+		t.Fatal("recovered finished tombstone was not deleted")
+	}
+	restoredEngine.OnConnect(gameID, winnerID)
+	env, ok := emitter.last(winnerID, protocol.S2CMatchOver)
+	if !ok || env.Data.(protocol.MatchOverData).WinnerID != winnerID {
+		t.Fatal("recovered winner did not receive MATCH_OVER")
+	}
+}
+
+func TestFinishPathsDeleteActiveSnapshot(t *testing.T) {
+	tests := []struct {
+		name       string
+		finish     func(*Engine, *Match)
+		reason     string
+		winnerMode string
+	}{
+		{
+			name: "winning move",
+			finish: func(gameEngine *Engine, match *Match) {
+				gameEngine.Move(match.GameID, match.players[match.turnIdx].ID, match.ID, json.RawMessage(`{"win":true}`))
+			},
+			reason: "win", winnerMode: "present",
+		},
+		{
+			name: "draw",
+			finish: func(gameEngine *Engine, match *Match) {
+				gameEngine.Move(match.GameID, match.players[match.turnIdx].ID, match.ID, json.RawMessage(`{"draw":true}`))
+			},
+			reason: "draw", winnerMode: "empty",
+		},
+		{
+			name: "forfeit",
+			finish: func(gameEngine *Engine, match *Match) {
+				gameEngine.Forfeit(match.GameID, match.players[0].ID, match.ID)
+			},
+			reason: "forfeit", winnerMode: "present",
+		},
+		{
+			name: "timeout",
+			finish: func(gameEngine *Engine, match *Match) {
+				if match.timer != nil {
+					match.timer.Stop()
+				}
+				gameEngine.onTimeout(match.ID, match.turnIdx)
+			},
+			reason: "timeout", winnerMode: "present",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			activeStore := newMemoryActiveMatchStore()
+			gameEngine, _, emitter := newPersistenceTestEngine(activeStore)
+			match := startPersistenceTestMatch(t, gameEngine)
+			matchID := match.ID
+			players := append([]protocol.PlayerInfo(nil), match.players...)
+			test.finish(gameEngine, match)
+
+			if _, exists := activeStore.get(persistenceTestGameID, matchID); exists {
+				t.Fatal("finished active snapshot was not deleted")
+			}
+			if gameEngine.matches[matchID] != nil {
+				t.Fatal("finished match remained in memory")
+			}
+			env, ok := emitter.last(players[0].ID, protocol.S2CMatchOver)
+			if !ok {
+				t.Fatal("player did not receive MATCH_OVER")
+			}
+			result := env.Data.(protocol.MatchOverData)
+			if result.Reason != test.reason {
+				t.Fatalf("unexpected result reason: %s", result.Reason)
+			}
+			if test.winnerMode == "empty" && result.WinnerID != "" {
+				t.Fatalf("draw unexpectedly has winner %s", result.WinnerID)
+			}
+			if test.winnerMode == "present" && result.WinnerID == "" {
+				t.Fatal("finished match has no winner")
+			}
+		})
+	}
+}
+
+func TestGraceExpiryHandlesOneOrBothDisconnectedPlayers(t *testing.T) {
+	t.Run("one disconnected", func(t *testing.T) {
+		activeStore := newMemoryActiveMatchStore()
+		gameEngine, _, emitter := newPersistenceTestEngine(activeStore)
+		match := startPersistenceTestMatch(t, gameEngine)
+		disconnectedID := match.players[0].ID
+		winnerID := match.players[1].ID
+		gameEngine.OnDisconnect(match.GameID, disconnectedID)
+		if match.graceTimer != nil {
+			match.graceTimer.Stop()
+		}
+		gameEngine.onGraceExpire(match.ID, match.graceGen)
+		env, ok := emitter.last(winnerID, protocol.S2CMatchOver)
+		if !ok || env.Data.(protocol.MatchOverData).WinnerID != winnerID {
+			t.Fatal("connected player did not win after grace expiry")
+		}
+	})
+
+	t.Run("both disconnected", func(t *testing.T) {
+		activeStore := newMemoryActiveMatchStore()
+		gameEngine, _, emitter := newPersistenceTestEngine(activeStore)
+		match := startPersistenceTestMatch(t, gameEngine)
+		players := append([]protocol.PlayerInfo(nil), match.players...)
+		gameEngine.OnDisconnect(match.GameID, players[0].ID)
+		gameEngine.OnDisconnect(match.GameID, players[1].ID)
+		if match.graceTimer != nil {
+			match.graceTimer.Stop()
+		}
+		gameEngine.onGraceExpire(match.ID, match.graceGen)
+		env, ok := emitter.last(players[0].ID, protocol.S2CMatchOver)
+		if !ok || env.Data.(protocol.MatchOverData).WinnerID != "" {
+			t.Fatal("both-disconnected match should finish without a winner")
+		}
+	})
+}
+
+func TestQueueAndRoomStartRecoverWhenRedisSaveFails(t *testing.T) {
+	t.Run("queue players are requeued", func(t *testing.T) {
+		activeStore := newMemoryActiveMatchStore()
+		gameEngine, _, emitter := newPersistenceTestEngine(activeStore)
+		gameEngine.JoinQueue(persistenceTestGameID, protocol.PlayerInfo{ID: "player-a", Name: "A"})
+		activeStore.failSave = true
+		gameEngine.JoinQueue(persistenceTestGameID, protocol.PlayerInfo{ID: "player-b", Name: "B"})
+		if len(gameEngine.queues[persistenceTestGameID]) != 2 {
+			t.Fatal("players were not requeued after match persistence failure")
+		}
+		env, ok := emitter.last("player-b", protocol.S2CError)
+		if !ok || env.Data.(protocol.ErrorData).Code != "MATCH_START_FAILED" {
+			t.Fatal("queued player did not receive MATCH_START_FAILED")
+		}
+	})
+
+	t.Run("room is restored", func(t *testing.T) {
+		activeStore := newMemoryActiveMatchStore()
+		gameEngine, rooms, emitter := newPersistenceTestEngine(activeStore)
+		room := Room{
+			ID: "room-1", GameID: persistenceTestGameID,
+			OwnerID: "owner", OwnerName: "Owner", OwnerReady: true,
+			GuestID: "guest", GuestName: "Guest", GuestReady: true,
+		}
+		if err := rooms.Save(room); err != nil {
+			t.Fatal(err)
+		}
+		activeStore.failSave = true
+		gameEngine.StartRoom(room.GameID, room.OwnerID, room.ID)
+		if restored, exists := rooms.Get(room.GameID, room.ID); !exists || restored.GuestID != room.GuestID {
+			t.Fatal("room was not restored after active match save failed")
+		}
+		env, ok := emitter.last(room.OwnerID, protocol.S2CError)
+		if !ok || env.Data.(protocol.ErrorData).Code != "ROOM_START_FAILED" {
+			t.Fatal("room owner did not receive ROOM_START_FAILED")
+		}
+	})
+}
+
+func TestRestoreSkipsUnsupportedOrMalformedSnapshots(t *testing.T) {
+	tests := []struct {
+		name     string
+		snapshot ActiveMatchSnapshot
+	}{
+		{
+			name: "unsupported version",
+			snapshot: ActiveMatchSnapshot{
+				ID: "bad-version", GameID: persistenceTestGameID,
+				Players: []protocol.PlayerInfo{{ID: "a"}, {ID: "b"}},
+				State:   json.RawMessage(`{"moveCount":0,"winner":-1}`), StateVersion: 99,
+				Status: matchStatusPlaying,
+			},
+		},
+		{
+			name: "malformed state",
+			snapshot: ActiveMatchSnapshot{
+				ID: "bad-state", GameID: persistenceTestGameID,
+				Players: []protocol.PlayerInfo{{ID: "a"}, {ID: "b"}},
+				State:   json.RawMessage(`{"moveCount":`), StateVersion: 1,
+				Status: matchStatusPlaying,
+			},
+		},
+		{
+			name: "invalid turn",
+			snapshot: ActiveMatchSnapshot{
+				ID: "bad-turn", GameID: persistenceTestGameID,
+				Players: []protocol.PlayerInfo{{ID: "a"}, {ID: "b"}},
+				State:   json.RawMessage(`{"moveCount":0,"winner":-1}`), StateVersion: 1,
+				Status: matchStatusPlaying, TurnIndex: 2,
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			activeStore := newMemoryActiveMatchStore()
+			if err := activeStore.Save(test.snapshot); err != nil {
+				t.Fatal(err)
+			}
+			gameEngine, _, _ := newPersistenceTestEngine(activeStore)
+			if len(gameEngine.matches) != 0 || len(gameEngine.byUser) != 0 {
+				t.Fatal("invalid snapshot was restored")
+			}
+		})
+	}
+}

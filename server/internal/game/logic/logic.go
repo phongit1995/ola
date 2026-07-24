@@ -7,7 +7,9 @@ import (
 
 type GameLogic interface {
 	ID() string
+	StateVersion() int
 	Init(seed int64) any
+	DecodeState(data json.RawMessage) (any, error)
 	ValidateMove(state any, playerIdx int, move json.RawMessage) error
 	Apply(state any, playerIdx int, move json.RawMessage) (any, error)
 	Result(state any) (over bool, winnerIdx int)

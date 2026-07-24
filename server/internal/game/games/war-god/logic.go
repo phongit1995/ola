@@ -18,8 +18,18 @@ func init() {
 
 func (Logic) ID() string { return "war-god" }
 
+func (Logic) StateVersion() int { return 1 }
+
 func (Logic) Init(seed int64) any {
 	return &State{Placeholder: true}
+}
+
+func (Logic) DecodeState(data json.RawMessage) (any, error) {
+	var state State
+	if err := json.Unmarshal(data, &state); err != nil {
+		return nil, errors.New("invalid saved war-god state")
+	}
+	return &state, nil
 }
 
 func (Logic) ValidateMove(state any, playerIdx int, move json.RawMessage) error {

@@ -34,6 +34,8 @@ func init() {
 
 func (Logic) ID() string { return "caro" }
 
+func (Logic) StateVersion() int { return 1 }
+
 func (Logic) Init(seed int64) any {
 	return &State{
 		Board:  make([]int, Size*Size),
@@ -41,6 +43,17 @@ func (Logic) Init(seed int64) any {
 		LastY:  -1,
 		Winner: noneWin,
 	}
+}
+
+func (Logic) DecodeState(data json.RawMessage) (any, error) {
+	state := &State{Winner: noneWin}
+	if err := json.Unmarshal(data, state); err != nil {
+		return nil, errors.New("invalid saved caro state")
+	}
+	if len(state.Board) != Size*Size {
+		return nil, errors.New("invalid saved caro board")
+	}
+	return state, nil
 }
 
 func parseMove(raw json.RawMessage) (int, int, error) {
@@ -71,10 +84,17 @@ func (Logic) ValidateMove(state any, playerIdx int, move json.RawMessage) error 
 }
 
 func (Logic) Apply(state any, playerIdx int, move json.RawMessage) (any, error) {
-	s := state.(*State)
+	current := state.(*State)
 	x, y, err := parseMove(move)
 	if err != nil {
-		return s, err
+		return current, err
+	}
+	s := &State{
+		Board:     append([]int(nil), current.Board...),
+		MoveCount: current.MoveCount,
+		LastX:     current.LastX,
+		LastY:     current.LastY,
+		Winner:    current.Winner,
 	}
 	s.Board[y*Size+x] = playerIdx + 1
 	s.MoveCount++

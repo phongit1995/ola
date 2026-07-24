@@ -2,6 +2,7 @@ package engine
 
 import (
 	"encoding/json"
+	"fmt"
 	"math/rand"
 	"sync"
 	"time"
@@ -24,12 +25,14 @@ type Engine struct {
 	logger       *zap.SugaredLogger
 	emitter      Emitter
 	store        RoomRepository
+	activeStore  ActiveMatchRepository
 	queues       map[string][]protocol.PlayerInfo
 	matches      map[string]*Match
 	byUser       map[string]*Match
 	finished     map[string]protocol.MatchOverData
 	turnSeconds  int
 	graceSeconds int
+	restored     bool
 }
 
 type Match struct {
@@ -48,12 +51,24 @@ type Match struct {
 	graceGen      int
 	disconnected  map[int]bool
 	pausedRemain  time.Duration
+	startedAt     time.Time
+	actions       []MatchAction
+	winnerID      string
+	resultReason  string
+	finishedAt    time.Time
 }
 
-func NewEngine(logger *zap.SugaredLogger, turnSeconds int, graceSeconds int, store RoomRepository) *Engine {
+func NewEngine(
+	logger *zap.SugaredLogger,
+	turnSeconds int,
+	graceSeconds int,
+	store RoomRepository,
+	activeStore ActiveMatchRepository,
+) *Engine {
 	return &Engine{
 		logger:       logger.Named("[game-engine]"),
 		store:        store,
+		activeStore:  activeStore,
 		queues:       make(map[string][]protocol.PlayerInfo),
 		matches:      make(map[string]*Match),
 		byUser:       make(map[string]*Match),
@@ -68,7 +83,13 @@ func userKey(gameID, userID string) string {
 }
 
 func (e *Engine) SetEmitter(emitter Emitter) {
+	e.mu.Lock()
+	defer e.mu.Unlock()
 	e.emitter = emitter
+	if !e.restored {
+		e.restoreActiveMatchesLocked()
+		e.restored = true
+	}
 }
 
 func (e *Engine) OnConnect(gameID, userID string) {
@@ -103,8 +124,18 @@ func (e *Engine) OnConnect(gameID, userID string) {
 				m.pausedRemain = 0
 			}
 		}
+		if err := e.persistMatch(m); err != nil {
+			e.logger.Errorw("Failed to persist reconnected match", "match_id", m.ID, "error", err)
+		}
 	}
 	e.sendMatchFoundTo(m, userID, true)
+	oppIdx := 1 - idx
+	if m.disconnected[oppIdx] {
+		e.emitter.ToUser(m.GameID, userID, protocol.OutEnvelope{
+			Type: protocol.S2COpponentDisconnected,
+			Data: protocol.OpponentDisconnectedData{GraceDeadline: m.graceDeadline.UnixMilli()},
+		})
+	}
 }
 
 func (e *Engine) JoinQueue(gameID string, player protocol.PlayerInfo) {
@@ -152,7 +183,12 @@ func (e *Engine) JoinQueue(gameID string, player protocol.PlayerInfo) {
 		e.emitter.ToUser(gameID, player.ID, protocol.OutEnvelope{Type: protocol.S2CQueueWaiting})
 		return
 	}
-	e.startMatch(gameID, gameLogic, opponent, player, 0)
+	if err := e.startMatch(gameID, gameLogic, opponent, player, 0); err != nil {
+		e.queues[gameID] = append([]protocol.PlayerInfo{opponent}, e.queues[gameID]...)
+		e.queues[gameID] = append(e.queues[gameID], player)
+		e.sendError(gameID, opponent.ID, "MATCH_START_FAILED", err.Error())
+		e.sendError(gameID, player.ID, "MATCH_START_FAILED", err.Error())
+	}
 }
 
 func (e *Engine) LeaveQueue(gameID string, userID string) {
@@ -434,13 +470,19 @@ func (e *Engine) StartRoom(gameID, ownerID, roomID string) {
 		e.sendError(gameID, ownerID, "ROOM_START_FAILED", err.Error())
 		return
 	}
-	e.startMatch(
+	if err := e.startMatch(
 		gameID,
 		gameLogic,
 		protocol.PlayerInfo{ID: room.OwnerID, Name: room.OwnerName},
 		protocol.PlayerInfo{ID: room.GuestID, Name: room.GuestName},
 		room.Bet,
-	)
+	); err != nil {
+		if restoreErr := e.store.Save(room); restoreErr != nil {
+			e.logger.Errorw("Failed to restore room after match start failure", "room_id", room.ID, "error", restoreErr)
+		}
+		e.sendError(gameID, ownerID, "ROOM_START_FAILED", err.Error())
+		e.sendError(gameID, room.GuestID, "ROOM_START_FAILED", err.Error())
+	}
 }
 
 func (e *Engine) ListRooms(gameID, userID string) {
@@ -586,6 +628,9 @@ func (e *Engine) OnDisconnect(gameID, userID string) {
 			Data: protocol.OpponentDisconnectedData{GraceDeadline: m.graceDeadline.UnixMilli()},
 		})
 	}
+	if err := e.persistMatch(m); err != nil {
+		e.logger.Errorw("Failed to persist disconnected match", "match_id", m.ID, "error", err)
+	}
 }
 
 func (e *Engine) cancelGrace(m *Match) {
@@ -647,7 +692,16 @@ func (e *Engine) Move(gameID, userID, matchID string, move json.RawMessage) {
 		e.sendError(gameID, userID, "INVALID_MOVE", err.Error())
 		return
 	}
+	previousState := m.state
+	previousTurn := m.turnIdx
+	previousDeadline := m.deadline
 	m.state = state
+	m.actions = append(m.actions, MatchAction{
+		Sequence:    len(m.actions) + 1,
+		PlayerIndex: playerIdx,
+		Move:        append(json.RawMessage(nil), move...),
+		CreatedAt:   time.Now().UnixMilli(),
+	})
 
 	if over, winnerIdx := m.logic.Result(m.state); over {
 		winnerID := ""
@@ -662,7 +716,17 @@ func (e *Engine) Move(gameID, userID, matchID string, move json.RawMessage) {
 	}
 
 	m.turnIdx = 1 - m.turnIdx
-	e.armTimer(m)
+	m.deadline = time.Now().Add(time.Duration(e.turnSeconds) * time.Second)
+	if err := e.persistMatch(m); err != nil {
+		m.state = previousState
+		m.turnIdx = previousTurn
+		m.deadline = previousDeadline
+		m.actions = m.actions[:len(m.actions)-1]
+		e.logger.Errorw("Failed to persist match move", "match_id", m.ID, "user_id", userID, "error", err)
+		e.sendError(gameID, userID, "STATE_SAVE_FAILED", "failed to save the move, please retry")
+		return
+	}
+	e.scheduleTurnTimer(m)
 
 	data := protocol.StateData{
 		MatchID:  m.ID,
@@ -691,7 +755,7 @@ func (e *Engine) Forfeit(gameID, userID, matchID string) {
 	e.finishMatch(m, m.players[winnerIdx].ID, "forfeit")
 }
 
-func (e *Engine) startMatch(gameID string, gameLogic logic.GameLogic, p0, p1 protocol.PlayerInfo, bet int) {
+func (e *Engine) startMatch(gameID string, gameLogic logic.GameLogic, p0, p1 protocol.PlayerInfo, bet int) error {
 	for _, p := range []protocol.PlayerInfo{p0, p1} {
 		e.leaveQueueLocked(gameID, p.ID)
 		delete(e.finished, userKey(gameID, p.ID))
@@ -710,13 +774,19 @@ func (e *Engine) startMatch(gameID string, gameLogic logic.GameLogic, p0, p1 pro
 		turnIdx:      0,
 		bet:          bet,
 		disconnected: make(map[int]bool),
+		startedAt:    time.Now(),
+	}
+	m.deadline = time.Now().Add(time.Duration(e.turnSeconds) * time.Second)
+	if err := e.persistMatch(m); err != nil {
+		return fmt.Errorf("persist active match: %w", err)
 	}
 	e.matches[m.ID] = m
 	e.byUser[userKey(gameID, p0.ID)] = m
 	e.byUser[userKey(gameID, p1.ID)] = m
-	e.armTimer(m)
+	e.scheduleTurnTimer(m)
 	e.sendMatchFound(m, false)
 	e.logger.Infow("Match started", "match_id", m.ID, "game_id", gameID, "p0", p0.ID, "p1", p1.ID)
+	return nil
 }
 
 func (e *Engine) sendMatchFound(m *Match, resumed bool) {
@@ -742,15 +812,15 @@ func (e *Engine) sendMatchFoundTo(m *Match, userID string, resumed bool) {
 	})
 }
 
-func (e *Engine) armTimer(m *Match) {
-	e.armTimerDuration(m, time.Duration(e.turnSeconds)*time.Second)
+func (e *Engine) armTimerDuration(m *Match, d time.Duration) {
+	m.deadline = time.Now().Add(d)
+	e.scheduleTurnTimer(m)
 }
 
-func (e *Engine) armTimerDuration(m *Match, d time.Duration) {
+func (e *Engine) scheduleTurnTimer(m *Match) {
 	if m.timer != nil {
 		m.timer.Stop()
 	}
-	m.deadline = time.Now().Add(d)
 	matchID := m.ID
 	turnAtArm := m.turnIdx
 	m.timer = time.AfterFunc(time.Until(m.deadline), func() {
@@ -771,11 +841,20 @@ func (e *Engine) onTimeout(matchID string, expectedTurn int) {
 
 func (e *Engine) finishMatch(m *Match, winnerID string, reason string) {
 	m.over = true
+	m.winnerID = winnerID
+	m.resultReason = reason
+	m.finishedAt = time.Now()
 	if m.timer != nil {
 		m.timer.Stop()
 	}
 	if m.graceTimer != nil {
 		m.graceTimer.Stop()
+	}
+	if err := e.persistMatch(m); err != nil {
+		e.logger.Errorw("Failed to persist final match snapshot", "match_id", m.ID, "error", err)
+	}
+	if err := e.activeStore.Delete(m.GameID, m.ID, m.players[0].ID, m.players[1].ID); err != nil {
+		e.logger.Errorw("Failed to delete finished active match", "match_id", m.ID, "error", err)
 	}
 	data := protocol.MatchOverData{
 		MatchID:  m.ID,
@@ -801,6 +880,197 @@ func (e *Engine) scheduleFinishedCleanup(key string) {
 		delete(e.finished, key)
 		e.mu.Unlock()
 	})
+}
+
+func (e *Engine) persistMatch(m *Match) error {
+	state, err := json.Marshal(m.state)
+	if err != nil {
+		return fmt.Errorf("marshal match state: %w", err)
+	}
+	status := matchStatusPlaying
+	if m.over {
+		status = matchStatusFinished
+	}
+	snapshot := ActiveMatchSnapshot{
+		ID:                 m.ID,
+		GameID:             m.GameID,
+		Players:            m.players,
+		State:              state,
+		StateVersion:       m.logic.StateVersion(),
+		TurnIndex:          m.turnIdx,
+		TurnDeadline:       m.deadline.UnixMilli(),
+		Bet:                m.bet,
+		StartedAt:          m.startedAt.UnixMilli(),
+		Status:             status,
+		WinnerID:           m.winnerID,
+		ResultReason:       m.resultReason,
+		Actions:            m.actions,
+		Disconnected:       m.disconnected,
+		PausedRemainMillis: m.pausedRemain.Milliseconds(),
+	}
+	if !m.graceDeadline.IsZero() {
+		snapshot.GraceDeadline = m.graceDeadline.UnixMilli()
+	}
+	if !m.finishedAt.IsZero() {
+		snapshot.FinishedAt = m.finishedAt.UnixMilli()
+	}
+	return e.activeStore.Save(snapshot)
+}
+
+func (e *Engine) restoreActiveMatchesLocked() {
+	restored := 0
+	for _, gameID := range logic.IDs() {
+		snapshots, err := e.activeStore.List(gameID)
+		if err != nil {
+			e.logger.Errorw("Failed to load active matches", "game_id", gameID, "error", err)
+			continue
+		}
+		for _, snapshot := range snapshots {
+			if snapshot.Status == matchStatusFinished {
+				e.restoreFinishedSnapshot(snapshot)
+				continue
+			}
+			if snapshot.Status != matchStatusPlaying {
+				e.logger.Warnw("Skipped active match with unknown status", "match_id", snapshot.ID, "status", snapshot.Status)
+				continue
+			}
+			if snapshot.ID == "" || snapshot.GameID != gameID || len(snapshot.Players) != 2 || snapshot.TurnIndex < 0 || snapshot.TurnIndex > 1 {
+				e.logger.Warnw("Skipped invalid active match snapshot", "game_id", gameID, "match_id", snapshot.ID)
+				continue
+			}
+			gameLogic, err := logic.Get(snapshot.GameID)
+			if err != nil {
+				e.logger.Errorw("Skipped active match with unknown game", "match_id", snapshot.ID, "error", err)
+				continue
+			}
+			if snapshot.StateVersion != gameLogic.StateVersion() {
+				e.logger.Errorw("Skipped active match with unsupported state version",
+					"match_id", snapshot.ID,
+					"saved_version", snapshot.StateVersion,
+					"current_version", gameLogic.StateVersion(),
+				)
+				continue
+			}
+			state, err := gameLogic.DecodeState(snapshot.State)
+			if err != nil {
+				e.logger.Errorw("Failed to decode active match state", "match_id", snapshot.ID, "error", err)
+				continue
+			}
+			if _, exists := e.matches[snapshot.ID]; exists {
+				continue
+			}
+			p0Key := userKey(gameID, snapshot.Players[0].ID)
+			p1Key := userKey(gameID, snapshot.Players[1].ID)
+			if _, exists := e.byUser[p0Key]; exists {
+				e.logger.Warnw("Skipped active match because player is already restored", "match_id", snapshot.ID, "user_id", snapshot.Players[0].ID)
+				continue
+			}
+			if _, exists := e.byUser[p1Key]; exists {
+				e.logger.Warnw("Skipped active match because player is already restored", "match_id", snapshot.ID, "user_id", snapshot.Players[1].ID)
+				continue
+			}
+
+			startedAt := time.UnixMilli(snapshot.StartedAt)
+			if snapshot.StartedAt <= 0 {
+				startedAt = time.Now()
+			}
+			deadline := time.UnixMilli(snapshot.TurnDeadline)
+			if snapshot.TurnDeadline <= 0 {
+				deadline = time.Now().Add(time.Duration(e.turnSeconds) * time.Second)
+			}
+			pausedRemain := time.Duration(snapshot.PausedRemainMillis) * time.Millisecond
+			if pausedRemain <= 0 {
+				pausedRemain = time.Until(deadline)
+				if pausedRemain < time.Second {
+					pausedRemain = time.Second
+				}
+			}
+			m := &Match{
+				ID:           snapshot.ID,
+				GameID:       snapshot.GameID,
+				logic:        gameLogic,
+				players:      snapshot.Players,
+				state:        state,
+				turnIdx:      snapshot.TurnIndex,
+				deadline:     deadline,
+				bet:          snapshot.Bet,
+				disconnected: map[int]bool{0: true, 1: true},
+				pausedRemain: pausedRemain,
+				startedAt:    startedAt,
+				actions:      snapshot.Actions,
+				graceGen:     1,
+			}
+			m.graceDeadline = time.Now().Add(time.Duration(e.graceSeconds) * time.Second)
+			e.matches[m.ID] = m
+			e.byUser[p0Key] = m
+			e.byUser[p1Key] = m
+			e.restoreTimersLocked(m)
+			restored++
+		}
+	}
+	if restored > 0 {
+		e.logger.Infow("Restored active matches from Redis", "count", restored)
+	}
+}
+
+func (e *Engine) restoreTimersLocked(m *Match) {
+	if m.pausedRemain <= 0 {
+		e.scheduleTurnTimer(m)
+	} else if len(m.disconnected) == 0 {
+		remain := m.pausedRemain
+		m.pausedRemain = 0
+		e.armTimerDuration(m, remain)
+		if err := e.persistMatch(m); err != nil {
+			e.logger.Errorw("Failed to normalize restored match timer", "match_id", m.ID, "error", err)
+		}
+	}
+	if len(m.disconnected) == 0 {
+		return
+	}
+	if m.graceDeadline.IsZero() {
+		m.graceDeadline = time.Now().Add(time.Duration(e.graceSeconds) * time.Second)
+	}
+	gen := m.graceGen
+	m.graceTimer = time.AfterFunc(time.Until(m.graceDeadline), func() {
+		e.onGraceExpire(m.ID, gen)
+	})
+}
+
+func (e *Engine) deleteSnapshot(snapshot ActiveMatchSnapshot) {
+	userIDs := make([]string, 0, len(snapshot.Players))
+	for _, player := range snapshot.Players {
+		userIDs = append(userIDs, player.ID)
+	}
+	if err := e.activeStore.Delete(snapshot.GameID, snapshot.ID, userIDs...); err != nil {
+		e.logger.Errorw("Failed to delete stale match snapshot", "match_id", snapshot.ID, "error", err)
+	}
+}
+
+func (e *Engine) restoreFinishedSnapshot(snapshot ActiveMatchSnapshot) {
+	gameLogic, err := logic.Get(snapshot.GameID)
+	if err != nil || snapshot.StateVersion != gameLogic.StateVersion() {
+		e.deleteSnapshot(snapshot)
+		return
+	}
+	state, err := gameLogic.DecodeState(snapshot.State)
+	if err != nil {
+		e.logger.Errorw("Failed to decode finished match state", "match_id", snapshot.ID, "error", err)
+		e.deleteSnapshot(snapshot)
+		return
+	}
+	data := protocol.MatchOverData{
+		MatchID:  snapshot.ID,
+		WinnerID: snapshot.WinnerID,
+		Reason:   snapshot.ResultReason,
+		State:    state,
+		Bet:      snapshot.Bet,
+	}
+	for _, player := range snapshot.Players {
+		key := userKey(snapshot.GameID, player.ID)
+		e.finished[key] = data
+		e.scheduleFinishedCleanup(key)
+	}
+	e.deleteSnapshot(snapshot)
 }
 
 func (e *Engine) sendError(gameID, userID string, code string, message string) {

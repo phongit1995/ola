@@ -14,7 +14,13 @@ import (
 
 func Provider(c *dig.Container) error {
 	if err := c.Provide(func(cfg *config.Config, logger *zap.SugaredLogger, cache *services.CacheService) *engine.Engine {
-		return engine.NewEngine(logger, cfg.GameTurnSeconds, cfg.GameReconnectGraceSeconds, engine.NewRoomStore(cache))
+		return engine.NewEngine(
+			logger,
+			cfg.GameTurnSeconds,
+			cfg.GameReconnectGraceSeconds,
+			engine.NewRoomStore(cache),
+			engine.NewMatchStore(cache),
+		)
 	}); err != nil {
 		return err
 	}
