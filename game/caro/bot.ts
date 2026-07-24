@@ -245,6 +245,7 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
       emitChat('you', 'Bạn', message);
       scheduleBotChat(botReply(message), 700 + Math.floor(Math.random() * 900));
     },
+    sendRoomChat() {},
 
     forfeit(_matchId: string) {
       if (playing) finish('bot', 'forfeit');

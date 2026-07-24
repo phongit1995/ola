@@ -228,13 +228,21 @@ func (s *Server) handleMessage(data *SocketData, raw any) {
 		if err := json.Unmarshal(env.Data, &d); err != nil {
 			return
 		}
-		s.engine.Chat(data.GameID, data.UserID, d.MatchID, d.Text)
+		if d.RoomID != "" {
+			s.engine.RoomChat(data.GameID, data.UserID, d.RoomID, d.Text)
+		} else {
+			s.engine.Chat(data.GameID, data.UserID, d.MatchID, d.Text)
+		}
 	case protocol.C2SForfeit:
 		var d protocol.ForfeitData
 		if err := json.Unmarshal(env.Data, &d); err != nil {
 			return
 		}
-		s.engine.Forfeit(data.GameID, data.UserID, d.MatchID)
+		if d.LeaveAfter {
+			s.engine.ForfeitAndLeave(data.GameID, data.UserID, d.MatchID)
+		} else {
+			s.engine.Forfeit(data.GameID, data.UserID, d.MatchID)
+		}
 	case protocol.C2SRoomCreate:
 		var d protocol.RoomCreateData
 		if err := json.Unmarshal(env.Data, &d); err != nil {

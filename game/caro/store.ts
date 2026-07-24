@@ -80,6 +80,10 @@ function chatErrorText(code: string): string | null {
       return 'Tin nhắn tối đa 120 ký tự';
     case 'INVALID_CHAT':
       return 'Tin nhắn không hợp lệ';
+    case 'ROOM_NOT_FULL':
+      return 'Cần đủ hai người trong bàn để chat';
+    case 'NOT_ROOM_MEMBER':
+      return 'Bạn không còn ở trong bàn này';
     default:
       return null;
   }
@@ -164,9 +168,11 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     kenRaf: undefined as number | undefined,
     announceId: 0,
     opponentIsBot: false,
+    chatOpponentId: null as string | null,
     chatSeq: 0,
     pendingRoomId: null as string | null,
     roomConnectionLost: false,
+    exitingMatch: null as MatchFoundData<CaroState> | null,
   };
 
   const showToast = (message: string): void => {
@@ -214,6 +220,8 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     stopTimer();
     refs.match = null;
     refs.opponentIsBot = false;
+    refs.chatOpponentId = null;
+    refs.chatSeq = 0;
     refs.pendingRoomId = null;
     const user = refs.user;
     set((s) => ({
@@ -256,12 +264,18 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     refs.matchBet = room.bet;
     const meMember = room.members.find((member) => member.id === room.youId);
     const opponent = room.members.find((member) => member.id !== room.youId);
+    const preserveChat = opponent != null && refs.chatOpponentId === opponent.id;
+    if (!preserveChat) refs.chatSeq = 0;
+    refs.chatOpponentId = opponent?.id ?? null;
     const isOwner = room.ownerId === room.youId;
     const bothReady = room.members.length === 2 && room.members.every((member) => member.ready);
+    const current = get();
+    const preserveOutcome =
+      current.boardMode === 'playing' && refs.match == null && (current.result != null || current.overlay?.kind != null);
     const status = !opponent
-      ? isOwner
+      ? isOwner && meMember?.ready
         ? 'Bạn đã sẵn sàng — đang chờ đối thủ vào bàn...'
-        : 'Đang chờ đối thủ vào bàn...'
+        : 'Chưa sẵn sàng — đang chờ đối thủ vào bàn...'
       : bothReady
       ? isOwner
         ? 'Cả hai đã sẵn sàng — bấm Bắt đầu'
@@ -277,8 +291,8 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
       lobbyVisible: false,
       rankedVisible: false,
       leaderboardVisible: false,
-      overlay: null,
-      result: null,
+      overlay: preserveOutcome ? s.overlay : null,
+      result: preserveOutcome ? s.result : null,
       roomWaiting: room,
       board: firstRoomState ? emptyState().board : s.board,
       lastIdx: firstRoomState ? -1 : s.lastIdx,
@@ -291,7 +305,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
       winLine: null,
       replayVisible: false,
       forfeitDisabled: true,
-      messages: firstRoomState ? [] : s.messages,
+      messages: preserveChat ? s.messages : [],
       matchSeq: firstRoomState ? s.matchSeq + 1 : s.matchSeq,
       me: {
         name: meMember ? `@${meMember.name}` : user ? `@${user.username}` : '@Bạn',
@@ -327,7 +341,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
       me: { ...s.me, active: mine },
       op: { ...s.op, active: !mine },
       showTimer: true,
-      turnArrowSrc: mine ? BOARD_ASSETS.boardTurnLeft : BOARD_ASSETS.boardTurnRight,
+      turnArrowSrc: mine ? BOARD_ASSETS.boardTurnRight : BOARD_ASSETS.boardTurnLeft,
     }));
     bridge.turnChanged({ yourTurn: mine, deadline: deadlineMs });
     stopTimer();
@@ -428,6 +442,8 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
       if (refs.session !== target) return;
       if (get().roomWaiting?.roomId !== data.roomId && refs.pendingRoomId !== data.roomId) return;
       refs.pendingRoomId = null;
+      refs.chatOpponentId = null;
+      refs.chatSeq = 0;
       set({
         boardMode: 'idle',
         roomActionPending: null,
@@ -435,8 +451,17 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
         rankedVisible: true,
         lobbyVisible: false,
         leaderboardVisible: false,
+        overlay: null,
+        result: null,
+        board: emptyState().board,
+        lastIdx: -1,
+        winLine: null,
+        oppAway: null,
+        messages: [],
       });
-      if (data.reason === 'member_left') {
+      if (data.reason === 'guest_left') {
+        showToast('Bạn đã rời bàn');
+      } else if (data.reason === 'member_left') {
         showToast('Một người đã thoát bàn, phòng đã được hủy');
       } else if (data.reason === 'owner_left' || data.reason === 'owner_disconnected' || data.reason === 'owner_busy') {
         showToast('Chủ phòng đã rời, phòng đã đóng');
@@ -448,6 +473,8 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
       if (refs.session !== target) return;
       if (get().roomWaiting?.roomId !== data.roomId) return;
       refs.pendingRoomId = null;
+      refs.chatOpponentId = null;
+      refs.chatSeq = 0;
       set({
         boardMode: 'idle',
         roomActionPending: null,
@@ -455,6 +482,13 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
         rankedVisible: true,
         lobbyVisible: false,
         leaderboardVisible: false,
+        overlay: null,
+        result: null,
+        board: emptyState().board,
+        lastIdx: -1,
+        winLine: null,
+        oppAway: null,
+        messages: [],
       });
       showToast('Bạn đã bị chủ phòng mời ra');
       refs.online?.listRooms();
@@ -478,10 +512,14 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
         refs.session = refs.online;
       }
       refs.match = data;
-      refs.chatSeq = 0;
+      refs.exitingMatch = null;
       refs.matchBet = data.bet ?? refs.matchBet;
       refs.opponentIsBot = target === refs.bot;
       const isBot = target === refs.bot && refs.botLevel != null;
+      const opponent = opponentOf(data.players, data.you);
+      const preserveChat = !isBot && refs.chatOpponentId === opponent.id;
+      if (!preserveChat) refs.chatSeq = 0;
+      refs.chatOpponentId = isBot ? null : opponent.id;
       const botVip = isBot ? vipIconUrl(BOT_VIP_ID[refs.botLevel as BotLevel]) : VIP_DEFAULT_ICON;
       const user = refs.user;
       const meMark: 'x' | 'o' = data.you === 0 ? 'x' : 'o';
@@ -498,7 +536,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
         winLine: null,
         roomWaiting: null,
         oppAway: null,
-        messages: [],
+        messages: preserveChat ? s.messages : [],
         me: {
           name: user ? `@${user.username}` : data.players[data.you].name,
           vip: user ? avatarIconSrc(user.vipType) : VIP_DEFAULT_ICON,
@@ -506,7 +544,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
           active: false,
         },
         op: {
-          name: opponentOf(data.players, data.you).name,
+          name: opponent.name,
           vip: botVip,
           mark: meMark === 'x' ? 'o' : 'x',
           active: false,
@@ -533,10 +571,17 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     });
 
     target.onChat((data) => {
-      if (refs.session !== target || refs.match?.matchId !== data.matchId) return;
+      if (refs.session !== target) return;
       const match = refs.match;
-      const myID = match.players[match.you].id;
-      const opponentID = match.players[1 - match.you].id;
+      const room = get().roomWaiting;
+      const isMatchChat = data.matchId != null && match?.matchId === data.matchId;
+      const isRoomChat = data.roomId != null && room?.roomId === data.roomId;
+      if (!isMatchChat && !isRoomChat) return;
+      const myID = isMatchChat && match ? match.players[match.you].id : room?.youId;
+      const opponentID =
+        isMatchChat && match
+          ? match.players[1 - match.you].id
+          : room?.members.find((member) => member.id !== room?.youId)?.id;
       const who = data.userId === myID ? get().me.name : data.userId === opponentID ? get().op.name : data.name;
       refs.chatSeq += 1;
       set((state) => ({
@@ -548,17 +593,22 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
       if (refs.session !== target) return;
       clearMatchUi();
       renderState(data.state);
-      const match = refs.match;
+      const exiting = refs.exitingMatch?.matchId === data.matchId;
+      const match = refs.match ?? (exiting ? refs.exitingMatch : null);
       const won = match != null && data.winnerId === match.players[match.you].id;
       const draw = data.winnerId == null || data.winnerId === '';
+      bridge.gameOver({ matchId: data.matchId, winnerId: data.winnerId, reason: data.reason, won });
+      refs.match = null;
+      if (exiting) {
+        refs.exitingMatch = null;
+        return;
+      }
       if (draw) {
         set({ overlay: { title: 'Hòa!', sub: '', kind: 'draw', actions: ['again', 'lobby'] }, status: 'Chơi ván mới?' });
       } else {
         const bet = refs.matchBet;
         set({ result: { win: won, kenDelta: bet > 0 ? (won ? bet : -bet) : null } });
       }
-      bridge.gameOver({ matchId: data.matchId, winnerId: data.winnerId, reason: data.reason, won });
-      refs.match = null;
     });
 
     target.onError((err) => {
@@ -635,6 +685,8 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
       return;
     }
     refs.pendingRoomId = null;
+    refs.chatOpponentId = null;
+    refs.chatSeq = 0;
     set((s) => ({
       boardMode: 'idle',
       roomActionPending: null,
@@ -644,6 +696,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
       leaderboardVisible: false,
       lobbyVisible: true,
       roomWaiting: null,
+      messages: [],
       lobbyAnimKey: s.lobbyAnimKey + 1,
     }));
     if (!refs.user && !refs.connecting) void connectToServer();
@@ -758,7 +811,8 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
 
     toggleRoomReady() {
       const room = get().roomWaiting;
-      if (!room || room.ownerId === room.youId || room.members.length < 2 || get().roomActionPending) return;
+      if (!room || room.members.length < 2 || get().roomActionPending) return;
+      if (room.ownerId === room.youId) return;
       const me = room.members.find((member) => member.id === room.youId);
       set({ roomActionPending: 'ready' });
       refs.online?.setRoomReady(room.roomId, !(me?.ready ?? false));
@@ -767,7 +821,8 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     startRoom() {
       const room = get().roomWaiting;
       if (!room || get().roomActionPending) return;
-      const canStart = room.ownerId === room.youId && room.members.length === 2 && room.members.every((member) => member.ready);
+      const guest = room.members.find((member) => !member.owner);
+      const canStart = room.ownerId === room.youId && room.members.length === 2 && guest?.ready === true;
       if (!canStart) return;
       set({ roomActionPending: 'starting', status: 'Đang bắt đầu trận...' });
       refs.online?.startRoom(room.roomId);
@@ -797,6 +852,10 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     },
 
     again() {
+      if (get().roomWaiting) {
+        set({ overlay: null, result: null });
+        return;
+      }
       if (refs.session === refs.bot) {
         refs.session?.joinQueue();
         return;
@@ -820,13 +879,20 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     },
 
     exitMatch() {
-      if (refs.match) refs.session?.forfeit(refs.match.matchId);
+      if (refs.match) {
+        refs.exitingMatch = refs.match;
+        refs.session?.forfeit(refs.match.matchId, true);
+      }
       refs.match = null;
       clearMatchUi();
       toLobby();
     },
 
     closeResult() {
+      if (get().roomWaiting) {
+        set({ result: null });
+        return;
+      }
       set({ result: null });
       toLobby();
     },
@@ -844,8 +910,15 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
 
     sendChat(text) {
       const trimmed = text.trim();
-      if (!trimmed || !refs.match) return;
-      refs.session?.sendChat(refs.match.matchId, trimmed);
+      if (!trimmed) return;
+      if (refs.match) {
+        refs.session?.sendChat(refs.match.matchId, trimmed);
+        return;
+      }
+      const room = get().roomWaiting;
+      if (room?.members.length === 2) {
+        refs.online?.sendRoomChat(room.roomId, trimmed);
+      }
     },
   };
 });

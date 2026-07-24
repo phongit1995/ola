@@ -45,6 +45,7 @@ type Engine struct {
 	matches      map[string]*Match
 	byUser       map[string]*Match
 	finished     map[string]protocol.MatchOverData
+	roomChatLast map[string]time.Time
 	turnSeconds  int
 	graceSeconds int
 	restored     bool
@@ -74,6 +75,7 @@ type Match struct {
 	resultReason  string
 	finishedAt    time.Time
 	lastChatAt    [2]time.Time
+	room          *Room
 }
 
 func NewEngine(
@@ -91,6 +93,7 @@ func NewEngine(
 		matches:      make(map[string]*Match),
 		byUser:       make(map[string]*Match),
 		finished:     make(map[string]protocol.MatchOverData),
+		roomChatLast: make(map[string]time.Time),
 		turnSeconds:  turnSeconds,
 		graceSeconds: graceSeconds,
 	}
@@ -225,7 +228,6 @@ func (e *Engine) OnConnect(gameID, userID string) {
 
 	if data, ok := e.takeFinished(key); ok {
 		e.toUser(gameID, userID, protocol.OutEnvelope{Type: protocol.S2CMatchOver, Data: data})
-		return
 	}
 
 	e.roomMu.Lock()
@@ -236,7 +238,6 @@ func (e *Engine) OnConnect(gameID, userID string) {
 	}
 	if data, ok := e.takeFinished(key); ok {
 		e.toUser(gameID, userID, protocol.OutEnvelope{Type: protocol.S2CMatchOver, Data: data})
-		return
 	}
 	if ref, ok := e.store.RoomByUser(gameID, userID); ok {
 		if room, exists := e.store.Get(gameID, ref.RoomID); exists && room.hasMember(userID) {
@@ -397,14 +398,13 @@ func (e *Engine) CreateRoom(gameID string, owner protocol.PlayerInfo, bet int, p
 	e.leaveQueue(gameID, owner.ID)
 
 	room := Room{
-		ID:         uuid.NewString(),
-		GameID:     gameID,
-		OwnerID:    owner.ID,
-		OwnerName:  owner.Name,
-		OwnerReady: true,
-		Bet:        bet,
-		Password:   password,
-		CreatedAt:  time.Now().UnixMilli(),
+		ID:        uuid.NewString(),
+		GameID:    gameID,
+		OwnerID:   owner.ID,
+		OwnerName: owner.Name,
+		Bet:       bet,
+		Password:  password,
+		CreatedAt: time.Now().UnixMilli(),
 	}
 	if err := e.store.Save(room); err != nil {
 		e.sendError(gameID, owner.ID, "ROOM_CREATE_FAILED", err.Error())
@@ -482,7 +482,6 @@ func (e *Engine) JoinRoom(gameID string, joiner protocol.PlayerInfo, roomID, pas
 
 	room.GuestID = joiner.ID
 	room.GuestName = joiner.Name
-	room.OwnerReady = true
 	room.GuestReady = false
 	if err := e.store.Save(room); err != nil {
 		e.sendError(gameID, joiner.ID, "ROOM_JOIN_FAILED", err.Error())
@@ -530,6 +529,7 @@ func (e *Engine) leaveRoomLocked(gameID, userID, roomID string, disconnected boo
 			e.sendError(gameID, userID, "ROOM_LEAVE_FAILED", err.Error())
 			return
 		}
+		e.clearRoomChatRate(room.GameID, room.OwnerID, room.GuestID)
 		reason := "owner_left"
 		if disconnected {
 			reason = "owner_disconnected"
@@ -540,27 +540,23 @@ func (e *Engine) leaveRoomLocked(gameID, userID, roomID string, disconnected boo
 	}
 
 	guestID := room.GuestID
-	if !disconnected {
-		if err := e.store.Delete(gameID, room.ID, room.OwnerID, room.GuestID); err != nil {
-			e.logger.Errorw("Failed to cancel room after member left", "room_id", room.ID, "error", err)
-			e.sendError(gameID, userID, "ROOM_LEAVE_FAILED", err.Error())
-			return
-		}
-		e.emitRoomRemoved(room.GameID, room.ID)
-		e.emitRoomClosed(room, "member_left")
-		return
-	}
 	room.GuestID = ""
 	room.GuestName = ""
-	room.OwnerReady = true
 	room.GuestReady = false
 	if err := e.store.Save(room); err != nil {
 		e.sendError(gameID, userID, "ROOM_LEAVE_FAILED", err.Error())
 		return
 	}
+	e.clearRoomChatRate(room.GameID, room.OwnerID, guestID)
 	_ = e.store.DeleteUserRef(gameID, guestID, room.ID)
 	e.emitRoomUpsert(room)
 	e.emitRoomStateTo(room, room.OwnerID)
+	if !disconnected {
+		e.toUser(gameID, guestID, protocol.OutEnvelope{
+			Type: protocol.S2CRoomClosed,
+			Data: protocol.RoomClosedData{RoomID: room.ID, Reason: "guest_left"},
+		})
+	}
 }
 
 func (e *Engine) SetRoomReady(gameID, userID, roomID string, ready bool) {
@@ -573,11 +569,10 @@ func (e *Engine) SetRoomReady(gameID, userID, roomID string, ready bool) {
 	}
 	defer release()
 	if room.OwnerID == userID {
-		// The room owner is ready from creation until the room is closed.
-		room.OwnerReady = true
-	} else {
-		room.GuestReady = ready
+		// Owner readiness is implicit and is not stored as mutable room state.
+		return
 	}
+	room.GuestReady = ready
 	if err := e.store.Save(room); err != nil {
 		e.sendError(gameID, userID, "ROOM_UPDATE_FAILED", err.Error())
 		return
@@ -606,12 +601,12 @@ func (e *Engine) KickRoomMember(gameID, ownerID, roomID, targetID string) {
 	kickedID := room.GuestID
 	room.GuestID = ""
 	room.GuestName = ""
-	room.OwnerReady = true
 	room.GuestReady = false
 	if err := e.store.Save(room); err != nil {
 		e.sendError(gameID, ownerID, "ROOM_UPDATE_FAILED", err.Error())
 		return
 	}
+	e.clearRoomChatRate(room.GameID, room.OwnerID, kickedID)
 	_ = e.store.DeleteUserRef(gameID, kickedID, room.ID)
 	e.emitRoomUpsert(room)
 	e.toUser(gameID, kickedID, protocol.OutEnvelope{
@@ -638,9 +633,8 @@ func (e *Engine) StartRoom(gameID, ownerID, roomID string) {
 		e.sendError(gameID, ownerID, "ROOM_NOT_FULL", "another player is required")
 		return
 	}
-	room.OwnerReady = true
 	if !room.GuestReady {
-		e.sendError(gameID, ownerID, "ROOM_NOT_READY", "all players must be ready")
+		e.sendError(gameID, ownerID, "ROOM_NOT_READY", "the guest must be ready")
 		return
 	}
 	gameLogic, err := logic.Get(gameID)
@@ -652,12 +646,13 @@ func (e *Engine) StartRoom(gameID, ownerID, roomID string) {
 		e.sendError(gameID, ownerID, "ROOM_START_FAILED", err.Error())
 		return
 	}
-	if err := e.startMatch(
+	if err := e.startRoomMatch(
 		gameID,
 		gameLogic,
 		protocol.PlayerInfo{ID: room.OwnerID, Name: room.OwnerName},
 		protocol.PlayerInfo{ID: room.GuestID, Name: room.GuestName},
 		room.Bet,
+		room,
 	); err != nil {
 		if restoreErr := e.store.Save(room); restoreErr != nil {
 			e.logger.Errorw("Failed to restore room after match start failure", "room_id", room.ID, "error", restoreErr)
@@ -1001,13 +996,9 @@ func (e *Engine) Chat(gameID, userID, matchID, text string) {
 		e.sendError(gameID, userID, "MATCH_MISMATCH", "chat does not belong to the active match")
 		return
 	}
-	text = strings.TrimSpace(text)
-	if text == "" {
-		e.sendError(gameID, userID, "INVALID_CHAT", "chat message cannot be empty")
-		return
-	}
-	if utf8.RuneCountInString(text) > maxChatRunes {
-		e.sendError(gameID, userID, "CHAT_TOO_LONG", "chat message is too long")
+	text, code, message := validateChatText(text)
+	if code != "" {
+		e.sendError(gameID, userID, code, message)
 		return
 	}
 
@@ -1033,7 +1024,89 @@ func (e *Engine) Chat(gameID, userID, matchID, text string) {
 	}
 }
 
+func (e *Engine) RoomChat(gameID, userID, roomID, text string) {
+	e.roomMu.Lock()
+	defer e.roomMu.Unlock()
+
+	if roomID == "" {
+		e.sendError(gameID, userID, "ROOM_NOT_FOUND", "room id is required")
+		return
+	}
+	room, exists := e.store.Get(gameID, roomID)
+	if !exists {
+		e.sendError(gameID, userID, "ROOM_NOT_FOUND", "room not found")
+		return
+	}
+	if !room.hasMember(userID) {
+		e.sendError(gameID, userID, "NOT_ROOM_MEMBER", "only room members can chat")
+		return
+	}
+	if room.GuestID == "" {
+		e.sendError(gameID, userID, "ROOM_NOT_FULL", "another player is required to chat")
+		return
+	}
+	text, code, message := validateChatText(text)
+	if code != "" {
+		e.sendError(gameID, userID, code, message)
+		return
+	}
+
+	now := time.Now()
+	rateKey := userKey(gameID, userID)
+	if last := e.roomChatLast[rateKey]; !last.IsZero() && now.Sub(last) < chatCooldown {
+		e.sendError(gameID, userID, "CHAT_RATE_LIMITED", "chat messages are being sent too quickly")
+		return
+	}
+	e.roomChatLast[rateKey] = now
+
+	senderName := room.OwnerName
+	if userID == room.GuestID {
+		senderName = room.GuestName
+	}
+	data := protocol.ChatMessageData{
+		RoomID: room.ID,
+		UserID: userID,
+		Name:   senderName,
+		Text:   text,
+		SentAt: now.UnixMilli(),
+	}
+	for _, recipientID := range []string{room.OwnerID, room.GuestID} {
+		e.toUser(room.GameID, recipientID, protocol.OutEnvelope{
+			Type: protocol.S2CChatMessage,
+			Data: data,
+		})
+	}
+}
+
+func validateChatText(text string) (string, string, string) {
+	text = strings.TrimSpace(text)
+	if text == "" {
+		return "", "INVALID_CHAT", "chat message cannot be empty"
+	}
+	if utf8.RuneCountInString(text) > maxChatRunes {
+		return "", "CHAT_TOO_LONG", "chat message is too long"
+	}
+	return text, "", ""
+}
+
+// clearRoomChatRate must be called while roomMu is held.
+func (e *Engine) clearRoomChatRate(gameID string, userIDs ...string) {
+	for _, userID := range userIDs {
+		if userID != "" {
+			delete(e.roomChatLast, userKey(gameID, userID))
+		}
+	}
+}
+
 func (e *Engine) Forfeit(gameID, userID, matchID string) {
+	e.forfeit(gameID, userID, matchID, false)
+}
+
+func (e *Engine) ForfeitAndLeave(gameID, userID, matchID string) {
+	e.forfeit(gameID, userID, matchID, true)
+}
+
+func (e *Engine) forfeit(gameID, userID, matchID string, leaveAfter bool) {
 	m := e.matchForUser(gameID, userID)
 	if m == nil {
 		return
@@ -1046,11 +1119,30 @@ func (e *Engine) Forfeit(gameID, userID, matchID string) {
 	if matchID != "" && matchID != m.ID {
 		return
 	}
+	if leaveAfter {
+		if m.room != nil && m.room.GuestID == userID {
+			room := *m.room
+			room.GuestID = ""
+			room.GuestName = ""
+			room.GuestReady = false
+			m.room = &room
+		} else {
+			m.room = nil
+		}
+	}
 	winnerIdx := 1 - m.playerIndex(userID)
 	e.finishMatch(m, m.players[winnerIdx].ID, "forfeit")
 }
 
 func (e *Engine) startMatch(gameID string, gameLogic logic.GameLogic, p0, p1 protocol.PlayerInfo, bet int) error {
+	return e.startMatchWithRoom(gameID, gameLogic, p0, p1, bet, nil)
+}
+
+func (e *Engine) startRoomMatch(gameID string, gameLogic logic.GameLogic, p0, p1 protocol.PlayerInfo, bet int, room Room) error {
+	return e.startMatchWithRoom(gameID, gameLogic, p0, p1, bet, &room)
+}
+
+func (e *Engine) startMatchWithRoom(gameID string, gameLogic logic.GameLogic, p0, p1 protocol.PlayerInfo, bet int, room *Room) error {
 	if rand.Intn(2) == 1 {
 		p0, p1 = p1, p0
 	}
@@ -1065,6 +1157,7 @@ func (e *Engine) startMatch(gameID string, gameLogic logic.GameLogic, p0, p1 pro
 		bet:          bet,
 		disconnected: make(map[int]bool),
 		startedAt:    time.Now(),
+		room:         room,
 	}
 	m.deadline = time.Now().Add(time.Duration(e.turnSeconds) * time.Second)
 	m.mu.Lock()
@@ -1149,6 +1242,17 @@ func (e *Engine) onTimeout(matchID string, expectedTurn, expectedGen int) {
 }
 
 func (e *Engine) finishMatch(m *Match, winnerID string, reason string) {
+	if len(m.disconnected) > 0 {
+		if m.room == nil || m.disconnected[m.playerIndex(m.room.OwnerID)] {
+			m.room = nil
+		} else if m.disconnected[m.playerIndex(m.room.GuestID)] {
+			room := *m.room
+			room.GuestID = ""
+			room.GuestName = ""
+			room.GuestReady = false
+			m.room = &room
+		}
+	}
 	m.over = true
 	m.winnerID = winnerID
 	m.resultReason = reason
@@ -1161,6 +1265,15 @@ func (e *Engine) finishMatch(m *Match, winnerID string, reason string) {
 	}
 	if err := e.persistMatch(m); err != nil {
 		e.logger.Errorw("Failed to persist final match snapshot", "match_id", m.ID, "error", err)
+	}
+	var waitingRoom *Room
+	if m.room != nil {
+		room := prepareNextRound(*m.room)
+		if err := e.store.Save(room); err != nil {
+			e.logger.Errorw("Failed to restore waiting room after match", "match_id", m.ID, "room_id", room.ID, "error", err)
+		} else {
+			waitingRoom = &room
+		}
 	}
 	if err := e.activeStore.Delete(m.GameID, m.ID, m.players[0].ID, m.players[1].ID); err != nil {
 		e.logger.Errorw("Failed to delete finished active match", "match_id", m.ID, "error", err)
@@ -1184,6 +1297,14 @@ func (e *Engine) finishMatch(m *Match, winnerID string, reason string) {
 	e.removeMatch(m)
 	for _, p := range m.players {
 		e.toUser(m.GameID, p.ID, protocol.OutEnvelope{Type: protocol.S2CMatchOver, Data: data})
+	}
+	if waitingRoom != nil {
+		e.emitRoomUpsert(*waitingRoom)
+		e.emitRoomWaiting(waitingRoom.GameID, waitingRoom.OwnerID, *waitingRoom)
+		if waitingRoom.GuestID != "" {
+			e.emitRoomWaiting(waitingRoom.GameID, waitingRoom.GuestID, *waitingRoom)
+		}
+		e.emitRoomState(*waitingRoom)
 	}
 	for _, key := range keys {
 		e.scheduleFinishedCleanup(key, m.ID)
@@ -1225,6 +1346,7 @@ func (e *Engine) persistMatch(m *Match) error {
 		ResultReason:       m.resultReason,
 		Disconnected:       m.disconnected,
 		PausedRemainMillis: m.pausedRemain.Milliseconds(),
+		Room:               m.room,
 	}
 	if !m.graceDeadline.IsZero() {
 		snapshot.GraceDeadline = m.graceDeadline.UnixMilli()
@@ -1302,6 +1424,7 @@ func (e *Engine) restoreActiveMatches() {
 				pausedRemain: pausedRemain,
 				startedAt:    startedAt,
 				graceGen:     1,
+				room:         cloneRoom(snapshot.Room),
 			}
 			m.graceDeadline = time.Now().Add(time.Duration(e.graceSeconds) * time.Second)
 			m.mu.Lock()
@@ -1372,6 +1495,12 @@ func (e *Engine) restoreFinishedSnapshot(snapshot ActiveMatchSnapshot) {
 		State:    state,
 		Bet:      snapshot.Bet,
 	}
+	if snapshot.Room != nil {
+		room := prepareNextRound(*snapshot.Room)
+		if err := e.store.Save(room); err != nil {
+			e.logger.Errorw("Failed to restore waiting room from finished match", "match_id", snapshot.ID, "room_id", room.ID, "error", err)
+		}
+	}
 	keys := make([]string, 0, len(snapshot.Players))
 	e.finishedMu.Lock()
 	for _, player := range snapshot.Players {
@@ -1384,6 +1513,19 @@ func (e *Engine) restoreFinishedSnapshot(snapshot ActiveMatchSnapshot) {
 		e.scheduleFinishedCleanup(key, snapshot.ID)
 	}
 	e.deleteSnapshot(snapshot)
+}
+
+func prepareNextRound(room Room) Room {
+	room.GuestReady = false
+	return room
+}
+
+func cloneRoom(room *Room) *Room {
+	if room == nil {
+		return nil
+	}
+	cloned := *room
+	return &cloned
 }
 
 func (e *Engine) sendError(gameID, userID string, code string, message string) {

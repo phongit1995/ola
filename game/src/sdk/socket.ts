@@ -28,7 +28,8 @@ export interface GameSession<TState = unknown, TMove = unknown> {
   leaveQueue(): void;
   sendMove(matchId: string, move: TMove): void;
   sendChat(matchId: string, text: string): void;
-  forfeit(matchId: string): void;
+  sendRoomChat(roomId: string, text: string): void;
+  forfeit(matchId: string, leaveAfter?: boolean): void;
   createRoom(bet: number, password?: string): void;
   joinRoom(roomId: string, password?: string): void;
   leaveRoom(roomId?: string): void;
@@ -103,7 +104,8 @@ export async function joinGame<TState = unknown, TMove = unknown>(
     leaveQueue: () => send(C2S.QueueLeave),
     sendMove: (matchId, move) => send(C2S.Move, { matchId, move }),
     sendChat: (matchId, text) => send(C2S.ChatSend, { matchId, text }),
-    forfeit: (matchId) => send(C2S.Forfeit, { matchId }),
+    sendRoomChat: (roomId, text) => send(C2S.ChatSend, { roomId, text }),
+    forfeit: (matchId, leaveAfter = false) => send(C2S.Forfeit, { matchId, leaveAfter }),
     createRoom: (bet, password) => send(C2S.RoomCreate, { bet, password }),
     joinRoom: (roomId, password) => send(C2S.RoomJoin, { roomId, password }),
     leaveRoom: (roomId) => send(C2S.RoomLeave, roomId ? { roomId } : undefined),

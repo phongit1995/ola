@@ -72,7 +72,8 @@ export interface StateData<TState = unknown, TMove = unknown> {
 }
 
 export interface ChatMessageData {
-  matchId: string;
+  matchId?: string;
+  roomId?: string;
   userId: string;
   name: string;
   text: string;
@@ -137,7 +138,7 @@ export interface RoomStateData {
 
 export interface RoomClosedData {
   roomId: string;
-  reason: 'owner_left' | 'owner_disconnected' | 'owner_busy' | 'member_left' | 'left' | string;
+  reason: 'owner_left' | 'owner_disconnected' | 'owner_busy' | 'guest_left' | 'member_left' | 'left' | string;
 }
 
 export interface RoomKickedData {

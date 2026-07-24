@@ -97,12 +97,14 @@ type MoveCommand struct {
 }
 
 type ChatSendData struct {
-	MatchID string `json:"matchId"`
+	MatchID string `json:"matchId,omitempty"`
+	RoomID  string `json:"roomId,omitempty"`
 	Text    string `json:"text"`
 }
 
 type ChatMessageData struct {
-	MatchID string `json:"matchId"`
+	MatchID string `json:"matchId,omitempty"`
+	RoomID  string `json:"roomId,omitempty"`
 	UserID  string `json:"userId"`
 	Name    string `json:"name"`
 	Text    string `json:"text"`
@@ -110,7 +112,8 @@ type ChatMessageData struct {
 }
 
 type ForfeitData struct {
-	MatchID string `json:"matchId"`
+	MatchID    string `json:"matchId"`
+	LeaveAfter bool   `json:"leaveAfter,omitempty"`
 }
 
 type RoomCreateData struct {

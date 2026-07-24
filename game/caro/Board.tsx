@@ -93,7 +93,8 @@ export function Board() {
   const opponentInRoom = roomWaiting?.members.find((member) => member.id !== roomWaiting.youId);
   const isRoomOwner = roomWaiting != null && roomWaiting.ownerId === roomWaiting.youId;
   const roomFull = roomWaiting?.members.length === 2;
-  const roomCanStart = roomFull === true && roomWaiting.members.every((member) => member.ready);
+  const roomCanStart = roomFull === true && roomWaiting.members.some((member) => !member.owner && member.ready);
+  const chatEnabled = playing || (pregame && roomFull === true);
   const roomBusy = roomActionPending != null;
 
   useEffect(() => {
@@ -112,24 +113,7 @@ export function Board() {
   return (
     <div id="app" style={assetBg('boardBg')}>
       <header id="topbar">
-        <div className={'player' + (me.active ? ' active' : '')} id="player-me">
-          <div className="p-avatar" style={assetBg('boardAvatarFrame')}>
-            <img className="p-vip" src={me.vip} alt="" />
-          </div>
-          <div className="name-row">
-            <span className="name">{me.name}</span>
-            {playing && <span className={`mark ${me.mark}`}>{me.mark === 'x' ? 'X' : 'O'}</span>}
-          </div>
-          {pregame && meInRoom && <span className={'room-ready-state' + (meInRoom.ready ? ' ready' : '')}>{meInRoom.ready ? 'Sẵn sàng' : 'Chưa sẵn sàng'}</span>}
-        </div>
-        <div id="center">
-          <div id="timer" className={showTimer ? (timerUrgent ? 'urgent' : '') : 'hidden'} style={assetBg('boardTimerFrame')}>
-            <span id="timer-val">{timerText}</span>
-          </div>
-          <img id="turn-arrow" className={turnArrowSrc ? '' : 'hidden'} src={turnArrowSrc ?? undefined} alt="" />
-          <div id="status">{status}</div>
-        </div>
-        <div className={'player right' + (op.active ? ' active' : '')} id="player-op">
+        <div className={'player' + (op.active ? ' active' : '')} id="player-op">
           <div className="p-avatar" style={assetBg('boardAvatarFrame')}>
             <img className="p-vip" src={op.vip} alt="" />
           </div>
@@ -138,6 +122,23 @@ export function Board() {
             {playing && <span className={`mark ${op.mark}`}>{op.mark === 'x' ? 'X' : 'O'}</span>}
           </div>
           {pregame && opponentInRoom && <span className={'room-ready-state' + (opponentInRoom.ready ? ' ready' : '')}>{opponentInRoom.ready ? 'Sẵn sàng' : 'Chưa sẵn sàng'}</span>}
+        </div>
+        <div id="center">
+          <div id="timer" className={showTimer ? (timerUrgent ? 'urgent' : '') : 'hidden'} style={assetBg('boardTimerFrame')}>
+            <span id="timer-val">{timerText}</span>
+          </div>
+          <img id="turn-arrow" className={turnArrowSrc ? '' : 'hidden'} src={turnArrowSrc ?? undefined} alt="" />
+          <div id="status">{status}</div>
+        </div>
+        <div className={'player right' + (me.active ? ' active' : '')} id="player-me">
+          <div className="p-avatar" style={assetBg('boardAvatarFrame')}>
+            <img className="p-vip" src={me.vip} alt="" />
+          </div>
+          <div className="name-row">
+            <span className="name">{me.name}</span>
+            {playing && <span className={`mark ${me.mark}`}>{me.mark === 'x' ? 'X' : 'O'}</span>}
+          </div>
+          {pregame && meInRoom && <span className={'room-ready-state' + (meInRoom.ready ? ' ready' : '')}>{meInRoom.ready ? 'Sẵn sàng' : 'Chưa sẵn sàng'}</span>}
         </div>
       </header>
 
@@ -237,12 +238,12 @@ export function Board() {
             type="text"
             autoComplete="off"
             maxLength={120}
-            disabled={!playing}
-            placeholder={pregame ? 'CHAT SAU KHI BẮT ĐẦU...' : 'NHẬP TIN NHẮN...'}
+            disabled={!chatEnabled}
+            placeholder={pregame && !roomFull ? 'CHỜ ĐỦ HAI NGƯỜI...' : 'NHẬP TIN NHẮN...'}
             value={chatInput}
             onChange={(e) => setChatInput(e.target.value)}
           />
-          <button type="submit" className="chat-send" aria-label="Gửi" disabled={!playing}>
+          <button type="submit" className="chat-send" aria-label="Gửi" disabled={!chatEnabled}>
             <img src={assetSrc('sendIcon')} alt="" />
           </button>
         </form>

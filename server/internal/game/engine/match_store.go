@@ -35,6 +35,7 @@ type ActiveMatchSnapshot struct {
 	Disconnected       map[int]bool          `json:"disconnected,omitempty"`
 	GraceDeadline      int64                 `json:"graceDeadline,omitempty"`
 	PausedRemainMillis int64                 `json:"pausedRemainMillis,omitempty"`
+	Room               *Room                 `json:"room,omitempty"`
 }
 
 type ActiveMatchRepository interface {

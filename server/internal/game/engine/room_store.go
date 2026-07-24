@@ -24,7 +24,6 @@ type Room struct {
 	GameID     string `json:"gameId"`
 	OwnerID    string `json:"ownerId"`
 	OwnerName  string `json:"ownerName"`
-	OwnerReady bool   `json:"ownerReady"`
 	GuestID    string `json:"guestId,omitempty"`
 	GuestName  string `json:"guestName,omitempty"`
 	GuestReady bool   `json:"guestReady"`

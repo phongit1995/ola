@@ -688,19 +688,31 @@ func TestRestoreFinishedSnapshotMakesResultAvailableOnReconnect(t *testing.T) {
 		Players: []protocol.PlayerInfo{{ID: "player-a", Name: "A"}, {ID: "player-b", Name: "B"}},
 		State:   state, StateVersion: 1, Status: matchStatusFinished,
 		WinnerID: "player-a", ResultReason: "win", Bet: 5,
+		Room: &Room{
+			ID: "finished-room", GameID: persistenceTestGameID,
+			OwnerID: "player-a", OwnerName: "A",
+			GuestID: "player-b", GuestName: "B", GuestReady: true,
+		},
 	}
 	if err := activeStore.Save(snapshot); err != nil {
 		t.Fatal(err)
 	}
-	gameEngine, _, emitter := newPersistenceTestEngine(activeStore)
+	gameEngine, rooms, emitter := newPersistenceTestEngine(activeStore)
 	if _, exists := activeStore.get(snapshot.GameID, snapshot.ID); exists {
 		t.Fatal("finished tombstone was not removed after restore")
+	}
+	room, exists := rooms.Get(snapshot.GameID, snapshot.Room.ID)
+	if !exists || room.GuestReady {
+		t.Fatalf("finished match room did not restore with the guest unready: %+v", room)
 	}
 
 	gameEngine.OnConnect(snapshot.GameID, "player-a")
 	env, ok := emitter.last("player-a", protocol.S2CMatchOver)
 	if !ok || env.Data.(protocol.MatchOverData).WinnerID != "player-a" {
 		t.Fatal("finished result was not delivered after reconnect")
+	}
+	if emitter.count("player-a", protocol.S2CRoomState) != 1 {
+		t.Fatal("returning player did not recover the next-round room")
 	}
 }
 
@@ -861,7 +873,7 @@ func TestQueueAndRoomStartRecoverWhenRedisSaveFails(t *testing.T) {
 		gameEngine, rooms, emitter := newPersistenceTestEngine(activeStore)
 		room := Room{
 			ID: "room-1", GameID: persistenceTestGameID,
-			OwnerID: "owner", OwnerName: "Owner", OwnerReady: true,
+			OwnerID: "owner", OwnerName: "Owner",
 			GuestID: "guest", GuestName: "Guest", GuestReady: true,
 		}
 		if err := rooms.Save(room); err != nil {
