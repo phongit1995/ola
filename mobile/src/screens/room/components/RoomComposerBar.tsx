@@ -6,6 +6,7 @@ import type { NativeUploadFile } from '@ola/shared/lib';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { kulToken } from '@lib/kul';
 import { pastedImageFile } from '@lib/imagePicker';
+import { compressImageForUpload } from '@lib/compressImage';
 import { ChatComposer, type ChatComposerHandle } from '@components/ChatComposer';
 import { useLastKeyboardHeight } from '@hooks/useKeyboardHeight';
 import { SmileyKulPanel, SMILEY_PANEL_MIN_CONTENT_HEIGHT } from './SmileyKulPanel';
@@ -137,7 +138,8 @@ export const RoomComposerBar = forwardRef<RoomComposerHandle, RoomComposerBarPro
       setPanelOpen(false);
       for (const image of images) {
         try {
-          await onSendImage(image.file);
+          const file = await compressImageForUpload(image.file);
+          await onSendImage(file);
         } catch {
           pushToast('error', t('room.sendError'));
         }

@@ -17,6 +17,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { colorForName, isSameDay } from '@ola/shared/lib';
+import type { NativeUploadFile } from '@ola/shared/lib';
 import type { Message, ReactionType } from '@ola/shared/types';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
@@ -25,6 +26,7 @@ import { useMediaViewerStore } from '@store/mediaViewerStore';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { kulToken } from '@lib/kul';
 import { pastedImageFile } from '@lib/imagePicker';
+import { compressImageForUpload, ImageTooLargeError } from '@lib/compressImage';
 import { ListOptionDialog, type ListOption } from '@components/ui/ListOptionDialog';
 import { RoomReactionsDialog } from '@screens/room/components/RoomReactionsDialog';
 import { MessageActionSheet, type AnchorRect, type MessageSheetAction } from '@screens/room/components/MessageActionSheet';
@@ -34,7 +36,7 @@ import { DIVIDER } from '@constants';
 import { useChatDetail } from './useChatDetail';
 import { usePeerCard } from './usePeerCard';
 import { chatMessageAbilities } from './chatMessageView';
-import { CHAT_BG, MAX_UPLOAD_BYTES } from './constants';
+import { CHAT_BG } from './constants';
 import { ChatInputBar, type ChatInputBarHandle } from './components/ChatInputBar';
 import { ChatBubble, ChatMessageRow } from './components/ChatMessageRow';
 import { ChatReactionBalloons } from './components/ChatReactionBalloons';
@@ -196,18 +198,23 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     composerRef.current?.clear();
   }
 
+  async function compressAndSend(file: NativeUploadFile) {
+    try {
+      const prepared = await compressImageForUpload(file);
+      await sendImage(prepared);
+    } catch (err) {
+      push('error', err instanceof ImageTooLargeError ? t('chat.imageTooLarge') : t('chat.imageError'));
+    }
+  }
+
   async function sendPickedAssets(assets: Asset[]) {
     for (const asset of assets) {
       if (asset.uri == null) continue;
-      if ((asset.fileSize ?? 0) > MAX_UPLOAD_BYTES) {
-        push('error', t('chat.imageTooLarge'));
-        continue;
-      }
-      try {
-        await sendImage({ uri: asset.uri, name: asset.fileName ?? 'photo.jpg', type: asset.type ?? 'image/jpeg' });
-      } catch {
-        push('error', t('chat.imageError'));
-      }
+      await compressAndSend({
+        uri: asset.uri,
+        name: asset.fileName ?? 'photo.jpg',
+        type: asset.type ?? 'image/jpeg',
+      });
     }
   }
 
@@ -502,7 +509,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         onSend={(text) => void send(text)}
         onTyping={notifyTyping}
         onFocusInput={closeAttachTab}
-        onPasteImage={(uri) => void sendImage(pastedImageFile(uri))}
+        onPasteImage={(uri) => void compressAndSend(pastedImageFile(uri))}
       />
 
       <AttachmentBar
