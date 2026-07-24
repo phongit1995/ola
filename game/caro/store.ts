@@ -69,6 +69,9 @@ function roomErrorText(code: string): string | null {
   }
 }
 
+export type BoardMode = 'idle' | 'pregame' | 'playing';
+export type RoomActionPending = 'creating' | 'joining' | 'ready' | 'starting' | 'leaving' | 'kicking' | null;
+
 function chatErrorText(code: string): string | null {
   switch (code) {
     case 'CHAT_RATE_LIMITED':
@@ -93,6 +96,8 @@ export interface CaroStore {
   leaderboardVisible: boolean;
   rooms: RoomInfo[];
   roomWaiting: RoomStateData | null;
+  boardMode: BoardMode;
+  roomActionPending: RoomActionPending;
   oppAway: number | null;
 
   board: number[];
@@ -160,6 +165,8 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     announceId: 0,
     opponentIsBot: false,
     chatSeq: 0,
+    pendingRoomId: null as string | null,
+    roomConnectionLost: false,
   };
 
   const showToast = (message: string): void => {
@@ -200,6 +207,106 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
       turnAnnounce: null,
       winLine: null,
       oppAway: null,
+    }));
+  };
+
+  const enterPendingRoom = (pending: Exclude<RoomActionPending, null>, status: string): void => {
+    stopTimer();
+    refs.match = null;
+    refs.opponentIsBot = false;
+    refs.pendingRoomId = null;
+    const user = refs.user;
+    set((s) => ({
+      boardMode: 'pregame',
+      roomActionPending: pending,
+      lobbyVisible: false,
+      rankedVisible: false,
+      leaderboardVisible: false,
+      overlay: null,
+      result: null,
+      roomWaiting: null,
+      board: emptyState().board,
+      lastIdx: -1,
+      status,
+      myTurn: false,
+      showTimer: false,
+      timerUrgent: false,
+      turnArrowSrc: null,
+      turnAnnounce: null,
+      winLine: null,
+      replayVisible: false,
+      forfeitDisabled: true,
+      messages: [],
+      matchSeq: s.matchSeq + 1,
+      me: {
+        name: user ? `@${user.username}` : '@Bạn',
+        vip: user ? avatarIconSrc(user.vipType) : VIP_DEFAULT_ICON,
+        mark: 'x',
+        active: false,
+      },
+      op: { ...EMPTY_PLAYER, name: 'Đang chờ...', mark: 'o' },
+    }));
+  };
+
+  const applyRoomState = (room: RoomStateData): void => {
+    stopTimer();
+    refs.match = null;
+    refs.opponentIsBot = false;
+    refs.pendingRoomId = room.roomId;
+    refs.matchBet = room.bet;
+    const meMember = room.members.find((member) => member.id === room.youId);
+    const opponent = room.members.find((member) => member.id !== room.youId);
+    const isOwner = room.ownerId === room.youId;
+    const bothReady = room.members.length === 2 && room.members.every((member) => member.ready);
+    const status = !opponent
+      ? isOwner
+        ? 'Bạn đã sẵn sàng — đang chờ đối thủ vào bàn...'
+        : 'Đang chờ đối thủ vào bàn...'
+      : bothReady
+      ? isOwner
+        ? 'Cả hai đã sẵn sàng — bấm Bắt đầu'
+        : 'Cả hai đã sẵn sàng — chờ chủ bàn bắt đầu'
+      : meMember?.ready
+      ? 'Bạn đã sẵn sàng — chờ đối thủ'
+      : 'Đối thủ đã vào bàn — hãy bấm Sẵn sàng';
+    const firstRoomState = get().roomWaiting?.roomId !== room.roomId;
+    const user = refs.user;
+    set((s) => ({
+      boardMode: 'pregame',
+      roomActionPending: null,
+      lobbyVisible: false,
+      rankedVisible: false,
+      leaderboardVisible: false,
+      overlay: null,
+      result: null,
+      roomWaiting: room,
+      board: firstRoomState ? emptyState().board : s.board,
+      lastIdx: firstRoomState ? -1 : s.lastIdx,
+      status,
+      myTurn: false,
+      showTimer: false,
+      timerUrgent: false,
+      turnArrowSrc: null,
+      turnAnnounce: null,
+      winLine: null,
+      replayVisible: false,
+      forfeitDisabled: true,
+      messages: firstRoomState ? [] : s.messages,
+      matchSeq: firstRoomState ? s.matchSeq + 1 : s.matchSeq,
+      me: {
+        name: meMember ? `@${meMember.name}` : user ? `@${user.username}` : '@Bạn',
+        vip: user ? avatarIconSrc(user.vipType) : VIP_DEFAULT_ICON,
+        mark: 'x',
+        active: false,
+      },
+      op: opponent
+        ? {
+            name: `@${opponent.name}`,
+            vip: VIP_DEFAULT_ICON,
+            mark: 'o',
+            active: false,
+          }
+        : { ...EMPTY_PLAYER, name: 'Đang chờ...', mark: 'o' },
     }));
   };
 
@@ -247,7 +354,23 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     target.onConnectionChange((connected) => {
       if (refs.session !== target) return;
       if (!connected) {
+        if (target === refs.online && get().boardMode === 'pregame') refs.roomConnectionLost = true;
         set({ status: 'Mất kết nối, đang thử lại...' });
+        return;
+      }
+      if (target === refs.online && refs.roomConnectionLost && get().boardMode === 'pregame') {
+        refs.roomConnectionLost = false;
+        refs.pendingRoomId = null;
+        set({
+          boardMode: 'idle',
+          roomActionPending: null,
+          roomWaiting: null,
+          rankedVisible: true,
+          lobbyVisible: false,
+          leaderboardVisible: false,
+        });
+        showToast('Kết nối bị gián đoạn, bạn đã rời bàn');
+        target.listRooms();
         return;
       }
       if (target === refs.online && get().rankedVisible) target.listRooms();
@@ -286,25 +409,36 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     target.onRoomWaiting((data) => {
       if (refs.session !== target) return;
       refs.matchBet = data.bet;
+      refs.pendingRoomId = data.roomId;
       set((s) => ({
-        roomWaiting:
-          s.roomWaiting?.roomId === data.roomId
-            ? { ...s.roomWaiting, bet: data.bet, locked: data.locked }
-            : { roomId: data.roomId, ownerId: '', youId: '', bet: data.bet, locked: data.locked, members: [] },
+        boardMode: 'pregame',
+        lobbyVisible: false,
+        rankedVisible: false,
+        leaderboardVisible: false,
+        status: s.roomWaiting?.roomId === data.roomId ? s.status : 'Đang tải thông tin bàn...',
       }));
     });
 
     target.onRoomState((data) => {
       if (refs.session !== target) return;
-      refs.matchBet = data.bet;
-      set({ roomWaiting: data });
+      applyRoomState(data);
     });
 
     target.onRoomClosed((data) => {
       if (refs.session !== target) return;
-      if (get().roomWaiting?.roomId !== data.roomId) return;
-      set({ roomWaiting: null });
-      if (data.reason === 'owner_left' || data.reason === 'owner_disconnected' || data.reason === 'owner_busy') {
+      if (get().roomWaiting?.roomId !== data.roomId && refs.pendingRoomId !== data.roomId) return;
+      refs.pendingRoomId = null;
+      set({
+        boardMode: 'idle',
+        roomActionPending: null,
+        roomWaiting: null,
+        rankedVisible: true,
+        lobbyVisible: false,
+        leaderboardVisible: false,
+      });
+      if (data.reason === 'member_left') {
+        showToast('Một người đã thoát bàn, phòng đã được hủy');
+      } else if (data.reason === 'owner_left' || data.reason === 'owner_disconnected' || data.reason === 'owner_busy') {
         showToast('Chủ phòng đã rời, phòng đã đóng');
       }
       refs.online?.listRooms();
@@ -313,7 +447,15 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     target.onRoomKicked((data) => {
       if (refs.session !== target) return;
       if (get().roomWaiting?.roomId !== data.roomId) return;
-      set({ roomWaiting: null });
+      refs.pendingRoomId = null;
+      set({
+        boardMode: 'idle',
+        roomActionPending: null,
+        roomWaiting: null,
+        rankedVisible: true,
+        lobbyVisible: false,
+        leaderboardVisible: false,
+      });
       showToast('Bạn đã bị chủ phòng mời ra');
       refs.online?.listRooms();
     });
@@ -343,7 +485,10 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
       const botVip = isBot ? vipIconUrl(BOT_VIP_ID[refs.botLevel as BotLevel]) : VIP_DEFAULT_ICON;
       const user = refs.user;
       const meMark: 'x' | 'o' = data.you === 0 ? 'x' : 'o';
+      refs.pendingRoomId = null;
       set((s) => ({
+        boardMode: 'playing',
+        roomActionPending: null,
         matchSeq: s.matchSeq + 1,
         lobbyVisible: false,
         rankedVisible: false,
@@ -424,6 +569,25 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
         return;
       }
       if (!refs.match) {
+        const pending = get().roomActionPending;
+        const currentRoom = get().roomWaiting;
+        const returnToRooms = (pending === 'creating' || pending === 'joining') && !currentRoom;
+        if (currentRoom && !returnToRooms) {
+          applyRoomState(currentRoom);
+        } else {
+          set({
+            roomActionPending: null,
+            ...(returnToRooms
+              ? {
+                  boardMode: 'idle' as const,
+                  rankedVisible: true,
+                  lobbyVisible: false,
+                  leaderboardVisible: false,
+                }
+              : {}),
+          });
+        }
+        if (returnToRooms) refs.pendingRoomId = null;
         showToast(roomErrorText(err.code) ?? err.message);
         return;
       }
@@ -439,6 +603,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
       if (!refs.online) {
         refs.online = await joinGame<CaroState, CaroMove>('caro');
         wireSession(refs.online);
+        if (!refs.session) refs.session = refs.online;
       }
       await new Promise<void>((resolve, reject) => {
         const off = refs.online!.onUserInfo(() => {
@@ -463,8 +628,16 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
 
   const toLobby = (): void => {
     const waitingRoom = get().roomWaiting;
-    if (waitingRoom) refs.online?.leaveRoom(waitingRoom.roomId);
+    if (waitingRoom) {
+      if (get().roomActionPending) return;
+      set({ roomActionPending: 'leaving' });
+      refs.online?.leaveRoom(waitingRoom.roomId);
+      return;
+    }
+    refs.pendingRoomId = null;
     set((s) => ({
+      boardMode: 'idle',
+      roomActionPending: null,
       overlay: null,
       result: null,
       rankedVisible: false,
@@ -486,6 +659,8 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     leaderboardVisible: false,
     rooms: [],
     roomWaiting: null,
+    boardMode: 'idle',
+    roomActionPending: null,
     oppAway: null,
     board: emptyState().board,
     lastIdx: -1,
@@ -532,7 +707,19 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     },
 
     playRanked() {
-      set({ lobbyVisible: false, leaderboardVisible: false, rankedVisible: true, rooms: [], roomWaiting: null });
+      const activeRoom = get().roomWaiting;
+      if (activeRoom) {
+        applyRoomState(activeRoom);
+        return;
+      }
+      set({
+        boardMode: 'idle',
+        roomActionPending: null,
+        lobbyVisible: false,
+        leaderboardVisible: false,
+        rankedVisible: true,
+        rooms: [],
+      });
       const enter = (): void => {
         if (!refs.online) return;
         refs.session = refs.online;
@@ -550,39 +737,50 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
       if (!refs.online) return;
       refs.session = refs.online;
       refs.matchBet = bet;
+      enterPendingRoom('creating', 'Đang tạo bàn...');
       refs.online.createRoom(bet, password || undefined);
     },
 
     joinRoom(roomId, password) {
       if (!refs.online) return;
       refs.session = refs.online;
+      enterPendingRoom('joining', 'Đang vào bàn...');
+      refs.pendingRoomId = roomId;
       refs.online.joinRoom(roomId, password || undefined);
     },
 
     cancelRoom() {
       const room = get().roomWaiting;
-      refs.online?.leaveRoom(room?.roomId);
-      set({ roomWaiting: null });
-      refs.online?.listRooms();
+      if (!room || get().roomActionPending) return;
+      set({ roomActionPending: 'leaving', status: 'Đang hủy bàn...' });
+      refs.online?.leaveRoom(room.roomId);
     },
 
     toggleRoomReady() {
       const room = get().roomWaiting;
-      if (!room) return;
+      if (!room || room.ownerId === room.youId || room.members.length < 2 || get().roomActionPending) return;
       const me = room.members.find((member) => member.id === room.youId);
+      set({ roomActionPending: 'ready' });
       refs.online?.setRoomReady(room.roomId, !(me?.ready ?? false));
     },
 
     startRoom() {
       const room = get().roomWaiting;
-      if (room) refs.online?.startRoom(room.roomId);
+      if (!room || get().roomActionPending) return;
+      const canStart = room.ownerId === room.youId && room.members.length === 2 && room.members.every((member) => member.ready);
+      if (!canStart) return;
+      set({ roomActionPending: 'starting', status: 'Đang bắt đầu trận...' });
+      refs.online?.startRoom(room.roomId);
     },
 
     kickRoomGuest() {
       const room = get().roomWaiting;
-      if (!room || room.ownerId !== room.youId) return;
+      if (!room || room.ownerId !== room.youId || get().roomActionPending) return;
       const guest = room.members.find((member) => !member.owner);
-      if (guest) refs.online?.kickRoomMember(room.roomId, guest.id);
+      if (guest) {
+        set({ roomActionPending: 'kicking' });
+        refs.online?.kickRoomMember(room.roomId, guest.id);
+      }
     },
 
     showLeaderboard() {

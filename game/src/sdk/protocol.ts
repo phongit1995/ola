@@ -137,7 +137,7 @@ export interface RoomStateData {
 
 export interface RoomClosedData {
   roomId: string;
-  reason: 'owner_left' | 'owner_disconnected' | 'owner_busy' | 'left' | string;
+  reason: 'owner_left' | 'owner_disconnected' | 'owner_busy' | 'member_left' | 'left' | string;
 }
 
 export interface RoomKickedData {

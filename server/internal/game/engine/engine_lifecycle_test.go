@@ -127,7 +127,7 @@ func TestCreateRoomValidationAndIdempotency(t *testing.T) {
 		gameEngine.queues[persistenceTestGameID] = []protocol.PlayerInfo{lifecyclePlayer("owner")}
 		gameEngine.CreateRoom(persistenceTestGameID, lifecyclePlayer("owner"), 10, "secret")
 		room := onlyRoom(t, rooms)
-		if room.Bet != 10 || room.Password != "secret" || len(gameEngine.queues[persistenceTestGameID]) != 0 {
+		if room.Bet != 10 || room.Password != "secret" || !room.OwnerReady || len(gameEngine.queues[persistenceTestGameID]) != 0 {
 			t.Fatalf("unexpected created room: %+v", room)
 		}
 		if emitter.count("owner", protocol.S2CRoomWaiting) != 1 || emitter.count("owner", protocol.S2CRoomState) != 1 {
@@ -215,12 +215,13 @@ func TestJoinRoomValidationAndSuccess(t *testing.T) {
 		gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
 		room := lifecycleRoom("room")
 		room.Password = "secret"
+		room.OwnerReady = true
 		_ = rooms.Save(room)
 		gameEngine.queues[persistenceTestGameID] = []protocol.PlayerInfo{lifecyclePlayer("guest")}
 
 		gameEngine.JoinRoom(persistenceTestGameID, lifecyclePlayer("guest"), room.ID, "secret")
 		joined, ok := rooms.Get(room.GameID, room.ID)
-		if !ok || joined.GuestID != "guest" || joined.GuestReady || len(gameEngine.queues[persistenceTestGameID]) != 0 {
+		if !ok || joined.GuestID != "guest" || !joined.OwnerReady || joined.GuestReady || len(gameEngine.queues[persistenceTestGameID]) != 0 {
 			t.Fatalf("unexpected joined room: %+v", joined)
 		}
 		if emitter.count("owner", protocol.S2CRoomState) != 1 || emitter.count("guest", protocol.S2CRoomState) != 1 {
@@ -246,7 +247,7 @@ func TestRoomLeaveAndDisconnectLifecycle(t *testing.T) {
 	}{
 		{name: "owner leaves", userID: "owner", closedReason: "owner_left"},
 		{name: "owner disconnects", userID: "owner", disconnect: true, closedReason: "owner_disconnected"},
-		{name: "guest leaves", userID: "guest", closedReason: "left", roomShouldLive: true},
+		{name: "guest leaves", userID: "guest", closedReason: "member_left"},
 		{name: "guest disconnects", userID: "guest", disconnect: true, roomShouldLive: true},
 	}
 	for _, test := range tests {
@@ -270,7 +271,7 @@ func TestRoomLeaveAndDisconnectLifecycle(t *testing.T) {
 				t.Fatalf("room existence = %v, want %v", exists, test.roomShouldLive)
 			}
 			if test.roomShouldLive {
-				if stored.GuestID != "" || stored.GuestReady {
+				if stored.GuestID != "" || !stored.OwnerReady || stored.GuestReady {
 					t.Fatalf("guest was not removed cleanly: %+v", stored)
 				}
 				if _, ok := rooms.RoomByUser(room.GameID, "guest"); ok {
@@ -331,11 +332,12 @@ func TestRoomReadyKickAndActionErrors(t *testing.T) {
 		_ = rooms.Save(room)
 		gameEngine.SetRoomReady(room.GameID, "owner", room.ID, true)
 		gameEngine.SetRoomReady(room.GameID, "guest", room.ID, true)
+		gameEngine.SetRoomReady(room.GameID, "owner", room.ID, false)
 		updated, _ := rooms.Get(room.GameID, room.ID)
 		if !updated.OwnerReady || !updated.GuestReady {
 			t.Fatalf("ready state was not saved: %+v", updated)
 		}
-		if emitter.count("owner", protocol.S2CRoomState) != 2 || emitter.count("guest", protocol.S2CRoomState) != 2 {
+		if emitter.count("owner", protocol.S2CRoomState) != 3 || emitter.count("guest", protocol.S2CRoomState) != 3 {
 			t.Fatal("ready state was not broadcast")
 		}
 	})
@@ -368,6 +370,7 @@ func TestRoomReadyKickAndActionErrors(t *testing.T) {
 		room := lifecycleRoom("room")
 		room.GuestID = "guest"
 		room.GuestName = "GUEST"
+		room.OwnerReady = true
 		room.GuestReady = true
 		_ = rooms.Save(room)
 
@@ -379,7 +382,7 @@ func TestRoomReadyKickAndActionErrors(t *testing.T) {
 		emitter.clear()
 		gameEngine.KickRoomMember(room.GameID, "owner", room.ID, "guest")
 		updated, _ := rooms.Get(room.GameID, room.ID)
-		if updated.GuestID != "" || updated.GuestReady {
+		if updated.GuestID != "" || !updated.OwnerReady || updated.GuestReady {
 			t.Fatalf("kicked guest remains in room: %+v", updated)
 		}
 		if _, ok := rooms.RoomByUser(room.GameID, "guest"); ok {
@@ -402,7 +405,7 @@ func TestStartRoomValidationAndSuccess(t *testing.T) {
 	}{
 		{name: "not owner", room: func() Room { r := lifecycleRoom("room"); r.GuestID = "guest"; return r }(), actor: "guest", code: "NOT_ROOM_OWNER"},
 		{name: "not full", room: lifecycleRoom("room"), actor: "owner", code: "ROOM_NOT_FULL"},
-		{name: "not ready", room: func() Room { r := lifecycleRoom("room"); r.GuestID = "guest"; return r }(), actor: "owner", code: "ROOM_NOT_READY"},
+		{name: "not ready", room: func() Room { r := lifecycleRoom("room"); r.GuestID = "guest"; r.OwnerReady = true; return r }(), actor: "owner", code: "ROOM_NOT_READY"},
 		{name: "delete failure", room: func() Room {
 			r := lifecycleRoom("room")
 			r.GuestID = "guest"
