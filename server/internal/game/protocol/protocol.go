@@ -58,15 +58,16 @@ type UserInfoData struct {
 }
 
 type MatchFoundData struct {
-	MatchID  string       `json:"matchId"`
-	GameID   string       `json:"gameId"`
-	Players  []PlayerInfo `json:"players"`
-	You      int          `json:"you"`
-	State    any          `json:"state"`
-	Turn     int          `json:"turn"`
-	Deadline int64        `json:"deadline"`
-	Resumed  bool         `json:"resumed,omitempty"`
-	Bet      int          `json:"bet,omitempty"`
+	MatchID     string       `json:"matchId"`
+	GameID      string       `json:"gameId"`
+	Players     []PlayerInfo `json:"players"`
+	You         int          `json:"you"`
+	State       any          `json:"state"`
+	Turn        int          `json:"turn"`
+	Deadline    int64        `json:"deadline"`
+	Resumed     bool         `json:"resumed,omitempty"`
+	Bet         int          `json:"bet,omitempty"`
+	RoomOwnerID string       `json:"roomOwnerId,omitempty"`
 }
 
 type StateData struct {

@@ -448,6 +448,17 @@ func TestStartRoomValidationAndSuccess(t *testing.T) {
 			if emitter.count(userID, protocol.S2CMatchFound) != 1 {
 				t.Fatalf("%s did not receive MATCH_FOUND", userID)
 			}
+			message, ok := emitter.last(userID, protocol.S2CMatchFound)
+			if !ok {
+				t.Fatalf("%s MATCH_FOUND payload was not captured", userID)
+			}
+			payload, ok := message.Data.(protocol.MatchFoundData)
+			if !ok {
+				t.Fatalf("%s MATCH_FOUND has unexpected payload type %T", userID, message.Data)
+			}
+			if payload.RoomOwnerID != room.OwnerID {
+				t.Fatalf("%s received room owner %q, want %q", userID, payload.RoomOwnerID, room.OwnerID)
+			}
 		}
 		for _, match := range gameEngine.matches {
 			if match.bet != room.Bet {

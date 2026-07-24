@@ -1,8 +1,9 @@
-import { assetBg } from './assets';
+import { assetBg, type AssetKey } from './assets';
 
 interface ConfirmModalProps {
   open: boolean;
   text: string;
+  icon?: AssetKey;
   confirmLabel?: string;
   cancelLabel?: string;
   onConfirm: () => void;
@@ -12,6 +13,7 @@ interface ConfirmModalProps {
 export function ConfirmModal({
   open,
   text,
+  icon = 'confirmDoor',
   confirmLabel = 'Thoát',
   cancelLabel = 'Hủy',
   onConfirm,
@@ -27,7 +29,7 @@ export function ConfirmModal({
           <span>Xác nhận</span>
         </div>
         <div className="confirm-body">
-          <div className="confirm-door" style={assetBg('confirmDoor')} />
+          <div className="confirm-icon" style={assetBg(icon)} />
           <p className="confirm-text">{text}</p>
           <div className="confirm-actions">
             <button type="button" className="confirm-btn danger" style={assetBg('btnRed')} onClick={onConfirm}>

@@ -28,6 +28,7 @@ export interface PlayerDisplay {
   vip: string;
   mark: 'x' | 'o';
   active: boolean;
+  owner: boolean;
 }
 
 export interface ChatMsg {
@@ -54,7 +55,7 @@ function formatClock(seconds: number): string {
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
-const EMPTY_PLAYER: PlayerDisplay = { name: '---', vip: VIP_DEFAULT_ICON, mark: 'x', active: false };
+const EMPTY_PLAYER: PlayerDisplay = { name: '---', vip: VIP_DEFAULT_ICON, mark: 'x', active: false, owner: false };
 
 function roomErrorText(code: string): string | null {
   switch (code) {
@@ -251,6 +252,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
         vip: user ? avatarIconSrc(user.vipType) : VIP_DEFAULT_ICON,
         mark: 'x',
         active: false,
+        owner: false,
       },
       op: { ...EMPTY_PLAYER, name: 'Đang chờ...', mark: 'o' },
     }));
@@ -312,6 +314,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
         vip: user ? avatarIconSrc(user.vipType) : VIP_DEFAULT_ICON,
         mark: 'x',
         active: false,
+        owner: meMember?.owner ?? false,
       },
       op: opponent
         ? {
@@ -319,6 +322,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
             vip: VIP_DEFAULT_ICON,
             mark: 'o',
             active: false,
+            owner: opponent.owner,
           }
         : { ...EMPTY_PLAYER, name: 'Đang chờ...', mark: 'o' },
     }));
@@ -542,12 +546,14 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
           vip: user ? avatarIconSrc(user.vipType) : VIP_DEFAULT_ICON,
           mark: meMark,
           active: false,
+          owner: data.roomOwnerId === data.players[data.you].id,
         },
         op: {
           name: opponent.name,
           vip: botVip,
           mark: meMark === 'x' ? 'o' : 'x',
           active: false,
+          owner: data.roomOwnerId === opponent.id,
         },
         forfeitDisabled: false,
         replayVisible: target === refs.bot,
@@ -875,7 +881,9 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     },
 
     forfeit() {
-      if (refs.match && window.confirm('Bỏ cuộc trận này?')) refs.session?.forfeit(refs.match.matchId);
+      if (!refs.match) return;
+      set({ forfeitDisabled: true });
+      refs.session?.forfeit(refs.match.matchId);
     },
 
     exitMatch() {

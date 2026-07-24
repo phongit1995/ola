@@ -680,6 +680,50 @@ func TestRestoreActiveMatchAndResumeAfterBothPlayersReconnect(t *testing.T) {
 	}
 }
 
+func TestRestoreRoomMatchPreservesOwnerInMatchFound(t *testing.T) {
+	activeStore := newMemoryActiveMatchStore()
+	firstEngine, rooms, _ := newPersistenceTestEngine(activeStore)
+	room := lifecycleRoom("restored-owner-room")
+	room.GuestID = "guest"
+	room.GuestName = "GUEST"
+	room.GuestReady = true
+	if err := rooms.Save(room); err != nil {
+		t.Fatal(err)
+	}
+	firstEngine.StartRoom(room.GameID, room.OwnerID, room.ID)
+
+	var match *Match
+	for _, current := range firstEngine.matches {
+		match = current
+	}
+	if match == nil {
+		t.Fatal("room match was not started")
+	}
+	matchID := match.ID
+	stopEngineTimers(firstEngine)
+
+	secondEngine, _, emitter := newPersistenceTestEngine(activeStore)
+	defer stopEngineTimers(secondEngine)
+	restored := secondEngine.matches[matchID]
+	if restored == nil || restored.room == nil {
+		t.Fatal("room match metadata was not restored")
+	}
+	for _, player := range restored.players {
+		secondEngine.OnConnect(restored.GameID, player.ID)
+		message, ok := emitter.last(player.ID, protocol.S2CMatchFound)
+		if !ok {
+			t.Fatalf("%s did not receive resumed MATCH_FOUND", player.ID)
+		}
+		payload, ok := message.Data.(protocol.MatchFoundData)
+		if !ok {
+			t.Fatalf("%s MATCH_FOUND has unexpected payload type %T", player.ID, message.Data)
+		}
+		if payload.RoomOwnerID != room.OwnerID {
+			t.Fatalf("%s received restored room owner %q, want %q", player.ID, payload.RoomOwnerID, room.OwnerID)
+		}
+	}
+}
+
 func TestRestoreFinishedSnapshotMakesResultAvailableOnReconnect(t *testing.T) {
 	activeStore := newMemoryActiveMatchStore()
 	state, _ := json.Marshal(&persistenceTestState{MoveCount: 3, Winner: 0})

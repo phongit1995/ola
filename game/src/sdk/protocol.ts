@@ -60,6 +60,7 @@ export interface MatchFoundData<TState = unknown> {
   deadline: number;
   resumed?: boolean;
   bet?: number;
+  roomOwnerId?: string;
 }
 
 export interface StateData<TState = unknown, TMove = unknown> {

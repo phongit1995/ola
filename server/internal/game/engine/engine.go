@@ -1184,18 +1184,23 @@ func (e *Engine) sendMatchFound(m *Match, resumed bool) {
 }
 
 func (e *Engine) sendMatchFoundTo(m *Match, userID string, resumed bool) {
+	roomOwnerID := ""
+	if m.room != nil {
+		roomOwnerID = m.room.OwnerID
+	}
 	e.toUser(m.GameID, userID, protocol.OutEnvelope{
 		Type: protocol.S2CMatchFound,
 		Data: protocol.MatchFoundData{
-			MatchID:  m.ID,
-			GameID:   m.GameID,
-			Players:  m.players,
-			You:      m.playerIndex(userID),
-			State:    m.state,
-			Turn:     m.turnIdx,
-			Deadline: m.deadline.UnixMilli(),
-			Resumed:  resumed,
-			Bet:      m.bet,
+			MatchID:     m.ID,
+			GameID:      m.GameID,
+			Players:     m.players,
+			You:         m.playerIndex(userID),
+			State:       m.state,
+			Turn:        m.turnIdx,
+			Deadline:    m.deadline.UnixMilli(),
+			Resumed:     resumed,
+			Bet:         m.bet,
+			RoomOwnerID: roomOwnerID,
 		},
 	})
 }

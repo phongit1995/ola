@@ -10,6 +10,7 @@ const CELLS = Array.from({ length: SIZE * SIZE }, (_, i) => i);
 export function Board() {
   const [chatInput, setChatInput] = useState('');
   const [exitOpen, setExitOpen] = useState(false);
+  const [forfeitOpen, setForfeitOpen] = useState(false);
   const chatLogRef = useRef<HTMLDivElement>(null);
   const {
     me,
@@ -102,6 +103,10 @@ export function Board() {
   }, [matchSeq]);
 
   useEffect(() => {
+    if (!playing) setForfeitOpen(false);
+  }, [playing]);
+
+  useEffect(() => {
     const log = chatLogRef.current;
     if (log) log.scrollTop = log.scrollHeight;
   }, [messages.length]);
@@ -121,7 +126,12 @@ export function Board() {
             <span className="name">{op.name}</span>
             {playing && <span className={`mark ${op.mark}`}>{op.mark === 'x' ? 'X' : 'O'}</span>}
           </div>
-          {pregame && opponentInRoom && <span className={'room-ready-state' + (opponentInRoom.ready ? ' ready' : '')}>{opponentInRoom.ready ? 'Sẵn sàng' : 'Chưa sẵn sàng'}</span>}
+          {op.owner && <span className="room-owner-badge">Chủ phòng</span>}
+          {pregame && opponentInRoom && !opponentInRoom.owner && (
+            <span className={'room-ready-state' + (opponentInRoom.ready ? ' ready' : '')}>
+              {opponentInRoom.ready ? 'Sẵn sàng' : 'Chưa sẵn sàng'}
+            </span>
+          )}
         </div>
         <div id="center">
           <div id="timer" className={showTimer ? (timerUrgent ? 'urgent' : '') : 'hidden'} style={assetBg('boardTimerFrame')}>
@@ -138,7 +148,10 @@ export function Board() {
             <span className="name">{me.name}</span>
             {playing && <span className={`mark ${me.mark}`}>{me.mark === 'x' ? 'X' : 'O'}</span>}
           </div>
-          {pregame && meInRoom && <span className={'room-ready-state' + (meInRoom.ready ? ' ready' : '')}>{meInRoom.ready ? 'Sẵn sàng' : 'Chưa sẵn sàng'}</span>}
+          {me.owner && <span className="room-owner-badge">Chủ phòng</span>}
+          {pregame && meInRoom && !meInRoom.owner && (
+            <span className={'room-ready-state' + (meInRoom.ready ? ' ready' : '')}>{meInRoom.ready ? 'Sẵn sàng' : 'Chưa sẵn sàng'}</span>
+          )}
         </div>
       </header>
 
@@ -267,8 +280,16 @@ export function Board() {
                 Bắt đầu
               </button>
             )}
-            <button type="button" id="btn-exit" style={assetBg('boardMenuBtn')} disabled={roomBusy || !roomWaiting} onClick={() => setExitOpen(true)}>
-              Thoát bàn
+            <button
+              type="button"
+              id="btn-exit"
+              className="board-action-btn"
+              style={assetBg('boardMenuBtn')}
+              disabled={roomBusy || !roomWaiting}
+              onClick={() => setExitOpen(true)}
+            >
+              <img className="board-action-icon" src={assetSrc('icExit')} alt="" />
+              <span>Thoát bàn</span>
             </button>
           </>
         ) : (
@@ -276,11 +297,20 @@ export function Board() {
             <button type="button" id="btn-replay" className={replayVisible ? '' : 'hidden'} style={assetBg('boardMenuBtn')} onClick={replay}>
               Chơi lại
             </button>
-            <button type="button" id="btn-forfeit" style={assetBg('boardMenuBtn')} disabled={forfeitDisabled} onClick={forfeit}>
-              Bỏ cuộc
+            <button
+              type="button"
+              id="btn-forfeit"
+              className="board-action-btn"
+              style={assetBg('boardMenuBtn')}
+              disabled={forfeitDisabled}
+              onClick={() => setForfeitOpen(true)}
+            >
+              <img className="board-action-icon" src={assetSrc('boardForfeitIcon')} alt="" />
+              <span>Bỏ cuộc</span>
             </button>
-            <button type="button" id="btn-exit" style={assetBg('boardMenuBtn')} onClick={() => setExitOpen(true)}>
-              Thoát
+            <button type="button" id="btn-exit" className="board-action-btn" style={assetBg('boardMenuBtn')} onClick={() => setExitOpen(true)}>
+              <img className="board-action-icon" src={assetSrc('icExit')} alt="" />
+              <span>Thoát</span>
             </button>
           </>
         )}
@@ -292,13 +322,31 @@ export function Board() {
 
       <ConfirmModal
         open={exitOpen}
-        text={pregame ? 'Thoát bàn sẽ hủy phòng cho cả hai người. Thoát chứ?' : 'Thoát sẽ bị xử thua trận này. Thoát chứ?'}
+        text={
+          pregame
+            ? isRoomOwner
+              ? 'Thoát bàn sẽ đóng phòng. Thoát chứ?'
+              : 'Bạn sẽ rời bàn; chủ phòng vẫn ở lại. Thoát chứ?'
+            : 'Thoát sẽ bị xử thua và rời bàn. Thoát chứ?'
+        }
         onConfirm={() => {
           setExitOpen(false);
           if (pregame) cancelRoom();
           else exitMatch();
         }}
         onCancel={() => setExitOpen(false)}
+      />
+      <ConfirmModal
+        open={forfeitOpen}
+        icon="boardForfeitIcon"
+        text="Bạn sẽ bị xử thua ván này. Cả hai vẫn ở lại bàn để chơi ván tiếp theo."
+        confirmLabel="Bỏ cuộc"
+        cancelLabel="Tiếp tục"
+        onConfirm={() => {
+          setForfeitOpen(false);
+          forfeit();
+        }}
+        onCancel={() => setForfeitOpen(false)}
       />
     </div>
   );
