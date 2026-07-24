@@ -3,6 +3,7 @@ import ImageCropPicker from 'react-native-image-crop-picker';
 import { toast } from '@ola/shared/lib';
 import type { NativeUploadFile } from '@ola/shared/lib';
 import { MIN_IMAGE_SOURCE } from '@ola/shared/constants';
+import { compressImageForUpload } from './compressImage';
 
 export const AVATAR_OUTPUT = 800;
 
@@ -25,6 +26,14 @@ function withFileScheme(path: string): string {
   return `file://${path}`;
 }
 
+async function toCompressedUploadFile(file: NativeUploadFile): Promise<NativeUploadFile> {
+  try {
+    return await compressImageForUpload(file);
+  } catch {
+    return file;
+  }
+}
+
 function isPickerCancel(err: unknown): boolean {
   return (
     typeof err === 'object' &&
@@ -44,12 +53,13 @@ export async function pickCroppedImage(width: number, height: number): Promise<C
       compressImageQuality: 0.9,
     });
     const fileName = image.path.split('/').pop() ?? 'photo.jpg';
+    const file = await toCompressedUploadFile({
+      uri: withFileScheme(image.path),
+      name: image.filename ?? fileName,
+      type: image.mime || 'image/jpeg',
+    });
     return {
-      file: {
-        uri: withFileScheme(image.path),
-        name: image.filename ?? fileName,
-        type: image.mime || 'image/jpeg',
-      },
+      file,
       sourceWidth: image.cropRect?.width ?? image.width,
       sourceHeight: image.cropRect?.height ?? image.height,
     };
@@ -89,8 +99,13 @@ export async function pickSingleImage(): Promise<PickedImage | null> {
   });
   const asset = result.assets?.[0];
   if (result.didCancel || asset?.uri == null) return null;
+  const file = await toCompressedUploadFile({
+    uri: asset.uri,
+    name: asset.fileName ?? 'photo.jpg',
+    type: asset.type ?? 'image/jpeg',
+  });
   return {
-    file: { uri: asset.uri, name: asset.fileName ?? 'photo.jpg', type: asset.type ?? 'image/jpeg' },
+    file,
     width: asset.width ?? 0,
     height: asset.height ?? 0,
   };
