@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strings"
+	"sync"
 
 	"ola-chat-server/internal/config"
 	"ola-chat-server/internal/game/engine"
@@ -30,6 +31,12 @@ type Server struct {
 	engine *engine.Engine
 	repo   *Repository
 	logger *zap.SugaredLogger
+	connMu sync.Mutex
+	conns  map[string]int
+}
+
+func userRoom(gameID, userID string) string {
+	return "game:" + gameID + ":user:" + userID
 }
 
 func NewServer(
@@ -52,6 +59,7 @@ func NewServer(
 		engine: gameEngine,
 		repo:   repo,
 		logger: logger.Named("[game-ws]"),
+		conns:  make(map[string]int),
 	}
 	gameEngine.SetEmitter(server)
 
@@ -114,15 +122,20 @@ func NewServer(
 
 func (s *Server) handleConnection(client *socket.Socket) {
 	data := client.Data().(*SocketData)
-	client.Join(socket.Room("user:" + data.UserID))
+	client.Join(socket.Room(userRoom(data.GameID, data.UserID)))
 
 	s.logger.Infow("Game socket connected",
 		"user_id", data.UserID,
 		"game_id", data.GameID,
 		"socket_id", client.Id())
 
+	key := userRoom(data.GameID, data.UserID)
+	s.connMu.Lock()
+	s.conns[key]++
+	s.connMu.Unlock()
+
 	s.sendUserInfo(client, data)
-	s.engine.OnConnect(data.UserID)
+	s.engine.OnConnect(data.GameID, data.UserID)
 
 	client.On(messageEvent, func(args ...any) {
 		if len(args) == 0 {
@@ -132,7 +145,16 @@ func (s *Server) handleConnection(client *socket.Socket) {
 	})
 
 	client.On("disconnect", func(args ...any) {
-		s.engine.OnDisconnect(data.GameID, data.UserID)
+		s.connMu.Lock()
+		s.conns[key]--
+		last := s.conns[key] <= 0
+		if last {
+			delete(s.conns, key)
+		}
+		s.connMu.Unlock()
+		if last {
+			s.engine.OnDisconnect(data.GameID, data.UserID)
+		}
 		s.logger.Infow("Game socket disconnected", "user_id", data.UserID)
 	})
 }
@@ -156,6 +178,9 @@ func (s *Server) sendUserInfo(client *socket.Socket, data *SocketData) {
 		return
 	}
 
+	if info.Username != "" {
+		data.Name = info.Username
+	}
 	client.Emit(messageEvent, protocol.OutEnvelope{Type: protocol.S2CUserInfo, Data: *info})
 }
 
@@ -175,9 +200,15 @@ func (s *Server) handleMessage(data *SocketData, raw any) {
 	case protocol.C2SQueueLeave:
 		s.engine.LeaveQueue(data.GameID, data.UserID)
 	case protocol.C2SMove:
-		s.engine.Move(data.UserID, env.Data)
+		var d protocol.MoveCommand
+		if err := json.Unmarshal(env.Data, &d); err != nil {
+			return
+		}
+		s.engine.Move(data.GameID, data.UserID, d.MatchID, d.Move)
 	case protocol.C2SForfeit:
-		s.engine.Forfeit(data.UserID)
+		var d protocol.ForfeitData
+		_ = json.Unmarshal(env.Data, &d)
+		s.engine.Forfeit(data.GameID, data.UserID, d.MatchID)
 	case protocol.C2SRoomCreate:
 		var d protocol.RoomCreateData
 		_ = json.Unmarshal(env.Data, &d)
@@ -197,8 +228,8 @@ func (s *Server) handleMessage(data *SocketData, raw any) {
 	}
 }
 
-func (s *Server) ToUser(userID string, envelope protocol.OutEnvelope) {
-	s.io.To(socket.Room("user:" + userID)).Emit(messageEvent, envelope)
+func (s *Server) ToUser(gameID string, userID string, envelope protocol.OutEnvelope) {
+	s.io.To(socket.Room(userRoom(gameID, userID))).Emit(messageEvent, envelope)
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {

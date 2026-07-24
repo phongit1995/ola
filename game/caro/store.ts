@@ -487,7 +487,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
 
     placeMove(x, y) {
       if (!refs.match || !get().myTurn) return;
-      refs.session?.sendMove({ x, y });
+      refs.session?.sendMove(refs.match.matchId, { x, y });
     },
 
     again() {
@@ -510,11 +510,11 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     },
 
     forfeit() {
-      if (refs.match && window.confirm('Bỏ cuộc trận này?')) refs.session?.forfeit();
+      if (refs.match && window.confirm('Bỏ cuộc trận này?')) refs.session?.forfeit(refs.match.matchId);
     },
 
     exitMatch() {
-      if (refs.match) refs.session?.forfeit();
+      if (refs.match) refs.session?.forfeit(refs.match.matchId);
       refs.match = null;
       clearMatchUi();
       toLobby();

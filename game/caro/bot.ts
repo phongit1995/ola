@@ -144,7 +144,7 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
 
     leaveQueue() {},
 
-    sendMove(move: CaroMove) {
+    sendMove(_matchId: string, move: CaroMove) {
       if (!playing || !playerTurn) return;
       if (
         move.x < 0 ||
@@ -173,7 +173,7 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
       botTimer = window.setTimeout(botMove, TURN_ANNOUNCE_MS + BOT_LEVELS[level].thinkMs);
     },
 
-    forfeit() {
+    forfeit(_matchId: string) {
       if (playing) finish('bot', 'forfeit');
     },
 

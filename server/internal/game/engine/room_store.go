@@ -40,16 +40,24 @@ func NewRoomStore(cache *services.CacheService) *RoomStore {
 }
 
 func (s *RoomStore) Save(room Room) error {
+	if err := s.cache.Set(fmt.Sprintf(userRoomKey, room.OwnerID), userRoomRef{GameID: room.GameID, RoomID: room.ID}, roomTTL); err != nil {
+		return err
+	}
 	if err := s.cache.SetHash(fmt.Sprintf(roomsHashKey, room.GameID), room.ID, room); err != nil {
+		_ = s.cache.Delete(fmt.Sprintf(userRoomKey, room.OwnerID))
 		return err
 	}
 	_ = s.cache.SetExpire(fmt.Sprintf(roomsHashKey, room.GameID), roomTTL)
-	return s.cache.Set(fmt.Sprintf(userRoomKey, room.OwnerID), userRoomRef{GameID: room.GameID, RoomID: room.ID}, roomTTL)
+	return nil
 }
 
 func (s *RoomStore) Get(gameID, roomID string) (Room, bool) {
 	var room Room
 	if err := s.cache.GetHash(fmt.Sprintf(roomsHashKey, gameID), roomID, &room); err != nil {
+		return Room{}, false
+	}
+	if room.CreatedAt < time.Now().Add(-roomTTL).UnixMilli() {
+		s.Delete(gameID, roomID, room.OwnerID)
 		return Room{}, false
 	}
 	return room, true

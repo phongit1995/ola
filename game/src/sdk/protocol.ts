@@ -64,7 +64,7 @@ export interface StateData<TState = unknown, TMove = unknown> {
 export interface MatchOverData<TState = unknown> {
   matchId: string;
   winnerId?: string;
-  reason: 'win' | 'forfeit' | 'timeout' | 'disconnect';
+  reason: 'win' | 'forfeit' | 'timeout' | 'disconnect' | 'draw';
   state: TState;
   bet?: number;
 }

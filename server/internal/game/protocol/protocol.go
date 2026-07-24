@@ -81,6 +81,15 @@ type ErrorData struct {
 	Message string `json:"message"`
 }
 
+type MoveCommand struct {
+	MatchID string          `json:"matchId"`
+	Move    json.RawMessage `json:"move"`
+}
+
+type ForfeitData struct {
+	MatchID string `json:"matchId"`
+}
+
 type RoomCreateData struct {
 	Bet      int    `json:"bet"`
 	Password string `json:"password"`

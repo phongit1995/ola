@@ -20,8 +20,8 @@ export interface GameSession<TState = unknown, TMove = unknown> {
   readonly userId: string;
   joinQueue(): void;
   leaveQueue(): void;
-  sendMove(move: TMove): void;
-  forfeit(): void;
+  sendMove(matchId: string, move: TMove): void;
+  forfeit(matchId: string): void;
   createRoom(bet: number, password?: string): void;
   joinRoom(roomId: string, password?: string): void;
   leaveRoom(): void;
@@ -85,8 +85,8 @@ export async function joinGame<TState = unknown, TMove = unknown>(
     userId,
     joinQueue: () => send(C2S.QueueJoin),
     leaveQueue: () => send(C2S.QueueLeave),
-    sendMove: (move) => send(C2S.Move, move),
-    forfeit: () => send(C2S.Forfeit),
+    sendMove: (matchId, move) => send(C2S.Move, { matchId, move }),
+    forfeit: (matchId) => send(C2S.Forfeit, { matchId }),
     createRoom: (bet, password) => send(C2S.RoomCreate, { bet, password }),
     joinRoom: (roomId, password) => send(C2S.RoomJoin, { roomId, password }),
     leaveRoom: () => send(C2S.RoomLeave),
