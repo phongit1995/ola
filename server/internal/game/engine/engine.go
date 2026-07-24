@@ -23,7 +23,7 @@ type Engine struct {
 	mu           sync.Mutex
 	logger       *zap.SugaredLogger
 	emitter      Emitter
-	store        *RoomStore
+	store        RoomRepository
 	queues       map[string][]protocol.PlayerInfo
 	matches      map[string]*Match
 	byUser       map[string]*Match
@@ -50,7 +50,7 @@ type Match struct {
 	pausedRemain  time.Duration
 }
 
-func NewEngine(logger *zap.SugaredLogger, turnSeconds int, graceSeconds int, store *RoomStore) *Engine {
+func NewEngine(logger *zap.SugaredLogger, turnSeconds int, graceSeconds int, store RoomRepository) *Engine {
 	return &Engine{
 		logger:       logger.Named("[game-engine]"),
 		store:        store,
@@ -80,6 +80,15 @@ func (e *Engine) OnConnect(gameID, userID string) {
 		if data, ok := e.finished[key]; ok {
 			e.emitter.ToUser(gameID, userID, protocol.OutEnvelope{Type: protocol.S2CMatchOver, Data: data})
 			delete(e.finished, key)
+			return
+		}
+		if ref, ok := e.store.RoomByUser(gameID, userID); ok {
+			if room, exists := e.store.Get(gameID, ref.RoomID); exists && room.hasMember(userID) {
+				e.emitRoomWaiting(gameID, userID, room)
+				e.emitRoomStateTo(room, userID)
+			} else {
+				_ = e.store.DeleteUserRef(gameID, userID)
+			}
 		}
 		return
 	}
@@ -105,6 +114,15 @@ func (e *Engine) JoinQueue(gameID string, player protocol.PlayerInfo) {
 	if m, ok := e.byUser[userKey(gameID, player.ID)]; ok && !m.over {
 		e.sendMatchFound(m, true)
 		return
+	}
+	if ref, ok := e.store.RoomByUser(gameID, player.ID); ok {
+		if room, exists := e.store.Get(gameID, ref.RoomID); exists && room.hasMember(player.ID) {
+			e.emitRoomWaiting(gameID, player.ID, room)
+			e.emitRoomStateTo(room, player.ID)
+			e.sendError(gameID, player.ID, "IN_ROOM", "leave the current room before joining queue")
+			return
+		}
+		_ = e.store.DeleteUserRef(gameID, player.ID)
 	}
 
 	gameLogic, err := logic.Get(gameID)
@@ -166,13 +184,24 @@ func (e *Engine) CreateRoom(gameID string, owner protocol.PlayerInfo, bet int, p
 		e.sendError(gameID, owner.ID, "UNKNOWN_GAME", err.Error())
 		return
 	}
+	if bet < 0 {
+		e.sendError(gameID, owner.ID, "INVALID_BET", "bet cannot be negative")
+		return
+	}
+	if len(password) > 64 {
+		e.sendError(gameID, owner.ID, "INVALID_PASSWORD", "room password is too long")
+		return
+	}
 
-	if ref, ok := e.store.RoomByUser(owner.ID); ok {
-		if room, ok2 := e.store.Get(ref.GameID, ref.RoomID); ok2 {
+	if ref, ok := e.store.RoomByUser(gameID, owner.ID); ok {
+		if room, ok2 := e.store.Get(gameID, ref.RoomID); ok2 && room.hasMember(owner.ID) {
 			e.emitRoomWaiting(gameID, owner.ID, room)
+			e.emitRoomStateTo(room, owner.ID)
 			return
 		}
+		_ = e.store.DeleteUserRef(gameID, owner.ID)
 	}
+	e.leaveQueueLocked(gameID, owner.ID)
 
 	room := Room{
 		ID:        uuid.NewString(),
@@ -187,7 +216,9 @@ func (e *Engine) CreateRoom(gameID string, owner protocol.PlayerInfo, bet int, p
 		e.sendError(gameID, owner.ID, "ROOM_CREATE_FAILED", err.Error())
 		return
 	}
+	delete(e.finished, userKey(gameID, owner.ID))
 	e.emitRoomWaiting(gameID, owner.ID, room)
+	e.emitRoomStateTo(room, owner.ID)
 	e.logger.Infow("Room created", "room_id", room.ID, "owner", owner.ID, "bet", bet)
 }
 
@@ -199,6 +230,30 @@ func (e *Engine) JoinRoom(gameID string, joiner protocol.PlayerInfo, roomID, pas
 		e.sendMatchFound(m, true)
 		return
 	}
+
+	if roomID == "" {
+		e.sendError(gameID, joiner.ID, "ROOM_NOT_FOUND", "room id is required")
+		return
+	}
+	if ref, exists := e.store.RoomByUser(gameID, joiner.ID); exists {
+		if room, ok := e.store.Get(gameID, ref.RoomID); ok && room.hasMember(joiner.ID) {
+			if room.ID == roomID {
+				e.emitRoomWaiting(gameID, joiner.ID, room)
+				e.emitRoomStateTo(room, joiner.ID)
+				return
+			}
+			e.sendError(gameID, joiner.ID, "ALREADY_IN_ROOM", "leave the current room before joining another")
+			return
+		}
+		_ = e.store.DeleteUserRef(gameID, joiner.ID)
+	}
+
+	release, claimed := e.store.Claim(gameID, roomID)
+	if !claimed {
+		e.sendError(gameID, joiner.ID, "ROOM_BUSY", "room is being updated")
+		return
+	}
+	defer release()
 
 	room, ok := e.store.Get(gameID, roomID)
 	if !ok {
@@ -213,33 +268,179 @@ func (e *Engine) JoinRoom(gameID string, joiner protocol.PlayerInfo, roomID, pas
 		e.sendError(gameID, joiner.ID, "WRONG_PASSWORD", "wrong password")
 		return
 	}
-	if m, ok := e.byUser[userKey(gameID, room.OwnerID)]; ok && !m.over {
-		e.store.Delete(gameID, roomID, room.OwnerID)
+	if room.GuestID != "" && room.GuestID != joiner.ID {
+		e.sendError(gameID, joiner.ID, "ROOM_FULL", "room is full")
+		return
+	}
+	if m, busy := e.byUser[userKey(gameID, room.OwnerID)]; busy && !m.over {
+		_ = e.store.Delete(gameID, room.ID, room.OwnerID, room.GuestID)
+		e.emitRoomClosed(room, "owner_busy")
 		e.sendError(gameID, joiner.ID, "ROOM_NOT_FOUND", "room owner busy")
 		return
 	}
 
-	gameLogic, err := logic.Get(gameID)
-	if err != nil {
-		e.sendError(gameID, joiner.ID, "UNKNOWN_GAME", err.Error())
+	room.GuestID = joiner.ID
+	room.GuestName = joiner.Name
+	room.GuestReady = false
+	if err := e.store.Save(room); err != nil {
+		e.sendError(gameID, joiner.ID, "ROOM_JOIN_FAILED", err.Error())
 		return
 	}
-
-	if !e.store.Claim(roomID) {
-		e.sendError(gameID, joiner.ID, "ROOM_NOT_FOUND", "room already taken")
-		return
-	}
-	e.store.Delete(gameID, roomID, room.OwnerID)
-
-	e.startMatch(gameID, gameLogic, protocol.PlayerInfo{ID: room.OwnerID, Name: room.OwnerName}, joiner, room.Bet)
+	delete(e.finished, userKey(gameID, joiner.ID))
+	e.leaveQueueLocked(gameID, joiner.ID)
+	e.emitRoomWaiting(gameID, joiner.ID, room)
+	e.emitRoomState(room)
 }
 
-func (e *Engine) LeaveRoom(userID string) {
+func (e *Engine) LeaveRoom(gameID, userID, roomID string) {
 	e.mu.Lock()
 	defer e.mu.Unlock()
-	if ref, ok := e.store.RoomByUser(userID); ok {
-		e.store.Delete(ref.GameID, ref.RoomID, userID)
+	e.leaveRoomLocked(gameID, userID, roomID, false)
+}
+
+func (e *Engine) leaveRoomLocked(gameID, userID, roomID string, disconnected bool) {
+	ref, ok := e.store.RoomByUser(gameID, userID)
+	if !ok {
+		return
 	}
+	if roomID != "" && roomID != ref.RoomID {
+		e.sendError(gameID, userID, "ROOM_MISMATCH", "room does not match current membership")
+		return
+	}
+
+	release, claimed := e.store.Claim(gameID, ref.RoomID)
+	if !claimed {
+		e.sendError(gameID, userID, "ROOM_BUSY", "room is being updated")
+		return
+	}
+	defer release()
+
+	room, exists := e.store.Get(gameID, ref.RoomID)
+	if !exists || !room.hasMember(userID) {
+		_ = e.store.DeleteUserRef(gameID, userID)
+		return
+	}
+
+	if room.OwnerID == userID {
+		_ = e.store.Delete(gameID, room.ID, room.OwnerID, room.GuestID)
+		reason := "owner_left"
+		if disconnected {
+			reason = "owner_disconnected"
+		}
+		e.emitRoomClosed(room, reason)
+		return
+	}
+
+	guestID := room.GuestID
+	room.GuestID = ""
+	room.GuestName = ""
+	room.GuestReady = false
+	if err := e.store.Save(room); err != nil {
+		e.sendError(gameID, userID, "ROOM_LEAVE_FAILED", err.Error())
+		return
+	}
+	_ = e.store.DeleteUserRef(gameID, guestID)
+	if !disconnected {
+		e.emitter.ToUser(gameID, userID, protocol.OutEnvelope{
+			Type: protocol.S2CRoomClosed,
+			Data: protocol.RoomClosedData{RoomID: room.ID, Reason: "left"},
+		})
+	}
+	e.emitRoomStateTo(room, room.OwnerID)
+}
+
+func (e *Engine) SetRoomReady(gameID, userID, roomID string, ready bool) {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+
+	room, release, ok := e.roomForAction(gameID, userID, roomID)
+	if !ok {
+		return
+	}
+	defer release()
+	if room.OwnerID == userID {
+		room.OwnerReady = ready
+	} else {
+		room.GuestReady = ready
+	}
+	if err := e.store.Save(room); err != nil {
+		e.sendError(gameID, userID, "ROOM_UPDATE_FAILED", err.Error())
+		return
+	}
+	e.emitRoomState(room)
+}
+
+func (e *Engine) KickRoomMember(gameID, ownerID, roomID, targetID string) {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+
+	room, release, ok := e.roomForAction(gameID, ownerID, roomID)
+	if !ok {
+		return
+	}
+	defer release()
+	if room.OwnerID != ownerID {
+		e.sendError(gameID, ownerID, "NOT_ROOM_OWNER", "only the room owner can kick members")
+		return
+	}
+	if room.GuestID == "" || (targetID != "" && targetID != room.GuestID) {
+		e.sendError(gameID, ownerID, "ROOM_MEMBER_NOT_FOUND", "room member not found")
+		return
+	}
+
+	kickedID := room.GuestID
+	room.GuestID = ""
+	room.GuestName = ""
+	room.GuestReady = false
+	if err := e.store.Save(room); err != nil {
+		e.sendError(gameID, ownerID, "ROOM_UPDATE_FAILED", err.Error())
+		return
+	}
+	_ = e.store.DeleteUserRef(gameID, kickedID)
+	e.emitter.ToUser(gameID, kickedID, protocol.OutEnvelope{
+		Type: protocol.S2CRoomKicked,
+		Data: protocol.RoomKickedData{RoomID: room.ID, ByUserID: ownerID},
+	})
+	e.emitRoomStateTo(room, ownerID)
+}
+
+func (e *Engine) StartRoom(gameID, ownerID, roomID string) {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+
+	room, release, ok := e.roomForAction(gameID, ownerID, roomID)
+	if !ok {
+		return
+	}
+	defer release()
+	if room.OwnerID != ownerID {
+		e.sendError(gameID, ownerID, "NOT_ROOM_OWNER", "only the room owner can start the match")
+		return
+	}
+	if room.GuestID == "" {
+		e.sendError(gameID, ownerID, "ROOM_NOT_FULL", "another player is required")
+		return
+	}
+	if !room.OwnerReady || !room.GuestReady {
+		e.sendError(gameID, ownerID, "ROOM_NOT_READY", "all players must be ready")
+		return
+	}
+	gameLogic, err := logic.Get(gameID)
+	if err != nil {
+		e.sendError(gameID, ownerID, "UNKNOWN_GAME", err.Error())
+		return
+	}
+	if err := e.store.Delete(gameID, room.ID, room.OwnerID, room.GuestID); err != nil {
+		e.sendError(gameID, ownerID, "ROOM_START_FAILED", err.Error())
+		return
+	}
+	e.startMatch(
+		gameID,
+		gameLogic,
+		protocol.PlayerInfo{ID: room.OwnerID, Name: room.OwnerName},
+		protocol.PlayerInfo{ID: room.GuestID, Name: room.GuestName},
+		room.Bet,
+	)
 }
 
 func (e *Engine) ListRooms(gameID, userID string) {
@@ -248,12 +449,17 @@ func (e *Engine) ListRooms(gameID, userID string) {
 	rooms := e.store.List(gameID)
 	infos := make([]protocol.RoomInfo, 0, len(rooms))
 	for _, r := range rooms {
+		players := 1
+		if r.GuestID != "" {
+			players = 2
+		}
 		infos = append(infos, protocol.RoomInfo{
 			ID:      r.ID,
 			Owner:   r.OwnerName,
 			Bet:     r.Bet,
 			Locked:  r.Password != "",
-			Players: 1,
+			Players: players,
+			Full:    players == 2,
 		})
 	}
 	e.emitter.ToUser(gameID, userID, protocol.OutEnvelope{Type: protocol.S2CRoomList, Data: protocol.RoomListData{Rooms: infos}})
@@ -266,14 +472,76 @@ func (e *Engine) emitRoomWaiting(gameID, userID string, room Room) {
 	})
 }
 
+func (e *Engine) emitRoomState(room Room) {
+	e.emitRoomStateTo(room, room.OwnerID)
+	if room.GuestID != "" {
+		e.emitRoomStateTo(room, room.GuestID)
+	}
+}
+
+func (e *Engine) emitRoomStateTo(room Room, userID string) {
+	members := []protocol.RoomMember{{
+		ID: room.OwnerID, Name: room.OwnerName, Owner: true, Ready: room.OwnerReady,
+	}}
+	if room.GuestID != "" {
+		members = append(members, protocol.RoomMember{
+			ID: room.GuestID, Name: room.GuestName, Ready: room.GuestReady,
+		})
+	}
+	e.emitter.ToUser(room.GameID, userID, protocol.OutEnvelope{
+		Type: protocol.S2CRoomState,
+		Data: protocol.RoomStateData{
+			RoomID: room.ID, OwnerID: room.OwnerID, YouID: userID, Bet: room.Bet,
+			Locked: room.Password != "", Members: members,
+		},
+	})
+}
+
+func (e *Engine) emitRoomClosed(room Room, reason string) {
+	data := protocol.RoomClosedData{RoomID: room.ID, Reason: reason}
+	e.emitter.ToUser(room.GameID, room.OwnerID, protocol.OutEnvelope{Type: protocol.S2CRoomClosed, Data: data})
+	if room.GuestID != "" {
+		e.emitter.ToUser(room.GameID, room.GuestID, protocol.OutEnvelope{Type: protocol.S2CRoomClosed, Data: data})
+	}
+}
+
+func (e *Engine) roomForAction(gameID, userID, roomID string) (Room, func(), bool) {
+	if roomID == "" {
+		e.sendError(gameID, userID, "ROOM_NOT_FOUND", "room id is required")
+		return Room{}, nil, false
+	}
+	ref, ok := e.store.RoomByUser(gameID, userID)
+	if !ok || ref.RoomID != roomID {
+		e.sendError(gameID, userID, "ROOM_NOT_FOUND", "room not found")
+		return Room{}, nil, false
+	}
+	release, claimed := e.store.Claim(gameID, roomID)
+	if !claimed {
+		e.sendError(gameID, userID, "ROOM_BUSY", "room is being updated")
+		return Room{}, nil, false
+	}
+	room, exists := e.store.Get(gameID, roomID)
+	if !exists || !room.hasMember(userID) {
+		release()
+		_ = e.store.DeleteUserRef(gameID, userID)
+		e.sendError(gameID, userID, "ROOM_NOT_FOUND", "room not found")
+		return Room{}, nil, false
+	}
+	return room, release, true
+}
+
+func (r Room) hasMember(userID string) bool {
+	return r.OwnerID == userID || r.GuestID == userID
+}
+
 func (e *Engine) OnDisconnect(gameID, userID string) {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 
 	e.leaveQueueLocked(gameID, userID)
 
-	if ref, ok := e.store.RoomByUser(userID); ok {
-		e.store.Delete(ref.GameID, ref.RoomID, userID)
+	if ref, ok := e.store.RoomByUser(gameID, userID); ok {
+		e.leaveRoomLocked(gameID, userID, ref.RoomID, true)
 	}
 
 	m, ok := e.byUser[userKey(gameID, userID)]
@@ -426,9 +694,6 @@ func (e *Engine) Forfeit(gameID, userID, matchID string) {
 func (e *Engine) startMatch(gameID string, gameLogic logic.GameLogic, p0, p1 protocol.PlayerInfo, bet int) {
 	for _, p := range []protocol.PlayerInfo{p0, p1} {
 		e.leaveQueueLocked(gameID, p.ID)
-		if ref, ok := e.store.RoomByUser(p.ID); ok {
-			e.store.Delete(ref.GameID, ref.RoomID, p.ID)
-		}
 		delete(e.finished, userKey(gameID, p.ID))
 	}
 

@@ -1584,16 +1584,64 @@ button:focus-visible,
   z-index: 2;
 }
 
-#ranked-waiting-cancel {
+.ranked-room-members {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ranked-room-member {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 10px;
+  background: rgba(20, 48, 79, 0.08);
+  border-radius: 9px;
+  font-size: 13px;
+}
+
+.ranked-room-member strong {
+  color: #a8352c;
+  white-space: nowrap;
+}
+
+.ranked-room-member strong.ready {
+  color: #287447;
+}
+
+.ranked-waiting-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.ranked-waiting-actions button {
   border: none;
-  background: #a8352c;
   color: var(--lobby-cream);
   font-weight: 800;
-  font-size: 14px;
+  font-size: 12px;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
   border-radius: 12px;
-  padding: 9px 24px;
+  padding: 9px 14px;
+}
+
+.ranked-waiting-actions button:disabled {
+  opacity: 0.45;
+}
+
+.ranked-room-ready,
+.ranked-room-start {
+  background: #287447;
+}
+
+.ranked-room-kick,
+#ranked-waiting-cancel {
+  background: #a8352c;
 }
 
 #ranked-toast {

@@ -11,6 +11,9 @@ const (
 	C2SRoomJoin   = "ROOM_JOIN"
 	C2SRoomLeave  = "ROOM_LEAVE"
 	C2SRoomList   = "ROOM_LIST"
+	C2SRoomKick   = "ROOM_KICK"
+	C2SRoomReady  = "ROOM_READY"
+	C2SRoomStart  = "ROOM_START"
 
 	S2CUserInfo             = "USER_INFO"
 	S2CQueueWaiting         = "QUEUE_WAITING"
@@ -20,6 +23,9 @@ const (
 	S2CError                = "ERROR"
 	S2CRoomList             = "ROOM_LIST"
 	S2CRoomWaiting          = "ROOM_WAITING"
+	S2CRoomState            = "ROOM_STATE"
+	S2CRoomClosed           = "ROOM_CLOSED"
+	S2CRoomKicked           = "ROOM_KICKED"
 	S2COpponentDisconnected = "OPPONENT_DISCONNECTED"
 	S2COpponentReconnected  = "OPPONENT_RECONNECTED"
 )
@@ -100,6 +106,20 @@ type RoomJoinData struct {
 	Password string `json:"password"`
 }
 
+type RoomActionData struct {
+	RoomID string `json:"roomId"`
+}
+
+type RoomKickData struct {
+	RoomID string `json:"roomId"`
+	UserID string `json:"userId"`
+}
+
+type RoomReadyData struct {
+	RoomID string `json:"roomId"`
+	Ready  bool   `json:"ready"`
+}
+
 type RoomInfo struct {
 	ID      string `json:"id"`
 	Owner   string `json:"owner"`
@@ -117,6 +137,32 @@ type RoomWaitingData struct {
 	RoomID string `json:"roomId"`
 	Bet    int    `json:"bet"`
 	Locked bool   `json:"locked"`
+}
+
+type RoomMember struct {
+	ID    string `json:"id"`
+	Name  string `json:"name"`
+	Owner bool   `json:"owner"`
+	Ready bool   `json:"ready"`
+}
+
+type RoomStateData struct {
+	RoomID  string       `json:"roomId"`
+	OwnerID string       `json:"ownerId"`
+	YouID   string       `json:"youId"`
+	Bet     int          `json:"bet"`
+	Locked  bool         `json:"locked"`
+	Members []RoomMember `json:"members"`
+}
+
+type RoomClosedData struct {
+	RoomID string `json:"roomId"`
+	Reason string `json:"reason"`
+}
+
+type RoomKickedData struct {
+	RoomID   string `json:"roomId"`
+	ByUserID string `json:"byUserId"`
 }
 
 type OpponentDisconnectedData struct {

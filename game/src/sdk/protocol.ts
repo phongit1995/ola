@@ -7,6 +7,9 @@ export const C2S = {
   RoomJoin: 'ROOM_JOIN',
   RoomLeave: 'ROOM_LEAVE',
   RoomList: 'ROOM_LIST',
+  RoomKick: 'ROOM_KICK',
+  RoomReady: 'ROOM_READY',
+  RoomStart: 'ROOM_START',
 } as const;
 
 export const S2C = {
@@ -18,6 +21,9 @@ export const S2C = {
   Error: 'ERROR',
   RoomList: 'ROOM_LIST',
   RoomWaiting: 'ROOM_WAITING',
+  RoomState: 'ROOM_STATE',
+  RoomClosed: 'ROOM_CLOSED',
+  RoomKicked: 'ROOM_KICKED',
   OpponentDisconnected: 'OPPONENT_DISCONNECTED',
   OpponentReconnected: 'OPPONENT_RECONNECTED',
 } as const;
@@ -91,6 +97,32 @@ export interface RoomWaitingData {
   roomId: string;
   bet: number;
   locked: boolean;
+}
+
+export interface RoomMember {
+  id: string;
+  name: string;
+  owner: boolean;
+  ready: boolean;
+}
+
+export interface RoomStateData {
+  roomId: string;
+  ownerId: string;
+  youId: string;
+  bet: number;
+  locked: boolean;
+  members: RoomMember[];
+}
+
+export interface RoomClosedData {
+  roomId: string;
+  reason: 'owner_left' | 'owner_disconnected' | 'owner_busy' | 'left' | string;
+}
+
+export interface RoomKickedData {
+  roomId: string;
+  byUserId: string;
 }
 
 export interface OpponentDisconnectedData {

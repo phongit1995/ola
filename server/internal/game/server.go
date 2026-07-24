@@ -1,6 +1,7 @@
 package game
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"strings"
@@ -12,6 +13,8 @@ import (
 	"ola-chat-server/internal/game/protocol"
 	"ola-chat-server/internal/services"
 
+	redisClient "github.com/zishang520/socket.io/adapters/redis/v3"
+	"github.com/zishang520/socket.io/adapters/redis/v3/adapter"
 	socket "github.com/zishang520/socket.io/servers/socket/v3"
 	"github.com/zishang520/socket.io/v3/pkg/types"
 	"go.uber.org/zap"
@@ -44,12 +47,20 @@ func NewServer(
 	jwtService *services.JWTService,
 	gameEngine *engine.Engine,
 	repo *Repository,
+	cache *services.CacheService,
 	logger *zap.SugaredLogger,
 ) (*Server, error) {
 	opts := socket.DefaultServerOptions()
 	opts.SetCors(&types.Cors{
 		Origin:      cfg.CORSAllowedOrigins,
 		Credentials: true,
+	})
+
+	adapterOpts := adapter.DefaultRedisAdapterOptions()
+	adapterOpts.SetKey(cfg.GameWebSocketRedisPrefix)
+	opts.SetAdapter(&adapter.RedisAdapterBuilder{
+		Redis: redisClient.NewRedisClient(context.Background(), cache.GetClient()),
+		Opts:  adapterOpts,
 	})
 
 	io := socket.NewServer(nil, opts)
@@ -116,7 +127,9 @@ func NewServer(
 		server.handleConnection(client)
 	})
 
-	logger.Info("✅ Game WebSocket server initialized")
+	logger.Infow("✅ Game WebSocket server initialized with Redis Adapter",
+		"redis_prefix", cfg.GameWebSocketRedisPrefix,
+	)
 	return server, nil
 }
 
@@ -207,11 +220,15 @@ func (s *Server) handleMessage(data *SocketData, raw any) {
 		s.engine.Move(data.GameID, data.UserID, d.MatchID, d.Move)
 	case protocol.C2SForfeit:
 		var d protocol.ForfeitData
-		_ = json.Unmarshal(env.Data, &d)
+		if err := json.Unmarshal(env.Data, &d); err != nil {
+			return
+		}
 		s.engine.Forfeit(data.GameID, data.UserID, d.MatchID)
 	case protocol.C2SRoomCreate:
 		var d protocol.RoomCreateData
-		_ = json.Unmarshal(env.Data, &d)
+		if err := json.Unmarshal(env.Data, &d); err != nil {
+			return
+		}
 		s.engine.CreateRoom(data.GameID, protocol.PlayerInfo{ID: data.UserID, Name: data.Name}, d.Bet, d.Password)
 	case protocol.C2SRoomJoin:
 		var d protocol.RoomJoinData
@@ -220,7 +237,31 @@ func (s *Server) handleMessage(data *SocketData, raw any) {
 		}
 		s.engine.JoinRoom(data.GameID, protocol.PlayerInfo{ID: data.UserID, Name: data.Name}, d.RoomID, d.Password)
 	case protocol.C2SRoomLeave:
-		s.engine.LeaveRoom(data.UserID)
+		var d protocol.RoomActionData
+		if len(env.Data) > 0 {
+			if err := json.Unmarshal(env.Data, &d); err != nil {
+				return
+			}
+		}
+		s.engine.LeaveRoom(data.GameID, data.UserID, d.RoomID)
+	case protocol.C2SRoomKick:
+		var d protocol.RoomKickData
+		if err := json.Unmarshal(env.Data, &d); err != nil {
+			return
+		}
+		s.engine.KickRoomMember(data.GameID, data.UserID, d.RoomID, d.UserID)
+	case protocol.C2SRoomReady:
+		var d protocol.RoomReadyData
+		if err := json.Unmarshal(env.Data, &d); err != nil {
+			return
+		}
+		s.engine.SetRoomReady(data.GameID, data.UserID, d.RoomID, d.Ready)
+	case protocol.C2SRoomStart:
+		var d protocol.RoomActionData
+		if err := json.Unmarshal(env.Data, &d); err != nil {
+			return
+		}
+		s.engine.StartRoom(data.GameID, data.UserID, d.RoomID)
 	case protocol.C2SRoomList:
 		s.engine.ListRooms(data.GameID, data.UserID)
 	default:

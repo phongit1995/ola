@@ -6,29 +6,46 @@ import (
 	"time"
 
 	"ola-chat-server/internal/services"
+
+	"github.com/google/uuid"
 )
 
 const (
-	roomTTL      = 30 * time.Minute
-	roomLockTTL  = 10 * time.Second
-	roomsHashKey = "GAME:%s:ROOMS"
-	userRoomKey  = "GAME:USERROOM:%s"
-	roomLockKey  = "GAME:ROOMLOCK:%s"
+	roomTTL           = 30 * time.Minute
+	roomLockTTL       = 10 * time.Second
+	roomsHashKey      = "GAME:%s:ROOMS"
+	userRoomKey       = "GAME:%s:USERROOM:%s"
+	legacyUserRoomKey = "GAME:USERROOM:%s"
+	roomLockKey       = "GAME:%s:ROOMLOCK:%s"
 )
 
 type Room struct {
-	ID        string `json:"id"`
-	GameID    string `json:"gameId"`
-	OwnerID   string `json:"ownerId"`
-	OwnerName string `json:"ownerName"`
-	Bet       int    `json:"bet"`
-	Password  string `json:"password"`
-	CreatedAt int64  `json:"createdAt"`
+	ID         string `json:"id"`
+	GameID     string `json:"gameId"`
+	OwnerID    string `json:"ownerId"`
+	OwnerName  string `json:"ownerName"`
+	OwnerReady bool   `json:"ownerReady"`
+	GuestID    string `json:"guestId,omitempty"`
+	GuestName  string `json:"guestName,omitempty"`
+	GuestReady bool   `json:"guestReady"`
+	Bet        int    `json:"bet"`
+	Password   string `json:"password"`
+	CreatedAt  int64  `json:"createdAt"`
 }
 
 type userRoomRef struct {
 	GameID string `json:"gameId"`
 	RoomID string `json:"roomId"`
+}
+
+type RoomRepository interface {
+	Save(room Room) error
+	Get(gameID, roomID string) (Room, bool)
+	Delete(gameID, roomID string, userIDs ...string) error
+	DeleteUserRef(gameID, userID string) error
+	List(gameID string) []Room
+	RoomByUser(gameID, userID string) (userRoomRef, bool)
+	Claim(gameID, roomID string) (release func(), ok bool)
 }
 
 type RoomStore struct {
@@ -40,14 +57,29 @@ func NewRoomStore(cache *services.CacheService) *RoomStore {
 }
 
 func (s *RoomStore) Save(room Room) error {
-	if err := s.cache.Set(fmt.Sprintf(userRoomKey, room.OwnerID), userRoomRef{GameID: room.GameID, RoomID: room.ID}, roomTTL); err != nil {
-		return err
+	roomData, err := json.Marshal(room)
+	if err != nil {
+		return fmt.Errorf("marshal room: %w", err)
 	}
-	if err := s.cache.SetHash(fmt.Sprintf(roomsHashKey, room.GameID), room.ID, room); err != nil {
-		_ = s.cache.Delete(fmt.Sprintf(userRoomKey, room.OwnerID))
-		return err
+	refData, err := json.Marshal(userRoomRef{GameID: room.GameID, RoomID: room.ID})
+	if err != nil {
+		return fmt.Errorf("marshal room reference: %w", err)
 	}
-	_ = s.cache.SetExpire(fmt.Sprintf(roomsHashKey, room.GameID), roomTTL)
+
+	ctx := s.cache.GetContext()
+	pipe := s.cache.GetClient().TxPipeline()
+	roomsKey := fmt.Sprintf(roomsHashKey, room.GameID)
+	pipe.HSet(ctx, roomsKey, room.ID, roomData)
+	pipe.Set(ctx, fmt.Sprintf(userRoomKey, room.GameID, room.OwnerID), refData, roomTTL)
+	pipe.Del(ctx, fmt.Sprintf(legacyUserRoomKey, room.OwnerID))
+	if room.GuestID != "" {
+		pipe.Set(ctx, fmt.Sprintf(userRoomKey, room.GameID, room.GuestID), refData, roomTTL)
+		pipe.Del(ctx, fmt.Sprintf(legacyUserRoomKey, room.GuestID))
+	}
+	pipe.Expire(ctx, roomsKey, roomTTL)
+	if _, err := pipe.Exec(ctx); err != nil {
+		return fmt.Errorf("save room: %w", err)
+	}
 	return nil
 }
 
@@ -57,17 +89,38 @@ func (s *RoomStore) Get(gameID, roomID string) (Room, bool) {
 		return Room{}, false
 	}
 	if room.CreatedAt < time.Now().Add(-roomTTL).UnixMilli() {
-		s.Delete(gameID, roomID, room.OwnerID)
+		_ = s.Delete(gameID, roomID, room.OwnerID, room.GuestID)
 		return Room{}, false
 	}
 	return room, true
 }
 
-func (s *RoomStore) Delete(gameID, roomID, ownerID string) {
-	_ = s.cache.DeleteHash(fmt.Sprintf(roomsHashKey, gameID), roomID)
-	if ownerID != "" {
-		_ = s.cache.Delete(fmt.Sprintf(userRoomKey, ownerID))
+func (s *RoomStore) Delete(gameID, roomID string, userIDs ...string) error {
+	ctx := s.cache.GetContext()
+	pipe := s.cache.GetClient().TxPipeline()
+	pipe.HDel(ctx, fmt.Sprintf(roomsHashKey, gameID), roomID)
+	for _, userID := range userIDs {
+		if userID != "" {
+			pipe.Del(ctx, fmt.Sprintf(userRoomKey, gameID, userID))
+			pipe.Del(ctx, fmt.Sprintf(legacyUserRoomKey, userID))
+		}
 	}
+	if _, err := pipe.Exec(ctx); err != nil {
+		return fmt.Errorf("delete room: %w", err)
+	}
+	return nil
+}
+
+func (s *RoomStore) DeleteUserRef(gameID, userID string) error {
+	if userID == "" {
+		return nil
+	}
+	ctx := s.cache.GetContext()
+	return s.cache.GetClient().Del(
+		ctx,
+		fmt.Sprintf(userRoomKey, gameID, userID),
+		fmt.Sprintf(legacyUserRoomKey, userID),
+	).Err()
 }
 
 func (s *RoomStore) List(gameID string) []Room {
@@ -83,7 +136,7 @@ func (s *RoomStore) List(gameID string) []Room {
 			continue
 		}
 		if room.CreatedAt < cutoff {
-			s.Delete(gameID, id, room.OwnerID)
+			_ = s.Delete(gameID, id, room.OwnerID, room.GuestID)
 			continue
 		}
 		rooms = append(rooms, room)
@@ -91,18 +144,35 @@ func (s *RoomStore) List(gameID string) []Room {
 	return rooms
 }
 
-func (s *RoomStore) RoomByUser(userID string) (userRoomRef, bool) {
+func (s *RoomStore) RoomByUser(gameID, userID string) (userRoomRef, bool) {
 	var ref userRoomRef
-	if err := s.cache.Get(fmt.Sprintf(userRoomKey, userID), &ref); err != nil {
-		return userRoomRef{}, false
+	if err := s.cache.Get(fmt.Sprintf(userRoomKey, gameID, userID), &ref); err != nil {
+		if err := s.cache.Get(fmt.Sprintf(legacyUserRoomKey, userID), &ref); err != nil || ref.GameID != gameID {
+			return userRoomRef{}, false
+		}
+		_ = s.cache.Set(fmt.Sprintf(userRoomKey, gameID, userID), ref, roomTTL)
+		_ = s.cache.Delete(fmt.Sprintf(legacyUserRoomKey, userID))
 	}
 	return ref, true
 }
 
-func (s *RoomStore) Claim(roomID string) bool {
-	ok, err := s.cache.SetNX(fmt.Sprintf(roomLockKey, roomID), "1", roomLockTTL)
-	if err != nil {
-		return false
+func (s *RoomStore) Claim(gameID, roomID string) (func(), bool) {
+	key := fmt.Sprintf(roomLockKey, gameID, roomID)
+	token := uuid.NewString()
+	client := s.cache.GetClient()
+	ctx := s.cache.GetContext()
+	ok, err := client.SetNX(ctx, key, token, roomLockTTL).Result()
+	if err != nil || !ok {
+		return nil, false
 	}
-	return ok
+
+	release := func() {
+		const unlockScript = `
+if redis.call("GET", KEYS[1]) == ARGV[1] then
+  return redis.call("DEL", KEYS[1])
+end
+return 0`
+		_, _ = client.Eval(ctx, unlockScript, []string{key}, token).Result()
+	}
+	return release, true
 }

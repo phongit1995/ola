@@ -9,6 +9,9 @@ import {
   type MatchOverData,
   type OpponentDisconnectedData,
   type RoomListData,
+  type RoomClosedData,
+  type RoomKickedData,
+  type RoomStateData,
   type RoomWaitingData,
   type StateData,
   type UserInfoData,
@@ -24,12 +27,18 @@ export interface GameSession<TState = unknown, TMove = unknown> {
   forfeit(matchId: string): void;
   createRoom(bet: number, password?: string): void;
   joinRoom(roomId: string, password?: string): void;
-  leaveRoom(): void;
+  leaveRoom(roomId?: string): void;
+  kickRoomMember(roomId: string, userId: string): void;
+  setRoomReady(roomId: string, ready: boolean): void;
+  startRoom(roomId: string): void;
   listRooms(): void;
   onUserInfo(handler: (data: UserInfoData) => void): () => void;
   onQueueWaiting(handler: () => void): () => void;
   onRoomList(handler: (data: RoomListData) => void): () => void;
   onRoomWaiting(handler: (data: RoomWaitingData) => void): () => void;
+  onRoomState(handler: (data: RoomStateData) => void): () => void;
+  onRoomClosed(handler: (data: RoomClosedData) => void): () => void;
+  onRoomKicked(handler: (data: RoomKickedData) => void): () => void;
   onMatchFound(handler: (data: MatchFoundData<TState>) => void): () => void;
   onState(handler: (data: StateData<TState, TMove>) => void): () => void;
   onMatchOver(handler: (data: MatchOverData<TState>) => void): () => void;
@@ -89,12 +98,18 @@ export async function joinGame<TState = unknown, TMove = unknown>(
     forfeit: (matchId) => send(C2S.Forfeit, { matchId }),
     createRoom: (bet, password) => send(C2S.RoomCreate, { bet, password }),
     joinRoom: (roomId, password) => send(C2S.RoomJoin, { roomId, password }),
-    leaveRoom: () => send(C2S.RoomLeave),
+    leaveRoom: (roomId) => send(C2S.RoomLeave, roomId ? { roomId } : undefined),
+    kickRoomMember: (roomId, userId) => send(C2S.RoomKick, { roomId, userId }),
+    setRoomReady: (roomId, ready) => send(C2S.RoomReady, { roomId, ready }),
+    startRoom: (roomId) => send(C2S.RoomStart, { roomId }),
     listRooms: () => send(C2S.RoomList),
     onUserInfo: (handler) => on(S2C.UserInfo, handler as Handler),
     onQueueWaiting: (handler) => on(S2C.QueueWaiting, handler as Handler),
     onRoomList: (handler) => on(S2C.RoomList, handler as Handler),
     onRoomWaiting: (handler) => on(S2C.RoomWaiting, handler as Handler),
+    onRoomState: (handler) => on(S2C.RoomState, handler as Handler),
+    onRoomClosed: (handler) => on(S2C.RoomClosed, handler as Handler),
+    onRoomKicked: (handler) => on(S2C.RoomKicked, handler as Handler),
     onMatchFound: (handler) => on(S2C.MatchFound, handler as Handler),
     onState: (handler) => on(S2C.State, handler as Handler),
     onMatchOver: (handler) => on(S2C.MatchOver, handler as Handler),

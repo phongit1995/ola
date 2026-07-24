@@ -129,6 +129,7 @@ services:
       - REDIS_PORT=${REDIS_PORT:-6379}
       - REDIS_PASSWORD=${REDIS_PASSWORD:-redis123}
       - REDIS_DB=${REDIS_DB:-0}
+      - GAME_WEBSOCKET_REDIS_PREFIX=${GAME_WEBSOCKET_REDIS_PREFIX:-ola-game}
       - GIN_MODE=${GIN_MODE:-release}
       - SERVICE_NAME=game
     networks:

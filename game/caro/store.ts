@@ -6,6 +6,7 @@ import {
   type MatchFoundData,
   type PlayerInfo,
   type RoomInfo,
+  type RoomStateData,
   type UserInfoData,
 } from '../src/sdk';
 import { parseVipTypeId, vipIconUrl } from '@ola/shared/lib/vip';
@@ -77,7 +78,7 @@ export interface CaroStore {
   rankedVisible: boolean;
   leaderboardVisible: boolean;
   rooms: RoomInfo[];
-  roomWaiting: { roomId: string; bet: number; locked: boolean } | null;
+  roomWaiting: RoomStateData | null;
   oppAway: number | null;
 
   board: number[];
@@ -109,6 +110,9 @@ export interface CaroStore {
   createRoom(bet: number, password?: string): void;
   joinRoom(roomId: string, password?: string): void;
   cancelRoom(): void;
+  toggleRoomReady(): void;
+  startRoom(): void;
+  kickRoomGuest(): void;
   showLeaderboard(): void;
   hideLeaderboard(): void;
   retry(): void;
@@ -248,7 +252,36 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     target.onRoomWaiting((data) => {
       if (refs.session !== target) return;
       refs.matchBet = data.bet;
-      set({ roomWaiting: { roomId: data.roomId, bet: data.bet, locked: data.locked } });
+      set((s) => ({
+        roomWaiting:
+          s.roomWaiting?.roomId === data.roomId
+            ? { ...s.roomWaiting, bet: data.bet, locked: data.locked }
+            : { roomId: data.roomId, ownerId: '', youId: '', bet: data.bet, locked: data.locked, members: [] },
+      }));
+    });
+
+    target.onRoomState((data) => {
+      if (refs.session !== target) return;
+      refs.matchBet = data.bet;
+      set({ roomWaiting: data });
+    });
+
+    target.onRoomClosed((data) => {
+      if (refs.session !== target) return;
+      if (get().roomWaiting?.roomId !== data.roomId) return;
+      set({ roomWaiting: null });
+      if (data.reason === 'owner_left' || data.reason === 'owner_disconnected' || data.reason === 'owner_busy') {
+        showToast('Chủ phòng đã rời, phòng đã đóng');
+      }
+      refs.online?.listRooms();
+    });
+
+    target.onRoomKicked((data) => {
+      if (refs.session !== target) return;
+      if (get().roomWaiting?.roomId !== data.roomId) return;
+      set({ roomWaiting: null });
+      showToast('Bạn đã bị chủ phòng mời ra');
+      refs.online?.listRooms();
     });
 
     target.onOpponentDisconnected((data) => {
@@ -377,12 +410,15 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
   };
 
   const toLobby = (): void => {
+    const waitingRoom = get().roomWaiting;
+    if (waitingRoom) refs.online?.leaveRoom(waitingRoom.roomId);
     set((s) => ({
       overlay: null,
       result: null,
       rankedVisible: false,
       leaderboardVisible: false,
       lobbyVisible: true,
+      roomWaiting: null,
       lobbyAnimKey: s.lobbyAnimKey + 1,
     }));
     if (!refs.user && !refs.connecting) void connectToServer();
@@ -472,9 +508,29 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     },
 
     cancelRoom() {
-      refs.online?.leaveRoom();
+      const room = get().roomWaiting;
+      refs.online?.leaveRoom(room?.roomId);
       set({ roomWaiting: null });
       refs.online?.listRooms();
+    },
+
+    toggleRoomReady() {
+      const room = get().roomWaiting;
+      if (!room) return;
+      const me = room.members.find((member) => member.id === room.youId);
+      refs.online?.setRoomReady(room.roomId, !(me?.ready ?? false));
+    },
+
+    startRoom() {
+      const room = get().roomWaiting;
+      if (room) refs.online?.startRoom(room.roomId);
+    },
+
+    kickRoomGuest() {
+      const room = get().roomWaiting;
+      if (!room || room.ownerId !== room.youId) return;
+      const guest = room.members.find((member) => !member.owner);
+      if (guest) refs.online?.kickRoomMember(room.roomId, guest.id);
     },
 
     showLeaderboard() {
