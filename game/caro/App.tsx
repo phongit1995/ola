@@ -7,6 +7,7 @@ import { Lobby } from './Lobby';
 import { Leaderboard } from './Leaderboard';
 import { Ranked } from './Ranked';
 import { Result } from './Result';
+import { ConfirmModal } from './ConfirmModal';
 
 function OppAwayBanner() {
   const oppAway = useCaroStore((s) => s.oppAway);
@@ -26,6 +27,8 @@ export function App() {
   const [progress, setProgress] = useState('Đang tải...');
   const [ready, setReady] = useState(false);
   const lobbyAnimKey = useCaroStore((s) => s.lobbyAnimKey);
+  const notice = useCaroStore((s) => s.notice);
+  const dismissNotice = useCaroStore((s) => s.dismissNotice);
   const init = useCaroStore((s) => s.init);
   const dispose = useCaroStore((s) => s.dispose);
 
@@ -58,6 +61,17 @@ export function App() {
       <Ranked />
       <Result />
       <OppAwayBanner />
+      <ConfirmModal
+        open={notice != null}
+        title="Thông báo"
+        text={notice ?? ''}
+        confirmLabel="Đã hiểu"
+        cancelLabel={null}
+        confirmTone="primary"
+        dismissOnBackdrop={false}
+        onConfirm={dismissNotice}
+        onCancel={dismissNotice}
+      />
     </>
   );
 }

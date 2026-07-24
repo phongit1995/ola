@@ -398,13 +398,14 @@ func (e *Engine) CreateRoom(gameID string, owner protocol.PlayerInfo, bet int, p
 	e.leaveQueue(gameID, owner.ID)
 
 	room := Room{
-		ID:        uuid.NewString(),
-		GameID:    gameID,
-		OwnerID:   owner.ID,
-		OwnerName: owner.Name,
-		Bet:       bet,
-		Password:  password,
-		CreatedAt: time.Now().UnixMilli(),
+		ID:           uuid.NewString(),
+		GameID:       gameID,
+		OwnerID:      owner.ID,
+		OwnerName:    owner.Name,
+		OwnerVipType: owner.VipType,
+		Bet:          bet,
+		Password:     password,
+		CreatedAt:    time.Now().UnixMilli(),
 	}
 	if err := e.store.Save(room); err != nil {
 		e.sendError(gameID, owner.ID, "ROOM_CREATE_FAILED", err.Error())
@@ -482,6 +483,7 @@ func (e *Engine) JoinRoom(gameID string, joiner protocol.PlayerInfo, roomID, pas
 
 	room.GuestID = joiner.ID
 	room.GuestName = joiner.Name
+	room.GuestVipType = joiner.VipType
 	room.GuestReady = false
 	if err := e.store.Save(room); err != nil {
 		e.sendError(gameID, joiner.ID, "ROOM_JOIN_FAILED", err.Error())
@@ -539,10 +541,7 @@ func (e *Engine) leaveRoomLocked(gameID, userID, roomID string, disconnected boo
 		return
 	}
 
-	guestID := room.GuestID
-	room.GuestID = ""
-	room.GuestName = ""
-	room.GuestReady = false
+	guestID := clearRoomGuest(&room)
 	if err := e.store.Save(room); err != nil {
 		e.sendError(gameID, userID, "ROOM_LEAVE_FAILED", err.Error())
 		return
@@ -598,10 +597,7 @@ func (e *Engine) KickRoomMember(gameID, ownerID, roomID, targetID string) {
 		return
 	}
 
-	kickedID := room.GuestID
-	room.GuestID = ""
-	room.GuestName = ""
-	room.GuestReady = false
+	kickedID := clearRoomGuest(&room)
 	if err := e.store.Save(room); err != nil {
 		e.sendError(gameID, ownerID, "ROOM_UPDATE_FAILED", err.Error())
 		return
@@ -649,8 +645,8 @@ func (e *Engine) StartRoom(gameID, ownerID, roomID string) {
 	if err := e.startRoomMatch(
 		gameID,
 		gameLogic,
-		protocol.PlayerInfo{ID: room.OwnerID, Name: room.OwnerName},
-		protocol.PlayerInfo{ID: room.GuestID, Name: room.GuestName},
+		protocol.PlayerInfo{ID: room.OwnerID, Name: room.OwnerName, VipType: room.OwnerVipType},
+		protocol.PlayerInfo{ID: room.GuestID, Name: room.GuestName, VipType: room.GuestVipType},
 		room.Bet,
 		room,
 	); err != nil {
@@ -732,11 +728,11 @@ func (e *Engine) emitRoomState(room Room) {
 
 func (e *Engine) emitRoomStateTo(room Room, userID string) {
 	members := []protocol.RoomMember{{
-		ID: room.OwnerID, Name: room.OwnerName, Owner: true, Ready: true,
+		ID: room.OwnerID, Name: room.OwnerName, VipType: room.OwnerVipType, Owner: true, Ready: true,
 	}}
 	if room.GuestID != "" {
 		members = append(members, protocol.RoomMember{
-			ID: room.GuestID, Name: room.GuestName, Ready: room.GuestReady,
+			ID: room.GuestID, Name: room.GuestName, VipType: room.GuestVipType, Ready: room.GuestReady,
 		})
 	}
 	e.toUser(room.GameID, userID, protocol.OutEnvelope{
@@ -1122,9 +1118,7 @@ func (e *Engine) forfeit(gameID, userID, matchID string, leaveAfter bool) {
 	if leaveAfter {
 		if m.room != nil && m.room.GuestID == userID {
 			room := *m.room
-			room.GuestID = ""
-			room.GuestName = ""
-			room.GuestReady = false
+			clearRoomGuest(&room)
 			m.room = &room
 		} else {
 			m.room = nil
@@ -1252,9 +1246,7 @@ func (e *Engine) finishMatch(m *Match, winnerID string, reason string) {
 			m.room = nil
 		} else if m.disconnected[m.playerIndex(m.room.GuestID)] {
 			room := *m.room
-			room.GuestID = ""
-			room.GuestName = ""
-			room.GuestReady = false
+			clearRoomGuest(&room)
 			m.room = &room
 		}
 	}
@@ -1523,6 +1515,15 @@ func (e *Engine) restoreFinishedSnapshot(snapshot ActiveMatchSnapshot) {
 func prepareNextRound(room Room) Room {
 	room.GuestReady = false
 	return room
+}
+
+func clearRoomGuest(room *Room) string {
+	guestID := room.GuestID
+	room.GuestID = ""
+	room.GuestName = ""
+	room.GuestVipType = nil
+	room.GuestReady = false
+	return guestID
 }
 
 func cloneRoom(room *Room) *Room {

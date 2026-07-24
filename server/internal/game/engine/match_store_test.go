@@ -43,8 +43,11 @@ func newRedisMatchStoreTest(t *testing.T) (*MatchStore, *miniredis.Miniredis, *s
 func redisStoreSnapshot(gameID, matchID string) ActiveMatchSnapshot {
 	return ActiveMatchSnapshot{
 		ID: matchID, GameID: gameID,
-		Players: []protocol.PlayerInfo{{ID: "player-a", Name: "A"}, {ID: "player-b", Name: "B"}},
-		State:   json.RawMessage(`{"moveCount":1,"winner":-1}`), StateVersion: 1,
+		Players: []protocol.PlayerInfo{
+			{ID: "player-a", Name: "A", VipType: lifecycleVipType("player-a")},
+			{ID: "player-b", Name: "B", VipType: lifecycleVipType("player-b")},
+		},
+		State: json.RawMessage(`{"moveCount":1,"winner":-1}`), StateVersion: 1,
 		TurnIndex: 1, TurnDeadline: time.Now().Add(time.Minute).UnixMilli(),
 		Bet: 10, StartedAt: time.Now().UnixMilli(), Status: matchStatusPlaying,
 	}
@@ -76,6 +79,9 @@ func TestMatchStoreSaveListUpdateAndDelete(t *testing.T) {
 	}
 	if len(loaded) != 1 || loaded[0].ID != snapshot.ID {
 		t.Fatalf("unexpected loaded snapshot: %+v", loaded)
+	}
+	for _, player := range loaded[0].Players {
+		requireVipType(t, player.VipType, lifecycleVipValue(player.ID))
 	}
 
 	snapshot.TurnIndex = 0

@@ -84,6 +84,7 @@ import boardFrame from './assets/board/board-frame.png';
 import boardX from './assets/board/x.png';
 import boardO from './assets/board/o.png';
 import boardTimerFrame from './assets/board/timer-frame.png';
+import boardTimerFrameMine from './assets/board/timer-frame-mine.png';
 import boardTurnLeft from './assets/board/turn-left.png';
 import boardTurnRight from './assets/board/turn-right.png';
 import boardAvatarFrame from './assets/board/avatar-frame.png';
@@ -119,6 +120,7 @@ export const BOARD_ASSETS = {
   boardX,
   boardO,
   boardTimerFrame,
+  boardTimerFrameMine,
   boardTurnLeft,
   boardTurnRight,
   boardAvatarFrame,

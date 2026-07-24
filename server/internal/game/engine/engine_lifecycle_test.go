@@ -63,18 +63,35 @@ func requireRoomRemoved(t *testing.T, emitter *captureEmitter, roomID string) {
 	}
 }
 
+func lifecycleVipValue(id string) string {
+	return "vip-" + id
+}
+
+func lifecycleVipType(id string) *string {
+	value := lifecycleVipValue(id)
+	return &value
+}
+
+func requireVipType(t *testing.T, got *string, want string) {
+	t.Helper()
+	if got == nil || *got != want {
+		t.Fatalf("VIP type = %v, want %q", got, want)
+	}
+}
+
 func lifecyclePlayer(id string) protocol.PlayerInfo {
-	return protocol.PlayerInfo{ID: id, Name: strings.ToUpper(id)}
+	return protocol.PlayerInfo{ID: id, Name: strings.ToUpper(id), VipType: lifecycleVipType(id)}
 }
 
 func lifecycleRoom(id string) Room {
 	return Room{
-		ID:        id,
-		GameID:    persistenceTestGameID,
-		OwnerID:   "owner",
-		OwnerName: "OWNER",
-		Bet:       25,
-		CreatedAt: time.Now().UnixMilli(),
+		ID:           id,
+		GameID:       persistenceTestGameID,
+		OwnerID:      "owner",
+		OwnerName:    "OWNER",
+		OwnerVipType: lifecycleVipType("owner"),
+		Bet:          25,
+		CreatedAt:    time.Now().UnixMilli(),
 	}
 }
 
@@ -130,6 +147,7 @@ func TestCreateRoomValidationAndIdempotency(t *testing.T) {
 		if room.Bet != 10 || room.Password != "secret" || len(gameEngine.queues[persistenceTestGameID]) != 0 {
 			t.Fatalf("unexpected created room: %+v", room)
 		}
+		requireVipType(t, room.OwnerVipType, lifecycleVipValue("owner"))
 		if emitter.count("owner", protocol.S2CRoomWaiting) != 1 || emitter.count("owner", protocol.S2CRoomState) != 1 {
 			t.Fatal("owner did not receive initial room events")
 		}
@@ -223,8 +241,20 @@ func TestJoinRoomValidationAndSuccess(t *testing.T) {
 		if !ok || joined.GuestID != "guest" || joined.GuestReady || len(gameEngine.queues[persistenceTestGameID]) != 0 {
 			t.Fatalf("unexpected joined room: %+v", joined)
 		}
+		requireVipType(t, joined.GuestVipType, lifecycleVipValue("guest"))
 		if emitter.count("owner", protocol.S2CRoomState) != 1 || emitter.count("guest", protocol.S2CRoomState) != 1 {
 			t.Fatal("room state was not broadcast to both players")
+		}
+		envelope, ok := emitter.last("owner", protocol.S2CRoomState)
+		if !ok {
+			t.Fatal("owner ROOM_STATE payload was not captured")
+		}
+		state, ok := envelope.Data.(protocol.RoomStateData)
+		if !ok || len(state.Members) != 2 {
+			t.Fatalf("unexpected ROOM_STATE payload: %#v", envelope.Data)
+		}
+		for _, member := range state.Members {
+			requireVipType(t, member.VipType, lifecycleVipValue(member.ID))
 		}
 		requireRoomUpsert(t, emitter, room.ID, 2)
 
@@ -255,6 +285,7 @@ func TestRoomLeaveAndDisconnectLifecycle(t *testing.T) {
 			room := lifecycleRoom("room")
 			room.GuestID = "guest"
 			room.GuestName = "GUEST"
+			room.GuestVipType = lifecycleVipType("guest")
 			room.GuestReady = true
 			_ = rooms.Save(room)
 
@@ -269,7 +300,7 @@ func TestRoomLeaveAndDisconnectLifecycle(t *testing.T) {
 				t.Fatalf("room existence = %v, want %v", exists, test.roomShouldLive)
 			}
 			if test.roomShouldLive {
-				if stored.GuestID != "" || stored.GuestReady {
+				if stored.GuestID != "" || stored.GuestVipType != nil || stored.GuestReady {
 					t.Fatalf("guest was not removed cleanly: %+v", stored)
 				}
 				if _, ok := rooms.RoomByUser(room.GameID, "guest"); ok {
@@ -374,6 +405,7 @@ func TestRoomReadyKickAndActionErrors(t *testing.T) {
 		room := lifecycleRoom("room")
 		room.GuestID = "guest"
 		room.GuestName = "GUEST"
+		room.GuestVipType = lifecycleVipType("guest")
 		room.GuestReady = true
 		_ = rooms.Save(room)
 
@@ -385,7 +417,7 @@ func TestRoomReadyKickAndActionErrors(t *testing.T) {
 		emitter.clear()
 		gameEngine.KickRoomMember(room.GameID, "owner", room.ID, "guest")
 		updated, _ := rooms.Get(room.GameID, room.ID)
-		if updated.GuestID != "" || updated.GuestReady {
+		if updated.GuestID != "" || updated.GuestVipType != nil || updated.GuestReady {
 			t.Fatalf("kicked guest remains in room: %+v", updated)
 		}
 		if _, ok := rooms.RoomByUser(room.GameID, "guest"); ok {
@@ -438,6 +470,7 @@ func TestStartRoomValidationAndSuccess(t *testing.T) {
 		room := lifecycleRoom("room")
 		room.GuestID = "guest"
 		room.GuestName = "GUEST"
+		room.GuestVipType = lifecycleVipType("guest")
 		room.GuestReady = true
 		_ = rooms.Save(room)
 		gameEngine.StartRoom(room.GameID, "owner", room.ID)
@@ -459,6 +492,12 @@ func TestStartRoomValidationAndSuccess(t *testing.T) {
 			if payload.RoomOwnerID != room.OwnerID {
 				t.Fatalf("%s received room owner %q, want %q", userID, payload.RoomOwnerID, room.OwnerID)
 			}
+			if len(payload.Players) != 2 {
+				t.Fatalf("%s received unexpected players: %+v", userID, payload.Players)
+			}
+			for _, player := range payload.Players {
+				requireVipType(t, player.VipType, lifecycleVipValue(player.ID))
+			}
 		}
 		for _, match := range gameEngine.matches {
 			if match.bet != room.Bet {
@@ -477,6 +516,7 @@ func TestFinishedRoomMatchReturnsWithGuestUnready(t *testing.T) {
 	room.Password = "secret"
 	room.GuestID = "guest"
 	room.GuestName = "GUEST"
+	room.GuestVipType = lifecycleVipType("guest")
 	room.GuestReady = true
 	if err := rooms.Save(room); err != nil {
 		t.Fatal(err)
@@ -504,6 +544,8 @@ func TestFinishedRoomMatchReturnsWithGuestUnready(t *testing.T) {
 	if returned.OwnerID != room.OwnerID || returned.GuestID != room.GuestID || returned.Password != room.Password {
 		t.Fatalf("restored room lost its identity or members: %+v", returned)
 	}
+	requireVipType(t, returned.OwnerVipType, lifecycleVipValue("owner"))
+	requireVipType(t, returned.GuestVipType, lifecycleVipValue("guest"))
 	if returned.GuestReady {
 		t.Fatalf("finished room did not reset guest readiness: %+v", returned)
 	}
@@ -556,6 +598,7 @@ func TestGuestExitMatchReturnsOwnerToWaitingRoom(t *testing.T) {
 	room := lifecycleRoom("room-guest-exit")
 	room.GuestID = "guest"
 	room.GuestName = "GUEST"
+	room.GuestVipType = lifecycleVipType("guest")
 	room.GuestReady = true
 	if err := rooms.Save(room); err != nil {
 		t.Fatal(err)
@@ -573,7 +616,7 @@ func TestGuestExitMatchReturnsOwnerToWaitingRoom(t *testing.T) {
 	gameEngine.ForfeitAndLeave(room.GameID, room.GuestID, match.ID)
 
 	returned, exists := rooms.Get(room.GameID, room.ID)
-	if !exists || returned.OwnerID != room.OwnerID || returned.GuestID != "" || returned.GuestReady {
+	if !exists || returned.OwnerID != room.OwnerID || returned.GuestID != "" || returned.GuestVipType != nil || returned.GuestReady {
 		t.Fatalf("owner did not retain an empty waiting room after guest exit: %+v", returned)
 	}
 	if emitter.count(room.OwnerID, protocol.S2CRoomState) != 1 {
@@ -591,6 +634,7 @@ func TestGuestDisconnectExpiryReturnsOwnerToWaitingRoom(t *testing.T) {
 	room := lifecycleRoom("room-guest-disconnect")
 	room.GuestID = "guest"
 	room.GuestName = "GUEST"
+	room.GuestVipType = lifecycleVipType("guest")
 	room.GuestReady = true
 	if err := rooms.Save(room); err != nil {
 		t.Fatal(err)
@@ -612,7 +656,7 @@ func TestGuestDisconnectExpiryReturnsOwnerToWaitingRoom(t *testing.T) {
 	gameEngine.onGraceExpire(match.ID, match.graceGen)
 
 	returned, exists := rooms.Get(room.GameID, room.ID)
-	if !exists || returned.OwnerID != room.OwnerID || returned.GuestID != "" || returned.GuestReady {
+	if !exists || returned.OwnerID != room.OwnerID || returned.GuestID != "" || returned.GuestVipType != nil || returned.GuestReady {
 		t.Fatalf("owner did not retain an empty room after guest disconnect expiry: %+v", returned)
 	}
 	if emitter.count(room.OwnerID, protocol.S2CRoomState) != 1 {

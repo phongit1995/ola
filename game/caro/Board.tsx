@@ -7,6 +7,17 @@ import { ConfirmModal } from './ConfirmModal';
 
 const CELLS = Array.from({ length: SIZE * SIZE }, (_, i) => i);
 
+function RoomOwnerIcon() {
+  return (
+    <span className="room-owner-icon" role="img" aria-label="Chủ phòng" title="Chủ phòng">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 8l4.2 3.2L12 5l3.8 6.2L20 8l-1.5 9h-13L4 8Z" />
+        <path d="M6 19h12" />
+      </svg>
+    </span>
+  );
+}
+
 export function Board() {
   const [chatInput, setChatInput] = useState('');
   const [exitOpen, setExitOpen] = useState(false);
@@ -33,6 +44,7 @@ export function Board() {
     boardMode,
     roomWaiting,
     roomActionPending,
+    result,
     toast,
   } = useCaroStore(
     useShallow((s) => ({
@@ -56,6 +68,7 @@ export function Board() {
       boardMode: s.boardMode,
       roomWaiting: s.roomWaiting,
       roomActionPending: s.roomActionPending,
+      result: s.result,
       toast: s.toast,
     })),
   );
@@ -95,7 +108,7 @@ export function Board() {
   const isRoomOwner = roomWaiting != null && roomWaiting.ownerId === roomWaiting.youId;
   const roomFull = roomWaiting?.members.length === 2;
   const roomCanStart = roomFull === true && roomWaiting.members.some((member) => !member.owner && member.ready);
-  const chatEnabled = playing || (pregame && roomFull === true);
+  const chatEnabled = result == null && (playing || (pregame && roomFull === true));
   const roomBusy = roomActionPending != null;
 
   useEffect(() => {
@@ -105,6 +118,16 @@ export function Board() {
   useEffect(() => {
     if (!playing) setForfeitOpen(false);
   }, [playing]);
+
+  useEffect(() => {
+    if (!result) return;
+    setExitOpen(false);
+    setForfeitOpen(false);
+  }, [result]);
+
+  useEffect(() => {
+    if (boardMode === 'idle') setExitOpen(false);
+  }, [boardMode]);
 
   useEffect(() => {
     const log = chatLogRef.current;
@@ -119,14 +142,16 @@ export function Board() {
     <div id="app" style={assetBg('boardBg')}>
       <header id="topbar">
         <div className={'player' + (op.active ? ' active' : '')} id="player-op">
-          <div className="p-avatar" style={assetBg('boardAvatarFrame')}>
-            <img className="p-vip" src={op.vip} alt="" />
+          <div className="player-avatar">
+            <div className="p-avatar" style={assetBg('boardAvatarFrame')}>
+              <img className="p-vip" src={op.vip} alt="" />
+            </div>
+            {op.owner && <RoomOwnerIcon />}
           </div>
           <div className="name-row">
             <span className="name">{op.name}</span>
             {playing && <span className={`mark ${op.mark}`}>{op.mark === 'x' ? 'X' : 'O'}</span>}
           </div>
-          {op.owner && <span className="room-owner-badge">Chủ phòng</span>}
           {pregame && opponentInRoom && !opponentInRoom.owner && (
             <span className={'room-ready-state' + (opponentInRoom.ready ? ' ready' : '')}>
               {opponentInRoom.ready ? 'Sẵn sàng' : 'Chưa sẵn sàng'}
@@ -134,21 +159,29 @@ export function Board() {
           )}
         </div>
         <div id="center">
-          <div id="timer" className={showTimer ? (timerUrgent ? 'urgent' : '') : 'hidden'} style={assetBg('boardTimerFrame')}>
+          <div
+            id="timer"
+            className={[showTimer ? '' : 'hidden', myTurn ? 'mine' : 'opponent', timerUrgent ? 'urgent' : '']
+              .filter(Boolean)
+              .join(' ')}
+            style={assetBg(myTurn ? 'boardTimerFrameMine' : 'boardTimerFrame')}
+          >
             <span id="timer-val">{timerText}</span>
           </div>
           <img id="turn-arrow" className={turnArrowSrc ? '' : 'hidden'} src={turnArrowSrc ?? undefined} alt="" />
           <div id="status">{status}</div>
         </div>
         <div className={'player right' + (me.active ? ' active' : '')} id="player-me">
-          <div className="p-avatar" style={assetBg('boardAvatarFrame')}>
-            <img className="p-vip" src={me.vip} alt="" />
+          <div className="player-avatar">
+            <div className="p-avatar" style={assetBg('boardAvatarFrame')}>
+              <img className="p-vip" src={me.vip} alt="" />
+            </div>
+            {me.owner && <RoomOwnerIcon />}
           </div>
           <div className="name-row">
             <span className="name">{me.name}</span>
             {playing && <span className={`mark ${me.mark}`}>{me.mark === 'x' ? 'X' : 'O'}</span>}
           </div>
-          {me.owner && <span className="room-owner-badge">Chủ phòng</span>}
           {pregame && meInRoom && !meInRoom.owner && (
             <span className={'room-ready-state' + (meInRoom.ready ? ' ready' : '')}>{meInRoom.ready ? 'Sẵn sàng' : 'Chưa sẵn sàng'}</span>
           )}
@@ -190,10 +223,32 @@ export function Board() {
                 />
               </svg>
             )}
-            {pregame && (
+            {pregame && !result && (
               <div className="room-pregame-panel">
                 <strong>{roomWaiting ? `Bàn cược ${roomWaiting.bet.toLocaleString('vi-VN')} Ken` : 'Đang kết nối bàn...'}</strong>
-                <span>{opponentInRoom ? 'Đã đủ hai người chơi' : 'Đang chờ người chơi thứ hai...'}</span>
+                <span>{status}</span>
+                {roomFull && !isRoomOwner && (
+                  <button
+                    type="button"
+                    className="room-pregame-action"
+                    style={assetBg('boardMenuBtn')}
+                    disabled={roomBusy}
+                    onClick={toggleRoomReady}
+                  >
+                    {meInRoom?.ready ? 'Hủy sẵn sàng' : 'Sẵn sàng'}
+                  </button>
+                )}
+                {isRoomOwner && roomFull && (
+                  <button
+                    type="button"
+                    className="room-pregame-action"
+                    style={assetBg('boardMenuBtn')}
+                    disabled={roomBusy || !roomCanStart}
+                    onClick={startRoom}
+                  >
+                    Bắt đầu
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -265,19 +320,9 @@ export function Board() {
       <footer id="bottombar" className={pregame ? 'pregame' : ''}>
         {pregame ? (
           <>
-            {roomFull && !isRoomOwner && (
-              <button type="button" style={assetBg('boardMenuBtn')} disabled={roomBusy} onClick={toggleRoomReady}>
-                {meInRoom?.ready ? 'Hủy sẵn sàng' : 'Sẵn sàng'}
-              </button>
-            )}
             {isRoomOwner && opponentInRoom && (
               <button type="button" style={assetBg('boardMenuBtn')} disabled={roomBusy} onClick={kickRoomGuest}>
                 Mời ra
-              </button>
-            )}
-            {isRoomOwner && roomFull && (
-              <button type="button" style={assetBg('boardMenuBtn')} disabled={roomBusy || !roomCanStart} onClick={startRoom}>
-                Bắt đầu
               </button>
             )}
             <button
@@ -294,7 +339,14 @@ export function Board() {
           </>
         ) : (
           <>
-            <button type="button" id="btn-replay" className={replayVisible ? '' : 'hidden'} style={assetBg('boardMenuBtn')} onClick={replay}>
+            <button
+              type="button"
+              id="btn-replay"
+              className={replayVisible ? '' : 'hidden'}
+              style={assetBg('boardMenuBtn')}
+              disabled={result != null}
+              onClick={replay}
+            >
               Chơi lại
             </button>
             <button
@@ -308,7 +360,14 @@ export function Board() {
               <img className="board-action-icon" src={assetSrc('boardForfeitIcon')} alt="" />
               <span>Bỏ cuộc</span>
             </button>
-            <button type="button" id="btn-exit" className="board-action-btn" style={assetBg('boardMenuBtn')} onClick={() => setExitOpen(true)}>
+            <button
+              type="button"
+              id="btn-exit"
+              className="board-action-btn"
+              style={assetBg('boardMenuBtn')}
+              disabled={result != null}
+              onClick={() => setExitOpen(true)}
+            >
               <img className="board-action-icon" src={assetSrc('icExit')} alt="" />
               <span>Thoát</span>
             </button>

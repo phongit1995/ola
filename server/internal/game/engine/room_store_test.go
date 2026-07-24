@@ -21,8 +21,10 @@ func TestRoomStoreSaveGetListAndDelete(t *testing.T) {
 	_, server, cache := newRedisMatchStoreTest(t)
 	store := NewRoomStore(cache)
 	room := redisRoom("caro", "room-1", "owner")
+	room.OwnerVipType = lifecycleVipType("owner")
 	room.GuestID = "guest"
 	room.GuestName = "guest"
+	room.GuestVipType = lifecycleVipType("guest")
 	room.Password = "secret"
 	if err := store.Save(room); err != nil {
 		t.Fatalf("save room: %v", err)
@@ -40,6 +42,8 @@ func TestRoomStoreSaveGetListAndDelete(t *testing.T) {
 	if !ok || loaded.OwnerID != room.OwnerID || loaded.GuestID != room.GuestID || loaded.Password != room.Password {
 		t.Fatalf("unexpected loaded room: %+v", loaded)
 	}
+	requireVipType(t, loaded.OwnerVipType, lifecycleVipValue("owner"))
+	requireVipType(t, loaded.GuestVipType, lifecycleVipValue("guest"))
 	listed, err := store.List(room.GameID)
 	if err != nil {
 		t.Fatal(err)
@@ -47,6 +51,8 @@ func TestRoomStoreSaveGetListAndDelete(t *testing.T) {
 	if len(listed) != 1 || listed[0].ID != room.ID {
 		t.Fatalf("unexpected room list: %+v", listed)
 	}
+	requireVipType(t, listed[0].OwnerVipType, lifecycleVipValue("owner"))
+	requireVipType(t, listed[0].GuestVipType, lifecycleVipValue("guest"))
 	for _, userID := range []string{room.OwnerID, room.GuestID} {
 		ref, exists := store.RoomByUser(room.GameID, userID)
 		if !exists || ref.RoomID != room.ID {

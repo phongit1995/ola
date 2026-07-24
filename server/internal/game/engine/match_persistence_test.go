@@ -324,8 +324,8 @@ func startPersistenceTestMatch(t *testing.T, gameEngine *Engine) *Match {
 	if err := gameEngine.startMatch(
 		persistenceTestGameID,
 		gameLogic,
-		protocol.PlayerInfo{ID: "player-a", Name: "Player A"},
-		protocol.PlayerInfo{ID: "player-b", Name: "Player B"},
+		protocol.PlayerInfo{ID: "player-a", Name: "Player A", VipType: lifecycleVipType("player-a")},
+		protocol.PlayerInfo{ID: "player-b", Name: "Player B", VipType: lifecycleVipType("player-b")},
 		10,
 	); err != nil {
 		t.Fatalf("start match: %v", err)
@@ -373,6 +373,9 @@ func TestStartMatchPersistsInitialSnapshot(t *testing.T) {
 	}
 	if len(snapshot.Players) != 2 {
 		t.Fatalf("unexpected players: %+v", snapshot)
+	}
+	for _, player := range snapshot.Players {
+		requireVipType(t, player.VipType, lifecycleVipValue(player.ID))
 	}
 	if snapshot.TurnDeadline <= time.Now().UnixMilli() || snapshot.StartedAt <= 0 {
 		t.Fatal("initial timer metadata was not persisted")
@@ -664,6 +667,13 @@ func TestRestoreActiveMatchAndResumeAfterBothPlayersReconnect(t *testing.T) {
 	}
 
 	secondEngine.OnConnect(restored.GameID, restored.players[0].ID)
+	firstPlayerEnvelope, ok := emitter.last(restored.players[0].ID, protocol.S2CMatchFound)
+	if !ok {
+		t.Fatal("first returning player did not receive resumed MATCH_FOUND")
+	}
+	for _, player := range firstPlayerEnvelope.Data.(protocol.MatchFoundData).Players {
+		requireVipType(t, player.VipType, lifecycleVipValue(player.ID))
+	}
 	if _, ok := emitter.last(restored.players[0].ID, protocol.S2COpponentDisconnected); !ok {
 		t.Fatal("first returning player was not told that the opponent is disconnected")
 	}
@@ -678,6 +688,10 @@ func TestRestoreActiveMatchAndResumeAfterBothPlayersReconnect(t *testing.T) {
 	if _, ok := emitter.last(restored.players[1].ID, protocol.S2CMatchFound); !ok {
 		t.Fatal("returning player did not receive resumed MATCH_FOUND")
 	}
+	secondPlayerEnvelope, _ := emitter.last(restored.players[1].ID, protocol.S2CMatchFound)
+	for _, player := range secondPlayerEnvelope.Data.(protocol.MatchFoundData).Players {
+		requireVipType(t, player.VipType, lifecycleVipValue(player.ID))
+	}
 }
 
 func TestRestoreRoomMatchPreservesOwnerInMatchFound(t *testing.T) {
@@ -686,6 +700,7 @@ func TestRestoreRoomMatchPreservesOwnerInMatchFound(t *testing.T) {
 	room := lifecycleRoom("restored-owner-room")
 	room.GuestID = "guest"
 	room.GuestName = "GUEST"
+	room.GuestVipType = lifecycleVipType("guest")
 	room.GuestReady = true
 	if err := rooms.Save(room); err != nil {
 		t.Fatal(err)
@@ -708,6 +723,8 @@ func TestRestoreRoomMatchPreservesOwnerInMatchFound(t *testing.T) {
 	if restored == nil || restored.room == nil {
 		t.Fatal("room match metadata was not restored")
 	}
+	requireVipType(t, restored.room.OwnerVipType, lifecycleVipValue("owner"))
+	requireVipType(t, restored.room.GuestVipType, lifecycleVipValue("guest"))
 	for _, player := range restored.players {
 		secondEngine.OnConnect(restored.GameID, player.ID)
 		message, ok := emitter.last(player.ID, protocol.S2CMatchFound)
@@ -720,6 +737,9 @@ func TestRestoreRoomMatchPreservesOwnerInMatchFound(t *testing.T) {
 		}
 		if payload.RoomOwnerID != room.OwnerID {
 			t.Fatalf("%s received restored room owner %q, want %q", player.ID, payload.RoomOwnerID, room.OwnerID)
+		}
+		for _, payloadPlayer := range payload.Players {
+			requireVipType(t, payloadPlayer.VipType, lifecycleVipValue(payloadPlayer.ID))
 		}
 	}
 }

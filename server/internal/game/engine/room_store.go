@@ -20,17 +20,19 @@ const (
 )
 
 type Room struct {
-	ID         string `json:"id"`
-	GameID     string `json:"gameId"`
-	OwnerID    string `json:"ownerId"`
-	OwnerName  string `json:"ownerName"`
-	GuestID    string `json:"guestId,omitempty"`
-	GuestName  string `json:"guestName,omitempty"`
-	GuestReady bool   `json:"guestReady"`
-	Bet        int    `json:"bet"`
-	Password   string `json:"password"`
-	CreatedAt  int64  `json:"createdAt"`
-	UpdatedAt  int64  `json:"updatedAt"`
+	ID           string  `json:"id"`
+	GameID       string  `json:"gameId"`
+	OwnerID      string  `json:"ownerId"`
+	OwnerName    string  `json:"ownerName"`
+	OwnerVipType *string `json:"ownerVipType,omitempty"`
+	GuestID      string  `json:"guestId,omitempty"`
+	GuestName    string  `json:"guestName,omitempty"`
+	GuestVipType *string `json:"guestVipType,omitempty"`
+	GuestReady   bool    `json:"guestReady"`
+	Bet          int     `json:"bet"`
+	Password     string  `json:"password"`
+	CreatedAt    int64   `json:"createdAt"`
+	UpdatedAt    int64   `json:"updatedAt"`
 }
 
 type userRoomRef struct {

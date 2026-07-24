@@ -42,11 +42,8 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
   let playerTurn = true;
   let turnTimer: number | undefined;
   let botTimer: number | undefined;
-  let overTimer: number | undefined;
   let lastPlayerChatAt = 0;
   const chatTimers = new Set<number>();
-
-  const WIN_REVEAL_MS = 1300;
 
   const on = (type: string, handler: Handler): (() => void) => {
     let set = listeners.get(type);
@@ -65,10 +62,8 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
   const clearTimers = (): void => {
     if (turnTimer) window.clearTimeout(turnTimer);
     if (botTimer) window.clearTimeout(botTimer);
-    if (overTimer) window.clearTimeout(overTimer);
     turnTimer = undefined;
     botTimer = undefined;
-    overTimer = undefined;
     chatTimers.forEach((timer) => window.clearTimeout(timer));
     chatTimers.clear();
   };
@@ -110,22 +105,15 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
     turnTimer = window.setTimeout(() => finish('bot', 'timeout'), TURN_MS);
   };
 
-  const finish = (
-    winner: 'you' | 'bot' | null,
-    reason: MatchOverData['reason'],
-    delayMs = 0,
-  ): void => {
+  const finish = (winner: 'you' | 'bot' | null, reason: MatchOverData['reason']): void => {
     playing = false;
     clearTimers();
-    const emitOver = (): void =>
-      emit('MATCH_OVER', {
-        matchId,
-        winnerId: winner ?? '',
-        reason,
-        state,
-      } satisfies MatchOverData<CaroState>);
-    if (delayMs > 0) overTimer = window.setTimeout(emitOver, delayMs);
-    else emitOver();
+    emit('MATCH_OVER', {
+      matchId,
+      winnerId: winner ?? '',
+      reason,
+      state,
+    } satisfies MatchOverData<CaroState>);
   };
 
   const pushState = (turn: number, lastMove: CaroMove, lastBy: number): void => {
@@ -149,18 +137,18 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
   const botMove = (): void => {
     const move = pickBotMove(state.board, level);
     if (!move) {
-      finish(null, 'win');
+      finish(null, 'draw');
       return;
     }
     applyMove(move, BOT_MARK);
     if (checkWin(state.board, move.x, move.y, BOT_MARK)) {
       pushState(-1, move, 1);
-      finish('bot', 'win', WIN_REVEAL_MS);
+      finish('bot', 'win');
       return;
     }
     if (state.moveCount === SIZE * SIZE) {
       pushState(-1, move, 1);
-      finish(null, 'win', WIN_REVEAL_MS);
+      finish(null, 'draw');
       return;
     }
     playerTurn = true;
@@ -215,12 +203,12 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
       applyMove(move, PLAYER_MARK);
       if (checkWin(state.board, move.x, move.y, PLAYER_MARK)) {
         pushState(-1, move, 0);
-        finish('you', 'win', WIN_REVEAL_MS);
+        finish('you', 'win');
         return;
       }
       if (state.moveCount === SIZE * SIZE) {
         pushState(-1, move, 0);
-        finish(null, 'win', WIN_REVEAL_MS);
+        finish(null, 'draw');
         return;
       }
       pushState(1, move, 0);

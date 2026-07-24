@@ -84,11 +84,19 @@ button:focus-visible,
   justify-self: start;
 }
 
+.player-avatar {
+  position: relative;
+  width: clamp(56px, 18vw, 92px);
+  aspect-ratio: 1;
+  flex: 0 0 auto;
+}
+
 .p-avatar {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: clamp(56px, 18vw, 92px);
+  width: 100%;
+  height: 100%;
   aspect-ratio: 1;
   background-size: 100% 100%;
   transition: filter 200ms, transform 200ms;
@@ -133,16 +141,32 @@ button:focus-visible,
   color: #287447;
 }
 
-.room-owner-badge {
-  padding: 2px 8px;
-  border: 1px solid rgba(163, 105, 25, 0.3);
-  border-radius: 999px;
-  background: rgba(226, 171, 72, 0.18);
-  color: #8b5916;
-  font-size: clamp(9px, 2.5vw, 12px);
-  font-weight: 900;
-  line-height: 1.2;
-  white-space: nowrap;
+.room-owner-icon {
+  position: absolute;
+  top: 3%;
+  right: 3%;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: clamp(20px, 5.5vw, 28px);
+  aspect-ratio: 1;
+  border: 2px solid var(--lobby-cream);
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 25%, #396da8 0%, #1d4f8b 52%, #14304f 100%);
+  box-shadow: 0 2px 7px rgba(9, 24, 43, 0.38);
+  pointer-events: none;
+}
+
+.room-owner-icon svg {
+  width: 76%;
+  height: 76%;
+  overflow: visible;
+  fill: #f2bd3f;
+  stroke: #ffe7a0;
+  stroke-width: 1.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 1px 1px rgba(92, 50, 4, 0.7));
 }
 
 .mark {
@@ -207,9 +231,17 @@ button:focus-visible,
   visibility: hidden;
 }
 
+#timer.mine {
+  color: var(--lobby-navy-dark);
+}
+
 #timer.urgent {
   color: #ff9b8d;
   animation: pulse 1s ease-in-out infinite;
+}
+
+#timer.mine.urgent {
+  color: #8f2f28;
 }
 
 #turn-arrow {
@@ -331,7 +363,6 @@ button:focus-visible,
   background: rgba(247, 236, 215, 0.82);
   color: var(--lobby-navy);
   text-align: center;
-  pointer-events: none;
   -webkit-backdrop-filter: blur(1px);
   backdrop-filter: blur(1px);
 }
@@ -344,6 +375,31 @@ button:focus-visible,
 .room-pregame-panel span {
   font-size: clamp(13px, 3.5vw, 17px);
   font-weight: 800;
+}
+
+.room-pregame-action {
+  width: clamp(120px, 40vw, 190px);
+  aspect-ratio: 1564 / 568;
+  border: none;
+  background-color: transparent;
+  background-size: 100% 100%;
+  color: var(--lobby-cream);
+  font-size: clamp(13px, 3.8vw, 17px);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0;
+  cursor: pointer;
+  transition: transform 120ms ease-out, opacity 200ms;
+}
+
+.room-pregame-action:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.room-pregame-action:disabled {
+  opacity: 0.4;
+  cursor: default;
 }
 
 .cell {
@@ -405,7 +461,7 @@ button:focus-visible,
   stroke-linecap: round;
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
-  animation: win-line-draw 380ms ease-out forwards;
+  animation: win-line-draw 580ms ease-out forwards;
 }
 
 .win-line-bg {
@@ -428,6 +484,7 @@ button:focus-visible,
 #overlay {
   position: absolute;
   inset: 0;
+  z-index: 5;
   background: rgba(9, 24, 43, 0.55);
   -webkit-backdrop-filter: blur(3px);
   backdrop-filter: blur(3px);
@@ -2255,12 +2312,25 @@ button:focus-visible,
   display: none;
 }
 
+#result.pending {
+  background: transparent;
+  cursor: wait;
+}
+
+#result.pending #result-card {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 #result-card {
   position: relative;
   width: min(68%, 330px);
   aspect-ratio: 1082 / 1437;
   background-size: 100% 100%;
   container-type: inline-size;
+}
+
+#result.revealed #result-card {
   animation: rise 240ms ease-out;
 }
 

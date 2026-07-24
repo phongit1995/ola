@@ -45,8 +45,9 @@ type OutEnvelope struct {
 }
 
 type PlayerInfo struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+	ID      string  `json:"id"`
+	Name    string  `json:"name"`
+	VipType *string `json:"vipType,omitempty"`
 }
 
 type UserInfoData struct {
@@ -169,10 +170,11 @@ type RoomWaitingData struct {
 }
 
 type RoomMember struct {
-	ID    string `json:"id"`
-	Name  string `json:"name"`
-	Owner bool   `json:"owner"`
-	Ready bool   `json:"ready"`
+	ID      string  `json:"id"`
+	Name    string  `json:"name"`
+	VipType *string `json:"vipType,omitempty"`
+	Owner   bool    `json:"owner"`
+	Ready   bool    `json:"ready"`
 }
 
 type RoomStateData struct {

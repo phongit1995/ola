@@ -40,6 +40,7 @@ export interface Envelope {
 export interface PlayerInfo {
   id: string;
   name: string;
+  vipType?: string | null;
 }
 
 export interface UserInfoData {
@@ -126,6 +127,7 @@ export interface RoomMember {
   name: string;
   owner: boolean;
   ready: boolean;
+  vipType?: string | null;
 }
 
 export interface RoomStateData {

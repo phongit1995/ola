@@ -23,10 +23,11 @@ import (
 const messageEvent = "message"
 
 type SocketData struct {
-	UserID string
-	GameID string
-	Name   string
-	Guest  bool
+	UserID  string
+	GameID  string
+	Name    string
+	VipType *string
+	Guest   bool
 }
 
 type Server struct {
@@ -199,7 +200,16 @@ func (s *Server) sendUserInfo(client *socket.Socket, data *SocketData) {
 	if info.Username != "" {
 		data.Name = info.Username
 	}
+	data.VipType = info.VipType
 	client.Emit(messageEvent, protocol.OutEnvelope{Type: protocol.S2CUserInfo, Data: *info})
+}
+
+func socketPlayer(data *SocketData) protocol.PlayerInfo {
+	return protocol.PlayerInfo{
+		ID:      data.UserID,
+		Name:    data.Name,
+		VipType: data.VipType,
+	}
 }
 
 func (s *Server) handleMessage(data *SocketData, raw any) {
@@ -214,7 +224,7 @@ func (s *Server) handleMessage(data *SocketData, raw any) {
 
 	switch env.Type {
 	case protocol.C2SQueueJoin:
-		s.engine.JoinQueue(data.GameID, protocol.PlayerInfo{ID: data.UserID, Name: data.Name})
+		s.engine.JoinQueue(data.GameID, socketPlayer(data))
 	case protocol.C2SQueueLeave:
 		s.engine.LeaveQueue(data.GameID, data.UserID)
 	case protocol.C2SMove:
@@ -248,13 +258,13 @@ func (s *Server) handleMessage(data *SocketData, raw any) {
 		if err := json.Unmarshal(env.Data, &d); err != nil {
 			return
 		}
-		s.engine.CreateRoom(data.GameID, protocol.PlayerInfo{ID: data.UserID, Name: data.Name}, d.Bet, d.Password)
+		s.engine.CreateRoom(data.GameID, socketPlayer(data), d.Bet, d.Password)
 	case protocol.C2SRoomJoin:
 		var d protocol.RoomJoinData
 		if err := json.Unmarshal(env.Data, &d); err != nil {
 			return
 		}
-		s.engine.JoinRoom(data.GameID, protocol.PlayerInfo{ID: data.UserID, Name: data.Name}, d.RoomID, d.Password)
+		s.engine.JoinRoom(data.GameID, socketPlayer(data), d.RoomID, d.Password)
 	case protocol.C2SRoomLeave:
 		var d protocol.RoomActionData
 		if len(env.Data) > 0 {
