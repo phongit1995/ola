@@ -1,0 +1,525 @@
+package engine
+
+import (
+	"encoding/json"
+	"strings"
+	"testing"
+	"time"
+
+	"ola-chat-server/internal/game/protocol"
+)
+
+func (e *captureEmitter) clear() {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	e.messages = nil
+}
+
+func (e *captureEmitter) count(userID, messageType string) int {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	count := 0
+	for _, message := range e.messages {
+		if message.userID == userID && message.env.Type == messageType {
+			count++
+		}
+	}
+	return count
+}
+
+func requireErrorCode(t *testing.T, emitter *captureEmitter, userID, code string) {
+	t.Helper()
+	envelope, ok := emitter.last(userID, protocol.S2CError)
+	if !ok {
+		t.Fatalf("expected error %s for %s", code, userID)
+	}
+	data, ok := envelope.Data.(protocol.ErrorData)
+	if !ok || data.Code != code {
+		t.Fatalf("expected error %s, got %#v", code, envelope.Data)
+	}
+}
+
+func lifecyclePlayer(id string) protocol.PlayerInfo {
+	return protocol.PlayerInfo{ID: id, Name: strings.ToUpper(id)}
+}
+
+func lifecycleRoom(id string) Room {
+	return Room{
+		ID:        id,
+		GameID:    persistenceTestGameID,
+		OwnerID:   "owner",
+		OwnerName: "OWNER",
+		Bet:       25,
+		CreatedAt: time.Now().UnixMilli(),
+	}
+}
+
+func onlyRoom(t *testing.T, store *memoryRoomStore) Room {
+	t.Helper()
+	rooms := store.List(persistenceTestGameID)
+	if len(rooms) != 1 {
+		t.Fatalf("expected one room, got %d", len(rooms))
+	}
+	return rooms[0]
+}
+
+func TestCreateRoomValidationAndIdempotency(t *testing.T) {
+	t.Run("validation", func(t *testing.T) {
+		tests := []struct {
+			name     string
+			gameID   string
+			bet      int
+			password string
+			code     string
+		}{
+			{name: "unknown game", gameID: "missing-game", code: "UNKNOWN_GAME"},
+			{name: "negative bet", gameID: persistenceTestGameID, bet: -1, code: "INVALID_BET"},
+			{name: "long password", gameID: persistenceTestGameID, password: strings.Repeat("x", 65), code: "INVALID_PASSWORD"},
+		}
+		for _, test := range tests {
+			t.Run(test.name, func(t *testing.T) {
+				gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+				gameEngine.CreateRoom(test.gameID, lifecyclePlayer("owner"), test.bet, test.password)
+				requireErrorCode(t, emitter, "owner", test.code)
+				if len(rooms.rooms) != 0 {
+					t.Fatal("invalid request created a room")
+				}
+			})
+		}
+	})
+
+	t.Run("store failure", func(t *testing.T) {
+		gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		rooms.failSave = true
+		gameEngine.CreateRoom(persistenceTestGameID, lifecyclePlayer("owner"), 10, "")
+		requireErrorCode(t, emitter, "owner", "ROOM_CREATE_FAILED")
+	})
+
+	t.Run("success leaves queue and is idempotent", func(t *testing.T) {
+		gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		gameEngine.queues[persistenceTestGameID] = []protocol.PlayerInfo{lifecyclePlayer("owner")}
+		gameEngine.CreateRoom(persistenceTestGameID, lifecyclePlayer("owner"), 10, "secret")
+		room := onlyRoom(t, rooms)
+		if room.Bet != 10 || room.Password != "secret" || len(gameEngine.queues[persistenceTestGameID]) != 0 {
+			t.Fatalf("unexpected created room: %+v", room)
+		}
+		if emitter.count("owner", protocol.S2CRoomWaiting) != 1 || emitter.count("owner", protocol.S2CRoomState) != 1 {
+			t.Fatal("owner did not receive initial room events")
+		}
+
+		gameEngine.CreateRoom(persistenceTestGameID, lifecyclePlayer("owner"), 999, "different")
+		if repeated := onlyRoom(t, rooms); repeated.ID != room.ID || repeated.Bet != room.Bet {
+			t.Fatalf("idempotent create replaced the room: %+v", repeated)
+		}
+	})
+}
+
+func TestJoinRoomValidationAndSuccess(t *testing.T) {
+	t.Run("missing room id", func(t *testing.T) {
+		gameEngine, _, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		gameEngine.JoinRoom(persistenceTestGameID, lifecyclePlayer("guest"), "", "")
+		requireErrorCode(t, emitter, "guest", "ROOM_NOT_FOUND")
+	})
+
+	t.Run("room busy", func(t *testing.T) {
+		gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		rooms.claimOK = false
+		gameEngine.JoinRoom(persistenceTestGameID, lifecyclePlayer("guest"), "room", "")
+		requireErrorCode(t, emitter, "guest", "ROOM_BUSY")
+	})
+
+	t.Run("room not found", func(t *testing.T) {
+		gameEngine, _, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		gameEngine.JoinRoom(persistenceTestGameID, lifecyclePlayer("guest"), "missing", "")
+		requireErrorCode(t, emitter, "guest", "ROOM_NOT_FOUND")
+	})
+
+	t.Run("own room without membership index", func(t *testing.T) {
+		gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		room := lifecycleRoom("room")
+		rooms.rooms[memoryRoomKey(room.GameID, room.ID)] = room
+		gameEngine.JoinRoom(persistenceTestGameID, lifecyclePlayer("owner"), room.ID, "")
+		requireErrorCode(t, emitter, "owner", "OWN_ROOM")
+	})
+
+	t.Run("wrong password", func(t *testing.T) {
+		gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		room := lifecycleRoom("room")
+		room.Password = "secret"
+		_ = rooms.Save(room)
+		gameEngine.JoinRoom(persistenceTestGameID, lifecyclePlayer("guest"), room.ID, "wrong")
+		requireErrorCode(t, emitter, "guest", "WRONG_PASSWORD")
+	})
+
+	t.Run("room full", func(t *testing.T) {
+		gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		room := lifecycleRoom("room")
+		room.GuestID = "existing"
+		room.GuestName = "EXISTING"
+		_ = rooms.Save(room)
+		gameEngine.JoinRoom(persistenceTestGameID, lifecyclePlayer("guest"), room.ID, "")
+		requireErrorCode(t, emitter, "guest", "ROOM_FULL")
+	})
+
+	t.Run("already in another room", func(t *testing.T) {
+		gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		current := lifecycleRoom("current")
+		current.GuestID = "guest"
+		current.GuestName = "GUEST"
+		target := lifecycleRoom("target")
+		target.OwnerID = "other-owner"
+		_ = rooms.Save(current)
+		_ = rooms.Save(target)
+		gameEngine.JoinRoom(persistenceTestGameID, lifecyclePlayer("guest"), target.ID, "")
+		requireErrorCode(t, emitter, "guest", "ALREADY_IN_ROOM")
+	})
+
+	t.Run("save failure", func(t *testing.T) {
+		gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		room := lifecycleRoom("room")
+		_ = rooms.Save(room)
+		rooms.failSave = true
+		gameEngine.JoinRoom(persistenceTestGameID, lifecyclePlayer("guest"), room.ID, "")
+		requireErrorCode(t, emitter, "guest", "ROOM_JOIN_FAILED")
+	})
+
+	t.Run("success and idempotent retry", func(t *testing.T) {
+		gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		room := lifecycleRoom("room")
+		room.Password = "secret"
+		_ = rooms.Save(room)
+		gameEngine.queues[persistenceTestGameID] = []protocol.PlayerInfo{lifecyclePlayer("guest")}
+
+		gameEngine.JoinRoom(persistenceTestGameID, lifecyclePlayer("guest"), room.ID, "secret")
+		joined, ok := rooms.Get(room.GameID, room.ID)
+		if !ok || joined.GuestID != "guest" || joined.GuestReady || len(gameEngine.queues[persistenceTestGameID]) != 0 {
+			t.Fatalf("unexpected joined room: %+v", joined)
+		}
+		if emitter.count("owner", protocol.S2CRoomState) != 1 || emitter.count("guest", protocol.S2CRoomState) != 1 {
+			t.Fatal("room state was not broadcast to both players")
+		}
+
+		emitter.clear()
+		gameEngine.JoinRoom(persistenceTestGameID, lifecyclePlayer("guest"), room.ID, "secret")
+		if emitter.count("guest", protocol.S2CRoomWaiting) != 1 || emitter.count("guest", protocol.S2CRoomState) != 1 {
+			t.Fatal("idempotent join did not restore the guest room view")
+		}
+	})
+}
+
+func TestRoomLeaveAndDisconnectLifecycle(t *testing.T) {
+	tests := []struct {
+		name           string
+		userID         string
+		disconnect     bool
+		closedReason   string
+		roomShouldLive bool
+	}{
+		{name: "owner leaves", userID: "owner", closedReason: "owner_left"},
+		{name: "owner disconnects", userID: "owner", disconnect: true, closedReason: "owner_disconnected"},
+		{name: "guest leaves", userID: "guest", closedReason: "left", roomShouldLive: true},
+		{name: "guest disconnects", userID: "guest", disconnect: true, roomShouldLive: true},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+			room := lifecycleRoom("room")
+			room.OwnerReady = true
+			room.GuestID = "guest"
+			room.GuestName = "GUEST"
+			room.GuestReady = true
+			_ = rooms.Save(room)
+
+			if test.disconnect {
+				gameEngine.OnDisconnect(room.GameID, test.userID)
+			} else {
+				gameEngine.LeaveRoom(room.GameID, test.userID, room.ID)
+			}
+
+			stored, exists := rooms.Get(room.GameID, room.ID)
+			if exists != test.roomShouldLive {
+				t.Fatalf("room existence = %v, want %v", exists, test.roomShouldLive)
+			}
+			if test.roomShouldLive {
+				if stored.GuestID != "" || stored.GuestReady {
+					t.Fatalf("guest was not removed cleanly: %+v", stored)
+				}
+				if _, ok := rooms.RoomByUser(room.GameID, "guest"); ok {
+					t.Fatal("guest membership index remains")
+				}
+				if emitter.count("owner", protocol.S2CRoomState) != 1 {
+					t.Fatal("owner did not receive updated room state")
+				}
+				wantGuestClose := 1
+				if test.disconnect {
+					wantGuestClose = 0
+				}
+				if emitter.count("guest", protocol.S2CRoomClosed) != wantGuestClose {
+					t.Fatal("unexpected guest close event count")
+				}
+				return
+			}
+
+			for _, userID := range []string{"owner", "guest"} {
+				if _, ok := rooms.RoomByUser(room.GameID, userID); ok {
+					t.Fatalf("membership remains for %s", userID)
+				}
+				envelope, ok := emitter.last(userID, protocol.S2CRoomClosed)
+				if !ok || envelope.Data.(protocol.RoomClosedData).Reason != test.closedReason {
+					t.Fatalf("unexpected room close for %s: %#v", userID, envelope.Data)
+				}
+			}
+		})
+	}
+}
+
+func TestRoomReadyKickAndActionErrors(t *testing.T) {
+	t.Run("ready is saved and broadcast", func(t *testing.T) {
+		gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		room := lifecycleRoom("room")
+		room.GuestID = "guest"
+		room.GuestName = "GUEST"
+		_ = rooms.Save(room)
+		gameEngine.SetRoomReady(room.GameID, "owner", room.ID, true)
+		gameEngine.SetRoomReady(room.GameID, "guest", room.ID, true)
+		updated, _ := rooms.Get(room.GameID, room.ID)
+		if !updated.OwnerReady || !updated.GuestReady {
+			t.Fatalf("ready state was not saved: %+v", updated)
+		}
+		if emitter.count("owner", protocol.S2CRoomState) != 2 || emitter.count("guest", protocol.S2CRoomState) != 2 {
+			t.Fatal("ready state was not broadcast")
+		}
+	})
+
+	t.Run("action validation", func(t *testing.T) {
+		gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		gameEngine.SetRoomReady(persistenceTestGameID, "guest", "", true)
+		requireErrorCode(t, emitter, "guest", "ROOM_NOT_FOUND")
+
+		room := lifecycleRoom("room")
+		room.GuestID = "guest"
+		room.GuestName = "GUEST"
+		_ = rooms.Save(room)
+		rooms.claimOK = false
+		gameEngine.SetRoomReady(room.GameID, "guest", room.ID, true)
+		requireErrorCode(t, emitter, "guest", "ROOM_BUSY")
+	})
+
+	t.Run("ready save failure", func(t *testing.T) {
+		gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		room := lifecycleRoom("room")
+		_ = rooms.Save(room)
+		rooms.failSave = true
+		gameEngine.SetRoomReady(room.GameID, "owner", room.ID, true)
+		requireErrorCode(t, emitter, "owner", "ROOM_UPDATE_FAILED")
+	})
+
+	t.Run("kick validation and success", func(t *testing.T) {
+		gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		room := lifecycleRoom("room")
+		room.GuestID = "guest"
+		room.GuestName = "GUEST"
+		room.GuestReady = true
+		_ = rooms.Save(room)
+
+		gameEngine.KickRoomMember(room.GameID, "guest", room.ID, "owner")
+		requireErrorCode(t, emitter, "guest", "NOT_ROOM_OWNER")
+		gameEngine.KickRoomMember(room.GameID, "owner", room.ID, "someone-else")
+		requireErrorCode(t, emitter, "owner", "ROOM_MEMBER_NOT_FOUND")
+
+		emitter.clear()
+		gameEngine.KickRoomMember(room.GameID, "owner", room.ID, "guest")
+		updated, _ := rooms.Get(room.GameID, room.ID)
+		if updated.GuestID != "" || updated.GuestReady {
+			t.Fatalf("kicked guest remains in room: %+v", updated)
+		}
+		if _, ok := rooms.RoomByUser(room.GameID, "guest"); ok {
+			t.Fatal("kicked guest membership remains")
+		}
+		if emitter.count("guest", protocol.S2CRoomKicked) != 1 || emitter.count("owner", protocol.S2CRoomState) != 1 {
+			t.Fatal("kick events were not sent")
+		}
+	})
+}
+
+func TestStartRoomValidationAndSuccess(t *testing.T) {
+	tests := []struct {
+		name      string
+		room      Room
+		actor     string
+		configure func(*memoryRoomStore)
+		code      string
+	}{
+		{name: "not owner", room: func() Room { r := lifecycleRoom("room"); r.GuestID = "guest"; return r }(), actor: "guest", code: "NOT_ROOM_OWNER"},
+		{name: "not full", room: lifecycleRoom("room"), actor: "owner", code: "ROOM_NOT_FULL"},
+		{name: "not ready", room: func() Room { r := lifecycleRoom("room"); r.GuestID = "guest"; return r }(), actor: "owner", code: "ROOM_NOT_READY"},
+		{name: "delete failure", room: func() Room {
+			r := lifecycleRoom("room")
+			r.GuestID = "guest"
+			r.OwnerReady = true
+			r.GuestReady = true
+			return r
+		}(), actor: "owner", configure: func(s *memoryRoomStore) { s.failDelete = true }, code: "ROOM_START_FAILED"},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+			test.room.GuestName = "GUEST"
+			_ = rooms.Save(test.room)
+			if test.configure != nil {
+				test.configure(rooms)
+			}
+			gameEngine.StartRoom(test.room.GameID, test.actor, test.room.ID)
+			requireErrorCode(t, emitter, test.actor, test.code)
+			if len(gameEngine.matches) != 0 {
+				t.Fatal("invalid room start created a match")
+			}
+		})
+	}
+
+	t.Run("success", func(t *testing.T) {
+		gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		defer stopEngineTimers(gameEngine)
+		room := lifecycleRoom("room")
+		room.GuestID = "guest"
+		room.GuestName = "GUEST"
+		room.OwnerReady = true
+		room.GuestReady = true
+		_ = rooms.Save(room)
+		gameEngine.StartRoom(room.GameID, "owner", room.ID)
+		if _, ok := rooms.Get(room.GameID, room.ID); ok || len(gameEngine.matches) != 1 {
+			t.Fatal("ready room was not converted into a match")
+		}
+		for _, userID := range []string{"owner", "guest"} {
+			if emitter.count(userID, protocol.S2CMatchFound) != 1 {
+				t.Fatalf("%s did not receive MATCH_FOUND", userID)
+			}
+		}
+		for _, match := range gameEngine.matches {
+			if match.bet != room.Bet {
+				t.Fatalf("room bet was not carried into match: %d", match.bet)
+			}
+		}
+	})
+}
+
+func TestQueueLifecycleAndRoomConflict(t *testing.T) {
+	t.Run("unknown game", func(t *testing.T) {
+		gameEngine, _, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		gameEngine.JoinQueue("missing-game", lifecyclePlayer("player"))
+		requireErrorCode(t, emitter, "player", "UNKNOWN_GAME")
+	})
+
+	t.Run("wait duplicate and leave", func(t *testing.T) {
+		gameEngine, _, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		player := lifecyclePlayer("player")
+		gameEngine.JoinQueue(persistenceTestGameID, player)
+		gameEngine.JoinQueue(persistenceTestGameID, player)
+		if len(gameEngine.queues[persistenceTestGameID]) != 1 || emitter.count(player.ID, protocol.S2CQueueWaiting) != 2 {
+			t.Fatal("queue join was not idempotent")
+		}
+		gameEngine.LeaveQueue(persistenceTestGameID, player.ID)
+		if len(gameEngine.queues[persistenceTestGameID]) != 0 {
+			t.Fatal("player remains in queue after leave")
+		}
+	})
+
+	t.Run("room member cannot queue", func(t *testing.T) {
+		gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		room := lifecycleRoom("room")
+		_ = rooms.Save(room)
+		gameEngine.JoinQueue(room.GameID, lifecyclePlayer("owner"))
+		requireErrorCode(t, emitter, "owner", "IN_ROOM")
+		if len(gameEngine.queues[room.GameID]) != 0 || emitter.count("owner", protocol.S2CRoomState) != 1 {
+			t.Fatal("room member entered queue or did not recover room state")
+		}
+	})
+
+	t.Run("two players are matched", func(t *testing.T) {
+		gameEngine, _, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		defer stopEngineTimers(gameEngine)
+		gameEngine.JoinQueue(persistenceTestGameID, lifecyclePlayer("a"))
+		gameEngine.JoinQueue(persistenceTestGameID, lifecyclePlayer("b"))
+		if len(gameEngine.queues[persistenceTestGameID]) != 0 || len(gameEngine.matches) != 1 {
+			t.Fatal("two queued players were not matched")
+		}
+		if emitter.count("a", protocol.S2CMatchFound) != 1 || emitter.count("b", protocol.S2CMatchFound) != 1 {
+			t.Fatal("matched players did not receive MATCH_FOUND")
+		}
+	})
+}
+
+func TestRoomListAndReconnectView(t *testing.T) {
+	gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+	open := lifecycleRoom("open")
+	locked := lifecycleRoom("locked")
+	locked.OwnerID = "other-owner"
+	locked.OwnerName = "OTHER"
+	locked.Password = "secret"
+	locked.GuestID = "guest"
+	locked.GuestName = "GUEST"
+	_ = rooms.Save(open)
+	_ = rooms.Save(locked)
+
+	gameEngine.ListRooms(persistenceTestGameID, "viewer")
+	envelope, ok := emitter.last("viewer", protocol.S2CRoomList)
+	if !ok {
+		t.Fatal("room list was not emitted")
+	}
+	data := envelope.Data.(protocol.RoomListData)
+	if len(data.Rooms) != 2 {
+		t.Fatalf("unexpected room list: %+v", data.Rooms)
+	}
+	foundLocked := false
+	for _, room := range data.Rooms {
+		if room.ID == locked.ID {
+			foundLocked = room.Locked && room.Full && room.Players == 2
+		}
+	}
+	if !foundLocked {
+		t.Fatal("locked/full room metadata is incorrect")
+	}
+
+	emitter.clear()
+	gameEngine.OnConnect(open.GameID, open.OwnerID)
+	if emitter.count(open.OwnerID, protocol.S2CRoomWaiting) != 1 || emitter.count(open.OwnerID, protocol.S2CRoomState) != 1 {
+		t.Fatal("room owner did not recover room view on reconnect")
+	}
+}
+
+func TestMoveGuardCases(t *testing.T) {
+	gameEngine, _, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+	defer stopEngineTimers(gameEngine)
+	gameEngine.Move(persistenceTestGameID, "missing", "", json.RawMessage(`{}`))
+	requireErrorCode(t, emitter, "missing", "NO_MATCH")
+
+	match := startPersistenceTestMatch(t, gameEngine)
+	current := match.players[match.turnIdx].ID
+	opponent := match.players[1-match.turnIdx].ID
+
+	emitter.clear()
+	gameEngine.Move(match.GameID, opponent, match.ID, json.RawMessage(`{"win":false}`))
+	requireErrorCode(t, emitter, opponent, "NOT_YOUR_TURN")
+
+	emitter.clear()
+	gameEngine.Move(match.GameID, current, "different-match", json.RawMessage(`{"win":false}`))
+	if emitter.count(current, protocol.S2CState) != 0 || match.actions != nil {
+		t.Fatal("move for a different match was applied")
+	}
+
+	gameEngine.Move(match.GameID, current, match.ID, json.RawMessage(`{`))
+	requireErrorCode(t, emitter, current, "INVALID_MOVE")
+	if match.actions != nil {
+		t.Fatal("invalid move was recorded")
+	}
+
+	emitter.clear()
+	if match.timer != nil {
+		match.timer.Stop()
+	}
+	match.deadline = time.Now().Add(-time.Second)
+	gameEngine.Move(match.GameID, current, match.ID, json.RawMessage(`{"win":false}`))
+	if emitter.count(current, protocol.S2CState) != 0 || match.actions != nil {
+		t.Fatal("move after deadline was applied")
+	}
+}

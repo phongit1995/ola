@@ -72,17 +72,27 @@ func init() {
 }
 
 type memoryRoomStore struct {
-	rooms map[string]Room
-	refs  map[string]userRoomRef
+	rooms      map[string]Room
+	refs       map[string]userRoomRef
+	failSave   bool
+	failDelete bool
+	claimOK    bool
 }
 
 func newMemoryRoomStore() *memoryRoomStore {
-	return &memoryRoomStore{rooms: make(map[string]Room), refs: make(map[string]userRoomRef)}
+	return &memoryRoomStore{
+		rooms:   make(map[string]Room),
+		refs:    make(map[string]userRoomRef),
+		claimOK: true,
+	}
 }
 
 func memoryRoomKey(gameID, value string) string { return gameID + ":" + value }
 
 func (s *memoryRoomStore) Save(room Room) error {
+	if s.failSave {
+		return errors.New("save room failed")
+	}
 	s.rooms[memoryRoomKey(room.GameID, room.ID)] = room
 	ref := userRoomRef{GameID: room.GameID, RoomID: room.ID}
 	s.refs[memoryRoomKey(room.GameID, room.OwnerID)] = ref
@@ -98,6 +108,9 @@ func (s *memoryRoomStore) Get(gameID, roomID string) (Room, bool) {
 }
 
 func (s *memoryRoomStore) Delete(gameID, roomID string, userIDs ...string) error {
+	if s.failDelete {
+		return errors.New("delete room failed")
+	}
 	delete(s.rooms, memoryRoomKey(gameID, roomID))
 	for _, userID := range userIDs {
 		delete(s.refs, memoryRoomKey(gameID, userID))
@@ -126,7 +139,7 @@ func (s *memoryRoomStore) RoomByUser(gameID, userID string) (userRoomRef, bool) 
 }
 
 func (s *memoryRoomStore) Claim(gameID, roomID string) (func(), bool) {
-	return func() {}, true
+	return func() {}, s.claimOK
 }
 
 type memoryActiveMatchStore struct {
