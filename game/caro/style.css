@@ -274,6 +274,7 @@ button:focus-visible,
   position: absolute;
   left: 50%;
   top: 38%;
+  transform: translateX(-50%);
   z-index: 6;
   pointer-events: none;
   font-weight: 900;
@@ -666,25 +667,43 @@ button:focus-visible,
   flex: 1;
   min-height: 0;
   overflow-y: auto;
+  padding-right: clamp(2px, 0.7vw, 4px);
   display: flex;
   flex-direction: column;
   gap: clamp(2px, 0.8vw, 5px);
   color: var(--lobby-navy);
   font-size: clamp(11px, 3vw, 14px);
   line-height: 1.35;
-  background-image:
-    linear-gradient(var(--chat-rule-color), var(--chat-rule-color)),
-    linear-gradient(var(--chat-rule-color), var(--chat-rule-color));
-  background-position:
-    left 33.333%,
-    left 66.666%;
-  background-repeat: no-repeat;
-  background-size: 100% 1px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(29, 79, 139, 0.58) rgba(29, 79, 139, 0.08);
+}
+
+#chat-log::-webkit-scrollbar {
+  width: 5px;
+}
+
+#chat-log::-webkit-scrollbar-track {
+  background: rgba(29, 79, 139, 0.08);
+  border-radius: 999px;
+}
+
+#chat-log::-webkit-scrollbar-thumb {
+  background: rgba(29, 79, 139, 0.58);
+  border: 1px solid rgba(253, 246, 231, 0.72);
+  border-radius: 999px;
+}
+
+#chat-log::-webkit-scrollbar-thumb:hover {
+  background: rgba(29, 79, 139, 0.78);
 }
 
 .chat-msg {
-  word-break: break-word;
-  padding-bottom: clamp(2px, 0.8vw, 5px);
+  flex-shrink: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  padding-bottom: clamp(1px, 0.5vw, 3px);
+  border-bottom: 1px dashed var(--chat-rule-color);
 }
 
 .chat-who {
@@ -695,19 +714,20 @@ button:focus-visible,
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: clamp(6px, 2.5vw, 12px);
-  padding-top: clamp(4px, 1.4vw, 8px);
+  gap: clamp(4px, 1.6vw, 8px);
+  padding-top: clamp(2px, 0.8vw, 5px);
   border-top: 1px solid var(--chat-rule-color);
 }
 
 #chat-input {
   flex: 1;
   min-width: 0;
+  height: clamp(18px, 4.5vw, 24px);
   border: none;
   background: transparent;
   color: var(--lobby-navy);
   font-family: inherit;
-  font-size: clamp(12px, 3.2vw, 15px);
+  font-size: clamp(10px, 2.7vw, 13px);
   font-weight: 600;
   outline: none;
 }
@@ -721,7 +741,7 @@ button:focus-visible,
 
 .chat-send {
   flex-shrink: 0;
-  height: clamp(18px, 5.5vw, 30px);
+  height: clamp(15px, 4.2vw, 22px);
   aspect-ratio: 684 / 567;
   border: none;
   background: transparent;
