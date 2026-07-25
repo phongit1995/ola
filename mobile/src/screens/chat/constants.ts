@@ -1,6 +1,6 @@
-export const CHAT_BG = '#ECE5DD';
+export { MAX_UPLOAD_BYTES } from '@ola/shared/constants';
 
-export const MAX_UPLOAD_BYTES = 2 * 1024 * 1024;
+export const CHAT_BG = '#ECE5DD';
 
 export const SWIPE_MAX = 88;
 

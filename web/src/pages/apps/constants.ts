@@ -11,6 +11,7 @@ import iconMedia from '@/assets/icons/apps/media.png';
 // import iconMall from '@/assets/icons/apps/mall.png';
 // import iconNearby from '@/assets/icons/apps/nearby.png';
 import iconSetting from '@/assets/icons/apps/setting.png';
+import iconLogout from '@/assets/icons/apps/logout.png';
 import iconEgg from '@/assets/icons/apps/egg.png';
 import iconPen from '@/assets/games/pen/pen_icon.webp';
 import iconWheel from '@/assets/games/spin-wheel/wheel.webp';
@@ -21,6 +22,7 @@ export interface AppItem {
   titleKey: ParseKeys;
   app?: AppOverlayKind;
   overlay?: 'pen' | 'egg' | 'wheel';
+  action?: 'logout';
   subtitleKey?: 'home.appGameSubtitle' | 'home.appMallSubtitle';
 }
 
@@ -42,6 +44,7 @@ export const APP_ITEMS: AppItem[] = [
   // TODO: mở lại mục Lân cận khi NearbyPlacesPage hết dữ liệu mock (MOCK_VENUES)
   // { icon: iconNearby, titleKey: 'home.apps.nearby', app: 'nearby' },
   { icon: iconSetting, titleKey: 'home.apps.settings', app: 'settings' },
+  { icon: iconLogout, titleKey: 'home.logout', action: 'logout' },
 ];
 
 export const MOCK_VENUES: Venue[] = [

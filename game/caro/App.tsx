@@ -4,13 +4,31 @@ import { BOARD_ASSETS, preloadAssets } from './assets';
 import { useCaroStore } from './store';
 import { Board } from './Board';
 import { Lobby } from './Lobby';
+import { Leaderboard } from './Leaderboard';
 import { Ranked } from './Ranked';
 import { Result } from './Result';
+import { ConfirmModal } from './ConfirmModal';
+
+function OppAwayBanner() {
+  const oppAway = useCaroStore((s) => s.oppAway);
+  const [left, setLeft] = useState(0);
+  useEffect(() => {
+    if (oppAway == null) return;
+    const tick = (): void => setLeft(Math.max(0, Math.ceil((oppAway - Date.now()) / 1000)));
+    tick();
+    const id = window.setInterval(tick, 250);
+    return () => window.clearInterval(id);
+  }, [oppAway]);
+  if (oppAway == null) return null;
+  return <div className="opp-away-banner">Đối thủ mất kết nối, chờ {left}s...</div>;
+}
 
 export function App() {
   const [progress, setProgress] = useState('Đang tải...');
   const [ready, setReady] = useState(false);
   const lobbyAnimKey = useCaroStore((s) => s.lobbyAnimKey);
+  const notice = useCaroStore((s) => s.notice);
+  const dismissNotice = useCaroStore((s) => s.dismissNotice);
   const init = useCaroStore((s) => s.init);
   const dispose = useCaroStore((s) => s.dispose);
 
@@ -39,8 +57,21 @@ export function App() {
     <>
       <Board />
       <Lobby key={lobbyAnimKey} progress={progress} />
+      <Leaderboard />
       <Ranked />
       <Result />
+      <OppAwayBanner />
+      <ConfirmModal
+        open={notice != null}
+        title="Thông báo"
+        text={notice ?? ''}
+        confirmLabel="Đã hiểu"
+        cancelLabel={null}
+        confirmTone="primary"
+        dismissOnBackdrop={false}
+        onConfirm={dismissNotice}
+        onCancel={dismissNotice}
+      />
     </>
   );
 }

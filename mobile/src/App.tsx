@@ -13,6 +13,7 @@ import { SocketService } from '@ola/shared/services';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useSettingsStore } from '@ola/shared/stores/settingsStore';
 import { RootNavigator } from './navigation/RootNavigator';
+import { StatusBarBackground } from './components/ui/StatusBarBackground';
 import { ToastHost } from './components/ui/ToastHost';
 import { MediaViewer } from './components/ui/MediaViewer';
 import { useMeNotificationRealtime } from './hooks/useMeNotificationRealtime';
@@ -67,7 +68,7 @@ export default function App() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <KeyboardProvider statusBarTranslucent navigationBarTranslucent>
       <SafeAreaProvider>
-        <StatusBar barStyle="light-content" backgroundColor="#7cb342" />
+        <StatusBar barStyle="light-content" />
         <NavigationContainer
           ref={navigationRef}
           onReady={() => {
@@ -85,6 +86,7 @@ export default function App() {
         >
           <RootNavigator />
         </NavigationContainer>
+        <StatusBarBackground />
         <KenTreasureOverlay />
         <ToastHost />
         <MediaViewer />

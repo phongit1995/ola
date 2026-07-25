@@ -1,9 +1,11 @@
 package game
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"strings"
+	"sync"
 
 	"ola-chat-server/internal/config"
 	"ola-chat-server/internal/game/engine"
@@ -11,6 +13,8 @@ import (
 	"ola-chat-server/internal/game/protocol"
 	"ola-chat-server/internal/services"
 
+	redisClient "github.com/zishang520/socket.io/adapters/redis/v3"
+	"github.com/zishang520/socket.io/adapters/redis/v3/adapter"
 	socket "github.com/zishang520/socket.io/servers/socket/v3"
 	"github.com/zishang520/socket.io/v3/pkg/types"
 	"go.uber.org/zap"
@@ -19,10 +23,11 @@ import (
 const messageEvent = "message"
 
 type SocketData struct {
-	UserID string
-	GameID string
-	Name   string
-	Guest  bool
+	UserID  string
+	GameID  string
+	Name    string
+	VipType *string
+	Guest   bool
 }
 
 type Server struct {
@@ -30,6 +35,16 @@ type Server struct {
 	engine *engine.Engine
 	repo   *Repository
 	logger *zap.SugaredLogger
+	connMu sync.Mutex
+	conns  map[string]int
+}
+
+func userRoom(gameID, userID string) string {
+	return "game:" + gameID + ":user:" + userID
+}
+
+func lobbyRoom(gameID string) string {
+	return "game:" + gameID + ":lobby"
 }
 
 func NewServer(
@@ -37,12 +52,20 @@ func NewServer(
 	jwtService *services.JWTService,
 	gameEngine *engine.Engine,
 	repo *Repository,
+	cache *services.CacheService,
 	logger *zap.SugaredLogger,
 ) (*Server, error) {
 	opts := socket.DefaultServerOptions()
 	opts.SetCors(&types.Cors{
 		Origin:      cfg.CORSAllowedOrigins,
 		Credentials: true,
+	})
+
+	adapterOpts := adapter.DefaultRedisAdapterOptions()
+	adapterOpts.SetKey(cfg.GameWebSocketRedisPrefix)
+	opts.SetAdapter(&adapter.RedisAdapterBuilder{
+		Redis: redisClient.NewRedisClient(context.Background(), cache.GetClient()),
+		Opts:  adapterOpts,
 	})
 
 	io := socket.NewServer(nil, opts)
@@ -52,6 +75,7 @@ func NewServer(
 		engine: gameEngine,
 		repo:   repo,
 		logger: logger.Named("[game-ws]"),
+		conns:  make(map[string]int),
 	}
 	gameEngine.SetEmitter(server)
 
@@ -76,14 +100,17 @@ func NewServer(
 
 		if cfg.GameAllowGuest && strings.HasPrefix(token, "guest:") {
 			guest = true
-			userID = strings.TrimPrefix(token, "guest:")
-			if userID == "" {
+			guestID, namespacedID, ok := guestIdentity(token)
+			if !ok {
 				next(socket.NewExtendedError("invalid guest token", nil))
 				return
 			}
+			// Keep guests in a separate identity namespace even when their
+			// client-supplied suffix happens to be a registered UUID.
+			userID = namespacedID
 			name, _ = auth["name"].(string)
 			if name == "" {
-				name = "Guest-" + userID
+				name = "Guest-" + guestID
 			}
 		} else {
 			uid, err := jwtService.GetUserIDFromToken(token)
@@ -108,21 +135,29 @@ func NewServer(
 		server.handleConnection(client)
 	})
 
-	logger.Info("✅ Game WebSocket server initialized")
+	logger.Infow("✅ Game WebSocket server initialized with Redis Adapter",
+		"redis_prefix", cfg.GameWebSocketRedisPrefix,
+	)
 	return server, nil
 }
 
 func (s *Server) handleConnection(client *socket.Socket) {
 	data := client.Data().(*SocketData)
-	client.Join(socket.Room("user:" + data.UserID))
+	client.Join(socket.Room(userRoom(data.GameID, data.UserID)))
+	client.Join(socket.Room(lobbyRoom(data.GameID)))
 
 	s.logger.Infow("Game socket connected",
 		"user_id", data.UserID,
 		"game_id", data.GameID,
 		"socket_id", client.Id())
 
+	key := userRoom(data.GameID, data.UserID)
+	s.connMu.Lock()
+	s.conns[key]++
+	s.connMu.Unlock()
+
 	s.sendUserInfo(client, data)
-	s.engine.OnConnect(data.UserID)
+	s.engine.OnConnect(data.GameID, data.UserID)
 
 	client.On(messageEvent, func(args ...any) {
 		if len(args) == 0 {
@@ -132,7 +167,16 @@ func (s *Server) handleConnection(client *socket.Socket) {
 	})
 
 	client.On("disconnect", func(args ...any) {
-		s.engine.LeaveQueue(data.GameID, data.UserID)
+		s.connMu.Lock()
+		s.conns[key]--
+		last := s.conns[key] <= 0
+		if last {
+			delete(s.conns, key)
+		}
+		s.connMu.Unlock()
+		if last {
+			s.engine.OnDisconnect(data.GameID, data.UserID)
+		}
 		s.logger.Infow("Game socket disconnected", "user_id", data.UserID)
 	})
 }
@@ -156,7 +200,30 @@ func (s *Server) sendUserInfo(client *socket.Socket, data *SocketData) {
 		return
 	}
 
+	if info.Username != "" {
+		data.Name = info.Username
+	}
+	data.VipType = info.VipType
 	client.Emit(messageEvent, protocol.OutEnvelope{Type: protocol.S2CUserInfo, Data: *info})
+}
+
+func socketPlayer(data *SocketData) protocol.PlayerInfo {
+	return protocol.PlayerInfo{
+		ID:      data.UserID,
+		Name:    data.Name,
+		VipType: data.VipType,
+	}
+}
+
+func guestIdentity(token string) (suffix, userID string, ok bool) {
+	if !strings.HasPrefix(token, "guest:") {
+		return "", "", false
+	}
+	suffix = strings.TrimPrefix(token, "guest:")
+	if suffix == "" {
+		return "", "", false
+	}
+	return suffix, "guest:" + suffix, true
 }
 
 func (s *Server) handleMessage(data *SocketData, raw any) {
@@ -171,20 +238,86 @@ func (s *Server) handleMessage(data *SocketData, raw any) {
 
 	switch env.Type {
 	case protocol.C2SQueueJoin:
-		s.engine.JoinQueue(data.GameID, protocol.PlayerInfo{ID: data.UserID, Name: data.Name})
+		s.engine.JoinQueue(data.GameID, socketPlayer(data))
 	case protocol.C2SQueueLeave:
 		s.engine.LeaveQueue(data.GameID, data.UserID)
 	case protocol.C2SMove:
-		s.engine.Move(data.UserID, env.Data)
+		var d protocol.MoveCommand
+		if err := json.Unmarshal(env.Data, &d); err != nil {
+			return
+		}
+		s.engine.Move(data.GameID, data.UserID, d.MatchID, d.Move)
+	case protocol.C2SChatSend:
+		var d protocol.ChatSendData
+		if err := json.Unmarshal(env.Data, &d); err != nil {
+			return
+		}
+		if d.RoomID != "" {
+			s.engine.RoomChat(data.GameID, data.UserID, d.RoomID, d.Text)
+		} else {
+			s.engine.Chat(data.GameID, data.UserID, d.MatchID, d.Text)
+		}
 	case protocol.C2SForfeit:
-		s.engine.Forfeit(data.UserID)
+		var d protocol.ForfeitData
+		if err := json.Unmarshal(env.Data, &d); err != nil {
+			return
+		}
+		if d.LeaveAfter {
+			s.engine.ForfeitAndLeave(data.GameID, data.UserID, d.MatchID)
+		} else {
+			s.engine.Forfeit(data.GameID, data.UserID, d.MatchID)
+		}
+	case protocol.C2SRoomCreate:
+		var d protocol.RoomCreateData
+		if err := json.Unmarshal(env.Data, &d); err != nil {
+			return
+		}
+		s.engine.CreateRoom(data.GameID, socketPlayer(data), d.Bet, d.Password)
+	case protocol.C2SRoomJoin:
+		var d protocol.RoomJoinData
+		if err := json.Unmarshal(env.Data, &d); err != nil {
+			return
+		}
+		s.engine.JoinRoom(data.GameID, socketPlayer(data), d.RoomID, d.Password)
+	case protocol.C2SRoomLeave:
+		var d protocol.RoomActionData
+		if len(env.Data) > 0 {
+			if err := json.Unmarshal(env.Data, &d); err != nil {
+				return
+			}
+		}
+		s.engine.LeaveRoom(data.GameID, data.UserID, d.RoomID)
+	case protocol.C2SRoomKick:
+		var d protocol.RoomKickData
+		if err := json.Unmarshal(env.Data, &d); err != nil {
+			return
+		}
+		s.engine.KickRoomMember(data.GameID, data.UserID, d.RoomID, d.UserID)
+	case protocol.C2SRoomReady:
+		var d protocol.RoomReadyData
+		if err := json.Unmarshal(env.Data, &d); err != nil {
+			return
+		}
+		s.engine.SetRoomReady(data.GameID, data.UserID, d.RoomID, d.Ready)
+	case protocol.C2SRoomStart:
+		var d protocol.RoomActionData
+		if err := json.Unmarshal(env.Data, &d); err != nil {
+			return
+		}
+		s.engine.StartRoom(data.GameID, data.UserID, d.RoomID)
+	case protocol.C2SRoomList:
+		s.engine.ListRooms(data.GameID, data.UserID)
 	default:
 		s.logger.Debugw("Unknown game message type", "type", env.Type, "user_id", data.UserID)
 	}
 }
 
-func (s *Server) ToUser(userID string, envelope protocol.OutEnvelope) {
-	s.io.To(socket.Room("user:" + userID)).Emit(messageEvent, envelope)
+func (s *Server) ToUser(gameID string, userID string, envelope protocol.OutEnvelope) {
+	s.io.To(socket.Room(userRoom(gameID, userID))).Emit(messageEvent, envelope)
+}
+
+func (s *Server) ToGame(gameID string, envelope protocol.OutEnvelope) {
+	s.io.To(socket.Room(lobbyRoom(gameID))).Emit(messageEvent, envelope)
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {

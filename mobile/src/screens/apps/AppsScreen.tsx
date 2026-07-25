@@ -1,15 +1,17 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, Pressable, ScrollView, Text, View, type ImageSourcePropType } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { formatKen } from '@ola/shared/lib';
+import { AuthService, SocketService } from '@ola/shared/services';
 import { useAppNotificationStore } from '@ola/shared/stores/appNotificationStore';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
+import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { useArcadeStore } from '@store/arcadeStore';
 import { APP_ITEMS, type AppItem } from './constants';
 
@@ -64,12 +66,17 @@ export function AppsScreen() {
   const fetchGames = useArcadeStore((s) => s.fetchGames);
   const notifUnread = useAppNotificationStore((s) => s.unreadCount);
   const user = useAuthStore((s) => s.user);
+  const [logoutOpen, setLogoutOpen] = useState(false);
 
   useEffect(() => {
     void fetchGames();
   }, [fetchGames]);
 
   function handleOpen(item: AppItem) {
+    if (item.action === 'logout') {
+      setLogoutOpen(true);
+      return;
+    }
     if (item.action === 'notifications') {
       navigation.navigate(ROOT_ROUTES.Notifications);
       return;
@@ -107,6 +114,18 @@ export function AppsScreen() {
       return;
     }
     push('info', t('chat.comingSoon'));
+  }
+
+  async function confirmLogout() {
+    setLogoutOpen(false);
+    try {
+      await AuthService.logout();
+    } catch {
+      push('error', t('chat.logoutError'));
+    } finally {
+      SocketService.disconnect();
+      useAuthStore.getState().clearUser();
+    }
   }
 
   function renderAppItem(item: AppItem) {
@@ -155,6 +174,17 @@ export function AppsScreen() {
         ))}
         {APP_ITEMS.slice(1).map(renderAppItem)}
       </ScrollView>
+      <ConfirmDialog
+        visible={logoutOpen}
+        danger
+        showIcon={false}
+        title={t('dialog.logoutTitle')}
+        message={t('dialog.logoutMessage')}
+        confirmLabel={t('dialog.logoutButton')}
+        cancelLabel={t('dialog.no')}
+        onConfirm={() => void confirmLogout()}
+        onCancel={() => setLogoutOpen(false)}
+      />
     </View>
   );
 }

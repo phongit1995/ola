@@ -1,4 +1,8 @@
 {
+  "arcade": {
+    "minimize": "Thu nhỏ",
+    "restore": "Mở lại"
+  },
   "common": {
     "clear": "Xoá",
     "showPassword": "Hiện mật khẩu",
@@ -1176,7 +1180,10 @@
     "title": "Kho ảnh",
     "count": "{{count}} ảnh",
     "empty": "Bạn chưa có ảnh nào.",
-    "comingSoon": "Tính năng đang được phát triển"
+    "comingSoon": "Tính năng đang được phát triển",
+    "save": "Tải ảnh",
+    "saved": "Đã lưu ảnh vào thư viện",
+    "saveFailed": "Không thể lưu ảnh"
   },
   "nearby": {
     "title": "Địa điểm lân cận",

@@ -19,9 +19,11 @@ type Config struct {
 
 	ChatPort int `env:"CHAT_PORT" envDefault:"8081" validate:"min=1,max=65535"`
 
-	GamePort        int  `env:"GAME_PORT" envDefault:"8082" validate:"min=1,max=65535"`
-	GameAllowGuest  bool `env:"GAME_ALLOW_GUEST" envDefault:"false"`
-	GameTurnSeconds int  `env:"GAME_TURN_SECONDS" envDefault:"45" validate:"min=5,max=300"`
+	GamePort                  int    `env:"GAME_PORT" envDefault:"8082" validate:"min=1,max=65535"`
+	GameAllowGuest            bool   `env:"GAME_ALLOW_GUEST" envDefault:"false"`
+	GameTurnSeconds           int    `env:"GAME_TURN_SECONDS" envDefault:"45" validate:"min=5,max=300"`
+	GameReconnectGraceSeconds int    `env:"GAME_RECONNECT_GRACE_SECONDS" envDefault:"30" validate:"min=5,max=120"`
+	GameWebSocketRedisPrefix  string `env:"GAME_WEBSOCKET_REDIS_PREFIX" envDefault:"ola-game" validate:"required"`
 
 	DBHost     string `env:"DB_HOST"`
 	DBPort     int    `env:"DB_PORT" envDefault:"5432" validate:"omitempty,min=1,max=65535"`
