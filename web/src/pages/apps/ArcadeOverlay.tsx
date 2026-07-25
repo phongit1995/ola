@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ensureFreshToken } from '@ola/shared/api';
 import { Avatar } from '@components';
+import { useDraggable } from '@hooks';
 import { colorForName } from '@lib';
 import { useArcadeOverlayStore } from '@/store/arcadeOverlayStore';
 
@@ -9,9 +10,6 @@ interface GameBridgeMessage {
   source?: string;
   type?: string;
 }
-
-const BUBBLE_SIZE = 56;
-const DRAG_THRESHOLD = 4;
 
 export function ArcadeOverlay() {
   const { t } = useTranslation();
@@ -22,9 +20,12 @@ export function ArcadeOverlay() {
   const restore = useArcadeOverlayStore((s) => s.restore);
   const close = useArcadeOverlayStore((s) => s.close);
   const iframeRef = useRef<HTMLIFrameElement>(null);
-
-  const [bubblePos, setBubblePos] = useState<{ x: number; y: number } | null>(null);
-  const dragRef = useRef<{ startX: number; startY: number; offX: number; offY: number; moved: boolean } | null>(null);
+  const {
+    ref: bubbleRef,
+    onPointerDown: onBubbleDown,
+    onPointerMove: onBubbleMove,
+    onPointerUp: onBubbleUp,
+  } = useDraggable<HTMLButtonElement>({ onClick: restore });
 
   useEffect(() => {
     if (!active) return;
@@ -49,46 +50,6 @@ export function ArcadeOverlay() {
     window.addEventListener('message', onMessage);
     return () => window.removeEventListener('message', onMessage);
   }, [active, close]);
-
-  function onBubblePointerDown(event: React.PointerEvent<HTMLButtonElement>) {
-    const rect = event.currentTarget.getBoundingClientRect();
-    dragRef.current = {
-      startX: event.clientX,
-      startY: event.clientY,
-      offX: event.clientX - rect.left,
-      offY: event.clientY - rect.top,
-      moved: false,
-    };
-    event.currentTarget.setPointerCapture(event.pointerId);
-  }
-
-  function onBubblePointerMove(event: React.PointerEvent<HTMLButtonElement>) {
-    const drag = dragRef.current;
-    if (!drag) return;
-    if (
-      Math.abs(event.clientX - drag.startX) > DRAG_THRESHOLD ||
-      Math.abs(event.clientY - drag.startY) > DRAG_THRESHOLD
-    ) {
-      drag.moved = true;
-    }
-    if (!drag.moved) return;
-    const container = event.currentTarget.offsetParent as HTMLElement | null;
-    const rect = container?.getBoundingClientRect();
-    const baseLeft = rect?.left ?? 0;
-    const baseTop = rect?.top ?? 0;
-    const width = rect?.width ?? window.innerWidth;
-    const height = rect?.height ?? window.innerHeight;
-    const x = Math.min(Math.max(0, event.clientX - drag.offX - baseLeft), width - BUBBLE_SIZE);
-    const y = Math.min(Math.max(0, event.clientY - drag.offY - baseTop), height - BUBBLE_SIZE);
-    setBubblePos({ x, y });
-  }
-
-  function onBubblePointerUp(event: React.PointerEvent<HTMLButtonElement>) {
-    const drag = dragRef.current;
-    dragRef.current = null;
-    event.currentTarget.releasePointerCapture(event.pointerId);
-    if (drag && !drag.moved) restore();
-  }
 
   if (!active) return null;
 
@@ -116,13 +77,13 @@ export function ArcadeOverlay() {
         <button
           type="button"
           aria-label={t('arcade.restore')}
-          onPointerDown={onBubblePointerDown}
-          onPointerMove={onBubblePointerMove}
-          onPointerUp={onBubblePointerUp}
-          style={bubblePos ? { left: bubblePos.x, top: bubblePos.y } : undefined}
-          className={`absolute z-50 flex h-14 w-14 touch-none items-center justify-center rounded-full border-2 border-white bg-white shadow-lg ${
-            bubblePos ? '' : 'right-4 bottom-24'
-          } ${notify ? 'animate-pulse ring-4 ring-ola-accent' : ''}`}
+          ref={bubbleRef}
+          onPointerDown={onBubbleDown}
+          onPointerMove={onBubbleMove}
+          onPointerUp={onBubbleUp}
+          className={`absolute right-4 bottom-24 z-50 flex h-14 w-14 cursor-grab touch-none select-none items-center justify-center rounded-full border-2 border-white bg-white shadow-lg active:cursor-grabbing ${
+            notify ? 'animate-pulse ring-4 ring-ola-accent' : ''
+          }`}
         >
           <Avatar
             name={active.name}

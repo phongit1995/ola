@@ -11,3 +11,4 @@ export * from './useAuthSessionSync';
 export * from './useSettingsSync';
 export * from './useAttachPanel';
 export * from './useStickyScroll';
+export * from './useDraggable';
