@@ -1,14 +1,31 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ensureFreshToken } from '@ola/shared/api';
 import { Avatar } from '@components';
-import { useDraggable } from '@hooks';
 import { colorForName } from '@lib';
 import { useArcadeOverlayStore } from '@/store/arcadeOverlayStore';
 
 interface GameBridgeMessage {
   source?: string;
   type?: string;
+}
+
+interface BubbleDrag {
+  startX: number;
+  startY: number;
+  baseX: number;
+  baseY: number;
+  minX: number;
+  maxX: number;
+  minY: number;
+  maxY: number;
+  moved: boolean;
+}
+
+const DRAG_THRESHOLD = 4;
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), Math.max(min, max));
 }
 
 export function ArcadeOverlay() {
@@ -20,12 +37,8 @@ export function ArcadeOverlay() {
   const restore = useArcadeOverlayStore((s) => s.restore);
   const close = useArcadeOverlayStore((s) => s.close);
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const {
-    ref: bubbleRef,
-    onPointerDown: onBubbleDown,
-    onPointerMove: onBubbleMove,
-    onPointerUp: onBubbleUp,
-  } = useDraggable<HTMLButtonElement>({ onClick: restore });
+  const [bubblePos, setBubblePos] = useState({ x: 0, y: 0 });
+  const dragRef = useRef<BubbleDrag | null>(null);
 
   useEffect(() => {
     if (!active) return;
@@ -53,6 +66,52 @@ export function ArcadeOverlay() {
 
   if (!active) return null;
 
+  function handleBubbleDown(event: ReactPointerEvent<HTMLDivElement>) {
+    const el = event.currentTarget;
+    const container = el.offsetParent as HTMLElement | null;
+    const rect = el.getBoundingClientRect();
+    const bounds = container?.getBoundingClientRect();
+    const left = bounds?.left ?? 0;
+    const top = bounds?.top ?? 0;
+    const width = bounds?.width ?? window.innerWidth;
+    const height = bounds?.height ?? window.innerHeight;
+    const startLeft = rect.left - left;
+    const startTop = rect.top - top;
+    dragRef.current = {
+      startX: event.clientX,
+      startY: event.clientY,
+      baseX: bubblePos.x,
+      baseY: bubblePos.y,
+      minX: -startLeft,
+      maxX: width - rect.width - startLeft,
+      minY: -startTop,
+      maxY: height - rect.height - startTop,
+      moved: false,
+    };
+    el.setPointerCapture(event.pointerId);
+  }
+
+  function handleBubbleMove(event: ReactPointerEvent<HTMLDivElement>) {
+    const drag = dragRef.current;
+    if (!drag) return;
+    const dx = event.clientX - drag.startX;
+    const dy = event.clientY - drag.startY;
+    if (Math.abs(dx) > DRAG_THRESHOLD || Math.abs(dy) > DRAG_THRESHOLD) drag.moved = true;
+    if (!drag.moved) return;
+    setBubblePos({
+      x: drag.baseX + clamp(dx, drag.minX, drag.maxX),
+      y: drag.baseY + clamp(dy, drag.minY, drag.maxY),
+    });
+  }
+
+  function handleBubbleUp(event: ReactPointerEvent<HTMLDivElement>) {
+    const drag = dragRef.current;
+    if (!drag) return;
+    dragRef.current = null;
+    event.currentTarget.releasePointerCapture(event.pointerId);
+    if (!drag.moved) restore();
+  }
+
   return (
     <>
       <div className={`absolute inset-0 z-50 bg-[#0f0f23] ${minimized ? 'invisible' : ''}`}>
@@ -74,13 +133,20 @@ export function ArcadeOverlay() {
       </div>
 
       {minimized && (
-        <button
-          type="button"
+        <div
+          role="button"
+          tabIndex={0}
           aria-label={t('arcade.restore')}
-          ref={bubbleRef}
-          onPointerDown={onBubbleDown}
-          onPointerMove={onBubbleMove}
-          onPointerUp={onBubbleUp}
+          onPointerDown={handleBubbleDown}
+          onPointerMove={handleBubbleMove}
+          onPointerUp={handleBubbleUp}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              restore();
+            }
+          }}
+          style={{ transform: `translate(${bubblePos.x}px, ${bubblePos.y}px)` }}
           className={`absolute right-4 bottom-24 z-50 flex h-14 w-14 cursor-grab touch-none select-none items-center justify-center rounded-full border-2 border-white bg-white shadow-lg active:cursor-grabbing ${
             notify ? 'animate-pulse ring-4 ring-ola-accent' : ''
           }`}
@@ -93,9 +159,9 @@ export function ArcadeOverlay() {
             rounded
           />
           {notify && (
-            <span className="absolute -top-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-white bg-ola-accent" />
+            <span className="pointer-events-none absolute -top-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-white bg-ola-accent" />
           )}
-        </button>
+        </div>
       )}
     </>
   );
