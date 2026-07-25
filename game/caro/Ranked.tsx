@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { parseVipTypeId, vipIconUrl } from '@ola/shared/lib/vip';
 import type { RoomInfo } from '../src/sdk';
-import { assetBg, assetSrc } from './assets';
+import { assetBg, assetSrc, VIP_DEFAULT_ICON } from './assets';
 import { useCaroStore } from './store';
 
 const PAGE_SIZE = 9;
@@ -97,9 +97,13 @@ export function Ranked() {
                   <span className="rr-owner">
                     {(() => {
                       const vipId = parseVipTypeId(room.ownerVipType);
-                      return vipId != null ? (
-                        <img src={vipIconUrl(vipId)} alt="" className="rr-vip" />
-                      ) : null;
+                      return (
+                        <img
+                          src={vipId != null ? vipIconUrl(vipId) : VIP_DEFAULT_ICON}
+                          alt=""
+                          className="rr-vip"
+                        />
+                      );
                     })()}
                     <span className="rr-owner-name">@{room.owner}</span>
                   </span>
