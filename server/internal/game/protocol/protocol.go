@@ -51,6 +51,7 @@ type PlayerInfo struct {
 }
 
 type UserInfoData struct {
+	ID       string  `json:"id"`
 	Username string  `json:"username"`
 	VipType  *string `json:"vipType,omitempty"`
 	VipDays  int     `json:"vipDays"`
@@ -143,12 +144,13 @@ type RoomReadyData struct {
 }
 
 type RoomInfo struct {
-	ID      string `json:"id"`
-	Owner   string `json:"owner"`
-	Bet     int    `json:"bet"`
-	Locked  bool   `json:"locked"`
-	Players int    `json:"players"`
-	Full    bool   `json:"full,omitempty"`
+	ID           string  `json:"id"`
+	Owner        string  `json:"owner"`
+	OwnerVipType *string `json:"ownerVipType,omitempty"`
+	Bet          int     `json:"bet"`
+	Locked       bool    `json:"locked"`
+	Players      int     `json:"players"`
+	Full         bool    `json:"full,omitempty"`
 }
 
 type RoomListData struct {

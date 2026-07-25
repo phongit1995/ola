@@ -44,6 +44,7 @@ export interface PlayerInfo {
 }
 
 export interface UserInfoData {
+  id: string;
   username: string;
   vipType?: string | null;
   vipDays: number;
@@ -98,6 +99,7 @@ export interface ErrorData {
 export interface RoomInfo {
   id: string;
   owner: string;
+  ownerVipType?: string | null;
   bet: number;
   locked: boolean;
   players: number;

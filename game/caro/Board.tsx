@@ -1,4 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+} from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { assetBg, assetSrc } from './assets';
 import { SIZE } from './types';
@@ -6,6 +12,79 @@ import { useCaroStore } from './store';
 import { ConfirmModal } from './ConfirmModal';
 
 const CELLS = Array.from({ length: SIZE * SIZE }, (_, i) => i);
+
+const DRAG_THRESHOLD = 6;
+
+interface PanPoint {
+  x: number;
+  y: number;
+}
+
+interface PanBounds {
+  minX: number;
+  maxX: number;
+  minY: number;
+  maxY: number;
+}
+
+function clampPan(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), Math.max(min, max));
+}
+
+// The board (grid) is bigger than the clip window and pans inside it.
+// When an axis fits (board <= clip) it stays centered; when it overflows it pans.
+function panBounds(clip: Pick<DOMRect, 'width' | 'height'>, board: Pick<DOMRect, 'width' | 'height'>): PanBounds {
+  const slackX = clip.width - board.width;
+  const slackY = clip.height - board.height;
+  return {
+    minX: slackX >= 0 ? slackX / 2 : slackX,
+    maxX: slackX >= 0 ? slackX / 2 : 0,
+    minY: slackY >= 0 ? slackY / 2 : slackY,
+    maxY: slackY >= 0 ? slackY / 2 : 0,
+  };
+}
+
+function clampPanPoint(point: PanPoint, bounds: PanBounds): PanPoint {
+  return {
+    x: clampPan(point.x, bounds.minX, bounds.maxX),
+    y: clampPan(point.y, bounds.minY, bounds.maxY),
+  };
+}
+
+function centerPan(bounds: PanBounds): PanPoint {
+  return {
+    x: (bounds.minX + bounds.maxX) / 2,
+    y: (bounds.minY + bounds.maxY) / 2,
+  };
+}
+
+function revealCell(
+  current: PanPoint,
+  index: number,
+  clip: Pick<DOMRect, 'width' | 'height'>,
+  board: Pick<DOMRect, 'width' | 'height'>,
+  bounds: PanBounds,
+): PanPoint {
+  const cellWidth = board.width / SIZE;
+  const cellHeight = board.height / SIZE;
+  const x = index % SIZE;
+  const y = Math.floor(index / SIZE);
+  const marginX = cellWidth * 0.6;
+  const marginY = cellHeight * 0.6;
+  const left = current.x + x * cellWidth;
+  const right = left + cellWidth;
+  const top = current.y + y * cellHeight;
+  const bottom = top + cellHeight;
+  let nextX = current.x;
+  let nextY = current.y;
+
+  if (left < marginX) nextX += marginX - left;
+  else if (right > clip.width - marginX) nextX -= right - (clip.width - marginX);
+  if (top < marginY) nextY += marginY - top;
+  else if (bottom > clip.height - marginY) nextY -= bottom - (clip.height - marginY);
+
+  return clampPanPoint({ x: nextX, y: nextY }, bounds);
+}
 
 function formatKen(value: number): string {
   return value.toLocaleString('vi-VN', { maximumFractionDigits: 0 });
@@ -27,12 +106,28 @@ export function Board() {
   const [exitOpen, setExitOpen] = useState(false);
   const [forfeitOpen, setForfeitOpen] = useState(false);
   const chatLogRef = useRef<HTMLDivElement>(null);
+  const clipRef = useRef<HTMLDivElement>(null);
+  const boardRef = useRef<HTMLDivElement>(null);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const dragRef = useRef<{
+    startX: number;
+    startY: number;
+    baseX: number;
+    baseY: number;
+    minX: number;
+    maxX: number;
+    minY: number;
+    maxY: number;
+    moved: boolean;
+    pointerId: number;
+  } | null>(null);
   const {
     me,
     op,
     overlay,
     status,
     myTurn,
+    movePending,
     showTimer,
     timerText,
     timerUrgent,
@@ -58,6 +153,7 @@ export function Board() {
       overlay: s.overlay,
       status: s.status,
       myTurn: s.myTurn,
+      movePending: s.movePending,
       showTimer: s.showTimer,
       timerText: s.timerText,
       timerUrgent: s.timerUrgent,
@@ -141,6 +237,100 @@ export function Board() {
     if (log) log.scrollTop = log.scrollHeight;
   }, [messages.length]);
 
+  useLayoutEffect(() => {
+    const clip = clipRef.current;
+    const board = boardRef.current;
+    if (!clip || !board) return;
+    const resize = (recenter: boolean): void => {
+      const bounds = panBounds(clip.getBoundingClientRect(), board.getBoundingClientRect());
+      setPan((current) => {
+        const next = recenter ? centerPan(bounds) : clampPanPoint(current, bounds);
+        return next.x === current.x && next.y === current.y ? current : next;
+      });
+    };
+
+    resize(true);
+    const observer = new ResizeObserver(() => resize(false));
+    const onWindowResize = (): void => resize(false);
+    observer.observe(clip);
+    observer.observe(board);
+    window.addEventListener('resize', onWindowResize);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', onWindowResize);
+    };
+  }, [matchSeq]);
+
+  useLayoutEffect(() => {
+    if (lastIdx < 0) return;
+    const clip = clipRef.current;
+    const board = boardRef.current;
+    if (!clip || !board) return;
+    const clipRect = clip.getBoundingClientRect();
+    const boardRect = board.getBoundingClientRect();
+    const bounds = panBounds(clipRect, boardRect);
+    setPan((current) => {
+      const next = revealCell(current, lastIdx, clipRect, boardRect, bounds);
+      return next.x === current.x && next.y === current.y ? current : next;
+    });
+  }, [lastIdx, matchSeq]);
+
+  const onBoardPointerDown = (event: ReactPointerEvent<HTMLDivElement>): void => {
+    if (!event.isPrimary || event.button !== 0 || dragRef.current) return;
+    if (event.target instanceof Element && event.target.closest('button')) return;
+    const clip = clipRef.current;
+    const board = boardRef.current;
+    if (!clip || !board) return;
+    const bounds = panBounds(clip.getBoundingClientRect(), board.getBoundingClientRect());
+    dragRef.current = {
+      startX: event.clientX,
+      startY: event.clientY,
+      baseX: pan.x,
+      baseY: pan.y,
+      minX: bounds.minX,
+      maxX: bounds.maxX,
+      minY: bounds.minY,
+      maxY: bounds.maxY,
+      moved: false,
+      pointerId: event.pointerId,
+    };
+    clip.setPointerCapture(event.pointerId);
+  };
+
+  const onBoardPointerMove = (event: ReactPointerEvent<HTMLDivElement>): void => {
+    const drag = dragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    const dx = event.clientX - drag.startX;
+    const dy = event.clientY - drag.startY;
+    if (Math.abs(dx) > DRAG_THRESHOLD || Math.abs(dy) > DRAG_THRESHOLD) drag.moved = true;
+    if (!drag.moved) return;
+    setPan({
+      x: clampPan(drag.baseX + dx, drag.minX, drag.maxX),
+      y: clampPan(drag.baseY + dy, drag.minY, drag.maxY),
+    });
+  };
+
+  const onBoardPointerUp = (event: ReactPointerEvent<HTMLDivElement>): void => {
+    const drag = dragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    dragRef.current = null;
+    const clip = clipRef.current;
+    if (clip?.hasPointerCapture(event.pointerId)) clip.releasePointerCapture(event.pointerId);
+    if (drag.moved) return;
+    const board = boardRef.current;
+    if (!board) return;
+    const rect = board.getBoundingClientRect();
+    const x = Math.floor((event.clientX - rect.left) / (rect.width / SIZE));
+    const y = Math.floor((event.clientY - rect.top) / (rect.height / SIZE));
+    if (x < 0 || x >= SIZE || y < 0 || y >= SIZE) return;
+    placeMove(x, y);
+  };
+
+  const onBoardPointerCancel = (event: ReactPointerEvent<HTMLDivElement>): void => {
+    if (dragRef.current?.pointerId !== event.pointerId) return;
+    dragRef.current = null;
+  };
+
   const send = (): void => {
     sendChat(chatInput);
     setChatInput('');
@@ -201,7 +391,11 @@ export function Board() {
             {turnAnnounce.text}
           </div>
         )}
-        <div id="board-frame" className={timerUrgent && myTurn ? 'urgent' : ''} style={assetBg('boardFrame')}>
+        <div
+          id="board-frame"
+          className={timerUrgent && myTurn ? 'urgent' : ''}
+          style={assetBg('boardFrame')}
+        >
           {boardMode !== 'idle' && (
             <div
               className="board-bet-badge"
@@ -213,61 +407,74 @@ export function Board() {
               <img src={assetSrc('icKen')} alt="" />
             </div>
           )}
-          <div id="board" className={myTurn ? 'playable' : ''}>
-            {CELLS.map((i) => {
-              const mark = board[i];
-              const cls = 'cell' + (mark ? ` p${mark}` : '') + (i === lastIdx ? ' last' : '');
-              const x = i % SIZE;
-              const y = Math.floor(i / SIZE);
-              return <div key={i} className={cls} onClick={() => placeMove(x, y)} />;
-            })}
-            {winLine && (
-              <svg className="win-line-svg" viewBox={`0 0 ${SIZE} ${SIZE}`} preserveAspectRatio="none" aria-hidden="true">
-                <line
-                  className="win-line-bg"
-                  x1={winLine.x1 + 0.5}
-                  y1={winLine.y1 + 0.5}
-                  x2={winLine.x2 + 0.5}
-                  y2={winLine.y2 + 0.5}
-                  pathLength={1}
-                />
-                <line
-                  className="win-line-fg"
-                  x1={winLine.x1 + 0.5}
-                  y1={winLine.y1 + 0.5}
-                  x2={winLine.x2 + 0.5}
-                  y2={winLine.y2 + 0.5}
-                  pathLength={1}
-                />
-              </svg>
-            )}
-            {pregame && !result && (
-              <div className="room-pregame-panel">
-                <span>{status}</span>
-                {roomFull && !isRoomOwner && (
-                  <button
-                    type="button"
-                    className="room-pregame-action"
-                    style={assetBg('boardMenuBtn')}
-                    disabled={roomBusy}
-                    onClick={toggleRoomReady}
-                  >
-                    {meInRoom?.ready ? 'Hủy sẵn sàng' : 'Sẵn sàng'}
-                  </button>
-                )}
-                {isRoomOwner && roomFull && (
-                  <button
-                    type="button"
-                    className="room-pregame-action"
-                    style={assetBg('boardMenuBtn')}
-                    disabled={roomBusy || !roomCanStart}
-                    onClick={startRoom}
-                  >
-                    Bắt đầu
-                  </button>
-                )}
-              </div>
-            )}
+          <div
+            id="board-clip"
+            ref={clipRef}
+            onPointerDown={onBoardPointerDown}
+            onPointerMove={onBoardPointerMove}
+            onPointerUp={onBoardPointerUp}
+            onPointerCancel={onBoardPointerCancel}
+          >
+            <div
+              id="board"
+              ref={boardRef}
+              className={myTurn && !movePending ? 'playable' : ''}
+              style={{ transform: `translate(${pan.x}px, ${pan.y}px)` }}
+              aria-busy={movePending}
+            >
+              {CELLS.map((i) => {
+                const mark = board[i];
+                const cls = 'cell' + (mark ? ` p${mark}` : '') + (i === lastIdx ? ' last' : '');
+                return <div key={i} className={cls} />;
+              })}
+              {winLine && (
+                <svg className="win-line-svg" viewBox={`0 0 ${SIZE} ${SIZE}`} preserveAspectRatio="none" aria-hidden="true">
+                  <line
+                    className="win-line-bg"
+                    x1={winLine.x1 + 0.5}
+                    y1={winLine.y1 + 0.5}
+                    x2={winLine.x2 + 0.5}
+                    y2={winLine.y2 + 0.5}
+                    pathLength={1}
+                  />
+                  <line
+                    className="win-line-fg"
+                    x1={winLine.x1 + 0.5}
+                    y1={winLine.y1 + 0.5}
+                    x2={winLine.x2 + 0.5}
+                    y2={winLine.y2 + 0.5}
+                    pathLength={1}
+                  />
+                </svg>
+              )}
+              {pregame && !result && (
+                <div className="room-pregame-panel">
+                  <span>{status}</span>
+                  {roomFull && !isRoomOwner && (
+                    <button
+                      type="button"
+                      className="room-pregame-action"
+                      style={assetBg('boardMenuBtn')}
+                      disabled={roomBusy}
+                      onClick={toggleRoomReady}
+                    >
+                      {meInRoom?.ready ? 'Hủy sẵn sàng' : 'Sẵn sàng'}
+                    </button>
+                  )}
+                  {isRoomOwner && roomFull && (
+                    <button
+                      type="button"
+                      className="room-pregame-action"
+                      style={assetBg('boardMenuBtn')}
+                      disabled={roomBusy || !roomCanStart}
+                      onClick={startRoom}
+                    >
+                      Bắt đầu
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
         <div id="overlay" className={overlay ? '' : 'hidden'}>

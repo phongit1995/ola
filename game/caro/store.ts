@@ -125,6 +125,7 @@ export interface CaroStore {
   lastIdx: number;
   status: string;
   myTurn: boolean;
+  movePending: boolean;
   showTimer: boolean;
   timerText: string;
   timerUrgent: boolean;
@@ -192,6 +193,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     pendingRoomId: null as string | null,
     roomConnectionLost: false,
     exitingMatch: null as MatchFoundData<CaroState> | null,
+    handledMatchIds: new Set<string>(),
   };
 
   const showToast = (message: string): void => {
@@ -224,6 +226,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     set((s) => ({
       forfeitDisabled: true,
       myTurn: false,
+      movePending: false,
       me: { ...s.me, active: false },
       op: { ...s.op, active: false },
       showTimer: false,
@@ -257,6 +260,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
       lastIdx: -1,
       status,
       myTurn: false,
+      movePending: false,
       showTimer: false,
       timerUrgent: false,
       turnArrowSrc: null,
@@ -319,6 +323,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
       lastIdx: preserveOutcome ? s.lastIdx : firstRoomState ? -1 : s.lastIdx,
       status: preserveOutcome ? s.status : status,
       myTurn: false,
+      movePending: false,
       showTimer: false,
       timerUrgent: false,
       turnArrowSrc: null,
@@ -373,6 +378,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     refs.announceId += 1;
     set((s) => ({
       myTurn: mine,
+      movePending: false,
       status: mine ? 'Lượt của bạn' : 'Đợi đối thủ...',
       turnAnnounce: {
         id: refs.announceId,
@@ -595,6 +601,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
         bet: matchBet,
         oppAway: null,
         messages: preserveChat ? s.messages : [],
+        movePending: false,
         me: {
           name: user ? `@${user.username}` : mePlayer.name,
           vip: avatarIconSrc(mePlayer.vipType ?? user?.vipType),
@@ -622,7 +629,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
       renderState(data.state);
       if (data.turn < 0) {
         stopTimer();
-        set({ myTurn: false, showTimer: false, timerUrgent: false, turnAnnounce: null });
+        set({ myTurn: false, movePending: false, showTimer: false, timerUrgent: false, turnAnnounce: null });
         return;
       }
       applyTurn(data.turn, data.deadline);
@@ -649,12 +656,18 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
 
     target.onMatchOver((data) => {
       if (refs.session !== target) return;
-      if (get().result?.matchId === data.matchId) return;
+      if (refs.handledMatchIds.has(data.matchId)) return;
+      refs.handledMatchIds.add(data.matchId);
+      if (refs.handledMatchIds.size > 64) {
+        const oldest = refs.handledMatchIds.values().next().value;
+        if (oldest) refs.handledMatchIds.delete(oldest);
+      }
       clearMatchUi();
       renderState(data.state);
       const exiting = refs.exitingMatch?.matchId === data.matchId;
       const match = refs.match ?? (exiting ? refs.exitingMatch : null);
-      const won = match != null && data.winnerId === match.players[match.you].id;
+      const myId = match?.players[match.you]?.id ?? refs.user?.id ?? target.userId;
+      const won = data.winnerId != null && data.winnerId !== '' && data.winnerId === myId;
       const draw = data.winnerId == null || data.winnerId === '';
       bridge.gameOver({ matchId: data.matchId, winnerId: data.winnerId, reason: data.reason, won });
       refs.match = null;
@@ -665,7 +678,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
       if (draw) {
         set({ overlay: { title: 'Hòa!', sub: '', kind: 'draw', actions: ['again', 'lobby'] }, status: 'Chơi ván mới?' });
       } else {
-        const bet = refs.matchBet;
+        const bet = data.bet ?? refs.matchBet;
         const line = data.reason === 'win' ? findFinalWinLine(data.state) : null;
         set({
           result: {
@@ -712,7 +725,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
         showToast(roomErrorText(err.code) ?? err.message);
         return;
       }
-      set({ status: err.message });
+      set({ movePending: false, status: err.message });
     });
   };
 
@@ -796,6 +809,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     lastIdx: -1,
     status: 'Sẵn sàng',
     myTurn: false,
+    movePending: false,
     showTimer: false,
     timerText: '00:45',
     timerUrgent: false,
@@ -823,6 +837,12 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
       stopTimer();
       window.clearTimeout(refs.toastTimer);
       if (refs.kenRaf) cancelAnimationFrame(refs.kenRaf);
+      refs.bot?.disconnect();
+      refs.online?.disconnect();
+      refs.bot = null;
+      refs.online = null;
+      refs.session = null;
+      refs.match = null;
     },
 
     playBot(level) {
@@ -929,7 +949,22 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     },
 
     placeMove(x, y) {
-      if (!refs.match || !get().myTurn) return;
+      const state = get();
+      if (
+        !refs.match ||
+        !state.myTurn ||
+        state.movePending ||
+        !Number.isInteger(x) ||
+        !Number.isInteger(y) ||
+        x < 0 ||
+        x >= SIZE ||
+        y < 0 ||
+        y >= SIZE ||
+        state.board[y * SIZE + x] !== 0
+      ) {
+        return;
+      }
+      set({ movePending: true });
       refs.session?.sendMove(refs.match.matchId, { x, y });
     },
 
@@ -946,6 +981,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
 
     replay() {
       if (refs.match && !window.confirm('Chơi lại ván mới?')) return;
+      if (refs.match) refs.session?.forfeit(refs.match.matchId);
       refs.session?.joinQueue();
     },
 

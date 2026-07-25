@@ -30,6 +30,7 @@ func (r *Repository) GetUserInfo(userID string) (*protocol.UserInfoData, error) 
 	}
 
 	info := &protocol.UserInfoData{
+		ID:       userID,
 		Username: u.Username,
 		Ken:      u.Ken,
 	}

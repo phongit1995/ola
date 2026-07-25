@@ -676,6 +676,7 @@ func (s *SettlementRepository) freshUserInfo(userID uuid.UUID) (*protocol.UserIn
 		}
 	}
 	info := &protocol.UserInfoData{
+		ID:       userID.String(),
 		Username: u.Username,
 		Ken:      u.Ken,
 	}

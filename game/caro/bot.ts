@@ -35,6 +35,9 @@ type Handler = (data: never) => void;
 
 export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMove> {
   const listeners = new Map<string, Set<Handler>>();
+  const sessionId =
+    globalThis.crypto?.randomUUID?.() ??
+    `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
   let state = emptyState();
   let matchId = '';
   let matchCount = 0;
@@ -164,7 +167,7 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
       clearTimers();
       state = emptyState();
       matchCount++;
-      matchId = `local-${matchCount}`;
+      matchId = `local-${sessionId}-${matchCount}`;
       playing = true;
       playerTurn = true;
       lastPlayerChatAt = 0;

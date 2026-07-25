@@ -963,12 +963,13 @@ func roomInfo(room Room) protocol.RoomInfo {
 		players = 2
 	}
 	return protocol.RoomInfo{
-		ID:      room.ID,
-		Owner:   room.OwnerName,
-		Bet:     room.Bet,
-		Locked:  room.Password != "",
-		Players: players,
-		Full:    players == 2,
+		ID:           room.ID,
+		Owner:        room.OwnerName,
+		OwnerVipType: room.OwnerVipType,
+		Bet:          room.Bet,
+		Locked:       room.Password != "",
+		Players:      players,
+		Full:         players == 2,
 	}
 }
 

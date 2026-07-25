@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { parseVipTypeId, vipIconUrl } from '@ola/shared/lib/vip';
 import type { RoomInfo } from '../src/sdk';
 import { assetBg, assetSrc } from './assets';
 import { useCaroStore } from './store';
@@ -93,7 +94,15 @@ export function Ranked() {
                   style={{ top: `${HEAD_BOTTOM + i * ROW_HEIGHT}%`, height: `${ROW_HEIGHT}%` }}
                   onClick={room.full ? undefined : () => attemptJoin(room)}
                 >
-                  <span className="rr-owner">@{room.owner}</span>
+                  <span className="rr-owner">
+                    {(() => {
+                      const vipId = parseVipTypeId(room.ownerVipType);
+                      return vipId != null ? (
+                        <img src={vipIconUrl(vipId)} alt="" className="rr-vip" />
+                      ) : null;
+                    })()}
+                    <span className="rr-owner-name">@{room.owner}</span>
+                  </span>
                   <span className="rr-bet">{formatKen(room.bet)}</span>
                   <span className="rr-join">
                     {room.locked && <img src={assetSrc('rankedLock')} alt="" className="rr-lock" />}

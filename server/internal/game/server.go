@@ -185,7 +185,7 @@ func (s *Server) sendUserInfo(client *socket.Socket, data *SocketData) {
 	if data.Guest {
 		client.Emit(messageEvent, protocol.OutEnvelope{
 			Type: protocol.S2CUserInfo,
-			Data: protocol.UserInfoData{Username: data.Name, Guest: true},
+			Data: protocol.UserInfoData{ID: data.UserID, Username: data.Name, Guest: true},
 		})
 		return
 	}

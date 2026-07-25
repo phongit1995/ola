@@ -261,6 +261,7 @@ button:focus-visible,
 }
 
 #board-wrap {
+  --cell: clamp(20px, 5.6vw, 30px);
   flex: 1;
   position: relative;
   display: flex;
@@ -323,6 +324,20 @@ button:focus-visible,
   border-radius: 10px;
 }
 
+#board-clip {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 6px;
+  touch-action: none;
+  cursor: grab;
+}
+
+#board-clip:active {
+  cursor: grabbing;
+}
+
 .board-bet-badge {
   position: absolute;
   bottom: calc(100% - 4px);
@@ -375,9 +390,11 @@ button:focus-visible,
 }
 
 #board {
-  position: relative;
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(var(--cell) * 20);
+  height: calc(var(--cell) * 20);
   display: grid;
   grid-template-columns: repeat(20, 1fr);
   grid-template-rows: repeat(20, 1fr);
@@ -386,7 +403,8 @@ button:focus-visible,
     linear-gradient(to bottom, #b3cbc6 1px, transparent 1px);
   background-size: calc(100% / 20) calc(100% / 20);
   border-radius: 6px;
-  touch-action: manipulation;
+  touch-action: none;
+  will-change: transform;
 }
 
 .room-pregame-panel {
@@ -1686,6 +1704,20 @@ button:focus-visible,
   text-overflow: ellipsis;
   white-space: nowrap;
   padding: 0 4px;
+}
+
+.rr-vip {
+  height: min(clamp(12px, 5cqw, 20px), 4.6cqh);
+  width: auto;
+  flex-shrink: 0;
+  margin-right: 3px;
+}
+
+.rr-owner-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .rr-join {

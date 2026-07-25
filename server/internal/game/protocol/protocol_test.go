@@ -36,3 +36,22 @@ func TestVipTypeFieldsRemainBackwardCompatible(t *testing.T) {
 		t.Fatalf("room member VIP type was not encoded: %s", memberJSON)
 	}
 }
+
+func TestUserInfoIncludesStableUserID(t *testing.T) {
+	payload, err := json.Marshal(UserInfoData{
+		ID:       "player-123",
+		Username: "Player",
+		Ken:      42,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var encoded map[string]any
+	if err := json.Unmarshal(payload, &encoded); err != nil {
+		t.Fatal(err)
+	}
+	if encoded["id"] != "player-123" {
+		t.Fatalf("user info did not encode its stable id: %s", payload)
+	}
+}
