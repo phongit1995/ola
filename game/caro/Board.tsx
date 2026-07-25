@@ -140,6 +140,7 @@ export function Board() {
     forfeitDisabled,
     messages,
     matchSeq,
+    betDeductionVisible,
     boardMode,
     roomWaiting,
     roomActionPending,
@@ -166,6 +167,7 @@ export function Board() {
       forfeitDisabled: s.forfeitDisabled,
       messages: s.messages,
       matchSeq: s.matchSeq,
+      betDeductionVisible: s.betDeductionVisible,
       boardMode: s.boardMode,
       roomWaiting: s.roomWaiting,
       roomActionPending: s.roomActionPending,
@@ -213,6 +215,9 @@ export function Board() {
   const chatEnabled = result == null && (playing || (pregame && roomFull === true));
   const roomBusy = roomActionPending != null;
   const betText = formatKen(bet);
+  const showBetDeduction = playing && result == null && betDeductionVisible;
+  const winnerPayoutText = result?.winnerPayout != null ? formatKen(result.winnerPayout) : '';
+  const showWinnerPayout = result?.winnerPayout != null && result.winnerPayout > 0 && !replayVisible;
 
   useEffect(() => {
     setChatInput('');
@@ -344,6 +349,16 @@ export function Board() {
               <img className="p-vip" src={op.vip} alt="" />
             </div>
             {op.owner && <RoomOwnerIcon />}
+            {showBetDeduction && (
+              <span key={`op-bet-${matchSeq}`} className="player-ken-change debit">
+                -{betText} KEN
+              </span>
+            )}
+            {showWinnerPayout && result != null && !result.win && (
+              <span key={`op-payout-${result.matchId}`} className="player-ken-change credit">
+                +{winnerPayoutText} KEN
+              </span>
+            )}
           </div>
           <div className="name-row">
             <span className="name">{op.name}</span>
@@ -374,6 +389,16 @@ export function Board() {
               <img className="p-vip" src={me.vip} alt="" />
             </div>
             {me.owner && <RoomOwnerIcon />}
+            {showBetDeduction && (
+              <span key={`me-bet-${matchSeq}`} className="player-ken-change debit">
+                -{betText} KEN
+              </span>
+            )}
+            {showWinnerPayout && result != null && result.win && (
+              <span key={`me-payout-${result.matchId}`} className="player-ken-change credit">
+                +{winnerPayoutText} KEN
+              </span>
+            )}
           </div>
           <div className="name-row">
             <span className="name">{me.name}</span>

@@ -91,6 +91,54 @@ button:focus-visible,
   flex: 0 0 auto;
 }
 
+.player-ken-change {
+  position: absolute;
+  left: 50%;
+  bottom: 4%;
+  z-index: 4;
+  padding: 2px 6px;
+  border-radius: 999px;
+  color: var(--lobby-cream);
+  font-size: clamp(9px, 2.7vw, 12px);
+  font-weight: 900;
+  line-height: 1.2;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 2px 6px rgba(48, 12, 8, 0.35);
+  animation: player-ken-change 1.6s ease-out forwards;
+}
+
+.player-ken-change.debit {
+  background: rgba(143, 47, 40, 0.94);
+}
+
+.player-ken-change.credit {
+  background: rgba(40, 116, 71, 0.95);
+  box-shadow: 0 2px 8px rgba(9, 48, 28, 0.42);
+}
+
+@keyframes player-ken-change {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 8px) scale(0.78);
+  }
+
+  16% {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+
+  72% {
+    opacity: 1;
+    transform: translate(-50%, -10px) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -24px) scale(0.96);
+  }
+}
+
 .p-avatar {
   display: flex;
   align-items: center;
@@ -274,13 +322,13 @@ button:focus-visible,
 .turn-announce {
   position: absolute;
   left: 50%;
-  top: 38%;
+  top: clamp(118px, calc(24% + 30px), 166px);
   transform: translateX(-50%);
   z-index: 6;
   pointer-events: none;
   font-weight: 900;
-  font-size: clamp(20px, 6.8vw, 36px);
-  letter-spacing: 1px;
+  font-size: clamp(14px, 4.2vw, 21px);
+  letter-spacing: 0.6px;
   text-transform: uppercase;
   white-space: nowrap;
   text-shadow: 0 2px 0 rgba(9, 24, 43, 0.35), 0 0 14px rgba(9, 24, 43, 0.25);
@@ -310,7 +358,7 @@ button:focus-visible,
   }
   100% {
     opacity: 0;
-    transform: translate(-50%, -132px) scale(1);
+    transform: translate(-50%, -18px) scale(1);
   }
 }
 
@@ -347,10 +395,10 @@ button:focus-visible,
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 3%;
-  width: clamp(108px, 31vw, 150px);
+  gap: 5px;
+  width: clamp(108px, 34%, 150px);
   aspect-ratio: 1302 / 354;
-  padding: 0 8%;
+  padding: 0 clamp(8px, 2.5%, 12px);
   background-size: 100% 100%;
   background-repeat: no-repeat;
   color: var(--lobby-cream);
@@ -366,11 +414,13 @@ button:focus-visible,
 
 .board-bet-badge span {
   min-width: 0;
+  flex: 0 0 auto;
   color: var(--lobby-cream);
   font-size: clamp(14px, 4vw, 20px);
   font-weight: 900;
   font-variant-numeric: tabular-nums;
   line-height: 1;
+  text-align: center;
   white-space: nowrap;
   text-shadow: 0 2px 2px rgba(9, 24, 43, 0.45);
 }
@@ -815,8 +865,15 @@ button:focus-visible,
 }
 
 #bottombar .board-action-btn {
+  width: clamp(108px, 31vw, 152px);
   gap: clamp(4px, 1.4vw, 8px);
   padding: 0 clamp(8px, 2vw, 12px);
+}
+
+#bottombar .board-action-btn span {
+  flex: 0 0 auto;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .board-action-icon {
@@ -837,6 +894,7 @@ button:focus-visible,
 }
 
 #bottombar.pregame .board-action-btn {
+  width: clamp(92px, 27vw, 124px);
   gap: 3px;
   padding: 0 4px;
 }
@@ -1707,7 +1765,7 @@ button:focus-visible,
 }
 
 .rr-vip {
-  height: min(clamp(12px, 5cqw, 20px), 4.6cqh);
+  height: min(clamp(16px, 6cqw, 26px), 6cqh);
   width: auto;
   flex-shrink: 0;
   margin-right: 3px;

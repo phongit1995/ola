@@ -18,6 +18,8 @@ import (
 type fakeSettlement struct {
 	mu sync.Mutex
 
+	commissionPercent int
+
 	escrowEntered chan struct{}
 	escrowRelease chan struct{}
 	escrowOnce    sync.Once
@@ -47,6 +49,12 @@ func (s *failingListActiveMatchStore) List(string) ([]ActiveMatchSnapshot, error
 
 func (s *fakeSettlement) Balance(string) (int, bool) {
 	return MaxBet, true
+}
+
+func (s *fakeSettlement) WinnerAmounts(_ string, bet int) (payout, net int) {
+	commission := bet * s.commissionPercent / 100
+	payout = bet*2 - commission
+	return payout, payout - bet
 }
 
 func (s *fakeSettlement) EscrowStart(ctx context.Context, rec MatchRecord) ([]SettledBalance, error) {
@@ -109,6 +117,16 @@ func (s *fakeSettlement) ReconcileStale(_ context.Context, activeMatchIDs []stri
 		}
 	}
 	return result, err
+}
+
+func TestEngineUsesSettlementWinnerAmounts(t *testing.T) {
+	gameEngine := NewEngine(zap.NewNop().Sugar(), 30, 30, newMemoryRoomStore(), newMemoryActiveMatchStore())
+	gameEngine.SetSettlement(&fakeSettlement{commissionPercent: 5})
+
+	payout, net := gameEngine.winnerAmounts("caro", 10_000)
+	if payout != 19_500 || net != 9_500 {
+		t.Fatalf("winner amounts = payout %d, net %d; want 19500 and 9500", payout, net)
+	}
 }
 
 func (s *fakeSettlement) counts() (escrow, abort, settle, reconcile int) {

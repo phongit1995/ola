@@ -109,6 +109,8 @@ export interface MatchOverData<TState = unknown> {
   reason: 'win' | 'forfeit' | 'timeout' | 'disconnect' | 'draw';
   state: TState;
   bet?: number;
+  payout?: number;
+  kenDelta?: number;
 }
 
 export interface ErrorData {

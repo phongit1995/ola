@@ -8,12 +8,19 @@ function formatKen(value: number): string {
 
 export function Result() {
   const result = useCaroStore((s) => s.result);
+  const replayVisible = useCaroStore((s) => s.replayVisible);
   const closeResult = useCaroStore((s) => s.closeResult);
   const again = useCaroStore((s) => s.again);
   const [revealedResult, setRevealedResult] = useState<MatchResultState | null>(null);
   const win = result?.win ?? true;
   const delta = result?.kenDelta ?? null;
-  const showKen = delta != null && delta !== 0;
+  const showKen = delta != null;
+  const kenText =
+    delta == null
+      ? ''
+      : delta === 0
+        ? '0 KEN'
+        : `${delta > 0 ? '+ ' : '- '}${formatKen(Math.abs(delta))} KEN`;
   const pending = result != null && result.revealDelayMs > 0 && revealedResult !== result;
 
   useEffect(() => {
@@ -43,21 +50,21 @@ export function Result() {
         </div>
         <div id="result-ken" className={showKen ? '' : 'hidden'} style={assetBg('resultKenFrame')}>
           <img src={assetSrc('resultIcKen')} alt="" />
-          <span id="result-ken-text">
-            {showKen ? `${delta > 0 ? '+' : '-'}${formatKen(Math.abs(delta))} KEN` : ''}
-          </span>
+          <span id="result-ken-text">{kenText}</span>
         </div>
         <div id="result-actions">
-          <button
-            type="button"
-            id="result-replay"
-            className="result-btn"
-            style={assetBg(win ? 'resultBtnReplayWin' : 'resultBtnReplayLose')}
-            disabled={pending}
-            onClick={again}
-          >
-            <span>Chơi lại</span>
-          </button>
+          {replayVisible && (
+            <button
+              type="button"
+              id="result-replay"
+              className="result-btn"
+              style={assetBg(win ? 'resultBtnReplayWin' : 'resultBtnReplayLose')}
+              disabled={pending}
+              onClick={again}
+            >
+              <span>Chơi lại</span>
+            </button>
+          )}
           <button
             type="button"
             id="result-close"

@@ -109,6 +109,8 @@ type MatchOverData struct {
 	Reason   string `json:"reason"`
 	State    any    `json:"state"`
 	Bet      int    `json:"bet,omitempty"`
+	Payout   int    `json:"payout,omitempty"`
+	KenDelta int    `json:"kenDelta"`
 }
 
 type ErrorData struct {

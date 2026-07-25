@@ -29,6 +29,7 @@ export interface MatchResultState {
   matchId: string;
   win: boolean;
   kenDelta: number | null;
+  winnerPayout: number | null;
   revealDelayMs: number;
 }
 
@@ -146,6 +147,7 @@ export interface CaroStore {
   toast: string | null;
   notice: string | null;
   matchSeq: number;
+  betDeductionVisible: boolean;
   turnAnnounce: { id: number; text: string; mine: boolean } | null;
   winLine: WinLine | null;
   messages: ChatMsg[];
@@ -623,6 +625,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
         boardMode: 'playing',
         roomActionPending: null,
         matchSeq: s.matchSeq + 1,
+        betDeductionVisible: !data.resumed && target !== refs.bot && matchBet > 0,
         lobbyVisible: false,
         rankedVisible: false,
         leaderboardVisible: false,
@@ -712,12 +715,18 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
       } else {
         const bet = data.bet ?? refs.matchBet;
         const line = data.reason === 'win' ? findFinalWinLine(data.state) : null;
+        const winnerPayout = data.payout ?? bet * 2;
+        const winnerNet = data.kenDelta ?? winnerPayout - bet;
+        const kenDelta = target === refs.bot ? null : bet === 0 ? 0 : won ? winnerNet : -bet;
+        const payoutRevealDelay =
+          target !== refs.bot && bet > 0 && winnerPayout > 0 ? WIN_RESULT_REVEAL_MS : 0;
         set({
           result: {
             matchId: data.matchId,
             win: won,
-            kenDelta: bet > 0 ? (won ? bet : -bet) : null,
-            revealDelayMs: line ? WIN_RESULT_REVEAL_MS : 0,
+            kenDelta,
+            winnerPayout: target === refs.bot || bet === 0 ? null : winnerPayout,
+            revealDelayMs: line ? WIN_RESULT_REVEAL_MS : payoutRevealDelay,
           },
           winLine: line,
           status: won ? 'Bạn thắng!' : 'Bạn thua!',
@@ -862,6 +871,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     toast: null,
     notice: null,
     matchSeq: 0,
+    betDeductionVisible: false,
     turnAnnounce: null,
     winLine: null,
     messages: [],

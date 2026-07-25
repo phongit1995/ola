@@ -61,6 +61,7 @@ type SettledBalance struct {
 
 type Settlement interface {
 	Balance(userID string) (int, bool)
+	WinnerAmounts(gameID string, bet int) (payout, net int)
 	EscrowStart(ctx context.Context, rec MatchRecord) ([]SettledBalance, error)
 	AbortStart(ctx context.Context, matchID string) ([]SettledBalance, error)
 	SettleFinish(ctx context.Context, out MatchOutcome) ([]SettledBalance, error)
