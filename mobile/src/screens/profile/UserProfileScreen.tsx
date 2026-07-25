@@ -13,6 +13,7 @@ import { ReportDialog } from '@components/ui/ReportDialog';
 import { ListOptionDialog, type ListOption } from '@components/ui/ListOptionDialog';
 import type { ProfileViewerState } from './interface';
 import { useProfileActions } from './useProfileActions';
+import { MeComposerModal } from '@screens/me/components/MeComposerModal';
 import { ProfileCard } from './components/ProfileCard';
 import { FollowingPreviewCard } from './components/FollowingPreviewCard';
 import { ProfilePostList } from './components/ProfilePostList';
@@ -69,6 +70,7 @@ export function UserProfileScreen({
   const [followingOpen, setFollowingOpen] = useState(false);
   const [followersOpen, setFollowersOpen] = useState(false);
   const [vipStoreOpen, setVipStoreOpen] = useState(false);
+  const [composerOpen, setComposerOpen] = useState(false);
   const [viewer, setViewer] = useState<ProfileViewerState | null>(null);
 
   const openViewer = (images: string[], index = 0) =>
@@ -153,7 +155,7 @@ export function UserProfileScreen({
             onToggleFollow={toggleFollow}
             onUnblock={blockAction}
             onUpdateInfo={onEditProfile ?? comingSoon}
-            onPostMe={comingSoon}
+            onPostMe={() => setComposerOpen(true)}
             onMore={() => setMenuOpen(true)}
             openViewer={openViewer}
             onOpenProfile={onOpenProfile}
@@ -198,6 +200,16 @@ export function UserProfileScreen({
             resizeMode="contain"
           />
         </Pressable>
+      )}
+
+      {composerOpen && (
+        <MeComposerModal
+          visible
+          onClose={() => setComposerOpen(false)}
+          onSaved={() => {
+            if (isSelf) void reloadPosts();
+          }}
+        />
       )}
 
       <ListOptionDialog
