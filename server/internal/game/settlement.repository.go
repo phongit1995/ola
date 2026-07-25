@@ -495,13 +495,15 @@ func (s *SettlementRepository) abortMatch(ctx context.Context, matchID string) (
 	var result settlementResult
 	err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		var row models.GameMatch
-		err := tx.Unscoped().Clauses(clause.Locking{Strength: "UPDATE"}).
-			Where("match_id = ?", matchID).First(&row).Error
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil
+		// A missing escrow is a valid idempotent no-op. Find lets us detect it
+		// through RowsAffected without GORM reporting ErrRecordNotFound in debug logs.
+		query := tx.Unscoped().Clauses(clause.Locking{Strength: "UPDATE"}).
+			Where("match_id = ?", matchID).Limit(1).Find(&row)
+		if query.Error != nil {
+			return query.Error
 		}
-		if err != nil {
-			return err
+		if query.RowsAffected == 0 {
+			return nil
 		}
 		if row.Status == matchStatusFinished {
 			result.gameID = row.GameID

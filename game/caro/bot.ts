@@ -249,6 +249,7 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
     setRoomReady() {},
     startRoom() {},
     listRooms() {},
+    getLeaderboard() {},
 
     onUserInfo: () => () => {},
     onRoomList: () => () => {},
@@ -266,6 +267,7 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
     onError: (handler) => on('ERROR', handler as Handler),
     onOpponentDisconnected: () => () => {},
     onOpponentReconnected: () => () => {},
+    onLeaderboard: () => () => {},
     onConnectionChange: (handler) => {
       (handler as (c: boolean) => void)(true);
       return () => {};

@@ -3,6 +3,8 @@ import {
   bridge,
   joinGame,
   type GameSession,
+  type LeaderboardEntry,
+  type LeaderboardPeriod,
   type MatchFoundData,
   type PlayerInfo,
   type RoomInfo,
@@ -47,6 +49,7 @@ export interface ChatMsg {
 const BOT_VIP_ID: Record<BotLevel, number> = { easy: 1, normal: 2, hard: 3 };
 const CHAT_HISTORY_LIMIT = 100;
 const WIN_RESULT_REVEAL_MS = 1700;
+const LEADERBOARD_REQUEST_TIMEOUT_MS = 8000;
 
 function avatarIconSrc(vipType?: string | null): string {
   const id = parseVipTypeId(vipType);
@@ -115,6 +118,9 @@ export interface CaroStore {
 
   rankedVisible: boolean;
   leaderboardVisible: boolean;
+  leaderboards: Record<LeaderboardPeriod, LeaderboardEntry[] | null>;
+  leaderboardLoading: Record<LeaderboardPeriod, boolean>;
+  leaderboardErrors: Record<LeaderboardPeriod, string | null>;
   rooms: RoomInfo[];
   roomWaiting: RoomStateData | null;
   boardMode: BoardMode;
@@ -157,6 +163,7 @@ export interface CaroStore {
   kickRoomGuest(): void;
   showLeaderboard(): void;
   hideLeaderboard(): void;
+  loadLeaderboard(period: LeaderboardPeriod): void;
   retry(): void;
   exitApp(): void;
   placeMove(x: number, y: number): void;
@@ -182,6 +189,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     matchBet: 0,
     user: null as UserInfoData | null,
     connecting: false,
+    connectPromise: null as Promise<void> | null,
     deadline: 0,
     timer: undefined as number | undefined,
     toastTimer: undefined as number | undefined,
@@ -194,6 +202,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     roomConnectionLost: false,
     exitingMatch: null as MatchFoundData<CaroState> | null,
     handledMatchIds: new Set<string>(),
+    leaderboardTimers: { day: undefined, week: undefined } as Record<LeaderboardPeriod, number | undefined>,
   };
 
   const showToast = (message: string): void => {
@@ -469,6 +478,29 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
       set((state) => ({ rooms: state.rooms.filter((room) => room.id !== data.roomId) }));
     });
 
+    target.onLeaderboard((data) => {
+      if (target !== refs.online || (data.period !== 'day' && data.period !== 'week')) return;
+      const period = data.period;
+      window.clearTimeout(refs.leaderboardTimers[period]);
+      refs.leaderboardTimers[period] = undefined;
+      set((state) => ({
+        leaderboards: data.error
+          ? state.leaderboards
+          : {
+              ...state.leaderboards,
+              [period]: data.items,
+            },
+        leaderboardLoading: {
+          ...state.leaderboardLoading,
+          [period]: false,
+        },
+        leaderboardErrors: {
+          ...state.leaderboardErrors,
+          [period]: data.error ?? null,
+        },
+      }));
+    });
+
     target.onRoomWaiting((data) => {
       if (refs.session !== target) return;
       refs.matchBet = data.bet;
@@ -729,35 +761,39 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     });
   };
 
-  const connectToServer = async (): Promise<void> => {
-    if (refs.connecting) return;
-    refs.connecting = true;
-    set({ lobbyPhase: 'connecting' });
-    try {
-      if (!refs.online) {
-        refs.online = await joinGame<CaroState, CaroMove>('caro');
-        wireSession(refs.online);
-        if (!refs.session) refs.session = refs.online;
-      }
-      await new Promise<void>((resolve, reject) => {
-        const off = refs.online!.onUserInfo(() => {
-          off();
-          clearTimeout(timer);
-          resolve();
+  const connectToServer = (): Promise<void> => {
+    if (refs.connectPromise) return refs.connectPromise;
+    refs.connectPromise = (async () => {
+      refs.connecting = true;
+      set({ lobbyPhase: 'connecting' });
+      try {
+        if (!refs.online) {
+          refs.online = await joinGame<CaroState, CaroMove>('caro');
+          wireSession(refs.online);
+          if (!refs.session) refs.session = refs.online;
+        }
+        await new Promise<void>((resolve, reject) => {
+          const off = refs.online!.onUserInfo(() => {
+            off();
+            clearTimeout(timer);
+            resolve();
+          });
+          const timer = setTimeout(() => {
+            off();
+            reject(new Error('connect timeout'));
+          }, 8000);
         });
-        const timer = setTimeout(() => {
-          off();
-          reject(new Error('connect timeout'));
-        }, 8000);
-      });
-    } catch {
-      refs.online?.disconnect();
-      refs.online = null;
-      refs.user = null;
-      set({ userInfo: null, lobbyPhase: 'error' });
-    } finally {
-      refs.connecting = false;
-    }
+      } catch {
+        refs.online?.disconnect();
+        refs.online = null;
+        refs.user = null;
+        set({ userInfo: null, lobbyPhase: 'error' });
+      } finally {
+        refs.connecting = false;
+        refs.connectPromise = null;
+      }
+    })();
+    return refs.connectPromise;
   };
 
   const toLobby = (): void => {
@@ -800,6 +836,9 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     bet: 0,
     rankedVisible: false,
     leaderboardVisible: false,
+    leaderboards: { day: null, week: null },
+    leaderboardLoading: { day: false, week: false },
+    leaderboardErrors: { day: null, week: null },
     rooms: [],
     roomWaiting: null,
     boardMode: 'idle',
@@ -839,9 +878,14 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
       if (refs.kenRaf) cancelAnimationFrame(refs.kenRaf);
       refs.bot?.disconnect();
       refs.online?.disconnect();
+      window.clearTimeout(refs.leaderboardTimers.day);
+      window.clearTimeout(refs.leaderboardTimers.week);
+      refs.leaderboardTimers.day = undefined;
+      refs.leaderboardTimers.week = undefined;
       refs.bot = null;
       refs.online = null;
       refs.session = null;
+      refs.connectPromise = null;
       refs.match = null;
     },
 
@@ -946,6 +990,33 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
 
     hideLeaderboard() {
       set({ leaderboardVisible: false });
+    },
+
+    loadLeaderboard(period) {
+      const request = (): void => {
+        if (!refs.online) {
+          set((state) => ({
+            leaderboardLoading: { ...state.leaderboardLoading, [period]: false },
+            leaderboardErrors: { ...state.leaderboardErrors, [period]: 'Không kết nối được máy chủ' },
+          }));
+          return;
+        }
+        set((state) => ({
+          leaderboardLoading: { ...state.leaderboardLoading, [period]: true },
+          leaderboardErrors: { ...state.leaderboardErrors, [period]: null },
+        }));
+        window.clearTimeout(refs.leaderboardTimers[period]);
+        refs.leaderboardTimers[period] = window.setTimeout(() => {
+          refs.leaderboardTimers[period] = undefined;
+          set((state) => ({
+            leaderboardLoading: { ...state.leaderboardLoading, [period]: false },
+            leaderboardErrors: { ...state.leaderboardErrors, [period]: 'Máy chủ phản hồi quá lâu' },
+          }));
+        }, LEADERBOARD_REQUEST_TIMEOUT_MS);
+        refs.online?.getLeaderboard(period);
+      };
+      if (refs.online) request();
+      else void connectToServer().then(request);
     },
 
     placeMove(x, y) {

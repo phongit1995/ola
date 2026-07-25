@@ -1,9 +1,12 @@
 package game
 
 import (
+	"bytes"
 	"context"
 	"errors"
+	"log"
 	"math"
+	"strings"
 	"testing"
 	"time"
 
@@ -168,6 +171,35 @@ func TestSettleFinishRejectsMissingEscrow(t *testing.T) {
 	})
 	if !errors.Is(err, errMatchNotEscrowed) {
 		t.Fatalf("missing escrow error=%v, want %v", err, errMatchNotEscrowed)
+	}
+}
+
+func TestAbortStartMissingEscrowIsIdempotentWithoutRecordNotFoundLog(t *testing.T) {
+	db, mock := newSettlementMockDB(t)
+	var logs bytes.Buffer
+	db = db.Session(&gorm.Session{
+		Logger: logger.New(log.New(&logs, "", 0), logger.Config{
+			LogLevel: logger.Info,
+		}),
+	})
+	repo := &SettlementRepository{db: db, logger: zap.NewNop().Sugar()}
+	matchID := uuid.NewString()
+
+	mock.ExpectBegin()
+	mock.ExpectQuery(`SELECT \* FROM "game_matches".*match_id = \$1.*FOR UPDATE`).
+		WithArgs(matchID, 1).
+		WillReturnRows(sqlmock.NewRows([]string{"id"}))
+	mock.ExpectCommit()
+
+	balances, err := repo.AbortStart(context.Background(), matchID)
+	if err != nil {
+		t.Fatalf("abort missing escrow: %v", err)
+	}
+	if len(balances) != 0 {
+		t.Fatalf("abort missing escrow balances=%v, want none", balances)
+	}
+	if strings.Contains(logs.String(), gorm.ErrRecordNotFound.Error()) {
+		t.Fatalf("abort missing escrow produced a false error log: %s", logs.String())
 	}
 }
 

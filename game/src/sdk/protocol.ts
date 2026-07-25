@@ -11,6 +11,7 @@ export const C2S = {
   RoomKick: 'ROOM_KICK',
   RoomReady: 'ROOM_READY',
   RoomStart: 'ROOM_START',
+  Leaderboard: 'LEADERBOARD',
 } as const;
 
 export const S2C = {
@@ -30,6 +31,7 @@ export const S2C = {
   RoomKicked: 'ROOM_KICKED',
   OpponentDisconnected: 'OPPONENT_DISCONNECTED',
   OpponentReconnected: 'OPPONENT_RECONNECTED',
+  Leaderboard: 'LEADERBOARD',
 } as const;
 
 export interface Envelope {
@@ -50,6 +52,24 @@ export interface UserInfoData {
   vipDays: number;
   ken: number;
   guest?: boolean;
+}
+
+export type LeaderboardPeriod = 'day' | 'week';
+
+export interface LeaderboardEntry {
+  rank: number;
+  userId: string;
+  username: string;
+  vipType?: string | null;
+  ken: number;
+}
+
+export interface LeaderboardData {
+  period: LeaderboardPeriod;
+  from: number;
+  to: number;
+  items: LeaderboardEntry[];
+  error?: string;
 }
 
 export interface MatchFoundData<TState = unknown> {

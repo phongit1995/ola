@@ -307,9 +307,26 @@ func (s *Server) handleMessage(data *SocketData, raw any) {
 		s.engine.StartRoom(data.GameID, data.UserID, d.RoomID)
 	case protocol.C2SRoomList:
 		s.engine.ListRooms(data.GameID, data.UserID)
+	case protocol.C2SLeaderboard:
+		var d protocol.LeaderboardRequestData
+		if len(env.Data) > 0 {
+			if err := json.Unmarshal(env.Data, &d); err != nil {
+				return
+			}
+		}
+		s.sendLeaderboard(data.GameID, data.UserID, d.Period)
 	default:
 		s.logger.Debugw("Unknown game message type", "type", env.Type, "user_id", data.UserID)
 	}
+}
+
+func (s *Server) sendLeaderboard(gameID, userID, period string) {
+	data, err := s.repo.Leaderboard(gameID, period)
+	if err != nil {
+		s.logger.Errorw("Failed to load game leaderboard", "game_id", gameID, "period", period, "error", err)
+		data.Error = "Không thể tải bảng xếp hạng"
+	}
+	s.ToUser(gameID, userID, protocol.OutEnvelope{Type: protocol.S2CLeaderboard, Data: data})
 }
 
 func (s *Server) ToUser(gameID string, userID string, envelope protocol.OutEnvelope) {

@@ -3,18 +3,19 @@ package protocol
 import "encoding/json"
 
 const (
-	C2SQueueJoin  = "QUEUE_JOIN"
-	C2SQueueLeave = "QUEUE_LEAVE"
-	C2SMove       = "MOVE"
-	C2SChatSend   = "CHAT_SEND"
-	C2SForfeit    = "FORFEIT"
-	C2SRoomCreate = "ROOM_CREATE"
-	C2SRoomJoin   = "ROOM_JOIN"
-	C2SRoomLeave  = "ROOM_LEAVE"
-	C2SRoomList   = "ROOM_LIST"
-	C2SRoomKick   = "ROOM_KICK"
-	C2SRoomReady  = "ROOM_READY"
-	C2SRoomStart  = "ROOM_START"
+	C2SQueueJoin   = "QUEUE_JOIN"
+	C2SQueueLeave  = "QUEUE_LEAVE"
+	C2SMove        = "MOVE"
+	C2SChatSend    = "CHAT_SEND"
+	C2SForfeit     = "FORFEIT"
+	C2SRoomCreate  = "ROOM_CREATE"
+	C2SRoomJoin    = "ROOM_JOIN"
+	C2SRoomLeave   = "ROOM_LEAVE"
+	C2SRoomList    = "ROOM_LIST"
+	C2SRoomKick    = "ROOM_KICK"
+	C2SRoomReady   = "ROOM_READY"
+	C2SRoomStart   = "ROOM_START"
+	C2SLeaderboard = "LEADERBOARD"
 
 	S2CUserInfo             = "USER_INFO"
 	S2CQueueWaiting         = "QUEUE_WAITING"
@@ -32,6 +33,7 @@ const (
 	S2CRoomKicked           = "ROOM_KICKED"
 	S2COpponentDisconnected = "OPPONENT_DISCONNECTED"
 	S2COpponentReconnected  = "OPPONENT_RECONNECTED"
+	S2CLeaderboard          = "LEADERBOARD"
 )
 
 type Envelope struct {
@@ -57,6 +59,26 @@ type UserInfoData struct {
 	VipDays  int     `json:"vipDays"`
 	Ken      int     `json:"ken"`
 	Guest    bool    `json:"guest,omitempty"`
+}
+
+type LeaderboardRequestData struct {
+	Period string `json:"period"`
+}
+
+type LeaderboardEntry struct {
+	Rank     int     `json:"rank"`
+	UserID   string  `json:"userId"`
+	Username string  `json:"username"`
+	VipType  *string `json:"vipType,omitempty"`
+	Ken      int64   `json:"ken"`
+}
+
+type LeaderboardData struct {
+	Period string             `json:"period"`
+	From   int64              `json:"from"`
+	To     int64              `json:"to"`
+	Items  []LeaderboardEntry `json:"items"`
+	Error  string             `json:"error,omitempty"`
 }
 
 type MatchFoundData struct {

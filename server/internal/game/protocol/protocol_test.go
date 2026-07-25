@@ -55,3 +55,24 @@ func TestUserInfoIncludesStableUserID(t *testing.T) {
 		t.Fatalf("user info did not encode its stable id: %s", payload)
 	}
 }
+
+func TestLeaderboardKeepsEmptyItemsAsArray(t *testing.T) {
+	payload, err := json.Marshal(LeaderboardData{
+		Period: "day",
+		From:   1,
+		To:     2,
+		Items:  []LeaderboardEntry{},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var encoded map[string]any
+	if err := json.Unmarshal(payload, &encoded); err != nil {
+		t.Fatal(err)
+	}
+	items, ok := encoded["items"].([]any)
+	if !ok || len(items) != 0 {
+		t.Fatalf("leaderboard items must encode as an empty array: %s", payload)
+	}
+}
