@@ -216,6 +216,17 @@ func (s *blockingActiveMatchStore) Delete(gameID, matchID string, userIDs ...str
 	return s.base.Delete(gameID, matchID, userIDs...)
 }
 
+func (s *blockingActiveMatchStore) DeleteIfStatus(
+	gameID, matchID, status string,
+	userIDs ...string,
+) (bool, error) {
+	return s.base.DeleteIfStatus(gameID, matchID, status, userIDs...)
+}
+
+func (s *blockingActiveMatchStore) Get(gameID, matchID string) (ActiveMatchSnapshot, bool, error) {
+	return s.base.Get(gameID, matchID)
+}
+
 func (s *blockingActiveMatchStore) List(gameID string) ([]ActiveMatchSnapshot, error) {
 	return s.base.List(gameID)
 }
@@ -251,6 +262,29 @@ func (s *memoryActiveMatchStore) Delete(gameID, matchID string, userIDs ...strin
 	}
 	delete(s.matches, activeSnapshotKey(gameID, matchID))
 	return nil
+}
+
+func (s *memoryActiveMatchStore) DeleteIfStatus(
+	gameID, matchID, status string,
+	userIDs ...string,
+) (bool, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.failDelete {
+		return false, errors.New("delete failed")
+	}
+	key := activeSnapshotKey(gameID, matchID)
+	snapshot, exists := s.matches[key]
+	if exists && snapshot.Status != status {
+		return false, nil
+	}
+	delete(s.matches, key)
+	return true, nil
+}
+
+func (s *memoryActiveMatchStore) Get(gameID, matchID string) (ActiveMatchSnapshot, bool, error) {
+	snapshot, ok := s.get(gameID, matchID)
+	return snapshot, ok, nil
 }
 
 func (s *memoryActiveMatchStore) List(gameID string) ([]ActiveMatchSnapshot, error) {
@@ -326,7 +360,7 @@ func startPersistenceTestMatch(t *testing.T, gameEngine *Engine) *Match {
 		gameLogic,
 		protocol.PlayerInfo{ID: "player-a", Name: "Player A", VipType: lifecycleVipType("player-a")},
 		protocol.PlayerInfo{ID: "player-b", Name: "Player B", VipType: lifecycleVipType("player-b")},
-		10,
+		0,
 	); err != nil {
 		t.Fatalf("start match: %v", err)
 	}
@@ -698,6 +732,7 @@ func TestRestoreRoomMatchPreservesOwnerInMatchFound(t *testing.T) {
 	activeStore := newMemoryActiveMatchStore()
 	firstEngine, rooms, _ := newPersistenceTestEngine(activeStore)
 	room := lifecycleRoom("restored-owner-room")
+	room.Bet = 0
 	room.GuestID = "guest"
 	room.GuestName = "GUEST"
 	room.GuestVipType = lifecycleVipType("guest")
@@ -762,8 +797,8 @@ func TestRestoreFinishedSnapshotMakesResultAvailableOnReconnect(t *testing.T) {
 		t.Fatal(err)
 	}
 	gameEngine, rooms, emitter := newPersistenceTestEngine(activeStore)
-	if _, exists := activeStore.get(snapshot.GameID, snapshot.ID); exists {
-		t.Fatal("finished tombstone was not removed after restore")
+	if _, exists := activeStore.get(snapshot.GameID, snapshot.ID); !exists {
+		t.Fatal("finished tombstone was removed before settlement was available")
 	}
 	room, exists := rooms.Get(snapshot.GameID, snapshot.Room.ID)
 	if !exists || room.GuestReady {
@@ -797,9 +832,11 @@ func TestFinishedTombstoneSurvivesDeleteFailureAndIsRecovered(t *testing.T) {
 
 	activeStore.failDelete = false
 	restoredEngine, _, emitter := newPersistenceTestEngine(activeStore)
-	if _, exists := activeStore.get(gameID, matchID); exists {
-		t.Fatal("recovered finished tombstone was not deleted")
-	}
+	restoredEngine.SetSettlement(&fakeSettlement{})
+	waitForCondition(t, time.Second, "recovered finished tombstone was not deleted after settlement", func() bool {
+		_, exists := activeStore.get(gameID, matchID)
+		return !exists
+	})
 	restoredEngine.OnConnect(gameID, winnerID)
 	env, ok := emitter.last(winnerID, protocol.S2CMatchOver)
 	if !ok || env.Data.(protocol.MatchOverData).WinnerID != winnerID {

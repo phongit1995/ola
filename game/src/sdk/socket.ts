@@ -64,7 +64,7 @@ export async function joinGame<TState = unknown, TMove = unknown>(
 ): Promise<GameSession<TState, TMove>> {
   const token = await bridge.requestToken();
   const name = new URLSearchParams(location.search).get('name') ?? undefined;
-  const userId = token.startsWith('guest:') ? token.slice(6) : 'me';
+  const userId = token.startsWith('guest:') ? token : 'me';
 
   const socket: Socket = io('/', {
     auth: { token, gameId, ...(name && { name }) },

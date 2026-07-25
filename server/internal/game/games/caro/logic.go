@@ -108,6 +108,14 @@ func (Logic) Apply(state any, playerIdx int, move json.RawMessage) (any, error) 
 	return s, nil
 }
 
+func (Logic) MoveCount(state any) int {
+	s, ok := state.(*State)
+	if !ok {
+		return 0
+	}
+	return s.MoveCount
+}
+
 func (Logic) Result(state any) (bool, int) {
 	s := state.(*State)
 	switch s.Winner {

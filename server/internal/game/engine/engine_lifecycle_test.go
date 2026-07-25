@@ -95,6 +95,12 @@ func lifecycleRoom(id string) Room {
 	}
 }
 
+func newLifecycleTestEngine(activeStore ActiveMatchRepository) (*Engine, *memoryRoomStore, *captureEmitter) {
+	gameEngine, rooms, emitter := newPersistenceTestEngine(activeStore)
+	gameEngine.SetSettlement(&fakeSettlement{})
+	return gameEngine, rooms, emitter
+}
+
 func onlyRoom(t *testing.T, store *memoryRoomStore) Room {
 	t.Helper()
 	rooms, err := store.List(persistenceTestGameID)
@@ -122,7 +128,7 @@ func TestCreateRoomValidationAndIdempotency(t *testing.T) {
 		}
 		for _, test := range tests {
 			t.Run(test.name, func(t *testing.T) {
-				gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+				gameEngine, rooms, emitter := newLifecycleTestEngine(newMemoryActiveMatchStore())
 				gameEngine.CreateRoom(test.gameID, lifecyclePlayer("owner"), test.bet, test.password)
 				requireErrorCode(t, emitter, "owner", test.code)
 				if len(rooms.rooms) != 0 {
@@ -133,14 +139,14 @@ func TestCreateRoomValidationAndIdempotency(t *testing.T) {
 	})
 
 	t.Run("store failure", func(t *testing.T) {
-		gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		gameEngine, rooms, emitter := newLifecycleTestEngine(newMemoryActiveMatchStore())
 		rooms.failSave = true
 		gameEngine.CreateRoom(persistenceTestGameID, lifecyclePlayer("owner"), 10, "")
 		requireErrorCode(t, emitter, "owner", "ROOM_CREATE_FAILED")
 	})
 
 	t.Run("success leaves queue and is idempotent", func(t *testing.T) {
-		gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		gameEngine, rooms, emitter := newLifecycleTestEngine(newMemoryActiveMatchStore())
 		gameEngine.queues[persistenceTestGameID] = []protocol.PlayerInfo{lifecyclePlayer("owner")}
 		gameEngine.CreateRoom(persistenceTestGameID, lifecyclePlayer("owner"), 10, "secret")
 		room := onlyRoom(t, rooms)
@@ -162,26 +168,26 @@ func TestCreateRoomValidationAndIdempotency(t *testing.T) {
 
 func TestJoinRoomValidationAndSuccess(t *testing.T) {
 	t.Run("missing room id", func(t *testing.T) {
-		gameEngine, _, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		gameEngine, _, emitter := newLifecycleTestEngine(newMemoryActiveMatchStore())
 		gameEngine.JoinRoom(persistenceTestGameID, lifecyclePlayer("guest"), "", "")
 		requireErrorCode(t, emitter, "guest", "ROOM_NOT_FOUND")
 	})
 
 	t.Run("room busy", func(t *testing.T) {
-		gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		gameEngine, rooms, emitter := newLifecycleTestEngine(newMemoryActiveMatchStore())
 		rooms.claimOK = false
 		gameEngine.JoinRoom(persistenceTestGameID, lifecyclePlayer("guest"), "room", "")
 		requireErrorCode(t, emitter, "guest", "ROOM_BUSY")
 	})
 
 	t.Run("room not found", func(t *testing.T) {
-		gameEngine, _, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		gameEngine, _, emitter := newLifecycleTestEngine(newMemoryActiveMatchStore())
 		gameEngine.JoinRoom(persistenceTestGameID, lifecyclePlayer("guest"), "missing", "")
 		requireErrorCode(t, emitter, "guest", "ROOM_NOT_FOUND")
 	})
 
 	t.Run("own room without membership index", func(t *testing.T) {
-		gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		gameEngine, rooms, emitter := newLifecycleTestEngine(newMemoryActiveMatchStore())
 		room := lifecycleRoom("room")
 		rooms.rooms[memoryRoomKey(room.GameID, room.ID)] = room
 		gameEngine.JoinRoom(persistenceTestGameID, lifecyclePlayer("owner"), room.ID, "")
@@ -189,7 +195,7 @@ func TestJoinRoomValidationAndSuccess(t *testing.T) {
 	})
 
 	t.Run("wrong password", func(t *testing.T) {
-		gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		gameEngine, rooms, emitter := newLifecycleTestEngine(newMemoryActiveMatchStore())
 		room := lifecycleRoom("room")
 		room.Password = "secret"
 		_ = rooms.Save(room)
@@ -198,7 +204,7 @@ func TestJoinRoomValidationAndSuccess(t *testing.T) {
 	})
 
 	t.Run("room full", func(t *testing.T) {
-		gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		gameEngine, rooms, emitter := newLifecycleTestEngine(newMemoryActiveMatchStore())
 		room := lifecycleRoom("room")
 		room.GuestID = "existing"
 		room.GuestName = "EXISTING"
@@ -208,7 +214,7 @@ func TestJoinRoomValidationAndSuccess(t *testing.T) {
 	})
 
 	t.Run("already in another room", func(t *testing.T) {
-		gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		gameEngine, rooms, emitter := newLifecycleTestEngine(newMemoryActiveMatchStore())
 		current := lifecycleRoom("current")
 		current.GuestID = "guest"
 		current.GuestName = "GUEST"
@@ -221,7 +227,7 @@ func TestJoinRoomValidationAndSuccess(t *testing.T) {
 	})
 
 	t.Run("save failure", func(t *testing.T) {
-		gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		gameEngine, rooms, emitter := newLifecycleTestEngine(newMemoryActiveMatchStore())
 		room := lifecycleRoom("room")
 		_ = rooms.Save(room)
 		rooms.failSave = true
@@ -230,7 +236,7 @@ func TestJoinRoomValidationAndSuccess(t *testing.T) {
 	})
 
 	t.Run("success and idempotent retry", func(t *testing.T) {
-		gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		gameEngine, rooms, emitter := newLifecycleTestEngine(newMemoryActiveMatchStore())
 		room := lifecycleRoom("room")
 		room.Password = "secret"
 		_ = rooms.Save(room)
@@ -281,7 +287,7 @@ func TestRoomLeaveAndDisconnectLifecycle(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+			gameEngine, rooms, emitter := newLifecycleTestEngine(newMemoryActiveMatchStore())
 			room := lifecycleRoom("room")
 			room.GuestID = "guest"
 			room.GuestName = "GUEST"
@@ -340,7 +346,7 @@ func TestRoomLeaveAndDisconnectLifecycle(t *testing.T) {
 	}
 
 	t.Run("owner delete failure keeps room visible", func(t *testing.T) {
-		gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		gameEngine, rooms, emitter := newLifecycleTestEngine(newMemoryActiveMatchStore())
 		room := lifecycleRoom("room-delete-failure")
 		room.GuestID = "guest"
 		room.GuestName = "GUEST"
@@ -360,7 +366,7 @@ func TestRoomLeaveAndDisconnectLifecycle(t *testing.T) {
 
 func TestRoomReadyKickAndActionErrors(t *testing.T) {
 	t.Run("ready is saved and broadcast", func(t *testing.T) {
-		gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		gameEngine, rooms, emitter := newLifecycleTestEngine(newMemoryActiveMatchStore())
 		room := lifecycleRoom("room")
 		room.GuestID = "guest"
 		room.GuestName = "GUEST"
@@ -376,7 +382,7 @@ func TestRoomReadyKickAndActionErrors(t *testing.T) {
 	})
 
 	t.Run("action validation", func(t *testing.T) {
-		gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		gameEngine, rooms, emitter := newLifecycleTestEngine(newMemoryActiveMatchStore())
 		gameEngine.SetRoomReady(persistenceTestGameID, "guest", "", true)
 		requireErrorCode(t, emitter, "guest", "ROOM_NOT_FOUND")
 
@@ -390,7 +396,7 @@ func TestRoomReadyKickAndActionErrors(t *testing.T) {
 	})
 
 	t.Run("ready save failure", func(t *testing.T) {
-		gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		gameEngine, rooms, emitter := newLifecycleTestEngine(newMemoryActiveMatchStore())
 		room := lifecycleRoom("room")
 		room.GuestID = "guest"
 		room.GuestName = "GUEST"
@@ -401,7 +407,7 @@ func TestRoomReadyKickAndActionErrors(t *testing.T) {
 	})
 
 	t.Run("kick validation and success", func(t *testing.T) {
-		gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		gameEngine, rooms, emitter := newLifecycleTestEngine(newMemoryActiveMatchStore())
 		room := lifecycleRoom("room")
 		room.GuestID = "guest"
 		room.GuestName = "GUEST"
@@ -450,7 +456,7 @@ func TestStartRoomValidationAndSuccess(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+			gameEngine, rooms, emitter := newLifecycleTestEngine(newMemoryActiveMatchStore())
 			test.room.GuestName = "GUEST"
 			_ = rooms.Save(test.room)
 			if test.configure != nil {
@@ -465,7 +471,7 @@ func TestStartRoomValidationAndSuccess(t *testing.T) {
 	}
 
 	t.Run("success", func(t *testing.T) {
-		gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		gameEngine, rooms, emitter := newLifecycleTestEngine(newMemoryActiveMatchStore())
 		defer stopEngineTimers(gameEngine)
 		room := lifecycleRoom("room")
 		room.GuestID = "guest"
@@ -510,7 +516,7 @@ func TestStartRoomValidationAndSuccess(t *testing.T) {
 
 func TestFinishedRoomMatchReturnsWithGuestUnready(t *testing.T) {
 	activeStore := newMemoryActiveMatchStore()
-	gameEngine, rooms, emitter := newPersistenceTestEngine(activeStore)
+	gameEngine, rooms, emitter := newLifecycleTestEngine(activeStore)
 	defer stopEngineTimers(gameEngine)
 	room := lifecycleRoom("room-next-round")
 	room.Password = "secret"
@@ -564,7 +570,7 @@ func TestFinishedRoomMatchReturnsWithGuestUnready(t *testing.T) {
 }
 
 func TestOwnerExitMatchDoesNotRestoreWaitingRoom(t *testing.T) {
-	gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+	gameEngine, rooms, emitter := newLifecycleTestEngine(newMemoryActiveMatchStore())
 	defer stopEngineTimers(gameEngine)
 	room := lifecycleRoom("room-exit")
 	room.GuestID = "guest"
@@ -593,7 +599,7 @@ func TestOwnerExitMatchDoesNotRestoreWaitingRoom(t *testing.T) {
 }
 
 func TestGuestExitMatchReturnsOwnerToWaitingRoom(t *testing.T) {
-	gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+	gameEngine, rooms, emitter := newLifecycleTestEngine(newMemoryActiveMatchStore())
 	defer stopEngineTimers(gameEngine)
 	room := lifecycleRoom("room-guest-exit")
 	room.GuestID = "guest"
@@ -629,7 +635,7 @@ func TestGuestExitMatchReturnsOwnerToWaitingRoom(t *testing.T) {
 }
 
 func TestGuestDisconnectExpiryReturnsOwnerToWaitingRoom(t *testing.T) {
-	gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+	gameEngine, rooms, emitter := newLifecycleTestEngine(newMemoryActiveMatchStore())
 	defer stopEngineTimers(gameEngine)
 	room := lifecycleRoom("room-guest-disconnect")
 	room.GuestID = "guest"
@@ -667,13 +673,13 @@ func TestGuestDisconnectExpiryReturnsOwnerToWaitingRoom(t *testing.T) {
 
 func TestQueueLifecycleAndRoomConflict(t *testing.T) {
 	t.Run("unknown game", func(t *testing.T) {
-		gameEngine, _, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		gameEngine, _, emitter := newLifecycleTestEngine(newMemoryActiveMatchStore())
 		gameEngine.JoinQueue("missing-game", lifecyclePlayer("player"))
 		requireErrorCode(t, emitter, "player", "UNKNOWN_GAME")
 	})
 
 	t.Run("wait duplicate and leave", func(t *testing.T) {
-		gameEngine, _, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		gameEngine, _, emitter := newLifecycleTestEngine(newMemoryActiveMatchStore())
 		player := lifecyclePlayer("player")
 		gameEngine.JoinQueue(persistenceTestGameID, player)
 		gameEngine.JoinQueue(persistenceTestGameID, player)
@@ -687,7 +693,7 @@ func TestQueueLifecycleAndRoomConflict(t *testing.T) {
 	})
 
 	t.Run("room member cannot queue", func(t *testing.T) {
-		gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		gameEngine, rooms, emitter := newLifecycleTestEngine(newMemoryActiveMatchStore())
 		room := lifecycleRoom("room")
 		_ = rooms.Save(room)
 		gameEngine.JoinQueue(room.GameID, lifecyclePlayer("owner"))
@@ -698,7 +704,7 @@ func TestQueueLifecycleAndRoomConflict(t *testing.T) {
 	})
 
 	t.Run("two players are matched", func(t *testing.T) {
-		gameEngine, _, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		gameEngine, _, emitter := newLifecycleTestEngine(newMemoryActiveMatchStore())
 		defer stopEngineTimers(gameEngine)
 		gameEngine.JoinQueue(persistenceTestGameID, lifecyclePlayer("a"))
 		gameEngine.JoinQueue(persistenceTestGameID, lifecyclePlayer("b"))
@@ -712,7 +718,7 @@ func TestQueueLifecycleAndRoomConflict(t *testing.T) {
 }
 
 func TestRoomListAndReconnectView(t *testing.T) {
-	gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+	gameEngine, rooms, emitter := newLifecycleTestEngine(newMemoryActiveMatchStore())
 	open := lifecycleRoom("open")
 	locked := lifecycleRoom("locked")
 	open.CreatedAt = time.Now().Add(-time.Minute).UnixMilli()
@@ -754,7 +760,7 @@ func TestRoomListAndReconnectView(t *testing.T) {
 }
 
 func TestRoomListFailureDoesNotLookLikeAnEmptyLobby(t *testing.T) {
-	gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+	gameEngine, rooms, emitter := newLifecycleTestEngine(newMemoryActiveMatchStore())
 	rooms.failList = true
 	gameEngine.ListRooms(persistenceTestGameID, "viewer")
 	requireErrorCode(t, emitter, "viewer", "ROOM_LIST_FAILED")
@@ -764,7 +770,7 @@ func TestRoomListFailureDoesNotLookLikeAnEmptyLobby(t *testing.T) {
 }
 
 func TestMoveGuardCases(t *testing.T) {
-	gameEngine, _, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+	gameEngine, _, emitter := newLifecycleTestEngine(newMemoryActiveMatchStore())
 	defer stopEngineTimers(gameEngine)
 	gameEngine.Move(persistenceTestGameID, "missing", "", json.RawMessage(`{}`))
 	requireErrorCode(t, emitter, "missing", "NO_MATCH")
@@ -802,7 +808,7 @@ func TestMoveGuardCases(t *testing.T) {
 
 func TestMatchChatValidationAndBroadcast(t *testing.T) {
 	t.Run("broadcasts server-owned sender data to both players", func(t *testing.T) {
-		gameEngine, _, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		gameEngine, _, emitter := newLifecycleTestEngine(newMemoryActiveMatchStore())
 		defer stopEngineTimers(gameEngine)
 		match := startPersistenceTestMatch(t, gameEngine)
 		sender := match.players[0]
@@ -822,7 +828,7 @@ func TestMatchChatValidationAndBroadcast(t *testing.T) {
 	})
 
 	t.Run("rate limits repeated messages from the same player", func(t *testing.T) {
-		gameEngine, _, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		gameEngine, _, emitter := newLifecycleTestEngine(newMemoryActiveMatchStore())
 		defer stopEngineTimers(gameEngine)
 		match := startPersistenceTestMatch(t, gameEngine)
 		sender := match.players[0]
@@ -875,7 +881,7 @@ func TestMatchChatValidationAndBroadcast(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			gameEngine, _, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+			gameEngine, _, emitter := newLifecycleTestEngine(newMemoryActiveMatchStore())
 			defer stopEngineTimers(gameEngine)
 			match := startPersistenceTestMatch(t, gameEngine)
 			gameID, userID, matchID, message := test.setup(gameEngine, match)
@@ -893,7 +899,7 @@ func TestMatchChatValidationAndBroadcast(t *testing.T) {
 
 func TestRoomChatValidationAndBroadcast(t *testing.T) {
 	t.Run("both room members can chat before a match", func(t *testing.T) {
-		gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+		gameEngine, rooms, emitter := newLifecycleTestEngine(newMemoryActiveMatchStore())
 		room := lifecycleRoom("chat-room")
 		room.GuestID = "guest"
 		room.GuestName = "GUEST"
@@ -983,7 +989,7 @@ func TestRoomChatValidationAndBroadcast(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			gameEngine, rooms, emitter := newPersistenceTestEngine(newMemoryActiveMatchStore())
+			gameEngine, rooms, emitter := newLifecycleTestEngine(newMemoryActiveMatchStore())
 			gameID, userID, roomID, message := test.setup(rooms)
 			gameEngine.RoomChat(gameID, userID, roomID, message)
 			requireErrorCode(t, emitter, test.userID, test.code)

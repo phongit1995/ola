@@ -1,0 +1,371 @@
+package game
+
+import (
+	"context"
+	"errors"
+	"math"
+	"testing"
+	"time"
+
+	"ola-chat-server/internal/game/engine"
+	"ola-chat-server/internal/models"
+
+	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/google/uuid"
+	"go.uber.org/zap"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
+)
+
+func newSettlementMockDB(t *testing.T) (*gorm.DB, sqlmock.Sqlmock) {
+	t.Helper()
+	sqlDB, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherRegexp))
+	if err != nil {
+		t.Fatalf("create sqlmock: %v", err)
+	}
+	t.Cleanup(func() {
+		mock.ExpectClose()
+		if err := sqlDB.Close(); err != nil {
+			t.Errorf("close sqlmock DB: %v", err)
+		}
+		if err := mock.ExpectationsWereMet(); err != nil {
+			t.Errorf("unmet SQL expectations: %v", err)
+		}
+	})
+
+	db, err := gorm.Open(postgres.New(postgres.Config{Conn: sqlDB}), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Silent),
+	})
+	if err != nil {
+		t.Fatalf("open gorm DB: %v", err)
+	}
+	return db, mock
+}
+
+func TestSettlementValidation(t *testing.T) {
+	now := time.Now()
+	valid := engine.MatchRecord{
+		GameID:    "caro",
+		MatchID:   uuid.NewString(),
+		Player0ID: uuid.NewString(),
+		Player1ID: uuid.NewString(),
+		Mode:      "room",
+		Bet:       10,
+		StartedAt: now,
+	}
+
+	if _, _, guest, err := validateRecord(valid); err != nil || guest {
+		t.Fatalf("valid record rejected: guest=%v err=%v", guest, err)
+	}
+
+	invalidPlayer := valid
+	invalidPlayer.Player0ID = "guest-id"
+	if _, _, _, err := validateRecord(invalidPlayer); !errors.Is(err, errInvalidMatch) {
+		t.Fatalf("positive bet with invalid player id should fail, got %v", err)
+	}
+	invalidPlayer.Bet = 0
+	if _, _, guest, err := validateRecord(invalidPlayer); err != nil || !guest {
+		t.Fatalf("zero-bet guest should be ignored: guest=%v err=%v", guest, err)
+	}
+
+	tooLarge := valid
+	tooLarge.Bet = engine.MaxBet + 1
+	if _, _, _, err := validateRecord(tooLarge); !errors.Is(err, errInvalidMatch) {
+		t.Fatalf("oversized bet should fail, got %v", err)
+	}
+
+	guestOutcome := engine.MatchOutcome{
+		GameID:     valid.GameID,
+		MatchID:    valid.MatchID,
+		Player0ID:  "guest:" + valid.Player0ID,
+		Player1ID:  valid.Player1ID,
+		WinnerID:   valid.Player1ID,
+		Reason:     "win",
+		Bet:        valid.Bet,
+		MoveCount:  9,
+		FinishedAt: now,
+	}
+	if _, _, _, err := validateOutcome(guestOutcome); !errors.Is(err, errInvalidMatch) {
+		t.Fatalf("paid guest outcome should fail UUID validation, got %v", err)
+	}
+	guestOutcome.Bet = 0
+	if _, _, guest, err := validateOutcome(guestOutcome); err != nil || !guest {
+		t.Fatalf("zero-bet guest outcome should be ignored: guest=%v err=%v", guest, err)
+	}
+
+	if _, err := checkedCredit(math.MaxInt32-4, 5); !errors.Is(err, errKenBalanceCap) {
+		t.Fatalf("overflowing credit should fail, got %v", err)
+	}
+
+	p0, p1, _, _ := validateRecord(valid)
+	closed := models.GameMatch{
+		GameID:     valid.GameID,
+		MatchID:    valid.MatchID,
+		Player0ID:  p0,
+		Player1ID:  p1,
+		Status:     matchStatusFinished,
+		Mode:       valid.Mode,
+		Bet:        valid.Bet,
+		EscrowedAt: now,
+	}
+	if err := verifyMatchRecord(closed, valid, p0, p1); !errors.Is(err, engine.ErrEscrowClosed) {
+		t.Fatalf("closed escrow error=%v, want %v", err, engine.ErrEscrowClosed)
+	}
+}
+
+func TestSettlementResultReasonValidation(t *testing.T) {
+	tests := []struct {
+		reason    string
+		hasWinner bool
+		wantError bool
+	}{
+		{reason: "win", hasWinner: true},
+		{reason: "forfeit", hasWinner: true},
+		{reason: "timeout", hasWinner: true},
+		{reason: "draw"},
+		{reason: "void"},
+		{reason: "disconnect"},
+		{reason: "disconnect", hasWinner: true},
+		{reason: "win", wantError: true},
+		{reason: "draw", hasWinner: true, wantError: true},
+		{reason: "unknown", hasWinner: true, wantError: true},
+	}
+	for _, test := range tests {
+		t.Run(test.reason, func(t *testing.T) {
+			err := validateResultReason(test.reason, test.hasWinner)
+			if (err != nil) != test.wantError {
+				t.Fatalf("validateResultReason(%q, %v) error=%v, wantError=%v",
+					test.reason, test.hasWinner, err, test.wantError)
+			}
+		})
+	}
+}
+
+func TestSettleFinishRejectsMissingEscrow(t *testing.T) {
+	db, mock := newSettlementMockDB(t)
+	repo := &SettlementRepository{db: db, logger: zap.NewNop().Sugar()}
+	matchID := uuid.NewString()
+	p0 := uuid.NewString()
+	p1 := uuid.NewString()
+
+	mock.ExpectBegin()
+	mock.ExpectQuery(`SELECT \* FROM "game_matches".*match_id = \$1.*FOR UPDATE`).
+		WithArgs(matchID, 1).
+		WillReturnRows(sqlmock.NewRows([]string{"id"}))
+	mock.ExpectRollback()
+
+	_, err := repo.SettleFinish(context.Background(), engine.MatchOutcome{
+		GameID:     "caro",
+		MatchID:    matchID,
+		Player0ID:  p0,
+		Player1ID:  p1,
+		WinnerID:   p0,
+		Reason:     "win",
+		Bet:        10,
+		MoveCount:  9,
+		FinishedAt: time.Now(),
+	})
+	if !errors.Is(err, errMatchNotEscrowed) {
+		t.Fatalf("missing escrow error=%v, want %v", err, errMatchNotEscrowed)
+	}
+}
+
+func TestSettleFinishRejectsOutcomeThatConflictsWithEscrow(t *testing.T) {
+	db, mock := newSettlementMockDB(t)
+	repo := &SettlementRepository{db: db, logger: zap.NewNop().Sugar()}
+	p0 := uuid.New()
+	p1 := uuid.New()
+	matchID := uuid.New()
+	rowID := uuid.New()
+	now := time.Now().UTC()
+
+	mock.ExpectBegin()
+	mock.ExpectQuery(`SELECT \* FROM "game_matches".*match_id = \$1.*FOR UPDATE`).
+		WithArgs(matchID.String(), 1).
+		WillReturnRows(sqlmock.NewRows([]string{
+			"id", "game_id", "match_id", "player0_id", "player1_id", "status",
+			"mode", "bet", "started_at", "escrowed_at", "deleted_at",
+		}).AddRow(
+			rowID, "caro", matchID, p0, p1, matchStatusPlaying,
+			"room", 25, now.Add(-time.Minute), now, nil,
+		))
+	mock.ExpectRollback()
+
+	_, err := repo.settleFinish(context.Background(), engine.MatchOutcome{
+		GameID:     "caro",
+		MatchID:    matchID.String(),
+		Player0ID:  p0.String(),
+		Player1ID:  p1.String(),
+		WinnerID:   p0.String(),
+		Reason:     "win",
+		Bet:        100,
+		MoveCount:  9,
+		FinishedAt: now.Add(time.Minute),
+	}, p0, p1)
+	if !errors.Is(err, errMatchConflict) {
+		t.Fatalf("mismatched bet error=%v, want %v", err, errMatchConflict)
+	}
+}
+
+func TestSettleFinishRetryDoesNotUpdateBalancesAgain(t *testing.T) {
+	db, mock := newSettlementMockDB(t)
+	repo := &SettlementRepository{db: db, logger: zap.NewNop().Sugar()}
+	p0 := uuid.New()
+	p1 := uuid.New()
+	matchID := uuid.New()
+	rowID := uuid.New()
+	now := time.Now().UTC()
+	finishedAt := now.Add(time.Minute)
+	out := engine.MatchOutcome{
+		GameID:     "caro",
+		MatchID:    matchID.String(),
+		Player0ID:  p0.String(),
+		Player1ID:  p1.String(),
+		WinnerID:   p0.String(),
+		Reason:     "win",
+		Bet:        25,
+		MoveCount:  9,
+		FinishedAt: finishedAt,
+	}
+
+	mock.ExpectBegin()
+	mock.ExpectQuery(`SELECT \* FROM "game_matches".*match_id = \$1.*FOR UPDATE`).
+		WithArgs(matchID.String(), 1).
+		WillReturnRows(sqlmock.NewRows([]string{
+			"id", "game_id", "match_id", "player0_id", "player1_id", "winner_id",
+			"loser_id", "status", "reason", "mode", "bet", "ken_delta", "move_count",
+			"started_at", "escrowed_at", "finished_at", "deleted_at",
+		}).AddRow(
+			rowID, out.GameID, out.MatchID, p0, p1, p0,
+			p1, matchStatusFinished, out.Reason, "room", out.Bet, out.Bet, out.MoveCount,
+			now.Add(-time.Minute), now, finishedAt, nil,
+		))
+	mock.ExpectCommit()
+
+	result, err := repo.settleFinish(context.Background(), out, p0, p1)
+	if err != nil {
+		t.Fatalf("idempotent finish: %v", err)
+	}
+	if result.gameID != out.GameID || len(result.userIDs) != 2 {
+		t.Fatalf("unexpected idempotent finish result: %+v", result)
+	}
+}
+
+func TestSettleFinishCreditsWinnerFromEscrowedBet(t *testing.T) {
+	db, mock := newSettlementMockDB(t)
+	repo := &SettlementRepository{db: db, logger: zap.NewNop().Sugar()}
+	p0 := uuid.MustParse("11111111-1111-4111-8111-111111111111")
+	p1 := uuid.MustParse("22222222-2222-4222-8222-222222222222")
+	matchID := uuid.MustParse("33333333-3333-4333-8333-333333333333")
+	rowID := uuid.MustParse("44444444-4444-4444-8444-444444444444")
+	now := time.Now().UTC()
+	out := engine.MatchOutcome{
+		GameID:     "caro",
+		MatchID:    matchID.String(),
+		Player0ID:  p0.String(),
+		Player1ID:  p1.String(),
+		WinnerID:   p0.String(),
+		Reason:     "win",
+		Bet:        25,
+		MoveCount:  9,
+		FinishedAt: now.Add(time.Minute),
+	}
+
+	mock.ExpectBegin()
+	mock.ExpectQuery(`SELECT \* FROM "game_matches".*match_id = \$1.*FOR UPDATE`).
+		WithArgs(matchID.String(), 1).
+		WillReturnRows(sqlmock.NewRows([]string{
+			"id", "game_id", "match_id", "player0_id", "player1_id", "status",
+			"mode", "bet", "started_at", "escrowed_at", "deleted_at",
+		}).AddRow(
+			rowID, out.GameID, out.MatchID, p0, p1, matchStatusPlaying,
+			"room", out.Bet, now.Add(-time.Minute), now, nil,
+		))
+	expectLockedUser(mock, p0, 75)
+	expectLockedUser(mock, p1, 55)
+	expectKenUpdate(mock, p0, 125)
+	mock.ExpectExec(`UPDATE "game_matches" SET .*WHERE id = .*status = `).
+		WillReturnResult(sqlmock.NewResult(0, 1))
+	mock.ExpectCommit()
+
+	result, err := repo.settleFinish(context.Background(), out, p0, p1)
+	if err != nil {
+		t.Fatalf("settle winner: %v", err)
+	}
+	if result.gameID != out.GameID || len(result.userIDs) != 2 {
+		t.Fatalf("unexpected settle result: %+v", result)
+	}
+}
+
+func TestEscrowStartIsIdempotentAndDebitsOnce(t *testing.T) {
+	db, mock := newSettlementMockDB(t)
+	repo := &SettlementRepository{db: db, logger: zap.NewNop().Sugar()}
+	p0 := uuid.MustParse("11111111-1111-4111-8111-111111111111")
+	p1 := uuid.MustParse("22222222-2222-4222-8222-222222222222")
+	matchID := uuid.MustParse("33333333-3333-4333-8333-333333333333")
+	rowID := uuid.MustParse("44444444-4444-4444-8444-444444444444")
+	startedAt := time.Now().Add(-time.Second).UTC()
+	rec := engine.MatchRecord{
+		GameID:    "caro",
+		MatchID:   matchID.String(),
+		Player0ID: p0.String(),
+		Player1ID: p1.String(),
+		Mode:      "room",
+		Bet:       25,
+		StartedAt: startedAt,
+	}
+
+	mock.ExpectBegin()
+	mock.ExpectQuery(`INSERT INTO "game_matches"`).
+		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(rowID))
+	expectLockedUser(mock, p0, 100)
+	expectLockedUser(mock, p1, 80)
+	expectKenUpdate(mock, p0, 75)
+	expectKenUpdate(mock, p1, 55)
+	mock.ExpectCommit()
+
+	result, err := repo.escrowStart(context.Background(), rec, p0, p1)
+	if err != nil {
+		t.Fatalf("first escrow: %v", err)
+	}
+	if result.gameID != rec.GameID || len(result.userIDs) != 2 {
+		t.Fatalf("unexpected escrow result: %+v", result)
+	}
+
+	escrowedAt := startedAt.Add(time.Second)
+	mock.ExpectBegin()
+	mock.ExpectQuery(`INSERT INTO "game_matches"`).
+		WillReturnRows(sqlmock.NewRows([]string{"id"}))
+	mock.ExpectQuery(`SELECT \* FROM "game_matches".*match_id = \$1.*FOR UPDATE`).
+		WithArgs(rec.MatchID, 1).
+		WillReturnRows(sqlmock.NewRows([]string{
+			"id", "game_id", "match_id", "player0_id", "player1_id", "status",
+			"mode", "bet", "started_at", "escrowed_at", "deleted_at",
+		}).AddRow(
+			rowID, rec.GameID, rec.MatchID, p0, p1, matchStatusPlaying,
+			rec.Mode, rec.Bet, startedAt, escrowedAt, nil,
+		))
+	mock.ExpectCommit()
+
+	result, err = repo.escrowStart(context.Background(), rec, p0, p1)
+	if err != nil {
+		t.Fatalf("idempotent escrow: %v", err)
+	}
+	if result.gameID != rec.GameID || len(result.userIDs) != 2 {
+		t.Fatalf("unexpected idempotent result: %+v", result)
+	}
+}
+
+func expectLockedUser(mock sqlmock.Sqlmock, userID uuid.UUID, ken int) {
+	mock.ExpectQuery(`SELECT \* FROM "users".*id = \$1.*FOR UPDATE`).
+		WithArgs(userID, 1).
+		WillReturnRows(sqlmock.NewRows([]string{"id", "ken", "deleted_at"}).
+			AddRow(userID, ken, nil))
+}
+
+func expectKenUpdate(mock sqlmock.Sqlmock, userID uuid.UUID, ken int) {
+	mock.ExpectExec(`UPDATE "users" SET .*"ken"=\$1.*WHERE id = \$3`).
+		WithArgs(ken, sqlmock.AnyArg(), userID).
+		WillReturnResult(sqlmock.NewResult(0, 1))
+}

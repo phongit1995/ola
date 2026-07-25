@@ -100,14 +100,17 @@ func NewServer(
 
 		if cfg.GameAllowGuest && strings.HasPrefix(token, "guest:") {
 			guest = true
-			userID = strings.TrimPrefix(token, "guest:")
-			if userID == "" {
+			guestID, namespacedID, ok := guestIdentity(token)
+			if !ok {
 				next(socket.NewExtendedError("invalid guest token", nil))
 				return
 			}
+			// Keep guests in a separate identity namespace even when their
+			// client-supplied suffix happens to be a registered UUID.
+			userID = namespacedID
 			name, _ = auth["name"].(string)
 			if name == "" {
-				name = "Guest-" + userID
+				name = "Guest-" + guestID
 			}
 		} else {
 			uid, err := jwtService.GetUserIDFromToken(token)
@@ -210,6 +213,17 @@ func socketPlayer(data *SocketData) protocol.PlayerInfo {
 		Name:    data.Name,
 		VipType: data.VipType,
 	}
+}
+
+func guestIdentity(token string) (suffix, userID string, ok bool) {
+	if !strings.HasPrefix(token, "guest:") {
+		return "", "", false
+	}
+	suffix = strings.TrimPrefix(token, "guest:")
+	if suffix == "" {
+		return "", "", false
+	}
+	return suffix, "guest:" + suffix, true
 }
 
 func (s *Server) handleMessage(data *SocketData, raw any) {

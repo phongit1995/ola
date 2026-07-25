@@ -1,7 +1,9 @@
 package engine
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math/rand"
 	"sort"
@@ -32,50 +34,64 @@ type Engine struct {
 	// mu protects only the match registries. Match state is protected by Match.mu.
 	mu sync.RWMutex
 	// Queue, room workflows, and completed results do not share the registry lock.
-	queueMu      sync.Mutex
-	roomMu       sync.Mutex
-	finishedMu   sync.Mutex
-	emitterMu    sync.RWMutex
-	restoreMu    sync.Mutex
-	logger       *zap.SugaredLogger
-	emitter      Emitter
-	store        RoomRepository
-	activeStore  ActiveMatchRepository
-	queues       map[string][]protocol.PlayerInfo
-	matches      map[string]*Match
-	byUser       map[string]*Match
-	finished     map[string]protocol.MatchOverData
-	roomChatLast map[string]time.Time
-	turnSeconds  int
-	graceSeconds int
-	restored     bool
+	queueMu          sync.Mutex
+	roomMu           sync.Mutex
+	finishedMu       sync.Mutex
+	emitterMu        sync.RWMutex
+	settlementMu     sync.RWMutex
+	restoreMu        sync.Mutex
+	maintenanceOnce  sync.Once
+	settlementJobsMu sync.Mutex
+	restoreJobsMu    sync.Mutex
+	abortJobsMu      sync.Mutex
+	logger           *zap.SugaredLogger
+	emitter          Emitter
+	settlement       Settlement
+	store            RoomRepository
+	activeStore      ActiveMatchRepository
+	queues           map[string][]protocol.PlayerInfo
+	queuePending     map[string]bool
+	queueCancelled   map[string]bool
+	matches          map[string]*Match
+	byUser           map[string]*Match
+	terminalMatches  map[string]time.Time
+	roomReservations map[string]struct{}
+	finished         map[string]protocol.MatchOverData
+	settlementJobs   map[string]struct{}
+	restoreJobs      map[string]struct{}
+	abortJobs        map[string]struct{}
+	roomChatLast     map[string]time.Time
+	turnSeconds      int
+	graceSeconds     int
+	restored         bool
 }
 
 type Match struct {
 	// mu protects mutable gameplay state, persistence, and both timer generations.
-	mu            sync.Mutex
-	ID            string
-	GameID        string
-	logic         logic.GameLogic
-	players       []protocol.PlayerInfo
-	state         any
-	turnIdx       int
-	deadline      time.Time
-	timer         *time.Timer
-	turnGen       int
-	over          bool
-	bet           int
-	graceTimer    *time.Timer
-	graceDeadline time.Time
-	graceGen      int
-	disconnected  map[int]bool
-	pausedRemain  time.Duration
-	startedAt     time.Time
-	winnerID      string
-	resultReason  string
-	finishedAt    time.Time
-	lastChatAt    [2]time.Time
-	room          *Room
+	mu             sync.Mutex
+	ID             string
+	GameID         string
+	logic          logic.GameLogic
+	players        []protocol.PlayerInfo
+	state          any
+	turnIdx        int
+	deadline       time.Time
+	timer          *time.Timer
+	turnGen        int
+	over           bool
+	bet            int
+	graceTimer     *time.Timer
+	graceDeadline  time.Time
+	graceGen       int
+	disconnected   map[int]bool
+	pausedRemain   time.Duration
+	startedAt      time.Time
+	winnerID       string
+	resultReason   string
+	finishedAt     time.Time
+	lastChatAt     [2]time.Time
+	room           *Room
+	escrowVerified bool
 }
 
 func NewEngine(
@@ -86,16 +102,23 @@ func NewEngine(
 	activeStore ActiveMatchRepository,
 ) *Engine {
 	return &Engine{
-		logger:       logger.Named("[game-engine]"),
-		store:        store,
-		activeStore:  activeStore,
-		queues:       make(map[string][]protocol.PlayerInfo),
-		matches:      make(map[string]*Match),
-		byUser:       make(map[string]*Match),
-		finished:     make(map[string]protocol.MatchOverData),
-		roomChatLast: make(map[string]time.Time),
-		turnSeconds:  turnSeconds,
-		graceSeconds: graceSeconds,
+		logger:           logger.Named("[game-engine]"),
+		store:            store,
+		activeStore:      activeStore,
+		queues:           make(map[string][]protocol.PlayerInfo),
+		queuePending:     make(map[string]bool),
+		queueCancelled:   make(map[string]bool),
+		matches:          make(map[string]*Match),
+		byUser:           make(map[string]*Match),
+		terminalMatches:  make(map[string]time.Time),
+		roomReservations: make(map[string]struct{}),
+		finished:         make(map[string]protocol.MatchOverData),
+		settlementJobs:   make(map[string]struct{}),
+		restoreJobs:      make(map[string]struct{}),
+		abortJobs:        make(map[string]struct{}),
+		roomChatLast:     make(map[string]time.Time),
+		turnSeconds:      turnSeconds,
+		graceSeconds:     graceSeconds,
 	}
 }
 
@@ -109,11 +132,12 @@ func (e *Engine) SetEmitter(emitter Emitter) {
 	e.emitterMu.Unlock()
 
 	e.restoreMu.Lock()
-	defer e.restoreMu.Unlock()
 	if !e.restored {
 		e.restoreActiveMatches()
 		e.restored = true
 	}
+	e.restoreMu.Unlock()
+	e.maybeStartSettlementMaintenance()
 }
 
 func (e *Engine) currentEmitter() Emitter {
@@ -170,22 +194,97 @@ func (e *Engine) hasActiveMatch(gameID, userID string) bool {
 	return !m.over
 }
 
+type matchInstallResult uint8
+
+const (
+	matchInstalled matchInstallResult = iota
+	matchAlreadyInstalled
+	matchPlayerConflict
+	matchRoomTransition
+	matchTerminal
+)
+
 func (e *Engine) installMatch(m *Match) bool {
+	return e.installMatchDetailed(m, false, false) == matchInstalled
+}
+
+func (e *Engine) installRestoredMatch(m *Match) matchInstallResult {
+	return e.installMatchDetailed(m, true, false)
+}
+
+func (e *Engine) installReservedRoomMatch(m *Match) bool {
+	return e.installMatchDetailed(m, false, true) == matchInstalled
+}
+
+func (e *Engine) installMatchDetailed(m *Match, restored, allowRoomReservation bool) matchInstallResult {
 	e.mu.Lock()
 	defer e.mu.Unlock()
+	if restored {
+		if expiresAt, terminal := e.terminalMatches[m.ID]; terminal {
+			if time.Now().Before(expiresAt) {
+				return matchTerminal
+			}
+			delete(e.terminalMatches, m.ID)
+		}
+	}
 	if _, exists := e.matches[m.ID]; exists {
-		return false
+		return matchAlreadyInstalled
 	}
 	for _, player := range m.players {
-		if current := e.byUser[userKey(m.GameID, player.ID)]; current != nil {
-			return false
+		key := userKey(m.GameID, player.ID)
+		if _, reserved := e.roomReservations[key]; reserved && !allowRoomReservation {
+			return matchRoomTransition
+		}
+		if current := e.byUser[key]; current != nil {
+			return matchPlayerConflict
 		}
 	}
 	e.matches[m.ID] = m
 	for _, player := range m.players {
 		e.byUser[userKey(m.GameID, player.ID)] = m
 	}
-	return true
+	return matchInstalled
+}
+
+func (e *Engine) markMatchTerminal(matchID string) {
+	now := time.Now()
+	e.mu.Lock()
+	for id, expiresAt := range e.terminalMatches {
+		if !now.Before(expiresAt) {
+			delete(e.terminalMatches, id)
+		}
+	}
+	e.terminalMatches[matchID] = now.Add(activeMatchTTL)
+	e.mu.Unlock()
+}
+
+func (e *Engine) reserveRoomUsers(gameID string, userIDs ...string) (func(), bool) {
+	keys := make([]string, 0, len(userIDs))
+	e.mu.Lock()
+	for _, userID := range userIDs {
+		key := userKey(gameID, userID)
+		if e.byUser[key] != nil {
+			e.mu.Unlock()
+			return nil, false
+		}
+		if _, reserved := e.roomReservations[key]; reserved {
+			e.mu.Unlock()
+			return nil, false
+		}
+		keys = append(keys, key)
+	}
+	for _, key := range keys {
+		e.roomReservations[key] = struct{}{}
+	}
+	e.mu.Unlock()
+
+	return func() {
+		e.mu.Lock()
+		for _, key := range keys {
+			delete(e.roomReservations, key)
+		}
+		e.mu.Unlock()
+	}, true
 }
 
 func (e *Engine) removeMatch(m *Match) {
@@ -312,10 +411,16 @@ func (e *Engine) JoinQueue(gameID string, player protocol.PlayerInfo) {
 	}
 
 	e.queueMu.Lock()
-	defer e.queueMu.Unlock()
+	playerKey := userKey(gameID, player.ID)
+	if e.queuePending[playerKey] {
+		e.queueMu.Unlock()
+		e.toUser(gameID, player.ID, protocol.OutEnvelope{Type: protocol.S2CQueueWaiting})
+		return
+	}
 	queue := e.queues[gameID]
 	for _, waiting := range queue {
 		if waiting.ID == player.ID {
+			e.queueMu.Unlock()
 			e.toUser(gameID, player.ID, protocol.OutEnvelope{Type: protocol.S2CQueueWaiting})
 			return
 		}
@@ -323,6 +428,7 @@ func (e *Engine) JoinQueue(gameID string, player protocol.PlayerInfo) {
 
 	if len(queue) == 0 {
 		e.queues[gameID] = append(queue, player)
+		e.queueMu.Unlock()
 		e.toUser(gameID, player.ID, protocol.OutEnvelope{Type: protocol.S2CQueueWaiting})
 		return
 	}
@@ -331,15 +437,98 @@ func (e *Engine) JoinQueue(gameID string, player protocol.PlayerInfo) {
 	e.queues[gameID] = queue[1:]
 	if e.hasActiveMatch(gameID, opponent.ID) {
 		e.queues[gameID] = append(e.queues[gameID], player)
+		e.queueMu.Unlock()
 		e.toUser(gameID, player.ID, protocol.OutEnvelope{Type: protocol.S2CQueueWaiting})
 		return
 	}
-	if err := e.startMatch(gameID, gameLogic, opponent, player, 0); err != nil {
-		e.queues[gameID] = append([]protocol.PlayerInfo{opponent}, e.queues[gameID]...)
-		e.queues[gameID] = append(e.queues[gameID], player)
+	opponentKey := userKey(gameID, opponent.ID)
+	e.queuePending[opponentKey] = true
+	e.queuePending[playerKey] = true
+	e.queueMu.Unlock()
+
+	releasePlayers, reserveErr := e.reserveQueuedMatch(gameID, opponent, player)
+	if reserveErr != nil {
+		err = reserveErr
+	} else {
+		err = e.startReservedQueueMatch(
+			gameID,
+			gameLogic,
+			opponent,
+			player,
+			opponentKey,
+			playerKey,
+		)
+		releasePlayers()
+	}
+
+	e.queueMu.Lock()
+	delete(e.queuePending, opponentKey)
+	delete(e.queuePending, playerKey)
+	opponentCancelled := e.queueCancelled[opponentKey]
+	playerCancelled := e.queueCancelled[playerKey]
+	delete(e.queueCancelled, opponentKey)
+	delete(e.queueCancelled, playerKey)
+	if err != nil {
+		if !opponentCancelled && !queueHasPlayer(e.queues[gameID], opponent.ID) {
+			e.queues[gameID] = append([]protocol.PlayerInfo{opponent}, e.queues[gameID]...)
+		}
+		if !playerCancelled && !queueHasPlayer(e.queues[gameID], player.ID) {
+			e.queues[gameID] = append(e.queues[gameID], player)
+		}
+	}
+	e.queueMu.Unlock()
+	if err != nil {
 		e.sendError(gameID, opponent.ID, "MATCH_START_FAILED", err.Error())
 		e.sendError(gameID, player.ID, "MATCH_START_FAILED", err.Error())
 	}
+}
+
+func (e *Engine) reserveQueuedMatch(gameID string, players ...protocol.PlayerInfo) (func(), error) {
+	e.roomMu.Lock()
+	defer e.roomMu.Unlock()
+
+	e.queueMu.Lock()
+	for _, player := range players {
+		if e.queueCancelled[userKey(gameID, player.ID)] {
+			e.queueMu.Unlock()
+			return nil, fmt.Errorf("queue entry was cancelled")
+		}
+	}
+	e.queueMu.Unlock()
+
+	for _, player := range players {
+		if ref, exists := e.store.RoomByUser(gameID, player.ID); exists {
+			if room, ok := e.store.Get(gameID, ref.RoomID); ok && room.hasMember(player.ID) {
+				e.queueMu.Lock()
+				e.queueCancelled[userKey(gameID, player.ID)] = true
+				e.queueMu.Unlock()
+				return nil, fmt.Errorf("player entered a room before matchmaking completed")
+			}
+			_ = e.store.DeleteUserRef(gameID, player.ID, ref.RoomID)
+		}
+	}
+	release, reserved := e.reserveRoomUsers(gameID, playerIDs(players)...)
+	if !reserved {
+		return nil, fmt.Errorf("player state changed before matchmaking completed")
+	}
+	return release, nil
+}
+
+func playerIDs(players []protocol.PlayerInfo) []string {
+	ids := make([]string, 0, len(players))
+	for _, player := range players {
+		ids = append(ids, player.ID)
+	}
+	return ids
+}
+
+func queueHasPlayer(queue []protocol.PlayerInfo, userID string) bool {
+	for _, player := range queue {
+		if player.ID == userID {
+			return true
+		}
+	}
+	return false
 }
 
 func (e *Engine) LeaveQueue(gameID string, userID string) {
@@ -362,30 +551,45 @@ func (e *Engine) leaveQueueLocked(gameID string, userID string) {
 			return
 		}
 	}
+	key := userKey(gameID, userID)
+	if e.queuePending[key] {
+		e.queueCancelled[key] = true
+	}
 }
 
 func (e *Engine) CreateRoom(gameID string, owner protocol.PlayerInfo, bet int, password string) {
 	if e.sendActiveMatch(gameID, owner.ID) {
 		return
 	}
-	e.roomMu.Lock()
-	defer e.roomMu.Unlock()
-	if e.sendActiveMatch(gameID, owner.ID) {
-		return
-	}
-
 	if _, err := logic.Get(gameID); err != nil {
 		e.sendError(gameID, owner.ID, "UNKNOWN_GAME", err.Error())
 		return
 	}
-	if bet < 0 {
-		e.sendError(gameID, owner.ID, "INVALID_BET", "bet cannot be negative")
+	if bet < 0 || bet > MaxBet {
+		e.sendError(gameID, owner.ID, "INVALID_BET", "bet is outside the allowed range")
 		return
 	}
 	if len(password) > 64 {
 		e.sendError(gameID, owner.ID, "INVALID_PASSWORD", "room password is too long")
 		return
 	}
+	if !e.ensureCanBet(gameID, owner.ID, bet) {
+		return
+	}
+
+	e.roomMu.Lock()
+	defer e.roomMu.Unlock()
+	if e.sendActiveMatch(gameID, owner.ID) {
+		return
+	}
+	releaseOwner, reserved := e.reserveRoomUsers(gameID, owner.ID)
+	if !reserved {
+		if !e.sendActiveMatch(gameID, owner.ID) {
+			e.sendError(gameID, owner.ID, "ROOM_BUSY", "player state is being updated")
+		}
+		return
+	}
+	defer releaseOwner()
 
 	if ref, ok := e.store.RoomByUser(gameID, owner.ID); ok {
 		if room, ok2 := e.store.Get(gameID, ref.RoomID); ok2 && room.hasMember(owner.ID) {
@@ -465,6 +669,38 @@ func (e *Engine) JoinRoom(gameID string, joiner protocol.PlayerInfo, roomID, pas
 		e.sendError(gameID, joiner.ID, "WRONG_PASSWORD", "wrong password")
 		return
 	}
+	// The room claim keeps this room stable while the potentially remote
+	// balance lookup runs, so unrelated room workflows need not wait.
+	e.roomMu.Unlock()
+	canBet := e.ensureCanBet(gameID, joiner.ID, room.Bet)
+	e.roomMu.Lock()
+	if !canBet {
+		return
+	}
+	releaseUser, reserved := e.reserveRoomUsers(gameID, joiner.ID)
+	if !reserved {
+		if !e.sendActiveMatch(gameID, joiner.ID) {
+			e.sendError(gameID, joiner.ID, "ROOM_BUSY", "player state is being updated")
+		}
+		return
+	}
+	defer releaseUser()
+
+	// The caller could have entered another room while the balance lookup was
+	// in flight. Never overwrite that newer membership.
+	if ref, exists := e.store.RoomByUser(gameID, joiner.ID); exists {
+		if joined, ok := e.store.Get(gameID, ref.RoomID); ok && joined.hasMember(joiner.ID) {
+			e.sendError(gameID, joiner.ID, "ALREADY_IN_ROOM", "leave the current room before joining another")
+			return
+		}
+		_ = e.store.DeleteUserRef(gameID, joiner.ID, ref.RoomID)
+	}
+	freshRoom, exists := e.store.Get(gameID, room.ID)
+	if !exists {
+		e.sendError(gameID, joiner.ID, "ROOM_NOT_FOUND", "room not found")
+		return
+	}
+	room = freshRoom
 	if room.GuestID != "" && room.GuestID != joiner.ID {
 		e.sendError(gameID, joiner.ID, "ROOM_FULL", "room is full")
 		return
@@ -638,29 +874,67 @@ func (e *Engine) StartRoom(gameID, ownerID, roomID string) {
 		e.sendError(gameID, ownerID, "UNKNOWN_GAME", err.Error())
 		return
 	}
+	releasePlayers, reserved := e.reserveRoomUsers(gameID, room.OwnerID, room.GuestID)
+	if !reserved {
+		e.sendError(gameID, ownerID, "ROOM_BUSY", "a room member state is being updated")
+		return
+	}
+	defer releasePlayers()
 	if err := e.store.Delete(gameID, room.ID, room.OwnerID, room.GuestID); err != nil {
 		e.sendError(gameID, ownerID, "ROOM_START_FAILED", err.Error())
 		return
 	}
-	if err := e.startRoomMatch(
+	// The per-room claim remains held while escrow is recorded. Releasing the
+	// global room mutex lets unrelated rooms continue during that bounded I/O.
+	e.roomMu.Unlock()
+	startErr := e.startRoomMatch(
 		gameID,
 		gameLogic,
 		protocol.PlayerInfo{ID: room.OwnerID, Name: room.OwnerName, VipType: room.OwnerVipType},
 		protocol.PlayerInfo{ID: room.GuestID, Name: room.GuestName, VipType: room.GuestVipType},
 		room.Bet,
 		room,
-	); err != nil {
-		if restoreErr := e.store.Save(room); restoreErr != nil {
-			e.logger.Errorw("Failed to restore room after match start failure", "room_id", room.ID, "error", restoreErr)
+	)
+	e.roomMu.Lock()
+	if startErr != nil {
+		if !e.restoreRoomAfterFailedStart(room) {
 			e.emitRoomRemoved(room.GameID, room.ID)
 		} else {
 			e.emitRoomUpsert(room)
 		}
-		e.sendError(gameID, ownerID, "ROOM_START_FAILED", err.Error())
-		e.sendError(gameID, room.GuestID, "ROOM_START_FAILED", err.Error())
+		e.sendError(gameID, ownerID, "ROOM_START_FAILED", startErr.Error())
+		e.sendError(gameID, room.GuestID, "ROOM_START_FAILED", startErr.Error())
 		return
 	}
 	e.emitRoomRemoved(room.GameID, room.ID)
+}
+
+func (e *Engine) restoreRoomAfterFailedStart(room Room) bool {
+	for _, userID := range []string{room.OwnerID, room.GuestID} {
+		if e.hasActiveMatch(room.GameID, userID) {
+			return false
+		}
+		if ref, exists := e.store.RoomByUser(room.GameID, userID); exists {
+			if current, ok := e.store.Get(room.GameID, ref.RoomID); ok && current.hasMember(userID) {
+				return false
+			}
+			_ = e.store.DeleteUserRef(room.GameID, userID, ref.RoomID)
+		}
+	}
+
+	e.queueMu.Lock()
+	defer e.queueMu.Unlock()
+	for _, userID := range []string{room.OwnerID, room.GuestID} {
+		key := userKey(room.GameID, userID)
+		if e.queuePending[key] || queueHasPlayer(e.queues[room.GameID], userID) {
+			return false
+		}
+	}
+	if err := e.store.Save(room); err != nil {
+		e.logger.Errorw("Failed to restore room after match start failure", "room_id", room.ID, "error", err)
+		return false
+	}
+	return true
 }
 
 func (e *Engine) ListRooms(gameID, userID string) {
@@ -1129,14 +1403,38 @@ func (e *Engine) forfeit(gameID, userID, matchID string, leaveAfter bool) {
 }
 
 func (e *Engine) startMatch(gameID string, gameLogic logic.GameLogic, p0, p1 protocol.PlayerInfo, bet int) error {
-	return e.startMatchWithRoom(gameID, gameLogic, p0, p1, bet, nil)
+	return e.startMatchWithRoom(gameID, gameLogic, p0, p1, bet, nil, false, nil)
+}
+
+func (e *Engine) startReservedQueueMatch(
+	gameID string,
+	gameLogic logic.GameLogic,
+	p0, p1 protocol.PlayerInfo,
+	queueKeys ...string,
+) error {
+	return e.startMatchWithRoom(gameID, gameLogic, p0, p1, 0, nil, true, queueKeys)
 }
 
 func (e *Engine) startRoomMatch(gameID string, gameLogic logic.GameLogic, p0, p1 protocol.PlayerInfo, bet int, room Room) error {
-	return e.startMatchWithRoom(gameID, gameLogic, p0, p1, bet, &room)
+	return e.startMatchWithRoom(gameID, gameLogic, p0, p1, bet, &room, true, nil)
 }
 
-func (e *Engine) startMatchWithRoom(gameID string, gameLogic logic.GameLogic, p0, p1 protocol.PlayerInfo, bet int, room *Room) error {
+func (e *Engine) startMatchWithRoom(
+	gameID string,
+	gameLogic logic.GameLogic,
+	p0, p1 protocol.PlayerInfo,
+	bet int,
+	room *Room,
+	allowRoomReservation bool,
+	queueKeys []string,
+) error {
+	if bet < 0 || bet > MaxBet {
+		return fmt.Errorf("bet is outside the allowed range")
+	}
+	settlement := e.currentSettlement()
+	if bet > 0 && settlement == nil {
+		return fmt.Errorf("betting is temporarily unavailable")
+	}
 	if rand.Intn(2) == 1 {
 		p0, p1 = p1, p0
 	}
@@ -1153,22 +1451,120 @@ func (e *Engine) startMatchWithRoom(gameID string, gameLogic logic.GameLogic, p0
 		startedAt:    time.Now(),
 		room:         room,
 	}
-	m.deadline = time.Now().Add(time.Duration(e.turnSeconds) * time.Second)
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	if !e.installMatch(m) {
+	var installed bool
+	queueCancelled := false
+	if len(queueKeys) > 0 {
+		e.queueMu.Lock()
+		for _, key := range queueKeys {
+			if e.queueCancelled[key] {
+				queueCancelled = true
+				break
+			}
+		}
+		if !queueCancelled {
+			installed = e.installReservedRoomMatch(m)
+		}
+		e.queueMu.Unlock()
+	} else if allowRoomReservation {
+		installed = e.installReservedRoomMatch(m)
+	} else {
+		installed = e.installMatch(m)
+	}
+	if queueCancelled {
+		return fmt.Errorf("queue entry was cancelled")
+	}
+	if !installed {
 		return fmt.Errorf("one or more players already have an active match")
 	}
+	var startBalances []SettledBalance
+	if settlement != nil {
+		mode := "queue"
+		if room != nil {
+			mode = "room"
+		}
+		record := MatchRecord{
+			GameID:    gameID,
+			MatchID:   m.ID,
+			Player0ID: m.players[0].ID,
+			Player1ID: m.players[1].ID,
+			Bet:       bet,
+			Mode:      mode,
+			StartedAt: m.startedAt,
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), settlementOperationTimeout)
+		balances, err := settlement.EscrowStart(ctx, record)
+		cancel()
+		if err != nil {
+			m.over = true
+			e.removeMatch(m)
+			abortCtx, abortCancel := context.WithTimeout(context.Background(), settlementOperationTimeout)
+			abortBalances, abortErr := settlement.AbortStart(abortCtx, m.ID)
+			abortCancel()
+			if abortErr != nil {
+				e.logger.Errorw("Failed to abort match after start record error", "match_id", m.ID, "error", abortErr)
+				e.preserveAbortRecovery(m)
+			} else {
+				e.emitSettledBalances(abortBalances, gameID)
+			}
+			return fmt.Errorf("record match start: %w", err)
+		}
+		startBalances = balances
+		m.escrowVerified = true
+	}
+
+	// The first turn begins only after the start record/escrow is durable.
+	m.deadline = time.Now().Add(time.Duration(e.turnSeconds) * time.Second)
 	if err := e.persistMatch(m); err != nil {
 		m.over = true
 		e.removeMatch(m)
-		return fmt.Errorf("persist active match: %w", err)
+		persistErr := fmt.Errorf("persist active match: %w", err)
+		abortSucceeded := settlement == nil
+		if settlement != nil {
+			ctx, cancel := context.WithTimeout(context.Background(), settlementOperationTimeout)
+			balances, abortErr := settlement.AbortStart(ctx, m.ID)
+			cancel()
+			if abortErr != nil {
+				e.logger.Errorw("Failed to abort escrow after active match persistence failure", "match_id", m.ID, "error", abortErr)
+				persistErr = fmt.Errorf("%w; abort match start: %v", persistErr, abortErr)
+				e.preserveAbortRecovery(m)
+			} else {
+				e.emitSettledBalances(balances, gameID)
+				abortSucceeded = true
+			}
+		}
+		if abortSucceeded {
+			if delErr := e.activeStore.Delete(gameID, m.ID, m.players[0].ID, m.players[1].ID); delErr != nil {
+				e.logger.Errorw("Failed to clean up match after persistence failure", "match_id", m.ID, "error", delErr)
+			}
+		}
+		return persistErr
 	}
 	e.clearFinished(userKey(gameID, p0.ID), userKey(gameID, p1.ID))
 	e.scheduleTurnTimer(m)
 	e.sendMatchFound(m, false)
+	e.emitSettledBalances(startBalances, gameID)
 	e.logger.Infow("Match started", "match_id", m.ID, "game_id", gameID, "p0", p0.ID, "p1", p1.ID)
 	return nil
+}
+
+func (e *Engine) preserveAbortRecovery(m *Match) {
+	snapshot, err := e.snapshotForMatch(m)
+	if err != nil {
+		e.logger.Errorw("Failed to prepare abort recovery snapshot", "match_id", m.ID, "error", err)
+		snapshot = ActiveMatchSnapshot{
+			ID:      m.ID,
+			GameID:  m.GameID,
+			Players: append([]protocol.PlayerInfo(nil), m.players...),
+			Status:  matchStatusFinished,
+		}
+	}
+	snapshot.Status = matchStatusAborting
+	if err := e.activeStore.Save(snapshot); err != nil {
+		e.logger.Errorw("Failed to persist abort recovery snapshot", "match_id", m.ID, "error", err)
+	}
+	e.queueAbortSettlement(snapshot)
 }
 
 func (e *Engine) sendMatchFound(m *Match, resumed bool) {
@@ -1254,6 +1650,9 @@ func (e *Engine) finishMatch(m *Match, winnerID string, reason string) {
 	m.winnerID = winnerID
 	m.resultReason = reason
 	m.finishedAt = time.Now()
+	// Block maintenance from reinstalling an older playing snapshot while this
+	// terminal state is being persisted and removed from the live registry.
+	e.markMatchTerminal(m.ID)
 	if m.timer != nil {
 		m.timer.Stop()
 	}
@@ -1263,6 +1662,26 @@ func (e *Engine) finishMatch(m *Match, winnerID string, reason string) {
 	if err := e.persistMatch(m); err != nil {
 		e.logger.Errorw("Failed to persist final match snapshot", "match_id", m.ID, "error", err)
 	}
+	outcome := MatchOutcome{
+		GameID:     m.GameID,
+		MatchID:    m.ID,
+		Player0ID:  m.players[0].ID,
+		Player1ID:  m.players[1].ID,
+		WinnerID:   winnerID,
+		Reason:     reason,
+		Bet:        m.bet,
+		MoveCount:  matchMoveCount(m),
+		FinishedAt: m.finishedAt,
+	}
+	snapshot, snapshotErr := e.snapshotForMatch(m)
+	if snapshotErr != nil {
+		e.logger.Errorw("Failed to prepare final match snapshot for settlement retry", "match_id", m.ID, "error", snapshotErr)
+		snapshot = ActiveMatchSnapshot{
+			ID:      m.ID,
+			GameID:  m.GameID,
+			Players: append([]protocol.PlayerInfo(nil), m.players...),
+		}
+	}
 	var waitingRoom *Room
 	if m.room != nil {
 		room := prepareNextRound(*m.room)
@@ -1271,9 +1690,6 @@ func (e *Engine) finishMatch(m *Match, winnerID string, reason string) {
 		} else {
 			waitingRoom = &room
 		}
-	}
-	if err := e.activeStore.Delete(m.GameID, m.ID, m.players[0].ID, m.players[1].ID); err != nil {
-		e.logger.Errorw("Failed to delete finished active match", "match_id", m.ID, "error", err)
 	}
 	data := protocol.MatchOverData{
 		MatchID:  m.ID,
@@ -1294,6 +1710,17 @@ func (e *Engine) finishMatch(m *Match, winnerID string, reason string) {
 	e.removeMatch(m)
 	for _, p := range m.players {
 		e.toUser(m.GameID, p.ID, protocol.OutEnvelope{Type: protocol.S2CMatchOver, Data: data})
+	}
+	if e.currentSettlement() != nil || m.bet > 0 {
+		e.queueFinishedSettlement(snapshot, outcome)
+	} else if _, err := e.activeStore.DeleteIfStatus(
+		m.GameID,
+		m.ID,
+		matchStatusFinished,
+		m.players[0].ID,
+		m.players[1].ID,
+	); err != nil {
+		e.logger.Errorw("Failed to delete finished active match", "match_id", m.ID, "error", err)
 	}
 	if waitingRoom != nil {
 		e.emitRoomUpsert(*waitingRoom)
@@ -1320,9 +1747,17 @@ func (e *Engine) scheduleFinishedCleanup(key, matchID string) {
 }
 
 func (e *Engine) persistMatch(m *Match) error {
+	snapshot, err := e.snapshotForMatch(m)
+	if err != nil {
+		return err
+	}
+	return e.activeStore.Save(snapshot)
+}
+
+func (e *Engine) snapshotForMatch(m *Match) (ActiveMatchSnapshot, error) {
 	state, err := json.Marshal(m.state)
 	if err != nil {
-		return fmt.Errorf("marshal match state: %w", err)
+		return ActiveMatchSnapshot{}, fmt.Errorf("marshal match state: %w", err)
 	}
 	status := matchStatusPlaying
 	if m.over {
@@ -1351,7 +1786,7 @@ func (e *Engine) persistMatch(m *Match) error {
 	if !m.finishedAt.IsZero() {
 		snapshot.FinishedAt = m.finishedAt.UnixMilli()
 	}
-	return e.activeStore.Save(snapshot)
+	return snapshot, nil
 }
 
 func (e *Engine) restoreActiveMatches() {
@@ -1367,77 +1802,320 @@ func (e *Engine) restoreActiveMatches() {
 				e.restoreFinishedSnapshot(snapshot)
 				continue
 			}
-			if snapshot.Status != matchStatusPlaying {
-				e.logger.Warnw("Skipped active match with unknown status", "match_id", snapshot.ID, "status", snapshot.Status)
+			if snapshot.Status == matchStatusAborting {
+				e.queueAbortSettlement(snapshot)
 				continue
 			}
-			if snapshot.ID == "" || snapshot.GameID != gameID || len(snapshot.Players) != 2 || snapshot.TurnIndex < 0 || snapshot.TurnIndex > 1 {
-				e.logger.Warnw("Skipped invalid active match snapshot", "game_id", gameID, "match_id", snapshot.ID)
-				continue
+			didRestore, retry := e.restorePlayingSnapshot(snapshot, gameID)
+			if retry {
+				e.queuePlayingRestore(snapshot)
 			}
-			gameLogic, err := logic.Get(snapshot.GameID)
-			if err != nil {
-				e.logger.Errorw("Skipped active match with unknown game", "match_id", snapshot.ID, "error", err)
-				continue
+			if didRestore {
+				restored++
 			}
-			if snapshot.StateVersion != gameLogic.StateVersion() {
-				e.logger.Errorw("Skipped active match with unsupported state version",
-					"match_id", snapshot.ID,
-					"saved_version", snapshot.StateVersion,
-					"current_version", gameLogic.StateVersion(),
-				)
-				continue
-			}
-			state, err := gameLogic.DecodeState(snapshot.State)
-			if err != nil {
-				e.logger.Errorw("Failed to decode active match state", "match_id", snapshot.ID, "error", err)
-				continue
-			}
-			startedAt := time.UnixMilli(snapshot.StartedAt)
-			if snapshot.StartedAt <= 0 {
-				startedAt = time.Now()
-			}
-			deadline := time.UnixMilli(snapshot.TurnDeadline)
-			if snapshot.TurnDeadline <= 0 {
-				deadline = time.Now().Add(time.Duration(e.turnSeconds) * time.Second)
-			}
-			pausedRemain := time.Duration(snapshot.PausedRemainMillis) * time.Millisecond
-			if pausedRemain <= 0 {
-				pausedRemain = time.Until(deadline)
-				if pausedRemain < time.Second {
-					pausedRemain = time.Second
-				}
-			}
-			m := &Match{
-				ID:           snapshot.ID,
-				GameID:       snapshot.GameID,
-				logic:        gameLogic,
-				players:      snapshot.Players,
-				state:        state,
-				turnIdx:      snapshot.TurnIndex,
-				deadline:     deadline,
-				bet:          snapshot.Bet,
-				disconnected: map[int]bool{0: true, 1: true},
-				pausedRemain: pausedRemain,
-				startedAt:    startedAt,
-				graceGen:     1,
-				room:         cloneRoom(snapshot.Room),
-			}
-			m.graceDeadline = time.Now().Add(time.Duration(e.graceSeconds) * time.Second)
-			m.mu.Lock()
-			if !e.installMatch(m) {
-				m.mu.Unlock()
-				e.logger.Warnw("Skipped active match because its id or a player is already restored", "match_id", snapshot.ID)
-				continue
-			}
-			e.restoreTimersLocked(m)
-			m.mu.Unlock()
-			restored++
 		}
 	}
 	if restored > 0 {
 		e.logger.Infow("Restored active matches from Redis", "count", restored)
 	}
+}
+
+func (e *Engine) restorePlayingSnapshot(snapshot ActiveMatchSnapshot, expectedGameID string) (bool, bool) {
+	if snapshot.Status != matchStatusPlaying {
+		e.logger.Warnw("Skipped active match with unknown status", "match_id", snapshot.ID, "status", snapshot.Status)
+		return false, false
+	}
+	if snapshot.ID == "" || snapshot.GameID != expectedGameID || len(snapshot.Players) != 2 ||
+		snapshot.TurnIndex < 0 || snapshot.TurnIndex > 1 {
+		e.logger.Warnw("Skipped invalid active match snapshot", "game_id", expectedGameID, "match_id", snapshot.ID)
+		return false, false
+	}
+	if e.matchByID(snapshot.ID) != nil {
+		return false, false
+	}
+	current, exists, err := e.activeStore.Get(expectedGameID, snapshot.ID)
+	if err != nil {
+		e.logger.Errorw("Failed to revalidate active match before restore", "game_id", expectedGameID, "match_id", snapshot.ID, "error", err)
+		return false, true
+	}
+	if !exists {
+		return false, false
+	}
+	if current.Status == matchStatusFinished {
+		e.handleFinishedRestore(current)
+		return false, false
+	}
+	if current.Status != matchStatusPlaying {
+		e.logger.Warnw("Skipped active match with unknown current status", "match_id", current.ID, "status", current.Status)
+		return false, false
+	}
+	if current.ID != snapshot.ID || current.GameID != expectedGameID || len(current.Players) != 2 ||
+		current.TurnIndex < 0 || current.TurnIndex > 1 {
+		e.logger.Warnw("Skipped invalid current active match snapshot", "game_id", expectedGameID, "match_id", current.ID)
+		return false, false
+	}
+	snapshot = current
+	settlement := e.currentSettlement()
+	if snapshot.Bet > 0 && settlement == nil {
+		// A paid match must never become playable before its escrow can be
+		// verified. SetSettlement triggers reconciliation once it is available.
+		return false, false
+	}
+	gameLogic, err := logic.Get(snapshot.GameID)
+	if err != nil {
+		e.logger.Errorw("Skipped active match with unknown game", "match_id", snapshot.ID, "error", err)
+		e.abortUnrecoverableRestore(snapshot, settlement)
+		return false, false
+	}
+	if snapshot.StateVersion != gameLogic.StateVersion() {
+		e.logger.Errorw("Skipped active match with unsupported state version",
+			"match_id", snapshot.ID,
+			"saved_version", snapshot.StateVersion,
+			"current_version", gameLogic.StateVersion(),
+		)
+		e.abortUnrecoverableRestore(snapshot, settlement)
+		return false, false
+	}
+	state, err := gameLogic.DecodeState(snapshot.State)
+	if err != nil {
+		e.logger.Errorw("Failed to decode active match state", "match_id", snapshot.ID, "error", err)
+		e.abortUnrecoverableRestore(snapshot, settlement)
+		return false, false
+	}
+	startedAt := time.UnixMilli(snapshot.StartedAt)
+	if snapshot.StartedAt <= 0 {
+		startedAt = time.Now()
+	}
+	deadline := time.UnixMilli(snapshot.TurnDeadline)
+	if snapshot.TurnDeadline <= 0 {
+		deadline = time.Now().Add(time.Duration(e.turnSeconds) * time.Second)
+	}
+	pausedRemain := time.Duration(snapshot.PausedRemainMillis) * time.Millisecond
+	if pausedRemain <= 0 {
+		pausedRemain = time.Until(deadline)
+		if pausedRemain < time.Second {
+			pausedRemain = time.Second
+		}
+	}
+	m := &Match{
+		ID:           snapshot.ID,
+		GameID:       snapshot.GameID,
+		logic:        gameLogic,
+		players:      snapshot.Players,
+		state:        state,
+		turnIdx:      snapshot.TurnIndex,
+		deadline:     deadline,
+		bet:          snapshot.Bet,
+		disconnected: map[int]bool{0: true, 1: true},
+		pausedRemain: pausedRemain,
+		startedAt:    startedAt,
+		graceGen:     1,
+		room:         cloneRoom(snapshot.Room),
+	}
+	m.graceDeadline = time.Now().Add(time.Duration(e.graceSeconds) * time.Second)
+
+	// Install a locked provisional match before touching escrow. That makes
+	// room, queue, and concurrent restore transitions observe one owner for
+	// these users while the database call is in flight.
+	e.roomMu.Lock()
+	roomConflict := e.snapshotHasRoomMemberLocked(snapshot)
+	m.mu.Lock()
+	installResult := matchPlayerConflict
+	if !roomConflict {
+		installResult = e.installRestoredMatch(m)
+	}
+	e.roomMu.Unlock()
+	switch installResult {
+	case matchAlreadyInstalled, matchTerminal:
+		m.mu.Unlock()
+		return false, false
+	case matchRoomTransition:
+		m.mu.Unlock()
+		return false, true
+	case matchPlayerConflict:
+		m.mu.Unlock()
+		e.logger.Warnw("Skipped active match because its id or a player is already restored", "match_id", snapshot.ID)
+		return false, e.abortConflictingRestore(snapshot, settlement)
+	}
+
+	if settlement != nil {
+		record, ok := recordFromSnapshot(snapshot)
+		if !ok {
+			m.over = true
+			e.removeMatch(m)
+			m.mu.Unlock()
+			e.abortUnrecoverableRestore(snapshot, settlement)
+			return false, false
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), settlementOperationTimeout)
+		balances, escrowErr := settlement.EscrowStart(ctx, record)
+		cancel()
+		if escrowErr != nil {
+			m.over = true
+			e.removeMatch(m)
+			m.mu.Unlock()
+			e.logger.Errorw("Skipped restored match because its escrow could not be verified", "match_id", snapshot.ID, "error", escrowErr)
+			if errors.Is(escrowErr, ErrEscrowClosed) {
+				return false, !e.discardRestoredSnapshot(snapshot, nil)
+			}
+			if errors.Is(escrowErr, ErrSettlementConflict) {
+				return false, false
+			}
+			return false, true
+		}
+		e.emitSettledBalances(balances, snapshot.GameID)
+		m.escrowVerified = true
+	}
+
+	e.restoreTimersLocked(m)
+	m.mu.Unlock()
+	return true, false
+}
+
+func (e *Engine) snapshotHasRoomMemberLocked(snapshot ActiveMatchSnapshot) bool {
+	for _, player := range snapshot.Players {
+		ref, exists := e.store.RoomByUser(snapshot.GameID, player.ID)
+		if !exists {
+			continue
+		}
+		if room, ok := e.store.Get(snapshot.GameID, ref.RoomID); ok && room.hasMember(player.ID) {
+			return true
+		}
+		_ = e.store.DeleteUserRef(snapshot.GameID, player.ID, ref.RoomID)
+	}
+	return false
+}
+
+func (e *Engine) abortConflictingRestore(snapshot ActiveMatchSnapshot, settlement Settlement) bool {
+	if settlement == nil {
+		// Keep zero-bet recovery state until settlement is available rather
+		// than deleting a possible durable match record blindly.
+		return false
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), settlementOperationTimeout)
+	balances, abortErr := settlement.AbortStart(ctx, snapshot.ID)
+	cancel()
+	if abortErr != nil {
+		e.logger.Errorw("Failed to abort conflicting restored match", "match_id", snapshot.ID, "error", abortErr)
+		return !errors.Is(abortErr, ErrSettlementConflict)
+	}
+	e.emitSettledBalances(balances, snapshot.GameID)
+	if !e.restoreSnapshotRoom(snapshot) {
+		return true
+	}
+	return !e.deleteSnapshot(snapshot)
+}
+
+func (e *Engine) abortUnrecoverableRestore(snapshot ActiveMatchSnapshot, settlement Settlement) {
+	if settlement == nil {
+		return
+	}
+	if e.abortConflictingRestore(snapshot, settlement) {
+		snapshot.Status = matchStatusAborting
+		if err := e.activeStore.Save(snapshot); err != nil {
+			e.logger.Errorw("Failed to persist unrecoverable match cleanup", "match_id", snapshot.ID, "error", err)
+		}
+		e.queueAbortSettlement(snapshot)
+	}
+}
+
+func (e *Engine) handleFinishedRestore(snapshot ActiveMatchSnapshot) {
+	e.markMatchTerminal(snapshot.ID)
+	e.restoreFinishedSnapshot(snapshot)
+	if outcome, ok := outcomeFromSnapshot(snapshot); ok && e.currentSettlement() != nil {
+		e.queueFinishedSettlement(snapshot, outcome)
+	}
+}
+
+func (e *Engine) discardRestoredSnapshot(snapshot ActiveMatchSnapshot, match *Match) bool {
+	current, exists, err := e.activeStore.Get(snapshot.GameID, snapshot.ID)
+	if err != nil {
+		e.logger.Errorw("Failed to revalidate discarded match snapshot", "match_id", snapshot.ID, "error", err)
+		return false
+	}
+	if exists && current.Status != snapshot.Status {
+		// A newer lifecycle state owns both the snapshot and any room rollback.
+		return true
+	}
+	if match != nil {
+		match.mu.Lock()
+		if match.over {
+			match.mu.Unlock()
+			// The live match completed while escrow verification was in flight.
+			// Its finished snapshot/room now owns cleanup; never apply the
+			// older playing snapshot over that terminal state.
+			return true
+		}
+		match.over = true
+		e.invalidateTurnTimer(match)
+		if match.graceTimer != nil {
+			match.graceTimer.Stop()
+			match.graceTimer = nil
+		}
+		match.mu.Unlock()
+		e.removeMatch(match)
+	}
+	if !e.restoreSnapshotRoom(snapshot) {
+		return false
+	}
+	return e.deleteSnapshot(snapshot)
+}
+
+func (e *Engine) restoreSnapshotRoom(snapshot ActiveMatchSnapshot) bool {
+	if snapshot.Room == nil {
+		return true
+	}
+	room := prepareNextRound(*snapshot.Room)
+	memberIDs := []string{room.OwnerID}
+	if room.GuestID != "" {
+		memberIDs = append(memberIDs, room.GuestID)
+	}
+
+	e.roomMu.Lock()
+	defer e.roomMu.Unlock()
+	release, reserved := e.reserveRoomUsers(room.GameID, memberIDs...)
+	if !reserved {
+		for _, userID := range memberIDs {
+			if e.matchForUser(room.GameID, userID) != nil {
+				return true
+			}
+			if ref, exists := e.store.RoomByUser(room.GameID, userID); exists {
+				if current, ok := e.store.Get(room.GameID, ref.RoomID); ok && current.hasMember(userID) {
+					return true
+				}
+			}
+		}
+		// An in-flight room transition owns a reservation but has not committed
+		// canonical state yet. Retain the snapshot and retry after it resolves.
+		return false
+	}
+	defer release()
+
+	for _, userID := range memberIDs {
+		if e.hasActiveMatch(room.GameID, userID) {
+			return true
+		}
+		if ref, exists := e.store.RoomByUser(room.GameID, userID); exists {
+			if current, ok := e.store.Get(room.GameID, ref.RoomID); ok && current.hasMember(userID) {
+				return true
+			}
+			_ = e.store.DeleteUserRef(room.GameID, userID, ref.RoomID)
+		}
+	}
+
+	e.queueMu.Lock()
+	defer e.queueMu.Unlock()
+	for _, userID := range memberIDs {
+		key := userKey(room.GameID, userID)
+		if e.queuePending[key] || queueHasPlayer(e.queues[room.GameID], userID) {
+			return true
+		}
+	}
+	if err := e.store.Save(room); err != nil {
+		e.logger.Errorw("Failed to restore waiting room from match snapshot", "match_id", snapshot.ID, "room_id", room.ID, "error", err)
+		return false
+	}
+	return true
 }
 
 func (e *Engine) restoreTimersLocked(m *Match) {
@@ -1463,26 +2141,30 @@ func (e *Engine) restoreTimersLocked(m *Match) {
 	})
 }
 
-func (e *Engine) deleteSnapshot(snapshot ActiveMatchSnapshot) {
+func (e *Engine) deleteSnapshot(snapshot ActiveMatchSnapshot) bool {
 	userIDs := make([]string, 0, len(snapshot.Players))
 	for _, player := range snapshot.Players {
 		userIDs = append(userIDs, player.ID)
 	}
-	if err := e.activeStore.Delete(snapshot.GameID, snapshot.ID, userIDs...); err != nil {
+	deleted, err := e.activeStore.DeleteIfStatus(snapshot.GameID, snapshot.ID, snapshot.Status, userIDs...)
+	if err != nil {
 		e.logger.Errorw("Failed to delete stale match snapshot", "match_id", snapshot.ID, "error", err)
+		return false
+	} else if !deleted {
+		e.logger.Infow("Kept match snapshot because its lifecycle status changed", "match_id", snapshot.ID, "expected_status", snapshot.Status)
 	}
+	return true
 }
 
 func (e *Engine) restoreFinishedSnapshot(snapshot ActiveMatchSnapshot) {
 	gameLogic, err := logic.Get(snapshot.GameID)
 	if err != nil || snapshot.StateVersion != gameLogic.StateVersion() {
-		e.deleteSnapshot(snapshot)
+		e.logger.Errorw("Could not restore finished match result because its game state is unsupported", "game_id", snapshot.GameID, "match_id", snapshot.ID)
 		return
 	}
 	state, err := gameLogic.DecodeState(snapshot.State)
 	if err != nil {
 		e.logger.Errorw("Failed to decode finished match state", "match_id", snapshot.ID, "error", err)
-		e.deleteSnapshot(snapshot)
 		return
 	}
 	data := protocol.MatchOverData{
@@ -1492,11 +2174,8 @@ func (e *Engine) restoreFinishedSnapshot(snapshot ActiveMatchSnapshot) {
 		State:    state,
 		Bet:      snapshot.Bet,
 	}
-	if snapshot.Room != nil {
-		room := prepareNextRound(*snapshot.Room)
-		if err := e.store.Save(room); err != nil {
-			e.logger.Errorw("Failed to restore waiting room from finished match", "match_id", snapshot.ID, "room_id", room.ID, "error", err)
-		}
+	if !e.restoreSnapshotRoom(snapshot) {
+		e.logger.Errorw("Deferred waiting-room restore from finished match", "match_id", snapshot.ID)
 	}
 	keys := make([]string, 0, len(snapshot.Players))
 	e.finishedMu.Lock()
@@ -1509,7 +2188,6 @@ func (e *Engine) restoreFinishedSnapshot(snapshot ActiveMatchSnapshot) {
 	for _, key := range keys {
 		e.scheduleFinishedCleanup(key, snapshot.ID)
 	}
-	e.deleteSnapshot(snapshot)
 }
 
 func prepareNextRound(room Room) Room {

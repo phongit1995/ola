@@ -7,6 +7,8 @@ import (
 
 	"ola-chat-server/internal/game/protocol"
 	"ola-chat-server/internal/services"
+
+	"github.com/redis/go-redis/v9"
 )
 
 const (
@@ -16,6 +18,7 @@ const (
 	activeMatchesKey    = "GAME:%s:ACTIVE_MATCHES"
 	matchStatusPlaying  = "playing"
 	matchStatusFinished = "finished"
+	matchStatusAborting = "aborting"
 )
 
 type ActiveMatchSnapshot struct {
@@ -41,6 +44,8 @@ type ActiveMatchSnapshot struct {
 type ActiveMatchRepository interface {
 	Save(snapshot ActiveMatchSnapshot) error
 	Delete(gameID, matchID string, userIDs ...string) error
+	DeleteIfStatus(gameID, matchID, status string, userIDs ...string) (bool, error)
+	Get(gameID, matchID string) (ActiveMatchSnapshot, bool, error)
 	List(gameID string) ([]ActiveMatchSnapshot, error)
 }
 
@@ -102,6 +107,60 @@ return 1`
 		return fmt.Errorf("delete active match: %w", err)
 	}
 	return nil
+}
+
+func (s *MatchStore) DeleteIfStatus(gameID, matchID, status string, userIDs ...string) (bool, error) {
+	ctx, cancel := gameRedisContext(s.cache)
+	defer cancel()
+	keys := []string{
+		fmt.Sprintf(activeMatchKey, gameID, matchID),
+		fmt.Sprintf(activeMatchesKey, gameID),
+	}
+	for _, userID := range userIDs {
+		if userID != "" {
+			keys = append(keys, fmt.Sprintf(userMatchKey, gameID, userID))
+		}
+	}
+	const deleteMatchIfStatusScript = `
+local raw = redis.call("GET", KEYS[1])
+if raw then
+  local snapshot = cjson.decode(raw)
+  if snapshot["status"] ~= ARGV[2] then
+    return 0
+  end
+end
+redis.call("DEL", KEYS[1])
+redis.call("SREM", KEYS[2], ARGV[1])
+for i = 3, #KEYS do
+  if redis.call("GET", KEYS[i]) == ARGV[1] then
+    redis.call("DEL", KEYS[i])
+  end
+end
+return 1`
+	deleted, err := s.cache.GetClient().
+		Eval(ctx, deleteMatchIfStatusScript, keys, matchID, status).
+		Int()
+	if err != nil {
+		return false, fmt.Errorf("conditionally delete active match: %w", err)
+	}
+	return deleted == 1, nil
+}
+
+func (s *MatchStore) Get(gameID, matchID string) (ActiveMatchSnapshot, bool, error) {
+	ctx, cancel := gameRedisContext(s.cache)
+	defer cancel()
+	raw, err := s.cache.GetClient().Get(ctx, fmt.Sprintf(activeMatchKey, gameID, matchID)).Bytes()
+	if err != nil {
+		if err == redis.Nil {
+			return ActiveMatchSnapshot{}, false, nil
+		}
+		return ActiveMatchSnapshot{}, false, fmt.Errorf("load active match: %w", err)
+	}
+	var snapshot ActiveMatchSnapshot
+	if err := json.Unmarshal(raw, &snapshot); err != nil {
+		return ActiveMatchSnapshot{}, false, fmt.Errorf("decode active match: %w", err)
+	}
+	return snapshot, true, nil
 }
 
 func (s *MatchStore) List(gameID string) ([]ActiveMatchSnapshot, error) {
