@@ -1,4 +1,8 @@
 {
+  "arcade": {
+    "minimize": "Minimize",
+    "restore": "Restore"
+  },
   "common": {
     "clear": "Clear",
     "showPassword": "Show password",

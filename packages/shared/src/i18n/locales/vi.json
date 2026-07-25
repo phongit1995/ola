@@ -1,4 +1,8 @@
 {
+  "arcade": {
+    "minimize": "Thu nhỏ",
+    "restore": "Mở lại"
+  },
   "common": {
     "clear": "Xoá",
     "showPassword": "Hiện mật khẩu",
