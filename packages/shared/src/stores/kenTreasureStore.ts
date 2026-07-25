@@ -28,6 +28,7 @@ interface KenTreasureState {
   show: (payload: { id: string; expiresAt: string }) => void;
   open: (id: string) => Promise<void>;
   dismiss: (id: string) => void;
+  reset: () => void;
 }
 
 function hasActiveModal(chests: Record<string, KenTreasureChest>): boolean {
@@ -66,6 +67,8 @@ export const useKenTreasureStore = create<KenTreasureState>((set, get) => ({
       KenTreasureService.open(id).catch(() => null),
       new Promise<void>((resolve) => setTimeout(() => resolve(), OPEN_ANIM_MS)),
     ]);
+    const current = get().chests[id];
+    if (!current || current.phase !== 'opening') return;
     if (!result) {
       toast.error(i18n.t('kenTreasure.openError'));
       set((state) => ({ chests: patchChests(state.chests, id, { phase: 'closed' }) }));
@@ -86,6 +89,7 @@ export const useKenTreasureStore = create<KenTreasureState>((set, get) => ({
       delete next[id];
       return { chests: next };
     }),
+  reset: () => set({ chests: {} }),
 }));
 
 interface KenTreasurePositionState {

@@ -1,4 +1,10 @@
-import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+} from 'react';
 import { useTranslation } from 'react-i18next';
 import { ensureFreshToken } from '@ola/shared/api';
 import { Avatar } from '@components';
@@ -10,7 +16,13 @@ interface GameBridgeMessage {
   type?: string;
 }
 
+interface BubblePosition {
+  x: number;
+  y: number;
+}
+
 interface BubbleDrag {
+  pointerId: number;
   startX: number;
   startY: number;
   baseX: number;
@@ -23,9 +35,46 @@ interface BubbleDrag {
 }
 
 const DRAG_THRESHOLD = 4;
+const BUBBLE_POSITION_STORAGE_KEY = 'ola.arcade.bubble-position';
+const DEFAULT_BUBBLE_POSITION: BubblePosition = { x: 0, y: 0 };
 
 function clamp(value: number, min: number, max: number): number {
-  return Math.min(Math.max(value, min), Math.max(min, max));
+  if (min > max) return (min + max) / 2;
+  return Math.min(Math.max(value, min), max);
+}
+
+function readStoredBubblePosition(): BubblePosition {
+  if (typeof window === 'undefined') return DEFAULT_BUBBLE_POSITION;
+  try {
+    const raw = window.localStorage.getItem(BUBBLE_POSITION_STORAGE_KEY);
+    if (!raw) return DEFAULT_BUBBLE_POSITION;
+    const parsed = JSON.parse(raw) as Partial<BubblePosition>;
+    if (!Number.isFinite(parsed.x) || !Number.isFinite(parsed.y)) {
+      return DEFAULT_BUBBLE_POSITION;
+    }
+    return { x: parsed.x as number, y: parsed.y as number };
+  } catch {
+    return DEFAULT_BUBBLE_POSITION;
+  }
+}
+
+function storeBubblePosition(position: BubblePosition) {
+  try {
+    window.localStorage.setItem(
+      BUBBLE_POSITION_STORAGE_KEY,
+      JSON.stringify(position)
+    );
+  } catch {
+    // Storage can be unavailable in private/embedded browser contexts.
+  }
+}
+
+function applyBubbleTransform(
+  element: HTMLDivElement | null,
+  position: BubblePosition
+) {
+  if (!element) return;
+  element.style.transform = `translate3d(${position.x}px, ${position.y}px, 0)`;
 }
 
 export function ArcadeOverlay() {
@@ -37,8 +86,16 @@ export function ArcadeOverlay() {
   const restore = useArcadeOverlayStore((s) => s.restore);
   const close = useArcadeOverlayStore((s) => s.close);
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const [bubblePos, setBubblePos] = useState({ x: 0, y: 0 });
+  const bubbleRef = useRef<HTMLDivElement>(null);
+  const [bubblePos, setBubblePos] = useState(readStoredBubblePosition);
+  const bubblePosRef = useRef(bubblePos);
+  const pendingBubblePosRef = useRef(bubblePos);
+  const dragFrameRef = useRef<number | null>(null);
   const dragRef = useRef<BubbleDrag | null>(null);
+  const setBubbleElement = useCallback((element: HTMLDivElement | null) => {
+    bubbleRef.current = element;
+    applyBubbleTransform(element, bubblePosRef.current);
+  }, []);
 
   useEffect(() => {
     if (!active) return;
@@ -52,7 +109,7 @@ export function ArcadeOverlay() {
         const token = await ensureFreshToken();
         iframeRef.current?.contentWindow?.postMessage(
           { source: 'ola-host', type: 'token', data: token },
-          gameOrigin,
+          gameOrigin
         );
       }
       if (data.type === 'exit') {
@@ -64,9 +121,110 @@ export function ArcadeOverlay() {
     return () => window.removeEventListener('message', onMessage);
   }, [active, close]);
 
+  useEffect(
+    () => () => {
+      if (dragFrameRef.current != null)
+        cancelAnimationFrame(dragFrameRef.current);
+    },
+    []
+  );
+
+  useEffect(() => {
+    if (!minimized) return;
+    const el = bubbleRef.current;
+    if (!el) return;
+    const bubbleElement: HTMLDivElement = el;
+    const container = bubbleElement.offsetParent as HTMLElement | null;
+
+    function keepBubbleInBounds() {
+      if (dragRef.current || dragFrameRef.current != null) return;
+      const rect = bubbleElement.getBoundingClientRect();
+      const bounds = container?.getBoundingClientRect();
+      const left = bounds?.left ?? 0;
+      const top = bounds?.top ?? 0;
+      const width = bounds?.width ?? window.innerWidth;
+      const height = bounds?.height ?? window.innerHeight;
+      const startLeft = rect.left - left;
+      const startTop = rect.top - top;
+      const next = {
+        x:
+          bubblePosRef.current.x +
+          clamp(0, -startLeft, width - rect.width - startLeft),
+        y:
+          bubblePosRef.current.y +
+          clamp(0, -startTop, height - rect.height - startTop),
+      };
+      if (
+        next.x === bubblePosRef.current.x &&
+        next.y === bubblePosRef.current.y
+      )
+        return;
+      bubblePosRef.current = next;
+      pendingBubblePosRef.current = next;
+      applyBubbleTransform(bubbleElement, next);
+      setBubblePos(next);
+      storeBubblePosition(next);
+    }
+
+    const initialFrame = requestAnimationFrame(keepBubbleInBounds);
+    const resizeObserver =
+      typeof ResizeObserver === 'undefined'
+        ? null
+        : new ResizeObserver(keepBubbleInBounds);
+    if (container) resizeObserver?.observe(container);
+    window.addEventListener('resize', keepBubbleInBounds);
+    window.visualViewport?.addEventListener('resize', keepBubbleInBounds);
+    return () => {
+      cancelAnimationFrame(initialFrame);
+      resizeObserver?.disconnect();
+      window.removeEventListener('resize', keepBubbleInBounds);
+      window.visualViewport?.removeEventListener('resize', keepBubbleInBounds);
+    };
+  }, [minimized]);
+
   if (!active) return null;
 
+  function commitPendingBubblePosition() {
+    if (dragFrameRef.current != null) {
+      cancelAnimationFrame(dragFrameRef.current);
+      dragFrameRef.current = null;
+    }
+    const next = pendingBubblePosRef.current;
+    bubblePosRef.current = next;
+    applyBubbleTransform(bubbleRef.current, next);
+    setBubblePos((current) =>
+      current.x === next.x && current.y === next.y ? current : next
+    );
+    storeBubblePosition(next);
+  }
+
+  function scheduleBubblePosition(next: BubblePosition) {
+    pendingBubblePosRef.current = next;
+    if (dragFrameRef.current != null) return;
+    dragFrameRef.current = requestAnimationFrame(() => {
+      dragFrameRef.current = null;
+      const pending = pendingBubblePosRef.current;
+      bubblePosRef.current = pending;
+      applyBubbleTransform(bubbleRef.current, pending);
+    });
+  }
+
+  function positionFromPointer(
+    drag: BubbleDrag,
+    clientX: number,
+    clientY: number
+  ) {
+    const dx = clientX - drag.startX;
+    const dy = clientY - drag.startY;
+    return {
+      x: drag.baseX + clamp(dx, drag.minX, drag.maxX),
+      y: drag.baseY + clamp(dy, drag.minY, drag.maxY),
+    };
+  }
+
   function handleBubbleDown(event: ReactPointerEvent<HTMLDivElement>) {
+    if (!event.isPrimary || event.button !== 0 || dragRef.current) return;
+    event.preventDefault();
     const el = event.currentTarget;
     const container = el.offsetParent as HTMLElement | null;
     const rect = el.getBoundingClientRect();
@@ -78,10 +236,11 @@ export function ArcadeOverlay() {
     const startLeft = rect.left - left;
     const startTop = rect.top - top;
     dragRef.current = {
+      pointerId: event.pointerId,
       startX: event.clientX,
       startY: event.clientY,
-      baseX: bubblePos.x,
-      baseY: bubblePos.y,
+      baseX: bubblePosRef.current.x,
+      baseY: bubblePosRef.current.y,
       minX: -startLeft,
       maxX: width - rect.width - startLeft,
       minY: -startTop,
@@ -93,28 +252,57 @@ export function ArcadeOverlay() {
 
   function handleBubbleMove(event: ReactPointerEvent<HTMLDivElement>) {
     const drag = dragRef.current;
-    if (!drag) return;
+    if (!drag || drag.pointerId !== event.pointerId) return;
     const dx = event.clientX - drag.startX;
     const dy = event.clientY - drag.startY;
-    if (Math.abs(dx) > DRAG_THRESHOLD || Math.abs(dy) > DRAG_THRESHOLD) drag.moved = true;
+    if (Math.hypot(dx, dy) > DRAG_THRESHOLD) drag.moved = true;
     if (!drag.moved) return;
-    setBubblePos({
-      x: drag.baseX + clamp(dx, drag.minX, drag.maxX),
-      y: drag.baseY + clamp(dy, drag.minY, drag.maxY),
-    });
+    event.preventDefault();
+    scheduleBubblePosition(
+      positionFromPointer(drag, event.clientX, event.clientY)
+    );
   }
 
   function handleBubbleUp(event: ReactPointerEvent<HTMLDivElement>) {
     const drag = dragRef.current;
-    if (!drag) return;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    const dx = event.clientX - drag.startX;
+    const dy = event.clientY - drag.startY;
+    const moved = drag.moved || Math.hypot(dx, dy) > DRAG_THRESHOLD;
+    if (moved) {
+      pendingBubblePosRef.current = positionFromPointer(
+        drag,
+        event.clientX,
+        event.clientY
+      );
+      commitPendingBubblePosition();
+    }
     dragRef.current = null;
-    event.currentTarget.releasePointerCapture(event.pointerId);
-    if (!drag.moved) restore();
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    if (!moved) restore();
+  }
+
+  function handleBubbleCancel(event: ReactPointerEvent<HTMLDivElement>) {
+    const drag = dragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    dragRef.current = null;
+    commitPendingBubblePosition();
+  }
+
+  function handleBubbleLostCapture(event: ReactPointerEvent<HTMLDivElement>) {
+    const drag = dragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    dragRef.current = null;
+    commitPendingBubblePosition();
   }
 
   return (
     <>
-      <div className={`absolute inset-0 z-50 bg-[#0f0f23] ${minimized ? 'invisible' : ''}`}>
+      <div
+        className={`absolute inset-0 z-50 bg-[#0f0f23] ${minimized ? 'invisible' : ''}`}
+      >
         <button
           type="button"
           aria-label={t('arcade.minimize')}
@@ -134,30 +322,35 @@ export function ArcadeOverlay() {
 
       {minimized && (
         <div
+          ref={setBubbleElement}
           role="button"
           tabIndex={0}
           aria-label={t('arcade.restore')}
           onPointerDown={handleBubbleDown}
           onPointerMove={handleBubbleMove}
           onPointerUp={handleBubbleUp}
+          onPointerCancel={handleBubbleCancel}
+          onLostPointerCapture={handleBubbleLostCapture}
+          onDragStart={(event) => event.preventDefault()}
           onKeyDown={(event) => {
             if (event.key === 'Enter' || event.key === ' ') {
               event.preventDefault();
               restore();
             }
           }}
-          style={{ transform: `translate(${bubblePos.x}px, ${bubblePos.y}px)` }}
-          className={`absolute right-4 bottom-24 z-50 flex h-14 w-14 cursor-grab touch-none select-none items-center justify-center rounded-full border-2 border-white bg-white shadow-lg active:cursor-grabbing ${
+          className={`absolute right-4 bottom-24 z-50 flex h-14 w-14 cursor-grab touch-none select-none items-center justify-center rounded-full border-2 border-white bg-white shadow-lg [will-change:transform] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ola-accent active:cursor-grabbing ${
             notify ? 'animate-pulse ring-4 ring-ola-accent' : ''
           }`}
         >
-          <Avatar
-            name={active.name}
-            color={colorForName(active.name)}
-            src={active.iconUrl}
-            size={52}
-            rounded
-          />
+          <span className="pointer-events-none">
+            <Avatar
+              name={active.name}
+              color={colorForName(active.name)}
+              src={active.iconUrl}
+              size={52}
+              rounded
+            />
+          </span>
           {notify && (
             <span className="pointer-events-none absolute -top-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-white bg-ola-accent" />
           )}
