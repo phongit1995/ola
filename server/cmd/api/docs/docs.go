@@ -702,6 +702,210 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/game-matches": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-game-match"
+                ],
+                "summary": "Danh sách trận PvP mini-game (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Lọc theo game (caro, war-god)",
+                        "name": "gameId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Lọc theo người chơi (một trong hai bên)",
+                        "name": "userId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Lọc theo người thắng",
+                        "name": "winnerId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "playing|finished",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "win|forfeit|timeout|draw|disconnect|void",
+                        "name": "reason",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "queue|room",
+                        "name": "mode",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Cược tối thiểu",
+                        "name": "minBet",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Cược tối đa",
+                        "name": "maxBet",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Từ thời gian (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến thời gian (RFC3339)",
+                        "name": "to",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_game-match.MatchListSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/game-matches/stats": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-game-match"
+                ],
+                "summary": "Thống kê trận \u0026 cược mini-game (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Lọc theo game (caro, war-god)",
+                        "name": "gameId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "queue|room",
+                        "name": "mode",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Từ thời gian (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến thời gian (RFC3339)",
+                        "name": "to",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_game-match.MatchStatsSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/game-matches/suspects": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-game-match"
+                ],
+                "summary": "Người chơi \u0026 cặp đấu thắng bất thường (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Lọc theo game (caro, war-god)",
+                        "name": "gameId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Từ thời gian (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến thời gian (RFC3339)",
+                        "name": "to",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Số trận tối thiểu để xét user (mặc định 10)",
+                        "name": "minMatches",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Số trận tối thiểu để xét cặp (mặc định 5)",
+                        "name": "minPairMatches",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_game-match.SuspectsSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/ken/auto-jobs": {
             "get": {
                 "security": [
@@ -11192,6 +11396,392 @@ const docTemplate = `{
                 },
                 "verified": {
                     "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_game-match.MatchListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_game-match.MatchView"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 20
+                },
+                "offset": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "internal_modules_admin_game-match.MatchListSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_game-match.MatchListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_game-match.MatchStatsResponse": {
+            "type": "object",
+            "properties": {
+                "bucket": {
+                    "type": "string"
+                },
+                "byGame": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_game-match.StatsGameRow"
+                    }
+                },
+                "byReason": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_game-match.StatsReasonRow"
+                    }
+                },
+                "overview": {
+                    "$ref": "#/definitions/internal_modules_admin_game-match.StatsOverview"
+                },
+                "timeseries": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_game-match.StatsTimePoint"
+                    }
+                },
+                "topPlayers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_game-match.StatsPlayer"
+                    }
+                }
+            }
+        },
+        "internal_modules_admin_game-match.MatchStatsSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_game-match.MatchStatsResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_game-match.MatchView": {
+            "type": "object",
+            "properties": {
+                "bet": {
+                    "type": "integer",
+                    "example": 1000
+                },
+                "finishedAt": {
+                    "type": "string"
+                },
+                "gameId": {
+                    "type": "string",
+                    "example": "caro"
+                },
+                "houseTake": {
+                    "type": "integer",
+                    "example": 100
+                },
+                "id": {
+                    "type": "string"
+                },
+                "kenDelta": {
+                    "type": "integer",
+                    "example": 900
+                },
+                "matchId": {
+                    "type": "string"
+                },
+                "mode": {
+                    "type": "string",
+                    "example": "queue"
+                },
+                "moveCount": {
+                    "type": "integer",
+                    "example": 24
+                },
+                "player0": {
+                    "$ref": "#/definitions/internal_modules_admin_game-match.UserBrief"
+                },
+                "player1": {
+                    "$ref": "#/definitions/internal_modules_admin_game-match.UserBrief"
+                },
+                "reason": {
+                    "type": "string",
+                    "example": "win"
+                },
+                "startedAt": {
+                    "type": "string",
+                    "example": "2026-07-24T10:00:00Z"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "finished"
+                },
+                "winnerId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_game-match.StatsGameRow": {
+            "type": "object",
+            "properties": {
+                "finished": {
+                    "type": "integer"
+                },
+                "gameId": {
+                    "type": "string"
+                },
+                "houseTake": {
+                    "type": "integer"
+                },
+                "matches": {
+                    "type": "integer"
+                },
+                "volume": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_game-match.StatsOverview": {
+            "type": "object",
+            "properties": {
+                "decidedMatches": {
+                    "type": "integer"
+                },
+                "drawMatches": {
+                    "type": "integer"
+                },
+                "finishedMatches": {
+                    "type": "integer"
+                },
+                "houseTake": {
+                    "type": "integer"
+                },
+                "playingMatches": {
+                    "type": "integer"
+                },
+                "totalMatches": {
+                    "type": "integer"
+                },
+                "totalPayout": {
+                    "type": "integer"
+                },
+                "totalVolume": {
+                    "type": "integer"
+                },
+                "uniquePlayers": {
+                    "type": "integer"
+                },
+                "voidMatches": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_game-match.StatsPlayer": {
+            "type": "object",
+            "properties": {
+                "losses": {
+                    "type": "integer"
+                },
+                "matches": {
+                    "type": "integer"
+                },
+                "netKen": {
+                    "type": "integer"
+                },
+                "staked": {
+                    "type": "integer"
+                },
+                "user": {
+                    "$ref": "#/definitions/internal_modules_admin_game-match.UserBrief"
+                },
+                "winRate": {
+                    "type": "number"
+                },
+                "wins": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_game-match.StatsReasonRow": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "percent": {
+                    "type": "number"
+                },
+                "reason": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_game-match.StatsTimePoint": {
+            "type": "object",
+            "properties": {
+                "date": {
+                    "type": "string"
+                },
+                "finished": {
+                    "type": "integer"
+                },
+                "houseTake": {
+                    "type": "integer"
+                },
+                "matches": {
+                    "type": "integer"
+                },
+                "volume": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_game-match.SuspectPair": {
+            "type": "object",
+            "properties": {
+                "aWins": {
+                    "type": "integer"
+                },
+                "bWins": {
+                    "type": "integer"
+                },
+                "decided": {
+                    "type": "integer"
+                },
+                "matches": {
+                    "type": "integer"
+                },
+                "netA": {
+                    "type": "integer"
+                },
+                "oneSidedRate": {
+                    "type": "number"
+                },
+                "totalBet": {
+                    "type": "integer"
+                },
+                "userA": {
+                    "$ref": "#/definitions/internal_modules_admin_game-match.UserBrief"
+                },
+                "userB": {
+                    "$ref": "#/definitions/internal_modules_admin_game-match.UserBrief"
+                }
+            }
+        },
+        "internal_modules_admin_game-match.SuspectsResponse": {
+            "type": "object",
+            "properties": {
+                "minMatches": {
+                    "type": "integer"
+                },
+                "minPairMatches": {
+                    "type": "integer"
+                },
+                "pairs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_game-match.SuspectPair"
+                    }
+                },
+                "players": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_game-match.StatsPlayer"
+                    }
+                }
+            }
+        },
+        "internal_modules_admin_game-match.SuspectsSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_game-match.SuspectsResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_game-match.UserBrief": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string",
+                    "example": "https://example.com/avatar.jpg"
+                },
+                "fullName": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "john_doe"
                 }
             }
         },

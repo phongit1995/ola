@@ -334,6 +334,264 @@ definitions:
       verified:
         type: integer
     type: object
+  internal_modules_admin_game-match.MatchListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_admin_game-match.MatchView'
+        type: array
+      limit:
+        example: 20
+        type: integer
+      offset:
+        example: 0
+        type: integer
+      total:
+        example: 1
+        type: integer
+    type: object
+  internal_modules_admin_game-match.MatchListSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_game-match.MatchListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_admin_game-match.MatchStatsResponse:
+    properties:
+      bucket:
+        type: string
+      byGame:
+        items:
+          $ref: '#/definitions/internal_modules_admin_game-match.StatsGameRow'
+        type: array
+      byReason:
+        items:
+          $ref: '#/definitions/internal_modules_admin_game-match.StatsReasonRow'
+        type: array
+      overview:
+        $ref: '#/definitions/internal_modules_admin_game-match.StatsOverview'
+      timeseries:
+        items:
+          $ref: '#/definitions/internal_modules_admin_game-match.StatsTimePoint'
+        type: array
+      topPlayers:
+        items:
+          $ref: '#/definitions/internal_modules_admin_game-match.StatsPlayer'
+        type: array
+    type: object
+  internal_modules_admin_game-match.MatchStatsSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_game-match.MatchStatsResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_admin_game-match.MatchView:
+    properties:
+      bet:
+        example: 1000
+        type: integer
+      finishedAt:
+        type: string
+      gameId:
+        example: caro
+        type: string
+      houseTake:
+        example: 100
+        type: integer
+      id:
+        type: string
+      kenDelta:
+        example: 900
+        type: integer
+      matchId:
+        type: string
+      mode:
+        example: queue
+        type: string
+      moveCount:
+        example: 24
+        type: integer
+      player0:
+        $ref: '#/definitions/internal_modules_admin_game-match.UserBrief'
+      player1:
+        $ref: '#/definitions/internal_modules_admin_game-match.UserBrief'
+      reason:
+        example: win
+        type: string
+      startedAt:
+        example: "2026-07-24T10:00:00Z"
+        type: string
+      status:
+        example: finished
+        type: string
+      winnerId:
+        type: string
+    type: object
+  internal_modules_admin_game-match.StatsGameRow:
+    properties:
+      finished:
+        type: integer
+      gameId:
+        type: string
+      houseTake:
+        type: integer
+      matches:
+        type: integer
+      volume:
+        type: integer
+    type: object
+  internal_modules_admin_game-match.StatsOverview:
+    properties:
+      decidedMatches:
+        type: integer
+      drawMatches:
+        type: integer
+      finishedMatches:
+        type: integer
+      houseTake:
+        type: integer
+      playingMatches:
+        type: integer
+      totalMatches:
+        type: integer
+      totalPayout:
+        type: integer
+      totalVolume:
+        type: integer
+      uniquePlayers:
+        type: integer
+      voidMatches:
+        type: integer
+    type: object
+  internal_modules_admin_game-match.StatsPlayer:
+    properties:
+      losses:
+        type: integer
+      matches:
+        type: integer
+      netKen:
+        type: integer
+      staked:
+        type: integer
+      user:
+        $ref: '#/definitions/internal_modules_admin_game-match.UserBrief'
+      winRate:
+        type: number
+      wins:
+        type: integer
+    type: object
+  internal_modules_admin_game-match.StatsReasonRow:
+    properties:
+      count:
+        type: integer
+      percent:
+        type: number
+      reason:
+        type: string
+    type: object
+  internal_modules_admin_game-match.StatsTimePoint:
+    properties:
+      date:
+        type: string
+      finished:
+        type: integer
+      houseTake:
+        type: integer
+      matches:
+        type: integer
+      volume:
+        type: integer
+    type: object
+  internal_modules_admin_game-match.SuspectPair:
+    properties:
+      aWins:
+        type: integer
+      bWins:
+        type: integer
+      decided:
+        type: integer
+      matches:
+        type: integer
+      netA:
+        type: integer
+      oneSidedRate:
+        type: number
+      totalBet:
+        type: integer
+      userA:
+        $ref: '#/definitions/internal_modules_admin_game-match.UserBrief'
+      userB:
+        $ref: '#/definitions/internal_modules_admin_game-match.UserBrief'
+    type: object
+  internal_modules_admin_game-match.SuspectsResponse:
+    properties:
+      minMatches:
+        type: integer
+      minPairMatches:
+        type: integer
+      pairs:
+        items:
+          $ref: '#/definitions/internal_modules_admin_game-match.SuspectPair'
+        type: array
+      players:
+        items:
+          $ref: '#/definitions/internal_modules_admin_game-match.StatsPlayer'
+        type: array
+    type: object
+  internal_modules_admin_game-match.SuspectsSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_game-match.SuspectsResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_admin_game-match.UserBrief:
+    properties:
+      avatar:
+        example: https://example.com/avatar.jpg
+        type: string
+      fullName:
+        example: John Doe
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      username:
+        example: john_doe
+        type: string
+    type: object
   internal_modules_admin_ken.AdjustRequest:
     properties:
       action:
@@ -7777,6 +8035,135 @@ paths:
       summary: Thống kê đập trứng (admin)
       tags:
       - admin-egg
+  /admin/game-matches:
+    get:
+      parameters:
+      - description: Lọc theo game (caro, war-god)
+        in: query
+        name: gameId
+        type: string
+      - description: Lọc theo người chơi (một trong hai bên)
+        in: query
+        name: userId
+        type: string
+      - description: Lọc theo người thắng
+        in: query
+        name: winnerId
+        type: string
+      - description: playing|finished
+        in: query
+        name: status
+        type: string
+      - description: win|forfeit|timeout|draw|disconnect|void
+        in: query
+        name: reason
+        type: string
+      - description: queue|room
+        in: query
+        name: mode
+        type: string
+      - description: Cược tối thiểu
+        in: query
+        name: minBet
+        type: integer
+      - description: Cược tối đa
+        in: query
+        name: maxBet
+        type: integer
+      - description: Từ thời gian (RFC3339)
+        in: query
+        name: from
+        type: string
+      - description: Đến thời gian (RFC3339)
+        in: query
+        name: to
+        type: string
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_game-match.MatchListSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Danh sách trận PvP mini-game (admin)
+      tags:
+      - admin-game-match
+  /admin/game-matches/stats:
+    get:
+      parameters:
+      - description: Lọc theo game (caro, war-god)
+        in: query
+        name: gameId
+        type: string
+      - description: queue|room
+        in: query
+        name: mode
+        type: string
+      - description: Từ thời gian (RFC3339)
+        in: query
+        name: from
+        type: string
+      - description: Đến thời gian (RFC3339)
+        in: query
+        name: to
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_game-match.MatchStatsSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Thống kê trận & cược mini-game (admin)
+      tags:
+      - admin-game-match
+  /admin/game-matches/suspects:
+    get:
+      parameters:
+      - description: Lọc theo game (caro, war-god)
+        in: query
+        name: gameId
+        type: string
+      - description: Từ thời gian (RFC3339)
+        in: query
+        name: from
+        type: string
+      - description: Đến thời gian (RFC3339)
+        in: query
+        name: to
+        type: string
+      - description: Số trận tối thiểu để xét user (mặc định 10)
+        in: query
+        name: minMatches
+        type: integer
+      - description: Số trận tối thiểu để xét cặp (mặc định 5)
+        in: query
+        name: minPairMatches
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_game-match.SuspectsSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Người chơi & cặp đấu thắng bất thường (admin)
+      tags:
+      - admin-game-match
   /admin/ken/auto-jobs:
     get:
       produces:
