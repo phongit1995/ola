@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { ARCADE_ATTENTION_REASON } from '@ola/shared/types';
 import {
   bridge,
+  GameAuthenticationExpiredError,
   GameAuthenticationRequiredError,
   joinGame,
   type GameSession,
@@ -33,6 +34,14 @@ const CHAT_HISTORY_LIMIT = 100;
 const WIN_RESULT_REVEAL_MS = 1700;
 const LEADERBOARD_REQUEST_TIMEOUT_MS = 8000;
 const HISTORY_REQUEST_TIMEOUT_MS = 8000;
+const AUTHENTICATION_REQUIRED_TEXT = 'Vui lòng đăng nhập để chơi Cờ Caro';
+const AUTHENTICATION_EXPIRED_TEXT = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại';
+
+function authenticationErrorText(error: unknown): string | null {
+  if (error instanceof GameAuthenticationRequiredError) return AUTHENTICATION_REQUIRED_TEXT;
+  if (error instanceof GameAuthenticationExpiredError) return AUTHENTICATION_EXPIRED_TEXT;
+  return null;
+}
 
 export const useCaro = create<CaroStore>()((set, get) => {
   const refs = {
@@ -730,27 +739,40 @@ export const useCaro = create<CaroStore>()((set, get) => {
           if (!refs.session) refs.session = refs.online;
         }
         await new Promise<void>((resolve, reject) => {
-          const off = refs.online!.onUserInfo(() => {
-            off();
-            clearTimeout(timer);
+          const online = refs.online!;
+          let timer: number | undefined;
+          let offUserInfo = (): void => {};
+          let offConnectionError = (): void => {};
+          const cleanup = (): void => {
+            offUserInfo();
+            offConnectionError();
+            if (timer != null) clearTimeout(timer);
+          };
+          offUserInfo = online.onUserInfo(() => {
+            cleanup();
             resolve();
           });
-          const timer = setTimeout(() => {
-            off();
+          offConnectionError = online.onConnectionError((error) => {
+            if (authenticationErrorText(error) == null) return;
+            cleanup();
+            reject(error);
+          });
+          timer = window.setTimeout(() => {
+            cleanup();
             reject(new Error('connect timeout'));
           }, 8000);
         });
       } catch (error) {
-        refs.online?.disconnect();
+        const authenticationMessage = authenticationErrorText(error);
+        const online = refs.online;
+        online?.disconnect();
+        if (refs.session === online) refs.session = null;
         refs.online = null;
         refs.user = null;
         set({
           userInfo: null,
           lobbyPhase: 'error',
-          lobbyError:
-            error instanceof GameAuthenticationRequiredError
-              ? 'Vui lòng đăng nhập để chơi Cờ Caro'
-              : 'Không kết nối được máy chủ',
+          lobbyError: authenticationMessage ?? 'Không kết nối được máy chủ',
         });
       } finally {
         refs.connecting = false;

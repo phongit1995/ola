@@ -283,6 +283,7 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
       (handler as (c: boolean) => void)(true);
       return () => {};
     },
+    onConnectionError: () => () => {},
 
     disconnect() {
       clearTimers();

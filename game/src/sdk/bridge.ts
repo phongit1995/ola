@@ -44,6 +44,13 @@ export class GameAuthenticationRequiredError extends Error {
   }
 }
 
+export class GameAuthenticationExpiredError extends Error {
+  constructor() {
+    super('Authentication token is expired or invalid');
+    this.name = 'GameAuthenticationExpiredError';
+  }
+}
+
 function tokenFrom(value: unknown): string | null {
   const token = String(value ?? '').trim();
   return token || null;

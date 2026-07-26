@@ -1,5 +1,9 @@
 import { io, type Socket } from 'socket.io-client';
-import { bridge } from './bridge';
+import {
+  bridge,
+  GameAuthenticationExpiredError,
+  GameAuthenticationRequiredError,
+} from './bridge';
 import {
   C2S,
   S2C,
@@ -61,10 +65,18 @@ export interface GameSession<TState = unknown, TMove = unknown> {
   onLeaderboard(handler: (data: LeaderboardData) => void): () => void;
   onHistory(handler: (data: MatchHistoryData) => void): () => void;
   onConnectionChange(handler: (connected: boolean) => void): () => void;
+  onConnectionError(handler: (error: Error) => void): () => void;
   disconnect(): void;
 }
 
 type Handler = (data: never) => void;
+
+function normalizeConnectionError(error: Error): Error {
+  const message = error.message.trim().toLowerCase();
+  if (message === 'unauthorized') return new GameAuthenticationExpiredError();
+  if (message === 'access_token is required') return new GameAuthenticationRequiredError();
+  return error;
+}
 
 export async function joinGame<TState = unknown, TMove = unknown>(gameId: string): Promise<GameSession<TState, TMove>> {
   const token = await bridge.requestToken();
@@ -96,7 +108,10 @@ export async function joinGame<TState = unknown, TMove = unknown>(gameId: string
   });
   socket.on('connect', () => emitLocal('connection', true));
   socket.on('disconnect', () => emitLocal('connection', false));
-  socket.on('connect_error', () => emitLocal('connection', false));
+  socket.on('connect_error', (error) => {
+    emitLocal('connection', false);
+    emitLocal('connection_error', normalizeConnectionError(error));
+  });
 
   const send = (type: string, data?: unknown): void => {
     socket.emit('message', { type, data } satisfies Envelope);
@@ -138,6 +153,7 @@ export async function joinGame<TState = unknown, TMove = unknown>(gameId: string
     onLeaderboard: (handler) => on(S2C.Leaderboard, handler as Handler),
     onHistory: (handler) => on(S2C.History, handler as Handler),
     onConnectionChange: (handler) => on('connection', handler as Handler),
+    onConnectionError: (handler) => on('connection_error', handler as Handler),
     disconnect: () => socket.disconnect(),
   };
 }
