@@ -4,6 +4,7 @@ import { AppState, StatusBar } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import NetInfo from '@react-native-community/netinfo';
 import { NavigationContainer, useNavigationContainerRef } from '@react-navigation/native';
 import type { ParamListBase } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
@@ -73,10 +74,14 @@ export default function App() {
     const appStateSubscription = AppState.addEventListener('change', (state) => {
       if (state === 'active') SocketService.ensureAlive();
     });
+    const unsubscribeNetInfo = NetInfo.addEventListener((state) => {
+      if (state.isConnected === true) SocketService.ensureAlive();
+    });
     void useAuthStore.getState().refreshUser();
     return () => {
       setOnUnauthorized(null);
       appStateSubscription.remove();
+      unsubscribeNetInfo();
     };
   }, []);
 
