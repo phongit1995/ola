@@ -24,5 +24,7 @@ func (r *Router) Setup(admin *utils.AppGroup) {
 		wheel.PUT("/wheels/:id/config", r.controller.SaveConfig)
 		wheel.GET("/spins", r.controller.ListSpins)
 		wheel.GET("/stats", r.controller.GetStats)
+		wheel.GET("/stats/users", r.controller.GetUserStats)
+		wheel.GET("/stats/vip", r.controller.GetVipStats)
 	}
 }

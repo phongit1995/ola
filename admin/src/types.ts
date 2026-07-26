@@ -917,6 +917,46 @@ export interface WheelStatsParams {
   to?: string
 }
 
+export type WheelUserStatsSortBy = 'kenSpent' | 'kenWon' | 'netKen' | 'spins' | 'vipDays'
+
+export interface WheelUserStatsItem {
+  user: WheelSpinUser
+  spins: number
+  winSpins: number
+  winRate: number
+  freeSpins: number
+  kenSpent: number
+  kenWon: number
+  netKen: number
+  vipDays: number
+  vipItems: number
+  lastSpinAt: string
+}
+
+export interface WheelUserStatsParams {
+  wheelId?: string
+  userId?: string
+  from?: string
+  to?: string
+  sortBy?: WheelUserStatsSortBy
+  limit?: number
+  offset?: number
+}
+
+export interface WheelVipStatsRow {
+  vipTypeId: number
+  itemWins: number
+  dayWins: number
+  vipDays: number
+}
+
+export interface WheelVipStatsParams {
+  wheelId?: string
+  userId?: string
+  from?: string
+  to?: string
+}
+
 export type PenStatus = 'open' | 'settled' | 'cancelled'
 export type PenResult = 'saved' | 'goal'
 export type PenSide = 'left' | 'right'

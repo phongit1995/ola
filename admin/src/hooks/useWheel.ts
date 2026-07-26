@@ -6,11 +6,15 @@ import type {
   UpdateWheelRequest,
   WheelSpinListParams,
   WheelStatsParams,
+  WheelUserStatsParams,
+  WheelVipStatsParams,
 } from '@/types'
 
 const WHEELS_KEY = 'admin-wheels'
 const WHEEL_SPINS_KEY = 'admin-wheel-spins'
 const WHEEL_STATS_KEY = 'admin-wheel-stats'
+const WHEEL_USER_STATS_KEY = 'admin-wheel-user-stats'
+const WHEEL_VIP_STATS_KEY = 'admin-wheel-vip-stats'
 
 export function useWheels() {
   return useQuery({
@@ -31,6 +35,22 @@ export function useWheelStats(params: WheelStatsParams, enabled = true) {
   return useQuery({
     queryKey: [WHEEL_STATS_KEY, params],
     queryFn: () => AdminWheelService.getStats(params),
+    enabled,
+  })
+}
+
+export function useWheelUserStats(params: WheelUserStatsParams, enabled = true) {
+  return useQuery({
+    queryKey: [WHEEL_USER_STATS_KEY, params],
+    queryFn: () => AdminWheelService.getUserStats(params),
+    enabled,
+  })
+}
+
+export function useWheelVipStats(params: WheelVipStatsParams, enabled = true) {
+  return useQuery({
+    queryKey: [WHEEL_VIP_STATS_KEY, params],
+    queryFn: () => AdminWheelService.getVipStats(params),
     enabled,
   })
 }

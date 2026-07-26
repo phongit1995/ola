@@ -1277,6 +1277,128 @@ definitions:
       total:
         type: integer
     type: object
+  internal_modules_admin_wheel.UserBrief:
+    properties:
+      avatar:
+        example: https://example.com/avatar.jpg
+        type: string
+      fullName:
+        example: John Doe
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      username:
+        example: john_doe
+        type: string
+    type: object
+  internal_modules_admin_wheel.UserStatsItem:
+    properties:
+      freeSpins:
+        example: 12
+        type: integer
+      kenSpent:
+        example: 120000
+        type: integer
+      kenWon:
+        example: 40000
+        type: integer
+      lastSpinAt:
+        example: "2026-07-25T15:12:33Z"
+        type: string
+      netKen:
+        example: -80000
+        type: integer
+      spins:
+        example: 120
+        type: integer
+      user:
+        $ref: '#/definitions/internal_modules_admin_wheel.UserBrief'
+      vipDays:
+        example: 14
+        type: integer
+      vipItems:
+        example: 2
+        type: integer
+      winRate:
+        example: 25
+        type: number
+      winSpins:
+        example: 30
+        type: integer
+    type: object
+  internal_modules_admin_wheel.UserStatsResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_admin_wheel.UserStatsItem'
+        type: array
+      limit:
+        example: 20
+        type: integer
+      offset:
+        example: 0
+        type: integer
+      total:
+        example: 1
+        type: integer
+    type: object
+  internal_modules_admin_wheel.UserStatsSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_wheel.UserStatsResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_admin_wheel.VipStatsResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_admin_wheel.VipStatsRow'
+        type: array
+    type: object
+  internal_modules_admin_wheel.VipStatsRow:
+    properties:
+      dayWins:
+        example: 9
+        type: integer
+      itemWins:
+        example: 5
+        type: integer
+      vipDays:
+        example: 27
+        type: integer
+      vipTypeId:
+        example: 12
+        type: integer
+    type: object
+  internal_modules_admin_wheel.VipStatsSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_wheel.VipStatsResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
   internal_modules_auth.AuthResponse:
     properties:
       refreshToken:
@@ -10093,6 +10215,80 @@ paths:
       security:
       - BearerAuth: []
       summary: Thống kê vòng quay (admin)
+      tags:
+      - admin-wheel
+  /admin/wheel/stats/users:
+    get:
+      parameters:
+      - description: Lọc theo vòng quay
+        in: query
+        name: wheelId
+        type: string
+      - description: Lọc theo user
+        in: query
+        name: userId
+        type: string
+      - description: Từ thời gian (RFC3339)
+        in: query
+        name: from
+        type: string
+      - description: Đến thời gian (RFC3339)
+        in: query
+        name: to
+        type: string
+      - description: kenSpent|kenWon|netKen|spins|vipDays (mặc định kenSpent)
+        in: query
+        name: sortBy
+        type: string
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_wheel.UserStatsSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Thống kê vòng quay theo từng user (admin)
+      tags:
+      - admin-wheel
+  /admin/wheel/stats/vip:
+    get:
+      parameters:
+      - description: Lọc theo vòng quay
+        in: query
+        name: wheelId
+        type: string
+      - description: Lọc theo user
+        in: query
+        name: userId
+        type: string
+      - description: Từ thời gian (RFC3339)
+        in: query
+        name: from
+        type: string
+      - description: Đến thời gian (RFC3339)
+        in: query
+        name: to
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_wheel.VipStatsSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Thống kê vòng quay theo loại VIP (admin)
       tags:
       - admin-wheel
   /admin/wheel/wheels:

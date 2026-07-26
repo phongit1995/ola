@@ -3745,6 +3745,124 @@
                 }
             }
         },
+        "/admin/wheel/stats/users": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-wheel"
+                ],
+                "summary": "Thống kê vòng quay theo từng user (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Lọc theo vòng quay",
+                        "name": "wheelId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Lọc theo user",
+                        "name": "userId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Từ thời gian (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến thời gian (RFC3339)",
+                        "name": "to",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "kenSpent|kenWon|netKen|spins|vipDays (mặc định kenSpent)",
+                        "name": "sortBy",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_wheel.UserStatsSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/wheel/stats/vip": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-wheel"
+                ],
+                "summary": "Thống kê vòng quay theo loại VIP (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Lọc theo vòng quay",
+                        "name": "wheelId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Lọc theo user",
+                        "name": "userId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Từ thời gian (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến thời gian (RFC3339)",
+                        "name": "to",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_wheel.VipStatsSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/wheel/wheels": {
             "get": {
                 "security": [
@@ -12951,6 +13069,182 @@
                 },
                 "total": {
                     "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_wheel.UserBrief": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string",
+                    "example": "https://example.com/avatar.jpg"
+                },
+                "fullName": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "john_doe"
+                }
+            }
+        },
+        "internal_modules_admin_wheel.UserStatsItem": {
+            "type": "object",
+            "properties": {
+                "freeSpins": {
+                    "type": "integer",
+                    "example": 12
+                },
+                "kenSpent": {
+                    "type": "integer",
+                    "example": 120000
+                },
+                "kenWon": {
+                    "type": "integer",
+                    "example": 40000
+                },
+                "lastSpinAt": {
+                    "type": "string",
+                    "example": "2026-07-25T15:12:33Z"
+                },
+                "netKen": {
+                    "type": "integer",
+                    "example": -80000
+                },
+                "spins": {
+                    "type": "integer",
+                    "example": 120
+                },
+                "user": {
+                    "$ref": "#/definitions/internal_modules_admin_wheel.UserBrief"
+                },
+                "vipDays": {
+                    "type": "integer",
+                    "example": 14
+                },
+                "vipItems": {
+                    "type": "integer",
+                    "example": 2
+                },
+                "winRate": {
+                    "type": "number",
+                    "example": 25
+                },
+                "winSpins": {
+                    "type": "integer",
+                    "example": 30
+                }
+            }
+        },
+        "internal_modules_admin_wheel.UserStatsResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_wheel.UserStatsItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 20
+                },
+                "offset": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "internal_modules_admin_wheel.UserStatsSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_wheel.UserStatsResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_wheel.VipStatsResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_wheel.VipStatsRow"
+                    }
+                }
+            }
+        },
+        "internal_modules_admin_wheel.VipStatsRow": {
+            "type": "object",
+            "properties": {
+                "dayWins": {
+                    "type": "integer",
+                    "example": 9
+                },
+                "itemWins": {
+                    "type": "integer",
+                    "example": 5
+                },
+                "vipDays": {
+                    "type": "integer",
+                    "example": 27
+                },
+                "vipTypeId": {
+                    "type": "integer",
+                    "example": 12
+                }
+            }
+        },
+        "internal_modules_admin_wheel.VipStatsSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_wheel.VipStatsResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
                 }
             }
         },
