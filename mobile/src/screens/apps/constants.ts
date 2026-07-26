@@ -37,7 +37,7 @@ export const APP_ITEMS: AppItem[] = [
     titleKey: 'home.apps.profile',
     action: 'profile',
   },
-  { icon: require('@assets/icons/apps/vip.png'), titleKey: 'home.apps.vip', action: 'vip' },
+  { icon: require('@assets/icons/apps/vip.webp'), titleKey: 'home.apps.vip', action: 'vip' },
   { icon: require('@assets/icons/apps/ken.png'), titleKey: 'home.apps.ken', action: 'ken' },
   {
     icon: require('@assets/icons/apps/media.png'),
