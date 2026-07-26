@@ -1,4 +1,4 @@
-import { GAME_ERROR_CODE, type GameErrorCode } from '../src/sdk';
+import { GAME_ERROR_CODE, type GameErrorCode } from '../../src/sdk';
 
 const ROOM_ERROR_TEXT = new Map<GameErrorCode, string>([
   [GAME_ERROR_CODE.WrongPassword, 'Sai mật khẩu'],

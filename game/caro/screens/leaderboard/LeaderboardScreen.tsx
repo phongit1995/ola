@@ -1,41 +1,29 @@
-import { useEffect, useState } from 'react';
-import { parseVipTypeId, vipIconUrl } from '@ola/shared/lib/vip';
-import type { LeaderboardPeriod } from '../../src/sdk';
-import { assetBg, assetSrc, VIP_DEFAULT_ICON, type AssetKey } from '../assets';
-import { useCaroStore } from '../store';
+import { useEffect } from 'react';
+import { useShallow } from 'zustand/react/shallow';
+import type { LeaderboardPeriod } from '../../../src/sdk';
+import { assetBg, assetSrc } from '../../assets';
+import { useCaro } from '../../store/useCaro';
+import { LeaderboardPager } from './components/LeaderboardPager';
+import { LeaderboardRow } from './components/LeaderboardRow';
+import { useLeaderboard } from './useLeaderboard';
 
 const PAGE_SIZE = 10;
 
-function formatKen(value: number): string {
-  return value.toLocaleString('vi-VN');
-}
-
-const RANK_ASSETS: Partial<Record<number, AssetKey>> = {
-  1: 'leaderboardRank1',
-  2: 'leaderboardRank2',
-  3: 'leaderboardRank3',
-  4: 'leaderboardRank4',
-  5: 'leaderboardRank5',
-  6: 'leaderboardRank6',
-  7: 'leaderboardRank7',
-  8: 'leaderboardRank8',
-  9: 'leaderboardRank9',
-  10: 'leaderboardRank10',
-};
-
-function rankAsset(rank: number): AssetKey | null {
-  return RANK_ASSETS[rank] ?? null;
-}
-
 export function LeaderboardScreen() {
-  const visible = useCaroStore((s) => s.leaderboardVisible);
-  const close = useCaroStore((s) => s.hideLeaderboard);
-  const leaderboards = useCaroStore((s) => s.leaderboards);
-  const leaderboardLoading = useCaroStore((s) => s.leaderboardLoading);
-  const leaderboardErrors = useCaroStore((s) => s.leaderboardErrors);
-  const loadLeaderboard = useCaroStore((s) => s.loadLeaderboard);
-  const [period, setPeriod] = useState<LeaderboardPeriod>('day');
-  const [page, setPage] = useState(0);
+  const visible = useCaro((s) => s.leaderboardVisible);
+  const close = useCaro((s) => s.hideLeaderboard);
+  const leaderboards = useCaro((s) => s.leaderboards);
+  const leaderboardLoading = useCaro((s) => s.leaderboardLoading);
+  const leaderboardErrors = useCaro((s) => s.leaderboardErrors);
+  const loadLeaderboard = useCaro((s) => s.loadLeaderboard);
+  const { period, page, setPeriod, setPage } = useLeaderboard(
+    useShallow((state) => ({
+      period: state.period,
+      page: state.page,
+      setPeriod: state.setPeriod,
+      setPage: state.setPage,
+    })),
+  );
   const players = leaderboards[period] ?? [];
   const loading = leaderboardLoading[period];
   const error = leaderboardErrors[period];
@@ -48,7 +36,7 @@ export function LeaderboardScreen() {
 
   useEffect(() => {
     setPage((current) => Math.min(current, pageCount - 1));
-  }, [pageCount]);
+  }, [pageCount, setPage]);
 
   useEffect(() => {
     if (!visible) return;
@@ -61,7 +49,6 @@ export function LeaderboardScreen() {
 
   const changePeriod = (next: LeaderboardPeriod): void => {
     setPeriod(next);
-    setPage(0);
   };
 
   return (
@@ -120,30 +107,9 @@ export function LeaderboardScreen() {
               <span>Ken thắng</span>
             </div>
             <div className="leaderboard-rows" aria-busy={loading}>
-              {visiblePlayers.map((player) => {
-                const medal = rankAsset(player.rank);
-                const vipId = parseVipTypeId(player.vipType);
-                return (
-                  <div className="leaderboard-row" key={player.userId}>
-                    <div className="leaderboard-rank">
-                      {medal ? (
-                        <img src={assetSrc(medal)} alt={`Hạng ${player.rank}`} />
-                      ) : (
-                        <span>{player.rank}</span>
-                      )}
-                    </div>
-                    <div className="leaderboard-player">
-                      <img src={vipId != null ? vipIconUrl(vipId) : VIP_DEFAULT_ICON} alt="" />
-                      <span>@{player.username}</span>
-                    </div>
-                    <div className="leaderboard-ken">
-                      <span>{formatKen(player.ken)}</span>
-                      <img src={assetSrc('leaderboardKen')} alt="Ken" />
-                    </div>
-                    <div className="leaderboard-divider" style={assetBg('leaderboardDivider')} />
-                  </div>
-                );
-              })}
+              {visiblePlayers.map((player) => (
+                <LeaderboardRow key={player.userId} player={player} />
+              ))}
               {players.length === 0 && (
                 <div className="leaderboard-state" role={error ? 'alert' : 'status'}>
                   <span>{loading ? 'Đang tải bảng xếp hạng...' : error ?? 'Chưa có người chơi thắng Ken.'}</span>
@@ -157,31 +123,7 @@ export function LeaderboardScreen() {
             </div>
           </section>
 
-          <nav className="leaderboard-pager" aria-label="Phân trang bảng xếp hạng">
-            <button
-              type="button"
-              className="leaderboard-page-arrow"
-              style={assetBg('leaderboardPageArrow')}
-              disabled={page === 0}
-              aria-label="Trang trước"
-              onClick={() => setPage((current) => Math.max(0, current - 1))}
-            >
-              &lt;
-            </button>
-            <span className="leaderboard-page-number" style={assetBg('leaderboardPageNumber')}>
-              {page + 1}
-            </span>
-            <button
-              type="button"
-              className="leaderboard-page-arrow"
-              style={assetBg('leaderboardPageArrow')}
-              disabled={page >= pageCount - 1}
-              aria-label="Trang sau"
-              onClick={() => setPage((current) => Math.min(pageCount - 1, current + 1))}
-            >
-              &gt;
-            </button>
-          </nav>
+          <LeaderboardPager page={page} pageCount={pageCount} onChange={setPage} />
         </div>
       </div>
     </div>

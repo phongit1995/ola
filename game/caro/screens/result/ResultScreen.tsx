@@ -1,18 +1,21 @@
-import { useEffect, useState } from 'react';
-import { assetBg, assetSrc } from '../assets';
-import { useCaroStore } from '../store';
-import type { MatchResultState } from '../store.types';
-
-function formatKen(value: number): string {
-  return value.toLocaleString('vi-VN');
-}
+import { useEffect } from 'react';
+import { useShallow } from 'zustand/react/shallow';
+import { assetBg, assetSrc } from '../../assets';
+import { formatKen } from '../../helpers/format';
+import { useCaro } from '../../store/useCaro';
+import { useResult } from './useResult';
 
 export function ResultScreen() {
-  const result = useCaroStore((s) => s.result);
-  const replayVisible = useCaroStore((s) => s.replayVisible);
-  const closeResult = useCaroStore((s) => s.closeResult);
-  const again = useCaroStore((s) => s.again);
-  const [revealedResult, setRevealedResult] = useState<MatchResultState | null>(null);
+  const result = useCaro((s) => s.result);
+  const replayVisible = useCaro((s) => s.replayVisible);
+  const closeResult = useCaro((s) => s.closeResult);
+  const again = useCaro((s) => s.again);
+  const { revealedResult, setRevealedResult } = useResult(
+    useShallow((state) => ({
+      revealedResult: state.revealedResult,
+      setRevealedResult: state.setRevealedResult,
+    })),
+  );
   const win = result?.win ?? true;
   const delta = result?.kenDelta ?? null;
   const showKen = delta != null;
@@ -25,10 +28,14 @@ export function ResultScreen() {
   const pending = result != null && result.revealDelayMs > 0 && revealedResult !== result;
 
   useEffect(() => {
-    if (!result || result.revealDelayMs <= 0) return;
+    if (!result) {
+      setRevealedResult(null);
+      return;
+    }
+    if (result.revealDelayMs <= 0) return;
     const timer = window.setTimeout(() => setRevealedResult(result), result.revealDelayMs);
     return () => window.clearTimeout(timer);
-  }, [result]);
+  }, [result, setRevealedResult]);
 
   return (
     <div

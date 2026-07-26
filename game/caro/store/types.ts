@@ -4,8 +4,8 @@ import type {
   RoomInfo,
   RoomStateData,
   UserInfoData,
-} from '../src/sdk';
-import type { BotLevel, WinLine } from './types';
+} from '../../src/sdk';
+import type { BotLevel, WinLine } from '../types';
 
 export type OverlayAction = 'again' | 'cancel' | 'lobby';
 export type OverlayKind = 'win' | 'lose' | 'draw';
@@ -56,7 +56,7 @@ export interface TurnAnnouncement {
   mine: boolean;
 }
 
-export interface CaroStore {
+export interface CaroState {
   lobbyVisible: boolean;
   lobbyPhase: LobbyPhase;
   lobbyAnimKey: number;
@@ -98,7 +98,9 @@ export interface CaroStore {
   turnAnnounce: TurnAnnouncement | null;
   winLine: WinLine | null;
   messages: ChatMsg[];
+}
 
+export interface CaroActions {
   init(ready: boolean): void;
   dispose(): void;
   playBot(level: BotLevel): void;
@@ -127,3 +129,5 @@ export interface CaroStore {
   dismissNotice(): void;
   sendChat(text: string): void;
 }
+
+export type CaroStore = CaroState & CaroActions;

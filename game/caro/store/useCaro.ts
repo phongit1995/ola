@@ -6,61 +6,32 @@ import {
   type GameSession,
   type LeaderboardPeriod,
   type MatchFoundData,
-  type PlayerInfo,
   type RoomStateData,
   type UserInfoData,
-} from '../src/sdk';
-import { parseVipTypeId, vipIconUrl } from '@ola/shared/lib/vip';
-import { BOARD_ASSETS, VIP_DEFAULT_ICON } from './assets';
-import { createBotSession } from './bot';
-import { chatErrorText, roomErrorText } from './errorText';
-import type { CaroStore, PlayerDisplay, RoomActionPending } from './store.types';
+} from '../../src/sdk';
+import { vipIconUrl } from '@ola/shared/lib/vip';
+import { BOARD_ASSETS, VIP_DEFAULT_ICON } from '../assets';
+import { createBotSession } from '../bot';
+import { findFinalWinLine } from '../helpers/board';
+import { chatErrorText, roomErrorText } from '../helpers/errorText';
+import { formatClock } from '../helpers/format';
+import { avatarIconSrc, opponentOf } from '../helpers/player';
+import type { CaroStore, RoomActionPending } from './types';
+import { createInitialCaroState, EMPTY_PLAYER } from './initialState';
 import {
   SIZE,
   emptyState,
-  findWinLine,
   type BotLevel,
   type CaroMove,
   type CaroState,
-  type WinLine,
-} from './types';
+} from '../types';
 
 const BOT_VIP_ID: Record<BotLevel, number> = { easy: 1, normal: 2, hard: 3 };
 const CHAT_HISTORY_LIMIT = 100;
 const WIN_RESULT_REVEAL_MS = 1700;
 const LEADERBOARD_REQUEST_TIMEOUT_MS = 8000;
 
-function avatarIconSrc(vipType?: string | null): string {
-  const id = parseVipTypeId(vipType);
-  return id != null ? vipIconUrl(id) : VIP_DEFAULT_ICON;
-}
-
-function opponentOf(players: PlayerInfo[], you: number): PlayerInfo {
-  return players[1 - you];
-}
-
-function formatClock(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-}
-
-function findFinalWinLine(state: CaroState): WinLine | null {
-  const { board, lastX, lastY } = state;
-  if (lastX < 0 || lastX >= SIZE || lastY < 0 || lastY >= SIZE) return null;
-  const mark = board[lastY * SIZE + lastX];
-  return mark ? findWinLine(board, lastX, lastY, mark) : null;
-}
-
-const EMPTY_PLAYER: PlayerDisplay = {
-  name: '---',
-  vip: VIP_DEFAULT_ICON,
-  mark: 'x',
-  active: false,
-  owner: false,
-};
-
-export const useCaroStore = create<CaroStore>()((set, get) => {
+export const useCaro = create<CaroStore>()((set, get) => {
   const refs = {
     online: null as GameSession<CaroState, CaroMove> | null,
     bot: null as GameSession<CaroState, CaroMove> | null,
@@ -523,10 +494,15 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     });
 
     target.onMatchFound((data) => {
-      if (refs.session !== target) {
-        if (target !== refs.online || !data.resumed) return;
-        refs.session = refs.online;
+      const resumesOnlineSession = refs.session !== target && target === refs.online && data.resumed === true;
+      if (refs.session !== target && !resumesOnlineSession) return;
+      const mePlayer = data.players[data.you];
+      const opponent = opponentOf(data.players, data.you);
+      if (!mePlayer || !opponent) {
+        showToast('Dữ liệu người chơi không hợp lệ');
+        return;
       }
+      if (resumesOnlineSession) refs.session = target;
       refs.match = data;
       if (!data.resumed) {
         bridge.attention({
@@ -539,8 +515,6 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
       refs.matchBet = matchBet;
       refs.opponentIsBot = target === refs.bot;
       const isBot = target === refs.bot && refs.botLevel != null;
-      const mePlayer = data.players[data.you];
-      const opponent = opponentOf(data.players, data.you);
       const preserveChat = !isBot && refs.chatOpponentId === opponent.id;
       if (!preserveChat) refs.chatSeq = 0;
       refs.chatOpponentId = isBot ? null : opponent.id;
@@ -773,44 +747,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
   };
 
   return {
-    lobbyVisible: true,
-    lobbyPhase: 'loading',
-    lobbyAnimKey: 0,
-    userInfo: null,
-    ken: 0,
-    bet: 0,
-    rankedVisible: false,
-    leaderboardVisible: false,
-    leaderboards: { day: null, week: null },
-    leaderboardLoading: { day: false, week: false },
-    leaderboardErrors: { day: null, week: null },
-    rooms: [],
-    roomWaiting: null,
-    boardMode: 'idle',
-    roomActionPending: null,
-    oppAway: null,
-    board: emptyState().board,
-    lastIdx: -1,
-    status: 'Sẵn sàng',
-    myTurn: false,
-    movePending: false,
-    showTimer: false,
-    timerText: '00:45',
-    timerUrgent: false,
-    turnArrowSrc: null,
-    me: EMPTY_PLAYER,
-    op: { ...EMPTY_PLAYER, mark: 'o' },
-    overlay: null,
-    replayVisible: false,
-    forfeitDisabled: true,
-    result: null,
-    toast: null,
-    notice: null,
-    matchSeq: 0,
-    betDeductionVisible: false,
-    turnAnnounce: null,
-    winLine: null,
-    messages: [],
+    ...createInitialCaroState(),
 
     init(ready) {
       if (!ready) return;
@@ -1059,5 +996,5 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
 });
 
 if (import.meta.env.DEV) {
-  (window as unknown as { caroStore?: typeof useCaroStore }).caroStore = useCaroStore;
+  (window as unknown as { caroStore?: typeof useCaro }).caroStore = useCaro;
 }
