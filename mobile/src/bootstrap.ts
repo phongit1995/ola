@@ -6,6 +6,8 @@ import { configureDeviceInfo, configureEnv, configureSound } from '@ola/shared/p
 import { registerOnLogout } from '@ola/shared/stores/authStore';
 import { useKenTreasureStore } from '@ola/shared/stores/kenTreasureStore';
 import { useMediaViewerStore } from '@ola/shared/stores/mediaViewerStore';
+import { useRoomChatStore } from '@ola/shared/stores/roomChatStore';
+import { useSettingsStore } from '@ola/shared/stores/settingsStore';
 import { useArcadeOverlayStore } from './store/arcadeOverlayStore';
 import { mobileEnv } from './platform/env';
 import { configureRichTextNative } from './lib/richTextNativeConfig';
@@ -30,7 +32,9 @@ configureSound({
   playKenCredit: playKenCreditSound,
 });
 registerOnLogout(() => {
+  useRoomChatStore.getState().reset();
   useArcadeOverlayStore.getState().close();
   useKenTreasureStore.getState().reset();
   useMediaViewerStore.getState().close();
+  useSettingsStore.getState().reset();
 });

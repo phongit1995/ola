@@ -23,10 +23,14 @@ export interface ChatMessageAbilities {
   canDelete: boolean;
 }
 
-export function chatMessageAbilities(message: Message, myId: string): ChatMessageAbilities {
+export function chatMessageAbilities(
+  message: Message,
+  myId: string,
+  blocked: boolean
+): ChatMessageAbilities {
   const isOwn = message.senderId === myId;
   return {
-    canReply: !isOwn,
+    canReply: !isOwn && !blocked,
     canCopy: isCopyableText(message),
     canEdit: isOwn && message.type === 'text',
     canDelete: isOwn,

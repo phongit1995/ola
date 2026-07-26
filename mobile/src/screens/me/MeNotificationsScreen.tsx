@@ -6,7 +6,8 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { FlashList } from '@shopify/flash-list';
 import { useMeNotificationStore } from '@ola/shared/stores/meNotificationStore';
 import { useMeFeedStore } from '@ola/shared/stores/meFeedStore';
-import { applyPostReaction } from '@ola/shared/stores/postHelpers';
+import { applyPostReaction, reconcileTopLikers } from '@ola/shared/stores/postHelpers';
+import { selfLiker } from '@ola/shared/stores/selfLiker';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { MeService } from '@ola/shared/services';
 import { createTimeFormatter } from '@ola/shared/lib';
@@ -44,7 +45,6 @@ export function MeNotificationsScreen() {
   const load = useMeNotificationStore((s) => s.load);
   const loadMore = useMeNotificationStore((s) => s.loadMore);
   const markAllRead = useMeNotificationStore((s) => s.markAllRead);
-  const toggleFeedReaction = useMeFeedStore((s) => s.toggleReaction);
 
   const [openPost, setOpenPost] = useState<Post | null>(null);
   const [openingId, setOpeningId] = useState<string | null>(null);
@@ -79,21 +79,22 @@ export function MeNotificationsScreen() {
   async function toggleReaction(id: string, type: 'like' | 'dislike') {
     if (openPost == null) return;
     const active = openPost.myReaction === type;
-    const optimistic = applyPostReaction(openPost, active ? null : type);
+    const optimistic = applyPostReaction(openPost, active ? null : type, selfLiker());
     setOpenPost(optimistic);
-    void toggleFeedReaction(id, type);
     try {
       const updated = active ? await MeService.removeReaction(id) : await MeService.react(id, type);
-      setOpenPost(updated);
+      setOpenPost(reconcileTopLikers(updated, optimistic));
+      useMeFeedStore.getState().syncPost(updated);
     } catch {
       setOpenPost(openPost);
     }
   }
 
-  function adjustCommentCount(_postId: string, delta: number) {
+  function adjustCommentCount(postId: string, delta: number) {
     setOpenPost((prev) =>
       prev == null ? prev : { ...prev, commentCount: Math.max(0, prev.commentCount + delta) }
     );
+    useMeFeedStore.getState().adjustCommentCount(postId, delta);
   }
 
   function openProfile(nick: string) {

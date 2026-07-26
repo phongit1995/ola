@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Image, Keyboard, Pressable, Text, View } from 'react-native';
 import { KeyboardShift } from '@components/KeyboardShift';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useIsFocused } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { CompositeScreenProps, NavigationAction } from '@react-navigation/native';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
@@ -134,10 +133,20 @@ export function RoomChatScreen({ navigation, route }: Props) {
     return () => close();
   }, [roomId, roomName, open, close]);
 
-  const isFocused = useIsFocused();
   useEffect(() => {
-    setRoomForeground(isFocused);
-  }, [isFocused, setRoomForeground]);
+    const tabNavigation = navigation.getParent();
+    const syncForeground = () => {
+      const state = tabNavigation?.getState();
+      const activeTabName = state == null ? null : state.routes[state.index]?.name;
+      setRoomForeground(activeTabName === TAB_ROUTES.Room);
+    };
+    syncForeground();
+    const unsubscribe = tabNavigation?.addListener('state', syncForeground);
+    return () => {
+      unsubscribe?.();
+      setRoomForeground(false);
+    };
+  }, [navigation, setRoomForeground]);
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('beforeRemove', (event) => {

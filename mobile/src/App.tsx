@@ -11,9 +11,11 @@ import { setOnUnauthorized } from '@ola/shared/api';
 import { authTokens, toast } from '@ola/shared/lib';
 import { SocketService } from '@ola/shared/services';
 import { useAuthStore } from '@ola/shared/stores/authStore';
+import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import { useSettingsStore } from '@ola/shared/stores/settingsStore';
 import { RootNavigator } from './navigation/RootNavigator';
 import { StatusBarBackground } from './components/ui/StatusBarBackground';
+import { ReconnectingBanner } from './components/ui/ReconnectingBanner';
 import { ToastHost } from './components/ui/ToastHost';
 import { MediaViewer } from './components/ui/MediaViewer';
 import { useMeNotificationRealtime } from './hooks/useMeNotificationRealtime';
@@ -35,6 +37,7 @@ export default function App() {
   useAppNotificationRealtime();
   useKenRealtime();
   const userId = useAuthStore((s) => s.user?.id);
+  const authReady = useAuthStore((s) => s.authReady);
   const { t } = useTranslation();
   const navigationRef = useNavigationContainerRef<ParamListBase>();
   const routeNameRef = useRef<string | null>(null);
@@ -43,24 +46,36 @@ export default function App() {
     setTelemetryUser(userId ?? null);
   }, [userId]);
   useEffect(() => {
-    return SocketService.onForceLogout(({ reason }) => {
+    if (!authReady || userId == null) return;
+    SocketService.connect();
+    void useChatStore.getState().loadConversations();
+    return () => SocketService.disconnect();
+  }, [authReady, userId]);
+  useEffect(() => {
+    const unsubscribeReplaced = SocketService.onSessionReplaced(() => {
+      clearSession();
+      toast.info(t('auth.sessionReplaced'));
+    });
+    const unsubscribeForce = SocketService.onForceLogout(({ reason }) => {
       clearSession();
       if (reason === 'banned') toast.error(t('auth.banned'));
       else if (reason !== 'logged_out') toast.info(t('auth.sessionEnded'));
     });
+    return () => {
+      unsubscribeReplaced();
+      unsubscribeForce();
+    };
   }, [t]);
   useEffect(() => {
     initTelemetry();
     if (!__DEV__) void checkForOtaUpdate();
     setOnUnauthorized(clearSession);
-    const unsubscribeSession = SocketService.onSessionReplaced(() => clearSession());
     const appStateSubscription = AppState.addEventListener('change', (state) => {
       if (state === 'active') SocketService.ensureAlive();
     });
     void useAuthStore.getState().refreshUser();
     return () => {
       setOnUnauthorized(null);
-      unsubscribeSession();
       appStateSubscription.remove();
     };
   }, []);
@@ -88,6 +103,7 @@ export default function App() {
           <RootNavigator />
         </NavigationContainer>
         <StatusBarBackground />
+        <ReconnectingBanner />
         <KenTreasureOverlay />
         <ArcadeOverlay />
         <ToastHost />

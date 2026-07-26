@@ -298,7 +298,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   }
 
   function sheetActions(message: Message): MessageSheetAction[] {
-    const abilities = chatMessageAbilities(message, myId);
+    const abilities = chatMessageAbilities(message, myId, blocked);
     const actions: MessageSheetAction[] = [];
     if (abilities.canReply) {
       actions.push({
