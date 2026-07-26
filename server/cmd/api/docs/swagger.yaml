@@ -334,6 +334,125 @@ definitions:
       verified:
         type: integer
     type: object
+  internal_modules_admin_egg.UserBrief:
+    properties:
+      avatar:
+        example: https://example.com/avatar.jpg
+        type: string
+      fullName:
+        example: John Doe
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      username:
+        example: john_doe
+        type: string
+    type: object
+  internal_modules_admin_egg.UserStatsItem:
+    properties:
+      draws:
+        example: 120
+        type: integer
+      kenSpent:
+        example: 120000
+        type: integer
+      kenWon:
+        example: 40000
+        type: integer
+      lastDrawAt:
+        example: "2026-07-25T15:12:33Z"
+        type: string
+      netKen:
+        example: -80000
+        type: integer
+      user:
+        $ref: '#/definitions/internal_modules_admin_egg.UserBrief'
+      vipDays:
+        example: 14
+        type: integer
+      vipIcons:
+        example: 2
+        type: integer
+      winDraws:
+        example: 30
+        type: integer
+      winRate:
+        example: 25
+        type: number
+    type: object
+  internal_modules_admin_egg.UserStatsResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_admin_egg.UserStatsItem'
+        type: array
+      limit:
+        example: 20
+        type: integer
+      offset:
+        example: 0
+        type: integer
+      total:
+        example: 1
+        type: integer
+    type: object
+  internal_modules_admin_egg.UserStatsSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_egg.UserStatsResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_admin_egg.VipStatsResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_admin_egg.VipStatsRow'
+        type: array
+    type: object
+  internal_modules_admin_egg.VipStatsRow:
+    properties:
+      dayWins:
+        example: 9
+        type: integer
+      iconWins:
+        example: 5
+        type: integer
+      vipDays:
+        example: 27
+        type: integer
+      vipTypeId:
+        example: 12
+        type: integer
+    type: object
+  internal_modules_admin_egg.VipStatsSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_egg.VipStatsResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
   internal_modules_admin_game-match.MatchListResponse:
     properties:
       items:
@@ -1874,6 +1993,35 @@ definitions:
         type: integer
       vipTypeId:
         type: integer
+    type: object
+  internal_modules_egg.GiftListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_egg.GiftSectionView'
+        type: array
+    type: object
+  internal_modules_egg.GiftRewardView:
+    properties:
+      isSuperLucky:
+        type: boolean
+      kenAmount:
+        type: integer
+      label:
+        type: string
+      vipDays:
+        type: integer
+      vipTypeId:
+        type: integer
+    type: object
+  internal_modules_egg.GiftSectionView:
+    properties:
+      rewards:
+        items:
+          $ref: '#/definitions/internal_modules_egg.GiftRewardView'
+        type: array
+      type:
+        $ref: '#/definitions/ola-chat-server_internal_models.EggCategoryType'
     type: object
   internal_modules_egg.OpenPackRequest:
     properties:
@@ -8035,6 +8183,80 @@ paths:
       summary: Thống kê đập trứng (admin)
       tags:
       - admin-egg
+  /admin/egg/stats/users:
+    get:
+      parameters:
+      - description: Lọc theo gói
+        in: query
+        name: packId
+        type: string
+      - description: Lọc theo user
+        in: query
+        name: userId
+        type: string
+      - description: Từ thời gian (RFC3339)
+        in: query
+        name: from
+        type: string
+      - description: Đến thời gian (RFC3339)
+        in: query
+        name: to
+        type: string
+      - description: kenSpent|kenWon|netKen|draws|vipDays (mặc định kenSpent)
+        in: query
+        name: sortBy
+        type: string
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_egg.UserStatsSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Thống kê đập trứng theo từng user (admin)
+      tags:
+      - admin-egg
+  /admin/egg/stats/vip:
+    get:
+      parameters:
+      - description: Lọc theo gói
+        in: query
+        name: packId
+        type: string
+      - description: Lọc theo user
+        in: query
+        name: userId
+        type: string
+      - description: Từ thời gian (RFC3339)
+        in: query
+        name: from
+        type: string
+      - description: Đến thời gian (RFC3339)
+        in: query
+        name: to
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_egg.VipStatsSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Thống kê đập trứng theo loại VIP (admin)
+      tags:
+      - admin-egg
   /admin/game-matches:
     get:
       parameters:
@@ -11350,6 +11572,30 @@ paths:
       security:
       - BearerAuth: []
       summary: Đập một quả trứng trong gói
+      tags:
+      - egg
+  /egg/packs/{id}/gifts:
+    get:
+      parameters:
+      - description: Pack ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_egg.GiftListResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Danh sách quà của một gói đập trứng
       tags:
       - egg
   /health:

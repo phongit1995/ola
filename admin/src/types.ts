@@ -687,6 +687,45 @@ export interface EggStatsParams {
   to?: string
 }
 
+export type EggUserStatsSortBy = 'kenSpent' | 'kenWon' | 'netKen' | 'draws' | 'vipDays'
+
+export interface EggUserStatsItem {
+  user: EggDrawUser
+  draws: number
+  winDraws: number
+  winRate: number
+  kenSpent: number
+  kenWon: number
+  netKen: number
+  vipDays: number
+  vipIcons: number
+  lastDrawAt: string
+}
+
+export interface EggUserStatsParams {
+  packId?: string
+  userId?: string
+  from?: string
+  to?: string
+  sortBy?: EggUserStatsSortBy
+  limit?: number
+  offset?: number
+}
+
+export interface EggVipStatsRow {
+  vipTypeId: number
+  iconWins: number
+  dayWins: number
+  vipDays: number
+}
+
+export interface EggVipStatsParams {
+  packId?: string
+  userId?: string
+  from?: string
+  to?: string
+}
+
 export type WheelSegmentKind =
   | 'miss'
   | 'ken_fixed'

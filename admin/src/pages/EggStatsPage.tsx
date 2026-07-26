@@ -1,6 +1,21 @@
 import { useMemo, useState } from 'react'
-import { Avatar, Card, Col, Empty, Row, Select, Space, Spin, Statistic, Table, Tag, Typography } from 'antd'
-import type { ColumnsType } from 'antd/es/table'
+import {
+  Avatar,
+  Card,
+  Col,
+  Empty,
+  Input,
+  Row,
+  Select,
+  Space,
+  Spin,
+  Statistic,
+  Table,
+  Tag,
+  Typography,
+} from 'antd'
+import type { ColumnsType, TablePaginationConfig } from 'antd/es/table'
+import type { SorterResult } from 'antd/es/table/interface'
 import {
   Bar,
   CartesianGrid,
@@ -15,8 +30,16 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { useEggPacks, useEggStats } from '@/hooks/useEgg'
-import type { EggCategoryType, EggStatsPack, EggStatsPlayer, EggStatsReward } from '@/types'
+import { useEggPacks, useEggStats, useEggUserStats, useEggVipStats } from '@/hooks/useEgg'
+import { vipIconUrl, vipName } from '@/lib/vipCatalog'
+import type {
+  EggCategoryType,
+  EggStatsPack,
+  EggStatsReward,
+  EggUserStatsItem,
+  EggUserStatsSortBy,
+  EggVipStatsRow,
+} from '@/types'
 
 const CATEGORY_META: Record<EggCategoryType, { label: string; color: string }> = {
   nothing: { label: 'Không trúng', color: '#94a3b8' },
@@ -77,23 +100,47 @@ const packColumns: ColumnsType<EggStatsPack> = [
   },
 ]
 
-const playerColumns: ColumnsType<EggStatsPlayer> = [
+function NetText({ value }: { value: number }) {
+  if (value > 0) return <Typography.Text type="success">+{vn(value)}</Typography.Text>
+  if (value < 0) return <Typography.Text type="danger">{vn(value)}</Typography.Text>
+  return <Typography.Text>0</Typography.Text>
+}
+
+const USER_STATS_SORTS: EggUserStatsSortBy[] = ['kenSpent', 'kenWon', 'netKen', 'draws', 'vipDays']
+const USER_PAGE_SIZE = 10
+
+const vipColumns: ColumnsType<EggVipStatsRow> = [
   {
-    title: 'Người chơi',
-    key: 'user',
-    render: (_, row) => (
-      <Space>
-        <Avatar size="small" src={row.user.avatar || undefined}>
-          {row.user.username?.[0] ?? '?'}
-        </Avatar>
-        <Typography.Text strong>@{row.user.username}</Typography.Text>
-      </Space>
-    ),
+    title: 'Loại VIP',
+    key: 'vip',
+    render: (_, row) =>
+      row.vipTypeId > 0 ? (
+        <Space>
+          <Avatar shape="square" size="small" src={vipIconUrl(row.vipTypeId)} />
+          <Typography.Text strong>{vipName(row.vipTypeId)}</Typography.Text>
+          <Typography.Text type="secondary">#{row.vipTypeId}</Typography.Text>
+        </Space>
+      ) : (
+        <Typography.Text type="secondary">Không gắn loại VIP</Typography.Text>
+      ),
   },
-  { title: 'Lượt', dataIndex: 'draws', width: 90, align: 'right', render: (v: number) => vn(v) },
   {
-    title: 'Ken đã chi',
-    dataIndex: 'kenSpent',
+    title: 'Icon trúng',
+    dataIndex: 'iconWins',
+    width: 110,
+    align: 'right',
+    render: (v: number) => vn(v),
+  },
+  {
+    title: 'Lượt trúng ngày VIP',
+    dataIndex: 'dayWins',
+    width: 150,
+    align: 'right',
+    render: (v: number) => vn(v),
+  },
+  {
+    title: 'Tổng ngày VIP',
+    dataIndex: 'vipDays',
     width: 130,
     align: 'right',
     render: (v: number) => vn(v),
@@ -104,6 +151,9 @@ export function EggStatsPage() {
   const [from, setFrom] = useState(() => isoDate(new Date(Date.now() - 29 * 24 * 60 * 60 * 1000)))
   const [to, setTo] = useState(() => isoDate(new Date()))
   const [packId, setPackId] = useState<string | undefined>(undefined)
+  const [userSort, setUserSort] = useState<EggUserStatsSortBy>('kenSpent')
+  const [userPage, setUserPage] = useState(1)
+  const [userSearch, setUserSearch] = useState('')
 
   const { data: packs } = useEggPacks()
   const params = useMemo(
@@ -115,6 +165,118 @@ export function EggStatsPage() {
     [packId, from, to],
   )
   const { data, isFetching } = useEggStats(params)
+
+  const userStatsParams = useMemo(
+    () => ({
+      ...params,
+      userId: userSearch || undefined,
+      sortBy: userSort,
+      limit: USER_PAGE_SIZE,
+      offset: (userPage - 1) * USER_PAGE_SIZE,
+    }),
+    [params, userSearch, userSort, userPage],
+  )
+  const { data: userStats, isFetching: userStatsFetching } = useEggUserStats(userStatsParams)
+  const { data: vipStats, isFetching: vipStatsFetching } = useEggVipStats(params)
+
+  function onUserTableChange(
+    _pagination: TablePaginationConfig,
+    _filters: unknown,
+    sorter: SorterResult<EggUserStatsItem> | SorterResult<EggUserStatsItem>[],
+  ) {
+    const single = Array.isArray(sorter) ? sorter[0] : sorter
+    const field = single?.order ? String(single.field) : 'kenSpent'
+    const next = USER_STATS_SORTS.find((key) => key === field) ?? 'kenSpent'
+    if (next !== userSort) {
+      setUserSort(next)
+      setUserPage(1)
+    }
+  }
+
+  const userColumns: ColumnsType<EggUserStatsItem> = [
+    {
+      title: 'Người chơi',
+      key: 'user',
+      render: (_, row) => (
+        <Space>
+          <Avatar size="small" src={row.user.avatar || undefined}>
+            {row.user.username?.[0] ?? '?'}
+          </Avatar>
+          <Typography.Text strong>@{row.user.username}</Typography.Text>
+        </Space>
+      ),
+    },
+    {
+      title: 'Lượt',
+      dataIndex: 'draws',
+      width: 90,
+      align: 'right',
+      sorter: true,
+      sortOrder: userSort === 'draws' ? 'descend' : null,
+      sortDirections: ['descend'],
+      render: (v: number) => vn(v),
+    },
+    {
+      title: 'Trúng',
+      key: 'winRate',
+      width: 130,
+      align: 'right',
+      render: (_, row) => `${vn(row.winDraws)} (${row.winRate.toFixed(1)}%)`,
+    },
+    {
+      title: 'Ken chi',
+      dataIndex: 'kenSpent',
+      width: 120,
+      align: 'right',
+      sorter: true,
+      sortOrder: userSort === 'kenSpent' ? 'descend' : null,
+      sortDirections: ['descend'],
+      render: (v: number) => vn(v),
+    },
+    {
+      title: 'Ken trúng',
+      dataIndex: 'kenWon',
+      width: 120,
+      align: 'right',
+      sorter: true,
+      sortOrder: userSort === 'kenWon' ? 'descend' : null,
+      sortDirections: ['descend'],
+      render: (v: number) => vn(v),
+    },
+    {
+      title: 'Ròng (user)',
+      dataIndex: 'netKen',
+      width: 120,
+      align: 'right',
+      sorter: true,
+      sortOrder: userSort === 'netKen' ? 'descend' : null,
+      sortDirections: ['descend'],
+      render: (v: number) => <NetText value={v} />,
+    },
+    {
+      title: 'Ngày VIP',
+      dataIndex: 'vipDays',
+      width: 100,
+      align: 'right',
+      sorter: true,
+      sortOrder: userSort === 'vipDays' ? 'descend' : null,
+      sortDirections: ['descend'],
+      render: (v: number) => vn(v),
+    },
+    {
+      title: 'Icon',
+      dataIndex: 'vipIcons',
+      width: 80,
+      align: 'right',
+      render: (v: number) => vn(v),
+    },
+    {
+      title: 'Đập gần nhất',
+      dataIndex: 'lastDrawAt',
+      width: 150,
+      render: (v: string) => new Date(v).toLocaleString('vi-VN'),
+    },
+  ]
 
   const packOptions = (packs ?? []).map((pack) => ({ value: pack.id, label: pack.name }))
   const hasData = (data?.overview.totalDraws ?? 0) > 0
@@ -279,13 +441,47 @@ export function EggStatsPage() {
             />
           </Card>
 
-          <Card title="Top người chơi (theo Ken đã chi)">
-            <Table<EggStatsPlayer>
+          <Card title="Thống kê theo loại VIP">
+            <Table<EggVipStatsRow>
+              rowKey="vipTypeId"
+              size="small"
+              loading={vipStatsFetching}
+              columns={vipColumns}
+              dataSource={vipStats?.items ?? []}
+              pagination={{ pageSize: 10, hideOnSinglePage: true, showSizeChanger: false }}
+              locale={{ emptyText: 'Chưa có phần thưởng VIP nào được trúng' }}
+            />
+          </Card>
+
+          <Card
+            title="Thống kê theo người chơi"
+            extra={
+              <Input.Search
+                allowClear
+                placeholder="Lọc theo User ID"
+                onSearch={(value) => {
+                  setUserSearch(value.trim())
+                  setUserPage(1)
+                }}
+                style={{ width: 260 }}
+              />
+            }
+          >
+            <Table<EggUserStatsItem>
               rowKey={(row) => row.user.id}
               size="small"
-              columns={playerColumns}
-              dataSource={data.topPlayers}
-              pagination={false}
+              loading={userStatsFetching}
+              columns={userColumns}
+              dataSource={userStats?.items ?? []}
+              onChange={onUserTableChange}
+              pagination={{
+                current: userPage,
+                pageSize: USER_PAGE_SIZE,
+                total: userStats?.total ?? 0,
+                showSizeChanger: false,
+                onChange: setUserPage,
+              }}
+              locale={{ emptyText: 'Chưa có người chơi nào' }}
             />
           </Card>
         </>

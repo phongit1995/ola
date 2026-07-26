@@ -7,6 +7,10 @@ import type {
   EggPack,
   EggStatsParams,
   EggStatsResponse,
+  EggUserStatsItem,
+  EggUserStatsParams,
+  EggVipStatsParams,
+  EggVipStatsRow,
   ListResult,
   MessageResult,
   SaveEggConfigRequest,
@@ -48,6 +52,22 @@ export const AdminEggService = {
 
   async getStats(params: EggStatsParams = {}): Promise<EggStatsResponse> {
     const { data } = await http.get<ApiResponse<EggStatsResponse>>('/admin/egg/stats', { params })
+    return data.data
+  },
+
+  async getUserStats(params: EggUserStatsParams = {}): Promise<ListResult<EggUserStatsItem>> {
+    const { data } = await http.get<ApiResponse<ListResult<EggUserStatsItem>>>(
+      '/admin/egg/stats/users',
+      { params },
+    )
+    return data.data
+  },
+
+  async getVipStats(params: EggVipStatsParams = {}): Promise<{ items: EggVipStatsRow[] }> {
+    const { data } = await http.get<ApiResponse<{ items: EggVipStatsRow[] }>>(
+      '/admin/egg/stats/vip',
+      { params },
+    )
     return data.data
   },
 }

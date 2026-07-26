@@ -4,6 +4,8 @@ import type {
   CreateEggPackRequest,
   EggDrawListParams,
   EggStatsParams,
+  EggUserStatsParams,
+  EggVipStatsParams,
   SaveEggConfigRequest,
   UpdateEggPackRequest,
 } from '@/types'
@@ -11,6 +13,8 @@ import type {
 const EGG_PACKS_KEY = 'admin-egg-packs'
 const EGG_DRAWS_KEY = 'admin-egg-draws'
 const EGG_STATS_KEY = 'admin-egg-stats'
+const EGG_USER_STATS_KEY = 'admin-egg-user-stats'
+const EGG_VIP_STATS_KEY = 'admin-egg-vip-stats'
 
 export function useEggDraws(params: EggDrawListParams, enabled = true) {
   return useQuery({
@@ -31,6 +35,22 @@ export function useEggStats(params: EggStatsParams, enabled = true) {
   return useQuery({
     queryKey: [EGG_STATS_KEY, params],
     queryFn: () => AdminEggService.getStats(params),
+    enabled,
+  })
+}
+
+export function useEggUserStats(params: EggUserStatsParams, enabled = true) {
+  return useQuery({
+    queryKey: [EGG_USER_STATS_KEY, params],
+    queryFn: () => AdminEggService.getUserStats(params),
+    enabled,
+  })
+}
+
+export function useEggVipStats(params: EggVipStatsParams, enabled = true) {
+  return useQuery({
+    queryKey: [EGG_VIP_STATS_KEY, params],
+    queryFn: () => AdminEggService.getVipStats(params),
     enabled,
   })
 }

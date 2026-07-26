@@ -24,5 +24,7 @@ func (r *Router) Setup(admin *utils.AppGroup) {
 		egg.PUT("/packs/:id/config", r.controller.SaveConfig)
 		egg.GET("/draws", r.controller.ListDraws)
 		egg.GET("/stats", r.controller.GetStats)
+		egg.GET("/stats/users", r.controller.GetUserStats)
+		egg.GET("/stats/vip", r.controller.GetVipStats)
 	}
 }

@@ -699,6 +699,124 @@
                 }
             }
         },
+        "/admin/egg/stats/users": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-egg"
+                ],
+                "summary": "Thống kê đập trứng theo từng user (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Lọc theo gói",
+                        "name": "packId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Lọc theo user",
+                        "name": "userId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Từ thời gian (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến thời gian (RFC3339)",
+                        "name": "to",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "kenSpent|kenWon|netKen|draws|vipDays (mặc định kenSpent)",
+                        "name": "sortBy",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_egg.UserStatsSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/egg/stats/vip": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-egg"
+                ],
+                "summary": "Thống kê đập trứng theo loại VIP (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Lọc theo gói",
+                        "name": "packId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Lọc theo user",
+                        "name": "userId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Từ thời gian (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến thời gian (RFC3339)",
+                        "name": "to",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_egg.VipStatsSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/game-matches": {
             "get": {
                 "security": [
@@ -5965,6 +6083,45 @@
                         "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/egg/packs/{id}/gifts": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "egg"
+                ],
+                "summary": "Danh sách quà của một gói đập trứng",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Pack ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_egg.GiftListResponse"
                         }
                     },
                     "404": {
@@ -11396,6 +11553,178 @@
                 }
             }
         },
+        "internal_modules_admin_egg.UserBrief": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string",
+                    "example": "https://example.com/avatar.jpg"
+                },
+                "fullName": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "john_doe"
+                }
+            }
+        },
+        "internal_modules_admin_egg.UserStatsItem": {
+            "type": "object",
+            "properties": {
+                "draws": {
+                    "type": "integer",
+                    "example": 120
+                },
+                "kenSpent": {
+                    "type": "integer",
+                    "example": 120000
+                },
+                "kenWon": {
+                    "type": "integer",
+                    "example": 40000
+                },
+                "lastDrawAt": {
+                    "type": "string",
+                    "example": "2026-07-25T15:12:33Z"
+                },
+                "netKen": {
+                    "type": "integer",
+                    "example": -80000
+                },
+                "user": {
+                    "$ref": "#/definitions/internal_modules_admin_egg.UserBrief"
+                },
+                "vipDays": {
+                    "type": "integer",
+                    "example": 14
+                },
+                "vipIcons": {
+                    "type": "integer",
+                    "example": 2
+                },
+                "winDraws": {
+                    "type": "integer",
+                    "example": 30
+                },
+                "winRate": {
+                    "type": "number",
+                    "example": 25
+                }
+            }
+        },
+        "internal_modules_admin_egg.UserStatsResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_egg.UserStatsItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 20
+                },
+                "offset": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "internal_modules_admin_egg.UserStatsSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_egg.UserStatsResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_egg.VipStatsResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_egg.VipStatsRow"
+                    }
+                }
+            }
+        },
+        "internal_modules_admin_egg.VipStatsRow": {
+            "type": "object",
+            "properties": {
+                "dayWins": {
+                    "type": "integer",
+                    "example": 9
+                },
+                "iconWins": {
+                    "type": "integer",
+                    "example": 5
+                },
+                "vipDays": {
+                    "type": "integer",
+                    "example": 27
+                },
+                "vipTypeId": {
+                    "type": "integer",
+                    "example": 12
+                }
+            }
+        },
+        "internal_modules_admin_egg.VipStatsSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_egg.VipStatsResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
         "internal_modules_admin_game-match.MatchListResponse": {
             "type": "object",
             "properties": {
@@ -13679,6 +14008,51 @@
                 },
                 "vipTypeId": {
                     "type": "integer"
+                }
+            }
+        },
+        "internal_modules_egg.GiftListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_egg.GiftSectionView"
+                    }
+                }
+            }
+        },
+        "internal_modules_egg.GiftRewardView": {
+            "type": "object",
+            "properties": {
+                "isSuperLucky": {
+                    "type": "boolean"
+                },
+                "kenAmount": {
+                    "type": "integer"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "vipDays": {
+                    "type": "integer"
+                },
+                "vipTypeId": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_egg.GiftSectionView": {
+            "type": "object",
+            "properties": {
+                "rewards": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_egg.GiftRewardView"
+                    }
+                },
+                "type": {
+                    "$ref": "#/definitions/ola-chat-server_internal_models.EggCategoryType"
                 }
             }
         },
