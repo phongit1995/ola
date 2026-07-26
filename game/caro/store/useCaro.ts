@@ -16,6 +16,7 @@ import { createBotSession } from '../bot';
 import { findFinalWinLine } from '../helpers/board';
 import { chatErrorText, roomErrorText } from '../helpers/errorText';
 import { formatClock } from '../helpers/format';
+import { mergeMatchHistory, readBotHistory, saveBotHistory } from '../helpers/history';
 import { avatarIconSrc, opponentOf } from '../helpers/player';
 import type { CaroStore, RoomActionPending } from './types';
 import { createInitialCaroState, EMPTY_PLAYER } from './initialState';
@@ -31,6 +32,7 @@ const BOT_VIP_ID: Record<BotLevel, number> = { easy: 1, normal: 2, hard: 3 };
 const CHAT_HISTORY_LIMIT = 100;
 const WIN_RESULT_REVEAL_MS = 1700;
 const LEADERBOARD_REQUEST_TIMEOUT_MS = 8000;
+const HISTORY_REQUEST_TIMEOUT_MS = 8000;
 
 export const useCaro = create<CaroStore>()((set, get) => {
   const refs = {
@@ -56,6 +58,7 @@ export const useCaro = create<CaroStore>()((set, get) => {
     exitingMatch: null as MatchFoundData<CaroState> | null,
     handledMatchIds: new Set<string>(),
     leaderboardTimers: { day: undefined, week: undefined } as Record<LeaderboardPeriod, number | undefined>,
+    historyTimer: undefined as number | undefined,
   };
 
   const showToast = (message: string): void => {
@@ -298,6 +301,7 @@ export const useCaro = create<CaroStore>()((set, get) => {
         lobbyPhase: 'ready',
         lobbyError: null,
         lobbyAnimKey: s.lobbyAnimKey + 1,
+        history: mergeMatchHistory(s.history, readBotHistory(info.id)),
       }));
       animateKen(info.ken ?? 0);
     });
@@ -379,6 +383,19 @@ export const useCaro = create<CaroStore>()((set, get) => {
           ...state.leaderboardErrors,
           [period]: data.error ?? null,
         },
+      }));
+    });
+
+    target.onHistory((data) => {
+      if (target !== refs.online) return;
+      window.clearTimeout(refs.historyTimer);
+      refs.historyTimer = undefined;
+      set((state) => ({
+        history: data.error
+          ? state.history
+          : mergeMatchHistory(data.items, refs.user ? readBotHistory(refs.user.id) : []),
+        historyLoading: false,
+        historyError: data.error ?? null,
       }));
     });
 
@@ -538,6 +555,7 @@ export const useCaro = create<CaroStore>()((set, get) => {
         lobbyVisible: false,
         rankedVisible: false,
         leaderboardVisible: false,
+        historyVisible: false,
         overlay: null,
         result: null,
         winLine: null,
@@ -620,6 +638,20 @@ export const useCaro = create<CaroStore>()((set, get) => {
       const myId = match?.players[match.you]?.id ?? refs.user?.id ?? target.userId;
       const won = data.winnerId != null && data.winnerId !== '' && data.winnerId === myId;
       const draw = data.winnerId == null || data.winnerId === '';
+      if (target === refs.bot && match && refs.user) {
+        const opponent = match.players[1 - match.you];
+        if (opponent) {
+          const botHistory = saveBotHistory(refs.user.id, {
+            id: data.matchId,
+            playedAt: Date.now(),
+            opponentId: 'bot',
+            opponentName: opponent.name,
+            bet: 0,
+            outcome: draw ? 'draw' : won ? 'win' : 'lose',
+          });
+          set((state) => ({ history: mergeMatchHistory(state.history, botHistory) }));
+        }
+      }
       bridge.gameOver({ matchId: data.matchId, winnerId: data.winnerId, reason: data.reason, won });
       refs.match = null;
       if (exiting) {
@@ -778,6 +810,8 @@ export const useCaro = create<CaroStore>()((set, get) => {
       window.clearTimeout(refs.leaderboardTimers.week);
       refs.leaderboardTimers.day = undefined;
       refs.leaderboardTimers.week = undefined;
+      window.clearTimeout(refs.historyTimer);
+      refs.historyTimer = undefined;
       refs.bot = null;
       refs.online = null;
       refs.session = null;
@@ -881,11 +915,38 @@ export const useCaro = create<CaroStore>()((set, get) => {
     },
 
     showLeaderboard() {
-      set({ lobbyVisible: true, rankedVisible: false, leaderboardVisible: true });
+      set({ lobbyVisible: true, rankedVisible: false, historyVisible: false, leaderboardVisible: true });
     },
 
     hideLeaderboard() {
       set({ leaderboardVisible: false });
+    },
+
+    showHistory() {
+      set({ lobbyVisible: true, rankedVisible: false, leaderboardVisible: false, historyVisible: true });
+      get().loadHistory();
+    },
+
+    hideHistory() {
+      set({ historyVisible: false });
+    },
+
+    loadHistory() {
+      const request = (): void => {
+        if (!refs.online) {
+          set({ historyLoading: false, historyError: 'Không kết nối được máy chủ' });
+          return;
+        }
+        set({ historyLoading: true, historyError: null });
+        window.clearTimeout(refs.historyTimer);
+        refs.historyTimer = window.setTimeout(() => {
+          refs.historyTimer = undefined;
+          set({ historyLoading: false, historyError: 'Máy chủ phản hồi quá lâu' });
+        }, HISTORY_REQUEST_TIMEOUT_MS);
+        refs.online.getHistory();
+      };
+      if (refs.online) request();
+      else void connectToServer().then(request);
     },
 
     loadLeaderboard(period) {

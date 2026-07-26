@@ -16,6 +16,7 @@ const (
 	C2SRoomReady   = "ROOM_READY"
 	C2SRoomStart   = "ROOM_START"
 	C2SLeaderboard = "LEADERBOARD"
+	C2SHistory     = "HISTORY"
 
 	S2CUserInfo             = "USER_INFO"
 	S2CQueueWaiting         = "QUEUE_WAITING"
@@ -34,6 +35,7 @@ const (
 	S2COpponentDisconnected = "OPPONENT_DISCONNECTED"
 	S2COpponentReconnected  = "OPPONENT_RECONNECTED"
 	S2CLeaderboard          = "LEADERBOARD"
+	S2CHistory              = "HISTORY"
 )
 
 type Envelope struct {
@@ -78,6 +80,20 @@ type LeaderboardData struct {
 	To     int64              `json:"to"`
 	Items  []LeaderboardEntry `json:"items"`
 	Error  string             `json:"error,omitempty"`
+}
+
+type MatchHistoryEntry struct {
+	ID           string `json:"id"`
+	PlayedAt     int64  `json:"playedAt"`
+	OpponentID   string `json:"opponentId"`
+	OpponentName string `json:"opponentName"`
+	Bet          int    `json:"bet"`
+	Outcome      string `json:"outcome"`
+}
+
+type MatchHistoryData struct {
+	Items []MatchHistoryEntry `json:"items"`
+	Error string              `json:"error,omitempty"`
 }
 
 type MatchFoundData struct {

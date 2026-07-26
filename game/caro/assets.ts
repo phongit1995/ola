@@ -113,6 +113,14 @@ import leaderboardPageNumber from './assets/leaderboard/page-number.webp';
 import leaderboardPanel from './assets/leaderboard/panel.webp';
 import leaderboardDivider from './assets/leaderboard/divider.webp';
 import leaderboardKen from './assets/leaderboard/ken.webp';
+import historyPanel from './assets/history/panel.webp';
+import historyTitleFrame from './assets/history/title-frame.webp';
+import historyIcon from './assets/history/icon.webp';
+import historyCloseFrame from './assets/history/close-frame.webp';
+import historyCloseX from './assets/history/close-x.webp';
+import historyTable from './assets/history/table.webp';
+import historyPageBtn from './assets/history/page-btn.webp';
+import historyKen from './assets/history/ken.webp';
 
 export const BOARD_ASSETS = {
   boardBg,
@@ -189,12 +197,24 @@ export const LEADERBOARD_ASSETS = {
   leaderboardKen,
 } as const;
 
+export const HISTORY_ASSETS = {
+  historyPanel,
+  historyTitleFrame,
+  historyIcon,
+  historyCloseFrame,
+  historyCloseX,
+  historyTable,
+  historyPageBtn,
+  historyKen,
+} as const;
+
 const ALL_ASSETS = {
   ...LOBBY_ASSETS,
   ...BOARD_ASSETS,
   ...RANKED_ASSETS,
   ...RESULT_ASSETS,
   ...LEADERBOARD_ASSETS,
+  ...HISTORY_ASSETS,
 } as const;
 
 export type AssetKey = keyof typeof ALL_ASSETS;

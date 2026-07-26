@@ -36,11 +36,12 @@ export function LobbyScreen({ progress }: { progress: string }) {
     reset();
   }, [lobbyAnimKey, reset]);
 
-  const { playBot, playRanked, showLeaderboard, retry, exitApp, showToast } = useCaro(
+  const { playBot, playRanked, showLeaderboard, showHistory, retry, exitApp, showToast } = useCaro(
     useShallow((s) => ({
       playBot: s.playBot,
       playRanked: s.playRanked,
       showLeaderboard: s.showLeaderboard,
+      showHistory: s.showHistory,
       retry: s.retry,
       exitApp: s.exitApp,
       showToast: s.showToast,
@@ -100,7 +101,7 @@ export function LobbyScreen({ progress }: { progress: string }) {
           </button>
         </div>
         <div className="lobby-bottom" style={assetBg('bottomFrame')}>
-          <button type="button" id="lobby-history" onClick={() => showToast('Tính năng đang phát triển')}>
+          <button type="button" id="lobby-history" onClick={showHistory}>
             <img src={assetSrc('icHistory')} alt="" />
             <span>Lịch sử</span>
           </button>

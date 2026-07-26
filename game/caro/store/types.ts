@@ -1,6 +1,7 @@
 import type {
   LeaderboardEntry,
   LeaderboardPeriod,
+  MatchHistoryEntry,
   RoomInfo,
   RoomStateData,
   UserInfoData,
@@ -56,6 +57,8 @@ export interface TurnAnnouncement {
   mine: boolean;
 }
 
+export type HistoryEntry = MatchHistoryEntry;
+
 export interface CaroState {
   lobbyVisible: boolean;
   lobbyPhase: LobbyPhase;
@@ -70,6 +73,10 @@ export interface CaroState {
   leaderboards: Record<LeaderboardPeriod, LeaderboardEntry[] | null>;
   leaderboardLoading: Record<LeaderboardPeriod, boolean>;
   leaderboardErrors: Record<LeaderboardPeriod, string | null>;
+  historyVisible: boolean;
+  history: HistoryEntry[];
+  historyLoading: boolean;
+  historyError: string | null;
   rooms: RoomInfo[];
   roomWaiting: RoomStateData | null;
   boardMode: BoardMode;
@@ -116,6 +123,9 @@ export interface CaroActions {
   showLeaderboard(): void;
   hideLeaderboard(): void;
   loadLeaderboard(period: LeaderboardPeriod): void;
+  showHistory(): void;
+  hideHistory(): void;
+  loadHistory(): void;
   retry(): void;
   exitApp(): void;
   placeMove(x: number, y: number): void;

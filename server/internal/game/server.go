@@ -274,9 +274,20 @@ func (s *Server) handleMessage(data *SocketData, raw any) {
 			}
 		}
 		s.sendLeaderboard(data.GameID, data.UserID, d.Period)
+	case protocol.C2SHistory:
+		s.sendMatchHistory(data.GameID, data.UserID)
 	default:
 		s.logger.Debugw("Unknown game message type", "type", env.Type, "user_id", data.UserID)
 	}
+}
+
+func (s *Server) sendMatchHistory(gameID, userID string) {
+	data, err := s.repo.MatchHistory(gameID, userID)
+	if err != nil {
+		s.logger.Errorw("Failed to load game history", "game_id", gameID, "user_id", userID, "error", err)
+		data.Error = "Không thể tải lịch sử đấu"
+	}
+	s.ToUser(gameID, userID, protocol.OutEnvelope{Type: protocol.S2CHistory, Data: data})
 }
 
 func (s *Server) sendLeaderboard(gameID, userID, period string) {

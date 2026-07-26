@@ -12,6 +12,7 @@ export const C2S = {
   RoomReady: 'ROOM_READY',
   RoomStart: 'ROOM_START',
   Leaderboard: 'LEADERBOARD',
+  History: 'HISTORY',
 } as const;
 
 export const S2C = {
@@ -32,6 +33,7 @@ export const S2C = {
   OpponentDisconnected: 'OPPONENT_DISCONNECTED',
   OpponentReconnected: 'OPPONENT_RECONNECTED',
   Leaderboard: 'LEADERBOARD',
+  History: 'HISTORY',
 } as const;
 
 export const GAME_ERROR_CODE = {
@@ -82,6 +84,22 @@ export interface LeaderboardData {
   from: number;
   to: number;
   items: LeaderboardEntry[];
+  error?: string;
+}
+
+export type MatchHistoryOutcome = 'win' | 'lose' | 'draw';
+
+export interface MatchHistoryEntry {
+  id: string;
+  playedAt: number;
+  opponentId: string;
+  opponentName: string;
+  bet: number;
+  outcome: MatchHistoryOutcome;
+}
+
+export interface MatchHistoryData {
+  items: MatchHistoryEntry[];
   error?: string;
 }
 

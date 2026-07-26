@@ -4,6 +4,7 @@ import { BOARD_ASSETS, preloadAssets } from './assets';
 import { ConfirmModal } from './components/ConfirmModal';
 import { BoardScreen } from './screens/board/BoardScreen';
 import { LeaderboardScreen } from './screens/leaderboard/LeaderboardScreen';
+import { HistoryScreen } from './screens/history/HistoryScreen';
 import { LobbyScreen } from './screens/lobby/LobbyScreen';
 import { RankedScreen } from './screens/ranked/RankedScreen';
 import { ResultScreen } from './screens/result/ResultScreen';
@@ -58,6 +59,7 @@ export function App() {
       <BoardScreen />
       <LobbyScreen key={lobbyAnimKey} progress={progress} />
       <LeaderboardScreen />
+      <HistoryScreen />
       <RankedScreen />
       <ResultScreen />
       <OppAwayBanner />

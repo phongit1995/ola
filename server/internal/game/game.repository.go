@@ -49,6 +49,7 @@ func (r *Repository) GetUserInfo(userID string) (*protocol.UserInfoData, error) 
 }
 
 const leaderboardLimit = 100
+const matchHistoryLimit = 100
 
 var gameGMT7 = time.FixedZone("GMT+7", 7*60*60)
 
@@ -58,6 +59,17 @@ type leaderboardRow struct {
 	VipType    *string    `gorm:"column:vip_type"`
 	VipEndTime *time.Time `gorm:"column:vip_end_time"`
 	Ken        int64      `gorm:"column:ken"`
+}
+
+type matchHistoryRow struct {
+	MatchID     string     `gorm:"column:match_id"`
+	PlayedAt    time.Time  `gorm:"column:played_at"`
+	Player0ID   uuid.UUID  `gorm:"column:player0_id"`
+	Player1ID   uuid.UUID  `gorm:"column:player1_id"`
+	WinnerID    *uuid.UUID `gorm:"column:winner_id"`
+	Player0Name string     `gorm:"column:player0_name"`
+	Player1Name string     `gorm:"column:player1_name"`
+	Bet         int        `gorm:"column:bet"`
 }
 
 func normalizeLeaderboardPeriod(period string) string {
@@ -118,6 +130,64 @@ func (r *Repository) Leaderboard(gameID, period string) (protocol.LeaderboardDat
 			Username: row.Username,
 			VipType:  vipType,
 			Ken:      row.Ken,
+		}
+	}
+	return data, nil
+}
+
+func (r *Repository) MatchHistory(gameID, userID string) (protocol.MatchHistoryData, error) {
+	data := protocol.MatchHistoryData{Items: []protocol.MatchHistoryEntry{}}
+	uid, err := uuid.Parse(userID)
+	if err != nil {
+		return data, err
+	}
+
+	var rows []matchHistoryRow
+	err = r.db.Table("game_matches").
+		Select(`game_matches.match_id, game_matches.finished_at AS played_at,
+			game_matches.player0_id, game_matches.player1_id, game_matches.winner_id,
+			game_matches.bet, player0.username AS player0_name, player1.username AS player1_name`).
+		Joins("LEFT JOIN users AS player0 ON player0.id = game_matches.player0_id").
+		Joins("LEFT JOIN users AS player1 ON player1.id = game_matches.player1_id").
+		Where(`game_matches.game_id = ? AND game_matches.status = ?
+			AND (game_matches.player0_id = ? OR game_matches.player1_id = ?)
+			AND game_matches.finished_at IS NOT NULL AND game_matches.reason <> ?
+			AND game_matches.deleted_at IS NULL`,
+			gameID, matchStatusFinished, uid, uid, reasonVoid).
+		Order("game_matches.finished_at DESC, game_matches.id DESC").
+		Limit(matchHistoryLimit).
+		Scan(&rows).Error
+	if err != nil {
+		return data, err
+	}
+
+	data.Items = make([]protocol.MatchHistoryEntry, len(rows))
+	for i, row := range rows {
+		opponentID := row.Player1ID
+		opponentName := row.Player1Name
+		if row.Player1ID == uid {
+			opponentID = row.Player0ID
+			opponentName = row.Player0Name
+		}
+		if opponentName == "" {
+			opponentName = opponentID.String()[:8]
+		}
+
+		outcome := "draw"
+		if row.WinnerID != nil {
+			if *row.WinnerID == uid {
+				outcome = "win"
+			} else {
+				outcome = "lose"
+			}
+		}
+		data.Items[i] = protocol.MatchHistoryEntry{
+			ID:           row.MatchID,
+			PlayedAt:     row.PlayedAt.UnixMilli(),
+			OpponentID:   opponentID.String(),
+			OpponentName: opponentName,
+			Bet:          row.Bet,
+			Outcome:      outcome,
 		}
 	}
 	return data, nil
