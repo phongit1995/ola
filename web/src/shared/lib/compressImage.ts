@@ -1,4 +1,5 @@
-const MAX_UPLOAD_BYTES = 2 * 1024 * 1024;
+import { MAX_UPLOAD_BYTES } from '@ola/shared/constants';
+
 const MAX_DIMENSION = 1920;
 const MIN_DIMENSION = 320;
 const DIMENSION_STEP = 0.8;

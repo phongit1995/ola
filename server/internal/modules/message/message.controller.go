@@ -202,7 +202,7 @@ func (ctrl *Controller) UpdateMessage(c *gin.Context) (interface{}, error) {
 
 // SendImageMessage godoc
 // @Summary      Send image message
-// @Description  Upload an image and create a message of type=image in one call (≤2MB jpeg/png/gif/webp)
+// @Description  Upload an image and create a message of type=image in one call (≤3MB jpeg/png/gif/webp)
 // @Tags         messages
 // @Accept       multipart/form-data
 // @Produce      json
