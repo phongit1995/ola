@@ -268,8 +268,6 @@ export function ChatListScreen() {
     [navigation]
   );
 
-  const comingSoon = () => pushToast('info', t('chat.comingSoon'));
-
   async function startCompose(userId: string) {
     setComposeOpen(false);
     const conversation = await startDirect(userId);
@@ -313,7 +311,7 @@ export function ChatListScreen() {
   ];
 
   const contactsMenu: ListOption[] = [
-    { key: 'buy-vip', label: t('chat.menuBuyVip'), onSelect: comingSoon },
+    { key: 'buy-vip', label: t('chat.menuBuyVip'), onSelect: () => navigation.navigate(ROOT_ROUTES.VipStore) },
     { key: 'change-avatar', label: t('chat.menuChangeAvatar'), onSelect: () => setAvatarOpen(true) },
     { key: 'change-cover', label: t('chat.menuChangeCover'), onSelect: () => setCoverOpen(true) },
     {

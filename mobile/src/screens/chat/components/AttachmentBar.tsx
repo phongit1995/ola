@@ -63,6 +63,11 @@ function MorePanel({
 
   const buttons: Array<{ key: string; label: string; onPress: () => void }> = [
     {
+      key: 'location',
+      label: t('chat.attachSendLocation'),
+      onPress: () => push('info', t('chat.comingSoon')),
+    },
+    {
       key: 'transfer-ken',
       label: t('chat.attachTransferKen'),
       onPress: () => (onTransferKen != null ? onTransferKen() : push('info', t('chat.comingSoon'))),
