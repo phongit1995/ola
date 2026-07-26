@@ -17,6 +17,7 @@ import {
   type CaroMove,
   type CaroState,
 } from './types';
+import { botFinishLine, botGreeting, botMoveLine, botReply } from './helpers/botChat';
 
 const TURN_MS = (Number(import.meta.env.VITE_GAME_TURN_SECONDS) || 45) * 1000;
 const PLAYER_MARK = 1;
@@ -29,22 +30,6 @@ export const BOT_LEVELS: Record<BotLevel, { name: string; thinkMs: number }> = {
   normal: { name: 'Máy · Thường', thinkMs: 500 },
   hard: { name: 'Máy · Khó', thinkMs: 650 },
 };
-
-const BOT_GREETINGS: Record<BotLevel, string[]> = {
-  easy: ['Chào bạn! Mình mới tập chơi thôi 😄', 'Chơi vui nhé, nhẹ tay với mình nha!'],
-  normal: ['Chào bạn, bắt đầu nhé!', 'Một ván Caro thật hay nào!'],
-  hard: ['Chào đối thủ. Mình sẽ chơi nghiêm túc đấy!', 'Sẵn sàng chưa? Đừng để mình có bốn quân nhé.'],
-};
-
-const BOT_REPLIES = [
-  'Hay đấy!',
-  'Mình đang suy nghĩ đây 🤔',
-  'Chúc bạn may mắn!',
-  'Nước đi thú vị đó.',
-  'Cẩn thận nhé, mình sắp phản công rồi!',
-];
-
-const BOT_MOVE_LINES = ['Đến lượt bạn đó!', 'Mình đi xong rồi nhé.', 'Thử chặn nước này xem!'];
 
 type Handler = (data: never) => void;
 type ServerEventType = (typeof S2C)[keyof typeof S2C];
@@ -62,6 +47,7 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
   let turnTimer: number | undefined;
   let botTimer: number | undefined;
   let lastPlayerChatAt = 0;
+  let lastBotLine = '';
   const chatTimers = new Set<number>();
 
   const on = (type: ServerEventType, handler: Handler): (() => void) => {
@@ -87,7 +73,12 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
     chatTimers.clear();
   };
 
-  const randomLine = (lines: string[]): string => lines[Math.floor(Math.random() * lines.length)];
+  const randomLine = (lines: readonly string[]): string => {
+    const choices = lines.length > 1 ? lines.filter((line) => line !== lastBotLine) : lines;
+    const line = choices[Math.floor(Math.random() * choices.length)];
+    lastBotLine = line;
+    return line;
+  };
 
   const emitChat = (userId: 'you' | 'bot', name: string, text: string): void => {
     emit(S2C.ChatMessage, {
@@ -109,14 +100,6 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
     chatTimers.add(timer);
   };
 
-  const botReply = (message: string): string => {
-    const normalized = message.toLocaleLowerCase('vi-VN');
-    if (/\b(chào|hello|hi)\b/u.test(normalized)) return 'Chào bạn! Chúng ta chơi vui nhé 😄';
-    if (normalized.includes('khó')) return level === 'hard' ? 'Khó mới vui chứ!' : 'Mình cũng đang cố hết sức đây!';
-    if (normalized.includes('hay')) return 'Cảm ơn bạn, nước của bạn cũng hay lắm!';
-    return randomLine(BOT_REPLIES);
-  };
-
   const deadline = (): number => Date.now() + TURN_MS;
 
   const armPlayerTimeout = (): void => {
@@ -125,6 +108,7 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
   };
 
   const finish = (winner: 'you' | 'bot' | null, reason: MatchOverData['reason']): void => {
+    emitChat('bot', BOT_LEVELS[level].name, botFinishLine(winner, reason, randomLine));
     playing = false;
     clearTimers();
     emit(S2C.MatchOver, {
@@ -173,7 +157,7 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
     playerTurn = true;
     armPlayerTimeout();
     pushState(0, move, 1);
-    if (Math.random() < 0.25) scheduleBotChat(randomLine(BOT_MOVE_LINES), 350);
+    if (Math.random() < 0.25) scheduleBotChat(botMoveLine(level, randomLine), 350);
   };
 
   return {
@@ -200,7 +184,7 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
         turn: 0,
         deadline: deadline(),
       } satisfies MatchFoundData<CaroState>);
-      scheduleBotChat(randomLine(BOT_GREETINGS[level]), 650 + Math.floor(Math.random() * 500));
+      scheduleBotChat(botGreeting(level, randomLine), 650 + Math.floor(Math.random() * 500));
     },
 
     leaveQueue() {},
@@ -259,7 +243,7 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
       lastPlayerChatAt = now;
       const message = characters.join('');
       emitChat('you', 'Bạn', message);
-      scheduleBotChat(botReply(message), 700 + Math.floor(Math.random() * 900));
+      scheduleBotChat(botReply(message, level, randomLine), 700 + Math.floor(Math.random() * 900));
     },
     sendRoomChat() {},
 
