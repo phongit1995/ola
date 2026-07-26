@@ -60,6 +60,7 @@ button:focus-visible,
 #app {
   display: flex;
   flex-direction: column;
+  position: relative;
   width: 100%;
   max-width: 520px;
   margin: 0 auto;
@@ -734,6 +735,7 @@ button:focus-visible,
 
 #chatbox {
   --chat-rule-color: rgba(29, 79, 139, 0.28);
+  position: relative;
   width: min(100%, 92vw);
   max-width: 480px;
   margin: 0 auto;
@@ -835,6 +837,116 @@ button:focus-visible,
   transition: transform 100ms ease-out;
 }
 
+.caro-reaction-area {
+  position: relative;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+}
+
+.caro-reaction-trigger {
+  width: clamp(20px, 5.5vw, 27px);
+  height: clamp(20px, 5.5vw, 27px);
+  flex: 0 0 auto;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation;
+  user-select: none;
+  transition: transform 100ms ease-out, filter 120ms ease-out;
+}
+
+.caro-reaction-trigger img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 2px rgba(9, 24, 43, 0.28));
+}
+
+.caro-reaction-trigger:active {
+  transform: scale(0.9);
+}
+
+.caro-reaction-picker {
+  position: absolute;
+  right: -34px;
+  bottom: calc(100% + 10px);
+  z-index: 45;
+  width: max-content;
+  max-width: calc(92vw - 22px);
+  display: grid;
+  grid-template-columns: repeat(6, clamp(34px, 10vw, 44px));
+  gap: clamp(2px, 1vw, 5px);
+  padding: clamp(6px, 1.8vw, 9px);
+  border: 2px solid rgba(29, 79, 139, 0.78);
+  border-radius: 14px;
+  background: rgba(253, 246, 231, 0.98);
+  box-shadow: 0 8px 22px rgba(9, 24, 43, 0.3);
+  animation: caro-reaction-picker-in 150ms ease-out both;
+}
+
+.caro-reaction-picker::after {
+  content: '';
+  position: absolute;
+  right: 43px;
+  top: 100%;
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid rgba(29, 79, 139, 0.78);
+  border-bottom: 2px solid rgba(29, 79, 139, 0.78);
+  background: #fdf6e7;
+  transform: translateY(-5px) rotate(45deg);
+}
+
+.caro-reaction-picker button {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  aspect-ratio: 1;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation;
+  user-select: none;
+  transition: transform 120ms ease-out, background-color 120ms ease-out;
+}
+
+.caro-reaction-picker button:hover,
+.caro-reaction-picker button:focus-visible {
+  background: rgba(29, 79, 139, 0.1);
+}
+
+.caro-reaction-picker button:active {
+  transform: scale(0.84);
+}
+
+.caro-reaction-picker img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 2px rgba(9, 24, 43, 0.18));
+}
+
+@keyframes caro-reaction-picker-in {
+  from {
+    opacity: 0;
+    transform: translateY(7px) scale(0.92);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 .chat-send img {
   height: 100%;
   width: auto;
@@ -920,9 +1032,70 @@ button:focus-visible,
 }
 
 #chat-input:disabled,
-.chat-send:disabled {
+.chat-send:disabled,
+.caro-reaction-trigger:disabled {
   cursor: default;
   opacity: 0.48;
+}
+
+.caro-reaction-balloons {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.caro-reaction-balloons img {
+  position: absolute;
+  object-fit: contain;
+  opacity: 0;
+  will-change: transform, opacity;
+  animation-name: caro-reaction-fly;
+  animation-timing-function: ease-out;
+  animation-fill-mode: both;
+  filter: drop-shadow(0 3px 4px rgba(9, 24, 43, 0.28));
+}
+
+@keyframes caro-reaction-fly {
+  0% {
+    opacity: 0;
+    transform: translate3d(-50%, 8px, 0) scale(0.45) rotate(-7deg);
+  }
+
+  10% {
+    opacity: 1;
+  }
+
+  30% {
+    transform: translate3d(calc(-50% + var(--reaction-sway)), var(--reaction-rise-30), 0) scale(1) rotate(5deg);
+  }
+
+  62% {
+    opacity: 0.96;
+    transform: translate3d(
+        calc(-50% + var(--reaction-return-sway)),
+        var(--reaction-rise-62),
+        0
+      )
+      scale(1.08) rotate(-4deg);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate3d(calc(-50% + var(--reaction-drift)), var(--reaction-rise-end), 0) scale(1.16)
+      rotate(7deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .caro-reaction-picker {
+    animation: none;
+  }
+
+  .caro-reaction-balloons img {
+    animation-duration: 900ms !important;
+  }
 }
 
 #board-toast {

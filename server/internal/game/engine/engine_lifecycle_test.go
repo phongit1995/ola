@@ -897,6 +897,104 @@ func TestMatchChatValidationAndBroadcast(t *testing.T) {
 	}
 }
 
+func TestMatchReactionValidationAndBroadcast(t *testing.T) {
+	t.Run("broadcasts an allowed reaction to both players", func(t *testing.T) {
+		gameEngine, _, emitter := newLifecycleTestEngine(newMemoryActiveMatchStore())
+		defer stopEngineTimers(gameEngine)
+		match := startPersistenceTestMatch(t, gameEngine)
+		sender := match.players[0]
+
+		gameEngine.MatchReaction(match.GameID, sender.ID, match.ID, protocol.ReactionTypeLove)
+		for _, player := range match.players {
+			envelope, ok := emitter.last(player.ID, protocol.S2CReaction)
+			if !ok {
+				t.Fatalf("%s did not receive reaction", player.ID)
+			}
+			data, ok := envelope.Data.(protocol.ReactionData)
+			if !ok || data.MatchID != match.ID || data.UserID != sender.ID ||
+				data.Type != protocol.ReactionTypeLove || data.SentAt <= 0 {
+				t.Fatalf("unexpected reaction data for %s: %#v", player.ID, envelope.Data)
+			}
+		}
+	})
+
+	t.Run("rate limits each player independently", func(t *testing.T) {
+		gameEngine, _, emitter := newLifecycleTestEngine(newMemoryActiveMatchStore())
+		defer stopEngineTimers(gameEngine)
+		match := startPersistenceTestMatch(t, gameEngine)
+		first := match.players[0]
+		second := match.players[1]
+
+		gameEngine.MatchReaction(match.GameID, first.ID, match.ID, protocol.ReactionTypeLike)
+		gameEngine.MatchReaction(match.GameID, first.ID, match.ID, protocol.ReactionTypeHaha)
+		requireErrorCode(t, emitter, first.ID, protocol.ErrorCodeReactionRateLimited)
+
+		gameEngine.MatchReaction(match.GameID, second.ID, match.ID, protocol.ReactionTypeWow)
+		for _, player := range match.players {
+			if count := emitter.count(player.ID, protocol.S2CReaction); count != 2 {
+				t.Fatalf("%s received %d reactions, want 2", player.ID, count)
+			}
+		}
+	})
+
+	tests := []struct {
+		name         string
+		gameID       string
+		userID       string
+		matchID      string
+		reactionType string
+		code         string
+	}{
+		{
+			name:         "no active match",
+			gameID:       persistenceTestGameID,
+			userID:       "missing",
+			matchID:      "missing-match",
+			reactionType: protocol.ReactionTypeLike,
+			code:         protocol.ErrorCodeNoMatch,
+		},
+		{
+			name:         "wrong match",
+			matchID:      "different-match",
+			reactionType: protocol.ReactionTypeLike,
+			code:         protocol.ErrorCodeMatchMismatch,
+		},
+		{
+			name:         "unknown reaction",
+			reactionType: "THUMBS_DOWN",
+			code:         protocol.ErrorCodeInvalidReaction,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			gameEngine, _, emitter := newLifecycleTestEngine(newMemoryActiveMatchStore())
+			defer stopEngineTimers(gameEngine)
+			match := startPersistenceTestMatch(t, gameEngine)
+			gameID := test.gameID
+			if gameID == "" {
+				gameID = match.GameID
+			}
+			userID := test.userID
+			if userID == "" {
+				userID = match.players[0].ID
+			}
+			matchID := test.matchID
+			if matchID == "" {
+				matchID = match.ID
+			}
+
+			gameEngine.MatchReaction(gameID, userID, matchID, test.reactionType)
+			requireErrorCode(t, emitter, userID, test.code)
+			for _, player := range match.players {
+				if emitter.count(player.ID, protocol.S2CReaction) != 0 {
+					t.Fatal("invalid reaction was broadcast")
+				}
+			}
+		})
+	}
+}
+
 func TestRoomChatValidationAndBroadcast(t *testing.T) {
 	t.Run("both room members can chat before a match", func(t *testing.T) {
 		gameEngine, rooms, emitter := newLifecycleTestEngine(newMemoryActiveMatchStore())

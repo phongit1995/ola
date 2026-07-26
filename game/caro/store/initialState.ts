@@ -55,5 +55,6 @@ export function createInitialCaroState(): CaroState {
     turnAnnounce: null,
     winLine: null,
     messages: [],
+    reactionNotice: null,
   };
 }

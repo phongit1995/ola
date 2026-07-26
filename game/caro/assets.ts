@@ -100,6 +100,13 @@ import boardMenuBtn from './assets/board/menu-btn.webp';
 import boardForfeitIcon from './assets/board/ic-forfeit.webp';
 import boardChatFrame from './assets/board/chat-frame-clean.webp';
 import boardSendIcon from './assets/board/send-icon.webp';
+import boardReactionIcon from './assets/board/reaction-icon.webp';
+import reactionLike from './assets/reactions/like.webp';
+import reactionLove from './assets/reactions/love.webp';
+import reactionHaha from './assets/reactions/haha.webp';
+import reactionWow from './assets/reactions/wow.webp';
+import reactionSad from './assets/reactions/sad.webp';
+import reactionAngry from './assets/reactions/angry.webp';
 import leaderboardTitleFrame from './assets/leaderboard/title-frame.webp';
 import leaderboardCup from './assets/leaderboard/cup.webp';
 import leaderboardCloseFrame from './assets/leaderboard/close-frame.webp';
@@ -154,6 +161,16 @@ export const BOARD_ASSETS = {
   boardForfeitIcon,
   chatFrame: boardChatFrame,
   sendIcon: boardSendIcon,
+  reactionIcon: boardReactionIcon,
+} as const;
+
+export const REACTION_ASSETS = {
+  reactionLike,
+  reactionLove,
+  reactionHaha,
+  reactionWow,
+  reactionSad,
+  reactionAngry,
 } as const;
 
 export const RANKED_ASSETS = {
@@ -231,6 +248,7 @@ const MODAL_ASSETS = {
 const ALL_ASSETS = {
   ...LOBBY_ASSETS,
   ...BOARD_ASSETS,
+  ...REACTION_ASSETS,
   ...RANKED_ASSETS,
   ...RESULT_ASSETS,
   ...LEADERBOARD_ASSETS,
@@ -313,6 +331,10 @@ export function preloadModalAssets(): Promise<void> {
 
 export function preloadResultAssets(): void {
   void preloadUrls(Object.values(RESULT_ASSETS), undefined, 30000);
+}
+
+export function preloadReactionAssets(): void {
+  void preloadUrls(Object.values(REACTION_ASSETS), undefined, 30000);
 }
 
 export const VIP_DEFAULT_ICON = '/ola_smiley_online.png';

@@ -3,26 +3,28 @@ package protocol
 import "encoding/json"
 
 const (
-	C2SQueueJoin   = "QUEUE_JOIN"
-	C2SQueueLeave  = "QUEUE_LEAVE"
-	C2SMove        = "MOVE"
-	C2SChatSend    = "CHAT_SEND"
-	C2SForfeit     = "FORFEIT"
-	C2SRoomCreate  = "ROOM_CREATE"
-	C2SRoomJoin    = "ROOM_JOIN"
-	C2SRoomLeave   = "ROOM_LEAVE"
-	C2SRoomList    = "ROOM_LIST"
-	C2SRoomKick    = "ROOM_KICK"
-	C2SRoomReady   = "ROOM_READY"
-	C2SRoomStart   = "ROOM_START"
-	C2SLeaderboard = "LEADERBOARD"
-	C2SHistory     = "HISTORY"
+	C2SQueueJoin    = "QUEUE_JOIN"
+	C2SQueueLeave   = "QUEUE_LEAVE"
+	C2SMove         = "MOVE"
+	C2SChatSend     = "CHAT_SEND"
+	C2SReactionSend = "REACTION_SEND"
+	C2SForfeit      = "FORFEIT"
+	C2SRoomCreate   = "ROOM_CREATE"
+	C2SRoomJoin     = "ROOM_JOIN"
+	C2SRoomLeave    = "ROOM_LEAVE"
+	C2SRoomList     = "ROOM_LIST"
+	C2SRoomKick     = "ROOM_KICK"
+	C2SRoomReady    = "ROOM_READY"
+	C2SRoomStart    = "ROOM_START"
+	C2SLeaderboard  = "LEADERBOARD"
+	C2SHistory      = "HISTORY"
 
 	S2CUserInfo             = "USER_INFO"
 	S2CQueueWaiting         = "QUEUE_WAITING"
 	S2CMatchFound           = "MATCH_FOUND"
 	S2CState                = "STATE"
 	S2CChatMessage          = "CHAT_MESSAGE"
+	S2CReaction             = "REACTION"
 	S2CMatchOver            = "MATCH_OVER"
 	S2CError                = "ERROR"
 	S2CRoomList             = "ROOM_LIST"
@@ -39,40 +41,51 @@ const (
 )
 
 const (
-	ErrorCodeAlreadyInRoom      = "ALREADY_IN_ROOM"
-	ErrorCodeBetNotAllowed      = "BET_NOT_ALLOWED"
-	ErrorCodeChatRateLimited    = "CHAT_RATE_LIMITED"
-	ErrorCodeChatTooLong        = "CHAT_TOO_LONG"
-	ErrorCodeInsufficientKen    = "INSUFFICIENT_KEN"
-	ErrorCodeInvalidBet         = "INVALID_BET"
-	ErrorCodeInvalidChat        = "INVALID_CHAT"
-	ErrorCodeInvalidMove        = "INVALID_MOVE"
-	ErrorCodeInvalidPassword    = "INVALID_PASSWORD"
-	ErrorCodeInRoom             = "IN_ROOM"
-	ErrorCodeMatchMismatch      = "MATCH_MISMATCH"
-	ErrorCodeMatchStartFailed   = "MATCH_START_FAILED"
-	ErrorCodeNotRoomMember      = "NOT_ROOM_MEMBER"
-	ErrorCodeNotRoomOwner       = "NOT_ROOM_OWNER"
-	ErrorCodeNotYourTurn        = "NOT_YOUR_TURN"
-	ErrorCodeNoMatch            = "NO_MATCH"
-	ErrorCodeOwnRoom            = "OWN_ROOM"
-	ErrorCodeRoomBusy           = "ROOM_BUSY"
-	ErrorCodeRoomCreateFailed   = "ROOM_CREATE_FAILED"
-	ErrorCodeRoomFull           = "ROOM_FULL"
-	ErrorCodeRoomJoinFailed     = "ROOM_JOIN_FAILED"
-	ErrorCodeRoomLeaveFailed    = "ROOM_LEAVE_FAILED"
-	ErrorCodeRoomListFailed     = "ROOM_LIST_FAILED"
-	ErrorCodeRoomMemberNotFound = "ROOM_MEMBER_NOT_FOUND"
-	ErrorCodeRoomMismatch       = "ROOM_MISMATCH"
-	ErrorCodeRoomNotFound       = "ROOM_NOT_FOUND"
-	ErrorCodeRoomNotFull        = "ROOM_NOT_FULL"
-	ErrorCodeRoomNotReady       = "ROOM_NOT_READY"
-	ErrorCodeRoomStartFailed    = "ROOM_START_FAILED"
-	ErrorCodeRoomUpdateFailed   = "ROOM_UPDATE_FAILED"
-	ErrorCodeStateSaveFailed    = "STATE_SAVE_FAILED"
-	ErrorCodeUnknownGame        = "UNKNOWN_GAME"
-	ErrorCodeUserInfoFailed     = "USER_INFO_FAILED"
-	ErrorCodeWrongPassword      = "WRONG_PASSWORD"
+	ErrorCodeAlreadyInRoom       = "ALREADY_IN_ROOM"
+	ErrorCodeBetNotAllowed       = "BET_NOT_ALLOWED"
+	ErrorCodeChatRateLimited     = "CHAT_RATE_LIMITED"
+	ErrorCodeChatTooLong         = "CHAT_TOO_LONG"
+	ErrorCodeInsufficientKen     = "INSUFFICIENT_KEN"
+	ErrorCodeInvalidBet          = "INVALID_BET"
+	ErrorCodeInvalidChat         = "INVALID_CHAT"
+	ErrorCodeInvalidMove         = "INVALID_MOVE"
+	ErrorCodeInvalidPassword     = "INVALID_PASSWORD"
+	ErrorCodeInvalidReaction     = "INVALID_REACTION"
+	ErrorCodeInRoom              = "IN_ROOM"
+	ErrorCodeMatchMismatch       = "MATCH_MISMATCH"
+	ErrorCodeMatchStartFailed    = "MATCH_START_FAILED"
+	ErrorCodeNotRoomMember       = "NOT_ROOM_MEMBER"
+	ErrorCodeNotRoomOwner        = "NOT_ROOM_OWNER"
+	ErrorCodeNotYourTurn         = "NOT_YOUR_TURN"
+	ErrorCodeNoMatch             = "NO_MATCH"
+	ErrorCodeOwnRoom             = "OWN_ROOM"
+	ErrorCodeRoomBusy            = "ROOM_BUSY"
+	ErrorCodeRoomCreateFailed    = "ROOM_CREATE_FAILED"
+	ErrorCodeRoomFull            = "ROOM_FULL"
+	ErrorCodeRoomJoinFailed      = "ROOM_JOIN_FAILED"
+	ErrorCodeRoomLeaveFailed     = "ROOM_LEAVE_FAILED"
+	ErrorCodeRoomListFailed      = "ROOM_LIST_FAILED"
+	ErrorCodeRoomMemberNotFound  = "ROOM_MEMBER_NOT_FOUND"
+	ErrorCodeRoomMismatch        = "ROOM_MISMATCH"
+	ErrorCodeRoomNotFound        = "ROOM_NOT_FOUND"
+	ErrorCodeRoomNotFull         = "ROOM_NOT_FULL"
+	ErrorCodeRoomNotReady        = "ROOM_NOT_READY"
+	ErrorCodeRoomStartFailed     = "ROOM_START_FAILED"
+	ErrorCodeRoomUpdateFailed    = "ROOM_UPDATE_FAILED"
+	ErrorCodeReactionRateLimited = "REACTION_RATE_LIMITED"
+	ErrorCodeStateSaveFailed     = "STATE_SAVE_FAILED"
+	ErrorCodeUnknownGame         = "UNKNOWN_GAME"
+	ErrorCodeUserInfoFailed      = "USER_INFO_FAILED"
+	ErrorCodeWrongPassword       = "WRONG_PASSWORD"
+)
+
+const (
+	ReactionTypeLike  = "LIKE"
+	ReactionTypeLove  = "LOVE"
+	ReactionTypeHaha  = "HAHA"
+	ReactionTypeWow   = "WOW"
+	ReactionTypeSad   = "SAD"
+	ReactionTypeAngry = "ANGRY"
 )
 
 type Envelope struct {
@@ -188,6 +201,18 @@ type ChatMessageData struct {
 	UserID  string `json:"userId"`
 	Name    string `json:"name"`
 	Text    string `json:"text"`
+	SentAt  int64  `json:"sentAt"`
+}
+
+type ReactionSendData struct {
+	MatchID string `json:"matchId"`
+	Type    string `json:"type"`
+}
+
+type ReactionData struct {
+	MatchID string `json:"matchId"`
+	UserID  string `json:"userId"`
+	Type    string `json:"type"`
 	SentAt  int64  `json:"sentAt"`
 }
 

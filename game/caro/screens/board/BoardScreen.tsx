@@ -5,6 +5,7 @@ import { BoardActions } from './components/BoardActions';
 import { BoardChat } from './components/BoardChat';
 import { BoardHeader } from './components/BoardHeader';
 import { GameBoard } from './components/GameBoard';
+import { ReactionBalloons } from './components/ReactionBalloons';
 
 export function BoardScreen() {
   const { toast, boardMode } = useCaro(
@@ -20,6 +21,7 @@ export function BoardScreen() {
       <GameBoard />
       <BoardChat />
       <BoardActions />
+      <ReactionBalloons />
 
       <div id="board-toast" className={toast && boardMode !== 'idle' ? 'show' : 'hidden'}>
         {toast}

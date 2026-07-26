@@ -3,6 +3,7 @@ export const C2S = {
   QueueLeave: 'QUEUE_LEAVE',
   Move: 'MOVE',
   ChatSend: 'CHAT_SEND',
+  ReactionSend: 'REACTION_SEND',
   Forfeit: 'FORFEIT',
   RoomCreate: 'ROOM_CREATE',
   RoomJoin: 'ROOM_JOIN',
@@ -21,6 +22,7 @@ export const S2C = {
   MatchFound: 'MATCH_FOUND',
   State: 'STATE',
   ChatMessage: 'CHAT_MESSAGE',
+  Reaction: 'REACTION',
   MatchOver: 'MATCH_OVER',
   Error: 'ERROR',
   RoomList: 'ROOM_LIST',
@@ -61,6 +63,7 @@ export const GAME_ERROR_CODE = {
   ChatRateLimited: 'CHAT_RATE_LIMITED',
   ChatTooLong: 'CHAT_TOO_LONG',
   InvalidChat: 'INVALID_CHAT',
+  InvalidReaction: 'INVALID_REACTION',
   RoomNotFull: 'ROOM_NOT_FULL',
   NotRoomMember: 'NOT_ROOM_MEMBER',
   InvalidMove: 'INVALID_MOVE',
@@ -68,12 +71,24 @@ export const GAME_ERROR_CODE = {
   MatchStartFailed: 'MATCH_START_FAILED',
   NoMatch: 'NO_MATCH',
   NotYourTurn: 'NOT_YOUR_TURN',
+  ReactionRateLimited: 'REACTION_RATE_LIMITED',
   StateSaveFailed: 'STATE_SAVE_FAILED',
   UnknownGame: 'UNKNOWN_GAME',
   UserInfoFailed: 'USER_INFO_FAILED',
 } as const;
 
 export type GameErrorCode = (typeof GAME_ERROR_CODE)[keyof typeof GAME_ERROR_CODE];
+
+export const GAME_REACTION_TYPE = {
+  Like: 'LIKE',
+  Love: 'LOVE',
+  Haha: 'HAHA',
+  Wow: 'WOW',
+  Sad: 'SAD',
+  Angry: 'ANGRY',
+} as const;
+
+export type GameReactionType = (typeof GAME_REACTION_TYPE)[keyof typeof GAME_REACTION_TYPE];
 
 export interface Envelope {
   type: string;
@@ -157,6 +172,13 @@ export interface ChatMessageData {
   userId: string;
   name: string;
   text: string;
+  sentAt: number;
+}
+
+export interface ReactionData {
+  matchId: string;
+  userId: string;
+  type: GameReactionType;
   sentAt: number;
 }
 
