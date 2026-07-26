@@ -69,7 +69,7 @@ export default function App() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <KeyboardProvider statusBarTranslucent navigationBarTranslucent>
       <SafeAreaProvider>
-        <StatusBar barStyle="light-content" />
+        <StatusBar translucent barStyle="light-content" />
         <NavigationContainer
           ref={navigationRef}
           onReady={() => {
