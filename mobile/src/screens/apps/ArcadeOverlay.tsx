@@ -10,22 +10,25 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import Animated, {
+  cancelAnimation,
   runOnJS,
   useAnimatedStyle,
   useSharedValue,
+  withRepeat,
+  withSequence,
+  withTiming,
 } from 'react-native-reanimated';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import WebView, { type WebViewMessageEvent } from 'react-native-webview';
 import { ensureFreshToken } from '@ola/shared/api';
+import {
+  ARCADE_BRIDGE_EVENT,
+  ARCADE_BRIDGE_SOURCE,
+  type ArcadeBridgeMessage,
+} from '@ola/shared/types';
 import { useArcadeOverlayStore } from '@store/arcadeOverlayStore';
 import { mmkvStorage } from '@platform/storage';
-
-interface GameBridgeMessage {
-  source?: string;
-  type?: string;
-  data?: unknown;
-}
 
 interface BubblePosition {
   x: number;
@@ -70,7 +73,6 @@ export function ArcadeOverlay() {
   const notify = useArcadeOverlayStore(state => state.notify);
   const minimize = useArcadeOverlayStore(state => state.minimize);
   const restore = useArcadeOverlayStore(state => state.restore);
-  const setNotify = useArcadeOverlayStore(state => state.setNotify);
   const close = useArcadeOverlayStore(state => state.close);
   const insets = useSafeAreaInsets();
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
@@ -95,6 +97,7 @@ export function ArcadeOverlay() {
   );
   const startX = useSharedValue(0);
   const startY = useSharedValue(0);
+  const notifyOpacity = useSharedValue(1);
 
   useEffect(() => {
     const next = {
@@ -118,6 +121,22 @@ export function ArcadeOverlay() {
     );
     return () => subscription.remove();
   }, [active, minimize, minimized]);
+
+  useEffect(() => {
+    cancelAnimation(notifyOpacity);
+    if (notify) {
+      notifyOpacity.value = withRepeat(
+        withSequence(
+          withTiming(0.2, { duration: 450 }),
+          withTiming(1, { duration: 450 }),
+        ),
+        -1,
+      );
+    } else {
+      notifyOpacity.value = 1;
+    }
+    return () => cancelAnimation(notifyOpacity);
+  }, [notify, notifyOpacity]);
 
   function commitBubblePosition(x: number, y: number) {
     const next = {
@@ -161,6 +180,9 @@ export function ArcadeOverlay() {
   const bubbleAnimatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: tx.value }, { translateY: ty.value }],
   }));
+  const notifyAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: notifyOpacity.value,
+  }));
 
   function sendToGame(message: {
     source: string;
@@ -176,31 +198,37 @@ export function ArcadeOverlay() {
   async function handleGetToken() {
     try {
       const token = await ensureFreshToken();
-      sendToGame({ source: 'ola-host', type: 'token', data: token });
+      sendToGame({
+        source: ARCADE_BRIDGE_SOURCE.Host,
+        type: ARCADE_BRIDGE_EVENT.Token,
+        data: token,
+      });
     } catch {
       // The game bridge will fall back to its guest token timeout.
     }
   }
 
   function handleMessage(event: WebViewMessageEvent) {
-    let message: GameBridgeMessage | null = null;
+    let message: ArcadeBridgeMessage | null = null;
     try {
-      message = JSON.parse(event.nativeEvent.data) as GameBridgeMessage;
+      message = JSON.parse(event.nativeEvent.data) as ArcadeBridgeMessage;
     } catch {
       return;
     }
-    if (message?.source !== 'ola-game') return;
-    if (message.type === 'get_token') void handleGetToken();
+    if (message?.source !== ARCADE_BRIDGE_SOURCE.Game) return;
+    if (message.type === ARCADE_BRIDGE_EVENT.GetToken) void handleGetToken();
+    const overlay = useArcadeOverlayStore.getState();
     if (
-      minimized &&
-      (message.type === 'game_over' ||
-        (message.type === 'turn_changed' &&
+      overlay.minimized &&
+      (message.type === ARCADE_BRIDGE_EVENT.AttentionRequired ||
+        message.type === ARCADE_BRIDGE_EVENT.GameOver ||
+        (message.type === ARCADE_BRIDGE_EVENT.TurnChanged &&
           (message.data as { yourTurn?: boolean } | undefined)?.yourTurn ===
             true))
     ) {
-      setNotify(true);
+      overlay.setNotify(true);
     }
-    if (message.type === 'exit') close();
+    if (message.type === ARCADE_BRIDGE_EVENT.Exit) close();
   }
 
   if (!active) return null;
@@ -245,7 +273,11 @@ export function ArcadeOverlay() {
           <Animated.View
             accessible
             accessibilityRole="button"
-            accessibilityLabel={t('arcade.restore')}
+            accessibilityLabel={
+              notify
+                ? `${t('arcade.restore')}. ${t('arcade.hasNotification')}`
+                : t('arcade.restore')
+            }
             accessibilityHint={t('arcade.restore')}
             onAccessibilityTap={restore}
             style={[
@@ -262,7 +294,12 @@ export function ArcadeOverlay() {
               style={styles.bubbleIcon}
               resizeMode="cover"
             />
-            {notify && <View pointerEvents="none" style={styles.notifyDot} />}
+            {notify && (
+              <Animated.View
+                pointerEvents="none"
+                style={[styles.notifyDot, notifyAnimatedStyle]}
+              />
+            )}
           </Animated.View>
         </GestureDetector>
       )}
@@ -320,7 +357,7 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
   },
   bubbleNotify: {
-    borderColor: '#ff4081',
+    borderColor: '#dc2626',
   },
   bubbleIcon: {
     width: BUBBLE_SIZE - 4,
@@ -329,13 +366,13 @@ const styles = StyleSheet.create({
   },
   notifyDot: {
     position: 'absolute',
-    top: -2,
-    right: -2,
-    width: 14,
-    height: 14,
-    borderRadius: 7,
+    top: -4,
+    right: -4,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
     borderWidth: 2,
     borderColor: '#ffffff',
-    backgroundColor: '#ff4081',
+    backgroundColor: '#dc2626',
   },
 });

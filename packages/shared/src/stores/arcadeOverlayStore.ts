@@ -26,8 +26,9 @@ export const useArcadeOverlayStore = create<ArcadeOverlayState>((set, get) => ({
     });
     return true;
   },
-  minimize: () => set({ minimized: true }),
+  minimize: () => set({ minimized: true, notify: false }),
   restore: () => set({ minimized: false, notify: false }),
-  setNotify: (value) => set({ notify: value }),
+  setNotify: (value) =>
+    set((state) => ({ notify: value && state.minimized })),
   close: () => set({ active: null, minimized: false, notify: false }),
 }));

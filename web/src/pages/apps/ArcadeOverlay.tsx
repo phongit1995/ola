@@ -7,15 +7,14 @@ import {
 } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ensureFreshToken } from '@ola/shared/api';
+import {
+  ARCADE_BRIDGE_EVENT,
+  ARCADE_BRIDGE_SOURCE,
+  type ArcadeBridgeMessage,
+} from '@ola/shared/types';
 import { Avatar } from '@components';
 import { colorForName } from '@lib';
 import { useArcadeOverlayStore } from '@/store/arcadeOverlayStore';
-
-interface GameBridgeMessage {
-  source?: string;
-  type?: string;
-  data?: unknown;
-}
 
 interface BubblePosition {
   x: number;
@@ -104,13 +103,17 @@ export function ArcadeOverlay() {
 
     async function onMessage(event: MessageEvent) {
       if (event.origin !== gameOrigin) return;
-      const data = event.data as GameBridgeMessage;
-      if (data?.source !== 'ola-game') return;
-      if (data.type === 'get_token') {
+      const data = event.data as ArcadeBridgeMessage;
+      if (data?.source !== ARCADE_BRIDGE_SOURCE.Game) return;
+      if (data.type === ARCADE_BRIDGE_EVENT.GetToken) {
         try {
           const token = await ensureFreshToken();
           iframeRef.current?.contentWindow?.postMessage(
-            { source: 'ola-host', type: 'token', data: token },
+            {
+              source: ARCADE_BRIDGE_SOURCE.Host,
+              type: ARCADE_BRIDGE_EVENT.Token,
+              data: token,
+            },
             gameOrigin
           );
         } catch {
@@ -120,14 +123,15 @@ export function ArcadeOverlay() {
       const overlay = useArcadeOverlayStore.getState();
       if (
         overlay.minimized &&
-        (data.type === 'game_over' ||
-          (data.type === 'turn_changed' &&
+        (data.type === ARCADE_BRIDGE_EVENT.AttentionRequired ||
+          data.type === ARCADE_BRIDGE_EVENT.GameOver ||
+          (data.type === ARCADE_BRIDGE_EVENT.TurnChanged &&
             (data.data as { yourTurn?: boolean } | undefined)?.yourTurn ===
               true))
       ) {
         overlay.setNotify(true);
       }
-      if (data.type === 'exit') {
+      if (data.type === ARCADE_BRIDGE_EVENT.Exit) {
         close();
       }
     }
@@ -340,7 +344,11 @@ export function ArcadeOverlay() {
           ref={setBubbleElement}
           role="button"
           tabIndex={0}
-          aria-label={t('arcade.restore')}
+          aria-label={
+            notify
+              ? `${t('arcade.restore')}. ${t('arcade.hasNotification')}`
+              : t('arcade.restore')
+          }
           onPointerDown={handleBubbleDown}
           onPointerMove={handleBubbleMove}
           onPointerUp={handleBubbleUp}
@@ -354,7 +362,7 @@ export function ArcadeOverlay() {
             }
           }}
           className={`absolute right-4 bottom-24 z-50 flex h-14 w-14 cursor-grab touch-none select-none items-center justify-center rounded-full border-2 border-white bg-white shadow-lg [will-change:transform] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ola-accent active:cursor-grabbing ${
-            notify ? 'animate-pulse ring-4 ring-ola-accent' : ''
+            notify ? 'border-red-600' : ''
           }`}
         >
           <span className="pointer-events-none">
@@ -367,7 +375,10 @@ export function ArcadeOverlay() {
             />
           </span>
           {notify && (
-            <span className="pointer-events-none absolute -top-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-white bg-ola-accent" />
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute -top-1 -right-1 h-4 w-4 animate-pulse rounded-full border-2 border-white bg-red-600"
+            />
           )}
         </div>
       )}

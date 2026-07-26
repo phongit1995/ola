@@ -1,11 +1,11 @@
-const BRIDGE_SOURCE = 'ola-game';
-const HOST_SOURCE = 'ola-host';
-
-interface BridgeMessage {
-  source: string;
-  type: string;
-  data?: unknown;
-}
+import {
+  ARCADE_ATTENTION_REASON,
+  ARCADE_BRIDGE_EVENT,
+  ARCADE_BRIDGE_SOURCE,
+  type ArcadeAttentionData,
+  type ArcadeBridgeEvent,
+  type ArcadeBridgeMessage,
+} from '@ola/shared/types';
 
 interface RNWebView {
   postMessage(message: string): void;
@@ -17,8 +17,12 @@ declare global {
   }
 }
 
-function sendToHost(type: string, data?: unknown): void {
-  const message: BridgeMessage = { source: BRIDGE_SOURCE, type, data };
+function sendToHost(type: ArcadeBridgeEvent, data?: unknown): void {
+  const message: ArcadeBridgeMessage = {
+    source: ARCADE_BRIDGE_SOURCE.Game,
+    type,
+    data,
+  };
   if (window.ReactNativeWebView) {
     window.ReactNativeWebView.postMessage(JSON.stringify(message));
     return;
@@ -33,8 +37,8 @@ const hostHandlers = new Map<string, Set<HostHandler>>();
 
 function handleIncoming(raw: unknown): void {
   if (raw == null || typeof raw !== 'object') return;
-  const message = raw as BridgeMessage;
-  if (message.source !== HOST_SOURCE || typeof message.type !== 'string') return;
+  const message = raw as ArcadeBridgeMessage;
+  if (message.source !== ARCADE_BRIDGE_SOURCE.Host || typeof message.type !== 'string') return;
   hostHandlers.get(message.type)?.forEach((handler) => handler(message.data));
 }
 
@@ -61,19 +65,32 @@ export const bridge = {
   },
 
   ready(): void {
-    sendToHost('ready');
+    sendToHost(ARCADE_BRIDGE_EVENT.Ready);
   },
 
   gameOver(data: { matchId: string; winnerId?: string; reason: string; won: boolean }): void {
-    sendToHost('game_over', data);
+    sendToHost(ARCADE_BRIDGE_EVENT.GameOver, data);
+    sendToHost(ARCADE_BRIDGE_EVENT.AttentionRequired, {
+      reason: ARCADE_ATTENTION_REASON.GameOver,
+      matchId: data.matchId,
+    } satisfies ArcadeAttentionData);
   },
 
   turnChanged(data: { yourTurn: boolean; deadline: number }): void {
-    sendToHost('turn_changed', data);
+    sendToHost(ARCADE_BRIDGE_EVENT.TurnChanged, data);
+    if (data.yourTurn) {
+      sendToHost(ARCADE_BRIDGE_EVENT.AttentionRequired, {
+        reason: ARCADE_ATTENTION_REASON.YourTurn,
+      } satisfies ArcadeAttentionData);
+    }
+  },
+
+  attention(data: ArcadeAttentionData): void {
+    sendToHost(ARCADE_BRIDGE_EVENT.AttentionRequired, data);
   },
 
   exit(): void {
-    sendToHost('exit');
+    sendToHost(ARCADE_BRIDGE_EVENT.Exit);
   },
 
   requestToken(): Promise<string> {
@@ -83,12 +100,12 @@ export const bridge = {
         resolve(fromQuery);
         return;
       }
-      const off = bridge.onHost('token', (data) => {
+      const off = bridge.onHost(ARCADE_BRIDGE_EVENT.Token, (data) => {
         off();
         clearTimeout(timer);
         resolve(String(data ?? ''));
       });
-      sendToHost('get_token');
+      sendToHost(ARCADE_BRIDGE_EVENT.GetToken);
       const timer = setTimeout(() => {
         off();
         resolve(`guest:${crypto.randomUUID().slice(0, 8)}`);

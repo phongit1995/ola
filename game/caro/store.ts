@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { ARCADE_ATTENTION_REASON } from '@ola/shared/types';
 import {
   bridge,
   joinGame,
@@ -172,6 +173,12 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
 
   const applyRoomState = (room: RoomStateData): void => {
     stopTimer();
+    const current = get();
+    const previousRoom =
+      current.roomWaiting?.roomId === room.roomId ? current.roomWaiting : null;
+    const previousOpponent = previousRoom?.members.find(
+      (member) => member.id !== previousRoom.youId,
+    );
     refs.match = null;
     refs.opponentIsBot = false;
     refs.pendingRoomId = room.roomId;
@@ -183,7 +190,6 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     refs.chatOpponentId = opponent?.id ?? null;
     const isOwner = room.ownerId === room.youId;
     const bothReady = room.members.length === 2 && room.members.every((member) => member.ready);
-    const current = get();
     // MATCH_OVER is followed immediately by ROOM_WAITING and ROOM_STATE. Keep
     // presenting the completed match until its result UI is dismissed.
     const preserveOutcome = current.result != null || current.overlay?.kind != null;
@@ -196,8 +202,26 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
       : meMember?.ready
       ? 'Đang chờ đối thủ sẵn sàng...'
       : 'Đối thủ đã vào bàn — hãy bấm Sẵn sàng';
-    const firstRoomState = get().roomWaiting?.roomId !== room.roomId;
+    const firstRoomState = current.roomWaiting?.roomId !== room.roomId;
     const user = refs.user;
+    if (previousRoom) {
+      if (!previousOpponent && opponent) {
+        bridge.attention({
+          reason: ARCADE_ATTENTION_REASON.OpponentJoined,
+          roomId: room.roomId,
+        });
+      } else if (previousOpponent && opponent && !previousOpponent.ready && opponent.ready) {
+        bridge.attention({
+          reason: ARCADE_ATTENTION_REASON.OpponentReady,
+          roomId: room.roomId,
+        });
+      } else if (previousOpponent && !opponent) {
+        bridge.attention({
+          reason: ARCADE_ATTENTION_REASON.OpponentLeft,
+          roomId: room.roomId,
+        });
+      }
+    }
     set((s) => ({
       boardMode: preserveOutcome ? s.boardMode : 'pregame',
       roomActionPending: null,
@@ -407,7 +431,20 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
 
     target.onRoomClosed((data) => {
       if (refs.session !== target) return;
-      if (get().roomWaiting?.roomId !== data.roomId && refs.pendingRoomId !== data.roomId) return;
+      const room = get().roomWaiting;
+      if (room?.roomId !== data.roomId && refs.pendingRoomId !== data.roomId) return;
+      if (
+        room != null &&
+        room.ownerId !== room.youId &&
+        (data.reason === 'owner_left' ||
+          data.reason === 'owner_disconnected' ||
+          data.reason === 'owner_busy')
+      ) {
+        bridge.attention({
+          reason: ARCADE_ATTENTION_REASON.OpponentLeft,
+          roomId: data.roomId,
+        });
+      }
       refs.pendingRoomId = null;
       refs.chatOpponentId = null;
       refs.chatSeq = 0;
@@ -441,6 +478,10 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     target.onRoomKicked((data) => {
       if (refs.session !== target) return;
       if (get().roomWaiting?.roomId !== data.roomId && refs.pendingRoomId !== data.roomId) return;
+      bridge.attention({
+        reason: ARCADE_ATTENTION_REASON.RoomKicked,
+        roomId: data.roomId,
+      });
       refs.pendingRoomId = null;
       refs.chatOpponentId = null;
       refs.chatSeq = 0;
@@ -467,6 +508,10 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
 
     target.onOpponentDisconnected((data) => {
       if (refs.session !== target) return;
+      bridge.attention({
+        reason: ARCADE_ATTENTION_REASON.OpponentDisconnected,
+        matchId: refs.match?.matchId,
+      });
       set({ oppAway: data.graceDeadline, status: 'Đối thủ mất kết nối, đang chờ...' });
       showToast('Đối thủ mất kết nối');
     });
@@ -483,6 +528,12 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
         refs.session = refs.online;
       }
       refs.match = data;
+      if (!data.resumed) {
+        bridge.attention({
+          reason: ARCADE_ATTENTION_REASON.MatchStarted,
+          matchId: data.matchId,
+        });
+      }
       refs.exitingMatch = null;
       const matchBet = data.bet ?? refs.matchBet;
       refs.matchBet = matchBet;
@@ -561,6 +612,13 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
           ? match.players[1 - match.you].id
           : room?.members.find((member) => member.id !== room?.youId)?.id;
       const who = data.userId === myID ? get().me.name : data.userId === opponentID ? get().op.name : data.name;
+      if (!refs.opponentIsBot && data.userId === opponentID) {
+        bridge.attention({
+          reason: ARCADE_ATTENTION_REASON.NewChat,
+          roomId: data.roomId,
+          matchId: data.matchId,
+        });
+      }
       refs.chatSeq += 1;
       set((state) => ({
         messages: [...state.messages, { id: refs.chatSeq, who, text: data.text }].slice(-CHAT_HISTORY_LIMIT),

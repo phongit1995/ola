@@ -2,6 +2,7 @@
   "arcade": {
     "minimize": "Minimize",
     "restore": "Restore",
+    "hasNotification": "There is a new update in the game",
     "alreadyRunning": "Another game is already open. Close it before starting a new one."
   },
   "common": {
