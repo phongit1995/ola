@@ -369,7 +369,7 @@ export function ArcadeOverlay() {
             }
           }}
           className={`absolute right-4 bottom-24 z-50 flex h-14 w-14 cursor-grab touch-none select-none items-center justify-center rounded-full border-2 border-white bg-white shadow-lg [will-change:transform] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ola-accent active:cursor-grabbing ${
-            notify ? 'border-red-600' : ''
+            notify ? 'border-ola-warning' : ''
           }`}
         >
           <span className="pointer-events-none">
@@ -384,7 +384,7 @@ export function ArcadeOverlay() {
           {notify && (
             <span
               aria-hidden="true"
-              className="pointer-events-none absolute -top-1 -right-1 h-4 w-4 animate-pulse rounded-full border-2 border-white bg-red-600"
+              className="pointer-events-none absolute -top-1 -right-1 h-4 w-4 animate-blink rounded-full border-2 border-white bg-ola-warning"
             />
           )}
         </div>

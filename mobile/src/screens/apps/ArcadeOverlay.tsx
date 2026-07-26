@@ -27,6 +27,7 @@ import {
   ARCADE_BRIDGE_SOURCE,
   type ArcadeBridgeMessage,
 } from '@ola/shared/types';
+import { WARNING } from '@constants';
 import { useArcadeOverlayStore } from '@store/arcadeOverlayStore';
 import { mmkvStorage } from '@platform/storage';
 
@@ -361,7 +362,7 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
   },
   bubbleNotify: {
-    borderColor: '#dc2626',
+    borderColor: WARNING,
   },
   bubbleIcon: {
     width: BUBBLE_SIZE - 4,
@@ -377,6 +378,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 2,
     borderColor: '#ffffff',
-    backgroundColor: '#dc2626',
+    backgroundColor: WARNING,
   },
 });
