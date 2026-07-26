@@ -55,6 +55,7 @@ export const hud = {} as {
   overlay: Container;
   overlayTitle: Text;
   overlaySub: Text;
+  overlayKen: Text;
   overlayBtnLabel: Text;
   overlayDim: Graphics;
   confirm: Container;
@@ -325,8 +326,15 @@ function buildOverlay(onStart: () => void): void {
   hud.overlaySub.style.wordWrapWidth = cardW - 50;
   hud.overlaySub.style.align = 'center';
   hud.overlaySub.x = cardW / 2;
-  hud.overlaySub.y = 140;
+  hud.overlaySub.y = 134;
   card.addChild(hud.overlaySub);
+
+  hud.overlayKen = makeText('', 16, 0x7dff8a, '800');
+  hud.overlayKen.style.stroke = { color: 0x120d02, width: 3, join: 'round' };
+  hud.overlayKen.x = cardW / 2;
+  hud.overlayKen.y = 160;
+  hud.overlayKen.visible = false;
+  card.addChild(hud.overlayKen);
 
   const btn = new Container();
   const btnBg = new Sprite(tex[A.menu.btnBlue]);
@@ -448,10 +456,21 @@ export function updateFighter(f: FighterUI, fighter: Fighter, active: boolean, r
   f.ultLabel.style.fill = ready ? 0xffe9a8 : 0xcfc9b8;
 }
 
-export function showOverlay(title: string, titleColor: number, sub: string, btnLabel: string): void {
+export function showOverlay(
+  title: string,
+  titleColor: number,
+  sub: string,
+  btnLabel: string,
+  ken?: { text: string; color: number },
+): void {
   hud.overlayTitle.text = title;
   hud.overlayTitle.style.fill = titleColor;
   hud.overlaySub.text = sub;
+  hud.overlayKen.visible = ken != null;
+  if (ken) {
+    hud.overlayKen.text = ken.text;
+    hud.overlayKen.style.fill = ken.color;
+  }
   hud.overlayBtnLabel.text = btnLabel;
   hud.overlay.visible = true;
 }

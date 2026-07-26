@@ -24,6 +24,11 @@ export function tween(
   return new Promise((resolve) => {
     let t = 0;
     const step = (ticker: Ticker): void => {
+      if (obj.destroyed) {
+        appRef.ticker.remove(step);
+        resolve();
+        return;
+      }
       t += ticker.deltaMS;
       const k = Math.min(1, t / dur);
       const e = 1 - (1 - k) * (1 - k);

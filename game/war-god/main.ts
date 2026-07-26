@@ -1,7 +1,10 @@
 import { Application, Container, Graphics, Sprite } from 'pixi.js';
-import { bridge, joinGame, type GameSession, type UserInfoData } from '../src/sdk';
+import { GAME_ERROR_CODE, bridge, joinGame, type UserInfoData } from '../src/sdk';
 import { A, loadAssets, tex } from './assets';
 import { initKit } from './kit';
+import { pvp, type PvpGameSession } from './pvp';
+import { hasActiveRoom, initRooms, openWaitingRoom } from './rooms';
+import type { ServerMove, ServerState } from './logic/server-types';
 import {
   battleChatFocused,
   battleDebug,
@@ -12,12 +15,17 @@ import {
 } from './screens/battle';
 import {
   buildLobby,
+  hideSearchPopup,
+  isSearchPopupOpen,
   layoutLobby,
   lobbyEnterAnimated,
   lobbySetConnecting,
   lobbySetError,
   lobbySetReady,
   lobbySetVisible,
+  lobbyShowToast,
+  lobbyUpdateKen,
+  openSearchPopup,
 } from './screens/lobby';
 
 const DESIGN_W = 520;
@@ -30,8 +38,15 @@ let lobbyBox: Container;
 let designH = 980;
 let safeTop = 0;
 let safeBottom = 0;
-let session: GameSession | null = null;
+let session: PvpGameSession | null = null;
 let userInfo: UserInfoData | null = null;
+let wiredSession: PvpGameSession | null = null;
+
+const roomsDeps = {
+  getSession: () => session,
+  getUserInfo: () => userInfo,
+  toast: (msg: string) => lobbyShowToast(msg),
+};
 
 function readSafeInsets(): void {
   const probe = document.createElement('div');
@@ -45,7 +60,7 @@ function readSafeInsets(): void {
   probe.remove();
 }
 
-function waitUserInfo(gameSession: GameSession, timeoutMs: number): Promise<UserInfoData> {
+function waitUserInfo(gameSession: PvpGameSession, timeoutMs: number): Promise<UserInfoData> {
   return new Promise((resolve, reject) => {
     const cleanup = (): void => {
       offInfo();
@@ -62,10 +77,31 @@ function waitUserInfo(gameSession: GameSession, timeoutMs: number): Promise<User
   });
 }
 
+function wireSessionEvents(next: PvpGameSession): void {
+  if (wiredSession === next) return;
+  wiredSession = next;
+  next.onUserInfo((data) => {
+    userInfo = data;
+    lobbyUpdateKen(data.ken);
+  });
+  next.onError((err) => {
+    if (
+      (err.code === GAME_ERROR_CODE.InRoom || err.code === GAME_ERROR_CODE.AlreadyInRoom) &&
+      isSearchPopupOpen()
+    ) {
+      hideSearchPopup();
+      openWaitingRoom();
+    }
+  });
+}
+
 async function connectToServer(): Promise<void> {
   lobbySetConnecting();
   try {
-    session ??= await joinGame('war-god');
+    session ??= await joinGame<ServerState, ServerMove>('war-god');
+    pvp.init(session);
+    initRooms(roomsDeps);
+    wireSessionEvents(session);
     userInfo = await waitUserInfo(session, 8000);
     lobbySetReady(userInfo);
   } catch {
@@ -73,6 +109,27 @@ async function connectToServer(): Promise<void> {
     session = null;
     lobbySetError();
   }
+}
+
+function startPvpQueue(): void {
+  if (hasActiveRoom()) {
+    openWaitingRoom();
+    return;
+  }
+  if (session && userInfo) {
+    openSearchPopup();
+    pvp.startQueue();
+    return;
+  }
+  void connectToServer().then(() => {
+    if (!session || !userInfo) return;
+    if (hasActiveRoom()) {
+      openWaitingRoom();
+      return;
+    }
+    openSearchPopup();
+    pvp.startQueue();
+  });
 }
 
 function layout(): void {
@@ -146,15 +203,24 @@ async function main(): Promise<void> {
     onExitToLobby: () => {
       lobbyEnterAnimated();
       if (!userInfo && !session) void connectToServer();
+      if (hasActiveRoom()) openWaitingRoom();
     },
+    onPvpError: (text) => lobbyShowToast(text),
   });
 
   lobbyBox = buildLobby({
+    getSession: () => session,
     onPlay: (level) => startBattle(level),
+    onPvp: startPvpQueue,
+    onCancelQueue: () => {
+      pvp.cancelQueue();
+      hideSearchPopup();
+    },
     onRetry: () => void connectToServer(),
     onExit: () => bridge.exit(),
   });
   root.addChild(lobbyBox);
+  initRooms(roomsDeps);
 
   layout();
   window.addEventListener('resize', layout);

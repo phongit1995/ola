@@ -286,7 +286,7 @@ func TestSettleFinishRetryDoesNotUpdateBalancesAgain(t *testing.T) {
 
 func TestSettleFinishCreditsWinnerFromEscrowedBet(t *testing.T) {
 	db, mock := newSettlementMockDB(t)
-	repo := &SettlementRepository{db: db, logger: zap.NewNop().Sugar(), commissionPercent: 5}
+	repo := &SettlementRepository{db: db, logger: zap.NewNop().Sugar(), commissionPercents: map[string]int{"caro": 5}}
 	p0 := uuid.MustParse("11111111-1111-4111-8111-111111111111")
 	p1 := uuid.MustParse("22222222-2222-4222-8222-222222222222")
 	matchID := uuid.MustParse("33333333-3333-4333-8333-333333333333")
@@ -330,16 +330,21 @@ func TestSettleFinishCreditsWinnerFromEscrowedBet(t *testing.T) {
 	}
 }
 
-func TestWinnerAmountsApplyCommissionOnlyToCaro(t *testing.T) {
-	repo := &SettlementRepository{commissionPercent: 5}
+func TestWinnerAmountsApplyPerGameCommission(t *testing.T) {
+	repo := &SettlementRepository{commissionPercents: map[string]int{"caro": 5, "war-god": 5}}
 	payout, net := repo.WinnerAmounts("caro", 10_000)
 	if payout != 19_500 || net != 9_500 {
-		t.Fatalf("winner amounts = payout %d, net %d; want 19500 and 9500", payout, net)
+		t.Fatalf("caro amounts = payout %d, net %d; want 19500 and 9500", payout, net)
 	}
 
 	payout, net = repo.WinnerAmounts("war-god", 10_000)
+	if payout != 19_500 || net != 9_500 {
+		t.Fatalf("war-god amounts = payout %d, net %d; want 19500 and 9500", payout, net)
+	}
+
+	payout, net = repo.WinnerAmounts("other-game", 10_000)
 	if payout != 20_000 || net != 10_000 {
-		t.Fatalf("non-Caro amounts = payout %d, net %d; want 20000 and 10000", payout, net)
+		t.Fatalf("uncommissioned amounts = payout %d, net %d; want 20000 and 10000", payout, net)
 	}
 }
 

@@ -38,10 +38,10 @@ var (
 )
 
 type SettlementRepository struct {
-	db                *gorm.DB
-	users             *user.CacheService
-	logger            *zap.SugaredLogger
-	commissionPercent int
+	db                 *gorm.DB
+	users              *user.CacheService
+	logger             *zap.SugaredLogger
+	commissionPercents map[string]int
 }
 
 type settlementResult struct {
@@ -60,10 +60,13 @@ func NewSettlementRepository(
 	cfg *config.Config,
 ) engine.Settlement {
 	return &SettlementRepository{
-		db:                db,
-		users:             users,
-		logger:            logger.Named("[game-settle]"),
-		commissionPercent: cfg.CaroCommissionPercent,
+		db:     db,
+		users:  users,
+		logger: logger.Named("[game-settle]"),
+		commissionPercents: map[string]int{
+			"caro":    cfg.CaroCommissionPercent,
+			"war-god": cfg.WarGodCommissionPercent,
+		},
 	}
 }
 
@@ -77,11 +80,7 @@ func winnerAmounts(bet, commissionPercent int) (payout, net int) {
 }
 
 func (s *SettlementRepository) WinnerAmounts(gameID string, bet int) (payout, net int) {
-	commissionPercent := 0
-	if gameID == "caro" {
-		commissionPercent = s.commissionPercent
-	}
-	return winnerAmounts(bet, commissionPercent)
+	return winnerAmounts(bet, s.commissionPercents[gameID])
 }
 
 func parsePlayers(a, b string) (uuid.UUID, uuid.UUID, error) {

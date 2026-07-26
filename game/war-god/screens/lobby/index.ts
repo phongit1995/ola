@@ -1,8 +1,9 @@
 import { Assets, Container, Graphics, Sprite, Text, Texture, type Ticker } from 'pixi.js';
-import type { UserInfoData } from '../../../src/sdk';
+import type { GameSession, UserInfoData } from '../../../src/sdk';
 import { A, tex } from '../../assets';
-import { addTick, iconSprite, makeText, popIn, pressable, removeTick } from '../../kit';
+import { addTick, iconSprite, makeText, popIn, pressable, removeTick, tween } from '../../kit';
 import type { BotLevel } from '../../logic/battle';
+import { buildRoomsLayer, hideAllRoomPopups, layoutRooms, openRoomList } from '../../rooms';
 import { PILL_W, makePill, makeWoodBtn } from './ui';
 import { buildPickPopup, hidePickPopup, layoutPickPopup, openPickPopup } from './pick-popup';
 import { buildGuidePopup, hideGuidePopup, layoutGuidePopup, openGuidePopup } from './guide-popup';
@@ -12,6 +13,18 @@ import {
   layoutConfirmPopup,
   openConfirmPopup,
 } from './confirm-popup';
+import {
+  buildHistoryPopup,
+  hideHistoryPopup,
+  layoutHistoryPopup,
+  openHistoryPopup,
+} from './history-popup';
+import {
+  buildLeaderboardPopup,
+  hideLeaderboardPopup,
+  layoutLeaderboardPopup,
+  openLeaderboardPopup,
+} from './leaderboard-popup';
 
 const DESIGN_W = 520;
 const VIP_FIT_W = 150;
@@ -20,6 +33,7 @@ const NAME_W = 400;
 const KEN_W = 330;
 const WOOD_W = 310;
 const WOOD_H = 86;
+const PILL_GAP = 10;
 const SOUND_KEY = 'wg-sound-on';
 
 function parseVipTypeId(vipType: string | null | undefined): number | null {
@@ -34,7 +48,10 @@ function vipIconUrl(id: number): string {
 }
 
 interface LobbyDeps {
+  getSession(): GameSession | null;
   onPlay(level: BotLevel): void;
+  onPvp(): void;
+  onCancelQueue(): void;
   onRetry(): void;
   onExit(): void;
 }
@@ -62,8 +79,10 @@ let plusBg: Sprite;
 let plusIc: Sprite;
 let btnBot: Container;
 let btnPvp: Container;
+let btnRoom: Container;
 let btnBotWrap: Container;
 let btnPvpWrap: Container;
+let btnRoomWrap: Container;
 let menuRow: Container;
 let soundIcon: Sprite;
 let soundOn = true;
@@ -75,6 +94,11 @@ let toastTimer: number | undefined;
 let pickBox: Container;
 let guideBox: Container;
 let confirmBox: Container;
+let searchBox: Container;
+let searchDim: Graphics;
+let searchCard: Container;
+let searchLabel: Text;
+let searchStep: ((ticker: Ticker) => void) | null = null;
 let spinnerStep: ((ticker: Ticker) => void) | null = null;
 let lastDesignH = 980;
 let lastInsetTop = 0;
@@ -127,6 +151,79 @@ function showToast(message: string): void {
   toastTimer = window.setTimeout(() => {
     toastText.visible = false;
   }, 2200);
+}
+
+export function lobbyShowToast(message: string): void {
+  if (!box?.visible) return;
+  showToast(message);
+}
+
+function stopSearchAnim(): void {
+  if (searchStep) {
+    removeTick(searchStep);
+    searchStep = null;
+  }
+}
+
+function buildSearchPopup(): Container {
+  searchBox = new Container();
+  searchDim = new Graphics();
+  searchDim.eventMode = 'static';
+  searchBox.addChild(searchDim);
+
+  searchCard = new Container();
+  const panel = new Graphics()
+    .roundRect(-190, -95, 380, 190, 18)
+    .fill({ color: 0x101c2c, alpha: 0.94 })
+    .stroke({ width: 2, color: 0xf6c445 });
+  panel.eventMode = 'static';
+  searchCard.addChild(panel);
+
+  searchLabel = makeText('Đang tìm trận...', 20, 0xffe9a8, '800');
+  searchLabel.y = -36;
+  searchCard.addChild(searchLabel);
+
+  const cancel = makeWoodBtn('HỦY', 180, 60, null, () => deps.onCancelQueue());
+  cancel.y = 42;
+  searchCard.addChild(cancel);
+
+  searchBox.addChild(searchCard);
+  searchBox.visible = false;
+  return searchBox;
+}
+
+export function openSearchPopup(): void {
+  stopSearchAnim();
+  searchBox.visible = true;
+  searchDim.alpha = 0;
+  void tween(searchDim, { alpha: 1 }, 200);
+  popIn(searchCard, 0, 380);
+  let t = 0;
+  searchStep = (ticker: Ticker) => {
+    t += ticker.deltaMS;
+    const dots = '.'.repeat(1 + (Math.floor(t / 400) % 3));
+    searchLabel.text = `Đang tìm trận${dots}`;
+  };
+  addTick(searchStep);
+}
+
+export function hideSearchPopup(): void {
+  stopSearchAnim();
+  if (searchBox) searchBox.visible = false;
+}
+
+export function isSearchPopupOpen(): boolean {
+  return searchBox?.visible === true;
+}
+
+export function lobbyUpdateKen(ken: number): void {
+  if (!kenText || kenValue === ken) return;
+  if (box?.visible && content.visible) {
+    animateKen(ken);
+    return;
+  }
+  kenValue = ken;
+  kenText.text = ken > 0 ? ken.toLocaleString('vi-VN') : '0';
 }
 
 export function buildLobby(lobbyDeps: LobbyDeps): Container {
@@ -211,20 +308,29 @@ export function buildLobby(lobbyDeps: LobbyDeps): Container {
   btnBotWrap.addChild(btnBot);
   content.addChild(btnBotWrap);
 
-  btnPvp = makeWoodBtn('ĐẤU 1V1', WOOD_W, WOOD_H, A.lobby.icPvp, () => {
-    showToast('Đấu 1v1 đang phát triển, sắp ra mắt!');
-  });
+  btnPvp = makeWoodBtn('ĐẤU 1V1', WOOD_W, WOOD_H, A.lobby.icPvp, () => deps.onPvp());
   btnPvpWrap = new Container();
   btnPvpWrap.x = DESIGN_W / 2;
   btnPvpWrap.addChild(btnPvp);
   content.addChild(btnPvpWrap);
 
+  btnRoom = makeWoodBtn('PHÒNG ĐẤU', WOOD_W, WOOD_H, A.lobby.icPvp, openRoomList);
+  btnRoomWrap = new Container();
+  btnRoomWrap.x = DESIGN_W / 2;
+  btnRoomWrap.addChild(btnRoom);
+  content.addChild(btnRoomWrap);
+
   menuRow = new Container();
+  const pillStep = PILL_W + PILL_GAP;
   const history = makePill('LỊCH SỬ', A.lobby.icHistory, () =>
-    showToast('Lịch sử đấu đang phát triển!'),
+    openHistoryPopup(deps.getSession),
   );
-  history.x = -PILL_W - 10;
+  history.x = -1.5 * pillStep;
   menuRow.addChild(history);
+
+  const rank = makePill('HẠNG', A.lobby.coin, () => openLeaderboardPopup(deps.getSession));
+  rank.x = -0.5 * pillStep;
+  menuRow.addChild(rank);
 
   const sound = makePill('ÂM THANH', soundOn ? A.lobby.icSoundOn : A.lobby.icSoundOff, () => {
     soundOn = !soundOn;
@@ -232,12 +338,14 @@ export function buildLobby(lobbyDeps: LobbyDeps): Container {
     soundIcon.texture = tex[soundOn ? A.lobby.icSoundOn : A.lobby.icSoundOff];
     soundIcon.scale.set(26 / soundIcon.texture.height);
   });
+  sound.x = 0.5 * pillStep;
   soundIcon = sound.children[2] as Sprite;
   menuRow.addChild(sound);
 
   const guide = makePill('HƯỚNG DẪN', A.lobby.icGuide, openGuidePopup);
-  guide.x = PILL_W + 10;
+  guide.x = 1.5 * pillStep;
   menuRow.addChild(guide);
+  menuRow.scale.set((DESIGN_W - 16) / (4 * PILL_W + 3 * PILL_GAP));
   menuRow.x = DESIGN_W / 2;
   content.addChild(menuRow);
 
@@ -261,17 +369,21 @@ export function buildLobby(lobbyDeps: LobbyDeps): Container {
   retryBtn.visible = false;
   box.addChild(retryBtn);
 
-  toastText = makeText('', 15, 0xffffff, '800');
-  toastText.x = DESIGN_W / 2;
-  toastText.visible = false;
-  box.addChild(toastText);
-
   pickBox = buildPickPopup((level) => deps.onPlay(level));
   box.addChild(pickBox);
   guideBox = buildGuidePopup();
   box.addChild(guideBox);
   confirmBox = buildConfirmPopup();
   box.addChild(confirmBox);
+  box.addChild(buildSearchPopup());
+  box.addChild(buildRoomsLayer());
+  box.addChild(buildHistoryPopup());
+  box.addChild(buildLeaderboardPopup());
+
+  toastText = makeText('', 15, 0xffffff, '800');
+  toastText.x = DESIGN_W / 2;
+  toastText.visible = false;
+  box.addChild(toastText);
 
   return box;
 }
@@ -317,22 +429,26 @@ export function layoutLobby(designH: number, insetTop: number, insetBottom: numb
   const kenBottom = kenFrame.y + kenH / 2;
   const menuTop = menuY - 41;
   let btnScale = 1;
-  let pvpY = menuY - 104;
+  let roomY = menuY - 104;
+  let pvpY = roomY - 104;
   let botY = pvpY - 104;
   if (botY - WOOD_H / 2 < kenBottom + 12) {
     const availTop = kenBottom + 10;
     const availBot = menuTop - 10;
-    const span = Math.max(80, availBot - availTop);
-    const need = WOOD_H * 2 + 14;
+    const span = Math.max(120, availBot - availTop);
+    const need = WOOD_H * 3 + 28;
     btnScale = Math.min(1, span / need);
     const blockTop = (availTop + availBot) / 2 - (need * btnScale) / 2;
     botY = blockTop + (WOOD_H * btnScale) / 2;
     pvpY = botY + (WOOD_H + 14) * btnScale;
+    roomY = pvpY + (WOOD_H + 14) * btnScale;
   }
   btnBotWrap.scale.set(btnScale);
   btnPvpWrap.scale.set(btnScale);
+  btnRoomWrap.scale.set(btnScale);
   btnBotWrap.y = botY;
   btnPvpWrap.y = pvpY;
+  btnRoomWrap.y = roomY;
 
   const gapBottom = botY - (WOOD_H * btnScale) / 2;
   statusPanel.y = btnScale < 1 ? (kenBottom + menuTop) / 2 : (kenBottom + gapBottom) / 2;
@@ -341,6 +457,12 @@ export function layoutLobby(designH: number, insetTop: number, insetBottom: numb
   layoutPickPopup(designH, insetTop, insetBottom);
   layoutGuidePopup(designH);
   layoutConfirmPopup(designH);
+  layoutRooms(designH, insetTop, insetBottom);
+  layoutHistoryPopup(designH, insetTop, insetBottom);
+  layoutLeaderboardPopup(designH, insetTop, insetBottom);
+  searchDim.clear().rect(0, 0, DESIGN_W, designH).fill({ color: 0x080814, alpha: 0.72 });
+  searchCard.x = DESIGN_W / 2;
+  searchCard.y = insetTop + (designH - insetTop - insetBottom) / 2;
 }
 
 function layoutNameRow(): void {
@@ -364,8 +486,9 @@ function revealContent(): void {
   popIn(kenText, 210);
   popIn(plusBtn, 210);
   popIn(btnBot, 320);
-  popIn(btnPvp, 440);
-  popIn(menuRow, 560);
+  popIn(btnPvp, 420);
+  popIn(btnRoom, 520);
+  popIn(menuRow, 640);
 }
 
 export function lobbySetConnecting(): void {
@@ -421,7 +544,7 @@ export function lobbySetReady(info: UserInfoData): void {
   kenValue = info.ken;
   kenText.text = '';
   window.setTimeout(() => {
-    if (box.visible && content.visible) animateKen(info.ken);
+    if (box.visible && content.visible) animateKen(kenValue);
   }, 380);
 }
 
@@ -440,6 +563,10 @@ export function lobbySetVisible(visible: boolean): void {
     hidePickPopup();
     hideGuidePopup();
     hideConfirmPopup();
+    hideSearchPopup();
+    hideAllRoomPopups();
+    hideHistoryPopup();
+    hideLeaderboardPopup();
     toastText.visible = false;
     if (toastTimer) window.clearTimeout(toastTimer);
   }

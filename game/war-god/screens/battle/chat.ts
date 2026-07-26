@@ -1,6 +1,7 @@
 import { Container, Graphics, Rectangle, Sprite } from 'pixi.js';
 import { A, tex } from '../../assets';
 import { HEADING, makeText } from '../../kit';
+import { pvp } from '../../pvp';
 
 export const CHAT_W = 492;
 const CHAT_PAD = 12;
@@ -15,7 +16,8 @@ const BOT_LINES = [
 ];
 
 interface ChatEntry {
-  from: 'me' | 'bot';
+  name: string;
+  mine: boolean;
   text: string;
 }
 
@@ -38,6 +40,7 @@ let input: HTMLInputElement;
 let chatH = 150;
 let contentH = 0;
 let scrollBack = 0;
+let pvpChat = false;
 
 function viewH(): number {
   return chatH - 62;
@@ -54,12 +57,7 @@ function renderChat(): void {
   msgLayer.removeChildren().forEach((c) => c.destroy({ children: true }));
   let y = 0;
   for (const entry of chatLog) {
-    const name = makeText(
-      entry.from === 'me' ? '@bạn:' : '@máy:',
-      12,
-      entry.from === 'me' ? 0xffd75e : 0x6fd3ff,
-      '800',
-    );
+    const name = makeText(`${entry.name}:`, 12, entry.mine ? 0xffd75e : 0x6fd3ff, '800');
     name.anchor.set(0, 0);
     const content = makeText(entry.text, 12, 0xffffff, '700');
     content.anchor.set(0, 0);
@@ -76,8 +74,8 @@ function renderChat(): void {
   applyScroll();
 }
 
-function pushChat(from: 'me' | 'bot', text: string): void {
-  chatLog.push({ from, text });
+function pushChat(name: string, mine: boolean, text: string): void {
+  chatLog.push({ name, mine, text });
   if (chatLog.length > 50) chatLog.shift();
   scrollBack = 0;
   renderChat();
@@ -87,11 +85,15 @@ function sendChat(): void {
   const value = input.value.trim();
   if (!value) return;
   input.value = '';
-  pushChat('me', value.slice(0, 120));
+  if (pvpChat) {
+    pvp.sendChatText(value.slice(0, 120));
+    return;
+  }
+  pushChat('@bạn', true, value.slice(0, 120));
   setTimeout(
     () => {
       if (!deps.isOver() && Math.random() < 0.75) {
-        pushChat('bot', BOT_LINES[Math.floor(Math.random() * BOT_LINES.length)]);
+        pushChat('@máy', false, BOT_LINES[Math.floor(Math.random() * BOT_LINES.length)]);
       }
     },
     900 + Math.random() * 1200,
@@ -218,10 +220,22 @@ export function layoutChat(x: number, y: number, h: number, rootX: number, scale
   renderChat();
 }
 
-export function resetChat(greeting: string): void {
+export function resetChat(greeting?: string): void {
   chatLog.length = 0;
   input.value = '';
-  pushChat('bot', greeting);
+  if (greeting) {
+    pushChat('@máy', false, greeting);
+    return;
+  }
+  renderChat();
+}
+
+export function setChatPvp(on: boolean): void {
+  pvpChat = on;
+}
+
+export function pushPvpChat(name: string, mine: boolean, text: string): void {
+  pushChat(name, mine, text);
 }
 
 export function setChatInputVisible(visible: boolean): void {

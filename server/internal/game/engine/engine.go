@@ -75,6 +75,7 @@ type Match struct {
 	players        []protocol.PlayerInfo
 	state          any
 	turnIdx        int
+	timeoutRuns    [2]int
 	deadline       time.Time
 	timer          *time.Timer
 	turnGen        int
@@ -1199,6 +1200,7 @@ func (e *Engine) Move(gameID, userID, matchID string, move json.RawMessage) {
 	previousTurn := m.turnIdx
 	previousDeadline := m.deadline
 	previousPausedRemain := m.pausedRemain
+	previousTimeoutRuns := m.timeoutRuns
 	m.state = state
 
 	if over, winnerIdx := m.logic.Result(m.state); over {
@@ -1213,7 +1215,10 @@ func (e *Engine) Move(gameID, userID, matchID string, move json.RawMessage) {
 		return
 	}
 
-	m.turnIdx = 1 - m.turnIdx
+	if keeper, ok := m.logic.(logic.TurnKeeper); !ok || !keeper.KeepTurn(m.state) {
+		m.turnIdx = 1 - m.turnIdx
+	}
+	m.timeoutRuns[playerIdx] = 0
 	m.deadline = time.Now().Add(time.Duration(e.turnSeconds) * time.Second)
 	if m.disconnected[m.turnIdx] {
 		e.invalidateTurnTimer(m)
@@ -1227,6 +1232,7 @@ func (e *Engine) Move(gameID, userID, matchID string, move json.RawMessage) {
 		m.turnIdx = previousTurn
 		m.deadline = previousDeadline
 		m.pausedRemain = previousPausedRemain
+		m.timeoutRuns = previousTimeoutRuns
 		if m.pausedRemain == 0 {
 			e.scheduleTurnTimer(m)
 		}
@@ -1633,8 +1639,43 @@ func (e *Engine) onTimeout(matchID string, expectedTurn, expectedGen int) {
 		m.pausedRemain > 0 || m.disconnected[m.turnIdx] {
 		return
 	}
-	winnerIdx := 1 - m.turnIdx
-	e.finishMatch(m, m.players[winnerIdx].ID, "timeout")
+	if skipper, ok := m.logic.(logic.TimeoutSkipper); !ok || !skipper.TimeoutSkipsTurn() {
+		winnerIdx := 1 - m.turnIdx
+		e.finishMatch(m, m.players[winnerIdx].ID, "timeout")
+		return
+	}
+	m.timeoutRuns[m.turnIdx]++
+	if m.timeoutRuns[m.turnIdx] >= 3 {
+		winnerIdx := 1 - m.turnIdx
+		e.finishMatch(m, m.players[winnerIdx].ID, "timeout")
+		return
+	}
+	timedOut := m.turnIdx
+	m.turnIdx = 1 - m.turnIdx
+	m.deadline = time.Now().Add(time.Duration(e.turnSeconds) * time.Second)
+	if m.disconnected[m.turnIdx] {
+		e.invalidateTurnTimer(m)
+		m.pausedRemain = time.Until(m.deadline)
+		if m.pausedRemain < time.Second {
+			m.pausedRemain = time.Second
+		}
+	}
+	if err := e.persistMatch(m); err != nil {
+		e.logger.Errorw("Failed to persist skipped turn after timeout", "match_id", m.ID, "error", err)
+	}
+	if m.pausedRemain == 0 {
+		e.scheduleTurnTimer(m)
+	}
+	data := protocol.StateData{
+		MatchID:  m.ID,
+		State:    m.state,
+		Turn:     m.turnIdx,
+		Deadline: m.deadline.UnixMilli(),
+		LastBy:   timedOut,
+	}
+	for _, p := range m.players {
+		e.toUser(m.GameID, p.ID, protocol.OutEnvelope{Type: protocol.S2CState, Data: data})
+	}
 }
 
 func (e *Engine) winnerAmounts(gameID string, bet int) (payout, net int) {
@@ -1787,6 +1828,7 @@ func (e *Engine) snapshotForMatch(m *Match) (ActiveMatchSnapshot, error) {
 		State:              state,
 		StateVersion:       m.logic.StateVersion(),
 		TurnIndex:          m.turnIdx,
+		TimeoutRuns:        m.timeoutRuns,
 		TurnDeadline:       m.deadline.UnixMilli(),
 		Bet:                m.bet,
 		StartedAt:          m.startedAt.UnixMilli(),
@@ -1921,6 +1963,7 @@ func (e *Engine) restorePlayingSnapshot(snapshot ActiveMatchSnapshot, expectedGa
 		players:      snapshot.Players,
 		state:        state,
 		turnIdx:      snapshot.TurnIndex,
+		timeoutRuns:  snapshot.TimeoutRuns,
 		deadline:     deadline,
 		bet:          snapshot.Bet,
 		disconnected: map[int]bool{0: true, 1: true},
