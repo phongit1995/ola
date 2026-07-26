@@ -23,7 +23,7 @@ import lobbyConfirmDoor from './assets/lobby/confirm-door.webp';
 import lobbyBtnRed from './assets/lobby/btn-red.webp';
 import lobbyBtnNavy from './assets/lobby/btn-navy.webp';
 
-export const LOBBY_ASSETS = {
+const LOBBY_CRITICAL_ASSETS = {
   bg: lobbyBg,
   avatarFrame: lobbyAvatarFrame,
   nameFrame: lobbyNameFrame,
@@ -38,6 +38,10 @@ export const LOBBY_ASSETS = {
   icHistory: lobbyIcHistory,
   icLeaderboard: lobbyIcLeaderboard,
   icExit: lobbyIcExit,
+} as const;
+
+export const LOBBY_ASSETS = {
+  ...LOBBY_CRITICAL_ASSETS,
   pickBg: lobbyPickBg,
   pickTitle: lobbyPickTitle,
   pickLevel: lobbyPickLevel,
@@ -231,7 +235,14 @@ export function preloadAssets(
   onProgress?: (loaded: number, total: number) => void,
   timeoutMs = 15000,
 ): Promise<void> {
-  const urls = Object.values(ALL_ASSETS);
+  return preloadUrls(Object.values(LOBBY_CRITICAL_ASSETS), onProgress, timeoutMs);
+}
+
+function preloadUrls(
+  urls: readonly string[],
+  onProgress?: (loaded: number, total: number) => void,
+  timeoutMs = 15000,
+): Promise<void> {
   const total = urls.length;
   let loaded = 0;
   onProgress?.(0, total);
@@ -253,6 +264,10 @@ export function preloadAssets(
   ).then(() => undefined);
   const timeout = new Promise<void>((resolve) => setTimeout(resolve, timeoutMs));
   return Promise.race([loadAll, timeout]);
+}
+
+export function preloadResultAssets(): void {
+  void preloadUrls(Object.values(RESULT_ASSETS), undefined, 30000);
 }
 
 export const VIP_DEFAULT_ICON = '/ola_smiley_online.png';

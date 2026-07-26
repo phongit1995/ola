@@ -698,6 +698,7 @@ func (s *SettlementRepository) freshUserInfo(userID uuid.UUID) (*protocol.UserIn
 		ID:       userID.String(),
 		Username: u.Username,
 		Ken:      u.Ken,
+		MaxBet:   engine.MaxBet,
 	}
 	if u.VipUsed != nil && u.VipEndTime != nil {
 		left := time.Until(*u.VipEndTime)

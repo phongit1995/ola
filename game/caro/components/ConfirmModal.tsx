@@ -1,4 +1,6 @@
+import { useId, useRef } from 'react';
 import { assetBg, type AssetKey } from '../assets';
+import { handleDialogKeyDown, useDialogFocus } from '../helpers/dialog';
 
 interface ConfirmModalProps {
   open: boolean;
@@ -25,18 +27,29 @@ export function ConfirmModal({
   onConfirm,
   onCancel,
 }: ConfirmModalProps) {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
+  const descriptionId = useId();
+  useDialogFocus(open, cardRef);
+
   return (
     <div
       className={'confirm-modal' + (open ? '' : ' hidden')}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={titleId}
+      aria-describedby={descriptionId}
+      aria-hidden={!open}
       onClick={(e) => dismissOnBackdrop && e.target === e.currentTarget && onCancel()}
+      onKeyDown={(event) => handleDialogKeyDown(event, cardRef, onCancel)}
     >
-      <div className="confirm-card" style={assetBg('confirmBg')}>
+      <div ref={cardRef} className="confirm-card" style={assetBg('confirmBg')}>
         <div className="confirm-title" style={assetBg('confirmTitle')}>
-          <span>{title}</span>
+          <span id={titleId}>{title}</span>
         </div>
         <div className="confirm-body">
           <div className="confirm-icon" style={assetBg(icon)} />
-          <p className="confirm-text">{text}</p>
+          <p id={descriptionId} className="confirm-text">{text}</p>
           <div className="confirm-actions">
             <button
               type="button"

@@ -4,6 +4,7 @@ import (
 	"math"
 	"time"
 
+	"ola-chat-server/internal/game/engine"
 	"ola-chat-server/internal/game/protocol"
 	"ola-chat-server/internal/modules/user"
 
@@ -35,6 +36,7 @@ func (r *Repository) GetUserInfo(userID string) (*protocol.UserInfoData, error) 
 		ID:       userID,
 		Username: u.Username,
 		Ken:      u.Ken,
+		MaxBet:   engine.MaxBet,
 	}
 
 	if u.VipUsed != nil && u.VipEndTime != nil {

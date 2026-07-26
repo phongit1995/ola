@@ -53,7 +53,53 @@ func (Logic) DecodeState(data json.RawMessage) (any, error) {
 	if len(state.Board) != Size*Size {
 		return nil, errors.New("invalid saved caro board")
 	}
+	if err := validateSavedState(state); err != nil {
+		return nil, err
+	}
 	return state, nil
+}
+
+func validateSavedState(state *State) error {
+	if state.MoveCount < 0 || state.MoveCount > Size*Size {
+		return errors.New("invalid saved caro move count")
+	}
+
+	counts := [3]int{}
+	for _, mark := range state.Board {
+		if mark < 0 || mark > 2 {
+			return errors.New("invalid saved caro cell")
+		}
+		counts[mark]++
+	}
+	occupied := counts[1] + counts[2]
+	if occupied != state.MoveCount || counts[1] < counts[2] || counts[1] > counts[2]+1 {
+		return errors.New("inconsistent saved caro move count")
+	}
+
+	if state.MoveCount == 0 {
+		if state.LastX != -1 || state.LastY != -1 {
+			return errors.New("invalid saved caro last move")
+		}
+		return nil
+	}
+	if state.LastX < 0 || state.LastX >= Size || state.LastY < 0 || state.LastY >= Size {
+		return errors.New("invalid saved caro last move")
+	}
+	lastMark := state.Board[state.LastY*Size+state.LastX]
+	expectedLastMark := 1
+	if counts[1] == counts[2] {
+		expectedLastMark = 2
+	}
+	if lastMark != expectedLastMark {
+		return errors.New("inconsistent saved caro last move")
+	}
+
+	for index, mark := range state.Board {
+		if mark != 0 && wins(state.Board, index%Size, index/Size, mark) {
+			return errors.New("completed caro state cannot be restored as active")
+		}
+	}
+	return nil
 }
 
 func parseMove(raw json.RawMessage) (int, int, error) {

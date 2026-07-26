@@ -17,6 +17,17 @@ declare global {
   }
 }
 
+function parentOrigin(): string | null {
+  if (window.parent === window || !document.referrer) return null;
+  try {
+    return new URL(document.referrer).origin;
+  } catch {
+    return null;
+  }
+}
+
+const trustedParentOrigin = parentOrigin();
+
 function sendToHost(type: ArcadeBridgeEvent, data?: unknown): void {
   const message: ArcadeBridgeMessage = {
     source: ARCADE_BRIDGE_SOURCE.Game,
@@ -28,7 +39,7 @@ function sendToHost(type: ArcadeBridgeEvent, data?: unknown): void {
     return;
   }
   if (window.parent !== window) {
-    window.parent.postMessage(message, '*');
+    window.parent.postMessage(message, trustedParentOrigin ?? '*');
   }
 }
 
@@ -67,7 +78,11 @@ function handleIncoming(raw: unknown): void {
   hostHandlers.get(message.type)?.forEach((handler) => handler(message.data));
 }
 
-window.addEventListener('message', (event) => handleIncoming(event.data));
+window.addEventListener('message', (event) => {
+  if (window.parent === window || event.source !== window.parent) return;
+  if (trustedParentOrigin != null && event.origin !== trustedParentOrigin) return;
+  handleIncoming(event.data);
+});
 document.addEventListener('message', ((event: MessageEvent) => {
   if (typeof event.data === 'string') {
     try {

@@ -13,6 +13,7 @@ export type OverlayKind = 'win' | 'lose' | 'draw';
 export type PlayerMark = 'x' | 'o';
 export type LobbyPhase = 'loading' | 'connecting' | 'error' | 'ready';
 export type BoardMode = 'idle' | 'pregame' | 'playing';
+export type MatchOutcome = 'win' | 'lose' | 'draw';
 export type RoomActionPending =
   | 'creating'
   | 'joining'
@@ -31,7 +32,7 @@ export interface OverlayState {
 
 export interface MatchResultState {
   matchId: string;
-  win: boolean;
+  outcome: MatchOutcome;
   kenDelta: number | null;
   winnerPayout: number | null;
   revealDelayMs: number;

@@ -12,10 +12,13 @@ interface RankedRoomRowProps {
 
 export function RankedRoomRow({ room, top, height, onJoin }: RankedRoomRowProps) {
   return (
-    <div
+    <button
+      type="button"
       className={'ranked-row' + (room.full ? ' full' : '')}
       style={{ top: `${top}%`, height: `${height}%` }}
-      onClick={room.full ? undefined : () => onJoin(room)}
+      disabled={room.full}
+      aria-label={`Bàn của ${room.owner}, cược ${formatKen(room.bet)} Ken, ${room.players} trên 2 người${room.locked ? ', có mật khẩu' : ''}`}
+      onClick={() => onJoin(room)}
     >
       <span className="rr-owner">
         <img src={avatarIconSrc(room.ownerVipType)} alt="" className="rr-vip" />
@@ -31,6 +34,6 @@ export function RankedRoomRow({ room, top, height, onJoin }: RankedRoomRowProps)
           {room.players}/2
         </span>
       </span>
-    </div>
+    </button>
   );
 }

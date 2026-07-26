@@ -1,6 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { assetBg, assetSrc } from '../../assets';
+import { handleDialogKeyDown, useDialogFocus } from '../../helpers/dialog';
 import { useCaro } from '../../store/useCaro';
 import { HistoryPager } from './components/HistoryPager';
 import { HistoryRow } from './components/HistoryRow';
@@ -9,6 +10,7 @@ import { useHistory } from './useHistory';
 const PAGE_SIZE = 10;
 
 export function HistoryScreen() {
+  const dialogRef = useRef<HTMLDivElement>(null);
   const { visible, close, history, loading, error, retry } = useCaro(
     useShallow((state) => ({
       visible: state.historyVisible,
@@ -29,6 +31,7 @@ export function HistoryScreen() {
 
   const pageCount = Math.max(1, Math.ceil(history.length / PAGE_SIZE));
   const visibleEntries = history.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
+  useDialogFocus(visible, dialogRef);
 
   useEffect(() => {
     if (visible) resetPage();
@@ -38,15 +41,6 @@ export function HistoryScreen() {
     setPage((current) => Math.min(current, pageCount - 1));
   }, [pageCount, setPage]);
 
-  useEffect(() => {
-    if (!visible) return;
-    const onKeyDown = (event: KeyboardEvent): void => {
-      if (event.key === 'Escape') close();
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [close, visible]);
-
   return (
     <div
       id="history"
@@ -55,8 +49,9 @@ export function HistoryScreen() {
       aria-modal="true"
       aria-labelledby="history-title-text"
       onClick={(event) => event.target === event.currentTarget && close()}
+      onKeyDown={(event) => handleDialogKeyDown(event, dialogRef, close)}
     >
-      <div id="history-inner" style={assetBg('historyPanel')}>
+      <div ref={dialogRef} id="history-inner" style={assetBg('historyPanel')}>
         <div className="history-title" style={assetBg('historyTitleFrame')}>
           <img src={assetSrc('historyIcon')} alt="" />
           <span id="history-title-text">Lịch sử</span>
@@ -84,7 +79,7 @@ export function HistoryScreen() {
           </section>
 
           {(loading || error || history.length === 0) && (
-            <div className="history-state" role="status">
+            <div className="history-state" role={error ? 'alert' : 'status'}>
               {loading ? (
                 <span>Đang tải lịch sử...</span>
               ) : error ? (

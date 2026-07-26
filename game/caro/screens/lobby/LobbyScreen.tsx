@@ -118,13 +118,15 @@ export function LobbyScreen({ progress }: { progress: string }) {
           {toast}
         </div>
       </div>
-      <BotLevelPicker open={pickOpen} onChoose={choose} onClose={() => setPickOpen(false)} />
-      <ConfirmModal
-        open={exitOpen}
-        text="Bạn có chắc muốn thoát trò chơi?"
-        onConfirm={exitApp}
-        onCancel={() => setExitOpen(false)}
-      />
+      {pickOpen && <BotLevelPicker open onChoose={choose} onClose={() => setPickOpen(false)} />}
+      {exitOpen && (
+        <ConfirmModal
+          open
+          text="Bạn có chắc muốn thoát trò chơi?"
+          onConfirm={exitApp}
+          onCancel={() => setExitOpen(false)}
+        />
+      )}
     </div>
   );
 }

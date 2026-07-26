@@ -1,6 +1,7 @@
 import {
   useLayoutEffect,
   useRef,
+  type KeyboardEvent as ReactKeyboardEvent,
   type PointerEvent as ReactPointerEvent,
 } from 'react';
 import { useShallow } from 'zustand/react/shallow';
@@ -31,6 +32,9 @@ export function GameBoard() {
   const clipRef = useRef<HTMLDivElement>(null);
   const boardRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<BoardDrag | null>(null);
+  const panRef = useRef({ x: 0, y: 0 });
+  const pendingPanRef = useRef({ x: 0, y: 0 });
+  const panFrameRef = useRef<number | null>(null);
   const { pan, setPan } = useBoard(
     useShallow((state) => ({
       pan: state.pan,
@@ -91,6 +95,47 @@ export function GameBoard() {
   const roomCanStart = roomFull === true && roomWaiting.members.some((member) => !member.owner && member.ready);
   const roomBusy = roomActionPending != null;
   const betText = formatKen(bet);
+  const keyboardStartIdx = Math.max(0, board.findIndex((mark) => mark === 0));
+
+  useLayoutEffect(() => {
+    panRef.current = pan;
+    pendingPanRef.current = pan;
+    if (!dragRef.current && boardRef.current) {
+      boardRef.current.style.transform = `translate3d(${pan.x}px, ${pan.y}px, 0)`;
+    }
+  }, [pan]);
+
+  useLayoutEffect(
+    () => () => {
+      if (panFrameRef.current != null) cancelAnimationFrame(panFrameRef.current);
+    },
+    [],
+  );
+
+  const applyPanTransform = (next: { x: number; y: number }): void => {
+    panRef.current = next;
+    const boardElement = boardRef.current;
+    if (boardElement) boardElement.style.transform = `translate3d(${next.x}px, ${next.y}px, 0)`;
+  };
+
+  const schedulePanTransform = (next: { x: number; y: number }): void => {
+    pendingPanRef.current = next;
+    if (panFrameRef.current != null) return;
+    panFrameRef.current = requestAnimationFrame(() => {
+      panFrameRef.current = null;
+      applyPanTransform(pendingPanRef.current);
+    });
+  };
+
+  const commitPan = (next = pendingPanRef.current): void => {
+    if (panFrameRef.current != null) {
+      cancelAnimationFrame(panFrameRef.current);
+      panFrameRef.current = null;
+    }
+    pendingPanRef.current = next;
+    applyPanTransform(next);
+    setPan((current) => (current.x === next.x && current.y === next.y ? current : next));
+  };
 
   useLayoutEffect(() => {
     const clip = clipRef.current;
@@ -132,7 +177,7 @@ export function GameBoard() {
 
   const onBoardPointerDown = (event: ReactPointerEvent<HTMLDivElement>): void => {
     if (!event.isPrimary || event.button !== 0 || dragRef.current) return;
-    if (event.target instanceof Element && event.target.closest('button')) return;
+    if (event.target instanceof Element && event.target.closest('button:not(.cell)')) return;
     const clip = clipRef.current;
     const boardElement = boardRef.current;
     if (!clip || !boardElement) return;
@@ -140,8 +185,8 @@ export function GameBoard() {
     dragRef.current = {
       startX: event.clientX,
       startY: event.clientY,
-      baseX: pan.x,
-      baseY: pan.y,
+      baseX: panRef.current.x,
+      baseY: panRef.current.y,
       minX: bounds.minX,
       maxX: bounds.maxX,
       minY: bounds.minY,
@@ -159,7 +204,7 @@ export function GameBoard() {
     const dy = event.clientY - drag.startY;
     if (Math.abs(dx) > DRAG_THRESHOLD || Math.abs(dy) > DRAG_THRESHOLD) drag.moved = true;
     if (!drag.moved) return;
-    setPan({
+    schedulePanTransform({
       x: clampPan(drag.baseX + dx, drag.minX, drag.maxX),
       y: clampPan(drag.baseY + dy, drag.minY, drag.maxY),
     });
@@ -168,10 +213,17 @@ export function GameBoard() {
   const onBoardPointerUp = (event: ReactPointerEvent<HTMLDivElement>): void => {
     const drag = dragRef.current;
     if (!drag || drag.pointerId !== event.pointerId) return;
-    dragRef.current = null;
     const clip = clipRef.current;
     if (clip?.hasPointerCapture(event.pointerId)) clip.releasePointerCapture(event.pointerId);
-    if (drag.moved) return;
+    if (drag.moved) {
+      commitPan({
+        x: clampPan(drag.baseX + event.clientX - drag.startX, drag.minX, drag.maxX),
+        y: clampPan(drag.baseY + event.clientY - drag.startY, drag.minY, drag.maxY),
+      });
+      dragRef.current = null;
+      return;
+    }
+    dragRef.current = null;
     const boardElement = boardRef.current;
     if (!boardElement) return;
     const rect = boardElement.getBoundingClientRect();
@@ -184,6 +236,30 @@ export function GameBoard() {
   const onBoardPointerCancel = (event: ReactPointerEvent<HTMLDivElement>): void => {
     if (dragRef.current?.pointerId !== event.pointerId) return;
     dragRef.current = null;
+    commitPan();
+  };
+
+  const onCellKeyDown = (event: ReactKeyboardEvent<HTMLButtonElement>, index: number): void => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      if (board[index] === 0) placeMove(index % SIZE, Math.floor(index / SIZE));
+      return;
+    }
+    const direction =
+      event.key === 'ArrowLeft'
+        ? [-1, 0]
+        : event.key === 'ArrowRight'
+          ? [1, 0]
+          : event.key === 'ArrowUp'
+            ? [0, -1]
+            : event.key === 'ArrowDown'
+              ? [0, 1]
+              : null;
+    if (!direction) return;
+    event.preventDefault();
+    const x = Math.min(SIZE - 1, Math.max(0, (index % SIZE) + direction[0]));
+    const y = Math.min(SIZE - 1, Math.max(0, Math.floor(index / SIZE) + direction[1]));
+    boardRef.current?.querySelector<HTMLButtonElement>(`.cell[data-index="${y * SIZE + x}"]`)?.focus();
   };
 
   return (
@@ -217,13 +293,33 @@ export function GameBoard() {
             id="board"
             ref={boardRef}
             className={myTurn && !movePending ? 'playable' : ''}
-            style={{ transform: `translate(${pan.x}px, ${pan.y}px)` }}
+            style={{ transform: `translate3d(${pan.x}px, ${pan.y}px, 0)` }}
+            role="grid"
+            aria-label="Bàn cờ Caro 20 nhân 20"
             aria-busy={movePending}
           >
             {CELLS.map((index) => {
               const mark = board[index];
               const className = 'cell' + (mark ? ` p${mark}` : '') + (index === lastIdx ? ' last' : '');
-              return <div key={index} className={className} />;
+              const x = index % SIZE;
+              const y = Math.floor(index / SIZE);
+              const label = mark === 1 ? 'quân X' : mark === 2 ? 'quân O' : 'ô trống';
+              return (
+                <button
+                  key={index}
+                  type="button"
+                  className={className}
+                  data-index={index}
+                  role="gridcell"
+                  tabIndex={index === keyboardStartIdx ? 0 : -1}
+                  aria-label={`Hàng ${y + 1}, cột ${x + 1}, ${label}`}
+                  aria-disabled={!myTurn || movePending || mark !== 0}
+                  onKeyDown={(event) => onCellKeyDown(event, index)}
+                  onClick={(event) => {
+                    if (event.detail === 0 && mark === 0) placeMove(x, y);
+                  }}
+                />
+              );
             })}
             {winLine && (
               <svg className="win-line-svg" viewBox={`0 0 ${SIZE} ${SIZE}`} preserveAspectRatio="none" aria-hidden="true">

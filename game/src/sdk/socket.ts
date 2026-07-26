@@ -72,6 +72,9 @@ export interface GameSession<TState = unknown, TMove = unknown> {
 type Handler = (data: never) => void;
 
 function normalizeConnectionError(error: Error): Error {
+  const code = (error as Error & { data?: { code?: unknown } }).data?.code;
+  if (code === 'AUTH_EXPIRED') return new GameAuthenticationExpiredError();
+  if (code === 'AUTH_REQUIRED') return new GameAuthenticationRequiredError();
   const message = error.message.trim().toLowerCase();
   if (message === 'unauthorized') return new GameAuthenticationExpiredError();
   if (message === 'access_token is required') return new GameAuthenticationRequiredError();

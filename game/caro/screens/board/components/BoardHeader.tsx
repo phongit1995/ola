@@ -72,7 +72,7 @@ export function BoardHeader() {
               -{betText} KEN
             </span>
           )}
-          {showWinnerPayout && result != null && !result.win && (
+          {showWinnerPayout && result?.outcome === 'lose' && (
             <span key={`op-payout-${result.matchId}`} className="player-ken-change credit">
               +{winnerPayoutText} KEN
             </span>
@@ -114,7 +114,7 @@ export function BoardHeader() {
               -{betText} KEN
             </span>
           )}
-          {showWinnerPayout && result != null && result.win && (
+          {showWinnerPayout && result?.outcome === 'win' && (
             <span key={`me-payout-${result.matchId}`} className="player-ken-change credit">
               +{winnerPayoutText} KEN
             </span>

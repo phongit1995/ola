@@ -82,7 +82,7 @@ func NewServer(
 
 		token, _ := auth["token"].(string)
 		if token == "" {
-			next(socket.NewExtendedError("access_token is required", nil))
+			next(socket.NewExtendedError("access_token is required", map[string]string{"code": "AUTH_REQUIRED"}))
 			return
 		}
 
@@ -95,7 +95,7 @@ func NewServer(
 		uid, err := jwtService.GetUserIDFromToken(token)
 		if err != nil {
 			server.logger.Warnw("Invalid game socket token", "error", err)
-			next(socket.NewExtendedError("Unauthorized", nil))
+			next(socket.NewExtendedError("Unauthorized", map[string]string{"code": "AUTH_EXPIRED"}))
 			return
 		}
 		userID := uid.String()
@@ -165,7 +165,7 @@ func (s *Server) sendUserInfo(client *socket.Socket, data *SocketData) {
 		s.logger.Warnw("Failed to load user info", "user_id", data.UserID, "error", err)
 		client.Emit(messageEvent, protocol.OutEnvelope{
 			Type: protocol.S2CError,
-			Data: protocol.ErrorData{Code: "USER_INFO_FAILED", Message: "failed to load user info"},
+			Data: protocol.ErrorData{Code: protocol.ErrorCodeUserInfoFailed, Message: "failed to load user info"},
 		})
 		return
 	}

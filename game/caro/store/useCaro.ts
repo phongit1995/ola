@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { ARCADE_ATTENTION_REASON } from '@ola/shared/types';
 import {
   bridge,
+  GAME_ERROR_CODE,
   GameAuthenticationExpiredError,
   GameAuthenticationRequiredError,
   joinGame,
@@ -12,13 +13,14 @@ import {
   type UserInfoData,
 } from '../../src/sdk';
 import { vipIconUrl } from '@ola/shared/lib/vip';
-import { BOARD_ASSETS, VIP_DEFAULT_ICON } from '../assets';
+import { BOARD_ASSETS, VIP_DEFAULT_ICON, preloadResultAssets } from '../assets';
 import { createBotSession } from '../bot';
 import { findFinalWinLine } from '../helpers/board';
-import { chatErrorText, roomErrorText } from '../helpers/errorText';
+import { chatErrorText, matchErrorText, roomErrorText } from '../helpers/errorText';
 import { formatClock } from '../helpers/format';
 import { mergeMatchHistory, readBotHistory, saveBotHistory } from '../helpers/history';
 import { avatarIconSrc, opponentOf } from '../helpers/player';
+import { roomCreationError } from '../helpers/room';
 import type { CaroStore, RoomActionPending } from './types';
 import { createInitialCaroState, EMPTY_PLAYER } from './initialState';
 import {
@@ -536,6 +538,7 @@ export const useCaro = create<CaroStore>()((set, get) => {
       }
       if (resumesOnlineSession) refs.session = target;
       refs.match = data;
+      preloadResultAssets();
       if (!data.resumed) {
         bridge.attention({
           reason: ARCADE_ATTENTION_REASON.MatchStarted,
@@ -597,6 +600,7 @@ export const useCaro = create<CaroStore>()((set, get) => {
 
     target.onState((data) => {
       if (refs.session !== target) return;
+      if (refs.match?.matchId !== data.matchId) return;
       renderState(data.state);
       if (data.turn < 0) {
         stopTimer();
@@ -608,6 +612,8 @@ export const useCaro = create<CaroStore>()((set, get) => {
 
     target.onChat((data) => {
       if (refs.session !== target) return;
+      if (data.matchId && data.matchId !== refs.match?.matchId) return;
+      if (data.roomId && data.roomId !== get().roomWaiting?.roomId) return;
       const match = refs.match;
       const room = get().roomWaiting;
       const isMatchChat = data.matchId != null && match?.matchId === data.matchId;
@@ -634,6 +640,8 @@ export const useCaro = create<CaroStore>()((set, get) => {
 
     target.onMatchOver((data) => {
       if (refs.session !== target) return;
+      const exiting = refs.exitingMatch?.matchId === data.matchId;
+      if (refs.match != null && refs.match.matchId !== data.matchId && !exiting) return;
       if (refs.handledMatchIds.has(data.matchId)) return;
       refs.handledMatchIds.add(data.matchId);
       if (refs.handledMatchIds.size > 64) {
@@ -642,7 +650,6 @@ export const useCaro = create<CaroStore>()((set, get) => {
       }
       clearMatchUi();
       renderState(data.state);
-      const exiting = refs.exitingMatch?.matchId === data.matchId;
       const match = refs.match ?? (exiting ? refs.exitingMatch : null);
       const myId = match?.players[match.you]?.id ?? refs.user?.id ?? target.userId;
       const won = data.winnerId != null && data.winnerId !== '' && data.winnerId === myId;
@@ -667,33 +674,59 @@ export const useCaro = create<CaroStore>()((set, get) => {
         refs.exitingMatch = null;
         return;
       }
-      if (draw) {
-        set({ overlay: { title: 'Hòa!', sub: '', kind: 'draw', actions: ['again', 'lobby'] }, status: 'Chơi ván mới?' });
-      } else {
-        const bet = data.bet ?? refs.matchBet;
-        const line = data.reason === 'win' ? findFinalWinLine(data.state) : null;
-        const winnerPayout = data.payout ?? bet * 2;
-        const winnerNet = data.kenDelta ?? winnerPayout - bet;
-        const kenDelta = target === refs.bot ? null : bet === 0 ? 0 : won ? winnerNet : -bet;
-        const payoutRevealDelay =
-          target !== refs.bot && bet > 0 && winnerPayout > 0 ? WIN_RESULT_REVEAL_MS : 0;
-        set({
-          result: {
-            matchId: data.matchId,
-            win: won,
-            kenDelta,
-            winnerPayout: target === refs.bot || bet === 0 ? null : winnerPayout,
-            revealDelayMs: line ? WIN_RESULT_REVEAL_MS : payoutRevealDelay,
-          },
-          winLine: line,
-          status: won ? 'Bạn thắng!' : 'Bạn thua!',
-        });
-      }
+      const bet = data.bet ?? refs.matchBet;
+      const line = !draw && data.reason === 'win' ? findFinalWinLine(data.state) : null;
+      const winnerPayout = data.payout ?? bet * 2;
+      const winnerNet = data.kenDelta ?? winnerPayout - bet;
+      const kenDelta = draw || target === refs.bot ? null : bet === 0 ? 0 : won ? winnerNet : -bet;
+      const payoutRevealDelay =
+        !draw && target !== refs.bot && bet > 0 && winnerPayout > 0 ? WIN_RESULT_REVEAL_MS : 0;
+      set({
+        overlay: null,
+        result: {
+          matchId: data.matchId,
+          outcome: draw ? 'draw' : won ? 'win' : 'lose',
+          kenDelta,
+          winnerPayout: draw || target === refs.bot || bet === 0 ? null : winnerPayout,
+          revealDelayMs: line ? WIN_RESULT_REVEAL_MS : payoutRevealDelay,
+        },
+        winLine: line,
+        status: draw ? 'Ván đấu hòa!' : won ? 'Bạn thắng!' : 'Bạn thua!',
+      });
     });
 
     target.onError((err) => {
       if (refs.session !== target) return;
-      const chatMessage = chatErrorText(err.code);
+      const lostRoom =
+        err.code === GAME_ERROR_CODE.NotRoomMember ||
+        err.code === GAME_ERROR_CODE.RoomNotFound ||
+        err.code === GAME_ERROR_CODE.RoomMismatch;
+      if (lostRoom && !refs.match && get().roomWaiting) {
+        refs.pendingRoomId = null;
+        refs.matchBet = 0;
+        refs.chatOpponentId = null;
+        refs.chatSeq = 0;
+        set({
+          boardMode: 'idle',
+          roomActionPending: null,
+          roomWaiting: null,
+          bet: 0,
+          board: emptyState().board,
+          lastIdx: -1,
+          overlay: null,
+          result: null,
+          winLine: null,
+          messages: [],
+          lobbyVisible: false,
+          leaderboardVisible: false,
+          rankedVisible: true,
+        });
+        refs.online?.listRooms();
+        showToast(roomErrorText(err.code) ?? err.message);
+        return;
+      }
+      const roomActionError = get().roomActionPending != null ? roomErrorText(err.code) : null;
+      const chatMessage = roomActionError == null ? chatErrorText(err.code) : null;
       if (chatMessage) {
         showToast(chatMessage);
         return;
@@ -720,10 +753,10 @@ export const useCaro = create<CaroStore>()((set, get) => {
         }
         if (returnToRooms) refs.pendingRoomId = null;
         if (returnToRooms) refs.matchBet = 0;
-        showToast(roomErrorText(err.code) ?? err.message);
+        showToast(roomErrorText(err.code) ?? matchErrorText(err.code) ?? err.message);
         return;
       }
-      set({ movePending: false, status: err.message });
+      set({ movePending: false, status: matchErrorText(err.code) ?? err.message });
     });
   };
 
@@ -885,10 +918,21 @@ export const useCaro = create<CaroStore>()((set, get) => {
 
     createRoom(bet, password) {
       if (!refs.online) return;
+      const normalizedPassword = password?.trim() ?? '';
+      const validationError = roomCreationError(
+        bet,
+        normalizedPassword,
+        refs.user?.ken ?? null,
+        refs.user?.maxBet ?? null,
+      );
+      if (validationError) {
+        showToast(validationError);
+        return;
+      }
       refs.session = refs.online;
       refs.matchBet = bet;
       enterPendingRoom('creating', 'Đang tạo bàn...');
-      refs.online.createRoom(bet, password || undefined);
+      refs.online.createRoom(bet, normalizedPassword || undefined);
     },
 
     joinRoom(roomId, password) {

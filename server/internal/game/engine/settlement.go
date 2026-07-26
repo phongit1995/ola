@@ -521,20 +521,20 @@ func (e *Engine) ensureCanBet(gameID, userID string, bet int) bool {
 	}
 	settlement := e.currentSettlement()
 	if settlement == nil {
-		e.sendError(gameID, userID, "BET_NOT_ALLOWED", "betting is temporarily unavailable")
+		e.sendError(gameID, userID, protocol.ErrorCodeBetNotAllowed, "betting is temporarily unavailable")
 		return false
 	}
 	balance, ok := settlement.Balance(userID)
 	if !ok {
-		e.sendError(gameID, userID, "BET_NOT_ALLOWED", "betting requires a registered account")
+		e.sendError(gameID, userID, protocol.ErrorCodeBetNotAllowed, "betting requires a registered account")
 		return false
 	}
 	if balance < bet {
-		e.sendError(gameID, userID, "INSUFFICIENT_KEN", "not enough Ken for this bet")
+		e.sendError(gameID, userID, protocol.ErrorCodeInsufficientKen, "not enough Ken for this bet")
 		return false
 	}
 	if balance > math.MaxInt32-bet {
-		e.sendError(gameID, userID, "BET_NOT_ALLOWED", "this bet could exceed the Ken balance limit")
+		e.sendError(gameID, userID, protocol.ErrorCodeBetNotAllowed, "this bet could exceed the Ken balance limit")
 		return false
 	}
 	return true

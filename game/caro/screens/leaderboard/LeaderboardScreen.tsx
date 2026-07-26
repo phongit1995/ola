@@ -1,7 +1,8 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import type { LeaderboardPeriod } from '../../../src/sdk';
 import { assetBg, assetSrc } from '../../assets';
+import { handleDialogKeyDown, useDialogFocus } from '../../helpers/dialog';
 import { useCaro } from '../../store/useCaro';
 import { LeaderboardPager } from './components/LeaderboardPager';
 import { LeaderboardRow } from './components/LeaderboardRow';
@@ -10,6 +11,7 @@ import { useLeaderboard } from './useLeaderboard';
 const PAGE_SIZE = 10;
 
 export function LeaderboardScreen() {
+  const dialogRef = useRef<HTMLDivElement>(null);
   const visible = useCaro((s) => s.leaderboardVisible);
   const close = useCaro((s) => s.hideLeaderboard);
   const leaderboards = useCaro((s) => s.leaderboards);
@@ -29,6 +31,7 @@ export function LeaderboardScreen() {
   const error = leaderboardErrors[period];
   const pageCount = Math.max(1, Math.ceil(players.length / PAGE_SIZE));
   const visiblePlayers = players.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
+  useDialogFocus(visible, dialogRef);
 
   useEffect(() => {
     if (visible) loadLeaderboard(period);
@@ -37,15 +40,6 @@ export function LeaderboardScreen() {
   useEffect(() => {
     setPage((current) => Math.min(current, pageCount - 1));
   }, [pageCount, setPage]);
-
-  useEffect(() => {
-    if (!visible) return;
-    const onKeyDown = (event: KeyboardEvent): void => {
-      if (event.key === 'Escape') close();
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [close, visible]);
 
   const changePeriod = (next: LeaderboardPeriod): void => {
     setPeriod(next);
@@ -59,8 +53,9 @@ export function LeaderboardScreen() {
       aria-modal="true"
       aria-labelledby="leaderboard-title-text"
       onClick={(event) => event.target === event.currentTarget && close()}
+      onKeyDown={(event) => handleDialogKeyDown(event, dialogRef, close)}
     >
-      <div id="leaderboard-inner" style={assetBg('leaderboardPanel')}>
+      <div ref={dialogRef} id="leaderboard-inner" style={assetBg('leaderboardPanel')}>
         <div className="leaderboard-title" style={assetBg('leaderboardTitleFrame')}>
           <img src={assetSrc('leaderboardCup')} alt="" />
           <span id="leaderboard-title-text">Bảng xếp hạng</span>
@@ -110,6 +105,14 @@ export function LeaderboardScreen() {
               {visiblePlayers.map((player) => (
                 <LeaderboardRow key={player.userId} player={player} />
               ))}
+              {players.length > 0 && error && !loading && (
+                <div className="leaderboard-state compact" role="alert">
+                  <span>{error}</span>
+                  <button type="button" onClick={() => loadLeaderboard(period)}>
+                    Thử lại
+                  </button>
+                </div>
+              )}
               {players.length === 0 && (
                 <div className="leaderboard-state" role={error ? 'alert' : 'status'}>
                   <span>{loading ? 'Đang tải bảng xếp hạng...' : error ?? 'Chưa có người chơi thắng Ken.'}</span>

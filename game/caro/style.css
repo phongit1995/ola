@@ -516,6 +516,13 @@ button:focus-visible,
   display: flex;
   align-items: center;
   justify-content: center;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  appearance: none;
+  background-color: transparent;
   font-size: 0;
   background-size: 68% 68%;
   background-repeat: no-repeat;
@@ -1743,6 +1750,10 @@ button:focus-visible,
   width: 100%;
   display: grid;
   grid-template-columns: 35.3% 33.6% 31.1%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
   cursor: pointer;
 }
 
@@ -2036,6 +2047,17 @@ button:focus-visible,
   color: rgba(29, 79, 139, 0.4);
   font-weight: 700;
   font-size: clamp(10px, 4.2cqw, 15px);
+}
+
+.create-error {
+  width: 90%;
+  min-height: 1.25em;
+  margin: -2cqw 0 0;
+  color: #b5372e;
+  font-size: clamp(11px, 4.2cqw, 15px);
+  font-weight: 800;
+  line-height: 1.2;
+  text-align: center;
 }
 
 /* iOS Safari auto-zooms focused text fields whose computed font is below 16px. */
@@ -2346,6 +2368,24 @@ button:focus-visible,
 
 .leaderboard-state button:active {
   transform: scale(0.95);
+}
+
+.leaderboard-state.compact {
+  inset: auto 4% 2%;
+  z-index: 2;
+  min-height: 38px;
+  flex-direction: row;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 12px;
+  background: rgba(253, 246, 231, 0.94);
+  box-shadow: 0 3px 10px rgba(9, 24, 43, 0.2);
+}
+
+.leaderboard-state.compact button {
+  min-height: 30px;
+  padding: 5px 12px;
+  flex-shrink: 0;
 }
 
 .leaderboard-row {
@@ -2866,6 +2906,14 @@ button:focus-visible,
 
 #result.lose #result-brush {
   aspect-ratio: 2172 / 724;
+}
+
+#result.draw #result-cup {
+  filter: grayscale(0.65) saturate(0.65);
+}
+
+#result.draw #result-verdict {
+  color: #f2c14e;
 }
 
 #result-verdict {
