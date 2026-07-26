@@ -10,6 +10,7 @@ import {
   DollarOutlined,
   FileSearchOutlined,
   GiftOutlined,
+  HeartOutlined,
   LockOutlined,
   LogoutOutlined,
   PlayCircleOutlined,
@@ -31,7 +32,15 @@ const { Sider, Header, Content } = Layout
 
 const MENU_ITEMS = [
   { key: '/', icon: <AppstoreOutlined />, label: 'Tổng quan' },
-  { key: '/users', icon: <TeamOutlined />, label: 'Người dùng' },
+  {
+    key: 'users',
+    icon: <TeamOutlined />,
+    label: 'Người dùng',
+    children: [
+      { key: '/users', icon: <TeamOutlined />, label: 'Danh sách' },
+      { key: '/users/marriages', icon: <HeartOutlined />, label: 'Kết hôn' },
+    ],
+  },
   { key: '/rooms', icon: <CommentOutlined />, label: 'Phòng chat' },
   { key: '/clans', icon: <FlagOutlined />, label: 'Clan' },
   {
@@ -78,6 +87,7 @@ const VIP_KEYS = ['/vip-packages', '/vip-shop', '/vip-transfers']
 const PAGE_TITLES: Record<string, string> = {
   '/': 'Tổng quan',
   '/users': 'Quản lý người dùng',
+  '/users/marriages': 'Kết hôn & cầu hôn',
   '/rooms': 'Quản lý phòng chat',
   '/clans': 'Quản lý clan',
   '/vip-packages': 'Quản lý gói VIP',
@@ -113,6 +123,7 @@ export function AdminLayout() {
     )[0] ?? '/'
 
   const openKeys = [
+    ...(selectedKey.startsWith('/users') ? ['users'] : []),
     ...(VIP_KEYS.includes(selectedKey) ? ['vip'] : []),
     ...(selectedKey.startsWith('/games') ? ['games'] : []),
     ...(selectedKey.startsWith('/settings') ? ['settings'] : []),

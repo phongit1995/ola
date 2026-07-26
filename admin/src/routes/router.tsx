@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { LoginPage } from '@/pages/LoginPage'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { UsersPage } from '@/pages/UsersPage'
+import { MarriagesPage } from '@/pages/MarriagesPage'
 import { RoomsPage } from '@/pages/RoomsPage'
 import { ClansPage } from '@/pages/ClansPage'
 import { VipPackagesPage } from '@/pages/VipPackagesPage'
@@ -43,6 +44,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <DashboardPage /> },
       { path: 'users', element: <UsersPage /> },
+      { path: 'users/marriages', element: <MarriagesPage /> },
       { path: 'rooms', element: <RoomsPage /> },
       { path: 'clans', element: <ClansPage /> },
       { path: 'vip-packages', element: <VipPackagesPage /> },
