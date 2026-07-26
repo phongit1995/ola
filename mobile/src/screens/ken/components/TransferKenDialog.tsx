@@ -20,6 +20,7 @@ export interface TransferKenReceiver {
   username?: string;
   avatar?: string;
   color: string;
+  online?: boolean;
 }
 
 interface TransferKenDialogProps {
@@ -41,6 +42,7 @@ function toReceiver(user: UserSearchResult): TransferKenReceiver {
     username: user.username,
     avatar: user.avatar,
     color: colorForName(user.username),
+    online: user.isOnline,
   };
 }
 
@@ -51,7 +53,24 @@ function ReceiverRow({ receiver, onPress }: { receiver: TransferKenReceiver; onP
       onPress={onPress}
       disabled={onPress == null}
     >
-      <Avatar name={receiver.name} uri={receiver.avatar ?? undefined} size={40} />
+      <View className="relative">
+        <Avatar name={receiver.name} uri={receiver.avatar ?? undefined} size={40} />
+        {receiver.online === true && (
+          <View
+            className="bg-ola-primary"
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              right: 0,
+              width: 12,
+              height: 12,
+              borderRadius: 6,
+              borderWidth: 2,
+              borderColor: '#ffffff',
+            }}
+          />
+        )}
+      </View>
       <View className="min-w-0 flex-1">
         <Text numberOfLines={1} className="text-base" style={{ color: TEXT_PRIMARY }}>
           {receiver.name}

@@ -14,7 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import DeviceInfo from 'react-native-device-info';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AuthService } from '@ola/shared/services';
-import { ApiError, USERNAME_MAX, decodeSecret } from '@ola/shared/lib';
+import { ApiError, toast, USERNAME_MAX, decodeSecret } from '@ola/shared/lib';
 import { PASSWORD_MAX, PASSWORD_MIN } from '@ola/shared/constants';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import {
@@ -101,7 +101,9 @@ export function LoginScreen({ navigation }: Props) {
       saveAccount(username, data.password, user.avatar);
       setUser(user);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : t('auth.errGeneric'));
+      const message = err instanceof ApiError ? err.message : t('auth.errGeneric');
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }

@@ -5,9 +5,14 @@ import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { useMeLocalStore } from '@store/meLocalStore';
 import { activeVipTypeId } from '@ola/shared/lib';
-import { MIN_IMAGE_SOURCE, RELATIONSHIP_STATUS } from '@ola/shared/constants';
+import { RELATIONSHIP_STATUS } from '@ola/shared/constants';
 import type { FollowUser, Post, PublicProfile } from '@ola/shared/types';
-import { pickSingleImage } from '@lib/imagePicker';
+import {
+  AVATAR_OUTPUT,
+  COVER_OUTPUT,
+  pickCroppedImage,
+  pickValidatedCroppedImage,
+} from '@lib/imagePicker';
 import { FOLLOWING_PREVIEW_LIMIT, POSTS_PAGE_SIZE } from './constants';
 
 export function useProfileActions(username: string) {
@@ -158,7 +163,13 @@ export function useProfileActions(username: string) {
 
   async function changeCover() {
     if (uploadingCover) return;
-    const picked = await pickSingleImage();
+    let picked;
+    try {
+      picked = await pickCroppedImage(COVER_OUTPUT.width, COVER_OUTPUT.height);
+    } catch {
+      push('error', t('profileEdit.coverError'));
+      return;
+    }
     if (picked == null) return;
     setUploadingCover(true);
     try {
@@ -176,19 +187,14 @@ export function useProfileActions(username: string) {
 
   async function changeAvatar() {
     if (uploadingAvatar) return;
-    const picked = await pickSingleImage();
+    const picked = await pickValidatedCroppedImage(AVATAR_OUTPUT, AVATAR_OUTPUT, {
+      tooSmall: t('avatar.tooSmall'),
+      error: t('avatar.error'),
+    });
     if (picked == null) return;
-    if (
-      picked.width > 0 &&
-      picked.height > 0 &&
-      Math.min(picked.width, picked.height) < MIN_IMAGE_SOURCE
-    ) {
-      push('error', t('avatar.tooSmall'));
-      return;
-    }
     setUploadingAvatar(true);
     try {
-      const { url } = await UserService.uploadAvatar(picked.file);
+      const { url } = await UserService.uploadAvatar(picked);
       await UserService.updateMe({ avatar: url });
       setProfile(p => (p != null ? { ...p, avatar: url } : p));
       await refreshUser();
@@ -212,6 +218,7 @@ export function useProfileActions(username: string) {
     fans,
     kisses,
     uploadingCover,
+    uploadingAvatar,
     isSelf,
     toggleFollow,
     kiss,

@@ -165,6 +165,16 @@ export function ClanScreen({ handle, id, onClose, onOpenManage, onOpenMembers }:
             pushToast('success', t('me.hideSuccess'));
           },
         },
+        {
+          key: 'save',
+          label: t('me.menuSave'),
+          onSelect: () => pushToast('success', t('me.saveSuccess')),
+        },
+        {
+          key: 'share',
+          label: t('me.menuShare'),
+          onSelect: () => pushToast('success', t('me.shareSuccess')),
+        },
         { key: 'report', label: t('report.post'), onSelect: () => setReportPostId(post.id) },
         {
           key: 'block',

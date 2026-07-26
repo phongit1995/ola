@@ -73,6 +73,10 @@ export const playMessageSound = createSoundPlayer(
   require('@assets/sounds/message.mp3'),
   'notifSound'
 ).play;
+export const playLikeMeSound = createSoundPlayer(
+  require('@assets/sounds/like_me.mp3'),
+  'notifSound'
+).play;
 export const playRoomTagSound = createSoundPlayer(
   require('@assets/sounds/room-tag.mp3'),
   'notifSound'

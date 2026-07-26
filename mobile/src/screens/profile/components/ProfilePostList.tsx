@@ -10,6 +10,7 @@ import type { Post } from '@ola/shared/types';
 import { useMeLocalStore } from '@store/meLocalStore';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { ListOptionDialog, type ListOption } from '@components/ui/ListOptionDialog';
+import { ReportDialog } from '@components/ui/ReportDialog';
 import { MePostCard } from '@screens/me/components/MePostCard';
 import { MeCommentSheet } from '@screens/me/components/MeCommentSheet';
 import { MeLikersDialog } from '@screens/me/components/MeLikersDialog';
@@ -49,6 +50,7 @@ export function ProfilePostList({
   const [likersPostId, setLikersPostId] = useState<string | null>(null);
   const [menuPostId, setMenuPostId] = useState<string | null>(null);
   const [deletePostId, setDeletePostId] = useState<string | null>(null);
+  const [reportPostId, setReportPostId] = useState<string | null>(null);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
 
   const formatTime = useMemo(() => createTimeFormatter(language), [language]);
@@ -124,6 +126,7 @@ export function ProfilePostList({
         label: t('me.menuShare'),
         onSelect: () => push('success', t('me.shareSuccess')),
       },
+      { key: 'report', label: t('report.post'), onSelect: () => setReportPostId(post.id) },
       {
         key: 'block',
         label: t('me.menuBlock'),
@@ -232,6 +235,13 @@ export function ProfilePostList({
         }}
         onCancel={() => setDeletePostId(null)}
       />
+
+      {reportPostId != null && (
+        <ReportDialog
+          target={{ type: 'post', id: reportPostId }}
+          onClose={() => setReportPostId(null)}
+        />
+      )}
 
       {editingPost != null && (
         <MeComposerModal

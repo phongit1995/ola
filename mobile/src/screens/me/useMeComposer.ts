@@ -11,7 +11,7 @@ import type { ChatComposerHandle } from '@components/ChatComposer';
 import { findActionIcon } from '@lib/checkInActions';
 import { compressImagesForUpload } from '@lib/compressImage';
 import type { ComposedCheckIn } from './components/MeComposerCheckInPanel';
-import { COMPOSER_MAX_IMAGES } from './constants';
+import { COMPOSER_MAX_IMAGES, COMPOSER_PRIVACY_OPTIONS } from './constants';
 import type { PickedPhoto } from './interface';
 import type { ComposerAttachKey, ComposerPanel } from './types';
 
@@ -58,7 +58,15 @@ export function useMeComposer({
   useEffect(() => {
     if (!visible) return;
     setContent(editPost?.content ?? '');
-    setPrivacy(editPost?.visibility ?? (privacyOptions?.[0] ?? 'public'));
+    const visibilityOptions =
+      privacyOptions != null && privacyOptions.length > 0
+        ? privacyOptions
+        : COMPOSER_PRIVACY_OPTIONS;
+    setPrivacy(
+      editPost != null && visibilityOptions.includes(editPost.visibility)
+        ? editPost.visibility
+        : (visibilityOptions[0] ?? 'public')
+    );
     setPhotos(
       (editPost?.images ?? []).map((image, index) => ({
         id: `e${index}`,

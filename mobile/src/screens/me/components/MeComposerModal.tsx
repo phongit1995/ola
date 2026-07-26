@@ -110,7 +110,7 @@ function MeComposerBody({
       <View
         className="flex-1"
         onStartShouldSetResponderCapture={() => {
-          if (vm.panel === 'smiley') vm.setPanel(null);
+          if (vm.panel != null) vm.setPanel(null);
           return false;
         }}
       >

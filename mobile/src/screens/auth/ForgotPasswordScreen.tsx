@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Image, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { USERNAME_MAX, USERNAME_PATTERN } from '@ola/shared/lib';
 import type { AuthStackParamList } from '@navigation/types';
 import { AUTH_ROUTES } from '@navigation/routes';
+import { LanguageSwitcher } from '@components/LanguageSwitcher';
 import { FORGOT_USERNAME_MIN } from './constants';
 
 interface ForgotForm {
@@ -35,20 +36,35 @@ export function ForgotPasswordScreen({ navigation }: Props) {
     >
       <View className="h-12 w-full flex-row items-center">
         <Pressable className="px-2" onPress={() => navigation.goBack()}>
-          <Text className="text-base text-white">‹ {t('forgot.backToLogin')}</Text>
+          <Text className="text-base text-white">{t('common.cancel')}</Text>
         </Pressable>
+        <Text className="flex-1 text-center text-lg font-medium text-white">
+          {t('forgot.title')}
+        </Text>
+        <LanguageSwitcher />
       </View>
 
-      <Text className="mb-2 mt-4 text-xl font-semibold text-white">{t('forgot.title')}</Text>
+      <Image
+        source={require('@assets/ola-logo.png')}
+        style={{ width: 56, height: 56, marginTop: 24, marginBottom: 12 }}
+        resizeMode="contain"
+      />
 
       {submitted ? (
-        <View className="w-full max-w-md items-center gap-2 rounded-sm bg-white/10 p-6">
-          <Text className="text-base font-semibold text-white">{t('forgot.doneTitle')}</Text>
-          <Text className="text-center text-sm text-white/90">{t('forgot.doneDesc')}</Text>
+        <View className="mt-2 w-full max-w-md items-center gap-2 rounded-sm bg-white p-5">
+          <Text className="text-base font-medium" style={{ color: 'rgba(0,0,0,0.87)' }}>
+            {t('forgot.doneTitle')}
+          </Text>
+          <Text className="text-center text-sm" style={{ color: 'rgba(0,0,0,0.54)' }}>
+            {t('forgot.doneDesc')}
+          </Text>
         </View>
       ) : (
         <View className="w-full max-w-md gap-4">
           <Text className="text-sm text-white/90">{t('forgot.desc')}</Text>
+          <Text className="-mb-3 text-xs font-medium text-white/90">
+            {t('forgot.usernameLabel')}
+          </Text>
           <Controller
             control={control}
             name="username"
@@ -60,7 +76,8 @@ export function ForgotPasswordScreen({ navigation }: Props) {
             }}
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
-                className="h-12 rounded-sm bg-white px-4 text-base text-neutral-900"
+                className="h-12 rounded-sm bg-white px-4 text-base"
+                style={{ color: '#171717' }}
                 placeholder={t('forgot.usernamePlaceholder')}
                 placeholderTextColor="#9ca3af"
                 autoCapitalize="none"
@@ -82,6 +99,13 @@ export function ForgotPasswordScreen({ navigation }: Props) {
           </Pressable>
         </View>
       )}
+
+      <Pressable
+        className="mt-4 h-12 w-full max-w-md items-center justify-center"
+        onPress={() => navigation.goBack()}
+      >
+        <Text className="text-xl text-white/70">{t('forgot.backToLogin')}</Text>
+      </Pressable>
     </ScrollView>
   );
 }

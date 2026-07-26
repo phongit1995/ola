@@ -29,6 +29,7 @@ interface ProfileCardProps {
   fans: number;
   kisses: number;
   uploadingCover: boolean;
+  uploadingAvatar: boolean;
   onChangeCover: () => void;
   onKiss: () => void;
   onOpenFollowers: () => void;
@@ -83,6 +84,7 @@ export function ProfileCard({
   fans,
   kisses,
   uploadingCover,
+  uploadingAvatar,
   onChangeCover,
   onKiss,
   onOpenFollowers,
@@ -175,9 +177,27 @@ export function ProfileCard({
             {profile.avatar != null && profile.avatar !== '' ? (
               <Pressable onPress={() => openViewer([profile.avatar!])}>
                 <Avatar name={nick} uri={profile.avatar} size={96} rounded={false} />
+                {uploadingAvatar && (
+                  <View
+                    className="absolute inset-0 items-center justify-center"
+                    style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
+                  >
+                    <Text className="text-sm text-white">{t('common.loading')}</Text>
+                  </View>
+                )}
               </Pressable>
             ) : (
-              <Avatar name={nick} size={96} rounded={false} />
+              <View>
+                <Avatar name={nick} size={96} rounded={false} />
+                {uploadingAvatar && (
+                  <View
+                    className="absolute inset-0 items-center justify-center"
+                    style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
+                  >
+                    <Text className="text-sm text-white">{t('common.loading')}</Text>
+                  </View>
+                )}
+              </View>
             )}
             {profile.spouse != null && (
               <Pressable onPress={openSpouse}>

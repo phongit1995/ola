@@ -17,6 +17,7 @@ import { useStickyBottomList } from '@hooks/useStickyBottomList';
 import { launchCamera, launchImageLibrary, type Asset } from 'react-native-image-picker';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useAuthStore } from '@ola/shared/stores/authStore';
+import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { colorForName, isSameDay } from '@ola/shared/lib';
 import type { NativeUploadFile } from '@ola/shared/lib';
@@ -147,6 +148,16 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     unstick,
   } = useStickyBottomList<Message>();
   const composerRef = useRef<ChatInputBarHandle>(null);
+  const currentConversationId = useChatStore((s) => s.currentConversationId);
+  const loadingMore = useChatStore((s) => s.loadingMore);
+  const [activeConversationId, setActiveConversationId] = useState(currentConversationId);
+  if (activeConversationId !== currentConversationId) {
+    setActiveConversationId(currentConversationId);
+    setPendingAudio(null);
+    setOpenTab(null);
+    setEditing(null);
+    setHighlightedId(null);
+  }
 
   const {
     anchorId: peerCardAnchorId,
@@ -459,9 +470,16 @@ export function ChatDetailScreen({ navigation, route }: Props) {
           onContentSizeChange={onContentSizeChange}
           onLayout={onListLayout}
           ListHeaderComponent={
-            peerCardVisible && peerCardAnchorId === '' && peerProfile != null
-              ? renderPeerCard()
-              : null
+            <>
+              {loadingMore && (
+                <View className="items-center py-2">
+                  <ActivityIndicator size="small" color="#7cb342" />
+                </View>
+              )}
+              {peerCardVisible && peerCardAnchorId === '' && peerProfile != null
+                ? renderPeerCard()
+                : null}
+            </>
           }
           ListFooterComponent={
             typingUsers.length > 0 ? <TypingIndicator name={title} avatar={peerAvatar} /> : null
