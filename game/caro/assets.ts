@@ -40,8 +40,7 @@ const LOBBY_CRITICAL_ASSETS = {
   icExit: lobbyIcExit,
 } as const;
 
-export const LOBBY_ASSETS = {
-  ...LOBBY_CRITICAL_ASSETS,
+const LOBBY_MODAL_ASSETS = {
   pickBg: lobbyPickBg,
   pickTitle: lobbyPickTitle,
   pickLevel: lobbyPickLevel,
@@ -52,6 +51,11 @@ export const LOBBY_ASSETS = {
   confirmDoor: lobbyConfirmDoor,
   btnRed: lobbyBtnRed,
   btnNavy: lobbyBtnNavy,
+} as const;
+
+export const LOBBY_ASSETS = {
+  ...LOBBY_CRITICAL_ASSETS,
+  ...LOBBY_MODAL_ASSETS,
 } as const;
 
 import rankedBg from './assets/ranked/bg.webp';
@@ -126,6 +130,16 @@ import historyTable from './assets/history/table.webp';
 import historyPageBtn from './assets/history/page-btn.webp';
 import historyKen from './assets/history/ken.webp';
 
+const CREATE_MODAL_ASSETS = {
+  createPanel,
+  createTitleFrame,
+  createLabelFrame,
+  createInputFrame,
+  createBtnOk,
+  createBtnClose,
+  createIcX,
+} as const;
+
 export const BOARD_ASSETS = {
   boardBg,
   boardFrame,
@@ -152,13 +166,7 @@ export const RANKED_ASSETS = {
   rankedLock,
   rankedPageBtn,
   rankedMenuBtn,
-  createPanel,
-  createTitleFrame,
-  createLabelFrame,
-  createInputFrame,
-  createBtnOk,
-  createBtnClose,
-  createIcX,
+  ...CREATE_MODAL_ASSETS,
 } as const;
 
 export const RESULT_ASSETS = {
@@ -212,6 +220,14 @@ export const HISTORY_ASSETS = {
   historyKen,
 } as const;
 
+const MODAL_ASSETS = {
+  ...LOBBY_MODAL_ASSETS,
+  ...CREATE_MODAL_ASSETS,
+  ...RESULT_ASSETS,
+  ...LEADERBOARD_ASSETS,
+  ...HISTORY_ASSETS,
+} as const;
+
 const ALL_ASSETS = {
   ...LOBBY_ASSETS,
   ...BOARD_ASSETS,
@@ -238,32 +254,61 @@ export function preloadAssets(
   return preloadUrls(Object.values(LOBBY_CRITICAL_ASSETS), onProgress, timeoutMs);
 }
 
+const IMAGE_LOADS = new Map<string, Promise<void>>();
+
+function preloadUrl(url: string): Promise<void> {
+  const existing = IMAGE_LOADS.get(url);
+  if (existing) return existing;
+  const pending = new Promise<void>((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve();
+    img.onerror = () => {
+      IMAGE_LOADS.delete(url);
+      resolve();
+    };
+    img.src = url;
+  });
+  IMAGE_LOADS.set(url, pending);
+  return pending;
+}
+
 function preloadUrls(
   urls: readonly string[],
   onProgress?: (loaded: number, total: number) => void,
   timeoutMs = 15000,
 ): Promise<void> {
-  const total = urls.length;
+  const uniqueUrls = [...new Set(urls)];
+  const total = uniqueUrls.length;
   let loaded = 0;
   onProgress?.(0, total);
   const loadAll = Promise.all(
-    urls.map(
-      (url) =>
-        new Promise<void>((resolve) => {
-          const done = (): void => {
-            loaded++;
-            onProgress?.(loaded, total);
-            resolve();
-          };
-          const img = new Image();
-          img.onload = done;
-          img.onerror = done;
-          img.src = url;
-        }),
+    uniqueUrls.map((url) =>
+      preloadUrl(url).then(() => {
+        loaded++;
+        onProgress?.(loaded, total);
+      }),
     ),
   ).then(() => undefined);
-  const timeout = new Promise<void>((resolve) => setTimeout(resolve, timeoutMs));
-  return Promise.race([loadAll, timeout]);
+  return new Promise<void>((resolve) => {
+    let settled = false;
+    const finish = (): void => {
+      if (settled) return;
+      settled = true;
+      resolve();
+    };
+    const timer = window.setTimeout(finish, timeoutMs);
+    void loadAll.then(() => {
+      window.clearTimeout(timer);
+      finish();
+    });
+  });
+}
+
+let modalPreload: Promise<void> | null = null;
+
+export function preloadModalAssets(): Promise<void> {
+  modalPreload ??= preloadUrls(Object.values(MODAL_ASSETS), undefined, 60000);
+  return modalPreload;
 }
 
 export function preloadResultAssets(): void {

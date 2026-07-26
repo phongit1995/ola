@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { bridge } from '../src/sdk';
-import { BOARD_ASSETS, preloadAssets } from './assets';
+import { BOARD_ASSETS, preloadAssets, preloadModalAssets } from './assets';
 import { ConfirmModal } from './components/ConfirmModal';
 import { BoardScreen } from './screens/board/BoardScreen';
 import { LeaderboardScreen } from './screens/leaderboard/LeaderboardScreen';
@@ -48,7 +48,10 @@ export function App() {
       const pct = total === 0 ? 100 : Math.round((loaded / total) * 100);
       setProgress(`Đang tải... ${pct}%`);
     }).then(() => {
-      if (!cancelled) setReady(true);
+      if (!cancelled) {
+        void preloadModalAssets();
+        setReady(true);
+      }
     });
     return () => {
       cancelled = true;
