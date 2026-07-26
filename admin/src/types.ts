@@ -192,6 +192,67 @@ export interface KenChestClaim {
   }
 }
 
+export type KenChestSource = 'manual' | 'auto'
+
+export interface KenChestStatsOverview {
+  totalChests: number
+  manualChests: number
+  autoChests: number
+  activeChests: number
+  expiredChests: number
+  totalClaims: number
+  emptyClaims: number
+  emptyRate: number
+  totalKenGiven: number
+  uniqueUsers: number
+}
+
+export interface KenChestStatsSourceRow {
+  source: KenChestSource
+  chests: number
+  claims: number
+  kenGiven: number
+}
+
+export interface KenChestStatsTimePoint {
+  date: string
+  claims: number
+  empty: number
+  kenGiven: number
+}
+
+export interface KenChestStatsResponse {
+  overview: KenChestStatsOverview
+  bySource: KenChestStatsSourceRow[]
+  timeseries: KenChestStatsTimePoint[]
+  bucket: 'day' | 'month'
+}
+
+export interface KenChestStatsParams {
+  source?: KenChestSource
+  userId?: string
+  from?: string
+  to?: string
+}
+
+export type KenChestUserStatsSortBy = 'kenTotal' | 'claims' | 'empty'
+
+export interface KenChestUserStatsItem {
+  user: KenChestClaim['user']
+  claims: number
+  chests: number
+  emptyClaims: number
+  emptyRate: number
+  kenTotal: number
+  lastClaimAt: string
+}
+
+export interface KenChestUserStatsParams extends KenChestStatsParams {
+  sortBy?: KenChestUserStatsSortBy
+  limit?: number
+  offset?: number
+}
+
 export interface AdminUserListItem {
   id: string
   username: string
@@ -307,6 +368,51 @@ export interface KenAdjustResult {
   amount: number
   balanceBefore: number
   balanceAfter: number
+}
+
+export interface KenTransferItem {
+  id: string
+  from: KenCounterparty
+  to: KenCounterparty
+  amount: number
+  description?: string
+  createdAt: string
+}
+
+export interface KenTransferListParams {
+  senderId?: string
+  receiverId?: string
+  userId?: string
+  minAmount?: number
+  maxAmount?: number
+  from?: string
+  to?: string
+  limit?: number
+  offset?: number
+}
+
+export type KenTransferUserStatsSortBy = 'sentTotal' | 'receivedTotal' | 'netKen' | 'transfers'
+
+export interface KenTransferUserStatsItem {
+  user: KenCounterparty
+  sentCount: number
+  sentTotal: number
+  receivedCount: number
+  receivedTotal: number
+  netKen: number
+  partners: number
+  lastTransferAt: string
+}
+
+export interface KenTransferUserStatsParams {
+  userId?: string
+  minAmount?: number
+  maxAmount?: number
+  from?: string
+  to?: string
+  sortBy?: KenTransferUserStatsSortBy
+  limit?: number
+  offset?: number
 }
 
 export interface VipPackage {
@@ -687,6 +793,45 @@ export interface EggStatsParams {
   to?: string
 }
 
+export type EggUserStatsSortBy = 'kenSpent' | 'kenWon' | 'netKen' | 'draws' | 'vipDays'
+
+export interface EggUserStatsItem {
+  user: EggDrawUser
+  draws: number
+  winDraws: number
+  winRate: number
+  kenSpent: number
+  kenWon: number
+  netKen: number
+  vipDays: number
+  vipIcons: number
+  lastDrawAt: string
+}
+
+export interface EggUserStatsParams {
+  packId?: string
+  userId?: string
+  from?: string
+  to?: string
+  sortBy?: EggUserStatsSortBy
+  limit?: number
+  offset?: number
+}
+
+export interface EggVipStatsRow {
+  vipTypeId: number
+  iconWins: number
+  dayWins: number
+  vipDays: number
+}
+
+export interface EggVipStatsParams {
+  packId?: string
+  userId?: string
+  from?: string
+  to?: string
+}
+
 export type WheelSegmentKind =
   | 'miss'
   | 'ken_fixed'
@@ -878,6 +1023,46 @@ export interface WheelStatsParams {
   to?: string
 }
 
+export type WheelUserStatsSortBy = 'kenSpent' | 'kenWon' | 'netKen' | 'spins' | 'vipDays'
+
+export interface WheelUserStatsItem {
+  user: WheelSpinUser
+  spins: number
+  winSpins: number
+  winRate: number
+  freeSpins: number
+  kenSpent: number
+  kenWon: number
+  netKen: number
+  vipDays: number
+  vipItems: number
+  lastSpinAt: string
+}
+
+export interface WheelUserStatsParams {
+  wheelId?: string
+  userId?: string
+  from?: string
+  to?: string
+  sortBy?: WheelUserStatsSortBy
+  limit?: number
+  offset?: number
+}
+
+export interface WheelVipStatsRow {
+  vipTypeId: number
+  itemWins: number
+  dayWins: number
+  vipDays: number
+}
+
+export interface WheelVipStatsParams {
+  wheelId?: string
+  userId?: string
+  from?: string
+  to?: string
+}
+
 export type PenStatus = 'open' | 'settled' | 'cancelled'
 export type PenResult = 'saved' | 'goal'
 export type PenSide = 'left' | 'right'
@@ -974,6 +1159,178 @@ export interface PenStatsResponse {
 export interface PenStatsParams {
   from?: string
   to?: string
+}
+
+export type PenUserStatsSortBy = 'staked' | 'netKen' | 'shots' | 'catches'
+
+export interface PenUserStatsItem {
+  user: PenUserBrief
+  shots: number
+  shooterSettled: number
+  shooterWins: number
+  shooterWinRate: number
+  catches: number
+  keeperWins: number
+  keeperSaveRate: number
+  cancelled: number
+  cancelRate: number
+  staked: number
+  netKen: number
+  lastPlayAt: string
+}
+
+export interface PenUserStatsParams {
+  userId?: string
+  from?: string
+  to?: string
+  sortBy?: PenUserStatsSortBy
+  limit?: number
+  offset?: number
+}
+
+export interface PenSideStatsResponse {
+  shooterLeft: number
+  shooterRight: number
+  keeperLeft: number
+  keeperRight: number
+}
+
+export interface PenSideStatsParams {
+  userId?: string
+  from?: string
+  to?: string
+}
+
+export type GameMatchStatus = 'playing' | 'finished'
+export type GameMatchReason = 'win' | 'forfeit' | 'timeout' | 'draw' | 'disconnect' | 'void'
+export type GameMatchMode = 'queue' | 'room'
+
+export interface GameMatchUserBrief {
+  id: string
+  username: string
+  fullName?: string
+  avatar?: string
+}
+
+export interface AdminGameMatch {
+  id: string
+  matchId: string
+  gameId: string
+  player0?: GameMatchUserBrief
+  player1?: GameMatchUserBrief
+  winnerId?: string
+  status: GameMatchStatus
+  reason?: GameMatchReason
+  mode: GameMatchMode
+  bet: number
+  kenDelta: number
+  houseTake: number
+  moveCount: number
+  startedAt: string
+  finishedAt?: string
+}
+
+export interface GameMatchListParams {
+  gameId?: string
+  userId?: string
+  winnerId?: string
+  status?: GameMatchStatus
+  reason?: GameMatchReason
+  mode?: GameMatchMode
+  minBet?: number
+  maxBet?: number
+  from?: string
+  to?: string
+  limit?: number
+  offset?: number
+}
+
+export interface GameMatchStatsOverview {
+  totalMatches: number
+  playingMatches: number
+  finishedMatches: number
+  decidedMatches: number
+  drawMatches: number
+  voidMatches: number
+  uniquePlayers: number
+  totalVolume: number
+  totalPayout: number
+  houseTake: number
+}
+
+export interface GameMatchStatsGameRow {
+  gameId: string
+  matches: number
+  finished: number
+  volume: number
+  houseTake: number
+}
+
+export interface GameMatchStatsReasonRow {
+  reason: GameMatchReason
+  count: number
+  percent: number
+}
+
+export interface GameMatchStatsTimePoint {
+  date: string
+  matches: number
+  finished: number
+  volume: number
+  houseTake: number
+}
+
+export interface GameMatchStatsPlayer {
+  user: GameMatchUserBrief
+  matches: number
+  wins: number
+  losses: number
+  winRate: number
+  staked: number
+  netKen: number
+}
+
+export interface GameMatchStatsResponse {
+  overview: GameMatchStatsOverview
+  byGame: GameMatchStatsGameRow[]
+  byReason: GameMatchStatsReasonRow[]
+  timeseries: GameMatchStatsTimePoint[]
+  topPlayers: GameMatchStatsPlayer[]
+  bucket: 'day' | 'month'
+}
+
+export interface GameMatchStatsParams {
+  gameId?: string
+  mode?: GameMatchMode
+  from?: string
+  to?: string
+}
+
+export interface GameMatchSuspectPair {
+  userA: GameMatchUserBrief
+  userB: GameMatchUserBrief
+  matches: number
+  decided: number
+  aWins: number
+  bWins: number
+  oneSidedRate: number
+  totalBet: number
+  netA: number
+}
+
+export interface GameMatchSuspectsResponse {
+  minMatches: number
+  minPairMatches: number
+  players: GameMatchStatsPlayer[]
+  pairs: GameMatchSuspectPair[]
+}
+
+export interface GameMatchSuspectsParams {
+  gameId?: string
+  from?: string
+  to?: string
+  minMatches?: number
+  minPairMatches?: number
 }
 
 export interface AppSetting {
@@ -1139,4 +1496,73 @@ export interface ClanMember {
   role: 'owner' | 'deputy' | 'ambassador' | 'member'
   verified: boolean
   joinedAt: string
+}
+
+export interface MarriageUser {
+  id: string
+  username: string
+  fullName?: string
+  avatar?: string
+}
+
+export interface MarriageStatsParams {
+  from?: string
+  to?: string
+}
+
+export interface MarriageStats {
+  proposals: {
+    total: number
+    pending: number
+    accepted: number
+    rejected: number
+    cancelled: number
+  }
+  marriages: {
+    total: number
+    active: number
+    divorced: number
+  }
+}
+
+export type MarriageStatus = 'active' | 'divorced'
+
+export interface MarriageItem {
+  id: string
+  userA: MarriageUser
+  userB: MarriageUser
+  status: MarriageStatus
+  marriedAt: string
+  divorcedAt?: string
+  divorcedBy?: string
+}
+
+export interface MarriageListParams {
+  status?: MarriageStatus
+  userId?: string
+  from?: string
+  to?: string
+  limit?: number
+  offset?: number
+}
+
+export type MarriageProposalStatus = 'pending' | 'accepted' | 'rejected' | 'cancelled'
+
+export interface MarriageProposalItem {
+  id: string
+  proposer: MarriageUser
+  addressee: MarriageUser
+  message?: string
+  status: MarriageProposalStatus
+  createdAt: string
+  respondedAt?: string
+}
+
+export interface MarriageProposalListParams {
+  status?: MarriageProposalStatus
+  userId?: string
+  from?: string
+  to?: string
+  limit?: number
+  offset?: number
 }

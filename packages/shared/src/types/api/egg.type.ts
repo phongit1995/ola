@@ -35,6 +35,23 @@ export interface EggPackListResult {
   items: EggPack[];
 }
 
+export interface EggGiftReward {
+  label: string;
+  vipTypeId?: number;
+  kenAmount?: number;
+  vipDays?: number;
+  isSuperLucky: boolean;
+}
+
+export interface EggGiftSection {
+  type: EggCategoryKind;
+  rewards: EggGiftReward[];
+}
+
+export interface EggGiftListResult {
+  items: EggGiftSection[];
+}
+
 export interface EggDrawResult {
   drawId: string;
   packId: string;

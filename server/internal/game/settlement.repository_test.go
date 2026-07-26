@@ -58,30 +58,30 @@ func TestSettlementValidation(t *testing.T) {
 		StartedAt: now,
 	}
 
-	if _, _, guest, err := validateRecord(valid); err != nil || guest {
-		t.Fatalf("valid record rejected: guest=%v err=%v", guest, err)
+	if _, _, err := validateRecord(valid); err != nil {
+		t.Fatalf("valid record rejected: %v", err)
 	}
 
 	invalidPlayer := valid
-	invalidPlayer.Player0ID = "guest-id"
-	if _, _, _, err := validateRecord(invalidPlayer); !errors.Is(err, errInvalidMatch) {
-		t.Fatalf("positive bet with invalid player id should fail, got %v", err)
+	invalidPlayer.Player0ID = "invalid-player-id"
+	if _, _, err := validateRecord(invalidPlayer); !errors.Is(err, errInvalidMatch) {
+		t.Fatalf("invalid player id should fail, got %v", err)
 	}
 	invalidPlayer.Bet = 0
-	if _, _, guest, err := validateRecord(invalidPlayer); err != nil || !guest {
-		t.Fatalf("zero-bet guest should be ignored: guest=%v err=%v", guest, err)
+	if _, _, err := validateRecord(invalidPlayer); !errors.Is(err, errInvalidMatch) {
+		t.Fatalf("zero-bet record with invalid player id should fail, got %v", err)
 	}
 
 	tooLarge := valid
 	tooLarge.Bet = engine.MaxBet + 1
-	if _, _, _, err := validateRecord(tooLarge); !errors.Is(err, errInvalidMatch) {
+	if _, _, err := validateRecord(tooLarge); !errors.Is(err, errInvalidMatch) {
 		t.Fatalf("oversized bet should fail, got %v", err)
 	}
 
-	guestOutcome := engine.MatchOutcome{
+	invalidOutcome := engine.MatchOutcome{
 		GameID:     valid.GameID,
 		MatchID:    valid.MatchID,
-		Player0ID:  "guest:" + valid.Player0ID,
+		Player0ID:  "invalid-player-id",
 		Player1ID:  valid.Player1ID,
 		WinnerID:   valid.Player1ID,
 		Reason:     "win",
@@ -89,19 +89,19 @@ func TestSettlementValidation(t *testing.T) {
 		MoveCount:  9,
 		FinishedAt: now,
 	}
-	if _, _, _, err := validateOutcome(guestOutcome); !errors.Is(err, errInvalidMatch) {
-		t.Fatalf("paid guest outcome should fail UUID validation, got %v", err)
+	if _, _, err := validateOutcome(invalidOutcome); !errors.Is(err, errInvalidMatch) {
+		t.Fatalf("outcome with invalid player id should fail, got %v", err)
 	}
-	guestOutcome.Bet = 0
-	if _, _, guest, err := validateOutcome(guestOutcome); err != nil || !guest {
-		t.Fatalf("zero-bet guest outcome should be ignored: guest=%v err=%v", guest, err)
+	invalidOutcome.Bet = 0
+	if _, _, err := validateOutcome(invalidOutcome); !errors.Is(err, errInvalidMatch) {
+		t.Fatalf("zero-bet outcome with invalid player id should fail, got %v", err)
 	}
 
 	if _, err := checkedCredit(math.MaxInt32-4, 5); !errors.Is(err, errKenBalanceCap) {
 		t.Fatalf("overflowing credit should fail, got %v", err)
 	}
 
-	p0, p1, _, _ := validateRecord(valid)
+	p0, p1, _ := validateRecord(valid)
 	closed := models.GameMatch{
 		GameID:     valid.GameID,
 		MatchID:    valid.MatchID,
@@ -286,7 +286,7 @@ func TestSettleFinishRetryDoesNotUpdateBalancesAgain(t *testing.T) {
 
 func TestSettleFinishCreditsWinnerFromEscrowedBet(t *testing.T) {
 	db, mock := newSettlementMockDB(t)
-	repo := &SettlementRepository{db: db, logger: zap.NewNop().Sugar(), commissionPercent: 5}
+	repo := &SettlementRepository{db: db, logger: zap.NewNop().Sugar(), commissionPercents: map[string]int{"caro": 5}}
 	p0 := uuid.MustParse("11111111-1111-4111-8111-111111111111")
 	p1 := uuid.MustParse("22222222-2222-4222-8222-222222222222")
 	matchID := uuid.MustParse("33333333-3333-4333-8333-333333333333")
@@ -330,16 +330,21 @@ func TestSettleFinishCreditsWinnerFromEscrowedBet(t *testing.T) {
 	}
 }
 
-func TestWinnerAmountsApplyCommissionOnlyToCaro(t *testing.T) {
-	repo := &SettlementRepository{commissionPercent: 5}
+func TestWinnerAmountsApplyPerGameCommission(t *testing.T) {
+	repo := &SettlementRepository{commissionPercents: map[string]int{"caro": 5, "war-god": 5}}
 	payout, net := repo.WinnerAmounts("caro", 10_000)
 	if payout != 19_500 || net != 9_500 {
-		t.Fatalf("winner amounts = payout %d, net %d; want 19500 and 9500", payout, net)
+		t.Fatalf("caro amounts = payout %d, net %d; want 19500 and 9500", payout, net)
 	}
 
 	payout, net = repo.WinnerAmounts("war-god", 10_000)
+	if payout != 19_500 || net != 9_500 {
+		t.Fatalf("war-god amounts = payout %d, net %d; want 19500 and 9500", payout, net)
+	}
+
+	payout, net = repo.WinnerAmounts("other-game", 10_000)
 	if payout != 20_000 || net != 10_000 {
-		t.Fatalf("non-Caro amounts = payout %d, net %d; want 20000 and 10000", payout, net)
+		t.Fatalf("uncommissioned amounts = payout %d, net %d; want 20000 and 10000", payout, net)
 	}
 }
 

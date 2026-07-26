@@ -99,9 +99,13 @@ export function ContactsPane({ onAccountMenu }: { onAccountMenu?: () => void }) 
 
   useEffect(() => {
     const store = useFriendsStore.getState();
-    store.ensureFriends();
+    if (!store.loaded && !store.loading) {
+      void store.loadFriends().then((ok) => {
+        if (!ok) push('error', t('chat.loadFriendsError'));
+      });
+    }
     store.loadRequests();
-  }, []);
+  }, [push, t]);
 
   const contacts = useMemo(() => mapFriendsToContacts(friends, t, now), [friends, t, now]);
 

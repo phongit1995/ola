@@ -1326,6 +1326,18 @@
       "vipDays": "{{days}} ngày VIP",
       "defaultLabel": "Phần thưởng",
       "ok": "Đập tiếp"
+    },
+    "gifts": {
+      "title": "Danh sách quà",
+      "heading": "DANH SÁCH QUÀ",
+      "subtitle": "ĐẬP TRỨNG",
+      "empty": "Chưa có quà nào.",
+      "vipDaysLabel": "{{days}} ngày VIP",
+      "section": {
+        "ken": "KEN",
+        "vip_days": "NGÀY VIP",
+        "vip_icon": "VIP"
+      }
     }
   },
   "penGame": {

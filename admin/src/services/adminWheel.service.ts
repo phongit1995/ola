@@ -11,6 +11,10 @@ import type {
   WheelSpinListParams,
   WheelStatsParams,
   WheelStatsResponse,
+  WheelUserStatsItem,
+  WheelUserStatsParams,
+  WheelVipStatsParams,
+  WheelVipStatsRow,
 } from '@/types'
 
 export const AdminWheelService = {
@@ -50,6 +54,22 @@ export const AdminWheelService = {
     const { data } = await http.get<ApiResponse<WheelStatsResponse>>('/admin/wheel/stats', {
       params,
     })
+    return data.data
+  },
+
+  async getUserStats(params: WheelUserStatsParams = {}): Promise<ListResult<WheelUserStatsItem>> {
+    const { data } = await http.get<ApiResponse<ListResult<WheelUserStatsItem>>>(
+      '/admin/wheel/stats/users',
+      { params },
+    )
+    return data.data
+  },
+
+  async getVipStats(params: WheelVipStatsParams = {}): Promise<{ items: WheelVipStatsRow[] }> {
+    const { data } = await http.get<ApiResponse<{ items: WheelVipStatsRow[] }>>(
+      '/admin/wheel/stats/vip',
+      { params },
+    )
     return data.data
   },
 }

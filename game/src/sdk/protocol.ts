@@ -12,6 +12,7 @@ export const C2S = {
   RoomReady: 'ROOM_READY',
   RoomStart: 'ROOM_START',
   Leaderboard: 'LEADERBOARD',
+  History: 'HISTORY',
 } as const;
 
 export const S2C = {
@@ -32,18 +33,44 @@ export const S2C = {
   OpponentDisconnected: 'OPPONENT_DISCONNECTED',
   OpponentReconnected: 'OPPONENT_RECONNECTED',
   Leaderboard: 'LEADERBOARD',
+  History: 'HISTORY',
 } as const;
 
 export const GAME_ERROR_CODE = {
+  AlreadyInRoom: 'ALREADY_IN_ROOM',
+  BetNotAllowed: 'BET_NOT_ALLOWED',
   WrongPassword: 'WRONG_PASSWORD',
   RoomNotFound: 'ROOM_NOT_FOUND',
   OwnRoom: 'OWN_ROOM',
+  RoomBusy: 'ROOM_BUSY',
+  RoomCreateFailed: 'ROOM_CREATE_FAILED',
+  RoomFull: 'ROOM_FULL',
+  RoomJoinFailed: 'ROOM_JOIN_FAILED',
+  RoomLeaveFailed: 'ROOM_LEAVE_FAILED',
+  RoomListFailed: 'ROOM_LIST_FAILED',
+  RoomMemberNotFound: 'ROOM_MEMBER_NOT_FOUND',
+  RoomMismatch: 'ROOM_MISMATCH',
+  RoomNotReady: 'ROOM_NOT_READY',
+  RoomStartFailed: 'ROOM_START_FAILED',
+  RoomUpdateFailed: 'ROOM_UPDATE_FAILED',
+  NotRoomOwner: 'NOT_ROOM_OWNER',
+  InRoom: 'IN_ROOM',
+  InvalidBet: 'INVALID_BET',
+  InvalidPassword: 'INVALID_PASSWORD',
+  InsufficientKen: 'INSUFFICIENT_KEN',
   ChatRateLimited: 'CHAT_RATE_LIMITED',
   ChatTooLong: 'CHAT_TOO_LONG',
   InvalidChat: 'INVALID_CHAT',
   RoomNotFull: 'ROOM_NOT_FULL',
   NotRoomMember: 'NOT_ROOM_MEMBER',
   InvalidMove: 'INVALID_MOVE',
+  MatchMismatch: 'MATCH_MISMATCH',
+  MatchStartFailed: 'MATCH_START_FAILED',
+  NoMatch: 'NO_MATCH',
+  NotYourTurn: 'NOT_YOUR_TURN',
+  StateSaveFailed: 'STATE_SAVE_FAILED',
+  UnknownGame: 'UNKNOWN_GAME',
+  UserInfoFailed: 'USER_INFO_FAILED',
 } as const;
 
 export type GameErrorCode = (typeof GAME_ERROR_CODE)[keyof typeof GAME_ERROR_CODE];
@@ -65,7 +92,7 @@ export interface UserInfoData {
   vipType?: string | null;
   vipDays: number;
   ken: number;
-  guest?: boolean;
+  maxBet?: number;
 }
 
 export type LeaderboardPeriod = 'day' | 'week';
@@ -83,6 +110,22 @@ export interface LeaderboardData {
   from: number;
   to: number;
   items: LeaderboardEntry[];
+  error?: string;
+}
+
+export type MatchHistoryOutcome = 'win' | 'lose' | 'draw';
+
+export interface MatchHistoryEntry {
+  id: string;
+  playedAt: number;
+  opponentId: string;
+  opponentName: string;
+  bet: number;
+  outcome: MatchHistoryOutcome;
+}
+
+export interface MatchHistoryData {
+  items: MatchHistoryEntry[];
   error?: string;
 }
 

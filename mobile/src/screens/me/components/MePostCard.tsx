@@ -13,6 +13,7 @@ import Animated, {
 import { colorForName } from '@ola/shared/lib';
 import type { Post, PostAuthor, PostCheckIn } from '@ola/shared/types';
 import { imageSizeForHeight } from '@lib/chatSmiley';
+import { playLikeMeSound } from '@lib/sound';
 import { renderRichText } from '@lib/richText';
 import { stickerImageForCode } from '@lib/kul';
 import { Avatar } from '@components/ui/Avatar';
@@ -251,6 +252,7 @@ function MePostCardComponent({
     const becomingLiked = !liked;
     pop(likeScale, becomingLiked ? 1.5 : 0.8);
     if (becomingLiked) {
+      playLikeMeSound();
       setFlying(true);
       flyProgress.value = 0;
       flyProgress.value = withTiming(1, { duration: 1500 }, (finished) => {

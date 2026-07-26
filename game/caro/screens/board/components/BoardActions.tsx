@@ -61,6 +61,8 @@ export function BoardActions() {
     if (boardMode === 'idle') setExitOpen(false);
   }, [boardMode, setExitOpen]);
 
+  useEffect(() => () => closeDialogs(), [closeDialogs]);
+
   return (
     <>
       <footer id="bottombar" className={pregame ? 'pregame' : ''}>

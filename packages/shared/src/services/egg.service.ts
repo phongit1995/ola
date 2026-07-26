@@ -4,12 +4,17 @@ import type {
   EggDrawHistoryFilter,
   EggDrawHistoryResult,
   EggDrawResult,
+  EggGiftListResult,
   EggPackListResult,
 } from '../types';
 
 export class EggService {
   static listPacks(): Promise<EggPackListResult> {
     return http.get<EggPackListResult>(API_PATH.egg.packs);
+  }
+
+  static listGifts(packId: string): Promise<EggGiftListResult> {
+    return http.get<EggGiftListResult>(API_PATH.egg.gifts(packId));
   }
 
   static draw(packId: string, idempotencyKey: string): Promise<EggDrawResult> {

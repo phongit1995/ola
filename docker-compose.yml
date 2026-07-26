@@ -115,7 +115,6 @@ services:
       - JWT_SECRET=${JWT_SECRET:-your-jwt-secret-change-in-production-min-32-chars}
       - JWT_EXPIRY=${JWT_EXPIRY:-24h}
       - GAME_PORT=${GAME_PORT:-8082}
-      - GAME_ALLOW_GUEST=${GAME_ALLOW_GUEST:-false}
       - GAME_TURN_SECONDS=${GAME_TURN_SECONDS:-45}
       - CARO_COMMISSION_PERCENT=${CARO_COMMISSION_PERCENT:-5}
       - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-http://localhost:3000}

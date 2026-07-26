@@ -1,6 +1,12 @@
 package adminken
 
-import "ola-chat-server/internal/utils"
+import (
+	"time"
+
+	"ola-chat-server/internal/utils"
+
+	"github.com/google/uuid"
+)
 
 type AdjustRequest struct {
 	Action      string `json:"action" binding:"required,oneof=grant deduct" example:"grant"`
@@ -49,5 +55,51 @@ type TransactionListResponse struct {
 	Items  []TransactionItem `json:"items"`
 }
 
+type TransferFilter struct {
+	SenderID   *uuid.UUID
+	ReceiverID *uuid.UUID
+	UserID     *uuid.UUID
+	MinAmount  *int
+	MaxAmount  *int
+	From       *time.Time
+	To         *time.Time
+}
+
+type TransferItem struct {
+	ID          string           `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	From        CounterpartyInfo `json:"from"`
+	To          CounterpartyInfo `json:"to"`
+	Amount      int              `json:"amount" example:"5000"`
+	Description string           `json:"description,omitempty" example:"Chuyển ken"`
+	CreatedAt   string           `json:"createdAt" example:"2026-07-26T10:00:00Z"`
+}
+
+type TransferListResponse struct {
+	Total  int64          `json:"total" example:"1"`
+	Limit  int            `json:"limit" example:"20"`
+	Offset int            `json:"offset" example:"0"`
+	Items  []TransferItem `json:"items"`
+}
+
+type TransferUserStatsItem struct {
+	User           CounterpartyInfo `json:"user"`
+	SentCount      int64            `json:"sentCount" example:"12"`
+	SentTotal      int64            `json:"sentTotal" example:"60000"`
+	ReceivedCount  int64            `json:"receivedCount" example:"8"`
+	ReceivedTotal  int64            `json:"receivedTotal" example:"32000"`
+	NetKen         int64            `json:"netKen" example:"-28000"`
+	Partners       int64            `json:"partners" example:"5"`
+	LastTransferAt string           `json:"lastTransferAt" example:"2026-07-26T10:00:00Z"`
+}
+
+type TransferUserStatsResponse struct {
+	Total  int64                   `json:"total" example:"1"`
+	Limit  int                     `json:"limit" example:"20"`
+	Offset int                     `json:"offset" example:"0"`
+	Items  []TransferUserStatsItem `json:"items"`
+}
+
 type AdjustSuccessResponse = utils.BaseResponse[AdjustResponse]
 type TransactionListSuccessResponse = utils.BaseResponse[TransactionListResponse]
+type TransferListSuccessResponse = utils.BaseResponse[TransferListResponse]
+type TransferUserStatsSuccessResponse = utils.BaseResponse[TransferUserStatsResponse]

@@ -17,6 +17,7 @@ export * from './upload';
 export * from './vietqr';
 export * from './spinWheel';
 export * from './eggGame';
+export * from './eggGiftFixture';
 export * from './relationshipLabels';
 export * from './vipPurchase';
 export * from './presence';

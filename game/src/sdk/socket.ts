@@ -1,5 +1,9 @@
 import { io, type Socket } from 'socket.io-client';
-import { bridge } from './bridge';
+import {
+  bridge,
+  GameAuthenticationExpiredError,
+  GameAuthenticationRequiredError,
+} from './bridge';
 import {
   C2S,
   S2C,
@@ -8,6 +12,7 @@ import {
   type ErrorData,
   type LeaderboardData,
   type LeaderboardPeriod,
+  type MatchHistoryData,
   type MatchFoundData,
   type MatchOverData,
   type OpponentDisconnectedData,
@@ -40,6 +45,7 @@ export interface GameSession<TState = unknown, TMove = unknown> {
   startRoom(roomId: string): void;
   listRooms(): void;
   getLeaderboard(period: LeaderboardPeriod): void;
+  getHistory(): void;
   onUserInfo(handler: (data: UserInfoData) => void): () => void;
   onQueueWaiting(handler: () => void): () => void;
   onRoomList(handler: (data: RoomListData) => void): () => void;
@@ -57,18 +63,27 @@ export interface GameSession<TState = unknown, TMove = unknown> {
   onOpponentDisconnected(handler: (data: OpponentDisconnectedData) => void): () => void;
   onOpponentReconnected(handler: () => void): () => void;
   onLeaderboard(handler: (data: LeaderboardData) => void): () => void;
+  onHistory(handler: (data: MatchHistoryData) => void): () => void;
   onConnectionChange(handler: (connected: boolean) => void): () => void;
+  onConnectionError(handler: (error: Error) => void): () => void;
   disconnect(): void;
 }
 
 type Handler = (data: never) => void;
 
-export async function joinGame<TState = unknown, TMove = unknown>(
-  gameId: string,
-): Promise<GameSession<TState, TMove>> {
+function normalizeConnectionError(error: Error): Error {
+  const code = (error as Error & { data?: { code?: unknown } }).data?.code;
+  if (code === 'AUTH_EXPIRED') return new GameAuthenticationExpiredError();
+  if (code === 'AUTH_REQUIRED') return new GameAuthenticationRequiredError();
+  const message = error.message.trim().toLowerCase();
+  if (message === 'unauthorized') return new GameAuthenticationExpiredError();
+  if (message === 'access_token is required') return new GameAuthenticationRequiredError();
+  return error;
+}
+
+export async function joinGame<TState = unknown, TMove = unknown>(gameId: string): Promise<GameSession<TState, TMove>> {
   const token = await bridge.requestToken();
   const name = new URLSearchParams(location.search).get('name') ?? undefined;
-  const userId = token.startsWith('guest:') ? token : 'me';
 
   const socket: Socket = io('/', {
     auth: { token, gameId, ...(name && { name }) },
@@ -96,14 +111,17 @@ export async function joinGame<TState = unknown, TMove = unknown>(
   });
   socket.on('connect', () => emitLocal('connection', true));
   socket.on('disconnect', () => emitLocal('connection', false));
-  socket.on('connect_error', () => emitLocal('connection', false));
+  socket.on('connect_error', (error) => {
+    emitLocal('connection', false);
+    emitLocal('connection_error', normalizeConnectionError(error));
+  });
 
   const send = (type: string, data?: unknown): void => {
     socket.emit('message', { type, data } satisfies Envelope);
   };
 
   return {
-    userId,
+    userId: 'me',
     joinQueue: () => send(C2S.QueueJoin),
     leaveQueue: () => send(C2S.QueueLeave),
     sendMove: (matchId, move) => send(C2S.Move, { matchId, move }),
@@ -118,6 +136,7 @@ export async function joinGame<TState = unknown, TMove = unknown>(
     startRoom: (roomId) => send(C2S.RoomStart, { roomId }),
     listRooms: () => send(C2S.RoomList),
     getLeaderboard: (period) => send(C2S.Leaderboard, { period }),
+    getHistory: () => send(C2S.History),
     onUserInfo: (handler) => on(S2C.UserInfo, handler as Handler),
     onQueueWaiting: (handler) => on(S2C.QueueWaiting, handler as Handler),
     onRoomList: (handler) => on(S2C.RoomList, handler as Handler),
@@ -135,7 +154,9 @@ export async function joinGame<TState = unknown, TMove = unknown>(
     onOpponentDisconnected: (handler) => on(S2C.OpponentDisconnected, handler as Handler),
     onOpponentReconnected: (handler) => on(S2C.OpponentReconnected, handler as Handler),
     onLeaderboard: (handler) => on(S2C.Leaderboard, handler as Handler),
+    onHistory: (handler) => on(S2C.History, handler as Handler),
     onConnectionChange: (handler) => on('connection', handler as Handler),
+    onConnectionError: (handler) => on('connection_error', handler as Handler),
     disconnect: () => socket.disconnect(),
   };
 }

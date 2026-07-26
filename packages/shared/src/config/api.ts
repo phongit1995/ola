@@ -129,6 +129,7 @@ export const API_PATH = {
   },
   egg: {
     packs: '/egg/packs',
+    gifts: (id: string) => `/egg/packs/${id}/gifts`,
     draw: (id: string) => `/egg/packs/${id}/draws`,
     draws: '/egg/draws',
   },

@@ -14,6 +14,7 @@ export function createInitialCaroState(): CaroState {
   return {
     lobbyVisible: true,
     lobbyPhase: 'loading',
+    lobbyError: null,
     lobbyAnimKey: 0,
     userInfo: null,
     ken: 0,
@@ -23,6 +24,10 @@ export function createInitialCaroState(): CaroState {
     leaderboards: { day: null, week: null },
     leaderboardLoading: { day: false, week: false },
     leaderboardErrors: { day: null, week: null },
+    historyVisible: false,
+    history: [],
+    historyLoading: false,
+    historyError: null,
     rooms: [],
     roomWaiting: null,
     boardMode: 'idle',

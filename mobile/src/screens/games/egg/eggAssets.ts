@@ -6,6 +6,9 @@ export const eggAssets = {
   reload: require('@assets/games/egg/ic_reload.png'),
   vipDays: require('@assets/games/egg/day_vip.png'),
   kenCoin: require('@assets/icons/apps/ken.png'),
+  gift: require('@assets/games/egg/ic_gift.png'),
+  closeCircle: require('@assets/games/egg/btn_close_circle.png'),
+  closeX: require('@assets/games/egg/ic_close_x.png'),
 } as const;
 
 export const EGG_FRAMES: Record<string, ImageSourcePropType> = {

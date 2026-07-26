@@ -13,7 +13,7 @@ import { KeyboardView } from '@components/KeyboardView';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AuthService } from '@ola/shared/services';
-import { resolveAuthError, USERNAME_MAX, USERNAME_PATTERN } from '@ola/shared/lib';
+import { ApiError, resolveAuthError, toast, USERNAME_MAX, USERNAME_PATTERN } from '@ola/shared/lib';
 import { PASSWORD_MAX, PASSWORD_MIN } from '@ola/shared/constants';
 import { LanguageSwitcher } from '@components/LanguageSwitcher';
 import { TextField } from '@components/form/TextField';
@@ -41,6 +41,7 @@ export function RegisterScreen({ navigation }: Props) {
     control,
     handleSubmit,
     getValues,
+    setError,
     formState: { errors },
   } = useForm<RegisterForm>({
     mode: 'onTouched',
@@ -52,10 +53,20 @@ export function RegisterScreen({ navigation }: Props) {
     setSubmitError(null);
     try {
       await AuthService.register({ username: data.username, password: data.password });
+      toast.success(t('register.success'));
       setSuccess(true);
       setTimeout(() => navigation.navigate(AUTH_ROUTES.Login), 800);
     } catch (err) {
-      setSubmitError(resolveAuthError(err, t));
+      if (err instanceof ApiError && err.status === 409) {
+        const message = t('register.errUsernameTaken');
+        setError('username', { message });
+        setSubmitError(message);
+        toast.error(message);
+        return;
+      }
+      const message = resolveAuthError(err, t);
+      setSubmitError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }

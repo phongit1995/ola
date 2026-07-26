@@ -1,9 +1,31 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AdminKenService } from '@/services/adminKen.service'
-import type { KenAdjustRequest } from '@/types'
+import type {
+  KenAdjustRequest,
+  KenTransferListParams,
+  KenTransferUserStatsParams,
+} from '@/types'
 
 const KEN_KEY = 'admin-ken'
 const USERS_KEY = 'admin-users'
+const KEN_TRANSFERS_KEY = 'admin-ken-transfers'
+const KEN_TRANSFER_USER_STATS_KEY = 'admin-ken-transfer-user-stats'
+
+export function useKenTransfers(params: KenTransferListParams, enabled = true) {
+  return useQuery({
+    queryKey: [KEN_TRANSFERS_KEY, params],
+    queryFn: () => AdminKenService.listTransfers(params),
+    enabled,
+  })
+}
+
+export function useKenTransferUserStats(params: KenTransferUserStatsParams, enabled = true) {
+  return useQuery({
+    queryKey: [KEN_TRANSFER_USER_STATS_KEY, params],
+    queryFn: () => AdminKenService.getTransferUserStats(params),
+    enabled,
+  })
+}
 
 export function useKenTransactions(
   userId: string | null,

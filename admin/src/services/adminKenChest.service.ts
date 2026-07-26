@@ -7,6 +7,10 @@ import type {
   KenChestAutoJobRequest,
   KenChestAutoSettings,
   KenChestClaim,
+  KenChestStatsParams,
+  KenChestStatsResponse,
+  KenChestUserStatsItem,
+  KenChestUserStatsParams,
   KenClaimHistoryItem,
   ListParams,
   ListResult,
@@ -81,6 +85,23 @@ export const AdminKenChestService = {
     const { data } = await http.put<ApiResponse<KenChestAutoSettings>>('/admin/ken/auto-settings', {
       enabled,
     })
+    return data.data
+  },
+
+  async getStats(params: KenChestStatsParams = {}): Promise<KenChestStatsResponse> {
+    const { data } = await http.get<ApiResponse<KenChestStatsResponse>>('/admin/ken/chest-stats', {
+      params,
+    })
+    return data.data
+  },
+
+  async getUserStats(
+    params: KenChestUserStatsParams = {},
+  ): Promise<ListResult<KenChestUserStatsItem>> {
+    const { data } = await http.get<ApiResponse<ListResult<KenChestUserStatsItem>>>(
+      '/admin/ken/chest-stats/users',
+      { params },
+    )
     return data.data
   },
 }

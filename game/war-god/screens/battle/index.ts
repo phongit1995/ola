@@ -7,13 +7,23 @@ import {
   Texture,
   type Ticker,
 } from 'pixi.js';
-import { bridge, type UserInfoData } from '../../../src/sdk';
+import { ARCADE_ATTENTION_REASON } from '@ola/shared/types';
+import {
+  GAME_ERROR_CODE,
+  bridge,
+  type ErrorData,
+  type MatchFoundData,
+  type MatchOverData,
+  type StateData,
+  type UserInfoData,
+} from '../../../src/sdk';
 import {
   CELLS,
   GRID,
   applyGravity,
   areAdjacent,
   createBoard,
+  emptyCounts,
   findMatches,
   findValidMoves,
   swapCells,
@@ -32,10 +42,28 @@ import {
   type BotLevel,
   type Fighter,
 } from '../../logic/battle';
+import { recordBotMatch } from '../../logic/bot-history';
+import {
+  decodeBoard,
+  decodeTile,
+  type ServerMove,
+  type ServerState,
+  type Step,
+} from '../../logic/server-types';
+import { errorText } from '../../logic/error-text';
+import { pvp } from '../../pvp';
 import { A, tex } from '../../assets';
 import { HEADING, addTick, makeText, removeTick, sleep, tween } from '../../kit';
 import { buildHud, hud, showConfirm, showOverlay, updateFighter } from './hud';
-import { CHAT_W, buildChat, layoutChat, resetChat, setChatInputVisible } from './chat';
+import {
+  CHAT_W,
+  buildChat,
+  layoutChat,
+  pushPvpChat,
+  resetChat,
+  setChatInputVisible,
+  setChatPvp,
+} from './chat';
 
 const DESIGN_W = 520;
 const TURN_SECONDS = Number(new URLSearchParams(location.search).get('turnsec')) || 45;
@@ -48,6 +76,7 @@ export interface BattleDeps {
   onGameStart(): void;
   onRequestLayout(): void;
   onExitToLobby(): void;
+  onPvpError(text: string): void;
 }
 
 export interface BattleLayoutOpts {
@@ -91,6 +120,20 @@ let selected: number | null = null;
 let turnDeadline = 0;
 let inGame = false;
 let botLevel: BotLevel = 'normal';
+let mode: 'bot' | 'pvp' = 'bot';
+let pvpMatchId = '';
+let pvpIdx = 0;
+let myUserId = '';
+let oppAwayUntil = 0;
+let pausedTurnRemain = 0;
+let flowEpoch = 0;
+let pvpChain: Promise<unknown> = Promise.resolve();
+const handledMatchOvers = new Set<string>();
+const CHAT_ERROR_CODES = new Set<string>([
+  GAME_ERROR_CODE.ChatRateLimited,
+  GAME_ERROR_CODE.ChatTooLong,
+  GAME_ERROR_CODE.InvalidChat,
+]);
 
 let turnAnnounce: Container;
 let turnAnnounceLabel: ReturnType<typeof makeText>;
@@ -310,7 +353,7 @@ function announce(text: string, color: number): void {
 
 function announceTurn(side: 'me' | 'foe'): void {
   if (side === 'me') announce('ĐẾN LƯỢT BẠN', 0xffd75e);
-  else announce('ĐẾN LƯỢT MÁY', 0xff6b5e);
+  else announce(mode === 'pvp' ? 'ĐẾN LƯỢT ĐỐI THỦ' : 'ĐẾN LƯỢT MÁY', 0xff6b5e);
 }
 
 function cellRootPos(i: number): { x: number; y: number } {
@@ -409,18 +452,28 @@ function floatNumber(card: Container, text: string, color: number, line: number)
 
 function renderTurnClock(): void {
   if (!inGame) return;
-  const left = Math.max(0, turnDeadline - performance.now());
+  const left =
+    pausedTurnRemain > 0 ? pausedTurnRemain : Math.max(0, turnDeadline - performance.now());
   const total = Math.ceil(left / 1000);
   const mm = String(Math.floor(total / 60)).padStart(2, '0');
   const ss = String(total % 60).padStart(2, '0');
   hud.timer.text = `${mm}:${ss}`;
+  if (mode === 'pvp' && !over && oppAwayUntil > 0) {
+    const secs = Math.max(0, Math.ceil((oppAwayUntil - performance.now()) / 1000));
+    setStatus(`Đối thủ mất kết nối, chờ ${secs}s...`);
+    return;
+  }
   if (!over && myTurn && !busy && !hud.confirm.visible) {
     if (left <= 0) {
+      if (mode === 'pvp') {
+        setStatus('Hết giờ...');
+        return;
+      }
       setStatus('Hết giờ — mất lượt!');
       void startBotTurn();
       return;
     }
-    if (left <= 10_000) showHint();
+    if (left <= 10_000 && mode === 'bot') showHint();
   }
 }
 
@@ -435,7 +488,8 @@ function updateHud(): void {
   hud.me.ultBtn.alpha = canUlt || !meActive ? 1 : 0.85;
 
   hud.turnCount.text = String(turnNumber);
-  hud.forfeit.setEnabled(myTurn && !busy && !over);
+  hud.restart.setEnabled(mode === 'bot');
+  hud.forfeit.setEnabled(!over && (mode === 'pvp' || (myTurn && !busy)));
 }
 
 function buildFxFrames(sheet: Texture): Texture[] {
@@ -637,6 +691,7 @@ function finish(won: boolean, reason: 'win' | 'forfeit', sub: string): void {
   endBusy();
   clearHint();
   updateHud();
+  if (mode === 'bot') recordBotMatch({ level: botLevel, won, forfeit: reason === 'forfeit' });
   showOverlay(won ? 'CHIẾN THẮNG!' : 'THẤT BẠI', won ? 0xffd75e : 0xff7a6e, sub, 'Chơi lại');
   setChatInputVisible(false);
   bridge.gameOver({ matchId: `wargod-${Date.now()}`, winnerId: won ? 'you' : 'bot', reason, won });
@@ -676,8 +731,9 @@ async function onTileTap(i: number): Promise<void> {
   clearHint();
 
   swapCells(board, a, b);
-  if (!findMatches(board)) {
-    swapCells(board, a, b);
+  const valid = findMatches(board) != null;
+  swapCells(board, a, b);
+  if (!valid) {
     await animateSwap(a, b);
     await animateSwap(a, b);
     setStatus('Không tạo được combo');
@@ -685,6 +741,13 @@ async function onTileTap(i: number): Promise<void> {
     return;
   }
 
+  if (mode === 'pvp') {
+    setStatus('Đang gửi nước đi...');
+    pvp.sendSwap(a, b);
+    return;
+  }
+
+  swapCells(board, a, b);
   await animateSwap(a, b);
   const extraTurn = await resolveCascades('me');
   if (checkEnd()) return;
@@ -705,6 +768,11 @@ async function castMyUltimate(): Promise<void> {
   busy = true;
   setSelected(null);
   clearHint();
+  if (mode === 'pvp') {
+    setStatus('Đang gửi tuyệt chiêu...');
+    pvp.sendUlt();
+    return;
+  }
   castUltimate(me, foe);
   setStatus(`TUYỆT CHIÊU! -${ULT_DMG} HP`);
   updateHud();
@@ -714,6 +782,8 @@ async function castMyUltimate(): Promise<void> {
 }
 
 async function startBotTurn(): Promise<void> {
+  const ep = flowEpoch;
+  const stale = (): boolean => over || flowEpoch !== ep || mode !== 'bot';
   myTurn = false;
   busy = true;
   setSelected(null);
@@ -724,13 +794,14 @@ async function startBotTurn(): Promise<void> {
 
   for (;;) {
     await sleep(700);
-    if (over) return;
+    if (stale()) return;
 
     if (botShouldUlt(foe, me, botLevel)) {
       castUltimate(foe, me);
       setStatus(`Máy tung TUYỆT CHIÊU! -${ULT_DMG} HP`);
       updateHud();
       await playUltFx('foe');
+      if (stale()) return;
       if (checkEnd()) return;
       break;
     }
@@ -738,24 +809,28 @@ async function startBotTurn(): Promise<void> {
     const move = botChooseMove(board, foe, me, botLevel);
     if (!move) {
       await ensurePlayable();
+      if (stale()) return;
       continue;
     }
     await showBotPick(move[0]);
-    if (over) return;
+    if (stale()) return;
     swapCells(board, move[0], move[1]);
     await Promise.all([
       tween(botSelectorA, pos(move[1]), 180),
       animateSwap(move[0], move[1]),
     ]);
     await sleep(160);
+    if (stale()) return;
     botSelectorA.visible = false;
     const extraTurn = await resolveCascades('foe');
+    if (stale()) return;
     if (checkEnd()) return;
     if (!extraTurn) break;
     announce('MÁY THÊM LƯỢT!', 0xffa94d);
     setStatus('Máy được thêm lượt!');
   }
 
+  if (stale()) return;
   myTurn = true;
   endBusy();
   turnNumber++;
@@ -767,6 +842,12 @@ async function startBotTurn(): Promise<void> {
 
 export function startBattle(level: BotLevel = botLevel): void {
   deps.onGameStart();
+  flowEpoch++;
+  const ep = flowEpoch;
+  mode = 'bot';
+  pvpMatchId = '';
+  oppAwayUntil = 0;
+  pausedTurnRemain = 0;
   botLevel = level;
   inGame = true;
   me = createFighter();
@@ -783,11 +864,13 @@ export function startBattle(level: BotLevel = botLevel): void {
   const userInfo = deps.getUserInfo();
   if (userInfo) hud.me.name.text = `@${userInfo.username}`;
   hud.foe.name.text = `@máy · ${LEVEL_LABELS[botLevel]}`;
+  setChatPvp(false);
   setChatInputVisible(true);
   resetChat('Chào! Chơi vui nhé 😄');
   setStatus('Chuẩn bị chiến đấu...');
   updateHud();
   void dropInBoard().then(() => {
+    if (flowEpoch !== ep) return;
     endBusy();
     resetTurnClock();
     announceTurn('me');
@@ -796,10 +879,306 @@ export function startBattle(level: BotLevel = botLevel): void {
   });
 }
 
+function syncFighters(state: ServerState): void {
+  const meF = state.fighters[pvpIdx];
+  const foeF = state.fighters[1 - pvpIdx];
+  if (meF) me = { hp: meF.hp, mp: meF.mp, armor: meF.armor };
+  if (foeF) foe = { hp: foeF.hp, mp: foeF.mp, armor: foeF.armor };
+}
+
+export function startPvpBattle(data: MatchFoundData<ServerState>): Promise<void> | void {
+  deps.onGameStart();
+  flowEpoch++;
+  const ep = flowEpoch;
+  mode = 'pvp';
+  inGame = true;
+  over = false;
+  busy = true;
+  pvpMatchId = data.matchId;
+  pvpIdx = data.you;
+  oppAwayUntil = 0;
+  pausedTurnRemain = 0;
+  clearHint();
+  const state = data.state;
+  syncFighters(state);
+  board = decodeBoard(state.board);
+  myTurn = data.turn === pvpIdx;
+  turnNumber = state.moveCount + 1;
+  setSelected(null);
+  botSelectorA.visible = false;
+  rebuildSprites();
+  hud.overlay.visible = false;
+  hud.confirm.visible = false;
+  const mePlayer = data.players[pvpIdx];
+  const opponent = data.players[1 - pvpIdx];
+  myUserId = mePlayer?.id ?? '';
+  hud.me.name.text = `@${mePlayer?.name ?? deps.getUserInfo()?.username ?? 'bạn'}`;
+  hud.foe.name.text = `@${opponent?.name ?? 'đối thủ'}`;
+  setChatPvp(true);
+  if (!data.resumed) resetChat();
+  setChatInputVisible(true);
+  turnDeadline = performance.now() + (data.deadline - Date.now());
+  updateHud();
+  if (data.resumed) {
+    endBusy();
+    setStatus('Đã vào lại trận đấu');
+    announceTurn(myTurn ? 'me' : 'foe');
+    updateHud();
+    bridge.turnChanged({ yourTurn: myTurn, deadline: data.deadline });
+    return;
+  }
+  bridge.attention({ reason: ARCADE_ATTENTION_REASON.MatchStarted, matchId: data.matchId });
+  setStatus('Chuẩn bị chiến đấu...');
+  return dropInBoard().then(() => {
+    if (flowEpoch !== ep) return;
+    endBusy();
+    announceTurn(myTurn ? 'me' : 'foe');
+    setStatus(myTurn ? 'Lượt của bạn — ghép 3 ô để tấn công!' : 'Đợi đối thủ...');
+    updateHud();
+    bridge.turnChanged({ yourTurn: myTurn, deadline: data.deadline });
+  });
+}
+
+async function replayStep(step: Step, side: 'me' | 'foe'): Promise<void> {
+  if (step.kind === 'swap') {
+    if (side === 'foe') {
+      await showBotPick(step.a);
+      swapCells(board, step.a, step.b);
+      await Promise.all([tween(botSelectorA, pos(step.b), 180), animateSwap(step.a, step.b)]);
+      await sleep(160);
+      botSelectorA.visible = false;
+      return;
+    }
+    swapCells(board, step.a, step.b);
+    await animateSwap(step.a, step.b);
+    return;
+  }
+  if (step.kind === 'match') {
+    const attacker = side === 'me' ? me : foe;
+    const defender = side === 'me' ? foe : me;
+    const cells = new Set(step.cells);
+    const result = applyTileEffects(attacker, defender, { ...emptyCounts(), ...step.counts });
+    const parts: string[] = [];
+    if (result.damage > 0) parts.push(`-${result.damage} HP`);
+    if (result.heal > 0) parts.push(`+${result.heal} HP`);
+    if (result.mana > 0) parts.push(`+${result.mana} MP`);
+    if (result.armor > 0) parts.push(`+${result.armor} giáp`);
+    if (parts.length > 0) {
+      setStatus(`${side === 'me' ? 'Bạn' : 'Đối thủ'}: ${parts.join('  ')}`);
+    }
+    await Promise.all([animateRemove(cells), flyMatched(cells, side)]);
+    updateHud();
+    const atkCard = side === 'me' ? hud.me.card : hud.foe.card;
+    const defCard = side === 'me' ? hud.foe.card : hud.me.card;
+    let atkLine = 0;
+    if (result.damage > 0) floatNumber(defCard, `-${result.damage} HP`, 0xff6b5e, 0);
+    if (result.heal > 0) floatNumber(atkCard, `+${result.heal} HP`, 0x7dff8a, atkLine++);
+    if (result.mana > 0) floatNumber(atkCard, `+${result.mana} MP`, 0x6ec1ff, atkLine++);
+    if (result.armor > 0) floatNumber(atkCard, `+${result.armor} giáp`, 0x9fd0ff, atkLine++);
+    return;
+  }
+  if (step.kind === 'gravity') {
+    const falls = step.falls ?? [];
+    for (const fall of falls) board[fall.to] = board[fall.from];
+    const spawns = (step.spawns ?? []).map((spawn) => ({
+      index: spawn.index,
+      type: decodeTile(spawn.type),
+      fromRow: spawn.fromRow,
+    }));
+    for (const spawn of spawns) board[spawn.index] = spawn.type;
+    await animateGravity(falls, spawns);
+    return;
+  }
+  if (step.kind === 'shuffle') {
+    setStatus('Hết nước đi — đảo bàn!');
+    await sleep(400);
+    board = decodeBoard(step.board);
+    rebuildSprites();
+    return;
+  }
+  const attacker = side === 'me' ? me : foe;
+  const defender = side === 'me' ? foe : me;
+  attacker.mp = Math.max(0, attacker.mp - ULT_COST);
+  defender.hp = Math.max(0, defender.hp - step.damage);
+  setStatus(
+    side === 'me'
+      ? `TUYỆT CHIÊU! -${step.damage} HP`
+      : `Đối thủ tung TUYỆT CHIÊU! -${step.damage} HP`,
+  );
+  updateHud();
+  await playUltFx(side);
+}
+
+async function handlePvpState(data: StateData<ServerState, ServerMove>): Promise<void> {
+  if (mode !== 'pvp' || !inGame || over || data.matchId !== pvpMatchId) return;
+  busy = true;
+  const ep = flowEpoch;
+  clearHint();
+  setSelected(null);
+  const state = data.state;
+  const side: 'me' | 'foe' = data.lastBy === pvpIdx ? 'me' : 'foe';
+  let replayFailed = false;
+  if (data.lastMove) {
+    try {
+      for (const step of state.steps) {
+        if (over || flowEpoch !== ep || data.matchId !== pvpMatchId) return;
+        await replayStep(step, side);
+      }
+    } catch {
+      replayFailed = true;
+    }
+  }
+  if (flowEpoch !== ep || data.matchId !== pvpMatchId) return;
+  const authBoard = decodeBoard(state.board);
+  const changed = authBoard.some((type, idx) => type !== board[idx]);
+  board = authBoard;
+  syncFighters(state);
+  if (changed || replayFailed) rebuildSprites();
+  if (over) return;
+  myTurn = data.turn === pvpIdx;
+  turnDeadline = performance.now() + (data.deadline - Date.now());
+  pausedTurnRemain = 0;
+  turnNumber = state.moveCount + 1;
+  updateHud();
+  if (!data.lastMove) {
+    setStatus(data.lastBy === pvpIdx ? 'Hết giờ — bạn mất lượt!' : 'Đối thủ hết giờ — mất lượt!');
+  } else if (data.turn === data.lastBy) {
+    if (myTurn) {
+      announce('BẠN THÊM LƯỢT!', 0x7dff8a);
+      setStatus('Combo 4+ — bạn được thêm lượt!');
+    } else {
+      announce('ĐỐI THỦ THÊM LƯỢT!', 0xffa94d);
+      setStatus('Đối thủ được thêm lượt!');
+    }
+  } else {
+    announceTurn(myTurn ? 'me' : 'foe');
+    setStatus(myTurn ? 'Lượt của bạn — ghép 3 ô để tấn công!' : 'Đợi đối thủ...');
+  }
+  bridge.turnChanged({ yourTurn: myTurn, deadline: data.deadline });
+  endBusy();
+}
+
+function matchOverSub(reason: MatchOverData['reason'], won: boolean, draw: boolean): string {
+  if (draw) return 'Hai bên bất phân thắng bại';
+  if (reason === 'forfeit') return won ? 'Đối thủ đã bỏ cuộc' : 'Bạn đã bỏ cuộc';
+  if (reason === 'timeout') return 'Hết giờ 3 lần liên tiếp';
+  if (reason === 'disconnect') return won ? 'Đối thủ mất kết nối' : 'Bạn đã mất kết nối';
+  return won ? 'Bạn đã hạ gục đối thủ' : 'Đối thủ đã hạ gục bạn';
+}
+
+async function handlePvpMatchOver(data: MatchOverData<ServerState>): Promise<void> {
+  if (mode !== 'pvp' || data.matchId !== pvpMatchId) return;
+  if (handledMatchOvers.has(data.matchId)) return;
+  handledMatchOvers.add(data.matchId);
+  over = true;
+  const ep = flowEpoch;
+  endBusy();
+  clearHint();
+  oppAwayUntil = 0;
+  pausedTurnRemain = 0;
+  const draw = data.winnerId == null || data.winnerId === '';
+  const won = !draw && data.winnerId === myUserId;
+  if (data.reason === 'win' && !draw && inGame && data.state.steps?.length) {
+    const side: 'me' | 'foe' = won ? 'me' : 'foe';
+    try {
+      for (const step of data.state.steps) {
+        if (flowEpoch !== ep) break;
+        await replayStep(step, side);
+      }
+    } catch {
+      botSelectorA.visible = false;
+    }
+  }
+  if (flowEpoch !== ep) {
+    bridge.gameOver({ matchId: data.matchId, winnerId: data.winnerId, reason: data.reason, won });
+    return;
+  }
+  botSelectorA.visible = false;
+  setSelected(null);
+  board = decodeBoard(data.state.board);
+  syncFighters(data.state);
+  rebuildSprites();
+  updateHud();
+  const bet = data.bet ?? pvp.bet();
+  const winnerNet = data.kenDelta ?? bet;
+  const kenDelta = won ? winnerNet : -bet;
+  const ken =
+    bet > 0 && !draw
+      ? {
+          text: `${kenDelta >= 0 ? '+' : ''}${kenDelta.toLocaleString('vi-VN')} KEN`,
+          color: kenDelta >= 0 ? 0x7dff8a : 0xff6b5e,
+        }
+      : undefined;
+  showOverlay(
+    draw ? 'HÒA' : won ? 'CHIẾN THẮNG!' : 'THẤT BẠI',
+    draw ? 0xffe9a8 : won ? 0xffd75e : 0xff7a6e,
+    matchOverSub(data.reason, won, draw),
+    'VỀ SẢNH',
+    ken,
+  );
+  setStatus(draw ? 'Ván đấu hòa!' : won ? 'Bạn thắng!' : 'Bạn thua!');
+  setChatInputVisible(false);
+  bridge.gameOver({ matchId: data.matchId, winnerId: data.winnerId, reason: data.reason, won });
+}
+
+function queuePvp(fn: () => Promise<void> | void): void {
+  pvpChain = pvpChain.then(fn).catch(() => undefined);
+}
+
+function bindPvpHandlers(): void {
+  pvp.on({
+    onMatchFound: (data) => queuePvp(() => startPvpBattle(data)),
+    onState: (data) => queuePvp(() => handlePvpState(data)),
+    onMatchOver: (data) => queuePvp(() => handlePvpMatchOver(data)),
+    onChat: (data) => {
+      if (mode !== 'pvp' || data.matchId !== pvpMatchId) return;
+      const mine = data.userId === myUserId;
+      pushPvpChat(`@${data.name}`, mine, data.text);
+      if (!mine) {
+        bridge.attention({ reason: ARCADE_ATTENTION_REASON.NewChat, matchId: data.matchId });
+      }
+    },
+    onOpponentDisconnected: (data) => {
+      if (mode !== 'pvp' || !inGame || over) return;
+      oppAwayUntil = performance.now() + (data.graceDeadline - Date.now());
+      if (!myTurn) pausedTurnRemain = Math.max(0, turnDeadline - performance.now());
+      bridge.attention({
+        reason: ARCADE_ATTENTION_REASON.OpponentDisconnected,
+        matchId: pvpMatchId,
+      });
+    },
+    onOpponentReconnected: () => {
+      if (mode !== 'pvp' || !inGame || over) return;
+      oppAwayUntil = 0;
+      if (pausedTurnRemain > 0) {
+        turnDeadline = performance.now() + pausedTurnRemain;
+        pausedTurnRemain = 0;
+      }
+      setStatus('Đối thủ đã quay lại');
+    },
+    onError: (err: ErrorData) => {
+      const text = errorText(err.code);
+      if (mode === 'pvp' && inGame && !over) {
+        if (!CHAT_ERROR_CODES.has(err.code)) endBusy();
+        setStatus(text);
+        return;
+      }
+      deps.onPvpError(text);
+    },
+    onConnectionChange: (connected) => {
+      if (mode !== 'pvp' || !inGame || over || connected) return;
+      setStatus('Mất kết nối, đang kết nối lại...');
+    },
+  });
+}
+
 function exitToLobby(): void {
+  flowEpoch++;
   over = true;
   inGame = false;
   busy = false;
+  oppAwayUntil = 0;
+  pausedTurnRemain = 0;
   clearHint();
   setSelected(null);
   botSelectorA.visible = false;
@@ -819,6 +1198,8 @@ export function markBattleRefit(): void {
 
 export function battleDebug(): Record<string, unknown> {
   return {
+    mode,
+    matchId: pvpMatchId,
     myTurn,
     busy,
     over,
@@ -879,8 +1260,15 @@ export function buildBattleScreen(root: Container, battleDeps: BattleDeps): void
 
   buildHud(root, {
     onUlt: () => void castMyUltimate(),
-    onStart: () => startBattle(),
+    onStart: () => {
+      if (mode === 'pvp') {
+        exitToLobby();
+        return;
+      }
+      startBattle();
+    },
     onRestart: () => {
+      if (mode === 'pvp') return;
       if (over) {
         startBattle();
         return;
@@ -888,7 +1276,12 @@ export function buildBattleScreen(root: Container, battleDeps: BattleDeps): void
       showConfirm('Chơi lại từ đầu?', () => startBattle());
     },
     onForfeit: () => {
-      if (over || !myTurn || busy) return;
+      if (over) return;
+      if (mode === 'pvp') {
+        showConfirm('Bỏ cuộc trận này?', () => pvp.forfeit());
+        return;
+      }
+      if (!myTurn || busy) return;
       showConfirm('Bỏ cuộc trận này?', () => finish(false, 'forfeit', 'Bạn đã bỏ cuộc'));
     },
     onExit: () => {
@@ -896,9 +1289,18 @@ export function buildBattleScreen(root: Container, battleDeps: BattleDeps): void
         exitToLobby();
         return;
       }
+      if (mode === 'pvp') {
+        showConfirm('Thoát trận về sảnh?', () => {
+          pvp.leaveMatch();
+          pvpMatchId = '';
+          exitToLobby();
+        });
+        return;
+      }
       showConfirm('Thoát trận về sảnh?', exitToLobby);
     },
   });
+  bindPvpHandlers();
 
   chatBox = buildChat({
     isOver: () => over,

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Animated,
+  BackHandler,
   Easing,
   Image,
   Pressable,
@@ -165,6 +166,29 @@ export function PenGameScreen({ navigation }: Props) {
   }, [windowWidth, setPageSize]);
 
   const closeCatch = useCallback(() => setCatchShot(null), []);
+
+  useEffect(() => {
+    const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (catchShot != null) {
+        if (!catching) setCatchShot(null);
+        return true;
+      }
+      if (shootOpen) {
+        if (!submitting) setShootOpen(false);
+        return true;
+      }
+      if (historyOpen) {
+        setHistoryOpen(false);
+        return true;
+      }
+      if (leaderboardOpen) {
+        setLeaderboardOpen(false);
+        return true;
+      }
+      return false;
+    });
+    return () => subscription.remove();
+  }, [catchShot, catching, shootOpen, submitting, historyOpen, leaderboardOpen]);
 
   useEffect(
     () => () => {

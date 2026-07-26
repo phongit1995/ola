@@ -1,11 +1,13 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
+  Image,
   Keyboard,
   NativeScrollEvent,
   NativeSyntheticEvent,
   Pressable,
+  ScrollView,
   Text,
   View,
 } from 'react-native';
@@ -15,6 +17,7 @@ import { useStickyBottomList } from '@hooks/useStickyBottomList';
 import { launchCamera, launchImageLibrary, type Asset } from 'react-native-image-picker';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useAuthStore } from '@ola/shared/stores/authStore';
+import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { colorForName, isSameDay } from '@ola/shared/lib';
 import type { NativeUploadFile } from '@ola/shared/lib';
@@ -57,6 +60,12 @@ const copyActionIcon = require('@assets/icons/chat/ic_menu_copy.png');
 const replyActionIcon = require('@assets/icons/me/ic_action_reply_gray.png');
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ChatDetail'>;
+
+interface PendingImage {
+  id: string;
+  uri: string;
+  file: NativeUploadFile;
+}
 
 export function ChatDetailScreen({ navigation, route }: Props) {
   const { conversationId } = route.params;
@@ -109,7 +118,11 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   const [transferVipDaysOpen, setTransferVipDaysOpen] = useState(false);
   const [tradingVipOpen, setTradingVipOpen] = useState(false);
   const [pendingAudio, setPendingAudio] = useState<VoiceRecording | null>(null);
+  const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
   const [editing, setEditing] = useState<string | null>(null);
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const imageIdRef = useRef(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const [blockOpen, setBlockOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Message | null>(null);
@@ -135,6 +148,16 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     unstick,
   } = useStickyBottomList<Message>();
   const composerRef = useRef<ChatInputBarHandle>(null);
+  const currentConversationId = useChatStore((s) => s.currentConversationId);
+  const loadingMore = useChatStore((s) => s.loadingMore);
+  const [activeConversationId, setActiveConversationId] = useState(currentConversationId);
+  if (activeConversationId !== currentConversationId) {
+    setActiveConversationId(currentConversationId);
+    setPendingAudio(null);
+    setOpenTab(null);
+    setEditing(null);
+    setHighlightedId(null);
+  }
 
   const {
     anchorId: peerCardAnchorId,
@@ -207,18 +230,55 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     }
   }
 
-  async function sendPickedAssets(assets: Asset[]) {
-    for (const asset of assets) {
-      if (asset.uri == null) continue;
-      await compressAndSend({
-        uri: asset.uri,
-        name: asset.fileName ?? 'photo.jpg',
-        type: asset.type ?? 'image/jpeg',
-      });
+  function queuePickedAssets(assets: Asset[]) {
+    if (assets.length === 0) return;
+    if (editing != null) cancelEdit();
+    setPendingImages((current) => {
+      const next = [...current];
+      for (const asset of assets) {
+        if (asset.uri == null) continue;
+        imageIdRef.current += 1;
+        next.push({
+          id: String(imageIdRef.current),
+          uri: asset.uri,
+          file: {
+            uri: asset.uri,
+            name: asset.fileName ?? 'photo.jpg',
+            type: asset.type ?? 'image/jpeg',
+          },
+        });
+      }
+      return next;
+    });
+  }
+
+  function queuePastedImage(uri: string) {
+    if (editing != null) cancelEdit();
+    imageIdRef.current += 1;
+    const id = String(imageIdRef.current);
+    setPendingImages((current) => [...current, { id, uri, file: pastedImageFile(uri) }]);
+  }
+
+  function removePendingImage(id: string) {
+    setPendingImages((current) => current.filter((image) => image.id !== id));
+  }
+
+  function clearPendingImages() {
+    setPendingImages([]);
+  }
+
+  async function sendPendingImages() {
+    const images = pendingImages;
+    if (images.length === 0) return;
+    setPendingImages([]);
+    setOpenTab(null);
+    pinOnNextContent();
+    for (const image of images) {
+      await compressAndSend(image.file);
     }
   }
 
-  async function pickAndSendImages() {
+  async function pickImages() {
     const keyboardWasVisible = Keyboard.isVisible();
     const result = await launchImageLibrary({
       mediaType: 'photo',
@@ -229,10 +289,10 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     });
     if (keyboardWasVisible) requestAnimationFrame(() => composerRef.current?.focus());
     if (result.didCancel) return;
-    await sendPickedAssets(result.assets ?? []);
+    queuePickedAssets(result.assets ?? []);
   }
 
-  async function captureAndSendPhoto() {
+  async function capturePhoto() {
     const keyboardWasVisible = Keyboard.isVisible();
     const result = await launchCamera({
       mediaType: 'photo',
@@ -247,7 +307,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
       push('error', t('chat.imageError'));
       return;
     }
-    await sendPickedAssets(result.assets ?? []);
+    queuePickedAssets(result.assets ?? []);
   }
 
   const menuOptions: ListOption[] = [
@@ -284,7 +344,17 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     }
     unstick();
     listRef.current?.scrollToIndex({ index, animated: true, viewPosition: 0.5 });
+    setHighlightedId(id);
+    if (highlightTimerRef.current != null) clearTimeout(highlightTimerRef.current);
+    highlightTimerRef.current = setTimeout(() => setHighlightedId(null), 1500);
   }
+
+  useEffect(
+    () => () => {
+      if (highlightTimerRef.current != null) clearTimeout(highlightTimerRef.current);
+    },
+    []
+  );
 
   function startReply(message: Message) {
     setEditing(null);
@@ -298,7 +368,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   }
 
   function sheetActions(message: Message): MessageSheetAction[] {
-    const abilities = chatMessageAbilities(message, myId);
+    const abilities = chatMessageAbilities(message, myId, blocked);
     const actions: MessageSheetAction[] = [];
     if (abilities.canReply) {
       actions.push({
@@ -400,9 +470,16 @@ export function ChatDetailScreen({ navigation, route }: Props) {
           onContentSizeChange={onContentSizeChange}
           onLayout={onListLayout}
           ListHeaderComponent={
-            peerCardVisible && peerCardAnchorId === '' && peerProfile != null
-              ? renderPeerCard()
-              : null
+            <>
+              {loadingMore && (
+                <View className="items-center py-2">
+                  <ActivityIndicator size="small" color="#7cb342" />
+                </View>
+              )}
+              {peerCardVisible && peerCardAnchorId === '' && peerProfile != null
+                ? renderPeerCard()
+                : null}
+            </>
           }
           ListFooterComponent={
             typingUsers.length > 0 ? <TypingIndicator name={title} avatar={peerAvatar} /> : null
@@ -438,6 +515,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
                   showTime={showTime}
                   isLastOwn={item.id === lastOwnId}
                   seen={conversationSeen}
+                  highlighted={item.id === highlightedId}
                   peerName={title}
                   peerAvatar={peerAvatar}
                   timeLabel={timeFormatter(item.createdAt)}
@@ -500,16 +578,59 @@ export function ChatDetailScreen({ navigation, route }: Props) {
           onDiscard={() => setPendingAudio(null)}
         />
       )}
+      {pendingImages.length > 0 && (
+        <View
+          className="flex-row items-end gap-1 bg-white px-2 py-1.5"
+          style={{ borderTopWidth: 1, borderTopColor: DIVIDER }}
+        >
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            className="min-h-9 flex-1"
+            contentContainerClassName="items-center gap-2 px-1 py-1"
+          >
+            {pendingImages.map((image) => (
+              <View key={image.id} className="relative">
+                <Image
+                  source={{ uri: image.uri }}
+                  style={{ width: 44, height: 44, borderRadius: 8 }}
+                  resizeMode="cover"
+                />
+                <Pressable
+                  onPress={() => removePendingImage(image.id)}
+                  className="absolute h-5 w-5 items-center justify-center rounded-full"
+                  style={{ top: -6, right: -6, backgroundColor: 'rgba(0,0,0,0.6)' }}
+                >
+                  <Text className="text-xs leading-none text-white">×</Text>
+                </Pressable>
+              </View>
+            ))}
+            <Pressable
+              onPress={clearPendingImages}
+              className="ml-1 h-9 items-center justify-center rounded-full px-3"
+              style={{ borderWidth: 1, borderColor: 'rgba(0,0,0,0.12)' }}
+            >
+              <Text className="text-sm font-medium text-ola-ink-soft">{t('dialog.cancel')}</Text>
+            </Pressable>
+          </ScrollView>
+          <Pressable
+            onPress={() => void sendPendingImages()}
+            className="h-9 items-center justify-center rounded-full bg-ola-primary px-4 active:opacity-90"
+          >
+            <Text className="text-sm font-semibold text-white">{t('chat.send')}</Text>
+          </Pressable>
+        </View>
+      )}
       <ChatInputBar
         ref={composerRef}
-        hidden={pendingAudio != null}
+        hidden={pendingAudio != null || pendingImages.length > 0}
         refocusOnSend={openTab == null}
         editing={editing != null}
         placeholder={t('chat.messageInputPlaceholder', { name: title })}
         onSend={(text) => void send(text)}
         onTyping={notifyTyping}
         onFocusInput={closeAttachTab}
-        onPasteImage={(uri) => void compressAndSend(pastedImageFile(uri))}
+        onPasteImage={queuePastedImage}
       />
 
       <AttachmentBar
@@ -525,8 +646,8 @@ export function ChatDetailScreen({ navigation, route }: Props) {
           void send(kulToken(index));
           setOpenTab(null);
         }}
-        onPickImage={() => void pickAndSendImages()}
-        onPickCamera={() => void captureAndSendPhoto()}
+        onPickImage={() => void pickImages()}
+        onPickCamera={() => void capturePhoto()}
         onRecorded={(recording) => {
           setOpenTab(null);
           setPendingAudio(recording);

@@ -702,6 +702,328 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/egg/stats/users": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-egg"
+                ],
+                "summary": "Thống kê đập trứng theo từng user (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Lọc theo gói",
+                        "name": "packId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Lọc theo user",
+                        "name": "userId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Từ thời gian (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến thời gian (RFC3339)",
+                        "name": "to",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "kenSpent|kenWon|netKen|draws|vipDays (mặc định kenSpent)",
+                        "name": "sortBy",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_egg.UserStatsSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/egg/stats/vip": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-egg"
+                ],
+                "summary": "Thống kê đập trứng theo loại VIP (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Lọc theo gói",
+                        "name": "packId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Lọc theo user",
+                        "name": "userId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Từ thời gian (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến thời gian (RFC3339)",
+                        "name": "to",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_egg.VipStatsSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/game-matches": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-game-match"
+                ],
+                "summary": "Danh sách trận PvP mini-game (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Lọc theo game (caro, war-god)",
+                        "name": "gameId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Lọc theo người chơi (một trong hai bên)",
+                        "name": "userId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Lọc theo người thắng",
+                        "name": "winnerId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "playing|finished",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "win|forfeit|timeout|draw|disconnect|void",
+                        "name": "reason",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "queue|room",
+                        "name": "mode",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Cược tối thiểu",
+                        "name": "minBet",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Cược tối đa",
+                        "name": "maxBet",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Từ thời gian (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến thời gian (RFC3339)",
+                        "name": "to",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_game-match.MatchListSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/game-matches/stats": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-game-match"
+                ],
+                "summary": "Thống kê trận \u0026 cược mini-game (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Lọc theo game (caro, war-god)",
+                        "name": "gameId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "queue|room",
+                        "name": "mode",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Từ thời gian (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến thời gian (RFC3339)",
+                        "name": "to",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_game-match.MatchStatsSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/game-matches/suspects": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-game-match"
+                ],
+                "summary": "Người chơi \u0026 cặp đấu thắng bất thường (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Lọc theo game (caro, war-god)",
+                        "name": "gameId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Từ thời gian (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến thời gian (RFC3339)",
+                        "name": "to",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Số trận tối thiểu để xét user (mặc định 10)",
+                        "name": "minMatches",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Số trận tối thiểu để xét cặp (mặc định 5)",
+                        "name": "minPairMatches",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_game-match.SuspectsSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/ken/auto-jobs": {
             "get": {
                 "security": [
@@ -899,6 +1221,124 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/ola-chat-server_internal_modules_kenchest.AutoSettingsView"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/ken/chest-stats": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-ken-chest"
+                ],
+                "summary": "Thống kê rương ken (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "manual|auto",
+                        "name": "source",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Lọc theo user",
+                        "name": "userId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Từ thời gian (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến thời gian (RFC3339)",
+                        "name": "to",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_kenchest.StatsSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/ken/chest-stats/users": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-ken-chest"
+                ],
+                "summary": "Thống kê rương ken theo từng user (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "manual|auto",
+                        "name": "source",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Lọc theo user",
+                        "name": "userId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Từ thời gian (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến thời gian (RFC3339)",
+                        "name": "to",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "kenTotal|claims|empty (mặc định kenTotal)",
+                        "name": "sortBy",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_kenchest.UserStatsSuccessResponse"
                         }
                     }
                 }
@@ -1147,6 +1587,160 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/ola-chat-server_internal_modules_kenchest.ClaimHistoryListResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/ken/transfers": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-ken"
+                ],
+                "summary": "Lịch sử chuyển ken giữa các user (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Lọc theo người gửi",
+                        "name": "senderId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Lọc theo người nhận",
+                        "name": "receiverId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Lọc theo user (gửi hoặc nhận)",
+                        "name": "userId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Số ken tối thiểu",
+                        "name": "minAmount",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Số ken tối đa",
+                        "name": "maxAmount",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Từ thời gian (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến thời gian (RFC3339)",
+                        "name": "to",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_ken.TransferListSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/ken/transfers/users": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-ken"
+                ],
+                "summary": "Thống kê chuyển/nhận ken theo từng user (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Lọc theo user",
+                        "name": "userId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Số ken tối thiểu mỗi giao dịch",
+                        "name": "minAmount",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Số ken tối đa mỗi giao dịch",
+                        "name": "maxAmount",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Từ thời gian (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến thời gian (RFC3339)",
+                        "name": "to",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "sentTotal|receivedTotal|netKen|transfers (mặc định sentTotal)",
+                        "name": "sortBy",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_ken.TransferUserStatsSuccessResponse"
                         }
                     }
                 }
@@ -1870,6 +2464,112 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/ola-chat-server_internal_modules_pen.PenStatsSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/pen/stats/sides": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-pen"
+                ],
+                "summary": "Phân bố hướng sút/chụp trái-phải (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Lọc theo user",
+                        "name": "userId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Từ thời gian (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến thời gian (RFC3339)",
+                        "name": "to",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_pen.SideStatsSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/pen/stats/users": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-pen"
+                ],
+                "summary": "Thống kê PEN theo từng user, gộp cả vai sút và chụp (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Lọc theo user",
+                        "name": "userId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Từ thời gian (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến thời gian (RFC3339)",
+                        "name": "to",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "staked|netKen|shots|catches (mặc định staked)",
+                        "name": "sortBy",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_pen.UserStatsSuccessResponse"
                         }
                     }
                 }
@@ -3421,6 +4121,124 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/ola-chat-server_internal_modules_wheel.StatsResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/wheel/stats/users": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-wheel"
+                ],
+                "summary": "Thống kê vòng quay theo từng user (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Lọc theo vòng quay",
+                        "name": "wheelId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Lọc theo user",
+                        "name": "userId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Từ thời gian (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến thời gian (RFC3339)",
+                        "name": "to",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "kenSpent|kenWon|netKen|spins|vipDays (mặc định kenSpent)",
+                        "name": "sortBy",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_wheel.UserStatsSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/wheel/stats/vip": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-wheel"
+                ],
+                "summary": "Thống kê vòng quay theo loại VIP (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Lọc theo vòng quay",
+                        "name": "wheelId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Lọc theo user",
+                        "name": "userId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Từ thời gian (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến thời gian (RFC3339)",
+                        "name": "to",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_wheel.VipStatsSuccessResponse"
                         }
                     }
                 }
@@ -5764,6 +6582,45 @@ const docTemplate = `{
                         "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/egg/packs/{id}/gifts": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "egg"
+                ],
+                "summary": "Danh sách quà của một gói đập trứng",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Pack ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_egg.GiftListResponse"
                         }
                     },
                     "404": {
@@ -11195,6 +12052,564 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_modules_admin_egg.UserBrief": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string",
+                    "example": "https://example.com/avatar.jpg"
+                },
+                "fullName": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "john_doe"
+                }
+            }
+        },
+        "internal_modules_admin_egg.UserStatsItem": {
+            "type": "object",
+            "properties": {
+                "draws": {
+                    "type": "integer",
+                    "example": 120
+                },
+                "kenSpent": {
+                    "type": "integer",
+                    "example": 120000
+                },
+                "kenWon": {
+                    "type": "integer",
+                    "example": 40000
+                },
+                "lastDrawAt": {
+                    "type": "string",
+                    "example": "2026-07-25T15:12:33Z"
+                },
+                "netKen": {
+                    "type": "integer",
+                    "example": -80000
+                },
+                "user": {
+                    "$ref": "#/definitions/internal_modules_admin_egg.UserBrief"
+                },
+                "vipDays": {
+                    "type": "integer",
+                    "example": 14
+                },
+                "vipIcons": {
+                    "type": "integer",
+                    "example": 2
+                },
+                "winDraws": {
+                    "type": "integer",
+                    "example": 30
+                },
+                "winRate": {
+                    "type": "number",
+                    "example": 25
+                }
+            }
+        },
+        "internal_modules_admin_egg.UserStatsResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_egg.UserStatsItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 20
+                },
+                "offset": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "internal_modules_admin_egg.UserStatsSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_egg.UserStatsResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_egg.VipStatsResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_egg.VipStatsRow"
+                    }
+                }
+            }
+        },
+        "internal_modules_admin_egg.VipStatsRow": {
+            "type": "object",
+            "properties": {
+                "dayWins": {
+                    "type": "integer",
+                    "example": 9
+                },
+                "iconWins": {
+                    "type": "integer",
+                    "example": 5
+                },
+                "vipDays": {
+                    "type": "integer",
+                    "example": 27
+                },
+                "vipTypeId": {
+                    "type": "integer",
+                    "example": 12
+                }
+            }
+        },
+        "internal_modules_admin_egg.VipStatsSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_egg.VipStatsResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_game-match.MatchListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_game-match.MatchView"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 20
+                },
+                "offset": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "internal_modules_admin_game-match.MatchListSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_game-match.MatchListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_game-match.MatchStatsResponse": {
+            "type": "object",
+            "properties": {
+                "bucket": {
+                    "type": "string"
+                },
+                "byGame": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_game-match.StatsGameRow"
+                    }
+                },
+                "byReason": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_game-match.StatsReasonRow"
+                    }
+                },
+                "overview": {
+                    "$ref": "#/definitions/internal_modules_admin_game-match.StatsOverview"
+                },
+                "timeseries": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_game-match.StatsTimePoint"
+                    }
+                },
+                "topPlayers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_game-match.StatsPlayer"
+                    }
+                }
+            }
+        },
+        "internal_modules_admin_game-match.MatchStatsSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_game-match.MatchStatsResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_game-match.MatchView": {
+            "type": "object",
+            "properties": {
+                "bet": {
+                    "type": "integer",
+                    "example": 1000
+                },
+                "finishedAt": {
+                    "type": "string"
+                },
+                "gameId": {
+                    "type": "string",
+                    "example": "caro"
+                },
+                "houseTake": {
+                    "type": "integer",
+                    "example": 100
+                },
+                "id": {
+                    "type": "string"
+                },
+                "kenDelta": {
+                    "type": "integer",
+                    "example": 900
+                },
+                "matchId": {
+                    "type": "string"
+                },
+                "mode": {
+                    "type": "string",
+                    "example": "queue"
+                },
+                "moveCount": {
+                    "type": "integer",
+                    "example": 24
+                },
+                "player0": {
+                    "$ref": "#/definitions/internal_modules_admin_game-match.UserBrief"
+                },
+                "player1": {
+                    "$ref": "#/definitions/internal_modules_admin_game-match.UserBrief"
+                },
+                "reason": {
+                    "type": "string",
+                    "example": "win"
+                },
+                "startedAt": {
+                    "type": "string",
+                    "example": "2026-07-24T10:00:00Z"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "finished"
+                },
+                "winnerId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_game-match.StatsGameRow": {
+            "type": "object",
+            "properties": {
+                "finished": {
+                    "type": "integer"
+                },
+                "gameId": {
+                    "type": "string"
+                },
+                "houseTake": {
+                    "type": "integer"
+                },
+                "matches": {
+                    "type": "integer"
+                },
+                "volume": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_game-match.StatsOverview": {
+            "type": "object",
+            "properties": {
+                "decidedMatches": {
+                    "type": "integer"
+                },
+                "drawMatches": {
+                    "type": "integer"
+                },
+                "finishedMatches": {
+                    "type": "integer"
+                },
+                "houseTake": {
+                    "type": "integer"
+                },
+                "playingMatches": {
+                    "type": "integer"
+                },
+                "totalMatches": {
+                    "type": "integer"
+                },
+                "totalPayout": {
+                    "type": "integer"
+                },
+                "totalVolume": {
+                    "type": "integer"
+                },
+                "uniquePlayers": {
+                    "type": "integer"
+                },
+                "voidMatches": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_game-match.StatsPlayer": {
+            "type": "object",
+            "properties": {
+                "losses": {
+                    "type": "integer"
+                },
+                "matches": {
+                    "type": "integer"
+                },
+                "netKen": {
+                    "type": "integer"
+                },
+                "staked": {
+                    "type": "integer"
+                },
+                "user": {
+                    "$ref": "#/definitions/internal_modules_admin_game-match.UserBrief"
+                },
+                "winRate": {
+                    "type": "number"
+                },
+                "wins": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_game-match.StatsReasonRow": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "percent": {
+                    "type": "number"
+                },
+                "reason": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_game-match.StatsTimePoint": {
+            "type": "object",
+            "properties": {
+                "date": {
+                    "type": "string"
+                },
+                "finished": {
+                    "type": "integer"
+                },
+                "houseTake": {
+                    "type": "integer"
+                },
+                "matches": {
+                    "type": "integer"
+                },
+                "volume": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_game-match.SuspectPair": {
+            "type": "object",
+            "properties": {
+                "aWins": {
+                    "type": "integer"
+                },
+                "bWins": {
+                    "type": "integer"
+                },
+                "decided": {
+                    "type": "integer"
+                },
+                "matches": {
+                    "type": "integer"
+                },
+                "netA": {
+                    "type": "integer"
+                },
+                "oneSidedRate": {
+                    "type": "number"
+                },
+                "totalBet": {
+                    "type": "integer"
+                },
+                "userA": {
+                    "$ref": "#/definitions/internal_modules_admin_game-match.UserBrief"
+                },
+                "userB": {
+                    "$ref": "#/definitions/internal_modules_admin_game-match.UserBrief"
+                }
+            }
+        },
+        "internal_modules_admin_game-match.SuspectsResponse": {
+            "type": "object",
+            "properties": {
+                "minMatches": {
+                    "type": "integer"
+                },
+                "minPairMatches": {
+                    "type": "integer"
+                },
+                "pairs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_game-match.SuspectPair"
+                    }
+                },
+                "players": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_game-match.StatsPlayer"
+                    }
+                }
+            }
+        },
+        "internal_modules_admin_game-match.SuspectsSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_game-match.SuspectsResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_game-match.UserBrief": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string",
+                    "example": "https://example.com/avatar.jpg"
+                },
+                "fullName": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "john_doe"
+                }
+            }
+        },
         "internal_modules_admin_ken.AdjustRequest": {
             "type": "object",
             "required": [
@@ -11390,6 +12805,387 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "$ref": "#/definitions/internal_modules_admin_ken.TransactionListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_ken.TransferItem": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "integer",
+                    "example": 5000
+                },
+                "createdAt": {
+                    "type": "string",
+                    "example": "2026-07-26T10:00:00Z"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "Chuyển ken"
+                },
+                "from": {
+                    "$ref": "#/definitions/internal_modules_admin_ken.CounterpartyInfo"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "to": {
+                    "$ref": "#/definitions/internal_modules_admin_ken.CounterpartyInfo"
+                }
+            }
+        },
+        "internal_modules_admin_ken.TransferListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_ken.TransferItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 20
+                },
+                "offset": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "internal_modules_admin_ken.TransferListSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_ken.TransferListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_ken.TransferUserStatsItem": {
+            "type": "object",
+            "properties": {
+                "lastTransferAt": {
+                    "type": "string",
+                    "example": "2026-07-26T10:00:00Z"
+                },
+                "netKen": {
+                    "type": "integer",
+                    "example": -28000
+                },
+                "partners": {
+                    "type": "integer",
+                    "example": 5
+                },
+                "receivedCount": {
+                    "type": "integer",
+                    "example": 8
+                },
+                "receivedTotal": {
+                    "type": "integer",
+                    "example": 32000
+                },
+                "sentCount": {
+                    "type": "integer",
+                    "example": 12
+                },
+                "sentTotal": {
+                    "type": "integer",
+                    "example": 60000
+                },
+                "user": {
+                    "$ref": "#/definitions/internal_modules_admin_ken.CounterpartyInfo"
+                }
+            }
+        },
+        "internal_modules_admin_ken.TransferUserStatsResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_ken.TransferUserStatsItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 20
+                },
+                "offset": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "internal_modules_admin_ken.TransferUserStatsSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_ken.TransferUserStatsResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_kenchest.StatsOverview": {
+            "type": "object",
+            "properties": {
+                "activeChests": {
+                    "type": "integer"
+                },
+                "autoChests": {
+                    "type": "integer"
+                },
+                "emptyClaims": {
+                    "type": "integer"
+                },
+                "emptyRate": {
+                    "type": "number"
+                },
+                "expiredChests": {
+                    "type": "integer"
+                },
+                "manualChests": {
+                    "type": "integer"
+                },
+                "totalChests": {
+                    "type": "integer"
+                },
+                "totalClaims": {
+                    "type": "integer"
+                },
+                "totalKenGiven": {
+                    "type": "integer"
+                },
+                "uniqueUsers": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_kenchest.StatsResponse": {
+            "type": "object",
+            "properties": {
+                "bucket": {
+                    "type": "string"
+                },
+                "bySource": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_kenchest.StatsSourceRow"
+                    }
+                },
+                "overview": {
+                    "$ref": "#/definitions/internal_modules_admin_kenchest.StatsOverview"
+                },
+                "timeseries": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_kenchest.StatsTimePoint"
+                    }
+                }
+            }
+        },
+        "internal_modules_admin_kenchest.StatsSourceRow": {
+            "type": "object",
+            "properties": {
+                "chests": {
+                    "type": "integer"
+                },
+                "claims": {
+                    "type": "integer"
+                },
+                "kenGiven": {
+                    "type": "integer"
+                },
+                "source": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_kenchest.StatsSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_kenchest.StatsResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_kenchest.StatsTimePoint": {
+            "type": "object",
+            "properties": {
+                "claims": {
+                    "type": "integer"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "empty": {
+                    "type": "integer"
+                },
+                "kenGiven": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_kenchest.UserBrief": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string",
+                    "example": "https://example.com/avatar.jpg"
+                },
+                "fullName": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "john_doe"
+                }
+            }
+        },
+        "internal_modules_admin_kenchest.UserStatsItem": {
+            "type": "object",
+            "properties": {
+                "chests": {
+                    "type": "integer",
+                    "example": 20
+                },
+                "claims": {
+                    "type": "integer",
+                    "example": 25
+                },
+                "emptyClaims": {
+                    "type": "integer",
+                    "example": 4
+                },
+                "emptyRate": {
+                    "type": "number",
+                    "example": 16
+                },
+                "kenTotal": {
+                    "type": "integer",
+                    "example": 52000
+                },
+                "lastClaimAt": {
+                    "type": "string",
+                    "example": "2026-07-25T15:12:33Z"
+                },
+                "user": {
+                    "$ref": "#/definitions/internal_modules_admin_kenchest.UserBrief"
+                }
+            }
+        },
+        "internal_modules_admin_kenchest.UserStatsResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_kenchest.UserStatsItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 20
+                },
+                "offset": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "internal_modules_admin_kenchest.UserStatsSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_kenchest.UserStatsResponse"
                 },
                 "error": {
                     "type": "string"
@@ -11634,6 +13430,179 @@ const docTemplate = `{
                 "enabled": {
                     "type": "boolean",
                     "example": false
+                }
+            }
+        },
+        "internal_modules_admin_pen.SideStatsResponse": {
+            "type": "object",
+            "properties": {
+                "keeperLeft": {
+                    "type": "integer",
+                    "example": 101
+                },
+                "keeperRight": {
+                    "type": "integer",
+                    "example": 117
+                },
+                "shooterLeft": {
+                    "type": "integer",
+                    "example": 120
+                },
+                "shooterRight": {
+                    "type": "integer",
+                    "example": 98
+                }
+            }
+        },
+        "internal_modules_admin_pen.SideStatsSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_pen.SideStatsResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_pen.UserBrief": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string",
+                    "example": "https://example.com/avatar.jpg"
+                },
+                "fullName": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "john_doe"
+                }
+            }
+        },
+        "internal_modules_admin_pen.UserStatsItem": {
+            "type": "object",
+            "properties": {
+                "cancelRate": {
+                    "type": "number",
+                    "example": 7.5
+                },
+                "cancelled": {
+                    "type": "integer",
+                    "example": 3
+                },
+                "catches": {
+                    "type": "integer",
+                    "example": 25
+                },
+                "keeperSaveRate": {
+                    "type": "number",
+                    "example": 40
+                },
+                "keeperWins": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "lastPlayAt": {
+                    "type": "string",
+                    "example": "2026-07-25T15:12:33Z"
+                },
+                "netKen": {
+                    "type": "integer",
+                    "example": -8000
+                },
+                "shooterSettled": {
+                    "type": "integer",
+                    "example": 30
+                },
+                "shooterWinRate": {
+                    "type": "number",
+                    "example": 40
+                },
+                "shooterWins": {
+                    "type": "integer",
+                    "example": 12
+                },
+                "shots": {
+                    "type": "integer",
+                    "example": 40
+                },
+                "staked": {
+                    "type": "integer",
+                    "example": 120000
+                },
+                "user": {
+                    "$ref": "#/definitions/internal_modules_admin_pen.UserBrief"
+                }
+            }
+        },
+        "internal_modules_admin_pen.UserStatsResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_pen.UserStatsItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 20
+                },
+                "offset": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "internal_modules_admin_pen.UserStatsSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_pen.UserStatsResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
                 }
             }
         },
@@ -12035,6 +14004,182 @@ const docTemplate = `{
                 },
                 "total": {
                     "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_wheel.UserBrief": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string",
+                    "example": "https://example.com/avatar.jpg"
+                },
+                "fullName": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "john_doe"
+                }
+            }
+        },
+        "internal_modules_admin_wheel.UserStatsItem": {
+            "type": "object",
+            "properties": {
+                "freeSpins": {
+                    "type": "integer",
+                    "example": 12
+                },
+                "kenSpent": {
+                    "type": "integer",
+                    "example": 120000
+                },
+                "kenWon": {
+                    "type": "integer",
+                    "example": 40000
+                },
+                "lastSpinAt": {
+                    "type": "string",
+                    "example": "2026-07-25T15:12:33Z"
+                },
+                "netKen": {
+                    "type": "integer",
+                    "example": -80000
+                },
+                "spins": {
+                    "type": "integer",
+                    "example": 120
+                },
+                "user": {
+                    "$ref": "#/definitions/internal_modules_admin_wheel.UserBrief"
+                },
+                "vipDays": {
+                    "type": "integer",
+                    "example": 14
+                },
+                "vipItems": {
+                    "type": "integer",
+                    "example": 2
+                },
+                "winRate": {
+                    "type": "number",
+                    "example": 25
+                },
+                "winSpins": {
+                    "type": "integer",
+                    "example": 30
+                }
+            }
+        },
+        "internal_modules_admin_wheel.UserStatsResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_wheel.UserStatsItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 20
+                },
+                "offset": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "internal_modules_admin_wheel.UserStatsSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_wheel.UserStatsResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_wheel.VipStatsResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_wheel.VipStatsRow"
+                    }
+                }
+            }
+        },
+        "internal_modules_admin_wheel.VipStatsRow": {
+            "type": "object",
+            "properties": {
+                "dayWins": {
+                    "type": "integer",
+                    "example": 9
+                },
+                "itemWins": {
+                    "type": "integer",
+                    "example": 5
+                },
+                "vipDays": {
+                    "type": "integer",
+                    "example": 27
+                },
+                "vipTypeId": {
+                    "type": "integer",
+                    "example": 12
+                }
+            }
+        },
+        "internal_modules_admin_wheel.VipStatsSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_wheel.VipStatsResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
                 }
             }
         },
@@ -13092,6 +15237,51 @@ const docTemplate = `{
                 },
                 "vipTypeId": {
                     "type": "integer"
+                }
+            }
+        },
+        "internal_modules_egg.GiftListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_egg.GiftSectionView"
+                    }
+                }
+            }
+        },
+        "internal_modules_egg.GiftRewardView": {
+            "type": "object",
+            "properties": {
+                "isSuperLucky": {
+                    "type": "boolean"
+                },
+                "kenAmount": {
+                    "type": "integer"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "vipDays": {
+                    "type": "integer"
+                },
+                "vipTypeId": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_egg.GiftSectionView": {
+            "type": "object",
+            "properties": {
+                "rewards": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_egg.GiftRewardView"
+                    }
+                },
+                "type": {
+                    "$ref": "#/definitions/ola-chat-server_internal_models.EggCategoryType"
                 }
             }
         },

@@ -16,6 +16,7 @@ const (
 	C2SRoomReady   = "ROOM_READY"
 	C2SRoomStart   = "ROOM_START"
 	C2SLeaderboard = "LEADERBOARD"
+	C2SHistory     = "HISTORY"
 
 	S2CUserInfo             = "USER_INFO"
 	S2CQueueWaiting         = "QUEUE_WAITING"
@@ -34,6 +35,44 @@ const (
 	S2COpponentDisconnected = "OPPONENT_DISCONNECTED"
 	S2COpponentReconnected  = "OPPONENT_RECONNECTED"
 	S2CLeaderboard          = "LEADERBOARD"
+	S2CHistory              = "HISTORY"
+)
+
+const (
+	ErrorCodeAlreadyInRoom      = "ALREADY_IN_ROOM"
+	ErrorCodeBetNotAllowed      = "BET_NOT_ALLOWED"
+	ErrorCodeChatRateLimited    = "CHAT_RATE_LIMITED"
+	ErrorCodeChatTooLong        = "CHAT_TOO_LONG"
+	ErrorCodeInsufficientKen    = "INSUFFICIENT_KEN"
+	ErrorCodeInvalidBet         = "INVALID_BET"
+	ErrorCodeInvalidChat        = "INVALID_CHAT"
+	ErrorCodeInvalidMove        = "INVALID_MOVE"
+	ErrorCodeInvalidPassword    = "INVALID_PASSWORD"
+	ErrorCodeInRoom             = "IN_ROOM"
+	ErrorCodeMatchMismatch      = "MATCH_MISMATCH"
+	ErrorCodeMatchStartFailed   = "MATCH_START_FAILED"
+	ErrorCodeNotRoomMember      = "NOT_ROOM_MEMBER"
+	ErrorCodeNotRoomOwner       = "NOT_ROOM_OWNER"
+	ErrorCodeNotYourTurn        = "NOT_YOUR_TURN"
+	ErrorCodeNoMatch            = "NO_MATCH"
+	ErrorCodeOwnRoom            = "OWN_ROOM"
+	ErrorCodeRoomBusy           = "ROOM_BUSY"
+	ErrorCodeRoomCreateFailed   = "ROOM_CREATE_FAILED"
+	ErrorCodeRoomFull           = "ROOM_FULL"
+	ErrorCodeRoomJoinFailed     = "ROOM_JOIN_FAILED"
+	ErrorCodeRoomLeaveFailed    = "ROOM_LEAVE_FAILED"
+	ErrorCodeRoomListFailed     = "ROOM_LIST_FAILED"
+	ErrorCodeRoomMemberNotFound = "ROOM_MEMBER_NOT_FOUND"
+	ErrorCodeRoomMismatch       = "ROOM_MISMATCH"
+	ErrorCodeRoomNotFound       = "ROOM_NOT_FOUND"
+	ErrorCodeRoomNotFull        = "ROOM_NOT_FULL"
+	ErrorCodeRoomNotReady       = "ROOM_NOT_READY"
+	ErrorCodeRoomStartFailed    = "ROOM_START_FAILED"
+	ErrorCodeRoomUpdateFailed   = "ROOM_UPDATE_FAILED"
+	ErrorCodeStateSaveFailed    = "STATE_SAVE_FAILED"
+	ErrorCodeUnknownGame        = "UNKNOWN_GAME"
+	ErrorCodeUserInfoFailed     = "USER_INFO_FAILED"
+	ErrorCodeWrongPassword      = "WRONG_PASSWORD"
 )
 
 type Envelope struct {
@@ -58,7 +97,7 @@ type UserInfoData struct {
 	VipType  *string `json:"vipType,omitempty"`
 	VipDays  int     `json:"vipDays"`
 	Ken      int     `json:"ken"`
-	Guest    bool    `json:"guest,omitempty"`
+	MaxBet   int     `json:"maxBet"`
 }
 
 type LeaderboardRequestData struct {
@@ -79,6 +118,20 @@ type LeaderboardData struct {
 	To     int64              `json:"to"`
 	Items  []LeaderboardEntry `json:"items"`
 	Error  string             `json:"error,omitempty"`
+}
+
+type MatchHistoryEntry struct {
+	ID           string `json:"id"`
+	PlayedAt     int64  `json:"playedAt"`
+	OpponentID   string `json:"opponentId"`
+	OpponentName string `json:"opponentName"`
+	Bet          int    `json:"bet"`
+	Outcome      string `json:"outcome"`
+}
+
+type MatchHistoryData struct {
+	Items []MatchHistoryEntry `json:"items"`
+	Error string              `json:"error,omitempty"`
 }
 
 type MatchFoundData struct {

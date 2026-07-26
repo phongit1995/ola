@@ -4,6 +4,7 @@ import { BOARD_ASSETS, preloadAssets } from './assets';
 import { ConfirmModal } from './components/ConfirmModal';
 import { BoardScreen } from './screens/board/BoardScreen';
 import { LeaderboardScreen } from './screens/leaderboard/LeaderboardScreen';
+import { HistoryScreen } from './screens/history/HistoryScreen';
 import { LobbyScreen } from './screens/lobby/LobbyScreen';
 import { RankedScreen } from './screens/ranked/RankedScreen';
 import { ResultScreen } from './screens/result/ResultScreen';
@@ -27,6 +28,12 @@ export function App() {
   const [progress, setProgress] = useState('Đang tải...');
   const [ready, setReady] = useState(false);
   const lobbyAnimKey = useCaro((s) => s.lobbyAnimKey);
+  const lobbyVisible = useCaro((s) => s.lobbyVisible);
+  const rankedVisible = useCaro((s) => s.rankedVisible);
+  const leaderboardVisible = useCaro((s) => s.leaderboardVisible);
+  const historyVisible = useCaro((s) => s.historyVisible);
+  const boardMode = useCaro((s) => s.boardMode);
+  const result = useCaro((s) => s.result);
   const notice = useCaro((s) => s.notice);
   const dismissNotice = useCaro((s) => s.dismissNotice);
   const init = useCaro((s) => s.init);
@@ -55,23 +62,26 @@ export function App() {
 
   return (
     <>
-      <BoardScreen />
-      <LobbyScreen key={lobbyAnimKey} progress={progress} />
-      <LeaderboardScreen />
-      <RankedScreen />
-      <ResultScreen />
+      {boardMode !== 'idle' && <BoardScreen />}
+      {lobbyVisible && <LobbyScreen key={lobbyAnimKey} progress={progress} />}
+      {leaderboardVisible && <LeaderboardScreen />}
+      {historyVisible && <HistoryScreen />}
+      {rankedVisible && <RankedScreen />}
+      {result && <ResultScreen />}
       <OppAwayBanner />
-      <ConfirmModal
-        open={notice != null}
-        title="Thông báo"
-        text={notice ?? ''}
-        confirmLabel="Đã hiểu"
-        cancelLabel={null}
-        confirmTone="primary"
-        dismissOnBackdrop={false}
-        onConfirm={dismissNotice}
-        onCancel={dismissNotice}
-      />
+      {notice && (
+        <ConfirmModal
+          open
+          title="Thông báo"
+          text={notice}
+          confirmLabel="Đã hiểu"
+          cancelLabel={null}
+          confirmTone="primary"
+          dismissOnBackdrop={false}
+          onConfirm={dismissNotice}
+          onCancel={dismissNotice}
+        />
+      )}
     </>
   );
 }

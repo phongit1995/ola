@@ -17,6 +17,8 @@ interface DialogProps {
   showClose?: boolean;
   dismissOnBackdrop?: boolean;
   avoidKeyboard?: boolean;
+  bare?: boolean;
+  maxWidth?: number;
   children: ReactNode;
   footer?: ReactNode;
 }
@@ -29,6 +31,8 @@ export function Dialog({
   showClose = false,
   dismissOnBackdrop = true,
   avoidKeyboard = true,
+  bare = false,
+  maxWidth = 384,
   children,
   footer,
 }: DialogProps) {
@@ -46,20 +50,25 @@ export function Dialog({
           pointerEvents="box-none"
         >
           <Pressable
-            className="w-full overflow-hidden bg-white"
-            style={{
-              minWidth: 280,
-              maxWidth: 384,
-              borderRadius: 5,
-              shadowColor: '#000',
-              shadowOpacity: 0.35,
-              shadowRadius: 24,
-              shadowOffset: { width: 0, height: 6 },
-              elevation: 8,
-            }}
+            className={bare ? 'w-full' : 'w-full overflow-hidden bg-white'}
+            style={
+              bare
+                ? { maxWidth }
+                : {
+                    minWidth: 280,
+                    maxWidth,
+                    borderRadius: 5,
+                    shadowColor: '#000',
+                    shadowOpacity: 0.35,
+                    shadowRadius: 24,
+                    shadowOffset: { width: 0, height: 6 },
+                    elevation: 8,
+                  }
+            }
             onPress={() => undefined}
           >
-            {title != null && (
+            {bare && children}
+            {!bare && title != null && (
               <View
                 className="flex-row items-center px-2 py-1"
                 style={{
@@ -95,10 +104,14 @@ export function Dialog({
                 )}
               </View>
             )}
-            <View className="m-2" style={{ minHeight: 50 }}>
-              {children}
-            </View>
-            {footer != null && <View className="flex-row gap-2 px-1 pb-2">{footer}</View>}
+            {!bare && (
+              <View className="m-2" style={{ minHeight: 50 }}>
+                {children}
+              </View>
+            )}
+            {!bare && footer != null && (
+              <View className="flex-row gap-2 px-1 pb-2">{footer}</View>
+            )}
           </Pressable>
         </View>
       </Body>

@@ -86,6 +86,23 @@ type PackListResponse struct {
 	Items []PackView `json:"items"`
 }
 
+type GiftRewardView struct {
+	Label        string `json:"label"`
+	VipTypeID    *int16 `json:"vipTypeId,omitempty"`
+	KenAmount    *int   `json:"kenAmount,omitempty"`
+	VipDays      *int   `json:"vipDays,omitempty"`
+	IsSuperLucky bool   `json:"isSuperLucky"`
+}
+
+type GiftSectionView struct {
+	Type    models.EggCategoryType `json:"type"`
+	Rewards []GiftRewardView       `json:"rewards"`
+}
+
+type GiftListResponse struct {
+	Items []GiftSectionView `json:"items"`
+}
+
 type OpenResult struct {
 	DrawID       uuid.UUID              `json:"drawId"`
 	PackID       uuid.UUID              `json:"packId"`

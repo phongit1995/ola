@@ -75,6 +75,7 @@ type Match struct {
 	players        []protocol.PlayerInfo
 	state          any
 	turnIdx        int
+	timeoutRuns    [2]int
 	deadline       time.Time
 	timer          *time.Timer
 	turnGen        int
@@ -393,7 +394,7 @@ func (e *Engine) JoinQueue(gameID string, player protocol.PlayerInfo) {
 		if room, exists := e.store.Get(gameID, ref.RoomID); exists && room.hasMember(player.ID) {
 			e.emitRoomWaiting(gameID, player.ID, room)
 			e.emitRoomStateTo(room, player.ID)
-			e.sendError(gameID, player.ID, "IN_ROOM", "leave the current room before joining queue")
+			e.sendError(gameID, player.ID, protocol.ErrorCodeInRoom, "leave the current room before joining queue")
 			e.roomMu.Unlock()
 			return
 		}
@@ -406,7 +407,7 @@ func (e *Engine) JoinQueue(gameID string, player protocol.PlayerInfo) {
 
 	gameLogic, err := logic.Get(gameID)
 	if err != nil {
-		e.sendError(gameID, player.ID, "UNKNOWN_GAME", err.Error())
+		e.sendError(gameID, player.ID, protocol.ErrorCodeUnknownGame, err.Error())
 		return
 	}
 
@@ -478,8 +479,8 @@ func (e *Engine) JoinQueue(gameID string, player protocol.PlayerInfo) {
 	}
 	e.queueMu.Unlock()
 	if err != nil {
-		e.sendError(gameID, opponent.ID, "MATCH_START_FAILED", err.Error())
-		e.sendError(gameID, player.ID, "MATCH_START_FAILED", err.Error())
+		e.sendError(gameID, opponent.ID, protocol.ErrorCodeMatchStartFailed, err.Error())
+		e.sendError(gameID, player.ID, protocol.ErrorCodeMatchStartFailed, err.Error())
 	}
 }
 
@@ -562,15 +563,15 @@ func (e *Engine) CreateRoom(gameID string, owner protocol.PlayerInfo, bet int, p
 		return
 	}
 	if _, err := logic.Get(gameID); err != nil {
-		e.sendError(gameID, owner.ID, "UNKNOWN_GAME", err.Error())
+		e.sendError(gameID, owner.ID, protocol.ErrorCodeUnknownGame, err.Error())
 		return
 	}
 	if bet < 0 || bet > MaxBet {
-		e.sendError(gameID, owner.ID, "INVALID_BET", "bet is outside the allowed range")
+		e.sendError(gameID, owner.ID, protocol.ErrorCodeInvalidBet, "bet is outside the allowed range")
 		return
 	}
 	if len(password) > 64 {
-		e.sendError(gameID, owner.ID, "INVALID_PASSWORD", "room password is too long")
+		e.sendError(gameID, owner.ID, protocol.ErrorCodeInvalidPassword, "room password is too long")
 		return
 	}
 	if !e.ensureCanBet(gameID, owner.ID, bet) {
@@ -585,7 +586,7 @@ func (e *Engine) CreateRoom(gameID string, owner protocol.PlayerInfo, bet int, p
 	releaseOwner, reserved := e.reserveRoomUsers(gameID, owner.ID)
 	if !reserved {
 		if !e.sendActiveMatch(gameID, owner.ID) {
-			e.sendError(gameID, owner.ID, "ROOM_BUSY", "player state is being updated")
+			e.sendError(gameID, owner.ID, protocol.ErrorCodeRoomBusy, "player state is being updated")
 		}
 		return
 	}
@@ -612,7 +613,7 @@ func (e *Engine) CreateRoom(gameID string, owner protocol.PlayerInfo, bet int, p
 		CreatedAt:    time.Now().UnixMilli(),
 	}
 	if err := e.store.Save(room); err != nil {
-		e.sendError(gameID, owner.ID, "ROOM_CREATE_FAILED", err.Error())
+		e.sendError(gameID, owner.ID, protocol.ErrorCodeRoomCreateFailed, err.Error())
 		return
 	}
 	e.clearFinished(userKey(gameID, owner.ID))
@@ -633,7 +634,7 @@ func (e *Engine) JoinRoom(gameID string, joiner protocol.PlayerInfo, roomID, pas
 	}
 
 	if roomID == "" {
-		e.sendError(gameID, joiner.ID, "ROOM_NOT_FOUND", "room id is required")
+		e.sendError(gameID, joiner.ID, protocol.ErrorCodeRoomNotFound, "room id is required")
 		return
 	}
 	if ref, exists := e.store.RoomByUser(gameID, joiner.ID); exists {
@@ -643,7 +644,7 @@ func (e *Engine) JoinRoom(gameID string, joiner protocol.PlayerInfo, roomID, pas
 				e.emitRoomStateTo(room, joiner.ID)
 				return
 			}
-			e.sendError(gameID, joiner.ID, "ALREADY_IN_ROOM", "leave the current room before joining another")
+			e.sendError(gameID, joiner.ID, protocol.ErrorCodeAlreadyInRoom, "leave the current room before joining another")
 			return
 		}
 		_ = e.store.DeleteUserRef(gameID, joiner.ID, ref.RoomID)
@@ -651,22 +652,22 @@ func (e *Engine) JoinRoom(gameID string, joiner protocol.PlayerInfo, roomID, pas
 
 	release, claimed := e.store.Claim(gameID, roomID)
 	if !claimed {
-		e.sendError(gameID, joiner.ID, "ROOM_BUSY", "room is being updated")
+		e.sendError(gameID, joiner.ID, protocol.ErrorCodeRoomBusy, "room is being updated")
 		return
 	}
 	defer release()
 
 	room, ok := e.store.Get(gameID, roomID)
 	if !ok {
-		e.sendError(gameID, joiner.ID, "ROOM_NOT_FOUND", "room not found")
+		e.sendError(gameID, joiner.ID, protocol.ErrorCodeRoomNotFound, "room not found")
 		return
 	}
 	if room.OwnerID == joiner.ID {
-		e.sendError(gameID, joiner.ID, "OWN_ROOM", "cannot join your own room")
+		e.sendError(gameID, joiner.ID, protocol.ErrorCodeOwnRoom, "cannot join your own room")
 		return
 	}
 	if room.Password != "" && room.Password != password {
-		e.sendError(gameID, joiner.ID, "WRONG_PASSWORD", "wrong password")
+		e.sendError(gameID, joiner.ID, protocol.ErrorCodeWrongPassword, "wrong password")
 		return
 	}
 	// The room claim keeps this room stable while the potentially remote
@@ -680,7 +681,7 @@ func (e *Engine) JoinRoom(gameID string, joiner protocol.PlayerInfo, roomID, pas
 	releaseUser, reserved := e.reserveRoomUsers(gameID, joiner.ID)
 	if !reserved {
 		if !e.sendActiveMatch(gameID, joiner.ID) {
-			e.sendError(gameID, joiner.ID, "ROOM_BUSY", "player state is being updated")
+			e.sendError(gameID, joiner.ID, protocol.ErrorCodeRoomBusy, "player state is being updated")
 		}
 		return
 	}
@@ -690,30 +691,30 @@ func (e *Engine) JoinRoom(gameID string, joiner protocol.PlayerInfo, roomID, pas
 	// in flight. Never overwrite that newer membership.
 	if ref, exists := e.store.RoomByUser(gameID, joiner.ID); exists {
 		if joined, ok := e.store.Get(gameID, ref.RoomID); ok && joined.hasMember(joiner.ID) {
-			e.sendError(gameID, joiner.ID, "ALREADY_IN_ROOM", "leave the current room before joining another")
+			e.sendError(gameID, joiner.ID, protocol.ErrorCodeAlreadyInRoom, "leave the current room before joining another")
 			return
 		}
 		_ = e.store.DeleteUserRef(gameID, joiner.ID, ref.RoomID)
 	}
 	freshRoom, exists := e.store.Get(gameID, room.ID)
 	if !exists {
-		e.sendError(gameID, joiner.ID, "ROOM_NOT_FOUND", "room not found")
+		e.sendError(gameID, joiner.ID, protocol.ErrorCodeRoomNotFound, "room not found")
 		return
 	}
 	room = freshRoom
 	if room.GuestID != "" && room.GuestID != joiner.ID {
-		e.sendError(gameID, joiner.ID, "ROOM_FULL", "room is full")
+		e.sendError(gameID, joiner.ID, protocol.ErrorCodeRoomFull, "room is full")
 		return
 	}
 	if e.hasActiveMatch(gameID, room.OwnerID) {
 		if err := e.store.Delete(gameID, room.ID, room.OwnerID, room.GuestID); err != nil {
 			e.logger.Errorw("Failed to delete room whose owner is busy", "room_id", room.ID, "error", err)
-			e.sendError(gameID, joiner.ID, "ROOM_UPDATE_FAILED", "failed to close unavailable room")
+			e.sendError(gameID, joiner.ID, protocol.ErrorCodeRoomUpdateFailed, "failed to close unavailable room")
 			return
 		}
 		e.emitRoomRemoved(room.GameID, room.ID)
 		e.emitRoomClosed(room, "owner_busy")
-		e.sendError(gameID, joiner.ID, "ROOM_NOT_FOUND", "room owner busy")
+		e.sendError(gameID, joiner.ID, protocol.ErrorCodeRoomNotFound, "room owner busy")
 		return
 	}
 
@@ -722,7 +723,7 @@ func (e *Engine) JoinRoom(gameID string, joiner protocol.PlayerInfo, roomID, pas
 	room.GuestVipType = joiner.VipType
 	room.GuestReady = false
 	if err := e.store.Save(room); err != nil {
-		e.sendError(gameID, joiner.ID, "ROOM_JOIN_FAILED", err.Error())
+		e.sendError(gameID, joiner.ID, protocol.ErrorCodeRoomJoinFailed, err.Error())
 		return
 	}
 	e.clearFinished(userKey(gameID, joiner.ID))
@@ -744,13 +745,13 @@ func (e *Engine) leaveRoomLocked(gameID, userID, roomID string, disconnected boo
 		return
 	}
 	if roomID != "" && roomID != ref.RoomID {
-		e.sendError(gameID, userID, "ROOM_MISMATCH", "room does not match current membership")
+		e.sendError(gameID, userID, protocol.ErrorCodeRoomMismatch, "room does not match current membership")
 		return
 	}
 
 	release, claimed := e.store.Claim(gameID, ref.RoomID)
 	if !claimed {
-		e.sendError(gameID, userID, "ROOM_BUSY", "room is being updated")
+		e.sendError(gameID, userID, protocol.ErrorCodeRoomBusy, "room is being updated")
 		return
 	}
 	defer release()
@@ -764,7 +765,7 @@ func (e *Engine) leaveRoomLocked(gameID, userID, roomID string, disconnected boo
 	if room.OwnerID == userID {
 		if err := e.store.Delete(gameID, room.ID, room.OwnerID, room.GuestID); err != nil {
 			e.logger.Errorw("Failed to close room", "room_id", room.ID, "error", err)
-			e.sendError(gameID, userID, "ROOM_LEAVE_FAILED", err.Error())
+			e.sendError(gameID, userID, protocol.ErrorCodeRoomLeaveFailed, err.Error())
 			return
 		}
 		e.clearRoomChatRate(room.GameID, room.OwnerID, room.GuestID)
@@ -779,7 +780,7 @@ func (e *Engine) leaveRoomLocked(gameID, userID, roomID string, disconnected boo
 
 	guestID := clearRoomGuest(&room)
 	if err := e.store.Save(room); err != nil {
-		e.sendError(gameID, userID, "ROOM_LEAVE_FAILED", err.Error())
+		e.sendError(gameID, userID, protocol.ErrorCodeRoomLeaveFailed, err.Error())
 		return
 	}
 	e.clearRoomChatRate(room.GameID, room.OwnerID, guestID)
@@ -809,7 +810,7 @@ func (e *Engine) SetRoomReady(gameID, userID, roomID string, ready bool) {
 	}
 	room.GuestReady = ready
 	if err := e.store.Save(room); err != nil {
-		e.sendError(gameID, userID, "ROOM_UPDATE_FAILED", err.Error())
+		e.sendError(gameID, userID, protocol.ErrorCodeRoomUpdateFailed, err.Error())
 		return
 	}
 	e.emitRoomState(room)
@@ -825,17 +826,17 @@ func (e *Engine) KickRoomMember(gameID, ownerID, roomID, targetID string) {
 	}
 	defer release()
 	if room.OwnerID != ownerID {
-		e.sendError(gameID, ownerID, "NOT_ROOM_OWNER", "only the room owner can kick members")
+		e.sendError(gameID, ownerID, protocol.ErrorCodeNotRoomOwner, "only the room owner can kick members")
 		return
 	}
 	if room.GuestID == "" || (targetID != "" && targetID != room.GuestID) {
-		e.sendError(gameID, ownerID, "ROOM_MEMBER_NOT_FOUND", "room member not found")
+		e.sendError(gameID, ownerID, protocol.ErrorCodeRoomMemberNotFound, "room member not found")
 		return
 	}
 
 	kickedID := clearRoomGuest(&room)
 	if err := e.store.Save(room); err != nil {
-		e.sendError(gameID, ownerID, "ROOM_UPDATE_FAILED", err.Error())
+		e.sendError(gameID, ownerID, protocol.ErrorCodeRoomUpdateFailed, err.Error())
 		return
 	}
 	e.clearRoomChatRate(room.GameID, room.OwnerID, kickedID)
@@ -858,30 +859,30 @@ func (e *Engine) StartRoom(gameID, ownerID, roomID string) {
 	}
 	defer release()
 	if room.OwnerID != ownerID {
-		e.sendError(gameID, ownerID, "NOT_ROOM_OWNER", "only the room owner can start the match")
+		e.sendError(gameID, ownerID, protocol.ErrorCodeNotRoomOwner, "only the room owner can start the match")
 		return
 	}
 	if room.GuestID == "" {
-		e.sendError(gameID, ownerID, "ROOM_NOT_FULL", "another player is required")
+		e.sendError(gameID, ownerID, protocol.ErrorCodeRoomNotFull, "another player is required")
 		return
 	}
 	if !room.GuestReady {
-		e.sendError(gameID, ownerID, "ROOM_NOT_READY", "the guest must be ready")
+		e.sendError(gameID, ownerID, protocol.ErrorCodeRoomNotReady, "the guest must be ready")
 		return
 	}
 	gameLogic, err := logic.Get(gameID)
 	if err != nil {
-		e.sendError(gameID, ownerID, "UNKNOWN_GAME", err.Error())
+		e.sendError(gameID, ownerID, protocol.ErrorCodeUnknownGame, err.Error())
 		return
 	}
 	releasePlayers, reserved := e.reserveRoomUsers(gameID, room.OwnerID, room.GuestID)
 	if !reserved {
-		e.sendError(gameID, ownerID, "ROOM_BUSY", "a room member state is being updated")
+		e.sendError(gameID, ownerID, protocol.ErrorCodeRoomBusy, "a room member state is being updated")
 		return
 	}
 	defer releasePlayers()
 	if err := e.store.Delete(gameID, room.ID, room.OwnerID, room.GuestID); err != nil {
-		e.sendError(gameID, ownerID, "ROOM_START_FAILED", err.Error())
+		e.sendError(gameID, ownerID, protocol.ErrorCodeRoomStartFailed, err.Error())
 		return
 	}
 	// The per-room claim remains held while escrow is recorded. Releasing the
@@ -902,8 +903,8 @@ func (e *Engine) StartRoom(gameID, ownerID, roomID string) {
 		} else {
 			e.emitRoomUpsert(room)
 		}
-		e.sendError(gameID, ownerID, "ROOM_START_FAILED", startErr.Error())
-		e.sendError(gameID, room.GuestID, "ROOM_START_FAILED", startErr.Error())
+		e.sendError(gameID, ownerID, protocol.ErrorCodeRoomStartFailed, startErr.Error())
+		e.sendError(gameID, room.GuestID, protocol.ErrorCodeRoomStartFailed, startErr.Error())
 		return
 	}
 	e.emitRoomRemoved(room.GameID, room.ID)
@@ -941,7 +942,7 @@ func (e *Engine) ListRooms(gameID, userID string) {
 	rooms, err := e.store.List(gameID)
 	if err != nil {
 		e.logger.Errorw("Failed to list rooms", "game_id", gameID, "error", err)
-		e.sendError(gameID, userID, "ROOM_LIST_FAILED", "failed to load rooms")
+		e.sendError(gameID, userID, protocol.ErrorCodeRoomListFailed, "failed to load rooms")
 		return
 	}
 	sort.Slice(rooms, func(i, j int) bool {
@@ -1029,24 +1030,24 @@ func (e *Engine) emitRoomClosed(room Room, reason string) {
 
 func (e *Engine) roomForAction(gameID, userID, roomID string) (Room, func(), bool) {
 	if roomID == "" {
-		e.sendError(gameID, userID, "ROOM_NOT_FOUND", "room id is required")
+		e.sendError(gameID, userID, protocol.ErrorCodeRoomNotFound, "room id is required")
 		return Room{}, nil, false
 	}
 	ref, ok := e.store.RoomByUser(gameID, userID)
 	if !ok || ref.RoomID != roomID {
-		e.sendError(gameID, userID, "ROOM_NOT_FOUND", "room not found")
+		e.sendError(gameID, userID, protocol.ErrorCodeRoomNotFound, "room not found")
 		return Room{}, nil, false
 	}
 	release, claimed := e.store.Claim(gameID, roomID)
 	if !claimed {
-		e.sendError(gameID, userID, "ROOM_BUSY", "room is being updated")
+		e.sendError(gameID, userID, protocol.ErrorCodeRoomBusy, "room is being updated")
 		return Room{}, nil, false
 	}
 	room, exists := e.store.Get(gameID, roomID)
 	if !exists || !room.hasMember(userID) {
 		release()
 		_ = e.store.DeleteUserRef(gameID, userID, ref.RoomID)
-		e.sendError(gameID, userID, "ROOM_NOT_FOUND", "room not found")
+		e.sendError(gameID, userID, protocol.ErrorCodeRoomNotFound, "room not found")
 		return Room{}, nil, false
 	}
 	return room, release, true
@@ -1163,13 +1164,13 @@ func (e *Engine) onGraceExpire(matchID string, gen int) {
 func (e *Engine) Move(gameID, userID, matchID string, move json.RawMessage) {
 	m := e.matchForUser(gameID, userID)
 	if m == nil {
-		e.sendError(gameID, userID, "NO_MATCH", "no active match")
+		e.sendError(gameID, userID, protocol.ErrorCodeNoMatch, "no active match")
 		return
 	}
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	if m.over {
-		e.sendError(gameID, userID, "NO_MATCH", "no active match")
+		e.sendError(gameID, userID, protocol.ErrorCodeNoMatch, "no active match")
 		return
 	}
 	if matchID != "" && matchID != m.ID {
@@ -1178,7 +1179,7 @@ func (e *Engine) Move(gameID, userID, matchID string, move json.RawMessage) {
 
 	playerIdx := m.playerIndex(userID)
 	if playerIdx != m.turnIdx {
-		e.sendError(gameID, userID, "NOT_YOUR_TURN", "not your turn")
+		e.sendError(gameID, userID, protocol.ErrorCodeNotYourTurn, "not your turn")
 		return
 	}
 	if time.Now().After(m.deadline) {
@@ -1186,19 +1187,20 @@ func (e *Engine) Move(gameID, userID, matchID string, move json.RawMessage) {
 	}
 
 	if err := m.logic.ValidateMove(m.state, playerIdx, move); err != nil {
-		e.sendError(gameID, userID, "INVALID_MOVE", err.Error())
+		e.sendError(gameID, userID, protocol.ErrorCodeInvalidMove, err.Error())
 		return
 	}
 
 	state, err := m.logic.Apply(m.state, playerIdx, move)
 	if err != nil {
-		e.sendError(gameID, userID, "INVALID_MOVE", err.Error())
+		e.sendError(gameID, userID, protocol.ErrorCodeInvalidMove, err.Error())
 		return
 	}
 	previousState := m.state
 	previousTurn := m.turnIdx
 	previousDeadline := m.deadline
 	previousPausedRemain := m.pausedRemain
+	previousTimeoutRuns := m.timeoutRuns
 	m.state = state
 
 	if over, winnerIdx := m.logic.Result(m.state); over {
@@ -1213,7 +1215,10 @@ func (e *Engine) Move(gameID, userID, matchID string, move json.RawMessage) {
 		return
 	}
 
-	m.turnIdx = 1 - m.turnIdx
+	if keeper, ok := m.logic.(logic.TurnKeeper); !ok || !keeper.KeepTurn(m.state) {
+		m.turnIdx = 1 - m.turnIdx
+	}
+	m.timeoutRuns[playerIdx] = 0
 	m.deadline = time.Now().Add(time.Duration(e.turnSeconds) * time.Second)
 	if m.disconnected[m.turnIdx] {
 		e.invalidateTurnTimer(m)
@@ -1227,11 +1232,12 @@ func (e *Engine) Move(gameID, userID, matchID string, move json.RawMessage) {
 		m.turnIdx = previousTurn
 		m.deadline = previousDeadline
 		m.pausedRemain = previousPausedRemain
+		m.timeoutRuns = previousTimeoutRuns
 		if m.pausedRemain == 0 {
 			e.scheduleTurnTimer(m)
 		}
 		e.logger.Errorw("Failed to persist match move", "match_id", m.ID, "user_id", userID, "error", err)
-		e.sendError(gameID, userID, "STATE_SAVE_FAILED", "failed to save the move, please retry")
+		e.sendError(gameID, userID, protocol.ErrorCodeStateSaveFailed, "failed to save the move, please retry")
 		return
 	}
 	if m.pausedRemain == 0 {
@@ -1254,17 +1260,17 @@ func (e *Engine) Move(gameID, userID, matchID string, move json.RawMessage) {
 func (e *Engine) Chat(gameID, userID, matchID, text string) {
 	m := e.matchForUser(gameID, userID)
 	if m == nil {
-		e.sendError(gameID, userID, "NO_MATCH", "no active match")
+		e.sendError(gameID, userID, protocol.ErrorCodeNoMatch, "no active match")
 		return
 	}
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	if m.over {
-		e.sendError(gameID, userID, "NO_MATCH", "no active match")
+		e.sendError(gameID, userID, protocol.ErrorCodeNoMatch, "no active match")
 		return
 	}
 	if matchID == "" || matchID != m.ID {
-		e.sendError(gameID, userID, "MATCH_MISMATCH", "chat does not belong to the active match")
+		e.sendError(gameID, userID, protocol.ErrorCodeMatchMismatch, "chat does not belong to the active match")
 		return
 	}
 	text, code, message := validateChatText(text)
@@ -1276,7 +1282,7 @@ func (e *Engine) Chat(gameID, userID, matchID, text string) {
 	senderIdx := m.playerIndex(userID)
 	now := time.Now()
 	if last := m.lastChatAt[senderIdx]; !last.IsZero() && now.Sub(last) < chatCooldown {
-		e.sendError(gameID, userID, "CHAT_RATE_LIMITED", "chat messages are being sent too quickly")
+		e.sendError(gameID, userID, protocol.ErrorCodeChatRateLimited, "chat messages are being sent too quickly")
 		return
 	}
 	m.lastChatAt[senderIdx] = now
@@ -1300,20 +1306,20 @@ func (e *Engine) RoomChat(gameID, userID, roomID, text string) {
 	defer e.roomMu.Unlock()
 
 	if roomID == "" {
-		e.sendError(gameID, userID, "ROOM_NOT_FOUND", "room id is required")
+		e.sendError(gameID, userID, protocol.ErrorCodeRoomNotFound, "room id is required")
 		return
 	}
 	room, exists := e.store.Get(gameID, roomID)
 	if !exists {
-		e.sendError(gameID, userID, "ROOM_NOT_FOUND", "room not found")
+		e.sendError(gameID, userID, protocol.ErrorCodeRoomNotFound, "room not found")
 		return
 	}
 	if !room.hasMember(userID) {
-		e.sendError(gameID, userID, "NOT_ROOM_MEMBER", "only room members can chat")
+		e.sendError(gameID, userID, protocol.ErrorCodeNotRoomMember, "only room members can chat")
 		return
 	}
 	if room.GuestID == "" {
-		e.sendError(gameID, userID, "ROOM_NOT_FULL", "another player is required to chat")
+		e.sendError(gameID, userID, protocol.ErrorCodeRoomNotFull, "another player is required to chat")
 		return
 	}
 	text, code, message := validateChatText(text)
@@ -1325,7 +1331,7 @@ func (e *Engine) RoomChat(gameID, userID, roomID, text string) {
 	now := time.Now()
 	rateKey := userKey(gameID, userID)
 	if last := e.roomChatLast[rateKey]; !last.IsZero() && now.Sub(last) < chatCooldown {
-		e.sendError(gameID, userID, "CHAT_RATE_LIMITED", "chat messages are being sent too quickly")
+		e.sendError(gameID, userID, protocol.ErrorCodeChatRateLimited, "chat messages are being sent too quickly")
 		return
 	}
 	e.roomChatLast[rateKey] = now
@@ -1352,10 +1358,10 @@ func (e *Engine) RoomChat(gameID, userID, roomID, text string) {
 func validateChatText(text string) (string, string, string) {
 	text = strings.TrimSpace(text)
 	if text == "" {
-		return "", "INVALID_CHAT", "chat message cannot be empty"
+		return "", protocol.ErrorCodeInvalidChat, "chat message cannot be empty"
 	}
 	if utf8.RuneCountInString(text) > maxChatRunes {
-		return "", "CHAT_TOO_LONG", "chat message is too long"
+		return "", protocol.ErrorCodeChatTooLong, "chat message is too long"
 	}
 	return text, "", ""
 }
@@ -1633,8 +1639,43 @@ func (e *Engine) onTimeout(matchID string, expectedTurn, expectedGen int) {
 		m.pausedRemain > 0 || m.disconnected[m.turnIdx] {
 		return
 	}
-	winnerIdx := 1 - m.turnIdx
-	e.finishMatch(m, m.players[winnerIdx].ID, "timeout")
+	if skipper, ok := m.logic.(logic.TimeoutSkipper); !ok || !skipper.TimeoutSkipsTurn() {
+		winnerIdx := 1 - m.turnIdx
+		e.finishMatch(m, m.players[winnerIdx].ID, "timeout")
+		return
+	}
+	m.timeoutRuns[m.turnIdx]++
+	if m.timeoutRuns[m.turnIdx] >= 3 {
+		winnerIdx := 1 - m.turnIdx
+		e.finishMatch(m, m.players[winnerIdx].ID, "timeout")
+		return
+	}
+	timedOut := m.turnIdx
+	m.turnIdx = 1 - m.turnIdx
+	m.deadline = time.Now().Add(time.Duration(e.turnSeconds) * time.Second)
+	if m.disconnected[m.turnIdx] {
+		e.invalidateTurnTimer(m)
+		m.pausedRemain = time.Until(m.deadline)
+		if m.pausedRemain < time.Second {
+			m.pausedRemain = time.Second
+		}
+	}
+	if err := e.persistMatch(m); err != nil {
+		e.logger.Errorw("Failed to persist skipped turn after timeout", "match_id", m.ID, "error", err)
+	}
+	if m.pausedRemain == 0 {
+		e.scheduleTurnTimer(m)
+	}
+	data := protocol.StateData{
+		MatchID:  m.ID,
+		State:    m.state,
+		Turn:     m.turnIdx,
+		Deadline: m.deadline.UnixMilli(),
+		LastBy:   timedOut,
+	}
+	for _, p := range m.players {
+		e.toUser(m.GameID, p.ID, protocol.OutEnvelope{Type: protocol.S2CState, Data: data})
+	}
 }
 
 func (e *Engine) winnerAmounts(gameID string, bet int) (payout, net int) {
@@ -1787,6 +1828,7 @@ func (e *Engine) snapshotForMatch(m *Match) (ActiveMatchSnapshot, error) {
 		State:              state,
 		StateVersion:       m.logic.StateVersion(),
 		TurnIndex:          m.turnIdx,
+		TimeoutRuns:        m.timeoutRuns,
 		TurnDeadline:       m.deadline.UnixMilli(),
 		Bet:                m.bet,
 		StartedAt:          m.startedAt.UnixMilli(),
@@ -1921,6 +1963,7 @@ func (e *Engine) restorePlayingSnapshot(snapshot ActiveMatchSnapshot, expectedGa
 		players:      snapshot.Players,
 		state:        state,
 		turnIdx:      snapshot.TurnIndex,
+		timeoutRuns:  snapshot.TimeoutRuns,
 		deadline:     deadline,
 		bet:          snapshot.Bet,
 		disconnected: map[int]bool{0: true, 1: true},

@@ -4,7 +4,7 @@ import iconNotify from '@/assets/icons/apps/notify.png';
 // TODO: mở lại các import icon dưới khi bật lại mục Kho game / Đăng quảng cáo / OlaMall / Lân cận
 // import iconGame from '@/assets/icons/apps/game.png';
 import iconPersonal from '@/assets/icons/apps/personal.png';
-import iconVip from '@/assets/icons/apps/vip.png';
+import iconVip from '@/assets/icons/apps/vip.webp';
 import iconKen from '@/assets/icons/apps/ken.png';
 // import iconAdme from '@/assets/icons/apps/adme.png';
 import iconMedia from '@/assets/icons/apps/media.png';

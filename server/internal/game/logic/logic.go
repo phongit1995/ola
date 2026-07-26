@@ -15,6 +15,14 @@ type GameLogic interface {
 	Result(state any) (over bool, winnerIdx int)
 }
 
+type TurnKeeper interface {
+	KeepTurn(state any) bool
+}
+
+type TimeoutSkipper interface {
+	TimeoutSkipsTurn() bool
+}
+
 var registry = map[string]GameLogic{}
 
 func Register(l GameLogic) {

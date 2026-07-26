@@ -10,6 +10,7 @@ import {
   DollarOutlined,
   FileSearchOutlined,
   GiftOutlined,
+  HeartOutlined,
   LockOutlined,
   LogoutOutlined,
   PlayCircleOutlined,
@@ -19,6 +20,8 @@ import {
   SwapOutlined,
   PictureOutlined,
   TeamOutlined,
+  TransactionOutlined,
+  TrophyOutlined,
   UserOutlined,
 } from '@ant-design/icons'
 import { AdminAuthService } from '@/services/adminAuth.service'
@@ -29,7 +32,15 @@ const { Sider, Header, Content } = Layout
 
 const MENU_ITEMS = [
   { key: '/', icon: <AppstoreOutlined />, label: 'Tổng quan' },
-  { key: '/users', icon: <TeamOutlined />, label: 'Người dùng' },
+  {
+    key: 'users',
+    icon: <TeamOutlined />,
+    label: 'Người dùng',
+    children: [
+      { key: '/users', icon: <TeamOutlined />, label: 'Danh sách' },
+      { key: '/users/marriages', icon: <HeartOutlined />, label: 'Kết hôn' },
+    ],
+  },
   { key: '/rooms', icon: <CommentOutlined />, label: 'Phòng chat' },
   { key: '/clans', icon: <FlagOutlined />, label: 'Clan' },
   {
@@ -52,8 +63,10 @@ const MENU_ITEMS = [
       { key: '/games/pen', icon: <AimOutlined />, label: 'Sút Pen' },
       { key: '/games/ken-treasure', icon: <GiftOutlined />, label: 'Rương Ken' },
       { key: '/games/mini-game', icon: <PlayCircleOutlined />, label: 'Mini game' },
+      { key: '/games/matches', icon: <TrophyOutlined />, label: 'Trận PvP' },
     ],
   },
+  { key: '/ken-transfers', icon: <TransactionOutlined />, label: 'Chuyển Ken' },
   { key: '/me', icon: <PictureOutlined />, label: 'Me' },
   { key: '/audit-logs', icon: <FileSearchOutlined />, label: 'Nhật ký admin' },
   {
@@ -74,6 +87,7 @@ const VIP_KEYS = ['/vip-packages', '/vip-shop', '/vip-transfers']
 const PAGE_TITLES: Record<string, string> = {
   '/': 'Tổng quan',
   '/users': 'Quản lý người dùng',
+  '/users/marriages': 'Kết hôn & cầu hôn',
   '/rooms': 'Quản lý phòng chat',
   '/clans': 'Quản lý clan',
   '/vip-packages': 'Quản lý gói VIP',
@@ -87,6 +101,9 @@ const PAGE_TITLES: Record<string, string> = {
   '/games/pen/stats': 'Thống kê Pen',
   '/games/ken-treasure': 'Rương Ken',
   '/games/mini-game': 'Mini game',
+  '/games/matches': 'Trận PvP mini-game',
+  '/games/matches/stats': 'Thống kê trận & cược',
+  '/ken-transfers': 'Lịch sử chuyển Ken',
   '/me': 'Quản lý Me',
   '/audit-logs': 'Nhật ký admin',
   '/settings/topup': 'Cài đặt nạp KEN',
@@ -106,6 +123,7 @@ export function AdminLayout() {
     )[0] ?? '/'
 
   const openKeys = [
+    ...(selectedKey.startsWith('/users') ? ['users'] : []),
     ...(VIP_KEYS.includes(selectedKey) ? ['vip'] : []),
     ...(selectedKey.startsWith('/games') ? ['games'] : []),
     ...(selectedKey.startsWith('/settings') ? ['settings'] : []),

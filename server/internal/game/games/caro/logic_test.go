@@ -52,6 +52,55 @@ func TestDecodeStateRejectsInvalidCaroSnapshots(t *testing.T) {
 	}{
 		{name: "malformed json", data: json.RawMessage(`{"board":`)},
 		{name: "wrong board size", data: json.RawMessage(`{"board":[0,0],"moveCount":0,"lastX":-1,"lastY":-1}`)},
+		{
+			name: "invalid cell",
+			data: snapshotWith(func(state *State) {
+				state.Board[0] = 3
+				state.MoveCount = 1
+				state.LastX = 0
+				state.LastY = 0
+			}),
+		},
+		{
+			name: "inconsistent move count",
+			data: snapshotWith(func(state *State) {
+				state.Board[0] = 1
+				state.MoveCount = 0
+			}),
+		},
+		{
+			name: "invalid last move",
+			data: snapshotWith(func(state *State) {
+				state.Board[0] = 1
+				state.MoveCount = 1
+				state.LastX = Size
+				state.LastY = 0
+			}),
+		},
+		{
+			name: "wrong last player",
+			data: snapshotWith(func(state *State) {
+				state.Board[0] = 1
+				state.Board[1] = 2
+				state.MoveCount = 2
+				state.LastX = 0
+				state.LastY = 0
+			}),
+		},
+		{
+			name: "completed board",
+			data: snapshotWith(func(state *State) {
+				for x := 0; x < WinLen; x++ {
+					state.Board[x] = 1
+					if x < WinLen-1 {
+						state.Board[Size+x] = 2
+					}
+				}
+				state.MoveCount = WinLen*2 - 1
+				state.LastX = WinLen - 1
+				state.LastY = 0
+			}),
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -60,6 +109,21 @@ func TestDecodeStateRejectsInvalidCaroSnapshots(t *testing.T) {
 			}
 		})
 	}
+}
+
+func snapshotWith(update func(*State)) json.RawMessage {
+	state := &State{
+		Board:  make([]int, Size*Size),
+		LastX:  -1,
+		LastY:  -1,
+		Winner: noneWin,
+	}
+	update(state)
+	data, err := json.Marshal(state)
+	if err != nil {
+		panic(err)
+	}
+	return data
 }
 
 func TestCaroStateVersion(t *testing.T) {

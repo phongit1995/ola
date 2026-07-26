@@ -69,5 +69,5 @@ export function useEggGame() {
     })();
   }, [activePack, draw, applyResult, showWin, push, t]);
 
-  return { ken, totalWin, cost, muted, packsStatus, play, toggleMute };
+  return { ken, totalWin, cost, packId: activePack?.id ?? null, muted, packsStatus, play, toggleMute };
 }

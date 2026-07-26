@@ -20,10 +20,11 @@ export function LobbyScreen({ progress }: { progress: string }) {
     })),
   );
 
-  const { lobbyVisible, lobbyPhase: phase, lobbyAnimKey, userInfo, ken, toast } = useCaro(
+  const { lobbyVisible, lobbyPhase: phase, lobbyError, lobbyAnimKey, userInfo, ken, toast } = useCaro(
     useShallow((s) => ({
       lobbyVisible: s.lobbyVisible,
       lobbyPhase: s.lobbyPhase,
+      lobbyError: s.lobbyError,
       lobbyAnimKey: s.lobbyAnimKey,
       userInfo: s.userInfo,
       ken: s.ken,
@@ -35,11 +36,12 @@ export function LobbyScreen({ progress }: { progress: string }) {
     reset();
   }, [lobbyAnimKey, reset]);
 
-  const { playBot, playRanked, showLeaderboard, retry, exitApp, showToast } = useCaro(
+  const { playBot, playRanked, showLeaderboard, showHistory, retry, exitApp, showToast } = useCaro(
     useShallow((s) => ({
       playBot: s.playBot,
       playRanked: s.playRanked,
       showLeaderboard: s.showLeaderboard,
+      showHistory: s.showHistory,
       retry: s.retry,
       exitApp: s.exitApp,
       showToast: s.showToast,
@@ -72,7 +74,7 @@ export function LobbyScreen({ progress }: { progress: string }) {
             <img id="lobby-vip" className={phase === 'ready' ? '' : 'hidden'} src={vipSrc} alt="VIP" />
           </div>
           <div className="lobby-name" style={assetBg('nameFrame')}>
-            <span id="lobby-name-text">{userInfo ? (userInfo.guest ? 'Khách' : `@${userInfo.username}`) : '...'}</span>
+            <span id="lobby-name-text">{userInfo ? `@${userInfo.username}` : '...'}</span>
           </div>
           <div className="lobby-ken" style={assetBg('kenFrame')}>
             <img className="lobby-ken-icon" src={assetSrc('icKen')} alt="Ken" />
@@ -91,13 +93,15 @@ export function LobbyScreen({ progress }: { progress: string }) {
           </button>
         </div>
         <div id="lobby-status" className={phase === 'connecting' || phase === 'error' ? '' : 'hidden'}>
-          <span id="lobby-status-text">{phase === 'error' ? 'Không kết nối được máy chủ' : 'Đang kết nối máy chủ...'}</span>
+          <span id="lobby-status-text">
+            {phase === 'error' ? lobbyError ?? 'Không kết nối được máy chủ' : 'Đang kết nối máy chủ...'}
+          </span>
           <button type="button" id="lobby-retry" className={phase === 'error' ? '' : 'hidden'} onClick={retry}>
             Thử lại
           </button>
         </div>
         <div className="lobby-bottom" style={assetBg('bottomFrame')}>
-          <button type="button" id="lobby-history" onClick={() => showToast('Tính năng đang phát triển')}>
+          <button type="button" id="lobby-history" onClick={showHistory}>
             <img src={assetSrc('icHistory')} alt="" />
             <span>Lịch sử</span>
           </button>
@@ -114,13 +118,15 @@ export function LobbyScreen({ progress }: { progress: string }) {
           {toast}
         </div>
       </div>
-      <BotLevelPicker open={pickOpen} onChoose={choose} onClose={() => setPickOpen(false)} />
-      <ConfirmModal
-        open={exitOpen}
-        text="Bạn có chắc muốn thoát trò chơi?"
-        onConfirm={exitApp}
-        onCancel={() => setExitOpen(false)}
-      />
+      {pickOpen && <BotLevelPicker open onChoose={choose} onClose={() => setPickOpen(false)} />}
+      {exitOpen && (
+        <ConfirmModal
+          open
+          text="Bạn có chắc muốn thoát trò chơi?"
+          onConfirm={exitApp}
+          onCancel={() => setExitOpen(false)}
+        />
+      )}
     </div>
   );
 }

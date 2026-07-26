@@ -92,6 +92,7 @@ interface ChatMessageRowProps {
   showTime: boolean;
   isLastOwn: boolean;
   seen: boolean;
+  highlighted?: boolean;
   peerName: string;
   peerAvatar?: string;
   timeLabel: string;
@@ -228,6 +229,7 @@ export function ChatMessageRow({
   showTime,
   isLastOwn,
   seen,
+  highlighted = false,
   peerName,
   peerAvatar,
   timeLabel,
@@ -241,16 +243,21 @@ export function ChatMessageRow({
 }: ChatMessageRowProps) {
   const chips = reactionChips(message.reactions);
   const bubbleRef = useRef<View>(null);
+  const chipsRef = useRef<View>(null);
   const showAvatar = !fromMe && firstInGroup;
   const pending = message.status === 'sending' || message.status === 'uploading';
   const failed = message.status === 'failed';
   const canAct = !pending && !failed;
 
-  function handleLongPress() {
+  function openActions(ref: typeof bubbleRef) {
     if (!canAct) return;
-    bubbleRef.current?.measureInWindow((x, y, width, height) => {
+    ref.current?.measureInWindow((x, y, width, height) => {
       onLongPress({ x, y, width, height });
     });
+  }
+
+  function handleLongPress() {
+    openActions(bubbleRef);
   }
 
   return (
@@ -272,7 +279,18 @@ export function ChatMessageRow({
             className="flex-row items-center gap-2"
             style={{ flexDirection: fromMe ? 'row-reverse' : 'row' }}
           >
-            <Pressable ref={bubbleRef} onLongPress={handleLongPress} delayLongPress={300}>
+            <Pressable
+              ref={bubbleRef}
+              onPress={() => openActions(bubbleRef)}
+              onLongPress={handleLongPress}
+              delayLongPress={300}
+              style={{
+                borderWidth: 2,
+                margin: -2,
+                borderRadius: 18,
+                borderColor: highlighted ? 'rgba(124,179,66,0.4)' : 'transparent',
+              }}
+            >
               <ChatBubble
                 message={message}
                 fromMe={fromMe}
@@ -293,7 +311,9 @@ export function ChatMessageRow({
 
           {chips.length > 0 && (
             <Pressable
-              onPress={() => onShowReactions?.(message.id)}
+              ref={chipsRef}
+              onPress={() => openActions(chipsRef)}
+              onLongPress={() => onShowReactions?.(message.id)}
               className="-mt-2 flex-row flex-wrap gap-1"
               style={{ alignSelf: fromMe ? 'flex-end' : 'flex-start' }}
             >

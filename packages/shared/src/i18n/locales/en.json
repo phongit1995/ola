@@ -1326,6 +1326,18 @@
       "vipDays": "{{days}} days of VIP",
       "defaultLabel": "Reward",
       "ok": "Keep smashing"
+    },
+    "gifts": {
+      "title": "Prize list",
+      "heading": "PRIZE LIST",
+      "subtitle": "EGG SMASH",
+      "empty": "No prizes yet.",
+      "vipDaysLabel": "{{days}} days of VIP",
+      "section": {
+        "ken": "KEN",
+        "vip_days": "VIP DAYS",
+        "vip_icon": "VIP"
+      }
     }
   },
   "penGame": {

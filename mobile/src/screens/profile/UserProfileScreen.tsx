@@ -55,6 +55,7 @@ export function UserProfileScreen({
     fans,
     kisses,
     uploadingCover,
+    uploadingAvatar,
     isSelf,
     toggleFollow,
     kiss,
@@ -147,6 +148,7 @@ export function UserProfileScreen({
             fans={fans}
             kisses={kisses}
             uploadingCover={uploadingCover}
+            uploadingAvatar={uploadingAvatar}
             onChangeCover={() => void changeCover()}
             onKiss={kiss}
             onOpenFollowers={() => setFollowersOpen(true)}

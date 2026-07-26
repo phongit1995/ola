@@ -13,3 +13,5 @@ export const PRIMARY_LIGHT = '#f1f8e9';
 export const BUTTON = '#9ccc65';
 
 export const ERROR = '#e34545';
+
+export const WARNING = '#ff9800';

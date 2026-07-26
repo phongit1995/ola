@@ -1,29 +1,29 @@
-import lobbyBg from './assets/lobby/bg.png';
-import lobbyAvatarFrame from './assets/lobby/avatar-frame.png';
-import lobbyNameFrame from './assets/lobby/name-frame.png';
-import lobbyKenFrame from './assets/lobby/ken-frame.png';
-import lobbyIcKen from './assets/lobby/ic-ken.png';
-import lobbyBtnPlus from './assets/lobby/btn-plus.png';
-import lobbyIcPlus from './assets/lobby/ic-plus.png';
-import lobbyModeFrame from './assets/lobby/mode-frame.png';
-import lobbyIcBot from './assets/lobby/ic-bot.png';
-import lobbyIcRanked from './assets/lobby/ic-ranked.png';
-import lobbyBottomFrame from './assets/lobby/bottom-frame.png';
-import lobbyIcHistory from './assets/lobby/ic-history.png';
-import lobbyIcLeaderboard from './assets/lobby/ic-leaderboard.png';
-import lobbyIcExit from './assets/lobby/ic-exit.png';
-import lobbyPickBg from './assets/lobby/pick-bg.png';
-import lobbyPickTitle from './assets/lobby/pick-title.png';
-import lobbyPickLevel from './assets/lobby/pick-level.png';
-import lobbyPickClose from './assets/lobby/pick-close.png';
-import lobbyPickX from './assets/lobby/pick-x.png';
-import lobbyConfirmBg from './assets/lobby/confirm-bg.png';
-import lobbyConfirmTitle from './assets/lobby/confirm-title.png';
-import lobbyConfirmDoor from './assets/lobby/confirm-door.png';
-import lobbyBtnRed from './assets/lobby/btn-red.png';
-import lobbyBtnNavy from './assets/lobby/btn-navy.png';
+import lobbyBg from './assets/lobby/bg.webp';
+import lobbyAvatarFrame from './assets/lobby/avatar-frame.webp';
+import lobbyNameFrame from './assets/lobby/name-frame.webp';
+import lobbyKenFrame from './assets/lobby/ken-frame.webp';
+import lobbyIcKen from './assets/lobby/ic-ken.webp';
+import lobbyBtnPlus from './assets/lobby/btn-plus.webp';
+import lobbyIcPlus from './assets/lobby/ic-plus.webp';
+import lobbyModeFrame from './assets/lobby/mode-frame.webp';
+import lobbyIcBot from './assets/lobby/ic-bot.webp';
+import lobbyIcRanked from './assets/lobby/ic-ranked.webp';
+import lobbyBottomFrame from './assets/lobby/bottom-frame.webp';
+import lobbyIcHistory from './assets/lobby/ic-history.webp';
+import lobbyIcLeaderboard from './assets/lobby/ic-leaderboard.webp';
+import lobbyIcExit from './assets/lobby/ic-exit.webp';
+import lobbyPickBg from './assets/lobby/pick-bg.webp';
+import lobbyPickTitle from './assets/lobby/pick-title.webp';
+import lobbyPickLevel from './assets/lobby/pick-level.webp';
+import lobbyPickClose from './assets/lobby/pick-close.webp';
+import lobbyPickX from './assets/lobby/pick-x.webp';
+import lobbyConfirmBg from './assets/lobby/confirm-bg.webp';
+import lobbyConfirmTitle from './assets/lobby/confirm-title.webp';
+import lobbyConfirmDoor from './assets/lobby/confirm-door.webp';
+import lobbyBtnRed from './assets/lobby/btn-red.webp';
+import lobbyBtnNavy from './assets/lobby/btn-navy.webp';
 
-export const LOBBY_ASSETS = {
+const LOBBY_CRITICAL_ASSETS = {
   bg: lobbyBg,
   avatarFrame: lobbyAvatarFrame,
   nameFrame: lobbyNameFrame,
@@ -38,6 +38,10 @@ export const LOBBY_ASSETS = {
   icHistory: lobbyIcHistory,
   icLeaderboard: lobbyIcLeaderboard,
   icExit: lobbyIcExit,
+} as const;
+
+export const LOBBY_ASSETS = {
+  ...LOBBY_CRITICAL_ASSETS,
   pickBg: lobbyPickBg,
   pickTitle: lobbyPickTitle,
   pickLevel: lobbyPickLevel,
@@ -50,48 +54,48 @@ export const LOBBY_ASSETS = {
   btnNavy: lobbyBtnNavy,
 } as const;
 
-import rankedBg from './assets/ranked/bg.png';
-import rankedTitleFrame from './assets/ranked/title-frame.png';
-import rankedCup from './assets/ranked/ic-cup.png';
-import rankedTable from './assets/ranked/table.png';
-import rankedSlotOpen from './assets/ranked/slot-open.png';
-import rankedSlotFull from './assets/ranked/slot-full.png';
-import rankedLock from './assets/ranked/ic-lock.png';
-import rankedPageBtn from './assets/ranked/page-btn.png';
-import rankedMenuBtn from './assets/ranked/menu-btn.png';
-import createPanel from './assets/create/panel.png';
-import createTitleFrame from './assets/create/title-frame.png';
-import createLabelFrame from './assets/create/label-frame.png';
-import createInputFrame from './assets/create/input-frame.png';
-import createBtnOk from './assets/create/btn-ok.png';
-import createBtnClose from './assets/create/btn-close.png';
-import createIcX from './assets/create/ic-x.png';
-import resultBg from './assets/result/bg.png';
-import resultTitleFrame from './assets/result/title-frame.png';
-import resultCupWin from './assets/result/cup-win.png';
-import resultCupLose from './assets/result/cup-lose.png';
-import resultBrushWin from './assets/result/brush-win.png';
-import resultBrushLose from './assets/result/brush-lose.png';
-import resultKenFrame from './assets/result/ken-frame.png';
-import resultIcKen from './assets/result/ic-ken.png';
-import resultBtnClose from './assets/result/btn-close.png';
-import resultBtnReplayWin from './assets/result/btn-replay-win.png';
-import resultBtnCloseWin from './assets/result/btn-close-win.png';
-import resultBtnReplayLose from './assets/result/btn-replay-lose.png';
-import resultBtnCloseLose from './assets/result/btn-close-lose.png';
-import boardBg from './assets/board/bg.png';
-import boardFrame from './assets/board/board-frame.png';
-import boardX from './assets/board/x.png';
-import boardO from './assets/board/o.png';
-import boardTimerFrame from './assets/board/timer-frame.png';
-import boardTimerFrameMine from './assets/board/timer-frame-mine.png';
-import boardTurnLeft from './assets/board/turn-left.png';
-import boardTurnRight from './assets/board/turn-right.png';
-import boardAvatarFrame from './assets/board/avatar-frame.png';
-import boardMenuBtn from './assets/board/menu-btn.png';
-import boardForfeitIcon from './assets/board/ic-forfeit.png';
-import boardChatFrame from './assets/board/chat-frame-clean.png';
-import boardSendIcon from './assets/board/send-icon.png';
+import rankedBg from './assets/ranked/bg.webp';
+import rankedTitleFrame from './assets/ranked/title-frame.webp';
+import rankedCup from './assets/ranked/ic-cup.webp';
+import rankedTable from './assets/ranked/table.webp';
+import rankedSlotOpen from './assets/ranked/slot-open.webp';
+import rankedSlotFull from './assets/ranked/slot-full.webp';
+import rankedLock from './assets/ranked/ic-lock.webp';
+import rankedPageBtn from './assets/ranked/page-btn.webp';
+import rankedMenuBtn from './assets/ranked/menu-btn.webp';
+import createPanel from './assets/create/panel.webp';
+import createTitleFrame from './assets/create/title-frame.webp';
+import createLabelFrame from './assets/create/label-frame.webp';
+import createInputFrame from './assets/create/input-frame.webp';
+import createBtnOk from './assets/create/btn-ok.webp';
+import createBtnClose from './assets/create/btn-close.webp';
+import createIcX from './assets/create/ic-x.webp';
+import resultBg from './assets/result/bg.webp';
+import resultTitleFrame from './assets/result/title-frame.webp';
+import resultCupWin from './assets/result/cup-win.webp';
+import resultCupLose from './assets/result/cup-lose.webp';
+import resultBrushWin from './assets/result/brush-win.webp';
+import resultBrushLose from './assets/result/brush-lose.webp';
+import resultKenFrame from './assets/result/ken-frame.webp';
+import resultIcKen from './assets/result/ic-ken.webp';
+import resultBtnClose from './assets/result/btn-close.webp';
+import resultBtnReplayWin from './assets/result/btn-replay-win.webp';
+import resultBtnCloseWin from './assets/result/btn-close-win.webp';
+import resultBtnReplayLose from './assets/result/btn-replay-lose.webp';
+import resultBtnCloseLose from './assets/result/btn-close-lose.webp';
+import boardBg from './assets/board/bg.webp';
+import boardFrame from './assets/board/board-frame.webp';
+import boardX from './assets/board/x.webp';
+import boardO from './assets/board/o.webp';
+import boardTimerFrame from './assets/board/timer-frame.webp';
+import boardTimerFrameMine from './assets/board/timer-frame-mine.webp';
+import boardTurnLeft from './assets/board/turn-left.webp';
+import boardTurnRight from './assets/board/turn-right.webp';
+import boardAvatarFrame from './assets/board/avatar-frame.webp';
+import boardMenuBtn from './assets/board/menu-btn.webp';
+import boardForfeitIcon from './assets/board/ic-forfeit.webp';
+import boardChatFrame from './assets/board/chat-frame-clean.webp';
+import boardSendIcon from './assets/board/send-icon.webp';
 import leaderboardTitleFrame from './assets/leaderboard/title-frame.webp';
 import leaderboardCup from './assets/leaderboard/cup.webp';
 import leaderboardCloseFrame from './assets/leaderboard/close-frame.webp';
@@ -113,6 +117,14 @@ import leaderboardPageNumber from './assets/leaderboard/page-number.webp';
 import leaderboardPanel from './assets/leaderboard/panel.webp';
 import leaderboardDivider from './assets/leaderboard/divider.webp';
 import leaderboardKen from './assets/leaderboard/ken.webp';
+import historyPanel from './assets/history/panel.webp';
+import historyTitleFrame from './assets/history/title-frame.webp';
+import historyIcon from './assets/history/icon.webp';
+import historyCloseFrame from './assets/history/close-frame.webp';
+import historyCloseX from './assets/history/close-x.webp';
+import historyTable from './assets/history/table.webp';
+import historyPageBtn from './assets/history/page-btn.webp';
+import historyKen from './assets/history/ken.webp';
 
 export const BOARD_ASSETS = {
   boardBg,
@@ -189,12 +201,24 @@ export const LEADERBOARD_ASSETS = {
   leaderboardKen,
 } as const;
 
+export const HISTORY_ASSETS = {
+  historyPanel,
+  historyTitleFrame,
+  historyIcon,
+  historyCloseFrame,
+  historyCloseX,
+  historyTable,
+  historyPageBtn,
+  historyKen,
+} as const;
+
 const ALL_ASSETS = {
   ...LOBBY_ASSETS,
   ...BOARD_ASSETS,
   ...RANKED_ASSETS,
   ...RESULT_ASSETS,
   ...LEADERBOARD_ASSETS,
+  ...HISTORY_ASSETS,
 } as const;
 
 export type AssetKey = keyof typeof ALL_ASSETS;
@@ -211,7 +235,14 @@ export function preloadAssets(
   onProgress?: (loaded: number, total: number) => void,
   timeoutMs = 15000,
 ): Promise<void> {
-  const urls = Object.values(ALL_ASSETS);
+  return preloadUrls(Object.values(LOBBY_CRITICAL_ASSETS), onProgress, timeoutMs);
+}
+
+function preloadUrls(
+  urls: readonly string[],
+  onProgress?: (loaded: number, total: number) => void,
+  timeoutMs = 15000,
+): Promise<void> {
   const total = urls.length;
   let loaded = 0;
   onProgress?.(0, total);
@@ -233,6 +264,10 @@ export function preloadAssets(
   ).then(() => undefined);
   const timeout = new Promise<void>((resolve) => setTimeout(resolve, timeoutMs));
   return Promise.race([loadAll, timeout]);
+}
+
+export function preloadResultAssets(): void {
+  void preloadUrls(Object.values(RESULT_ASSETS), undefined, 30000);
 }
 
 export const VIP_DEFAULT_ICON = '/ola_smiley_online.png';

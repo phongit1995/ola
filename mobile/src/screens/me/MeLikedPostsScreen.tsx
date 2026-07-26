@@ -5,14 +5,24 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { FlashList } from '@shopify/flash-list';
 import { MeService } from '@ola/shared/services';
-import { applyPostReaction } from '@ola/shared/stores/postHelpers';
+import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
+import { usePostListActions } from '@ola/shared/stores/usePostListActions';
 import { createTimeFormatter, postTimeLabel } from '@ola/shared/lib';
+import { EDIT_WINDOW_MS } from '@ola/shared/constants';
 import type { Post } from '@ola/shared/types';
+import { useMeLocalStore } from '@store/meLocalStore';
+import { useMediaViewerStore } from '@store/mediaViewerStore';
+import { ConfirmDialog } from '@components/ui/ConfirmDialog';
+import { ListOptionDialog, type ListOption } from '@components/ui/ListOptionDialog';
+import { ReportDialog } from '@components/ui/ReportDialog';
+import { ScreenHeader } from '@components/ui/ScreenHeader';
 import { MePostCard } from './components/MePostCard';
 import { MeCommentSheet } from './components/MeCommentSheet';
 import { MeLikersDialog } from './components/MeLikersDialog';
-import { ScreenHeader } from '@components/ui/ScreenHeader';
+import { MeQuickCommentBar } from './components/MeQuickCommentBar';
+import { MeComposerModal } from './components/MeComposerModal';
+import { useQuickComment } from './useQuickComment';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 
@@ -21,56 +31,122 @@ export function MeLikedPostsScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const language = i18n.language;
   const push = useToastStore((s) => s.push);
+  const meId = useAuthStore((s) => s.user?.id) ?? '';
+  const openViewer = useMediaViewerStore((s) => s.openViewer);
+  const hiddenPostIds = useMeLocalStore((s) => s.hiddenPostIds);
+  const hidePost = useMeLocalStore((s) => s.hidePost);
+  const blockAuthor = useMeLocalStore((s) => s.blockAuthor);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [commentPostId, setCommentPostId] = useState<string | null>(null);
   const [commentFocusInput, setCommentFocusInput] = useState(false);
   const [likersPostId, setLikersPostId] = useState<string | null>(null);
+  const [menuPostId, setMenuPostId] = useState<string | null>(null);
+  const [deletePostId, setDeletePostId] = useState<string | null>(null);
+  const [reportPostId, setReportPostId] = useState<string | null>(null);
+  const [editingPost, setEditingPost] = useState<Post | null>(null);
   const formatTime = useMemo(() => createTimeFormatter(language), [language]);
 
-  useEffect(() => {
-    let active = true;
-    MeService.liked({ limit: 30 })
-      .then((result) => {
-        if (active) setPosts(result.items);
-      })
-      .catch(() => {
-        if (active) push('error', t('common.error'));
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-    return () => {
-      active = false;
-    };
+  const loadPosts = useCallback(async () => {
+    try {
+      const result = await MeService.liked({ limit: 30 });
+      setPosts(result.items);
+    } catch {
+      push('error', t('common.error'));
+    } finally {
+      setLoading(false);
+    }
   }, [push, t]);
 
-  const toggleReaction = useCallback(
-    async (id: string, type: 'like' | 'dislike') => {
-      const current = posts.find((p) => p.id === id);
-      if (current == null) return;
-      const active = current.myReaction === type;
-      setPosts((prev) => prev.map((p) => (p.id === id ? applyPostReaction(p, active ? null : type) : p)));
-      try {
-        const updated = active ? await MeService.removeReaction(id) : await MeService.react(id, type);
-        setPosts((prev) => {
-          const next = prev.map((p) => (p.id === id ? updated : p));
-          return updated.myReaction === 'like' ? next : next.filter((p) => p.id !== id);
-        });
-      } catch {
-        setPosts((prev) => prev.map((p) => (p.id === id ? current : p)));
-      }
-    },
-    [posts]
-  );
+  useEffect(() => {
+    void loadPosts();
+  }, [loadPosts]);
 
-  const adjustCommentCount = useCallback((id: string, delta: number) => {
-    setPosts((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, commentCount: Math.max(0, p.commentCount + delta) } : p))
-    );
-  }, []);
+  const visiblePosts = useMemo(() => {
+    if (hiddenPostIds.length === 0) return posts;
+    const hidden = new Set(hiddenPostIds);
+    return posts.filter((p) => !hidden.has(p.id));
+  }, [posts, hiddenPostIds]);
 
-  const commentPost = commentPostId != null ? posts.find((p) => p.id === commentPostId) ?? null : null;
+  const { toggleReaction, adjustCommentCount, deletePost, togglePin } = usePostListActions({
+    posts,
+    setPosts,
+    keepOnlyLiked: true,
+    reloadAfterPin: loadPosts,
+  });
+
+  const {
+    quickCommentPostId,
+    setQuickCommentPostId,
+    quickSubmitting,
+    submitQuickComment,
+    quickContextLabel,
+  } = useQuickComment(posts, adjustCommentCount);
+
+  function requestEdit(post: Post) {
+    const createdAtMs = post.createdAt != null ? new Date(post.createdAt).getTime() : 0;
+    if (Date.now() - createdAtMs > EDIT_WINDOW_MS) {
+      push('info', t('me.editExpired'));
+      return;
+    }
+    setEditingPost(post);
+  }
+
+  function buildPostMenuOptions(post: Post): ListOption[] {
+    const mine = meId !== '' && post.author?.id === meId;
+    if (mine) {
+      return [
+        { key: 'edit', label: t('me.menuEdit'), onSelect: () => requestEdit(post) },
+        {
+          key: 'pin',
+          label: post.isPinned ? t('me.menuUnpin') : t('me.menuPin'),
+          onSelect: () => void togglePin(post.id, !post.isPinned),
+        },
+        {
+          key: 'delete',
+          label: t('me.menuDelete'),
+          danger: true,
+          onSelect: () => setDeletePostId(post.id),
+        },
+      ];
+    }
+    return [
+      {
+        key: 'hide',
+        label: t('me.menuHide'),
+        onSelect: () => {
+          hidePost(post.id);
+          push('success', t('me.hideSuccess'));
+        },
+      },
+      {
+        key: 'save',
+        label: t('me.menuSave'),
+        onSelect: () => push('success', t('me.saveSuccess')),
+      },
+      {
+        key: 'share',
+        label: t('me.menuShare'),
+        onSelect: () => push('success', t('me.shareSuccess')),
+      },
+      { key: 'report', label: t('report.post'), onSelect: () => setReportPostId(post.id) },
+      {
+        key: 'block',
+        label: t('me.menuBlock'),
+        danger: true,
+        onSelect: () => {
+          const authorId = post.author?.id;
+          if (authorId == null || authorId === '') return;
+          blockAuthor(authorId);
+          push('success', t('me.blockSuccess'));
+        },
+      },
+    ];
+  }
+
+  const commentPost =
+    commentPostId != null ? (posts.find((p) => p.id === commentPostId) ?? null) : null;
+  const menuPost = menuPostId != null ? (posts.find((p) => p.id === menuPostId) ?? null) : null;
 
   function openProfile(nick: string) {
     setCommentPostId(null);
@@ -82,54 +158,105 @@ export function MeLikedPostsScreen() {
     <View className="flex-1 bg-[#eceff1]">
       <ScreenHeader title={t('me.drawerLikes')} onBack={() => navigation.goBack()} />
 
-        {loading && posts.length === 0 ? (
-          <ActivityIndicator className="py-10" color="#7cb342" size="large" />
-        ) : posts.length === 0 ? (
-          <Text className="px-6 py-10 text-center text-sm" style={{ color: 'rgba(0,0,0,0.45)' }}>
-            {t('me.likedEmpty')}
-          </Text>
-        ) : (
-          <FlashList
-            data={posts}
-            keyExtractor={(item) => item.id}
-                        renderItem={({ item }) => (
-              <MePostCard
-                post={item}
-                timeLabel={postTimeLabel(item.createdAt, formatTime)}
-                onToggleLike={(id) => void toggleReaction(id, 'like')}
-                onToggleDislike={(id) => void toggleReaction(id, 'dislike')}
-                onOpenProfile={openProfile}
-                onOpenComments={(id, focusInput) => {
-                  setCommentFocusInput(focusInput === true);
-                  setCommentPostId(id);
-                }}
-                onOpenLikers={(id) => setLikersPostId(id)}
-              />
-            )}
-          />
-        )}
+      {loading && visiblePosts.length === 0 ? (
+        <ActivityIndicator className="py-10" color="#7cb342" size="large" />
+      ) : visiblePosts.length === 0 ? (
+        <Text className="px-6 py-10 text-center text-sm" style={{ color: 'rgba(0,0,0,0.45)' }}>
+          {t('me.likedEmpty')}
+        </Text>
+      ) : (
+        <FlashList
+          data={visiblePosts}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <MePostCard
+              post={item}
+              timeLabel={postTimeLabel(item.createdAt, formatTime)}
+              onToggleLike={(id) => void toggleReaction(id, 'like')}
+              onToggleDislike={(id) => void toggleReaction(id, 'dislike')}
+              onOpenProfile={openProfile}
+              onOpenComments={(id, focusInput) => {
+                setCommentFocusInput(focusInput === true);
+                setCommentPostId(id);
+              }}
+              onQuickComment={(id) => setQuickCommentPostId(id)}
+              onOpenMenu={(id) => setMenuPostId(id)}
+              onOpenLikers={(id) => setLikersPostId(id)}
+              onOpenPhotos={(photos, index) => openViewer(photos, index)}
+            />
+          )}
+        />
+      )}
 
-        {commentPost != null && (
-          <MeCommentSheet
-            post={commentPost}
-            language={language}
-            autoFocusInput={commentFocusInput}
-            onClose={() => setCommentPostId(null)}
-            onToggleLike={(id) => void toggleReaction(id, 'like')}
-            onToggleDislike={(id) => void toggleReaction(id, 'dislike')}
-            onOpenProfile={openProfile}
-            onOpenLikers={(id) => setLikersPostId(id)}
-            onCommentDelta={adjustCommentCount}
-          />
-        )}
+      {commentPost != null && (
+        <MeCommentSheet
+          post={commentPost}
+          language={language}
+          autoFocusInput={commentFocusInput}
+          onClose={() => setCommentPostId(null)}
+          onToggleLike={(id) => void toggleReaction(id, 'like')}
+          onToggleDislike={(id) => void toggleReaction(id, 'dislike')}
+          onOpenProfile={openProfile}
+          onOpenLikers={(id) => setLikersPostId(id)}
+          onCommentDelta={adjustCommentCount}
+        />
+      )}
 
-        {likersPostId != null && (
-          <MeLikersDialog
-            postId={likersPostId}
-            onClose={() => setLikersPostId(null)}
-            onOpenProfile={openProfile}
-          />
-        )}
+      {likersPostId != null && (
+        <MeLikersDialog
+          postId={likersPostId}
+          onClose={() => setLikersPostId(null)}
+          onOpenProfile={openProfile}
+        />
+      )}
+
+      <ListOptionDialog
+        visible={menuPost != null}
+        title={t('me.postMenu')}
+        options={menuPost != null ? buildPostMenuOptions(menuPost) : []}
+        onClose={() => setMenuPostId(null)}
+      />
+
+      {quickCommentPostId != null && (
+        <MeQuickCommentBar
+          contextLabel={quickContextLabel}
+          submitting={quickSubmitting}
+          onSubmit={submitQuickComment}
+          onClose={() => setQuickCommentPostId(null)}
+        />
+      )}
+
+      <ConfirmDialog
+        visible={deletePostId != null}
+        danger
+        title={t('me.deleteConfirmTitle')}
+        message={t('me.deleteConfirmText')}
+        confirmLabel={t('me.deleteConfirmOk')}
+        cancelLabel={t('dialog.cancel')}
+        onConfirm={() => {
+          const id = deletePostId;
+          setDeletePostId(null);
+          if (id == null) return;
+          void deletePost(id);
+        }}
+        onCancel={() => setDeletePostId(null)}
+      />
+
+      {reportPostId != null && (
+        <ReportDialog
+          target={{ type: 'post', id: reportPostId }}
+          onClose={() => setReportPostId(null)}
+        />
+      )}
+
+      {editingPost != null && (
+        <MeComposerModal
+          visible
+          editPost={editingPost}
+          onSaved={() => void loadPosts()}
+          onClose={() => setEditingPost(null)}
+        />
+      )}
     </View>
   );
 }

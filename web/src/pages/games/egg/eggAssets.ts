@@ -14,6 +14,9 @@ import egg8Miss from '@/assets/games/egg/Egg_8_Miss.png';
 import egg9Miss from '@/assets/games/egg/Egg_9_Miss.png';
 import historyUrl from '@/assets/games/egg/ic_history.png';
 import reloadUrl from '@/assets/games/egg/ic_reload.png';
+import giftUrl from '@/assets/games/egg/ic_gift.png';
+import closeCircleUrl from '@/assets/games/egg/btn_close_circle.png';
+import closeXUrl from '@/assets/games/egg/ic_close_x.png';
 import smashUrl from '@/assets/sounds/smash.wav';
 
 export const EGG_BACKGROUND_KEY = 'Egg_Background';
@@ -40,3 +43,6 @@ export const EGG_TEXTURE_URLS: Record<string, string> = {
 
 export const smashSoundUrl = smashUrl;
 export const historyIconUrl = historyUrl;
+export const giftIconUrl = giftUrl;
+export const closeCircleButtonUrl = closeCircleUrl;
+export const closeXIconUrl = closeXUrl;

@@ -159,3 +159,53 @@ func toTransactionItem(t *models.KenTransaction) TransactionItem {
 	}
 	return item
 }
+
+func counterparty(id uuid.UUID, username, fullName, avatar string) CounterpartyInfo {
+	if username == "" {
+		return CounterpartyInfo{ID: id.String(), Username: id.String()[:8]}
+	}
+	return CounterpartyInfo{ID: id.String(), Username: username, FullName: fullName, Avatar: avatar}
+}
+
+func (s *Service) ListTransfers(f TransferFilter, limit, offset int) (*TransferListResponse, error) {
+	rows, total, err := s.repo.ListTransfers(f, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	items := make([]TransferItem, len(rows))
+	for i, row := range rows {
+		item := TransferItem{
+			ID:          row.ID.String(),
+			From:        counterparty(row.SenderID, row.SenderUsername, row.SenderFullName, row.SenderAvatar),
+			Amount:      row.Amount,
+			Description: row.Description,
+			CreatedAt:   row.CreatedAt.UTC().Format(time.RFC3339),
+		}
+		if row.ReceiverID != nil {
+			item.To = counterparty(*row.ReceiverID, row.ReceiverUsername, row.ReceiverFullName, row.ReceiverAvatar)
+		}
+		items[i] = item
+	}
+	return &TransferListResponse{Total: total, Limit: limit, Offset: offset, Items: items}, nil
+}
+
+func (s *Service) TransferUserStats(f TransferFilter, sortBy string, limit, offset int) (*TransferUserStatsResponse, error) {
+	rows, total, err := s.repo.TransferUserStats(f, sortBy, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	items := make([]TransferUserStatsItem, len(rows))
+	for i, row := range rows {
+		items[i] = TransferUserStatsItem{
+			User:           counterparty(row.UserID, row.Username, row.FullName, row.Avatar),
+			SentCount:      row.SentCount,
+			SentTotal:      row.SentTotal,
+			ReceivedCount:  row.ReceivedCount,
+			ReceivedTotal:  row.ReceivedTotal,
+			NetKen:         row.NetKen,
+			Partners:       row.Partners,
+			LastTransferAt: row.LastTransferAt.UTC().Format(time.RFC3339),
+		}
+	}
+	return &TransferUserStatsResponse{Total: total, Limit: limit, Offset: offset, Items: items}, nil
+}

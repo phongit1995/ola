@@ -77,6 +77,22 @@ func TestLeaderboardKeepsEmptyItemsAsArray(t *testing.T) {
 	}
 }
 
+func TestMatchHistoryKeepsEmptyItemsAsArray(t *testing.T) {
+	payload, err := json.Marshal(MatchHistoryData{Items: []MatchHistoryEntry{}})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var encoded map[string]any
+	if err := json.Unmarshal(payload, &encoded); err != nil {
+		t.Fatal(err)
+	}
+	items, ok := encoded["items"].([]any)
+	if !ok || len(items) != 0 {
+		t.Fatalf("match history items must encode as an empty array: %s", payload)
+	}
+}
+
 func TestMatchOverIncludesWinnerPayoutAndNetDelta(t *testing.T) {
 	payload, err := json.Marshal(MatchOverData{
 		MatchID:  "match-1",

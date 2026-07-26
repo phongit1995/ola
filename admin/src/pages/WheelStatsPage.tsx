@@ -1,12 +1,86 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Button, Card, Col, DatePicker, Row, Select, Space, Statistic, Table, Tag } from 'antd'
+import {
+  Avatar,
+  Button,
+  Card,
+  Col,
+  DatePicker,
+  Input,
+  Row,
+  Select,
+  Space,
+  Statistic,
+  Table,
+  Tag,
+  Typography,
+} from 'antd'
 import { ArrowLeftOutlined } from '@ant-design/icons'
-import type { ColumnsType } from 'antd/es/table'
+import type { ColumnsType, TablePaginationConfig } from 'antd/es/table'
+import type { SorterResult } from 'antd/es/table/interface'
 import type { Dayjs } from 'dayjs'
-import { useWheelStats, useWheels } from '@/hooks/useWheel'
-import type { WheelStatsKind, WheelStatsPlayer, WheelStatsReward, WheelStatsWheel } from '@/types'
+import { useWheelStats, useWheelUserStats, useWheelVipStats, useWheels } from '@/hooks/useWheel'
+import { vipIconUrl, vipName } from '@/lib/vipCatalog'
+import type {
+  WheelStatsKind,
+  WheelStatsReward,
+  WheelStatsWheel,
+  WheelUserStatsItem,
+  WheelUserStatsSortBy,
+  WheelVipStatsRow,
+} from '@/types'
 import { kindMeta } from './wheel/wheelHelpers'
+
+const USER_STATS_SORTS: WheelUserStatsSortBy[] = ['kenSpent', 'kenWon', 'netKen', 'spins', 'vipDays']
+const USER_PAGE_SIZE = 10
+
+function vn(n: number) {
+  return n.toLocaleString('vi-VN')
+}
+
+function NetText({ value }: { value: number }) {
+  if (value > 0) return <Typography.Text type="success">+{vn(value)}</Typography.Text>
+  if (value < 0) return <Typography.Text type="danger">{vn(value)}</Typography.Text>
+  return <Typography.Text>0</Typography.Text>
+}
+
+const vipColumns: ColumnsType<WheelVipStatsRow> = [
+  {
+    title: 'Loại VIP',
+    key: 'vip',
+    render: (_, row) =>
+      row.vipTypeId > 0 ? (
+        <Space>
+          <Avatar shape="square" size="small" src={vipIconUrl(row.vipTypeId)} />
+          <Typography.Text strong>{vipName(row.vipTypeId)}</Typography.Text>
+          <Typography.Text type="secondary">#{row.vipTypeId}</Typography.Text>
+        </Space>
+      ) : (
+        <Typography.Text type="secondary">Không gắn loại VIP</Typography.Text>
+      ),
+  },
+  {
+    title: 'Item trúng',
+    dataIndex: 'itemWins',
+    width: 110,
+    align: 'right',
+    render: (v: number) => vn(v),
+  },
+  {
+    title: 'Lượt trúng ngày VIP',
+    dataIndex: 'dayWins',
+    width: 150,
+    align: 'right',
+    render: (v: number) => vn(v),
+  },
+  {
+    title: 'Tổng ngày VIP',
+    dataIndex: 'vipDays',
+    width: 130,
+    align: 'right',
+    render: (v: number) => vn(v),
+  },
+]
 
 export function WheelStatsPage() {
   const navigate = useNavigate()
@@ -24,6 +98,129 @@ export function WheelStatsPage() {
 
   const { data, isFetching } = useWheelStats(params)
   const overview = data?.overview
+
+  const [userSort, setUserSort] = useState<WheelUserStatsSortBy>('kenSpent')
+  const [userPage, setUserPage] = useState(1)
+  const [userSearch, setUserSearch] = useState('')
+
+  const userStatsParams = useMemo(
+    () => ({
+      ...params,
+      userId: userSearch || undefined,
+      sortBy: userSort,
+      limit: USER_PAGE_SIZE,
+      offset: (userPage - 1) * USER_PAGE_SIZE,
+    }),
+    [params, userSearch, userSort, userPage],
+  )
+  const { data: userStats, isFetching: userStatsFetching } = useWheelUserStats(userStatsParams)
+  const { data: vipStats, isFetching: vipStatsFetching } = useWheelVipStats(params)
+
+  function onUserTableChange(
+    _pagination: TablePaginationConfig,
+    _filters: unknown,
+    sorter: SorterResult<WheelUserStatsItem> | SorterResult<WheelUserStatsItem>[],
+  ) {
+    const single = Array.isArray(sorter) ? sorter[0] : sorter
+    const field = single?.order ? String(single.field) : 'kenSpent'
+    const next = USER_STATS_SORTS.find((key) => key === field) ?? 'kenSpent'
+    if (next !== userSort) {
+      setUserSort(next)
+      setUserPage(1)
+    }
+  }
+
+  const userColumns: ColumnsType<WheelUserStatsItem> = [
+    {
+      title: 'Người chơi',
+      key: 'user',
+      render: (_, row) => (
+        <Space>
+          <Avatar size="small" src={row.user.avatar || undefined}>
+            {row.user.username?.[0] ?? '?'}
+          </Avatar>
+          <Typography.Text strong>@{row.user.username}</Typography.Text>
+        </Space>
+      ),
+    },
+    {
+      title: 'Lượt',
+      dataIndex: 'spins',
+      width: 90,
+      align: 'right',
+      sorter: true,
+      sortOrder: userSort === 'spins' ? 'descend' : null,
+      sortDirections: ['descend'],
+      render: (v: number) => vn(v),
+    },
+    {
+      title: 'Trúng',
+      key: 'winRate',
+      width: 130,
+      align: 'right',
+      render: (_, row) => `${vn(row.winSpins)} (${row.winRate.toFixed(1)}%)`,
+    },
+    {
+      title: 'Lượt free',
+      dataIndex: 'freeSpins',
+      width: 100,
+      align: 'right',
+      render: (v: number) => vn(v),
+    },
+    {
+      title: 'Ken chi',
+      dataIndex: 'kenSpent',
+      width: 120,
+      align: 'right',
+      sorter: true,
+      sortOrder: userSort === 'kenSpent' ? 'descend' : null,
+      sortDirections: ['descend'],
+      render: (v: number) => vn(v),
+    },
+    {
+      title: 'Ken trúng',
+      dataIndex: 'kenWon',
+      width: 120,
+      align: 'right',
+      sorter: true,
+      sortOrder: userSort === 'kenWon' ? 'descend' : null,
+      sortDirections: ['descend'],
+      render: (v: number) => vn(v),
+    },
+    {
+      title: 'Ròng (user)',
+      dataIndex: 'netKen',
+      width: 120,
+      align: 'right',
+      sorter: true,
+      sortOrder: userSort === 'netKen' ? 'descend' : null,
+      sortDirections: ['descend'],
+      render: (v: number) => <NetText value={v} />,
+    },
+    {
+      title: 'Ngày VIP',
+      dataIndex: 'vipDays',
+      width: 100,
+      align: 'right',
+      sorter: true,
+      sortOrder: userSort === 'vipDays' ? 'descend' : null,
+      sortDirections: ['descend'],
+      render: (v: number) => vn(v),
+    },
+    {
+      title: 'Item VIP',
+      dataIndex: 'vipItems',
+      width: 90,
+      align: 'right',
+      render: (v: number) => vn(v),
+    },
+    {
+      title: 'Quay gần nhất',
+      dataIndex: 'lastSpinAt',
+      width: 150,
+      render: (v: string) => new Date(v).toLocaleString('vi-VN'),
+    },
+  ]
 
   const kindColumns: ColumnsType<WheelStatsKind> = [
     {
@@ -58,17 +255,6 @@ export function WheelStatsPage() {
         const color = v > 100 ? '#c0392b' : v > 70 ? '#d4a017' : '#1f8a3b'
         return <span style={{ color }}>{v.toFixed(1)}%</span>
       },
-    },
-  ]
-
-  const playerColumns: ColumnsType<WheelStatsPlayer> = [
-    { title: 'Người chơi', key: 'user', render: (_, p) => (p.user ? `@${p.user.username}` : '—') },
-    { title: 'Lượt', dataIndex: 'spins', align: 'right' },
-    {
-      title: 'Ken chi',
-      dataIndex: 'kenSpent',
-      align: 'right',
-      render: (v: number) => v.toLocaleString('vi-VN'),
     },
   ]
 
@@ -168,17 +354,52 @@ export function WheelStatsPage() {
           </Card>
         </Col>
         <Col span={12}>
-          <Card title="Người chơi chi nhiều nhất" size="small">
-            <Table<WheelStatsPlayer>
-              rowKey={(p) => p.user?.id ?? Math.random().toString()}
+          <Card title="Thống kê theo loại VIP" size="small">
+            <Table<WheelVipStatsRow>
+              rowKey="vipTypeId"
               size="small"
-              columns={playerColumns}
-              dataSource={data?.topPlayers ?? []}
-              pagination={false}
+              loading={vipStatsFetching}
+              columns={vipColumns}
+              dataSource={vipStats?.items ?? []}
+              pagination={{ pageSize: 10, hideOnSinglePage: true, showSizeChanger: false }}
+              locale={{ emptyText: 'Chưa có phần thưởng VIP nào được trúng' }}
             />
           </Card>
         </Col>
       </Row>
+
+      <Card
+        title="Thống kê theo người chơi"
+        size="small"
+        extra={
+          <Input.Search
+            allowClear
+            placeholder="Lọc theo User ID"
+            onSearch={(value) => {
+              setUserSearch(value.trim())
+              setUserPage(1)
+            }}
+            style={{ width: 260 }}
+          />
+        }
+      >
+        <Table<WheelUserStatsItem>
+          rowKey={(row) => row.user.id}
+          size="small"
+          loading={userStatsFetching}
+          columns={userColumns}
+          dataSource={userStats?.items ?? []}
+          onChange={onUserTableChange}
+          pagination={{
+            current: userPage,
+            pageSize: USER_PAGE_SIZE,
+            total: userStats?.total ?? 0,
+            showSizeChanger: false,
+            onChange: setUserPage,
+          }}
+          locale={{ emptyText: 'Chưa có người chơi nào' }}
+        />
+      </Card>
     </Space>
   )
 }

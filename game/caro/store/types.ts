@@ -1,6 +1,7 @@
 import type {
   LeaderboardEntry,
   LeaderboardPeriod,
+  MatchHistoryEntry,
   RoomInfo,
   RoomStateData,
   UserInfoData,
@@ -12,6 +13,7 @@ export type OverlayKind = 'win' | 'lose' | 'draw';
 export type PlayerMark = 'x' | 'o';
 export type LobbyPhase = 'loading' | 'connecting' | 'error' | 'ready';
 export type BoardMode = 'idle' | 'pregame' | 'playing';
+export type MatchOutcome = 'win' | 'lose' | 'draw';
 export type RoomActionPending =
   | 'creating'
   | 'joining'
@@ -30,7 +32,7 @@ export interface OverlayState {
 
 export interface MatchResultState {
   matchId: string;
-  win: boolean;
+  outcome: MatchOutcome;
   kenDelta: number | null;
   winnerPayout: number | null;
   revealDelayMs: number;
@@ -56,9 +58,12 @@ export interface TurnAnnouncement {
   mine: boolean;
 }
 
+export type HistoryEntry = MatchHistoryEntry;
+
 export interface CaroState {
   lobbyVisible: boolean;
   lobbyPhase: LobbyPhase;
+  lobbyError: string | null;
   lobbyAnimKey: number;
   userInfo: UserInfoData | null;
   ken: number;
@@ -69,6 +74,10 @@ export interface CaroState {
   leaderboards: Record<LeaderboardPeriod, LeaderboardEntry[] | null>;
   leaderboardLoading: Record<LeaderboardPeriod, boolean>;
   leaderboardErrors: Record<LeaderboardPeriod, string | null>;
+  historyVisible: boolean;
+  history: HistoryEntry[];
+  historyLoading: boolean;
+  historyError: string | null;
   rooms: RoomInfo[];
   roomWaiting: RoomStateData | null;
   boardMode: BoardMode;
@@ -115,6 +124,9 @@ export interface CaroActions {
   showLeaderboard(): void;
   hideLeaderboard(): void;
   loadLeaderboard(period: LeaderboardPeriod): void;
+  showHistory(): void;
+  hideHistory(): void;
+  loadHistory(): void;
   retry(): void;
   exitApp(): void;
   placeMove(x: number, y: number): void;

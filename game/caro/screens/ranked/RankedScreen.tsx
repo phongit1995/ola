@@ -17,6 +17,8 @@ const ROOM_RESYNC_JITTER_MS = 30_000;
 export function RankedScreen() {
   const visible = useCaro((s) => s.rankedVisible);
   const rooms = useCaro((s) => s.rooms);
+  const availableKen = useCaro((s) => s.userInfo?.ken ?? 0);
+  const maxBet = useCaro((s) => s.userInfo?.maxBet ?? null);
   const toast = useCaro((s) => s.toast);
   const onExit = useCaro((s) => s.toLobby);
   const createRoom = useCaro((s) => s.createRoom);
@@ -134,7 +136,13 @@ export function RankedScreen() {
         </div>
       </div>
 
-      <CreateRoomModal open={createOpen} onClose={closeCreate} onSubmit={onCreateOk} />
+      <CreateRoomModal
+        open={createOpen}
+        availableKen={availableKen}
+        maxBet={maxBet}
+        onClose={closeCreate}
+        onSubmit={onCreateOk}
+      />
       <JoinRoomModal room={passRoom} onClose={closePass} onSubmit={submitPass} />
     </div>
   );
