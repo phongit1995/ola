@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"math"
-	"sort"
 	"time"
 
 	"ola-chat-server/internal/constants"
@@ -126,35 +125,6 @@ func giftIdentity(catType models.EggCategoryType, rw models.EggReward) string {
 	return fmt.Sprintf("%s:%s", catType, rw.Label)
 }
 
-func sortGiftRewards(catType models.EggCategoryType, list []GiftRewardView) {
-	sort.SliceStable(list, func(i, j int) bool {
-		switch catType {
-		case models.EggCategoryKen:
-			return derefInt(list[i].KenAmount) < derefInt(list[j].KenAmount)
-		case models.EggCategoryVipDays:
-			return derefInt(list[i].VipDays) < derefInt(list[j].VipDays)
-		case models.EggCategoryVipIcon:
-			return derefInt16(list[i].VipTypeID) < derefInt16(list[j].VipTypeID)
-		default:
-			return false
-		}
-	})
-}
-
-func derefInt(v *int) int {
-	if v == nil {
-		return 0
-	}
-	return *v
-}
-
-func derefInt16(v *int16) int16 {
-	if v == nil {
-		return 0
-	}
-	return *v
-}
-
 func (s *Service) ListGifts(packID uuid.UUID) (*GiftListResponse, error) {
 	pack, err := s.repo.FindPack(packID)
 	if err != nil || !pack.IsEnabled {
@@ -164,48 +134,55 @@ func (s *Service) ListGifts(packID uuid.UUID) (*GiftListResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-	catTypes := map[uuid.UUID]models.EggCategoryType{}
+	activeCats := make([]models.EggCategory, 0, len(cats))
 	catIDs := make([]uuid.UUID, 0, len(cats))
 	for _, c := range cats {
 		if !c.IsActive || c.Type == models.EggCategoryNothing {
 			continue
 		}
-		catTypes[c.ID] = c.Type
+		activeCats = append(activeCats, c)
 		catIDs = append(catIDs, c.ID)
 	}
 	rewards, err := s.repo.RewardsByCategories(catIDs)
 	if err != nil {
 		return nil, err
 	}
-	byType := map[models.EggCategoryType][]GiftRewardView{}
-	seen := map[string]bool{}
+	rewardsByCat := map[uuid.UUID][]models.EggReward{}
 	for _, rw := range rewards {
-		catType, ok := catTypes[rw.CategoryID]
-		if !ok || !rw.IsActive {
+		if !rw.IsActive {
 			continue
 		}
-		key := giftIdentity(catType, rw)
-		if seen[key] {
-			continue
-		}
-		seen[key] = true
-		byType[catType] = append(byType[catType], GiftRewardView{
-			Label:        rw.Label,
-			VipTypeID:    rw.VipTypeID,
-			KenAmount:    rw.KenAmount,
-			VipDays:      rw.VipDays,
-			IsSuperLucky: rw.IsSuperLucky,
-		})
+		rewardsByCat[rw.CategoryID] = append(rewardsByCat[rw.CategoryID], rw)
 	}
-	sectionOrder := []models.EggCategoryType{models.EggCategoryKen, models.EggCategoryVipDays, models.EggCategoryVipIcon}
-	items := make([]GiftSectionView, 0, len(sectionOrder))
-	for _, catType := range sectionOrder {
-		list := byType[catType]
-		if len(list) == 0 {
+	byType := map[models.EggCategoryType][]GiftRewardView{}
+	typeOrder := make([]models.EggCategoryType, 0, len(activeCats))
+	seen := map[string]bool{}
+	for _, c := range activeCats {
+		if _, ok := byType[c.Type]; !ok {
+			typeOrder = append(typeOrder, c.Type)
+			byType[c.Type] = []GiftRewardView{}
+		}
+		for _, rw := range rewardsByCat[c.ID] {
+			key := giftIdentity(c.Type, rw)
+			if seen[key] {
+				continue
+			}
+			seen[key] = true
+			byType[c.Type] = append(byType[c.Type], GiftRewardView{
+				Label:        rw.Label,
+				VipTypeID:    rw.VipTypeID,
+				KenAmount:    rw.KenAmount,
+				VipDays:      rw.VipDays,
+				IsSuperLucky: rw.IsSuperLucky,
+			})
+		}
+	}
+	items := make([]GiftSectionView, 0, len(typeOrder))
+	for _, catType := range typeOrder {
+		if len(byType[catType]) == 0 {
 			continue
 		}
-		sortGiftRewards(catType, list)
-		items = append(items, GiftSectionView{Type: catType, Rewards: list})
+		items = append(items, GiftSectionView{Type: catType, Rewards: byType[catType]})
 	}
 	return &GiftListResponse{Items: items}, nil
 }
@@ -677,4 +654,3 @@ func weightedPick(weights []float64) int {
 	}
 	return last
 }
-
