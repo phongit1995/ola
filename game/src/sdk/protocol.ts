@@ -34,6 +34,20 @@ export const S2C = {
   Leaderboard: 'LEADERBOARD',
 } as const;
 
+export const GAME_ERROR_CODE = {
+  WrongPassword: 'WRONG_PASSWORD',
+  RoomNotFound: 'ROOM_NOT_FOUND',
+  OwnRoom: 'OWN_ROOM',
+  ChatRateLimited: 'CHAT_RATE_LIMITED',
+  ChatTooLong: 'CHAT_TOO_LONG',
+  InvalidChat: 'INVALID_CHAT',
+  RoomNotFull: 'ROOM_NOT_FULL',
+  NotRoomMember: 'NOT_ROOM_MEMBER',
+  InvalidMove: 'INVALID_MOVE',
+} as const;
+
+export type GameErrorCode = (typeof GAME_ERROR_CODE)[keyof typeof GAME_ERROR_CODE];
+
 export interface Envelope {
   type: string;
   data?: unknown;

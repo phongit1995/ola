@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { parseVipTypeId, vipIconUrl } from '@ola/shared/lib/vip';
-import type { RoomInfo } from '../src/sdk';
-import { assetBg, assetSrc, VIP_DEFAULT_ICON } from './assets';
-import { useCaroStore } from './store';
+import type { RoomInfo } from '../../src/sdk';
+import { assetBg, assetSrc, VIP_DEFAULT_ICON } from '../assets';
+import { useCaroStore } from '../store';
 
 const PAGE_SIZE = 9;
 const HEAD_BOTTOM = 10.5;
@@ -14,7 +14,7 @@ function formatKen(value: number): string {
   return value.toLocaleString('vi-VN');
 }
 
-export function Ranked() {
+export function RankedScreen() {
   const visible = useCaroStore((s) => s.rankedVisible);
   const rooms = useCaroStore((s) => s.rooms);
   const toast = useCaroStore((s) => s.toast);

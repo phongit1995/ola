@@ -1,16 +1,16 @@
 import { useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { parseVipTypeId, vipIconUrl } from '@ola/shared/lib/vip';
-import { assetBg, assetSrc, VIP_DEFAULT_ICON } from './assets';
-import type { BotLevel } from './bot';
-import { useCaroStore } from './store';
-import { ConfirmModal } from './ConfirmModal';
+import { ConfirmModal } from '../components/ConfirmModal';
+import { assetBg, assetSrc, VIP_DEFAULT_ICON } from '../assets';
+import { useCaroStore } from '../store';
+import type { BotLevel } from '../types';
 
 function formatKen(value: number): string {
   return Math.round(value).toLocaleString('vi-VN');
 }
 
-export function Lobby({ progress }: { progress: string }) {
+export function LobbyScreen({ progress }: { progress: string }) {
   const [pickOpen, setPickOpen] = useState(false);
   const [exitOpen, setExitOpen] = useState(false);
   const { lobbyVisible, lobbyPhase: phase, lobbyAnimKey, userInfo, ken, toast } = useCaroStore(

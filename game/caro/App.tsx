@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 import { bridge } from '../src/sdk';
 import { BOARD_ASSETS, preloadAssets } from './assets';
+import { ConfirmModal } from './components/ConfirmModal';
+import { BoardScreen } from './screens/BoardScreen';
+import { LeaderboardScreen } from './screens/LeaderboardScreen';
+import { LobbyScreen } from './screens/LobbyScreen';
+import { RankedScreen } from './screens/RankedScreen';
+import { ResultScreen } from './screens/ResultScreen';
 import { useCaroStore } from './store';
-import { Board } from './Board';
-import { Lobby } from './Lobby';
-import { Leaderboard } from './Leaderboard';
-import { Ranked } from './Ranked';
-import { Result } from './Result';
-import { ConfirmModal } from './ConfirmModal';
 
 function OppAwayBanner() {
   const oppAway = useCaroStore((s) => s.oppAway);
@@ -55,11 +55,11 @@ export function App() {
 
   return (
     <>
-      <Board />
-      <Lobby key={lobbyAnimKey} progress={progress} />
-      <Leaderboard />
-      <Ranked />
-      <Result />
+      <BoardScreen />
+      <LobbyScreen key={lobbyAnimKey} progress={progress} />
+      <LeaderboardScreen />
+      <RankedScreen />
+      <ResultScreen />
       <OppAwayBanner />
       <ConfirmModal
         open={notice != null}

@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { parseVipTypeId, vipIconUrl } from '@ola/shared/lib/vip';
-import type { LeaderboardPeriod } from '../src/sdk';
-import { assetBg, assetSrc, VIP_DEFAULT_ICON, type AssetKey } from './assets';
-import { useCaroStore } from './store';
+import type { LeaderboardPeriod } from '../../src/sdk';
+import { assetBg, assetSrc, VIP_DEFAULT_ICON, type AssetKey } from '../assets';
+import { useCaroStore } from '../store';
 
 const PAGE_SIZE = 10;
 
@@ -27,7 +27,7 @@ function rankAsset(rank: number): AssetKey | null {
   return RANK_ASSETS[rank] ?? null;
 }
 
-export function Leaderboard() {
+export function LeaderboardScreen() {
   const visible = useCaroStore((s) => s.leaderboardVisible);
   const close = useCaroStore((s) => s.hideLeaderboard);
   const leaderboards = useCaroStore((s) => s.leaderboards);

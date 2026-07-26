@@ -3,49 +3,26 @@ import {
   bridge,
   joinGame,
   type GameSession,
-  type LeaderboardEntry,
   type LeaderboardPeriod,
   type MatchFoundData,
   type PlayerInfo,
-  type RoomInfo,
   type RoomStateData,
   type UserInfoData,
 } from '../src/sdk';
 import { parseVipTypeId, vipIconUrl } from '@ola/shared/lib/vip';
 import { BOARD_ASSETS, VIP_DEFAULT_ICON } from './assets';
-import { createBotSession, type BotLevel } from './bot';
-import { SIZE, emptyState, findWinLine, type CaroMove, type CaroState, type WinLine } from './types';
-
-export type OverlayAction = 'again' | 'cancel' | 'lobby';
-
-export interface OverlayState {
-  title: string;
-  sub: string;
-  kind?: 'win' | 'lose' | 'draw';
-  actions: OverlayAction[];
-}
-
-export interface MatchResultState {
-  matchId: string;
-  win: boolean;
-  kenDelta: number | null;
-  winnerPayout: number | null;
-  revealDelayMs: number;
-}
-
-export interface PlayerDisplay {
-  name: string;
-  vip: string;
-  mark: 'x' | 'o';
-  active: boolean;
-  owner: boolean;
-}
-
-export interface ChatMsg {
-  id: number;
-  who: string;
-  text: string;
-}
+import { createBotSession } from './bot';
+import { chatErrorText, roomErrorText } from './errorText';
+import type { CaroStore, PlayerDisplay, RoomActionPending } from './store.types';
+import {
+  SIZE,
+  emptyState,
+  findWinLine,
+  type BotLevel,
+  type CaroMove,
+  type CaroState,
+  type WinLine,
+} from './types';
 
 const BOT_VIP_ID: Record<BotLevel, number> = { easy: 1, normal: 2, hard: 3 };
 const CHAT_HISTORY_LIMIT = 100;
@@ -74,112 +51,13 @@ function findFinalWinLine(state: CaroState): WinLine | null {
   return mark ? findWinLine(board, lastX, lastY, mark) : null;
 }
 
-const EMPTY_PLAYER: PlayerDisplay = { name: '---', vip: VIP_DEFAULT_ICON, mark: 'x', active: false, owner: false };
-
-function roomErrorText(code: string): string | null {
-  switch (code) {
-    case 'WRONG_PASSWORD':
-      return 'Sai mật khẩu';
-    case 'ROOM_NOT_FOUND':
-      return 'Bàn không còn nữa';
-    case 'OWN_ROOM':
-      return 'Không thể vào bàn của bạn';
-    default:
-      return null;
-  }
-}
-
-export type BoardMode = 'idle' | 'pregame' | 'playing';
-export type RoomActionPending = 'creating' | 'joining' | 'ready' | 'starting' | 'leaving' | 'kicking' | null;
-
-function chatErrorText(code: string): string | null {
-  switch (code) {
-    case 'CHAT_RATE_LIMITED':
-      return 'Bạn gửi tin nhắn quá nhanh';
-    case 'CHAT_TOO_LONG':
-      return 'Tin nhắn tối đa 120 ký tự';
-    case 'INVALID_CHAT':
-      return 'Tin nhắn không hợp lệ';
-    case 'ROOM_NOT_FULL':
-      return 'Cần đủ hai người trong bàn để chat';
-    case 'NOT_ROOM_MEMBER':
-      return 'Bạn không còn ở trong bàn này';
-    default:
-      return null;
-  }
-}
-
-export interface CaroStore {
-  lobbyVisible: boolean;
-  lobbyPhase: 'loading' | 'connecting' | 'error' | 'ready';
-  lobbyAnimKey: number;
-  userInfo: UserInfoData | null;
-  ken: number;
-  bet: number;
-
-  rankedVisible: boolean;
-  leaderboardVisible: boolean;
-  leaderboards: Record<LeaderboardPeriod, LeaderboardEntry[] | null>;
-  leaderboardLoading: Record<LeaderboardPeriod, boolean>;
-  leaderboardErrors: Record<LeaderboardPeriod, string | null>;
-  rooms: RoomInfo[];
-  roomWaiting: RoomStateData | null;
-  boardMode: BoardMode;
-  roomActionPending: RoomActionPending;
-  oppAway: number | null;
-
-  board: number[];
-  lastIdx: number;
-  status: string;
-  myTurn: boolean;
-  movePending: boolean;
-  showTimer: boolean;
-  timerText: string;
-  timerUrgent: boolean;
-  turnArrowSrc: string | null;
-  me: PlayerDisplay;
-  op: PlayerDisplay;
-  overlay: OverlayState | null;
-  replayVisible: boolean;
-  forfeitDisabled: boolean;
-
-  result: MatchResultState | null;
-  toast: string | null;
-  notice: string | null;
-  matchSeq: number;
-  betDeductionVisible: boolean;
-  turnAnnounce: { id: number; text: string; mine: boolean } | null;
-  winLine: WinLine | null;
-  messages: ChatMsg[];
-
-  init(ready: boolean): void;
-  dispose(): void;
-  playBot(level: BotLevel): void;
-  playRanked(): void;
-  refreshRooms(): void;
-  createRoom(bet: number, password?: string): void;
-  joinRoom(roomId: string, password?: string): void;
-  cancelRoom(): void;
-  toggleRoomReady(): void;
-  startRoom(): void;
-  kickRoomGuest(): void;
-  showLeaderboard(): void;
-  hideLeaderboard(): void;
-  loadLeaderboard(period: LeaderboardPeriod): void;
-  retry(): void;
-  exitApp(): void;
-  placeMove(x: number, y: number): void;
-  again(): void;
-  replay(): void;
-  cancelSearch(): void;
-  toLobby(): void;
-  forfeit(): void;
-  exitMatch(): void;
-  closeResult(): void;
-  showToast(message: string): void;
-  dismissNotice(): void;
-  sendChat(text: string): void;
-}
+const EMPTY_PLAYER: PlayerDisplay = {
+  name: '---',
+  vip: VIP_DEFAULT_ICON,
+  mark: 'x',
+  active: false,
+  owner: false,
+};
 
 export const useCaroStore = create<CaroStore>()((set, get) => {
   const refs = {

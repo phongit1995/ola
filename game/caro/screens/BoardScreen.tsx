@@ -6,10 +6,10 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { assetBg, assetSrc } from './assets';
-import { SIZE } from './types';
-import { useCaroStore } from './store';
-import { ConfirmModal } from './ConfirmModal';
+import { ConfirmModal } from '../components/ConfirmModal';
+import { assetBg, assetSrc } from '../assets';
+import { useCaroStore } from '../store';
+import { SIZE } from '../types';
 
 const CELLS = Array.from({ length: SIZE * SIZE }, (_, i) => i);
 
@@ -101,7 +101,7 @@ function RoomOwnerIcon() {
   );
 }
 
-export function Board() {
+export function BoardScreen() {
   const [chatInput, setChatInput] = useState('');
   const [exitOpen, setExitOpen] = useState(false);
   const [forfeitOpen, setForfeitOpen] = useState(false);

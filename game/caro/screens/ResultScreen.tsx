@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
-import { assetBg, assetSrc } from './assets';
-import { useCaroStore, type MatchResultState } from './store';
+import { assetBg, assetSrc } from '../assets';
+import { useCaroStore } from '../store';
+import type { MatchResultState } from '../store.types';
 
 function formatKen(value: number): string {
   return value.toLocaleString('vi-VN');
 }
 
-export function Result() {
+export function ResultScreen() {
   const result = useCaroStore((s) => s.result);
   const replayVisible = useCaroStore((s) => s.replayVisible);
   const closeResult = useCaroStore((s) => s.closeResult);

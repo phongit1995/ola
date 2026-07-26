@@ -1,6 +1,8 @@
 export const SIZE = 20;
 export const WIN_LEN = 5;
 
+export type BotLevel = 'easy' | 'normal' | 'hard';
+
 export interface CaroState {
   board: number[];
   moveCount: number;
