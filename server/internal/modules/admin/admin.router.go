@@ -13,6 +13,7 @@ import (
 	adminme "ola-chat-server/internal/modules/admin/me"
 	adminminigame "ola-chat-server/internal/modules/admin/mini-game"
 	adminpen "ola-chat-server/internal/modules/admin/pen"
+	adminrelationship "ola-chat-server/internal/modules/admin/relationship"
 	adminroom "ola-chat-server/internal/modules/admin/room"
 	adminsetting "ola-chat-server/internal/modules/admin/setting"
 	adminupload "ola-chat-server/internal/modules/admin/upload"
@@ -23,29 +24,30 @@ import (
 )
 
 type Router struct {
-	auditMiddleware *adminaudit.Middleware
-	auditRouter     *adminaudit.Router
-	dashboardRouter *admindashboard.Router
-	authRouter      *adminauth.Router
-	userRouter      *adminuser.Router
-	meRouter        *adminme.Router
-	roomRouter      *adminroom.Router
-	clanRouter      *adminclan.Router
-	uploadRouter    *adminupload.Router
-	vipRouter       *adminvip.Router
-	eggRouter       *adminegg.Router
-	wheelRouter     *adminwheel.Router
-	kenRouter       *adminken.Router
-	kenChestRouter  *adminkenchest.Router
-	penRouter       *adminpen.Router
-	gameMatchRouter *admingamematch.Router
-	marriageRouter  *adminmarriage.Router
-	settingRouter   *adminsetting.Router
-	miniGameRouter  *adminminigame.Router
+	auditMiddleware    *adminaudit.Middleware
+	auditRouter        *adminaudit.Router
+	dashboardRouter    *admindashboard.Router
+	authRouter         *adminauth.Router
+	userRouter         *adminuser.Router
+	meRouter           *adminme.Router
+	roomRouter         *adminroom.Router
+	clanRouter         *adminclan.Router
+	uploadRouter       *adminupload.Router
+	vipRouter          *adminvip.Router
+	eggRouter          *adminegg.Router
+	wheelRouter        *adminwheel.Router
+	kenRouter          *adminken.Router
+	kenChestRouter     *adminkenchest.Router
+	penRouter          *adminpen.Router
+	gameMatchRouter    *admingamematch.Router
+	marriageRouter     *adminmarriage.Router
+	relationshipRouter *adminrelationship.Router
+	settingRouter      *adminsetting.Router
+	miniGameRouter     *adminminigame.Router
 }
 
-func NewRouter(auditMiddleware *adminaudit.Middleware, auditRouter *adminaudit.Router, dashboardRouter *admindashboard.Router, authRouter *adminauth.Router, userRouter *adminuser.Router, meRouter *adminme.Router, roomRouter *adminroom.Router, clanRouter *adminclan.Router, uploadRouter *adminupload.Router, vipRouter *adminvip.Router, eggRouter *adminegg.Router, wheelRouter *adminwheel.Router, kenRouter *adminken.Router, kenChestRouter *adminkenchest.Router, penRouter *adminpen.Router, gameMatchRouter *admingamematch.Router, marriageRouter *adminmarriage.Router, settingRouter *adminsetting.Router, miniGameRouter *adminminigame.Router) *Router {
-	return &Router{auditMiddleware: auditMiddleware, auditRouter: auditRouter, dashboardRouter: dashboardRouter, authRouter: authRouter, userRouter: userRouter, meRouter: meRouter, roomRouter: roomRouter, clanRouter: clanRouter, uploadRouter: uploadRouter, vipRouter: vipRouter, eggRouter: eggRouter, wheelRouter: wheelRouter, kenRouter: kenRouter, kenChestRouter: kenChestRouter, penRouter: penRouter, gameMatchRouter: gameMatchRouter, marriageRouter: marriageRouter, settingRouter: settingRouter, miniGameRouter: miniGameRouter}
+func NewRouter(auditMiddleware *adminaudit.Middleware, auditRouter *adminaudit.Router, dashboardRouter *admindashboard.Router, authRouter *adminauth.Router, userRouter *adminuser.Router, meRouter *adminme.Router, roomRouter *adminroom.Router, clanRouter *adminclan.Router, uploadRouter *adminupload.Router, vipRouter *adminvip.Router, eggRouter *adminegg.Router, wheelRouter *adminwheel.Router, kenRouter *adminken.Router, kenChestRouter *adminkenchest.Router, penRouter *adminpen.Router, gameMatchRouter *admingamematch.Router, marriageRouter *adminmarriage.Router, relationshipRouter *adminrelationship.Router, settingRouter *adminsetting.Router, miniGameRouter *adminminigame.Router) *Router {
+	return &Router{auditMiddleware: auditMiddleware, auditRouter: auditRouter, dashboardRouter: dashboardRouter, authRouter: authRouter, userRouter: userRouter, meRouter: meRouter, roomRouter: roomRouter, clanRouter: clanRouter, uploadRouter: uploadRouter, vipRouter: vipRouter, eggRouter: eggRouter, wheelRouter: wheelRouter, kenRouter: kenRouter, kenChestRouter: kenChestRouter, penRouter: penRouter, gameMatchRouter: gameMatchRouter, marriageRouter: marriageRouter, relationshipRouter: relationshipRouter, settingRouter: settingRouter, miniGameRouter: miniGameRouter}
 }
 
 func (r *Router) Setup(api *utils.AppGroup) {
@@ -67,6 +69,7 @@ func (r *Router) Setup(api *utils.AppGroup) {
 		r.penRouter.Setup(admin)
 		r.gameMatchRouter.Setup(admin)
 		r.marriageRouter.Setup(admin)
+		r.relationshipRouter.Setup(admin)
 		r.settingRouter.Setup(admin)
 		r.miniGameRouter.Setup(admin)
 	}

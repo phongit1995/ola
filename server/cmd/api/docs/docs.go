@@ -1942,6 +1942,186 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/marriages": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-marriage"
+                ],
+                "summary": "Danh sách cặp đôi kết hôn (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "active|divorced",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Lọc theo user",
+                        "name": "userId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Cưới từ thời gian (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Cưới đến thời gian (RFC3339)",
+                        "name": "to",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_marriage.MarriageListSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/marriages/proposals": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-marriage"
+                ],
+                "summary": "Danh sách lời cầu hôn (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "pending|accepted|rejected|cancelled",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Lọc theo user (cầu hôn hoặc được cầu hôn)",
+                        "name": "userId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Từ thời gian (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến thời gian (RFC3339)",
+                        "name": "to",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_marriage.ProposalListSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/marriages/stats": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-marriage"
+                ],
+                "summary": "Thống kê kết hôn \u0026 cầu hôn (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Từ thời gian (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến thời gian (RFC3339)",
+                        "name": "to",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_marriage.StatsSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/me": {
             "get": {
                 "security": [
@@ -2570,6 +2750,260 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/internal_modules_admin_pen.UserStatsSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/relationships": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-relationship"
+                ],
+                "summary": "Danh sách quan hệ kết bạn/chặn (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "pending|accepted|rejected|blocked",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Lọc theo user (gửi hoặc nhận)",
+                        "name": "userId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Từ thời gian (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến thời gian (RFC3339)",
+                        "name": "to",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_relationship.RelationshipListSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/relationships/follows": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-relationship"
+                ],
+                "summary": "Danh sách theo dõi giữa các user (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Lọc theo người theo dõi",
+                        "name": "followerId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Lọc theo người được theo dõi",
+                        "name": "followeeId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Lọc theo user (theo dõi hoặc được theo dõi)",
+                        "name": "userId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Từ thời gian (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến thời gian (RFC3339)",
+                        "name": "to",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_relationship.FollowListSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/relationships/stats": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-relationship"
+                ],
+                "summary": "Thống kê quan hệ bạn bè \u0026 theo dõi (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Từ thời gian (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến thời gian (RFC3339)",
+                        "name": "to",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_relationship.StatsSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/relationships/users": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-relationship"
+                ],
+                "summary": "Thống kê bạn bè/chặn/theo dõi theo từng user (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Lọc theo user",
+                        "name": "userId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Từ thời gian (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến thời gian (RFC3339)",
+                        "name": "to",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "friends|blocked|followers|following (mặc định friends)",
+                        "name": "sortBy",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_relationship.UserStatsSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ola-chat-server_internal_utils.APIError"
                         }
                     }
                 }
@@ -13207,6 +13641,266 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_modules_admin_marriage.MarriageItem": {
+            "type": "object",
+            "properties": {
+                "divorcedAt": {
+                    "type": "string",
+                    "example": "2026-07-26T10:00:00Z"
+                },
+                "divorcedBy": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "marriedAt": {
+                    "type": "string",
+                    "example": "2026-07-26T10:00:00Z"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "active"
+                },
+                "userA": {
+                    "$ref": "#/definitions/internal_modules_admin_marriage.UserInfo"
+                },
+                "userB": {
+                    "$ref": "#/definitions/internal_modules_admin_marriage.UserInfo"
+                }
+            }
+        },
+        "internal_modules_admin_marriage.MarriageListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_marriage.MarriageItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 20
+                },
+                "offset": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "internal_modules_admin_marriage.MarriageListSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_marriage.MarriageListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_marriage.MarriageStats": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "integer",
+                    "example": 70
+                },
+                "divorced": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 80
+                }
+            }
+        },
+        "internal_modules_admin_marriage.ProposalItem": {
+            "type": "object",
+            "properties": {
+                "addressee": {
+                    "$ref": "#/definitions/internal_modules_admin_marriage.UserInfo"
+                },
+                "createdAt": {
+                    "type": "string",
+                    "example": "2026-07-26T10:00:00Z"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Lấy anh nhé"
+                },
+                "proposer": {
+                    "$ref": "#/definitions/internal_modules_admin_marriage.UserInfo"
+                },
+                "respondedAt": {
+                    "type": "string",
+                    "example": "2026-07-26T10:05:00Z"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "accepted"
+                }
+            }
+        },
+        "internal_modules_admin_marriage.ProposalListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_marriage.ProposalItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 20
+                },
+                "offset": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "internal_modules_admin_marriage.ProposalListSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_marriage.ProposalListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_marriage.ProposalStats": {
+            "type": "object",
+            "properties": {
+                "accepted": {
+                    "type": "integer",
+                    "example": 80
+                },
+                "cancelled": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "pending": {
+                    "type": "integer",
+                    "example": 5
+                },
+                "rejected": {
+                    "type": "integer",
+                    "example": 25
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 120
+                }
+            }
+        },
+        "internal_modules_admin_marriage.StatsResponse": {
+            "type": "object",
+            "properties": {
+                "marriages": {
+                    "$ref": "#/definitions/internal_modules_admin_marriage.MarriageStats"
+                },
+                "proposals": {
+                    "$ref": "#/definitions/internal_modules_admin_marriage.ProposalStats"
+                }
+            }
+        },
+        "internal_modules_admin_marriage.StatsSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_marriage.StatsResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_marriage.UserInfo": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string",
+                    "example": "https://cdn.ola.vn/a.png"
+                },
+                "fullName": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "john_doe"
+                }
+            }
+        },
         "internal_modules_admin_me.AuthorResponse": {
             "type": "object",
             "properties": {
@@ -13585,6 +14279,315 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "$ref": "#/definitions/internal_modules_admin_pen.UserStatsResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_relationship.FollowItem": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string",
+                    "example": "2026-07-26T10:00:00Z"
+                },
+                "followee": {
+                    "$ref": "#/definitions/internal_modules_admin_relationship.UserInfo"
+                },
+                "follower": {
+                    "$ref": "#/definitions/internal_modules_admin_relationship.UserInfo"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                }
+            }
+        },
+        "internal_modules_admin_relationship.FollowListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_relationship.FollowItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 20
+                },
+                "offset": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "internal_modules_admin_relationship.FollowListSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_relationship.FollowListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_relationship.FollowStats": {
+            "type": "object",
+            "properties": {
+                "total": {
+                    "type": "integer",
+                    "example": 630
+                }
+            }
+        },
+        "internal_modules_admin_relationship.RelationshipItem": {
+            "type": "object",
+            "properties": {
+                "actionedAt": {
+                    "type": "string",
+                    "example": "2026-07-26T10:05:00Z"
+                },
+                "addressee": {
+                    "$ref": "#/definitions/internal_modules_admin_relationship.UserInfo"
+                },
+                "createdAt": {
+                    "type": "string",
+                    "example": "2026-07-26T10:00:00Z"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "requester": {
+                    "$ref": "#/definitions/internal_modules_admin_relationship.UserInfo"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "accepted"
+                }
+            }
+        },
+        "internal_modules_admin_relationship.RelationshipListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_relationship.RelationshipItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 20
+                },
+                "offset": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "internal_modules_admin_relationship.RelationshipListSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_relationship.RelationshipListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_relationship.RelationshipStats": {
+            "type": "object",
+            "properties": {
+                "accepted": {
+                    "type": "integer",
+                    "example": 240
+                },
+                "blocked": {
+                    "type": "integer",
+                    "example": 270
+                },
+                "pending": {
+                    "type": "integer",
+                    "example": 280
+                },
+                "rejected": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 800
+                }
+            }
+        },
+        "internal_modules_admin_relationship.StatsResponse": {
+            "type": "object",
+            "properties": {
+                "follows": {
+                    "$ref": "#/definitions/internal_modules_admin_relationship.FollowStats"
+                },
+                "relationships": {
+                    "$ref": "#/definitions/internal_modules_admin_relationship.RelationshipStats"
+                }
+            }
+        },
+        "internal_modules_admin_relationship.StatsSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_relationship.StatsResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_relationship.UserInfo": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string",
+                    "example": "https://cdn.ola.vn/a.png"
+                },
+                "fullName": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "john_doe"
+                }
+            }
+        },
+        "internal_modules_admin_relationship.UserStatsItem": {
+            "type": "object",
+            "properties": {
+                "blocked": {
+                    "type": "integer",
+                    "example": 2
+                },
+                "followers": {
+                    "type": "integer",
+                    "example": 30
+                },
+                "following": {
+                    "type": "integer",
+                    "example": 18
+                },
+                "friends": {
+                    "type": "integer",
+                    "example": 12
+                },
+                "user": {
+                    "$ref": "#/definitions/internal_modules_admin_relationship.UserInfo"
+                }
+            }
+        },
+        "internal_modules_admin_relationship.UserStatsResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_relationship.UserStatsItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 20
+                },
+                "offset": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "internal_modules_admin_relationship.UserStatsSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_relationship.UserStatsResponse"
                 },
                 "error": {
                     "type": "string"

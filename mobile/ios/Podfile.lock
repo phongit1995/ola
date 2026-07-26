@@ -1784,6 +1784,28 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
+  - react-native-image-resizer (3.0.11):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - Yoga
   - react-native-keyboard-controller (1.22.0):
     - hermes-engine
     - RCTRequired
@@ -1808,6 +1830,28 @@ PODS:
     - ReactNativeDependencies
     - Yoga
   - react-native-keyboard-controller/common (1.22.0):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - Yoga
+  - react-native-netinfo (12.0.1):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -2953,7 +2997,9 @@ DEPENDENCIES:
   - "react-native-geolocation (from `../../node_modules/@react-native-community/geolocation`)"
   - react-native-get-random-values (from `../../node_modules/react-native-get-random-values`)
   - react-native-image-picker (from `../../node_modules/react-native-image-picker`)
+  - "react-native-image-resizer (from `../../node_modules/@bam.tech/react-native-image-resizer`)"
   - react-native-keyboard-controller (from `../../node_modules/react-native-keyboard-controller`)
+  - "react-native-netinfo (from `../../node_modules/@react-native-community/netinfo`)"
   - react-native-ota-hot-update (from `../../node_modules/react-native-ota-hot-update`)
   - react-native-safe-area-context (from `../../node_modules/react-native-safe-area-context`)
   - react-native-webview (from `../../node_modules/react-native-webview`)
@@ -3140,8 +3186,12 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/react-native-get-random-values"
   react-native-image-picker:
     :path: "../../node_modules/react-native-image-picker"
+  react-native-image-resizer:
+    :path: "../../node_modules/@bam.tech/react-native-image-resizer"
   react-native-keyboard-controller:
     :path: "../../node_modules/react-native-keyboard-controller"
+  react-native-netinfo:
+    :path: "../../node_modules/@react-native-community/netinfo"
   react-native-ota-hot-update:
     :path: "../../node_modules/react-native-ota-hot-update"
   react-native-safe-area-context:
@@ -3323,7 +3373,9 @@ SPEC CHECKSUMS:
   react-native-geolocation: aba0b4dbf0f9a84c328059efd93af22e9e6190d7
   react-native-get-random-values: 7db8eaf5e8cf979eea17e141007609341d8fc391
   react-native-image-picker: 09cea417bef3ee25008ad21d4426f9a1fc54ad84
+  react-native-image-resizer: 3e533c1e3792738abbba561e181ca9b509582160
   react-native-keyboard-controller: 7035cde04633689d349fa197e755ad0111d7c26d
+  react-native-netinfo: a05f9b897e76ad24b53f615fed1cbb731932363d
   react-native-ota-hot-update: 363bf2e27422085a0cdb75477230c7362d973d4c
   react-native-safe-area-context: 0bbcdfba5c4a1b3203276f1ed9128e3239fdf199
   react-native-webview: 8ea93f5c9c986e9ce9888953759aa3db77eaa379

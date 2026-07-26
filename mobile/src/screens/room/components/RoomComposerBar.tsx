@@ -6,7 +6,7 @@ import type { NativeUploadFile } from '@ola/shared/lib';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { kulToken } from '@lib/kul';
 import { pastedImageFile } from '@lib/imagePicker';
-import { compressImageForUpload } from '@lib/compressImage';
+import { compressImageForUpload, ImageTooLargeError } from '@lib/compressImage';
 import { ChatComposer, type ChatComposerHandle } from '@components/ChatComposer';
 import { useLastKeyboardHeight } from '@hooks/useKeyboardHeight';
 import { SmileyKulPanel, SMILEY_PANEL_MIN_CONTENT_HEIGHT } from './SmileyKulPanel';
@@ -85,6 +85,20 @@ export const RoomComposerBar = forwardRef<RoomComposerHandle, RoomComposerBarPro
       }
     }
 
+    async function queueImageFile(uri: string, file: NativeUploadFile) {
+      try {
+        const prepared = await compressImageForUpload(file);
+        imageIdRef.current += 1;
+        const id = String(imageIdRef.current);
+        setPendingImages((current) => [...current, { id, uri, file: prepared }]);
+      } catch (err) {
+        pushToast(
+          'error',
+          err instanceof ImageTooLargeError ? t('chat.imageTooLarge') : t('room.sendError')
+        );
+      }
+    }
+
     async function pickImages() {
       if (disabled) return;
       const keyboardWasVisible = Keyboard.isVisible();
@@ -96,23 +110,14 @@ export const RoomComposerBar = forwardRef<RoomComposerHandle, RoomComposerBarPro
         if (result.errorCode != null) pushToast('error', t('room.sendError'));
         return;
       }
-      setPendingImages((current) => {
-        const next = [...current];
-        for (const asset of assets) {
-          if (asset.uri == null) continue;
-          imageIdRef.current += 1;
-          next.push({
-            id: String(imageIdRef.current),
-            uri: asset.uri,
-            file: {
-              uri: asset.uri,
-              name: asset.fileName ?? 'photo.jpg',
-              type: asset.type ?? 'image/jpeg',
-            },
-          });
-        }
-        return next;
-      });
+      for (const asset of assets) {
+        if (asset.uri == null) continue;
+        await queueImageFile(asset.uri, {
+          uri: asset.uri,
+          name: asset.fileName ?? 'photo.jpg',
+          type: asset.type ?? 'image/jpeg',
+        });
+      }
     }
 
     function removePendingImage(id: string) {
@@ -121,9 +126,7 @@ export const RoomComposerBar = forwardRef<RoomComposerHandle, RoomComposerBarPro
 
     function addPastedImage(uri: string) {
       if (disabled) return;
-      imageIdRef.current += 1;
-      const id = String(imageIdRef.current);
-      setPendingImages((current) => [...current, { id, uri, file: pastedImageFile(uri) }]);
+      void queueImageFile(uri, pastedImageFile(uri));
     }
 
     function clearPendingImages() {
@@ -138,8 +141,7 @@ export const RoomComposerBar = forwardRef<RoomComposerHandle, RoomComposerBarPro
       setPanelOpen(false);
       for (const image of images) {
         try {
-          const file = await compressImageForUpload(image.file);
-          await onSendImage(file);
+          await onSendImage(image.file);
         } catch {
           pushToast('error', t('room.sendError'));
         }

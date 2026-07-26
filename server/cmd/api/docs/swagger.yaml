@@ -1123,6 +1123,185 @@ definitions:
       traceId:
         type: string
     type: object
+  internal_modules_admin_marriage.MarriageItem:
+    properties:
+      divorcedAt:
+        example: "2026-07-26T10:00:00Z"
+        type: string
+      divorcedBy:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      marriedAt:
+        example: "2026-07-26T10:00:00Z"
+        type: string
+      status:
+        example: active
+        type: string
+      userA:
+        $ref: '#/definitions/internal_modules_admin_marriage.UserInfo'
+      userB:
+        $ref: '#/definitions/internal_modules_admin_marriage.UserInfo'
+    type: object
+  internal_modules_admin_marriage.MarriageListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_admin_marriage.MarriageItem'
+        type: array
+      limit:
+        example: 20
+        type: integer
+      offset:
+        example: 0
+        type: integer
+      total:
+        example: 1
+        type: integer
+    type: object
+  internal_modules_admin_marriage.MarriageListSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_marriage.MarriageListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_admin_marriage.MarriageStats:
+    properties:
+      active:
+        example: 70
+        type: integer
+      divorced:
+        example: 10
+        type: integer
+      total:
+        example: 80
+        type: integer
+    type: object
+  internal_modules_admin_marriage.ProposalItem:
+    properties:
+      addressee:
+        $ref: '#/definitions/internal_modules_admin_marriage.UserInfo'
+      createdAt:
+        example: "2026-07-26T10:00:00Z"
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      message:
+        example: Lấy anh nhé
+        type: string
+      proposer:
+        $ref: '#/definitions/internal_modules_admin_marriage.UserInfo'
+      respondedAt:
+        example: "2026-07-26T10:05:00Z"
+        type: string
+      status:
+        example: accepted
+        type: string
+    type: object
+  internal_modules_admin_marriage.ProposalListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_admin_marriage.ProposalItem'
+        type: array
+      limit:
+        example: 20
+        type: integer
+      offset:
+        example: 0
+        type: integer
+      total:
+        example: 1
+        type: integer
+    type: object
+  internal_modules_admin_marriage.ProposalListSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_marriage.ProposalListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_admin_marriage.ProposalStats:
+    properties:
+      accepted:
+        example: 80
+        type: integer
+      cancelled:
+        example: 10
+        type: integer
+      pending:
+        example: 5
+        type: integer
+      rejected:
+        example: 25
+        type: integer
+      total:
+        example: 120
+        type: integer
+    type: object
+  internal_modules_admin_marriage.StatsResponse:
+    properties:
+      marriages:
+        $ref: '#/definitions/internal_modules_admin_marriage.MarriageStats'
+      proposals:
+        $ref: '#/definitions/internal_modules_admin_marriage.ProposalStats'
+    type: object
+  internal_modules_admin_marriage.StatsSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_marriage.StatsResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_admin_marriage.UserInfo:
+    properties:
+      avatar:
+        example: https://cdn.ola.vn/a.png
+        type: string
+      fullName:
+        example: John Doe
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      username:
+        example: john_doe
+        type: string
+    type: object
   internal_modules_admin_me.AuthorResponse:
     properties:
       avatar:
@@ -1379,6 +1558,217 @@ definitions:
     properties:
       data:
         $ref: '#/definitions/internal_modules_admin_pen.UserStatsResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_admin_relationship.FollowItem:
+    properties:
+      createdAt:
+        example: "2026-07-26T10:00:00Z"
+        type: string
+      followee:
+        $ref: '#/definitions/internal_modules_admin_relationship.UserInfo'
+      follower:
+        $ref: '#/definitions/internal_modules_admin_relationship.UserInfo'
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+    type: object
+  internal_modules_admin_relationship.FollowListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_admin_relationship.FollowItem'
+        type: array
+      limit:
+        example: 20
+        type: integer
+      offset:
+        example: 0
+        type: integer
+      total:
+        example: 1
+        type: integer
+    type: object
+  internal_modules_admin_relationship.FollowListSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_relationship.FollowListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_admin_relationship.FollowStats:
+    properties:
+      total:
+        example: 630
+        type: integer
+    type: object
+  internal_modules_admin_relationship.RelationshipItem:
+    properties:
+      actionedAt:
+        example: "2026-07-26T10:05:00Z"
+        type: string
+      addressee:
+        $ref: '#/definitions/internal_modules_admin_relationship.UserInfo'
+      createdAt:
+        example: "2026-07-26T10:00:00Z"
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      requester:
+        $ref: '#/definitions/internal_modules_admin_relationship.UserInfo'
+      status:
+        example: accepted
+        type: string
+    type: object
+  internal_modules_admin_relationship.RelationshipListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_admin_relationship.RelationshipItem'
+        type: array
+      limit:
+        example: 20
+        type: integer
+      offset:
+        example: 0
+        type: integer
+      total:
+        example: 1
+        type: integer
+    type: object
+  internal_modules_admin_relationship.RelationshipListSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_relationship.RelationshipListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_admin_relationship.RelationshipStats:
+    properties:
+      accepted:
+        example: 240
+        type: integer
+      blocked:
+        example: 270
+        type: integer
+      pending:
+        example: 280
+        type: integer
+      rejected:
+        example: 10
+        type: integer
+      total:
+        example: 800
+        type: integer
+    type: object
+  internal_modules_admin_relationship.StatsResponse:
+    properties:
+      follows:
+        $ref: '#/definitions/internal_modules_admin_relationship.FollowStats'
+      relationships:
+        $ref: '#/definitions/internal_modules_admin_relationship.RelationshipStats'
+    type: object
+  internal_modules_admin_relationship.StatsSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_relationship.StatsResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_admin_relationship.UserInfo:
+    properties:
+      avatar:
+        example: https://cdn.ola.vn/a.png
+        type: string
+      fullName:
+        example: John Doe
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      username:
+        example: john_doe
+        type: string
+    type: object
+  internal_modules_admin_relationship.UserStatsItem:
+    properties:
+      blocked:
+        example: 2
+        type: integer
+      followers:
+        example: 30
+        type: integer
+      following:
+        example: 18
+        type: integer
+      friends:
+        example: 12
+        type: integer
+      user:
+        $ref: '#/definitions/internal_modules_admin_relationship.UserInfo'
+    type: object
+  internal_modules_admin_relationship.UserStatsResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_admin_relationship.UserStatsItem'
+        type: array
+      limit:
+        example: 20
+        type: integer
+      offset:
+        example: 0
+        type: integer
+      total:
+        example: 1
+        type: integer
+    type: object
+  internal_modules_admin_relationship.UserStatsSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_relationship.UserStatsResponse'
       error:
         type: string
       path:
@@ -9463,6 +9853,119 @@ paths:
       summary: Nhật ký thao tác admin
       tags:
       - admin-audit
+  /admin/marriages:
+    get:
+      parameters:
+      - description: active|divorced
+        in: query
+        name: status
+        type: string
+      - description: Lọc theo user
+        in: query
+        name: userId
+        type: string
+      - description: Cưới từ thời gian (RFC3339)
+        in: query
+        name: from
+        type: string
+      - description: Cưới đến thời gian (RFC3339)
+        in: query
+        name: to
+        type: string
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_marriage.MarriageListSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Danh sách cặp đôi kết hôn (admin)
+      tags:
+      - admin-marriage
+  /admin/marriages/proposals:
+    get:
+      parameters:
+      - description: pending|accepted|rejected|cancelled
+        in: query
+        name: status
+        type: string
+      - description: Lọc theo user (cầu hôn hoặc được cầu hôn)
+        in: query
+        name: userId
+        type: string
+      - description: Từ thời gian (RFC3339)
+        in: query
+        name: from
+        type: string
+      - description: Đến thời gian (RFC3339)
+        in: query
+        name: to
+        type: string
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_marriage.ProposalListSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Danh sách lời cầu hôn (admin)
+      tags:
+      - admin-marriage
+  /admin/marriages/stats:
+    get:
+      parameters:
+      - description: Từ thời gian (RFC3339)
+        in: query
+        name: from
+        type: string
+      - description: Đến thời gian (RFC3339)
+        in: query
+        name: to
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_marriage.StatsSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Thống kê kết hôn & cầu hôn (admin)
+      tags:
+      - admin-marriage
   /admin/me:
     get:
       parameters:
@@ -9858,6 +10361,166 @@ paths:
       summary: Thống kê PEN theo từng user, gộp cả vai sút và chụp (admin)
       tags:
       - admin-pen
+  /admin/relationships:
+    get:
+      parameters:
+      - description: pending|accepted|rejected|blocked
+        in: query
+        name: status
+        type: string
+      - description: Lọc theo user (gửi hoặc nhận)
+        in: query
+        name: userId
+        type: string
+      - description: Từ thời gian (RFC3339)
+        in: query
+        name: from
+        type: string
+      - description: Đến thời gian (RFC3339)
+        in: query
+        name: to
+        type: string
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_relationship.RelationshipListSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Danh sách quan hệ kết bạn/chặn (admin)
+      tags:
+      - admin-relationship
+  /admin/relationships/follows:
+    get:
+      parameters:
+      - description: Lọc theo người theo dõi
+        in: query
+        name: followerId
+        type: string
+      - description: Lọc theo người được theo dõi
+        in: query
+        name: followeeId
+        type: string
+      - description: Lọc theo user (theo dõi hoặc được theo dõi)
+        in: query
+        name: userId
+        type: string
+      - description: Từ thời gian (RFC3339)
+        in: query
+        name: from
+        type: string
+      - description: Đến thời gian (RFC3339)
+        in: query
+        name: to
+        type: string
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_relationship.FollowListSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Danh sách theo dõi giữa các user (admin)
+      tags:
+      - admin-relationship
+  /admin/relationships/stats:
+    get:
+      parameters:
+      - description: Từ thời gian (RFC3339)
+        in: query
+        name: from
+        type: string
+      - description: Đến thời gian (RFC3339)
+        in: query
+        name: to
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_relationship.StatsSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Thống kê quan hệ bạn bè & theo dõi (admin)
+      tags:
+      - admin-relationship
+  /admin/relationships/users:
+    get:
+      parameters:
+      - description: Lọc theo user
+        in: query
+        name: userId
+        type: string
+      - description: Từ thời gian (RFC3339)
+        in: query
+        name: from
+        type: string
+      - description: Đến thời gian (RFC3339)
+        in: query
+        name: to
+        type: string
+      - description: friends|blocked|followers|following (mặc định friends)
+        in: query
+        name: sortBy
+        type: string
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_relationship.UserStatsSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ola-chat-server_internal_utils.APIError'
+      security:
+      - BearerAuth: []
+      summary: Thống kê bạn bè/chặn/theo dõi theo từng user (admin)
+      tags:
+      - admin-relationship
   /admin/rooms:
     get:
       parameters:

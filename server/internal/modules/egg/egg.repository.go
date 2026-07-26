@@ -83,7 +83,7 @@ func (r *Repository) CategoriesByPacks(packIDs []uuid.UUID) ([]models.EggCategor
 	if len(packIDs) == 0 {
 		return cats, nil
 	}
-	if err := r.db.Where("pack_id IN ?", packIDs).Order("sort_order ASC").Find(&cats).Error; err != nil {
+	if err := r.db.Where("pack_id IN ?", packIDs).Order("sort_order ASC").Order("created_at ASC").Find(&cats).Error; err != nil {
 		return nil, err
 	}
 	return cats, nil
@@ -94,7 +94,7 @@ func (r *Repository) RewardsByCategories(categoryIDs []uuid.UUID) ([]models.EggR
 	if len(categoryIDs) == 0 {
 		return rewards, nil
 	}
-	if err := r.db.Where("category_id IN ?", categoryIDs).Order("sort_order ASC").Find(&rewards).Error; err != nil {
+	if err := r.db.Where("category_id IN ?", categoryIDs).Order("sort_order ASC").Order("created_at ASC").Find(&rewards).Error; err != nil {
 		return nil, err
 	}
 	return rewards, nil
