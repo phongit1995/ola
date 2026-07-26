@@ -3,6 +3,7 @@ import { LoginPage } from '@/pages/LoginPage'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { UsersPage } from '@/pages/UsersPage'
 import { MarriagesPage } from '@/pages/MarriagesPage'
+import { RelationshipsPage } from '@/pages/RelationshipsPage'
 import { RoomsPage } from '@/pages/RoomsPage'
 import { ClansPage } from '@/pages/ClansPage'
 import { VipPackagesPage } from '@/pages/VipPackagesPage'
@@ -45,6 +46,7 @@ export const router = createBrowserRouter([
       { index: true, element: <DashboardPage /> },
       { path: 'users', element: <UsersPage /> },
       { path: 'users/marriages', element: <MarriagesPage /> },
+      { path: 'users/relationships', element: <RelationshipsPage /> },
       { path: 'rooms', element: <RoomsPage /> },
       { path: 'clans', element: <ClansPage /> },
       { path: 'vip-packages', element: <VipPackagesPage /> },
@@ -60,7 +62,8 @@ export const router = createBrowserRouter([
       { path: 'games/matches/stats', element: <GameMatchStatsPage /> },
       { path: 'games/ken-treasure', element: <KenChestsPage /> },
       { path: 'games/mini-game', element: <MiniGamePage /> },
-      { path: 'ken-transfers', element: <KenTransfersPage /> },
+      { path: 'users/ken-transfers', element: <KenTransfersPage /> },
+      { path: 'ken-transfers', element: <Navigate to="/users/ken-transfers" replace /> },
       { path: 'me', element: <MePage /> },
       { path: 'settings/topup', element: <TopupSettingsPage /> },
       { path: 'audit-logs', element: <AuditLogsPage /> },

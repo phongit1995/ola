@@ -13,6 +13,7 @@ import (
 	adminme "ola-chat-server/internal/modules/admin/me"
 	adminminigame "ola-chat-server/internal/modules/admin/mini-game"
 	adminpen "ola-chat-server/internal/modules/admin/pen"
+	adminrelationship "ola-chat-server/internal/modules/admin/relationship"
 	adminroom "ola-chat-server/internal/modules/admin/room"
 	adminsetting "ola-chat-server/internal/modules/admin/setting"
 	adminupload "ola-chat-server/internal/modules/admin/upload"
@@ -41,6 +42,7 @@ func Provider(c *dig.Container) error {
 		adminpen.Provider,
 		admingamematch.Provider,
 		adminmarriage.Provider,
+		adminrelationship.Provider,
 		adminsetting.Provider,
 		adminminigame.Provider,
 	}

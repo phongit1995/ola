@@ -22,6 +22,7 @@ import {
   TeamOutlined,
   TransactionOutlined,
   TrophyOutlined,
+  UsergroupAddOutlined,
   UserOutlined,
 } from '@ant-design/icons'
 import { AdminAuthService } from '@/services/adminAuth.service'
@@ -38,7 +39,9 @@ const MENU_ITEMS = [
     label: 'Người dùng',
     children: [
       { key: '/users', icon: <TeamOutlined />, label: 'Danh sách' },
+      { key: '/users/relationships', icon: <UsergroupAddOutlined />, label: 'Quan hệ' },
       { key: '/users/marriages', icon: <HeartOutlined />, label: 'Kết hôn' },
+      { key: '/users/ken-transfers', icon: <TransactionOutlined />, label: 'Chuyển Ken' },
     ],
   },
   { key: '/rooms', icon: <CommentOutlined />, label: 'Phòng chat' },
@@ -66,7 +69,6 @@ const MENU_ITEMS = [
       { key: '/games/matches', icon: <TrophyOutlined />, label: 'Trận PvP' },
     ],
   },
-  { key: '/ken-transfers', icon: <TransactionOutlined />, label: 'Chuyển Ken' },
   { key: '/me', icon: <PictureOutlined />, label: 'Me' },
   { key: '/audit-logs', icon: <FileSearchOutlined />, label: 'Nhật ký admin' },
   {
@@ -87,6 +89,7 @@ const VIP_KEYS = ['/vip-packages', '/vip-shop', '/vip-transfers']
 const PAGE_TITLES: Record<string, string> = {
   '/': 'Tổng quan',
   '/users': 'Quản lý người dùng',
+  '/users/relationships': 'Quan hệ bạn bè & theo dõi',
   '/users/marriages': 'Kết hôn & cầu hôn',
   '/rooms': 'Quản lý phòng chat',
   '/clans': 'Quản lý clan',
@@ -103,7 +106,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/games/mini-game': 'Mini game',
   '/games/matches': 'Trận PvP mini-game',
   '/games/matches/stats': 'Thống kê trận & cược',
-  '/ken-transfers': 'Lịch sử chuyển Ken',
+  '/users/ken-transfers': 'Lịch sử chuyển Ken',
   '/me': 'Quản lý Me',
   '/audit-logs': 'Nhật ký admin',
   '/settings/topup': 'Cài đặt nạp KEN',
