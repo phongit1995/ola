@@ -6,7 +6,6 @@ RUN corepack enable
 # Monorepo pnpm: game import @ola/shared qua alias/paths (../packages/shared/src)
 # và vite-plugin-static-copy đọc asset ở packages/shared/assets -> cần copy folder này.
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
-COPY patches patches
 COPY packages/shared/package.json packages/shared/package.json
 COPY game/package.json game/package.json
 RUN pnpm install --frozen-lockfile --filter @ola/game...

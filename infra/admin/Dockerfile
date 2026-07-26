@@ -6,7 +6,6 @@ RUN corepack enable
 # Monorepo pnpm: admin build theo workspace để dùng chung asset ở packages/shared
 # (vite-plugin-static-copy copy vip-icons từ packages/shared/assets).
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
-COPY patches patches
 COPY packages/shared/package.json packages/shared/package.json
 COPY admin/package.json admin/package.json
 RUN pnpm install --frozen-lockfile --filter admin...
