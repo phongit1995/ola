@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"sort"
 	"time"
 
 	"ola-chat-server/internal/constants"
@@ -105,6 +106,108 @@ func (s *Service) ListPacksForUser() (*PackListResponse, error) {
 		return nil, err
 	}
 	return &PackListResponse{Items: views}, nil
+}
+
+func giftIdentity(catType models.EggCategoryType, rw models.EggReward) string {
+	switch catType {
+	case models.EggCategoryKen:
+		if rw.KenAmount != nil {
+			return fmt.Sprintf("ken:%d", *rw.KenAmount)
+		}
+	case models.EggCategoryVipDays:
+		if rw.VipDays != nil {
+			return fmt.Sprintf("vip_days:%d", *rw.VipDays)
+		}
+	case models.EggCategoryVipIcon:
+		if rw.VipTypeID != nil {
+			return fmt.Sprintf("vip_icon:%d", *rw.VipTypeID)
+		}
+	}
+	return fmt.Sprintf("%s:%s", catType, rw.Label)
+}
+
+func sortGiftRewards(catType models.EggCategoryType, list []GiftRewardView) {
+	sort.SliceStable(list, func(i, j int) bool {
+		switch catType {
+		case models.EggCategoryKen:
+			return derefInt(list[i].KenAmount) < derefInt(list[j].KenAmount)
+		case models.EggCategoryVipDays:
+			return derefInt(list[i].VipDays) < derefInt(list[j].VipDays)
+		case models.EggCategoryVipIcon:
+			return derefInt16(list[i].VipTypeID) < derefInt16(list[j].VipTypeID)
+		default:
+			return false
+		}
+	})
+}
+
+func derefInt(v *int) int {
+	if v == nil {
+		return 0
+	}
+	return *v
+}
+
+func derefInt16(v *int16) int16 {
+	if v == nil {
+		return 0
+	}
+	return *v
+}
+
+func (s *Service) ListGifts(packID uuid.UUID) (*GiftListResponse, error) {
+	pack, err := s.repo.FindPack(packID)
+	if err != nil || !pack.IsEnabled {
+		return nil, ErrPackNotFound
+	}
+	cats, err := s.repo.CategoriesByPacks([]uuid.UUID{pack.ID})
+	if err != nil {
+		return nil, err
+	}
+	catTypes := map[uuid.UUID]models.EggCategoryType{}
+	catIDs := make([]uuid.UUID, 0, len(cats))
+	for _, c := range cats {
+		if !c.IsActive || c.Type == models.EggCategoryNothing {
+			continue
+		}
+		catTypes[c.ID] = c.Type
+		catIDs = append(catIDs, c.ID)
+	}
+	rewards, err := s.repo.RewardsByCategories(catIDs)
+	if err != nil {
+		return nil, err
+	}
+	byType := map[models.EggCategoryType][]GiftRewardView{}
+	seen := map[string]bool{}
+	for _, rw := range rewards {
+		catType, ok := catTypes[rw.CategoryID]
+		if !ok || !rw.IsActive {
+			continue
+		}
+		key := giftIdentity(catType, rw)
+		if seen[key] {
+			continue
+		}
+		seen[key] = true
+		byType[catType] = append(byType[catType], GiftRewardView{
+			Label:        rw.Label,
+			VipTypeID:    rw.VipTypeID,
+			KenAmount:    rw.KenAmount,
+			VipDays:      rw.VipDays,
+			IsSuperLucky: rw.IsSuperLucky,
+		})
+	}
+	sectionOrder := []models.EggCategoryType{models.EggCategoryKen, models.EggCategoryVipDays, models.EggCategoryVipIcon}
+	items := make([]GiftSectionView, 0, len(sectionOrder))
+	for _, catType := range sectionOrder {
+		list := byType[catType]
+		if len(list) == 0 {
+			continue
+		}
+		sortGiftRewards(catType, list)
+		items = append(items, GiftSectionView{Type: catType, Rewards: list})
+	}
+	return &GiftListResponse{Items: items}, nil
 }
 
 func (s *Service) ListAllPacks() (*PackListResponse, error) {

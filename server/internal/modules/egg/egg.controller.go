@@ -31,6 +31,27 @@ func (ctrl *Controller) ListPacks(c *gin.Context) (interface{}, error) {
 	return resp, nil
 }
 
+// ListGifts godoc
+// @Summary      Danh sách quà của một gói đập trứng
+// @Tags         egg
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "Pack ID"
+// @Success      200  {object}  GiftListResponse
+// @Failure      404  {object}  utils.APIError
+// @Router       /egg/packs/{id}/gifts [get]
+func (ctrl *Controller) ListGifts(c *gin.Context) (interface{}, error) {
+	packID, err := utils.ParseUUIDParam(c, "id", "invalid pack id")
+	if err != nil {
+		return nil, err
+	}
+	resp, err := ctrl.service.ListGifts(packID)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	return resp, nil
+}
+
 // Draw godoc
 // @Summary      Đập một quả trứng trong gói
 // @Tags         egg

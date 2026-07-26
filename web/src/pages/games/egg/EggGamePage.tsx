@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { formatKen } from '@lib';
 import { AnimatedKen, FullScreenOverlay } from '@components';
 import { SocketService } from '@services';
 import { useAuthStore } from '@/store/authStore';
@@ -8,7 +7,8 @@ import { useEggGameStore } from './eggGameStore';
 import { useEggGame } from './useEggGame';
 import { EggStage } from './EggStage';
 import { EggHistoryDialog } from './EggHistoryDialog';
-import { historyIconUrl } from './eggAssets';
+import { EggGiftDialog } from './EggGiftDialog';
+import { giftIconUrl, historyIconUrl } from './eggAssets';
 import { EGG_START_KEN } from './eggGame.constants';
 
 function BackIcon() {
@@ -28,8 +28,9 @@ export function EggGamePage({ onClose }: EggGamePageProps) {
   const userKen = useAuthStore((s) => s.user?.ken);
   const syncKen = useEggGameStore((s) => s.syncKen);
   const loadPacks = useEggGameStore((s) => s.loadPacks);
-  const { ken, totalWin, cost, packsStatus, play } = useEggGame();
+  const { ken, cost, packId, packsStatus, play } = useEggGame();
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [giftsOpen, setGiftsOpen] = useState(false);
 
   useEffect(() => {
     void loadPacks();
@@ -98,13 +99,19 @@ export function EggGamePage({ onClose }: EggGamePageProps) {
             <span>
               {t('eggGame.cost')}: <b className="text-[#ffca28]">{cost}</b> KEN
             </span>
-            <span>
-              {t('eggGame.totalWin')}: <b className="text-[#ffca28]">{formatKen(totalWin)}</b> KEN
-            </span>
+            <button
+              type="button"
+              onClick={() => setGiftsOpen(true)}
+              className="flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5 font-semibold text-white hover:bg-white/25"
+            >
+              <img src={giftIconUrl} alt="" className="h-4 w-4 object-contain" />
+              {t('eggGame.gifts.title')}
+            </button>
           </footer>
         </div>
       </div>
       <EggHistoryDialog open={historyOpen} onClose={() => setHistoryOpen(false)} />
+      <EggGiftDialog open={giftsOpen} packId={packId} onClose={() => setGiftsOpen(false)} />
     </FullScreenOverlay>
   );
 }
