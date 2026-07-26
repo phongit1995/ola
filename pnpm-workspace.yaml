@@ -13,3 +13,6 @@ overrides:
   firebase: 12.16.0
 
 nodeLinker: hoisted
+
+patchedDependencies:
+  '@bam.tech/react-native-image-resizer': patches/@bam.tech__react-native-image-resizer.patch
