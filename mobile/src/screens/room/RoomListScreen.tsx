@@ -12,6 +12,7 @@ import type { RoomStackParamList } from '@navigation/types';
 import { ROOM_ROUTES } from '@navigation/routes';
 import { DIVIDER } from '@constants';
 import { CachedImage } from '@components/ui/CachedImage';
+import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { ROOM_BROWSE_LIMIT } from './roomConstants';
 
 const membersIcon = require('@assets/icons/room/ic_indicate_privacy_friends.png');
@@ -41,16 +42,18 @@ function MembersBadge({ members }: { members: number }) {
 function RoomRow({
   room,
   color,
+  joined,
   onEnter,
 }: {
   room: Room;
   color: string;
+  joined: boolean;
   onEnter: (room: Room) => void;
 }) {
   return (
     <Pressable
       onPress={() => onEnter(room)}
-      className="flex-row items-center gap-2 bg-white px-4 py-3 active:bg-black/5"
+      className={`flex-row items-center gap-2 px-4 py-3 active:bg-black/5 ${joined ? 'bg-ola-primary-light' : 'bg-white'}`}
       style={{ borderBottomWidth: 1, borderBottomColor: DIVIDER }}
     >
       {room.imageUrl != null && room.imageUrl !== '' ? (
@@ -129,6 +132,7 @@ export function RoomListScreen() {
   const insets = useSafeAreaInsets();
   const rooms = useRoomListStore((s) => s.rooms);
   const loading = useRoomListStore((s) => s.loading);
+  const loaded = useRoomListStore((s) => s.loaded);
   const fetchRooms = useRoomListStore((s) => s.fetchRooms);
 
   const load = useCallback(
@@ -150,9 +154,14 @@ export function RoomListScreen() {
   const openRoom = useRoomChatStore((s) => s.open);
   const closeRoom = useRoomChatStore((s) => s.close);
   const [joiningRoom, setJoiningRoom] = useState<{ id: string; name: string } | null>(null);
+  const [fullRoom, setFullRoom] = useState<Room | null>(null);
 
   const enterRoom = useCallback(
     (room: Room) => {
+      if (room.memberCount >= ROOM_CAPACITY) {
+        setFullRoom(room);
+        return;
+      }
       setJoiningRoom({ id: room.id, name: room.name });
       void openRoom({ id: room.id, name: room.name });
     },
@@ -183,11 +192,11 @@ export function RoomListScreen() {
   const header = useMemo(
     () => (
       <View>
-        <QuickJoinRow onPress={quickJoin} />
+        {loaded && <QuickJoinRow onPress={quickJoin} />}
         <SectionHeader label={t('room.sectionPublic')} />
       </View>
     ),
-    [quickJoin, t]
+    [loaded, quickJoin, t]
   );
 
   return (
@@ -205,6 +214,13 @@ export function RoomListScreen() {
           </Pressable>
         </View>
       </View>
+      {loading && rooms.length > 0 && (
+        <View className="bg-ola-primary-light px-4 py-1.5">
+          <Text className="text-center text-xs" style={{ color: '#33691e' }}>
+            {t('room.refreshing')}
+          </Text>
+        </View>
+      )}
       {loading && rooms.length === 0 ? (
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator color="#7cb342" size="large" />
@@ -223,10 +239,26 @@ export function RoomListScreen() {
             </View>
           }
           renderItem={({ item, index }) => (
-            <RoomRow room={item} color={ROOM_COLORS[index % ROOM_COLORS.length]!} onEnter={enterRoom} />
+            <RoomRow
+              room={item}
+              color={ROOM_COLORS[index % ROOM_COLORS.length]!}
+              joined={item.id === (activeRoom?.id ?? '')}
+              onEnter={enterRoom}
+            />
           )}
+          extraData={activeRoom?.id ?? ''}
         />
       )}
+
+      <ConfirmDialog
+        visible={fullRoom != null}
+        title={fullRoom?.name ?? ''}
+        message={t('room.roomFull')}
+        confirmLabel={t('room.buyVip')}
+        cancelLabel={t('dialog.cancel')}
+        onConfirm={() => setFullRoom(null)}
+        onCancel={() => setFullRoom(null)}
+      />
 
       {joiningRoom != null && (
         <View
