@@ -65,7 +65,6 @@ export interface UserInfoData {
   vipType?: string | null;
   vipDays: number;
   ken: number;
-  guest?: boolean;
 }
 
 export type LeaderboardPeriod = 'day' | 'week';

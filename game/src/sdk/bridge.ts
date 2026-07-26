@@ -35,6 +35,24 @@ function sendToHost(type: ArcadeBridgeEvent, data?: unknown): void {
 type HostHandler = (data: unknown) => void;
 const hostHandlers = new Map<string, Set<HostHandler>>();
 
+const REQUIRED_TOKEN_TIMEOUT_MS = 8000;
+
+export class GameAuthenticationRequiredError extends Error {
+  constructor() {
+    super('Authentication token is required');
+    this.name = 'GameAuthenticationRequiredError';
+  }
+}
+
+function tokenFrom(value: unknown): string | null {
+  const token = String(value ?? '').trim();
+  return token || null;
+}
+
+function hasTokenHost(): boolean {
+  return window.ReactNativeWebView != null || window.parent !== window;
+}
+
 function handleIncoming(raw: unknown): void {
   if (raw == null || typeof raw !== 'object') return;
   const message = raw as ArcadeBridgeMessage;
@@ -94,22 +112,30 @@ export const bridge = {
   },
 
   requestToken(): Promise<string> {
-    return new Promise((resolve) => {
-      const fromQuery = new URLSearchParams(location.search).get('token');
-      if (fromQuery) {
-        resolve(fromQuery);
-        return;
-      }
+    const queryValue = new URLSearchParams(location.search).get('token');
+    if (queryValue != null) {
+      const token = tokenFrom(queryValue);
+      if (token) return Promise.resolve(token);
+    }
+
+    if (!hasTokenHost()) {
+      return Promise.reject(new GameAuthenticationRequiredError());
+    }
+
+    return new Promise((resolve, reject) => {
+      let timer: number | undefined;
       const off = bridge.onHost(ARCADE_BRIDGE_EVENT.Token, (data) => {
         off();
-        clearTimeout(timer);
-        resolve(String(data ?? ''));
+        if (timer != null) clearTimeout(timer);
+        const token = tokenFrom(data);
+        if (token) resolve(token);
+        else reject(new GameAuthenticationRequiredError());
       });
-      sendToHost(ARCADE_BRIDGE_EVENT.GetToken);
-      const timer = setTimeout(() => {
+      timer = window.setTimeout(() => {
         off();
-        resolve(`guest:${crypto.randomUUID().slice(0, 8)}`);
-      }, 1500);
+        reject(new GameAuthenticationRequiredError());
+      }, REQUIRED_TOKEN_TIMEOUT_MS);
+      sendToHost(ARCADE_BRIDGE_EVENT.GetToken);
     });
   },
 };

@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
-	"strings"
 	"sync"
 
 	"ola-chat-server/internal/config"
@@ -27,7 +26,6 @@ type SocketData struct {
 	GameID  string
 	Name    string
 	VipType *string
-	Guest   bool
 }
 
 type Server struct {
@@ -94,39 +92,19 @@ func NewServer(
 			return
 		}
 
-		var userID string
-		var name string
-		var guest bool
-
-		if cfg.GameAllowGuest && strings.HasPrefix(token, "guest:") {
-			guest = true
-			guestID, namespacedID, ok := guestIdentity(token)
-			if !ok {
-				next(socket.NewExtendedError("invalid guest token", nil))
-				return
-			}
-			// Keep guests in a separate identity namespace even when their
-			// client-supplied suffix happens to be a registered UUID.
-			userID = namespacedID
-			name, _ = auth["name"].(string)
-			if name == "" {
-				name = "Guest-" + guestID
-			}
-		} else {
-			uid, err := jwtService.GetUserIDFromToken(token)
-			if err != nil {
-				server.logger.Warnw("Invalid game socket token", "error", err)
-				next(socket.NewExtendedError("Unauthorized", nil))
-				return
-			}
-			userID = uid.String()
-			name, _ = auth["name"].(string)
-			if name == "" {
-				name = userID[:8]
-			}
+		uid, err := jwtService.GetUserIDFromToken(token)
+		if err != nil {
+			server.logger.Warnw("Invalid game socket token", "error", err)
+			next(socket.NewExtendedError("Unauthorized", nil))
+			return
+		}
+		userID := uid.String()
+		name, _ := auth["name"].(string)
+		if name == "" {
+			name = userID[:8]
 		}
 
-		s.SetData(&SocketData{UserID: userID, GameID: gameID, Name: name, Guest: guest})
+		s.SetData(&SocketData{UserID: userID, GameID: gameID, Name: name})
 		next(nil)
 	})
 
@@ -182,14 +160,6 @@ func (s *Server) handleConnection(client *socket.Socket) {
 }
 
 func (s *Server) sendUserInfo(client *socket.Socket, data *SocketData) {
-	if data.Guest {
-		client.Emit(messageEvent, protocol.OutEnvelope{
-			Type: protocol.S2CUserInfo,
-			Data: protocol.UserInfoData{ID: data.UserID, Username: data.Name, Guest: true},
-		})
-		return
-	}
-
 	info, err := s.repo.GetUserInfo(data.UserID)
 	if err != nil {
 		s.logger.Warnw("Failed to load user info", "user_id", data.UserID, "error", err)
@@ -213,17 +183,6 @@ func socketPlayer(data *SocketData) protocol.PlayerInfo {
 		Name:    data.Name,
 		VipType: data.VipType,
 	}
-}
-
-func guestIdentity(token string) (suffix, userID string, ok bool) {
-	if !strings.HasPrefix(token, "guest:") {
-		return "", "", false
-	}
-	suffix = strings.TrimPrefix(token, "guest:")
-	if suffix == "" {
-		return "", "", false
-	}
-	return suffix, "guest:" + suffix, true
 }
 
 func (s *Server) handleMessage(data *SocketData, raw any) {

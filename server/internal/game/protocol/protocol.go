@@ -58,7 +58,6 @@ type UserInfoData struct {
 	VipType  *string `json:"vipType,omitempty"`
 	VipDays  int     `json:"vipDays"`
 	Ken      int     `json:"ken"`
-	Guest    bool    `json:"guest,omitempty"`
 }
 
 type LeaderboardRequestData struct {

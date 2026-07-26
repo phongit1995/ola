@@ -20,7 +20,6 @@ type Config struct {
 	ChatPort int `env:"CHAT_PORT" envDefault:"8081" validate:"min=1,max=65535"`
 
 	GamePort                  int    `env:"GAME_PORT" envDefault:"8082" validate:"min=1,max=65535"`
-	GameAllowGuest            bool   `env:"GAME_ALLOW_GUEST" envDefault:"false"`
 	GameTurnSeconds           int    `env:"GAME_TURN_SECONDS" envDefault:"45" validate:"min=5,max=300"`
 	CaroCommissionPercent     int    `env:"CARO_COMMISSION_PERCENT" envDefault:"5" validate:"min=0,max=100"`
 	GameReconnectGraceSeconds int    `env:"GAME_RECONNECT_GRACE_SECONDS" envDefault:"30" validate:"min=5,max=120"`

@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { ARCADE_ATTENTION_REASON } from '@ola/shared/types';
 import {
   bridge,
+  GameAuthenticationRequiredError,
   joinGame,
   type GameSession,
   type LeaderboardPeriod,
@@ -292,7 +293,12 @@ export const useCaro = create<CaroStore>()((set, get) => {
   const wireSession = (target: GameSession<CaroState, CaroMove>): void => {
     target.onUserInfo((info) => {
       refs.user = info;
-      set((s) => ({ userInfo: info, lobbyPhase: 'ready', lobbyAnimKey: s.lobbyAnimKey + 1 }));
+      set((s) => ({
+        userInfo: info,
+        lobbyPhase: 'ready',
+        lobbyError: null,
+        lobbyAnimKey: s.lobbyAnimKey + 1,
+      }));
       animateKen(info.ken ?? 0);
     });
 
@@ -684,7 +690,7 @@ export const useCaro = create<CaroStore>()((set, get) => {
     if (refs.connectPromise) return refs.connectPromise;
     refs.connectPromise = (async () => {
       refs.connecting = true;
-      set({ lobbyPhase: 'connecting' });
+      set({ lobbyPhase: 'connecting', lobbyError: null });
       try {
         if (!refs.online) {
           refs.online = await joinGame<CaroState, CaroMove>('caro');
@@ -702,11 +708,18 @@ export const useCaro = create<CaroStore>()((set, get) => {
             reject(new Error('connect timeout'));
           }, 8000);
         });
-      } catch {
+      } catch (error) {
         refs.online?.disconnect();
         refs.online = null;
         refs.user = null;
-        set({ userInfo: null, lobbyPhase: 'error' });
+        set({
+          userInfo: null,
+          lobbyPhase: 'error',
+          lobbyError:
+            error instanceof GameAuthenticationRequiredError
+              ? 'Vui lòng đăng nhập để chơi Cờ Caro'
+              : 'Không kết nối được máy chủ',
+        });
       } finally {
         refs.connecting = false;
         refs.connectPromise = null;

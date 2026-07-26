@@ -20,10 +20,11 @@ export function LobbyScreen({ progress }: { progress: string }) {
     })),
   );
 
-  const { lobbyVisible, lobbyPhase: phase, lobbyAnimKey, userInfo, ken, toast } = useCaro(
+  const { lobbyVisible, lobbyPhase: phase, lobbyError, lobbyAnimKey, userInfo, ken, toast } = useCaro(
     useShallow((s) => ({
       lobbyVisible: s.lobbyVisible,
       lobbyPhase: s.lobbyPhase,
+      lobbyError: s.lobbyError,
       lobbyAnimKey: s.lobbyAnimKey,
       userInfo: s.userInfo,
       ken: s.ken,
@@ -72,7 +73,7 @@ export function LobbyScreen({ progress }: { progress: string }) {
             <img id="lobby-vip" className={phase === 'ready' ? '' : 'hidden'} src={vipSrc} alt="VIP" />
           </div>
           <div className="lobby-name" style={assetBg('nameFrame')}>
-            <span id="lobby-name-text">{userInfo ? (userInfo.guest ? 'Khách' : `@${userInfo.username}`) : '...'}</span>
+            <span id="lobby-name-text">{userInfo ? `@${userInfo.username}` : '...'}</span>
           </div>
           <div className="lobby-ken" style={assetBg('kenFrame')}>
             <img className="lobby-ken-icon" src={assetSrc('icKen')} alt="Ken" />
@@ -91,7 +92,9 @@ export function LobbyScreen({ progress }: { progress: string }) {
           </button>
         </div>
         <div id="lobby-status" className={phase === 'connecting' || phase === 'error' ? '' : 'hidden'}>
-          <span id="lobby-status-text">{phase === 'error' ? 'Không kết nối được máy chủ' : 'Đang kết nối máy chủ...'}</span>
+          <span id="lobby-status-text">
+            {phase === 'error' ? lobbyError ?? 'Không kết nối được máy chủ' : 'Đang kết nối máy chủ...'}
+          </span>
           <button type="button" id="lobby-retry" className={phase === 'error' ? '' : 'hidden'} onClick={retry}>
             Thử lại
           </button>

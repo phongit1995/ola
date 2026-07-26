@@ -14,6 +14,7 @@ export function createInitialCaroState(): CaroState {
   return {
     lobbyVisible: true,
     lobbyPhase: 'loading',
+    lobbyError: null,
     lobbyAnimKey: 0,
     userInfo: null,
     ken: 0,

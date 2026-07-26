@@ -58,30 +58,30 @@ func TestSettlementValidation(t *testing.T) {
 		StartedAt: now,
 	}
 
-	if _, _, guest, err := validateRecord(valid); err != nil || guest {
-		t.Fatalf("valid record rejected: guest=%v err=%v", guest, err)
+	if _, _, err := validateRecord(valid); err != nil {
+		t.Fatalf("valid record rejected: %v", err)
 	}
 
 	invalidPlayer := valid
-	invalidPlayer.Player0ID = "guest-id"
-	if _, _, _, err := validateRecord(invalidPlayer); !errors.Is(err, errInvalidMatch) {
-		t.Fatalf("positive bet with invalid player id should fail, got %v", err)
+	invalidPlayer.Player0ID = "invalid-player-id"
+	if _, _, err := validateRecord(invalidPlayer); !errors.Is(err, errInvalidMatch) {
+		t.Fatalf("invalid player id should fail, got %v", err)
 	}
 	invalidPlayer.Bet = 0
-	if _, _, guest, err := validateRecord(invalidPlayer); err != nil || !guest {
-		t.Fatalf("zero-bet guest should be ignored: guest=%v err=%v", guest, err)
+	if _, _, err := validateRecord(invalidPlayer); !errors.Is(err, errInvalidMatch) {
+		t.Fatalf("zero-bet record with invalid player id should fail, got %v", err)
 	}
 
 	tooLarge := valid
 	tooLarge.Bet = engine.MaxBet + 1
-	if _, _, _, err := validateRecord(tooLarge); !errors.Is(err, errInvalidMatch) {
+	if _, _, err := validateRecord(tooLarge); !errors.Is(err, errInvalidMatch) {
 		t.Fatalf("oversized bet should fail, got %v", err)
 	}
 
-	guestOutcome := engine.MatchOutcome{
+	invalidOutcome := engine.MatchOutcome{
 		GameID:     valid.GameID,
 		MatchID:    valid.MatchID,
-		Player0ID:  "guest:" + valid.Player0ID,
+		Player0ID:  "invalid-player-id",
 		Player1ID:  valid.Player1ID,
 		WinnerID:   valid.Player1ID,
 		Reason:     "win",
@@ -89,19 +89,19 @@ func TestSettlementValidation(t *testing.T) {
 		MoveCount:  9,
 		FinishedAt: now,
 	}
-	if _, _, _, err := validateOutcome(guestOutcome); !errors.Is(err, errInvalidMatch) {
-		t.Fatalf("paid guest outcome should fail UUID validation, got %v", err)
+	if _, _, err := validateOutcome(invalidOutcome); !errors.Is(err, errInvalidMatch) {
+		t.Fatalf("outcome with invalid player id should fail, got %v", err)
 	}
-	guestOutcome.Bet = 0
-	if _, _, guest, err := validateOutcome(guestOutcome); err != nil || !guest {
-		t.Fatalf("zero-bet guest outcome should be ignored: guest=%v err=%v", guest, err)
+	invalidOutcome.Bet = 0
+	if _, _, err := validateOutcome(invalidOutcome); !errors.Is(err, errInvalidMatch) {
+		t.Fatalf("zero-bet outcome with invalid player id should fail, got %v", err)
 	}
 
 	if _, err := checkedCredit(math.MaxInt32-4, 5); !errors.Is(err, errKenBalanceCap) {
 		t.Fatalf("overflowing credit should fail, got %v", err)
 	}
 
-	p0, p1, _, _ := validateRecord(valid)
+	p0, p1, _ := validateRecord(valid)
 	closed := models.GameMatch{
 		GameID:     valid.GameID,
 		MatchID:    valid.MatchID,

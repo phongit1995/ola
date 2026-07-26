@@ -59,6 +59,7 @@ export interface TurnAnnouncement {
 export interface CaroState {
   lobbyVisible: boolean;
   lobbyPhase: LobbyPhase;
+  lobbyError: string | null;
   lobbyAnimKey: number;
   userInfo: UserInfoData | null;
   ken: number;

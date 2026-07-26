@@ -63,12 +63,9 @@ export interface GameSession<TState = unknown, TMove = unknown> {
 
 type Handler = (data: never) => void;
 
-export async function joinGame<TState = unknown, TMove = unknown>(
-  gameId: string,
-): Promise<GameSession<TState, TMove>> {
+export async function joinGame<TState = unknown, TMove = unknown>(gameId: string): Promise<GameSession<TState, TMove>> {
   const token = await bridge.requestToken();
   const name = new URLSearchParams(location.search).get('name') ?? undefined;
-  const userId = token.startsWith('guest:') ? token : 'me';
 
   const socket: Socket = io('/', {
     auth: { token, gameId, ...(name && { name }) },
@@ -103,7 +100,7 @@ export async function joinGame<TState = unknown, TMove = unknown>(
   };
 
   return {
-    userId,
+    userId: 'me',
     joinQueue: () => send(C2S.QueueJoin),
     leaveQueue: () => send(C2S.QueueLeave),
     sendMove: (matchId, move) => send(C2S.Move, { matchId, move }),

@@ -204,7 +204,11 @@ export function ArcadeOverlay() {
         data: token,
       });
     } catch {
-      // The game bridge will fall back to its guest token timeout.
+      sendToGame({
+        source: ARCADE_BRIDGE_SOURCE.Host,
+        type: ARCADE_BRIDGE_EVENT.Token,
+        data: null,
+      });
     }
   }
 

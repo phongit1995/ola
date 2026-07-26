@@ -117,7 +117,14 @@ export function ArcadeOverlay() {
             gameOrigin
           );
         } catch {
-          // The game bridge will fall back to its guest token timeout.
+          iframeRef.current?.contentWindow?.postMessage(
+            {
+              source: ARCADE_BRIDGE_SOURCE.Host,
+              type: ARCADE_BRIDGE_EVENT.Token,
+              data: null,
+            },
+            gameOrigin
+          );
         }
       }
       const overlay = useArcadeOverlayStore.getState();

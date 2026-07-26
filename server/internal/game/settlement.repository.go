@@ -114,59 +114,53 @@ func validateBet(bet int) error {
 	return nil
 }
 
-func validateRecord(rec engine.MatchRecord) (p0, p1 uuid.UUID, guest bool, err error) {
+func validateRecord(rec engine.MatchRecord) (p0, p1 uuid.UUID, err error) {
 	if err = validateBet(rec.Bet); err != nil {
-		return uuid.Nil, uuid.Nil, false, err
+		return uuid.Nil, uuid.Nil, err
 	}
 	p0, p1, err = parsePlayers(rec.Player0ID, rec.Player1ID)
 	if err != nil {
-		if rec.Bet == 0 {
-			return uuid.Nil, uuid.Nil, true, nil
-		}
-		return uuid.Nil, uuid.Nil, false, err
+		return uuid.Nil, uuid.Nil, err
 	}
 	if _, err = parseMatchID(rec.MatchID); err != nil {
-		return uuid.Nil, uuid.Nil, false, err
+		return uuid.Nil, uuid.Nil, err
 	}
 	if rec.GameID == "" || len(rec.GameID) > 50 {
-		return uuid.Nil, uuid.Nil, false, invalidMatchError("invalid game id")
+		return uuid.Nil, uuid.Nil, invalidMatchError("invalid game id")
 	}
 	if rec.Mode != "queue" && rec.Mode != "room" {
-		return uuid.Nil, uuid.Nil, false, invalidMatchError("invalid match mode")
+		return uuid.Nil, uuid.Nil, invalidMatchError("invalid match mode")
 	}
 	if rec.StartedAt.IsZero() {
-		return uuid.Nil, uuid.Nil, false, invalidMatchError("missing start time")
+		return uuid.Nil, uuid.Nil, invalidMatchError("missing start time")
 	}
-	return p0, p1, false, nil
+	return p0, p1, nil
 }
 
-func validateOutcome(out engine.MatchOutcome) (p0, p1 uuid.UUID, guest bool, err error) {
+func validateOutcome(out engine.MatchOutcome) (p0, p1 uuid.UUID, err error) {
 	if err = validateBet(out.Bet); err != nil {
-		return uuid.Nil, uuid.Nil, false, err
+		return uuid.Nil, uuid.Nil, err
 	}
 	p0, p1, err = parsePlayers(out.Player0ID, out.Player1ID)
 	if err != nil {
-		if out.Bet == 0 {
-			return uuid.Nil, uuid.Nil, true, nil
-		}
-		return uuid.Nil, uuid.Nil, false, err
+		return uuid.Nil, uuid.Nil, err
 	}
 	if _, err = parseMatchID(out.MatchID); err != nil {
-		return uuid.Nil, uuid.Nil, false, err
+		return uuid.Nil, uuid.Nil, err
 	}
 	if out.GameID == "" || len(out.GameID) > 50 {
-		return uuid.Nil, uuid.Nil, false, invalidMatchError("invalid game id")
+		return uuid.Nil, uuid.Nil, invalidMatchError("invalid game id")
 	}
 	if strings.TrimSpace(out.Reason) == "" || len(out.Reason) > 20 {
-		return uuid.Nil, uuid.Nil, false, invalidMatchError("invalid finish reason")
+		return uuid.Nil, uuid.Nil, invalidMatchError("invalid finish reason")
 	}
 	if out.MoveCount < 0 {
-		return uuid.Nil, uuid.Nil, false, invalidMatchError("move count cannot be negative")
+		return uuid.Nil, uuid.Nil, invalidMatchError("move count cannot be negative")
 	}
 	if out.FinishedAt.IsZero() {
-		return uuid.Nil, uuid.Nil, false, invalidMatchError("missing finish time")
+		return uuid.Nil, uuid.Nil, invalidMatchError("missing finish time")
 	}
-	return p0, p1, false, nil
+	return p0, p1, nil
 }
 
 func (s *SettlementRepository) Balance(userID string) (int, bool) {
@@ -182,12 +176,9 @@ func (s *SettlementRepository) Balance(userID string) (int, bool) {
 }
 
 func (s *SettlementRepository) EscrowStart(ctx context.Context, rec engine.MatchRecord) ([]engine.SettledBalance, error) {
-	p0, p1, guest, err := validateRecord(rec)
+	p0, p1, err := validateRecord(rec)
 	if err != nil {
 		return nil, err
-	}
-	if guest {
-		return nil, nil
 	}
 	if rec.Bet == 0 {
 		registered, err := s.registeredPlayers(ctx, p0, p1)
@@ -308,12 +299,9 @@ func (s *SettlementRepository) AbortStart(ctx context.Context, matchID string) (
 }
 
 func (s *SettlementRepository) SettleFinish(ctx context.Context, out engine.MatchOutcome) ([]engine.SettledBalance, error) {
-	p0, p1, guest, err := validateOutcome(out)
+	p0, p1, err := validateOutcome(out)
 	if err != nil {
 		return nil, err
-	}
-	if guest {
-		return nil, nil
 	}
 	if out.Bet == 0 {
 		registered, err := s.registeredPlayers(ctx, p0, p1)
