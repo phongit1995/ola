@@ -12,6 +12,8 @@ import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
+import { trackEvent } from '@lib/telemetry';
+import { useArcadeOverlayStore } from '@store/arcadeOverlayStore';
 import { useArcadeStore } from '@store/arcadeStore';
 import { APP_ITEMS, type AppItem } from './constants';
 
@@ -64,6 +66,7 @@ export function AppsScreen() {
   const push = useToastStore((s) => s.push);
   const miniGames = useArcadeStore((s) => s.games);
   const fetchGames = useArcadeStore((s) => s.fetchGames);
+  const openArcade = useArcadeOverlayStore((s) => s.open);
   const notifUnread = useAppNotificationStore((s) => s.unreadCount);
   const user = useAuthStore((s) => s.user);
   const [logoutOpen, setLogoutOpen] = useState(false);
@@ -128,6 +131,20 @@ export function AppsScreen() {
     }
   }
 
+  function handleOpenArcade(game: (typeof miniGames)[number]) {
+    const isNewGame = useArcadeOverlayStore.getState().active == null;
+    if (!openArcade(game)) {
+      push('info', t('arcade.alreadyRunning'));
+      return;
+    }
+    if (isNewGame) {
+      trackEvent('arcade_open', {
+        game_id: game.id,
+        game_slug: game.slug,
+      });
+    }
+  }
+
   function renderAppItem(item: AppItem) {
     return (
       <PanelRow
@@ -169,7 +186,7 @@ export function AppsScreen() {
             icon={game.iconUrl ? { uri: game.iconUrl } : iconGameDefault}
             title={game.name}
             subtitle={game.description || undefined}
-            onPress={() => navigation.navigate(ROOT_ROUTES.ArcadeGame, { game })}
+            onPress={() => handleOpenArcade(game)}
           />
         ))}
         {APP_ITEMS.slice(1).map(renderAppItem)}

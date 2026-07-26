@@ -20,6 +20,7 @@ import { useMeNotificationRealtime } from './hooks/useMeNotificationRealtime';
 import { useAppNotificationRealtime } from './hooks/useAppNotificationRealtime';
 import { useKenRealtime } from './hooks/useKenRealtime';
 import { KenTreasureOverlay } from './screens/games/ken-treasure/KenTreasureOverlay';
+import { ArcadeOverlay } from './screens/apps/ArcadeOverlay';
 import { checkForOtaUpdate } from './services/otaUpdate';
 import { initTelemetry, setTelemetryUser, trackScreen } from './lib/telemetry';
 
@@ -88,6 +89,7 @@ export default function App() {
         </NavigationContainer>
         <StatusBarBackground />
         <KenTreasureOverlay />
+        <ArcadeOverlay />
         <ToastHost />
         <MediaViewer />
       </SafeAreaProvider>

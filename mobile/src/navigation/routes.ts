@@ -28,7 +28,6 @@ export const ROOT_ROUTES = {
   PenGame: 'PenGame',
   SpinWheel: 'SpinWheel',
   EggGame: 'EggGame',
-  ArcadeGame: 'ArcadeGame',
   MeVisitors: 'MeVisitors',
   MeLikedPosts: 'MeLikedPosts',
   MeNotifications: 'MeNotifications',

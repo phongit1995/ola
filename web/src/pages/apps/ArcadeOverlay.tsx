@@ -14,6 +14,7 @@ import { useArcadeOverlayStore } from '@/store/arcadeOverlayStore';
 interface GameBridgeMessage {
   source?: string;
   type?: string;
+  data?: unknown;
 }
 
 interface BubblePosition {
@@ -106,11 +107,25 @@ export function ArcadeOverlay() {
       const data = event.data as GameBridgeMessage;
       if (data?.source !== 'ola-game') return;
       if (data.type === 'get_token') {
-        const token = await ensureFreshToken();
-        iframeRef.current?.contentWindow?.postMessage(
-          { source: 'ola-host', type: 'token', data: token },
-          gameOrigin
-        );
+        try {
+          const token = await ensureFreshToken();
+          iframeRef.current?.contentWindow?.postMessage(
+            { source: 'ola-host', type: 'token', data: token },
+            gameOrigin
+          );
+        } catch {
+          // The game bridge will fall back to its guest token timeout.
+        }
+      }
+      const overlay = useArcadeOverlayStore.getState();
+      if (
+        overlay.minimized &&
+        (data.type === 'game_over' ||
+          (data.type === 'turn_changed' &&
+            (data.data as { yourTurn?: boolean } | undefined)?.yourTurn ===
+              true))
+      ) {
+        overlay.setNotify(true);
       }
       if (data.type === 'exit') {
         close();

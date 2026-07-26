@@ -1,7 +1,8 @@
 {
   "arcade": {
     "minimize": "Minimize",
-    "restore": "Restore"
+    "restore": "Restore",
+    "alreadyRunning": "Another game is already open. Close it before starting a new one."
   },
   "common": {
     "clear": "Clear",
