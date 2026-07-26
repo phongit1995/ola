@@ -1,6 +1,31 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AdminKenChestService } from '@/services/adminKenChest.service'
-import type { CreateKenChestRequest, KenChestAutoJobRequest, ListParams } from '@/types'
+import type {
+  CreateKenChestRequest,
+  KenChestAutoJobRequest,
+  KenChestStatsParams,
+  KenChestUserStatsParams,
+  ListParams,
+} from '@/types'
+
+const KEN_CHEST_STATS_KEY = 'admin-ken-chest-stats'
+const KEN_CHEST_USER_STATS_KEY = 'admin-ken-chest-user-stats'
+
+export function useKenChestStats(params: KenChestStatsParams, enabled = true) {
+  return useQuery({
+    queryKey: [KEN_CHEST_STATS_KEY, params],
+    queryFn: () => AdminKenChestService.getStats(params),
+    enabled,
+  })
+}
+
+export function useKenChestUserStats(params: KenChestUserStatsParams, enabled = true) {
+  return useQuery({
+    queryKey: [KEN_CHEST_USER_STATS_KEY, params],
+    queryFn: () => AdminKenChestService.getUserStats(params),
+    enabled,
+  })
+}
 
 const KEN_CHESTS_KEY = 'admin-ken-chests'
 const KEN_AUTO_JOBS_KEY = 'admin-ken-auto-jobs'

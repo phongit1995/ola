@@ -864,6 +864,154 @@ definitions:
       traceId:
         type: string
     type: object
+  internal_modules_admin_kenchest.StatsOverview:
+    properties:
+      activeChests:
+        type: integer
+      autoChests:
+        type: integer
+      emptyClaims:
+        type: integer
+      emptyRate:
+        type: number
+      expiredChests:
+        type: integer
+      manualChests:
+        type: integer
+      totalChests:
+        type: integer
+      totalClaims:
+        type: integer
+      totalKenGiven:
+        type: integer
+      uniqueUsers:
+        type: integer
+    type: object
+  internal_modules_admin_kenchest.StatsResponse:
+    properties:
+      bucket:
+        type: string
+      bySource:
+        items:
+          $ref: '#/definitions/internal_modules_admin_kenchest.StatsSourceRow'
+        type: array
+      overview:
+        $ref: '#/definitions/internal_modules_admin_kenchest.StatsOverview'
+      timeseries:
+        items:
+          $ref: '#/definitions/internal_modules_admin_kenchest.StatsTimePoint'
+        type: array
+    type: object
+  internal_modules_admin_kenchest.StatsSourceRow:
+    properties:
+      chests:
+        type: integer
+      claims:
+        type: integer
+      kenGiven:
+        type: integer
+      source:
+        type: string
+    type: object
+  internal_modules_admin_kenchest.StatsSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_kenchest.StatsResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_admin_kenchest.StatsTimePoint:
+    properties:
+      claims:
+        type: integer
+      date:
+        type: string
+      empty:
+        type: integer
+      kenGiven:
+        type: integer
+    type: object
+  internal_modules_admin_kenchest.UserBrief:
+    properties:
+      avatar:
+        example: https://example.com/avatar.jpg
+        type: string
+      fullName:
+        example: John Doe
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      username:
+        example: john_doe
+        type: string
+    type: object
+  internal_modules_admin_kenchest.UserStatsItem:
+    properties:
+      chests:
+        example: 20
+        type: integer
+      claims:
+        example: 25
+        type: integer
+      emptyClaims:
+        example: 4
+        type: integer
+      emptyRate:
+        example: 16
+        type: number
+      kenTotal:
+        example: 52000
+        type: integer
+      lastClaimAt:
+        example: "2026-07-25T15:12:33Z"
+        type: string
+      user:
+        $ref: '#/definitions/internal_modules_admin_kenchest.UserBrief'
+    type: object
+  internal_modules_admin_kenchest.UserStatsResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_admin_kenchest.UserStatsItem'
+        type: array
+      limit:
+        example: 20
+        type: integer
+      offset:
+        example: 0
+        type: integer
+      total:
+        example: 1
+        type: integer
+    type: object
+  internal_modules_admin_kenchest.UserStatsSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_kenchest.UserStatsResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
   internal_modules_admin_me.AuthorResponse:
     properties:
       avatar:
@@ -1011,6 +1159,127 @@ definitions:
         type: boolean
     required:
     - enabled
+    type: object
+  internal_modules_admin_pen.SideStatsResponse:
+    properties:
+      keeperLeft:
+        example: 101
+        type: integer
+      keeperRight:
+        example: 117
+        type: integer
+      shooterLeft:
+        example: 120
+        type: integer
+      shooterRight:
+        example: 98
+        type: integer
+    type: object
+  internal_modules_admin_pen.SideStatsSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_pen.SideStatsResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_admin_pen.UserBrief:
+    properties:
+      avatar:
+        example: https://example.com/avatar.jpg
+        type: string
+      fullName:
+        example: John Doe
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      username:
+        example: john_doe
+        type: string
+    type: object
+  internal_modules_admin_pen.UserStatsItem:
+    properties:
+      cancelRate:
+        example: 7.5
+        type: number
+      cancelled:
+        example: 3
+        type: integer
+      catches:
+        example: 25
+        type: integer
+      keeperSaveRate:
+        example: 40
+        type: number
+      keeperWins:
+        example: 10
+        type: integer
+      lastPlayAt:
+        example: "2026-07-25T15:12:33Z"
+        type: string
+      netKen:
+        example: -8000
+        type: integer
+      shooterSettled:
+        example: 30
+        type: integer
+      shooterWinRate:
+        example: 40
+        type: number
+      shooterWins:
+        example: 12
+        type: integer
+      shots:
+        example: 40
+        type: integer
+      staked:
+        example: 120000
+        type: integer
+      user:
+        $ref: '#/definitions/internal_modules_admin_pen.UserBrief'
+    type: object
+  internal_modules_admin_pen.UserStatsResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_admin_pen.UserStatsItem'
+        type: array
+      limit:
+        example: 20
+        type: integer
+      offset:
+        example: 0
+        type: integer
+      total:
+        example: 1
+        type: integer
+    type: object
+  internal_modules_admin_pen.UserStatsSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_pen.UserStatsResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
     type: object
   internal_modules_admin_setting.PutSettingRequest:
     properties:
@@ -8631,6 +8900,80 @@ paths:
       summary: Bật/tắt tất cả rương ken tự động (admin)
       tags:
       - admin-ken-chest
+  /admin/ken/chest-stats:
+    get:
+      parameters:
+      - description: manual|auto
+        in: query
+        name: source
+        type: string
+      - description: Lọc theo user
+        in: query
+        name: userId
+        type: string
+      - description: Từ thời gian (RFC3339)
+        in: query
+        name: from
+        type: string
+      - description: Đến thời gian (RFC3339)
+        in: query
+        name: to
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_kenchest.StatsSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Thống kê rương ken (admin)
+      tags:
+      - admin-ken-chest
+  /admin/ken/chest-stats/users:
+    get:
+      parameters:
+      - description: manual|auto
+        in: query
+        name: source
+        type: string
+      - description: Lọc theo user
+        in: query
+        name: userId
+        type: string
+      - description: Từ thời gian (RFC3339)
+        in: query
+        name: from
+        type: string
+      - description: Đến thời gian (RFC3339)
+        in: query
+        name: to
+        type: string
+      - description: kenTotal|claims|empty (mặc định kenTotal)
+        in: query
+        name: sortBy
+        type: string
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_kenchest.UserStatsSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Thống kê rương ken theo từng user (admin)
+      tags:
+      - admin-ken-chest
   /admin/ken/chests:
     get:
       parameters:
@@ -9238,6 +9581,72 @@ paths:
       security:
       - BearerAuth: []
       summary: Thống kê PEN (admin)
+      tags:
+      - admin-pen
+  /admin/pen/stats/sides:
+    get:
+      parameters:
+      - description: Lọc theo user
+        in: query
+        name: userId
+        type: string
+      - description: Từ thời gian (RFC3339)
+        in: query
+        name: from
+        type: string
+      - description: Đến thời gian (RFC3339)
+        in: query
+        name: to
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_pen.SideStatsSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Phân bố hướng sút/chụp trái-phải (admin)
+      tags:
+      - admin-pen
+  /admin/pen/stats/users:
+    get:
+      parameters:
+      - description: Lọc theo user
+        in: query
+        name: userId
+        type: string
+      - description: Từ thời gian (RFC3339)
+        in: query
+        name: from
+        type: string
+      - description: Đến thời gian (RFC3339)
+        in: query
+        name: to
+        type: string
+      - description: staked|netKen|shots|catches (mặc định staked)
+        in: query
+        name: sortBy
+        type: string
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_pen.UserStatsSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Thống kê PEN theo từng user, gộp cả vai sút và chụp (admin)
       tags:
       - admin-pen
   /admin/rooms:

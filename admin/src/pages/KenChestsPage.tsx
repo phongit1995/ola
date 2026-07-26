@@ -9,6 +9,7 @@ import { KenChestFormModal } from './KenChestFormModal'
 import { KenChestDetailModal } from './KenChestDetailModal'
 import { KenChestAutoJobs } from './KenChestAutoJobsPage'
 import { KenClaimsHistory } from './KenClaimsHistoryPage'
+import { KenChestStatsTab } from './KenChestStatsTab'
 import { KenSourceTag } from '@/components/KenSourceTag'
 import type { KenChest } from '@/types'
 
@@ -169,6 +170,7 @@ export function KenChestsPage() {
         items={[
           { key: 'list', label: 'Danh sách rương', children: listTab },
           { key: 'claims', label: 'Lịch sử nhận KEN', children: <KenClaimsHistory /> },
+          { key: 'stats', label: 'Thống kê', children: <KenChestStatsTab /> },
           { key: 'auto', label: 'Lịch tự động', children: <KenChestAutoJobs /> },
         ]}
       />

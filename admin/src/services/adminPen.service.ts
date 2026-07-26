@@ -4,8 +4,12 @@ import type {
   ApiResponse,
   ListResult,
   PenShotListParams,
+  PenSideStatsParams,
+  PenSideStatsResponse,
   PenStatsParams,
   PenStatsResponse,
+  PenUserStatsItem,
+  PenUserStatsParams,
 } from '@/types'
 
 export const AdminPenService = {
@@ -18,6 +22,21 @@ export const AdminPenService = {
 
   async getStats(params: PenStatsParams = {}): Promise<PenStatsResponse> {
     const { data } = await http.get<ApiResponse<PenStatsResponse>>('/admin/pen/stats', { params })
+    return data.data
+  },
+
+  async getUserStats(params: PenUserStatsParams = {}): Promise<ListResult<PenUserStatsItem>> {
+    const { data } = await http.get<ApiResponse<ListResult<PenUserStatsItem>>>(
+      '/admin/pen/stats/users',
+      { params },
+    )
+    return data.data
+  },
+
+  async getSideStats(params: PenSideStatsParams = {}): Promise<PenSideStatsResponse> {
+    const { data } = await http.get<ApiResponse<PenSideStatsResponse>>('/admin/pen/stats/sides', {
+      params,
+    })
     return data.data
   },
 }

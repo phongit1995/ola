@@ -1,23 +1,160 @@
 package adminkenchest
 
 import (
+	"net/http"
 	"strings"
+	"time"
 
 	"ola-chat-server/internal/middleware"
 	"ola-chat-server/internal/modules/kenchest"
 	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
 type Controller struct {
 	service *kenchest.Service
+	repo    *Repository
 	logger  *zap.SugaredLogger
 }
 
-func NewController(service *kenchest.Service, logger *zap.SugaredLogger) *Controller {
-	return &Controller{service: service, logger: logger.Named("[admin_ken_chest_controller]")}
+func NewController(service *kenchest.Service, repo *Repository, logger *zap.SugaredLogger) *Controller {
+	return &Controller{service: service, repo: repo, logger: logger.Named("[admin_ken_chest_controller]")}
+}
+
+func parseStatsFilter(c *gin.Context) (StatsFilter, error) {
+	var f StatsFilter
+	if raw := c.Query("source"); raw == "manual" || raw == "auto" {
+		f.Source = raw
+	}
+	if raw := c.Query("userId"); raw != "" {
+		parsed, err := uuid.Parse(raw)
+		if err != nil {
+			return f, utils.NewHTTPError(http.StatusBadRequest, "invalid user id")
+		}
+		f.UserID = &parsed
+	}
+	if raw := c.Query("from"); raw != "" {
+		t, err := time.Parse(time.RFC3339, raw)
+		if err != nil {
+			return f, utils.NewHTTPError(http.StatusBadRequest, "invalid from time")
+		}
+		f.From = &t
+	}
+	if raw := c.Query("to"); raw != "" {
+		t, err := time.Parse(time.RFC3339, raw)
+		if err != nil {
+			return f, utils.NewHTTPError(http.StatusBadRequest, "invalid to time")
+		}
+		f.To = &t
+	}
+	return f, nil
+}
+
+func userBriefFromRow(row userStatsRow) UserBrief {
+	if row.Username == "" {
+		return UserBrief{ID: row.UserID.String(), Username: row.UserID.String()[:8]}
+	}
+	return UserBrief{
+		ID:       row.UserID.String(),
+		Username: row.Username,
+		FullName: row.FullName,
+		Avatar:   row.Avatar,
+	}
+}
+
+// GetStats godoc
+// @Summary      Thống kê rương ken (admin)
+// @Tags         admin-ken-chest
+// @Produce      json
+// @Security     BearerAuth
+// @Param        source query string false "manual|auto"
+// @Param        userId query string false "Lọc theo user"
+// @Param        from query string false "Từ thời gian (RFC3339)"
+// @Param        to query string false "Đến thời gian (RFC3339)"
+// @Success      200  {object}  StatsSuccessResponse
+// @Router       /admin/ken/chest-stats [get]
+func (ctrl *Controller) GetStats(c *gin.Context) (interface{}, error) {
+	f, err := parseStatsFilter(c)
+	if err != nil {
+		return nil, err
+	}
+
+	overview, err := ctrl.repo.StatsOverview(f)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+	if overview.TotalClaims > 0 {
+		overview.EmptyRate = float64(overview.EmptyClaims) / float64(overview.TotalClaims) * 100
+	}
+
+	bySource, err := ctrl.repo.StatsBySource(f)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+
+	bucket := "day"
+	if f.From != nil && f.To != nil && f.To.Sub(*f.From) > 90*24*time.Hour {
+		bucket = "month"
+	}
+	timeseries, err := ctrl.repo.StatsTimeseries(f, bucket)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+
+	return &StatsResponse{
+		Overview:   overview,
+		BySource:   bySource,
+		Timeseries: timeseries,
+		Bucket:     bucket,
+	}, nil
+}
+
+// GetUserStats godoc
+// @Summary      Thống kê rương ken theo từng user (admin)
+// @Tags         admin-ken-chest
+// @Produce      json
+// @Security     BearerAuth
+// @Param        source query string false "manual|auto"
+// @Param        userId query string false "Lọc theo user"
+// @Param        from query string false "Từ thời gian (RFC3339)"
+// @Param        to query string false "Đến thời gian (RFC3339)"
+// @Param        sortBy query string false "kenTotal|claims|empty (mặc định kenTotal)"
+// @Param        limit query int false "Page size"
+// @Param        offset query int false "Offset"
+// @Success      200  {object}  UserStatsSuccessResponse
+// @Router       /admin/ken/chest-stats/users [get]
+func (ctrl *Controller) GetUserStats(c *gin.Context) (interface{}, error) {
+	f, err := parseStatsFilter(c)
+	if err != nil {
+		return nil, err
+	}
+	limit := utils.ParseLimit(c, 20, 100)
+	offset := utils.ParseOffset(c)
+
+	rows, total, err := ctrl.repo.UserStats(f, c.Query("sortBy"), limit, offset)
+	if err != nil {
+		return nil, utils.ServiceError(err)
+	}
+
+	items := make([]UserStatsItem, len(rows))
+	for i, row := range rows {
+		item := UserStatsItem{
+			User:        userBriefFromRow(row),
+			Claims:      row.Claims,
+			Chests:      row.Chests,
+			EmptyClaims: row.EmptyClaims,
+			KenTotal:    row.KenTotal,
+			LastClaimAt: row.LastClaimAt.UTC().Format(time.RFC3339),
+		}
+		if row.Claims > 0 {
+			item.EmptyRate = float64(row.EmptyClaims) / float64(row.Claims) * 100
+		}
+		items[i] = item
+	}
+	return &UserStatsResponse{Total: total, Limit: limit, Offset: offset, Items: items}, nil
 }
 
 // Create godoc

@@ -192,6 +192,67 @@ export interface KenChestClaim {
   }
 }
 
+export type KenChestSource = 'manual' | 'auto'
+
+export interface KenChestStatsOverview {
+  totalChests: number
+  manualChests: number
+  autoChests: number
+  activeChests: number
+  expiredChests: number
+  totalClaims: number
+  emptyClaims: number
+  emptyRate: number
+  totalKenGiven: number
+  uniqueUsers: number
+}
+
+export interface KenChestStatsSourceRow {
+  source: KenChestSource
+  chests: number
+  claims: number
+  kenGiven: number
+}
+
+export interface KenChestStatsTimePoint {
+  date: string
+  claims: number
+  empty: number
+  kenGiven: number
+}
+
+export interface KenChestStatsResponse {
+  overview: KenChestStatsOverview
+  bySource: KenChestStatsSourceRow[]
+  timeseries: KenChestStatsTimePoint[]
+  bucket: 'day' | 'month'
+}
+
+export interface KenChestStatsParams {
+  source?: KenChestSource
+  userId?: string
+  from?: string
+  to?: string
+}
+
+export type KenChestUserStatsSortBy = 'kenTotal' | 'claims' | 'empty'
+
+export interface KenChestUserStatsItem {
+  user: KenChestClaim['user']
+  claims: number
+  chests: number
+  emptyClaims: number
+  emptyRate: number
+  kenTotal: number
+  lastClaimAt: string
+}
+
+export interface KenChestUserStatsParams extends KenChestStatsParams {
+  sortBy?: KenChestUserStatsSortBy
+  limit?: number
+  offset?: number
+}
+
 export interface AdminUserListItem {
   id: string
   username: string
@@ -1051,6 +1112,46 @@ export interface PenStatsResponse {
 }
 
 export interface PenStatsParams {
+  from?: string
+  to?: string
+}
+
+export type PenUserStatsSortBy = 'staked' | 'netKen' | 'shots' | 'catches'
+
+export interface PenUserStatsItem {
+  user: PenUserBrief
+  shots: number
+  shooterSettled: number
+  shooterWins: number
+  shooterWinRate: number
+  catches: number
+  keeperWins: number
+  keeperSaveRate: number
+  cancelled: number
+  cancelRate: number
+  staked: number
+  netKen: number
+  lastPlayAt: string
+}
+
+export interface PenUserStatsParams {
+  userId?: string
+  from?: string
+  to?: string
+  sortBy?: PenUserStatsSortBy
+  limit?: number
+  offset?: number
+}
+
+export interface PenSideStatsResponse {
+  shooterLeft: number
+  shooterRight: number
+  keeperLeft: number
+  keeperRight: number
+}
+
+export interface PenSideStatsParams {
+  userId?: string
   from?: string
   to?: string
 }

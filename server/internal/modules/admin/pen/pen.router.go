@@ -19,5 +19,7 @@ func (r *Router) Setup(admin *utils.AppGroup) {
 	{
 		p.GET("/shots", r.controller.ListShots)
 		p.GET("/stats", r.controller.GetStats)
+		p.GET("/stats/users", r.controller.GetUserStats)
+		p.GET("/stats/sides", r.controller.GetSideStats)
 	}
 }

@@ -1223,6 +1223,124 @@
                 }
             }
         },
+        "/admin/ken/chest-stats": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-ken-chest"
+                ],
+                "summary": "Thống kê rương ken (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "manual|auto",
+                        "name": "source",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Lọc theo user",
+                        "name": "userId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Từ thời gian (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến thời gian (RFC3339)",
+                        "name": "to",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_kenchest.StatsSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/ken/chest-stats/users": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-ken-chest"
+                ],
+                "summary": "Thống kê rương ken theo từng user (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "manual|auto",
+                        "name": "source",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Lọc theo user",
+                        "name": "userId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Từ thời gian (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến thời gian (RFC3339)",
+                        "name": "to",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "kenTotal|claims|empty (mặc định kenTotal)",
+                        "name": "sortBy",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_kenchest.UserStatsSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/ken/chests": {
             "get": {
                 "security": [
@@ -2189,6 +2307,112 @@
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/ola-chat-server_internal_modules_pen.PenStatsSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/pen/stats/sides": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-pen"
+                ],
+                "summary": "Phân bố hướng sút/chụp trái-phải (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Lọc theo user",
+                        "name": "userId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Từ thời gian (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến thời gian (RFC3339)",
+                        "name": "to",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_pen.SideStatsSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/pen/stats/users": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-pen"
+                ],
+                "summary": "Thống kê PEN theo từng user, gộp cả vai sút và chụp (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Lọc theo user",
+                        "name": "userId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Từ thời gian (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến thời gian (RFC3339)",
+                        "name": "to",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "staked|netKen|shots|catches (mặc định staked)",
+                        "name": "sortBy",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_pen.UserStatsSuccessResponse"
                         }
                     }
                 }
@@ -12445,6 +12669,226 @@
                 }
             }
         },
+        "internal_modules_admin_kenchest.StatsOverview": {
+            "type": "object",
+            "properties": {
+                "activeChests": {
+                    "type": "integer"
+                },
+                "autoChests": {
+                    "type": "integer"
+                },
+                "emptyClaims": {
+                    "type": "integer"
+                },
+                "emptyRate": {
+                    "type": "number"
+                },
+                "expiredChests": {
+                    "type": "integer"
+                },
+                "manualChests": {
+                    "type": "integer"
+                },
+                "totalChests": {
+                    "type": "integer"
+                },
+                "totalClaims": {
+                    "type": "integer"
+                },
+                "totalKenGiven": {
+                    "type": "integer"
+                },
+                "uniqueUsers": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_kenchest.StatsResponse": {
+            "type": "object",
+            "properties": {
+                "bucket": {
+                    "type": "string"
+                },
+                "bySource": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_kenchest.StatsSourceRow"
+                    }
+                },
+                "overview": {
+                    "$ref": "#/definitions/internal_modules_admin_kenchest.StatsOverview"
+                },
+                "timeseries": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_kenchest.StatsTimePoint"
+                    }
+                }
+            }
+        },
+        "internal_modules_admin_kenchest.StatsSourceRow": {
+            "type": "object",
+            "properties": {
+                "chests": {
+                    "type": "integer"
+                },
+                "claims": {
+                    "type": "integer"
+                },
+                "kenGiven": {
+                    "type": "integer"
+                },
+                "source": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_kenchest.StatsSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_kenchest.StatsResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_kenchest.StatsTimePoint": {
+            "type": "object",
+            "properties": {
+                "claims": {
+                    "type": "integer"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "empty": {
+                    "type": "integer"
+                },
+                "kenGiven": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_modules_admin_kenchest.UserBrief": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string",
+                    "example": "https://example.com/avatar.jpg"
+                },
+                "fullName": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "john_doe"
+                }
+            }
+        },
+        "internal_modules_admin_kenchest.UserStatsItem": {
+            "type": "object",
+            "properties": {
+                "chests": {
+                    "type": "integer",
+                    "example": 20
+                },
+                "claims": {
+                    "type": "integer",
+                    "example": 25
+                },
+                "emptyClaims": {
+                    "type": "integer",
+                    "example": 4
+                },
+                "emptyRate": {
+                    "type": "number",
+                    "example": 16
+                },
+                "kenTotal": {
+                    "type": "integer",
+                    "example": 52000
+                },
+                "lastClaimAt": {
+                    "type": "string",
+                    "example": "2026-07-25T15:12:33Z"
+                },
+                "user": {
+                    "$ref": "#/definitions/internal_modules_admin_kenchest.UserBrief"
+                }
+            }
+        },
+        "internal_modules_admin_kenchest.UserStatsResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_kenchest.UserStatsItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 20
+                },
+                "offset": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "internal_modules_admin_kenchest.UserStatsSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_kenchest.UserStatsResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
         "internal_modules_admin_me.AuthorResponse": {
             "type": "object",
             "properties": {
@@ -12668,6 +13112,179 @@
                 "enabled": {
                     "type": "boolean",
                     "example": false
+                }
+            }
+        },
+        "internal_modules_admin_pen.SideStatsResponse": {
+            "type": "object",
+            "properties": {
+                "keeperLeft": {
+                    "type": "integer",
+                    "example": 101
+                },
+                "keeperRight": {
+                    "type": "integer",
+                    "example": 117
+                },
+                "shooterLeft": {
+                    "type": "integer",
+                    "example": 120
+                },
+                "shooterRight": {
+                    "type": "integer",
+                    "example": 98
+                }
+            }
+        },
+        "internal_modules_admin_pen.SideStatsSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_pen.SideStatsResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_pen.UserBrief": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string",
+                    "example": "https://example.com/avatar.jpg"
+                },
+                "fullName": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "john_doe"
+                }
+            }
+        },
+        "internal_modules_admin_pen.UserStatsItem": {
+            "type": "object",
+            "properties": {
+                "cancelRate": {
+                    "type": "number",
+                    "example": 7.5
+                },
+                "cancelled": {
+                    "type": "integer",
+                    "example": 3
+                },
+                "catches": {
+                    "type": "integer",
+                    "example": 25
+                },
+                "keeperSaveRate": {
+                    "type": "number",
+                    "example": 40
+                },
+                "keeperWins": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "lastPlayAt": {
+                    "type": "string",
+                    "example": "2026-07-25T15:12:33Z"
+                },
+                "netKen": {
+                    "type": "integer",
+                    "example": -8000
+                },
+                "shooterSettled": {
+                    "type": "integer",
+                    "example": 30
+                },
+                "shooterWinRate": {
+                    "type": "number",
+                    "example": 40
+                },
+                "shooterWins": {
+                    "type": "integer",
+                    "example": 12
+                },
+                "shots": {
+                    "type": "integer",
+                    "example": 40
+                },
+                "staked": {
+                    "type": "integer",
+                    "example": 120000
+                },
+                "user": {
+                    "$ref": "#/definitions/internal_modules_admin_pen.UserBrief"
+                }
+            }
+        },
+        "internal_modules_admin_pen.UserStatsResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_pen.UserStatsItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 20
+                },
+                "offset": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "internal_modules_admin_pen.UserStatsSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_pen.UserStatsResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
                 }
             }
         },
