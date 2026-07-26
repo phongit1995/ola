@@ -83,6 +83,10 @@ export function AppsPanel() {
     }
   }
 
+  function handleOpenArcade(game: (typeof miniGames)[number]) {
+    if (!openArcade(game)) toast.info(t('arcade.alreadyRunning'));
+  }
+
   function renderAppItem(item: AppItem) {
     return (
       <PanelRow
@@ -125,7 +129,7 @@ export function AppsPanel() {
               icon={game.iconUrl || iconGameDefault}
               title={game.name}
               subtitle={game.description || undefined}
-              onClick={() => openArcade(game)}
+              onClick={() => handleOpenArcade(game)}
             />
           ))}
           {APP_ITEMS.slice(1).map(renderAppItem)}

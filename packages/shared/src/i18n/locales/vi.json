@@ -1,7 +1,9 @@
 {
   "arcade": {
     "minimize": "Thu nhỏ",
-    "restore": "Mở lại"
+    "restore": "Mở lại",
+    "hasNotification": "Có cập nhật mới trong game",
+    "alreadyRunning": "Bạn đang mở một trò chơi khác. Hãy đóng trò chơi đó trước."
   },
   "common": {
     "clear": "Xoá",

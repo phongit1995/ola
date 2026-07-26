@@ -11,6 +11,7 @@ export const C2S = {
   RoomKick: 'ROOM_KICK',
   RoomReady: 'ROOM_READY',
   RoomStart: 'ROOM_START',
+  Leaderboard: 'LEADERBOARD',
 } as const;
 
 export const S2C = {
@@ -30,7 +31,22 @@ export const S2C = {
   RoomKicked: 'ROOM_KICKED',
   OpponentDisconnected: 'OPPONENT_DISCONNECTED',
   OpponentReconnected: 'OPPONENT_RECONNECTED',
+  Leaderboard: 'LEADERBOARD',
 } as const;
+
+export const GAME_ERROR_CODE = {
+  WrongPassword: 'WRONG_PASSWORD',
+  RoomNotFound: 'ROOM_NOT_FOUND',
+  OwnRoom: 'OWN_ROOM',
+  ChatRateLimited: 'CHAT_RATE_LIMITED',
+  ChatTooLong: 'CHAT_TOO_LONG',
+  InvalidChat: 'INVALID_CHAT',
+  RoomNotFull: 'ROOM_NOT_FULL',
+  NotRoomMember: 'NOT_ROOM_MEMBER',
+  InvalidMove: 'INVALID_MOVE',
+} as const;
+
+export type GameErrorCode = (typeof GAME_ERROR_CODE)[keyof typeof GAME_ERROR_CODE];
 
 export interface Envelope {
   type: string;
@@ -44,11 +60,30 @@ export interface PlayerInfo {
 }
 
 export interface UserInfoData {
+  id: string;
   username: string;
   vipType?: string | null;
   vipDays: number;
   ken: number;
   guest?: boolean;
+}
+
+export type LeaderboardPeriod = 'day' | 'week';
+
+export interface LeaderboardEntry {
+  rank: number;
+  userId: string;
+  username: string;
+  vipType?: string | null;
+  ken: number;
+}
+
+export interface LeaderboardData {
+  period: LeaderboardPeriod;
+  from: number;
+  to: number;
+  items: LeaderboardEntry[];
+  error?: string;
 }
 
 export interface MatchFoundData<TState = unknown> {
@@ -88,6 +123,8 @@ export interface MatchOverData<TState = unknown> {
   reason: 'win' | 'forfeit' | 'timeout' | 'disconnect' | 'draw';
   state: TState;
   bet?: number;
+  payout?: number;
+  kenDelta?: number;
 }
 
 export interface ErrorData {
@@ -98,6 +135,7 @@ export interface ErrorData {
 export interface RoomInfo {
   id: string;
   owner: string;
+  ownerVipType?: string | null;
   bet: number;
   locked: boolean;
   players: number;

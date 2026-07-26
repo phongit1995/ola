@@ -1,16 +1,16 @@
 import { useEffect, useState } from 'react';
 import { bridge } from '../src/sdk';
 import { BOARD_ASSETS, preloadAssets } from './assets';
-import { useCaroStore } from './store';
-import { Board } from './Board';
-import { Lobby } from './Lobby';
-import { Leaderboard } from './Leaderboard';
-import { Ranked } from './Ranked';
-import { Result } from './Result';
-import { ConfirmModal } from './ConfirmModal';
+import { ConfirmModal } from './components/ConfirmModal';
+import { BoardScreen } from './screens/board/BoardScreen';
+import { LeaderboardScreen } from './screens/leaderboard/LeaderboardScreen';
+import { LobbyScreen } from './screens/lobby/LobbyScreen';
+import { RankedScreen } from './screens/ranked/RankedScreen';
+import { ResultScreen } from './screens/result/ResultScreen';
+import { useCaro } from './store/useCaro';
 
 function OppAwayBanner() {
-  const oppAway = useCaroStore((s) => s.oppAway);
+  const oppAway = useCaro((s) => s.oppAway);
   const [left, setLeft] = useState(0);
   useEffect(() => {
     if (oppAway == null) return;
@@ -26,11 +26,11 @@ function OppAwayBanner() {
 export function App() {
   const [progress, setProgress] = useState('Đang tải...');
   const [ready, setReady] = useState(false);
-  const lobbyAnimKey = useCaroStore((s) => s.lobbyAnimKey);
-  const notice = useCaroStore((s) => s.notice);
-  const dismissNotice = useCaroStore((s) => s.dismissNotice);
-  const init = useCaroStore((s) => s.init);
-  const dispose = useCaroStore((s) => s.dispose);
+  const lobbyAnimKey = useCaro((s) => s.lobbyAnimKey);
+  const notice = useCaro((s) => s.notice);
+  const dismissNotice = useCaro((s) => s.dismissNotice);
+  const init = useCaro((s) => s.init);
+  const dispose = useCaro((s) => s.dispose);
 
   useEffect(() => {
     document.documentElement.style.setProperty('--asset-board-x', `url('${BOARD_ASSETS.boardX}')`);
@@ -55,11 +55,11 @@ export function App() {
 
   return (
     <>
-      <Board />
-      <Lobby key={lobbyAnimKey} progress={progress} />
-      <Leaderboard />
-      <Ranked />
-      <Result />
+      <BoardScreen />
+      <LobbyScreen key={lobbyAnimKey} progress={progress} />
+      <LeaderboardScreen />
+      <RankedScreen />
+      <ResultScreen />
       <OppAwayBanner />
       <ConfirmModal
         open={notice != null}

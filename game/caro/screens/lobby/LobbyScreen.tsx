@@ -1,19 +1,26 @@
-import { useState } from 'react';
+import { useLayoutEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { parseVipTypeId, vipIconUrl } from '@ola/shared/lib/vip';
-import { assetBg, assetSrc, VIP_DEFAULT_ICON } from './assets';
-import type { BotLevel } from './bot';
-import { useCaroStore } from './store';
-import { ConfirmModal } from './ConfirmModal';
+import { ConfirmModal } from '../../components/ConfirmModal';
+import { assetBg, assetSrc } from '../../assets';
+import { formatKen } from '../../helpers/format';
+import { avatarIconSrc } from '../../helpers/player';
+import { useCaro } from '../../store/useCaro';
+import type { BotLevel } from '../../types';
+import { BotLevelPicker } from './components/BotLevelPicker';
+import { useLobby } from './useLobby';
 
-function formatKen(value: number): string {
-  return Math.round(value).toLocaleString('vi-VN');
-}
+export function LobbyScreen({ progress }: { progress: string }) {
+  const { pickOpen, exitOpen, setPickOpen, setExitOpen, reset } = useLobby(
+    useShallow((state) => ({
+      pickOpen: state.pickOpen,
+      exitOpen: state.exitOpen,
+      setPickOpen: state.setPickOpen,
+      setExitOpen: state.setExitOpen,
+      reset: state.reset,
+    })),
+  );
 
-export function Lobby({ progress }: { progress: string }) {
-  const [pickOpen, setPickOpen] = useState(false);
-  const [exitOpen, setExitOpen] = useState(false);
-  const { lobbyVisible, lobbyPhase: phase, lobbyAnimKey, userInfo, ken, toast } = useCaroStore(
+  const { lobbyVisible, lobbyPhase: phase, lobbyAnimKey, userInfo, ken, toast } = useCaro(
     useShallow((s) => ({
       lobbyVisible: s.lobbyVisible,
       lobbyPhase: s.lobbyPhase,
@@ -23,7 +30,12 @@ export function Lobby({ progress }: { progress: string }) {
       toast: s.toast,
     })),
   );
-  const { playBot, playRanked, showLeaderboard, retry, exitApp, showToast } = useCaroStore(
+
+  useLayoutEffect(() => {
+    reset();
+  }, [lobbyAnimKey, reset]);
+
+  const { playBot, playRanked, showLeaderboard, retry, exitApp, showToast } = useCaro(
     useShallow((s) => ({
       playBot: s.playBot,
       playRanked: s.playRanked,
@@ -44,8 +56,7 @@ export function Lobby({ progress }: { progress: string }) {
     .filter(Boolean)
     .join(' ');
 
-  const vipTypeId = parseVipTypeId(userInfo?.vipType);
-  const vipSrc = vipTypeId != null ? vipIconUrl(vipTypeId) : VIP_DEFAULT_ICON;
+  const vipSrc = avatarIconSrc(userInfo?.vipType);
 
   const choose = (level: BotLevel): void => {
     setPickOpen(false);
@@ -103,29 +114,7 @@ export function Lobby({ progress }: { progress: string }) {
           {toast}
         </div>
       </div>
-      <div id="lobby-pick" className={pickOpen ? '' : 'hidden'} onClick={(e) => e.target === e.currentTarget && setPickOpen(false)}>
-        <div id="lobby-pick-card" style={assetBg('pickBg')}>
-          <div className="pick-body">
-            <div id="lobby-pick-title" style={assetBg('pickTitle')}>
-              <span>Chơi với máy</span>
-            </div>
-            <div id="lobby-pick-levels">
-              <button type="button" data-level="easy" style={assetBg('pickLevel')} onClick={() => choose('easy')}>
-                <span>Dễ</span>
-              </button>
-              <button type="button" data-level="normal" style={assetBg('pickLevel')} onClick={() => choose('normal')}>
-                <span>Vừa</span>
-              </button>
-              <button type="button" data-level="hard" style={assetBg('pickLevel')} onClick={() => choose('hard')}>
-                <span>Khó</span>
-              </button>
-            </div>
-          </div>
-          <button type="button" id="lobby-pick-close" style={assetBg('pickClose')} aria-label="Đóng" onClick={() => setPickOpen(false)}>
-            <img src={assetSrc('pickX')} alt="Đóng" />
-          </button>
-        </div>
-      </div>
+      <BotLevelPicker open={pickOpen} onChoose={choose} onClose={() => setPickOpen(false)} />
       <ConfirmModal
         open={exitOpen}
         text="Bạn có chắc muốn thoát trò chơi?"

@@ -18,6 +18,7 @@ export function registerKenRealtime() {
   });
 
   SocketService.on<{ id: string; expiresAt: string }>('KEN_CHEST_AVAILABLE', (data) => {
+    if (!useAuthStore.getState().user) return;
     if (data?.id && data.expiresAt)
       useKenTreasureStore.getState().show({ id: data.id, expiresAt: data.expiresAt });
   });

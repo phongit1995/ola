@@ -1,177 +1,37 @@
 import { create } from 'zustand';
+import { ARCADE_ATTENTION_REASON } from '@ola/shared/types';
 import {
   bridge,
   joinGame,
   type GameSession,
+  type LeaderboardPeriod,
   type MatchFoundData,
-  type PlayerInfo,
-  type RoomInfo,
   type RoomStateData,
   type UserInfoData,
-} from '../src/sdk';
-import { parseVipTypeId, vipIconUrl } from '@ola/shared/lib/vip';
-import { BOARD_ASSETS, VIP_DEFAULT_ICON } from './assets';
-import { createBotSession, type BotLevel } from './bot';
-import { SIZE, emptyState, findWinLine, type CaroMove, type CaroState, type WinLine } from './types';
-
-export type OverlayAction = 'again' | 'cancel' | 'lobby';
-
-export interface OverlayState {
-  title: string;
-  sub: string;
-  kind?: 'win' | 'lose' | 'draw';
-  actions: OverlayAction[];
-}
-
-export interface MatchResultState {
-  matchId: string;
-  win: boolean;
-  kenDelta: number | null;
-  revealDelayMs: number;
-}
-
-export interface PlayerDisplay {
-  name: string;
-  vip: string;
-  mark: 'x' | 'o';
-  active: boolean;
-  owner: boolean;
-}
-
-export interface ChatMsg {
-  id: number;
-  who: string;
-  text: string;
-}
+} from '../../src/sdk';
+import { vipIconUrl } from '@ola/shared/lib/vip';
+import { BOARD_ASSETS, VIP_DEFAULT_ICON } from '../assets';
+import { createBotSession } from '../bot';
+import { findFinalWinLine } from '../helpers/board';
+import { chatErrorText, roomErrorText } from '../helpers/errorText';
+import { formatClock } from '../helpers/format';
+import { avatarIconSrc, opponentOf } from '../helpers/player';
+import type { CaroStore, RoomActionPending } from './types';
+import { createInitialCaroState, EMPTY_PLAYER } from './initialState';
+import {
+  SIZE,
+  emptyState,
+  type BotLevel,
+  type CaroMove,
+  type CaroState,
+} from '../types';
 
 const BOT_VIP_ID: Record<BotLevel, number> = { easy: 1, normal: 2, hard: 3 };
 const CHAT_HISTORY_LIMIT = 100;
 const WIN_RESULT_REVEAL_MS = 1700;
+const LEADERBOARD_REQUEST_TIMEOUT_MS = 8000;
 
-function avatarIconSrc(vipType?: string | null): string {
-  const id = parseVipTypeId(vipType);
-  return id != null ? vipIconUrl(id) : VIP_DEFAULT_ICON;
-}
-
-function opponentOf(players: PlayerInfo[], you: number): PlayerInfo {
-  return players[1 - you];
-}
-
-function formatClock(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-}
-
-function findFinalWinLine(state: CaroState): WinLine | null {
-  const { board, lastX, lastY } = state;
-  if (lastX < 0 || lastX >= SIZE || lastY < 0 || lastY >= SIZE) return null;
-  const mark = board[lastY * SIZE + lastX];
-  return mark ? findWinLine(board, lastX, lastY, mark) : null;
-}
-
-const EMPTY_PLAYER: PlayerDisplay = { name: '---', vip: VIP_DEFAULT_ICON, mark: 'x', active: false, owner: false };
-
-function roomErrorText(code: string): string | null {
-  switch (code) {
-    case 'WRONG_PASSWORD':
-      return 'Sai mật khẩu';
-    case 'ROOM_NOT_FOUND':
-      return 'Bàn không còn nữa';
-    case 'OWN_ROOM':
-      return 'Không thể vào bàn của bạn';
-    default:
-      return null;
-  }
-}
-
-export type BoardMode = 'idle' | 'pregame' | 'playing';
-export type RoomActionPending = 'creating' | 'joining' | 'ready' | 'starting' | 'leaving' | 'kicking' | null;
-
-function chatErrorText(code: string): string | null {
-  switch (code) {
-    case 'CHAT_RATE_LIMITED':
-      return 'Bạn gửi tin nhắn quá nhanh';
-    case 'CHAT_TOO_LONG':
-      return 'Tin nhắn tối đa 120 ký tự';
-    case 'INVALID_CHAT':
-      return 'Tin nhắn không hợp lệ';
-    case 'ROOM_NOT_FULL':
-      return 'Cần đủ hai người trong bàn để chat';
-    case 'NOT_ROOM_MEMBER':
-      return 'Bạn không còn ở trong bàn này';
-    default:
-      return null;
-  }
-}
-
-export interface CaroStore {
-  lobbyVisible: boolean;
-  lobbyPhase: 'loading' | 'connecting' | 'error' | 'ready';
-  lobbyAnimKey: number;
-  userInfo: UserInfoData | null;
-  ken: number;
-  bet: number;
-
-  rankedVisible: boolean;
-  leaderboardVisible: boolean;
-  rooms: RoomInfo[];
-  roomWaiting: RoomStateData | null;
-  boardMode: BoardMode;
-  roomActionPending: RoomActionPending;
-  oppAway: number | null;
-
-  board: number[];
-  lastIdx: number;
-  status: string;
-  myTurn: boolean;
-  showTimer: boolean;
-  timerText: string;
-  timerUrgent: boolean;
-  turnArrowSrc: string | null;
-  me: PlayerDisplay;
-  op: PlayerDisplay;
-  overlay: OverlayState | null;
-  replayVisible: boolean;
-  forfeitDisabled: boolean;
-
-  result: MatchResultState | null;
-  toast: string | null;
-  notice: string | null;
-  matchSeq: number;
-  turnAnnounce: { id: number; text: string; mine: boolean } | null;
-  winLine: WinLine | null;
-  messages: ChatMsg[];
-
-  init(ready: boolean): void;
-  dispose(): void;
-  playBot(level: BotLevel): void;
-  playRanked(): void;
-  refreshRooms(): void;
-  createRoom(bet: number, password?: string): void;
-  joinRoom(roomId: string, password?: string): void;
-  cancelRoom(): void;
-  toggleRoomReady(): void;
-  startRoom(): void;
-  kickRoomGuest(): void;
-  showLeaderboard(): void;
-  hideLeaderboard(): void;
-  retry(): void;
-  exitApp(): void;
-  placeMove(x: number, y: number): void;
-  again(): void;
-  replay(): void;
-  cancelSearch(): void;
-  toLobby(): void;
-  forfeit(): void;
-  exitMatch(): void;
-  closeResult(): void;
-  showToast(message: string): void;
-  dismissNotice(): void;
-  sendChat(text: string): void;
-}
-
-export const useCaroStore = create<CaroStore>()((set, get) => {
+export const useCaro = create<CaroStore>()((set, get) => {
   const refs = {
     online: null as GameSession<CaroState, CaroMove> | null,
     bot: null as GameSession<CaroState, CaroMove> | null,
@@ -181,6 +41,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     matchBet: 0,
     user: null as UserInfoData | null,
     connecting: false,
+    connectPromise: null as Promise<void> | null,
     deadline: 0,
     timer: undefined as number | undefined,
     toastTimer: undefined as number | undefined,
@@ -192,6 +53,8 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     pendingRoomId: null as string | null,
     roomConnectionLost: false,
     exitingMatch: null as MatchFoundData<CaroState> | null,
+    handledMatchIds: new Set<string>(),
+    leaderboardTimers: { day: undefined, week: undefined } as Record<LeaderboardPeriod, number | undefined>,
   };
 
   const showToast = (message: string): void => {
@@ -224,6 +87,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     set((s) => ({
       forfeitDisabled: true,
       myTurn: false,
+      movePending: false,
       me: { ...s.me, active: false },
       op: { ...s.op, active: false },
       showTimer: false,
@@ -257,6 +121,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
       lastIdx: -1,
       status,
       myTurn: false,
+      movePending: false,
       showTimer: false,
       timerUrgent: false,
       turnArrowSrc: null,
@@ -279,6 +144,12 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
 
   const applyRoomState = (room: RoomStateData): void => {
     stopTimer();
+    const current = get();
+    const previousRoom =
+      current.roomWaiting?.roomId === room.roomId ? current.roomWaiting : null;
+    const previousOpponent = previousRoom?.members.find(
+      (member) => member.id !== previousRoom.youId,
+    );
     refs.match = null;
     refs.opponentIsBot = false;
     refs.pendingRoomId = room.roomId;
@@ -290,7 +161,6 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     refs.chatOpponentId = opponent?.id ?? null;
     const isOwner = room.ownerId === room.youId;
     const bothReady = room.members.length === 2 && room.members.every((member) => member.ready);
-    const current = get();
     // MATCH_OVER is followed immediately by ROOM_WAITING and ROOM_STATE. Keep
     // presenting the completed match until its result UI is dismissed.
     const preserveOutcome = current.result != null || current.overlay?.kind != null;
@@ -303,8 +173,26 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
       : meMember?.ready
       ? 'Đang chờ đối thủ sẵn sàng...'
       : 'Đối thủ đã vào bàn — hãy bấm Sẵn sàng';
-    const firstRoomState = get().roomWaiting?.roomId !== room.roomId;
+    const firstRoomState = current.roomWaiting?.roomId !== room.roomId;
     const user = refs.user;
+    if (previousRoom) {
+      if (!previousOpponent && opponent) {
+        bridge.attention({
+          reason: ARCADE_ATTENTION_REASON.OpponentJoined,
+          roomId: room.roomId,
+        });
+      } else if (previousOpponent && opponent && !previousOpponent.ready && opponent.ready) {
+        bridge.attention({
+          reason: ARCADE_ATTENTION_REASON.OpponentReady,
+          roomId: room.roomId,
+        });
+      } else if (previousOpponent && !opponent) {
+        bridge.attention({
+          reason: ARCADE_ATTENTION_REASON.OpponentLeft,
+          roomId: room.roomId,
+        });
+      }
+    }
     set((s) => ({
       boardMode: preserveOutcome ? s.boardMode : 'pregame',
       roomActionPending: null,
@@ -319,6 +207,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
       lastIdx: preserveOutcome ? s.lastIdx : firstRoomState ? -1 : s.lastIdx,
       status: preserveOutcome ? s.status : status,
       myTurn: false,
+      movePending: false,
       showTimer: false,
       timerUrgent: false,
       turnArrowSrc: null,
@@ -373,6 +262,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     refs.announceId += 1;
     set((s) => ({
       myTurn: mine,
+      movePending: false,
       status: mine ? 'Lượt của bạn' : 'Đợi đối thủ...',
       turnAnnounce: {
         id: refs.announceId,
@@ -463,6 +353,29 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
       set((state) => ({ rooms: state.rooms.filter((room) => room.id !== data.roomId) }));
     });
 
+    target.onLeaderboard((data) => {
+      if (target !== refs.online || (data.period !== 'day' && data.period !== 'week')) return;
+      const period = data.period;
+      window.clearTimeout(refs.leaderboardTimers[period]);
+      refs.leaderboardTimers[period] = undefined;
+      set((state) => ({
+        leaderboards: data.error
+          ? state.leaderboards
+          : {
+              ...state.leaderboards,
+              [period]: data.items,
+            },
+        leaderboardLoading: {
+          ...state.leaderboardLoading,
+          [period]: false,
+        },
+        leaderboardErrors: {
+          ...state.leaderboardErrors,
+          [period]: data.error ?? null,
+        },
+      }));
+    });
+
     target.onRoomWaiting((data) => {
       if (refs.session !== target) return;
       refs.matchBet = data.bet;
@@ -489,7 +402,20 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
 
     target.onRoomClosed((data) => {
       if (refs.session !== target) return;
-      if (get().roomWaiting?.roomId !== data.roomId && refs.pendingRoomId !== data.roomId) return;
+      const room = get().roomWaiting;
+      if (room?.roomId !== data.roomId && refs.pendingRoomId !== data.roomId) return;
+      if (
+        room != null &&
+        room.ownerId !== room.youId &&
+        (data.reason === 'owner_left' ||
+          data.reason === 'owner_disconnected' ||
+          data.reason === 'owner_busy')
+      ) {
+        bridge.attention({
+          reason: ARCADE_ATTENTION_REASON.OpponentLeft,
+          roomId: data.roomId,
+        });
+      }
       refs.pendingRoomId = null;
       refs.chatOpponentId = null;
       refs.chatSeq = 0;
@@ -523,6 +449,10 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     target.onRoomKicked((data) => {
       if (refs.session !== target) return;
       if (get().roomWaiting?.roomId !== data.roomId && refs.pendingRoomId !== data.roomId) return;
+      bridge.attention({
+        reason: ARCADE_ATTENTION_REASON.RoomKicked,
+        roomId: data.roomId,
+      });
       refs.pendingRoomId = null;
       refs.chatOpponentId = null;
       refs.chatSeq = 0;
@@ -549,6 +479,10 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
 
     target.onOpponentDisconnected((data) => {
       if (refs.session !== target) return;
+      bridge.attention({
+        reason: ARCADE_ATTENTION_REASON.OpponentDisconnected,
+        matchId: refs.match?.matchId,
+      });
       set({ oppAway: data.graceDeadline, status: 'Đối thủ mất kết nối, đang chờ...' });
       showToast('Đối thủ mất kết nối');
     });
@@ -560,18 +494,27 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
     });
 
     target.onMatchFound((data) => {
-      if (refs.session !== target) {
-        if (target !== refs.online || !data.resumed) return;
-        refs.session = refs.online;
+      const resumesOnlineSession = refs.session !== target && target === refs.online && data.resumed === true;
+      if (refs.session !== target && !resumesOnlineSession) return;
+      const mePlayer = data.players[data.you];
+      const opponent = opponentOf(data.players, data.you);
+      if (!mePlayer || !opponent) {
+        showToast('Dữ liệu người chơi không hợp lệ');
+        return;
       }
+      if (resumesOnlineSession) refs.session = target;
       refs.match = data;
+      if (!data.resumed) {
+        bridge.attention({
+          reason: ARCADE_ATTENTION_REASON.MatchStarted,
+          matchId: data.matchId,
+        });
+      }
       refs.exitingMatch = null;
       const matchBet = data.bet ?? refs.matchBet;
       refs.matchBet = matchBet;
       refs.opponentIsBot = target === refs.bot;
       const isBot = target === refs.bot && refs.botLevel != null;
-      const mePlayer = data.players[data.you];
-      const opponent = opponentOf(data.players, data.you);
       const preserveChat = !isBot && refs.chatOpponentId === opponent.id;
       if (!preserveChat) refs.chatSeq = 0;
       refs.chatOpponentId = isBot ? null : opponent.id;
@@ -585,6 +528,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
         boardMode: 'playing',
         roomActionPending: null,
         matchSeq: s.matchSeq + 1,
+        betDeductionVisible: !data.resumed && target !== refs.bot && matchBet > 0,
         lobbyVisible: false,
         rankedVisible: false,
         leaderboardVisible: false,
@@ -595,6 +539,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
         bet: matchBet,
         oppAway: null,
         messages: preserveChat ? s.messages : [],
+        movePending: false,
         me: {
           name: user ? `@${user.username}` : mePlayer.name,
           vip: avatarIconSrc(mePlayer.vipType ?? user?.vipType),
@@ -622,7 +567,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
       renderState(data.state);
       if (data.turn < 0) {
         stopTimer();
-        set({ myTurn: false, showTimer: false, timerUrgent: false, turnAnnounce: null });
+        set({ myTurn: false, movePending: false, showTimer: false, timerUrgent: false, turnAnnounce: null });
         return;
       }
       applyTurn(data.turn, data.deadline);
@@ -641,6 +586,13 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
           ? match.players[1 - match.you].id
           : room?.members.find((member) => member.id !== room?.youId)?.id;
       const who = data.userId === myID ? get().me.name : data.userId === opponentID ? get().op.name : data.name;
+      if (!refs.opponentIsBot && data.userId === opponentID) {
+        bridge.attention({
+          reason: ARCADE_ATTENTION_REASON.NewChat,
+          roomId: data.roomId,
+          matchId: data.matchId,
+        });
+      }
       refs.chatSeq += 1;
       set((state) => ({
         messages: [...state.messages, { id: refs.chatSeq, who, text: data.text }].slice(-CHAT_HISTORY_LIMIT),
@@ -649,12 +601,18 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
 
     target.onMatchOver((data) => {
       if (refs.session !== target) return;
-      if (get().result?.matchId === data.matchId) return;
+      if (refs.handledMatchIds.has(data.matchId)) return;
+      refs.handledMatchIds.add(data.matchId);
+      if (refs.handledMatchIds.size > 64) {
+        const oldest = refs.handledMatchIds.values().next().value;
+        if (oldest) refs.handledMatchIds.delete(oldest);
+      }
       clearMatchUi();
       renderState(data.state);
       const exiting = refs.exitingMatch?.matchId === data.matchId;
       const match = refs.match ?? (exiting ? refs.exitingMatch : null);
-      const won = match != null && data.winnerId === match.players[match.you].id;
+      const myId = match?.players[match.you]?.id ?? refs.user?.id ?? target.userId;
+      const won = data.winnerId != null && data.winnerId !== '' && data.winnerId === myId;
       const draw = data.winnerId == null || data.winnerId === '';
       bridge.gameOver({ matchId: data.matchId, winnerId: data.winnerId, reason: data.reason, won });
       refs.match = null;
@@ -665,14 +623,20 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
       if (draw) {
         set({ overlay: { title: 'Hòa!', sub: '', kind: 'draw', actions: ['again', 'lobby'] }, status: 'Chơi ván mới?' });
       } else {
-        const bet = refs.matchBet;
+        const bet = data.bet ?? refs.matchBet;
         const line = data.reason === 'win' ? findFinalWinLine(data.state) : null;
+        const winnerPayout = data.payout ?? bet * 2;
+        const winnerNet = data.kenDelta ?? winnerPayout - bet;
+        const kenDelta = target === refs.bot ? null : bet === 0 ? 0 : won ? winnerNet : -bet;
+        const payoutRevealDelay =
+          target !== refs.bot && bet > 0 && winnerPayout > 0 ? WIN_RESULT_REVEAL_MS : 0;
         set({
           result: {
             matchId: data.matchId,
             win: won,
-            kenDelta: bet > 0 ? (won ? bet : -bet) : null,
-            revealDelayMs: line ? WIN_RESULT_REVEAL_MS : 0,
+            kenDelta,
+            winnerPayout: target === refs.bot || bet === 0 ? null : winnerPayout,
+            revealDelayMs: line ? WIN_RESULT_REVEAL_MS : payoutRevealDelay,
           },
           winLine: line,
           status: won ? 'Bạn thắng!' : 'Bạn thua!',
@@ -712,39 +676,43 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
         showToast(roomErrorText(err.code) ?? err.message);
         return;
       }
-      set({ status: err.message });
+      set({ movePending: false, status: err.message });
     });
   };
 
-  const connectToServer = async (): Promise<void> => {
-    if (refs.connecting) return;
-    refs.connecting = true;
-    set({ lobbyPhase: 'connecting' });
-    try {
-      if (!refs.online) {
-        refs.online = await joinGame<CaroState, CaroMove>('caro');
-        wireSession(refs.online);
-        if (!refs.session) refs.session = refs.online;
-      }
-      await new Promise<void>((resolve, reject) => {
-        const off = refs.online!.onUserInfo(() => {
-          off();
-          clearTimeout(timer);
-          resolve();
+  const connectToServer = (): Promise<void> => {
+    if (refs.connectPromise) return refs.connectPromise;
+    refs.connectPromise = (async () => {
+      refs.connecting = true;
+      set({ lobbyPhase: 'connecting' });
+      try {
+        if (!refs.online) {
+          refs.online = await joinGame<CaroState, CaroMove>('caro');
+          wireSession(refs.online);
+          if (!refs.session) refs.session = refs.online;
+        }
+        await new Promise<void>((resolve, reject) => {
+          const off = refs.online!.onUserInfo(() => {
+            off();
+            clearTimeout(timer);
+            resolve();
+          });
+          const timer = setTimeout(() => {
+            off();
+            reject(new Error('connect timeout'));
+          }, 8000);
         });
-        const timer = setTimeout(() => {
-          off();
-          reject(new Error('connect timeout'));
-        }, 8000);
-      });
-    } catch {
-      refs.online?.disconnect();
-      refs.online = null;
-      refs.user = null;
-      set({ userInfo: null, lobbyPhase: 'error' });
-    } finally {
-      refs.connecting = false;
-    }
+      } catch {
+        refs.online?.disconnect();
+        refs.online = null;
+        refs.user = null;
+        set({ userInfo: null, lobbyPhase: 'error' });
+      } finally {
+        refs.connecting = false;
+        refs.connectPromise = null;
+      }
+    })();
+    return refs.connectPromise;
   };
 
   const toLobby = (): void => {
@@ -779,39 +747,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
   };
 
   return {
-    lobbyVisible: true,
-    lobbyPhase: 'loading',
-    lobbyAnimKey: 0,
-    userInfo: null,
-    ken: 0,
-    bet: 0,
-    rankedVisible: false,
-    leaderboardVisible: false,
-    rooms: [],
-    roomWaiting: null,
-    boardMode: 'idle',
-    roomActionPending: null,
-    oppAway: null,
-    board: emptyState().board,
-    lastIdx: -1,
-    status: 'Sẵn sàng',
-    myTurn: false,
-    showTimer: false,
-    timerText: '00:45',
-    timerUrgent: false,
-    turnArrowSrc: null,
-    me: EMPTY_PLAYER,
-    op: { ...EMPTY_PLAYER, mark: 'o' },
-    overlay: null,
-    replayVisible: false,
-    forfeitDisabled: true,
-    result: null,
-    toast: null,
-    notice: null,
-    matchSeq: 0,
-    turnAnnounce: null,
-    winLine: null,
-    messages: [],
+    ...createInitialCaroState(),
 
     init(ready) {
       if (!ready) return;
@@ -823,6 +759,17 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
       stopTimer();
       window.clearTimeout(refs.toastTimer);
       if (refs.kenRaf) cancelAnimationFrame(refs.kenRaf);
+      refs.bot?.disconnect();
+      refs.online?.disconnect();
+      window.clearTimeout(refs.leaderboardTimers.day);
+      window.clearTimeout(refs.leaderboardTimers.week);
+      refs.leaderboardTimers.day = undefined;
+      refs.leaderboardTimers.week = undefined;
+      refs.bot = null;
+      refs.online = null;
+      refs.session = null;
+      refs.connectPromise = null;
+      refs.match = null;
     },
 
     playBot(level) {
@@ -928,8 +875,50 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
       set({ leaderboardVisible: false });
     },
 
+    loadLeaderboard(period) {
+      const request = (): void => {
+        if (!refs.online) {
+          set((state) => ({
+            leaderboardLoading: { ...state.leaderboardLoading, [period]: false },
+            leaderboardErrors: { ...state.leaderboardErrors, [period]: 'Không kết nối được máy chủ' },
+          }));
+          return;
+        }
+        set((state) => ({
+          leaderboardLoading: { ...state.leaderboardLoading, [period]: true },
+          leaderboardErrors: { ...state.leaderboardErrors, [period]: null },
+        }));
+        window.clearTimeout(refs.leaderboardTimers[period]);
+        refs.leaderboardTimers[period] = window.setTimeout(() => {
+          refs.leaderboardTimers[period] = undefined;
+          set((state) => ({
+            leaderboardLoading: { ...state.leaderboardLoading, [period]: false },
+            leaderboardErrors: { ...state.leaderboardErrors, [period]: 'Máy chủ phản hồi quá lâu' },
+          }));
+        }, LEADERBOARD_REQUEST_TIMEOUT_MS);
+        refs.online?.getLeaderboard(period);
+      };
+      if (refs.online) request();
+      else void connectToServer().then(request);
+    },
+
     placeMove(x, y) {
-      if (!refs.match || !get().myTurn) return;
+      const state = get();
+      if (
+        !refs.match ||
+        !state.myTurn ||
+        state.movePending ||
+        !Number.isInteger(x) ||
+        !Number.isInteger(y) ||
+        x < 0 ||
+        x >= SIZE ||
+        y < 0 ||
+        y >= SIZE ||
+        state.board[y * SIZE + x] !== 0
+      ) {
+        return;
+      }
+      set({ movePending: true });
       refs.session?.sendMove(refs.match.matchId, { x, y });
     },
 
@@ -946,6 +935,7 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
 
     replay() {
       if (refs.match && !window.confirm('Chơi lại ván mới?')) return;
+      if (refs.match) refs.session?.forfeit(refs.match.matchId);
       refs.session?.joinQueue();
     },
 
@@ -1006,5 +996,5 @@ export const useCaroStore = create<CaroStore>()((set, get) => {
 });
 
 if (import.meta.env.DEV) {
-  (window as unknown as { caroStore?: typeof useCaroStore }).caroStore = useCaroStore;
+  (window as unknown as { caroStore?: typeof useCaro }).caroStore = useCaro;
 }

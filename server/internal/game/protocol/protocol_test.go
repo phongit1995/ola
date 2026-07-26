@@ -36,3 +36,86 @@ func TestVipTypeFieldsRemainBackwardCompatible(t *testing.T) {
 		t.Fatalf("room member VIP type was not encoded: %s", memberJSON)
 	}
 }
+
+func TestUserInfoIncludesStableUserID(t *testing.T) {
+	payload, err := json.Marshal(UserInfoData{
+		ID:       "player-123",
+		Username: "Player",
+		Ken:      42,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var encoded map[string]any
+	if err := json.Unmarshal(payload, &encoded); err != nil {
+		t.Fatal(err)
+	}
+	if encoded["id"] != "player-123" {
+		t.Fatalf("user info did not encode its stable id: %s", payload)
+	}
+}
+
+func TestLeaderboardKeepsEmptyItemsAsArray(t *testing.T) {
+	payload, err := json.Marshal(LeaderboardData{
+		Period: "day",
+		From:   1,
+		To:     2,
+		Items:  []LeaderboardEntry{},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var encoded map[string]any
+	if err := json.Unmarshal(payload, &encoded); err != nil {
+		t.Fatal(err)
+	}
+	items, ok := encoded["items"].([]any)
+	if !ok || len(items) != 0 {
+		t.Fatalf("leaderboard items must encode as an empty array: %s", payload)
+	}
+}
+
+func TestMatchOverIncludesWinnerPayoutAndNetDelta(t *testing.T) {
+	payload, err := json.Marshal(MatchOverData{
+		MatchID:  "match-1",
+		WinnerID: "player-1",
+		Reason:   "win",
+		Payout:   19_500,
+		KenDelta: 9_500,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var encoded map[string]any
+	if err := json.Unmarshal(payload, &encoded); err != nil {
+		t.Fatal(err)
+	}
+	if encoded["payout"] != float64(19_500) || encoded["kenDelta"] != float64(9_500) {
+		t.Fatalf("match result omitted payout data: %s", payload)
+	}
+}
+
+func TestMatchOverKeepsZeroNetDelta(t *testing.T) {
+	payload, err := json.Marshal(MatchOverData{
+		MatchID:  "match-100-percent-commission",
+		WinnerID: "player-1",
+		Reason:   "win",
+		Bet:      10_000,
+		Payout:   10_000,
+		KenDelta: 0,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var encoded map[string]any
+	if err := json.Unmarshal(payload, &encoded); err != nil {
+		t.Fatal(err)
+	}
+	if delta, exists := encoded["kenDelta"]; !exists || delta != float64(0) {
+		t.Fatalf("zero net delta must remain explicit: %s", payload)
+	}
+}

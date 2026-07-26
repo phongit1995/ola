@@ -1,5 +1,4 @@
 import type { BuyVipMode } from '@ola/shared/lib';
-import type { MiniGame } from '@ola/shared/types';
 import { AUTH_ROUTES, ROOM_ROUTES, ROOT_ROUTES, TAB_ROUTES } from './routes';
 
 export type AuthStackParamList = {
@@ -32,7 +31,6 @@ export type RootStackParamList = {
   [ROOT_ROUTES.PenGame]: undefined;
   [ROOT_ROUTES.SpinWheel]: undefined;
   [ROOT_ROUTES.EggGame]: undefined;
-  [ROOT_ROUTES.ArcadeGame]: { game: MiniGame };
   [ROOT_ROUTES.MeVisitors]: undefined;
   [ROOT_ROUTES.MeLikedPosts]: undefined;
   [ROOT_ROUTES.MeNotifications]: undefined;

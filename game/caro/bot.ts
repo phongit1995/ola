@@ -1,13 +1,28 @@
-import type { ChatMessageData, ErrorData, GameSession, MatchFoundData, MatchOverData, StateData } from '../src/sdk';
-import { SIZE, checkWin, emptyState, scorePlacement, type CaroMove, type CaroState } from './types';
+import {
+  GAME_ERROR_CODE,
+  S2C,
+  type ChatMessageData,
+  type ErrorData,
+  type GameSession,
+  type MatchFoundData,
+  type MatchOverData,
+  type StateData,
+} from '../src/sdk';
+import {
+  SIZE,
+  checkWin,
+  emptyState,
+  scorePlacement,
+  type BotLevel,
+  type CaroMove,
+  type CaroState,
+} from './types';
 
 const TURN_MS = (Number(import.meta.env.VITE_GAME_TURN_SECONDS) || 45) * 1000;
 const PLAYER_MARK = 1;
 const BOT_MARK = 2;
 const TURN_ANNOUNCE_MS = 1080;
 const MAX_CHAT_LENGTH = 120;
-
-export type BotLevel = 'easy' | 'normal' | 'hard';
 
 export const BOT_LEVELS: Record<BotLevel, { name: string; thinkMs: number }> = {
   easy: { name: 'Máy · Dễ', thinkMs: 350 },
@@ -32,9 +47,13 @@ const BOT_REPLIES = [
 const BOT_MOVE_LINES = ['Đến lượt bạn đó!', 'Mình đi xong rồi nhé.', 'Thử chặn nước này xem!'];
 
 type Handler = (data: never) => void;
+type ServerEventType = (typeof S2C)[keyof typeof S2C];
 
 export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMove> {
-  const listeners = new Map<string, Set<Handler>>();
+  const listeners = new Map<ServerEventType, Set<Handler>>();
+  const sessionId =
+    globalThis.crypto?.randomUUID?.() ??
+    `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
   let state = emptyState();
   let matchId = '';
   let matchCount = 0;
@@ -45,7 +64,7 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
   let lastPlayerChatAt = 0;
   const chatTimers = new Set<number>();
 
-  const on = (type: string, handler: Handler): (() => void) => {
+  const on = (type: ServerEventType, handler: Handler): (() => void) => {
     let set = listeners.get(type);
     if (!set) {
       set = new Set();
@@ -55,7 +74,7 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
     return () => listeners.get(type)?.delete(handler);
   };
 
-  const emit = (type: string, data: unknown): void => {
+  const emit = (type: ServerEventType, data: unknown): void => {
     listeners.get(type)?.forEach((handler) => (handler as (d: unknown) => void)(data));
   };
 
@@ -71,7 +90,7 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
   const randomLine = (lines: string[]): string => lines[Math.floor(Math.random() * lines.length)];
 
   const emitChat = (userId: 'you' | 'bot', name: string, text: string): void => {
-    emit('CHAT_MESSAGE', {
+    emit(S2C.ChatMessage, {
       matchId,
       userId,
       name,
@@ -108,7 +127,7 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
   const finish = (winner: 'you' | 'bot' | null, reason: MatchOverData['reason']): void => {
     playing = false;
     clearTimers();
-    emit('MATCH_OVER', {
+    emit(S2C.MatchOver, {
       matchId,
       winnerId: winner ?? '',
       reason,
@@ -117,7 +136,7 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
   };
 
   const pushState = (turn: number, lastMove: CaroMove, lastBy: number): void => {
-    emit('STATE', {
+    emit(S2C.State, {
       matchId,
       state,
       turn,
@@ -164,12 +183,12 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
       clearTimers();
       state = emptyState();
       matchCount++;
-      matchId = `local-${matchCount}`;
+      matchId = `local-${sessionId}-${matchCount}`;
       playing = true;
       playerTurn = true;
       lastPlayerChatAt = 0;
       armPlayerTimeout();
-      emit('MATCH_FOUND', {
+      emit(S2C.MatchFound, {
         matchId,
         gameId: 'caro',
         players: [
@@ -195,7 +214,10 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
         move.y >= SIZE ||
         state.board[move.y * SIZE + move.x] !== 0
       ) {
-        emit('ERROR', { code: 'INVALID_MOVE', message: 'Ô không hợp lệ' } satisfies ErrorData);
+        emit(S2C.Error, {
+          code: GAME_ERROR_CODE.InvalidMove,
+          message: 'Ô không hợp lệ',
+        } satisfies ErrorData);
         return;
       }
       playerTurn = false;
@@ -220,12 +242,18 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
       const characters = Array.from(text.trim());
       if (characters.length === 0) return;
       if (characters.length > MAX_CHAT_LENGTH) {
-        emit('ERROR', { code: 'CHAT_TOO_LONG', message: 'Tin nhắn tối đa 120 ký tự' } satisfies ErrorData);
+        emit(S2C.Error, {
+          code: GAME_ERROR_CODE.ChatTooLong,
+          message: 'Tin nhắn tối đa 120 ký tự',
+        } satisfies ErrorData);
         return;
       }
       const now = Date.now();
       if (now - lastPlayerChatAt < 500) {
-        emit('ERROR', { code: 'CHAT_RATE_LIMITED', message: 'Bạn gửi tin nhắn quá nhanh' } satisfies ErrorData);
+        emit(S2C.Error, {
+          code: GAME_ERROR_CODE.ChatRateLimited,
+          message: 'Bạn gửi tin nhắn quá nhanh',
+        } satisfies ErrorData);
         return;
       }
       lastPlayerChatAt = now;
@@ -246,6 +274,7 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
     setRoomReady() {},
     startRoom() {},
     listRooms() {},
+    getLeaderboard() {},
 
     onUserInfo: () => () => {},
     onRoomList: () => () => {},
@@ -255,14 +284,15 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
     onRoomState: () => () => {},
     onRoomClosed: () => () => {},
     onRoomKicked: () => () => {},
-    onQueueWaiting: (handler) => on('QUEUE_WAITING', handler as Handler),
-    onMatchFound: (handler) => on('MATCH_FOUND', handler as Handler),
-    onState: (handler) => on('STATE', handler as Handler),
-    onChat: (handler) => on('CHAT_MESSAGE', handler as Handler),
-    onMatchOver: (handler) => on('MATCH_OVER', handler as Handler),
-    onError: (handler) => on('ERROR', handler as Handler),
+    onQueueWaiting: (handler) => on(S2C.QueueWaiting, handler as Handler),
+    onMatchFound: (handler) => on(S2C.MatchFound, handler as Handler),
+    onState: (handler) => on(S2C.State, handler as Handler),
+    onChat: (handler) => on(S2C.ChatMessage, handler as Handler),
+    onMatchOver: (handler) => on(S2C.MatchOver, handler as Handler),
+    onError: (handler) => on(S2C.Error, handler as Handler),
     onOpponentDisconnected: () => () => {},
     onOpponentReconnected: () => () => {},
+    onLeaderboard: () => () => {},
     onConnectionChange: (handler) => {
       (handler as (c: boolean) => void)(true);
       return () => {};

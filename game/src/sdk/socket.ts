@@ -6,6 +6,8 @@ import {
   type ChatMessageData,
   type Envelope,
   type ErrorData,
+  type LeaderboardData,
+  type LeaderboardPeriod,
   type MatchFoundData,
   type MatchOverData,
   type OpponentDisconnectedData,
@@ -37,6 +39,7 @@ export interface GameSession<TState = unknown, TMove = unknown> {
   setRoomReady(roomId: string, ready: boolean): void;
   startRoom(roomId: string): void;
   listRooms(): void;
+  getLeaderboard(period: LeaderboardPeriod): void;
   onUserInfo(handler: (data: UserInfoData) => void): () => void;
   onQueueWaiting(handler: () => void): () => void;
   onRoomList(handler: (data: RoomListData) => void): () => void;
@@ -53,6 +56,7 @@ export interface GameSession<TState = unknown, TMove = unknown> {
   onError(handler: (data: ErrorData) => void): () => void;
   onOpponentDisconnected(handler: (data: OpponentDisconnectedData) => void): () => void;
   onOpponentReconnected(handler: () => void): () => void;
+  onLeaderboard(handler: (data: LeaderboardData) => void): () => void;
   onConnectionChange(handler: (connected: boolean) => void): () => void;
   disconnect(): void;
 }
@@ -113,6 +117,7 @@ export async function joinGame<TState = unknown, TMove = unknown>(
     setRoomReady: (roomId, ready) => send(C2S.RoomReady, { roomId, ready }),
     startRoom: (roomId) => send(C2S.RoomStart, { roomId }),
     listRooms: () => send(C2S.RoomList),
+    getLeaderboard: (period) => send(C2S.Leaderboard, { period }),
     onUserInfo: (handler) => on(S2C.UserInfo, handler as Handler),
     onQueueWaiting: (handler) => on(S2C.QueueWaiting, handler as Handler),
     onRoomList: (handler) => on(S2C.RoomList, handler as Handler),
@@ -129,6 +134,7 @@ export async function joinGame<TState = unknown, TMove = unknown>(
     onError: (handler) => on(S2C.Error, handler as Handler),
     onOpponentDisconnected: (handler) => on(S2C.OpponentDisconnected, handler as Handler),
     onOpponentReconnected: (handler) => on(S2C.OpponentReconnected, handler as Handler),
+    onLeaderboard: (handler) => on(S2C.Leaderboard, handler as Handler),
     onConnectionChange: (handler) => on('connection', handler as Handler),
     disconnect: () => socket.disconnect(),
   };

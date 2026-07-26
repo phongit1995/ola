@@ -1,26 +1,41 @@
-import { useEffect, useState } from 'react';
-import { assetBg, assetSrc } from './assets';
-import { useCaroStore, type MatchResultState } from './store';
+import { useEffect } from 'react';
+import { useShallow } from 'zustand/react/shallow';
+import { assetBg, assetSrc } from '../../assets';
+import { formatKen } from '../../helpers/format';
+import { useCaro } from '../../store/useCaro';
+import { useResult } from './useResult';
 
-function formatKen(value: number): string {
-  return value.toLocaleString('vi-VN');
-}
-
-export function Result() {
-  const result = useCaroStore((s) => s.result);
-  const closeResult = useCaroStore((s) => s.closeResult);
-  const again = useCaroStore((s) => s.again);
-  const [revealedResult, setRevealedResult] = useState<MatchResultState | null>(null);
+export function ResultScreen() {
+  const result = useCaro((s) => s.result);
+  const replayVisible = useCaro((s) => s.replayVisible);
+  const closeResult = useCaro((s) => s.closeResult);
+  const again = useCaro((s) => s.again);
+  const { revealedResult, setRevealedResult } = useResult(
+    useShallow((state) => ({
+      revealedResult: state.revealedResult,
+      setRevealedResult: state.setRevealedResult,
+    })),
+  );
   const win = result?.win ?? true;
   const delta = result?.kenDelta ?? null;
-  const showKen = delta != null && delta !== 0;
+  const showKen = delta != null;
+  const kenText =
+    delta == null
+      ? ''
+      : delta === 0
+        ? '0 KEN'
+        : `${delta > 0 ? '+ ' : '- '}${formatKen(Math.abs(delta))} KEN`;
   const pending = result != null && result.revealDelayMs > 0 && revealedResult !== result;
 
   useEffect(() => {
-    if (!result || result.revealDelayMs <= 0) return;
+    if (!result) {
+      setRevealedResult(null);
+      return;
+    }
+    if (result.revealDelayMs <= 0) return;
     const timer = window.setTimeout(() => setRevealedResult(result), result.revealDelayMs);
     return () => window.clearTimeout(timer);
-  }, [result]);
+  }, [result, setRevealedResult]);
 
   return (
     <div
@@ -43,21 +58,21 @@ export function Result() {
         </div>
         <div id="result-ken" className={showKen ? '' : 'hidden'} style={assetBg('resultKenFrame')}>
           <img src={assetSrc('resultIcKen')} alt="" />
-          <span id="result-ken-text">
-            {showKen ? `${delta > 0 ? '+' : '-'}${formatKen(Math.abs(delta))} KEN` : ''}
-          </span>
+          <span id="result-ken-text">{kenText}</span>
         </div>
         <div id="result-actions">
-          <button
-            type="button"
-            id="result-replay"
-            className="result-btn"
-            style={assetBg(win ? 'resultBtnReplayWin' : 'resultBtnReplayLose')}
-            disabled={pending}
-            onClick={again}
-          >
-            <span>Chơi lại</span>
-          </button>
+          {replayVisible && (
+            <button
+              type="button"
+              id="result-replay"
+              className="result-btn"
+              style={assetBg(win ? 'resultBtnReplayWin' : 'resultBtnReplayLose')}
+              disabled={pending}
+              onClick={again}
+            >
+              <span>Chơi lại</span>
+            </button>
+          )}
           <button
             type="button"
             id="result-close"

@@ -963,12 +963,13 @@ func roomInfo(room Room) protocol.RoomInfo {
 		players = 2
 	}
 	return protocol.RoomInfo{
-		ID:      room.ID,
-		Owner:   room.OwnerName,
-		Bet:     room.Bet,
-		Locked:  room.Password != "",
-		Players: players,
-		Full:    players == 2,
+		ID:           room.ID,
+		Owner:        room.OwnerName,
+		OwnerVipType: room.OwnerVipType,
+		Bet:          room.Bet,
+		Locked:       room.Password != "",
+		Players:      players,
+		Full:         players == 2,
 	}
 }
 
@@ -1636,6 +1637,16 @@ func (e *Engine) onTimeout(matchID string, expectedTurn, expectedGen int) {
 	e.finishMatch(m, m.players[winnerIdx].ID, "timeout")
 }
 
+func (e *Engine) winnerAmounts(gameID string, bet int) (payout, net int) {
+	if bet <= 0 {
+		return 0, 0
+	}
+	if settlement := e.currentSettlement(); settlement != nil {
+		return settlement.WinnerAmounts(gameID, bet)
+	}
+	return bet * 2, bet
+}
+
 func (e *Engine) finishMatch(m *Match, winnerID string, reason string) {
 	if len(m.disconnected) > 0 {
 		if m.room == nil || m.disconnected[m.playerIndex(m.room.OwnerID)] {
@@ -1691,12 +1702,18 @@ func (e *Engine) finishMatch(m *Match, winnerID string, reason string) {
 			waitingRoom = &room
 		}
 	}
+	payout, kenDelta := 0, 0
+	if winnerID != "" {
+		payout, kenDelta = e.winnerAmounts(m.GameID, m.bet)
+	}
 	data := protocol.MatchOverData{
 		MatchID:  m.ID,
 		WinnerID: winnerID,
 		Reason:   reason,
 		State:    m.state,
 		Bet:      m.bet,
+		Payout:   payout,
+		KenDelta: kenDelta,
 	}
 	keys := make([]string, 0, len(m.players))
 	for _, p := range m.players {
@@ -2167,12 +2184,18 @@ func (e *Engine) restoreFinishedSnapshot(snapshot ActiveMatchSnapshot) {
 		e.logger.Errorw("Failed to decode finished match state", "match_id", snapshot.ID, "error", err)
 		return
 	}
+	payout, kenDelta := 0, 0
+	if snapshot.WinnerID != "" {
+		payout, kenDelta = e.winnerAmounts(snapshot.GameID, snapshot.Bet)
+	}
 	data := protocol.MatchOverData{
 		MatchID:  snapshot.ID,
 		WinnerID: snapshot.WinnerID,
 		Reason:   snapshot.ResultReason,
 		State:    state,
 		Bet:      snapshot.Bet,
+		Payout:   payout,
+		KenDelta: kenDelta,
 	}
 	if !e.restoreSnapshotRoom(snapshot) {
 		e.logger.Errorw("Deferred waiting-room restore from finished match", "match_id", snapshot.ID)

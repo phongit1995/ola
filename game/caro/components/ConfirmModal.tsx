@@ -1,4 +1,4 @@
-import { assetBg, type AssetKey } from './assets';
+import { assetBg, type AssetKey } from '../assets';
 
 interface ConfirmModalProps {
   open: boolean;

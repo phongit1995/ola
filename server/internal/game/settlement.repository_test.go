@@ -1,9 +1,12 @@
 package game
 
 import (
+	"bytes"
 	"context"
 	"errors"
+	"log"
 	"math"
+	"strings"
 	"testing"
 	"time"
 
@@ -171,6 +174,35 @@ func TestSettleFinishRejectsMissingEscrow(t *testing.T) {
 	}
 }
 
+func TestAbortStartMissingEscrowIsIdempotentWithoutRecordNotFoundLog(t *testing.T) {
+	db, mock := newSettlementMockDB(t)
+	var logs bytes.Buffer
+	db = db.Session(&gorm.Session{
+		Logger: logger.New(log.New(&logs, "", 0), logger.Config{
+			LogLevel: logger.Info,
+		}),
+	})
+	repo := &SettlementRepository{db: db, logger: zap.NewNop().Sugar()}
+	matchID := uuid.NewString()
+
+	mock.ExpectBegin()
+	mock.ExpectQuery(`SELECT \* FROM "game_matches".*match_id = \$1.*FOR UPDATE`).
+		WithArgs(matchID, 1).
+		WillReturnRows(sqlmock.NewRows([]string{"id"}))
+	mock.ExpectCommit()
+
+	balances, err := repo.AbortStart(context.Background(), matchID)
+	if err != nil {
+		t.Fatalf("abort missing escrow: %v", err)
+	}
+	if len(balances) != 0 {
+		t.Fatalf("abort missing escrow balances=%v, want none", balances)
+	}
+	if strings.Contains(logs.String(), gorm.ErrRecordNotFound.Error()) {
+		t.Fatalf("abort missing escrow produced a false error log: %s", logs.String())
+	}
+}
+
 func TestSettleFinishRejectsOutcomeThatConflictsWithEscrow(t *testing.T) {
 	db, mock := newSettlementMockDB(t)
 	repo := &SettlementRepository{db: db, logger: zap.NewNop().Sugar()}
@@ -254,7 +286,7 @@ func TestSettleFinishRetryDoesNotUpdateBalancesAgain(t *testing.T) {
 
 func TestSettleFinishCreditsWinnerFromEscrowedBet(t *testing.T) {
 	db, mock := newSettlementMockDB(t)
-	repo := &SettlementRepository{db: db, logger: zap.NewNop().Sugar()}
+	repo := &SettlementRepository{db: db, logger: zap.NewNop().Sugar(), commissionPercent: 5}
 	p0 := uuid.MustParse("11111111-1111-4111-8111-111111111111")
 	p1 := uuid.MustParse("22222222-2222-4222-8222-222222222222")
 	matchID := uuid.MustParse("33333333-3333-4333-8333-333333333333")
@@ -284,7 +316,7 @@ func TestSettleFinishCreditsWinnerFromEscrowedBet(t *testing.T) {
 		))
 	expectLockedUser(mock, p0, 75)
 	expectLockedUser(mock, p1, 55)
-	expectKenUpdate(mock, p0, 125)
+	expectKenUpdate(mock, p0, 124)
 	mock.ExpectExec(`UPDATE "game_matches" SET .*WHERE id = .*status = `).
 		WillReturnResult(sqlmock.NewResult(0, 1))
 	mock.ExpectCommit()
@@ -295,6 +327,19 @@ func TestSettleFinishCreditsWinnerFromEscrowedBet(t *testing.T) {
 	}
 	if result.gameID != out.GameID || len(result.userIDs) != 2 {
 		t.Fatalf("unexpected settle result: %+v", result)
+	}
+}
+
+func TestWinnerAmountsApplyCommissionOnlyToCaro(t *testing.T) {
+	repo := &SettlementRepository{commissionPercent: 5}
+	payout, net := repo.WinnerAmounts("caro", 10_000)
+	if payout != 19_500 || net != 9_500 {
+		t.Fatalf("winner amounts = payout %d, net %d; want 19500 and 9500", payout, net)
+	}
+
+	payout, net = repo.WinnerAmounts("war-god", 10_000)
+	if payout != 20_000 || net != 10_000 {
+		t.Fatalf("non-Caro amounts = payout %d, net %d; want 20000 and 10000", payout, net)
 	}
 }
 

@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"ola-chat-server/internal/config"
 	"ola-chat-server/internal/game/engine"
 	"ola-chat-server/internal/game/protocol"
 	"ola-chat-server/internal/models"
@@ -37,9 +38,10 @@ var (
 )
 
 type SettlementRepository struct {
-	db     *gorm.DB
-	users  *user.CacheService
-	logger *zap.SugaredLogger
+	db                *gorm.DB
+	users             *user.CacheService
+	logger            *zap.SugaredLogger
+	commissionPercent int
 }
 
 type settlementResult struct {
@@ -51,8 +53,35 @@ func invalidMatchError(format string, args ...any) error {
 	return fmt.Errorf("%w: %w: %s", engine.ErrSettlementConflict, errInvalidMatch, fmt.Sprintf(format, args...))
 }
 
-func NewSettlementRepository(db *gorm.DB, users *user.CacheService, logger *zap.SugaredLogger) engine.Settlement {
-	return &SettlementRepository{db: db, users: users, logger: logger.Named("[game-settle]")}
+func NewSettlementRepository(
+	db *gorm.DB,
+	users *user.CacheService,
+	logger *zap.SugaredLogger,
+	cfg *config.Config,
+) engine.Settlement {
+	return &SettlementRepository{
+		db:                db,
+		users:             users,
+		logger:            logger.Named("[game-settle]"),
+		commissionPercent: cfg.CaroCommissionPercent,
+	}
+}
+
+func winnerAmounts(bet, commissionPercent int) (payout, net int) {
+	if bet <= 0 {
+		return 0, 0
+	}
+	commission := bet * commissionPercent / 100
+	payout = bet*2 - commission
+	return payout, payout - bet
+}
+
+func (s *SettlementRepository) WinnerAmounts(gameID string, bet int) (payout, net int) {
+	commissionPercent := 0
+	if gameID == "caro" {
+		commissionPercent = s.commissionPercent
+	}
+	return winnerAmounts(bet, commissionPercent)
 }
 
 func parsePlayers(a, b string) (uuid.UUID, uuid.UUID, error) {
@@ -357,7 +386,7 @@ func (s *SettlementRepository) settleFinish(
 				return err
 			}
 			if winner != nil {
-				amount := row.Bet * 2
+				amount, winnerNet := s.WinnerAmounts(row.GameID, row.Bet)
 				u := users[*winner]
 				after, err := checkedCredit(u.Ken, amount)
 				if err != nil {
@@ -366,7 +395,7 @@ func (s *SettlementRepository) settleFinish(
 				if err := updateUserKen(tx, *winner, after, true); err != nil {
 					return err
 				}
-				kenDelta = row.Bet
+				kenDelta = winnerNet
 			} else {
 				for _, id := range orderedUserIDs(row.Player0ID, row.Player1ID) {
 					u := users[id]
@@ -495,13 +524,15 @@ func (s *SettlementRepository) abortMatch(ctx context.Context, matchID string) (
 	var result settlementResult
 	err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		var row models.GameMatch
-		err := tx.Unscoped().Clauses(clause.Locking{Strength: "UPDATE"}).
-			Where("match_id = ?", matchID).First(&row).Error
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil
+		// A missing escrow is a valid idempotent no-op. Find lets us detect it
+		// through RowsAffected without GORM reporting ErrRecordNotFound in debug logs.
+		query := tx.Unscoped().Clauses(clause.Locking{Strength: "UPDATE"}).
+			Where("match_id = ?", matchID).Limit(1).Find(&row)
+		if query.Error != nil {
+			return query.Error
 		}
-		if err != nil {
-			return err
+		if query.RowsAffected == 0 {
+			return nil
 		}
 		if row.Status == matchStatusFinished {
 			result.gameID = row.GameID
@@ -676,6 +707,7 @@ func (s *SettlementRepository) freshUserInfo(userID uuid.UUID) (*protocol.UserIn
 		}
 	}
 	info := &protocol.UserInfoData{
+		ID:       userID.String(),
 		Username: u.Username,
 		Ken:      u.Ken,
 	}
