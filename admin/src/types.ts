@@ -370,6 +370,51 @@ export interface KenAdjustResult {
   balanceAfter: number
 }
 
+export interface KenTransferItem {
+  id: string
+  from: KenCounterparty
+  to: KenCounterparty
+  amount: number
+  description?: string
+  createdAt: string
+}
+
+export interface KenTransferListParams {
+  senderId?: string
+  receiverId?: string
+  userId?: string
+  minAmount?: number
+  maxAmount?: number
+  from?: string
+  to?: string
+  limit?: number
+  offset?: number
+}
+
+export type KenTransferUserStatsSortBy = 'sentTotal' | 'receivedTotal' | 'netKen' | 'transfers'
+
+export interface KenTransferUserStatsItem {
+  user: KenCounterparty
+  sentCount: number
+  sentTotal: number
+  receivedCount: number
+  receivedTotal: number
+  netKen: number
+  partners: number
+  lastTransferAt: string
+}
+
+export interface KenTransferUserStatsParams {
+  userId?: string
+  minAmount?: number
+  maxAmount?: number
+  from?: string
+  to?: string
+  sortBy?: KenTransferUserStatsSortBy
+  limit?: number
+  offset?: number
+}
+
 export interface VipPackage {
   id: string
   name: string

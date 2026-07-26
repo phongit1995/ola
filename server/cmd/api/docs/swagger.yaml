@@ -864,6 +864,117 @@ definitions:
       traceId:
         type: string
     type: object
+  internal_modules_admin_ken.TransferItem:
+    properties:
+      amount:
+        example: 5000
+        type: integer
+      createdAt:
+        example: "2026-07-26T10:00:00Z"
+        type: string
+      description:
+        example: Chuyển ken
+        type: string
+      from:
+        $ref: '#/definitions/internal_modules_admin_ken.CounterpartyInfo'
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      to:
+        $ref: '#/definitions/internal_modules_admin_ken.CounterpartyInfo'
+    type: object
+  internal_modules_admin_ken.TransferListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_admin_ken.TransferItem'
+        type: array
+      limit:
+        example: 20
+        type: integer
+      offset:
+        example: 0
+        type: integer
+      total:
+        example: 1
+        type: integer
+    type: object
+  internal_modules_admin_ken.TransferListSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_ken.TransferListResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
+  internal_modules_admin_ken.TransferUserStatsItem:
+    properties:
+      lastTransferAt:
+        example: "2026-07-26T10:00:00Z"
+        type: string
+      netKen:
+        example: -28000
+        type: integer
+      partners:
+        example: 5
+        type: integer
+      receivedCount:
+        example: 8
+        type: integer
+      receivedTotal:
+        example: 32000
+        type: integer
+      sentCount:
+        example: 12
+        type: integer
+      sentTotal:
+        example: 60000
+        type: integer
+      user:
+        $ref: '#/definitions/internal_modules_admin_ken.CounterpartyInfo'
+    type: object
+  internal_modules_admin_ken.TransferUserStatsResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_modules_admin_ken.TransferUserStatsItem'
+        type: array
+      limit:
+        example: 20
+        type: integer
+      offset:
+        example: 0
+        type: integer
+      total:
+        example: 1
+        type: integer
+    type: object
+  internal_modules_admin_ken.TransferUserStatsSuccessResponse:
+    properties:
+      data:
+        $ref: '#/definitions/internal_modules_admin_ken.TransferUserStatsResponse'
+      error:
+        type: string
+      path:
+        type: string
+      status:
+        type: integer
+      success:
+        type: boolean
+      timestamp:
+        type: string
+      traceId:
+        type: string
+    type: object
   internal_modules_admin_kenchest.StatsOverview:
     properties:
       activeChests:
@@ -9127,6 +9238,104 @@ paths:
       summary: Lịch sử nhận KEN tất cả rương (admin)
       tags:
       - admin-ken-chest
+  /admin/ken/transfers:
+    get:
+      parameters:
+      - description: Lọc theo người gửi
+        in: query
+        name: senderId
+        type: string
+      - description: Lọc theo người nhận
+        in: query
+        name: receiverId
+        type: string
+      - description: Lọc theo user (gửi hoặc nhận)
+        in: query
+        name: userId
+        type: string
+      - description: Số ken tối thiểu
+        in: query
+        name: minAmount
+        type: integer
+      - description: Số ken tối đa
+        in: query
+        name: maxAmount
+        type: integer
+      - description: Từ thời gian (RFC3339)
+        in: query
+        name: from
+        type: string
+      - description: Đến thời gian (RFC3339)
+        in: query
+        name: to
+        type: string
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_ken.TransferListSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Lịch sử chuyển ken giữa các user (admin)
+      tags:
+      - admin-ken
+  /admin/ken/transfers/users:
+    get:
+      parameters:
+      - description: Lọc theo user
+        in: query
+        name: userId
+        type: string
+      - description: Số ken tối thiểu mỗi giao dịch
+        in: query
+        name: minAmount
+        type: integer
+      - description: Số ken tối đa mỗi giao dịch
+        in: query
+        name: maxAmount
+        type: integer
+      - description: Từ thời gian (RFC3339)
+        in: query
+        name: from
+        type: string
+      - description: Đến thời gian (RFC3339)
+        in: query
+        name: to
+        type: string
+      - description: sentTotal|receivedTotal|netKen|transfers (mặc định sentTotal)
+        in: query
+        name: sortBy
+        type: string
+      - description: Page size
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_modules_admin_ken.TransferUserStatsSuccessResponse'
+      security:
+      - BearerAuth: []
+      summary: Thống kê chuyển/nhận ken theo từng user (admin)
+      tags:
+      - admin-ken
   /admin/ken/users/{userId}/adjust:
     post:
       consumes:

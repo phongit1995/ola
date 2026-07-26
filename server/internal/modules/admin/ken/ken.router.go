@@ -19,5 +19,7 @@ func (r *Router) Setup(admin *utils.AppGroup) {
 	{
 		ken.POST("/users/:userId/adjust", r.controller.Adjust)
 		ken.GET("/users/:userId/transactions", r.controller.ListTransactions)
+		ken.GET("/transfers", r.controller.ListTransfers)
+		ken.GET("/transfers/users", r.controller.TransferUserStats)
 	}
 }

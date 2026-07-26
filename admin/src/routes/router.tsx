@@ -16,6 +16,7 @@ import { PenStatsPage } from '@/pages/PenStatsPage'
 import { GameMatchesPage } from '@/pages/GameMatchesPage'
 import { GameMatchStatsPage } from '@/pages/GameMatchStatsPage'
 import { KenChestsPage } from '@/pages/KenChestsPage'
+import { KenTransfersPage } from '@/pages/KenTransfersPage'
 import { MiniGamePage } from '@/pages/MiniGamePage'
 import { MePage } from '@/pages/MePage'
 import { TopupSettingsPage } from '@/pages/TopupSettingsPage'
@@ -57,6 +58,7 @@ export const router = createBrowserRouter([
       { path: 'games/matches/stats', element: <GameMatchStatsPage /> },
       { path: 'games/ken-treasure', element: <KenChestsPage /> },
       { path: 'games/mini-game', element: <MiniGamePage /> },
+      { path: 'ken-transfers', element: <KenTransfersPage /> },
       { path: 'me', element: <MePage /> },
       { path: 'settings/topup', element: <TopupSettingsPage /> },
       { path: 'audit-logs', element: <AuditLogsPage /> },

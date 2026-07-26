@@ -1589,6 +1589,160 @@
                 }
             }
         },
+        "/admin/ken/transfers": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-ken"
+                ],
+                "summary": "Lịch sử chuyển ken giữa các user (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Lọc theo người gửi",
+                        "name": "senderId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Lọc theo người nhận",
+                        "name": "receiverId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Lọc theo user (gửi hoặc nhận)",
+                        "name": "userId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Số ken tối thiểu",
+                        "name": "minAmount",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Số ken tối đa",
+                        "name": "maxAmount",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Từ thời gian (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến thời gian (RFC3339)",
+                        "name": "to",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_ken.TransferListSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/ken/transfers/users": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin-ken"
+                ],
+                "summary": "Thống kê chuyển/nhận ken theo từng user (admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Lọc theo user",
+                        "name": "userId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Số ken tối thiểu mỗi giao dịch",
+                        "name": "minAmount",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Số ken tối đa mỗi giao dịch",
+                        "name": "maxAmount",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Từ thời gian (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Đến thời gian (RFC3339)",
+                        "name": "to",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "sentTotal|receivedTotal|netKen|transfers (mặc định sentTotal)",
+                        "name": "sortBy",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_modules_admin_ken.TransferUserStatsSuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/ken/users/{userId}/adjust": {
             "post": {
                 "security": [
@@ -12648,6 +12802,167 @@
             "properties": {
                 "data": {
                     "$ref": "#/definitions/internal_modules_admin_ken.TransactionListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_ken.TransferItem": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "integer",
+                    "example": 5000
+                },
+                "createdAt": {
+                    "type": "string",
+                    "example": "2026-07-26T10:00:00Z"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "Chuyển ken"
+                },
+                "from": {
+                    "$ref": "#/definitions/internal_modules_admin_ken.CounterpartyInfo"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "to": {
+                    "$ref": "#/definitions/internal_modules_admin_ken.CounterpartyInfo"
+                }
+            }
+        },
+        "internal_modules_admin_ken.TransferListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_ken.TransferItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 20
+                },
+                "offset": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "internal_modules_admin_ken.TransferListSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_ken.TransferListResponse"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_modules_admin_ken.TransferUserStatsItem": {
+            "type": "object",
+            "properties": {
+                "lastTransferAt": {
+                    "type": "string",
+                    "example": "2026-07-26T10:00:00Z"
+                },
+                "netKen": {
+                    "type": "integer",
+                    "example": -28000
+                },
+                "partners": {
+                    "type": "integer",
+                    "example": 5
+                },
+                "receivedCount": {
+                    "type": "integer",
+                    "example": 8
+                },
+                "receivedTotal": {
+                    "type": "integer",
+                    "example": 32000
+                },
+                "sentCount": {
+                    "type": "integer",
+                    "example": 12
+                },
+                "sentTotal": {
+                    "type": "integer",
+                    "example": 60000
+                },
+                "user": {
+                    "$ref": "#/definitions/internal_modules_admin_ken.CounterpartyInfo"
+                }
+            }
+        },
+        "internal_modules_admin_ken.TransferUserStatsResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_modules_admin_ken.TransferUserStatsItem"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 20
+                },
+                "offset": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "internal_modules_admin_ken.TransferUserStatsSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/internal_modules_admin_ken.TransferUserStatsResponse"
                 },
                 "error": {
                     "type": "string"

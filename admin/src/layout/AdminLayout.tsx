@@ -19,6 +19,7 @@ import {
   SwapOutlined,
   PictureOutlined,
   TeamOutlined,
+  TransactionOutlined,
   TrophyOutlined,
   UserOutlined,
 } from '@ant-design/icons'
@@ -56,6 +57,7 @@ const MENU_ITEMS = [
       { key: '/games/matches', icon: <TrophyOutlined />, label: 'Trận PvP' },
     ],
   },
+  { key: '/ken-transfers', icon: <TransactionOutlined />, label: 'Chuyển Ken' },
   { key: '/me', icon: <PictureOutlined />, label: 'Me' },
   { key: '/audit-logs', icon: <FileSearchOutlined />, label: 'Nhật ký admin' },
   {
@@ -91,6 +93,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/games/mini-game': 'Mini game',
   '/games/matches': 'Trận PvP mini-game',
   '/games/matches/stats': 'Thống kê trận & cược',
+  '/ken-transfers': 'Lịch sử chuyển Ken',
   '/me': 'Quản lý Me',
   '/audit-logs': 'Nhật ký admin',
   '/settings/topup': 'Cài đặt nạp KEN',
