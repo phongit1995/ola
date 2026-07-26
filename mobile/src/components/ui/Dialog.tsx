@@ -18,6 +18,7 @@ interface DialogProps {
   dismissOnBackdrop?: boolean;
   avoidKeyboard?: boolean;
   bare?: boolean;
+  maxWidth?: number;
   children: ReactNode;
   footer?: ReactNode;
 }
@@ -31,6 +32,7 @@ export function Dialog({
   dismissOnBackdrop = true,
   avoidKeyboard = true,
   bare = false,
+  maxWidth = 384,
   children,
   footer,
 }: DialogProps) {
@@ -51,10 +53,10 @@ export function Dialog({
             className={bare ? 'w-full' : 'w-full overflow-hidden bg-white'}
             style={
               bare
-                ? { maxWidth: 384 }
+                ? { maxWidth }
                 : {
                     minWidth: 280,
-                    maxWidth: 384,
+                    maxWidth,
                     borderRadius: 5,
                     shadowColor: '#000',
                     shadowOpacity: 0.35,

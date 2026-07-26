@@ -112,15 +112,20 @@ export function EggGiftDialog({ packId, onClose }: EggGiftDialogProps) {
   }, [packId]);
 
   return (
-    <Dialog visible onClose={onClose} bare>
+    <Dialog visible onClose={onClose} bare maxWidth={448}>
       <View style={{ paddingTop: 30 }}>
         <View
           style={{
             borderRadius: 24,
             backgroundColor: '#ffffff',
             paddingTop: 40,
-            paddingHorizontal: 10,
-            paddingBottom: 10,
+            paddingHorizontal: 12,
+            paddingBottom: 12,
+            shadowColor: '#000000',
+            shadowOpacity: 0.35,
+            shadowRadius: 24,
+            shadowOffset: { width: 0, height: 6 },
+            elevation: 8,
           }}
         >
           <ScrollView style={{ maxHeight: 500, minHeight: 160 }}>
@@ -170,37 +175,51 @@ export function EggGiftDialog({ packId, onClose }: EggGiftDialogProps) {
                         {t(style.labelKey)}
                       </Text>
                     </View>
-                    <View
-                      style={{ flexDirection: 'row', flexWrap: 'wrap', columnGap: 8, rowGap: 8 }}
-                    >
-                      {section.rewards.map((reward) => {
-                        const label = rewardText(section.type, reward, t);
-                        return (
-                          <View
-                            key={`${section.type}-${label}`}
-                            style={{
-                              width: '31%',
-                              borderRadius: 12,
-                              borderWidth: 1,
-                              borderColor: 'rgba(0,0,0,0.05)',
-                              backgroundColor: '#ffffff',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              paddingVertical: 10,
-                              paddingHorizontal: 4,
-                              gap: 4,
-                            }}
-                          >
-                            <RewardIcon type={section.type} reward={reward} />
-                            <Text
-                              className="text-center text-xs font-semibold"
-                              style={{ color: style.text }}
-                            >
-                              {label}
-                            </Text>
-                          </View>
-                        );
-                      })}
+                    <View style={{ gap: 8 }}>
+                      {Array.from(
+                        { length: Math.ceil(section.rewards.length / 3) },
+                        (_, rowIndex) => {
+                          const rowRewards = section.rewards.slice(
+                            rowIndex * 3,
+                            rowIndex * 3 + 3,
+                          );
+                          return (
+                            <View key={rowIndex} style={{ flexDirection: 'row', gap: 8 }}>
+                              {rowRewards.map((reward) => {
+                                const label = rewardText(section.type, reward, t);
+                                return (
+                                  <View
+                                    key={`${section.type}-${label}`}
+                                    style={{
+                                      flex: 1,
+                                      borderRadius: 12,
+                                      borderWidth: 1,
+                                      borderColor: 'rgba(0,0,0,0.05)',
+                                      backgroundColor: '#ffffff',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      paddingVertical: 10,
+                                      paddingHorizontal: 4,
+                                      gap: 4,
+                                    }}
+                                  >
+                                    <RewardIcon type={section.type} reward={reward} />
+                                    <Text
+                                      className="text-center text-xs font-semibold"
+                                      style={{ color: style.text }}
+                                    >
+                                      {label}
+                                    </Text>
+                                  </View>
+                                );
+                              })}
+                              {Array.from({ length: 3 - rowRewards.length }, (_filler, fillerIndex) => (
+                                <View key={`filler-${fillerIndex}`} style={{ flex: 1 }} />
+                              ))}
+                            </View>
+                          );
+                        },
+                      )}
                     </View>
                   </View>
                 );
@@ -223,9 +242,17 @@ export function EggGiftDialog({ packId, onClose }: EggGiftDialogProps) {
             paddingVertical: 8,
             paddingHorizontal: 16,
             alignItems: 'center',
+            shadowColor: '#000000',
+            shadowOpacity: 0.3,
+            shadowRadius: 10,
+            shadowOffset: { width: 0, height: 3 },
+            elevation: 9,
           }}
         >
-          <Text className="text-xl font-extrabold" style={{ color: '#ffffff' }}>
+          <Text
+            className="text-xl font-extrabold"
+            style={{ color: '#ffffff', letterSpacing: 0.5 }}
+          >
             {t('eggGame.gifts.heading')}
           </Text>
           <Text className="text-sm font-bold" style={{ color: '#ffca28' }}>
@@ -236,7 +263,15 @@ export function EggGiftDialog({ packId, onClose }: EggGiftDialogProps) {
         <Pressable
           accessibilityLabel={t('dialog.close')}
           onPress={onClose}
-          style={{ position: 'absolute', top: 12, right: 0, width: 36, height: 36, zIndex: 3 }}
+          style={{
+            position: 'absolute',
+            top: 12,
+            right: -8,
+            width: 36,
+            height: 36,
+            zIndex: 3,
+            elevation: 10,
+          }}
         >
           <Image
             source={eggAssets.closeCircle}
