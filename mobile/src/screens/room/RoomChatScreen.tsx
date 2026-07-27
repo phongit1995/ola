@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Image, Keyboard, Pressable, Text, View } from 'react-native';
-import { KeyboardShift } from '@components/KeyboardShift';
+import { KeyboardView } from '@components/KeyboardView';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { CompositeScreenProps, NavigationAction } from '@react-navigation/native';
@@ -119,6 +119,8 @@ export function RoomChatScreen({ navigation, route }: Props) {
   const pushToast = useToastStore((s) => s.push);
   const [filterOpen, setFilterOpen] = useState(false);
   const [pendingLeave, setPendingLeave] = useState<NavigationAction | null>(null);
+  const [contentOffsetY, setContentOffsetY] = useState(0);
+  const contentRef = useRef<View>(null);
   const confirmedLeaveRef = useRef(false);
   const visibleMembers = useMemo(
     () => members.filter((member) => memberMatchesFilter(member, filters)),
@@ -215,7 +217,19 @@ export function RoomChatScreen({ navigation, route }: Props) {
           />
       </View>
 
-      <KeyboardShift>
+      <View
+        ref={contentRef}
+        className="flex-1"
+        style={{ overflow: 'hidden' }}
+        onLayout={() =>
+          contentRef.current?.measureInWindow((_x, y) => setContentOffsetY(y))
+        }
+      >
+      <KeyboardView
+        behavior="translate-with-padding"
+        keyboardVerticalOffset={contentOffsetY}
+        className="flex-1"
+      >
       {status === 'error' ? (
         <View className="flex-1 items-center justify-center gap-4 px-8">
           <Text className="text-center text-base" style={{ color: 'rgba(0,0,0,0.7)' }}>
@@ -266,7 +280,8 @@ export function RoomChatScreen({ navigation, route }: Props) {
           </View>
         </>
       )}
-      </KeyboardShift>
+      </KeyboardView>
+      </View>
 
       <RoomFilterDialog
         visible={filterOpen}
