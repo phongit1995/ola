@@ -118,6 +118,8 @@ export interface LeaderboardEntry {
   username: string;
   vipType?: string | null;
   ken: number;
+  wins?: number;
+  losses?: number;
 }
 
 export interface LeaderboardData {

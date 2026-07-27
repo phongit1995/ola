@@ -123,6 +123,8 @@ type LeaderboardEntry struct {
 	Username string  `json:"username"`
 	VipType  *string `json:"vipType,omitempty"`
 	Ken      int64   `json:"ken"`
+	Wins     int64   `json:"wins"`
+	Losses   int64   `json:"losses"`
 }
 
 type LeaderboardData struct {

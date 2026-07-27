@@ -2698,7 +2698,7 @@ button:focus-visible,
 .leaderboard-head,
 .leaderboard-row {
   display: grid;
-  grid-template-columns: 21% 49% 30%;
+  grid-template-columns: 17% 39% 18% 26%;
 }
 
 .leaderboard-head {
@@ -2784,6 +2784,7 @@ button:focus-visible,
 
 .leaderboard-rank,
 .leaderboard-player,
+.leaderboard-record,
 .leaderboard-ken {
   min-width: 0;
   height: 100%;
@@ -2822,6 +2823,21 @@ button:focus-visible,
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.leaderboard-record {
+  justify-content: center;
+  gap: 0.25em;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.leaderboard-record .wins {
+  color: #2f7659;
+}
+
+.leaderboard-record .losses {
+  color: #a83c31;
 }
 
 .leaderboard-ken {
