@@ -1,14 +1,20 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MeService, UserService } from '@services';
-import { activeVipTypeId, createDateFormatter, createTimeFormatter, toast } from '@lib';
+import {
+  activeVipTypeId,
+  compressImagesForUpload,
+  createDateFormatter,
+  createTimeFormatter,
+  toast,
+} from '@lib';
 import { useAuthStore } from '@/store/authStore';
 import { useMeLocalStore } from '@/store/meLocalStore';
 import type { PostReaction, RelationshipInfo } from '@app-types';
 import { applyMeReaction, meSelfLiker, reconcileMeLikers, toMePost } from '../me/mappers';
 import type { MePost } from '../me/types';
 import type { ComposedPost } from '../me/components/MeComposerDialog';
-import { composedToImages, composedToUpdatePayload } from '../me/composer';
+import { composedToImages, composedToPayload, composedToUpdatePayload } from '../me/composer';
 import { useMeFeedStore } from '../me/meFeedStore';
 import { mapFollowing, mapPosts, mapPublicProfile, type ProfileMapDeps } from './mappers';
 import { useProfileActions } from './useProfileActions';
@@ -117,6 +123,33 @@ export function useUserProfile(username: string, seedColor: string): ProfileCont
     [setPost]
   );
 
+  const addPost = useCallback(
+    async (draft: ComposedPost): Promise<boolean> => {
+      let files: File[];
+      try {
+        files = await compressImagesForUpload(draft.files);
+      } catch {
+        toast.error(t('me.postError'));
+        return false;
+      }
+
+      const feed = useMeFeedStore.getState();
+      const created = await feed.createPost(composedToPayload(draft), files, draft.imageUrls);
+      if (created == null) return false;
+
+      feed.prependPost(created);
+      if (userId === useAuthStore.getState().user?.id) {
+        const mapped = toMePost(created, formatTime);
+        setSecondary((current) => ({
+          ...current,
+          posts: [mapped, ...current.posts],
+        }));
+      }
+      return true;
+    },
+    [formatTime, t, userId]
+  );
+
   const editPost = useCallback(
     async (id: string, draft: ComposedPost): Promise<boolean> => {
       try {
@@ -163,6 +196,7 @@ export function useUserProfile(username: string, seedColor: string): ProfileCont
   );
 
   const postActions: ProfilePostActions = {
+    addPost,
     toggleReaction,
     adjustCommentCount,
     editPost,
