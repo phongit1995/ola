@@ -1,16 +1,16 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
-  Alert,
-  Animated,
   Image,
-  PanResponder,
   Pressable,
   RefreshControl,
   Text,
   View,
 } from 'react-native';
+import ReanimatedSwipeable, {
+  type SwipeableMethods,
+} from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
 import { useNavigation } from '@react-navigation/native';
@@ -66,12 +66,21 @@ function headerTitle(conversation: Conversation): string {
 interface RowProps {
   conversation: Conversation;
   onPress: () => void;
-  onDelete: (options?: { clearMessages?: boolean }) => void;
+  onRequestDelete: (conversation: Conversation) => void;
+  onSwipeableWillOpen: (swipeable: SwipeableMethods) => void;
+  onSwipeableClose: (swipeable: SwipeableMethods) => void;
 }
 
-function ConversationRow({ conversation, onPress, onDelete }: RowProps) {
+function ConversationRow({
+  conversation,
+  onPress,
+  onRequestDelete,
+  onSwipeableWillOpen,
+  onSwipeableClose,
+}: RowProps) {
   const { t } = useTranslation();
-  const translateX = useRef(new Animated.Value(0)).current;
+  const swipeableRef = useRef<SwipeableMethods>(null);
+  const openRef = useRef(false);
 
   const title = headerTitle(conversation);
   const name = displayName(conversation);
@@ -93,109 +102,127 @@ function ConversationRow({ conversation, onPress, onDelete }: RowProps) {
         ? `${conversation.lastMessageSenderName}: `
         : '';
 
-  const panResponder = useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: (_e, g) => Math.abs(g.dx) > 8 && Math.abs(g.dx) > Math.abs(g.dy),
-      onPanResponderMove: (_e, g) => {
-        translateX.setValue(Math.min(0, Math.max(g.dx, -SWIPE_MAX)));
-      },
-      onPanResponderRelease: (_e, g) => {
-        if (g.dx <= -SWIPE_TRIGGER) {
-          Animated.timing(translateX, { toValue: 0, duration: 150, useNativeDriver: true }).start();
-          Alert.alert(
-            t('dialog.deleteConvTitle'),
-            t('dialog.deleteConvMessage', { name }),
-            [
-              { text: t('dialog.cancel'), style: 'cancel' },
-              { text: t('dialog.delete'), style: 'destructive', onPress: () => onDelete() },
-              {
-                text: t('dialog.deleteWithMessages'),
-                style: 'destructive',
-                onPress: () => onDelete({ clearMessages: true }),
-              },
-            ]
-          );
-        } else {
-          Animated.spring(translateX, { toValue: 0, useNativeDriver: true }).start();
-        }
-      },
-    })
-  ).current;
+  useLayoutEffect(() => {
+    const swipeable = swipeableRef.current;
+    swipeable?.reset();
+    swipeable?.close();
+    openRef.current = false;
+    if (swipeable != null) onSwipeableClose(swipeable);
+    return () => {
+      openRef.current = false;
+      if (swipeable != null) onSwipeableClose(swipeable);
+    };
+  }, [conversation.id, onSwipeableClose]);
+
+  function handlePress() {
+    if (openRef.current) {
+      swipeableRef.current?.close();
+      return;
+    }
+    onPress();
+  }
 
   return (
-    <View className="relative overflow-hidden">
-      <View className="absolute inset-y-0 right-0 w-[88px] items-center justify-center" style={{ backgroundColor: '#dd4b39' }}>
-        <Text className="text-sm font-medium text-white">{t('dialog.delete')}</Text>
-      </View>
-      <Animated.View style={{ transform: [{ translateX }] }} {...panResponder.panHandlers}>
+    <ReanimatedSwipeable
+      ref={swipeableRef}
+      rightThreshold={SWIPE_TRIGGER}
+      overshootLeft={false}
+      overshootRight={false}
+      onSwipeableWillOpen={() => {
+        const swipeable = swipeableRef.current;
+        if (swipeable == null) return;
+        openRef.current = true;
+        onSwipeableWillOpen(swipeable);
+      }}
+      onSwipeableClose={() => {
+        const swipeable = swipeableRef.current;
+        openRef.current = false;
+        if (swipeable != null) onSwipeableClose(swipeable);
+      }}
+      renderRightActions={(_progress, _translation, swipeable) => (
         <Pressable
-          onPress={onPress}
-          className="flex-row items-center gap-4 px-4"
-          style={{ minHeight: 72, backgroundColor: unread ? '#f1f8e9' : '#ffffff' }}
+          accessibilityRole="button"
+          accessibilityLabel={t('dialog.deleteAria', { name })}
+          onPress={() => {
+            swipeable.close();
+            openRef.current = false;
+            onSwipeableClose(swipeable);
+            onRequestDelete(conversation);
+          }}
+          className="h-full items-center justify-center"
+          style={{ width: SWIPE_MAX, backgroundColor: '#dd4b39' }}
         >
-          <View className="shrink-0">
-            <Avatar name={name} uri={avatarUri} />
-            {online && (
-              <View className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-ola-primary" style={{ borderWidth: 2, borderColor: '#fff' }} />
-            )}
-          </View>
-          <View className="min-w-0 flex-1">
-            <View className="flex-row items-center justify-between gap-2">
-              <Text
-                className={`flex-1 text-base text-ola-ink ${unread ? 'font-bold' : ''}`}
-                numberOfLines={1}
-              >
-                {title}
-              </Text>
-              <Text
-                className={`text-xs ${unread ? 'font-bold' : ''}`}
-                style={{ color: unread ? 'rgba(0,0,0,0.87)' : 'rgba(0,0,0,0.54)' }}
-              >
-                {formatClockHM(conversation.lastMessageAt)}
-              </Text>
-            </View>
-            <View className="mt-0.5 flex-row items-center gap-1">
-              <View className="min-w-0 flex-1 flex-row items-center">
-                {prefix !== '' && (
-                  <Text className="text-sm text-ola-ink" numberOfLines={1}>
-                    {prefix}
-                  </Text>
-                )}
-                {isSticker ? (
-                  <View className="flex-row items-center gap-1">
-                    <Image source={kulIcon} style={{ width: 16, height: 16 }} resizeMode="contain" />
-                    <Text className="text-sm text-ola-ink">
-                      {t('chat.stickerPreview')}
-                    </Text>
-                  </View>
-                ) : (
-                  <Text className="flex-1 text-sm text-ola-ink" numberOfLines={1}>
-                    <SmileyText text={lastText} fontSize={14} />
-                  </Text>
-                )}
-              </View>
-              {fromMe &&
-                hasPreview &&
-                (conversation.seen ? (
-                  <Avatar name={name} uri={avatarUri} size={16} />
-                ) : (
-                  <Image source={sentIcon} style={{ width: 14, height: 14, opacity: 0.6 }} resizeMode="contain" />
-                ))}
-            </View>
-          </View>
-          {unread && (
-            <View
-              className="h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-ola-accent px-1.5"
-              style={{ borderWidth: 2, borderColor: '#fff' }}
-            >
-              <Text className="text-xs font-bold text-white">
-                {conversation.unreadCount > 99 ? '99+' : conversation.unreadCount}
-              </Text>
-            </View>
-          )}
+          <Text className="text-sm font-medium text-white">{t('dialog.delete')}</Text>
         </Pressable>
-      </Animated.View>
-    </View>
+      )}
+    >
+      <Pressable
+        onPress={handlePress}
+        className="flex-row items-center gap-4 px-4"
+        style={{ minHeight: 72, backgroundColor: unread ? '#f1f8e9' : '#ffffff' }}
+      >
+        <View className="shrink-0">
+          <Avatar name={name} uri={avatarUri} />
+          {online && (
+            <View className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-ola-primary" style={{ borderWidth: 2, borderColor: '#fff' }} />
+          )}
+        </View>
+        <View className="min-w-0 flex-1">
+          <View className="flex-row items-center justify-between gap-2">
+            <Text
+              className={`flex-1 text-base text-ola-ink ${unread ? 'font-bold' : ''}`}
+              numberOfLines={1}
+            >
+              {title}
+            </Text>
+            <Text
+              className={`text-xs ${unread ? 'font-bold' : ''}`}
+              style={{ color: unread ? 'rgba(0,0,0,0.87)' : 'rgba(0,0,0,0.54)' }}
+            >
+              {formatClockHM(conversation.lastMessageAt)}
+            </Text>
+          </View>
+          <View className="mt-0.5 flex-row items-center gap-1">
+            <View className="min-w-0 flex-1 flex-row items-center">
+              {prefix !== '' && (
+                <Text className="text-sm text-ola-ink" numberOfLines={1}>
+                  {prefix}
+                </Text>
+              )}
+              {isSticker ? (
+                <View className="flex-row items-center gap-1">
+                  <Image source={kulIcon} style={{ width: 16, height: 16 }} resizeMode="contain" />
+                  <Text className="text-sm text-ola-ink">
+                    {t('chat.stickerPreview')}
+                  </Text>
+                </View>
+              ) : (
+                <Text className="flex-1 text-sm text-ola-ink" numberOfLines={1}>
+                  <SmileyText text={lastText} fontSize={14} />
+                </Text>
+              )}
+            </View>
+            {fromMe &&
+              hasPreview &&
+              (conversation.seen ? (
+                <Avatar name={name} uri={avatarUri} size={16} />
+              ) : (
+                <Image source={sentIcon} style={{ width: 14, height: 14, opacity: 0.6 }} resizeMode="contain" />
+              ))}
+          </View>
+        </View>
+        {unread && (
+          <View
+            className="h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-ola-accent px-1.5"
+            style={{ borderWidth: 2, borderColor: '#fff' }}
+          >
+            <Text className="text-xs font-bold text-white">
+              {conversation.unreadCount > 99 ? '99+' : conversation.unreadCount}
+            </Text>
+          </View>
+        )}
+      </Pressable>
+    </ReanimatedSwipeable>
   );
 }
 
@@ -250,12 +277,15 @@ export function ChatListScreen() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [composeOpen, setComposeOpen] = useState(false);
   const [deleteAllOpen, setDeleteAllOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Conversation | null>(null);
+  const [deleteArchived, setDeleteArchived] = useState(false);
   const [blockedOpen, setBlockedOpen] = useState(false);
   const [showStrangers, setShowStrangers] = useState(true);
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [avatarOpen, setAvatarOpen] = useState(false);
   const [coverOpen, setCoverOpen] = useState(false);
   const [logoutAll, setLogoutAll] = useState(false);
+  const openSwipeableRef = useRef<SwipeableMethods | null>(null);
 
   useEffect(() => {
     void loadConversations();
@@ -286,6 +316,32 @@ export function ChatListScreen() {
     setDeleteAllOpen(false);
     await deleteAllConversations();
     pushToast('success', t('chat.deleteAllDone'));
+  }
+
+  const requestDelete = useCallback((conversation: Conversation) => {
+    setDeleteArchived(false);
+    setDeleteTarget(conversation);
+  }, []);
+
+  const closeOpenSwipeable = useCallback(() => {
+    openSwipeableRef.current?.close();
+    openSwipeableRef.current = null;
+  }, []);
+
+  const handleSwipeableWillOpen = useCallback((swipeable: SwipeableMethods) => {
+    if (openSwipeableRef.current !== swipeable) openSwipeableRef.current?.close();
+    openSwipeableRef.current = swipeable;
+  }, []);
+
+  const handleSwipeableClose = useCallback((swipeable: SwipeableMethods) => {
+    if (openSwipeableRef.current === swipeable) openSwipeableRef.current = null;
+  }, []);
+
+  async function confirmDeleteConversation() {
+    const target = deleteTarget;
+    if (target == null) return;
+    setDeleteTarget(null);
+    await hideConversation(target.id, { clearMessages: deleteArchived });
   }
 
   async function confirmLogout() {
@@ -342,14 +398,26 @@ export function ChatListScreen() {
             label={t('home.subMessages')}
             active={sub === 'messages'}
             badge={totalUnread}
-            onPress={() => setSub('messages')}
+            onPress={() => {
+              closeOpenSwipeable();
+              setSub('messages');
+            }}
           />
           <HeaderTab
             label={t('home.subContacts')}
             active={sub === 'contacts'}
-            onPress={() => setSub('contacts')}
+            onPress={() => {
+              closeOpenSwipeable();
+              setSub('contacts');
+            }}
           />
-          <Pressable className="w-11 items-center justify-center" onPress={() => setMenuOpen(true)}>
+          <Pressable
+            className="w-11 items-center justify-center"
+            onPress={() => {
+              closeOpenSwipeable();
+              setMenuOpen(true);
+            }}
+          >
             <Image source={moreIcon} style={{ width: 20, height: 20, tintColor: '#fff' }} resizeMode="contain" />
           </Pressable>
         </View>
@@ -366,6 +434,7 @@ export function ChatListScreen() {
         <FlashList
           data={conversations}
           keyExtractor={(item) => item.id}
+          onScrollBeginDrag={closeOpenSwipeable}
           refreshControl={
             <RefreshControl refreshing={loading} onRefresh={() => void loadConversations()} />
           }
@@ -382,12 +451,17 @@ export function ChatListScreen() {
             <ConversationRow
               conversation={item}
               onPress={() => openConversation(item.id)}
-              onDelete={(options) => void hideConversation(item.id, options)}
+              onRequestDelete={requestDelete}
+              onSwipeableWillOpen={handleSwipeableWillOpen}
+              onSwipeableClose={handleSwipeableClose}
             />
           )}
         />
         <Pressable
-          onPress={() => setComposeOpen(true)}
+          onPress={() => {
+            closeOpenSwipeable();
+            setComposeOpen(true);
+          }}
           className="absolute h-14 w-14 items-center justify-center rounded-full bg-ola-primary"
           style={{
             right: 16,
@@ -419,6 +493,22 @@ export function ChatListScreen() {
 
       <ChangeAvatarDialog visible={avatarOpen} onClose={() => setAvatarOpen(false)} />
       <ChangeCoverDialog visible={coverOpen} onClose={() => setCoverOpen(false)} />
+
+      <ConfirmDialog
+        visible={deleteTarget != null}
+        danger
+        title={t('dialog.deleteConvTitle')}
+        message={t('dialog.deleteConvMessage', {
+          name: deleteTarget == null ? '' : displayName(deleteTarget),
+        })}
+        confirmLabel={t('dialog.delete')}
+        cancelLabel={t('dialog.cancel')}
+        checkboxLabel={t('dialog.deleteArchived')}
+        checked={deleteArchived}
+        onCheckedChange={setDeleteArchived}
+        onConfirm={() => void confirmDeleteConversation()}
+        onCancel={() => setDeleteTarget(null)}
+      />
 
       <ConfirmDialog
         visible={deleteAllOpen}

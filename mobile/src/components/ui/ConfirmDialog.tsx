@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Text } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { Dialog, DialogButton } from './Dialog';
 
 const infoIcon = require('@assets/icons/chat/ic_dialog_indicate_info.png');
@@ -12,6 +12,9 @@ interface ConfirmDialogProps {
   cancelLabel?: string;
   danger?: boolean;
   showIcon?: boolean;
+  checkboxLabel?: string;
+  checked?: boolean;
+  onCheckedChange?: (value: boolean) => void;
   onConfirm: () => void;
   onCancel: () => void;
 }
@@ -24,6 +27,9 @@ export function ConfirmDialog({
   cancelLabel,
   danger = false,
   showIcon = true,
+  checkboxLabel,
+  checked = false,
+  onCheckedChange,
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
@@ -48,6 +54,29 @@ export function ConfirmDialog({
       <Text className="text-sm leading-relaxed" style={{ color: '#616163' }}>
         {message}
       </Text>
+      {checkboxLabel != null && (
+        <Pressable
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked }}
+          disabled={onCheckedChange == null}
+          onPress={() => onCheckedChange?.(!checked)}
+          className="mt-3 flex-row items-center gap-2"
+        >
+          <View
+            className="h-5 w-5 shrink-0 items-center justify-center rounded"
+            style={{
+              borderWidth: 2,
+              borderColor: checked ? '#7cb342' : 'rgba(0,0,0,0.38)',
+              backgroundColor: checked ? '#7cb342' : 'transparent',
+            }}
+          >
+            {checked && <Text className="text-xs font-bold text-white">✓</Text>}
+          </View>
+          <Text className="flex-1 text-sm" style={{ color: '#616163' }}>
+            {checkboxLabel}
+          </Text>
+        </Pressable>
+      )}
     </Dialog>
   );
 }
