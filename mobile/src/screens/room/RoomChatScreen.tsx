@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Image, Keyboard, Pressable, Text, View } from 'react-native';
-import { KeyboardView } from '@components/KeyboardView';
+import { ChatKeyboardArea } from '@components/ChatKeyboardArea';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { CompositeScreenProps, NavigationAction } from '@react-navigation/native';
@@ -119,8 +119,6 @@ export function RoomChatScreen({ navigation, route }: Props) {
   const pushToast = useToastStore((s) => s.push);
   const [filterOpen, setFilterOpen] = useState(false);
   const [pendingLeave, setPendingLeave] = useState<NavigationAction | null>(null);
-  const [contentOffsetY, setContentOffsetY] = useState(0);
-  const contentRef = useRef<View>(null);
   const confirmedLeaveRef = useRef(false);
   const visibleMembers = useMemo(
     () => members.filter((member) => memberMatchesFilter(member, filters)),
@@ -217,71 +215,54 @@ export function RoomChatScreen({ navigation, route }: Props) {
           />
       </View>
 
-      <View
-        ref={contentRef}
-        className="flex-1"
-        style={{ overflow: 'hidden' }}
-        onLayout={() =>
-          contentRef.current?.measureInWindow((_x, y) => setContentOffsetY(y))
-        }
-      >
-      <KeyboardView
-        behavior="translate-with-padding"
-        keyboardVerticalOffset={contentOffsetY}
-        className="flex-1"
-      >
-      {status === 'error' ? (
-        <View className="flex-1 items-center justify-center gap-4 px-8">
-          <Text className="text-center text-base" style={{ color: 'rgba(0,0,0,0.7)' }}>
-            {t('room.joinError')}
-          </Text>
-          <Pressable
-            onPress={() => navigation.goBack()}
-            className="rounded-full bg-ola-primary px-6 py-2 active:opacity-90"
-          >
-            <Text className="text-sm font-medium text-white">{t('chat.back')}</Text>
-          </Pressable>
-        </View>
-      ) : status !== 'joined' ? (
-        <View className="flex-1 items-center justify-center gap-3">
-          <ActivityIndicator color="#7cb342" size="large" />
-          <Text className="text-sm text-ola-ink-soft">{t('room.joining')}</Text>
-        </View>
-      ) : (
-        <>
-          <View
-            style={{ flex: 1, display: activeTab === 'members' ? 'flex' : 'none' }}
-          >
-            <RoomMembersTab members={visibleMembers} onOpenUser={openUser} />
+      <ChatKeyboardArea>
+        {status === 'error' ? (
+          <View className="flex-1 items-center justify-center gap-4 px-8">
+            <Text className="text-center text-base" style={{ color: 'rgba(0,0,0,0.7)' }}>
+              {t('room.joinError')}
+            </Text>
+            <Pressable
+              onPress={() => navigation.goBack()}
+              className="rounded-full bg-ola-primary px-6 py-2 active:opacity-90"
+            >
+              <Text className="text-sm font-medium text-white">{t('chat.back')}</Text>
+            </Pressable>
           </View>
-          <View
-            style={{ flex: 1, display: activeTab === 'messages' ? 'flex' : 'none' }}
-          >
-            <RoomMessagesTab
-              currentUserId={currentUserId}
-              language={i18n.language}
-              messages={messages}
-              status={status}
-              active={activeTab === 'messages'}
-              hasMore={hasMore}
-              loadingMore={loadingMore}
-              replyTarget={replyTarget}
-              onSend={sendMessage}
-              onSendImage={sendImage}
-              onResendImage={onResendImage}
-              onLoadMore={loadMoreMessages}
-              onOpenUser={openUser}
-              onOpenProfile={openProfileByNick}
-              onSetReplyTarget={setReplyTarget}
-              onClearReplyTarget={clearReplyTarget}
-              onReact={handleReact}
-              onDeleteMessage={deleteRoomMessage}
-            />
+        ) : status !== 'joined' ? (
+          <View className="flex-1 items-center justify-center gap-3">
+            <ActivityIndicator color="#7cb342" size="large" />
+            <Text className="text-sm text-ola-ink-soft">{t('room.joining')}</Text>
           </View>
-        </>
-      )}
-      </KeyboardView>
-      </View>
+        ) : (
+          <>
+            <View style={{ flex: 1, display: activeTab === 'members' ? 'flex' : 'none' }}>
+              <RoomMembersTab members={visibleMembers} onOpenUser={openUser} />
+            </View>
+            <View style={{ flex: 1, display: activeTab === 'messages' ? 'flex' : 'none' }}>
+              <RoomMessagesTab
+                currentUserId={currentUserId}
+                language={i18n.language}
+                messages={messages}
+                status={status}
+                active={activeTab === 'messages'}
+                hasMore={hasMore}
+                loadingMore={loadingMore}
+                replyTarget={replyTarget}
+                onSend={sendMessage}
+                onSendImage={sendImage}
+                onResendImage={onResendImage}
+                onLoadMore={loadMoreMessages}
+                onOpenUser={openUser}
+                onOpenProfile={openProfileByNick}
+                onSetReplyTarget={setReplyTarget}
+                onClearReplyTarget={clearReplyTarget}
+                onReact={handleReact}
+                onDeleteMessage={deleteRoomMessage}
+              />
+            </View>
+          </>
+        )}
+      </ChatKeyboardArea>
 
       <RoomFilterDialog
         visible={filterOpen}

@@ -11,7 +11,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { KeyboardView } from '@components/KeyboardView';
+import { ChatKeyboardArea } from '@components/ChatKeyboardArea';
 import { FlashList } from '@shopify/flash-list';
 import { useStickyBottomList } from '@hooks/useStickyBottomList';
 import { launchCamera, launchImageLibrary, type Asset } from 'react-native-image-picker';
@@ -134,8 +134,6 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     lastInGroup: boolean;
   } | null>(null);
   const [reactionsTargetId, setReactionsTargetId] = useState<string | null>(null);
-  const [contentOffsetY, setContentOffsetY] = useState(0);
-  const contentRef = useRef<View>(null);
   const {
     listRef,
     suspendRef,
@@ -441,19 +439,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         onMore={() => setMenuOpen(true)}
       />
 
-      <View
-        ref={contentRef}
-        className="flex-1"
-        style={{ overflow: 'hidden' }}
-        onLayout={() =>
-          contentRef.current?.measureInWindow((_x, y) => setContentOffsetY(y))
-        }
-      >
-      <KeyboardView
-        behavior="translate-with-padding"
-        keyboardVerticalOffset={contentOffsetY}
-        className="flex-1"
-      >
+      <ChatKeyboardArea>
       <View
         className="flex-1"
         onStartShouldSetResponderCapture={() => {
@@ -693,8 +679,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
       />
       </>
       )}
-      </KeyboardView>
-      </View>
+      </ChatKeyboardArea>
 
       <ChatReactionBalloons />
 
