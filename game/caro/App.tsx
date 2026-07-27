@@ -1,4 +1,8 @@
 import { useEffect, useState } from 'react';
+import {
+  ARCADE_BRIDGE_EVENT,
+  type ArcadeKenUpdatedData,
+} from '@ola/shared/types';
 import { bridge } from '../src/sdk';
 import { BOARD_ASSETS, preloadAssets, preloadModalAssets } from './assets';
 import { ConfirmModal } from './components/ConfirmModal';
@@ -42,6 +46,10 @@ export function App() {
   useEffect(() => {
     document.documentElement.style.setProperty('--asset-board-x', `url('${BOARD_ASSETS.boardX}')`);
     document.documentElement.style.setProperty('--asset-board-o', `url('${BOARD_ASSETS.boardO}')`);
+    const stopKenSync = bridge.onHost(ARCADE_BRIDGE_EVENT.KenUpdated, (data) => {
+      const ken = (data as Partial<ArcadeKenUpdatedData> | undefined)?.ken;
+      if (typeof ken === 'number') useCaro.getState().syncKenFromHost(ken);
+    });
     bridge.ready();
     let cancelled = false;
     void preloadAssets((loaded, total) => {
@@ -55,6 +63,7 @@ export function App() {
     });
     return () => {
       cancelled = true;
+      stopKenSync();
       dispose();
     };
   }, [dispose]);

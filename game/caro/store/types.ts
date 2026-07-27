@@ -120,6 +120,7 @@ export interface CaroState {
 export interface CaroActions {
   init(ready: boolean): void;
   dispose(): void;
+  syncKenFromHost(ken: number): void;
   playBot(level: BotLevel): void;
   playRanked(): void;
   refreshRooms(): void;

@@ -11,9 +11,11 @@ import {
   ARCADE_BRIDGE_EVENT,
   ARCADE_BRIDGE_SOURCE,
   type ArcadeBridgeMessage,
+  type ArcadeKenUpdatedData,
 } from '@ola/shared/types';
 import { Avatar } from '@components';
 import { colorForName } from '@lib';
+import { useAuthStore } from '@/store/authStore';
 import { useArcadeOverlayStore } from '@/store/arcadeOverlayStore';
 
 interface BubblePosition {
@@ -85,6 +87,7 @@ export function ArcadeOverlay() {
   const minimize = useArcadeOverlayStore((s) => s.minimize);
   const restore = useArcadeOverlayStore((s) => s.restore);
   const close = useArcadeOverlayStore((s) => s.close);
+  const ken = useAuthStore((s) => s.user?.ken);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const bubbleRef = useRef<HTMLDivElement>(null);
   const [bubblePos, setBubblePos] = useState(readStoredBubblePosition);
@@ -96,6 +99,27 @@ export function ArcadeOverlay() {
     bubbleRef.current = element;
     applyBubbleTransform(element, bubblePosRef.current);
   }, []);
+  const postKenToGame = useCallback(
+    (nextKen: number | undefined) => {
+      if (
+        !active ||
+        typeof nextKen !== 'number' ||
+        !Number.isSafeInteger(nextKen) ||
+        nextKen < 0
+      ) {
+        return;
+      }
+      iframeRef.current?.contentWindow?.postMessage(
+        {
+          source: ARCADE_BRIDGE_SOURCE.Host,
+          type: ARCADE_BRIDGE_EVENT.KenUpdated,
+          data: { ken: nextKen } satisfies ArcadeKenUpdatedData,
+        } satisfies ArcadeBridgeMessage<ArcadeKenUpdatedData>,
+        new URL(active.gameUrl).origin
+      );
+    },
+    [active]
+  );
 
   useEffect(() => {
     if (!active) return;
@@ -103,8 +127,12 @@ export function ArcadeOverlay() {
 
     async function onMessage(event: MessageEvent) {
       if (event.origin !== gameOrigin) return;
+      if (event.source !== iframeRef.current?.contentWindow) return;
       const data = event.data as ArcadeBridgeMessage;
       if (data?.source !== ARCADE_BRIDGE_SOURCE.Game) return;
+      if (data.type === ARCADE_BRIDGE_EVENT.Ready) {
+        postKenToGame(useAuthStore.getState().user?.ken);
+      }
       if (data.type === ARCADE_BRIDGE_EVENT.GetToken) {
         try {
           const token = await ensureFreshToken();
@@ -127,6 +155,9 @@ export function ArcadeOverlay() {
           );
         }
       }
+      if (data.type === ARCADE_BRIDGE_EVENT.RefreshUser) {
+        void useAuthStore.getState().refreshUser();
+      }
       const overlay = useArcadeOverlayStore.getState();
       if (
         overlay.minimized &&
@@ -145,7 +176,11 @@ export function ArcadeOverlay() {
 
     window.addEventListener('message', onMessage);
     return () => window.removeEventListener('message', onMessage);
-  }, [active, close]);
+  }, [active, close, postKenToGame]);
+
+  useEffect(() => {
+    postKenToGame(ken);
+  }, [ken, postKenToGame]);
 
   useEffect(
     () => () => {

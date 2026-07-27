@@ -8,6 +8,8 @@ export const ARCADE_BRIDGE_EVENT = {
   GameOver: 'game_over',
   TurnChanged: 'turn_changed',
   AttentionRequired: 'attention_required',
+  RefreshUser: 'refresh_user',
+  KenUpdated: 'ken_updated',
   Exit: 'exit',
   GetToken: 'get_token',
   Token: 'token',
@@ -40,4 +42,8 @@ export interface ArcadeAttentionData {
   reason: ArcadeAttentionReason;
   roomId?: string;
   matchId?: string;
+}
+
+export interface ArcadeKenUpdatedData {
+  ken: number;
 }

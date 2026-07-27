@@ -309,6 +309,7 @@ export const useCaro = create<CaroStore>()((set, get) => {
   const wireSession = (target: GameSession<CaroState, CaroMove>): void => {
     target.onUserInfo((info) => {
       refs.user = info;
+      bridge.refreshUser();
       set((s) => ({
         userInfo: info,
         lobbyPhase: 'ready',
@@ -890,6 +891,16 @@ export const useCaro = create<CaroStore>()((set, get) => {
       refs.session = null;
       refs.connectPromise = null;
       refs.match = null;
+    },
+
+    syncKenFromHost(ken) {
+      if (!Number.isSafeInteger(ken) || ken < 0) return;
+      if (refs.user?.ken === ken && get().userInfo?.ken === ken) return;
+      if (refs.user) refs.user = { ...refs.user, ken };
+      set((state) => ({
+        userInfo: state.userInfo ? { ...state.userInfo, ken } : null,
+      }));
+      animateKen(ken);
     },
 
     playBot(level) {
