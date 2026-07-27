@@ -1,8 +1,9 @@
 import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Image, Pressable, Text, View } from 'react-native';
+import { Image, Pressable, View } from 'react-native';
 import { ChatComposer, type ChatComposerHandle } from '@components/ChatComposer';
-import { DIVIDER } from '@constants';
+import { ChatText as Text } from '@components/ui/ChatText';
+import { CHAT_MAX_FONT_SIZE_MULTIPLIER, DIVIDER } from '@constants';
 
 const likeIcon = require('@assets/icons/chat/smiley/smiley_35.png');
 
@@ -79,6 +80,7 @@ export const ChatInputBar = forwardRef<ChatInputBarHandle, ChatInputBarProps>(
               if (!editing) onTyping();
             }}
             placeholder={placeholder}
+            maxFontSizeMultiplier={CHAT_MAX_FONT_SIZE_MULTIPLIER}
             minHeight={36}
             maxHeight={128}
             paddingH={8}

@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import {
   NativeSyntheticEvent,
   Pressable,
-  Text,
   NativeScrollEvent,
   useWindowDimensions,
   View,
@@ -16,6 +15,7 @@ import type { NativeUploadFile } from '@ola/shared/lib';
 import { createDateFormatter } from '@ola/shared/lib';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { useRoomFilterStore } from '@ola/shared/stores/roomFilterStore';
+import { ChatText as Text } from '@components/ui/ChatText';
 import { RichTextView } from '@components/ui/RichTextView';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { buildRoomFeed, type GroupedMessage, type RoomFeedItem } from '../messageGroups';

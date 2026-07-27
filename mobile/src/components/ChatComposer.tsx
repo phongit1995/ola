@@ -6,12 +6,13 @@ import {
   useState,
   type ElementRef,
 } from 'react';
-import { TextInput } from 'react-native';
+import { TextInput, useWindowDimensions } from 'react-native';
 // eslint-disable-next-line @react-native/no-deep-imports -- TextInput.State không có registerInput; cần đăng ký composer native vào registry để tap-ra-ngoài/Keyboard.dismiss ẩn được bàn phím
 import TextInputState from 'react-native/Libraries/Components/TextInput/TextInputState';
 import OlaChatComposerNative, {
   Commands as ComposerCommands,
 } from './specs/OlaChatComposerNativeComponent';
+import { cappedFontScale } from '@constants';
 import { richTextNativeAvailable } from '@lib/richTextNativeConfig';
 
 export interface ChatComposerHandle {
@@ -30,6 +31,7 @@ interface ChatComposerProps {
   placeholder?: string;
   editable?: boolean;
   fontSize?: number;
+  maxFontSizeMultiplier?: number;
   minHeight?: number;
   maxHeight?: number;
   paddingH?: number;
@@ -150,6 +152,7 @@ const PlainComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(function
     placeholder,
     editable = true,
     fontSize = 16,
+    maxFontSizeMultiplier,
     minHeight = 40,
     maxHeight = 112,
     paddingH = 12,
@@ -188,6 +191,7 @@ const PlainComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(function
         flexGrow: 1,
         flexShrink: 1,
       }}
+      maxFontSizeMultiplier={maxFontSizeMultiplier}
       selectionColor={selectionColor}
       cursorColor={selectionColor}
       placeholder={placeholder}
@@ -204,8 +208,14 @@ const PlainComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(function
 
 export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(
   function ChatComposerInner(props, ref) {
+    const { fontScale } = useWindowDimensions();
     if (richTextNativeAvailable && nativeComposerEnabled) {
-      return <NativeComposer ref={ref} {...props} />;
+      const baseFontSize = props.fontSize ?? 16;
+      const nativeFontSize =
+        props.maxFontSizeMultiplier == null
+          ? baseFontSize
+          : baseFontSize * cappedFontScale(fontScale, props.maxFontSizeMultiplier);
+      return <NativeComposer ref={ref} {...props} fontSize={nativeFontSize} />;
     }
     return <PlainComposer ref={ref} {...props} />;
   }
