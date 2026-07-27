@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   BackHandler,
@@ -26,7 +26,9 @@ import {
   ARCADE_BRIDGE_EVENT,
   ARCADE_BRIDGE_SOURCE,
   type ArcadeBridgeMessage,
+  type ArcadeKenUpdatedData,
 } from '@ola/shared/types';
+import { useAuthStore } from '@ola/shared/stores/authStore';
 import { WARNING } from '@constants';
 import { useArcadeOverlayStore } from '@store/arcadeOverlayStore';
 import { mmkvStorage } from '@platform/storage';
@@ -75,6 +77,7 @@ export function ArcadeOverlay() {
   const minimize = useArcadeOverlayStore(state => state.minimize);
   const restore = useArcadeOverlayStore(state => state.restore);
   const close = useArcadeOverlayStore(state => state.close);
+  const ken = useAuthStore(state => state.user?.ken);
   const insets = useSafeAreaInsets();
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
   const webRef = useRef<WebView<object>>(null);
@@ -185,16 +188,34 @@ export function ArcadeOverlay() {
     opacity: notifyOpacity.value,
   }));
 
-  function sendToGame(message: {
-    source: string;
-    type: string;
-    data?: unknown;
-  }) {
+  const sendToGame = useCallback((message: ArcadeBridgeMessage) => {
     const payload = JSON.stringify(JSON.stringify(message));
     webRef.current?.injectJavaScript(
       `document.dispatchEvent(new MessageEvent('message',{data:${payload}}));true;`,
     );
-  }
+  }, []);
+
+  const sendKenToGame = useCallback(
+    (nextKen: number | undefined) => {
+      if (
+        typeof nextKen !== 'number' ||
+        !Number.isSafeInteger(nextKen) ||
+        nextKen < 0
+      ) {
+        return;
+      }
+      sendToGame({
+        source: ARCADE_BRIDGE_SOURCE.Host,
+        type: ARCADE_BRIDGE_EVENT.KenUpdated,
+        data: { ken: nextKen } satisfies ArcadeKenUpdatedData,
+      });
+    },
+    [sendToGame],
+  );
+
+  useEffect(() => {
+    sendKenToGame(ken);
+  }, [ken, sendKenToGame]);
 
   async function handleGetToken() {
     try {
@@ -221,7 +242,13 @@ export function ArcadeOverlay() {
       return;
     }
     if (message?.source !== ARCADE_BRIDGE_SOURCE.Game) return;
+    if (message.type === ARCADE_BRIDGE_EVENT.Ready) {
+      sendKenToGame(useAuthStore.getState().user?.ken);
+    }
     if (message.type === ARCADE_BRIDGE_EVENT.GetToken) void handleGetToken();
+    if (message.type === ARCADE_BRIDGE_EVENT.RefreshUser) {
+      void useAuthStore.getState().refreshUser();
+    }
     const overlay = useArcadeOverlayStore.getState();
     if (
       overlay.minimized &&

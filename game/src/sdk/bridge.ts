@@ -129,6 +129,10 @@ export const bridge = {
     sendToHost(ARCADE_BRIDGE_EVENT.AttentionRequired, data);
   },
 
+  refreshUser(): void {
+    sendToHost(ARCADE_BRIDGE_EVENT.RefreshUser);
+  },
+
   exit(): void {
     sendToHost(ARCADE_BRIDGE_EVENT.Exit);
   },

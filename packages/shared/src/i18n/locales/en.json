@@ -382,7 +382,7 @@
     "voiceMicDenied": "Microphone access is needed to record.",
     "voiceRecordError": "Could not record audio. Please try again.",
     "imageError": "Could not send the photo. Please try again.",
-    "imageTooLarge": "Image is too large (max 2MB).",
+    "imageTooLarge": "Image is too large (max 3MB).",
     "voiceDiscard": "Discard recording",
     "voiceTapStart": "Tap to record",
     "voiceTapStop": "Tap to stop",

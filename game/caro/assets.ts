@@ -40,8 +40,7 @@ const LOBBY_CRITICAL_ASSETS = {
   icExit: lobbyIcExit,
 } as const;
 
-export const LOBBY_ASSETS = {
-  ...LOBBY_CRITICAL_ASSETS,
+const LOBBY_MODAL_ASSETS = {
   pickBg: lobbyPickBg,
   pickTitle: lobbyPickTitle,
   pickLevel: lobbyPickLevel,
@@ -52,6 +51,11 @@ export const LOBBY_ASSETS = {
   confirmDoor: lobbyConfirmDoor,
   btnRed: lobbyBtnRed,
   btnNavy: lobbyBtnNavy,
+} as const;
+
+export const LOBBY_ASSETS = {
+  ...LOBBY_CRITICAL_ASSETS,
+  ...LOBBY_MODAL_ASSETS,
 } as const;
 
 import rankedBg from './assets/ranked/bg.webp';
@@ -70,6 +74,8 @@ import createInputFrame from './assets/create/input-frame.webp';
 import createBtnOk from './assets/create/btn-ok.webp';
 import createBtnClose from './assets/create/btn-close.webp';
 import createIcX from './assets/create/ic-x.webp';
+import createPasswordLock from './assets/create/ic-password-lock.webp';
+import createPasswordEye from './assets/create/ic-password-eye.webp';
 import resultBg from './assets/result/bg.webp';
 import resultTitleFrame from './assets/result/title-frame.webp';
 import resultCupWin from './assets/result/cup-win.webp';
@@ -96,6 +102,13 @@ import boardMenuBtn from './assets/board/menu-btn.webp';
 import boardForfeitIcon from './assets/board/ic-forfeit.webp';
 import boardChatFrame from './assets/board/chat-frame-clean.webp';
 import boardSendIcon from './assets/board/send-icon.webp';
+import boardReactionIcon from './assets/board/reaction-icon.webp';
+import reactionLike from './assets/reactions/like.webp';
+import reactionLove from './assets/reactions/love.webp';
+import reactionHaha from './assets/reactions/haha.webp';
+import reactionWow from './assets/reactions/wow.webp';
+import reactionSad from './assets/reactions/sad.webp';
+import reactionAngry from './assets/reactions/angry.webp';
 import leaderboardTitleFrame from './assets/leaderboard/title-frame.webp';
 import leaderboardCup from './assets/leaderboard/cup.webp';
 import leaderboardCloseFrame from './assets/leaderboard/close-frame.webp';
@@ -126,6 +139,18 @@ import historyTable from './assets/history/table.webp';
 import historyPageBtn from './assets/history/page-btn.webp';
 import historyKen from './assets/history/ken.webp';
 
+const CREATE_MODAL_ASSETS = {
+  createPanel,
+  createTitleFrame,
+  createLabelFrame,
+  createInputFrame,
+  createBtnOk,
+  createBtnClose,
+  createIcX,
+  createPasswordLock,
+  createPasswordEye,
+} as const;
+
 export const BOARD_ASSETS = {
   boardBg,
   boardFrame,
@@ -140,6 +165,16 @@ export const BOARD_ASSETS = {
   boardForfeitIcon,
   chatFrame: boardChatFrame,
   sendIcon: boardSendIcon,
+  reactionIcon: boardReactionIcon,
+} as const;
+
+export const REACTION_ASSETS = {
+  reactionLike,
+  reactionLove,
+  reactionHaha,
+  reactionWow,
+  reactionSad,
+  reactionAngry,
 } as const;
 
 export const RANKED_ASSETS = {
@@ -152,13 +187,7 @@ export const RANKED_ASSETS = {
   rankedLock,
   rankedPageBtn,
   rankedMenuBtn,
-  createPanel,
-  createTitleFrame,
-  createLabelFrame,
-  createInputFrame,
-  createBtnOk,
-  createBtnClose,
-  createIcX,
+  ...CREATE_MODAL_ASSETS,
 } as const;
 
 export const RESULT_ASSETS = {
@@ -212,9 +241,18 @@ export const HISTORY_ASSETS = {
   historyKen,
 } as const;
 
+const MODAL_ASSETS = {
+  ...LOBBY_MODAL_ASSETS,
+  ...CREATE_MODAL_ASSETS,
+  ...RESULT_ASSETS,
+  ...LEADERBOARD_ASSETS,
+  ...HISTORY_ASSETS,
+} as const;
+
 const ALL_ASSETS = {
   ...LOBBY_ASSETS,
   ...BOARD_ASSETS,
+  ...REACTION_ASSETS,
   ...RANKED_ASSETS,
   ...RESULT_ASSETS,
   ...LEADERBOARD_ASSETS,
@@ -238,36 +276,69 @@ export function preloadAssets(
   return preloadUrls(Object.values(LOBBY_CRITICAL_ASSETS), onProgress, timeoutMs);
 }
 
+const IMAGE_LOADS = new Map<string, Promise<void>>();
+
+function preloadUrl(url: string): Promise<void> {
+  const existing = IMAGE_LOADS.get(url);
+  if (existing) return existing;
+  const pending = new Promise<void>((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve();
+    img.onerror = () => {
+      IMAGE_LOADS.delete(url);
+      resolve();
+    };
+    img.src = url;
+  });
+  IMAGE_LOADS.set(url, pending);
+  return pending;
+}
+
 function preloadUrls(
   urls: readonly string[],
   onProgress?: (loaded: number, total: number) => void,
   timeoutMs = 15000,
 ): Promise<void> {
-  const total = urls.length;
+  const uniqueUrls = [...new Set(urls)];
+  const total = uniqueUrls.length;
   let loaded = 0;
   onProgress?.(0, total);
   const loadAll = Promise.all(
-    urls.map(
-      (url) =>
-        new Promise<void>((resolve) => {
-          const done = (): void => {
-            loaded++;
-            onProgress?.(loaded, total);
-            resolve();
-          };
-          const img = new Image();
-          img.onload = done;
-          img.onerror = done;
-          img.src = url;
-        }),
+    uniqueUrls.map((url) =>
+      preloadUrl(url).then(() => {
+        loaded++;
+        onProgress?.(loaded, total);
+      }),
     ),
   ).then(() => undefined);
-  const timeout = new Promise<void>((resolve) => setTimeout(resolve, timeoutMs));
-  return Promise.race([loadAll, timeout]);
+  return new Promise<void>((resolve) => {
+    let settled = false;
+    const finish = (): void => {
+      if (settled) return;
+      settled = true;
+      resolve();
+    };
+    const timer = window.setTimeout(finish, timeoutMs);
+    void loadAll.then(() => {
+      window.clearTimeout(timer);
+      finish();
+    });
+  });
+}
+
+let modalPreload: Promise<void> | null = null;
+
+export function preloadModalAssets(): Promise<void> {
+  modalPreload ??= preloadUrls(Object.values(MODAL_ASSETS), undefined, 60000);
+  return modalPreload;
 }
 
 export function preloadResultAssets(): void {
   void preloadUrls(Object.values(RESULT_ASSETS), undefined, 30000);
+}
+
+export function preloadReactionAssets(): void {
+  void preloadUrls(Object.values(REACTION_ASSETS), undefined, 30000);
 }
 
 export const VIP_DEFAULT_ICON = '/ola_smiley_online.png';

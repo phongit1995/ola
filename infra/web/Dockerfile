@@ -5,7 +5,6 @@ RUN corepack enable
 
 # Monorepo pnpm: web phụ thuộc @ola/shared (packages/shared, ship TS source)
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
-COPY patches patches
 COPY packages/shared/package.json packages/shared/package.json
 COPY web/package.json web/package.json
 RUN pnpm install --frozen-lockfile --filter web...

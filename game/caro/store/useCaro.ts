@@ -13,10 +13,10 @@ import {
   type UserInfoData,
 } from '../../src/sdk';
 import { vipIconUrl } from '@ola/shared/lib/vip';
-import { BOARD_ASSETS, VIP_DEFAULT_ICON, preloadResultAssets } from '../assets';
+import { BOARD_ASSETS, VIP_DEFAULT_ICON, preloadReactionAssets, preloadResultAssets } from '../assets';
 import { createBotSession } from '../bot';
 import { findFinalWinLine } from '../helpers/board';
-import { chatErrorText, matchErrorText, roomErrorText } from '../helpers/errorText';
+import { chatErrorText, matchErrorText, reactionErrorText, roomErrorText } from '../helpers/errorText';
 import { formatClock } from '../helpers/format';
 import { mergeMatchHistory, readBotHistory, saveBotHistory } from '../helpers/history';
 import { avatarIconSrc, opponentOf } from '../helpers/player';
@@ -64,6 +64,7 @@ export const useCaro = create<CaroStore>()((set, get) => {
     opponentIsBot: false,
     chatOpponentId: null as string | null,
     chatSeq: 0,
+    reactionSeq: 0,
     pendingRoomId: null as string | null,
     roomConnectionLost: false,
     exitingMatch: null as MatchFoundData<CaroState> | null,
@@ -111,6 +112,7 @@ export const useCaro = create<CaroStore>()((set, get) => {
       turnAnnounce: null,
       winLine: null,
       oppAway: null,
+      reactionNotice: null,
     }));
   };
 
@@ -307,6 +309,7 @@ export const useCaro = create<CaroStore>()((set, get) => {
   const wireSession = (target: GameSession<CaroState, CaroMove>): void => {
     target.onUserInfo((info) => {
       refs.user = info;
+      bridge.refreshUser();
       set((s) => ({
         userInfo: info,
         lobbyPhase: 'ready',
@@ -539,6 +542,7 @@ export const useCaro = create<CaroStore>()((set, get) => {
       if (resumesOnlineSession) refs.session = target;
       refs.match = data;
       preloadResultAssets();
+      preloadReactionAssets();
       if (!data.resumed) {
         bridge.attention({
           reason: ARCADE_ATTENTION_REASON.MatchStarted,
@@ -638,6 +642,20 @@ export const useCaro = create<CaroStore>()((set, get) => {
       }));
     });
 
+    target.onReaction((data) => {
+      if (refs.session !== target || refs.match?.matchId !== data.matchId) return;
+      const match = refs.match;
+      const myID = match.players[match.you]?.id;
+      refs.reactionSeq += 1;
+      set({
+        reactionNotice: {
+          id: refs.reactionSeq,
+          type: data.type,
+          mine: data.userId === myID,
+        },
+      });
+    });
+
     target.onMatchOver((data) => {
       if (refs.session !== target) return;
       const exiting = refs.exitingMatch?.matchId === data.matchId;
@@ -726,9 +744,10 @@ export const useCaro = create<CaroStore>()((set, get) => {
         return;
       }
       const roomActionError = get().roomActionPending != null ? roomErrorText(err.code) : null;
-      const chatMessage = roomActionError == null ? chatErrorText(err.code) : null;
-      if (chatMessage) {
-        showToast(chatMessage);
+      const interactionMessage =
+        roomActionError == null ? chatErrorText(err.code) ?? reactionErrorText(err.code) : null;
+      if (interactionMessage) {
+        showToast(interactionMessage);
         return;
       }
       if (!refs.match) {
@@ -872,6 +891,16 @@ export const useCaro = create<CaroStore>()((set, get) => {
       refs.session = null;
       refs.connectPromise = null;
       refs.match = null;
+    },
+
+    syncKenFromHost(ken) {
+      if (!Number.isSafeInteger(ken) || ken < 0) return;
+      if (refs.user?.ken === ken && get().userInfo?.ken === ken) return;
+      if (refs.user) refs.user = { ...refs.user, ken };
+      set((state) => ({
+        userInfo: state.userInfo ? { ...state.userInfo, ken } : null,
+      }));
+      animateKen(ken);
     },
 
     playBot(level) {
@@ -1131,6 +1160,11 @@ export const useCaro = create<CaroStore>()((set, get) => {
       if (room?.members.length === 2) {
         refs.online?.sendRoomChat(room.roomId, trimmed);
       }
+    },
+
+    sendReaction(type) {
+      if (!refs.match || get().boardMode !== 'playing' || get().result != null) return;
+      refs.session?.sendReaction(refs.match.matchId, type);
     },
   };
 });

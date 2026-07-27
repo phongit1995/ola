@@ -60,6 +60,7 @@ button:focus-visible,
 #app {
   display: flex;
   flex-direction: column;
+  position: relative;
   width: 100%;
   max-width: 520px;
   margin: 0 auto;
@@ -734,6 +735,7 @@ button:focus-visible,
 
 #chatbox {
   --chat-rule-color: rgba(29, 79, 139, 0.28);
+  position: relative;
   width: min(100%, 92vw);
   max-width: 480px;
   margin: 0 auto;
@@ -835,6 +837,116 @@ button:focus-visible,
   transition: transform 100ms ease-out;
 }
 
+.caro-reaction-area {
+  position: relative;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+}
+
+.caro-reaction-trigger {
+  width: clamp(20px, 5.5vw, 27px);
+  height: clamp(20px, 5.5vw, 27px);
+  flex: 0 0 auto;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation;
+  user-select: none;
+  transition: transform 100ms ease-out, filter 120ms ease-out;
+}
+
+.caro-reaction-trigger img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 2px rgba(9, 24, 43, 0.28));
+}
+
+.caro-reaction-trigger:active {
+  transform: scale(0.9);
+}
+
+.caro-reaction-picker {
+  position: absolute;
+  right: -34px;
+  bottom: calc(100% + 10px);
+  z-index: 45;
+  width: max-content;
+  max-width: calc(92vw - 22px);
+  display: grid;
+  grid-template-columns: repeat(6, clamp(34px, 10vw, 44px));
+  gap: clamp(2px, 1vw, 5px);
+  padding: clamp(6px, 1.8vw, 9px);
+  border: 2px solid rgba(29, 79, 139, 0.78);
+  border-radius: 14px;
+  background: rgba(253, 246, 231, 0.98);
+  box-shadow: 0 8px 22px rgba(9, 24, 43, 0.3);
+  animation: caro-reaction-picker-in 150ms ease-out both;
+}
+
+.caro-reaction-picker::after {
+  content: '';
+  position: absolute;
+  right: 43px;
+  top: 100%;
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid rgba(29, 79, 139, 0.78);
+  border-bottom: 2px solid rgba(29, 79, 139, 0.78);
+  background: #fdf6e7;
+  transform: translateY(-5px) rotate(45deg);
+}
+
+.caro-reaction-picker button {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  aspect-ratio: 1;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation;
+  user-select: none;
+  transition: transform 120ms ease-out, background-color 120ms ease-out;
+}
+
+.caro-reaction-picker button:hover,
+.caro-reaction-picker button:focus-visible {
+  background: rgba(29, 79, 139, 0.1);
+}
+
+.caro-reaction-picker button:active {
+  transform: scale(0.84);
+}
+
+.caro-reaction-picker img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 2px rgba(9, 24, 43, 0.18));
+}
+
+@keyframes caro-reaction-picker-in {
+  from {
+    opacity: 0;
+    transform: translateY(7px) scale(0.92);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 .chat-send img {
   height: 100%;
   width: auto;
@@ -920,9 +1032,70 @@ button:focus-visible,
 }
 
 #chat-input:disabled,
-.chat-send:disabled {
+.chat-send:disabled,
+.caro-reaction-trigger:disabled {
   cursor: default;
   opacity: 0.48;
+}
+
+.caro-reaction-balloons {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.caro-reaction-balloons img {
+  position: absolute;
+  object-fit: contain;
+  opacity: 0;
+  will-change: transform, opacity;
+  animation-name: caro-reaction-fly;
+  animation-timing-function: ease-out;
+  animation-fill-mode: both;
+  filter: drop-shadow(0 3px 4px rgba(9, 24, 43, 0.28));
+}
+
+@keyframes caro-reaction-fly {
+  0% {
+    opacity: 0;
+    transform: translate3d(-50%, 8px, 0) scale(0.45) rotate(-7deg);
+  }
+
+  10% {
+    opacity: 1;
+  }
+
+  30% {
+    transform: translate3d(calc(-50% + var(--reaction-sway)), var(--reaction-rise-30), 0) scale(1) rotate(5deg);
+  }
+
+  62% {
+    opacity: 0.96;
+    transform: translate3d(
+        calc(-50% + var(--reaction-return-sway)),
+        var(--reaction-rise-62),
+        0
+      )
+      scale(1.08) rotate(-4deg);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate3d(calc(-50% + var(--reaction-drift)), var(--reaction-rise-end), 0) scale(1.16)
+      rotate(7deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .caro-reaction-picker {
+    animation: none;
+  }
+
+  .caro-reaction-balloons img {
+    animation-duration: 900ms !important;
+  }
 }
 
 #board-toast {
@@ -1942,7 +2115,7 @@ button:focus-visible,
 
 #create-card {
   position: relative;
-  width: min(80%, 380px);
+  width: min(84vw, 380px, calc(74.78dvh - 18px));
   aspect-ratio: 1044 / 1396;
   background-size: 100% 100%;
   container-type: inline-size;
@@ -1996,12 +2169,12 @@ button:focus-visible,
 
 .create-body {
   position: absolute;
-  inset: 24% 10% 20%;
+  inset: 23.5% 8% 18.5%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4cqw;
+  gap: 2.3cqw;
 }
 
 .create-label {
@@ -2049,10 +2222,221 @@ button:focus-visible,
   font-size: clamp(10px, 4.2cqw, 15px);
 }
 
+.create-password-toggle {
+  width: 92%;
+  min-height: 16.5cqw;
+  box-sizing: border-box;
+  border: clamp(2px, 0.8cqw, 3px) solid var(--lobby-navy-dark);
+  border-radius: 4.5cqw;
+  padding: 1.7cqw 2.4cqw;
+  background: rgba(247, 236, 215, 0.72);
+  color: var(--lobby-navy-dark);
+  display: grid;
+  grid-template-columns: 15% minmax(0, 1fr) 30%;
+  align-items: center;
+  gap: 1.5cqw;
+  font-family: var(--body);
+  cursor: pointer;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.create-password-toggle:focus-visible,
+.create-password-visibility:focus-visible {
+  outline: clamp(2px, 0.8cqw, 3px) solid #b5372e;
+  outline-offset: 2px;
+}
+
+.create-password-toggle:active {
+  transform: scale(0.985);
+}
+
+.create-password-lock {
+  width: 76%;
+  max-height: 12cqw;
+  object-fit: contain;
+  justify-self: center;
+}
+
+.create-password-copy {
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 1.2cqw;
+  text-align: left;
+  text-transform: uppercase;
+  line-height: 1.05;
+}
+
+.create-password-copy strong {
+  font-size: clamp(12px, 4.5cqw, 17px);
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.create-password-copy small {
+  font-size: clamp(9px, 3.1cqw, 12px);
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.create-password-switch {
+  position: relative;
+  width: 100%;
+  height: clamp(30px, 9.5cqw, 36px);
+  box-sizing: border-box;
+  border: clamp(2px, 0.65cqw, 3px) solid var(--lobby-navy-dark);
+  border-radius: 999px;
+  background: var(--lobby-navy);
+  color: var(--lobby-cream);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  overflow: hidden;
+  transition: background-color 180ms ease;
+}
+
+.create-password-switch-text {
+  width: 52%;
+  font-size: clamp(9px, 3.2cqw, 12px);
+  font-weight: 900;
+  text-align: center;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.create-password-switch-knob {
+  position: absolute;
+  top: 8%;
+  bottom: 8%;
+  left: 4%;
+  width: 38%;
+  border-radius: 50%;
+  background: var(--lobby-cream);
+  box-shadow: 0 1px 3px rgba(9, 24, 43, 0.35);
+  transition: transform 180ms ease;
+}
+
+.create-password-toggle.is-on .create-password-switch {
+  justify-content: flex-start;
+  background: #a83c31;
+}
+
+.create-password-toggle.is-on .create-password-switch-knob {
+  transform: translateX(142%);
+}
+
+.create-password-field {
+  width: 92%;
+  min-height: 20.5cqw;
+  box-sizing: border-box;
+  border: clamp(2px, 0.8cqw, 3px) solid var(--lobby-navy-dark);
+  border-radius: 4.5cqw;
+  padding: 2.1cqw 3.7cqw 1.8cqw;
+  background: rgba(247, 236, 215, 0.72);
+  color: var(--lobby-navy-dark);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex-shrink: 0;
+  animation: create-password-reveal 180ms ease-out;
+}
+
+@keyframes create-password-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(-1.5cqw);
+  }
+}
+
+.create-password-field label {
+  font-size: clamp(11px, 4.2cqw, 16px);
+  font-weight: 900;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.create-password-input-row {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 1cqw;
+}
+
+.create-password-input-row input {
+  width: 100%;
+  min-width: 0;
+  height: 9cqw;
+  border: none;
+  padding: 0;
+  background: transparent;
+  outline: none;
+  color: var(--lobby-navy-dark);
+  font-family: var(--body);
+  font-size: clamp(16px, 5cqw, 19px);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.create-password-input-row input::placeholder {
+  color: rgba(20, 48, 79, 0.28);
+  letter-spacing: 0.2em;
+}
+
+.create-password-visibility {
+  position: relative;
+  width: clamp(36px, 11cqw, 42px);
+  height: clamp(36px, 11cqw, 42px);
+  border: none;
+  padding: 1.3cqw;
+  background: transparent;
+  color: var(--lobby-navy-dark);
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.create-password-visibility img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.create-password-visibility.is-visible::before,
+.create-password-visibility.is-visible::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 18%;
+  width: 64%;
+  border-radius: 999px;
+  transform: rotate(42deg);
+  pointer-events: none;
+}
+
+.create-password-visibility.is-visible::before {
+  height: clamp(4px, 1.4cqw, 5px);
+  margin-top: clamp(-2.5px, -0.7cqw, -2px);
+  background: var(--lobby-cream);
+}
+
+.create-password-visibility.is-visible::after {
+  height: clamp(2px, 0.7cqw, 3px);
+  margin-top: clamp(-1.5px, -0.35cqw, -1px);
+  background: var(--lobby-navy-dark);
+}
+
+.create-password-visibility:active {
+  transform: scale(0.9);
+}
+
 .create-error {
   width: 90%;
   min-height: 1.25em;
-  margin: -2cqw 0 0;
+  margin: -1cqw 0 0;
   color: #b5372e;
   font-size: clamp(11px, 4.2cqw, 15px);
   font-weight: 800;
@@ -2063,7 +2447,8 @@ button:focus-visible,
 /* iOS Safari auto-zooms focused text fields whose computed font is below 16px. */
 @supports (-webkit-touch-callout: none) {
   #chat-input,
-  .create-input input {
+  .create-input input,
+  .create-password-input-row input {
     font-size: 16px;
   }
 
@@ -2313,7 +2698,7 @@ button:focus-visible,
 .leaderboard-head,
 .leaderboard-row {
   display: grid;
-  grid-template-columns: 21% 49% 30%;
+  grid-template-columns: 17% 39% 18% 26%;
 }
 
 .leaderboard-head {
@@ -2399,6 +2784,7 @@ button:focus-visible,
 
 .leaderboard-rank,
 .leaderboard-player,
+.leaderboard-record,
 .leaderboard-ken {
   min-width: 0;
   height: 100%;
@@ -2437,6 +2823,21 @@ button:focus-visible,
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.leaderboard-record {
+  justify-content: center;
+  gap: 0.25em;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.leaderboard-record .wins {
+  color: #2f7659;
+}
+
+.leaderboard-record .losses {
+  color: #a83c31;
 }
 
 .leaderboard-ken {

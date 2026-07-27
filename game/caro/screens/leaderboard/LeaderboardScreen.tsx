@@ -99,6 +99,7 @@ export function LeaderboardScreen() {
             <div className="leaderboard-head">
               <span>Hạng</span>
               <span>Người chơi</span>
+              <span title="Thắng / Thua — tiêu chí xếp hạng mặc định">W/L ↓</span>
               <span>Ken thắng</span>
             </div>
             <div className="leaderboard-rows" aria-busy={loading}>
@@ -115,7 +116,7 @@ export function LeaderboardScreen() {
               )}
               {players.length === 0 && (
                 <div className="leaderboard-state" role={error ? 'alert' : 'status'}>
-                  <span>{loading ? 'Đang tải bảng xếp hạng...' : error ?? 'Chưa có người chơi thắng Ken.'}</span>
+                  <span>{loading ? 'Đang tải bảng xếp hạng...' : error ?? 'Chưa có người chơi xếp hạng.'}</span>
                   {error && !loading && (
                     <button type="button" onClick={() => loadLeaderboard(period)}>
                       Thử lại

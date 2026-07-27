@@ -18,6 +18,8 @@ const RANK_ASSETS: Partial<Record<number, AssetKey>> = {
 
 export function LeaderboardRow({ player }: { player: LeaderboardEntry }) {
   const medal = RANK_ASSETS[player.rank];
+  const wins = player.wins ?? 0;
+  const losses = player.losses ?? 0;
 
   return (
     <div className="leaderboard-row">
@@ -27,6 +29,11 @@ export function LeaderboardRow({ player }: { player: LeaderboardEntry }) {
       <div className="leaderboard-player">
         <img src={avatarIconSrc(player.vipType)} alt="" />
         <span>@{player.username}</span>
+      </div>
+      <div className="leaderboard-record" aria-label={`${wins} thắng, ${losses} thua`}>
+        <span className="wins">{wins}</span>
+        <span aria-hidden="true">/</span>
+        <span className="losses">{losses}</span>
       </div>
       <div className="leaderboard-ken">
         <span>{formatKen(player.ken)}</span>

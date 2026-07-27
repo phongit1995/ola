@@ -16,6 +16,8 @@ import {
   type MatchFoundData,
   type MatchOverData,
   type OpponentDisconnectedData,
+  type GameReactionType,
+  type ReactionData,
   type RoomListData,
   type RoomRemovedData,
   type RoomUpsertData,
@@ -36,6 +38,7 @@ export interface GameSession<TState = unknown, TMove = unknown> {
   sendMove(matchId: string, move: TMove): void;
   sendChat(matchId: string, text: string): void;
   sendRoomChat(roomId: string, text: string): void;
+  sendReaction(matchId: string, type: GameReactionType): void;
   forfeit(matchId: string, leaveAfter?: boolean): void;
   createRoom(bet: number, password?: string): void;
   joinRoom(roomId: string, password?: string): void;
@@ -58,6 +61,7 @@ export interface GameSession<TState = unknown, TMove = unknown> {
   onMatchFound(handler: (data: MatchFoundData<TState>) => void): () => void;
   onState(handler: (data: StateData<TState, TMove>) => void): () => void;
   onChat(handler: (data: ChatMessageData) => void): () => void;
+  onReaction(handler: (data: ReactionData) => void): () => void;
   onMatchOver(handler: (data: MatchOverData<TState>) => void): () => void;
   onError(handler: (data: ErrorData) => void): () => void;
   onOpponentDisconnected(handler: (data: OpponentDisconnectedData) => void): () => void;
@@ -127,6 +131,7 @@ export async function joinGame<TState = unknown, TMove = unknown>(gameId: string
     sendMove: (matchId, move) => send(C2S.Move, { matchId, move }),
     sendChat: (matchId, text) => send(C2S.ChatSend, { matchId, text }),
     sendRoomChat: (roomId, text) => send(C2S.ChatSend, { roomId, text }),
+    sendReaction: (matchId, type) => send(C2S.ReactionSend, { matchId, type }),
     forfeit: (matchId, leaveAfter = false) => send(C2S.Forfeit, { matchId, leaveAfter }),
     createRoom: (bet, password) => send(C2S.RoomCreate, { bet, password }),
     joinRoom: (roomId, password) => send(C2S.RoomJoin, { roomId, password }),
@@ -149,6 +154,7 @@ export async function joinGame<TState = unknown, TMove = unknown>(gameId: string
     onMatchFound: (handler) => on(S2C.MatchFound, handler as Handler),
     onState: (handler) => on(S2C.State, handler as Handler),
     onChat: (handler) => on(S2C.ChatMessage, handler as Handler),
+    onReaction: (handler) => on(S2C.Reaction, handler as Handler),
     onMatchOver: (handler) => on(S2C.MatchOver, handler as Handler),
     onError: (handler) => on(S2C.Error, handler as Handler),
     onOpponentDisconnected: (handler) => on(S2C.OpponentDisconnected, handler as Handler),

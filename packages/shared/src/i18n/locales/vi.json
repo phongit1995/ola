@@ -382,7 +382,7 @@
     "voiceMicDenied": "Cần quyền micro để ghi âm.",
     "voiceRecordError": "Không ghi âm được. Vui lòng thử lại.",
     "imageError": "Không gửi được ảnh. Vui lòng thử lại.",
-    "imageTooLarge": "Ảnh quá lớn (tối đa 2MB).",
+    "imageTooLarge": "Ảnh quá lớn (tối đa 3MB).",
     "voiceDiscard": "Huỷ ghi âm",
     "voiceTapStart": "Chạm để ghi âm",
     "voiceTapStop": "Chạm để dừng",

@@ -1,11 +1,14 @@
 import {
   GAME_ERROR_CODE,
+  GAME_REACTION_TYPE,
   S2C,
   type ChatMessageData,
   type ErrorData,
+  type GameReactionType,
   type GameSession,
   type MatchFoundData,
   type MatchOverData,
+  type ReactionData,
   type StateData,
 } from '../src/sdk';
 import {
@@ -24,6 +27,7 @@ const PLAYER_MARK = 1;
 const BOT_MARK = 2;
 const TURN_ANNOUNCE_MS = 1080;
 const MAX_CHAT_LENGTH = 120;
+const REACTION_COOLDOWN_MS = 800;
 
 export const BOT_LEVELS: Record<BotLevel, { name: string; thinkMs: number }> = {
   easy: { name: 'Máy · Dễ', thinkMs: 350 },
@@ -47,6 +51,7 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
   let turnTimer: number | undefined;
   let botTimer: number | undefined;
   let lastPlayerChatAt = 0;
+  let lastPlayerReactionAt = 0;
   let lastBotLine = '';
   const chatTimers = new Set<number>();
 
@@ -171,6 +176,7 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
       playing = true;
       playerTurn = true;
       lastPlayerChatAt = 0;
+      lastPlayerReactionAt = 0;
       armPlayerTimeout();
       emit(S2C.MatchFound, {
         matchId,
@@ -247,6 +253,32 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
     },
     sendRoomChat() {},
 
+    sendReaction(requestMatchID: string, type: GameReactionType) {
+      if (!playing || requestMatchID !== matchId) return;
+      if (!Object.values(GAME_REACTION_TYPE).includes(type)) {
+        emit(S2C.Error, {
+          code: GAME_ERROR_CODE.InvalidReaction,
+          message: 'Cảm xúc không hợp lệ',
+        } satisfies ErrorData);
+        return;
+      }
+      const now = Date.now();
+      if (now - lastPlayerReactionAt < REACTION_COOLDOWN_MS) {
+        emit(S2C.Error, {
+          code: GAME_ERROR_CODE.ReactionRateLimited,
+          message: 'Bạn thả cảm xúc quá nhanh',
+        } satisfies ErrorData);
+        return;
+      }
+      lastPlayerReactionAt = now;
+      emit(S2C.Reaction, {
+        matchId,
+        userId: 'you',
+        type,
+        sentAt: now,
+      } satisfies ReactionData);
+    },
+
     forfeit(_matchId: string) {
       if (playing) finish('bot', 'forfeit');
     },
@@ -273,6 +305,7 @@ export function createBotSession(level: BotLevel): GameSession<CaroState, CaroMo
     onMatchFound: (handler) => on(S2C.MatchFound, handler as Handler),
     onState: (handler) => on(S2C.State, handler as Handler),
     onChat: (handler) => on(S2C.ChatMessage, handler as Handler),
+    onReaction: (handler) => on(S2C.Reaction, handler as Handler),
     onMatchOver: (handler) => on(S2C.MatchOver, handler as Handler),
     onError: (handler) => on(S2C.Error, handler as Handler),
     onOpponentDisconnected: () => () => {},

@@ -36,12 +36,21 @@ const CHAT_ERROR_TEXT = new Map<GameErrorCode, string>([
   [GAME_ERROR_CODE.NotRoomMember, 'Bạn không còn ở trong bàn này'],
 ]);
 
+const REACTION_ERROR_TEXT = new Map<GameErrorCode, string>([
+  [GAME_ERROR_CODE.InvalidReaction, 'Cảm xúc không hợp lệ'],
+  [GAME_ERROR_CODE.ReactionRateLimited, 'Bạn thả cảm xúc quá nhanh'],
+]);
+
 export function roomErrorText(code: string): string | null {
   return ROOM_ERROR_TEXT.get(code as GameErrorCode) ?? null;
 }
 
 export function chatErrorText(code: string): string | null {
   return CHAT_ERROR_TEXT.get(code as GameErrorCode) ?? null;
+}
+
+export function reactionErrorText(code: string): string | null {
+  return REACTION_ERROR_TEXT.get(code as GameErrorCode) ?? null;
 }
 
 const MATCH_ERROR_TEXT = new Map<GameErrorCode, string>([

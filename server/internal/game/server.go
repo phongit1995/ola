@@ -216,6 +216,12 @@ func (s *Server) handleMessage(data *SocketData, raw any) {
 		} else {
 			s.engine.Chat(data.GameID, data.UserID, d.MatchID, d.Text)
 		}
+	case protocol.C2SReactionSend:
+		var d protocol.ReactionSendData
+		if err := json.Unmarshal(env.Data, &d); err != nil {
+			return
+		}
+		s.engine.MatchReaction(data.GameID, data.UserID, d.MatchID, d.Type)
 	case protocol.C2SForfeit:
 		var d protocol.ForfeitData
 		if err := json.Unmarshal(env.Data, &d); err != nil {

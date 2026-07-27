@@ -147,7 +147,7 @@ func (ctrl *Controller) SendRoomMessage(c *gin.Context) (interface{}, error) {
 
 // SendRoomImageMessage godoc
 // @Summary      Send an image message to a room (must have joined via socket)
-// @Description  Upload an image and create a message of type=image in one call (≤2MB jpeg/png/gif/webp)
+// @Description  Upload an image and create a message of type=image in one call (≤3MB jpeg/png/gif/webp)
 // @Tags         room
 // @Accept       multipart/form-data
 // @Produce      json

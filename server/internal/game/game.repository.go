@@ -61,6 +61,8 @@ type leaderboardRow struct {
 	VipType    *string    `gorm:"column:vip_type"`
 	VipEndTime *time.Time `gorm:"column:vip_end_time"`
 	Ken        int64      `gorm:"column:ken"`
+	Wins       int64      `gorm:"column:wins"`
+	Losses     int64      `gorm:"column:losses"`
 }
 
 type matchHistoryRow struct {
@@ -102,18 +104,42 @@ func (r *Repository) Leaderboard(gameID, period string) (protocol.LeaderboardDat
 		Items:  []protocol.LeaderboardEntry{},
 	}
 
+	var query *gorm.DB
+	if gameID == "caro" {
+		query = r.db.Table("game_matches").
+			Select(`results.user_id, users.username, users.vip_used AS vip_type, users.vip_end_time,
+				COALESCE(SUM(results.ken), 0) AS ken,
+				COALESCE(SUM(results.wins), 0) AS wins,
+				COALESCE(SUM(results.losses), 0) AS losses`).
+			Joins(`CROSS JOIN LATERAL (VALUES
+				(game_matches.winner_id, 1, 0, game_matches.ken_delta),
+				(game_matches.loser_id, 0, 1, 0)
+			) AS results(user_id, wins, losses, ken)`).
+			Joins("JOIN users ON users.id = results.user_id").
+			Where(`game_matches.game_id = ? AND game_matches.status = ? AND game_matches.winner_id IS NOT NULL
+				AND game_matches.finished_at >= ? AND game_matches.finished_at < ?
+				AND game_matches.deleted_at IS NULL AND users.deleted_at IS NULL
+				AND results.user_id IS NOT NULL`,
+				gameID, matchStatusFinished, from, to).
+			Group("results.user_id, users.username, users.vip_used, users.vip_end_time").
+			Having("COALESCE(SUM(results.wins), 0) > 0").
+			Order("wins DESC, losses ASC, ken DESC, users.username ASC, results.user_id ASC")
+	} else {
+		query = r.db.Table("game_matches").
+			Select(`game_matches.winner_id AS user_id, users.username, users.vip_used AS vip_type,
+				users.vip_end_time, COALESCE(SUM(game_matches.ken_delta), 0) AS ken`).
+			Joins("JOIN users ON users.id = game_matches.winner_id").
+			Where(`game_matches.game_id = ? AND game_matches.status = ? AND game_matches.winner_id IS NOT NULL
+				AND game_matches.finished_at >= ? AND game_matches.finished_at < ?
+				AND game_matches.deleted_at IS NULL AND users.deleted_at IS NULL`,
+				gameID, matchStatusFinished, from, to).
+			Group("game_matches.winner_id, users.username, users.vip_used, users.vip_end_time").
+			Having("COALESCE(SUM(game_matches.ken_delta), 0) > 0").
+			Order("ken DESC, COUNT(*) DESC, users.username ASC, game_matches.winner_id ASC")
+	}
+
 	var rows []leaderboardRow
-	err := r.db.Table("game_matches").
-		Select(`game_matches.winner_id AS user_id, users.username, users.vip_used AS vip_type,
-			users.vip_end_time, COALESCE(SUM(game_matches.ken_delta), 0) AS ken`).
-		Joins("JOIN users ON users.id = game_matches.winner_id").
-		Where(`game_matches.game_id = ? AND game_matches.status = ? AND game_matches.winner_id IS NOT NULL
-			AND game_matches.finished_at >= ? AND game_matches.finished_at < ?
-			AND game_matches.deleted_at IS NULL AND users.deleted_at IS NULL`,
-			gameID, matchStatusFinished, from, to).
-		Group("game_matches.winner_id, users.username, users.vip_used, users.vip_end_time").
-		Having("COALESCE(SUM(game_matches.ken_delta), 0) > 0").
-		Order("ken DESC, COUNT(*) DESC, users.username ASC, game_matches.winner_id ASC").
+	err := query.
 		Limit(leaderboardLimit).
 		Scan(&rows).Error
 	if err != nil {
@@ -132,6 +158,8 @@ func (r *Repository) Leaderboard(gameID, period string) (protocol.LeaderboardDat
 			Username: row.Username,
 			VipType:  vipType,
 			Ken:      row.Ken,
+			Wins:     row.Wins,
+			Losses:   row.Losses,
 		}
 	}
 	return data, nil

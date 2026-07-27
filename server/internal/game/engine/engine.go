@@ -28,6 +28,7 @@ const (
 	finishedResultTTL = 2 * time.Minute
 	maxChatRunes      = 120
 	chatCooldown      = 500 * time.Millisecond
+	reactionCooldown  = 800 * time.Millisecond
 )
 
 type Engine struct {
@@ -91,6 +92,7 @@ type Match struct {
 	resultReason   string
 	finishedAt     time.Time
 	lastChatAt     [2]time.Time
+	lastReactionAt [2]time.Time
 	room           *Room
 	escrowVerified bool
 }
@@ -1352,6 +1354,59 @@ func (e *Engine) RoomChat(gameID, userID, roomID, text string) {
 			Type: protocol.S2CChatMessage,
 			Data: data,
 		})
+	}
+}
+
+func (e *Engine) MatchReaction(gameID, userID, matchID, reactionType string) {
+	m := e.matchForUser(gameID, userID)
+	if m == nil {
+		e.sendError(gameID, userID, protocol.ErrorCodeNoMatch, "no active match")
+		return
+	}
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if m.over {
+		e.sendError(gameID, userID, protocol.ErrorCodeNoMatch, "no active match")
+		return
+	}
+	if matchID == "" || matchID != m.ID {
+		e.sendError(gameID, userID, protocol.ErrorCodeMatchMismatch, "reaction does not belong to the active match")
+		return
+	}
+	if !validReactionType(reactionType) {
+		e.sendError(gameID, userID, protocol.ErrorCodeInvalidReaction, "invalid reaction")
+		return
+	}
+
+	senderIdx := m.playerIndex(userID)
+	now := time.Now()
+	if last := m.lastReactionAt[senderIdx]; !last.IsZero() && now.Sub(last) < reactionCooldown {
+		e.sendError(gameID, userID, protocol.ErrorCodeReactionRateLimited, "reactions are being sent too quickly")
+		return
+	}
+	m.lastReactionAt[senderIdx] = now
+	data := protocol.ReactionData{
+		MatchID: m.ID,
+		UserID:  userID,
+		Type:    reactionType,
+		SentAt:  now.UnixMilli(),
+	}
+	for _, player := range m.players {
+		e.toUser(m.GameID, player.ID, protocol.OutEnvelope{Type: protocol.S2CReaction, Data: data})
+	}
+}
+
+func validReactionType(reactionType string) bool {
+	switch reactionType {
+	case protocol.ReactionTypeLike,
+		protocol.ReactionTypeLove,
+		protocol.ReactionTypeHaha,
+		protocol.ReactionTypeWow,
+		protocol.ReactionTypeSad,
+		protocol.ReactionTypeAngry:
+		return true
+	default:
+		return false
 	}
 }
 

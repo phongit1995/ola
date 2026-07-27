@@ -259,7 +259,7 @@ const (
 )
 
 const (
-	MaxImageUploadSize           = 2 * 1024 * 1024
+	MaxImageUploadSize           = 3 * 1024 * 1024
 	MaxAdminImageUploadSize      = 5 * 1024 * 1024
 	MaxAudioUploadSize           = 10 * 1024 * 1024
 	MaxAudioDurationSeconds      = 300

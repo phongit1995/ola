@@ -1,4 +1,5 @@
 import type {
+  GameReactionType,
   LeaderboardEntry,
   LeaderboardPeriod,
   MatchHistoryEntry,
@@ -58,6 +59,12 @@ export interface TurnAnnouncement {
   mine: boolean;
 }
 
+export interface ReactionNotice {
+  id: number;
+  type: GameReactionType;
+  mine: boolean;
+}
+
 export type HistoryEntry = MatchHistoryEntry;
 
 export interface CaroState {
@@ -107,11 +114,13 @@ export interface CaroState {
   turnAnnounce: TurnAnnouncement | null;
   winLine: WinLine | null;
   messages: ChatMsg[];
+  reactionNotice: ReactionNotice | null;
 }
 
 export interface CaroActions {
   init(ready: boolean): void;
   dispose(): void;
+  syncKenFromHost(ken: number): void;
   playBot(level: BotLevel): void;
   playRanked(): void;
   refreshRooms(): void;
@@ -140,6 +149,7 @@ export interface CaroActions {
   showToast(message: string): void;
   dismissNotice(): void;
   sendChat(text: string): void;
+  sendReaction(type: GameReactionType): void;
 }
 
 export type CaroStore = CaroState & CaroActions;
