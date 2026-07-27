@@ -8,6 +8,7 @@ import { useKenTreasureStore } from '@/pages/games/ken-treasure/kenTreasureStore
 import { useKenRealtime } from '@/pages/games/ken-treasure/useKenRealtime';
 import { useMeNotificationRealtime } from '@/pages/me/useMeNotificationRealtime';
 import { useAppNotificationRealtime } from '@/pages/apps/useAppNotificationRealtime';
+import { useSettingsStore } from '@/store/settingsStore';
 
 const MediaViewer = lazy(() =>
   import('@/pages/me/components/MediaViewer').then((m) => ({ default: m.MediaViewer })),
@@ -64,9 +65,10 @@ function App() {
   useKenRealtime();
   useMeNotificationRealtime();
   useAppNotificationRealtime();
+  const fontSize = useSettingsStore((state) => state.settings.fontSize);
 
   return (
-    <>
+    <div data-font-size={fontSize}>
       <div className="relative mx-auto flex h-dvh w-full max-w-[520px] flex-col overflow-hidden bg-white shadow-2xl [transform:translateZ(0)]">
         <AppRouter />
         <ReconnectingBanner />
@@ -76,7 +78,7 @@ function App() {
         <GlobalArcade />
       </div>
       <GlobalMediaViewer />
-    </>
+    </div>
   );
 }
 
