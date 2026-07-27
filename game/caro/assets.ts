@@ -74,6 +74,8 @@ import createInputFrame from './assets/create/input-frame.webp';
 import createBtnOk from './assets/create/btn-ok.webp';
 import createBtnClose from './assets/create/btn-close.webp';
 import createIcX from './assets/create/ic-x.webp';
+import createPasswordLock from './assets/create/ic-password-lock.webp';
+import createPasswordEye from './assets/create/ic-password-eye.webp';
 import resultBg from './assets/result/bg.webp';
 import resultTitleFrame from './assets/result/title-frame.webp';
 import resultCupWin from './assets/result/cup-win.webp';
@@ -145,6 +147,8 @@ const CREATE_MODAL_ASSETS = {
   createBtnOk,
   createBtnClose,
   createIcX,
+  createPasswordLock,
+  createPasswordEye,
 } as const;
 
 export const BOARD_ASSETS = {
