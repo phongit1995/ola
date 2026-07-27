@@ -6,7 +6,7 @@ import {
   useState,
   type ElementRef,
 } from 'react';
-import { TextInput, useWindowDimensions } from 'react-native';
+import { TextInput } from 'react-native';
 // eslint-disable-next-line @react-native/no-deep-imports -- TextInput.State không có registerInput; cần đăng ký composer native vào registry để tap-ra-ngoài/Keyboard.dismiss ẩn được bàn phím
 import TextInputState from 'react-native/Libraries/Components/TextInput/TextInputState';
 import OlaChatComposerNative, {
@@ -14,6 +14,7 @@ import OlaChatComposerNative, {
 } from './specs/OlaChatComposerNativeComponent';
 import { cappedFontScale } from '@constants';
 import { richTextNativeAvailable } from '@lib/richTextNativeConfig';
+import { useAppTypography } from '@components/AppFontProvider';
 
 export interface ChatComposerHandle {
   focus: () => void;
@@ -72,14 +73,18 @@ const NativeComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(functio
 ) {
   const nativeRef = useRef<ElementRef<typeof OlaChatComposerNative>>(null);
   const lastEmitted = useRef(value);
+  const lastRenderedFontSize = useRef(fontSize);
   const initialValue = useRef(value);
   const [contentHeight, setContentHeight] = useState(minHeight);
 
   useEffect(() => {
-    if (value === lastEmitted.current) return;
+    const valueChanged = value !== lastEmitted.current;
+    const fontSizeChanged = fontSize !== lastRenderedFontSize.current;
+    if (!valueChanged && !fontSizeChanged) return;
     lastEmitted.current = value;
+    lastRenderedFontSize.current = fontSize;
     if (nativeRef.current != null) ComposerCommands.setText(nativeRef.current, value);
-  }, [value]);
+  }, [fontSize, value]);
 
   useEffect(() => {
     const instance = nativeRef.current;
@@ -208,15 +213,17 @@ const PlainComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(function
 
 export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(
   function ChatComposerInner(props, ref) {
-    const { fontScale } = useWindowDimensions();
+    const { multiplier, systemFontScale } = useAppTypography();
+    const baseFontSize = props.fontSize ?? 16;
+    const appFontSize = baseFontSize * multiplier;
     if (richTextNativeAvailable && nativeComposerEnabled) {
-      const baseFontSize = props.fontSize ?? 16;
-      const nativeFontSize =
+      const effectiveSystemScale =
         props.maxFontSizeMultiplier == null
-          ? baseFontSize
-          : baseFontSize * cappedFontScale(fontScale, props.maxFontSizeMultiplier);
+          ? systemFontScale
+          : cappedFontScale(systemFontScale, props.maxFontSizeMultiplier);
+      const nativeFontSize = appFontSize * effectiveSystemScale;
       return <NativeComposer ref={ref} {...props} fontSize={nativeFontSize} />;
     }
-    return <PlainComposer ref={ref} {...props} />;
+    return <PlainComposer ref={ref} {...props} fontSize={appFontSize} />;
   }
 );

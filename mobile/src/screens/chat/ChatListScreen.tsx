@@ -26,6 +26,7 @@ import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { Avatar } from '@components/ui/Avatar';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
+import { useAppTypography } from '@components/AppFontProvider';
 import { kulImageForText } from '@lib/kul';
 import { SmileyText } from '@lib/richText';
 import { ListOptionDialog, type ListOption } from '@components/ui/ListOptionDialog';
@@ -65,6 +66,7 @@ function headerTitle(conversation: Conversation): string {
 
 interface RowProps {
   conversation: Conversation;
+  smileyFontSize: number;
   onPress: () => void;
   onRequestDelete: (conversation: Conversation) => void;
   onSwipeableWillOpen: (swipeable: SwipeableMethods) => void;
@@ -73,6 +75,7 @@ interface RowProps {
 
 function ConversationRow({
   conversation,
+  smileyFontSize,
   onPress,
   onRequestDelete,
   onSwipeableWillOpen,
@@ -198,7 +201,7 @@ function ConversationRow({
                 </View>
               ) : (
                 <Text className="flex-1 text-sm text-ola-ink" numberOfLines={1}>
-                  <SmileyText text={lastText} fontSize={14} />
+                  <SmileyText text={lastText} fontSize={smileyFontSize} />
                 </Text>
               )}
             </View>
@@ -263,6 +266,7 @@ function HeaderTab({
 
 export function ChatListScreen() {
   const { t } = useTranslation();
+  const { multiplier: fontMultiplier, systemFontScale } = useAppTypography();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const conversations = useConversationsWithPresence();
@@ -389,6 +393,7 @@ export function ChatListScreen() {
   ];
 
   const totalUnread = totalUnreadOf(conversations);
+  const smileyFontSize = 14 * fontMultiplier * systemFontScale;
 
   return (
     <View className="flex-1 bg-white">
@@ -433,6 +438,7 @@ export function ChatListScreen() {
         <View className="flex-1">
         <FlashList
           data={conversations}
+          extraData={smileyFontSize}
           keyExtractor={(item) => item.id}
           onScrollBeginDrag={closeOpenSwipeable}
           refreshControl={
@@ -450,6 +456,7 @@ export function ChatListScreen() {
           renderItem={({ item }) => (
             <ConversationRow
               conversation={item}
+              smileyFontSize={smileyFontSize}
               onPress={() => openConversation(item.id)}
               onRequestDelete={requestDelete}
               onSwipeableWillOpen={handleSwipeableWillOpen}

@@ -71,8 +71,14 @@ class OlaChatComposerView(private val reactContext: ThemedReactContext) :
 
   var fontSizeDp: Float = 16f
     set(value) {
-      field = if (value > 0) value else 16f
-      setTextSize(TypedValue.COMPLEX_UNIT_PX, PixelUtil.toPixelFromDIP(field))
+      val next = if (value > 0) value else 16f
+      if (next == field) return
+      field = next
+      setTextSize(TypedValue.COMPLEX_UNIT_PX, PixelUtil.toPixelFromDIP(next))
+      // TokenImageSpan nhận kích thước qua constructor nên phải dựng lại theo cỡ mới, không
+      // thì token giữ cỡ cũ trong khi chữ quanh nó đã đổi.
+      val current = serializedText()
+      if (current.isNotEmpty()) setTokenText(current)
     }
 
   private var suppressChangeEvent = false

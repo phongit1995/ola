@@ -15,6 +15,7 @@ import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import { useSettingsStore } from '@ola/shared/stores/settingsStore';
 import { RootNavigator } from './navigation/RootNavigator';
+import { AppFontProvider } from './components/AppFontProvider';
 import { StatusBarBackground } from './components/ui/StatusBarBackground';
 import { ReconnectingBanner } from './components/ui/ReconnectingBanner';
 import { ToastHost } from './components/ui/ToastHost';
@@ -87,34 +88,36 @@ export default function App() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <KeyboardProvider statusBarTranslucent navigationBarTranslucent>
-      <SafeAreaProvider>
-        <StatusBar translucent barStyle="light-content" />
-        <NavigationContainer
-          ref={navigationRef}
-          onReady={() => {
-            const name = navigationRef.getCurrentRoute()?.name ?? null;
-            routeNameRef.current = name;
-            if (name != null) trackScreen(name);
-          }}
-          onStateChange={() => {
-            const name = navigationRef.getCurrentRoute()?.name ?? null;
-            if (name != null && name !== routeNameRef.current) {
-              routeNameRef.current = name;
-              trackScreen(name);
-            }
-          }}
-        >
-          <RootNavigator />
-        </NavigationContainer>
-        <StatusBarBackground />
-        <ReconnectingBanner />
-        <KenTreasureOverlay />
-        <ArcadeOverlay />
-        <ToastHost />
-        <MediaViewer />
-      </SafeAreaProvider>
-      </KeyboardProvider>
+      <AppFontProvider>
+        <KeyboardProvider statusBarTranslucent navigationBarTranslucent>
+          <SafeAreaProvider>
+            <StatusBar translucent barStyle="light-content" />
+            <NavigationContainer
+              ref={navigationRef}
+              onReady={() => {
+                const name = navigationRef.getCurrentRoute()?.name ?? null;
+                routeNameRef.current = name;
+                if (name != null) trackScreen(name);
+              }}
+              onStateChange={() => {
+                const name = navigationRef.getCurrentRoute()?.name ?? null;
+                if (name != null && name !== routeNameRef.current) {
+                  routeNameRef.current = name;
+                  trackScreen(name);
+                }
+              }}
+            >
+              <RootNavigator />
+            </NavigationContainer>
+            <StatusBarBackground />
+            <ReconnectingBanner />
+            <KenTreasureOverlay />
+            <ArcadeOverlay />
+            <ToastHost />
+            <MediaViewer />
+          </SafeAreaProvider>
+        </KeyboardProvider>
+      </AppFontProvider>
     </GestureHandlerRootView>
   );
 }

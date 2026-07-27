@@ -162,8 +162,8 @@ export function TradingVipDialog({ visible, onClose, receiver }: TradingVipDialo
                       <VipBadge typeId={vip.typeId} size={40} />
                       <Text
                         numberOfLines={1}
-                        className="w-full text-center"
-                        style={{ fontSize: 10, color: TEXT_SECONDARY }}
+                        className="w-full text-center text-[10px]"
+                        style={{ color: TEXT_SECONDARY }}
                       >
                         {vipName(vip.typeId)}
                       </Text>

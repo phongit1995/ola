@@ -52,6 +52,7 @@ import { FriendRequestsScreen } from '@screens/friends/FriendRequestsScreen';
 import { SuggestedFriendsScreen } from '@screens/friends/SuggestedFriendsScreen';
 import { TAB_ICONS } from '@assets/tabIcons';
 import { KenBalanceBadge } from '@components/ui/KenBalanceBadge';
+import { useAppTypography } from '@components/AppFontProvider';
 import { mmkvStorage } from '@platform/storage';
 
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -107,6 +108,7 @@ function readStoredTab(): keyof MainTabParamList {
 
 function MainTabs() {
   const { t } = useTranslation();
+  const { multiplier: fontMultiplier } = useAppTypography();
   const [initialTab] = useState(readStoredTab);
   const [activeTab, setActiveTab] = useState<string>(initialTab);
   const chatUnread = useChatStore((state) => totalUnreadOf(state.conversations));
@@ -129,6 +131,9 @@ function MainTabs() {
           headerShown: false,
           tabBarActiveTintColor: '#7cb342',
           tabBarInactiveTintColor: '#9e9e9e',
+          tabBarLabelStyle: {
+            fontSize: 10 * fontMultiplier,
+          },
         }}
       >
         <Tabs.Screen
@@ -142,7 +147,7 @@ function MainTabs() {
             tabBarBadgeStyle: {
               backgroundColor: '#ff4081',
               color: '#ffffff',
-              fontSize: 10,
+              fontSize: 10 * fontMultiplier,
               fontWeight: 'bold',
             },
           }}
@@ -187,7 +192,7 @@ function MainTabs() {
             tabBarBadgeStyle: {
               backgroundColor: '#ff4081',
               color: '#ffffff',
-              fontSize: 10,
+              fontSize: 10 * fontMultiplier,
               fontWeight: 'bold',
             },
           }}

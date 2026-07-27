@@ -133,8 +133,15 @@ static UIImage *OlaScaledPasteImage(UIImage *image)
 
 - (void)imagesDidLoad
 {
-  NSAttributedString *current = _textView.attributedText;
-  if (current.length == 0) return;
+  [self reapplyTokenizedText];
+}
+
+// Dựng lại attributed text từ chuỗi token: bounds của OlaTokenAttachment được bake theo
+// fontSize lúc build nên đổi font (hoặc ảnh load xong) phải re-tokenize, không thì token
+// giữ cỡ cũ trong khi chữ quanh nó đã đổi. Cũng bắn lại height cho JS qua applyTokenizedText.
+- (void)reapplyTokenizedText
+{
+  if (_textView.attributedText.length == 0) return;
   NSString *serialized = [self serializedText];
   _suppressChangeEvent = YES;
   [self applyTokenizedText:serialized];
@@ -167,6 +174,7 @@ static UIImage *OlaScaledPasteImage(UIImage *image)
 {
   const auto &newProps = *std::static_pointer_cast<const OlaChatComposerProps>(props);
 
+  CGFloat previousFontSize = _fontSize;
   _fontSize = newProps.fontSize > 0 ? newProps.fontSize : 16;
   _paddingH = newProps.paddingH;
   _paddingV = newProps.paddingV;
@@ -192,6 +200,8 @@ static UIImage *OlaScaledPasteImage(UIImage *image)
       [self applyTokenizedText:initialText];
       _suppressChangeEvent = NO;
     }
+  } else if (previousFontSize != _fontSize) {
+    [self reapplyTokenizedText];
   }
 
   [super updateProps:props oldProps:oldProps];

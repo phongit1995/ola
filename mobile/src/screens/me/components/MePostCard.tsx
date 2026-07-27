@@ -18,6 +18,7 @@ import { renderRichText } from '@lib/richText';
 import { stickerImageForCode } from '@lib/kul';
 import { Avatar } from '@components/ui/Avatar';
 import { CachedImage } from '@components/ui/CachedImage';
+import { useAppTypography } from '@components/AppFontProvider';
 
 const moreIcon = require('@assets/icons/me/ic_more.png');
 const replyIcon = require('@assets/icons/me/ic_action_reply_gray.png');
@@ -210,6 +211,7 @@ function MePostCardComponent({
   onOpenClan,
 }: MePostCardProps) {
   const { t } = useTranslation();
+  const { multiplier: fontMultiplier, systemFontScale } = useAppTypography();
   const [expanded, setExpanded] = useState(false);
   const [clamped, setClamped] = useState(false);
   const [measured, setMeasured] = useState(false);
@@ -227,7 +229,7 @@ function MePostCardComponent({
   const stickerImg = stickerImageForCode(post.sticker);
   const contentNodes = renderRichText(post.content ?? '', {
     own: false,
-    fontSize: 14,
+    fontSize: 14 * fontMultiplier * systemFontScale,
     onMention: (nick) => onOpenProfile?.(nick, colorForName(nick)),
   });
 

@@ -101,7 +101,7 @@ export function MarriageLockedView({ onPropose }: MarriageLockedViewProps) {
                   </Text>
                 </View>
                 <View className="flex-row items-center" style={{ gap: 8 }}>
-                  <Text style={{ fontSize: 10, color: 'rgba(0,0,0,0.45)' }}>
+                  <Text className="text-[10px]" style={{ color: 'rgba(0,0,0,0.45)' }}>
                     {formatSentTime(new Date(item.createdAt).toISOString())}
                   </Text>
                   <Pressable
