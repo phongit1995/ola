@@ -7834,6 +7834,9 @@ definitions:
     type: object
   ola-chat-server_internal_utils.APIError:
     properties:
+      code:
+        example: MESSAGE_BLOCKED
+        type: string
       error:
         example: validation error
         type: string
@@ -14320,7 +14323,7 @@ paths:
       consumes:
       - multipart/form-data
       description: Upload an image and create a message of type=image in one call
-        (≤2MB jpeg/png/gif/webp)
+        (≤3MB jpeg/png/gif/webp)
       parameters:
       - description: Image file
         in: formData
@@ -15183,7 +15186,7 @@ paths:
       consumes:
       - multipart/form-data
       description: Upload an image and create a message of type=image in one call
-        (≤2MB jpeg/png/gif/webp)
+        (≤3MB jpeg/png/gif/webp)
       parameters:
       - description: Room ID
         in: path

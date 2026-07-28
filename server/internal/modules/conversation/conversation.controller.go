@@ -24,6 +24,19 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 	}
 }
 
+func conversationPolicyHTTPError(err error) *utils.HTTPError {
+	switch {
+	case errors.Is(err, ErrBlocked):
+		return utils.NewHTTPErrorWithCode(http.StatusForbidden, err.Error(), ErrorCodeMessageBlocked)
+	case errors.Is(err, ErrNotAllowedToMessage):
+		return utils.NewHTTPErrorWithCode(http.StatusForbidden, err.Error(), ErrorCodeMessageFriendsOnly)
+	case errors.Is(err, ErrDirectRecipientUnavailable):
+		return utils.NewHTTPErrorWithCode(http.StatusForbidden, err.Error(), ErrorCodeDirectRecipientUnavailable)
+	default:
+		return nil
+	}
+}
+
 // CreateDirectConversation godoc
 // @Summary      Create direct conversation
 // @Description  Create or get existing direct conversation between two users
@@ -55,8 +68,8 @@ func (ctrl *Controller) CreateDirectConversation(c *gin.Context) (interface{}, e
 
 	conversation, err := ctrl.service.CreateDirectConversation(userID, recipientID)
 	if err != nil {
-		if errors.Is(err, ErrNotAllowedToMessage) {
-			return nil, utils.NewHTTPError(http.StatusForbidden, err.Error())
+		if policyErr := conversationPolicyHTTPError(err); policyErr != nil {
+			return nil, policyErr
 		}
 		ctrl.logger.Errorw("Failed to create direct conversation", "error", err)
 		return nil, utils.NewHTTPError(http.StatusInternalServerError, "failed to create conversation")
@@ -382,6 +395,9 @@ func (ctrl *Controller) SendTypingIndicator(c *gin.Context) (interface{}, error)
 	}
 
 	if err := ctrl.service.SendTypingIndicator(userID, conversationID, true); err != nil {
+		if policyErr := conversationPolicyHTTPError(err); policyErr != nil {
+			return nil, policyErr
+		}
 		ctrl.logger.Errorw("Failed to send typing indicator", "error", err, "user_id", userID, "conversation_id", conversationID)
 		return nil, utils.NewHTTPError(http.StatusInternalServerError, "failed to send typing indicator")
 	}

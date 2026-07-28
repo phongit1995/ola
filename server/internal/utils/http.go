@@ -36,6 +36,7 @@ type ApiResponse struct {
 	Path      string      `json:"path"`
 	Data      interface{} `json:"data,omitempty"`
 	Error     string      `json:"error,omitempty"`
+	Code      string      `json:"code,omitempty"`
 }
 
 type BaseResponse[T any] struct {
@@ -55,17 +56,23 @@ type APIError struct {
 	Timestamp string `json:"timestamp" example:"2025-11-29T10:00:00Z"`
 	Path      string `json:"path" example:"/api/v1/auth/login"`
 	Error     string `json:"error" example:"validation error"`
+	Code      string `json:"code,omitempty" example:"MESSAGE_BLOCKED"`
 }
 
 type HTTPError struct {
 	Status  int
 	Message string
+	Code    string
 }
 
 func (e *HTTPError) Error() string { return e.Message }
 
 func NewHTTPError(status int, msg string) *HTTPError {
 	return &HTTPError{Status: status, Message: msg}
+}
+
+func NewHTTPErrorWithCode(status int, msg, code string) *HTTPError {
+	return &HTTPError{Status: status, Message: msg, Code: code}
 }
 
 func NewAppGroup(g *gin.RouterGroup) *AppGroup {
@@ -314,10 +321,12 @@ func wrap(h AppHandler) gin.HandlerFunc {
 			var httpErr *HTTPError
 			status := http.StatusInternalServerError
 			msg := "internal server error"
+			code := ""
 
 			if errors.As(err, &httpErr) {
 				status = httpErr.Status
 				msg = httpErr.Message
+				code = httpErr.Code
 			}
 
 			c.JSON(status, ApiResponse{
@@ -327,6 +336,7 @@ func wrap(h AppHandler) gin.HandlerFunc {
 				Timestamp: ts,
 				Path:      path,
 				Error:     msg,
+				Code:      code,
 			})
 			return
 		}

@@ -294,6 +294,7 @@
     "blockedByMe": "Bạn đã chặn người này. Bỏ chặn để nhắn tin.",
     "blockedByThem": "Bạn không thể nhắn tin cho người này.",
     "sendErrFriendsOnly": "Người này chỉ nhận tin nhắn từ bạn bè.",
+    "sendErrBlocked": "Không thể thực hiện hành động này.",
     "attachPickImage": "Chọn ảnh từ máy",
     "actionEdit": "Sửa tin nhắn",
     "actionDelete": "Xoá tin nhắn",

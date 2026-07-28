@@ -67,6 +67,7 @@ const (
 	CacheKeyMessage             = "MESSAGE:%s:DETAIL"
 	CacheKeyMessageList         = "CONVERSATION:%s:MESSAGES"
 	CacheKeyRelationship        = "RELATIONSHIP:%s:DETAIL"
+	CacheKeyRelationshipBlock   = "RELATIONSHIP:BLOCK:%s:%s"
 	CacheKeyRelationshipList    = "USER:%s:RELATIONSHIPS"
 	CacheKeyFriendList          = "USER:%s:FRIENDS"
 	CacheKeyUnreadCount         = "CONVERSATION:%s:USER:%s:UNREAD"
@@ -184,7 +185,8 @@ const (
 	CacheTTLHiddenConversations = 1800
 	CacheTTLMessage             = 3600
 	CacheTTLMessageList         = 300
-	CacheTTLRelationship        = 3600
+	CacheTTLRelationship        = 86400
+	CacheTTLRelationshipAllowed = 300
 	CacheTTLFriendList          = 60
 	CacheTTLUnreadCount         = 2592000
 	CacheTTLRateLimit           = 60

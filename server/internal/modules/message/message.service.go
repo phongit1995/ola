@@ -46,6 +46,7 @@ type Service struct {
 	userCache      *userModule.CacheService
 	userSettingSvc *usersetting.Service
 	relRepo        *relationships.Repository
+	relSvc         conversation.BlockChecker
 	db             *gorm.DB
 	kafkaProducer  *kafka.Producer
 	s3             *services.S3Service
@@ -54,7 +55,7 @@ type Service struct {
 	logger         *zap.SugaredLogger
 }
 
-func NewService(repo *Repository, cache *CacheService, convRepo *conversation.Repository, convCache *conversation.CacheService, userCache *userModule.CacheService, userSettingSvc *usersetting.Service, relRepo *relationships.Repository, db *gorm.DB, kafkaProducer *kafka.Producer, s3 *services.S3Service, redis *services.CacheService, cfg *config.Config, logger *zap.SugaredLogger) *Service {
+func NewService(repo *Repository, cache *CacheService, convRepo *conversation.Repository, convCache *conversation.CacheService, userCache *userModule.CacheService, userSettingSvc *usersetting.Service, relRepo *relationships.Repository, relSvc *relationships.Service, db *gorm.DB, kafkaProducer *kafka.Producer, s3 *services.S3Service, redis *services.CacheService, cfg *config.Config, logger *zap.SugaredLogger) *Service {
 	return &Service{
 		repo:           repo,
 		cache:          cache,
@@ -63,6 +64,7 @@ func NewService(repo *Repository, cache *CacheService, convRepo *conversation.Re
 		userCache:      userCache,
 		userSettingSvc: userSettingSvc,
 		relRepo:        relRepo,
+		relSvc:         relSvc,
 		db:             db,
 		kafkaProducer:  kafkaProducer,
 		s3:             s3,
@@ -89,7 +91,8 @@ func (s *Service) uploadImageFile(ctx context.Context, userID, conversationID uu
 		return nil, fmt.Errorf("%w: max %d bytes", ErrFileTooLarge, constants.MaxImageUploadSize)
 	}
 
-	if _, err := s.getConversationByIDCached(conversationID); err != nil {
+	conv, err := s.getConversationByIDCached(conversationID)
+	if err != nil {
 		return nil, fmt.Errorf("conversation not found: %w", err)
 	}
 	members, err := s.getMembersCached(conversationID)
@@ -98,6 +101,9 @@ func (s *Service) uploadImageFile(ctx context.Context, userID, conversationID uu
 	}
 	if !isActiveMember(members, userID) {
 		return nil, ErrNotMember
+	}
+	if err := conversation.EnsureDirectInteractionAllowed(s.relSvc, conv, members, userID); err != nil {
+		return nil, err
 	}
 
 	rateKey := fmt.Sprintf(constants.CacheKeyRateLimitUpload, userID.String())
@@ -221,7 +227,8 @@ func (s *Service) uploadAudioFile(ctx context.Context, userID, conversationID uu
 		return nil, fmt.Errorf("%w: max %d bytes", ErrFileTooLarge, constants.MaxAudioUploadSize)
 	}
 
-	if _, err := s.getConversationByIDCached(conversationID); err != nil {
+	conv, err := s.getConversationByIDCached(conversationID)
+	if err != nil {
 		return nil, fmt.Errorf("conversation not found: %w", err)
 	}
 	members, err := s.getMembersCached(conversationID)
@@ -230,6 +237,9 @@ func (s *Service) uploadAudioFile(ctx context.Context, userID, conversationID uu
 	}
 	if !isActiveMember(members, userID) {
 		return nil, ErrNotMember
+	}
+	if err := conversation.EnsureDirectInteractionAllowed(s.relSvc, conv, members, userID); err != nil {
+		return nil, err
 	}
 
 	rateKey := fmt.Sprintf(constants.CacheKeyRateLimitUpload, userID.String())
@@ -498,6 +508,9 @@ func (s *Service) SendDirectMessage(senderID, recipientID uuid.UUID, messageType
 	if senderID == recipientID {
 		return nil, fmt.Errorf("cannot send direct message to yourself")
 	}
+	if err := conversation.BlockIfUsersBlocked(s.relSvc, senderID, recipientID); err != nil {
+		return nil, err
+	}
 
 	userA, userB := senderID, recipientID
 	if senderID.String() > recipientID.String() {
@@ -661,15 +674,8 @@ func (s *Service) createFullDirectConversation(conversationID, userA, userB, cre
 }
 
 func (s *Service) SendMessage(senderID, conversationID uuid.UUID, messageType, content, metadata string, replyToID *uuid.UUID, clientMsgID string) (*MessageResponse, error) {
-	if clientMsgID != "" {
-		if existing, err := s.cache.GetMessageByClientMsgID(senderID, clientMsgID); err == nil && existing != nil {
-			s.logger.Infow("Idempotent send: returning existing message",
-				"client_msg_id", clientMsgID, "message_id", existing.ID)
-			return existing, nil
-		}
-	}
-
-	if _, err := s.getConversationByIDCached(conversationID); err != nil {
+	conv, err := s.getConversationByIDCached(conversationID)
+	if err != nil {
 		return nil, fmt.Errorf("conversation not found: %w", err)
 	}
 
@@ -680,6 +686,17 @@ func (s *Service) SendMessage(senderID, conversationID uuid.UUID, messageType, c
 
 	if !isActiveMember(members, senderID) {
 		return nil, ErrNotMember
+	}
+	if err := conversation.EnsureDirectInteractionAllowed(s.relSvc, conv, members, senderID); err != nil {
+		return nil, err
+	}
+
+	if clientMsgID != "" {
+		if existing, err := s.cache.GetMessageByClientMsgID(senderID, clientMsgID); err == nil && existing != nil {
+			s.logger.Infow("Idempotent send: returning existing message",
+				"client_msg_id", clientMsgID, "message_id", existing.ID)
+			return existing, nil
+		}
 	}
 
 	if err := validateMessageContent(messageType, content, metadata); err != nil {
@@ -1149,13 +1166,19 @@ func (s *Service) UpdateMessage(userID uuid.UUID, conversationIDStr, messageIDSt
 		return nil, fmt.Errorf("content cannot be empty")
 	}
 
-	// Check membership
+	conv, err := s.getConversationByIDCached(conversationID)
+	if err != nil {
+		return nil, fmt.Errorf("conversation not found: %w", err)
+	}
 	members, err := s.getMembersCached(conversationID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to check conversation membership: %w", err)
 	}
 	if !isMember(members, userID) {
 		return nil, ErrNotMember
+	}
+	if err := conversation.EnsureDirectInteractionAllowed(s.relSvc, conv, members, userID); err != nil {
+		return nil, err
 	}
 
 	// Update message in ScyllaDB
@@ -1613,12 +1636,19 @@ func (s *Service) ToggleReaction(ctx context.Context, userID, conversationID uui
 		return nil, fmt.Errorf("invalid message ID: %w", err)
 	}
 
+	conv, err := s.getConversationByIDCached(conversationID)
+	if err != nil {
+		return nil, fmt.Errorf("conversation not found: %w", err)
+	}
 	members, err := s.getMembersCached(conversationID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get members: %w", err)
 	}
 	if !isActiveMember(members, userID) {
 		return nil, ErrNotMember
+	}
+	if err := conversation.EnsureDirectInteractionAllowed(s.relSvc, conv, members, userID); err != nil {
+		return nil, err
 	}
 
 	rateKey := fmt.Sprintf(constants.CacheKeyRateLimitReaction, userID.String())

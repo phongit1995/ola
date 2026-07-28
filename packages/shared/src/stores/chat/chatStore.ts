@@ -40,6 +40,34 @@ import { clearMarkReadTimers, clearTypingTimers, registerChatRealtime } from './
 const MESSAGE_PAGE_SIZE = 50;
 const TYPING_THROTTLE = 2000;
 const PEER_CARD_LONG_CHAT_SHOW_RATE = 0.3;
+const MESSAGE_BLOCKED = 'MESSAGE_BLOCKED';
+const MESSAGE_FRIENDS_ONLY = 'MESSAGE_FRIENDS_ONLY';
+const DIRECT_RECIPIENT_UNAVAILABLE = 'DIRECT_RECIPIENT_UNAVAILABLE';
+
+function showMessagingPolicyError(error: unknown): boolean {
+  const apiError = toApiError(error);
+  if (
+    apiError.code === MESSAGE_BLOCKED ||
+    apiError.code === DIRECT_RECIPIENT_UNAVAILABLE
+  ) {
+    toast.error(i18n.t('chat.sendErrBlocked'));
+    return true;
+  }
+  if (apiError.code === MESSAGE_FRIENDS_ONLY) {
+    toast.error(i18n.t('chat.sendErrFriendsOnly'));
+    return true;
+  }
+  return false;
+}
+
+function showDirectMessagingError(error: unknown): boolean {
+  if (showMessagingPolicyError(error)) return true;
+  if (toApiError(error).status === 403) {
+    toast.error(i18n.t('chat.sendErrFriendsOnly'));
+    return true;
+  }
+  return false;
+}
 
 export interface TypingUser {
   userId: string;
@@ -368,7 +396,11 @@ export const useChatStore = create<ChatState>((set, get) => {
             content: text,
             clientMsgId: id,
             ...(reply != null ? { replyToId: reply.id } : {}),
-          })
+          }),
+        undefined,
+        (error) => {
+          showMessagingPolicyError(error);
+        }
       );
     },
 
@@ -389,7 +421,7 @@ export const useChatStore = create<ChatState>((set, get) => {
           await get().openConversation(conversation.id);
         }
       } catch (error) {
-        if (toApiError(error).status === 403) toast.error(i18n.t('chat.sendErrFriendsOnly'));
+        showDirectMessagingError(error);
         return;
       }
     },
@@ -414,7 +446,11 @@ export const useChatStore = create<ChatState>((set, get) => {
           }),
           status: 'uploading',
         }),
-        (id) => MessageService.sendImage(conversationId, file, id)
+        (id) => MessageService.sendImage(conversationId, file, id),
+        undefined,
+        (error) => {
+          showMessagingPolicyError(error);
+        }
       );
     },
 
@@ -439,9 +475,7 @@ export const useChatStore = create<ChatState>((set, get) => {
             loadingMore: false,
           }));
         } catch (error) {
-          if (toApiError(error).status === 403) {
-            toast.error(i18n.t('chat.sendErrFriendsOnly'));
-          } else {
+          if (!showDirectMessagingError(error)) {
             toast.error(i18n.t('chat.voiceSendError'));
           }
           throw error;
@@ -476,7 +510,9 @@ export const useChatStore = create<ChatState>((set, get) => {
             waveform,
           }),
         undefined,
-        () => toast.error(i18n.t('chat.voiceSendError'))
+        (error) => {
+          if (!showMessagingPolicyError(error)) toast.error(i18n.t('chat.voiceSendError'));
+        }
       );
     },
 
@@ -537,13 +573,15 @@ export const useChatStore = create<ChatState>((set, get) => {
           }),
         }));
         return true;
-      } catch {
+      } catch (error) {
         set((state) => ({
           messages: markByClientMsgId(state.messages, clientMsgId, {
             status: 'failed',
           }),
         }));
-        if (target.type === 'audio') toast.error(i18n.t('chat.voiceSendError'));
+        if (!showMessagingPolicyError(error) && target.type === 'audio') {
+          toast.error(i18n.t('chat.voiceSendError'));
+        }
         return false;
       }
     },
@@ -558,7 +596,8 @@ export const useChatStore = create<ChatState>((set, get) => {
             reactions: updated.reactions,
           }),
         }));
-      } catch {
+      } catch (error) {
+        showMessagingPolicyError(error);
         return;
       }
     },
@@ -608,8 +647,9 @@ export const useChatStore = create<ChatState>((set, get) => {
             item.id === messageId ? { ...updated, status: 'sent' } : item
           ),
         }));
-      } catch {
+      } catch (error) {
         if (get().currentConversationId === conversationId) set({ messages: snapshot });
+        showMessagingPolicyError(error);
       }
     },
 
