@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Image, Pressable, ScrollView, Text, View, type ImageSourcePropType } from 'react-native';
+import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -11,6 +11,7 @@ import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
+import { CachedImage } from '@components/ui/CachedImage';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { trackEvent } from '@lib/telemetry';
 import { useArcadeOverlayStore } from '@store/arcadeOverlayStore';
@@ -21,14 +22,15 @@ const iconGameDefault = require('@assets/icons/apps/game.png');
 const kenIcon = require('@assets/icons/apps/ken.png');
 
 interface PanelRowProps {
-  icon: ImageSourcePropType;
+  icon: number;
+  iconUrl?: string;
   title: string;
   subtitle?: string;
   badge?: number;
   onPress: () => void;
 }
 
-function PanelRow({ icon, title, subtitle, badge, onPress }: PanelRowProps) {
+function PanelRow({ icon, iconUrl, title, subtitle, badge, onPress }: PanelRowProps) {
   return (
     <Pressable
       onPress={onPress}
@@ -39,7 +41,12 @@ function PanelRow({ icon, title, subtitle, badge, onPress }: PanelRowProps) {
         borderBottomColor: 'rgba(0,0,0,0.12)',
       }}
     >
-      <Image source={icon} className="h-10 w-10 rounded-lg" resizeMode="contain" />
+      <CachedImage
+        uri={iconUrl}
+        placeholder={icon}
+        style={{ width: 40, height: 40, borderRadius: 8 }}
+        resizeMode="contain"
+      />
       <View className="min-w-0 flex-1">
         <Text numberOfLines={1} className="text-base font-bold text-black/87">
           {title}
@@ -183,7 +190,8 @@ export function AppsScreen() {
         {miniGames.map((game) => (
           <PanelRow
             key={game.id}
-            icon={game.iconUrl ? { uri: game.iconUrl } : iconGameDefault}
+            icon={iconGameDefault}
+            iconUrl={game.iconUrl || undefined}
             title={game.name}
             subtitle={game.description || undefined}
             onPress={() => handleOpenArcade(game)}

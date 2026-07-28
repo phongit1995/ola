@@ -11,6 +11,7 @@ import {
 import type { PostVisibility } from '@ola/shared/types';
 import { KUL_IMAGES, stickerImageForCode } from '@lib/kul';
 import { imageSizeForHeight } from '@lib/chatSmiley';
+import { CachedImage } from '@components/ui/CachedImage';
 import { CloseIcon } from '@components/ui/CloseIcon';
 import { DIVIDER, ERROR, PRIMARY, PRIMARY_LIGHT, TEXT_SECONDARY } from '@constants';
 import type { ComposedCheckIn } from './MeComposerCheckInPanel';
@@ -201,8 +202,8 @@ export function PhotoStrip({
       >
         {photos.map(photo => (
           <View key={photo.id} className="relative">
-            <Image
-              source={{ uri: photo.uri }}
+            <CachedImage
+              uri={photo.uri}
               style={{
                 width: 80,
                 height: 80,

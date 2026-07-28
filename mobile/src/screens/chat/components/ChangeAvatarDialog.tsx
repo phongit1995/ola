@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Image, Pressable, View } from 'react-native';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { Avatar } from '@components/ui/Avatar';
+import { CachedImage } from '@components/ui/CachedImage';
 import { AVATAR_OUTPUT } from '@lib/imagePicker';
 import { ChangeUserImageDialog } from './ChangeUserImageDialog';
 
@@ -47,8 +48,8 @@ export function ChangeAvatarDialog({ visible, onClose }: ChangeAvatarDialogProps
           style={{ opacity: saving ? 0.6 : 1 }}
         >
           {shownUri !== '' ? (
-            <Image
-              source={{ uri: shownUri }}
+            <CachedImage
+              uri={shownUri}
               style={{ width: 112, height: 112, borderRadius: 56 }}
               resizeMode="cover"
             />
