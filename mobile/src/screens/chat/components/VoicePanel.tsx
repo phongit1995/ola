@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Linking, Pressable, Text, View } from 'react-native';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { useVoiceRecorder, type VoiceRecording } from '@hooks/useVoiceRecorder';
 
@@ -34,13 +34,32 @@ export function VoicePanel({ onRecorded }: VoicePanelProps) {
     void recorder.stop().then(finish);
   });
 
+  function showMicrophoneSettings() {
+    Alert.alert(t('chat.attachRecord'), t('chat.voiceMicDenied'), [
+      { text: t('dialog.cancel'), style: 'cancel' },
+      {
+        text: t('settings.title'),
+        onPress: () => {
+          void Linking.openSettings().catch(() => push('error', t('chat.voiceRecordError')));
+        },
+      },
+    ]);
+  }
+
   async function toggle() {
+    if (recorder.isStarting) return;
     if (recorder.isRecording) {
       finish(await recorder.stop());
       return;
     }
-    const ok = await recorder.start();
-    if (!ok) push('error', t('chat.voiceMicDenied'));
+    const result = await recorder.start();
+    if (result === 'permission-blocked') {
+      showMicrophoneSettings();
+    } else if (result === 'permission-denied') {
+      push('error', t('chat.voiceMicDenied'));
+    } else if (result === 'error') {
+      push('error', t('chat.voiceRecordError'));
+    }
   }
 
   return (
@@ -50,16 +69,24 @@ export function VoicePanel({ onRecorded }: VoicePanelProps) {
       </Text>
       <Pressable
         onPress={() => void toggle()}
+        disabled={recorder.isStarting}
         className="h-16 w-16 items-center justify-center rounded-full active:opacity-80"
-        style={{ backgroundColor: recorder.isRecording ? '#e34545' : '#7cb342' }}
+        style={{
+          backgroundColor: recorder.isRecording ? '#e34545' : '#7cb342',
+          opacity: recorder.isStarting ? 0.6 : 1,
+        }}
       >
-        <View
-          style={
-            recorder.isRecording
-              ? { width: 22, height: 22, borderRadius: 4, backgroundColor: '#ffffff' }
-              : { width: 22, height: 22, borderRadius: 11, backgroundColor: '#ffffff' }
-          }
-        />
+        {recorder.isStarting ? (
+          <ActivityIndicator color="#ffffff" />
+        ) : (
+          <View
+            style={
+              recorder.isRecording
+                ? { width: 22, height: 22, borderRadius: 4, backgroundColor: '#ffffff' }
+                : { width: 22, height: 22, borderRadius: 11, backgroundColor: '#ffffff' }
+            }
+          />
+        )}
       </Pressable>
       <Text className="text-sm text-ola-ink-soft">
         {recorder.isRecording ? t('chat.voiceTapStop') : t('chat.voiceTapStart')}

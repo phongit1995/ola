@@ -7,6 +7,7 @@ import Sound, {
   type AudioSet,
 } from 'react-native-nitro-sound';
 import type { NativeUploadFile } from '@ola/shared/lib';
+import { recordAppError } from '@lib/telemetry';
 
 const MAX_DURATION_MS = 300_000;
 const MIN_DURATION_SEC = 1;
@@ -16,10 +17,18 @@ export interface VoiceRecording {
   duration: number;
 }
 
+export type VoiceRecorderStartResult =
+  | 'started'
+  | 'busy'
+  | 'permission-denied'
+  | 'permission-blocked'
+  | 'error';
+
 export interface VoiceRecorder {
   isRecording: boolean;
+  isStarting: boolean;
   elapsedMs: number;
-  start: () => Promise<boolean>;
+  start: () => Promise<VoiceRecorderStartResult>;
   stop: () => Promise<VoiceRecording | null>;
   cancel: () => Promise<void>;
 }
@@ -40,41 +49,90 @@ function normalizeUri(path: string): string {
   return path.startsWith('file://') ? path : `file://${path}`;
 }
 
-async function ensureMicPermission(): Promise<boolean> {
-  if (Platform.OS !== 'android') return true;
+type MicPermissionResult = 'granted' | 'denied' | 'blocked';
+
+async function ensureMicPermission(): Promise<MicPermissionResult> {
+  if (Platform.OS !== 'android') return 'granted';
   const status = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.RECORD_AUDIO);
-  return status === PermissionsAndroid.RESULTS.GRANTED;
+  if (status === PermissionsAndroid.RESULTS.GRANTED) return 'granted';
+  if (status === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN) return 'blocked';
+  return 'denied';
+}
+
+function errorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (typeof error === 'string') return error;
+  if (error != null && typeof error === 'object' && 'message' in error) {
+    return String(error.message);
+  }
+  return String(error);
+}
+
+function isMicPermissionError(error: unknown): boolean {
+  const message = errorMessage(error);
+  return (
+    /recording permission denied/i.test(message) ||
+    /microphone (?:access|permission).*(?:denied|settings)/i.test(message) ||
+    /permission.*microphone/i.test(message)
+  );
 }
 
 export function useVoiceRecorder(onMaxDuration?: () => void): VoiceRecorder {
   const [isRecording, setIsRecording] = useState(false);
+  const [isStarting, setIsStarting] = useState(false);
   const [elapsedMs, setElapsedMs] = useState(0);
   const recordingRef = useRef(false);
+  const startingRef = useRef(false);
+  const mountedRef = useRef(true);
   const elapsedRef = useRef(0);
+  const maxDurationHandledRef = useRef(false);
 
   const detach = useCallback(() => {
     Sound.removeRecordBackListener();
   }, []);
 
   const start = useCallback(async () => {
-    if (recordingRef.current) return false;
-    if (!(await ensureMicPermission())) return false;
+    if (recordingRef.current || startingRef.current) return 'busy';
+    startingRef.current = true;
+    setIsStarting(true);
     try {
+      const permission = await ensureMicPermission();
+      if (permission === 'denied') return 'permission-denied';
+      if (permission === 'blocked') return 'permission-blocked';
+
       Sound.setSubscriptionDuration(0.1);
+      maxDurationHandledRef.current = false;
       Sound.addRecordBackListener((meta) => {
         elapsedRef.current = meta.currentPosition;
-        setElapsedMs(meta.currentPosition);
-        if (meta.currentPosition >= MAX_DURATION_MS) onMaxDuration?.();
+        if (mountedRef.current) setElapsedMs(meta.currentPosition);
+        if (meta.currentPosition >= MAX_DURATION_MS && !maxDurationHandledRef.current) {
+          maxDurationHandledRef.current = true;
+          onMaxDuration?.();
+        }
       });
       await Sound.startRecorder(undefined, AUDIO_SET, false);
+
+      if (!mountedRef.current) {
+        await Sound.stopRecorder().catch(() => undefined);
+        detach();
+        return 'busy';
+      }
+
       recordingRef.current = true;
       elapsedRef.current = 0;
       setElapsedMs(0);
       setIsRecording(true);
-      return true;
-    } catch {
+      return 'started';
+    } catch (error) {
       detach();
-      return false;
+      if (Platform.OS === 'ios' && isMicPermissionError(error)) {
+        return 'permission-blocked';
+      }
+      recordAppError(error, `voice_recorder_start_failed:${Platform.OS}`);
+      return 'error';
+    } finally {
+      startingRef.current = false;
+      if (mountedRef.current) setIsStarting(false);
     }
   }, [detach, onMaxDuration]);
 
@@ -85,8 +143,9 @@ export function useVoiceRecorder(onMaxDuration?: () => void): VoiceRecorder {
     let path = '';
     try {
       path = await Sound.stopRecorder();
-    } catch {
+    } catch (error) {
       detach();
+      recordAppError(error, `voice_recorder_stop_failed:${Platform.OS}`);
       return null;
     }
     detach();
@@ -111,7 +170,9 @@ export function useVoiceRecorder(onMaxDuration?: () => void): VoiceRecorder {
   }, [detach]);
 
   useEffect(() => {
+    mountedRef.current = true;
     return () => {
+      mountedRef.current = false;
       if (recordingRef.current) {
         Sound.stopRecorder().catch(() => undefined);
       }
@@ -119,5 +180,5 @@ export function useVoiceRecorder(onMaxDuration?: () => void): VoiceRecorder {
     };
   }, []);
 
-  return { isRecording, elapsedMs, start, stop, cancel };
+  return { isRecording, isStarting, elapsedMs, start, stop, cancel };
 }
