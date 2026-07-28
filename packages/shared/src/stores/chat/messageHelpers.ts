@@ -75,8 +75,9 @@ export async function runOptimisticSend(
   set: ChatSet,
   optimistic: Message,
   send: (clientMsgId: string) => Promise<Message>,
-  onSuccess?: () => void
-): Promise<void> {
+  onSuccess?: () => void,
+  onFailure?: () => void
+): Promise<boolean> {
   const clientMsgId = optimistic.clientMsgId ?? optimistic.id;
   set((state) => ({
     messages: [...state.messages, optimistic],
@@ -85,12 +86,20 @@ export async function runOptimisticSend(
   try {
     const saved = await send(clientMsgId);
     set((state) => ({
-      messages: markByClientMsgId(state.messages, clientMsgId, { ...saved, status: 'sent' }),
+      messages: markByClientMsgId(state.messages, clientMsgId, {
+        ...saved,
+        status: 'sent',
+      }),
     }));
     onSuccess?.();
+    return true;
   } catch {
     set((state) => ({
-      messages: markByClientMsgId(state.messages, clientMsgId, { status: 'failed' }),
+      messages: markByClientMsgId(state.messages, clientMsgId, {
+        status: 'failed',
+      }),
     }));
+    onFailure?.();
+    return false;
   }
 }

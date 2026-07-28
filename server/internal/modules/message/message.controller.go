@@ -14,6 +14,8 @@ import (
 	"go.uber.org/zap"
 )
 
+const maxAudioWaveformSamples = 64
+
 type Controller struct {
 	service *Service
 	logger  *zap.SugaredLogger
@@ -259,7 +261,8 @@ func (ctrl *Controller) SendImageMessage(c *gin.Context) (interface{}, error) {
 // @Param        file formData file true "Audio file (webm/m4a/mp3/wav/ogg)"
 // @Param        conversationId formData string true "Conversation ID"
 // @Param        duration formData number true "Duration in seconds"
-// @Param        waveform formData string false "JSON array of amplitudes"
+// @Param        waveform formData string false "JSON array of amplitudes (max 64 values)"
+// @Param        replyToId formData string false "Message UUID being replied to"
 // @Param        clientMsgId formData string false "Idempotency key"
 // @Success      201  {object}  MessageSuccessResponse
 // @Failure      400  {object}  utils.APIError
@@ -295,11 +298,23 @@ func (ctrl *Controller) SendAudioMessage(c *gin.Context) (interface{}, error) {
 		if err := json.Unmarshal([]byte(raw), &waveform); err != nil {
 			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid waveform")
 		}
+		if len(waveform) > maxAudioWaveformSamples {
+			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid waveform")
+		}
+	}
+
+	var replyToID *uuid.UUID
+	if raw := c.PostForm("replyToId"); raw != "" {
+		parsed, err := uuid.Parse(raw)
+		if err != nil {
+			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid reply to ID")
+		}
+		replyToID = &parsed
 	}
 
 	clientMsgID := c.PostForm("clientMsgId")
 
-	result, err := ctrl.service.SendAudioMessage(c.Request.Context(), userID, conversationID, fileHeader, duration, waveform, clientMsgID)
+	result, err := ctrl.service.SendAudioMessage(c.Request.Context(), userID, conversationID, fileHeader, duration, waveform, replyToID, clientMsgID)
 	if err != nil {
 		ctrl.logger.Errorw("Failed to send audio message", "error", err)
 		status := httpStatusForError(err)

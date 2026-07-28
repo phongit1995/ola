@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   BackHandler,
-  Image,
   Platform,
   Pressable,
   StyleSheet,
@@ -30,6 +29,7 @@ import {
 } from '@ola/shared/types';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { WARNING } from '@constants';
+import { CachedImage } from '@components/ui/CachedImage';
 import { useArcadeOverlayStore } from '@store/arcadeOverlayStore';
 import { mmkvStorage } from '@platform/storage';
 
@@ -319,10 +319,9 @@ export function ArcadeOverlay() {
               bubbleAnimatedStyle,
             ]}
           >
-            <Image
-              source={
-                active.iconUrl ? { uri: active.iconUrl } : iconGameDefault
-              }
+            <CachedImage
+              uri={active.iconUrl || undefined}
+              placeholder={iconGameDefault}
               style={styles.bubbleIcon}
               resizeMode="cover"
             />

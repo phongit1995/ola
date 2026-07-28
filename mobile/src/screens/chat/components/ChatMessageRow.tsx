@@ -189,7 +189,9 @@ export function ChatBubble({
         url={meta.url}
         duration={formatDuration(meta.duration)}
         durationSec={meta.duration}
+        waveform={meta.waveform}
         isOut={fromMe}
+        onLongPress={onLongPress}
       />
     );
   }

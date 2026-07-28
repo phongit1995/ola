@@ -11,6 +11,14 @@ import type {
   SendMessageRequest,
 } from '../types';
 
+export interface SendAudioOptions {
+  clientMsgId?: string;
+  replyToId?: string;
+  waveform?: number[];
+}
+
+const AUDIO_UPLOAD_TIMEOUT_MS = 120_000;
+
 export class MessageService {
   static list(conversationId: string, params: GetMessagesParams = {}): Promise<MessagesListResult> {
     return http.get<MessagesListResult>(API_PATH.messages.byConversation(conversationId), {
@@ -39,15 +47,21 @@ export class MessageService {
     conversationId: string,
     file: UploadFile,
     duration: number,
-    clientMsgId?: string
+    options: SendAudioOptions = {}
   ): Promise<Message> {
     const form = new FormData();
     const ext = uploadFileMimeType(file).includes('mp4') ? 'm4a' : 'webm';
     appendUploadFile(form, 'file', file, `voice.${ext}`);
     form.append('conversationId', conversationId);
     form.append('duration', String(duration));
-    if (clientMsgId != null) form.append('clientMsgId', clientMsgId);
-    return http.postForm<Message>(API_PATH.messages.audio, form);
+    if (options.clientMsgId != null) form.append('clientMsgId', options.clientMsgId);
+    if (options.replyToId != null) form.append('replyToId', options.replyToId);
+    if (options.waveform != null && options.waveform.length > 0) {
+      form.append('waveform', JSON.stringify(options.waveform));
+    }
+    return http.postForm<Message>(API_PATH.messages.audio, form, {
+      timeout: AUDIO_UPLOAD_TIMEOUT_MS,
+    });
   }
 
   static sendDirect(payload: SendDirectMessageRequest): Promise<Message> {

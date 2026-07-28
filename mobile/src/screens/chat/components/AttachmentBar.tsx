@@ -4,10 +4,9 @@ import type { ImageSourcePropType } from 'react-native';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { useLastKeyboardHeight } from '@hooks/useKeyboardHeight';
 import { SmileyKulPanel, SMILEY_PANEL_MIN_CONTENT_HEIGHT } from '@screens/room/components/SmileyKulPanel';
-import { VoicePanel } from './VoicePanel';
-import type { VoiceRecording } from '@hooks/useVoiceRecorder';
 
 export type AttachTab = 'smiley' | 'camera' | 'photo' | 'voice' | 'more';
+export type AttachPanelTab = Exclude<AttachTab, 'voice'>;
 
 const TAB_ICONS: Record<AttachTab, { icon: ImageSourcePropType; active: ImageSourcePropType }> = {
   smiley: {
@@ -35,18 +34,19 @@ const TAB_ICONS: Record<AttachTab, { icon: ImageSourcePropType; active: ImageSou
 const ALL_TABS: AttachTab[] = ['smiley', 'camera', 'photo', 'voice', 'more'];
 
 interface AttachmentBarProps {
-  openTab: AttachTab | null;
+  openTab: AttachPanelTab | null;
   bottomInset?: number;
-  onToggleTab: (tab: AttachTab) => void;
+  onToggleTab: (tab: AttachPanelTab) => void;
+  onStartVoice: () => void;
   onPickEmoji: (code: string) => void;
   onBackspace: () => void;
   onSendKul: (index: number) => void;
   onPickImage?: () => void;
   onPickCamera?: () => void;
-  onRecorded?: (recording: VoiceRecording) => void;
   onTransferKen?: () => void;
   onTradingVip?: () => void;
   onSendVipDays?: () => void;
+  voiceDisabled?: boolean;
 }
 
 function MorePanel({
@@ -106,15 +106,16 @@ export function AttachmentBar({
   openTab,
   bottomInset = 0,
   onToggleTab,
+  onStartVoice,
   onPickEmoji,
   onBackspace,
   onSendKul,
   onPickImage,
   onPickCamera,
-  onRecorded,
   onTransferKen,
   onTradingVip,
   onSendVipDays,
+  voiceDisabled = false,
 }: AttachmentBarProps) {
   const { t } = useTranslation();
   const push = useToastStore((s) => s.push);
@@ -122,7 +123,11 @@ export function AttachmentBar({
   const panelContentHeight = Math.max(SMILEY_PANEL_MIN_CONTENT_HEIGHT, lastKeyboardHeight - 44);
 
   function handlePress(tab: AttachTab) {
-    if (tab === 'smiley' || tab === 'more' || tab === 'voice') {
+    if (tab === 'voice') {
+      onStartVoice();
+      return;
+    }
+    if (tab === 'smiley' || tab === 'more') {
       onToggleTab(tab);
       return;
     }
@@ -148,13 +153,16 @@ export function AttachmentBar({
     >
       <View className="flex-row">
         {ALL_TABS.map((tab) => {
-          const active = tab === openTab;
+          const isVoice = tab === 'voice';
+          const active = !isVoice && tab === openTab;
+          const disabled = isVoice && voiceDisabled;
           return (
             <Pressable
               key={tab}
               onPress={() => handlePress(tab)}
+              disabled={disabled}
               className="h-11 flex-1 items-center justify-center"
-              style={{ opacity: active ? 1 : 0.6 }}
+              style={{ opacity: disabled ? 0.3 : active ? 1 : 0.6 }}
             >
               <Image
                 source={active ? TAB_ICONS[tab].active : TAB_ICONS[tab].icon}
@@ -173,7 +181,6 @@ export function AttachmentBar({
           onSendKul={onSendKul}
         />
       )}
-      {openTab === 'voice' && onRecorded != null && <VoicePanel onRecorded={onRecorded} />}
       {openTab === 'more' && (
         <MorePanel
           onTransferKen={onTransferKen}

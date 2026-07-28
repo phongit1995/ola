@@ -60,6 +60,7 @@ export interface ChatMessage {
   voiceDuration?: string;
   audioUrl?: string;
   audioDuration?: number;
+  audioWaveform?: number[];
   address?: string;
   youtubeTitle?: string;
   youtubeDuration?: string;

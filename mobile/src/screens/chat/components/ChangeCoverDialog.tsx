@@ -1,7 +1,8 @@
 import { useTranslation } from 'react-i18next';
-import { Image, Pressable, Text } from 'react-native';
+import { Pressable, Text } from 'react-native';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { COVER_ASPECT } from '@ola/shared/constants';
+import { CachedImage } from '@components/ui/CachedImage';
 import { COVER_OUTPUT } from '@lib/imagePicker';
 import { ChangeUserImageDialog } from './ChangeUserImageDialog';
 
@@ -48,8 +49,8 @@ export function ChangeCoverDialog({ visible, onClose }: ChangeCoverDialogProps) 
           }}
         >
           {shownUri !== '' ? (
-            <Image
-              source={{ uri: shownUri }}
+            <CachedImage
+              uri={shownUri}
               style={{ width: '100%', height: '100%' }}
               resizeMode="cover"
             />

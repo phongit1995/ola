@@ -1,25 +1,46 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { PermissionsAndroid, Platform } from 'react-native';
+import { AppState, PermissionsAndroid, Platform } from 'react-native';
 import Sound, {
   AVEncoderAudioQualityIOSType,
   AudioEncoderAndroidType,
   OutputFormatAndroidType,
   type AudioSet,
 } from 'react-native-nitro-sound';
-import type { NativeUploadFile } from '@ola/shared/lib';
+import {
+  smoothVoiceLevel,
+  summarizeVoiceWaveform,
+  voiceLevelFromMetering,
+  VOICE_MIN_LEVEL,
+  VOICE_RECORDING_BAR_COUNT,
+  type NativeUploadFile,
+} from '@ola/shared/lib';
+import { recordAppError } from '@lib/telemetry';
+import { deleteTemporaryVoiceFile } from '@lib/temporaryVoiceFile';
 
-const MAX_DURATION_MS = 300_000;
-const MIN_DURATION_SEC = 1;
+const MAX_DURATION_MS = 60_000;
+const MIN_DURATION_MS = 1_000;
 
 export interface VoiceRecording {
   file: NativeUploadFile;
   duration: number;
+  waveform: number[];
 }
+
+export type VoiceRecorderStartResult =
+  | 'started'
+  | 'busy'
+  | 'permission-denied'
+  | 'permission-blocked'
+  | 'unavailable'
+  | 'error';
 
 export interface VoiceRecorder {
   isRecording: boolean;
+  isStarting: boolean;
+  isStopping: boolean;
   elapsedMs: number;
-  start: () => Promise<boolean>;
+  waveform: number[];
+  start: () => Promise<VoiceRecorderStartResult>;
   stop: () => Promise<VoiceRecording | null>;
   cancel: () => Promise<void>;
 }
@@ -36,88 +57,286 @@ const AUDIO_SET: AudioSet = {
   AudioEncodingBitRate: 48000,
 };
 
+const EMPTY_WAVEFORM = Array.from(
+  { length: VOICE_RECORDING_BAR_COUNT },
+  () => VOICE_MIN_LEVEL,
+);
+
 function normalizeUri(path: string): string {
   return path.startsWith('file://') ? path : `file://${path}`;
 }
 
-async function ensureMicPermission(): Promise<boolean> {
-  if (Platform.OS !== 'android') return true;
-  const status = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.RECORD_AUDIO);
-  return status === PermissionsAndroid.RESULTS.GRANTED;
+type MicPermissionResult = 'granted' | 'denied' | 'blocked';
+
+async function ensureMicPermission(): Promise<MicPermissionResult> {
+  if (Platform.OS !== 'android') return 'granted';
+  const status = await PermissionsAndroid.request(
+    PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+  );
+  if (status === PermissionsAndroid.RESULTS.GRANTED) return 'granted';
+  if (status === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN) return 'blocked';
+  return 'denied';
 }
 
-export function useVoiceRecorder(onMaxDuration?: () => void): VoiceRecorder {
-  const [isRecording, setIsRecording] = useState(false);
-  const [elapsedMs, setElapsedMs] = useState(0);
-  const recordingRef = useRef(false);
-  const elapsedRef = useRef(0);
+function errorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (typeof error === 'string') return error;
+  if (error != null && typeof error === 'object' && 'message' in error) {
+    return String(error.message);
+  }
+  return String(error);
+}
 
-  const detach = useCallback(() => {
-    Sound.removeRecordBackListener();
+function isMicPermissionError(error: unknown): boolean {
+  const message = errorMessage(error);
+  return (
+    /recording permission denied/i.test(message) ||
+    /microphone (?:access|permission).*(?:denied|settings)/i.test(message) ||
+    /permission.*microphone/i.test(message)
+  );
+}
+
+function isMicUnavailableError(error: unknown): boolean {
+  return /audio session|recorder.*(?:busy|unavailable|failed)|microphone.*in use|prepare failed/i.test(
+    errorMessage(error),
+  );
+}
+
+export function useVoiceRecorder(
+  onAutoStop?: (recording: VoiceRecording | null) => void,
+): VoiceRecorder {
+  const [isRecording, setIsRecording] = useState(false);
+  const [isStarting, setIsStarting] = useState(false);
+  const [isStopping, setIsStopping] = useState(false);
+  const [elapsedMs, setElapsedMs] = useState(0);
+  const [waveform, setWaveform] = useState<number[]>(EMPTY_WAVEFORM);
+  const recordingRef = useRef(false);
+  const startingRef = useRef(false);
+  const mountedRef = useRef(true);
+  const elapsedRef = useRef(0);
+  const waveformRef = useRef<number[]>(EMPTY_WAVEFORM);
+  const waveformSamplesRef = useRef<number[]>([]);
+  const smoothedLevelRef = useRef(VOICE_MIN_LEVEL);
+  const maxDurationHandledRef = useRef(false);
+  const maxTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const startRequestRef = useRef(0);
+  const stopPromiseRef = useRef<Promise<VoiceRecording | null> | null>(null);
+  const onAutoStopRef = useRef(onAutoStop);
+  onAutoStopRef.current = onAutoStop;
+
+  const clearMaxTimer = useCallback(() => {
+    if (maxTimerRef.current != null) {
+      clearTimeout(maxTimerRef.current);
+      maxTimerRef.current = null;
+    }
   }, []);
 
-  const start = useCallback(async () => {
-    if (recordingRef.current) return false;
-    if (!(await ensureMicPermission())) return false;
-    try {
-      Sound.setSubscriptionDuration(0.1);
-      Sound.addRecordBackListener((meta) => {
-        elapsedRef.current = meta.currentPosition;
-        setElapsedMs(meta.currentPosition);
-        if (meta.currentPosition >= MAX_DURATION_MS) onMaxDuration?.();
-      });
-      await Sound.startRecorder(undefined, AUDIO_SET, false);
-      recordingRef.current = true;
-      elapsedRef.current = 0;
-      setElapsedMs(0);
-      setIsRecording(true);
-      return true;
-    } catch {
-      detach();
-      return false;
-    }
-  }, [detach, onMaxDuration]);
+  const detach = useCallback(() => {
+    clearMaxTimer();
+    Sound.removeRecordBackListener();
+  }, [clearMaxTimer]);
 
-  const stop = useCallback(async () => {
-    if (!recordingRef.current) return null;
+  const stop = useCallback((): Promise<VoiceRecording | null> => {
+    if (stopPromiseRef.current != null) return stopPromiseRef.current;
+    if (!recordingRef.current) return Promise.resolve(null);
+
     recordingRef.current = false;
-    setIsRecording(false);
-    let path = '';
-    try {
-      path = await Sound.stopRecorder();
-    } catch {
-      detach();
-      return null;
+    maxDurationHandledRef.current = true;
+    clearMaxTimer();
+    if (mountedRef.current) setIsStopping(true);
+    const durationMs = Math.min(MAX_DURATION_MS, elapsedRef.current);
+
+    const pending = (async () => {
+      let path = '';
+      try {
+        path = await Sound.stopRecorder();
+      } catch (error) {
+        recordAppError(error, `voice_recorder_stop_failed:${Platform.OS}`);
+      } finally {
+        detach();
+        if (mountedRef.current) {
+          setIsRecording(false);
+          setIsStopping(false);
+        }
+      }
+
+      if (path === '') return null;
+      if (durationMs < MIN_DURATION_MS) {
+        await deleteTemporaryVoiceFile(path);
+        return null;
+      }
+      return {
+        file: {
+          uri: normalizeUri(path),
+          name: 'voice.m4a',
+          type: 'audio/mp4',
+        },
+        duration: Math.round(durationMs / 1000),
+        waveform: summarizeVoiceWaveform(waveformSamplesRef.current),
+      };
+    })();
+
+    stopPromiseRef.current = pending;
+    void pending.finally(() => {
+      if (stopPromiseRef.current === pending) stopPromiseRef.current = null;
+    });
+    return pending;
+  }, [clearMaxTimer, detach]);
+
+  const finishAutomatically = useCallback(
+    (atMaximumDuration: boolean) => {
+      if (
+        !recordingRef.current ||
+        maxDurationHandledRef.current ||
+        stopPromiseRef.current != null
+      ) {
+        return;
+      }
+      maxDurationHandledRef.current = true;
+      if (atMaximumDuration) {
+        elapsedRef.current = MAX_DURATION_MS;
+        if (mountedRef.current) setElapsedMs(MAX_DURATION_MS);
+      }
+      void stop().then(recording => {
+        if (mountedRef.current) onAutoStopRef.current?.(recording);
+      });
+    },
+    [stop],
+  );
+
+  const start = useCallback(async (): Promise<VoiceRecorderStartResult> => {
+    if (
+      recordingRef.current ||
+      startingRef.current ||
+      stopPromiseRef.current != null
+    ) {
+      return 'busy';
     }
-    detach();
-    const duration = Math.round(elapsedRef.current / 1000);
-    if (path === '' || duration < MIN_DURATION_SEC) return null;
-    return {
-      file: { uri: normalizeUri(path), name: 'voice.m4a', type: 'audio/mp4' },
-      duration,
-    };
-  }, [detach]);
+
+    startingRef.current = true;
+    if (mountedRef.current) setIsStarting(true);
+    const requestId = ++startRequestRef.current;
+
+    try {
+      const permission = await ensureMicPermission();
+      if (permission === 'denied') return 'permission-denied';
+      if (permission === 'blocked') return 'permission-blocked';
+
+      elapsedRef.current = 0;
+      waveformRef.current = EMPTY_WAVEFORM;
+      waveformSamplesRef.current = [];
+      smoothedLevelRef.current = VOICE_MIN_LEVEL;
+      maxDurationHandledRef.current = false;
+      if (mountedRef.current) {
+        setElapsedMs(0);
+        setWaveform(EMPTY_WAVEFORM);
+        setIsStopping(false);
+      }
+
+      Sound.setSubscriptionDuration(0.1);
+      Sound.addRecordBackListener(meta => {
+        const nextElapsed = Math.min(MAX_DURATION_MS, meta.currentPosition);
+        elapsedRef.current = nextElapsed;
+        const measured = voiceLevelFromMetering(meta.currentMetering);
+        const nextLevel = smoothVoiceLevel(smoothedLevelRef.current, measured);
+        smoothedLevelRef.current = nextLevel;
+        waveformSamplesRef.current.push(nextLevel);
+        const nextWaveform = [...waveformRef.current.slice(1), nextLevel];
+        waveformRef.current = nextWaveform;
+        if (mountedRef.current) {
+          setElapsedMs(nextElapsed);
+          setWaveform(nextWaveform);
+        }
+        if (meta.currentPosition >= MAX_DURATION_MS) {
+          finishAutomatically(true);
+        }
+      });
+
+      await Sound.startRecorder(undefined, AUDIO_SET, true);
+
+      if (
+        !mountedRef.current ||
+        requestId !== startRequestRef.current ||
+        AppState.currentState === 'background'
+      ) {
+        const path = await Sound.stopRecorder().catch(() => '');
+        await deleteTemporaryVoiceFile(path);
+        detach();
+        return 'busy';
+      }
+
+      recordingRef.current = true;
+      setIsRecording(true);
+      maxTimerRef.current = setTimeout(
+        () => finishAutomatically(true),
+        MAX_DURATION_MS,
+      );
+      return 'started';
+    } catch (error) {
+      detach();
+      if (isMicPermissionError(error)) {
+        return Platform.OS === 'ios'
+          ? 'permission-blocked'
+          : 'permission-denied';
+      }
+      if (isMicUnavailableError(error)) return 'unavailable';
+      recordAppError(error, `voice_recorder_start_failed:${Platform.OS}`);
+      return 'error';
+    } finally {
+      startingRef.current = false;
+      if (mountedRef.current) setIsStarting(false);
+    }
+  }, [detach, finishAutomatically]);
 
   const cancel = useCallback(async () => {
+    startRequestRef.current += 1;
+    maxDurationHandledRef.current = true;
+    clearMaxTimer();
     if (!recordingRef.current) return;
     recordingRef.current = false;
-    setIsRecording(false);
     try {
-      await Sound.stopRecorder();
-    } catch {
-      // ignore
+      const path = await Sound.stopRecorder();
+      await deleteTemporaryVoiceFile(path);
+    } catch (error) {
+      recordAppError(error, `voice_recorder_cancel_failed:${Platform.OS}`);
+    } finally {
+      detach();
+      if (mountedRef.current) setIsRecording(false);
     }
-    detach();
-  }, [detach]);
+  }, [clearMaxTimer, detach]);
 
   useEffect(() => {
+    const subscription = AppState.addEventListener('change', state => {
+      if (state === 'background') finishAutomatically(false);
+    });
+    return () => subscription.remove();
+  }, [finishAutomatically]);
+
+  useEffect(() => {
+    mountedRef.current = true;
     return () => {
+      mountedRef.current = false;
+      startRequestRef.current += 1;
+      startingRef.current = false;
+      clearMaxTimer();
       if (recordingRef.current) {
-        Sound.stopRecorder().catch(() => undefined);
+        recordingRef.current = false;
+        void Sound.stopRecorder()
+          .then(deleteTemporaryVoiceFile)
+          .catch(() => undefined);
       }
       Sound.removeRecordBackListener();
     };
-  }, []);
+  }, [clearMaxTimer]);
 
-  return { isRecording, elapsedMs, start, stop, cancel };
+  return {
+    isRecording,
+    isStarting,
+    isStopping,
+    elapsedMs,
+    waveform,
+    start,
+    stop,
+    cancel,
+  };
 }

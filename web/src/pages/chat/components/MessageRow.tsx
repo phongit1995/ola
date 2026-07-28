@@ -26,7 +26,23 @@ interface MessageRowProps {
   onResend: (id: string) => void;
 }
 
-export function MessageRow({ message, prev, next, name, color, avatar, isLastOwn, seen, highlighted = false, onOpenActions, onOpenProfile, onMention, onQuoteClick, onOpenImage, onResend }: MessageRowProps) {
+export function MessageRow({
+  message,
+  prev,
+  next,
+  name,
+  color,
+  avatar,
+  isLastOwn,
+  seen,
+  highlighted = false,
+  onOpenActions,
+  onOpenProfile,
+  onMention,
+  onQuoteClick,
+  onOpenImage,
+  onResend,
+}: MessageRowProps) {
   const isOut = message.direction === 'out';
   const boundary = prev == null;
   const firstInGroup = boundary || prev.direction !== message.direction;
@@ -47,18 +63,30 @@ export function MessageRow({ message, prev, next, name, color, avatar, isLastOwn
       suppressClick.current = false;
       return;
     }
-    if (message.kind === 'image' && message.image != null && message.image !== '') {
+    if (
+      message.kind === 'image' &&
+      message.image != null &&
+      message.image !== ''
+    ) {
       onOpenImage(message.image);
       return;
     }
-    if (canAct) onOpenActions(message, event.currentTarget.getBoundingClientRect());
+    if (canAct)
+      onOpenActions(message, event.currentTarget.getBoundingClientRect());
+  }
+
+  function handleBubbleClickCapture(event: MouseEvent<HTMLDivElement>) {
+    if (message.kind !== 'voice' || !suppressClick.current) return;
+    suppressClick.current = false;
+    event.preventDefault();
+    event.stopPropagation();
   }
 
   return (
-    <div
-      className={`flex flex-col ${firstInGroup && !boundary ? 'mt-2' : ''}`}
-    >
-      <div className={`flex items-end gap-1 ${isOut ? 'flex-row-reverse' : ''}`}>
+    <div className={`flex flex-col ${firstInGroup && !boundary ? 'mt-2' : ''}`}>
+      <div
+        className={`flex items-end gap-1 ${isOut ? 'flex-row-reverse' : ''}`}
+      >
         {!isOut &&
           (showAvatar ? (
             onOpenProfile != null ? (
@@ -78,8 +106,12 @@ export function MessageRow({ message, prev, next, name, color, avatar, isLastOwn
           ) : (
             <span className="w-8 shrink-0" />
           ))}
-        <div className={`flex max-w-[78%] flex-col ${isOut ? 'items-end' : ''}`}>
-          <div className={`flex items-center gap-2 ${isOut ? 'flex-row-reverse' : ''}`}>
+        <div
+          className={`flex max-w-[78%] flex-col ${isOut ? 'items-end' : ''}`}
+        >
+          <div
+            className={`flex items-center gap-2 ${isOut ? 'flex-row-reverse' : ''}`}
+          >
             <div
               data-message-id={message.id}
               {...longPress}
@@ -87,20 +119,33 @@ export function MessageRow({ message, prev, next, name, color, avatar, isLastOwn
                 suppressClick.current = false;
                 longPress.onPointerDown(event);
               }}
+              onClickCapture={handleBubbleClickCapture}
               onClick={handleBubbleClick}
               className={`touch-pan-y select-none ${highlighted ? 'rounded-2xl ring-2 ring-ola-primary/40' : ''}`}
             >
-              <ChatMessageBubble message={message} firstInGroup={firstInGroup} lastInGroup={lastInGroup} onMention={onMention} onQuoteClick={onQuoteClick} />
+              <ChatMessageBubble
+                message={message}
+                firstInGroup={firstInGroup}
+                lastInGroup={lastInGroup}
+                onMention={onMention}
+                onQuoteClick={onQuoteClick}
+              />
             </div>
             {showTime && (
-              <span className="shrink-0 text-[10px] text-black/38">{message.time}</span>
+              <span className="shrink-0 text-[10px] text-black/38">
+                {message.time}
+              </span>
             )}
           </div>
           {chips.length > 0 && (
             <button
               type="button"
               onClick={(event) => {
-                if (canAct) onOpenActions(message, event.currentTarget.getBoundingClientRect());
+                if (canAct)
+                  onOpenActions(
+                    message,
+                    event.currentTarget.getBoundingClientRect()
+                  );
               }}
               className={`relative z-10 -mt-2 flex flex-wrap gap-1 ${isOut ? 'justify-end self-end' : 'self-start'}`}
             >
@@ -109,7 +154,11 @@ export function MessageRow({ message, prev, next, name, color, avatar, isLastOwn
                   key={chip.type}
                   className="flex items-center gap-1 rounded-full bg-white py-0.5 pl-1 pr-1.5 shadow-[0_1px_3px_rgba(0,0,0,0.12)] ring-1 ring-black/5"
                 >
-                  <img src={chip.image} alt={chip.type} className="h-4 w-4 object-contain" />
+                  <img
+                    src={chip.image}
+                    alt={chip.type}
+                    className="h-4 w-4 object-contain"
+                  />
                   <span className="text-[11px] font-medium leading-none text-black/55 tabular-nums">
                     {chip.count}
                   </span>
@@ -117,9 +166,17 @@ export function MessageRow({ message, prev, next, name, color, avatar, isLastOwn
               ))}
             </button>
           )}
-          {isOut && isLastOwn && message.status !== 'sending' && message.status !== 'failed' && (
-            <SeenIndicator seen={seen} name={name} color={color} avatar={avatar} />
-          )}
+          {isOut &&
+            isLastOwn &&
+            message.status !== 'sending' &&
+            message.status !== 'failed' && (
+              <SeenIndicator
+                seen={seen}
+                name={name}
+                color={color}
+                avatar={avatar}
+              />
+            )}
         </div>
         {isOut && <InlineSendStatus message={message} onResend={onResend} />}
       </div>
@@ -149,7 +206,11 @@ function InlineSendStatus({
         aria-label={t('chat.resend')}
         className="flex shrink-0 items-center gap-1 self-center text-xs text-ola-error active:scale-95"
       >
-        <img src={resendIcon} alt={t('chat.resend')} className="h-5 w-5 object-contain" />
+        <img
+          src={resendIcon}
+          alt={t('chat.resend')}
+          className="h-5 w-5 object-contain"
+        />
       </button>
     );
   }
@@ -174,5 +235,11 @@ function SeenIndicator({
       </span>
     );
   }
-  return <img src={sentIcon} alt="" className="mt-1 h-4 w-4 object-contain opacity-60" />;
+  return (
+    <img
+      src={sentIcon}
+      alt=""
+      className="mt-1 h-4 w-4 object-contain opacity-60"
+    />
+  );
 }

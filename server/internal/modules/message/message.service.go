@@ -197,7 +197,7 @@ func pickAudioExtension(mime, originalName string) string {
 	return ".bin"
 }
 
-func (s *Service) SendAudioMessage(ctx context.Context, userID, conversationID uuid.UUID, fileHeader *multipart.FileHeader, duration float64, waveform []float64, clientMsgID string) (*MessageResponse, error) {
+func (s *Service) SendAudioMessage(ctx context.Context, userID, conversationID uuid.UUID, fileHeader *multipart.FileHeader, duration float64, waveform []float64, replyToID *uuid.UUID, clientMsgID string) (*MessageResponse, error) {
 	if duration <= 0 {
 		return nil, fmt.Errorf("%w: duration required", ErrInvalidMetadata)
 	}
@@ -213,7 +213,7 @@ func (s *Service) SendAudioMessage(ctx context.Context, userID, conversationID u
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal audio metadata: %w", err)
 	}
-	return s.SendMessage(userID, conversationID, constants.MessageTypeAudio, "", string(metaJSON), nil, clientMsgID)
+	return s.SendMessage(userID, conversationID, constants.MessageTypeAudio, "", string(metaJSON), replyToID, clientMsgID)
 }
 
 func (s *Service) uploadAudioFile(ctx context.Context, userID, conversationID uuid.UUID, fileHeader *multipart.FileHeader, duration float64, waveform []float64) (*AudioMetadata, error) {

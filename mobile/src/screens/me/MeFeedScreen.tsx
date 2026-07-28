@@ -354,7 +354,6 @@ export function MeFeedScreen() {
           onToggleLike={(id) => handleReaction(id, 'like')}
           onToggleDislike={(id) => handleReaction(id, 'dislike')}
           onOpenProfile={openProfile}
-          onOpenLikers={(id) => setLikersPostId(id)}
           onCommentDelta={adjustCommentCount}
         />
       )}

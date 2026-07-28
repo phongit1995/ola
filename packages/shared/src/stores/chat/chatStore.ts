@@ -1,6 +1,16 @@
 import { create } from 'zustand';
 import i18n from 'i18next';
-import { blobWithType, parseMessageMetadata, randomUuid, releaseUploadPreviewUrl, toApiError, toast, uploadPreviewUrl, type UploadFile } from '../../lib';
+import {
+  asNativeUploadFile,
+  blobWithType,
+  nativeUploadFileFromUri,
+  parseMessageMetadata,
+  randomUuid,
+  toApiError,
+  toast,
+  uploadPreviewUrl,
+  type UploadFile,
+} from '../../lib';
 import {
   buildOptimisticMessage,
   markById,
@@ -15,7 +25,14 @@ import {
   SocketService,
   UserService,
 } from '../../services';
-import type { ChatReactionNotice, Conversation, Message, PublicProfile, ReactionType, RelationshipInfo } from '../../types';
+import type {
+  ChatReactionNotice,
+  Conversation,
+  Message,
+  PublicProfile,
+  ReactionType,
+  RelationshipInfo,
+} from '../../types';
 import { registerOnLogout } from '../authStore';
 import { upsertConversation } from './chatHelpers';
 import { clearMarkReadTimers, clearTypingTimers, registerChatRealtime } from './chatRealtime';
@@ -61,13 +78,16 @@ export interface ChatState {
   openConversation: (conversationId: string) => Promise<void>;
   startDirect: (recipientId: string) => Promise<Conversation | null>;
   closeConversation: () => void;
-  hideConversation: (conversationId: string, options?: { clearMessages?: boolean }) => Promise<void>;
+  hideConversation: (
+    conversationId: string,
+    options?: { clearMessages?: boolean }
+  ) => Promise<void>;
   loadMoreMessages: () => Promise<void>;
   sendText: (content: string) => Promise<void>;
   sendFirstToDraft: (content: string) => Promise<void>;
   sendImage: (file: UploadFile) => Promise<void>;
-  sendAudio: (blob: UploadFile, duration: number) => Promise<void>;
-  resendMessage: (messageId: string) => Promise<void>;
+  sendAudio: (blob: UploadFile, duration: number, waveform?: number[]) => Promise<boolean>;
+  resendMessage: (messageId: string) => Promise<boolean>;
   reactToMessage: (messageId: string, type: ReactionType) => Promise<void>;
   deleteMessage: (messageId: string) => Promise<void>;
   deleteAllConversations: () => Promise<void>;
@@ -111,7 +131,9 @@ export const useChatStore = create<ChatState>((set, get) => {
 
   const peerUserId = (): string => {
     const state = get();
-    const conversation = state.conversations.find((item) => item.id === state.currentConversationId);
+    const conversation = state.conversations.find(
+      (item) => item.id === state.currentConversationId
+    );
     return conversation?.otherUser?.id ?? state.draftRecipient?.id ?? '';
   };
 
@@ -123,7 +145,10 @@ export const useChatStore = create<ChatState>((set, get) => {
       set({ loadingConversations: true });
       try {
         const result = await ConversationService.list();
-        set({ conversations: result.conversations, loadingConversations: false });
+        set({
+          conversations: result.conversations,
+          loadingConversations: false,
+        });
       } catch {
         set({ loadingConversations: false });
       }
@@ -133,7 +158,9 @@ export const useChatStore = create<ChatState>((set, get) => {
       const conversationId = get().currentConversationId;
       if (conversationId == null) return;
       try {
-        const result = await MessageService.list(conversationId, { limit: MESSAGE_PAGE_SIZE });
+        const result = await MessageService.list(conversationId, {
+          limit: MESSAGE_PAGE_SIZE,
+        });
         if (get().currentConversationId !== conversationId) return;
         const fetched = [...result.messages].reverse();
         const savedIds = new Set(fetched.map((item) => item.id));
@@ -188,7 +215,9 @@ export const useChatStore = create<ChatState>((set, get) => {
           .catch(() => {});
       }
       try {
-        const result = await MessageService.list(conversationId, { limit: MESSAGE_PAGE_SIZE });
+        const result = await MessageService.list(conversationId, {
+          limit: MESSAGE_PAGE_SIZE,
+        });
         if (get().currentConversationId !== conversationId) return;
         set({
           messages: [...result.messages].reverse(),
@@ -209,7 +238,9 @@ export const useChatStore = create<ChatState>((set, get) => {
       try {
         const existing = await ConversationService.checkDirect(recipientId);
         if (existing != null && existing.id !== '') {
-          set((state) => ({ conversations: upsertConversation(state.conversations, existing) }));
+          set((state) => ({
+            conversations: upsertConversation(state.conversations, existing),
+          }));
           await get().openConversation(existing.id);
           return existing;
         }
@@ -222,7 +253,11 @@ export const useChatStore = create<ChatState>((set, get) => {
           peerRelationship: null,
           peerProfile: null,
           peerCardRoll: false,
-          draftRecipient: { id: recipientId, name: existing?.name ?? '', avatar: existing?.avatar },
+          draftRecipient: {
+            id: recipientId,
+            name: existing?.name ?? '',
+            avatar: existing?.avatar,
+          },
         });
         UserService.publicProfile(recipientId)
           .then((profile) => {
@@ -365,50 +400,99 @@ export const useChatStore = create<ChatState>((set, get) => {
 
       const clientMsgId = randomUuid();
       const previewUrl = uploadPreviewUrl(file);
+      const nativeFile = asNativeUploadFile(file);
       await runOptimisticSend(
         set,
         buildOptimisticMessage({
           clientMsgId,
           conversationId,
           type: 'image',
-          metadata: JSON.stringify({ url: previewUrl }),
+          metadata: JSON.stringify({
+            url: previewUrl,
+            uploadName: nativeFile?.name,
+            uploadType: nativeFile?.type,
+          }),
           status: 'uploading',
         }),
-        (id) => MessageService.sendImage(conversationId, file, id),
-        () => releaseUploadPreviewUrl(previewUrl)
+        (id) => MessageService.sendImage(conversationId, file, id)
       );
     },
 
-    sendAudio: async (blob, duration) => {
-      const conversationId = get().currentConversationId;
-      if (conversationId == null) return;
+    sendAudio: async (blob, duration, waveform) => {
+      let conversationId = get().currentConversationId;
+      if (conversationId == null) {
+        const draft = get().draftRecipient;
+        if (draft == null) return false;
+        try {
+          const conversation = await ConversationService.createDirect(draft.id);
+          conversationId = conversation.id;
+          set((state) => ({
+            conversations: upsertConversation(state.conversations, conversation),
+            currentConversationId: conversation.id,
+            draftRecipient: null,
+            messages: [],
+            typingUsers: [],
+            replyTarget: null,
+            hasMore: false,
+            messagesCursor: null,
+            loadingMessages: false,
+            loadingMore: false,
+          }));
+        } catch (error) {
+          if (toApiError(error).status === 403) {
+            toast.error(i18n.t('chat.sendErrFriendsOnly'));
+          } else {
+            toast.error(i18n.t('chat.voiceSendError'));
+          }
+          throw error;
+        }
+      }
 
+      const reply = get().replyTarget;
+      if (reply != null) set({ replyTarget: null });
       const clientMsgId = randomUuid();
       const previewUrl = uploadPreviewUrl(blob);
-      await runOptimisticSend(
+      const nativeFile = asNativeUploadFile(blob);
+      return runOptimisticSend(
         set,
         buildOptimisticMessage({
           clientMsgId,
           conversationId,
           type: 'audio',
-          metadata: JSON.stringify({ url: previewUrl, duration }),
+          metadata: JSON.stringify({
+            url: previewUrl,
+            duration,
+            waveform,
+            uploadName: nativeFile?.name,
+            uploadType: nativeFile?.type,
+          }),
           status: 'uploading',
+          ...(reply != null ? { replyTo: replySnapshotOf(reply) } : {}),
         }),
-        (id) => MessageService.sendAudio(conversationId, blob, duration, id),
-        () => releaseUploadPreviewUrl(previewUrl)
+        (id) =>
+          MessageService.sendAudio(conversationId, blob, duration, {
+            clientMsgId: id,
+            replyToId: reply?.id,
+            waveform,
+          }),
+        undefined,
+        () => toast.error(i18n.t('chat.voiceSendError'))
       );
     },
 
     resendMessage: async (messageId) => {
       const conversationId = get().currentConversationId;
-      if (conversationId == null) return;
+      if (conversationId == null) return false;
       const target = get().messages.find((item) => item.id === messageId);
-      if (target == null || target.status !== 'failed') return;
+      if (target == null || target.status !== 'failed') return false;
 
       const clientMsgId = target.clientMsgId ?? randomUuid();
       const sendingStatus = target.type === 'text' ? 'sending' : 'uploading';
       set((state) => ({
-        messages: markById(state.messages, messageId, { status: sendingStatus, clientMsgId }),
+        messages: markById(state.messages, messageId, {
+          status: sendingStatus,
+          clientMsgId,
+        }),
       }));
 
       try {
@@ -422,21 +506,45 @@ export const useChatStore = create<ChatState>((set, get) => {
           });
         } else {
           const meta = parseMessageMetadata(target.metadata);
-          const blob = await (await fetch(meta.url ?? '')).blob();
+          const previewUrl = meta.url ?? '';
+          const fallbackName =
+            target.type === 'audio'
+              ? 'voice.m4a'
+              : previewUrl.split('/').pop()?.split('?')[0] ?? 'photo.jpg';
+          let upload: UploadFile | undefined = nativeUploadFileFromUri(
+            previewUrl,
+            meta.uploadName ?? fallbackName,
+            meta.uploadType ?? (target.type === 'audio' ? 'audio/mp4' : 'image/jpeg')
+          );
+          if (upload == null) {
+            const blob = await (await fetch(previewUrl)).blob();
+            upload = target.type === 'image' ? blobWithType(blob, 'image/jpeg') : blob;
+          }
           if (target.type === 'image') {
-            const imageBlob = blobWithType(blob, 'image/jpeg');
-            saved = await MessageService.sendImage(conversationId, imageBlob, clientMsgId, 'image');
+            saved = await MessageService.sendImage(conversationId, upload, clientMsgId, 'image');
           } else {
-            saved = await MessageService.sendAudio(conversationId, blob, meta.duration ?? 0, clientMsgId);
+            saved = await MessageService.sendAudio(conversationId, upload, meta.duration ?? 0, {
+              clientMsgId,
+              replyToId: target.replyToId,
+              waveform: meta.waveform,
+            });
           }
         }
         set((state) => ({
-          messages: markByClientMsgId(state.messages, clientMsgId, { ...saved, status: 'sent' }),
+          messages: markByClientMsgId(state.messages, clientMsgId, {
+            ...saved,
+            status: 'sent',
+          }),
         }));
+        return true;
       } catch {
         set((state) => ({
-          messages: markByClientMsgId(state.messages, clientMsgId, { status: 'failed' }),
+          messages: markByClientMsgId(state.messages, clientMsgId, {
+            status: 'failed',
+          }),
         }));
+        if (target.type === 'audio') toast.error(i18n.t('chat.voiceSendError'));
+        return false;
       }
     },
 
@@ -446,7 +554,9 @@ export const useChatStore = create<ChatState>((set, get) => {
       try {
         const updated = await MessageService.toggleReaction(conversationId, messageId, type);
         set((state) => ({
-          messages: markById(state.messages, messageId, { reactions: updated.reactions }),
+          messages: markById(state.messages, messageId, {
+            reactions: updated.reactions,
+          }),
         }));
       } catch {
         return;
@@ -471,7 +581,12 @@ export const useChatStore = create<ChatState>((set, get) => {
     deleteAllConversations: async () => {
       const ids = get().conversations.map((item) => item.id);
       if (ids.length === 0) return;
-      set({ conversations: [], currentConversationId: null, messages: [], typingUsers: [] });
+      set({
+        conversations: [],
+        currentConversationId: null,
+        messages: [],
+        typingUsers: [],
+      });
       const results = await Promise.allSettled(ids.map((id) => ConversationService.hide(id)));
       if (results.some((item) => item.status === 'rejected')) {
         await get().loadConversations();
@@ -523,7 +638,13 @@ export const useChatStore = create<ChatState>((set, get) => {
       if (current?.requestId == null || current.requestId === '') return false;
       try {
         await RelationshipService.unblock(current.requestId);
-        set({ peerRelationship: { ...current, status: 'none', requestId: undefined } });
+        set({
+          peerRelationship: {
+            ...current,
+            status: 'none',
+            requestId: undefined,
+          },
+        });
         return true;
       } catch {
         return false;
@@ -543,12 +664,20 @@ export const useChatStore = create<ChatState>((set, get) => {
           const userId = peerUserId();
           if (userId === '') return 'none';
           const relationship = await RelationshipService.sendRequest(userId);
-          set({ peerRelationship: { ...base, status: 'pending_outgoing', requestId: relationship.id } });
+          set({
+            peerRelationship: {
+              ...base,
+              status: 'pending_outgoing',
+              requestId: relationship.id,
+            },
+          });
           return 'request';
         }
         if (status === 'pending_outgoing' && requestId !== '') {
           await RelationshipService.cancel(requestId);
-          set({ peerRelationship: { ...base, status: 'none', requestId: undefined } });
+          set({
+            peerRelationship: { ...base, status: 'none', requestId: undefined },
+          });
           return 'cancel';
         }
         if (status === 'pending_incoming' && requestId !== '') {
@@ -558,7 +687,9 @@ export const useChatStore = create<ChatState>((set, get) => {
         }
         if (status === 'friend' && requestId !== '') {
           await RelationshipService.unfriend(requestId);
-          set({ peerRelationship: { ...base, status: 'none', requestId: undefined } });
+          set({
+            peerRelationship: { ...base, status: 'none', requestId: undefined },
+          });
           return 'unfriend';
         }
         return 'none';

@@ -6,6 +6,22 @@ export interface NativeUploadFile {
 
 export type UploadFile = Blob | NativeUploadFile;
 
+export function asNativeUploadFile(file: UploadFile): NativeUploadFile | undefined {
+  if (typeof Blob !== 'undefined' && file instanceof Blob) return undefined;
+  return file as NativeUploadFile;
+}
+
+export function nativeUploadFileFromUri(
+  uri: string,
+  name: string,
+  type: string
+): NativeUploadFile | undefined {
+  if (!uri.startsWith('file://') && !uri.startsWith('content://')) {
+    return undefined;
+  }
+  return { uri, name, type };
+}
+
 export function uploadFileMimeType(file: UploadFile): string {
   return file.type;
 }

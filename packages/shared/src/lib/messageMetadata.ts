@@ -1,6 +1,9 @@
 export interface MessageMetadata {
   url?: string;
   duration?: number;
+  waveform?: number[];
+  uploadName?: string;
+  uploadType?: string;
 }
 
 export function parseMessageMetadata(metadata?: string | null): MessageMetadata {

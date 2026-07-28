@@ -159,7 +159,6 @@ export function MeNotificationsScreen() {
             onToggleLike={(id) => toggleReaction(id, 'like')}
             onToggleDislike={(id) => toggleReaction(id, 'dislike')}
             onOpenProfile={openProfile}
-            onOpenLikers={() => push('info', t('me.comingSoon'))}
             onCommentDelta={adjustCommentCount}
           />
         )}

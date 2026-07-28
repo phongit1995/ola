@@ -14234,9 +14234,13 @@ paths:
         name: duration
         required: true
         type: number
-      - description: JSON array of amplitudes
+      - description: JSON array of amplitudes (max 64 values)
         in: formData
         name: waveform
+        type: string
+      - description: Message UUID being replied to
+        in: formData
+        name: replyToId
         type: string
       - description: Idempotency key
         in: formData

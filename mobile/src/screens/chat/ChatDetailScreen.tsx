@@ -6,6 +6,7 @@ import {
   Keyboard,
   NativeScrollEvent,
   NativeSyntheticEvent,
+  Platform,
   Pressable,
   ScrollView,
   Text,
@@ -19,8 +20,12 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
-import { colorForName, isSameDay } from '@ola/shared/lib';
-import type { NativeUploadFile } from '@ola/shared/lib';
+import {
+  colorForName,
+  isSameDay,
+  parseMessageMetadata,
+  type NativeUploadFile,
+} from '@ola/shared/lib';
 import type { Message, ReactionType } from '@ola/shared/types';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
@@ -30,6 +35,10 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import { kulToken } from '@lib/kul';
 import { pastedImageFile } from '@lib/imagePicker';
 import { compressImageForUpload, ImageTooLargeError } from '@lib/compressImage';
+import {
+  deleteTemporaryVoiceFile,
+  deleteTemporaryVoiceFileAfterUiUpdate,
+} from '@lib/temporaryVoiceFile';
 import { ListOptionDialog, type ListOption } from '@components/ui/ListOptionDialog';
 import { RoomReactionsDialog } from '@screens/room/components/RoomReactionsDialog';
 import { MessageActionSheet, type AnchorRect, type MessageSheetAction } from '@screens/room/components/MessageActionSheet';
@@ -43,8 +52,12 @@ import { CHAT_BG } from './constants';
 import { ChatInputBar, type ChatInputBarHandle } from './components/ChatInputBar';
 import { ChatBubble, ChatMessageRow } from './components/ChatMessageRow';
 import { ChatReactionBalloons } from './components/ChatReactionBalloons';
-import { AttachmentBar, type AttachTab } from './components/AttachmentBar';
+import { AttachmentBar, type AttachPanelTab } from './components/AttachmentBar';
 import { VoicePreviewBar } from './components/VoicePreviewBar';
+import {
+  VoiceRecorderControl,
+  type VoiceRecorderControlHandle,
+} from './components/VoiceRecorderControl';
 import { TradingVipDialog } from './components/TradingVipDialog';
 import { TransferVipDaysDialog } from './components/TransferVipDaysDialog';
 import { PeerProfileCard } from './components/PeerProfileCard';
@@ -113,11 +126,14 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     handleUnblock,
   } = useChatDetail(conversationId);
 
-  const [openTab, setOpenTab] = useState<AttachTab | null>(null);
+  const [openTab, setOpenTab] = useState<AttachPanelTab | null>(null);
   const [transferKenOpen, setTransferKenOpen] = useState(false);
   const [transferVipDaysOpen, setTransferVipDaysOpen] = useState(false);
   const [tradingVipOpen, setTradingVipOpen] = useState(false);
   const [pendingAudio, setPendingAudio] = useState<VoiceRecording | null>(null);
+  const pendingAudioRef = useRef<VoiceRecording | null>(null);
+  const pendingAudioCleanupQueueRef = useRef<VoiceRecording[]>([]);
+  const [voiceRecording, setVoiceRecording] = useState(false);
   const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
   const [editing, setEditing] = useState<string | null>(null);
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
@@ -126,6 +142,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [blockOpen, setBlockOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Message | null>(null);
+  const pendingDeleteTargetRef = useRef<Message | null>(null);
   const [actionTarget, setActionTarget] = useState<{
     message: Message;
     anchor: AnchorRect;
@@ -148,16 +165,45 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     unstick,
   } = useStickyBottomList<Message>();
   const composerRef = useRef<ChatInputBarHandle>(null);
+  const voiceRecorderRef = useRef<VoiceRecorderControlHandle>(null);
   const currentConversationId = useChatStore((s) => s.currentConversationId);
   const loadingMore = useChatStore((s) => s.loadingMore);
   const [activeConversationId, setActiveConversationId] = useState(currentConversationId);
   if (activeConversationId !== currentConversationId) {
+    if (pendingAudioRef.current != null) {
+      pendingAudioCleanupQueueRef.current.push(pendingAudioRef.current);
+      pendingAudioRef.current = null;
+    }
     setActiveConversationId(currentConversationId);
     setPendingAudio(null);
+    setVoiceRecording(false);
     setOpenTab(null);
     setEditing(null);
     setHighlightedId(null);
   }
+
+  useEffect(() => {
+    const abandoned = pendingAudioCleanupQueueRef.current;
+    pendingAudioCleanupQueueRef.current = [];
+    for (const audio of abandoned) {
+      void deleteTemporaryVoiceFile(audio.file.uri);
+    }
+  }, [currentConversationId]);
+
+  useEffect(
+    () => () => {
+      const owned = [
+        ...(pendingAudioRef.current != null ? [pendingAudioRef.current] : []),
+        ...pendingAudioCleanupQueueRef.current,
+      ];
+      pendingAudioRef.current = null;
+      pendingAudioCleanupQueueRef.current = [];
+      for (const audio of owned) {
+        void deleteTemporaryVoiceFile(audio.file.uri);
+      }
+    },
+    []
+  );
 
   const {
     anchorId: peerCardAnchorId,
@@ -267,6 +313,32 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     setPendingImages([]);
   }
 
+  function showPendingAudio(recording: VoiceRecording) {
+    pendingAudioRef.current = recording;
+    setPendingAudio(recording);
+  }
+
+  function discardPendingAudio() {
+    const audio = pendingAudioRef.current;
+    pendingAudioRef.current = null;
+    setPendingAudio(null);
+    if (audio != null) {
+      deleteTemporaryVoiceFileAfterUiUpdate(audio.file.uri);
+    }
+  }
+
+  async function resendWithAudioCleanup(messageId: string) {
+    const target = messages.find((message) => message.id === messageId);
+    const previewUri =
+      target?.type === 'audio'
+        ? (parseMessageMetadata(target.metadata).url ?? '')
+        : '';
+    const sent = await resendMessage(messageId);
+    if (sent && previewUri !== '') {
+      deleteTemporaryVoiceFileAfterUiUpdate(previewUri);
+    }
+  }
+
   async function sendPendingImages() {
     const images = pendingImages;
     if (images.length === 0) return;
@@ -367,6 +439,12 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     push('success', t('chat.copied'));
   }
 
+  const openPendingDeleteDialog = useCallback(() => {
+    const target = pendingDeleteTargetRef.current;
+    pendingDeleteTargetRef.current = null;
+    if (target != null) setDeleteTarget(target);
+  }, []);
+
   function sheetActions(message: Message): MessageSheetAction[] {
     const abilities = chatMessageAbilities(message, myId, blocked);
     const actions: MessageSheetAction[] = [];
@@ -402,7 +480,9 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         label: t('chat.actionDelete'),
         icon: deleteActionIcon,
         destructive: true,
-        onSelect: () => setDeleteTarget(message),
+        onSelect: () => {
+          pendingDeleteTargetRef.current = message;
+        },
       });
     }
     return actions;
@@ -523,7 +603,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
                     suspendRef.current = true;
                     setActionTarget({ message: item, anchor, fromMe, firstInGroup, lastInGroup });
                   }}
-                  onResend={(id) => void resendMessage(id)}
+                  onResend={(id) => void resendWithAudioCleanup(id)}
                   onOpenImage={(url) => openViewer([url])}
                   onMention={(nick) => navigation.navigate(ROOT_ROUTES.ProfileView, { userId: nick })}
                   onShowReactions={setReactionsTargetId}
@@ -567,15 +647,49 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         <VoicePreviewBar
           uri={pendingAudio.file.uri}
           duration={pendingAudio.duration}
+          waveform={pendingAudio.waveform}
+          bottomInset={bottomBarInset}
           onSend={() => {
             const audio = pendingAudio;
+            const sourceConversationId =
+              useChatStore.getState().currentConversationId;
+            pendingAudioRef.current = null;
             setPendingAudio(null);
             setOpenTab(null);
-            void sendAudio(audio.file, audio.duration).catch(() =>
-              push('error', t('chat.actionError'))
-            );
+            void sendAudio(audio.file, audio.duration, audio.waveform)
+              .then(sent => {
+                if (sent) {
+                  deleteTemporaryVoiceFileAfterUiUpdate(audio.file.uri);
+                }
+              })
+              .catch(() => {
+                if (
+                  useChatStore.getState().currentConversationId ===
+                  sourceConversationId
+                ) {
+                  showPendingAudio(audio);
+                } else {
+                  void deleteTemporaryVoiceFile(audio.file.uri);
+                }
+              });
           }}
-          onDiscard={() => setPendingAudio(null)}
+          onDiscard={discardPendingAudio}
+        />
+      )}
+      {pendingAudio == null && (
+        <VoiceRecorderControl
+          ref={voiceRecorderRef}
+          key={currentConversationId ?? conversationId ?? 'draft'}
+          bottomInset={bottomBarInset}
+          onRecorded={recording => {
+            showPendingAudio(recording);
+            setVoiceRecording(false);
+            setOpenTab(null);
+          }}
+          onRecordingChange={recording => {
+            setVoiceRecording(recording);
+            if (recording) setOpenTab(null);
+          }}
         />
       )}
       {pendingImages.length > 0 && (
@@ -623,7 +737,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
       )}
       <ChatInputBar
         ref={composerRef}
-        hidden={pendingAudio != null || pendingImages.length > 0}
+        hidden={pendingAudio != null || pendingImages.length > 0 || voiceRecording}
         refocusOnSend={openTab == null}
         editing={editing != null}
         placeholder={t('chat.messageInputPlaceholder', { name: title })}
@@ -633,50 +747,54 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         onPasteImage={queuePastedImage}
       />
 
-      <AttachmentBar
-        openTab={openTab}
-        bottomInset={bottomBarInset}
-        onToggleTab={(tab) => {
-          if (openTab !== tab) Keyboard.dismiss();
-          setOpenTab(openTab === tab ? null : tab);
-        }}
-        onPickEmoji={(code) => composerRef.current?.insertCode(code, true)}
-        onBackspace={() => composerRef.current?.backspace()}
-        onSendKul={(index) => {
-          void send(kulToken(index));
-          setOpenTab(null);
-        }}
-        onPickImage={() => void pickImages()}
-        onPickCamera={() => void capturePhoto()}
-        onRecorded={(recording) => {
-          setOpenTab(null);
-          setPendingAudio(recording);
-        }}
-        onTransferKen={() => {
-          setOpenTab(null);
-          if (peerId === '') {
-            push('error', t('chat.actionError'));
-            return;
-          }
-          setTransferKenOpen(true);
-        }}
-        onTradingVip={() => {
-          setOpenTab(null);
-          if (peerId === '') {
-            push('error', t('chat.actionError'));
-            return;
-          }
-          setTradingVipOpen(true);
-        }}
-        onSendVipDays={() => {
-          setOpenTab(null);
-          if (peerId === '') {
-            push('error', t('chat.actionError'));
-            return;
-          }
-          setTransferVipDaysOpen(true);
-        }}
-      />
+      {!voiceRecording && pendingAudio == null && (
+        <AttachmentBar
+          openTab={openTab}
+          bottomInset={bottomBarInset}
+          onToggleTab={(tab) => {
+            if (openTab !== tab) Keyboard.dismiss();
+            setOpenTab(openTab === tab ? null : tab);
+          }}
+          onStartVoice={() => {
+            Keyboard.dismiss();
+            setOpenTab(null);
+            voiceRecorderRef.current?.start();
+          }}
+          voiceDisabled={pendingImages.length > 0}
+          onPickEmoji={(code) => composerRef.current?.insertCode(code, true)}
+          onBackspace={() => composerRef.current?.backspace()}
+          onSendKul={(index) => {
+            void send(kulToken(index));
+            setOpenTab(null);
+          }}
+          onPickImage={() => void pickImages()}
+          onPickCamera={() => void capturePhoto()}
+          onTransferKen={() => {
+            setOpenTab(null);
+            if (peerId === '') {
+              push('error', t('chat.actionError'));
+              return;
+            }
+            setTransferKenOpen(true);
+          }}
+          onTradingVip={() => {
+            setOpenTab(null);
+            if (peerId === '') {
+              push('error', t('chat.actionError'));
+              return;
+            }
+            setTradingVipOpen(true);
+          }}
+          onSendVipDays={() => {
+            setOpenTab(null);
+            if (peerId === '') {
+              push('error', t('chat.actionError'));
+              return;
+            }
+            setTransferVipDaysOpen(true);
+          }}
+        />
+      )}
       </>
       )}
       </ChatKeyboardArea>
@@ -733,7 +851,9 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         onClose={() => {
           suspendRef.current = false;
           setActionTarget(null);
+          if (Platform.OS !== 'ios') requestAnimationFrame(openPendingDeleteDialog);
         }}
+        onDismiss={openPendingDeleteDialog}
       />
 
       <RoomReactionsDialog

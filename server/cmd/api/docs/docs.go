@@ -8632,8 +8632,14 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "JSON array of amplitudes",
+                        "description": "JSON array of amplitudes (max 64 values)",
                         "name": "waveform",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Message UUID being replied to",
+                        "name": "replyToId",
                         "in": "formData"
                     },
                     {

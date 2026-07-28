@@ -1,12 +1,11 @@
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, Pressable, Text, View } from 'react-native';
-import { OlaModal } from '@components/ui/OlaModal';
 import { CachedImage } from '@components/ui/CachedImage';
 import { FlashList } from '@shopify/flash-list';
 import type { RoomMember } from '@ola/shared/types';
 import { VipAvatar } from '@components/ui/VipAvatar';
 import { DEVICE_ICONS, normalizeDevice } from '@lib/deviceIcons';
+import { useMediaViewerStore } from '@store/mediaViewerStore';
 
 const maleIcon = require('@assets/icons/chat/ic_indicate_male.png');
 const femaleIcon = require('@assets/icons/chat/ic_indicate_female.png');
@@ -108,7 +107,7 @@ function MemberRow({
 
 export function RoomMembersTab({ members, onOpenUser }: RoomMembersTabProps) {
   const { t } = useTranslation();
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const openViewer = useMediaViewerStore((state) => state.openViewer);
 
   if (members.length === 0) {
     return (
@@ -125,28 +124,13 @@ export function RoomMembersTab({ members, onOpenUser }: RoomMembersTabProps) {
         data={members}
         keyExtractor={(item) => item.userId}
         renderItem={({ item }) => (
-          <MemberRow member={item} onOpenUser={onOpenUser} onViewImage={setPreviewImage} />
+          <MemberRow
+            member={item}
+            onOpenUser={onOpenUser}
+            onViewImage={(uri) => openViewer([uri])}
+          />
         )}
       />
-      <OlaModal
-        visible={previewImage != null}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setPreviewImage(null)}
-      >
-        <Pressable
-          className="flex-1 items-center justify-center bg-black/90 px-4"
-          onPress={() => setPreviewImage(null)}
-        >
-          {previewImage != null && (
-            <CachedImage
-              uri={previewImage}
-              style={{ width: '100%', height: '80%' }}
-              resizeMode="contain"
-            />
-          )}
-        </Pressable>
-      </OlaModal>
     </View>
   );
 }

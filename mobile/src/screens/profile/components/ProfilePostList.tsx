@@ -191,7 +191,6 @@ export function ProfilePostList({
           onToggleLike={id => void toggleReaction(id, 'like')}
           onToggleDislike={id => void toggleReaction(id, 'dislike')}
           onOpenProfile={openProfile}
-          onOpenLikers={id => setLikersPostId(id)}
           onCommentDelta={adjustCommentCount}
         />
       )}
