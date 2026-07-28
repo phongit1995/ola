@@ -11,6 +11,7 @@ import type { ChatReplySnapshot } from '@app-types';
 import type { ChatMessage } from '../interface';
 import { chatQuoteExcerpt } from '../chatView';
 import { VoiceBubble } from './VoiceBubble';
+import { useUploadPreviewLease } from './useUploadPreviewLease';
 
 const noop = () => undefined;
 
@@ -69,6 +70,7 @@ export function ChatMessageBubble({
   onQuoteClick,
 }: ChatMessageBubbleProps) {
   const { t } = useTranslation();
+  useUploadPreviewLease(message.kind === 'image' ? message.image : undefined);
   const isOut = message.direction === 'out';
   const failed = isOut && message.status === 'failed';
   const surface = isOut ? 'bg-[#dcedc8]' : 'bg-white shadow-sm';
@@ -126,6 +128,7 @@ export function ChatMessageBubble({
     case 'voice':
       return quotedWrap(
         <VoiceBubble
+          key={message.audioUrl}
           url={message.audioUrl}
           duration={message.voiceDuration}
           durationSec={message.audioDuration}

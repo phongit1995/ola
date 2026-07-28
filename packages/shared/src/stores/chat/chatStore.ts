@@ -1,10 +1,11 @@
 import { create } from 'zustand';
 import i18n from 'i18next';
 import {
+  asNativeUploadFile,
   blobWithType,
+  nativeUploadFileFromUri,
   parseMessageMetadata,
   randomUuid,
-  releaseUploadPreviewUrl,
   toApiError,
   toast,
   uploadPreviewUrl,
@@ -85,8 +86,8 @@ export interface ChatState {
   sendText: (content: string) => Promise<void>;
   sendFirstToDraft: (content: string) => Promise<void>;
   sendImage: (file: UploadFile) => Promise<void>;
-  sendAudio: (blob: UploadFile, duration: number, waveform?: number[]) => Promise<void>;
-  resendMessage: (messageId: string) => Promise<void>;
+  sendAudio: (blob: UploadFile, duration: number, waveform?: number[]) => Promise<boolean>;
+  resendMessage: (messageId: string) => Promise<boolean>;
   reactToMessage: (messageId: string, type: ReactionType) => Promise<void>;
   deleteMessage: (messageId: string) => Promise<void>;
   deleteAllConversations: () => Promise<void>;
@@ -399,17 +400,21 @@ export const useChatStore = create<ChatState>((set, get) => {
 
       const clientMsgId = randomUuid();
       const previewUrl = uploadPreviewUrl(file);
+      const nativeFile = asNativeUploadFile(file);
       await runOptimisticSend(
         set,
         buildOptimisticMessage({
           clientMsgId,
           conversationId,
           type: 'image',
-          metadata: JSON.stringify({ url: previewUrl }),
+          metadata: JSON.stringify({
+            url: previewUrl,
+            uploadName: nativeFile?.name,
+            uploadType: nativeFile?.type,
+          }),
           status: 'uploading',
         }),
-        (id) => MessageService.sendImage(conversationId, file, id),
-        () => releaseUploadPreviewUrl(previewUrl)
+        (id) => MessageService.sendImage(conversationId, file, id)
       );
     },
 
@@ -417,7 +422,7 @@ export const useChatStore = create<ChatState>((set, get) => {
       let conversationId = get().currentConversationId;
       if (conversationId == null) {
         const draft = get().draftRecipient;
-        if (draft == null) return;
+        if (draft == null) return false;
         try {
           const conversation = await ConversationService.createDirect(draft.id);
           conversationId = conversation.id;
@@ -447,13 +452,20 @@ export const useChatStore = create<ChatState>((set, get) => {
       if (reply != null) set({ replyTarget: null });
       const clientMsgId = randomUuid();
       const previewUrl = uploadPreviewUrl(blob);
-      await runOptimisticSend(
+      const nativeFile = asNativeUploadFile(blob);
+      return runOptimisticSend(
         set,
         buildOptimisticMessage({
           clientMsgId,
           conversationId,
           type: 'audio',
-          metadata: JSON.stringify({ url: previewUrl, duration, waveform }),
+          metadata: JSON.stringify({
+            url: previewUrl,
+            duration,
+            waveform,
+            uploadName: nativeFile?.name,
+            uploadType: nativeFile?.type,
+          }),
           status: 'uploading',
           ...(reply != null ? { replyTo: replySnapshotOf(reply) } : {}),
         }),
@@ -470,9 +482,9 @@ export const useChatStore = create<ChatState>((set, get) => {
 
     resendMessage: async (messageId) => {
       const conversationId = get().currentConversationId;
-      if (conversationId == null) return;
+      if (conversationId == null) return false;
       const target = get().messages.find((item) => item.id === messageId);
-      if (target == null || target.status !== 'failed') return;
+      if (target == null || target.status !== 'failed') return false;
 
       const clientMsgId = target.clientMsgId ?? randomUuid();
       const sendingStatus = target.type === 'text' ? 'sending' : 'uploading';
@@ -494,12 +506,24 @@ export const useChatStore = create<ChatState>((set, get) => {
           });
         } else {
           const meta = parseMessageMetadata(target.metadata);
-          const blob = await (await fetch(meta.url ?? '')).blob();
+          const previewUrl = meta.url ?? '';
+          const fallbackName =
+            target.type === 'audio'
+              ? 'voice.m4a'
+              : previewUrl.split('/').pop()?.split('?')[0] ?? 'photo.jpg';
+          let upload: UploadFile | undefined = nativeUploadFileFromUri(
+            previewUrl,
+            meta.uploadName ?? fallbackName,
+            meta.uploadType ?? (target.type === 'audio' ? 'audio/mp4' : 'image/jpeg')
+          );
+          if (upload == null) {
+            const blob = await (await fetch(previewUrl)).blob();
+            upload = target.type === 'image' ? blobWithType(blob, 'image/jpeg') : blob;
+          }
           if (target.type === 'image') {
-            const imageBlob = blobWithType(blob, 'image/jpeg');
-            saved = await MessageService.sendImage(conversationId, imageBlob, clientMsgId, 'image');
+            saved = await MessageService.sendImage(conversationId, upload, clientMsgId, 'image');
           } else {
-            saved = await MessageService.sendAudio(conversationId, blob, meta.duration ?? 0, {
+            saved = await MessageService.sendAudio(conversationId, upload, meta.duration ?? 0, {
               clientMsgId,
               replyToId: target.replyToId,
               waveform: meta.waveform,
@@ -512,10 +536,7 @@ export const useChatStore = create<ChatState>((set, get) => {
             status: 'sent',
           }),
         }));
-        if (target.type !== 'text') {
-          const previewUrl = parseMessageMetadata(target.metadata).url ?? '';
-          if (target.type !== 'audio') releaseUploadPreviewUrl(previewUrl);
-        }
+        return true;
       } catch {
         set((state) => ({
           messages: markByClientMsgId(state.messages, clientMsgId, {
@@ -523,6 +544,7 @@ export const useChatStore = create<ChatState>((set, get) => {
           }),
         }));
         if (target.type === 'audio') toast.error(i18n.t('chat.voiceSendError'));
+        return false;
       }
     },
 

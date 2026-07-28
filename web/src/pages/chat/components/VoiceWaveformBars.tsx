@@ -1,6 +1,11 @@
-import { normalizeVoiceWaveform } from './voiceWaveform';
+import {
+  normalizeVoiceWaveform,
+  voiceWaveformBarHeight,
+  VOICE_MESSAGE_BAR_COUNT,
+  VOICE_RECORDING_BAR_COUNT,
+} from '@ola/shared/lib';
 
-export const VOICE_WAVEFORM_BAR_COUNT = 22;
+export const VOICE_WAVEFORM_BAR_COUNT = VOICE_MESSAGE_BAR_COUNT;
 export const VOICE_WAVEFORM_WIDTH_CLASS = 'w-[86px]';
 
 interface VoiceWaveformBarsProps {
@@ -18,7 +23,7 @@ export function VoiceWaveformBars({
   tone,
   fluid = false,
 }: VoiceWaveformBarsProps) {
-  const barCount = fluid ? 30 : VOICE_WAVEFORM_BAR_COUNT;
+  const barCount = fluid ? VOICE_RECORDING_BAR_COUNT : VOICE_WAVEFORM_BAR_COUNT;
   const bars = normalizeVoiceWaveform(
     waveform,
     barCount,
@@ -53,14 +58,7 @@ export function VoiceWaveformBars({
           <span
             key={index}
             className={`${fluid ? 'w-[3px]' : 'w-[2px]'} shrink-0 rounded-full ${color}`}
-            style={{
-              height: `${
-                4 +
-                Math.round(
-                  Math.pow(Math.max(0, (level - 0.08) / 0.92), 0.72) * 20
-                )
-              }px`,
-            }}
+            style={{ height: `${voiceWaveformBarHeight(level)}px` }}
           />
         );
       })}

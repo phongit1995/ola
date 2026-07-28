@@ -10,6 +10,7 @@ export * from './vip';
 export * from './messageMetadata';
 export * from './postVisibility';
 export * from './duration';
+export * from './voiceWaveform';
 export * from './number';
 export * from './base64';
 export * from './randomUuid';

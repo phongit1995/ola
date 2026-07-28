@@ -1,8 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  smoothVoiceLevel,
+  summarizeVoiceWaveform,
+  VOICE_MIN_LEVEL,
+  VOICE_RECORDING_BAR_COUNT,
+} from '@ola/shared/lib';
 
 const MAX_DURATION_MS = 60_000;
 const MIN_DURATION_SEC = 1;
-const WAVEFORM_BAR_COUNT = 30;
 
 export type VoiceRecorderError =
   | 'unsupported'
@@ -50,38 +55,6 @@ function audioContextConstructor(): AudioContextConstructor | undefined {
   );
 }
 
-function summarizeWaveform(samples: number[], count: number): number[] {
-  if (samples.length === 0) {
-    return Array.from({ length: count }, () => 0.08);
-  }
-
-  if (samples.length <= count) {
-    return Array.from({ length: count }, (_, index) => {
-      const position =
-        count === 1 ? 0 : (index * (samples.length - 1)) / (count - 1);
-      const left = Math.floor(position);
-      const right = Math.min(samples.length - 1, Math.ceil(position));
-      const ratio = position - left;
-      return (
-        (samples[left] ?? 0.08) * (1 - ratio) + (samples[right] ?? 0.08) * ratio
-      );
-    });
-  }
-
-  return Array.from({ length: count }, (_, index) => {
-    const start = Math.floor((index * samples.length) / count);
-    const end = Math.max(
-      start + 1,
-      Math.floor(((index + 1) * samples.length) / count)
-    );
-    const bucket = samples.slice(start, end);
-    const average =
-      bucket.reduce((sum, sample) => sum + sample, 0) / bucket.length;
-    const peak = Math.max(...bucket);
-    return Math.max(0.08, Math.min(1, average * 0.65 + peak * 0.35));
-  });
-}
-
 function classifyMicrophoneError(error: unknown): VoiceRecorderError {
   const name =
     error instanceof DOMException
@@ -113,14 +86,14 @@ export function useVoiceRecorder(
   const [isRecording, setIsRecording] = useState(false);
   const [elapsedMs, setElapsedMs] = useState(0);
   const [waveform, setWaveform] = useState<number[]>(() =>
-    Array.from({ length: WAVEFORM_BAR_COUNT }, () => 0.08)
+    Array.from({ length: VOICE_RECORDING_BAR_COUNT }, () => VOICE_MIN_LEVEL)
   );
   const waveformRef = useRef<number[]>(
-    Array.from({ length: WAVEFORM_BAR_COUNT }, () => 0.08)
+    Array.from({ length: VOICE_RECORDING_BAR_COUNT }, () => VOICE_MIN_LEVEL)
   );
   const waveformSamplesRef = useRef<number[]>([]);
   const peakLevelRef = useRef(0.04);
-  const smoothedLevelRef = useRef(0.08);
+  const smoothedLevelRef = useRef(VOICE_MIN_LEVEL);
 
   const recorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -193,12 +166,14 @@ export function useVoiceRecorder(
             );
             const normalized = Math.min(1, signal / peakLevelRef.current);
             const targetLevel =
-              signal === 0 ? 0.08 : 0.08 + Math.sqrt(normalized) * 0.92;
-            const smoothing =
-              targetLevel > smoothedLevelRef.current ? 0.72 : 0.28;
-            const nextLevel =
-              smoothedLevelRef.current +
-              (targetLevel - smoothedLevelRef.current) * smoothing;
+              signal === 0
+                ? VOICE_MIN_LEVEL
+                : VOICE_MIN_LEVEL +
+                  Math.sqrt(normalized) * (1 - VOICE_MIN_LEVEL);
+            const nextLevel = smoothVoiceLevel(
+              smoothedLevelRef.current,
+              targetLevel
+            );
             smoothedLevelRef.current = nextLevel;
             waveformSamplesRef.current.push(nextLevel);
             const nextWaveform = [...waveformRef.current.slice(1), nextLevel];
@@ -314,10 +289,7 @@ export function useVoiceRecorder(
           ? {
               blob,
               duration,
-              waveform: summarizeWaveform(
-                waveformSamplesRef.current,
-                WAVEFORM_BAR_COUNT
-              ),
+              waveform: summarizeVoiceWaveform(waveformSamplesRef.current),
             }
           : null;
         cleanup();
@@ -336,13 +308,13 @@ export function useVoiceRecorder(
       recorder.start();
       startLevelMonitor(stream);
       const emptyWaveform = Array.from(
-        { length: WAVEFORM_BAR_COUNT },
-        () => 0.08
+        { length: VOICE_RECORDING_BAR_COUNT },
+        () => VOICE_MIN_LEVEL
       );
       waveformRef.current = emptyWaveform;
       waveformSamplesRef.current = [];
       peakLevelRef.current = 0.04;
-      smoothedLevelRef.current = 0.08;
+      smoothedLevelRef.current = VOICE_MIN_LEVEL;
       setWaveform(emptyWaveform);
       setIsRecording(true);
       setElapsedMs(0);

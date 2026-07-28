@@ -9,6 +9,7 @@ import {
   VoiceWaveformBars,
   VOICE_WAVEFORM_WIDTH_CLASS,
 } from './VoiceWaveformBars';
+import { useUploadPreviewLease } from './useUploadPreviewLease';
 
 interface VoiceBubbleProps {
   url?: string;
@@ -32,6 +33,7 @@ export function VoiceBubble({
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
+  useUploadPreviewLease(url);
 
   const baseClass = isOut ? 'bg-ola-primary' : 'bg-ola-primary-light';
   const badgeClass = isOut

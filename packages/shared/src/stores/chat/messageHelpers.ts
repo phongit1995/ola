@@ -77,7 +77,7 @@ export async function runOptimisticSend(
   send: (clientMsgId: string) => Promise<Message>,
   onSuccess?: () => void,
   onFailure?: () => void
-): Promise<void> {
+): Promise<boolean> {
   const clientMsgId = optimistic.clientMsgId ?? optimistic.id;
   set((state) => ({
     messages: [...state.messages, optimistic],
@@ -92,6 +92,7 @@ export async function runOptimisticSend(
       }),
     }));
     onSuccess?.();
+    return true;
   } catch {
     set((state) => ({
       messages: markByClientMsgId(state.messages, clientMsgId, {
@@ -99,5 +100,6 @@ export async function runOptimisticSend(
       }),
     }));
     onFailure?.();
+    return false;
   }
 }
