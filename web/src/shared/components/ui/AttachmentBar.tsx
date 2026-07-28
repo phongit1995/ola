@@ -1,8 +1,4 @@
-import {
-  useRef,
-  useState,
-  type PointerEvent as ReactPointerEvent,
-} from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import smileyIcon from '@/assets/icons/chat/ic_smiley.png';
 import smileyIconActive from '@/assets/icons/chat/ic_smiley_selected.png';
@@ -26,8 +22,7 @@ import cloudPhotoIcon from '@/assets/icons/chat/ic_cloud_photo_storage.png';
 import switchCameraIcon from '@/assets/icons/chat/ic_action_switch_camera.png';
 import snapTimerIcon from '@/assets/icons/chat/ic_snap_timer.png';
 import expandCameraIcon from '@/assets/icons/chat/ic_action_expand_selected.png';
-import { formatDurationMs, toast } from '@lib';
-import { useLongPress, useVoiceRecorder } from '@hooks';
+import { useLongPress } from '@hooks';
 import {
   EmojiPanel,
   KulPanel,
@@ -44,14 +39,15 @@ export type AttachTab =
   | 'voice'
   | 'more';
 
+export type AttachPanelTab = Exclude<AttachTab, 'voice'>;
+
 export type AttachBarVariant = 'full' | 'compact';
 
 export interface AttachSendPayload {
-  kind: 'location' | 'ken' | 'vip' | 'vipDays' | 'voice';
+  kind: 'location' | 'ken' | 'vip' | 'vipDays';
   address?: string;
   kenAmount?: number;
   vipDirection?: 'sent' | 'received';
-  voiceDuration?: string;
 }
 
 const ALL_TABS: AttachTab[] = [
@@ -84,18 +80,19 @@ const COMPACT_TAB_ICONS: Partial<Record<AttachTab, string>> = {
 };
 
 interface AttachmentBarProps {
-  openTab: AttachTab | null;
-  onToggleTab: (tab: AttachTab) => void;
+  openTab: AttachPanelTab | null;
+  onToggleTab: (tab: AttachPanelTab) => void;
+  onStartVoice: () => void;
   onPickEmoji: (emoji: string) => void;
   onBackspace?: () => void;
   onPickImage: () => void;
   onSendKul: (index: number) => void;
   onSend: (payload: AttachSendPayload) => void;
-  onRecorded?: (blob: Blob, duration: number) => void;
   tabs?: AttachTab[];
   showTabBar?: boolean;
   variant?: AttachBarVariant;
   groupSmileyTabs?: boolean;
+  voiceDisabled?: boolean;
 }
 
 function CameraPanel({ onCapture }: { onCapture: () => void }) {
@@ -170,102 +167,6 @@ function PhotoPanel({ onPickImage }: { onPickImage: () => void }) {
   );
 }
 
-function VoicePanel({
-  onRecorded,
-}: {
-  onRecorded: (blob: Blob, duration: number) => void;
-}) {
-  const { t } = useTranslation();
-  const [cancelArmed, setCancelArmed] = useState(false);
-  const activeRef = useRef(false);
-  const heldRef = useRef(false);
-  const cancelRef = useRef(false);
-  const recorder = useVoiceRecorder((error) => {
-    activeRef.current = false;
-    heldRef.current = false;
-    cancelRef.current = false;
-    setCancelArmed(false);
-    toast.error(
-      error === 'denied' ? t('chat.voiceMicDenied') : t('chat.voiceRecordError')
-    );
-  });
-
-  async function finalize() {
-    if (!activeRef.current) return;
-    activeRef.current = false;
-    if (cancelRef.current) {
-      recorder.cancel();
-      cancelRef.current = false;
-      setCancelArmed(false);
-      return;
-    }
-    const result = await recorder.stop();
-    setCancelArmed(false);
-    if (result != null) onRecorded(result.blob, result.duration);
-  }
-
-  async function handlePointerDown(
-    event: ReactPointerEvent<HTMLButtonElement>
-  ) {
-    event.currentTarget.setPointerCapture?.(event.pointerId);
-    heldRef.current = true;
-    cancelRef.current = false;
-    setCancelArmed(false);
-    const started = await recorder.start();
-    if (!started) {
-      heldRef.current = false;
-      return;
-    }
-    activeRef.current = true;
-    if (!heldRef.current) await finalize();
-  }
-
-  function handlePointerMove(event: ReactPointerEvent<HTMLButtonElement>) {
-    if (!activeRef.current) return;
-    const rect = event.currentTarget.getBoundingClientRect();
-    const outside =
-      event.clientX < rect.left ||
-      event.clientX > rect.right ||
-      event.clientY < rect.top ||
-      event.clientY > rect.bottom;
-    cancelRef.current = outside;
-    setCancelArmed(outside);
-  }
-
-  async function handlePointerUp() {
-    heldRef.current = false;
-    if (!activeRef.current) return;
-    await finalize();
-  }
-
-  return (
-    <div className="flex h-full flex-col items-center justify-between bg-[#d5d5d5] py-4">
-      <span className="text-sm text-black/54">
-        {formatDurationMs(recorder.elapsedMs)}
-      </span>
-      <button
-        type="button"
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={handlePointerUp}
-        className={`flex h-24 w-24 touch-none items-center justify-center rounded-full text-base font-medium text-white shadow-md transition select-none active:scale-95 ${
-          recorder.isRecording
-            ? `scale-110 ${cancelArmed ? 'bg-ola-error' : 'bg-ola-accent'}`
-            : 'bg-ola-accent'
-        }`}
-      >
-        {t('chat.attachRecord')}
-      </button>
-      <span className="text-xs text-black/54">
-        {cancelArmed
-          ? t('chat.voiceReleaseCancel')
-          : t('chat.attachRecordCancelTip')}
-      </span>
-    </div>
-  );
-}
-
 function MorePanel({
   onSend,
 }: {
@@ -314,16 +215,17 @@ function MorePanel({
 export function AttachmentBar({
   openTab,
   onToggleTab,
+  onStartVoice,
   onPickEmoji,
   onBackspace,
   onPickImage,
   onSendKul,
   onSend,
-  onRecorded,
   tabs = ALL_TABS,
   showTabBar = true,
   variant = 'full',
   groupSmileyTabs = false,
+  voiceDisabled = false,
 }: AttachmentBarProps) {
   const { t } = useTranslation();
   const isCompact = variant === 'compact';
@@ -352,13 +254,16 @@ export function AttachmentBar({
       {showTabBar && (
         <div className="flex">
           {tabs.map((tab) => {
-            const isActive = tab === openTab;
+            const isVoice = tab === 'voice';
+            const isActive = !isVoice && tab === openTab;
             const isPhoto = tab === 'photo';
+            const isDisabled = isVoice && voiceDisabled;
             return (
               <button
                 key={tab}
                 type="button"
                 aria-label={tabLabels[tab]}
+                disabled={isDisabled}
                 {...(isPhoto ? photoLongPress : {})}
                 onPointerDown={
                   isPhoto
@@ -373,15 +278,27 @@ export function AttachmentBar({
                     suppressPhotoClick.current = false;
                     return;
                   }
+                  if (isVoice) {
+                    onStartVoice();
+                    return;
+                  }
                   onToggleTab(tab);
                 }}
                 className={
                   isCompact
                     ? `relative flex h-11 flex-1 select-none items-center justify-center transition-colors ${
-                        isActive ? 'bg-ola-primary/10' : 'hover:bg-black/5'
+                        isDisabled
+                          ? 'cursor-not-allowed opacity-30'
+                          : isActive
+                            ? 'bg-ola-primary/10'
+                            : 'hover:bg-black/5'
                       }`
                     : `flex h-11 flex-1 select-none items-center justify-center ${
-                        isActive ? 'opacity-100' : 'opacity-60'
+                        isDisabled
+                          ? 'cursor-not-allowed opacity-30'
+                          : isActive
+                            ? 'opacity-100'
+                            : 'opacity-60'
                       }`
                 }
               >
@@ -427,9 +344,6 @@ export function AttachmentBar({
           {openTab === 'kul' && <KulPanel onSendKul={onSendKul} />}
           {openTab === 'camera' && <CameraPanel onCapture={onPickImage} />}
           {openTab === 'photo' && <PhotoPanel onPickImage={onPickImage} />}
-          {openTab === 'voice' && (
-            <VoicePanel onRecorded={onRecorded ?? (() => undefined)} />
-          )}
           {openTab === 'more' && <MorePanel onSend={onSend} />}
         </div>
       )}

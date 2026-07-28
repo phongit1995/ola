@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import {
   ActionButton,
   AttachmentBar,
-  type AttachTab,
+  type AttachPanelTab,
   Avatar,
   ConfirmDialog,
   FullScreenOverlay,
@@ -48,6 +48,10 @@ import { TransferKenDialog } from './TransferKenDialog';
 import { TradingVipDialog } from './TradingVipDialog';
 import { TransferVipDaysDialog } from './TransferVipDaysDialog';
 import { VoicePreviewBar } from './VoicePreviewBar';
+import {
+  VoiceRecorderControl,
+  type VoiceRecorderControlHandle,
+} from './VoiceRecorderControl';
 import { PeerProfileCard } from './PeerProfileCard';
 import { UserProfileView } from '../../profile/UserProfileView';
 import { useMediaViewerStore } from '@/store/mediaViewerStore';
@@ -111,6 +115,7 @@ export function ChatConversationView({
   const notifyTyping = useChatStore((s) => s.notifyTyping);
   const loadMoreMessages = useChatStore((s) => s.loadMoreMessages);
   const currentConversationId = useChatStore((s) => s.currentConversationId);
+  const draftRecipientId = useChatStore((s) => s.draftRecipient?.id ?? '');
   const conversationSeen = useChatStore((s) => {
     const conversation = s.conversations.find(
       (item) => item.id === s.currentConversationId
@@ -123,14 +128,16 @@ export function ChatConversationView({
   const [draft, setDraft] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
   const [blockOpen, setBlockOpen] = useState(false);
-  const [openTab, setOpenTab] = useState<AttachTab | null>(null);
+  const [openTab, setOpenTab] = useState<AttachPanelTab | null>(null);
   const [transferKenOpen, setTransferKenOpen] = useState(false);
   const [tradingVipOpen, setTradingVipOpen] = useState(false);
   const [transferVipDaysOpen, setTransferVipDaysOpen] = useState(false);
   const [pendingAudio, setPendingAudio] = useState<{
     blob: Blob;
     duration: number;
+    waveform: number[];
   } | null>(null);
+  const [voiceRecording, setVoiceRecording] = useState(false);
   const [pendingImage, setPendingImage] = useState<PendingImage | null>(null);
   const [actionTarget, setActionTarget] = useState<{
     message: ChatMessage;
@@ -149,6 +156,7 @@ export function ChatConversationView({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const composerAreaRef = useRef<HTMLDivElement>(null);
   const composerRef = useRef<SmileyInputHandle>(null);
+  const voiceRecorderRef = useRef<VoiceRecorderControlHandle>(null);
   const suppressLikeClick = useRef(false);
   const imageIdRef = useRef(0);
   const pendingImageRef = useRef(pendingImage);
@@ -233,6 +241,7 @@ export function ChatConversationView({
   if (activeConversationId !== currentConversationId) {
     setActiveConversationId(currentConversationId);
     setPendingAudio(null);
+    setVoiceRecording(false);
     setOpenTab(null);
     setEditing(null);
     setHighlightedId(null);
@@ -273,6 +282,15 @@ export function ChatConversationView({
     }
     setDraft('');
     composerRef.current?.reset();
+  }
+
+  function sendPendingAudio() {
+    if (pendingAudio == null) return;
+    const audio = pendingAudio;
+    setPendingAudio(null);
+    void sendAudio(audio.blob, audio.duration, audio.waveform).catch(() => {
+      setPendingAudio((current) => current ?? audio);
+    });
   }
 
   function handleDraftChange(value: string) {
@@ -663,27 +681,23 @@ export function ChatConversationView({
             </div>
           )}
 
-          {pendingAudio != null && (
-            <VoicePreviewBar
-              blob={pendingAudio.blob}
-              duration={pendingAudio.duration}
-              onSend={() => {
-                void sendAudio(pendingAudio.blob, pendingAudio.duration);
-                setPendingAudio(null);
-              }}
-              onDiscard={() => setPendingAudio(null)}
-            />
-          )}
-
           <div ref={composerAreaRef} className="shrink-0">
             <form
               onSubmit={(event) => {
                 event.preventDefault();
                 submitComposer();
               }}
-              className="flex shrink-0 items-end gap-1 border-t border-black/12 bg-white px-2 py-1.5"
+              className="relative flex min-h-12 shrink-0 items-end gap-1 border-t border-black/12 bg-white px-2 py-1.5"
             >
-              {pendingImage != null ? (
+              {pendingAudio != null ? (
+                <VoicePreviewBar
+                  blob={pendingAudio.blob}
+                  duration={pendingAudio.duration}
+                  waveform={pendingAudio.waveform}
+                  onSend={sendPendingAudio}
+                  onDiscard={() => setPendingAudio(null)}
+                />
+              ) : pendingImage != null ? (
                 <div className="flex min-h-9 flex-1 items-center py-1">
                   <div className="relative shrink-0">
                     <img
@@ -714,91 +728,111 @@ export function ChatConversationView({
                   className="max-h-32 min-h-9 flex-1 overflow-y-auto bg-transparent px-2 py-1.5 text-base text-black/87"
                 />
               )}
-              {isTyping || pendingImage != null ? (
-                <button
-                  type="submit"
-                  className="h-9 shrink-0 rounded-full bg-ola-primary px-4 text-sm font-semibold text-white shadow-sm transition active:scale-95"
-                >
-                  {editing != null ? t('chat.actionSave') : t('chat.send')}
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  aria-label={t('chat.like')}
-                  {...likeLongPress}
-                  onPointerDown={(event) => {
-                    suppressLikeClick.current = false;
-                    likeLongPress.onPointerDown(event);
+              {pendingAudio == null && (
+                <VoiceRecorderControl
+                  ref={voiceRecorderRef}
+                  key={currentConversationId ?? draftRecipientId}
+                  onRecorded={({ blob, duration, waveform }) => {
+                    setPendingAudio({ blob, duration, waveform });
+                    setVoiceRecording(false);
+                    setOpenTab(null);
                   }}
-                  onClick={() => {
-                    if (suppressLikeClick.current) {
-                      suppressLikeClick.current = false;
-                      return;
-                    }
-                    void sendText('(y)');
+                  onRecordingChange={(recording) => {
+                    setVoiceRecording(recording);
+                    if (recording) setOpenTab(null);
                   }}
-                  className="flex h-9 w-9 select-none items-center justify-center"
-                >
-                  <img
-                    src={likeIcon}
-                    alt=""
-                    className="h-7 w-7 object-contain"
-                  />
-                </button>
+                />
               )}
+              {pendingAudio == null &&
+                !voiceRecording &&
+                (isTyping || pendingImage != null ? (
+                  <button
+                    type="submit"
+                    className="h-9 shrink-0 rounded-full bg-ola-primary px-4 text-sm font-semibold text-white shadow-sm transition active:scale-95"
+                  >
+                    {editing != null ? t('chat.actionSave') : t('chat.send')}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    aria-label={t('chat.like')}
+                    {...likeLongPress}
+                    onPointerDown={(event) => {
+                      suppressLikeClick.current = false;
+                      likeLongPress.onPointerDown(event);
+                    }}
+                    onClick={() => {
+                      if (suppressLikeClick.current) {
+                        suppressLikeClick.current = false;
+                        return;
+                      }
+                      void sendText('(y)');
+                    }}
+                    className="flex h-9 w-9 select-none items-center justify-center"
+                  >
+                    <img
+                      src={likeIcon}
+                      alt=""
+                      className="h-7 w-7 object-contain"
+                    />
+                  </button>
+                ))}
             </form>
 
-            <AttachmentBar
-              tabs={['smiley', 'camera', 'photo', 'voice', 'more']}
-              groupSmileyTabs
-              openTab={openTab}
-              onToggleTab={(tab) =>
-                setOpenTab((current) => (current === tab ? null : tab))
-              }
-              onPickEmoji={(emoji) =>
-                composerRef.current?.insertCode(emoji, true, false)
-              }
-              onBackspace={() => composerRef.current?.backspace()}
-              onPickImage={() => fileInputRef.current?.click()}
-              onSendKul={(index) => {
-                void sendText(kulToken(index));
-                setOpenTab(null);
-              }}
-              onSend={(payload) => {
-                if (payload.kind === 'ken') {
+            {!voiceRecording && pendingAudio == null && (
+              <AttachmentBar
+                tabs={['smiley', 'camera', 'photo', 'voice', 'more']}
+                groupSmileyTabs
+                openTab={openTab}
+                onToggleTab={(tab) => {
+                  setOpenTab((current) => (current === tab ? null : tab));
+                }}
+                onStartVoice={() => {
                   setOpenTab(null);
-                  if (peerId === '') {
-                    toast.error(t('chat.actionError'));
+                  voiceRecorderRef.current?.start();
+                }}
+                voiceDisabled={pendingImage != null}
+                onPickEmoji={(emoji) =>
+                  composerRef.current?.insertCode(emoji, true, false)
+                }
+                onBackspace={() => composerRef.current?.backspace()}
+                onPickImage={() => fileInputRef.current?.click()}
+                onSendKul={(index) => {
+                  void sendText(kulToken(index));
+                  setOpenTab(null);
+                }}
+                onSend={(payload) => {
+                  if (payload.kind === 'ken') {
+                    setOpenTab(null);
+                    if (peerId === '') {
+                      toast.error(t('chat.actionError'));
+                      return;
+                    }
+                    setTransferKenOpen(true);
                     return;
                   }
-                  setTransferKenOpen(true);
-                  return;
-                }
-                if (payload.kind === 'vip') {
-                  setOpenTab(null);
-                  if (peerId === '') {
-                    toast.error(t('chat.actionError'));
+                  if (payload.kind === 'vip') {
+                    setOpenTab(null);
+                    if (peerId === '') {
+                      toast.error(t('chat.actionError'));
+                      return;
+                    }
+                    setTradingVipOpen(true);
                     return;
                   }
-                  setTradingVipOpen(true);
-                  return;
-                }
-                if (payload.kind === 'vipDays') {
-                  setOpenTab(null);
-                  if (peerId === '') {
-                    toast.error(t('chat.actionError'));
+                  if (payload.kind === 'vipDays') {
+                    setOpenTab(null);
+                    if (peerId === '') {
+                      toast.error(t('chat.actionError'));
+                      return;
+                    }
+                    setTransferVipDaysOpen(true);
                     return;
                   }
-                  setTransferVipDaysOpen(true);
-                  return;
-                }
-                toast.info(t('chat.comingSoon'));
-              }}
-              onRecorded={(blob, duration) => {
-                setPendingAudio({ blob, duration });
-                setOpenTab(null);
-              }}
-            />
+                  toast.info(t('chat.comingSoon'));
+                }}
+              />
+            )}
 
             <input
               ref={fileInputRef}

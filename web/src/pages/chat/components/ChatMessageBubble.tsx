@@ -129,6 +129,7 @@ export function ChatMessageBubble({
           url={message.audioUrl}
           duration={message.voiceDuration}
           durationSec={message.audioDuration}
+          waveform={message.audioWaveform}
           isOut={isOut}
         />
       );

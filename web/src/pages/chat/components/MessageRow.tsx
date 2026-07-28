@@ -75,6 +75,13 @@ export function MessageRow({
       onOpenActions(message, event.currentTarget.getBoundingClientRect());
   }
 
+  function handleBubbleClickCapture(event: MouseEvent<HTMLDivElement>) {
+    if (message.kind !== 'voice' || !suppressClick.current) return;
+    suppressClick.current = false;
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
   return (
     <div className={`flex flex-col ${firstInGroup && !boundary ? 'mt-2' : ''}`}>
       <div
@@ -112,6 +119,7 @@ export function MessageRow({
                 suppressClick.current = false;
                 longPress.onPointerDown(event);
               }}
+              onClickCapture={handleBubbleClickCapture}
               onClick={handleBubbleClick}
               className={`touch-pan-y select-none ${highlighted ? 'rounded-2xl ring-2 ring-ola-primary/40' : ''}`}
             >
