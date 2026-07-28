@@ -45,6 +45,7 @@ interface MessageActionSheetProps {
   preview?: ReactNode;
   onReact: (type: ReactionType) => void;
   onClose: () => void;
+  onDismiss?: () => void;
 }
 
 const CARD_SHADOW = {
@@ -441,6 +442,7 @@ export function MessageActionSheet({ anchor, preview, ...props }: MessageActionS
       statusBarTranslucent
       animationType={anchor == null && props.visible ? 'slide' : 'none'}
       onRequestClose={props.onClose}
+      onDismiss={props.onDismiss}
     >
       {!props.visible ? null : anchor != null ? (
         preview != null ? (

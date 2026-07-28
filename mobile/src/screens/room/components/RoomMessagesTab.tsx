@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   NativeSyntheticEvent,
+  Platform,
   Pressable,
   NativeScrollEvent,
   useWindowDimensions,
@@ -87,6 +88,10 @@ export function RoomMessagesTab({
   const [blockTarget, setBlockTarget] = useState<RoomMessage | null>(null);
   const [reactionsTargetId, setReactionsTargetId] = useState<string | null>(null);
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  const pendingSheetDialogRef = useRef<
+    { kind: 'delete' | 'block'; target: RoomMessage } | null
+  >(null);
+  const pendingBlockCommitRef = useRef<RoomMessage | null>(null);
   const {
     listRef,
     suspendRef,
@@ -131,6 +136,21 @@ export function RoomMessagesTab({
   const insertMention = useCallback((name: string) => {
     composerRef.current?.insertMention(name);
   }, []);
+
+  const openPendingSheetDialog = useCallback(() => {
+    const pending = pendingSheetDialogRef.current;
+    pendingSheetDialogRef.current = null;
+    if (pending?.kind === 'delete') setDeleteTarget(pending.target);
+    if (pending?.kind === 'block') setBlockTarget(pending.target);
+  }, []);
+
+  const commitPendingBlock = useCallback(() => {
+    const target = pendingBlockCommitRef.current;
+    pendingBlockCommitRef.current = null;
+    if (target == null) return;
+    blockUser(target.senderId);
+    pushToast('success', t('room.blockSuccess'));
+  }, [blockUser, pushToast, t]);
 
   const handleLongPressMessage = useCallback(
     (id: string, anchor: AnchorRect, grouped: GroupedMessage, isOwn: boolean) => {
@@ -186,7 +206,9 @@ export function RoomMessagesTab({
         key: 'block',
         label: t('room.actionBlock'),
         destructive: true,
-        onSelect: () => setBlockTarget(message),
+        onSelect: () => {
+          pendingSheetDialogRef.current = { kind: 'block', target: message };
+        },
       });
     } else {
       if (canCopy) actions.push(copyAction);
@@ -195,7 +217,9 @@ export function RoomMessagesTab({
         label: t('chat.actionDelete'),
         icon: deleteActionIcon,
         destructive: true,
-        onSelect: () => setDeleteTarget(message),
+        onSelect: () => {
+          pendingSheetDialogRef.current = { kind: 'delete', target: message };
+        },
       });
     }
     return actions;
@@ -360,7 +384,9 @@ export function RoomMessagesTab({
         onClose={() => {
           suspendRef.current = false;
           setActionTarget(null);
+          if (Platform.OS !== 'ios') requestAnimationFrame(openPendingSheetDialog);
         }}
+        onDismiss={openPendingSheetDialog}
       />
 
       <RoomReactionsDialog
@@ -399,11 +425,15 @@ export function RoomMessagesTab({
           const target = blockTarget;
           setBlockTarget(null);
           if (target != null) {
-            blockUser(target.senderId);
-            pushToast('success', t('room.blockSuccess'));
+            pendingBlockCommitRef.current = target;
+            if (Platform.OS !== 'ios') requestAnimationFrame(commitPendingBlock);
           }
         }}
-        onCancel={() => setBlockTarget(null)}
+        onCancel={() => {
+          pendingBlockCommitRef.current = null;
+          setBlockTarget(null);
+        }}
+        onDismiss={commitPendingBlock}
       />
     </View>
   );

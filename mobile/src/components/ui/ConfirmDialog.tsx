@@ -17,6 +17,7 @@ interface ConfirmDialogProps {
   onCheckedChange?: (value: boolean) => void;
   onConfirm: () => void;
   onCancel: () => void;
+  onDismiss?: () => void;
 }
 
 export function ConfirmDialog({
@@ -32,6 +33,7 @@ export function ConfirmDialog({
   onCheckedChange,
   onConfirm,
   onCancel,
+  onDismiss,
 }: ConfirmDialogProps) {
   const { t } = useTranslation();
 
@@ -39,6 +41,7 @@ export function ConfirmDialog({
     <Dialog
       visible={visible}
       onClose={onCancel}
+      onDismiss={onDismiss}
       title={title}
       icon={showIcon ? infoIcon : undefined}
       avoidKeyboard={false}
