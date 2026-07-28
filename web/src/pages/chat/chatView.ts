@@ -8,7 +8,11 @@ import {
   kulImageForText,
   parseMessageMetadata,
 } from '@lib';
-import type { ChatMessage, ChatMessageAbilities, ConversationView } from './interface';
+import type {
+  ChatMessage,
+  ChatMessageAbilities,
+  ConversationView,
+} from './interface';
 import { STATUS_MAP } from './constants';
 
 export function conversationDisplayName(conversation: Conversation): string {
@@ -27,7 +31,9 @@ export function conversationHeaderTitle(conversation: Conversation): string {
   return conversationDisplayName(conversation);
 }
 
-export function toConversationView(conversation: Conversation): ConversationView {
+export function toConversationView(
+  conversation: Conversation
+): ConversationView {
   const name = conversationDisplayName(conversation);
   const lastText = conversation.lastMessageText ?? '';
   const isSticker = kulImageForText(lastText) != null;
@@ -46,7 +52,10 @@ export function toConversationView(conversation: Conversation): ConversationView
     isGroup: conversation.type === 'group',
     time: formatClockHM(conversation.lastMessageAt),
     unread: conversation.unreadCount,
-    online: conversation.type === 'direct' ? (conversation.otherUser?.isOnline ?? false) : false,
+    online:
+      conversation.type === 'direct'
+        ? (conversation.otherUser?.isOnline ?? false)
+        : false,
   };
 }
 
@@ -69,7 +78,10 @@ export function isCopyableText(message: ChatMessage): boolean {
   );
 }
 
-export function chatMessageAbilities(message: ChatMessage, blocked: boolean): ChatMessageAbilities {
+export function chatMessageAbilities(
+  message: ChatMessage,
+  blocked: boolean
+): ChatMessageAbilities {
   const isOwn = message.direction === 'out';
   return {
     canReply: !isOwn && !blocked,

@@ -1,4 +1,8 @@
-import { useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
+import {
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+} from 'react';
 import { useTranslation } from 'react-i18next';
 import smileyIcon from '@/assets/icons/chat/ic_smiley.png';
 import smileyIconActive from '@/assets/icons/chat/ic_smiley_selected.png';
@@ -24,9 +28,21 @@ import snapTimerIcon from '@/assets/icons/chat/ic_snap_timer.png';
 import expandCameraIcon from '@/assets/icons/chat/ic_action_expand_selected.png';
 import { formatDurationMs, toast } from '@lib';
 import { useLongPress, useVoiceRecorder } from '@hooks';
-import { EmojiPanel, KulPanel, SmileyGroupPanel, SmileyPanel } from './SmileyGroupPanel';
+import {
+  EmojiPanel,
+  KulPanel,
+  SmileyGroupPanel,
+  SmileyPanel,
+} from './SmileyGroupPanel';
 
-export type AttachTab = 'smiley' | 'emoji' | 'kul' | 'camera' | 'photo' | 'voice' | 'more';
+export type AttachTab =
+  | 'smiley'
+  | 'emoji'
+  | 'kul'
+  | 'camera'
+  | 'photo'
+  | 'voice'
+  | 'more';
 
 export type AttachBarVariant = 'full' | 'compact';
 
@@ -38,9 +54,20 @@ export interface AttachSendPayload {
   voiceDuration?: string;
 }
 
-const ALL_TABS: AttachTab[] = ['smiley', 'emoji', 'kul', 'camera', 'photo', 'voice', 'more'];
+const ALL_TABS: AttachTab[] = [
+  'smiley',
+  'emoji',
+  'kul',
+  'camera',
+  'photo',
+  'voice',
+  'more',
+];
 
-const ATTACH_TAB_ICONS: Record<AttachTab, { icon: string; iconActive: string }> = {
+const ATTACH_TAB_ICONS: Record<
+  AttachTab,
+  { icon: string; iconActive: string }
+> = {
   smiley: { icon: smileyIcon, iconActive: smileyIconActive },
   emoji: { icon: emojiIcon, iconActive: emojiIcon },
   kul: { icon: kulIcon, iconActive: kulIconActive },
@@ -112,7 +139,11 @@ function PhotoPanel({ onPickImage }: { onPickImage: () => void }) {
         onClick={onPickImage}
         className="flex h-full w-full flex-col items-center justify-center gap-2 text-sm text-black/54"
       >
-        <img src={localPhotoIcon} alt="" className="h-10 w-10 object-contain opacity-60" />
+        <img
+          src={localPhotoIcon}
+          alt=""
+          className="h-10 w-10 object-contain opacity-60"
+        />
         {t('chat.attachPickImage')}
       </button>
       <button
@@ -129,13 +160,21 @@ function PhotoPanel({ onPickImage }: { onPickImage: () => void }) {
         aria-label="cloud-local"
         className="absolute right-2 bottom-2 flex h-12 w-12 items-center justify-center rounded-full bg-black/45"
       >
-        <img src={cloud ? cloudPhotoIcon : localPhotoIcon} alt="" className="h-6 w-6 object-contain" />
+        <img
+          src={cloud ? cloudPhotoIcon : localPhotoIcon}
+          alt=""
+          className="h-6 w-6 object-contain"
+        />
       </button>
     </div>
   );
 }
 
-function VoicePanel({ onRecorded }: { onRecorded: (blob: Blob, duration: number) => void }) {
+function VoicePanel({
+  onRecorded,
+}: {
+  onRecorded: (blob: Blob, duration: number) => void;
+}) {
   const { t } = useTranslation();
   const [cancelArmed, setCancelArmed] = useState(false);
   const activeRef = useRef(false);
@@ -146,7 +185,9 @@ function VoicePanel({ onRecorded }: { onRecorded: (blob: Blob, duration: number)
     heldRef.current = false;
     cancelRef.current = false;
     setCancelArmed(false);
-    toast.error(error === 'denied' ? t('chat.voiceMicDenied') : t('chat.voiceRecordError'));
+    toast.error(
+      error === 'denied' ? t('chat.voiceMicDenied') : t('chat.voiceRecordError')
+    );
   });
 
   async function finalize() {
@@ -163,7 +204,9 @@ function VoicePanel({ onRecorded }: { onRecorded: (blob: Blob, duration: number)
     if (result != null) onRecorded(result.blob, result.duration);
   }
 
-  async function handlePointerDown(event: ReactPointerEvent<HTMLButtonElement>) {
+  async function handlePointerDown(
+    event: ReactPointerEvent<HTMLButtonElement>
+  ) {
     event.currentTarget.setPointerCapture?.(event.pointerId);
     heldRef.current = true;
     cancelRef.current = false;
@@ -197,7 +240,9 @@ function VoicePanel({ onRecorded }: { onRecorded: (blob: Blob, duration: number)
 
   return (
     <div className="flex h-full flex-col items-center justify-between bg-[#d5d5d5] py-4">
-      <span className="text-sm text-black/54">{formatDurationMs(recorder.elapsedMs)}</span>
+      <span className="text-sm text-black/54">
+        {formatDurationMs(recorder.elapsedMs)}
+      </span>
       <button
         type="button"
         onPointerDown={handlePointerDown}
@@ -205,25 +250,34 @@ function VoicePanel({ onRecorded }: { onRecorded: (blob: Blob, duration: number)
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
         className={`flex h-24 w-24 touch-none items-center justify-center rounded-full text-base font-medium text-white shadow-md transition select-none active:scale-95 ${
-          recorder.isRecording ? `scale-110 ${cancelArmed ? 'bg-ola-error' : 'bg-ola-accent'}` : 'bg-ola-accent'
+          recorder.isRecording
+            ? `scale-110 ${cancelArmed ? 'bg-ola-error' : 'bg-ola-accent'}`
+            : 'bg-ola-accent'
         }`}
       >
         {t('chat.attachRecord')}
       </button>
       <span className="text-xs text-black/54">
-        {cancelArmed ? t('chat.voiceReleaseCancel') : t('chat.attachRecordCancelTip')}
+        {cancelArmed
+          ? t('chat.voiceReleaseCancel')
+          : t('chat.attachRecordCancelTip')}
       </span>
     </div>
   );
 }
 
-function MorePanel({ onSend }: { onSend: (payload: AttachSendPayload) => void }) {
+function MorePanel({
+  onSend,
+}: {
+  onSend: (payload: AttachSendPayload) => void;
+}) {
   const { t } = useTranslation();
   const buttons: Array<{ key: string; label: string; onClick: () => void }> = [
     {
       key: 'location',
       label: t('chat.attachSendLocation'),
-      onClick: () => onSend({ kind: 'location', address: t('chat.locationSample') }),
+      onClick: () =>
+        onSend({ kind: 'location', address: t('chat.locationSample') }),
     },
     {
       key: 'transfer-ken',
@@ -292,64 +346,66 @@ export function AttachmentBar({
   if (!showTabBar && openTab == null) return null;
 
   return (
-    <div className={`shrink-0 bg-white ${showTabBar ? 'border-t border-black/12' : ''}`}>
+    <div
+      className={`shrink-0 bg-white ${showTabBar ? 'border-t border-black/12' : ''}`}
+    >
       {showTabBar && (
         <div className="flex">
           {tabs.map((tab) => {
-          const isActive = tab === openTab;
-          const isPhoto = tab === 'photo';
-          return (
-            <button
-              key={tab}
-              type="button"
-              aria-label={tabLabels[tab]}
-              {...(isPhoto ? photoLongPress : {})}
-              onPointerDown={
-                isPhoto
-                  ? (event) => {
-                      suppressPhotoClick.current = false;
-                      photoLongPress.onPointerDown(event);
-                    }
-                  : undefined
-              }
-              onClick={() => {
-                if (isPhoto && suppressPhotoClick.current) {
-                  suppressPhotoClick.current = false;
-                  return;
+            const isActive = tab === openTab;
+            const isPhoto = tab === 'photo';
+            return (
+              <button
+                key={tab}
+                type="button"
+                aria-label={tabLabels[tab]}
+                {...(isPhoto ? photoLongPress : {})}
+                onPointerDown={
+                  isPhoto
+                    ? (event) => {
+                        suppressPhotoClick.current = false;
+                        photoLongPress.onPointerDown(event);
+                      }
+                    : undefined
                 }
-                onToggleTab(tab);
-              }}
-              className={
-                isCompact
-                  ? `relative flex h-11 flex-1 select-none items-center justify-center transition-colors ${
-                      isActive ? 'bg-ola-primary/10' : 'hover:bg-black/5'
-                    }`
-                  : `flex h-11 flex-1 select-none items-center justify-center ${
-                      isActive ? 'opacity-100' : 'opacity-60'
-                    }`
-              }
-            >
-              <img
-                src={
-                  isCompact
-                    ? COMPACT_TAB_ICONS[tab] ?? ATTACH_TAB_ICONS[tab].icon
-                    : isActive
-                      ? ATTACH_TAB_ICONS[tab].iconActive
-                      : ATTACH_TAB_ICONS[tab].icon
-                }
-                alt=""
+                onClick={() => {
+                  if (isPhoto && suppressPhotoClick.current) {
+                    suppressPhotoClick.current = false;
+                    return;
+                  }
+                  onToggleTab(tab);
+                }}
                 className={
                   isCompact
-                    ? `h-6 w-6 object-contain transition-opacity ${isActive ? 'opacity-100' : 'opacity-60'}`
-                    : 'h-6 w-6 object-contain'
+                    ? `relative flex h-11 flex-1 select-none items-center justify-center transition-colors ${
+                        isActive ? 'bg-ola-primary/10' : 'hover:bg-black/5'
+                      }`
+                    : `flex h-11 flex-1 select-none items-center justify-center ${
+                        isActive ? 'opacity-100' : 'opacity-60'
+                      }`
                 }
-              />
-              {isCompact && isActive && (
-                <span className="absolute inset-x-0 bottom-0 h-0.5 bg-ola-primary" />
-              )}
-            </button>
-          );
-        })}
+              >
+                <img
+                  src={
+                    isCompact
+                      ? (COMPACT_TAB_ICONS[tab] ?? ATTACH_TAB_ICONS[tab].icon)
+                      : isActive
+                        ? ATTACH_TAB_ICONS[tab].iconActive
+                        : ATTACH_TAB_ICONS[tab].icon
+                  }
+                  alt=""
+                  className={
+                    isCompact
+                      ? `h-6 w-6 object-contain transition-opacity ${isActive ? 'opacity-100' : 'opacity-60'}`
+                      : 'h-6 w-6 object-contain'
+                  }
+                />
+                {isCompact && isActive && (
+                  <span className="absolute inset-x-0 bottom-0 h-0.5 bg-ola-primary" />
+                )}
+              </button>
+            );
+          })}
         </div>
       )}
 
@@ -357,15 +413,23 @@ export function AttachmentBar({
         <div className="h-52 overflow-y-auto border-t border-black/12">
           {openTab === 'smiley' &&
             (groupSmileyTabs ? (
-              <SmileyGroupPanel onPick={onPickEmoji} onSendKul={onSendKul} onBackspace={onBackspace} />
+              <SmileyGroupPanel
+                onPick={onPickEmoji}
+                onSendKul={onSendKul}
+                onBackspace={onBackspace}
+              />
             ) : (
               <SmileyPanel onPick={onPickEmoji} onBackspace={onBackspace} />
             ))}
-          {openTab === 'emoji' && <EmojiPanel onPick={onPickEmoji} onBackspace={onBackspace} />}
+          {openTab === 'emoji' && (
+            <EmojiPanel onPick={onPickEmoji} onBackspace={onBackspace} />
+          )}
           {openTab === 'kul' && <KulPanel onSendKul={onSendKul} />}
           {openTab === 'camera' && <CameraPanel onCapture={onPickImage} />}
           {openTab === 'photo' && <PhotoPanel onPickImage={onPickImage} />}
-          {openTab === 'voice' && <VoicePanel onRecorded={onRecorded ?? (() => undefined)} />}
+          {openTab === 'voice' && (
+            <VoicePanel onRecorded={onRecorded ?? (() => undefined)} />
+          )}
           {openTab === 'more' && <MorePanel onSend={onSend} />}
         </div>
       )}

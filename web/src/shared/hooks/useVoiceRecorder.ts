@@ -21,12 +21,18 @@ export interface VoiceRecorder {
 function pickMimeType(): string {
   const candidates = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4'];
   for (const type of candidates) {
-    if (typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported(type)) return type;
+    if (
+      typeof MediaRecorder !== 'undefined' &&
+      MediaRecorder.isTypeSupported(type)
+    )
+      return type;
   }
   return '';
 }
 
-export function useVoiceRecorder(onError?: (error: VoiceRecorderError) => void): VoiceRecorder {
+export function useVoiceRecorder(
+  onError?: (error: VoiceRecorderError) => void
+): VoiceRecorder {
   const [isRecording, setIsRecording] = useState(false);
   const [elapsedMs, setElapsedMs] = useState(0);
 
@@ -38,7 +44,9 @@ export function useVoiceRecorder(onError?: (error: VoiceRecorderError) => void):
   const timerRef = useRef<number | null>(null);
   const cancelledRef = useRef(false);
   const resultRef = useRef<VoiceRecording | null>(null);
-  const pendingResolveRef = useRef<((value: VoiceRecording | null) => void) | null>(null);
+  const pendingResolveRef = useRef<
+    ((value: VoiceRecording | null) => void) | null
+  >(null);
 
   const cleanup = useCallback(() => {
     if (timerRef.current != null) {
@@ -72,7 +80,9 @@ export function useVoiceRecorder(onError?: (error: VoiceRecorderError) => void):
 
     try {
       const mimeType = pickMimeType();
-      const recorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+      const recorder = mimeType
+        ? new MediaRecorder(stream, { mimeType })
+        : new MediaRecorder(stream);
       chunksRef.current = [];
       cancelledRef.current = false;
       resultRef.current = null;
@@ -82,10 +92,16 @@ export function useVoiceRecorder(onError?: (error: VoiceRecorderError) => void):
         if (event.data.size > 0) chunksRef.current.push(event.data);
       };
       recorder.onstop = () => {
-        const cleanType = (recorder.mimeType || 'audio/webm').split(';')[0] ?? 'audio/webm';
+        const cleanType =
+          (recorder.mimeType || 'audio/webm').split(';')[0] ?? 'audio/webm';
         const blob = new Blob(chunksRef.current, { type: cleanType });
-        const duration = Math.round((stoppedAtRef.current - startAtRef.current) / 1000);
-        const valid = !cancelledRef.current && blob.size > 0 && duration >= MIN_DURATION_SEC;
+        const duration = Math.round(
+          (stoppedAtRef.current - startAtRef.current) / 1000
+        );
+        const valid =
+          !cancelledRef.current &&
+          blob.size > 0 &&
+          duration >= MIN_DURATION_SEC;
         const result = valid ? { blob, duration } : null;
         cleanup();
         if (pendingResolveRef.current != null) {

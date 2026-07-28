@@ -17,7 +17,18 @@ import {
   type SmileyInputHandle,
   type ListOption,
 } from '@components';
-import { chatFriendActionLabel, colorForName, compressImageForUpload, formatLastActive, ImageTooLargeError, isSameDay, kulToken, parseMessageMetadata, SmileyText, toast } from '@lib';
+import {
+  chatFriendActionLabel,
+  colorForName,
+  compressImageForUpload,
+  formatLastActive,
+  ImageTooLargeError,
+  isSameDay,
+  kulToken,
+  parseMessageMetadata,
+  SmileyText,
+  toast,
+} from '@lib';
 import moreIcon from '@/assets/icons/chat/ic_more_white.png';
 import likeIcon from '@/assets/icons/chat/smiley_35.png';
 import replyActionIcon from '@/assets/icons/me/ic_action_reply_gray.png';
@@ -101,7 +112,9 @@ export function ChatConversationView({
   const loadMoreMessages = useChatStore((s) => s.loadMoreMessages);
   const currentConversationId = useChatStore((s) => s.currentConversationId);
   const conversationSeen = useChatStore((s) => {
-    const conversation = s.conversations.find((item) => item.id === s.currentConversationId);
+    const conversation = s.conversations.find(
+      (item) => item.id === s.currentConversationId
+    );
     if (conversation == null) return false;
     if (!conversation.isLastMessageFromMe) return true;
     return conversation.seen;
@@ -114,7 +127,10 @@ export function ChatConversationView({
   const [transferKenOpen, setTransferKenOpen] = useState(false);
   const [tradingVipOpen, setTradingVipOpen] = useState(false);
   const [transferVipDaysOpen, setTransferVipDaysOpen] = useState(false);
-  const [pendingAudio, setPendingAudio] = useState<{ blob: Blob; duration: number } | null>(null);
+  const [pendingAudio, setPendingAudio] = useState<{
+    blob: Blob;
+    duration: number;
+  } | null>(null);
   const [pendingImage, setPendingImage] = useState<PendingImage | null>(null);
   const [actionTarget, setActionTarget] = useState<{
     message: ChatMessage;
@@ -125,9 +141,10 @@ export function ChatConversationView({
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const openViewer = useMediaViewerStore((s) => s.openViewer);
-  const [profileTarget, setProfileTarget] = useState<{ username: string; color: string } | null>(
-    null
-  );
+  const [profileTarget, setProfileTarget] = useState<{
+    username: string;
+    color: string;
+  } | null>(null);
   const [now, setNow] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const composerAreaRef = useRef<HTMLDivElement>(null);
@@ -159,13 +176,16 @@ export function ChatConversationView({
   }, [pendingImage]);
   useEffect(
     () => () => {
-      if (pendingImageRef.current != null) URL.revokeObjectURL(pendingImageRef.current.url);
+      if (pendingImageRef.current != null)
+        URL.revokeObjectURL(pendingImageRef.current.url);
     },
     []
   );
 
   const lastActiveText =
-    now != null && !online && !peerTyping ? formatLastActive(t, lastActiveAt, now) : undefined;
+    now != null && !online && !peerTyping
+      ? formatLastActive(t, lastActiveAt, now)
+      : undefined;
 
   const peerId = peerProfile?.id ?? '';
 
@@ -174,14 +194,15 @@ export function ChatConversationView({
     [messages, myId]
   );
 
-  const { scrollRef, handleScroll, pin, unpin, scrollToBottomIfPinned } = useStickyScroll({
-    count: bubbles.length,
-    lastId: bubbles[bubbles.length - 1]?.id ?? null,
-    hasMore,
-    loadingMore,
-    onLoadMore: loadMoreMessages,
-    loadMoreAtTop: 0,
-  });
+  const { scrollRef, handleScroll, pin, unpin, scrollToBottomIfPinned } =
+    useStickyScroll({
+      count: bubbles.length,
+      lastId: bubbles[bubbles.length - 1]?.id ?? null,
+      hasMore,
+      loadingMore,
+      onLoadMore: loadMoreMessages,
+      loadMoreAtTop: 0,
+    });
 
   const {
     anchorId: peerCardAnchorId,
@@ -206,7 +227,9 @@ export function ChatConversationView({
     return null;
   }, [bubbles]);
 
-  const [activeConversationId, setActiveConversationId] = useState(currentConversationId);
+  const [activeConversationId, setActiveConversationId] = useState(
+    currentConversationId
+  );
   if (activeConversationId !== currentConversationId) {
     setActiveConversationId(currentConversationId);
     setPendingAudio(null);
@@ -218,7 +241,8 @@ export function ChatConversationView({
 
   useEffect(() => {
     return () => {
-      if (highlightTimerRef.current != null) clearTimeout(highlightTimerRef.current);
+      if (highlightTimerRef.current != null)
+        clearTimeout(highlightTimerRef.current);
     };
   }, []);
 
@@ -271,7 +295,9 @@ export function ChatConversationView({
   }
 
   function scrollToMessage(id: string) {
-    const element = scrollRef.current?.querySelector(`[data-message-id="${CSS.escape(id)}"]`);
+    const element = scrollRef.current?.querySelector(
+      `[data-message-id="${CSS.escape(id)}"]`
+    );
     if (element == null) {
       toast.error(t('chat.replyNotFound'));
       return;
@@ -279,7 +305,8 @@ export function ChatConversationView({
     unpin();
     element.scrollIntoView({ behavior: 'smooth', block: 'center' });
     setHighlightedId(id);
-    if (highlightTimerRef.current != null) clearTimeout(highlightTimerRef.current);
+    if (highlightTimerRef.current != null)
+      clearTimeout(highlightTimerRef.current);
     highlightTimerRef.current = setTimeout(() => setHighlightedId(null), 1500);
   }
 
@@ -296,13 +323,28 @@ export function ChatConversationView({
     const abilities = chatMessageAbilities(message, blocked);
     const actions: MessageSheetAction[] = [];
     if (abilities.canReply) {
-      actions.push({ key: 'reply', label: t('chat.actionReply'), icon: replyActionIcon, onSelect: () => startReply(message) });
+      actions.push({
+        key: 'reply',
+        label: t('chat.actionReply'),
+        icon: replyActionIcon,
+        onSelect: () => startReply(message),
+      });
     }
     if (abilities.canCopy) {
-      actions.push({ key: 'copy', label: t('chat.actionCopy'), icon: copyActionIcon, onSelect: () => void copyMessage(message.text ?? '') });
+      actions.push({
+        key: 'copy',
+        label: t('chat.actionCopy'),
+        icon: copyActionIcon,
+        onSelect: () => void copyMessage(message.text ?? ''),
+      });
     }
     if (abilities.canEdit) {
-      actions.push({ key: 'edit', label: t('chat.actionEdit'), icon: editActionIcon, onSelect: () => startEdit(message) });
+      actions.push({
+        key: 'edit',
+        label: t('chat.actionEdit'),
+        icon: editActionIcon,
+        onSelect: () => startEdit(message),
+      });
     }
     if (abilities.canDelete) {
       actions.push({
@@ -338,7 +380,11 @@ export function ChatConversationView({
         return { id, file: prepared, url };
       });
     } catch (error) {
-      toast.error(error instanceof ImageTooLargeError ? t('chat.imageTooLarge') : t('chat.imageError'));
+      toast.error(
+        error instanceof ImageTooLargeError
+          ? t('chat.imageTooLarge')
+          : t('chat.imageError')
+      );
     }
   }
 
@@ -369,11 +415,13 @@ export function ChatConversationView({
   const canViewProfile = username != null && username !== '';
 
   function openPeerProfile() {
-    if (username != null && username !== '') setProfileTarget({ username, color });
+    if (username != null && username !== '')
+      setProfileTarget({ username, color });
   }
 
   function openMentionProfile(nick: string) {
-    if (nick !== '') setProfileTarget({ username: nick, color: colorForName(nick) });
+    if (nick !== '')
+      setProfileTarget({ username: nick, color: colorForName(nick) });
   }
 
   function showPeerAvatar() {
@@ -384,12 +432,16 @@ export function ChatConversationView({
   async function handleBlock() {
     setBlockOpen(false);
     const ok = await blockPeer();
-    toast[ok ? 'success' : 'error'](ok ? t('chat.blockDone', { name }) : t('chat.actionError'));
+    toast[ok ? 'success' : 'error'](
+      ok ? t('chat.blockDone', { name }) : t('chat.actionError')
+    );
   }
 
   async function handleUnblock() {
     const ok = await unblockPeer();
-    toast[ok ? 'success' : 'error'](ok ? t('chat.unblockDone', { name }) : t('chat.actionError'));
+    toast[ok ? 'success' : 'error'](
+      ok ? t('chat.unblockDone', { name }) : t('chat.actionError')
+    );
   }
 
   async function handleFriendAction() {
@@ -411,16 +463,34 @@ export function ChatConversationView({
   const friendLabel = chatFriendActionLabel(t, blockStatus);
 
   const menuOptions: ListOption[] = [
-    { key: 'make-friend', label: friendLabel, onSelect: () => void handleFriendAction() },
+    {
+      key: 'make-friend',
+      label: friendLabel,
+      onSelect: () => void handleFriendAction(),
+    },
     {
       key: 'view-me',
       label: t('chat.menuViewMe'),
-      onSelect: () => (canViewProfile ? openPeerProfile() : toast.info(t('chat.comingSoon'))),
+      onSelect: () =>
+        canViewProfile ? openPeerProfile() : toast.info(t('chat.comingSoon')),
     },
     blockedByMe
-      ? { key: 'unblock', label: t('chat.menuUnblock'), onSelect: () => void handleUnblock() }
-      : { key: 'block', label: t('chat.menuBlock'), danger: true, onSelect: () => setBlockOpen(true) },
-    { key: 'chat-group', label: t('chat.menuChatGroup'), onSelect: () => toast.info(t('chat.comingSoon')) },
+      ? {
+          key: 'unblock',
+          label: t('chat.menuUnblock'),
+          onSelect: () => void handleUnblock(),
+        }
+      : {
+          key: 'block',
+          label: t('chat.menuBlock'),
+          danger: true,
+          onSelect: () => setBlockOpen(true),
+        },
+    {
+      key: 'chat-group',
+      label: t('chat.menuChatGroup'),
+      onSelect: () => toast.info(t('chat.comingSoon')),
+    },
   ];
 
   const peerCardEl =
@@ -448,7 +518,7 @@ export function ChatConversationView({
             ? t('chat.typing', { name })
             : online
               ? t('chat.statusActive')
-              : lastActiveText ?? ''
+              : (lastActiveText ?? '')
         }
         onBack={onClose}
         left={<Avatar name={name} color={color} src={avatar} size={32} />}
@@ -484,7 +554,8 @@ export function ChatConversationView({
             {bubbles.map((message, index) => {
               const prev = bubbles[index - 1];
               const showDate =
-                !!message.createdAt && !isSameDay(prev?.createdAt ?? '', message.createdAt);
+                !!message.createdAt &&
+                !isSameDay(prev?.createdAt ?? '', message.createdAt);
               return (
                 <Fragment key={message.key}>
                   {showDate && <DateSeparator iso={message.createdAt ?? ''} />}
@@ -498,7 +569,9 @@ export function ChatConversationView({
                     isLastOwn={message.id === lastOwnId}
                     seen={conversationSeen}
                     highlighted={message.id === highlightedId}
-                    onOpenActions={(message, anchor) => setActionTarget({ message, anchor })}
+                    onOpenActions={(message, anchor) =>
+                      setActionTarget({ message, anchor })
+                    }
                     onOpenProfile={canViewProfile ? openPeerProfile : undefined}
                     onMention={openMentionProfile}
                     onQuoteClick={scrollToMessage}
@@ -526,194 +599,216 @@ export function ChatConversationView({
 
       {blocked ? (
         <div className="flex shrink-0 items-center justify-center gap-3 border-t border-black/12 bg-white px-4 py-3 text-center text-sm text-black/54">
-          <span>{blockedByMe ? t('chat.blockedByMe') : t('chat.blockedByThem')}</span>
+          <span>
+            {blockedByMe ? t('chat.blockedByMe') : t('chat.blockedByThem')}
+          </span>
           {blockedByMe && (
-            <ActionButton variant="outline" onClick={() => void handleUnblock()}>
+            <ActionButton
+              variant="outline"
+              onClick={() => void handleUnblock()}
+            >
               {t('chat.unblock')}
             </ActionButton>
           )}
         </div>
       ) : (
-       <>
-      {editing != null && (
-        <div className="flex items-center gap-2 border-t border-black/12 bg-ola-primary-light px-3 py-1.5 text-sm text-black/70">
-          <span className="flex-1">{t('chat.editingHint')}</span>
-          <button
-            type="button"
-            onClick={cancelEdit}
-            aria-label={t('dialog.cancel')}
-            className="px-2 text-base text-black/54"
-          >
-            ✕
-          </button>
-        </div>
-      )}
-
-      {editing == null && replyTarget != null && (
-        <div className="flex shrink-0 items-center gap-2 border-t border-black/12 bg-black/3 px-3 py-1.5">
-          <span className="h-8 w-0.5 shrink-0 rounded bg-ola-primary" />
-          {replyTarget.type === 'image' && (parseMessageMetadata(replyTarget.metadata).url ?? '') !== '' && (
-            <img
-              src={parseMessageMetadata(replyTarget.metadata).url}
-              alt=""
-              className="h-8 w-8 shrink-0 rounded object-cover"
-            />
+        <>
+          {editing != null && (
+            <div className="flex items-center gap-2 border-t border-black/12 bg-ola-primary-light px-3 py-1.5 text-sm text-black/70">
+              <span className="flex-1">{t('chat.editingHint')}</span>
+              <button
+                type="button"
+                onClick={cancelEdit}
+                aria-label={t('dialog.cancel')}
+                className="px-2 text-base text-black/54"
+              >
+                ✕
+              </button>
+            </div>
           )}
-          <span className="min-w-0 flex-1">
-            <span className="block truncate text-xs font-semibold text-ola-primary">
-              {t('chat.replyingTo', { name: replyTarget.senderName ?? '' })}
-            </span>
-            <span className="block truncate text-xs text-black/54">
-              <SmileyText
-                text={chatQuoteExcerpt(t, { type: replyTarget.type, excerpt: replyTarget.content })}
-              />
-            </span>
-          </span>
-          <button
-            type="button"
-            aria-label={t('dialog.cancel')}
-            onClick={clearReplyTarget}
-            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-lg text-black/54 hover:bg-black/5"
-          >
-            ×
-          </button>
-        </div>
-      )}
 
-      {pendingAudio != null && (
-        <VoicePreviewBar
-          blob={pendingAudio.blob}
-          duration={pendingAudio.duration}
-          onSend={() => {
-            void sendAudio(pendingAudio.blob, pendingAudio.duration);
-            setPendingAudio(null);
-          }}
-          onDiscard={() => setPendingAudio(null)}
-        />
-      )}
-
-      <div ref={composerAreaRef} className="shrink-0">
-      <form
-        onSubmit={(event) => {
-          event.preventDefault();
-          submitComposer();
-        }}
-        className="flex shrink-0 items-end gap-1 border-t border-black/12 bg-white px-2 py-1.5"
-      >
-        {pendingImage != null ? (
-          <div className="flex min-h-9 flex-1 items-center py-1">
-            <div className="relative shrink-0">
-              <img src={pendingImage.url} alt="" className="h-11 w-11 rounded-lg object-cover" />
+          {editing == null && replyTarget != null && (
+            <div className="flex shrink-0 items-center gap-2 border-t border-black/12 bg-black/3 px-3 py-1.5">
+              <span className="h-8 w-0.5 shrink-0 rounded bg-ola-primary" />
+              {replyTarget.type === 'image' &&
+                (parseMessageMetadata(replyTarget.metadata).url ?? '') !==
+                  '' && (
+                  <img
+                    src={parseMessageMetadata(replyTarget.metadata).url}
+                    alt=""
+                    className="h-8 w-8 shrink-0 rounded object-cover"
+                  />
+                )}
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-xs font-semibold text-ola-primary">
+                  {t('chat.replyingTo', { name: replyTarget.senderName ?? '' })}
+                </span>
+                <span className="block truncate text-xs text-black/54">
+                  <SmileyText
+                    text={chatQuoteExcerpt(t, {
+                      type: replyTarget.type,
+                      excerpt: replyTarget.content,
+                    })}
+                  />
+                </span>
+              </span>
               <button
                 type="button"
                 aria-label={t('dialog.cancel')}
-                onClick={clearPendingImage}
-                className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-xs leading-none text-white"
+                onClick={clearReplyTarget}
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-lg text-black/54 hover:bg-black/5"
               >
                 ×
               </button>
             </div>
-          </div>
-        ) : (
-          <SmileyInput
-            ref={composerRef}
-            value={draft}
-            onChange={handleDraftChange}
-            onEnter={submitComposer}
-            onFocus={() => setOpenTab(null)}
-            onImagePaste={(files) => void addImageFile(files)}
-            placeholder={t('chat.messageInputPlaceholder', { name })}
-            multiline
-            className="max-h-32 min-h-9 flex-1 overflow-y-auto bg-transparent px-2 py-1.5 text-base text-black/87"
-          />
-        )}
-        {isTyping || pendingImage != null ? (
-          <button
-            type="submit"
-            className="h-9 shrink-0 rounded-full bg-ola-primary px-4 text-sm font-semibold text-white shadow-sm transition active:scale-95"
-          >
-            {editing != null ? t('chat.actionSave') : t('chat.send')}
-          </button>
-        ) : (
-          <button
-            type="button"
-            aria-label={t('chat.like')}
-            {...likeLongPress}
-            onPointerDown={(event) => {
-              suppressLikeClick.current = false;
-              likeLongPress.onPointerDown(event);
-            }}
-            onClick={() => {
-              if (suppressLikeClick.current) {
-                suppressLikeClick.current = false;
-                return;
+          )}
+
+          {pendingAudio != null && (
+            <VoicePreviewBar
+              blob={pendingAudio.blob}
+              duration={pendingAudio.duration}
+              onSend={() => {
+                void sendAudio(pendingAudio.blob, pendingAudio.duration);
+                setPendingAudio(null);
+              }}
+              onDiscard={() => setPendingAudio(null)}
+            />
+          )}
+
+          <div ref={composerAreaRef} className="shrink-0">
+            <form
+              onSubmit={(event) => {
+                event.preventDefault();
+                submitComposer();
+              }}
+              className="flex shrink-0 items-end gap-1 border-t border-black/12 bg-white px-2 py-1.5"
+            >
+              {pendingImage != null ? (
+                <div className="flex min-h-9 flex-1 items-center py-1">
+                  <div className="relative shrink-0">
+                    <img
+                      src={pendingImage.url}
+                      alt=""
+                      className="h-11 w-11 rounded-lg object-cover"
+                    />
+                    <button
+                      type="button"
+                      aria-label={t('dialog.cancel')}
+                      onClick={clearPendingImage}
+                      className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-xs leading-none text-white"
+                    >
+                      ×
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <SmileyInput
+                  ref={composerRef}
+                  value={draft}
+                  onChange={handleDraftChange}
+                  onEnter={submitComposer}
+                  onFocus={() => setOpenTab(null)}
+                  onImagePaste={(files) => void addImageFile(files)}
+                  placeholder={t('chat.messageInputPlaceholder', { name })}
+                  multiline
+                  className="max-h-32 min-h-9 flex-1 overflow-y-auto bg-transparent px-2 py-1.5 text-base text-black/87"
+                />
+              )}
+              {isTyping || pendingImage != null ? (
+                <button
+                  type="submit"
+                  className="h-9 shrink-0 rounded-full bg-ola-primary px-4 text-sm font-semibold text-white shadow-sm transition active:scale-95"
+                >
+                  {editing != null ? t('chat.actionSave') : t('chat.send')}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  aria-label={t('chat.like')}
+                  {...likeLongPress}
+                  onPointerDown={(event) => {
+                    suppressLikeClick.current = false;
+                    likeLongPress.onPointerDown(event);
+                  }}
+                  onClick={() => {
+                    if (suppressLikeClick.current) {
+                      suppressLikeClick.current = false;
+                      return;
+                    }
+                    void sendText('(y)');
+                  }}
+                  className="flex h-9 w-9 select-none items-center justify-center"
+                >
+                  <img
+                    src={likeIcon}
+                    alt=""
+                    className="h-7 w-7 object-contain"
+                  />
+                </button>
+              )}
+            </form>
+
+            <AttachmentBar
+              tabs={['smiley', 'camera', 'photo', 'voice', 'more']}
+              groupSmileyTabs
+              openTab={openTab}
+              onToggleTab={(tab) =>
+                setOpenTab((current) => (current === tab ? null : tab))
               }
-              void sendText('(y)');
-            }}
-            className="flex h-9 w-9 select-none items-center justify-center"
-          >
-            <img src={likeIcon} alt="" className="h-7 w-7 object-contain" />
-          </button>
-        )}
-      </form>
+              onPickEmoji={(emoji) =>
+                composerRef.current?.insertCode(emoji, true, false)
+              }
+              onBackspace={() => composerRef.current?.backspace()}
+              onPickImage={() => fileInputRef.current?.click()}
+              onSendKul={(index) => {
+                void sendText(kulToken(index));
+                setOpenTab(null);
+              }}
+              onSend={(payload) => {
+                if (payload.kind === 'ken') {
+                  setOpenTab(null);
+                  if (peerId === '') {
+                    toast.error(t('chat.actionError'));
+                    return;
+                  }
+                  setTransferKenOpen(true);
+                  return;
+                }
+                if (payload.kind === 'vip') {
+                  setOpenTab(null);
+                  if (peerId === '') {
+                    toast.error(t('chat.actionError'));
+                    return;
+                  }
+                  setTradingVipOpen(true);
+                  return;
+                }
+                if (payload.kind === 'vipDays') {
+                  setOpenTab(null);
+                  if (peerId === '') {
+                    toast.error(t('chat.actionError'));
+                    return;
+                  }
+                  setTransferVipDaysOpen(true);
+                  return;
+                }
+                toast.info(t('chat.comingSoon'));
+              }}
+              onRecorded={(blob, duration) => {
+                setPendingAudio({ blob, duration });
+                setOpenTab(null);
+              }}
+            />
 
-      <AttachmentBar
-        tabs={['smiley', 'camera', 'photo', 'voice', 'more']}
-        groupSmileyTabs
-        openTab={openTab}
-        onToggleTab={(tab) => setOpenTab((current) => (current === tab ? null : tab))}
-        onPickEmoji={(emoji) => composerRef.current?.insertCode(emoji, true, false)}
-        onBackspace={() => composerRef.current?.backspace()}
-        onPickImage={() => fileInputRef.current?.click()}
-        onSendKul={(index) => {
-          void sendText(kulToken(index));
-          setOpenTab(null);
-        }}
-        onSend={(payload) => {
-          if (payload.kind === 'ken') {
-            setOpenTab(null);
-            if (peerId === '') {
-              toast.error(t('chat.actionError'));
-              return;
-            }
-            setTransferKenOpen(true);
-            return;
-          }
-          if (payload.kind === 'vip') {
-            setOpenTab(null);
-            if (peerId === '') {
-              toast.error(t('chat.actionError'));
-              return;
-            }
-            setTradingVipOpen(true);
-            return;
-          }
-          if (payload.kind === 'vipDays') {
-            setOpenTab(null);
-            if (peerId === '') {
-              toast.error(t('chat.actionError'));
-              return;
-            }
-            setTransferVipDaysOpen(true);
-            return;
-          }
-          toast.info(t('chat.comingSoon'));
-        }}
-        onRecorded={(blob, duration) => {
-          setPendingAudio({ blob, duration });
-          setOpenTab(null);
-        }}
-      />
-
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={handleFileChange}
-      />
-      </div>
-       </>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleFileChange}
+            />
+          </div>
+        </>
       )}
 
       {actionTarget != null && (
@@ -726,7 +821,12 @@ export function ChatConversationView({
         />
       )}
 
-      <ListOptionDialog open={menuOpen} title={name} options={menuOptions} onClose={() => setMenuOpen(false)} />
+      <ListOptionDialog
+        open={menuOpen}
+        title={name}
+        options={menuOptions}
+        onClose={() => setMenuOpen(false)}
+      />
       <ConfirmDialog
         open={deleteTarget != null}
         danger
@@ -769,7 +869,13 @@ export function ChatConversationView({
         <TradingVipDialog
           open
           onClose={() => setTradingVipOpen(false)}
-          receiver={{ id: peerId, name, username, avatar: peerProfile?.avatar ?? avatar, color }}
+          receiver={{
+            id: peerId,
+            name,
+            username,
+            avatar: peerProfile?.avatar ?? avatar,
+            color,
+          }}
         />
       )}
 
@@ -777,7 +883,13 @@ export function ChatConversationView({
         <TransferVipDaysDialog
           open
           onClose={() => setTransferVipDaysOpen(false)}
-          receiver={{ id: peerId, name, username, avatar: peerProfile?.avatar ?? avatar, color }}
+          receiver={{
+            id: peerId,
+            name,
+            username,
+            avatar: peerProfile?.avatar ?? avatar,
+            color,
+          }}
         />
       )}
 
@@ -787,10 +899,11 @@ export function ChatConversationView({
           username={profileTarget.username}
           color={profileTarget.color}
           onClose={() => setProfileTarget(null)}
-          onOpenFriend={(friend) => setProfileTarget({ username: friend.name, color: friend.color })}
+          onOpenFriend={(friend) =>
+            setProfileTarget({ username: friend.name, color: friend.color })
+          }
         />
       )}
-
     </FullScreenOverlay>
   );
 }

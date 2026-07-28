@@ -1,6 +1,15 @@
 import { create } from 'zustand';
 import i18n from 'i18next';
-import { blobWithType, parseMessageMetadata, randomUuid, releaseUploadPreviewUrl, toApiError, toast, uploadPreviewUrl, type UploadFile } from '../../lib';
+import {
+  blobWithType,
+  parseMessageMetadata,
+  randomUuid,
+  releaseUploadPreviewUrl,
+  toApiError,
+  toast,
+  uploadPreviewUrl,
+  type UploadFile,
+} from '../../lib';
 import {
   buildOptimisticMessage,
   markById,
@@ -15,7 +24,14 @@ import {
   SocketService,
   UserService,
 } from '../../services';
-import type { ChatReactionNotice, Conversation, Message, PublicProfile, ReactionType, RelationshipInfo } from '../../types';
+import type {
+  ChatReactionNotice,
+  Conversation,
+  Message,
+  PublicProfile,
+  ReactionType,
+  RelationshipInfo,
+} from '../../types';
 import { registerOnLogout } from '../authStore';
 import { upsertConversation } from './chatHelpers';
 import { clearMarkReadTimers, clearTypingTimers, registerChatRealtime } from './chatRealtime';
@@ -61,7 +77,10 @@ export interface ChatState {
   openConversation: (conversationId: string) => Promise<void>;
   startDirect: (recipientId: string) => Promise<Conversation | null>;
   closeConversation: () => void;
-  hideConversation: (conversationId: string, options?: { clearMessages?: boolean }) => Promise<void>;
+  hideConversation: (
+    conversationId: string,
+    options?: { clearMessages?: boolean }
+  ) => Promise<void>;
   loadMoreMessages: () => Promise<void>;
   sendText: (content: string) => Promise<void>;
   sendFirstToDraft: (content: string) => Promise<void>;
@@ -111,7 +130,9 @@ export const useChatStore = create<ChatState>((set, get) => {
 
   const peerUserId = (): string => {
     const state = get();
-    const conversation = state.conversations.find((item) => item.id === state.currentConversationId);
+    const conversation = state.conversations.find(
+      (item) => item.id === state.currentConversationId
+    );
     return conversation?.otherUser?.id ?? state.draftRecipient?.id ?? '';
   };
 
@@ -427,7 +448,12 @@ export const useChatStore = create<ChatState>((set, get) => {
             const imageBlob = blobWithType(blob, 'image/jpeg');
             saved = await MessageService.sendImage(conversationId, imageBlob, clientMsgId, 'image');
           } else {
-            saved = await MessageService.sendAudio(conversationId, blob, meta.duration ?? 0, clientMsgId);
+            saved = await MessageService.sendAudio(
+              conversationId,
+              blob,
+              meta.duration ?? 0,
+              clientMsgId
+            );
           }
         }
         set((state) => ({
@@ -543,7 +569,9 @@ export const useChatStore = create<ChatState>((set, get) => {
           const userId = peerUserId();
           if (userId === '') return 'none';
           const relationship = await RelationshipService.sendRequest(userId);
-          set({ peerRelationship: { ...base, status: 'pending_outgoing', requestId: relationship.id } });
+          set({
+            peerRelationship: { ...base, status: 'pending_outgoing', requestId: relationship.id },
+          });
           return 'request';
         }
         if (status === 'pending_outgoing' && requestId !== '') {

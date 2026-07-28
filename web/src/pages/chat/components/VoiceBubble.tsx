@@ -11,7 +11,12 @@ interface VoiceBubbleProps {
   isOut: boolean;
 }
 
-export function VoiceBubble({ url, duration, durationSec, isOut }: VoiceBubbleProps) {
+export function VoiceBubble({
+  url,
+  duration,
+  durationSec,
+  isOut,
+}: VoiceBubbleProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [playing, setPlaying] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -19,7 +24,9 @@ export function VoiceBubble({ url, duration, durationSec, isOut }: VoiceBubblePr
 
   const baseClass = isOut ? 'bg-ola-primary' : 'bg-ola-primary-light';
   const fillClass = isOut ? 'bg-ola-primary-dark' : 'bg-ola-primary';
-  const badgeClass = isOut ? 'bg-white text-ola-primary-darker' : 'bg-[#8f8f8f] text-white';
+  const badgeClass = isOut
+    ? 'bg-white text-ola-primary-darker'
+    : 'bg-[#8f8f8f] text-white';
   const iconColor = isOut ? '#ffffff' : '#8f8f8f';
   const playSrc = isOut ? playMediaIcon : playMediaGrayIcon;
   const pauseSrc = isOut ? pauseMediaIcon : pauseMediaGrayIcon;
@@ -51,7 +58,11 @@ export function VoiceBubble({ url, duration, durationSec, isOut }: VoiceBubblePr
             style={{ borderColor: iconColor, borderTopColor: 'transparent' }}
           />
         ) : (
-          <img src={playing ? pauseSrc : playSrc} alt="" className="h-5 w-5 object-contain" />
+          <img
+            src={playing ? pauseSrc : playSrc}
+            alt=""
+            className="h-5 w-5 object-contain"
+          />
         )}
       </button>
       <span className="relative h-0.5 flex-1 rounded-full bg-white" />
@@ -79,7 +90,10 @@ export function VoiceBubble({ url, duration, durationSec, isOut }: VoiceBubblePr
         }}
         onTimeUpdate={(event) => {
           const el = event.currentTarget;
-          const total = Number.isFinite(el.duration) && el.duration > 0 ? el.duration : durationSec ?? 0;
+          const total =
+            Number.isFinite(el.duration) && el.duration > 0
+              ? el.duration
+              : (durationSec ?? 0);
           setProgress(total > 0 ? Math.min(1, el.currentTime / total) : 0);
         }}
       />

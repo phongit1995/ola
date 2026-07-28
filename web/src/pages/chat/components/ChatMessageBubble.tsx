@@ -33,10 +33,18 @@ function ChatQuoteBlock({ replyTo, onQuoteClick }: ChatQuoteBlockProps) {
       className="mb-1 block w-full rounded border-l-2 border-[#7cb342] bg-black/5 py-0.5 pl-2 pr-1 text-left"
     >
       <span className="block truncate text-xs font-semibold text-black/60">
-        {replyTo.senderName != null && replyTo.senderName !== '' ? `@${replyTo.senderName}` : ''}
+        {replyTo.senderName != null && replyTo.senderName !== ''
+          ? `@${replyTo.senderName}`
+          : ''}
       </span>
       <span className="flex items-center gap-1 text-xs text-black/45">
-        {isImage && <img src={photoIcon} alt="" className="h-3.5 w-3.5 shrink-0 object-contain" />}
+        {isImage && (
+          <img
+            src={photoIcon}
+            alt=""
+            className="h-3.5 w-3.5 shrink-0 object-contain"
+          />
+        )}
         <span className="line-clamp-2">
           <SmileyText text={excerpt} />
         </span>
@@ -67,11 +75,17 @@ export function ChatMessageBubble({
   const groupCorners = isOut
     ? `${firstInGroup ? '' : 'rounded-tr-sm'} ${lastInGroup ? '' : 'rounded-br-sm'}`
     : `${firstInGroup ? '' : 'rounded-tl-sm'} ${lastInGroup ? '' : 'rounded-bl-sm'}`;
-  const bubbleBg = failed ? 'bg-[#f8d7d7]' : isOut ? 'bg-[#dcedc8]' : 'bg-white shadow-sm';
+  const bubbleBg = failed
+    ? 'bg-[#f8d7d7]'
+    : isOut
+      ? 'bg-[#dcedc8]'
+      : 'bg-white shadow-sm';
 
   const quotedWrap = (content: ReactNode) =>
     message.replyTo != null ? (
-      <div className={`max-w-[300px] rounded-2xl px-3 py-2 ${groupCorners} ${bubbleBg}`}>
+      <div
+        className={`max-w-[300px] rounded-2xl px-3 py-2 ${groupCorners} ${bubbleBg}`}
+      >
         <ChatQuoteBlock replyTo={message.replyTo} onQuoteClick={onQuoteClick} />
         {content}
       </div>
@@ -82,13 +96,17 @@ export function ChatMessageBubble({
   if (message.kind === 'text') {
     const kulImage = kulImageForText(message.text);
     if (kulImage != null) {
-      return quotedWrap(<img src={kulImage} alt="" className="h-30 w-auto object-contain" />);
+      return quotedWrap(
+        <img src={kulImage} alt="" className="h-30 w-auto object-contain" />
+      );
     }
   }
 
   switch (message.kind) {
     case 'sticker':
-      return <span className="px-1 text-6xl leading-none">{message.sticker}</span>;
+      return (
+        <span className="px-1 text-6xl leading-none">{message.sticker}</span>
+      );
 
     case 'image':
       return quotedWrap(
@@ -140,10 +158,14 @@ export function ChatMessageBubble({
       return (
         <div className="w-56 overflow-hidden rounded-lg bg-white shadow-sm">
           <div className="relative flex h-28 items-center justify-center bg-linear-to-br from-[#455A64] to-[#263238]">
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#FF0000] text-white">▶</span>
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#FF0000] text-white">
+              ▶
+            </span>
           </div>
           <div className="px-2 py-1.5">
-            <p className="truncate text-xs font-medium text-black/87">{message.youtubeTitle}</p>
+            <p className="truncate text-xs font-medium text-black/87">
+              {message.youtubeTitle}
+            </p>
             <p className="text-xs text-black/54">{message.youtubeDuration}</p>
           </div>
         </div>
@@ -151,25 +173,33 @@ export function ChatMessageBubble({
 
     case 'ken':
       return (
-        <div className={`flex items-center gap-2 rounded-2xl px-3 py-2 ${
-          isOut ? 'rounded-tr-sm' : 'rounded-tl-sm'
-        } ${surface}`}>
+        <div
+          className={`flex items-center gap-2 rounded-2xl px-3 py-2 ${
+            isOut ? 'rounded-tr-sm' : 'rounded-tl-sm'
+          } ${surface}`}
+        >
           <span className="flex h-8 w-8 items-center justify-center rounded-full bg-ola-primary">
             <img src={kenIcon} alt="" className="h-4 w-4 object-contain" />
           </span>
-          <span className="text-2xl font-bold text-ola-primary-darker">{message.kenAmount}</span>
+          <span className="text-2xl font-bold text-ola-primary-darker">
+            {message.kenAmount}
+          </span>
           <span className="text-sm text-black/54">{t('chat.kenLabel')}</span>
         </div>
       );
 
     case 'vip':
       return (
-        <div className={`flex items-center gap-2 rounded-2xl px-3 py-2 ${
-          isOut ? 'rounded-tr-sm' : 'rounded-tl-sm'
-        } ${surface}`}>
+        <div
+          className={`flex items-center gap-2 rounded-2xl px-3 py-2 ${
+            isOut ? 'rounded-tr-sm' : 'rounded-tl-sm'
+          } ${surface}`}
+        >
           <span className="text-2xl">🎁</span>
           <span className="text-sm font-medium text-ola-accent">
-            {message.vipDirection === 'received' ? t('chat.vipReceived') : t('chat.vipSent')}
+            {message.vipDirection === 'received'
+              ? t('chat.vipReceived')
+              : t('chat.vipSent')}
           </span>
         </div>
       );
@@ -180,7 +210,10 @@ export function ChatMessageBubble({
           className={`max-w-[300px] rounded-2xl px-3 py-2 text-base break-words text-black/87 ${groupCorners} ${bubbleBg}`}
         >
           {message.replyTo != null && (
-            <ChatQuoteBlock replyTo={message.replyTo} onQuoteClick={onQuoteClick} />
+            <ChatQuoteBlock
+              replyTo={message.replyTo}
+              onQuoteClick={onQuoteClick}
+            />
           )}
           {renderRichText(message.text ?? '', onMention ?? noop)}
         </div>
@@ -195,7 +228,12 @@ interface StrangerCardBubbleProps {
   onAddFriend: () => void;
 }
 
-export function StrangerCardBubble({ message, onClose, onBlock, onAddFriend }: StrangerCardBubbleProps) {
+export function StrangerCardBubble({
+  message,
+  onClose,
+  onBlock,
+  onAddFriend,
+}: StrangerCardBubbleProps) {
   const { t } = useTranslation();
   const card = message.stranger;
   if (card == null) return null;
@@ -207,12 +245,26 @@ export function StrangerCardBubble({ message, onClose, onBlock, onAddFriend }: S
           <Avatar name={card.name} color={card.color} size={56} />
           <div className="min-w-0 flex-1 pb-0.5">
             <div className="flex items-center gap-1">
-              <span className="truncate text-base font-medium text-black/87">{card.name}</span>
-              {card.verified && <img src={checkedIcon} alt="" className="h-4 w-4 object-contain" />}
+              <span className="truncate text-base font-medium text-black/87">
+                {card.name}
+              </span>
+              {card.verified && (
+                <img
+                  src={checkedIcon}
+                  alt=""
+                  className="h-4 w-4 object-contain"
+                />
+              )}
             </div>
-            <p className="text-xs text-black/54">{t('chat.strangerAge', { age: card.age })}</p>
-            <p className="text-xs text-black/54">{t('chat.strangerJoin', { year: card.joinYear })}</p>
-            <p className="text-xs text-black/54">{t('chat.strangerFans', { count: card.fans })}</p>
+            <p className="text-xs text-black/54">
+              {t('chat.strangerAge', { age: card.age })}
+            </p>
+            <p className="text-xs text-black/54">
+              {t('chat.strangerJoin', { year: card.joinYear })}
+            </p>
+            <p className="text-xs text-black/54">
+              {t('chat.strangerFans', { count: card.fans })}
+            </p>
           </div>
         </div>
       </div>
@@ -220,10 +272,18 @@ export function StrangerCardBubble({ message, onClose, onBlock, onAddFriend }: S
       <p className="px-3 pt-2 text-sm text-black/87">{card.status}</p>
 
       <div className="flex items-center justify-end gap-2 p-2">
-        <button type="button" onClick={onClose} className="px-3 py-1 text-sm text-black/54">
+        <button
+          type="button"
+          onClick={onClose}
+          className="px-3 py-1 text-sm text-black/54"
+        >
           {t('chat.strangerClose')}
         </button>
-        <button type="button" onClick={onBlock} className="px-3 py-1 text-sm text-black/54">
+        <button
+          type="button"
+          onClick={onBlock}
+          className="px-3 py-1 text-sm text-black/54"
+        >
           {t('chat.menuBlock')}
         </button>
         <button

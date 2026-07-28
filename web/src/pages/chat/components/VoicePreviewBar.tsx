@@ -13,7 +13,12 @@ interface VoicePreviewBarProps {
   onDiscard: () => void;
 }
 
-export function VoicePreviewBar({ blob, duration, onSend, onDiscard }: VoicePreviewBarProps) {
+export function VoicePreviewBar({
+  blob,
+  duration,
+  onSend,
+  onDiscard,
+}: VoicePreviewBarProps) {
   const { t } = useTranslation();
   const url = useMemo(() => URL.createObjectURL(blob), [blob]);
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -37,7 +42,11 @@ export function VoicePreviewBar({ blob, duration, onSend, onDiscard }: VoicePrev
         aria-label={t('chat.attachRecord')}
         className="flex h-9 w-9 shrink-0 items-center justify-center"
       >
-        <img src={playing ? pauseIcon : playIcon} alt="" className="h-6 w-6 object-contain" />
+        <img
+          src={playing ? pauseIcon : playIcon}
+          alt=""
+          className="h-6 w-6 object-contain"
+        />
       </button>
       <span className="relative h-1 flex-1 overflow-hidden rounded-full bg-black/15">
         <span
@@ -45,7 +54,9 @@ export function VoicePreviewBar({ blob, duration, onSend, onDiscard }: VoicePrev
           style={{ width: `${Math.round(progress * 100)}%` }}
         />
       </span>
-      <span className="shrink-0 text-xs text-black/54">{formatDuration(duration)}</span>
+      <span className="shrink-0 text-xs text-black/54">
+        {formatDuration(duration)}
+      </span>
       <button
         type="button"
         onClick={onDiscard}
@@ -75,7 +86,10 @@ export function VoicePreviewBar({ blob, duration, onSend, onDiscard }: VoicePrev
         }}
         onTimeUpdate={(event) => {
           const el = event.currentTarget;
-          const total = Number.isFinite(el.duration) && el.duration > 0 ? el.duration : duration;
+          const total =
+            Number.isFinite(el.duration) && el.duration > 0
+              ? el.duration
+              : duration;
           setProgress(total > 0 ? Math.min(1, el.currentTime / total) : 0);
         }}
       />
