@@ -401,7 +401,6 @@ export function ClanScreen({ handle, id, onClose, onOpenManage, onOpenMembers }:
           onToggleLike={(postId) => handleReaction(postId, 'like')}
           onToggleDislike={(postId) => handleReaction(postId, 'dislike')}
           onOpenProfile={openProfile}
-          onOpenLikers={(postId) => setLikersPostId(postId)}
           onCommentDelta={adjustCommentCount}
         />
       )}

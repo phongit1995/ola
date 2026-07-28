@@ -11,6 +11,7 @@ import { createTimeFormatter, formatDateDMY, isSameDay } from '@ola/shared/lib';
 import type { Post } from '@ola/shared/types';
 import { MePostCard } from './MePostCard';
 import { MeCommentItem } from './MeCommentItem';
+import { MeLikersDialog } from './MeLikersDialog';
 import {
   MeCommentComposer,
   type MeCommentComposerHandle,
@@ -25,7 +26,6 @@ interface MeCommentSheetProps {
   onToggleLike: (id: string) => void;
   onToggleDislike: (id: string) => void;
   onOpenProfile?: (nick: string, color: string) => void;
-  onOpenLikers?: (id: string) => void;
   onCommentDelta: (postId: string, delta: number) => void;
 }
 
@@ -50,7 +50,6 @@ function MeCommentSheetBody({
   onToggleLike,
   onToggleDislike,
   onOpenProfile,
-  onOpenLikers,
   onCommentDelta,
 }: MeCommentSheetProps) {
   const { t } = useTranslation();
@@ -58,6 +57,7 @@ function MeCommentSheetBody({
   const meId = useAuthStore(s => s.user?.id) ?? '';
   const composerRef = useRef<MeCommentComposerHandle>(null);
   const [viewer, setViewer] = useState<{ images: string[]; index: number } | null>(null);
+  const [likersPostId, setLikersPostId] = useState<string | null>(null);
 
   const {
     comments,
@@ -103,7 +103,7 @@ function MeCommentSheetBody({
             onToggleLike={onToggleLike}
             onToggleDislike={onToggleDislike}
             onOpenProfile={onOpenProfile}
-            onOpenLikers={onOpenLikers}
+            onOpenLikers={setLikersPostId}
             onOpenPhotos={(images, index) => setViewer({ images, index })}
           />
 
@@ -166,6 +166,14 @@ function MeCommentSheetBody({
         index={viewer?.index ?? 0}
         onClose={() => setViewer(null)}
       />
+
+      {likersPostId != null && (
+        <MeLikersDialog
+          postId={likersPostId}
+          onClose={() => setLikersPostId(null)}
+          onOpenProfile={onOpenProfile}
+        />
+      )}
     </>
   );
 }

@@ -6,6 +6,7 @@ import {
   Keyboard,
   NativeScrollEvent,
   NativeSyntheticEvent,
+  Platform,
   Pressable,
   ScrollView,
   Text,
@@ -126,6 +127,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [blockOpen, setBlockOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Message | null>(null);
+  const pendingDeleteTargetRef = useRef<Message | null>(null);
   const [actionTarget, setActionTarget] = useState<{
     message: Message;
     anchor: AnchorRect;
@@ -367,6 +369,12 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     push('success', t('chat.copied'));
   }
 
+  const openPendingDeleteDialog = useCallback(() => {
+    const target = pendingDeleteTargetRef.current;
+    pendingDeleteTargetRef.current = null;
+    if (target != null) setDeleteTarget(target);
+  }, []);
+
   function sheetActions(message: Message): MessageSheetAction[] {
     const abilities = chatMessageAbilities(message, myId, blocked);
     const actions: MessageSheetAction[] = [];
@@ -402,7 +410,9 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         label: t('chat.actionDelete'),
         icon: deleteActionIcon,
         destructive: true,
-        onSelect: () => setDeleteTarget(message),
+        onSelect: () => {
+          pendingDeleteTargetRef.current = message;
+        },
       });
     }
     return actions;
@@ -733,7 +743,9 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         onClose={() => {
           suspendRef.current = false;
           setActionTarget(null);
+          if (Platform.OS !== 'ios') requestAnimationFrame(openPendingDeleteDialog);
         }}
+        onDismiss={openPendingDeleteDialog}
       />
 
       <RoomReactionsDialog
