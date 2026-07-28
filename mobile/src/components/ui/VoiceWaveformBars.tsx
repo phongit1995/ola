@@ -34,15 +34,7 @@ export function VoiceWaveformBars({
     <View
       pointerEvents="none"
       className="h-7 flex-row items-center overflow-hidden"
-      style={
-        fluid
-          ? { flex: 1, justifyContent: 'space-between' }
-          : {
-              width: VOICE_WAVEFORM_WIDTH,
-              justifyContent: 'center',
-              gap: 2,
-            }
-      }
+      style={{ flex: 1, justifyContent: 'space-between' }}
     >
       {bars.map((level, index) => {
         const played = (index + 1) / bars.length <= progress;

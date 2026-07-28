@@ -13,6 +13,7 @@ import {
   buildOptimisticRoomImage,
   markRoomMessageByClientMsgId,
   markRoomMessageById,
+  mergeRoomMessageSnapshot,
   reconcileRoomServerMessage,
   withSenderVip,
   toRecord,
@@ -111,7 +112,9 @@ export const useRoomChatStore = create<RoomChatState>((set, get) => {
 
     const { ticket } = await RoomService.join(roomId);
     const ack = toRecord(
-      await socket.timeout(JOIN_ACK_TIMEOUT_MS).emitWithAck(ROOM_SOCKET_EVENTS.join, { roomId, ticket })
+      await socket
+        .timeout(JOIN_ACK_TIMEOUT_MS)
+        .emitWithAck(ROOM_SOCKET_EVENTS.join, { roomId, ticket })
     );
     if (get().activeRoom?.id !== roomId) return;
     if (!ack?.ok) {
@@ -124,13 +127,14 @@ export const useRoomChatStore = create<RoomChatState>((set, get) => {
       RoomService.members(roomId),
     ]);
     if (get().activeRoom?.id !== roomId) return;
-    set({
+    const snapshot = [...msgs.items].reverse().map(withSenderVip);
+    set((state) => ({
       status: 'joined',
-      messages: [...msgs.items].reverse().map(withSenderVip),
+      messages: mergeRoomMessageSnapshot(state.messages, snapshot),
       members: withVipTypeId(mem.items),
       memberCount: mem.total,
       hasMore: msgs.hasMore,
-    });
+    }));
   }
 
   SocketService.onReconnect(() => {
@@ -235,7 +239,9 @@ export const useRoomChatStore = create<RoomChatState>((set, get) => {
         const updated = await RoomService.toggleMessageReaction(room.id, messageId, type);
         if (get().activeRoom?.id !== room.id) return;
         set((state) => ({
-          messages: markRoomMessageById(state.messages, messageId, { reactions: updated.reactions }),
+          messages: markRoomMessageById(state.messages, messageId, {
+            reactions: updated.reactions,
+          }),
         }));
       } catch {
         return;

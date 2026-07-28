@@ -7,11 +7,13 @@ import Sound, {
   type AudioSet,
 } from 'react-native-nitro-sound';
 import {
-  smoothVoiceLevel,
+  createVoiceLevelTracker,
   summarizeVoiceWaveform,
-  voiceLevelFromMetering,
+  voiceLevelsFromDecibels,
+  VOICE_METERING_INTERVAL_MS,
   VOICE_MIN_LEVEL,
   VOICE_RECORDING_BAR_COUNT,
+  VOICE_SILENCE_DB,
   type NativeUploadFile,
 } from '@ola/shared/lib';
 import { recordAppError } from '@lib/telemetry';
@@ -115,8 +117,8 @@ export function useVoiceRecorder(
   const mountedRef = useRef(true);
   const elapsedRef = useRef(0);
   const waveformRef = useRef<number[]>(EMPTY_WAVEFORM);
-  const waveformSamplesRef = useRef<number[]>([]);
-  const smoothedLevelRef = useRef(VOICE_MIN_LEVEL);
+  const decibelSamplesRef = useRef<number[]>([]);
+  const levelTrackerRef = useRef(createVoiceLevelTracker());
   const maxDurationHandledRef = useRef(false);
   const maxTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const startRequestRef = useRef(0);
@@ -172,7 +174,9 @@ export function useVoiceRecorder(
           type: 'audio/mp4',
         },
         duration: Math.round(durationMs / 1000),
-        waveform: summarizeVoiceWaveform(waveformSamplesRef.current),
+        waveform: summarizeVoiceWaveform(
+          voiceLevelsFromDecibels(decibelSamplesRef.current),
+        ),
       };
     })();
 
@@ -224,8 +228,10 @@ export function useVoiceRecorder(
 
       elapsedRef.current = 0;
       waveformRef.current = EMPTY_WAVEFORM;
-      waveformSamplesRef.current = [];
-      smoothedLevelRef.current = VOICE_MIN_LEVEL;
+      decibelSamplesRef.current = [];
+      levelTrackerRef.current = createVoiceLevelTracker(
+        VOICE_METERING_INTERVAL_MS,
+      );
       maxDurationHandledRef.current = false;
       if (mountedRef.current) {
         setElapsedMs(0);
@@ -233,14 +239,13 @@ export function useVoiceRecorder(
         setIsStopping(false);
       }
 
-      Sound.setSubscriptionDuration(0.1);
+      Sound.setSubscriptionDuration(VOICE_METERING_INTERVAL_MS / 1000);
       Sound.addRecordBackListener(meta => {
         const nextElapsed = Math.min(MAX_DURATION_MS, meta.currentPosition);
         elapsedRef.current = nextElapsed;
-        const measured = voiceLevelFromMetering(meta.currentMetering);
-        const nextLevel = smoothVoiceLevel(smoothedLevelRef.current, measured);
-        smoothedLevelRef.current = nextLevel;
-        waveformSamplesRef.current.push(nextLevel);
+        const decibels = meta.currentMetering ?? VOICE_SILENCE_DB;
+        decibelSamplesRef.current.push(decibels);
+        const nextLevel = levelTrackerRef.current(decibels);
         const nextWaveform = [...waveformRef.current.slice(1), nextLevel];
         waveformRef.current = nextWaveform;
         if (mountedRef.current) {

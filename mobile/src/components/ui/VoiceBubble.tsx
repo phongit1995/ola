@@ -273,8 +273,8 @@ export function VoiceBubble({
         onLongPress={onLongPress}
         delayLongPress={300}
         accessibilityLabel={t('chat.voiceSeek')}
-        className="h-7 shrink-0 flex-row items-center justify-center"
-        style={{ width: VOICE_WAVEFORM_WIDTH }}
+        className="h-7 flex-row items-center justify-center"
+        style={{ flex: 1, minWidth: 0 }}
       >
         <VoiceWaveformBars
           waveform={waveform}

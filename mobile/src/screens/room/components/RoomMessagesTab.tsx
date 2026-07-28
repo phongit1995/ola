@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  AppState,
   NativeSyntheticEvent,
   Platform,
   Pressable,
@@ -105,9 +106,13 @@ export function RoomMessagesTab({
     pinOnNextContent,
     requestScrollToBottom,
     unstick,
+    isUserInteracting,
+    isStuckToBottom,
   } = useStickyBottomList<RoomFeedItem>();
   const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const composerRef = useRef<RoomComposerHandle>(null);
+  const wasStuckBeforeBackgroundRef = useRef(true);
+  const [foregroundEpoch, setForegroundEpoch] = useState(0);
 
   const canSend = status === 'joined';
   const dateFormatter = useMemo(() => createDateFormatter(language), [language]);
@@ -128,6 +133,20 @@ export function RoomMessagesTab({
   useEffect(() => {
     if (active && rendered) requestScrollToBottom();
   }, [active, rendered, requestScrollToBottom]);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextState) => {
+      if (nextState !== 'active') {
+        wasStuckBeforeBackgroundRef.current = isStuckToBottom();
+        return;
+      }
+      if (!active || !rendered) return;
+      setForegroundEpoch((value) => value + 1);
+      listRef.current?.recomputeViewableItems();
+      if (wasStuckBeforeBackgroundRef.current) requestScrollToBottom();
+    });
+    return () => subscription.remove();
+  }, [active, isStuckToBottom, listRef, rendered, requestScrollToBottom]);
 
   useEffect(() => {
     if (replyTarget != null) composerRef.current?.focus();
@@ -227,7 +246,12 @@ export function RoomMessagesTab({
 
   function handleScroll(event: NativeSyntheticEvent<NativeScrollEvent>) {
     onScroll(event);
-    if (event.nativeEvent.contentOffset.y < 80 && hasMore && !loadingMore) {
+    if (
+      isUserInteracting() &&
+      event.nativeEvent.contentOffset.y < 80 &&
+      hasMore &&
+      !loadingMore
+    ) {
       unstick();
       onLoadMore();
     }
@@ -295,6 +319,7 @@ export function RoomMessagesTab({
       <FlashList
         ref={listRef}
         data={feed}
+        extraData={foregroundEpoch}
         keyExtractor={(item) => item.key}
         getItemType={(item) => item.kind}
         drawDistance={1500}
