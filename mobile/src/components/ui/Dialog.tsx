@@ -12,6 +12,7 @@ import { KeyboardView } from '../KeyboardView';
 interface DialogProps {
   visible: boolean;
   onClose: () => void;
+  onDismiss?: () => void;
   title?: string;
   icon?: ImageSourcePropType;
   showClose?: boolean;
@@ -26,6 +27,7 @@ interface DialogProps {
 export function Dialog({
   visible,
   onClose,
+  onDismiss,
   title,
   icon,
   showClose = false,
@@ -38,7 +40,13 @@ export function Dialog({
 }: DialogProps) {
   const Body = avoidKeyboard ? KeyboardView : View;
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      onRequestClose={onClose}
+      onDismiss={onDismiss}
+    >
       <Pressable
         className="absolute inset-0"
         style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}

@@ -696,7 +696,7 @@ export const useCaro = create<CaroStore>()((set, get) => {
       const line = !draw && data.reason === 'win' ? findFinalWinLine(data.state) : null;
       const winnerPayout = data.payout ?? bet * 2;
       const winnerNet = data.kenDelta ?? winnerPayout - bet;
-      const kenDelta = draw || target === refs.bot ? null : bet === 0 ? 0 : won ? winnerNet : -bet;
+      const kenDelta = target === refs.bot ? 0 : draw ? null : bet === 0 ? 0 : won ? winnerNet : -bet;
       const payoutRevealDelay =
         !draw && target !== refs.bot && bet > 0 && winnerPayout > 0 ? WIN_RESULT_REVEAL_MS : 0;
       set({

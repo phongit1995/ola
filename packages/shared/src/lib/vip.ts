@@ -137,6 +137,7 @@ const VIP_NAMES = [
   'T1',
   'Liverpool',
   'D.Luffy',
+  'Hồng Qui',
 ];
 
 export const VIP_CATALOG: VipCatalogEntry[] = VIP_NAMES.map((name, index) => ({
@@ -159,7 +160,7 @@ export function vipIconUrl(id: number): string {
 export function parseVipTypeId(vipUsed: string | null | undefined): number | null {
   if (vipUsed == null || vipUsed === '') return null;
   const id = Number(vipUsed);
-  if (!Number.isInteger(id) || id < 1 || id > 133) return null;
+  if (!Number.isInteger(id) || id < 1 || id > VIP_CATALOG.length) return null;
   return id;
 }
 

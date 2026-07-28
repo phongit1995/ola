@@ -17,6 +17,7 @@ import type { UserSettings } from '@ola/shared/types';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { ScreenHeader } from '@components/ui/ScreenHeader';
+import { useAppTypography } from '@components/AppFontProvider';
 
 const PRIMARY = '#7cb342';
 const ROW_BORDER = 'rgba(0,0,0,0.06)';
@@ -98,6 +99,7 @@ function Segmented<T extends string>({
   options: { value: T; label: string }[];
   onChange: (value: T) => void;
 }) {
+  const { multiplier: fontMultiplier } = useAppTypography();
   return (
     <View
       className="shrink-0 flex-row rounded-lg bg-white"
@@ -118,8 +120,8 @@ function Segmented<T extends string>({
           >
             <Text
               style={{
-                fontSize: 13,
-                lineHeight: 17,
+                fontSize: 13 * fontMultiplier,
+                lineHeight: 17 * fontMultiplier,
                 color: selected ? '#ffffff' : 'rgba(0,0,0,0.7)',
                 fontWeight: selected ? '600' : '400',
               }}
@@ -381,7 +383,7 @@ export function SettingsScreen({ navigation }: Props) {
               }}
             >
               <ImageIcon />
-              <Text style={{ fontSize: 13, fontWeight: '600', color: PRIMARY }}>
+              <Text className="text-[13px] font-semibold" style={{ color: PRIMARY }}>
                 {t('settings.upload')}
               </Text>
             </Pressable>

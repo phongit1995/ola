@@ -21,7 +21,8 @@
   },
   "scripts": {
     "android": "react-native run-android",
-    "ios": "react-native run-ios",
+    "ios": "echo .env > /tmp/envfile && react-native run-ios --scheme OlaMobile",
+    "ios:prod": "echo env.production > /tmp/envfile && react-native run-ios --scheme OlaMobile-Prod --mode Release",
     "lint": "eslint .",
     "start": "react-native start",
     "typecheck": "tsc --noEmit",
@@ -54,7 +55,7 @@
     "react-hook-form": "^7.78.0",
     "react-i18next": "^17.0.8",
     "react-native": "0.86.0",
-    "react-native-blob-util": "^0.24.10",
+    "react-native-blob-util": "0.24.9",
     "react-native-config": "^1.6.1",
     "react-native-device-info": "^15.0.2",
     "react-native-gesture-handler": "^3.0.2",

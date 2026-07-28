@@ -1,6 +1,6 @@
 import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Image, Keyboard, Pressable, ScrollView, Text, View } from 'react-native';
+import { Image, Keyboard, Pressable, ScrollView, View } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import type { NativeUploadFile } from '@ola/shared/lib';
 import { useToastStore } from '@ola/shared/stores/toastStore';
@@ -8,6 +8,8 @@ import { kulToken } from '@lib/kul';
 import { pastedImageFile } from '@lib/imagePicker';
 import { compressImageForUpload, ImageTooLargeError } from '@lib/compressImage';
 import { ChatComposer, type ChatComposerHandle } from '@components/ChatComposer';
+import { ChatText as Text } from '@components/ui/ChatText';
+import { CHAT_MAX_FONT_SIZE_MULTIPLIER } from '@constants';
 import { useLastKeyboardHeight } from '@hooks/useKeyboardHeight';
 import { SmileyKulPanel, SMILEY_PANEL_MIN_CONTENT_HEIGHT } from './SmileyKulPanel';
 
@@ -219,6 +221,7 @@ export const RoomComposerBar = forwardRef<RoomComposerHandle, RoomComposerBarPro
                 onChange={setDraft}
                 editable={!disabled}
                 placeholder={t('room.chatInputHint')}
+                maxFontSizeMultiplier={CHAT_MAX_FONT_SIZE_MULTIPLIER}
                 onFocus={() => setPanelOpen(false)}
                 onPasteImage={addPastedImage}
               />

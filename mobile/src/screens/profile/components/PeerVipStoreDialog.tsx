@@ -103,11 +103,9 @@ export function PeerVipStoreDialog({ userId, name, onClose }: PeerVipStoreDialog
                     </View>
                     <Text
                       numberOfLines={1}
+                      className="w-full text-center text-[11px]"
                       style={{
                         marginTop: 2,
-                        width: '100%',
-                        textAlign: 'center',
-                        fontSize: 11,
                         color: icon.isUsing ? PRIMARY : TEXT_SECONDARY,
                         fontWeight: icon.isUsing ? '700' : '400',
                       }}

@@ -21,10 +21,12 @@ import Animated, {
 import { toast } from '@ola/shared/lib';
 import { useMediaViewerStore } from '@store/mediaViewerStore';
 import { saveImageToGallery } from '@lib/saveImage';
+import { recordAppError } from '@lib/telemetry';
 import { CachedImage } from './CachedImage';
 import { CloseIcon } from './CloseIcon';
 import { DownloadIcon } from './DownloadIcon';
 import { OlaModal } from './OlaModal';
+import { ToastHost } from './ToastHost';
 
 const MAX_ZOOM = 6;
 const DOUBLE_TAP_ZOOM = 2.5;
@@ -143,6 +145,7 @@ export function MediaViewerModal(props: MediaViewerModalProps) {
       onRequestClose={props.onClose}
     >
       <MediaViewerBody key={`${props.index}:${props.images[0] ?? ''}`} {...props} />
+      <ToastHost />
     </OlaModal>
   );
 }
@@ -168,7 +171,8 @@ function MediaViewerBody({ images, index, onClose }: MediaViewerModalProps) {
       const ok = await saveImageToGallery(uri);
       if (ok) toast.success(t('media.saved'));
       else toast.error(t('media.saveFailed'));
-    } catch {
+    } catch (error) {
+      recordAppError(error, `saveImageToGallery: ${uri}`);
       toast.error(t('media.saveFailed'));
     } finally {
       setSaving(false);

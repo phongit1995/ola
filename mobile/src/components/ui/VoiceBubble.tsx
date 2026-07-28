@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Image, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, View } from 'react-native';
 import Sound from 'react-native-sound';
+import { ChatText as Text } from './ChatText';
 
 const playMediaIcon = require('@assets/icons/chat/ic_play_media.png');
 const pauseMediaIcon = require('@assets/icons/chat/ic_pause_media.png');

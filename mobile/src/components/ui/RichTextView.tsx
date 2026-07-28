@@ -3,6 +3,8 @@ import { Linking, Text } from 'react-native';
 import { splitSmileys } from '@lib/chatSmiley';
 import { renderRichText } from '@lib/richText';
 import { measureRichText, richTextNativeAvailable } from '@lib/richTextNativeConfig';
+import { cappedFontScale, CHAT_MAX_FONT_SIZE_MULTIPLIER } from '@constants';
+import { useAppTypography } from '@components/AppFontProvider';
 import OlaRichTextViewNative from '../specs/OlaRichTextViewNativeComponent';
 
 let nativeRichTextEnabled = true;
@@ -34,20 +36,28 @@ function RichTextViewComponent({
   maxLines = 0,
   onMention,
 }: RichTextViewProps) {
+  const { multiplier, systemFontScale } = useAppTypography();
   // Match web: accent (mention/hashtag/url) luôn xanh đậm #33691e, kể cả tin của mình.
   const accentColor = '#33691e';
   const useNative =
     richTextNativeAvailable && nativeRichTextEnabled && hasInlineImages(content);
-  const size = useNative ? measureRichText(content, maxWidth, fontSize, maxLines) : null;
+  const appFontSize = fontSize * multiplier;
+  const effectiveFontScale = cappedFontScale(
+    systemFontScale,
+    CHAT_MAX_FONT_SIZE_MULTIPLIER
+  );
+  const nativeFontSize = appFontSize * effectiveFontScale;
+  const size = useNative ? measureRichText(content, maxWidth, nativeFontSize, maxLines) : null;
 
   if (size == null) {
     return (
       <Text
         className="text-base"
-        style={{ color, fontSize }}
+        style={{ color, fontSize: appFontSize }}
+        maxFontSizeMultiplier={CHAT_MAX_FONT_SIZE_MULTIPLIER}
         numberOfLines={maxLines > 0 ? maxLines : undefined}
       >
-        {renderRichText(content, { own, fontSize, onMention })}
+        {renderRichText(content, { own, fontSize: nativeFontSize, onMention })}
       </Text>
     );
   }
@@ -55,7 +65,7 @@ function RichTextViewComponent({
   return (
     <OlaRichTextViewNative
       content={content}
-      fontSize={fontSize}
+      fontSize={nativeFontSize}
       textColor={color}
       accentColor={accentColor}
       maxLines={maxLines}

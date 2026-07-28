@@ -1,3 +1,23 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.text-\[9px\] {
+  font-size: var(--ola-font-9, 9px);
+}
+
+.text-\[10px\] {
+  font-size: var(--ola-font-10, 10px);
+}
+
+.text-\[11px\] {
+  font-size: var(--ola-font-11, 11px);
+}
+
+.text-\[12px\] {
+  font-size: var(--ola-font-12, 12px);
+}
+
+.text-\[13px\] {
+  font-size: var(--ola-font-13, 13px);
+}

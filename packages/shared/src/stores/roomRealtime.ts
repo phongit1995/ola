@@ -1,6 +1,7 @@
 import type { StoreApi } from 'zustand';
 import { RoomService, SocketService } from '../services';
 import { useAuthStore } from './authStore';
+import { useRoomFilterStore } from './roomFilterStore';
 import { ROOM_SOCKET_EVENTS, type RoomMessage, type RoomReactor } from '../types';
 import { playRoomTagSound } from '../platform/sound';
 import {
@@ -34,6 +35,12 @@ function handleNewMessage(get: RoomGet, set: RoomSet, data: unknown) {
   if (roomId == null || message?.roomId !== roomId || typeof message.id !== 'string') return;
   const incoming = withSenderVip(message as unknown as RoomMessage);
   const me = useAuthStore.getState().user;
+  if (
+    incoming.senderId !== me?.id &&
+    useRoomFilterStore.getState().isBlocked(incoming.senderId)
+  ) {
+    return;
+  }
   const matchesIncoming = (item: RoomMessage) =>
     item.id === incoming.id ||
     (incoming.clientMsgId != null && item.clientMsgId === incoming.clientMsgId);

@@ -11,7 +11,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { KeyboardShift } from '@components/KeyboardShift';
+import { ChatKeyboardArea } from '@components/ChatKeyboardArea';
 import { FlashList } from '@shopify/flash-list';
 import { useStickyBottomList } from '@hooks/useStickyBottomList';
 import { launchCamera, launchImageLibrary, type Asset } from 'react-native-image-picker';
@@ -439,7 +439,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
         onMore={() => setMenuOpen(true)}
       />
 
-      <KeyboardShift>
+      <ChatKeyboardArea>
       <View
         className="flex-1"
         onStartShouldSetResponderCapture={() => {
@@ -679,7 +679,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
       />
       </>
       )}
-      </KeyboardShift>
+      </ChatKeyboardArea>
 
       <ChatReactionBalloons />
 

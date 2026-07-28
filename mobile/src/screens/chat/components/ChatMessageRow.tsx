@@ -1,10 +1,11 @@
 import { useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Image, Pressable, Text, useWindowDimensions, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, useWindowDimensions, View } from 'react-native';
 import { formatDuration, parseMessageMetadata } from '@ola/shared/lib';
 import type { ChatReplySnapshot, Message } from '@ola/shared/types';
 import { Avatar } from '@components/ui/Avatar';
 import { CachedImage } from '@components/ui/CachedImage';
+import { ChatText as Text } from '@components/ui/ChatText';
 import { VoiceBubble } from '@components/ui/VoiceBubble';
 import { kulImageForText } from '@lib/kul';
 import { reactionChips } from '@lib/reactions';

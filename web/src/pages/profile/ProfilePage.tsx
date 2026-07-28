@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScreenHeader, FullScreenOverlay, Spinner } from '@components';
-import { colorForName, toast } from '@lib';
+import { colorForName } from '@lib';
 import composeIcon from '@/assets/icons/chat/ic_action_compose_message.png';
 import { useAuthStore } from '@/store/authStore';
 import { useMeLocalStore } from '@/store/meLocalStore';
 import type { RelationshipInfo } from '@app-types';
 import { MePostCard } from '../me/components/MePostCard';
+import { MeComposerDialog } from '../me/components/MeComposerDialog';
 import { MePostInteractions, type MePostSource } from '../me/MePostInteractions';
 import { ProfileCard } from './components/ProfileCard';
 import { ProfileMediaStore } from './components/ProfileMediaStore';
@@ -51,6 +52,7 @@ export function ProfilePage({
   const hidePost = useMeLocalStore((s) => s.hidePost);
   const blockAuthor = useMeLocalStore((s) => s.blockAuthor);
   const [editOpen, setEditOpen] = useState(false);
+  const [composerOpen, setComposerOpen] = useState(false);
   const [followersOpen, setFollowersOpen] = useState(false);
   const [vipStoreOpen, setVipStoreOpen] = useState(false);
 
@@ -78,7 +80,7 @@ export function ProfilePage({
           profile={profile}
           relationship={relationship}
           actions={actions}
-          onPostMe={() => toast.info(t('profile.comingSoon'))}
+          onPostMe={() => setComposerOpen(true)}
           onUpdateInfo={() => setEditOpen(true)}
           onViewVipStore={() => setVipStoreOpen(true)}
           onOpenUser={(nick) => onOpenFriend({ name: nick, color: colorForName(nick) })}
@@ -127,6 +129,12 @@ export function ProfilePage({
       )}
 
       {editOpen && <EditProfileMePage onClose={() => setEditOpen(false)} />}
+
+      <MeComposerDialog
+        open={composerOpen}
+        onClose={() => setComposerOpen(false)}
+        onPost={postActions.addPost}
+      />
 
       {vipStoreOpen && (
         <PeerVipStoreDialog

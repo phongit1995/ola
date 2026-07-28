@@ -12,7 +12,9 @@ import TextInputState from 'react-native/Libraries/Components/TextInput/TextInpu
 import OlaChatComposerNative, {
   Commands as ComposerCommands,
 } from './specs/OlaChatComposerNativeComponent';
+import { cappedFontScale } from '@constants';
 import { richTextNativeAvailable } from '@lib/richTextNativeConfig';
+import { useAppTypography } from '@components/AppFontProvider';
 
 export interface ChatComposerHandle {
   focus: () => void;
@@ -30,6 +32,7 @@ interface ChatComposerProps {
   placeholder?: string;
   editable?: boolean;
   fontSize?: number;
+  maxFontSizeMultiplier?: number;
   minHeight?: number;
   maxHeight?: number;
   paddingH?: number;
@@ -70,14 +73,18 @@ const NativeComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(functio
 ) {
   const nativeRef = useRef<ElementRef<typeof OlaChatComposerNative>>(null);
   const lastEmitted = useRef(value);
+  const lastRenderedFontSize = useRef(fontSize);
   const initialValue = useRef(value);
   const [contentHeight, setContentHeight] = useState(minHeight);
 
   useEffect(() => {
-    if (value === lastEmitted.current) return;
+    const valueChanged = value !== lastEmitted.current;
+    const fontSizeChanged = fontSize !== lastRenderedFontSize.current;
+    if (!valueChanged && !fontSizeChanged) return;
     lastEmitted.current = value;
+    lastRenderedFontSize.current = fontSize;
     if (nativeRef.current != null) ComposerCommands.setText(nativeRef.current, value);
-  }, [value]);
+  }, [fontSize, value]);
 
   useEffect(() => {
     const instance = nativeRef.current;
@@ -150,6 +157,7 @@ const PlainComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(function
     placeholder,
     editable = true,
     fontSize = 16,
+    maxFontSizeMultiplier,
     minHeight = 40,
     maxHeight = 112,
     paddingH = 12,
@@ -188,6 +196,7 @@ const PlainComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(function
         flexGrow: 1,
         flexShrink: 1,
       }}
+      maxFontSizeMultiplier={maxFontSizeMultiplier}
       selectionColor={selectionColor}
       cursorColor={selectionColor}
       placeholder={placeholder}
@@ -204,9 +213,17 @@ const PlainComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(function
 
 export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(
   function ChatComposerInner(props, ref) {
+    const { multiplier, systemFontScale } = useAppTypography();
+    const baseFontSize = props.fontSize ?? 16;
+    const appFontSize = baseFontSize * multiplier;
     if (richTextNativeAvailable && nativeComposerEnabled) {
-      return <NativeComposer ref={ref} {...props} />;
+      const effectiveSystemScale =
+        props.maxFontSizeMultiplier == null
+          ? systemFontScale
+          : cappedFontScale(systemFontScale, props.maxFontSizeMultiplier);
+      const nativeFontSize = appFontSize * effectiveSystemScale;
+      return <NativeComposer ref={ref} {...props} fontSize={nativeFontSize} />;
     }
-    return <PlainComposer ref={ref} {...props} />;
+    return <PlainComposer ref={ref} {...props} fontSize={appFontSize} />;
   }
 );

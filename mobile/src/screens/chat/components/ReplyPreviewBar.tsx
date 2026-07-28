@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
-import { Pressable, Text, useWindowDimensions, View } from 'react-native';
+import { Pressable, useWindowDimensions, View } from 'react-native';
 import type { Message } from '@ola/shared/types';
+import { ChatText as Text } from '@components/ui/ChatText';
 import { RichTextView } from '@components/ui/RichTextView';
 import { DIVIDER } from '@constants';
 import { replyExcerpt } from '../chatMessageView';

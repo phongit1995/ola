@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Animated, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuthStore } from '@ola/shared/stores/authStore';
+import { useAppTypography } from '@components/AppFontProvider';
 import { AnimatedKen } from './AnimatedKen';
 
 const SHOW_MS = 3200;
@@ -10,6 +11,7 @@ const FADE_MS = 300;
 
 export function KenBalanceBadge() {
   const insets = useSafeAreaInsets();
+  const { multiplier: fontMultiplier } = useAppTypography();
   const ken = useAuthStore((s) => s.user?.ken);
   const [prevKen, setPrevKen] = useState(ken);
   const [visible, setVisible] = useState(false);
@@ -68,7 +70,11 @@ export function KenBalanceBadge() {
           value={ken}
           tweenMs={TWEEN_MS}
           iconSize={24}
-          textStyle={{ color: '#f57f17', fontSize: 18, fontWeight: '800' }}
+          textStyle={{
+            color: '#f57f17',
+            fontSize: 18 * fontMultiplier,
+            fontWeight: '800',
+          }}
         />
       </View>
     </Animated.View>

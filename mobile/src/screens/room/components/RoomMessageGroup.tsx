@@ -5,7 +5,6 @@ import {
   Image,
   type ImageSourcePropType,
   Pressable,
-  Text,
   useWindowDimensions,
   View,
 } from 'react-native';
@@ -15,6 +14,7 @@ import { kulImageForText } from '@lib/kul';
 import { reactionChips } from '@lib/reactions';
 import { imageSizeForHeight } from '@lib/chatSmiley';
 import { CachedImage } from '@components/ui/CachedImage';
+import { ChatText as Text } from '@components/ui/ChatText';
 import { RichTextView } from '@components/ui/RichTextView';
 import { VipAvatar } from '@components/ui/VipAvatar';
 import { useMediaViewerStore } from '@store/mediaViewerStore';

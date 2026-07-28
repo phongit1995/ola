@@ -3,6 +3,7 @@ import type { MePost } from '../me/types';
 import type { ComposedPost } from '../me/components/MeComposerDialog';
 
 export interface ProfilePostActions {
+  addPost: (draft: ComposedPost) => Promise<boolean>;
   toggleReaction: (id: string, type: PostReaction) => void;
   adjustCommentCount: (id: string, delta: number) => void;
   editPost: (id: string, draft: ComposedPost) => Promise<boolean>;

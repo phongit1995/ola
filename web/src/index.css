@@ -231,10 +231,82 @@ body {
   @apply bg-neutral-800 text-gray-900 antialiased;
 }
 
+[data-font-size] {
+  --ola-text-9: 9px;
+  --ola-text-10: 10px;
+  --ola-text-11: 11px;
+  --ola-text-12: 12px;
+  --ola-text-13: 13px;
+  font-size: var(--text-base);
+}
+
+[data-font-size='small'] {
+  --text-xs: 0.675rem;
+  --text-sm: 0.7875rem;
+  --text-base: 0.9rem;
+  --text-lg: 1.0125rem;
+  --text-xl: 1.125rem;
+  --text-2xl: 1.35rem;
+  --text-3xl: 1.6875rem;
+  --text-4xl: 2.025rem;
+  --text-5xl: 2.7rem;
+  --text-6xl: 3.375rem;
+  --text-7xl: 4.05rem;
+  --text-8xl: 5.4rem;
+  --text-9xl: 7.2rem;
+  --ola-text-9: 8.1px;
+  --ola-text-10: 9px;
+  --ola-text-11: 9.9px;
+  --ola-text-12: 10.8px;
+  --ola-text-13: 11.7px;
+}
+
+[data-font-size='large'] {
+  --text-xs: 0.8625rem;
+  --text-sm: 1.00625rem;
+  --text-base: 1.15rem;
+  --text-lg: 1.29375rem;
+  --text-xl: 1.4375rem;
+  --text-2xl: 1.725rem;
+  --text-3xl: 2.15625rem;
+  --text-4xl: 2.5875rem;
+  --text-5xl: 3.45rem;
+  --text-6xl: 4.3125rem;
+  --text-7xl: 5.175rem;
+  --text-8xl: 6.9rem;
+  --text-9xl: 9.2rem;
+  --ola-text-9: 10.35px;
+  --ola-text-10: 11.5px;
+  --ola-text-11: 12.65px;
+  --ola-text-12: 13.8px;
+  --ola-text-13: 14.95px;
+}
+
+[data-font-size] .text-\[9px\] {
+  font-size: var(--ola-text-9);
+}
+
+[data-font-size] .text-\[10px\] {
+  font-size: var(--ola-text-10);
+}
+
+[data-font-size] .text-\[11px\] {
+  font-size: var(--ola-text-11);
+}
+
+[data-font-size] .text-\[12px\] {
+  font-size: var(--ola-text-12);
+}
+
+[data-font-size] .text-\[13px\] {
+  font-size: var(--ola-text-13);
+}
+
 input,
 textarea,
 select {
-  font-size: 16px;
+  /* Keep iOS Safari from zooming focused fields while still allowing Large text. */
+  font-size: max(16px, var(--text-base));
 }
 
 .smiley-input {
