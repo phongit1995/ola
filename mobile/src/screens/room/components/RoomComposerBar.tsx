@@ -8,11 +8,8 @@ import {
 import { useTranslation } from 'react-i18next';
 import { Image, Keyboard, Pressable, ScrollView, View } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
-import type { NativeUploadFile } from '@ola/shared/lib';
-import {
-  useRoomChatStore,
-  type RoomAudioSendResult,
-} from '@ola/shared/stores/roomChatStore';
+import type { NativeUploadFile, RoomAudioSendResult } from '@ola/shared/types';
+import { useRoomChatStore } from '@ola/shared/stores/roomChatStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { kulToken } from '@lib/kul';
 import { pastedImageFile } from '@lib/imagePicker';

@@ -24,9 +24,8 @@ import {
   colorForName,
   isSameDay,
   parseMessageMetadata,
-  type NativeUploadFile,
 } from '@ola/shared/lib';
-import type { Message, ReactionType } from '@ola/shared/types';
+import type { Message, NativeUploadFile, ReactionType } from '@ola/shared/types';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';

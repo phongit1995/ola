@@ -1,5 +1,5 @@
-import { http } from '../api';
-import { API_PATH } from '../config';
+import { http } from '../api/http';
+import { API_PATH } from '../config/api';
 import type {
   BuyVipIconResult,
   BuyVipPackageResult,
@@ -10,7 +10,7 @@ import type {
   VipPurchaseHistoryResult,
   VipStoreResult,
   VipTransferHistoryResult,
-} from '../types';
+} from '../types/api/vip.type';
 
 export class VipService {
   static iconCatalog(): Promise<VipIconCatalogResult> {

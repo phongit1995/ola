@@ -1,4 +1,4 @@
-import type { RoomTab } from '@/store/roomChatStore';
+import type { RoomTab } from '@ola/shared/types';
 
 export interface RoomTabItem {
   key: RoomTab;

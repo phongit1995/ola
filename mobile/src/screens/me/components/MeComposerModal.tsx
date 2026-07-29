@@ -4,7 +4,7 @@ import { Pressable, ScrollView, View } from 'react-native';
 import { KeyboardView } from '@components/KeyboardView';
 import { OlaModal } from '@components/ui/OlaModal';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import type { NativeUploadFile } from '@ola/shared/lib';
+import type { NativeUploadFile } from '@ola/shared/types';
 import type { CreatePostRequest, Post, PostVisibility } from '@ola/shared/types';
 import { ChatComposer, type ChatComposerHandle } from '@components/ChatComposer';
 import { DIVIDER, PRIMARY } from '@constants';

@@ -13,7 +13,7 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import { FlashList } from '@shopify/flash-list';
 import { useStickyBottomList } from '@hooks/useStickyBottomList';
 import type { ReactionType, RoomMessage } from '@ola/shared/types';
-import type { NativeUploadFile } from '@ola/shared/lib';
+import type { NativeUploadFile } from '@ola/shared/types';
 import { createDateFormatter } from '@ola/shared/lib';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { useRoomFilterStore } from '@ola/shared/stores/roomFilterStore';
@@ -36,10 +36,7 @@ import {
   type MessageSheetAction,
 } from './MessageActionSheet';
 import { RoomReactionsDialog } from './RoomReactionsDialog';
-import type {
-  RoomAudioSendResult,
-  RoomChatStatus,
-} from '@ola/shared/stores/roomChatStore';
+import type { RoomAudioSendResult, RoomChatStatus } from '@ola/shared/types';
 
 const replyActionIcon = require('@assets/icons/me/ic_action_reply_gray.png');
 const deleteActionIcon = require('@assets/icons/chat/ic_menu_delete.png');

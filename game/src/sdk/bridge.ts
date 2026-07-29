@@ -2,9 +2,11 @@ import {
   ARCADE_ATTENTION_REASON,
   ARCADE_BRIDGE_EVENT,
   ARCADE_BRIDGE_SOURCE,
-  type ArcadeAttentionData,
-  type ArcadeBridgeEvent,
-  type ArcadeBridgeMessage,
+} from '@ola/shared/constants';
+import type {
+  ArcadeAttentionData,
+  ArcadeBridgeEvent,
+  ArcadeBridgeMessage,
 } from '@ola/shared/types';
 
 interface RNWebView {

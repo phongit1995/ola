@@ -4,8 +4,9 @@ import { ConfirmDialog } from '@components';
 import { toast } from '@lib';
 import { RoomChatView } from './components/RoomChatView';
 import { RoomJoiningOverlay } from './components/RoomJoiningOverlay';
-import { useRoomChatStore, type ActiveRoom } from '@/store/roomChatStore';
+import { useRoomChatStore } from '@/store/roomChatStore';
 import { useRoomListStore } from '@ola/shared/stores/roomListStore';
+import type { ActiveRoom } from '@ola/shared/types';
 
 export function RoomChatOverlay({ visible }: { visible: boolean }) {
   const { t } = useTranslation();

@@ -10,7 +10,7 @@ import {
 import { colorForName, toast } from '@lib';
 import { useAuthStore } from '@/store/authStore';
 import { useMarriageStore } from '@/store/marriageStore';
-import type { DiaryEntry } from '@/store/marriageStore';
+import type { DiaryEntry } from '@ola/shared/types';
 
 const DAY_MS = 86_400_000;
 

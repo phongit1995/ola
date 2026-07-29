@@ -1,10 +1,7 @@
-export interface NativeUploadFile {
-  uri: string;
-  name: string;
-  type: string;
-}
+import type { NativeUploadFile, UploadFile } from '../types/client/upload.type';
+import type { ObjectUrlApi } from '../types/lib.type';
 
-export type UploadFile = Blob | NativeUploadFile;
+export type { NativeUploadFile, UploadFile } from '../types/client/upload.type';
 
 export function asNativeUploadFile(file: UploadFile): NativeUploadFile | undefined {
   if (typeof Blob !== 'undefined' && file instanceof Blob) return undefined;
@@ -73,11 +70,6 @@ export function blobWithType(blob: Blob, type: string): Blob {
   if (blob.type !== '') return blob;
   const BlobCtor = Blob as unknown as new (parts: Blob[], options: { type: string }) => Blob;
   return new BlobCtor([blob], { type });
-}
-
-interface ObjectUrlApi {
-  createObjectURL?: (blob: Blob) => string;
-  revokeObjectURL?: (url: string) => void;
 }
 
 function objectUrlApi(): ObjectUrlApi | undefined {

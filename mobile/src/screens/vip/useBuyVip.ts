@@ -7,8 +7,8 @@ import {
   vipConfirmMessage,
   vipName,
   vipPackageLabel,
-  type BuyVipMode,
 } from '@ola/shared/lib';
+import type { BuyVipMode } from '@ola/shared/types';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import type { VipIconCatalogItem, VipPackageItem, UserSearchResult } from '@ola/shared/types';

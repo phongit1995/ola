@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
-import {
-  ARCADE_BRIDGE_EVENT,
-  type ArcadeKenUpdatedData,
-} from '@ola/shared/types';
+import { ARCADE_BRIDGE_EVENT } from '@ola/shared/constants';
+import type { ArcadeKenUpdatedData } from '@ola/shared/types';
 import { bridge } from '../src/sdk';
 import { BOARD_ASSETS, preloadAssets, preloadModalAssets } from './assets';
 import { ConfirmModal } from './components/ConfirmModal';

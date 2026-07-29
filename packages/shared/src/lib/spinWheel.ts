@@ -1,32 +1,22 @@
-export interface SegmentTheme {
-  light: string;
-  dark: string;
-  stroke: string;
-  shadow: string;
-}
+import type {
+  SegmentTheme,
+  WheelDividerLine,
+  WheelPoint,
+} from '../types/client/spinWheel.type';
+import {
+  SEGMENT_PALETTE,
+  SPIN_TURNS,
+  WHEEL_CENTER,
+  WHEEL_DIVIDER_INNER_RADIUS,
+  WHEEL_SLICE_RADIUS,
+} from './spinWheel.constants';
 
-export const SEGMENT_PALETTE = [
-  '#ff8a34',
-  '#2cb8d0',
-  '#ffc93c',
-  '#8b5cf6',
-  '#a0d22b',
-  '#f06ba0',
-  '#2e7dd1',
-  '#ff6b6b',
-  '#34c759',
-  '#c558d8',
-  '#ffd93c',
-  '#26c6da',
-  '#7ac943',
-  '#ec407a',
-  '#5b7cf0',
-  '#ff9a8b',
-  '#2cc7b0',
-  '#b06bf0',
-  '#f4a62a',
-  '#4dd0e1',
-];
+export * from './spinWheel.constants';
+export type {
+  SegmentTheme,
+  WheelDividerLine,
+  WheelPoint,
+} from '../types/client/spinWheel.type';
 
 function hexToRgb(hex: string): [number, number, number] {
   const value = hex.replace('#', '');
@@ -78,28 +68,6 @@ export function rotationForIndex(current: number, index: number, count: number):
   const currentAngle = ((current % 360) + 360) % 360;
   const delta = (landing - currentAngle + 360) % 360;
   return current + SPIN_TURNS * 360 + delta;
-}
-
-export const SPIN_TURNS = 6;
-export const SPIN_DURATION_MS = 4200;
-export const SPIN_START_KEN = 0;
-
-export const WHEEL_VIEWBOX = 100;
-export const WHEEL_CENTER = WHEEL_VIEWBOX / 2;
-export const WHEEL_SLICE_RADIUS = 48;
-export const WHEEL_LABEL_RADIUS = 31;
-export const WHEEL_DIVIDER_INNER_RADIUS = 12;
-
-export interface WheelPoint {
-  x: number;
-  y: number;
-}
-
-export interface WheelDividerLine {
-  x1: number;
-  y1: number;
-  x2: number;
-  y2: number;
 }
 
 export function wheelPolar(angleDeg: number, radius: number): WheelPoint {

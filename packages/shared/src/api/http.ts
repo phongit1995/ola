@@ -1,5 +1,5 @@
 import type { AxiosRequestConfig } from 'axios';
-import type { IApiResponse } from '../types';
+import type { IApiResponse } from '../types/api/common.type';
 import { getApi } from './axios';
 
 export const http = {

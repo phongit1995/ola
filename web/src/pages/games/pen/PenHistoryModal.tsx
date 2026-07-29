@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  usePenHistoryStore,
-  type PenHistorySection as SectionRole,
-} from '@/store/penHistoryStore';
+import { usePenHistoryStore } from '@/store/penHistoryStore';
+import type { PenHistorySection as SectionRole } from '@ola/shared/types';
 import { penHistoryAssets, penShootAssets } from './penAssets';
 import { bgImage } from './penUi';
 import { PenHistorySection } from './PenHistorySection';

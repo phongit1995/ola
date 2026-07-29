@@ -1,28 +1,12 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { authTokens } from '../lib';
+import { authTokens } from '../lib/tokenStorage';
 import { sharedPersistStorage } from '../platform/persistStorage';
-import { UserService } from '../services';
-import type { AuthUser } from '../types';
+import { UserService } from '../services/user.service';
+import type { AuthState, PersistedAuthState } from '../types/client/auth.type';
+import { notifyLogoutListeners } from './authLogout.state';
 
-interface AuthState {
-  user: AuthUser | null;
-  authReady: boolean;
-  setUser: (user: AuthUser) => void;
-  clearUser: () => void;
-  refreshUser: () => Promise<void>;
-}
-
-const logoutListeners = new Set<() => void>();
-
-export function registerOnLogout(listener: () => void): () => void {
-  logoutListeners.add(listener);
-  return () => logoutListeners.delete(listener);
-}
-
-interface PersistedAuthState {
-  user: AuthUser | null;
-}
+export { registerOnLogout } from './authLogout.state';
 
 export const useAuthStore = create<AuthState>()(
   persist(
@@ -31,7 +15,7 @@ export const useAuthStore = create<AuthState>()(
       authReady: false,
       setUser: (user) => set({ user }),
       clearUser: () => {
-        logoutListeners.forEach((listener) => listener());
+        notifyLogoutListeners();
         set({ user: null });
       },
       refreshUser: async () => {

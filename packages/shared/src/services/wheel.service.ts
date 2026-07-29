@@ -1,11 +1,11 @@
-import { http } from '../api';
-import { API_PATH } from '../config';
+import { http } from '../api/http';
+import { API_PATH } from '../config/api';
 import type {
   WheelConfig,
   WheelSpinHistoryFilter,
   WheelSpinHistoryResult,
   WheelSpinResult,
-} from '../types';
+} from '../types/api/wheel.type';
 
 export class WheelService {
   static getConfig(): Promise<WheelConfig> {

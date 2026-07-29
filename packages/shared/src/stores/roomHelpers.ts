@@ -1,5 +1,5 @@
-import { activeVipTypeId } from '../lib';
-import type { RoomMember, RoomMessage, RoomReplySnapshot } from '../types';
+import { activeVipTypeId } from '../lib/vip';
+import type { RoomMember, RoomMessage, RoomReplySnapshot } from '../types/api/room.type';
 import { useAuthStore } from './authStore';
 
 export function toRecord(value: unknown): Record<string, unknown> | null {

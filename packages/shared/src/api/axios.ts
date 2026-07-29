@@ -1,6 +1,7 @@
 import axios, { type AxiosInstance } from 'axios';
-import { env } from '../config';
-import { registerInterceptors } from './interceptors';
+import { env } from '../config/env';
+import { getApiInstance, setApiInstance } from './axios.state';
+import { registerInterceptors } from './interceptors/registerInterceptors';
 
 declare module 'axios' {
   export interface AxiosRequestConfig {
@@ -10,18 +11,17 @@ declare module 'axios' {
   }
 }
 
-let instance: AxiosInstance | null = null;
-
 export function getApi(): AxiosInstance {
-  if (instance == null) {
-    instance = axios.create({
+  const existing = getApiInstance();
+  if (existing != null) return existing;
+  const instance = axios.create({
       baseURL: env.apiUrl,
       timeout: env.apiTimeout,
       headers: {
         'Content-Type': 'application/json',
       },
-    });
-    registerInterceptors(instance);
-  }
+  });
+  registerInterceptors(instance);
+  setApiInstance(instance);
   return instance;
 }

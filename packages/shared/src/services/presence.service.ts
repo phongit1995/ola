@@ -1,6 +1,6 @@
-import { http } from '../api';
-import { API_PATH } from '../config';
-import type { PresenceBatchResult } from '../types';
+import { http } from '../api/http';
+import { API_PATH } from '../config/api';
+import type { PresenceBatchResult } from '../types/api/user.type';
 
 export class PresenceService {
   static batch(userIds: string[]): Promise<PresenceBatchResult> {

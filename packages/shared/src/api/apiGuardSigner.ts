@@ -1,14 +1,11 @@
 import { hmac } from '@noble/hashes/hmac.js';
 import { sha512 } from '@noble/hashes/sha2.js';
 import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js';
-import { env } from '../config';
+import { env } from '../config/env';
 import { randomUuid } from '../lib/randomUuid';
+import type { ApiGuardSignature } from '../types/lib.type';
 
-export interface ApiGuardSignature {
-  timestamp: string;
-  nonce: string;
-  signature: string;
-}
+export type { ApiGuardSignature } from '../types/lib.type';
 
 function signHex(secret: string, value: string): string {
   return bytesToHex(hmac(sha512, utf8ToBytes(secret), utf8ToBytes(value)));

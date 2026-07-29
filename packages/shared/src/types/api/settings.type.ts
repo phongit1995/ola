@@ -19,20 +19,6 @@ export interface UserSettings {
 
 export type UpdateSettingsRequest = Partial<UserSettings>;
 
-export const DEFAULT_USER_SETTINGS: UserSettings = {
-  messagePrivacy: 'all',
-  meVisibility: 'all',
-  commentPrivacy: 'all',
-  showBirthday: true,
-  showInterested: true,
-  notifMessage: true,
-  notifSound: true,
-  soundGame: true,
-  soundKen: true,
-  fontSize: 'medium',
-  wallpaperUrl: '',
-};
-
 export interface TopupBankInfo {
   bankName: string;
   bankBin: string;

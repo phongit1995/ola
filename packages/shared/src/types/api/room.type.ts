@@ -134,65 +134,13 @@ export interface SendRoomMessageRequest {
   replyToId?: string;
 }
 
-export const ROOM_SOCKET_EVENTS = {
-  message: 'message',
-  join: 'ROOM:JOIN',
-  leave: 'ROOM:LEAVE',
-  newMessage: 'NEW_ROOM_MESSAGE',
-  messageDeleted: 'ROOM_MESSAGE_DELETED',
-  reactionUpdated: 'ROOM_MESSAGE_REACTION_UPDATED',
-  memberJoined: 'ROOM_MEMBER_JOINED',
-  memberLeft: 'ROOM_MEMBER_LEFT',
-} as const;
+export interface SendRoomAudioOptions {
+  clientMsgId?: string;
+  replyToId?: string;
+  waveform?: number[];
+}
 
 export interface RoomJoinTicket {
   ticket: string;
   expiresIn: number;
-}
-
-export interface RoomJoinAck {
-  ok: boolean;
-  error?: string;
-  data?: { roomId: string; memberCount: number };
-}
-
-export interface RoomSocketEnvelope<T = unknown> {
-  type: string;
-  data: T;
-}
-
-export interface RoomJoinPayload {
-  roomId: string;
-  ticket: string;
-}
-
-export interface RoomPresenceAck {
-  roomId: string;
-  memberCount: number;
-}
-
-export interface NewRoomMessageEvent {
-  room: RoomBrief;
-  message: RoomMessage;
-}
-
-export interface RoomMessageDeletedEvent {
-  roomId: string;
-  messageId: string;
-}
-
-export interface RoomMessageReactionUpdatedEvent {
-  roomId: string;
-  messageId: string;
-  reactions: Record<string, RoomReactor[]>;
-  actorUserId: string;
-  actorUsername: string;
-  type: string;
-  action: string;
-}
-
-export interface RoomMemberPresenceEvent {
-  roomId: string;
-  userId: string;
-  memberCount: number;
 }

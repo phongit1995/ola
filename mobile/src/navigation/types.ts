@@ -1,4 +1,4 @@
-import type { BuyVipMode } from '@ola/shared/lib';
+import type { BuyVipMode } from '@ola/shared/types';
 import { AUTH_ROUTES, ROOM_ROUTES, ROOT_ROUTES, TAB_ROUTES } from './routes';
 
 export type AuthStackParamList = {

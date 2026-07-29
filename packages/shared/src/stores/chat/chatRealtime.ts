@@ -1,48 +1,50 @@
-import type { StoreApi } from 'zustand';
-import { SocketService } from '../../services';
-import { playMessageSound } from '../../platform/sound';
 import {
-  CHAT_SOCKET_EVENTS,
-  type Conversation,
-  type ConversationUpdatedEvent,
-  type MessageDeletedEvent,
-  type MessageReactionUpdatedEvent,
-  type MessageUpdatedEvent,
-  type NewMessageEvent,
-  type UserTypingEvent,
-} from '../../types';
+  CHAT_MARK_READ_DEBOUNCE_MS,
+  CHAT_MARK_READ_MAX_WAIT_MS,
+  CHAT_TYPING_TTL_MS,
+} from '../../constants/chat';
+import { CHAT_SOCKET_EVENTS } from '../../constants/socket';
+import { playMessageSound } from '../../platform/sound';
+import { SocketService } from '../../services/socket.service';
+import type { Conversation } from '../../types/api/chat.type';
+import type {
+  ConversationUpdatedEvent,
+  MessageDeletedEvent,
+  MessageReactionUpdatedEvent,
+  MessageUpdatedEvent,
+  NewMessageEvent,
+  UserTypingEvent,
+} from '../../types/realtime/chat.type';
 import { currentUserId, moveToTop, previewOf } from './chatHelpers';
 import { markById } from './messageHelpers';
-import type { ChatState } from './chatStore';
-
-type ChatSet = StoreApi<ChatState>['setState'];
-type ChatGet = StoreApi<ChatState>['getState'];
-
-const TYPING_TTL = 3000;
-const typingTimers = new Map<string, ReturnType<typeof setTimeout>>();
-const MARK_READ_DEBOUNCE = 400;
-const MARK_READ_MAX_WAIT = 1500;
-const markReadTimers = new Map<string, { timer: ReturnType<typeof setTimeout>; firstAt: number }>();
-let registered = false;
+import type { ChatGet, ChatSet } from './chatState';
+import { claimRealtimeRegistration } from '../realtimeRegistration.state';
+import {
+  chatMarkReadTimers,
+  chatTypingTimers,
+} from './chatRuntime.state';
 
 function scheduleMarkRead(get: ChatGet, conversationId: string) {
-  const existing = markReadTimers.get(conversationId);
+  const existing = chatMarkReadTimers.get(conversationId);
   const firstAt = existing?.firstAt ?? Date.now();
   if (existing) clearTimeout(existing.timer);
   const fire = () => {
-    markReadTimers.delete(conversationId);
+    chatMarkReadTimers.delete(conversationId);
     void get().markRead(conversationId);
   };
-  if (Date.now() - firstAt >= MARK_READ_MAX_WAIT) {
+  if (Date.now() - firstAt >= CHAT_MARK_READ_MAX_WAIT_MS) {
     fire();
     return;
   }
-  markReadTimers.set(conversationId, { timer: setTimeout(fire, MARK_READ_DEBOUNCE), firstAt });
+  chatMarkReadTimers.set(conversationId, {
+    timer: setTimeout(fire, CHAT_MARK_READ_DEBOUNCE_MS),
+    firstAt,
+  });
 }
 
 export function clearMarkReadTimers() {
-  markReadTimers.forEach((entry) => clearTimeout(entry.timer));
-  markReadTimers.clear();
+  chatMarkReadTimers.forEach((entry) => clearTimeout(entry.timer));
+  chatMarkReadTimers.clear();
 }
 
 function handleNewMessage(get: ChatGet, set: ChatSet, event: NewMessageEvent) {
@@ -128,13 +130,13 @@ function applyTypingUser(get: ChatGet, set: ChatSet, event: UserTypingEvent) {
   if (event.userId === currentUserId() || event.conversationId !== get().currentConversationId) {
     return;
   }
-  const existing = typingTimers.get(event.userId);
+  const existing = chatTypingTimers.get(event.userId);
   if (existing) clearTimeout(existing);
   const timer = setTimeout(() => {
-    typingTimers.delete(event.userId);
+    chatTypingTimers.delete(event.userId);
     set((state) => ({ typingUsers: state.typingUsers.filter((item) => item.userId !== event.userId) }));
-  }, TYPING_TTL);
-  typingTimers.set(event.userId, timer);
+  }, CHAT_TYPING_TTL_MS);
+  chatTypingTimers.set(event.userId, timer);
   set((state) =>
     state.typingUsers.some((item) => item.userId === event.userId)
       ? state
@@ -143,22 +145,21 @@ function applyTypingUser(get: ChatGet, set: ChatSet, event: UserTypingEvent) {
 }
 
 function clearTypingUser(set: ChatSet, userId: string) {
-  const existing = typingTimers.get(userId);
+  const existing = chatTypingTimers.get(userId);
   if (existing) {
     clearTimeout(existing);
-    typingTimers.delete(userId);
+    chatTypingTimers.delete(userId);
   }
   set((state) => ({ typingUsers: state.typingUsers.filter((item) => item.userId !== userId) }));
 }
 
 export function clearTypingTimers() {
-  typingTimers.forEach((timer) => clearTimeout(timer));
-  typingTimers.clear();
+  chatTypingTimers.forEach((timer) => clearTimeout(timer));
+  chatTypingTimers.clear();
 }
 
 export function registerChatRealtime(set: ChatSet, get: ChatGet) {
-  if (registered) return;
-  registered = true;
+  if (!claimRealtimeRegistration('chat')) return;
 
   SocketService.onReconnect(() => {
     void get().loadConversations();

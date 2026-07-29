@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react';
-import { SocketService, type ConnectionStatus } from '@services';
+import type { ConnectionStatus } from '@ola/shared/types';
+import { SocketService } from '@services';
 
 export function useConnectionStatus(): ConnectionStatus {
   return useSyncExternalStore(

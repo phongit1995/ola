@@ -1,5 +1,5 @@
 import type { AxiosInstance } from 'axios';
-import { authTokens } from '../../lib';
+import { authTokens } from '../../lib/tokenStorage';
 
 export function registerAuthTokenInterceptor(http: AxiosInstance): void {
   http.interceptors.request.use((config) => {

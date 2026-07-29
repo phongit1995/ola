@@ -1,25 +1,7 @@
 import { create } from 'zustand';
-import { ClanService } from '../services';
+import { ClanService } from '../services/clan.service';
 import { registerOnLogout } from './authStore';
-import type { Clan, UpdateClanRequest } from '../types';
-
-interface ClanState {
-  myClans: Clan[];
-  mineLoading: boolean;
-  mineLoaded: boolean;
-  current: Clan | null;
-  currentLoading: boolean;
-  currentError: string | null;
-  ensureMine: () => Promise<void>;
-  refreshMine: () => Promise<void>;
-  loadByHandle: (handle: string) => Promise<Clan | null>;
-  loadById: (id: string) => Promise<Clan | null>;
-  join: (id: string) => Promise<boolean>;
-  leave: (id: string) => Promise<boolean>;
-  update: (id: string, payload: UpdateClanRequest) => Promise<Clan | null>;
-  setCurrent: (clan: Clan | null) => void;
-  reset: () => void;
-}
+import type { ClanState } from '../types/client/clan.type';
 
 function errorMessage(error: unknown): string {
   if (error != null && typeof error === 'object' && 'message' in error) {

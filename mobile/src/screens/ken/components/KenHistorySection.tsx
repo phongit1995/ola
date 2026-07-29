@@ -7,9 +7,8 @@ import { DIVIDER, PRIMARY, TEXT_PRIMARY, TEXT_SECONDARY } from '@constants';
 import {
   KEN_HISTORY_PAGE,
   useKenHistoryStore,
-  type KenHistoryRow,
-  type KenHistoryTab,
 } from '@ola/shared/stores/kenHistoryStore';
+import type { KenHistoryRow, KenHistoryTab } from '@ola/shared/types';
 
 const KEN_TX_META = {
   VIP_PACKAGE: { icon: '👑', labelKey: 'ken.historyScreen.types.VIP_PACKAGE' },

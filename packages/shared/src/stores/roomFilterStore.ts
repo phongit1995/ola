@@ -1,15 +1,14 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import {
+  DEFAULT_ROOM_FILTERS,
+  ROOM_MAX_BLOCKED_USERS,
+} from '../constants/room';
 import { sharedPersistStorage } from '../platform/persistStorage';
-import type { RoomFilters, RoomMember } from '../types';
+import type { RoomFilters, RoomMember } from '../types/api/room.type';
+import type { RoomFilterState } from '../types/client/room.type';
 
-export const DEFAULT_ROOM_FILTERS: RoomFilters = {
-  showAll: true,
-  media: false,
-  female: false,
-  male: false,
-  flexible: false,
-};
+export { DEFAULT_ROOM_FILTERS } from '../constants/room';
 
 export function memberMatchesFilter(member: RoomMember, filters: RoomFilters): boolean {
   if (filters.showAll) return true;
@@ -19,17 +18,6 @@ export function memberMatchesFilter(member: RoomMember, filters: RoomFilters): b
   if (filters.male && member.gender === 'male') return true;
   if (filters.flexible && member.gender !== 'female' && member.gender !== 'male') return true;
   return false;
-}
-
-const MAX_BLOCKED_USERS = 500;
-
-interface RoomFilterState {
-  filters: RoomFilters;
-  blockedUserIds: string[];
-  setFilters: (filters: RoomFilters) => void;
-  blockUser: (userId: string) => void;
-  unblockUser: (userId: string) => void;
-  isBlocked: (userId: string) => boolean;
 }
 
 export const useRoomFilterStore = create<RoomFilterState>()(
@@ -42,7 +30,11 @@ export const useRoomFilterStore = create<RoomFilterState>()(
         set((state) =>
           state.blockedUserIds.includes(userId)
             ? state
-            : { blockedUserIds: [...state.blockedUserIds, userId].slice(-MAX_BLOCKED_USERS) }
+            : {
+                blockedUserIds: [...state.blockedUserIds, userId].slice(
+                  -ROOM_MAX_BLOCKED_USERS
+                ),
+              }
         ),
       unblockUser: (userId) =>
         set((state) => ({

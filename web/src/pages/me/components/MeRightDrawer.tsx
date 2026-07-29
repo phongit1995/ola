@@ -10,7 +10,8 @@ import {
 } from '@components';
 import { activeVipTypeId, colorForName, toast } from '@lib';
 import { UserService } from '@services';
-import { useMeLocalStore, type ViewedProfile } from '@/store/meLocalStore';
+import { useMeLocalStore } from '@/store/meLocalStore';
+import type { ViewedProfile } from '@ola/shared/types';
 import { CLOSE_ANIMATION_MS } from '../constants';
 
 interface MeRightDrawerProps {

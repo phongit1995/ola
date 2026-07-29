@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import type { SegmentTheme } from './spinWheel.constants';
+import type { SegmentTheme } from '@ola/shared/types';
 
 export const TEXT_SHADOW: CSSProperties = {
   textShadow: '0 2px 4px rgba(0,0,0,0.45)',

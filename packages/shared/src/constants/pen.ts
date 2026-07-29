@@ -1,0 +1,4 @@
+export const PEN_SHOTS_PAGE_SIZE = 10;
+export const PEN_SHOTS_MOBILE_PAGE_SIZE = 12;
+export const PEN_HISTORY_PAGE_SIZE = 10;
+export const PEN_LEADERBOARD_PAGE_SIZE = 10;

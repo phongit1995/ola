@@ -1,6 +1,10 @@
 import dayjs from 'dayjs';
 import localizedFormat from 'dayjs/plugin/localizedFormat';
 import 'dayjs/locale/vi';
+import {
+  EN_TIME_LABELS,
+  VI_TIME_LABELS,
+} from './datetime.constants';
 
 dayjs.extend(localizedFormat);
 
@@ -66,38 +70,8 @@ export function createDateFormatter(locale: string): (iso: string) => string {
   };
 }
 
-interface TimeLabels {
-  justNow: string;
-  minute: (n: number) => string;
-  hour: (n: number) => string;
-  today: string;
-  yesterday: string;
-  dayBefore: string;
-  weekdays: string[];
-}
-
-const VI_LABELS: TimeLabels = {
-  justNow: 'vừa tức thì',
-  minute: (n) => `${n} phút`,
-  hour: (n) => `${n} giờ`,
-  today: 'hôm nay',
-  yesterday: 'hôm qua',
-  dayBefore: 'hôm kia',
-  weekdays: ['Chủ Nhật', 'thứ Hai', 'thứ Ba', 'thứ Tư', 'thứ Năm', 'thứ Sáu', 'thứ Bảy'],
-};
-
-const EN_LABELS: TimeLabels = {
-  justNow: 'now',
-  minute: (n) => `${n} ${n > 1 ? 'mins' : 'min'}`,
-  hour: (n) => `${n} ${n > 1 ? 'hrs' : 'hr'}`,
-  today: 'today',
-  yesterday: 'yesterday',
-  dayBefore: '2 days',
-  weekdays: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
-};
-
 export function createTimeFormatter(locale: string): (iso: string) => string {
-  const labels = resolveLocale(locale) === 'vi' ? VI_LABELS : EN_LABELS;
+  const labels = resolveLocale(locale) === 'vi' ? VI_TIME_LABELS : EN_TIME_LABELS;
   return (iso: string) => {
     const then = dayjs(iso);
     if (!then.isValid()) return '';

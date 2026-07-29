@@ -13,8 +13,8 @@ import {
   SMASH_TAIL_HIT,
   SMASH_TAIL_MISS,
   TICK_MS,
-  type Nest,
 } from './eggGame.constants';
+import type { Nest } from '@ola/shared/types';
 import type { SmashOutcome, SmashStarter } from './useEggGame';
 
 type Phase = 'idle' | 'smashing' | 'broken';

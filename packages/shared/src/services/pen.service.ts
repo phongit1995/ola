@@ -1,5 +1,5 @@
-import { http } from '../api';
-import { API_PATH } from '../config';
+import { http } from '../api/http';
+import { API_PATH } from '../config/api';
 import type {
   CreateShotRequest,
   CreateShotResponse,
@@ -12,7 +12,7 @@ import type {
   PenHistoryParams,
   PenLeaderboardPeriod,
   PenLeaderboardResult,
-} from '../types';
+} from '../types/api/pen.type';
 
 export class PenService {
   static createShot(payload: CreateShotRequest): Promise<CreateShotResponse> {

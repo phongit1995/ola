@@ -1,5 +1,5 @@
 import type { TextStyle } from 'react-native';
-import type { SegmentTheme } from '@ola/shared/lib';
+import type { SegmentTheme } from '@ola/shared/types';
 
 export const TEXT_SHADOW: TextStyle = {
   textShadowColor: 'rgba(0,0,0,0.45)',

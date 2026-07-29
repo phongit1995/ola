@@ -1,11 +1,8 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { cn, portalRoot } from '@lib';
-import {
-  useToastStore,
-  type ToastItem,
-  type ToastType,
-} from '@/store/toastStore';
+import { useToastStore } from '@/store/toastStore';
+import type { ToastItem, ToastType } from '@ola/shared/types';
 
 const AUTO_DISMISS_MS = 3000;
 

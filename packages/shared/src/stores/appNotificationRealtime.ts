@@ -1,22 +1,15 @@
-import { SocketService } from '../services';
-import type { AppNotification } from '../types';
+import { APP_NOTIFICATION_SOCKET_EVENT } from '../constants/socket';
+import { SocketService } from '../services/socket.service';
+import type { AppNotificationIncoming } from '../types/realtime/notification.type';
 import { useAppNotificationStore } from './appNotificationStore';
 import { useFriendsStore } from './friendsStore';
 import { useMarriageStore } from './marriageStore';
-
-interface AppNotificationIncoming {
-  notification?: AppNotification | null;
-  removedId?: string | null;
-  unreadCount: number;
-}
-
-let registered = false;
+import { claimRealtimeRegistration } from './realtimeRegistration.state';
 
 export function registerAppNotificationRealtime() {
-  if (registered) return;
-  registered = true;
+  if (!claimRealtimeRegistration('app-notification')) return;
 
-  SocketService.on<AppNotificationIncoming>('APP_NOTIFICATION', (data) => {
+  SocketService.on<AppNotificationIncoming>(APP_NOTIFICATION_SOCKET_EVENT, (data) => {
     if (data == null) return;
     if (data.notification == null && data.removedId == null) return;
     const store = useAppNotificationStore.getState();

@@ -1,10 +1,6 @@
-export interface MessageMetadata {
-  url?: string;
-  duration?: number;
-  waveform?: number[];
-  uploadName?: string;
-  uploadType?: string;
-}
+import type { MessageMetadata } from '../types/lib.type';
+
+export type { MessageMetadata } from '../types/lib.type';
 
 export function parseMessageMetadata(metadata?: string | null): MessageMetadata {
   if (metadata == null || metadata === '') return {};

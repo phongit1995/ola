@@ -1,33 +1,16 @@
 import { create } from 'zustand';
-import { MeService } from '../services';
-import { toast, type UploadFile } from '../lib';
-import type { CreatePostRequest, MeFeedFilter, Post, PostReaction } from '../types';
+import { ME_FEED_PAGE_SIZE } from '../constants/feed';
+import { toast } from '../lib/toast';
+import { MeService } from '../services/me.service';
+import type { Post } from '../types/api/me.type';
+import type { MeFeedState } from '../types/client/feed.type';
 import i18n from 'i18next';
 import { applyPostReaction, reconcileTopLikers } from './postHelpers';
 import { selfLiker } from './selfLiker';
-
-interface MeFeedState {
-  posts: Post[];
-  loading: boolean;
-  loadingMore: boolean;
-  error: boolean;
-  nextCursor: string | null;
-  reacting: Set<string>;
-  refreshing: boolean;
-  loadFeed: (filter?: MeFeedFilter) => Promise<void>;
-  refreshFeed: (filter?: MeFeedFilter) => Promise<void>;
-  loadMore: (filter?: MeFeedFilter) => Promise<void>;
-  toggleReaction: (id: string, type: PostReaction) => Promise<void>;
-  createPost: (payload: CreatePostRequest, files: UploadFile[], imageUrls: string[]) => Promise<Post | null>;
-  prependPost: (post: Post) => void;
-  updatePost: (id: string, payload: CreatePostRequest, files: UploadFile[], imageUrls: string[], existingImages?: Post['images']) => Promise<Post | null>;
-  removePost: (id: string) => Promise<boolean>;
-  togglePin: (id: string, pinned: boolean) => Promise<void>;
-  adjustCommentCount: (id: string, delta: number) => void;
-  syncPost: (post: Post) => void;
-}
-
-const FEED_PAGE_SIZE = 30;
+import {
+  currentMeFeedRequestId,
+  nextMeFeedRequestId,
+} from './feedRequest.state';
 
 function replacePost(posts: Post[], updated: Post): Post[] {
   return posts.map((post) => (post.id === updated.id ? updated : post));
@@ -46,8 +29,6 @@ function applyPin(posts: Post[], updated: Post): Post[] {
   return [updated, ...others];
 }
 
-let feedRequestId = 0;
-
 export const useMeFeedStore = create<MeFeedState>((set, get) => ({
   posts: [],
   loading: true,
@@ -57,27 +38,27 @@ export const useMeFeedStore = create<MeFeedState>((set, get) => ({
   reacting: new Set(),
   refreshing: false,
   loadFeed: async (filter) => {
-    const requestId = ++feedRequestId;
+    const requestId = nextMeFeedRequestId();
     set({ loading: true, error: false });
     try {
-      const result = await MeService.feed({ filter, limit: FEED_PAGE_SIZE });
-      if (requestId !== feedRequestId) return;
+      const result = await MeService.feed({ filter, limit: ME_FEED_PAGE_SIZE });
+      if (requestId !== currentMeFeedRequestId()) return;
       set({ posts: result.items, nextCursor: result.nextCursor, loading: false });
     } catch (error) {
-      if (requestId !== feedRequestId) return;
+      if (requestId !== currentMeFeedRequestId()) return;
       console.error('load me feed failed', error);
       set({ posts: [], nextCursor: null, loading: false, error: true });
     }
   },
   refreshFeed: async (filter) => {
-    const requestId = ++feedRequestId;
+    const requestId = nextMeFeedRequestId();
     set({ refreshing: true, error: false });
     try {
-      const result = await MeService.feed({ filter, limit: FEED_PAGE_SIZE });
-      if (requestId !== feedRequestId) return;
+      const result = await MeService.feed({ filter, limit: ME_FEED_PAGE_SIZE });
+      if (requestId !== currentMeFeedRequestId()) return;
       set({ posts: result.items, nextCursor: result.nextCursor, refreshing: false });
     } catch (error) {
-      if (requestId !== feedRequestId) return;
+      if (requestId !== currentMeFeedRequestId()) return;
       console.error('refresh me feed failed', error);
       set({ refreshing: false });
     }
@@ -85,18 +66,22 @@ export const useMeFeedStore = create<MeFeedState>((set, get) => ({
   loadMore: async (filter) => {
     const { nextCursor, loading, loadingMore } = get();
     if (nextCursor == null || loading || loadingMore) return;
-    const requestId = feedRequestId;
+    const requestId = currentMeFeedRequestId();
     set({ loadingMore: true });
     try {
-      const result = await MeService.feed({ filter, limit: FEED_PAGE_SIZE, cursor: nextCursor });
-      if (requestId !== feedRequestId) return;
+      const result = await MeService.feed({
+        filter,
+        limit: ME_FEED_PAGE_SIZE,
+        cursor: nextCursor,
+      });
+      if (requestId !== currentMeFeedRequestId()) return;
       set((state) => ({
         posts: [...state.posts, ...result.items],
         nextCursor: result.nextCursor,
         loadingMore: false,
       }));
     } catch (error) {
-      if (requestId !== feedRequestId) return;
+      if (requestId !== currentMeFeedRequestId()) return;
       console.error('load more me feed failed', error);
       set({ loadingMore: false });
     }

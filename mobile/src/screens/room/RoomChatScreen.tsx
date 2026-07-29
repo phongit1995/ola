@@ -16,17 +16,14 @@ import type {
   NavigationAction,
 } from '@react-navigation/native';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
-import {
-  useRoomChatStore,
-  type RoomTab,
-} from '@ola/shared/stores/roomChatStore';
+import { useRoomChatStore } from '@ola/shared/stores/roomChatStore';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import {
   memberMatchesFilter,
   useRoomFilterStore,
 } from '@ola/shared/stores/roomFilterStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
-import type { ReactionType } from '@ola/shared/types';
+import type { ReactionType, RoomTab } from '@ola/shared/types';
 import type {
   MainTabParamList,
   RoomStackParamList,

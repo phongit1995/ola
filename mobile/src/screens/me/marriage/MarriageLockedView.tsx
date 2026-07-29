@@ -2,7 +2,8 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, Text, View } from 'react-native';
 import { createTimeFormatter, toast } from '@ola/shared/lib';
-import { useMarriageStore, type PendingProposal } from '@ola/shared/stores/marriageStore';
+import { useMarriageStore } from '@ola/shared/stores/marriageStore';
+import type { PendingProposal } from '@ola/shared/types';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { VipAvatar } from '@components/ui/VipAvatar';
 

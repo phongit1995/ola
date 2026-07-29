@@ -1,6 +1,6 @@
-import { http } from '../api';
-import { API_PATH } from '../config';
-import type { MiniGame } from '../types';
+import { http } from '../api/http';
+import { API_PATH } from '../config/api';
+import type { MiniGame } from '../types/api/miniGame.type';
 
 export class MiniGameService {
   static list(): Promise<MiniGame[]> {

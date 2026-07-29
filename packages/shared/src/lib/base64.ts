@@ -1,4 +1,4 @@
-const BASE64_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+import { BASE64_ALPHABET } from './base64.constants';
 
 export function utf8Encode(input: string): Uint8Array {
   const bytes: number[] = [];

@@ -1,22 +1,15 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { encodeSecret } from '../lib';
+import { MAX_SAVED_ACCOUNTS } from '../constants/storage';
+import { encodeSecret } from '../lib/secret';
 import { sharedPersistStorage } from '../platform/persistStorage';
+import type {
+  SavedAccount,
+  SavedAccountsState,
+} from '../types/client/savedAccount.type';
 
-export const MAX_SAVED_ACCOUNTS = 3;
-
-export interface SavedAccount {
-  username: string;
-  secret: string;
-  avatar?: string;
-  lastAccessTime: number;
-}
-
-interface SavedAccountsState {
-  accounts: SavedAccount[];
-  saveAccount: (username: string, password: string, avatar?: string) => void;
-  removeAccount: (username: string) => void;
-}
+export { MAX_SAVED_ACCOUNTS } from '../constants/storage';
+export type { SavedAccount } from '../types/client/savedAccount.type';
 
 function byMostRecent(a: SavedAccount, b: SavedAccount): number {
   return b.lastAccessTime - a.lastAccessTime;

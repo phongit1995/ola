@@ -1,5 +1,5 @@
 import { useAuthStore } from '../authStore';
-import type { Conversation, Message } from '../../types';
+import type { Conversation, Message } from '../../types/api/chat.type';
 
 export function currentUserId(): string {
   return useAuthStore.getState().user?.id ?? '';

@@ -1,12 +1,5 @@
 import { create } from 'zustand';
-
-interface MediaViewerState {
-  images: string[];
-  index: number;
-  open: boolean;
-  openViewer: (images: string[], index?: number) => void;
-  close: () => void;
-}
+import type { MediaViewerState } from '../types/client/mediaViewer.type';
 
 export const useMediaViewerStore = create<MediaViewerState>((set) => ({
   images: [],

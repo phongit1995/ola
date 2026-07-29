@@ -9,8 +9,8 @@ import { kenTreasureAssets, openingFrames } from './kenTreasureAssets';
 import {
   useKenTreasureStore,
   useKenTreasurePositionStore,
-  type KenTreasureChest,
 } from './kenTreasureStore';
+import type { KenTreasureChest } from '@ola/shared/types';
 
 const goldTextStyle: CSSProperties = {
   color: '#ffe27a',

@@ -22,8 +22,8 @@ import { formatKen } from '@ola/shared/lib';
 import {
   useKenTreasureStore,
   useKenTreasurePositionStore,
-  type KenTreasureChest,
 } from '@ola/shared/stores/kenTreasureStore';
+import type { KenTreasureChest } from '@ola/shared/types';
 import { assetRatio } from '@screens/games/pen/penUi';
 import { kenTreasureAssets, openingFrames } from './kenTreasureAssets';
 

@@ -1,34 +1,20 @@
 import { create } from 'zustand';
-import { PresenceService } from '../services';
+import {
+  PRESENCE_FOCUS_POLL_INTERVAL_MS,
+  PRESENCE_LIST_POLL_INTERVAL_MS,
+} from '../constants/presence';
+import { PresenceService } from '../services/presence.service';
+import type { PresenceState } from '../types/client/presence.type';
 import { registerOnLogout } from './authStore';
+import {
+  configurePresenceForegroundCheck,
+  isPresenceForeground,
+} from './presenceForeground.state';
 
-export interface PresenceInfo {
-  isOnline: boolean;
-  lastActiveAt?: string;
-}
-
-interface PresenceState {
-  presence: Map<string, PresenceInfo>;
-  listIntervalId: ReturnType<typeof setInterval> | null;
-  focusIntervalId: ReturnType<typeof setInterval> | null;
-  fetch: (userIds: string[]) => Promise<void>;
-  startListPolling: (getUserIds: () => string[]) => void;
-  stopListPolling: () => void;
-  startFocusPolling: (userId: string) => void;
-  stopFocusPolling: () => void;
-  reset: () => void;
-}
-
-const LIST_INTERVAL_MS = 60_000;
-const FOCUS_INTERVAL_MS = 15_000;
-
-const webDocument = (globalThis as { document?: { visibilityState?: string } }).document;
-
-let isForeground: () => boolean = () =>
-  webDocument == null || webDocument.visibilityState === 'visible';
+export type { PresenceInfo } from '../types/client/presence.type';
 
 export function configurePresenceForeground(check: () => boolean): void {
-  isForeground = check;
+  configurePresenceForegroundCheck(check);
 }
 
 export const usePresenceStore = create<PresenceState>((set, get) => ({
@@ -53,12 +39,12 @@ export const usePresenceStore = create<PresenceState>((set, get) => ({
   startListPolling: (getUserIds) => {
     get().stopListPolling();
     const run = () => {
-      if (!isForeground()) return;
+      if (!isPresenceForeground()) return;
       const ids = getUserIds();
       if (ids.length > 0) void get().fetch(ids);
     };
     run();
-    const id = setInterval(run, LIST_INTERVAL_MS);
+    const id = setInterval(run, PRESENCE_LIST_POLL_INTERVAL_MS);
     set({ listIntervalId: id });
   },
 
@@ -73,10 +59,10 @@ export const usePresenceStore = create<PresenceState>((set, get) => ({
   startFocusPolling: (userId) => {
     get().stopFocusPolling();
     const run = () => {
-      if (isForeground()) void get().fetch([userId]);
+      if (isPresenceForeground()) void get().fetch([userId]);
     };
     run();
-    const id = setInterval(run, FOCUS_INTERVAL_MS);
+    const id = setInterval(run, PRESENCE_FOCUS_POLL_INTERVAL_MS);
     set({ focusIntervalId: id });
   },
 

@@ -1,33 +1,12 @@
 import { create } from 'zustand';
-import { EggService } from '../services';
-import type { EggDrawResult, EggPack } from '../types';
+import { EggService } from '../services/egg.service';
+import type { EggGameState } from '../types/client/eggGame.type';
 import { useAuthStore } from './authStore';
+
+export type { EggPacksStatus } from '../types/client/eggGame.type';
 
 function syncAuthKen(ken: number) {
   useAuthStore.setState((state) => (state.user ? { user: { ...state.user, ken } } : state));
-}
-
-export type EggPacksStatus = 'idle' | 'loading' | 'ready' | 'error';
-
-interface EggGameState {
-  ken: number;
-  totalWin: number;
-  muted: boolean;
-  packs: EggPack[];
-  packsStatus: EggPacksStatus;
-  drawing: boolean;
-  smashing: boolean;
-  suppressKenSync: boolean;
-  winReward: EggDrawResult | null;
-  loadPacks: () => Promise<void>;
-  draw: (packId: string, idempotencyKey: string) => Promise<EggDrawResult | null>;
-  applyResult: (result: EggDrawResult) => void;
-  syncKen: (ken: number) => void;
-  beginSmash: () => void;
-  endSmash: () => void;
-  showWin: (result: EggDrawResult) => void;
-  closeWin: () => void;
-  toggleMute: () => void;
 }
 
 export const useEggGameStore = create<EggGameState>((set, get) => ({

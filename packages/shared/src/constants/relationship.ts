@@ -1,4 +1,4 @@
-import type { RelationshipStatus } from '../types';
+import type { RelationshipStatus } from '../types/api/user.type';
 
 export const RELATIONSHIP_STATUS = {
   self: 'self',

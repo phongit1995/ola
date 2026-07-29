@@ -7,7 +7,7 @@ import {
   Texture,
   type Ticker,
 } from 'pixi.js';
-import { ARCADE_ATTENTION_REASON } from '@ola/shared/types';
+import { ARCADE_ATTENTION_REASON } from '@ola/shared/constants';
 import {
   GAME_ERROR_CODE,
   bridge,

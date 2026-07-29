@@ -1,4 +1,4 @@
-import type { PostAuthor } from '../types';
+import type { PostAuthor } from '../types/api/me.type';
 import { useAuthStore } from './authStore';
 
 export function selfLiker(): PostAuthor | undefined {

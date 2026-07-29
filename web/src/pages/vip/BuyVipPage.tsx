@@ -10,8 +10,8 @@ import {
   vipPackageLabel,
   vipById,
   vipName,
-  type BuyVipMode,
 } from '@lib';
+import type { BuyVipMode } from '@ola/shared/types';
 import {
   ScreenHeader,
   FullScreenOverlay,

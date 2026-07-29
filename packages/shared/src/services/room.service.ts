@@ -1,14 +1,12 @@
-import { http } from '../api';
-import { API_PATH } from '../config';
+import { http } from '../api/http';
+import { API_PATH } from '../config/api';
+import { AUDIO_UPLOAD_TIMEOUT_MS } from '../constants/upload';
 import {
   appendUploadFile,
   audioUploadFilename,
   uploadFileMimeType,
-  type UploadFile,
 } from '../lib/upload';
 import type {
-  MessageResult,
-  ReactionType,
   Room,
   RoomJoinTicket,
   RoomListResult,
@@ -18,17 +16,15 @@ import type {
   BrowseRoomsParams,
   RoomMessagesParams,
   CreateRoomRequest,
+  SendRoomAudioOptions,
   UpdateRoomRequest,
   SendRoomMessageRequest,
-} from '../types';
+} from '../types/api/room.type';
+import type { MessageResult } from '../types/api/auth.type';
+import type { ReactionType } from '../types/api/chat.type';
+import type { UploadFile } from '../types/client/upload.type';
 
-export interface SendRoomAudioOptions {
-  clientMsgId?: string;
-  replyToId?: string;
-  waveform?: number[];
-}
-
-const AUDIO_UPLOAD_TIMEOUT_MS = 120_000;
+export type { SendRoomAudioOptions } from '../types/api/room.type';
 
 export class RoomService {
   static browse(params: BrowseRoomsParams = {}): Promise<RoomListResult> {

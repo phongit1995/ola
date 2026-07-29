@@ -1,29 +1,12 @@
 import { create } from 'zustand';
-import { WheelService } from '../services';
-import type { WheelConfig, WheelPlayerSegment, WheelSpinResult } from '../types';
-import { randomUuid } from '../lib';
+import { randomUuid } from '../lib/randomUuid';
 import { rotationForIndex } from '../lib/spinWheel';
+import { WheelService } from '../services/wheel.service';
+import type { WheelPlayerSegment } from '../types/api/wheel.type';
+import type { SpinWheelState } from '../types/client/spinWheel.type';
 import { useAuthStore } from './authStore';
 
-export type WheelConfigStatus = 'idle' | 'loading' | 'ready' | 'error';
-
-interface SpinWheelState {
-  ken: number;
-  muted: boolean;
-  config: WheelConfig | null;
-  configStatus: WheelConfigStatus;
-  rotation: number;
-  spinning: boolean;
-  suppressKenSync: boolean;
-  result: WheelSpinResult | null;
-  pendingResult: WheelSpinResult | null;
-  loadConfig: () => Promise<void>;
-  spin: () => Promise<boolean>;
-  settle: () => void;
-  syncKen: (ken: number) => void;
-  closeResult: () => void;
-  toggleMute: () => void;
-}
+export type { WheelConfigStatus } from '../types/client/spinWheel.type';
 
 function sortedSegments(segments: WheelPlayerSegment[]): WheelPlayerSegment[] {
   return [...segments].sort((a, b) => a.sortOrder - b.sortOrder);

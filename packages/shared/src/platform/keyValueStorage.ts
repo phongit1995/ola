@@ -1,16 +1,17 @@
-export interface KeyValueStorage {
-  getItem(key: string): string | null;
-  setItem(key: string, value: string): void;
-  removeItem(key: string): void;
-}
+import type { KeyValueStorage } from '../types/platform.type';
+import {
+  getCurrentStorage,
+  setCurrentStorage,
+} from './platformRuntime.state';
 
-let current: KeyValueStorage | null = null;
+export type { KeyValueStorage } from '../types/platform.type';
 
 export function configureKeyValueStorage(storage: KeyValueStorage): void {
-  current = storage;
+  setCurrentStorage(storage);
 }
 
 export function getKeyValueStorage(): KeyValueStorage {
+  const current = getCurrentStorage();
   if (current != null) return current;
   const globalStorage = (globalThis as { localStorage?: KeyValueStorage }).localStorage;
   if (globalStorage != null) return globalStorage;

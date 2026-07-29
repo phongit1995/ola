@@ -1,0 +1,9 @@
+export const VOICE_RECORDING_BAR_COUNT = 30;
+export const VOICE_MESSAGE_BAR_COUNT = 22;
+export const VOICE_MIN_LEVEL = 0.08;
+export const VOICE_SILENCE_DB = -100;
+export const VOICE_METERING_INTERVAL_MS = 100;
+
+export const VOICE_LEVEL_DRIFT_DB_PER_SECOND = 1.5;
+export const VOICE_LEVEL_FLOOR_FALL_DB_PER_SECOND = 6;
+export const VOICE_LEVEL_MIN_SPAN_DB = 18;

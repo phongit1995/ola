@@ -1,26 +1,19 @@
 import { useCallback, useRef } from 'react';
 import i18n from 'i18next';
-import { MeService } from '../services';
-import { toast } from '../lib';
-import type { Post, PostReaction } from '../types';
+import { toast } from '../lib/toast';
+import { MeService } from '../services/me.service';
+import type { PostReaction } from '../types/api/me.type';
+import type {
+  PostListActions,
+  PostListActionsOptions,
+} from '../types/client/feed.type';
 import { applyPostReaction, reconcileTopLikers } from './postHelpers';
 import { selfLiker } from './selfLiker';
 
-type PostsUpdater = (updater: (current: Post[]) => Post[]) => void;
-
-export interface PostListActionsOptions {
-  posts: Post[];
-  setPosts: PostsUpdater;
-  keepOnlyLiked?: boolean;
-  reloadAfterPin?: () => Promise<unknown> | void;
-}
-
-export interface PostListActions {
-  toggleReaction: (id: string, type: PostReaction) => Promise<void>;
-  adjustCommentCount: (id: string, delta: number) => void;
-  deletePost: (id: string) => Promise<void>;
-  togglePin: (id: string, pinned: boolean) => Promise<void>;
-}
+export type {
+  PostListActions,
+  PostListActionsOptions,
+} from '../types/client/feed.type';
 
 export function usePostListActions({
   posts,

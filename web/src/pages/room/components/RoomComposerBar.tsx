@@ -29,7 +29,7 @@ import {
   VoiceRecorderControl,
   type VoiceRecorderControlHandle,
 } from '@components/chat/voice/VoiceRecorderControl';
-import type { RoomAudioSendResult } from '@/store/roomChatStore';
+import type { RoomAudioSendResult } from '@ola/shared/types';
 
 export interface RoomComposerHandle {
   focus: () => void;

@@ -1,18 +1,16 @@
-import type { PenShotView, PenSide, PenUserBrief } from '../types';
-import type { PenHistorySection } from '../stores/penHistoryStore';
+import type { PenShotView } from '../types/api/pen.type';
+import type {
+  PenAllHistoryRowView,
+  PenHistoryRowView,
+  PenHistorySection,
+  PenRowOutcome,
+} from '../types/client/penHistory.type';
 
-export type PenRowOutcome = 'win' | 'lose' | 'pending' | 'cancelled';
-
-export interface PenHistoryRowView {
-  id: string;
-  opponent?: PenUserBrief;
-  side?: PenSide;
-  bet: number;
-  date: string;
-  time: string;
-  outcome: PenRowOutcome;
-  amount: number;
-}
+export type {
+  PenAllHistoryRowView,
+  PenHistoryRowView,
+  PenRowOutcome,
+} from '../types/client/penHistory.type';
 
 function pad(value: number): string {
   return String(value).padStart(2, '0');
@@ -38,16 +36,6 @@ function resolveAmount(shot: PenShotView, outcome: PenRowOutcome): number {
   if (outcome === 'win') return (shot.payout ?? shot.betAmount * 2) - shot.betAmount;
   if (outcome === 'lose') return -shot.betAmount;
   return 0;
-}
-
-export interface PenAllHistoryRowView {
-  id: string;
-  shooter?: PenUserBrief;
-  keeper?: PenUserBrief;
-  winnerId?: string;
-  bet: number;
-  date: string;
-  time: string;
 }
 
 export function toAllHistoryRow(shot: PenShotView): PenAllHistoryRowView {

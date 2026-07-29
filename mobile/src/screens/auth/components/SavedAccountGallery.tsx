@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { colorForName } from '@ola/shared/lib';
-import type { SavedAccount } from '@ola/shared/stores/savedAccountsStore';
+import type { SavedAccount } from '@ola/shared/types';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
 import { CachedImage } from '@components/ui/CachedImage';
 

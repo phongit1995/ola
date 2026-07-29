@@ -6,7 +6,7 @@ import { PenService } from '@services';
 import type { PenSide } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
 import { PEN_HISTORY_PAGE, usePenHistoryStore } from '@/store/penHistoryStore';
-import type { PenHistorySection as SectionRole } from '@/store/penHistoryStore';
+import type { PenHistorySection as SectionRole } from '@ola/shared/types';
 import { penAssets, penHistoryAssets } from './penAssets';
 import { PenHistoryTable } from './PenHistoryTable';
 import {

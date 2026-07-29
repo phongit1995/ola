@@ -1,30 +1,19 @@
-import type { StoreApi } from 'zustand';
+import { CHAT_REPLY_EXCERPT_MAX_RUNES } from '../../constants/chat';
 import { useAuthStore } from '../authStore';
-import { parseMessageMetadata } from '../../lib';
-import type { ChatReplySnapshot, Message, MessageType } from '../../types';
-import type { ChatState } from './chatStore';
+import { parseMessageMetadata } from '../../lib/messageMetadata';
+import type { ChatReplySnapshot, Message } from '../../types/api/chat.type';
+import type {
+  ChatSet,
+  OptimisticMessageInput,
+} from '../../types/client/chat.type';
 import { applyOutgoingToConversations } from './chatHelpers';
-
-type ChatSet = StoreApi<ChatState>['setState'];
-
-const REPLY_EXCERPT_MAX_RUNES = 120;
-
-interface OptimisticMessageInput {
-  clientMsgId: string;
-  conversationId: string;
-  type: MessageType;
-  status: Message['status'];
-  content?: string;
-  metadata?: string;
-  replyTo?: ChatReplySnapshot;
-}
 
 export function replySnapshotOf(message: Message): ChatReplySnapshot {
   return {
     messageId: message.id,
     senderId: message.senderId,
     senderName: message.senderName,
-    excerpt: Array.from(message.content).slice(0, REPLY_EXCERPT_MAX_RUNES).join(''),
+    excerpt: Array.from(message.content).slice(0, CHAT_REPLY_EXCERPT_MAX_RUNES).join(''),
     type: message.type,
     imageUrl: message.type === 'image' ? parseMessageMetadata(message.metadata).url : undefined,
   };

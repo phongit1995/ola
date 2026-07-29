@@ -1,6 +1,8 @@
-import { http } from '../api';
-import { appendUploadFile, type UploadFile } from '../lib/upload';
-import { API_PATH } from '../config';
+import { http } from '../api/http';
+import { appendUploadFile } from '../lib/upload';
+import type { UploadFile } from '../types/client/upload.type';
+import { API_PATH } from '../config/api';
+import type { MessageResult } from '../types/api/auth.type';
 import type {
   Clan,
   ClanAssignRoleRequest,
@@ -11,12 +13,9 @@ import type {
   ClanRole,
   ClanUploadImageResult,
   CreateClanRequest,
-  CreatePostRequest,
-  FeedParams,
-  MessageResult,
-  Post,
   UpdateClanRequest,
-} from '../types';
+} from '../types/api/clan.type';
+import type { CreatePostRequest, FeedParams, Post } from '../types/api/me.type';
 
 export class ClanService {
   static checkName(name: string): Promise<ClanCheckNameResult> {

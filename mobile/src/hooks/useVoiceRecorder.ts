@@ -14,8 +14,8 @@ import {
   VOICE_MIN_LEVEL,
   VOICE_RECORDING_BAR_COUNT,
   VOICE_SILENCE_DB,
-  type NativeUploadFile,
 } from '@ola/shared/lib';
+import type { NativeUploadFile } from '@ola/shared/types';
 import { recordAppError } from '@lib/telemetry';
 import { deleteTemporaryVoiceFile } from '@lib/temporaryVoiceFile';
 

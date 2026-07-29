@@ -1,6 +1,10 @@
-import { http } from '../api';
-import { API_PATH } from '../config';
-import type { TopupConfigResult, UserSettings, UpdateSettingsRequest } from '../types';
+import { http } from '../api/http';
+import { API_PATH } from '../config/api';
+import type {
+  TopupConfigResult,
+  UpdateSettingsRequest,
+  UserSettings,
+} from '../types/api/settings.type';
 
 export class SettingsService {
   static get(): Promise<UserSettings> {

@@ -1,9 +1,10 @@
-import type { StoreApi } from 'zustand';
-import { RoomService, SocketService } from '../services';
+import { ROOM_SOCKET_EVENTS } from '../constants/socket';
 import { useAuthStore } from './authStore';
 import { useRoomFilterStore } from './roomFilterStore';
-import { ROOM_SOCKET_EVENTS, type RoomMessage, type RoomReactor } from '../types';
 import { playRoomTagSound } from '../platform/sound';
+import { RoomService } from '../services/room.service';
+import { SocketService } from '../services/socket.service';
+import type { RoomMessage, RoomReactor } from '../types/api/room.type';
 import {
   markRoomMessageById,
   messageMentionsUser,
@@ -12,12 +13,8 @@ import {
   withSenderVip,
   withVipTypeId,
 } from './roomHelpers';
-import type { RoomChatState } from './roomChatStore';
-
-type RoomSet = StoreApi<RoomChatState>['setState'];
-type RoomGet = StoreApi<RoomChatState>['getState'];
-
-let registered = false;
+import type { RoomChatGet as RoomGet, RoomChatSet as RoomSet } from './roomChatState';
+import { claimRealtimeRegistration } from './realtimeRegistration.state';
 
 async function reloadMembers(get: RoomGet, set: RoomSet, roomId: string) {
   try {
@@ -107,8 +104,7 @@ function handleMemberCountChange(get: RoomGet, set: RoomSet, data: unknown) {
 }
 
 export function registerRoomRealtime(set: RoomSet, get: RoomGet) {
-  if (registered) return;
-  registered = true;
+  if (!claimRealtimeRegistration('room')) return;
 
   SocketService.on(ROOM_SOCKET_EVENTS.newMessage, (data) => handleNewMessage(get, set, data));
   SocketService.on(ROOM_SOCKET_EVENTS.messageDeleted, (data) => handleMessageDeleted(get, set, data));

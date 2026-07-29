@@ -1,0 +1,1 @@
+export const AUDIO_UPLOAD_TIMEOUT_MS = 120_000;

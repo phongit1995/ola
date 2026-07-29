@@ -20,10 +20,7 @@ import { RoomComposerBar, type RoomComposerHandle } from './RoomComposerBar';
 import { RoomReactionsDialog } from './RoomReactionsDialog';
 import { RoomReactionNotice } from './RoomReactionNotice';
 import { RoomReactionBalloons } from './RoomReactionBalloons';
-import type {
-  RoomAudioSendResult,
-  RoomChatStatus,
-} from '@/store/roomChatStore';
+import type { RoomAudioSendResult, RoomChatStatus } from '@ola/shared/types';
 import { useRoomFilterStore } from '@ola/shared/stores/roomFilterStore';
 
 interface RoomMessagesTabProps {

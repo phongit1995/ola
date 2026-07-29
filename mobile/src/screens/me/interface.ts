@@ -1,4 +1,4 @@
-import type { NativeUploadFile } from '@ola/shared/lib';
+import type { NativeUploadFile } from '@ola/shared/types';
 
 export interface PickedPhoto {
   id: string;

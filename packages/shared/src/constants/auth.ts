@@ -1,5 +1,6 @@
 export const PASSWORD_MIN = 6;
 export const PASSWORD_MAX = 20;
+export const TOKEN_REFRESH_BUFFER_MS = 30_000;
 
 export const EMAIL_VERIFY_ALLOWED_DOMAINS = ['gmail.com', 'yahoo.com', 'yahoo.com.vn', 'icloud.com'];
 

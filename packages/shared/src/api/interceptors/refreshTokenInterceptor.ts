@@ -1,22 +1,26 @@
 import type { AxiosError, AxiosInstance } from 'axios';
-import type { IApiResponse, ApiErrorBody, RefreshTokenResult } from '../../types';
-import { API_PATH } from '../../config';
-import { ApiError, authTokens, toApiError } from '../../lib';
+import { API_PATH } from '../../config/api';
+import { TOKEN_REFRESH_BUFFER_MS } from '../../constants/auth';
+import { ApiError, toApiError } from '../../lib/apiError';
 import { base64DecodeToString } from '../../lib/base64';
-
-const TOKEN_REFRESH_BUFFER_MS = 30_000;
-
-let onUnauthorized: (() => void) | null = null;
+import { authTokens } from '../../lib/tokenStorage';
+import type { RefreshTokenResult } from '../../types/api/auth.type';
+import type { ApiErrorBody, IApiResponse } from '../../types/api/common.type';
+import {
+  getOrCreatePendingRefresh,
+  getRefreshHttpInstance,
+  notifyUnauthorized,
+  setRefreshHttpInstance,
+  setUnauthorizedHandler,
+} from './refreshToken.state';
 
 export function setOnUnauthorized(handler: (() => void) | null): void {
-  onUnauthorized = handler;
+  setUnauthorizedHandler(handler);
 }
-
-let httpInstance: AxiosInstance | null = null;
-let refreshPromise: Promise<string> | null = null;
 
 async function requestNewAccessToken(): Promise<string> {
   const refreshToken = authTokens.getRefreshToken();
+  const httpInstance = getRefreshHttpInstance();
   if (!refreshToken || httpInstance == null) {
     throw new Error('Missing refresh token');
   }
@@ -32,12 +36,7 @@ async function requestNewAccessToken(): Promise<string> {
 }
 
 export function refreshAccessToken(): Promise<string> {
-  if (!refreshPromise) {
-    refreshPromise = requestNewAccessToken().finally(() => {
-      refreshPromise = null;
-    });
-  }
-  return refreshPromise;
+  return getOrCreatePendingRefresh(requestNewAccessToken);
 }
 
 function accessTokenExpMs(token: string): number | null {
@@ -55,7 +54,7 @@ function accessTokenExpMs(token: string): number | null {
 
 export function handleAuthExpired(): void {
   authTokens.clear();
-  onUnauthorized?.();
+  notifyUnauthorized();
 }
 
 function isAuthRejection(error: unknown): boolean {
@@ -83,7 +82,7 @@ export async function ensureFreshToken(): Promise<string> {
 }
 
 export function registerRefreshTokenInterceptor(http: AxiosInstance): void {
-  httpInstance = http;
+  setRefreshHttpInstance(http);
 
   http.interceptors.response.use(
     (response) => response,
