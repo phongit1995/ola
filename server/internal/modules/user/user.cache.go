@@ -15,66 +15,72 @@ import (
 )
 
 type cachedUser struct {
-	ID             string                 `json:"id"`
-	Username       string                 `json:"username"`
-	Email          string                 `json:"email"`
-	Avatar         string                 `json:"avatar"`
-	Phone          string                 `json:"phone"`
-	FullName       string                 `json:"fullName"`
-	Gender         string                 `json:"gender"`
-	Bio            string                 `json:"bio"`
-	BioImage       *string                `json:"bioImage"`
-	DateOfBirth    *time.Time             `json:"dateOfBirth"`
-	CustomInfo     map[string]interface{} `json:"customInfo"`
-	Ken            int                    `json:"ken"`
-	VipUsed        *string                `json:"vipUsed"`
-	VipEndTime     *time.Time             `json:"vipEndTime"`
-	FollowerCount  int                    `json:"followerCount"`
-	FollowingCount int                    `json:"followingCount"`
-	CreatedAt      time.Time              `json:"createdAt"`
-	UpdatedAt      time.Time              `json:"updatedAt"`
+	ID              string                 `json:"id"`
+	Username        string                 `json:"username"`
+	Email           string                 `json:"email"`
+	EmailVerified   bool                   `json:"emailVerified"`
+	EmailVerifiedAt *time.Time             `json:"emailVerifiedAt"`
+	Avatar          string                 `json:"avatar"`
+	Phone           string                 `json:"phone"`
+	FullName        string                 `json:"fullName"`
+	Gender          string                 `json:"gender"`
+	Bio             string                 `json:"bio"`
+	BioImage        *string                `json:"bioImage"`
+	DateOfBirth     *time.Time             `json:"dateOfBirth"`
+	CustomInfo      map[string]interface{} `json:"customInfo"`
+	Ken             int                    `json:"ken"`
+	VipUsed         *string                `json:"vipUsed"`
+	VipEndTime      *time.Time             `json:"vipEndTime"`
+	FollowerCount   int                    `json:"followerCount"`
+	FollowingCount  int                    `json:"followingCount"`
+	CreatedAt       time.Time              `json:"createdAt"`
+	UpdatedAt       time.Time              `json:"updatedAt"`
 }
 
 func toCachedUser(u *models.User) *cachedUser {
 	return &cachedUser{
-		ID:             u.ID.String(),
-		Username:       u.Username,
-		Email:          u.Email,
-		Avatar:         u.Avatar,
-		Phone:          u.Phone,
-		FullName:       u.FullName,
-		Gender:         u.Gender,
-		Bio:            u.Bio,
-		BioImage:       u.BioImage,
-		DateOfBirth:    u.DateOfBirth,
-		CustomInfo:     u.CustomInfo,
-		Ken:            u.Ken,
-		VipUsed:        u.VipUsed,
-		VipEndTime:     u.VipEndTime,
-		FollowerCount:  u.FollowerCount,
-		FollowingCount: u.FollowingCount,
-		CreatedAt:      u.CreatedAt,
-		UpdatedAt:      u.UpdatedAt,
+		ID:              u.ID.String(),
+		Username:        u.Username,
+		Email:           u.Email,
+		EmailVerified:   u.EmailVerified,
+		EmailVerifiedAt: u.EmailVerifiedAt,
+		Avatar:          u.Avatar,
+		Phone:           u.Phone,
+		FullName:        u.FullName,
+		Gender:          u.Gender,
+		Bio:             u.Bio,
+		BioImage:        u.BioImage,
+		DateOfBirth:     u.DateOfBirth,
+		CustomInfo:      u.CustomInfo,
+		Ken:             u.Ken,
+		VipUsed:         u.VipUsed,
+		VipEndTime:      u.VipEndTime,
+		FollowerCount:   u.FollowerCount,
+		FollowingCount:  u.FollowingCount,
+		CreatedAt:       u.CreatedAt,
+		UpdatedAt:       u.UpdatedAt,
 	}
 }
 
 func (cu *cachedUser) toModel() *models.User {
 	return &models.User{
-		Username:       cu.Username,
-		Email:          cu.Email,
-		Avatar:         cu.Avatar,
-		Phone:          cu.Phone,
-		FullName:       cu.FullName,
-		Gender:         cu.Gender,
-		Bio:            cu.Bio,
-		BioImage:       cu.BioImage,
-		DateOfBirth:    cu.DateOfBirth,
-		CustomInfo:     models.JSONB(cu.CustomInfo),
-		Ken:            cu.Ken,
-		VipUsed:        cu.VipUsed,
-		VipEndTime:     cu.VipEndTime,
-		FollowerCount:  cu.FollowerCount,
-		FollowingCount: cu.FollowingCount,
+		Username:        cu.Username,
+		Email:           cu.Email,
+		EmailVerified:   cu.EmailVerified,
+		EmailVerifiedAt: cu.EmailVerifiedAt,
+		Avatar:          cu.Avatar,
+		Phone:           cu.Phone,
+		FullName:        cu.FullName,
+		Gender:          cu.Gender,
+		Bio:             cu.Bio,
+		BioImage:        cu.BioImage,
+		DateOfBirth:     cu.DateOfBirth,
+		CustomInfo:      models.JSONB(cu.CustomInfo),
+		Ken:             cu.Ken,
+		VipUsed:         cu.VipUsed,
+		VipEndTime:      cu.VipEndTime,
+		FollowerCount:   cu.FollowerCount,
+		FollowingCount:  cu.FollowingCount,
 	}
 }
 

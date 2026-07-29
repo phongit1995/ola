@@ -35,6 +35,7 @@ type UserResponse struct {
 	ID             string                 `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
 	Username       string                 `json:"username" example:"john_doe"`
 	Email          string                 `json:"email" example:"john@example.com"`
+	EmailVerified  bool                   `json:"emailVerified" example:"false"`
 	Avatar         string                 `json:"avatar,omitempty" example:"https://example.com/avatar.jpg"`
 	Phone          string                 `json:"phone,omitempty" example:"+84987654321"`
 	FullName       string                 `json:"fullName,omitempty" example:"John Doe"`
