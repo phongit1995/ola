@@ -5,6 +5,7 @@ import { kulImageForText } from '@lib/kul';
 export function isCopyableText(message: RoomMessage): boolean {
   return (
     message.type !== 'image' &&
+    message.type !== 'audio' &&
     kulImageForText(message.content) == null &&
     message.content.trim() !== ''
   );
@@ -12,7 +13,10 @@ export function isCopyableText(message: RoomMessage): boolean {
 
 export function replyExcerpt(t: TFunction, message: RoomMessage): string {
   if (message.type === 'image') return t('room.replyImage');
-  return kulImageForText(message.content) != null ? t('room.replySticker') : message.content;
+  if (message.type === 'audio') return t('chat.replyAudio');
+  return kulImageForText(message.content) != null
+    ? t('room.replySticker')
+    : message.content;
 }
 
 export interface RoomMessageAbilities {
@@ -22,7 +26,7 @@ export interface RoomMessageAbilities {
 
 export function roomMessageAbilities(
   message: RoomMessage,
-  currentUserId: string
+  currentUserId: string,
 ): RoomMessageAbilities {
   return {
     isOwn: message.senderId === currentUserId,

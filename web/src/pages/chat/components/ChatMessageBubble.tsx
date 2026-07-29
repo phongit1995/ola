@@ -10,8 +10,8 @@ import { kulImageForText, renderRichText, SmileyText } from '@lib';
 import type { ChatReplySnapshot } from '@app-types';
 import type { ChatMessage } from '../interface';
 import { chatQuoteExcerpt } from '../chatView';
-import { VoiceBubble } from './VoiceBubble';
-import { useUploadPreviewLease } from './useUploadPreviewLease';
+import { VoiceBubble } from '@components/chat/voice/VoiceBubble';
+import { useUploadPreviewLease } from '@hooks';
 
 const noop = () => undefined;
 

@@ -4,15 +4,17 @@ import mentionIcon from '@/assets/icons/room/ic_tag_people.png';
 import photoIcon from '@/assets/icons/chat/ic_local.png';
 import resendIcon from '@/assets/icons/chat/btn_resend_d.png';
 import { Spinner, VipAvatar } from '@components';
-import { useLongPress } from '@hooks';
+import { useLongPress, useUploadPreviewLease } from '@hooks';
 import {
   colorForName,
   formatClockHM,
+  formatDuration,
   kulImageForText,
   reactionChips,
   renderRichText,
   SmileyText,
 } from '@lib';
+import { VoiceBubble } from '@components/chat/voice/VoiceBubble';
 import { useMediaViewerStore } from '@/store/mediaViewerStore';
 import type { RoomReplySnapshot } from '@app-types';
 import type {
@@ -31,6 +33,7 @@ interface RoomMessageGroupProps {
   onQuoteClick?: (messageId: string) => void;
   onShowReactions?: (id: string) => void;
   onResendImage?: (id: string) => void;
+  onResendAudio?: (id: string) => void;
 }
 
 interface QuoteBlockProps {
@@ -44,6 +47,8 @@ function QuoteBlock({ replyTo, isOwn, onQuoteClick }: QuoteBlockProps) {
   const isImage = replyTo.type === 'image';
   const excerpt = isImage
     ? t('room.replyImage')
+    : replyTo.type === 'audio'
+    ? t('chat.replyAudio')
     : kulImageForText(replyTo.excerpt) != null
     ? t('room.replySticker')
     : replyTo.excerpt;
@@ -96,6 +101,7 @@ interface RoomBubbleProps {
   onLongPressMessage?: (id: string, anchor: DOMRect | null) => void;
   onQuoteClick?: (messageId: string) => void;
   onResendImage?: (id: string) => void;
+  onResendAudio?: (id: string) => void;
 }
 
 function RoomBubble({
@@ -107,6 +113,7 @@ function RoomBubble({
   onLongPressMessage,
   onQuoteClick,
   onResendImage,
+  onResendAudio,
 }: RoomBubbleProps) {
   const { t } = useTranslation();
   const uploading = message.status === 'uploading';
@@ -124,6 +131,11 @@ function RoomBubble({
     message.type === 'image' &&
     message.imageUrl != null &&
     message.imageUrl !== '';
+  const isAudio =
+    message.type === 'audio' &&
+    message.audioUrl != null &&
+    message.audioUrl !== '';
+  useUploadPreviewLease(isImage ? message.imageUrl : undefined);
   const corners = isOwn ? OWN_CORNERS[position] : OTHER_CORNERS[position];
   const bubbleClass = isOwn
     ? `w-fit max-w-full break-words bg-[#7cb342] px-3.5 py-2 text-base text-white ${corners}`
@@ -158,12 +170,43 @@ function RoomBubble({
         </button>
       )}
     </span>
+  ) : isAudio ? (
+    <span
+      className={`relative block ${uploading || failed ? 'opacity-60' : ''}`}
+    >
+      <VoiceBubble
+        url={message.audioUrl}
+        duration={formatDuration(message.audioDuration)}
+        durationSec={message.audioDuration}
+        waveform={message.audioWaveform}
+        isOut={isOwn}
+      />
+      {uploading && (
+        <span className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <Spinner size={22} />
+        </span>
+      )}
+      {failed && (
+        <button
+          type="button"
+          aria-label={t('chat.resend')}
+          title={t('chat.resend')}
+          onClick={(event) => {
+            event.stopPropagation();
+            onResendAudio?.(message.id);
+          }}
+          className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40"
+        >
+          <img src={resendIcon} alt="" className="h-7 w-7 object-contain" />
+        </button>
+      )}
+    </span>
   ) : kul != null ? (
     <img src={kul} alt="" className="h-28 w-auto object-contain" />
   ) : (
     renderRichText(message.content, onMention)
   );
-  const bare = (isImage || kul != null) && message.replyTo == null;
+  const bare = (isImage || isAudio || kul != null) && message.replyTo == null;
   const body = bare ? (
     content
   ) : (
@@ -250,6 +293,7 @@ function RoomMessageGroupComponent({
   onQuoteClick,
   onShowReactions,
   onResendImage,
+  onResendAudio,
 }: RoomMessageGroupProps) {
   const { t } = useTranslation();
   const { isOwn, senderName } = group;
@@ -309,6 +353,7 @@ function RoomMessageGroupComponent({
                 onLongPressMessage={onLongPressMessage}
                 onQuoteClick={onQuoteClick}
                 onResendImage={onResendImage}
+                onResendAudio={onResendAudio}
               />
             );
             const withQuickMention = !isOwn && index === lastIndex;

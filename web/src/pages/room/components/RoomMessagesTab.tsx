@@ -20,7 +20,10 @@ import { RoomComposerBar, type RoomComposerHandle } from './RoomComposerBar';
 import { RoomReactionsDialog } from './RoomReactionsDialog';
 import { RoomReactionNotice } from './RoomReactionNotice';
 import { RoomReactionBalloons } from './RoomReactionBalloons';
-import type { RoomChatStatus } from '@/store/roomChatStore';
+import type {
+  RoomAudioSendResult,
+  RoomChatStatus,
+} from '@/store/roomChatStore';
 import { useRoomFilterStore } from '@ola/shared/stores/roomFilterStore';
 
 interface RoomMessagesTabProps {
@@ -34,7 +37,13 @@ interface RoomMessagesTabProps {
   replyTarget: RoomMessage | null;
   onSend: (content: string) => Promise<void>;
   onSendImage: (file: File) => Promise<void>;
+  onSendAudio: (
+    file: Blob,
+    duration: number,
+    waveform: number[]
+  ) => Promise<RoomAudioSendResult>;
   onResendImage: (id: string) => void;
+  onResendAudio: (id: string) => void;
   onLoadMore: () => void;
   onOpenProfile?: (nick: string, color: string) => void;
   onSetReplyTarget: (message: RoomMessage) => void;
@@ -54,7 +63,9 @@ export function RoomMessagesTab({
   replyTarget,
   onSend,
   onSendImage,
+  onSendAudio,
   onResendImage,
+  onResendAudio,
   onLoadMore,
   onOpenProfile,
   onSetReplyTarget,
@@ -242,6 +253,7 @@ export function RoomMessagesTab({
               onQuoteClick={scrollToMessage}
               onShowReactions={showReactions}
               onResendImage={onResendImage}
+              onResendAudio={onResendAudio}
             />
           )
         )}
@@ -284,6 +296,7 @@ export function RoomMessagesTab({
         onBeforeSend={pin}
         onSendText={onSend}
         onSendImage={onSendImage}
+        onSendAudio={onSendAudio}
       />
 
       {actionTarget != null && (

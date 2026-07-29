@@ -8,8 +8,12 @@ export interface GroupedMessage {
   id: string;
   key: string;
   content: string;
-  type?: 'text' | 'image';
+  type?: 'text' | 'image' | 'audio';
   imageUrl?: string;
+  audioUrl?: string;
+  audioDuration?: number;
+  audioWaveform?: number[];
+  audioMimeType?: string;
   createdAt: string;
   position: BubblePosition;
   replyTo?: RoomReplySnapshot;
@@ -109,6 +113,10 @@ export function buildRoomFeed(messages: RoomMessage[], currentUserId: string): R
         content: message.content,
         type: message.type,
         imageUrl: message.imageUrl,
+        audioUrl: message.audioUrl,
+        audioDuration: message.audioDuration,
+        audioWaveform: message.audioWaveform,
+        audioMimeType: message.audioMimeType,
         createdAt: message.createdAt,
         position: bubblePosition(count, index),
         replyTo: resolveReplySnapshot(message.replyTo, byId),

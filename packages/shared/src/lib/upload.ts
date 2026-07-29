@@ -26,6 +26,26 @@ export function uploadFileMimeType(file: UploadFile): string {
   return file.type;
 }
 
+export function audioUploadFilename(mimeType: string): string {
+  switch (mimeType.split(';', 1)[0]?.trim().toLowerCase()) {
+    case 'audio/mp4':
+    case 'audio/x-m4a':
+      return 'voice.m4a';
+    case 'audio/aac':
+      return 'voice.aac';
+    case 'audio/mpeg':
+      return 'voice.mp3';
+    case 'audio/wav':
+    case 'audio/x-wav':
+      return 'voice.wav';
+    case 'audio/ogg':
+      return 'voice.ogg';
+    case 'audio/webm':
+    default:
+      return 'voice.webm';
+  }
+}
+
 export function appendUploadFile(
   form: FormData,
   field: string,

@@ -47,11 +47,11 @@ import { MessageRow } from './MessageRow';
 import { TransferKenDialog } from './TransferKenDialog';
 import { TradingVipDialog } from './TradingVipDialog';
 import { TransferVipDaysDialog } from './TransferVipDaysDialog';
-import { VoicePreviewBar } from './VoicePreviewBar';
+import { VoicePreviewBar } from '@components/chat/voice/VoicePreviewBar';
 import {
   VoiceRecorderControl,
   type VoiceRecorderControlHandle,
-} from './VoiceRecorderControl';
+} from '@components/chat/voice/VoiceRecorderControl';
 import { PeerProfileCard } from './PeerProfileCard';
 import { UserProfileView } from '../../profile/UserProfileView';
 import { useMediaViewerStore } from '@/store/mediaViewerStore';

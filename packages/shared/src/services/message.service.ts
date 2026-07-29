@@ -1,5 +1,10 @@
 import { http } from '../api';
-import { appendUploadFile, uploadFileMimeType, type UploadFile } from '../lib/upload';
+import {
+  appendUploadFile,
+  audioUploadFilename,
+  uploadFileMimeType,
+  type UploadFile,
+} from '../lib/upload';
 import { API_PATH } from '../config';
 import type {
   GetMessagesParams,
@@ -50,8 +55,7 @@ export class MessageService {
     options: SendAudioOptions = {}
   ): Promise<Message> {
     const form = new FormData();
-    const ext = uploadFileMimeType(file).includes('mp4') ? 'm4a' : 'webm';
-    appendUploadFile(form, 'file', file, `voice.${ext}`);
+    appendUploadFile(form, 'file', file, audioUploadFilename(uploadFileMimeType(file)));
     form.append('conversationId', conversationId);
     form.append('duration', String(duration));
     if (options.clientMsgId != null) form.append('clientMsgId', options.clientMsgId);

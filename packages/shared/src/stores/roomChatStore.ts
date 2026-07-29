@@ -1,6 +1,12 @@
 import { create } from 'zustand';
 import { RoomService, SocketService } from '../services';
-import { randomUuid, releaseUploadPreviewUrl, uploadPreviewUrl } from '../lib';
+import {
+  audioUploadFilename,
+  nativeUploadFileFromUri,
+  randomUuid,
+  uploadFileMimeType,
+  uploadPreviewUrl,
+} from '../lib';
 import type { UploadFile } from '../lib/upload';
 import {
   ROOM_SOCKET_EVENTS,
@@ -10,11 +16,13 @@ import {
   type RoomReactionNotice,
 } from '../types';
 import {
+  buildOptimisticRoomAudio,
   buildOptimisticRoomImage,
   markRoomMessageByClientMsgId,
   markRoomMessageById,
   mergeRoomMessageSnapshot,
   reconcileRoomServerMessage,
+  roomReplySnapshotOf,
   withSenderVip,
   toRecord,
   withVipTypeId,
@@ -23,6 +31,7 @@ import { registerRoomRealtime } from './roomRealtime';
 
 export type RoomChatStatus = 'connecting' | 'joined' | 'error';
 export type RoomTab = 'members' | 'messages';
+export type RoomAudioSendResult = 'sent' | 'failed' | 'aborted';
 
 export interface ActiveRoom {
   id: string;
@@ -53,7 +62,13 @@ export interface RoomChatState {
   setRoomForeground: (foreground: boolean) => void;
   sendMessage: (content: string) => Promise<void>;
   sendImage: (file: UploadFile) => Promise<void>;
+  sendAudio: (
+    file: UploadFile,
+    duration: number,
+    waveform: number[]
+  ) => Promise<RoomAudioSendResult>;
   resendRoomImage: (messageId: string) => Promise<void>;
+  resendRoomAudio: (messageId: string) => Promise<void>;
   loadMoreMessages: () => Promise<void>;
   setReplyTarget: (message: RoomMessage) => void;
   clearReplyTarget: () => void;
@@ -84,25 +99,36 @@ export const useRoomChatStore = create<RoomChatState>((set, get) => {
   async function finalizeImageSend(
     roomId: string,
     clientMsgId: string,
-    previewUrl: string,
     upload: () => Promise<RoomMessage>
   ) {
     try {
       const saved = withSenderVip(await upload());
-      if (get().activeRoom?.id !== roomId) {
-        releaseUploadPreviewUrl(previewUrl);
-        return;
-      }
+      if (get().activeRoom?.id !== roomId) return;
       set((state) => ({ messages: reconcileRoomServerMessage(state.messages, saved) }));
-      releaseUploadPreviewUrl(previewUrl);
     } catch {
-      if (get().activeRoom?.id !== roomId) {
-        releaseUploadPreviewUrl(previewUrl);
-        return;
-      }
+      if (get().activeRoom?.id !== roomId) return;
       set((state) => ({
         messages: markRoomMessageByClientMsgId(state.messages, clientMsgId, { status: 'failed' }),
       }));
+    }
+  }
+
+  async function finalizeAudioSend(
+    roomId: string,
+    clientMsgId: string,
+    upload: () => Promise<RoomMessage>
+  ): Promise<RoomAudioSendResult> {
+    try {
+      const saved = withSenderVip(await upload());
+      if (get().activeRoom?.id !== roomId) return 'aborted';
+      set((state) => ({ messages: reconcileRoomServerMessage(state.messages, saved) }));
+      return 'sent';
+    } catch {
+      if (get().activeRoom?.id !== roomId) return 'aborted';
+      set((state) => ({
+        messages: markRoomMessageByClientMsgId(state.messages, clientMsgId, { status: 'failed' }),
+      }));
+      return 'failed';
     }
   }
 
@@ -201,8 +227,39 @@ export const useRoomChatStore = create<RoomChatState>((set, get) => {
       set((state) => ({
         messages: [...state.messages, buildOptimisticRoomImage(room.id, clientMsgId, previewUrl)],
       }));
-      await finalizeImageSend(room.id, clientMsgId, previewUrl, () =>
+      await finalizeImageSend(room.id, clientMsgId, () =>
         RoomService.sendImage(room.id, file, clientMsgId)
+      );
+    },
+
+    sendAudio: async (file, duration, waveform) => {
+      const room = get().activeRoom;
+      if (!room) return 'aborted';
+      const reply = get().replyTarget;
+      const clientMsgId = randomUuid();
+      const previewUrl = uploadPreviewUrl(file);
+      const mimeType = uploadFileMimeType(file) || 'audio/mp4';
+      set((state) => ({
+        replyTarget: state.replyTarget?.id === reply?.id ? null : state.replyTarget,
+        messages: [
+          ...state.messages,
+          buildOptimisticRoomAudio(
+            room.id,
+            clientMsgId,
+            previewUrl,
+            duration,
+            waveform,
+            mimeType,
+            reply != null ? roomReplySnapshotOf(reply) : undefined
+          ),
+        ],
+      }));
+      return finalizeAudioSend(room.id, clientMsgId, () =>
+        RoomService.sendAudio(room.id, file, duration, {
+          clientMsgId,
+          replyToId: reply?.id,
+          waveform,
+        })
       );
     },
 
@@ -219,9 +276,44 @@ export const useRoomChatStore = create<RoomChatState>((set, get) => {
           status: 'uploading',
         }),
       }));
-      await finalizeImageSend(room.id, clientMsgId, previewUrl, async () => {
+      await finalizeImageSend(room.id, clientMsgId, async () => {
         const blob = await (await fetch(previewUrl)).blob();
         return RoomService.sendImage(room.id, blob, clientMsgId, 'image');
+      });
+    },
+
+    resendRoomAudio: async (messageId) => {
+      const room = get().activeRoom;
+      if (!room) return;
+      const target = get().messages.find((item) => item.id === messageId);
+      if (
+        target == null ||
+        target.type !== 'audio' ||
+        target.status !== 'failed' ||
+        target.clientMsgId == null ||
+        target.audioUrl == null ||
+        target.audioUrl === ''
+      ) {
+        return;
+      }
+      const clientMsgId = target.clientMsgId;
+      const previewUrl = target.audioUrl;
+      const mimeType = target.audioMimeType || 'audio/mp4';
+      set((state) => ({
+        messages: markRoomMessageByClientMsgId(state.messages, clientMsgId, {
+          clientMsgId,
+          status: 'uploading',
+        }),
+      }));
+      await finalizeAudioSend(room.id, clientMsgId, async () => {
+        const file =
+          nativeUploadFileFromUri(previewUrl, audioUploadFilename(mimeType), mimeType) ??
+          (await (await fetch(previewUrl)).blob());
+        return RoomService.sendAudio(room.id, file, target.audioDuration ?? 0, {
+          clientMsgId,
+          replyToId: target.replyTo?.messageId,
+          waveform: target.audioWaveform,
+        });
       });
     },
 

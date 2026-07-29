@@ -23,6 +23,13 @@ import likeIcon from '@/assets/icons/chat/smiley_35.png';
 import smileyIcon from '@/assets/icons/chat/ic_smiley.png';
 import smileyIconActive from '@/assets/icons/chat/ic_smiley_selected.png';
 import photoIcon from '@/assets/icons/chat/ic_local.png';
+import voiceIcon from '@/assets/icons/chat/ic_voice.png';
+import { VoicePreviewBar } from '@components/chat/voice/VoicePreviewBar';
+import {
+  VoiceRecorderControl,
+  type VoiceRecorderControlHandle,
+} from '@components/chat/voice/VoiceRecorderControl';
+import type { RoomAudioSendResult } from '@/store/roomChatStore';
 
 export interface RoomComposerHandle {
   focus: () => void;
@@ -40,18 +47,29 @@ interface RoomComposerBarProps {
   onBeforeSend: () => void;
   onSendText: (text: string) => Promise<void>;
   onSendImage: (file: File) => Promise<void>;
+  onSendAudio: (
+    file: Blob,
+    duration: number,
+    waveform: number[]
+  ) => Promise<RoomAudioSendResult>;
 }
 
 export const RoomComposerBar = forwardRef<
   RoomComposerHandle,
   RoomComposerBarProps
 >(function RoomComposerBar(
-  { disabled, onBeforeSend, onSendText, onSendImage },
+  { disabled, onBeforeSend, onSendText, onSendImage, onSendAudio },
   ref
 ) {
   const { t } = useTranslation();
   const [draft, setDraft] = useState('');
   const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
+  const [pendingAudio, setPendingAudio] = useState<{
+    blob: Blob;
+    duration: number;
+    waveform: number[];
+  } | null>(null);
+  const [voiceRecording, setVoiceRecording] = useState(false);
   const {
     open: attachOpen,
     areaRef: composerAreaRef,
@@ -60,6 +78,8 @@ export const RoomComposerBar = forwardRef<
   } = useAttachPanel();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const composerRef = useRef<SmileyInputHandle>(null);
+  const voiceRecorderRef = useRef<VoiceRecorderControlHandle>(null);
+  const mountedRef = useRef(true);
   const draftRef = useRef(draft);
   const suppressLikeClick = useRef(false);
   const imageIdRef = useRef(0);
@@ -71,14 +91,15 @@ export const RoomComposerBar = forwardRef<
   useEffect(() => {
     pendingImagesRef.current = pendingImages;
   }, [pendingImages]);
-  useEffect(
-    () => () => {
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
       pendingImagesRef.current.forEach((image) =>
         URL.revokeObjectURL(image.url)
       );
-    },
-    []
-  );
+    };
+  }, []);
 
   useImperativeHandle(ref, () => ({
     focus: () => composerRef.current?.focus(),
@@ -162,6 +183,19 @@ export const RoomComposerBar = forwardRef<
     }
   }
 
+  async function sendPendingAudio() {
+    if (pendingAudio == null || disabled) return;
+    const audio = pendingAudio;
+    onBeforeSend();
+    setPendingAudio(null);
+    closeAttachPanel();
+    try {
+      await onSendAudio(audio.blob, audio.duration, audio.waveform);
+    } catch {
+      if (mountedRef.current) setPendingAudio(audio);
+    }
+  }
+
   async function handleSend() {
     if (disabled) return;
     if (pendingImages.length > 0) {
@@ -180,31 +214,56 @@ export const RoomComposerBar = forwardRef<
 
   return (
     <div ref={composerAreaRef} className="shrink-0">
-      <div className="flex shrink-0 items-center gap-1 border-t border-black/12 bg-white px-2 py-2">
-        <button
-          type="button"
-          aria-label={t('chat.attachTabSmiley')}
-          onClick={toggleAttachPanel}
-          className={`flex h-9 w-9 shrink-0 select-none items-center justify-center ${
-            attachOpen ? 'opacity-100' : 'opacity-60'
-          }`}
-        >
-          <img
-            src={attachOpen ? smileyIconActive : smileyIcon}
-            alt=""
-            className="h-6 w-6 object-contain"
+      <div className="relative flex min-h-12 shrink-0 items-center gap-1 border-t border-black/12 bg-white px-2 py-2">
+        {pendingAudio == null && !voiceRecording && (
+          <>
+            <button
+              type="button"
+              aria-label={t('chat.attachTabSmiley')}
+              onClick={toggleAttachPanel}
+              className={`flex h-9 w-9 shrink-0 select-none items-center justify-center ${
+                attachOpen ? 'opacity-100' : 'opacity-60'
+              }`}
+            >
+              <img
+                src={attachOpen ? smileyIconActive : smileyIcon}
+                alt=""
+                className="h-6 w-6 object-contain"
+              />
+            </button>
+            <button
+              type="button"
+              aria-label={t('chat.attachPickImage')}
+              onClick={() => fileInputRef.current?.click()}
+              disabled={disabled}
+              className="flex h-9 w-9 shrink-0 select-none items-center justify-center opacity-60 disabled:opacity-40"
+            >
+              <img src={photoIcon} alt="" className="h-6 w-6 object-contain" />
+            </button>
+            <button
+              type="button"
+              aria-label={t('chat.voiceTapStart')}
+              title={t('chat.attachRecord')}
+              onClick={() => {
+                closeAttachPanel();
+                voiceRecorderRef.current?.start();
+              }}
+              disabled={disabled || pendingImages.length > 0}
+              className="flex h-9 w-9 shrink-0 select-none items-center justify-center opacity-60 disabled:opacity-30"
+            >
+              <img src={voiceIcon} alt="" className="h-6 w-6 object-contain" />
+            </button>
+          </>
+        )}
+        {pendingAudio != null ? (
+          <VoicePreviewBar
+            blob={pendingAudio.blob}
+            duration={pendingAudio.duration}
+            waveform={pendingAudio.waveform}
+            onSend={() => void sendPendingAudio()}
+            onDiscard={() => setPendingAudio(null)}
           />
-        </button>
-        <button
-          type="button"
-          aria-label={t('chat.attachPickImage')}
-          onClick={() => fileInputRef.current?.click()}
-          disabled={disabled}
-          className="flex h-9 w-9 shrink-0 select-none items-center justify-center opacity-60 disabled:opacity-40"
-        >
-          <img src={photoIcon} alt="" className="h-6 w-6 object-contain" />
-        </button>
-        {pendingImages.length > 0 ? (
+        ) : pendingImages.length > 0 ? (
           <div className="flex min-h-9 flex-1 items-center gap-2 overflow-x-auto py-1">
             {pendingImages.map((image) => (
               <div key={image.id} className="relative shrink-0">
@@ -247,37 +306,53 @@ export const RoomComposerBar = forwardRef<
             }`}
           />
         )}
-        {isTyping || pendingImages.length > 0 ? (
-          <button
-            type="button"
-            onPointerDown={(event) => event.preventDefault()}
-            onClick={() => void handleSend()}
-            disabled={disabled}
-            className="h-9 shrink-0 rounded-full bg-ola-primary px-4 text-sm font-semibold text-white shadow-sm transition active:scale-95 disabled:opacity-40"
-          >
-            {t('chat.send')}
-          </button>
-        ) : (
-          <button
-            type="button"
-            aria-label={t('chat.like')}
-            disabled={disabled}
-            {...likeLongPress}
-            onPointerDown={(event) => {
-              suppressLikeClick.current = false;
-              likeLongPress.onPointerDown(event);
-            }}
-            onClick={() => {
-              if (suppressLikeClick.current) {
+        {pendingAudio == null &&
+          !voiceRecording &&
+          (isTyping || pendingImages.length > 0 ? (
+            <button
+              type="button"
+              onPointerDown={(event) => event.preventDefault()}
+              onClick={() => void handleSend()}
+              disabled={disabled}
+              className="h-9 shrink-0 rounded-full bg-ola-primary px-4 text-sm font-semibold text-white shadow-sm transition active:scale-95 disabled:opacity-40"
+            >
+              {t('chat.send')}
+            </button>
+          ) : (
+            <button
+              type="button"
+              aria-label={t('chat.like')}
+              disabled={disabled}
+              {...likeLongPress}
+              onPointerDown={(event) => {
                 suppressLikeClick.current = false;
-                return;
-              }
-              void sendText('(y)');
+                likeLongPress.onPointerDown(event);
+              }}
+              onClick={() => {
+                if (suppressLikeClick.current) {
+                  suppressLikeClick.current = false;
+                  return;
+                }
+                void sendText('(y)');
+              }}
+              className="flex h-9 w-9 shrink-0 select-none items-center justify-center disabled:opacity-40"
+            >
+              <img src={likeIcon} alt="" className="h-7 w-7 object-contain" />
+            </button>
+          ))}
+        {pendingAudio == null && (
+          <VoiceRecorderControl
+            ref={voiceRecorderRef}
+            onRecorded={({ blob, duration, waveform }) => {
+              setPendingAudio({ blob, duration, waveform });
+              setVoiceRecording(false);
+              closeAttachPanel();
             }}
-            className="flex h-9 w-9 shrink-0 select-none items-center justify-center disabled:opacity-40"
-          >
-            <img src={likeIcon} alt="" className="h-7 w-7 object-contain" />
-          </button>
+            onRecordingChange={(recording) => {
+              setVoiceRecording(recording);
+              if (recording) closeAttachPanel();
+            }}
+          />
         )}
       </div>
 
@@ -290,7 +365,7 @@ export const RoomComposerBar = forwardRef<
         onChange={handleFileChange}
       />
 
-      {!disabled && (
+      {!disabled && !voiceRecording && pendingAudio == null && (
         <div
           className={`h-52 shrink-0 border-t border-black/12 bg-white ${
             attachOpen ? '' : 'hidden'

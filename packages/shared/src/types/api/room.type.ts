@@ -43,7 +43,7 @@ export interface RoomReplySnapshot {
   senderId: string;
   senderName?: string;
   excerpt: string;
-  type?: 'text' | 'image';
+  type?: 'text' | 'image' | 'audio';
   imageUrl?: string;
 }
 
@@ -69,8 +69,13 @@ export interface RoomMessage {
   senderVipEnd?: string | null;
   senderVipTypeId?: number | null;
   content: string;
-  type?: 'text' | 'image';
+  type?: 'text' | 'image' | 'audio';
   imageUrl?: string;
+  audioUrl?: string;
+  audioDuration?: number;
+  audioWaveform?: number[];
+  audioMimeType?: string;
+  audioSize?: number;
   createdAt: string;
   replyTo?: RoomReplySnapshot;
   reactions?: Record<string, RoomReactor[]>;

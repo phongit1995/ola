@@ -8,7 +8,7 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
-import { colorForName, formatClockHM } from '@ola/shared/lib';
+import { colorForName, formatClockHM, formatDuration } from '@ola/shared/lib';
 import type { RoomReplySnapshot } from '@ola/shared/types';
 import { kulImageForText } from '@lib/kul';
 import { reactionChips } from '@lib/reactions';
@@ -17,10 +17,19 @@ import { CachedImage } from '@components/ui/CachedImage';
 import { ChatText as Text } from '@components/ui/ChatText';
 import { RichTextView } from '@components/ui/RichTextView';
 import { VipAvatar } from '@components/ui/VipAvatar';
+import { VoiceBubble } from '@components/ui/VoiceBubble';
 import { useMediaViewerStore } from '@store/mediaViewerStore';
 import type { AnchorRect } from './MessageActionSheet';
-import type { BubblePosition, GroupedMessage, MessageGroup } from '../messageGroups';
-import { OTHER_CORNERS, OWN_CORNERS, roomBubbleTextMaxWidth } from '../roomConstants';
+import type {
+  BubblePosition,
+  GroupedMessage,
+  MessageGroup,
+} from '../messageGroups';
+import {
+  OTHER_CORNERS,
+  OWN_CORNERS,
+  roomBubbleTextMaxWidth,
+} from '../roomConstants';
 
 const mentionIcon = require('@assets/icons/room/ic_tag_people.png');
 const photoIcon = require('@assets/icons/chat/ic_local.png');
@@ -55,11 +64,12 @@ interface RoomMessageGroupProps {
     id: string,
     anchor: AnchorRect,
     grouped: GroupedMessage,
-    isOwn: boolean
+    isOwn: boolean,
   ) => void;
   onQuoteClick?: (messageId: string) => void;
   onShowReactions?: (id: string) => void;
   onResendImage?: (id: string) => void;
+  onResendAudio?: (id: string) => void;
 }
 
 function QuoteBlock({
@@ -76,11 +86,15 @@ function QuoteBlock({
   const isImage = replyTo.type === 'image';
   const excerpt = isImage
     ? t('room.replyImage')
+    : replyTo.type === 'audio'
+    ? t('chat.replyAudio')
     : kulImageForText(replyTo.excerpt) != null
-      ? t('room.replySticker')
-      : replyTo.excerpt;
+    ? t('room.replySticker')
+    : replyTo.excerpt;
   const name =
-    replyTo.senderName != null && replyTo.senderName !== '' ? `@${replyTo.senderName}` : '';
+    replyTo.senderName != null && replyTo.senderName !== ''
+      ? `@${replyTo.senderName}`
+      : '';
   return (
     <Pressable
       onPress={() => onQuoteClick?.(replyTo.messageId)}
@@ -101,12 +115,20 @@ function QuoteBlock({
         </Text>
       )}
       <View className="flex-row items-center gap-1">
-        {isImage && <Image source={photoIcon} style={{ width: 14, height: 14 }} resizeMode="contain" />}
+        {isImage && (
+          <Image
+            source={photoIcon}
+            style={{ width: 14, height: 14 }}
+            resizeMode="contain"
+          />
+        )}
         <RichTextView
           content={excerpt}
           own={isOwn}
           color={isOwn ? 'rgba(255,255,255,0.75)' : 'rgba(0,0,0,0.45)'}
-          maxWidth={roomBubbleTextMaxWidth(windowWidth, isOwn) - (isImage ? 32 : 14)}
+          maxWidth={
+            roomBubbleTextMaxWidth(windowWidth, isOwn) - (isImage ? 32 : 14)
+          }
           fontSize={12}
           maxLines={2}
           onMention={() => onQuoteClick?.(replyTo.messageId)}
@@ -123,6 +145,7 @@ function BubbleContent({
   onMention,
   onLongPress,
   onResendImage,
+  onResendAudio,
 }: {
   message: GroupedMessage;
   isOwn: boolean;
@@ -130,13 +153,24 @@ function BubbleContent({
   onMention: (nick: string) => void;
   onLongPress?: () => void;
   onResendImage?: (id: string) => void;
+  onResendAudio?: (id: string) => void;
 }) {
-  const openViewer = useMediaViewerStore((s) => s.openViewer);
+  const { t } = useTranslation();
+  const openViewer = useMediaViewerStore(s => s.openViewer);
   const { width: windowWidth } = useWindowDimensions();
   const [imageRatio, setImageRatio] = useState<number | null>(() =>
-    message.imageUrl != null ? (imageRatioCache.get(message.imageUrl) ?? null) : null
+    message.imageUrl != null
+      ? imageRatioCache.get(message.imageUrl) ?? null
+      : null,
   );
-  const isImage = message.type === 'image' && message.imageUrl != null && message.imageUrl !== '';
+  const isImage =
+    message.type === 'image' &&
+    message.imageUrl != null &&
+    message.imageUrl !== '';
+  const isAudio =
+    message.type === 'audio' &&
+    message.audioUrl != null &&
+    message.audioUrl !== '';
   const uploading = message.status === 'uploading';
   const failed = message.status === 'failed';
 
@@ -155,11 +189,16 @@ function BubbleContent({
           onSize={({ width, height }) => {
             if (height > 0) {
               const ratio = width / height;
-              if (message.imageUrl != null) imageRatioCache.set(message.imageUrl, ratio);
+              if (message.imageUrl != null)
+                imageRatioCache.set(message.imageUrl, ratio);
               setImageRatio(ratio);
             }
           }}
-          style={{ ...size, borderRadius: IMAGE_RADIUS, opacity: uploading || failed ? 0.6 : 1 }}
+          style={{
+            ...size,
+            borderRadius: IMAGE_RADIUS,
+            opacity: uploading || failed ? 0.6 : 1,
+          }}
           resizeMode="cover"
         />
         {uploading && (
@@ -171,17 +210,67 @@ function BubbleContent({
           <Pressable
             onPress={() => onResendImage?.(message.id)}
             className="absolute inset-0 items-center justify-center"
-            style={{ backgroundColor: 'rgba(0,0,0,0.4)', borderRadius: IMAGE_RADIUS }}
+            style={{
+              backgroundColor: 'rgba(0,0,0,0.4)',
+              borderRadius: IMAGE_RADIUS,
+            }}
           >
-            <Image source={resendIcon} style={{ width: 28, height: 28 }} resizeMode="contain" />
+            <Image
+              source={resendIcon}
+              style={{ width: 28, height: 28 }}
+              resizeMode="contain"
+            />
           </Pressable>
         )}
       </Pressable>
     );
   }
 
+  if (isAudio) {
+    return (
+      <View style={{ opacity: uploading || failed ? 0.6 : 1 }}>
+        <VoiceBubble
+          url={message.audioUrl}
+          duration={formatDuration(message.audioDuration)}
+          durationSec={message.audioDuration}
+          waveform={message.audioWaveform}
+          isOut={isOwn}
+          onLongPress={onLongPress}
+        />
+        {uploading && (
+          <View
+            pointerEvents="none"
+            className="absolute inset-0 items-center justify-center"
+          >
+            <ActivityIndicator color="#7cb342" />
+          </View>
+        )}
+        {failed && (
+          <Pressable
+            onPress={() => onResendAudio?.(message.id)}
+            accessibilityLabel={t('chat.resend')}
+            className="absolute inset-0 items-center justify-center rounded-full"
+            style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}
+          >
+            <Image
+              source={resendIcon}
+              style={{ width: 28, height: 28 }}
+              resizeMode="contain"
+            />
+          </Pressable>
+        )}
+      </View>
+    );
+  }
+
   if (kul != null) {
-    return <Image source={kul} style={imageSizeForHeight(kul, 112)} resizeMode="contain" />;
+    return (
+      <Image
+        source={kul}
+        style={imageSizeForHeight(kul, 112)}
+        resizeMode="contain"
+      />
+    );
   }
 
   return (
@@ -204,6 +293,7 @@ export function RoomBubbleBody({
   onLongPress,
   onQuoteClick,
   onResendImage,
+  onResendAudio,
 }: {
   message: GroupedMessage;
   isOwn: boolean;
@@ -213,22 +303,36 @@ export function RoomBubbleBody({
   onLongPress?: () => void;
   onQuoteClick?: (messageId: string) => void;
   onResendImage?: (id: string) => void;
+  onResendAudio?: (id: string) => void;
 }) {
-  const isImage = message.type === 'image' && message.imageUrl != null && message.imageUrl !== '';
-  const kul = isImage ? null : kulImageForText(message.content);
+  const isImage =
+    message.type === 'image' &&
+    message.imageUrl != null &&
+    message.imageUrl !== '';
+  const isAudio =
+    message.type === 'audio' &&
+    message.audioUrl != null &&
+    message.audioUrl !== '';
+  const kul = isImage || isAudio ? null : kulImageForText(message.content);
   const corners = isOwn ? OWN_CORNERS[position] : OTHER_CORNERS[position];
-  const bare = (isImage || kul != null) && message.replyTo == null;
+  const bare = (isImage || isAudio || kul != null) && message.replyTo == null;
 
   return (
     <View
       className={bare ? 'rounded-xl' : `${corners} px-3.5 py-2`}
       style={[
         bare ? null : { backgroundColor: isOwn ? '#7cb342' : '#f1f8e9' },
-        highlighted ? { borderWidth: 2, borderColor: 'rgba(124,179,66,0.6)' } : null,
+        highlighted
+          ? { borderWidth: 2, borderColor: 'rgba(124,179,66,0.6)' }
+          : null,
       ]}
     >
       {message.replyTo != null && (
-        <QuoteBlock replyTo={message.replyTo} isOwn={isOwn} onQuoteClick={onQuoteClick} />
+        <QuoteBlock
+          replyTo={message.replyTo}
+          isOwn={isOwn}
+          onQuoteClick={onQuoteClick}
+        />
       )}
       <BubbleContent
         message={message}
@@ -237,6 +341,7 @@ export function RoomBubbleBody({
         onMention={onMention}
         onLongPress={onLongPress}
         onResendImage={onResendImage}
+        onResendAudio={onResendAudio}
       />
     </View>
   );
@@ -251,6 +356,7 @@ function RoomBubble({
   onLongPressMessage,
   onQuoteClick,
   onResendImage,
+  onResendAudio,
 }: {
   message: GroupedMessage;
   isOwn: boolean;
@@ -261,10 +367,11 @@ function RoomBubble({
     id: string,
     anchor: AnchorRect,
     grouped: GroupedMessage,
-    isOwn: boolean
+    isOwn: boolean,
   ) => void;
   onQuoteClick?: (messageId: string) => void;
   onResendImage?: (id: string) => void;
+  onResendAudio?: (id: string) => void;
 }) {
   const uploading = message.status === 'uploading';
   const failed = message.status === 'failed';
@@ -293,6 +400,7 @@ function RoomBubble({
         onLongPress={handleLongPress}
         onQuoteClick={onQuoteClick}
         onResendImage={onResendImage}
+        onResendAudio={onResendAudio}
       />
     </Pressable>
   );
@@ -315,7 +423,7 @@ function ReactionChipsRow({
       className="-mt-2 flex-row flex-wrap gap-1"
       style={{ alignSelf: isOwn ? 'flex-end' : 'flex-start' }}
     >
-      {chips.map((chip) => (
+      {chips.map(chip => (
         <View
           key={chip.type}
           className="flex-row items-center gap-1 rounded-full bg-white py-0.5 pl-1 pr-1.5"
@@ -330,9 +438,16 @@ function ReactionChipsRow({
           }}
         >
           {chip.image != null && (
-            <Image source={chip.image} style={{ width: 16, height: 16 }} resizeMode="contain" />
+            <Image
+              source={chip.image}
+              style={{ width: 16, height: 16 }}
+              resizeMode="contain"
+            />
           )}
-          <Text className="text-[11px] font-medium" style={{ color: 'rgba(0,0,0,0.55)' }}>
+          <Text
+            className="text-[11px] font-medium"
+            style={{ color: 'rgba(0,0,0,0.55)' }}
+          >
             {chip.count}
           </Text>
         </View>
@@ -351,6 +466,7 @@ function RoomMessageGroupComponent({
   onQuoteClick,
   onShowReactions,
   onResendImage,
+  onResendAudio,
 }: RoomMessageGroupProps) {
   const { isOwn, senderName } = group;
   const onMention = (nick: string) => onOpenProfile?.(nick, colorForName(nick));
@@ -361,9 +477,7 @@ function RoomMessageGroupComponent({
   return (
     <View className="gap-0.5">
       {group.showTime && (
-        <Text className="text-center text-xs text-ola-ink-hint">
-          {time}
-        </Text>
+        <Text className="text-center text-xs text-ola-ink-hint">{time}</Text>
       )}
       {isOwn ? (
         <Text
@@ -374,7 +488,11 @@ function RoomMessageGroupComponent({
           {senderName}
         </Text>
       ) : (
-        <Pressable onPress={openSender} className="ml-12 self-start" style={{ maxWidth: '85%' }}>
+        <Pressable
+          onPress={openSender}
+          className="ml-12 self-start"
+          style={{ maxWidth: '85%' }}
+        >
           <Text numberOfLines={1} className="text-sm text-ola-ink-soft">
             {senderName}
           </Text>
@@ -391,7 +509,10 @@ function RoomMessageGroupComponent({
         <Pressable onPress={openSender} disabled={isOwn}>
           <VipAvatar typeId={group.senderVipTypeId} size={32} />
         </Pressable>
-        <View className="min-w-0 gap-0.5" style={{ alignItems: isOwn ? 'flex-end' : 'flex-start' }}>
+        <View
+          className="min-w-0 gap-0.5"
+          style={{ alignItems: isOwn ? 'flex-end' : 'flex-start' }}
+        >
           {group.messages.map((message, index) => {
             const bubble = (
               <RoomBubble
@@ -403,6 +524,7 @@ function RoomMessageGroupComponent({
                 onLongPressMessage={onLongPressMessage}
                 onQuoteClick={onQuoteClick}
                 onResendImage={onResendImage}
+                onResendAudio={onResendAudio}
               />
             );
             const withQuickMention = !isOwn && index === lastIndex;
@@ -420,7 +542,10 @@ function RoomMessageGroupComponent({
                       className="absolute h-7 w-7 items-center justify-center rounded-full"
                       style={{ left: '100%', bottom: 0, marginLeft: 4 }}
                     >
-                      <Image source={mentionIcon} style={{ width: 24, height: 24 }} />
+                      <Image
+                        source={mentionIcon}
+                        style={{ width: 24, height: 24 }}
+                      />
                     </Pressable>
                   </View>
                 ) : (
@@ -442,7 +567,7 @@ function RoomMessageGroupComponent({
 
 function sameReply(
   a: RoomReplySnapshot | null | undefined,
-  b: RoomReplySnapshot | null | undefined
+  b: RoomReplySnapshot | null | undefined,
 ): boolean {
   if (a == null || b == null) return a == null && b == null;
   return (
@@ -464,6 +589,10 @@ function sameMessages(a: GroupedMessage[], b: GroupedMessage[]): boolean {
       x.content !== y.content ||
       x.type !== y.type ||
       x.imageUrl !== y.imageUrl ||
+      x.audioUrl !== y.audioUrl ||
+      x.audioDuration !== y.audioDuration ||
+      x.audioWaveform !== y.audioWaveform ||
+      x.audioMimeType !== y.audioMimeType ||
       x.status !== y.status ||
       x.position !== y.position ||
       x.reactions !== y.reactions ||
@@ -475,11 +604,17 @@ function sameMessages(a: GroupedMessage[], b: GroupedMessage[]): boolean {
   return true;
 }
 
-function groupHasMessage(group: MessageGroup, id: string | null | undefined): boolean {
-  return id != null && group.messages.some((message) => message.id === id);
+function groupHasMessage(
+  group: MessageGroup,
+  id: string | null | undefined,
+): boolean {
+  return id != null && group.messages.some(message => message.id === id);
 }
 
-function areGroupPropsEqual(prev: RoomMessageGroupProps, next: RoomMessageGroupProps): boolean {
+function areGroupPropsEqual(
+  prev: RoomMessageGroupProps,
+  next: RoomMessageGroupProps,
+): boolean {
   const pg = prev.group;
   const ng = next.group;
   if (
@@ -495,11 +630,15 @@ function areGroupPropsEqual(prev: RoomMessageGroupProps, next: RoomMessageGroupP
   if (!sameMessages(pg.messages, ng.messages)) return false;
   if (
     prev.highlightedId !== next.highlightedId &&
-    (groupHasMessage(pg, prev.highlightedId) || groupHasMessage(ng, next.highlightedId))
+    (groupHasMessage(pg, prev.highlightedId) ||
+      groupHasMessage(ng, next.highlightedId))
   ) {
     return false;
   }
   return true;
 }
 
-export const RoomMessageGroup = memo(RoomMessageGroupComponent, areGroupPropsEqual);
+export const RoomMessageGroup = memo(
+  RoomMessageGroupComponent,
+  areGroupPropsEqual,
+);

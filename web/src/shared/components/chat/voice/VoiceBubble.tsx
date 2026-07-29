@@ -5,8 +5,8 @@ import pauseMediaIcon from '@/assets/icons/chat/ic_pause_media.png';
 import playMediaGrayIcon from '@/assets/icons/chat/ic_play_media_gray.png';
 import pauseMediaGrayIcon from '@/assets/icons/chat/ic_pause_media_gray.png';
 import { formatDuration, toast } from '@lib';
+import { useUploadPreviewLease } from '@hooks';
 import { VoiceWaveformBars } from './VoiceWaveformBars';
-import { useUploadPreviewLease } from './useUploadPreviewLease';
 
 interface VoiceBubbleProps {
   url?: string;

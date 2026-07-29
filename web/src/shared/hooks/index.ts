@@ -13,3 +13,4 @@ export * from './useAttachPanel';
 export * from './useStickyScroll';
 export * from './useDraggable';
 export * from './useDevicePlatform';
+export * from './useUploadPreviewLease';
