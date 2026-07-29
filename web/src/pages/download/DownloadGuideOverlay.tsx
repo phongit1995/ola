@@ -12,7 +12,7 @@ export function DownloadGuideOverlay({ onClose }: { onClose: () => void }) {
         align="center"
         onBack={onClose}
       />
-      <div className="flex-1 overflow-y-auto px-4 pt-4 pb-8">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pt-4 pb-8">
         <p className="pb-3.5 text-center text-[13px] leading-relaxed text-black/55">
           {t('download.subtitle')}
         </p>

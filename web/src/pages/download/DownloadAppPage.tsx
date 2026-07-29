@@ -15,7 +15,7 @@ export function DownloadAppPage() {
   }
 
   return (
-    <div className="min-h-full bg-[#eef0f2] font-sans">
+    <div className="h-full min-h-0 overflow-y-auto overscroll-contain bg-[#eef0f2] font-sans">
       <header className="bg-linear-to-br from-ola-primary-dark to-ola-primary pt-4 pb-6">
         <div className="mx-auto max-w-2xl px-4">
           <button
