@@ -663,6 +663,19 @@ export function ChatDetailScreen({ navigation, route }: Props) {
               .then(sent => {
                 if (sent) {
                   deleteTemporaryVoiceFileAfterUiUpdate(audio.file.uri);
+                  return;
+                }
+                const retryable = useChatStore
+                  .getState()
+                  .messages.some(
+                    message =>
+                      message.type === 'audio' &&
+                      message.status === 'failed' &&
+                      parseMessageMetadata(message.metadata).url ===
+                        audio.file.uri,
+                  );
+                if (!retryable) {
+                  void deleteTemporaryVoiceFile(audio.file.uri);
                 }
               })
               .catch(() => {

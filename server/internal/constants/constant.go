@@ -193,6 +193,7 @@ const (
 	CacheTTLOTP                 = 300
 	CacheTTLPasswordResetToken  = 1800
 	CacheTTLClientMsgIDDedup    = 300
+	CacheTTLMediaUploadLock     = 150
 	CacheTTLLastRead            = 31536000
 	CacheTTLClearedMarker       = 31536000
 	CacheTTLVipPackages         = 3600

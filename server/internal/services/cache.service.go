@@ -112,6 +112,22 @@ func (s *CacheService) SetNX(key string, value interface{}, expiration time.Dura
 	return s.client.SetNX(s.ctx, key, data, expiration).Result()
 }
 
+// A lock owner must not delete a newer owner's value after expiration.
+func (s *CacheService) DeleteIfValue(key string, value interface{}) (bool, error) {
+	data, err := json.Marshal(value)
+	if err != nil {
+		return false, fmt.Errorf("failed to marshal value: %w", err)
+	}
+	const compareAndDelete = `
+		if redis.call("GET", KEYS[1]) == ARGV[1] then
+			return redis.call("DEL", KEYS[1])
+		end
+		return 0
+	`
+	deleted, err := s.client.Eval(s.ctx, compareAndDelete, []string{key}, data).Int64()
+	return deleted == 1, err
+}
+
 // Increment increments a counter
 func (s *CacheService) Increment(key string) (int64, error) {
 	return s.client.Incr(s.ctx, key).Result()

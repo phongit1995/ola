@@ -1,5 +1,5 @@
 'use strict'
-const { ok, section, req, data, sleep, summary, createUserSet, WS_BASE } = require('../helpers')
+const { ok, section, req, reqForm, data, sleep, summary, createUserSet, WS_BASE, audioForm } = require('../helpers')
 const { io } = require('socket.io-client')
 
 function connectWS(token) {
@@ -91,6 +91,30 @@ async function main() {
     ok('charlie received NEW_MESSAGE', result.charlie)
     ok('alice receives own message (multi-device sync)', result.alice)
 
+    r = await req('POST', '/conversations/direct', { recipientId: bob.id }, alice.token)
+    const directId = data(r)?.id
+    const audioClientMsgId = `ws-audio-${Date.now()}`
+    const audioReceived = await new Promise((resolve) => {
+      const timer = setTimeout(() => resolve(null), 7000)
+      wsB.on('message', (msg) => {
+        const message = msg?.data?.message
+        if (
+          msg?.type === 'NEW_MESSAGE' &&
+          message?.conversationId === directId &&
+          message?.clientMsgId === audioClientMsgId
+        ) {
+          clearTimeout(timer)
+          resolve(message)
+        }
+      })
+      sleep(300).then(() =>
+        reqForm('POST', '/messages/audio', audioForm(directId, audioClientMsgId), alice.token)
+      )
+    })
+    ok('bob received direct voice NEW_MESSAGE', audioReceived?.type === 'audio')
+    const realtimeAudioMeta = JSON.parse(audioReceived?.metadata || '{}')
+    ok('realtime voice contains playable URL', /^https?:\/\//.test(realtimeAudioMeta.url || ''))
+
   } catch (err) {
     console.error('  WS error:', err.message)
     ok('alice connected', false)
@@ -99,6 +123,8 @@ async function main() {
     ok('bob received NEW_MESSAGE', false)
     ok('charlie received NEW_MESSAGE', false)
     ok('alice NOT fanout to herself', false)
+    ok('bob received direct voice NEW_MESSAGE', false)
+    ok('realtime voice contains playable URL', false)
   } finally {
     wsA?.disconnect()
     wsB?.disconnect()

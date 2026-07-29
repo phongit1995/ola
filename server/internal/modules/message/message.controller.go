@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"ola-chat-server/internal/constants"
 	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
@@ -12,7 +13,25 @@ import (
 	"go.uber.org/zap"
 )
 
-const maxAudioWaveformSamples = 64
+const (
+	maxAudioWaveformSamples = 64
+	maxClientMessageIDBytes = 64
+)
+
+func multipartClientMessageID(c *gin.Context) (string, error) {
+	clientMsgID := c.PostForm("clientMsgId")
+	if len(clientMsgID) > maxClientMessageIDBytes {
+		return "", utils.NewHTTPError(http.StatusBadRequest, "invalid client message ID")
+	}
+	return clientMsgID, nil
+}
+
+func validateJSONMessageType(messageType string) error {
+	if messageType == constants.MessageTypeImage || messageType == constants.MessageTypeAudio {
+		return ErrMediaRequiresUpload
+	}
+	return nil
+}
 
 type Controller struct {
 	service *Service
@@ -63,6 +82,9 @@ func (ctrl *Controller) SendMessage(c *gin.Context) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+	if err := validateJSONMessageType(req.Type); err != nil {
+		return nil, ctrl.messageHTTPError(err, "invalid message type", "Invalid JSON message type")
+	}
 
 	conversationID, err := uuid.Parse(req.ConversationID)
 	if err != nil {
@@ -108,6 +130,9 @@ func (ctrl *Controller) SendDirectMessage(c *gin.Context) (interface{}, error) {
 	req, err := utils.BindJSON[SendDirectMessageRequest](c)
 	if err != nil {
 		return nil, err
+	}
+	if err := validateJSONMessageType(req.Type); err != nil {
+		return nil, ctrl.messageHTTPError(err, "invalid message type", "Invalid direct JSON message type")
 	}
 
 	recipientID, err := uuid.Parse(req.RecipientID)
@@ -240,7 +265,10 @@ func (ctrl *Controller) SendImageMessage(c *gin.Context) (interface{}, error) {
 		return nil, utils.NewHTTPError(http.StatusBadRequest, "missing file")
 	}
 
-	clientMsgID := c.PostForm("clientMsgId")
+	clientMsgID, err := multipartClientMessageID(c)
+	if err != nil {
+		return nil, err
+	}
 
 	result, err := ctrl.service.SendImageMessage(c.Request.Context(), userID, conversationID, fileHeader, clientMsgID)
 	if err != nil {
@@ -288,7 +316,10 @@ func (ctrl *Controller) SendAudioMessage(c *gin.Context) (interface{}, error) {
 
 	durationStr := c.PostForm("duration")
 	duration, err := strconv.ParseFloat(durationStr, 64)
-	if err != nil || duration <= 0 {
+	if err != nil {
+		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid duration")
+	}
+	if err := validateAudioDuration(duration); err != nil {
 		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid duration")
 	}
 
@@ -297,7 +328,7 @@ func (ctrl *Controller) SendAudioMessage(c *gin.Context) (interface{}, error) {
 		if err := json.Unmarshal([]byte(raw), &waveform); err != nil {
 			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid waveform")
 		}
-		if len(waveform) > maxAudioWaveformSamples {
+		if err := validateAudioWaveform(waveform, maxAudioWaveformSamples); err != nil {
 			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid waveform")
 		}
 	}
@@ -311,7 +342,10 @@ func (ctrl *Controller) SendAudioMessage(c *gin.Context) (interface{}, error) {
 		replyToID = &parsed
 	}
 
-	clientMsgID := c.PostForm("clientMsgId")
+	clientMsgID, err := multipartClientMessageID(c)
+	if err != nil {
+		return nil, err
+	}
 
 	result, err := ctrl.service.SendAudioMessage(c.Request.Context(), userID, conversationID, fileHeader, duration, waveform, replyToID, clientMsgID)
 	if err != nil {

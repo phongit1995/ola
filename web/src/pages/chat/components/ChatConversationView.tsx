@@ -287,9 +287,12 @@ export function ChatConversationView({
   function sendPendingAudio() {
     if (pendingAudio == null) return;
     const audio = pendingAudio;
+    const sourceConversationId = useChatStore.getState().currentConversationId;
     setPendingAudio(null);
     void sendAudio(audio.blob, audio.duration, audio.waveform).catch(() => {
-      setPendingAudio((current) => current ?? audio);
+      if (useChatStore.getState().currentConversationId === sourceConversationId) {
+        setPendingAudio((current) => current ?? audio);
+      }
     });
   }
 
