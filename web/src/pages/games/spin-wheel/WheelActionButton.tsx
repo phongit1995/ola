@@ -7,10 +7,22 @@ interface WheelActionButtonProps {
   onClick: () => void;
 }
 
-export function WheelActionButton({ icon, label, onClick }: WheelActionButtonProps) {
+export function WheelActionButton({
+  icon,
+  label,
+  onClick,
+}: WheelActionButtonProps) {
   return (
-    <button type="button" onClick={onClick} className="relative h-11 flex-1 active:scale-95">
-      <img src={bottomButtonFrameUrl} alt="" className="absolute inset-0 h-full w-full" />
+    <button
+      type="button"
+      onClick={onClick}
+      className="relative h-11 flex-1 active:scale-95"
+    >
+      <img
+        src={bottomButtonFrameUrl}
+        alt=""
+        className="absolute inset-0 h-full w-full"
+      />
       <span
         className="absolute inset-0 flex items-center justify-center gap-1.5 text-sm font-bold"
         style={CHIP_TEXT_STYLE}

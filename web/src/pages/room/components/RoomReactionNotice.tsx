@@ -9,12 +9,17 @@ const NOTICE_DURATION_MS = 2500;
 export function RoomReactionNotice() {
   const { t } = useTranslation();
   const notice = useRoomChatStore((state) => state.reactionNotice);
-  const clearReactionNotice = useRoomChatStore((state) => state.clearReactionNotice);
+  const clearReactionNotice = useRoomChatStore(
+    (state) => state.clearReactionNotice
+  );
 
   useEffect(() => {
     if (notice == null) return;
     const seq = notice.seq;
-    const timer = setTimeout(() => clearReactionNotice(seq), NOTICE_DURATION_MS);
+    const timer = setTimeout(
+      () => clearReactionNotice(seq),
+      NOTICE_DURATION_MS
+    );
     return () => clearTimeout(timer);
   }, [notice, clearReactionNotice]);
 
@@ -34,7 +39,9 @@ export function RoomReactionNotice() {
           </span>
         )}
         <span className="min-w-0 truncate text-sm leading-tight">
-          <span className="font-semibold text-black/85">@{notice.username}</span>
+          <span className="font-semibold text-black/85">
+            @{notice.username}
+          </span>
           <span className="text-black/50"> {t('room.reactionNotice')}</span>
         </span>
       </span>

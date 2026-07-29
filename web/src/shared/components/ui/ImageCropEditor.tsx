@@ -10,8 +10,16 @@ interface ImageCropEditorProps {
   onApply: (file: File) => void | Promise<void>;
 }
 
-export function ImageCropEditor({ src, aspect, busy, onCancel, onApply }: ImageCropEditorProps) {
-  const [cropped, setCropped] = useState<{ url: string; file: File } | null>(null);
+export function ImageCropEditor({
+  src,
+  aspect,
+  busy,
+  onCancel,
+  onApply,
+}: ImageCropEditorProps) {
+  const [cropped, setCropped] = useState<{ url: string; file: File } | null>(
+    null
+  );
 
   const clearCropped = useCallback(() => {
     setCropped((prev) => {

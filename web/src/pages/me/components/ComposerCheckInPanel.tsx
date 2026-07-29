@@ -5,7 +5,10 @@ import { toast } from '@lib';
 import checkInIcon from '@/assets/icons/me/ic_check_in.png';
 import { CHECK_IN_ACTIONS, type CheckInAction } from '../checkInActions';
 
-export type ComposedCheckIn = GeoVenue & { action?: string; actionIcon?: string };
+export type ComposedCheckIn = GeoVenue & {
+  action?: string;
+  actionIcon?: string;
+};
 
 interface ComposerCheckInPanelProps {
   onSelect: (checkIn: ComposedCheckIn) => void;
@@ -45,7 +48,9 @@ export function ComposerCheckInPanel({ onSelect }: ComposerCheckInPanelProps) {
             GeoService.reverse(latitude, longitude).catch(() => null),
           ]);
           setNearby(venues);
-          setCurrent(here ?? { name: '', address: '', lat: latitude, lng: longitude });
+          setCurrent(
+            here ?? { name: '', address: '', lat: latitude, lng: longitude }
+          );
         } catch {
           setLocateError(true);
           toast.error(t('me.checkInError'));
@@ -70,7 +75,9 @@ export function ComposerCheckInPanel({ onSelect }: ComposerCheckInPanelProps) {
   return (
     <div className="mt-2 overflow-hidden rounded-md border border-black/12">
       <div className="border-b border-black/12 p-2">
-        <p className="text-sm font-medium text-black/87">{t('me.checkInWhat')}</p>
+        <p className="text-sm font-medium text-black/87">
+          {t('me.checkInWhat')}
+        </p>
         <div className="mt-2 flex flex-wrap gap-1">
           {CHECK_IN_ACTIONS.map((item) => (
             <button
@@ -89,7 +96,9 @@ export function ComposerCheckInPanel({ onSelect }: ComposerCheckInPanelProps) {
           ))}
         </div>
         {action == null && (
-          <p className="mt-2 text-xs text-black/40">{t('me.checkInPickActionFirst')}</p>
+          <p className="mt-2 text-xs text-black/40">
+            {t('me.checkInPickActionFirst')}
+          </p>
         )}
       </div>
       {action != null && (
@@ -109,9 +118,15 @@ export function ComposerCheckInPanel({ onSelect }: ComposerCheckInPanelProps) {
               onClick={() => pick(current)}
               className="flex w-full items-center gap-2 border-b border-black/12 px-3 py-2 text-left text-sm text-black/87 hover:bg-ola-primary-light"
             >
-              <img src={checkInIcon} alt="" className="h-6 w-6 shrink-0 object-contain" />
+              <img
+                src={checkInIcon}
+                alt=""
+                className="h-6 w-6 shrink-0 object-contain"
+              />
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-ola-primary">{t('me.checkInCurrent')}</span>
+                <span className="block truncate text-ola-primary">
+                  {t('me.checkInCurrent')}
+                </span>
                 {(current.name !== '' || current.address !== '') && (
                   <span className="block truncate text-xs text-black/40">
                     {current.name !== '' ? current.name : current.address}
@@ -121,10 +136,14 @@ export function ComposerCheckInPanel({ onSelect }: ComposerCheckInPanelProps) {
             </button>
           )}
           {locateError && (
-            <p className="px-3 py-2 text-xs text-ola-error">{t('me.checkInError')}</p>
+            <p className="px-3 py-2 text-xs text-ola-error">
+              {t('me.checkInError')}
+            </p>
           )}
           {!locating && !locateError && nearby.length === 0 && (
-            <p className="px-3 py-2 text-xs text-black/40">{t('me.checkInNoVenues')}</p>
+            <p className="px-3 py-2 text-xs text-black/40">
+              {t('me.checkInNoVenues')}
+            </p>
           )}
           <div className="max-h-44 overflow-y-auto">
             {nearby.map((venue) => (
@@ -138,7 +157,9 @@ export function ComposerCheckInPanel({ onSelect }: ComposerCheckInPanelProps) {
                 <span className="min-w-0 flex-1">
                   <span className="block truncate">{venue.name}</span>
                   {venue.address !== '' && (
-                    <span className="block truncate text-xs text-black/40">{venue.address}</span>
+                    <span className="block truncate text-xs text-black/40">
+                      {venue.address}
+                    </span>
                   )}
                 </span>
               </button>

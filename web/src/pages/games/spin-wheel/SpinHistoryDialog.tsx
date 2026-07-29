@@ -46,7 +46,11 @@ function useOutcomeLabel() {
   return useCallback(
     (item: WheelSpinHistoryItem): OutcomeView => {
       if (item.segmentKind === 'miss') {
-        return { text: t('wheelGame.miss'), win: false, iconUrl: rewardMissUrl };
+        return {
+          text: t('wheelGame.miss'),
+          win: false,
+          iconUrl: rewardMissUrl,
+        };
       }
       if (isKenKind(item.segmentKind)) {
         return {
@@ -82,21 +86,31 @@ export function SpinHistoryDialog({ open, onClose }: SpinHistoryDialogProps) {
   const [page, setPage] = useState(0);
 
   const outcomeLabel = useOutcomeLabel();
-  const formatTime = useMemo(() => createTimeFormatter(i18n.language), [i18n.language]);
+  const formatTime = useMemo(
+    () => createTimeFormatter(i18n.language),
+    [i18n.language]
+  );
 
-  const loadPage = useCallback(async (pageIndex: number, outcome: WheelSpinHistoryFilter) => {
-    setLoading(true);
-    setError(false);
-    try {
-      const result = await WheelService.listSpins(PAGE_SIZE, pageIndex * PAGE_SIZE, outcome);
-      setTotal(result.total);
-      setItems(result.items);
-    } catch {
-      setError(true);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const loadPage = useCallback(
+    async (pageIndex: number, outcome: WheelSpinHistoryFilter) => {
+      setLoading(true);
+      setError(false);
+      try {
+        const result = await WheelService.listSpins(
+          PAGE_SIZE,
+          pageIndex * PAGE_SIZE,
+          outcome
+        );
+        setTotal(result.total);
+        setItems(result.items);
+      } catch {
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
   useEffect(() => {
     if (!open) return;
@@ -121,11 +135,18 @@ export function SpinHistoryDialog({ open, onClose }: SpinHistoryDialogProps) {
     >
       <div
         className="relative"
-        style={{ aspectRatio: '1043 / 1458', width: 'min(90vw, calc(62vh * 1043 / 1458))' }}
+        style={{
+          aspectRatio: '1043 / 1458',
+          width: 'min(90vw, calc(62vh * 1043 / 1458))',
+        }}
         onClick={(event) => event.stopPropagation()}
       >
         <div className="absolute inset-[3.5%] rounded-[24px] bg-[#fff4f1]" />
-        <img src={historyFrameUrl} alt="" className="pointer-events-none absolute inset-0 h-full w-full" />
+        <img
+          src={historyFrameUrl}
+          alt=""
+          className="pointer-events-none absolute inset-0 h-full w-full"
+        />
 
         <div className="absolute inset-0 flex flex-col px-[9%] pt-[15%] pb-[8%]">
           <div className="-mb-1 flex shrink-0 gap-0.5 px-2">
@@ -140,13 +161,19 @@ export function SpinHistoryDialog({ open, onClose }: SpinHistoryDialogProps) {
                   style={{ aspectRatio: '1254 / 425' }}
                 >
                   <img
-                    src={activeTab ? historyTabActiveUrl : historyTabInactiveUrl}
+                    src={
+                      activeTab ? historyTabActiveUrl : historyTabInactiveUrl
+                    }
                     alt=""
                     className="absolute inset-0 h-full w-full"
                   />
                   <span
                     className="absolute inset-0 flex items-center justify-center text-sm font-extrabold"
-                    style={activeTab ? HISTORY_LABEL_STYLE : HISTORY_TAB_INACTIVE_STYLE}
+                    style={
+                      activeTab
+                        ? HISTORY_LABEL_STYLE
+                        : HISTORY_TAB_INACTIVE_STYLE
+                    }
                   >
                     {t(`wheelGame.historyFilter.${f}`)}
                   </span>
@@ -164,7 +191,9 @@ export function SpinHistoryDialog({ open, onClose }: SpinHistoryDialogProps) {
           >
             {error ? (
               <div className="flex h-full items-center justify-center">
-                <p className="text-sm font-bold text-[#c0392b]">{t('wheelGame.error')}</p>
+                <p className="text-sm font-bold text-[#c0392b]">
+                  {t('wheelGame.error')}
+                </p>
               </div>
             ) : loading ? (
               <div className="flex h-full items-center justify-center">
@@ -172,7 +201,9 @@ export function SpinHistoryDialog({ open, onClose }: SpinHistoryDialogProps) {
               </div>
             ) : items.length === 0 ? (
               <div className="flex h-full items-center justify-center">
-                <p className="text-sm font-bold text-[#b98a97]">{t('wheelGame.historyEmpty')}</p>
+                <p className="text-sm font-bold text-[#b98a97]">
+                  {t('wheelGame.historyEmpty')}
+                </p>
               </div>
             ) : (
               <ul className="flex h-full flex-col">
@@ -186,7 +217,11 @@ export function SpinHistoryDialog({ open, onClose }: SpinHistoryDialogProps) {
                       <div className="flex min-w-0 items-center gap-2">
                         <div className="flex w-10 shrink-0 justify-center">
                           {outcome.vipTypeId != null ? (
-                            <VipIcon typeId={outcome.vipTypeId} className="h-9 w-9" rounded />
+                            <VipIcon
+                              typeId={outcome.vipTypeId}
+                              className="h-9 w-9"
+                              rounded
+                            />
                           ) : outcome.iconUrl ? (
                             <img
                               src={outcome.iconUrl}
@@ -208,14 +243,19 @@ export function SpinHistoryDialog({ open, onClose }: SpinHistoryDialogProps) {
                           {formatTime(item.createdAt)}
                         </p>
                         <p className="text-xs font-bold text-[#ff1e1e]">
-                          {item.isFree ? t('wheelGame.freeToday') : `-${formatKen(item.kenCost)} KEN`}
+                          {item.isFree
+                            ? t('wheelGame.freeToday')
+                            : `-${formatKen(item.kenCost)} KEN`}
                         </p>
                       </div>
                     </li>
                   );
                 })}
                 {Array.from({ length: placeholders }).map((_, index) => (
-                  <li key={`empty-${index}`} className="flex-1 border-b border-[#f6cfcb]/70 last:border-0" />
+                  <li
+                    key={`empty-${index}`}
+                    className="flex-1 border-b border-[#f6cfcb]/70 last:border-0"
+                  />
                 ))}
               </ul>
             )}
@@ -230,14 +270,21 @@ export function SpinHistoryDialog({ open, onClose }: SpinHistoryDialogProps) {
               className="relative w-[18%] active:scale-95 disabled:opacity-40"
               style={{ aspectRatio: '2008 / 1519' }}
             >
-              <img src={historyPageButtonUrl} alt="" className="absolute inset-0 h-full w-full" />
+              <img
+                src={historyPageButtonUrl}
+                alt=""
+                className="absolute inset-0 h-full w-full"
+              />
               <img
                 src={historyPagePrevUrl}
                 alt=""
                 className="absolute left-1/2 top-1/2 h-[52%] w-auto -translate-x-1/2 -translate-y-1/2"
               />
             </button>
-            <span className="text-lg font-extrabold" style={HISTORY_LABEL_STYLE}>
+            <span
+              className="text-lg font-extrabold"
+              style={HISTORY_LABEL_STYLE}
+            >
               {t('wheelGame.historyPage', { n: page + 1 })}
             </span>
             <button
@@ -248,7 +295,11 @@ export function SpinHistoryDialog({ open, onClose }: SpinHistoryDialogProps) {
               className="relative w-[18%] active:scale-95 disabled:opacity-40"
               style={{ aspectRatio: '2008 / 1519' }}
             >
-              <img src={historyPageButtonUrl} alt="" className="absolute inset-0 h-full w-full" />
+              <img
+                src={historyPageButtonUrl}
+                alt=""
+                className="absolute inset-0 h-full w-full"
+              />
               <img
                 src={historyPageNextUrl}
                 alt=""
@@ -260,9 +311,17 @@ export function SpinHistoryDialog({ open, onClose }: SpinHistoryDialogProps) {
 
         <div
           className="absolute left-1/2 top-0 flex w-[74%] -translate-x-1/2 -translate-y-1/2 items-center justify-center gap-2"
-          style={{ backgroundImage: `url(${historyHeaderUrl})`, backgroundSize: '100% 100%', aspectRatio: '1935 / 576' }}
+          style={{
+            backgroundImage: `url(${historyHeaderUrl})`,
+            backgroundSize: '100% 100%',
+            aspectRatio: '1935 / 576',
+          }}
         >
-          <img src={historyIconUrl} alt="" className="h-[38%] w-auto drop-shadow" />
+          <img
+            src={historyIconUrl}
+            alt=""
+            className="h-[38%] w-auto drop-shadow"
+          />
           <span className="text-xl font-extrabold" style={HISTORY_TITLE_STYLE}>
             {t('wheelGame.historyTitle')}
           </span>
@@ -275,7 +334,11 @@ export function SpinHistoryDialog({ open, onClose }: SpinHistoryDialogProps) {
           className="absolute right-[-1%] top-[-2%] w-[14%] active:scale-95"
           style={{ aspectRatio: '813 / 831' }}
         >
-          <img src={historyCloseButtonUrl} alt="" className="absolute inset-0 h-full w-full" />
+          <img
+            src={historyCloseButtonUrl}
+            alt=""
+            className="absolute inset-0 h-full w-full"
+          />
           <img
             src={historyCloseMarkUrl}
             alt=""

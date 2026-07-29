@@ -16,7 +16,11 @@ import type { VipIconInstance, VipStoreResult } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
 import { VipHistoryDialog } from './VipHistoryDialog';
 
-const PRIVACY_KEYS = ['privacyPublic', 'privacyFriends', 'privacyPrivate'] as const;
+const PRIVACY_KEYS = [
+  'privacyPublic',
+  'privacyFriends',
+  'privacyPrivate',
+] as const;
 const VIP_PAGE_SIZE = 100;
 
 interface VipRowProps {
@@ -28,10 +32,20 @@ interface VipRowProps {
   onToggle: () => void;
 }
 
-function VipRow({ icon, selectMode, selected, selectable, onSelect, onToggle }: VipRowProps) {
+function VipRow({
+  icon,
+  selectMode,
+  selected,
+  selectable,
+  onSelect,
+  onToggle,
+}: VipRowProps) {
   const { t } = useTranslation();
-  const stateKey =
-    icon.isUsing ? 'vip.stateInUse' : icon.isLocked ? 'vip.stateLocked' : 'vip.stateAvailable';
+  const stateKey = icon.isUsing
+    ? 'vip.stateInUse'
+    : icon.isLocked
+    ? 'vip.stateLocked'
+    : 'vip.stateAvailable';
   const disabled = selectMode && !selectable;
   return (
     <button
@@ -46,19 +60,39 @@ function VipRow({ icon, selectMode, selected, selectable, onSelect, onToggle }: 
         {selectMode && (
           <span
             className={`mr-3 flex h-5 w-5 shrink-0 items-center justify-center rounded border ${
-              selected ? 'border-ola-primary bg-ola-primary' : 'border-black/30 bg-white'
+              selected
+                ? 'border-ola-primary bg-ola-primary'
+                : 'border-black/30 bg-white'
             }`}
           >
             {selected && (
-              <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 text-white" fill="none" stroke="currentColor" strokeWidth={3} aria-hidden="true">
-                <path d="M5 12l5 5 9-11" strokeLinecap="round" strokeLinejoin="round" />
+              <svg
+                viewBox="0 0 24 24"
+                className="h-3.5 w-3.5 text-white"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={3}
+                aria-hidden="true"
+              >
+                <path
+                  d="M5 12l5 5 9-11"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
               </svg>
             )}
           </span>
         )}
-        <VipIcon typeId={icon.typeId} size={40} rounded alt={vipName(icon.typeId)} />
+        <VipIcon
+          typeId={icon.typeId}
+          size={40}
+          rounded
+          alt={vipName(icon.typeId)}
+        />
         <div className="ml-2 flex flex-col justify-center">
-          <span className="text-base text-black/87">{vipName(icon.typeId)}</span>
+          <span className="text-base text-black/87">
+            {vipName(icon.typeId)}
+          </span>
           <span className="mt-0.5 text-xs text-black/54">{t(stateKey)}</span>
         </div>
       </div>
@@ -82,7 +116,9 @@ export function VipStorePage({ onClose }: { onClose: () => void }) {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [menuIcon, setMenuIcon] = useState<VipIconInstance | null>(null);
   const [useTarget, setUseTarget] = useState<VipIconInstance | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<VipIconInstance | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<VipIconInstance | null>(
+    null
+  );
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [batchDeleteOpen, setBatchDeleteOpen] = useState(false);
@@ -139,7 +175,8 @@ export function VipStorePage({ onClose }: { onClose: () => void }) {
       const ONE_DAY = 86_400_000;
       const ONE_HOUR = 3_600_000;
       const ONE_MINUTE = 60_000;
-      if (diffMs >= ONE_DAY) return t('vip.daysLeft', { count: Math.ceil(diffMs / ONE_DAY) });
+      if (diffMs >= ONE_DAY)
+        return t('vip.daysLeft', { count: Math.ceil(diffMs / ONE_DAY) });
       const hours = Math.floor(diffMs / ONE_HOUR);
       const minutes = Math.floor((diffMs % ONE_HOUR) / ONE_MINUTE);
       if (hours >= 1) {
@@ -157,7 +194,11 @@ export function VipStorePage({ onClose }: { onClose: () => void }) {
 
   const durationText = buildDurationText();
 
-  async function runAction(action: () => Promise<unknown>, successText: string, syncUser = false) {
+  async function runAction(
+    action: () => Promise<unknown>,
+    successText: string,
+    syncUser = false
+  ) {
     if (busy) return;
     setBusy(true);
     try {
@@ -183,15 +224,20 @@ export function VipStorePage({ onClose }: { onClose: () => void }) {
     void runAction(
       () => VipService.activateIcon(target.instanceId),
       t('vip.toastUsed', { name: vipName(target.typeId) }),
-      true,
+      true
     );
   }
 
   function toggleLock(icon: VipIconInstance) {
     const willLock = !icon.isLocked;
     void runAction(
-      () => (willLock ? VipService.lockIcon(icon.instanceId) : VipService.unlockIcon(icon.instanceId)),
-      t(willLock ? 'vip.toastLocked' : 'vip.toastUnlocked', { name: vipName(icon.typeId) }),
+      () =>
+        willLock
+          ? VipService.lockIcon(icon.instanceId)
+          : VipService.unlockIcon(icon.instanceId),
+      t(willLock ? 'vip.toastLocked' : 'vip.toastUnlocked', {
+        name: vipName(icon.typeId),
+      })
     );
   }
 
@@ -202,7 +248,7 @@ export function VipStorePage({ onClose }: { onClose: () => void }) {
     void runAction(
       () => VipService.deleteIcon(target.instanceId),
       t('vip.toastDeleted', { name: vipName(target.typeId) }),
-      true,
+      true
     );
   }
 
@@ -232,14 +278,18 @@ export function VipStorePage({ onClose }: { onClose: () => void }) {
     void runAction(
       () => VipService.batchDeleteIcons(ids),
       t('vip.toastDeletedMany', { count: ids.length }),
-      true,
+      true
     );
   }
 
   function buildMenuOptions(icon: VipIconInstance): ListOption[] {
     const options: ListOption[] = [];
     if (!icon.isUsing) {
-      options.push({ key: 'use', label: t('vip.actionUse'), onSelect: () => setUseTarget(icon) });
+      options.push({
+        key: 'use',
+        label: t('vip.actionUse'),
+        onSelect: () => setUseTarget(icon),
+      });
     }
     options.push({
       key: 'lock',
@@ -282,13 +332,23 @@ export function VipStorePage({ onClose }: { onClose: () => void }) {
 
       <div className="flex-1 overflow-y-auto" onScroll={handleScroll}>
         <div className="bg-white/80">
-          <div className="px-4 pt-4 text-xs text-black/54">{t('vip.usingIcon')}</div>
+          <div className="px-4 pt-4 text-xs text-black/54">
+            {t('vip.usingIcon')}
+          </div>
           <div className="mt-1 flex h-[72px] flex-col">
             <div className="flex flex-1 items-center px-4">
               {usingIcon ? (
-                <VipIcon typeId={usingIcon.typeId} size={40} rounded alt={vipName(usingIcon.typeId)} />
+                <VipIcon
+                  typeId={usingIcon.typeId}
+                  size={40}
+                  rounded
+                  alt={vipName(usingIcon.typeId)}
+                />
               ) : (
-                <span className="shrink-0 rounded bg-black/12" style={{ width: 40, height: 40 }} />
+                <span
+                  className="shrink-0 rounded bg-black/12"
+                  style={{ width: 40, height: 40 }}
+                />
               )}
               <div className="ml-2 flex flex-col justify-center">
                 <span className="text-base text-black/87">
@@ -310,9 +370,18 @@ export function VipStorePage({ onClose }: { onClose: () => void }) {
             onClick={() => setPrivacyOpen(true)}
             className="flex min-h-12 w-full items-center px-4 text-left active:bg-black/5"
           >
-            <span className="flex-1 text-base text-black/87">{t('vip.whoCanSee')}</span>
-            <span className="mx-2 text-xs text-black/54">{t(`vip.${PRIVACY_KEYS[privacy]}`)}</span>
-            <svg viewBox="0 0 24 24" className="h-5 w-5 text-black/40" fill="currentColor" aria-hidden="true">
+            <span className="flex-1 text-base text-black/87">
+              {t('vip.whoCanSee')}
+            </span>
+            <span className="mx-2 text-xs text-black/54">
+              {t(`vip.${PRIVACY_KEYS[privacy]}`)}
+            </span>
+            <svg
+              viewBox="0 0 24 24"
+              className="h-5 w-5 text-black/40"
+              fill="currentColor"
+              aria-hidden="true"
+            >
               <path d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z" />
             </svg>
           </button>
@@ -341,7 +410,11 @@ export function VipStorePage({ onClose }: { onClose: () => void }) {
                 <span className="flex-1 text-sm">
                   {t('vip.selectedCount', { count: selectedIds.size })}
                 </span>
-                <button type="button" onClick={exitSelectMode} className="px-2 text-sm">
+                <button
+                  type="button"
+                  onClick={exitSelectMode}
+                  className="px-2 text-sm"
+                >
                   {t('vip.cancel')}
                 </button>
                 <button
@@ -355,9 +428,15 @@ export function VipStorePage({ onClose }: { onClose: () => void }) {
               </>
             ) : (
               <>
-                <span className="flex-1 text-center text-base">{t('vip.collection')}</span>
+                <span className="flex-1 text-center text-base">
+                  {t('vip.collection')}
+                </span>
                 {items.length > 0 && (
-                  <button type="button" onClick={() => setSelectMode(true)} className="text-sm">
+                  <button
+                    type="button"
+                    onClick={() => setSelectMode(true)}
+                    className="text-sm"
+                  >
                     {t('vip.select')}
                   </button>
                 )}
@@ -396,7 +475,9 @@ export function VipStorePage({ onClose }: { onClose: () => void }) {
 
       <div className="flex h-12 shrink-0 items-center gap-2 border-t border-black/12 bg-white px-2">
         <span className="text-xs text-black/54">{t('vip.duration')}</span>
-        <span className="flex-1 text-xl font-bold text-black/87">{durationText}</span>
+        <span className="flex-1 text-xl font-bold text-black/87">
+          {durationText}
+        </span>
         <button
           type="button"
           onClick={() => pushOverlay('vipBuy', 'extend')}
@@ -406,7 +487,10 @@ export function VipStorePage({ onClose }: { onClose: () => void }) {
         </button>
       </div>
 
-      <VipHistoryDialog open={historyOpen} onClose={() => setHistoryOpen(false)} />
+      <VipHistoryDialog
+        open={historyOpen}
+        onClose={() => setHistoryOpen(false)}
+      />
 
       <ListOptionDialog
         open={privacyOpen}
@@ -425,7 +509,9 @@ export function VipStorePage({ onClose }: { onClose: () => void }) {
       <ConfirmDialog
         open={useTarget != null}
         title={t('vip.confirmUseTitle')}
-        message={t('vip.confirmUse', { name: useTarget ? vipName(useTarget.typeId) : '' })}
+        message={t('vip.confirmUse', {
+          name: useTarget ? vipName(useTarget.typeId) : '',
+        })}
         confirmLabel={t('vip.confirm')}
         cancelLabel={t('vip.cancel')}
         onConfirm={confirmUse}
@@ -436,7 +522,9 @@ export function VipStorePage({ onClose }: { onClose: () => void }) {
         open={deleteTarget != null}
         danger
         title={t('vip.confirmDeleteTitle')}
-        message={t('vip.confirmDelete', { name: deleteTarget ? vipName(deleteTarget.typeId) : '' })}
+        message={t('vip.confirmDelete', {
+          name: deleteTarget ? vipName(deleteTarget.typeId) : '',
+        })}
         confirmLabel={t('vip.actionDelete')}
         cancelLabel={t('vip.cancel')}
         onConfirm={confirmDelete}

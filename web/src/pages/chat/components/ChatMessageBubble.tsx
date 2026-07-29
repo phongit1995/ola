@@ -75,13 +75,17 @@ export function ChatMessageBubble({
   const failed = isOut && message.status === 'failed';
   const surface = isOut ? 'bg-[#dcedc8]' : 'bg-white shadow-sm';
   const groupCorners = isOut
-    ? `${firstInGroup ? '' : 'rounded-tr-sm'} ${lastInGroup ? '' : 'rounded-br-sm'}`
-    : `${firstInGroup ? '' : 'rounded-tl-sm'} ${lastInGroup ? '' : 'rounded-bl-sm'}`;
+    ? `${firstInGroup ? '' : 'rounded-tr-sm'} ${
+        lastInGroup ? '' : 'rounded-br-sm'
+      }`
+    : `${firstInGroup ? '' : 'rounded-tl-sm'} ${
+        lastInGroup ? '' : 'rounded-bl-sm'
+      }`;
   const bubbleBg = failed
     ? 'bg-[#f8d7d7]'
     : isOut
-      ? 'bg-[#dcedc8]'
-      : 'bg-white shadow-sm';
+    ? 'bg-[#dcedc8]'
+    : 'bg-white shadow-sm';
 
   const quotedWrap = (content: ReactNode) =>
     message.replyTo != null ? (

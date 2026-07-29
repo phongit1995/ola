@@ -9,11 +9,17 @@ interface MarriageLockedViewProps {
   onPropose: () => void;
 }
 
-type PendingAction = { proposal: PendingProposal; kind: 'accept' | 'deny' } | null;
+type PendingAction = {
+  proposal: PendingProposal;
+  kind: 'accept' | 'deny';
+} | null;
 
 export function MarriageLockedView({ onPropose }: MarriageLockedViewProps) {
   const { t, i18n } = useTranslation();
-  const formatSentTime = useMemo(() => createTimeFormatter(i18n.language), [i18n.language]);
+  const formatSentTime = useMemo(
+    () => createTimeFormatter(i18n.language),
+    [i18n.language]
+  );
   const pending = useMarriageStore((s) => s.pendingProposals);
   const sent = useMarriageStore((s) => s.sentProposals);
   const acceptProposal = useMarriageStore((s) => s.acceptProposal);
@@ -37,7 +43,9 @@ export function MarriageLockedView({ onPropose }: MarriageLockedViewProps) {
     try {
       if (current.kind === 'accept') {
         await acceptProposal(current.proposal.id);
-        toast.success(t('marriage.acceptedToast', { nick: current.proposal.fromNick }));
+        toast.success(
+          t('marriage.acceptedToast', { nick: current.proposal.fromNick })
+        );
       } else {
         await denyProposal(current.proposal.id);
       }
@@ -49,8 +57,12 @@ export function MarriageLockedView({ onPropose }: MarriageLockedViewProps) {
   return (
     <div className="flex flex-col items-center px-6 py-10">
       <div className="text-7xl text-[#ff4d7d]/30">♥</div>
-      <h2 className="mt-4 text-lg font-bold text-[#c2185b]">{t('marriage.lockedTitle')}</h2>
-      <p className="mt-2 max-w-xs text-center text-sm text-black/55">{t('marriage.lockedDesc')}</p>
+      <h2 className="mt-4 text-lg font-bold text-[#c2185b]">
+        {t('marriage.lockedTitle')}
+      </h2>
+      <p className="mt-2 max-w-xs text-center text-sm text-black/55">
+        {t('marriage.lockedDesc')}
+      </p>
       <button
         type="button"
         onClick={onPropose}
@@ -61,7 +73,9 @@ export function MarriageLockedView({ onPropose }: MarriageLockedViewProps) {
 
       {sent.length > 0 && (
         <div className="mt-10 w-full max-w-md">
-          <p className="mb-2 text-sm font-bold text-[#c2185b]">{t('marriage.sentTitle')}</p>
+          <p className="mb-2 text-sm font-bold text-[#c2185b]">
+            {t('marriage.sentTitle')}
+          </p>
           <div className="flex flex-col gap-2">
             {sent.map((item) => (
               <div
@@ -73,7 +87,9 @@ export function MarriageLockedView({ onPropose }: MarriageLockedViewProps) {
                   <p className="truncate text-sm font-semibold text-black/80">
                     {t('marriage.sentTo', { nick: item.toNick })}
                   </p>
-                  <p className="truncate text-xs text-black/55">{item.message}</p>
+                  <p className="truncate text-xs text-black/55">
+                    {item.message}
+                  </p>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
                   <span className="text-[10px] text-black/45">
@@ -95,7 +111,9 @@ export function MarriageLockedView({ onPropose }: MarriageLockedViewProps) {
 
       {pending.length > 0 && (
         <div className="mt-8 w-full max-w-md">
-          <p className="mb-2 text-sm font-bold text-[#c2185b]">{t('marriage.receivedTitle')}</p>
+          <p className="mb-2 text-sm font-bold text-[#c2185b]">
+            {t('marriage.receivedTitle')}
+          </p>
           <div className="flex flex-col gap-2">
             {pending.map((proposal) => (
               <div
@@ -107,7 +125,9 @@ export function MarriageLockedView({ onPropose }: MarriageLockedViewProps) {
                   <p className="truncate text-sm font-semibold text-black/80">
                     {t('marriage.proposalFrom', { name: proposal.fromName })}
                   </p>
-                  <p className="truncate text-xs text-black/55">{proposal.message}</p>
+                  <p className="truncate text-xs text-black/55">
+                    {proposal.message}
+                  </p>
                 </div>
                 <button
                   type="button"
@@ -137,7 +157,9 @@ export function MarriageLockedView({ onPropose }: MarriageLockedViewProps) {
             ? t('marriage.confirmDeny', { nick: action?.proposal.fromNick })
             : t('marriage.confirmAccept', { nick: action?.proposal.fromNick })
         }
-        confirmLabel={action?.kind === 'deny' ? t('marriage.deny') : t('marriage.accept')}
+        confirmLabel={
+          action?.kind === 'deny' ? t('marriage.deny') : t('marriage.accept')
+        }
         cancelLabel={t('marriage.no')}
         danger={action?.kind === 'deny'}
         onConfirm={() => void confirm()}

@@ -106,7 +106,12 @@ export function MeLeftDrawer({
           className="relative h-28 shrink-0 bg-ola-primary-dark bg-cover bg-center text-left"
         >
           <span className="absolute inset-x-0 bottom-0 flex items-center gap-2 bg-linear-to-t from-black/70 to-transparent px-2 pb-2 pt-8">
-            <Avatar name={displayName} src={avatarUrl} color={DEFAULT_AVATAR_COLOR} size={40} />
+            <Avatar
+              name={displayName}
+              src={avatarUrl}
+              color={DEFAULT_AVATAR_COLOR}
+              size={40}
+            />
             <span className="min-w-0 flex-1 truncate text-base font-medium text-white">
               {displayName}
             </span>
@@ -124,10 +129,14 @@ export function MeLeftDrawer({
                 <img
                   src={item.icon}
                   alt=""
-                  className={`h-6 w-6 object-contain ${item.iconClassName ?? ''}`}
+                  className={`h-6 w-6 object-contain ${
+                    item.iconClassName ?? ''
+                  }`}
                 />
               </span>
-              <span className="truncate text-base text-black/87">{item.label}</span>
+              <span className="truncate text-base text-black/87">
+                {item.label}
+              </span>
             </button>
           ))}
         </nav>

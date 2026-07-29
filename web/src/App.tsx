@@ -1,6 +1,11 @@
 import { lazy, Suspense } from 'react';
 import { ReconnectingBanner, ToastViewport } from '@components';
-import { useSoundUnlock, useAuthSessionSync, useReconnectOnVisible, useSettingsSync } from '@hooks';
+import {
+  useSoundUnlock,
+  useAuthSessionSync,
+  useReconnectOnVisible,
+  useSettingsSync,
+} from '@hooks';
 import { AppRouter } from '@/routes';
 import { useArcadeOverlayStore } from '@/store/arcadeOverlayStore';
 import { useMediaViewerStore } from '@/store/mediaViewerStore';
@@ -11,17 +16,21 @@ import { useAppNotificationRealtime } from '@/pages/apps/useAppNotificationRealt
 import { useSettingsStore } from '@/store/settingsStore';
 
 const MediaViewer = lazy(() =>
-  import('@/pages/me/components/MediaViewer').then((m) => ({ default: m.MediaViewer })),
+  import('@/pages/me/components/MediaViewer').then((m) => ({
+    default: m.MediaViewer,
+  }))
 );
 
 const KenTreasureOverlay = lazy(() =>
   import('@/pages/games/ken-treasure/KenTreasureOverlay').then((m) => ({
     default: m.KenTreasureOverlay,
-  })),
+  }))
 );
 
 const ArcadeOverlay = lazy(() =>
-  import('@/pages/apps/ArcadeOverlay').then((m) => ({ default: m.ArcadeOverlay })),
+  import('@/pages/apps/ArcadeOverlay').then((m) => ({
+    default: m.ArcadeOverlay,
+  }))
 );
 
 function GlobalArcade() {
@@ -52,7 +61,12 @@ function GlobalMediaViewer() {
   if (!open || images.length === 0) return null;
   return (
     <Suspense fallback={null}>
-      <MediaViewer key={`${index}-${images[0]}`} photos={images} index={index} onClose={close} />
+      <MediaViewer
+        key={`${index}-${images[0]}`}
+        photos={images}
+        index={index}
+        onClose={close}
+      />
     </Suspense>
   );
 }

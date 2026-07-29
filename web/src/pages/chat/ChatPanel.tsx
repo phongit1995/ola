@@ -1,11 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import {
-  ConfirmDialog,
-  ListOptionDialog,
-  type ListOption,
-} from '@components';
+import { ConfirmDialog, ListOptionDialog, type ListOption } from '@components';
 import { ROUTES } from '@constants';
 import { toast } from '@lib';
 import { HomeHeader } from '@components/HomeHeader';
@@ -78,8 +74,13 @@ export function ChatPanel() {
   const requestsLoading = useFriendsStore((s) => s.requestsLoading);
   const friendsRaw = useFriendsWithPresence();
   const [now, setNow] = useState(() => Date.now());
-  const friends = useMemo(() => mapFriendsToContacts(friendsRaw, t, now), [friendsRaw, t, now]);
-  const [profileTarget, setProfileTarget] = useState<ProfileTarget | null>(null);
+  const friends = useMemo(
+    () => mapFriendsToContacts(friendsRaw, t, now),
+    [friendsRaw, t, now]
+  );
+  const [profileTarget, setProfileTarget] = useState<ProfileTarget | null>(
+    null
+  );
 
   usePresenceListPolling();
 
@@ -143,21 +144,58 @@ export function ChatPanel() {
   }
 
   const messagesMenu: ListOption[] = [
-    { key: 'delete-all', label: t('chat.menuDeleteAll'), danger: true, onSelect: () => setDeleteAllOpen(true) },
+    {
+      key: 'delete-all',
+      label: t('chat.menuDeleteAll'),
+      danger: true,
+      onSelect: () => setDeleteAllOpen(true),
+    },
     {
       key: 'strangers',
-      label: showStrangers ? t('chat.menuDeleteStrangers') : t('chat.menuShowStrangers'),
+      label: showStrangers
+        ? t('chat.menuDeleteStrangers')
+        : t('chat.menuShowStrangers'),
       onSelect: () => setShowStrangers((value) => !value),
     },
-    { key: 'block-list', label: t('chat.menuBlockList'), onSelect: () => setBlockedListOpen(true) },
+    {
+      key: 'block-list',
+      label: t('chat.menuBlockList'),
+      onSelect: () => setBlockedListOpen(true),
+    },
   ];
 
   const contactsMenu: ListOption[] = [
-    { key: 'buy-vip', label: t('chat.menuBuyVip'), onSelect: () => openApp('vip') },
-    { key: 'change-avatar', label: t('chat.menuChangeAvatar'), onSelect: () => setAvatarOpen(true) },
-    { key: 'change-cover', label: t('chat.menuChangeCover'), onSelect: () => setCoverOpen(true) },
-    { key: 'logout', label: t('chat.menuLogout'), onSelect: () => { setLogoutAll(false); setLogoutOpen(true); } },
-    { key: 'logout-all', label: t('chat.menuLogoutAll'), onSelect: () => { setLogoutAll(true); setLogoutOpen(true); } },
+    {
+      key: 'buy-vip',
+      label: t('chat.menuBuyVip'),
+      onSelect: () => openApp('vip'),
+    },
+    {
+      key: 'change-avatar',
+      label: t('chat.menuChangeAvatar'),
+      onSelect: () => setAvatarOpen(true),
+    },
+    {
+      key: 'change-cover',
+      label: t('chat.menuChangeCover'),
+      onSelect: () => setCoverOpen(true),
+    },
+    {
+      key: 'logout',
+      label: t('chat.menuLogout'),
+      onSelect: () => {
+        setLogoutAll(false);
+        setLogoutOpen(true);
+      },
+    },
+    {
+      key: 'logout-all',
+      label: t('chat.menuLogoutAll'),
+      onSelect: () => {
+        setLogoutAll(true);
+        setLogoutOpen(true);
+      },
+    },
   ];
 
   const headerMenuOptions = sub === 'messages' ? messagesMenu : contactsMenu;
@@ -226,13 +264,17 @@ export function ChatPanel() {
               contacts={friends}
               onSelect={(contact) => void startDirect(contact.id)}
               onOpenProfile={(contact) =>
-                setProfileTarget({ username: contact.name, color: contact.color })
+                setProfileTarget({
+                  username: contact.name,
+                  color: contact.color,
+                })
               }
               me={user}
               onAccountMenu={() => setHeaderMenuOpen(true)}
               onEditStatus={() => setStatusOpen(true)}
               onPreviewImage={() => {
-                if (user?.bioImage != null && user.bioImage !== '') openViewer([user.bioImage]);
+                if (user?.bioImage != null && user.bioImage !== '')
+                  openViewer([user.bioImage]);
               }}
               onPreviewBuddyImage={(img) => openViewer([img])}
               onComingSoon={comingSoon}
@@ -246,13 +288,19 @@ export function ChatPanel() {
               aria-label={t('chat.menuAddContact')}
               className="absolute right-4 bottom-4 flex h-14 w-14 items-center justify-center rounded-full bg-ola-primary shadow-[0_3px_6px_rgba(0,0,0,.3)]"
             >
-              <img src={addFriendIcon} alt="" className="h-6 w-6 object-contain brightness-0 invert" />
+              <img
+                src={addFriendIcon}
+                alt=""
+                className="h-6 w-6 object-contain brightness-0 invert"
+              />
             </button>
           </div>
         )}
       </main>
 
-      {suggestedOpen && <SuggestedFriendsScreen onClose={() => setSuggestedOpen(false)} />}
+      {suggestedOpen && (
+        <SuggestedFriendsScreen onClose={() => setSuggestedOpen(false)} />
+      )}
       {requestsOpen && (
         <FriendRequestsScreen
           requests={requests}
@@ -275,7 +323,9 @@ export function ChatPanel() {
       )}
       <ListOptionDialog
         open={headerMenuOpen}
-        title={sub === 'messages' ? t('home.subMessages') : t('home.subContacts')}
+        title={
+          sub === 'messages' ? t('home.subMessages') : t('home.subContacts')
+        }
         options={headerMenuOptions}
         onClose={() => setHeaderMenuOpen(false)}
       />
@@ -311,16 +361,23 @@ export function ChatPanel() {
           setProfileTarget(target);
         }}
       />
-      <ChangeAvatarScreen open={avatarOpen} onClose={() => setAvatarOpen(false)} />
+      <ChangeAvatarScreen
+        open={avatarOpen}
+        onClose={() => setAvatarOpen(false)}
+      />
       <ChangeCoverScreen open={coverOpen} onClose={() => setCoverOpen(false)} />
-      {statusOpen && <StatusEditDialog open onClose={() => setStatusOpen(false)} />}
+      {statusOpen && (
+        <StatusEditDialog open onClose={() => setStatusOpen(false)} />
+      )}
       {profileTarget != null && (
         <UserProfileView
           key={profileTarget.username}
           username={profileTarget.username}
           color={profileTarget.color}
           onClose={() => setProfileTarget(null)}
-          onOpenFriend={(friend) => setProfileTarget({ username: friend.name, color: friend.color })}
+          onOpenFriend={(friend) =>
+            setProfileTarget({ username: friend.name, color: friend.color })
+          }
         />
       )}
     </>

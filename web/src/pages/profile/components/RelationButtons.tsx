@@ -77,13 +77,30 @@ export function RelationButtons({
   const followIconSrc = following ? followingActiveIcon : followIcon;
 
   const otherMenu: ListOption[] = [
-    { key: 'block', label: t('profile.block'), danger: true, onSelect: actions.blockAction },
-    { key: 'copy', label: t('profile.copyNick'), onSelect: () => navigator.clipboard?.writeText(nick) },
-    { key: 'report', label: t('profile.report'), onSelect: () => setReportOpen(true) },
+    {
+      key: 'block',
+      label: t('profile.block'),
+      danger: true,
+      onSelect: actions.blockAction,
+    },
+    {
+      key: 'copy',
+      label: t('profile.copyNick'),
+      onSelect: () => navigator.clipboard?.writeText(nick),
+    },
+    {
+      key: 'report',
+      label: t('profile.report'),
+      onSelect: () => setReportOpen(true),
+    },
   ];
 
   const selfMenu: ListOption[] = [
-    { key: 'avatar', label: t('profile.changeAvatar'), onSelect: onChangeAvatar },
+    {
+      key: 'avatar',
+      label: t('profile.changeAvatar'),
+      onSelect: onChangeAvatar,
+    },
     { key: 'cover', label: t('profile.changeCover'), onSelect: onChangeCover },
     { key: 'privacy', label: t('profile.changePrivacy'), onSelect: comingSoon },
   ];
@@ -106,7 +123,11 @@ export function RelationButtons({
     <>
       <div className="flex px-2 py-2">
         {isSelf ? (
-          <RelationButton icon={editIcon} label={t('profile.updateInfo')} onClick={onUpdateInfo} />
+          <RelationButton
+            icon={editIcon}
+            label={t('profile.updateInfo')}
+            onClick={onUpdateInfo}
+          />
         ) : (
           <>
             <RelationButton
@@ -123,8 +144,16 @@ export function RelationButtons({
             />
           </>
         )}
-        <RelationButton icon={postMeIcon} label={t('profile.postMe')} onClick={onPostMe} />
-        <RelationButton icon={moreIcon} label={t('profile.more')} onClick={() => setMenuOpen(true)} />
+        <RelationButton
+          icon={postMeIcon}
+          label={t('profile.postMe')}
+          onClick={onPostMe}
+        />
+        <RelationButton
+          icon={moreIcon}
+          label={t('profile.more')}
+          onClick={() => setMenuOpen(true)}
+        />
       </div>
 
       <ListOptionDialog
@@ -135,7 +164,10 @@ export function RelationButtons({
       />
 
       {reportOpen && (
-        <ReportDialog target={{ type: 'account', id: userId }} onClose={() => setReportOpen(false)} />
+        <ReportDialog
+          target={{ type: 'account', id: userId }}
+          onClose={() => setReportOpen(false)}
+        />
       )}
     </>
   );

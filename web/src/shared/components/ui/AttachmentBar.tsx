@@ -249,7 +249,9 @@ export function AttachmentBar({
 
   return (
     <div
-      className={`shrink-0 bg-white ${showTabBar ? 'border-t border-black/12' : ''}`}
+      className={`shrink-0 bg-white ${
+        showTabBar ? 'border-t border-black/12' : ''
+      }`}
     >
       {showTabBar && (
         <div className="flex">
@@ -290,30 +292,32 @@ export function AttachmentBar({
                         isDisabled
                           ? 'cursor-not-allowed opacity-30'
                           : isActive
-                            ? 'bg-ola-primary/10'
-                            : 'hover:bg-black/5'
+                          ? 'bg-ola-primary/10'
+                          : 'hover:bg-black/5'
                       }`
                     : `flex h-11 flex-1 select-none items-center justify-center ${
                         isDisabled
                           ? 'cursor-not-allowed opacity-30'
                           : isActive
-                            ? 'opacity-100'
-                            : 'opacity-60'
+                          ? 'opacity-100'
+                          : 'opacity-60'
                       }`
                 }
               >
                 <img
                   src={
                     isCompact
-                      ? (COMPACT_TAB_ICONS[tab] ?? ATTACH_TAB_ICONS[tab].icon)
+                      ? COMPACT_TAB_ICONS[tab] ?? ATTACH_TAB_ICONS[tab].icon
                       : isActive
-                        ? ATTACH_TAB_ICONS[tab].iconActive
-                        : ATTACH_TAB_ICONS[tab].icon
+                      ? ATTACH_TAB_ICONS[tab].iconActive
+                      : ATTACH_TAB_ICONS[tab].icon
                   }
                   alt=""
                   className={
                     isCompact
-                      ? `h-6 w-6 object-contain transition-opacity ${isActive ? 'opacity-100' : 'opacity-60'}`
+                      ? `h-6 w-6 object-contain transition-opacity ${
+                          isActive ? 'opacity-100' : 'opacity-60'
+                        }`
                       : 'h-6 w-6 object-contain'
                   }
                 />

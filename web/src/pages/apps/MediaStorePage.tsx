@@ -20,7 +20,10 @@ function monthKey(iso: string): string {
 
 function monthLabel(iso: string, language: string): string {
   const date = new Date(iso);
-  const text = new Intl.DateTimeFormat(language, { month: 'long', year: 'numeric' }).format(date);
+  const text = new Intl.DateTimeFormat(language, {
+    month: 'long',
+    year: 'numeric',
+  }).format(date);
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
@@ -40,7 +43,12 @@ function groupByMonth(photos: MePhoto[], language: string): PhotoGroup[] {
 
 function EmptyIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="h-14 w-14 text-black/20" fill="currentColor" aria-hidden="true">
+    <svg
+      viewBox="0 0 24 24"
+      className="h-14 w-14 text-black/20"
+      fill="currentColor"
+      aria-hidden="true"
+    >
       <path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM8.5 13.5l2.5 3 3.5-4.5 4.5 6H5l3.5-4.5zM8 9a2 2 0 1 1 0-4 2 2 0 0 1 0 4z" />
     </svg>
   );
@@ -50,13 +58,24 @@ function PhotoSkeleton() {
   return (
     <div className="grid grid-cols-3 gap-1 p-2">
       {Array.from({ length: 12 }).map((_, index) => (
-        <div key={index} className="aspect-square animate-pulse rounded-sm bg-black/10" />
+        <div
+          key={index}
+          className="aspect-square animate-pulse rounded-sm bg-black/10"
+        />
       ))}
     </div>
   );
 }
 
-function PhotoTile({ url, label, onOpen }: { url: string; label?: string; onOpen: () => void }) {
+function PhotoTile({
+  url,
+  label,
+  onOpen,
+}: {
+  url: string;
+  label?: string;
+  onOpen: () => void;
+}) {
   const [loaded, setLoaded] = useState(false);
   return (
     <button
@@ -142,7 +161,10 @@ export function MediaStorePage({ onClose }: { onClose: () => void }) {
   }, [hasMore, loadPage, photos.length]);
 
   const allUrls = useMemo(() => photos.map((photo) => photo.url), [photos]);
-  const groups = useMemo(() => groupByMonth(photos, i18n.language), [photos, i18n.language]);
+  const groups = useMemo(
+    () => groupByMonth(photos, i18n.language),
+    [photos, i18n.language]
+  );
   const hasPhotos = photos.length > 0;
 
   return (

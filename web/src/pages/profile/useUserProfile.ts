@@ -11,28 +11,57 @@ import {
 import { useAuthStore } from '@/store/authStore';
 import { useMeLocalStore } from '@/store/meLocalStore';
 import type { PostReaction, RelationshipInfo } from '@app-types';
-import { applyMeReaction, meSelfLiker, reconcileMeLikers, toMePost } from '../me/mappers';
+import {
+  applyMeReaction,
+  meSelfLiker,
+  reconcileMeLikers,
+  toMePost,
+} from '../me/mappers';
 import type { MePost } from '../me/types';
 import type { ComposedPost } from '../me/components/MeComposerDialog';
-import { composedToImages, composedToPayload, composedToUpdatePayload } from '../me/composer';
+import {
+  composedToImages,
+  composedToPayload,
+  composedToUpdatePayload,
+} from '../me/composer';
 import { useMeFeedStore } from '../me/meFeedStore';
-import { mapFollowing, mapPosts, mapPublicProfile, type ProfileMapDeps } from './mappers';
+import {
+  mapFollowing,
+  mapPosts,
+  mapPublicProfile,
+  type ProfileMapDeps,
+} from './mappers';
 import { useProfileActions } from './useProfileActions';
-import type { ProfileController, ProfilePostActions, ProfileSecondary, UserProfile } from './types';
+import type {
+  ProfileController,
+  ProfilePostActions,
+  ProfileSecondary,
+  UserProfile,
+} from './types';
 import { EMPTY_SECONDARY, NO_RELATIONSHIP } from './constants';
 
-export function useUserProfile(username: string, seedColor: string): ProfileController {
+export function useUserProfile(
+  username: string,
+  seedColor: string
+): ProfileController {
   const { t, i18n } = useTranslation();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [userId, setUserId] = useState('');
-  const [relationship, setRelationship] = useState<RelationshipInfo>(NO_RELATIONSHIP);
+  const [relationship, setRelationship] =
+    useState<RelationshipInfo>(NO_RELATIONSHIP);
   const [secondary, setSecondary] = useState<ProfileSecondary>(EMPTY_SECONDARY);
   const canViewInterestedRef = useRef(true);
 
-  const formatTime = useMemo(() => createTimeFormatter(i18n.language), [i18n.language]);
-  const formatDate = useMemo(() => createDateFormatter(i18n.language), [i18n.language]);
+  const formatTime = useMemo(
+    () => createTimeFormatter(i18n.language),
+    [i18n.language]
+  );
+  const formatDate = useMemo(
+    () => createDateFormatter(i18n.language),
+    [i18n.language]
+  );
 
   const mapDeps = useMemo<ProfileMapDeps>(
     () => ({
@@ -70,7 +99,9 @@ export function useUserProfile(username: string, seedColor: string): ProfileCont
       const canView = canViewInterestedRef.current;
       const [postsResult, followingResult] = await Promise.all([
         MeService.byUser(id, { limit: 30 }).catch(() => null),
-        canView ? UserService.following(id, { limit: 12 }).catch(() => null) : Promise.resolve(null),
+        canView
+          ? UserService.following(id, { limit: 12 }).catch(() => null)
+          : Promise.resolve(null),
       ]);
       setSecondary({
         media: [],
@@ -92,7 +123,10 @@ export function useUserProfile(username: string, seedColor: string): ProfileCont
   }, [secondary.posts]);
 
   const setPost = useCallback((id: string, next: (post: MePost) => MePost) => {
-    setSecondary((s) => ({ ...s, posts: s.posts.map((p) => (p.id === id ? next(p) : p)) }));
+    setSecondary((s) => ({
+      ...s,
+      posts: s.posts.map((p) => (p.id === id ? next(p) : p)),
+    }));
   }, []);
 
   const toggleReaction = useCallback(
@@ -107,7 +141,10 @@ export function useUserProfile(username: string, seedColor: string): ProfileCont
           ? await MeService.removeReaction(id)
           : await MeService.react(id, type);
         const mapped = toMePost(updated, formatTime);
-        setPost(id, (p) => ({ ...reconcileMeLikers(mapped, p), color: p.color }));
+        setPost(id, (p) => ({
+          ...reconcileMeLikers(mapped, p),
+          color: p.color,
+        }));
       } catch {
         setPost(id, () => current);
         toast.error(t('me.reactionError'));
@@ -134,7 +171,11 @@ export function useUserProfile(username: string, seedColor: string): ProfileCont
       }
 
       const feed = useMeFeedStore.getState();
-      const created = await feed.createPost(composedToPayload(draft), files, draft.imageUrls);
+      const created = await feed.createPost(
+        composedToPayload(draft),
+        files,
+        draft.imageUrls
+      );
       if (created == null) return false;
 
       feed.prependPost(created);
@@ -154,7 +195,10 @@ export function useUserProfile(username: string, seedColor: string): ProfileCont
     async (id: string, draft: ComposedPost): Promise<boolean> => {
       try {
         const images = await composedToImages(draft, 'existingFirst');
-        const updated = await MeService.update(id, { ...composedToUpdatePayload(draft), images });
+        const updated = await MeService.update(id, {
+          ...composedToUpdatePayload(draft),
+          images,
+        });
         const mapped = toMePost(updated, formatTime);
         setPost(id, (p) => ({ ...mapped, color: p.color }));
         useMeFeedStore.getState().syncPost(updated);
@@ -172,7 +216,10 @@ export function useUserProfile(username: string, seedColor: string): ProfileCont
     async (id: string) => {
       try {
         await MeService.remove(id);
-        setSecondary((s) => ({ ...s, posts: s.posts.filter((p) => p.id !== id) }));
+        setSecondary((s) => ({
+          ...s,
+          posts: s.posts.filter((p) => p.id !== id),
+        }));
         toast.success(t('me.deleteSuccess'));
       } catch {
         toast.error(t('me.deleteError'));
@@ -224,7 +271,23 @@ export function useUserProfile(username: string, seedColor: string): ProfileCont
     };
   }, [loadProfile, loadSecondary]);
 
-  const { actions, busy } = useProfileActions({ userId, relationship, setRelationship, setProfile, reload });
+  const { actions, busy } = useProfileActions({
+    userId,
+    relationship,
+    setRelationship,
+    setProfile,
+    reload,
+  });
 
-  return { profile, userId, loading, notFound, relationship, busy, actions, secondary, postActions };
+  return {
+    profile,
+    userId,
+    loading,
+    notFound,
+    relationship,
+    busy,
+    actions,
+    secondary,
+    postActions,
+  };
 }

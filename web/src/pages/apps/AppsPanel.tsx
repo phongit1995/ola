@@ -32,10 +32,20 @@ function PanelRow({ icon, title, subtitle, badge, onClick }: PanelRowProps) {
         onClick={onClick}
         className="flex min-h-[72px] w-full items-center gap-4 bg-white/80 px-4 text-left active:bg-black/5"
       >
-        <img src={icon} alt="" className="h-10 w-10 shrink-0 rounded-lg object-contain" />
+        <img
+          src={icon}
+          alt=""
+          className="h-10 w-10 shrink-0 rounded-lg object-contain"
+        />
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-base font-bold text-black/87">{title}</span>
-          {subtitle && <span className="block truncate text-sm text-black/54">{subtitle}</span>}
+          <span className="block truncate text-base font-bold text-black/87">
+            {title}
+          </span>
+          {subtitle && (
+            <span className="block truncate text-sm text-black/54">
+              {subtitle}
+            </span>
+          )}
         </span>
         {badge != null && badge > 0 && (
           <span className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-ola-accent px-1.5 text-xs font-bold text-white">
@@ -107,7 +117,9 @@ export function AppsPanel() {
           <span className="min-w-0 flex-1 truncate text-sm font-medium">
             {user?.username ? `@${user.username}` : ''}
           </span>
-          <span className="shrink-0 text-lg font-medium">{t('home.tabApps')}</span>
+          <span className="shrink-0 text-lg font-medium">
+            {t('home.tabApps')}
+          </span>
           <div className="flex min-w-0 flex-1 justify-end">
             <button
               type="button"
@@ -115,7 +127,9 @@ export function AppsPanel() {
               className="flex shrink-0 items-center gap-1 rounded-full bg-white/15 px-3 py-1 hover:bg-white/25"
             >
               <img src={kenIcon} alt="" className="h-4 w-4 object-contain" />
-              <span className="text-sm font-bold">{formatKen(user?.ken ?? 0)}</span>
+              <span className="text-sm font-bold">
+                {formatKen(user?.ken ?? 0)}
+              </span>
             </button>
           </div>
         </div>

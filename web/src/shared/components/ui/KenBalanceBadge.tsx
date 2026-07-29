@@ -16,7 +16,8 @@ export function KenBalanceBadge({ ken, className = '' }: KenBalanceBadgeProps) {
 
   if (ken !== prevKen) {
     setPrevKen(ken);
-    if (typeof prevKen === 'number' && typeof ken === 'number') setVisible(true);
+    if (typeof prevKen === 'number' && typeof ken === 'number')
+      setVisible(true);
   }
 
   useEffect(() => {

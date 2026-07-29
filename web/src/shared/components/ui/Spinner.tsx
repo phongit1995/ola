@@ -15,7 +15,12 @@ interface SpinnerProps {
   className?: string;
 }
 
-export function Spinner({ size = 24, thickness = 2, tone = 'primary', className }: SpinnerProps) {
+export function Spinner({
+  size = 24,
+  thickness = 2,
+  tone = 'primary',
+  className,
+}: SpinnerProps) {
   return (
     <span
       role="status"

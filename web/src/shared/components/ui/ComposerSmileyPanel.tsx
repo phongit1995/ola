@@ -13,8 +13,16 @@ export function ComposerSmileyPanel({ onPick }: ComposerSmileyPanelProps) {
   const { t } = useTranslation();
   const [sub, setSub] = useState<'smiley' | 'emoji'>('smiley');
   const tabs = [
-    { key: 'smiley' as const, label: t('chat.attachTabSmiley'), icon: smileyTabIcon },
-    { key: 'emoji' as const, label: t('chat.attachTabEmoji'), icon: emojiTabIcon },
+    {
+      key: 'smiley' as const,
+      label: t('chat.attachTabSmiley'),
+      icon: smileyTabIcon,
+    },
+    {
+      key: 'emoji' as const,
+      label: t('chat.attachTabEmoji'),
+      icon: emojiTabIcon,
+    },
   ];
   return (
     <div>
@@ -34,15 +42,23 @@ export function ComposerSmileyPanel({ onPick }: ComposerSmileyPanelProps) {
               <img
                 src={tab.icon}
                 alt=""
-                className={`h-6 w-6 object-contain transition-opacity ${isActive ? 'opacity-100' : 'opacity-60'}`}
+                className={`h-6 w-6 object-contain transition-opacity ${
+                  isActive ? 'opacity-100' : 'opacity-60'
+                }`}
               />
-              {isActive && <span className="absolute inset-x-0 bottom-0 h-0.5 bg-ola-primary" />}
+              {isActive && (
+                <span className="absolute inset-x-0 bottom-0 h-0.5 bg-ola-primary" />
+              )}
             </button>
           );
         })}
       </div>
       <div className="max-h-44 overflow-y-auto">
-        {sub === 'smiley' ? <SmileyGrid onPick={onPick} /> : <EmojiGrid onPick={onPick} />}
+        {sub === 'smiley' ? (
+          <SmileyGrid onPick={onPick} />
+        ) : (
+          <EmojiGrid onPick={onPick} />
+        )}
       </div>
     </div>
   );

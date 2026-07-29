@@ -13,8 +13,16 @@ interface CellProps {
 
 function Cell({ url, index, heightClass, onOpen, extra }: CellProps) {
   return (
-    <button type="button" onClick={() => onOpen?.(index)} className="relative block">
-      <img src={url} alt="" className={`w-full cursor-pointer rounded object-cover ${heightClass}`} />
+    <button
+      type="button"
+      onClick={() => onOpen?.(index)}
+      className="relative block"
+    >
+      <img
+        src={url}
+        alt=""
+        className={`w-full cursor-pointer rounded object-cover ${heightClass}`}
+      />
       {extra != null && extra > 0 && (
         <div className="absolute inset-0 flex items-center justify-center rounded bg-black/50 text-lg font-medium text-white">
           +{extra}
@@ -31,7 +39,11 @@ export function MediaGrid({ photos, onOpen }: MediaGridProps) {
   if (count === 1) {
     return (
       <div className="mx-4 mt-3">
-        <button type="button" onClick={() => onOpen?.(0)} className="block w-full">
+        <button
+          type="button"
+          onClick={() => onOpen?.(0)}
+          className="block w-full"
+        >
           <img
             src={photos[0]}
             alt=""
@@ -48,12 +60,18 @@ export function MediaGrid({ photos, onOpen }: MediaGridProps) {
       count === 2
         ? 'h-44 md:h-72 lg:h-[26rem]'
         : count === 3
-          ? 'h-28 md:h-52 lg:h-72'
-          : 'h-40 md:h-64 lg:h-80';
+        ? 'h-28 md:h-52 lg:h-72'
+        : 'h-40 md:h-64 lg:h-80';
     return (
       <div className={`mx-4 mt-3 grid gap-2 ${cols}`}>
         {photos.map((url, index) => (
-          <Cell key={url} url={url} index={index} heightClass={height} onOpen={onOpen} />
+          <Cell
+            key={url}
+            url={url}
+            index={index}
+            heightClass={height}
+            onOpen={onOpen}
+          />
         ))}
       </div>
     );
@@ -66,7 +84,13 @@ export function MediaGrid({ photos, onOpen }: MediaGridProps) {
     <div className="mx-4 mt-3 flex flex-col gap-2">
       <div className="grid grid-cols-2 gap-2">
         {top.map((url, index) => (
-          <Cell key={url} url={url} index={index} heightClass="h-44 md:h-72" onOpen={onOpen} />
+          <Cell
+            key={url}
+            url={url}
+            index={index}
+            heightClass="h-44 md:h-72"
+            onOpen={onOpen}
+          />
         ))}
       </div>
       <div className="grid grid-cols-3 gap-2">

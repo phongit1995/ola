@@ -91,7 +91,8 @@ export function useDraggable<T extends HTMLElement>({
       if (current == null) return;
       const dx = event.clientX - current.startX;
       const dy = event.clientY - current.startY;
-      if (Math.abs(dx) > threshold || Math.abs(dy) > threshold) current.moved = true;
+      if (Math.abs(dx) > threshold || Math.abs(dy) > threshold)
+        current.moved = true;
       if (!current.moved) return;
       pending.current = {
         x: current.baseX + clamp(dx, current.minDx, current.maxDx),
@@ -99,7 +100,7 @@ export function useDraggable<T extends HTMLElement>({
       };
       schedule();
     },
-    [schedule, threshold],
+    [schedule, threshold]
   );
 
   const onPointerUp = useCallback(
@@ -111,14 +112,14 @@ export function useDraggable<T extends HTMLElement>({
       if (current.moved) offset.current = { ...pending.current };
       else onClick?.();
     },
-    [onClick],
+    [onClick]
   );
 
   useEffect(
     () => () => {
       if (frame.current != null) cancelAnimationFrame(frame.current);
     },
-    [],
+    []
   );
 
   return { ref, onPointerDown, onPointerMove, onPointerUp };

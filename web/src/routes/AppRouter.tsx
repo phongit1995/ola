@@ -5,18 +5,26 @@ import { LoginPage } from '@/pages/login/LoginPage';
 import { GuestRoute, ProtectedRoute } from './guards';
 
 const RegisterPage = lazy(() =>
-  import('@/pages/register/RegisterPage').then((m) => ({ default: m.RegisterPage }))
+  import('@/pages/register/RegisterPage').then((m) => ({
+    default: m.RegisterPage,
+  }))
 );
 const ForgotPasswordPage = lazy(() =>
-  import('@/pages/forgot-password/ForgotPasswordPage').then((m) => ({ default: m.ForgotPasswordPage }))
+  import('@/pages/forgot-password/ForgotPasswordPage').then((m) => ({
+    default: m.ForgotPasswordPage,
+  }))
 );
 const TermsPage = lazy(() =>
   import('@/pages/terms/TermsPage').then((m) => ({ default: m.TermsPage }))
 );
 const DownloadAppPage = lazy(() =>
-  import('@/pages/download/DownloadAppPage').then((m) => ({ default: m.DownloadAppPage }))
+  import('@/pages/download/DownloadAppPage').then((m) => ({
+    default: m.DownloadAppPage,
+  }))
 );
-const HomePage = lazy(() => import('@/pages/home/HomePage').then((m) => ({ default: m.HomePage })));
+const HomePage = lazy(() =>
+  import('@/pages/home/HomePage').then((m) => ({ default: m.HomePage }))
+);
 
 export function AppRouter() {
   return (

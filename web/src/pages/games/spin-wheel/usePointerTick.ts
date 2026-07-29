@@ -37,7 +37,9 @@ export function usePointerTick(
     const step = () => {
       const wheel = wheelRef.current;
       if (wheel && pointer) {
-        const wheelAngle = wheelAngleFromTransform(getComputedStyle(wheel).transform);
+        const wheelAngle = wheelAngleFromTransform(
+          getComputedStyle(wheel).transform
+        );
         pointer.style.rotate = `${pointerTickDeg(wheelAngle, angle)}deg`;
       }
       frame = requestAnimationFrame(step);

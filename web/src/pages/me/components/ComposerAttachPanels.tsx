@@ -1,6 +1,9 @@
 import { ComposerSmileyPanel } from '@components';
 import { KUL_STICKERS, kulCode } from '../stickers';
-import { ComposerCheckInPanel, type ComposedCheckIn } from './ComposerCheckInPanel';
+import {
+  ComposerCheckInPanel,
+  type ComposedCheckIn,
+} from './ComposerCheckInPanel';
 import { ComposerTagPanel } from './ComposerTagPanel';
 
 type AttachPanel = 'tag' | 'checkin' | 'sticker' | 'smiley' | null;

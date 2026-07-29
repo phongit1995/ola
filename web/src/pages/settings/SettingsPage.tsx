@@ -10,8 +10,16 @@ import iconPrivacy from '@/assets/icons/settings/icon-privacy.webp';
 import iconNotification from '@/assets/icons/settings/icon-notification.webp';
 import iconAppearance from '@/assets/icons/settings/icon-appearance.webp';
 
-const VIP_PRIVACY_KEYS = ['privacyPublic', 'privacyFriends', 'privacyPrivate'] as const;
-const VIP_PRIVACY_DISPLAY = ['privacyPrivate', 'privacyFriends', 'privacyPublic'] as const;
+const VIP_PRIVACY_KEYS = [
+  'privacyPublic',
+  'privacyFriends',
+  'privacyPrivate',
+] as const;
+const VIP_PRIVACY_DISPLAY = [
+  'privacyPrivate',
+  'privacyFriends',
+  'privacyPublic',
+] as const;
 
 function SectionIcon({ src }: { src: string }) {
   return <img src={src} alt="" className="h-5 w-auto object-contain" />;
@@ -19,7 +27,12 @@ function SectionIcon({ src }: { src: string }) {
 
 function ImageIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden="true">
+    <svg
+      viewBox="0 0 24 24"
+      className="h-4 w-4"
+      fill="currentColor"
+      aria-hidden="true"
+    >
       <path d="M21 5v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2ZM5 19h14l-4.5-6-3.5 4.5-2.5-3L5 19Zm3.5-8.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z" />
     </svg>
   );
@@ -27,7 +40,12 @@ function ImageIcon() {
 
 function AppDownloadIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="h-4.5 w-4.5" fill="currentColor" aria-hidden="true">
+    <svg
+      viewBox="0 0 24 24"
+      className="h-4.5 w-4.5"
+      fill="currentColor"
+      aria-hidden="true"
+    >
       <path d="M5 20h14v-2H5v2ZM19 9h-4V3H9v6H5l7 7 7-7Z" />
     </svg>
   );
@@ -35,7 +53,12 @@ function AppDownloadIcon() {
 
 function ChevronRightIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" aria-hidden="true">
+    <svg
+      viewBox="0 0 24 24"
+      className="h-5 w-5"
+      fill="currentColor"
+      aria-hidden="true"
+    >
       <path d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41Z" />
     </svg>
   );
@@ -48,10 +71,14 @@ function ToggleSwitch({ on, onChange }: { on: boolean; onChange: () => void }) {
       role="switch"
       aria-checked={on}
       onClick={onChange}
-      className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${on ? 'bg-ola-primary' : 'bg-black/20'}`}
+      className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${
+        on ? 'bg-ola-primary' : 'bg-black/20'
+      }`}
     >
       <span
-        className={`absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition-all ${on ? 'left-5.5' : 'left-0.5'}`}
+        className={`absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition-all ${
+          on ? 'left-5.5' : 'left-0.5'
+        }`}
       />
     </button>
   );
@@ -74,7 +101,9 @@ function Segmented<T extends string>({
           type="button"
           onClick={() => onChange(option.value)}
           className={`rounded-md px-2.5 py-1 text-[13px] leading-tight transition-colors ${
-            value === option.value ? 'bg-ola-primary font-semibold text-white' : 'text-black/70'
+            value === option.value
+              ? 'bg-ola-primary font-semibold text-white'
+              : 'text-black/70'
           }`}
         >
           {option.label}
@@ -84,7 +113,13 @@ function Segmented<T extends string>({
   );
 }
 
-function SettingRow({ label, children }: { label: string; children: ReactNode }) {
+function SettingRow({
+  label,
+  children,
+}: {
+  label: string;
+  children: ReactNode;
+}) {
   return (
     <div className="flex items-center justify-between gap-3 border-b border-black/6 px-4 py-3 last:border-b-0">
       <span className="min-w-0 flex-1 text-sm text-black/80">{label}</span>
@@ -144,15 +179,22 @@ export function SettingsPage({ onClose }: { onClose: () => void }) {
   }, []);
 
   const settingsDirty = useMemo(
-    () => (Object.keys(draft) as (keyof UserSettings)[]).some((key) => draft[key] !== settings[key]),
+    () =>
+      (Object.keys(draft) as (keyof UserSettings)[]).some(
+        (key) => draft[key] !== settings[key]
+      ),
     [draft, settings]
   );
   const vipDirty = vipTouched && vipPrivacyDraft !== vipPrivacy;
   const dirty = settingsDirty || vipDirty;
 
-  const vipPrivacyKey = VIP_PRIVACY_KEYS[vipPrivacyDraft] ?? VIP_PRIVACY_KEYS[0];
+  const vipPrivacyKey =
+    VIP_PRIVACY_KEYS[vipPrivacyDraft] ?? VIP_PRIVACY_KEYS[0];
 
-  function setField<K extends keyof UserSettings>(key: K, value: UserSettings[K]) {
+  function setField<K extends keyof UserSettings>(
+    key: K,
+    value: UserSettings[K]
+  ) {
     setDraft((current) => ({ ...current, [key]: value }));
   }
 
@@ -202,7 +244,11 @@ export function SettingsPage({ onClose }: { onClose: () => void }) {
       </ScreenHeader>
 
       <div className="flex-1 space-y-4 overflow-y-auto bg-[#eef0f2] px-4 py-4">
-        <SettingsCard icon={<SectionIcon src={iconPrivacy} />} index={1} title={t('settings.privacyTitle')}>
+        <SettingsCard
+          icon={<SectionIcon src={iconPrivacy} />}
+          index={1}
+          title={t('settings.privacyTitle')}
+        >
           <SettingRow label={t('settings.whoCanMessage')}>
             <Segmented
               value={draft.messagePrivacy}
@@ -243,35 +289,61 @@ export function SettingsPage({ onClose }: { onClose: () => void }) {
                   key === 'privacyPrivate'
                     ? t('settings.vipPrivacyMine')
                     : key === 'privacyPublic'
-                      ? t('settings.optAll')
-                      : t(`vip.${key}`),
+                    ? t('settings.optAll')
+                    : t(`vip.${key}`),
               }))}
             />
           </SettingRow>
           <SettingRow label={t('settings.showBirthday')}>
-            <ToggleSwitch on={draft.showBirthday} onChange={() => setField('showBirthday', !draft.showBirthday)} />
+            <ToggleSwitch
+              on={draft.showBirthday}
+              onChange={() => setField('showBirthday', !draft.showBirthday)}
+            />
           </SettingRow>
           <SettingRow label={t('settings.showInterested')}>
-            <ToggleSwitch on={draft.showInterested} onChange={() => setField('showInterested', !draft.showInterested)} />
+            <ToggleSwitch
+              on={draft.showInterested}
+              onChange={() => setField('showInterested', !draft.showInterested)}
+            />
           </SettingRow>
         </SettingsCard>
 
-        <SettingsCard icon={<SectionIcon src={iconNotification} />} index={2} title={t('settings.notificationTitle')}>
+        <SettingsCard
+          icon={<SectionIcon src={iconNotification} />}
+          index={2}
+          title={t('settings.notificationTitle')}
+        >
           <SettingRow label={t('settings.notifMessage')}>
-            <ToggleSwitch on={draft.notifMessage} onChange={() => setField('notifMessage', !draft.notifMessage)} />
+            <ToggleSwitch
+              on={draft.notifMessage}
+              onChange={() => setField('notifMessage', !draft.notifMessage)}
+            />
           </SettingRow>
           <SettingRow label={t('settings.notifSound')}>
-            <ToggleSwitch on={draft.notifSound} onChange={() => setField('notifSound', !draft.notifSound)} />
+            <ToggleSwitch
+              on={draft.notifSound}
+              onChange={() => setField('notifSound', !draft.notifSound)}
+            />
           </SettingRow>
           <SettingRow label={t('settings.soundGame')}>
-            <ToggleSwitch on={draft.soundGame} onChange={() => setField('soundGame', !draft.soundGame)} />
+            <ToggleSwitch
+              on={draft.soundGame}
+              onChange={() => setField('soundGame', !draft.soundGame)}
+            />
           </SettingRow>
           <SettingRow label={t('settings.soundKen')}>
-            <ToggleSwitch on={draft.soundKen} onChange={() => setField('soundKen', !draft.soundKen)} />
+            <ToggleSwitch
+              on={draft.soundKen}
+              onChange={() => setField('soundKen', !draft.soundKen)}
+            />
           </SettingRow>
         </SettingsCard>
 
-        <SettingsCard icon={<SectionIcon src={iconAppearance} />} index={3} title={t('settings.appearanceTitle')}>
+        <SettingsCard
+          icon={<SectionIcon src={iconAppearance} />}
+          index={3}
+          title={t('settings.appearanceTitle')}
+        >
           <SettingRow label={t('settings.fontSize')}>
             <Segmented
               value={draft.fontSize}
@@ -310,7 +382,9 @@ export function SettingsPage({ onClose }: { onClose: () => void }) {
           </span>
         </button>
 
-        <p className="pt-2 pb-4 text-center text-xs text-black/40">{t('settings.appVersion')}</p>
+        <p className="pt-2 pb-4 text-center text-xs text-black/40">
+          {t('settings.appVersion')}
+        </p>
       </div>
     </FullScreenOverlay>
   );

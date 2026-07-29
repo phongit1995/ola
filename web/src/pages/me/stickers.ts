@@ -10,7 +10,10 @@ export interface KulSticker {
 }
 
 export const KUL_STICKERS: KulSticker[] = Object.entries(files)
-  .map(([path, src]) => ({ index: Number(path.match(/kul(\d+)\.png$/)?.[1] ?? 0), src }))
+  .map(([path, src]) => ({
+    index: Number(path.match(/kul(\d+)\.png$/)?.[1] ?? 0),
+    src,
+  }))
   .filter((item) => item.index > 0)
   .sort((a, b) => a.index - b.index);
 

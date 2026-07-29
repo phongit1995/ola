@@ -57,9 +57,11 @@ const SMILEY_ALIASES: string[][] = [
   ['>:O', '>:o', '>:0'],
 ];
 
-export const SMILEY_PANEL: Array<{ image: string; code: string }> = SMILEY_IMAGES.map(
-  (image, index) => ({ image, code: SMILEY_ALIASES[index]?.[0] ?? '' })
-);
+export const SMILEY_PANEL: Array<{ image: string; code: string }> =
+  SMILEY_IMAGES.map((image, index) => ({
+    image,
+    code: SMILEY_ALIASES[index]?.[0] ?? '',
+  }));
 
 const SMILEY_MAP: Record<string, string> = (() => {
   const map: Record<string, string> = {};
@@ -88,8 +90,10 @@ const SMILEY_REGEX = new RegExp(`\\[e:\\d{1,2}\\]|${SMILEY_PATTERN}`, 'g');
 
 export type SmileyVariant = 'smiley' | 'emoji';
 
-export const SMILEY_IMG_CLASS = 'inline-block h-[1.25em] w-auto align-text-bottom';
-export const EMOJI_IMG_CLASS = 'inline-block h-[1.15em] w-auto align-text-bottom';
+export const SMILEY_IMG_CLASS =
+  'inline-block h-[1.25em] w-auto align-text-bottom';
+export const EMOJI_IMG_CLASS =
+  'inline-block h-[1.15em] w-auto align-text-bottom';
 
 export function smileyImgClass(variant: SmileyVariant): string {
   return variant === 'emoji' ? EMOJI_IMG_CLASS : SMILEY_IMG_CLASS;
@@ -110,9 +114,17 @@ export function splitSmileys(text: string): SmileySegment[] {
     const src = smileySrc ?? emojiImageForToken(code);
     if (src != null) {
       if (match.index > lastIndex) {
-        segments.push({ kind: 'text', value: text.slice(lastIndex, match.index) });
+        segments.push({
+          kind: 'text',
+          value: text.slice(lastIndex, match.index),
+        });
       }
-      segments.push({ kind: 'image', src, code, variant: smileySrc != null ? 'smiley' : 'emoji' });
+      segments.push({
+        kind: 'image',
+        src,
+        code,
+        variant: smileySrc != null ? 'smiley' : 'emoji',
+      });
       lastIndex = match.index + code.length;
     }
     match = SMILEY_REGEX.exec(text);

@@ -6,7 +6,11 @@ import { formatKen, playKenShotFailSound, toApiError, toast } from '@lib';
 import { PenService, SocketService } from '@services';
 import type { PenSettledEvent, PenSide, PenShotView } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
-import { PEN_SHOTS_PAGE, PEN_SHOTS_PAGE_MOBILE, usePenStore } from '@/store/penStore';
+import {
+  PEN_SHOTS_PAGE,
+  PEN_SHOTS_PAGE_MOBILE,
+  usePenStore,
+} from '@/store/penStore';
 import { PenButton } from './PenButton';
 import { PenShotList } from './PenShotList';
 import { PenShootModal } from './PenShootModal';
@@ -41,7 +45,10 @@ export function PenGamePage({ onClose }: PenGamePageProps) {
   const shotsPageSize = usePenStore((s) => s.pageSize);
   const loadShots = usePenStore((s) => s.loadShots);
   const setPageSize = usePenStore((s) => s.setPageSize);
-  const shotsPageCount = Math.max(1, Math.ceil(shotsTotal / (shotsPageSize || PEN_SHOTS_PAGE)));
+  const shotsPageCount = Math.max(
+    1,
+    Math.ceil(shotsTotal / (shotsPageSize || PEN_SHOTS_PAGE))
+  );
 
   const [kickId, setKickId] = useState(0);
   const [kicking, setKicking] = useState(false);
@@ -51,12 +58,15 @@ export function PenGamePage({ onClose }: PenGamePageProps) {
   const [submitting, setSubmitting] = useState(false);
   const [catchShot, setCatchShot] = useState<PenShotView | null>(null);
   const [catching, setCatching] = useState(false);
-  const [winFx, setWinFx] = useState<{ id: number; amount: number } | null>(null);
+  const [winFx, setWinFx] = useState<{ id: number; amount: number } | null>(
+    null
+  );
   const winFxTimer = useRef<number | null>(null);
 
   useEffect(() => {
     const mq = window.matchMedia('(min-width: 448px)');
-    const apply = () => setPageSize(mq.matches ? PEN_SHOTS_PAGE : PEN_SHOTS_PAGE_MOBILE);
+    const apply = () =>
+      setPageSize(mq.matches ? PEN_SHOTS_PAGE : PEN_SHOTS_PAGE_MOBILE);
     apply();
     mq.addEventListener('change', apply);
     return () => mq.removeEventListener('change', apply);
@@ -68,7 +78,7 @@ export function PenGamePage({ onClose }: PenGamePageProps) {
     () => () => {
       if (winFxTimer.current != null) window.clearTimeout(winFxTimer.current);
     },
-    [],
+    []
   );
 
   const playKick = () => {
@@ -105,16 +115,25 @@ export function PenGamePage({ onClose }: PenGamePageProps) {
         useAuthStore.getState().setUser({ ...current, ken: data.ken });
       }
     });
-    const offSettled = SocketService.on<PenSettledEvent>('PEN_SETTLED', (data) => {
-      if (data) onShotSettled.current(data);
-    });
+    const offSettled = SocketService.on<PenSettledEvent>(
+      'PEN_SETTLED',
+      (data) => {
+        if (data) onShotSettled.current(data);
+      }
+    );
     return () => {
       offKen();
       offSettled();
     };
   }, []);
 
-  const handleCreateShot = async ({ side, betAmount }: { side: PenSide; betAmount: number }) => {
+  const handleCreateShot = async ({
+    side,
+    betAmount,
+  }: {
+    side: PenSide;
+    betAmount: number;
+  }) => {
     if (submitting) return;
     setSubmitting(true);
     try {
@@ -201,7 +220,11 @@ export function PenGamePage({ onClose }: PenGamePageProps) {
                   alt="KEN"
                   className="h-3.5 w-3.5 shrink-0 @md:h-4 @md:w-4"
                 />
-                <AnimatedKen value={ken} showIcon={false} numberClassName="leading-none" />
+                <AnimatedKen
+                  value={ken}
+                  showIcon={false}
+                  numberClassName="leading-none"
+                />
               </span>
               <PenButton
                 bg={penAssets.plusBtn}
@@ -315,10 +338,15 @@ export function PenGamePage({ onClose }: PenGamePageProps) {
           )}
 
           {historyOpen && (
-            <PenHistoryModal userId={user?.id} onClose={() => setHistoryOpen(false)} />
+            <PenHistoryModal
+              userId={user?.id}
+              onClose={() => setHistoryOpen(false)}
+            />
           )}
 
-          {leaderboardOpen && <PenLeaderboardModal onClose={() => setLeaderboardOpen(false)} />}
+          {leaderboardOpen && (
+            <PenLeaderboardModal onClose={() => setLeaderboardOpen(false)} />
+          )}
         </div>
       </div>
     </FullScreenOverlay>

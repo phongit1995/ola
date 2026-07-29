@@ -9,18 +9,25 @@ interface FaqItem {
 
 export function DownloadFaq() {
   const { t } = useTranslation();
-  const items = t('download.faq', { returnObjects: true }) as unknown as FaqItem[];
+  const items = t('download.faq', {
+    returnObjects: true,
+  }) as unknown as FaqItem[];
   const [openQuestion, setOpenQuestion] = useState<string | null>(null);
 
   return (
     <section className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
       <header className="border-b border-black/6 px-4 py-3">
-        <h2 className="text-base font-bold text-black/85">{t('download.faqTitle')}</h2>
+        <h2 className="text-base font-bold text-black/85">
+          {t('download.faqTitle')}
+        </h2>
       </header>
       {items.map((item) => {
         const open = openQuestion === item.question;
         return (
-          <div key={item.question} className="border-b border-black/6 last:border-b-0">
+          <div
+            key={item.question}
+            className="border-b border-black/6 last:border-b-0"
+          >
             <button
               type="button"
               onClick={() => setOpenQuestion(open ? null : item.question)}
@@ -37,7 +44,9 @@ export function DownloadFaq() {
               />
             </button>
             {open && (
-              <p className="px-4 pb-3.5 text-[13px] leading-relaxed text-black/65">{item.answer}</p>
+              <p className="px-4 pb-3.5 text-[13px] leading-relaxed text-black/65">
+                {item.answer}
+              </p>
             )}
           </div>
         );

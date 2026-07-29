@@ -16,7 +16,9 @@ interface EggStageProps {
 export function EggStage({ hint, play }: EggStageProps) {
   const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
-  const [textures, setTextures] = useState<Record<string, Texture> | null>(null);
+  const [textures, setTextures] = useState<Record<string, Texture> | null>(
+    null
+  );
 
   useEffect(() => {
     let alive = true;

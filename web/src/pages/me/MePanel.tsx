@@ -65,7 +65,9 @@ export function MePanel() {
     void refreshUnread();
   }, [refreshUnread]);
 
-  const swipeHandlers = useHorizontalSwipe({ onSwipeLeft: () => setSearchOpen(true) });
+  const swipeHandlers = useHorizontalSwipe({
+    onSwipeLeft: () => setSearchOpen(true),
+  });
 
   if (marriageOpen) {
     return <MarriageView onBack={() => setMarriageOpen(false)} />;
@@ -118,7 +120,11 @@ export function MePanel() {
               className="flex h-12 w-10 shrink-0 items-center justify-center"
             >
               <span className="relative">
-                <img src={bellIcon} alt="" className="h-6 w-6 object-contain brightness-0 invert" />
+                <img
+                  src={bellIcon}
+                  alt=""
+                  className="h-6 w-6 object-contain brightness-0 invert"
+                />
                 {unreadCount > 0 && (
                   <span className="absolute -top-1 right-0 flex h-4 min-w-4 items-center justify-center rounded-full border-2 border-white bg-ola-accent px-1 text-[10px] font-bold text-white">
                     {unreadCount > 99 ? '99+' : unreadCount}
@@ -132,7 +138,11 @@ export function MePanel() {
               onClick={() => setSearchOpen(true)}
               className="flex h-12 w-10 shrink-0 items-center justify-center"
             >
-              <img src={searchIcon} alt="" className="h-6 w-6 object-contain brightness-0 invert" />
+              <img
+                src={searchIcon}
+                alt=""
+                className="h-6 w-6 object-contain brightness-0 invert"
+              />
             </button>
           </HomeHeader>
 
@@ -162,7 +172,9 @@ export function MePanel() {
                 onQuickComment={handlers.onQuickComment}
                 onOpenMenu={handlers.onOpenMenu}
                 onOpenLikers={handlers.onOpenLikers}
-                onOpenClan={(handle) => useClanOverlayStore.getState().open({ kind: 'clan', handle })}
+                onOpenClan={(handle) =>
+                  useClanOverlayStore.getState().open({ kind: 'clan', handle })
+                }
               />
             </PullToRefresh>
 
@@ -181,7 +193,9 @@ export function MePanel() {
                 avatarUrl={avatarUrl ?? undefined}
                 coverUrl={coverUrl ?? undefined}
                 onClose={() => setDrawerOpen(false)}
-                onViewProfile={() => handlers.onOpenProfile(displayName, DEFAULT_AVATAR_COLOR)}
+                onViewProfile={() =>
+                  handlers.onOpenProfile(displayName, DEFAULT_AVATAR_COLOR)
+                }
                 onSelect={(key) => {
                   if (key === 'personal') {
                     setDrawerOpen(false);

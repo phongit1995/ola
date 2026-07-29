@@ -28,12 +28,15 @@ export function FriendRequestsScreen({
   onClose,
 }: FriendRequestsScreenProps) {
   const { t, i18n } = useTranslation();
-  const formatTime = useMemo(() => createTimeFormatter(i18n.language), [i18n.language]);
+  const formatTime = useMemo(
+    () => createTimeFormatter(i18n.language),
+    [i18n.language]
+  );
   const [busyIds, setBusyIds] = useState<string[]>([]);
 
   const run = async (
     relationship: Relationship,
-    action: (relationship: Relationship) => Promise<void>,
+    action: (relationship: Relationship) => Promise<void>
   ) => {
     if (busyIds.includes(relationship.id)) return;
     setBusyIds((prev) => [...prev, relationship.id]);
@@ -46,7 +49,11 @@ export function FriendRequestsScreen({
 
   return (
     <FullScreenOverlay position="absolute">
-      <ScreenHeader title={t('chat.friendRequests')} onBack={onClose} align="center" />
+      <ScreenHeader
+        title={t('chat.friendRequests')}
+        onBack={onClose}
+        align="center"
+      />
 
       <div className="flex-1 overflow-y-auto">
         {loading ? (
@@ -62,7 +69,10 @@ export function FriendRequestsScreen({
             {requests.map((relationship) => {
               const requester = relationship.requester;
               const name = requester?.fullName || requester?.username || '';
-              const vipTypeId = activeVipTypeId(requester?.vipUsed, requester?.vipEndTime);
+              const vipTypeId = activeVipTypeId(
+                requester?.vipUsed,
+                requester?.vipEndTime
+              );
               const busy = busyIds.includes(relationship.id);
               return (
                 <li
@@ -76,11 +86,17 @@ export function FriendRequestsScreen({
                       className="h-14 w-14 shrink-0 rounded-full object-cover"
                     />
                   ) : (
-                    <Avatar name={name} color={colorForName(requester?.id ?? name)} size={56} />
+                    <Avatar
+                      name={name}
+                      color={colorForName(requester?.id ?? name)}
+                      size={56}
+                    />
                   )}
                   <div className="min-w-0 flex-1">
                     <span className="flex min-w-0 items-center gap-1">
-                      {vipTypeId != null && <VipIcon typeId={vipTypeId} className="h-5 w-5" />}
+                      {vipTypeId != null && (
+                        <VipIcon typeId={vipTypeId} className="h-5 w-5" />
+                      )}
                       <UserName
                         name={`@${requester?.username ?? ''}`}
                         fullName={requester?.fullName}

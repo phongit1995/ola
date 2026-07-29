@@ -290,7 +290,9 @@ export function ChatConversationView({
     const sourceConversationId = useChatStore.getState().currentConversationId;
     setPendingAudio(null);
     void sendAudio(audio.blob, audio.duration, audio.waveform).catch(() => {
-      if (useChatStore.getState().currentConversationId === sourceConversationId) {
+      if (
+        useChatStore.getState().currentConversationId === sourceConversationId
+      ) {
         setPendingAudio((current) => current ?? audio);
       }
     });
@@ -538,8 +540,8 @@ export function ChatConversationView({
           peerTyping
             ? t('chat.typing', { name })
             : online
-              ? t('chat.statusActive')
-              : (lastActiveText ?? '')
+            ? t('chat.statusActive')
+            : lastActiveText ?? ''
         }
         onBack={onClose}
         left={<Avatar name={name} color={color} src={avatar} size={32} />}

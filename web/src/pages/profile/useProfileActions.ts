@@ -30,7 +30,9 @@ export function useProfileActions({
   const changeCover = useCallback(
     async (file: File) => {
       try {
-        const { url } = await UserService.uploadAvatar(await compressImageForUpload(file));
+        const { url } = await UserService.uploadAvatar(
+          await compressImageForUpload(file)
+        );
         await UserService.updateMe({ coverPhoto: url });
         setProfile((p) => (p ? { ...p, coverPhoto: url } : p));
         await refreshUser();
@@ -45,7 +47,9 @@ export function useProfileActions({
   const changeAvatar = useCallback(
     async (file: File) => {
       try {
-        const { url } = await UserService.uploadAvatar(await compressImageForUpload(file));
+        const { url } = await UserService.uploadAvatar(
+          await compressImageForUpload(file)
+        );
         await UserService.updateMe({ avatar: url });
         setProfile((p) => (p ? { ...p, avatar: url } : p));
         await refreshUser();
@@ -63,7 +67,9 @@ export function useProfileActions({
     UserService.kiss(userId)
       .then((res) => setProfile((p) => (p ? { ...p, kisses: res.kisses } : p)))
       .catch(() => {
-        setProfile((p) => (p ? { ...p, kisses: Math.max(0, p.kisses - 1) } : p));
+        setProfile((p) =>
+          p ? { ...p, kisses: Math.max(0, p.kisses - 1) } : p
+        );
         toast.error(t('profile.actionError'));
       });
   }, [userId, setProfile, t]);
@@ -72,8 +78,12 @@ export function useProfileActions({
     if (userId === '') return;
     const wasFollowing = relationship.isFollowing;
     setRelationship((r) => ({ ...r, isFollowing: !wasFollowing }));
-    setProfile((p) => (p ? { ...p, fans: Math.max(0, p.fans + (wasFollowing ? -1 : 1)) } : p));
-    const call = wasFollowing ? UserService.unfollow(userId) : UserService.follow(userId);
+    setProfile((p) =>
+      p ? { ...p, fans: Math.max(0, p.fans + (wasFollowing ? -1 : 1)) } : p
+    );
+    const call = wasFollowing
+      ? UserService.unfollow(userId)
+      : UserService.follow(userId);
     call
       .then((res) => {
         setRelationship((r) => ({ ...r, isFollowing: res.following }));
@@ -81,7 +91,9 @@ export function useProfileActions({
       })
       .catch(() => {
         setRelationship((r) => ({ ...r, isFollowing: wasFollowing }));
-        setProfile((p) => (p ? { ...p, fans: Math.max(0, p.fans + (wasFollowing ? 1 : -1)) } : p));
+        setProfile((p) =>
+          p ? { ...p, fans: Math.max(0, p.fans + (wasFollowing ? 1 : -1)) } : p
+        );
         toast.error(t('profile.actionError'));
       });
   }, [userId, relationship.isFollowing, setRelationship, setProfile, t]);
@@ -99,17 +111,21 @@ export function useProfileActions({
   const friendAction = useCallback(() => {
     if (userId === '' || busy) return;
     const { status, requestId } = relationship;
-    if (status === 'none') runAndReload(RelationshipService.sendRequest(userId));
-    else if (status === 'pending_outgoing' && requestId) runAndReload(RelationshipService.cancel(requestId));
+    if (status === 'none')
+      runAndReload(RelationshipService.sendRequest(userId));
+    else if (status === 'pending_outgoing' && requestId)
+      runAndReload(RelationshipService.cancel(requestId));
     else if (status === 'pending_incoming' && requestId)
       runAndReload(RelationshipService.respond(requestId, 'accept'));
-    else if (status === 'friend' && requestId) runAndReload(RelationshipService.unfriend(requestId));
+    else if (status === 'friend' && requestId)
+      runAndReload(RelationshipService.unfriend(requestId));
   }, [userId, busy, relationship, runAndReload]);
 
   const blockAction = useCallback(() => {
     if (userId === '' || busy) return;
     const { status, requestId } = relationship;
-    if (status === 'blocked_by_me' && requestId) runAndReload(RelationshipService.unblock(requestId));
+    if (status === 'blocked_by_me' && requestId)
+      runAndReload(RelationshipService.unblock(requestId));
     else runAndReload(RelationshipService.block(userId));
   }, [userId, busy, relationship, runAndReload]);
 
@@ -119,8 +135,24 @@ export function useProfileActions({
   }, [userId]);
 
   const actions = useMemo<ProfileActions>(
-    () => ({ kiss, toggleFollow, friendAction, blockAction, message, changeCover, changeAvatar }),
-    [kiss, toggleFollow, friendAction, blockAction, message, changeCover, changeAvatar]
+    () => ({
+      kiss,
+      toggleFollow,
+      friendAction,
+      blockAction,
+      message,
+      changeCover,
+      changeAvatar,
+    }),
+    [
+      kiss,
+      toggleFollow,
+      friendAction,
+      blockAction,
+      message,
+      changeCover,
+      changeAvatar,
+    ]
   );
 
   return { actions, busy };

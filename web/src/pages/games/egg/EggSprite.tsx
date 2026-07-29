@@ -39,7 +39,13 @@ interface EggSpriteProps {
   onBroken: () => void;
 }
 
-export function EggSprite({ nest, restTexture, frameTextures, onSmash, onBroken }: EggSpriteProps) {
+export function EggSprite({
+  nest,
+  restTexture,
+  frameTextures,
+  onSmash,
+  onBroken,
+}: EggSpriteProps) {
   const restRef = useRef<Sprite>(null);
   const animRef = useRef<AnimState | null>(null);
   const pendingRef = useRef(false);
@@ -142,7 +148,11 @@ export function EggSprite({ nest, restTexture, frameTextures, onSmash, onBroken 
         ref={restRef}
         texture={idleHover ? hoverTexture : restTexture}
         visible={phase === 'idle'}
-        anchor={idleHover ? { x: ANIM_ANCHOR_X, y: ANIM_ANCHOR_Y } : { x: 0.5, y: REST_ANCHOR_Y }}
+        anchor={
+          idleHover
+            ? { x: ANIM_ANCHOR_X, y: ANIM_ANCHOR_Y }
+            : { x: 0.5, y: REST_ANCHOR_Y }
+        }
         scale={REST_SCALE}
         x={nest.x}
         y={idleHover ? baseY + ANIM_OFFSET_Y : baseY}

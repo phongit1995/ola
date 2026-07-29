@@ -1,7 +1,9 @@
 import type { CSSProperties } from 'react';
 import type { SegmentTheme } from './spinWheel.constants';
 
-export const TEXT_SHADOW: CSSProperties = { textShadow: '0 2px 4px rgba(0,0,0,0.45)' };
+export const TEXT_SHADOW: CSSProperties = {
+  textShadow: '0 2px 4px rgba(0,0,0,0.45)',
+};
 
 export const TITLE_STYLE: CSSProperties = {
   color: '#ffffff',
@@ -31,7 +33,8 @@ export const HISTORY_TITLE_STYLE: CSSProperties = {
   color: '#fff5f8',
   WebkitTextStroke: '4px #f04f7d',
   paintOrder: 'stroke fill',
-  textShadow: '0 -1px 0 rgba(255,255,255,0.6), 0 4px 0 #b8194d, 0 5px 6px rgba(0,0,0,0.28)',
+  textShadow:
+    '0 -1px 0 rgba(255,255,255,0.6), 0 4px 0 #b8194d, 0 5px 6px rgba(0,0,0,0.28)',
   letterSpacing: '0.02em',
 };
 

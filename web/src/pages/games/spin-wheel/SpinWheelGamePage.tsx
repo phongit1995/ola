@@ -12,7 +12,12 @@ import { SpinHistoryDialog } from './SpinHistoryDialog';
 import { WheelActionButton } from './WheelActionButton';
 import { playSpinSound, stopSpinSound } from './spinWheelSound';
 import { SPIN_START_KEN } from './spinWheel.constants';
-import { CHIP_TEXT_STYLE, SPIN_TEXT_STYLE, TEXT_SHADOW, TITLE_STYLE } from './spinWheelStyles';
+import {
+  CHIP_TEXT_STYLE,
+  SPIN_TEXT_STYLE,
+  TEXT_SHADOW,
+  TITLE_STYLE,
+} from './spinWheelStyles';
 import {
   backgroundUrl,
   closeButtonUrl,
@@ -55,9 +60,14 @@ export function SpinWheelGamePage({ onClose }: SpinWheelGamePageProps) {
   }, [userKen]);
 
   useEffect(() => {
-    useSpinWheelStore.setState({ spinning: false, suppressKenSync: false, pendingResult: null });
+    useSpinWheelStore.setState({
+      spinning: false,
+      suppressKenSync: false,
+      pendingResult: null,
+    });
     const off = SocketService.on<{ ken?: number }>('KEN_UPDATED', (data) => {
-      if (typeof data?.ken === 'number') useSpinWheelStore.getState().syncKen(data.ken);
+      if (typeof data?.ken === 'number')
+        useSpinWheelStore.getState().syncKen(data.ken);
     });
     return () => {
       off();
@@ -101,7 +111,10 @@ export function SpinWheelGamePage({ onClose }: SpinWheelGamePageProps) {
             aspectRatio: '1906 / 360',
           }}
         >
-          <span className="px-14 text-center text-2xl font-extrabold text-white" style={TITLE_STYLE}>
+          <span
+            className="px-14 text-center text-2xl font-extrabold text-white"
+            style={TITLE_STYLE}
+          >
             {t('wheelGame.title')}
           </span>
           <button
@@ -158,7 +171,10 @@ export function SpinWheelGamePage({ onClose }: SpinWheelGamePageProps) {
               style={{ width: 'min(84vw, 360px)', aspectRatio: '1 / 1' }}
             >
               {configStatus === 'error' ? (
-                <span className="text-sm font-bold text-white" style={TEXT_SHADOW}>
+                <span
+                  className="text-sm font-bold text-white"
+                  style={TEXT_SHADOW}
+                >
                   {t('wheelGame.error')}
                 </span>
               ) : (
@@ -183,9 +199,15 @@ export function SpinWheelGamePage({ onClose }: SpinWheelGamePageProps) {
           </button>
 
           <div className="flex items-center justify-center gap-1.5">
-            <img src={spinCountNoteUrl} alt="" className="h-6 w-auto shrink-0" />
+            <img
+              src={spinCountNoteUrl}
+              alt=""
+              className="h-6 w-auto shrink-0"
+            />
             <span className="text-sm font-bold text-white" style={TEXT_SHADOW}>
-              {freeAvailable ? t('wheelGame.freeToday') : t('wheelGame.spinCost', { n: kenCost })}
+              {freeAvailable
+                ? t('wheelGame.freeToday')
+                : t('wheelGame.spinCost', { n: kenCost })}
             </span>
           </div>
 
@@ -208,9 +230,17 @@ export function SpinWheelGamePage({ onClose }: SpinWheelGamePageProps) {
       </div>
 
       {result != null && (
-        <SpinResultDialog result={result} onClose={() => useSpinWheelStore.getState().closeResult()} />
+        <SpinResultDialog
+          result={result}
+          onClose={() => useSpinWheelStore.getState().closeResult()}
+        />
       )}
-      {historyOpen && <SpinHistoryDialog open={historyOpen} onClose={() => setHistoryOpen(false)} />}
+      {historyOpen && (
+        <SpinHistoryDialog
+          open={historyOpen}
+          onClose={() => setHistoryOpen(false)}
+        />
+      )}
     </FullScreenOverlay>
   );
 }

@@ -9,7 +9,11 @@ interface RoomReactionsDialogProps {
   onClose: () => void;
 }
 
-export function RoomReactionsDialog({ open, reactions, onClose }: RoomReactionsDialogProps) {
+export function RoomReactionsDialog({
+  open,
+  reactions,
+  onClose,
+}: RoomReactionsDialogProps) {
   const { t } = useTranslation();
   const rows = REACTION_ORDER.flatMap((type) =>
     (reactions?.[type] ?? []).map((reactor) => ({ type, reactor }))
@@ -18,12 +22,21 @@ export function RoomReactionsDialog({ open, reactions, onClose }: RoomReactionsD
   return (
     <Dialog open={open} onClose={onClose} title={t('room.reactionsTitle')}>
       {rows.length === 0 ? (
-        <p className="py-4 text-center text-sm text-black/54">{t('room.reactionsEmpty')}</p>
+        <p className="py-4 text-center text-sm text-black/54">
+          {t('room.reactionsEmpty')}
+        </p>
       ) : (
         <ul className="max-h-72 divide-y divide-black/8 overflow-y-auto">
           {rows.map(({ type, reactor }) => (
-            <li key={`${type}-${reactor.userId}`} className="flex items-center gap-3 py-2">
-              <img src={REACTION_IMAGE[type]} alt={type} className="h-6 w-6 object-contain" />
+            <li
+              key={`${type}-${reactor.userId}`}
+              className="flex items-center gap-3 py-2"
+            >
+              <img
+                src={REACTION_IMAGE[type]}
+                alt={type}
+                className="h-6 w-6 object-contain"
+              />
               <span className="min-w-0 flex-1 truncate text-base text-black/87">
                 @{reactor.username}
               </span>

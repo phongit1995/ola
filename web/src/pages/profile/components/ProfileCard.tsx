@@ -8,7 +8,13 @@ import femaleIcon from '@/assets/icons/profile/ic_indicate_female.png';
 import marriageIcon from '@/assets/icons/profile/ic_profile_marriage.png';
 import birthdayIcon from '@/assets/icons/profile/ic_profile_birthday.png';
 import vipStoreIcon from '@/assets/icons/me/icon_vip.webp';
-import { Avatar, ImageCropEditor, ImageCropOverlay, UserName, VipIcon } from '@components';
+import {
+  Avatar,
+  ImageCropEditor,
+  ImageCropOverlay,
+  UserName,
+  VipIcon,
+} from '@components';
 import { colorForName, validatedImageObjectUrl } from '@lib';
 import { AVATAR_ASPECT, COVER_ASPECT, MIN_IMAGE_SOURCE } from '@constants';
 import { useMediaViewerStore } from '@/store/mediaViewerStore';
@@ -54,7 +60,10 @@ export function ProfileCard({
   const coverInputRef = useRef<HTMLInputElement>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const [uploadingCover, setUploadingCover] = useState(false);
-  const [coverPreview, setCoverPreview] = useState<{ url: string; file: File } | null>(null);
+  const [coverPreview, setCoverPreview] = useState<{
+    url: string;
+    file: File;
+  } | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [avatarCropSrc, setAvatarCropSrc] = useState<string | null>(null);
 
@@ -140,7 +149,11 @@ export function ProfileCard({
               aria-label={t('profile.changeCover')}
               className="absolute right-2 bottom-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/40 disabled:opacity-60"
             >
-              <img src={cameraIcon} alt="" className="h-5 w-5 object-contain brightness-0 invert" />
+              <img
+                src={cameraIcon}
+                alt=""
+                className="h-5 w-5 object-contain brightness-0 invert"
+              />
             </button>
             <input
               ref={coverInputRef}
@@ -165,15 +178,29 @@ export function ProfileCard({
               onClick={() => openViewer([profile.avatar!])}
               className="leading-none"
             >
-              <Avatar name={profile.nick} color={profile.color} size={96} src={profile.avatar} rounded={false} />
+              <Avatar
+                name={profile.nick}
+                color={profile.color}
+                size={96}
+                src={profile.avatar}
+                rounded={false}
+              />
             </button>
           ) : (
-            <Avatar name={profile.nick} color={profile.color} size={96} src={profile.avatar} rounded={false} />
+            <Avatar
+              name={profile.nick}
+              color={profile.color}
+              size={96}
+              src={profile.avatar}
+              rounded={false}
+            />
           )}
           {profile.spouse ? (
             <button
               type="button"
-              onClick={() => profile.spouse && onOpenUser?.(profile.spouse.nick)}
+              onClick={() =>
+                profile.spouse && onOpenUser?.(profile.spouse.nick)
+              }
               className="leading-none"
             >
               <Avatar
@@ -226,7 +253,9 @@ export function ProfileCard({
           className="min-w-0 truncate text-lg text-black/87"
           fullNameClassName="text-black/54"
         />
-        {profile.verified && <img src={checkedIcon} alt="" className="h-5 w-5 object-contain" />}
+        {profile.verified && (
+          <img src={checkedIcon} alt="" className="h-5 w-5 object-contain" />
+        )}
       </div>
 
       <div className="mx-4 h-px bg-black/12" />
@@ -269,19 +298,27 @@ export function ProfileCard({
         </span>
       </button>
 
-      <p className="mt-3 line-clamp-5 px-4 text-center text-xs text-black/54">{profile.bio}</p>
+      <p className="mt-3 line-clamp-5 px-4 text-center text-xs text-black/54">
+        {profile.bio}
+      </p>
 
       {profile.vipTypeId != null && (
         <div className="mt-3 ml-4 flex items-center gap-1">
           <VipIcon typeId={profile.vipTypeId} className="h-6 w-6" />
-          <span className="text-xs font-bold text-ola-accent">{t('profile.vipAccount')}</span>
+          <span className="text-xs font-bold text-ola-accent">
+            {t('profile.vipAccount')}
+          </span>
         </div>
       )}
 
       <div className="pb-4">
         <InfoRow
           icon={profile.gender === 'female' ? femaleIcon : maleIcon}
-          text={profile.gender === 'female' ? t('profile.genderFemale') : t('profile.genderMale')}
+          text={
+            profile.gender === 'female'
+              ? t('profile.genderFemale')
+              : t('profile.genderMale')
+          }
         />
         <InfoRow
           icon={marriageIcon}
@@ -291,7 +328,9 @@ export function ProfileCard({
                 {t('marriage.marryWithLabel')}{' '}
                 <button
                   type="button"
-                  onClick={() => profile.spouse && onOpenUser?.(profile.spouse.nick)}
+                  onClick={() =>
+                    profile.spouse && onOpenUser?.(profile.spouse.nick)
+                  }
                   className="text-ola-primary-darker"
                 >
                   @{profile.spouse.nick}
@@ -303,14 +342,20 @@ export function ProfileCard({
           }
         />
         <InfoRow icon={birthdayIcon} text={profile.birthday} />
-        <div className="mt-2 ml-4 text-xs text-black/54">{profile.joinDate}</div>
+        <div className="mt-2 ml-4 text-xs text-black/54">
+          {profile.joinDate}
+        </div>
         {profile.canViewVipStore && (
           <button
             type="button"
             onClick={onViewVipStore}
             className="mt-2 ml-4 flex items-center gap-1 text-xs text-ola-primary-darker active:opacity-70"
           >
-            <img src={vipStoreIcon} alt="" className="h-4 w-auto shrink-0 object-contain" />
+            <img
+              src={vipStoreIcon}
+              alt=""
+              className="h-4 w-auto shrink-0 object-contain"
+            />
             {t('profile.viewVipStore')}
           </button>
         )}

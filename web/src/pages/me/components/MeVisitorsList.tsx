@@ -1,7 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Avatar, Spinner, UserName, VipIcon } from '@components';
-import { activeVipTypeId, colorForName, createTimeFormatter, toast } from '@lib';
+import {
+  activeVipTypeId,
+  colorForName,
+  createTimeFormatter,
+  toast,
+} from '@lib';
 import { RelationshipService, UserService } from '@services';
 import type { RelationshipStatus, VisitorUser } from '@app-types';
 
@@ -34,7 +39,10 @@ function toRow(user: VisitorUser): VisitorRow {
   };
 }
 
-export function MeVisitorsList({ className, onOpenProfile }: MeVisitorsListProps) {
+export function MeVisitorsList({
+  className,
+  onOpenProfile,
+}: MeVisitorsListProps) {
   const { t, i18n } = useTranslation();
   const [rows, setRows] = useState<VisitorRow[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
@@ -44,13 +52,18 @@ export function MeVisitorsList({ className, onOpenProfile }: MeVisitorsListProps
   const [requested, setRequested] = useState<Record<string, boolean>>({});
   const scrollRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
-  const formatTime = useMemo(() => createTimeFormatter(i18n.language), [i18n.language]);
+  const formatTime = useMemo(
+    () => createTimeFormatter(i18n.language),
+    [i18n.language]
+  );
 
   useEffect(() => {
     let active = true;
     (async () => {
       try {
-        const result = await UserService.myVisitors({ limit: VISITOR_PAGE_SIZE });
+        const result = await UserService.myVisitors({
+          limit: VISITOR_PAGE_SIZE,
+        });
         if (!active) return;
         setRows(result.users.map(toRow));
         setNextCursor(result.nextCursor);
@@ -110,24 +123,36 @@ export function MeVisitorsList({ className, onOpenProfile }: MeVisitorsListProps
   }
 
   return (
-    <div ref={scrollRef} className={`overflow-y-auto bg-white ${className ?? ''}`}>
+    <div
+      ref={scrollRef}
+      className={`overflow-y-auto bg-white ${className ?? ''}`}
+    >
       {loading && (
         <div className="flex justify-center py-6">
           <Spinner size={24} />
         </div>
       )}
       {!loading && error && (
-        <div className="py-6 text-center text-sm text-ola-error">{t('me.visitorsError')}</div>
+        <div className="py-6 text-center text-sm text-ola-error">
+          {t('me.visitorsError')}
+        </div>
       )}
       {!loading && !error && rows.length === 0 && (
-        <div className="py-10 text-center text-sm text-black/54">{t('me.followerEmpty')}</div>
+        <div className="py-10 text-center text-sm text-black/54">
+          {t('me.followerEmpty')}
+        </div>
       )}
       {!loading &&
         !error &&
         rows.map((row) => {
-          const title = row.fullName != null && row.fullName !== '' ? row.fullName : row.username;
-          const sent = row.status === 'pending_outgoing' || requested[row.id] === true;
-          const openProfile = () => onOpenProfile(row.username, colorForName(row.username));
+          const title =
+            row.fullName != null && row.fullName !== ''
+              ? row.fullName
+              : row.username;
+          const sent =
+            row.status === 'pending_outgoing' || requested[row.id] === true;
+          const openProfile = () =>
+            onOpenProfile(row.username, colorForName(row.username));
           return (
             <div
               key={row.id}
@@ -143,7 +168,11 @@ export function MeVisitorsList({ className, onOpenProfile }: MeVisitorsListProps
                 />
               </button>
               <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-                <button type="button" onClick={openProfile} className="min-w-0 text-left">
+                <button
+                  type="button"
+                  onClick={openProfile}
+                  className="min-w-0 text-left"
+                >
                   <span className="flex min-w-0 items-center gap-1">
                     <VipIcon typeId={row.vipTypeId} />
                     <UserName

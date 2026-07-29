@@ -29,7 +29,9 @@ export function LanguageSwitcher({
             key={lng}
             type="button"
             onClick={() => i18n.changeLanguage(lng)}
-            className={`rounded px-2 py-0.5 ${isActive ? activeClass : idleClass}`}
+            className={`rounded px-2 py-0.5 ${
+              isActive ? activeClass : idleClass
+            }`}
           >
             {LABELS[lng]}
           </button>

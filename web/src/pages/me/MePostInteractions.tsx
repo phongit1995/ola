@@ -2,9 +2,17 @@ import { useCallback, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toApiError, toast } from '@lib';
 import { MeService } from '@services';
-import { ConfirmDialog, ListOptionDialog, ReportDialog, type ListOption } from '@components';
+import {
+  ConfirmDialog,
+  ListOptionDialog,
+  ReportDialog,
+  type ListOption,
+} from '@components';
 import type { PostReaction, PostVisibility, ReportTarget } from '@app-types';
-import { MeComposerDialog, type ComposedPost } from './components/MeComposerDialog';
+import {
+  MeComposerDialog,
+  type ComposedPost,
+} from './components/MeComposerDialog';
 import { MeCommentSheet } from './components/MeCommentSheet';
 import { QuickCommentBar } from './components/QuickCommentBar';
 import { MeLikersDialog } from './components/MeLikersDialog';
@@ -53,15 +61,25 @@ export function MePostInteractions({
   children,
 }: MePostInteractionsProps) {
   const { t } = useTranslation();
-  const { posts, meId, toggleReaction, adjustCommentCount, editPost, deletePost, togglePin } =
-    source;
+  const {
+    posts,
+    meId,
+    toggleReaction,
+    adjustCommentCount,
+    editPost,
+    deletePost,
+    togglePin,
+  } = source;
 
-  const [profileTarget, setProfileTarget] = useState<{ username: string; color: string } | null>(
-    null
-  );
+  const [profileTarget, setProfileTarget] = useState<{
+    username: string;
+    color: string;
+  } | null>(null);
   const [commentPostId, setCommentPostId] = useState<string | null>(null);
   const [commentFocusInput, setCommentFocusInput] = useState(false);
-  const [quickCommentPostId, setQuickCommentPostId] = useState<string | null>(null);
+  const [quickCommentPostId, setQuickCommentPostId] = useState<string | null>(
+    null
+  );
   const [quickSubmitting, setQuickSubmitting] = useState(false);
   const [menuPostId, setMenuPostId] = useState<string | null>(null);
   const [reportTarget, setReportTarget] = useState<ReportTarget | null>(null);
@@ -69,11 +87,16 @@ export function MePostInteractions({
   const [deletePostId, setDeletePostId] = useState<string | null>(null);
   const [likersPostId, setLikersPostId] = useState<string | null>(null);
 
-  const commentPost = commentPostId == null ? null : posts.find((p) => p.id === commentPostId);
+  const commentPost =
+    commentPostId == null ? null : posts.find((p) => p.id === commentPostId);
   const quickPost =
-    quickCommentPostId == null ? null : posts.find((p) => p.id === quickCommentPostId);
-  const menuPost = menuPostId == null ? null : posts.find((p) => p.id === menuPostId);
-  const isMenuPostMine = menuPost != null && meId != null && menuPost.authorId === meId;
+    quickCommentPostId == null
+      ? null
+      : posts.find((p) => p.id === quickCommentPostId);
+  const menuPost =
+    menuPostId == null ? null : posts.find((p) => p.id === menuPostId);
+  const isMenuPostMine =
+    menuPost != null && meId != null && menuPost.authorId === meId;
   const canManageOwn = editPost != null && deletePost != null;
 
   const hideAndNotify = (id: string | null) => {
@@ -100,7 +123,11 @@ export function MePostInteractions({
   };
 
   const ownMenuOptions: ListOption[] = [
-    { key: 'edit', label: t('me.menuEdit'), onSelect: () => requestEdit(menuPostId) },
+    {
+      key: 'edit',
+      label: t('me.menuEdit'),
+      onSelect: () => requestEdit(menuPostId),
+    },
   ];
   if (togglePin != null && menuPost != null) {
     ownMenuOptions.push({
@@ -116,14 +143,23 @@ export function MePostInteractions({
     onSelect: () => setDeletePostId(menuPostId),
   });
 
-  const extraOptions = menuPost != null && extraMenuItems != null ? extraMenuItems(menuPost) : [];
+  const extraOptions =
+    menuPost != null && extraMenuItems != null ? extraMenuItems(menuPost) : [];
 
   const baseMenuOptions: ListOption[] =
     isMenuPostMine && canManageOwn
       ? ownMenuOptions
       : [
-          { key: 'hide', label: t('me.menuHide'), onSelect: () => hideAndNotify(menuPostId) },
-          { key: 'save', label: t('me.menuSave'), onSelect: () => toast.success(t('me.saveSuccess')) },
+          {
+            key: 'hide',
+            label: t('me.menuHide'),
+            onSelect: () => hideAndNotify(menuPostId),
+          },
+          {
+            key: 'save',
+            label: t('me.menuSave'),
+            onSelect: () => toast.success(t('me.saveSuccess')),
+          },
           {
             key: 'share',
             label: t('me.menuShare'),
@@ -133,7 +169,8 @@ export function MePostInteractions({
             key: 'report',
             label: t('report.post'),
             onSelect: () => {
-              if (menuPostId != null) setReportTarget({ type: 'post', id: menuPostId });
+              if (menuPostId != null)
+                setReportTarget({ type: 'post', id: menuPostId });
             },
           },
           {
@@ -149,7 +186,8 @@ export function MePostInteractions({
   );
   const menuOptions: ListOption[] = [...baseMenuOptions, ...dedupedExtras];
 
-  const editingPost = editPostId == null ? null : posts.find((p) => p.id === editPostId);
+  const editingPost =
+    editPostId == null ? null : posts.find((p) => p.id === editPostId);
   const editInitial: ComposedPost | undefined =
     editingPost == null
       ? undefined
@@ -251,8 +289,8 @@ export function MePostInteractions({
             quickPost == null
               ? undefined
               : quickPost.content !== ''
-                ? quickPost.content
-                : quickPost.author
+              ? quickPost.content
+              : quickPost.author
           }
           submitting={quickSubmitting}
           onSubmit={submitQuickComment}
@@ -268,7 +306,10 @@ export function MePostInteractions({
       />
 
       {reportTarget != null && (
-        <ReportDialog target={reportTarget} onClose={() => setReportTarget(null)} />
+        <ReportDialog
+          target={reportTarget}
+          onClose={() => setReportTarget(null)}
+        />
       )}
 
       {canManageOwn && (
@@ -327,7 +368,9 @@ export function MePostInteractions({
           username={profileTarget.username}
           color={profileTarget.color}
           onClose={() => setProfileTarget(null)}
-          onOpenFriend={(friend) => setProfileTarget({ username: friend.name, color: friend.color })}
+          onOpenFriend={(friend) =>
+            setProfileTarget({ username: friend.name, color: friend.color })
+          }
         />
       )}
     </>

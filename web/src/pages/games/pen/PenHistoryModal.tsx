@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { usePenHistoryStore, type PenHistorySection as SectionRole } from '@/store/penHistoryStore';
+import {
+  usePenHistoryStore,
+  type PenHistorySection as SectionRole,
+} from '@/store/penHistoryStore';
 import { penHistoryAssets, penShootAssets } from './penAssets';
 import { bgImage } from './penUi';
 import { PenHistorySection } from './PenHistorySection';
@@ -23,7 +26,10 @@ export function PenHistoryModal({ userId, onClose }: PenHistoryModalProps) {
     { key: 'catch', label: t('penGame.hist.tabCatch') },
     { key: 'all', label: t('penGame.hist.tabAll') },
   ];
-  const opponentLabel = tab === 'shoot' ? t('penGame.hist.colCatcher') : t('penGame.hist.colShooter');
+  const opponentLabel =
+    tab === 'shoot'
+      ? t('penGame.hist.colCatcher')
+      : t('penGame.hist.colShooter');
 
   return (
     <div
@@ -35,7 +41,11 @@ export function PenHistoryModal({ userId, onClose }: PenHistoryModalProps) {
         className="pen-panel relative flex max-h-[92%] w-full flex-col @md:w-[80%]"
       >
         <div className="flex shrink-0 items-center justify-center gap-2 px-12 pb-2 pt-4 text-white">
-          <img src={penHistoryAssets.clock} alt="" className="h-7 w-7 object-contain" />
+          <img
+            src={penHistoryAssets.clock}
+            alt=""
+            className="h-7 w-7 object-contain"
+          />
           <span className="text-3xl font-extrabold italic tracking-wider drop-shadow">
             {t('penGame.history')}
           </span>
@@ -48,7 +58,11 @@ export function PenHistoryModal({ userId, onClose }: PenHistoryModalProps) {
           style={bgImage(penShootAssets.closeBtn)}
           className="absolute right-[4%] top-[3.5%] flex h-9 w-9 items-center justify-center bg-no-repeat transition active:scale-95"
         >
-          <img src={penShootAssets.closeIcon} alt="" className="h-4 w-4 object-contain" />
+          <img
+            src={penShootAssets.closeIcon}
+            alt=""
+            className="h-4 w-4 object-contain"
+          />
         </button>
 
         <div className="flex shrink-0 gap-2 px-3 pb-2 pt-2">
@@ -61,7 +75,9 @@ export function PenHistoryModal({ userId, onClose }: PenHistoryModalProps) {
                 onClick={() => setTab(item.key)}
                 style={bgImage(penHistoryAssets.tab)}
                 className={`flex-1 whitespace-nowrap bg-no-repeat py-2.5 text-sm font-extrabold tracking-wide text-white transition active:scale-95 ${
-                  active ? 'drop-shadow-[0_0_6px_rgba(58,160,255,0.6)]' : 'opacity-40 saturate-50'
+                  active
+                    ? 'drop-shadow-[0_0_6px_rgba(58,160,255,0.6)]'
+                    : 'opacity-40 saturate-50'
                 }`}
               >
                 {item.label}
@@ -74,7 +90,11 @@ export function PenHistoryModal({ userId, onClose }: PenHistoryModalProps) {
           {tab === 'all' ? (
             <PenAllHistorySection />
           ) : (
-            <PenHistorySection section={tab} opponentLabel={opponentLabel} userId={userId} />
+            <PenHistorySection
+              section={tab}
+              opponentLabel={opponentLabel}
+              userId={userId}
+            />
           )}
         </div>
       </div>

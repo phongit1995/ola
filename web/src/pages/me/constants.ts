@@ -14,9 +14,25 @@ export const TAB_FILTER: Record<MeTab, MeFeedFilter | undefined> = {
 };
 
 export const ME_TABS = [
-  { key: 'community', icon: tabOla, iconActive: tabOlaActive, labelKey: 'me.tabCommunity' },
-  { key: 'personal', icon: tabFollower, iconActive: tabFollowerActive, labelKey: 'me.tabPersonal' },
-  { key: 'clan', icon: tabClan, iconActive: tabClan, labelKey: 'me.tabClan', invert: true },
+  {
+    key: 'community',
+    icon: tabOla,
+    iconActive: tabOlaActive,
+    labelKey: 'me.tabCommunity',
+  },
+  {
+    key: 'personal',
+    icon: tabFollower,
+    iconActive: tabFollowerActive,
+    labelKey: 'me.tabPersonal',
+  },
+  {
+    key: 'clan',
+    icon: tabClan,
+    iconActive: tabClan,
+    labelKey: 'me.tabClan',
+    invert: true,
+  },
 ] as const satisfies ReadonlyArray<{
   key: MeTab;
   icon: string;
@@ -25,7 +41,11 @@ export const ME_TABS = [
   invert?: boolean;
 }>;
 
-export const PRIVACY_OPTIONS: PostVisibility[] = ['public', 'friend', 'private'];
+export const PRIVACY_OPTIONS: PostVisibility[] = [
+  'public',
+  'friend',
+  'private',
+];
 
 export { EDIT_WINDOW_MS } from '@ola/shared/constants';
 

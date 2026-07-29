@@ -19,8 +19,12 @@ export interface ProfileMapDeps {
   formatDate: (iso: string) => string;
 }
 
-export function mapPublicProfile(data: PublicProfile, deps: ProfileMapDeps): UserProfile {
-  const nick = data.fullName && data.fullName !== '' ? data.fullName : data.username;
+export function mapPublicProfile(
+  data: PublicProfile,
+  deps: ProfileMapDeps
+): UserProfile {
+  const nick =
+    data.fullName && data.fullName !== '' ? data.fullName : data.username;
   return {
     nick,
     username: data.username,
@@ -35,8 +39,12 @@ export function mapPublicProfile(data: PublicProfile, deps: ProfileMapDeps): Use
     kisses: data.kisses,
     bio: data.bio ?? '',
     gender: data.gender,
-    marriage: data.spouse ? deps.marriedWith(data.spouse.username) : deps.singleLabel,
-    spouse: data.spouse ? { nick: data.spouse.username, avatar: data.spouse.avatar } : null,
+    marriage: data.spouse
+      ? deps.marriedWith(data.spouse.username)
+      : deps.singleLabel,
+    spouse: data.spouse
+      ? { nick: data.spouse.username, avatar: data.spouse.avatar }
+      : null,
     birthday: data.dateOfBirth ? formatBirthday(data.dateOfBirth) : '',
     joinDate: `${deps.joinedLabel} ${deps.formatDate(data.createdAt)}`,
     isSelf: data.relationship?.status === 'self',
@@ -53,6 +61,9 @@ export function mapFollowing(users: FollowUser[]): ProfileFriend[] {
   }));
 }
 
-export function mapPosts(posts: Post[], formatTime: (iso: string) => string): MePost[] {
+export function mapPosts(
+  posts: Post[],
+  formatTime: (iso: string) => string
+): MePost[] {
   return posts.map((post) => toMePost(post, formatTime));
 }

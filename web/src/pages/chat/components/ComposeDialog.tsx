@@ -37,7 +37,8 @@ export function ComposeDialog({ open, onClose, onStart }: ComposeDialogProps) {
     runSearch(value.trim());
   }
 
-  const emptyMessage = keyword === '' ? t('chat.addContactHint') : t('chat.composeSearchEmpty');
+  const emptyMessage =
+    keyword === '' ? t('chat.addContactHint') : t('chat.composeSearchEmpty');
 
   return (
     <UserListDialog
@@ -52,7 +53,9 @@ export function ComposeDialog({ open, onClose, onStart }: ComposeDialogProps) {
       loading={searching}
       loadingText={t('common.loading')}
       isEmpty={results.length === 0}
-      empty={<p className="py-6 text-center text-sm text-black/54">{emptyMessage}</p>}
+      empty={
+        <p className="py-6 text-center text-sm text-black/54">{emptyMessage}</p>
+      }
     >
       {results.map((user) => (
         <li key={user.id}>

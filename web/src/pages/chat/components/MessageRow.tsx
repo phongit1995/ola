@@ -110,7 +110,9 @@ export function MessageRow({
           className={`flex max-w-[78%] flex-col ${isOut ? 'items-end' : ''}`}
         >
           <div
-            className={`flex items-center gap-2 ${isOut ? 'flex-row-reverse' : ''}`}
+            className={`flex items-center gap-2 ${
+              isOut ? 'flex-row-reverse' : ''
+            }`}
           >
             <div
               data-message-id={message.id}
@@ -121,7 +123,9 @@ export function MessageRow({
               }}
               onClickCapture={handleBubbleClickCapture}
               onClick={handleBubbleClick}
-              className={`touch-pan-y select-none ${highlighted ? 'rounded-2xl ring-2 ring-ola-primary/40' : ''}`}
+              className={`touch-pan-y select-none ${
+                highlighted ? 'rounded-2xl ring-2 ring-ola-primary/40' : ''
+              }`}
             >
               <ChatMessageBubble
                 message={message}
@@ -147,7 +151,9 @@ export function MessageRow({
                     event.currentTarget.getBoundingClientRect()
                   );
               }}
-              className={`relative z-10 -mt-2 flex flex-wrap gap-1 ${isOut ? 'justify-end self-end' : 'self-start'}`}
+              className={`relative z-10 -mt-2 flex flex-wrap gap-1 ${
+                isOut ? 'justify-end self-end' : 'self-start'
+              }`}
             >
               {chips.map((chip) => (
                 <span

@@ -54,7 +54,7 @@ export function toConversationView(
     unread: conversation.unreadCount,
     online:
       conversation.type === 'direct'
-        ? (conversation.otherUser?.isOnline ?? false)
+        ? conversation.otherUser?.isOnline ?? false
         : false,
   };
 }

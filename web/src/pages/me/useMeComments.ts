@@ -21,7 +21,10 @@ interface UseMeCommentsOptions {
   onDelta?: (delta: number) => void;
 }
 
-export function useMeComments(postId: string, options: UseMeCommentsOptions = {}) {
+export function useMeComments(
+  postId: string,
+  options: UseMeCommentsOptions = {}
+) {
   const { onDelta } = options;
   const [comments, setComments] = useState<PostComment[]>([]);
   const [total, setTotal] = useState(0);
@@ -101,8 +104,11 @@ export function useMeComments(postId: string, options: UseMeCommentsOptions = {}
         self == null
           ? currentLikers
           : nextLiked
-            ? [self, ...currentLikers.filter((liker) => liker.id !== self.id)].slice(0, 3)
-            : currentLikers.filter((liker) => liker.id !== self.id);
+          ? [
+              self,
+              ...currentLikers.filter((liker) => liker.id !== self.id),
+            ].slice(0, 3)
+          : currentLikers.filter((liker) => liker.id !== self.id);
       const optimistic: PostComment = {
         ...target,
         liked: nextLiked,
@@ -159,5 +165,16 @@ export function useMeComments(postId: string, options: UseMeCommentsOptions = {}
     [postId, onDelta]
   );
 
-  return { comments, total, loading, error, submitting, add, remove, like, replyTarget, setReplyTarget };
+  return {
+    comments,
+    total,
+    loading,
+    error,
+    submitting,
+    add,
+    remove,
+    like,
+    replyTarget,
+    setReplyTarget,
+  };
 }

@@ -69,7 +69,7 @@ export function VoiceBubble({
     const total =
       Number.isFinite(el.duration) && el.duration > 0
         ? el.duration
-        : (durationSec ?? 0);
+        : durationSec ?? 0;
     if (total <= 0) return;
     el.currentTime = total * ratio;
     setProgress(ratio);
@@ -147,7 +147,7 @@ export function VoiceBubble({
           const total =
             Number.isFinite(el.duration) && el.duration > 0
               ? el.duration
-              : (durationSec ?? 0);
+              : durationSec ?? 0;
           setCurrentTime(el.currentTime);
           setProgress(total > 0 ? Math.min(1, el.currentTime / total) : 0);
         }}

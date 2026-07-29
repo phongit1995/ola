@@ -60,7 +60,9 @@ export function DownloadGuideBody({
   return (
     <div className="px-4 py-4">
       <div className="flex items-center justify-between gap-2">
-        <p className="min-w-0 flex-1 text-[13px] font-semibold text-black/70">{channel}</p>
+        <p className="min-w-0 flex-1 text-[13px] font-semibold text-black/70">
+          {channel}
+        </p>
         {isCurrentDevice && (
           <span className="shrink-0 rounded-full bg-ola-primary/12 px-2.5 py-1 text-[11px] font-semibold text-ola-primary-dark">
             {t('download.yourDevice')}
@@ -71,7 +73,10 @@ export function DownloadGuideBody({
       {chips.length > 0 && (
         <div className="mt-2.5 flex flex-wrap gap-1.5">
           {chips.map((chip) => (
-            <span key={chip} className="rounded-full bg-black/5 px-2.5 py-1 text-[11px] text-black/60">
+            <span
+              key={chip}
+              className="rounded-full bg-black/5 px-2.5 py-1 text-[11px] text-black/60"
+            >
               {chip}
             </span>
           ))}
@@ -89,7 +94,9 @@ export function DownloadGuideBody({
             <span className="mt-px flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-ola-primary text-[11px] font-bold text-white">
               {index + 1}
             </span>
-            <span className="text-[13px] leading-relaxed text-black/75">{step}</span>
+            <span className="text-[13px] leading-relaxed text-black/75">
+              {step}
+            </span>
           </li>
         ))}
       </ol>

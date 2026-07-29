@@ -13,7 +13,10 @@ const POST_TOKEN_PATTERN = new RegExp(
 const MENTION_TOKEN_PATTERN = new RegExp(`^(?:${MENTION_SOURCE})$`);
 const HASHTAG_TOKEN_PATTERN = new RegExp(`^(?:${HASHTAG_SOURCE})$`);
 
-export function renderRichText(content: string, onMention: (nick: string) => void): ReactNode[] {
+export function renderRichText(
+  content: string,
+  onMention: (nick: string) => void
+): ReactNode[] {
   return content.split(POST_TOKEN_PATTERN).map((part, index) => {
     if (MENTION_TOKEN_PATTERN.test(part)) {
       return (

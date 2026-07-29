@@ -18,7 +18,8 @@ export class ImageTooLargeError extends Error {
 
 function needsCompression(file: File): boolean {
   if (file.type === 'image/gif') return false;
-  if (PASSTHROUGH_TYPES.includes(file.type) && file.size <= MAX_UPLOAD_BYTES) return false;
+  if (PASSTHROUGH_TYPES.includes(file.type) && file.size <= MAX_UPLOAD_BYTES)
+    return false;
   return true;
 }
 
@@ -38,8 +39,13 @@ function loadImageFromFile(file: Blob): Promise<HTMLImageElement> {
   });
 }
 
-function canvasToJpeg(canvas: HTMLCanvasElement, quality: number): Promise<Blob | null> {
-  return new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', quality));
+function canvasToJpeg(
+  canvas: HTMLCanvasElement,
+  quality: number
+): Promise<Blob | null> {
+  return new Promise((resolve) =>
+    canvas.toBlob(resolve, 'image/jpeg', quality)
+  );
 }
 
 function toJpegName(name: string): string {
@@ -54,7 +60,11 @@ function isHeic(file: File): boolean {
 
 async function convertHeicToJpeg(file: File): Promise<File> {
   const { default: heic2any } = await import('heic2any');
-  const converted = await heic2any({ blob: file, toType: 'image/jpeg', quality: HEIC_CONVERT_QUALITY });
+  const converted = await heic2any({
+    blob: file,
+    toType: 'image/jpeg',
+    quality: HEIC_CONVERT_QUALITY,
+  });
   const blob = Array.isArray(converted) ? converted[0] : converted;
   if (blob == null) throw new Error('heic decode failed');
   return new File([blob], toJpegName(file.name), { type: 'image/jpeg' });
@@ -99,9 +109,12 @@ export async function compressImageForUpload(file: File): Promise<File> {
   let smallest: Blob | null = null;
   for (let round = 0; round < MAX_DOWNSCALE_ROUNDS; round += 1) {
     const encoded = await encodeAtDimensions(image, width, height);
-    if (encoded != null && (smallest == null || encoded.size < smallest.size)) smallest = encoded;
+    if (encoded != null && (smallest == null || encoded.size < smallest.size))
+      smallest = encoded;
     if (encoded != null && encoded.size <= MAX_UPLOAD_BYTES) {
-      return new File([encoded], toJpegName(source.name), { type: 'image/jpeg' });
+      return new File([encoded], toJpegName(source.name), {
+        type: 'image/jpeg',
+      });
     }
     if (width <= MIN_DIMENSION && height <= MIN_DIMENSION) break;
     width = Math.max(MIN_DIMENSION, Math.round(width * DIMENSION_STEP));

@@ -5,7 +5,11 @@ import { useTranslation } from 'react-i18next';
 import { Spinner, VipIcon } from '@components';
 import { EGG_GIFT_FIXTURE, formatKen, portalRoot, vipName } from '@lib';
 import { EggService } from '@services';
-import type { EggCategoryKind, EggGiftReward, EggGiftSection } from '@app-types';
+import type {
+  EggCategoryKind,
+  EggGiftReward,
+  EggGiftSection,
+} from '@app-types';
 import { closeCircleButtonUrl, closeXIconUrl } from './eggAssets';
 import kenCoinUrl from '@/assets/icons/apps/ken.png';
 import vipDaysIconUrl from '@/assets/games/egg/day_vip.png';
@@ -49,22 +53,38 @@ const SECTION_STYLES: Partial<Record<EggCategoryKind, SectionStyle>> = {
   },
 };
 
-function rewardText(type: EggCategoryKind, reward: EggGiftReward, t: TFunction): string {
-  if (type === 'vip_icon' && reward.vipTypeId != null) return vipName(reward.vipTypeId);
+function rewardText(
+  type: EggCategoryKind,
+  reward: EggGiftReward,
+  t: TFunction
+): string {
+  if (type === 'vip_icon' && reward.vipTypeId != null)
+    return vipName(reward.vipTypeId);
   if (reward.label) return reward.label;
-  if (type === 'ken' && reward.kenAmount) return `${formatKen(reward.kenAmount)} Ken`;
+  if (type === 'ken' && reward.kenAmount)
+    return `${formatKen(reward.kenAmount)} Ken`;
   if (type === 'vip_days' && reward.vipDays) {
     return t('eggGame.gifts.vipDaysLabel', { days: reward.vipDays });
   }
   return '';
 }
 
-function RewardIcon({ type, reward }: { type: EggCategoryKind; reward: EggGiftReward }) {
-  if (type === 'ken') return <img src={kenCoinUrl} alt="" className="h-9 w-9 object-contain" />;
+function RewardIcon({
+  type,
+  reward,
+}: {
+  type: EggCategoryKind;
+  reward: EggGiftReward;
+}) {
+  if (type === 'ken')
+    return <img src={kenCoinUrl} alt="" className="h-9 w-9 object-contain" />;
   if (type === 'vip_days') {
-    return <img src={vipDaysIconUrl} alt="" className="h-9 w-9 object-contain" />;
+    return (
+      <img src={vipDaysIconUrl} alt="" className="h-9 w-9 object-contain" />
+    );
   }
-  if (reward.vipTypeId != null) return <VipIcon typeId={reward.vipTypeId} size={40} rounded />;
+  if (reward.vipTypeId != null)
+    return <VipIcon typeId={reward.vipTypeId} size={40} rounded />;
   return null;
 }
 
@@ -129,11 +149,17 @@ export function EggGiftDialog({ open, packId, onClose }: EggGiftDialogProps) {
       }}
       className="fixed inset-0 z-[110] grid place-items-center bg-black/60 p-4"
     >
-      <div role="dialog" aria-modal="true" className="relative w-full max-w-md pt-[30px]">
+      <div
+        role="dialog"
+        aria-modal="true"
+        className="relative w-full max-w-md pt-[30px]"
+      >
         <div className="rounded-3xl bg-white px-3 pb-3 pt-10 shadow-[0_6px_24px_rgba(0,0,0,0.35)]">
           <div className="max-h-[68vh] overflow-y-auto pr-1 [scrollbar-color:#e3c98e_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#e3c98e] hover:[&::-webkit-scrollbar-thumb]:bg-[#d9a326]">
             {error ? (
-              <p className="py-8 text-center text-sm text-[#9a2b20]">{t('eggGame.error')}</p>
+              <p className="py-8 text-center text-sm text-[#9a2b20]">
+                {t('eggGame.error')}
+              </p>
             ) : loading ? (
               <div className="flex h-32 items-center justify-center">
                 <Spinner />
@@ -185,7 +211,9 @@ export function EggGiftDialog({ open, packId, onClose }: EggGiftDialogProps) {
           <h2 className="text-xl font-extrabold tracking-wide text-white">
             {t('eggGame.gifts.heading')}
           </h2>
-          <p className="text-sm font-bold text-[#ffca28]">{t('eggGame.gifts.subtitle')}</p>
+          <p className="text-sm font-bold text-[#ffca28]">
+            {t('eggGame.gifts.subtitle')}
+          </p>
         </div>
 
         <button
@@ -194,7 +222,11 @@ export function EggGiftDialog({ open, packId, onClose }: EggGiftDialogProps) {
           aria-label={t('dialog.close')}
           className="absolute -right-2 top-3 z-20 h-9 w-9 transition-transform hover:scale-105"
         >
-          <img src={closeCircleButtonUrl} alt="" className="absolute inset-0 h-9 w-9" />
+          <img
+            src={closeCircleButtonUrl}
+            alt=""
+            className="absolute inset-0 h-9 w-9"
+          />
           <img
             src={closeXIconUrl}
             alt=""

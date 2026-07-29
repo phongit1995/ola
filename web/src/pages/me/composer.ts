@@ -51,9 +51,12 @@ export async function composedToImages(
   existingImages: PostImage[] = []
 ): Promise<PostImage[]> {
   const prepared = await compressImagesForUpload(draft.files);
-  const uploaded = prepared.length > 0 ? (await MeService.uploadImages(prepared)).images : [];
+  const uploaded =
+    prepared.length > 0 ? (await MeService.uploadImages(prepared)).images : [];
   const existing: PostImage[] = draft.imageUrls.map(
     (url) => existingImages.find((image) => image.url === url) ?? { url }
   );
-  return order === 'createdFirst' ? [...uploaded, ...existing] : [...existing, ...uploaded];
+  return order === 'createdFirst'
+    ? [...uploaded, ...existing]
+    : [...existing, ...uploaded];
 }

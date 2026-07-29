@@ -70,15 +70,22 @@ export function PenCatchModal({
         onSelect={setDirection}
         selected={penCatchAssets.dir.selected}
         unselected={penCatchAssets.dir.unselected}
-        center={{ left: penCatchAssets.gloveLeft, right: penCatchAssets.gloveRight }}
+        center={{
+          left: penCatchAssets.gloveLeft,
+          right: penCatchAssets.gloveRight,
+        }}
         layout={CATCH_DIR_LAYOUT}
       />
 
       <div className="mt-auto flex flex-col items-center gap-1 pt-[4%]">
-        <span className="text-base font-semibold text-white/90">{t('penGame.catchBet')}</span>
+        <span className="text-base font-semibold text-white/90">
+          {t('penGame.catchBet')}
+        </span>
         <span className="flex items-center gap-2">
           <img src={penAssets.kenIcon} alt="KEN" className="h-6 w-6 shrink-0" />
-          <span className="text-2xl font-bold text-white">{formatVnd(betAmount)}</span>
+          <span className="text-2xl font-bold text-white">
+            {formatVnd(betAmount)}
+          </span>
         </span>
       </div>
 

@@ -2,7 +2,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMeFeedStore } from './meFeedStore';
 import { useMeLocalStore } from '@/store/meLocalStore';
-import { compressImagesForUpload, createTimeFormatter, filterVisiblePosts, toast } from '@lib';
+import {
+  compressImagesForUpload,
+  createTimeFormatter,
+  filterVisiblePosts,
+  toast,
+} from '@lib';
 import { toMePost } from './mappers';
 import { composedToPayload } from './composer';
 import { TAB_FILTER } from './constants';
@@ -27,26 +32,37 @@ export function useMeFeed() {
   const updatePost = useMeFeedStore((state) => state.updatePost);
   const removePost = useMeFeedStore((state) => state.removePost);
   const togglePin = useMeFeedStore((state) => state.togglePin);
-  const adjustCommentCount = useMeFeedStore((state) => state.adjustCommentCount);
+  const adjustCommentCount = useMeFeedStore(
+    (state) => state.adjustCommentCount
+  );
 
   const hiddenPostIds = useMeLocalStore((state) => state.hiddenPostIds);
   const blockedAuthorIds = useMeLocalStore((state) => state.blockedAuthorIds);
   const hidePost = useMeLocalStore((state) => state.hidePost);
   const blockAuthor = useMeLocalStore((state) => state.blockAuthor);
 
-  const formatTime = useMemo(() => createTimeFormatter(i18n.language), [i18n.language]);
+  const formatTime = useMemo(
+    () => createTimeFormatter(i18n.language),
+    [i18n.language]
+  );
 
   useEffect(() => {
     loadFeed(TAB_FILTER[tab]);
   }, [tab, loadFeed]);
 
-  const loadMore = useCallback(() => loadMoreFeed(TAB_FILTER[tab]), [loadMoreFeed, tab]);
-  const refresh = useCallback(() => refreshFeed(TAB_FILTER[tab]), [refreshFeed, tab]);
+  const loadMore = useCallback(
+    () => loadMoreFeed(TAB_FILTER[tab]),
+    [loadMoreFeed, tab]
+  );
+  const refresh = useCallback(
+    () => refreshFeed(TAB_FILTER[tab]),
+    [refreshFeed, tab]
+  );
 
   const posts = useMemo(
     () =>
-      filterVisiblePosts(rawPosts, hiddenPostIds, blockedAuthorIds).map((post) =>
-        toMePost(post, formatTime)
+      filterVisiblePosts(rawPosts, hiddenPostIds, blockedAuthorIds).map(
+        (post) => toMePost(post, formatTime)
       ),
     [rawPosts, formatTime, hiddenPostIds, blockedAuthorIds]
   );
@@ -60,7 +76,11 @@ export function useMeFeed() {
         toast.error(i18n.t('me.postError'));
         return false;
       }
-      const created = await createPost(composedToPayload(draft), files, draft.imageUrls);
+      const created = await createPost(
+        composedToPayload(draft),
+        files,
+        draft.imageUrls
+      );
       if (created == null) return false;
       prependPost(created);
       return true;
@@ -77,7 +97,12 @@ export function useMeFeed() {
         toast.error(i18n.t('me.editError'));
         return false;
       }
-      const updated = await updatePost(id, composedToPayload(draft), files, draft.imageUrls);
+      const updated = await updatePost(
+        id,
+        composedToPayload(draft),
+        files,
+        draft.imageUrls
+      );
       return updated != null;
     },
     [updatePost, i18n]

@@ -1,7 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { UserService } from '@services';
-import { ApiError, colorForName, compressImageForUpload, toast, validatedImageObjectUrl } from '@lib';
+import {
+  ApiError,
+  colorForName,
+  compressImageForUpload,
+  toast,
+  validatedImageObjectUrl,
+} from '@lib';
 import type { Gender, UpdateProfileRequest } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
 import maleIcon from '@/assets/icons/chat/ic_indicate_male.png';
@@ -15,13 +21,24 @@ import { INPUT_CLASS, PHONE_PATTERN } from './constants';
 
 function LockIcon({ className = 'h-4 w-4' }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden="true">
+    <svg
+      viewBox="0 0 24 24"
+      className={className}
+      fill="currentColor"
+      aria-hidden="true"
+    >
       <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z" />
     </svg>
   );
 }
 
-function Field({ label, children }: { label: React.ReactNode; children: React.ReactNode }) {
+function Field({
+  label,
+  children,
+}: {
+  label: React.ReactNode;
+  children: React.ReactNode;
+}) {
   return (
     <div className="mt-4 first:mt-0">
       <div className="text-xs text-black/54">{label}</div>
@@ -31,15 +48,31 @@ function Field({ label, children }: { label: React.ReactNode; children: React.Re
   );
 }
 
-function EmailStatusIcon({ verified, label }: { verified: boolean; label: string }) {
+function EmailStatusIcon({
+  verified,
+  label,
+}: {
+  verified: boolean;
+  label: string;
+}) {
   return (
     <span title={label} aria-label={label} className="inline-flex align-middle">
       {verified ? (
-        <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 text-green-600" fill="currentColor" aria-hidden="true">
+        <svg
+          viewBox="0 0 24 24"
+          className="h-3.5 w-3.5 text-green-600"
+          fill="currentColor"
+          aria-hidden="true"
+        >
           <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm-1 14-4-4 1.41-1.41L11 13.17l4.59-4.58L17 10l-6 6z" />
         </svg>
       ) : (
-        <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 text-amber-500" fill="currentColor" aria-hidden="true">
+        <svg
+          viewBox="0 0 24 24"
+          className="h-3.5 w-3.5 text-amber-500"
+          fill="currentColor"
+          aria-hidden="true"
+        >
           <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
         </svg>
       )}
@@ -90,18 +123,37 @@ function AvatarPicker({ avatar, nick, uploading, onPick }: AvatarPickerProps) {
         className="relative"
       >
         {avatar ? (
-          <img src={avatar} alt="" className="h-24 w-24 rounded-full object-cover ring-4 ring-white" />
+          <img
+            src={avatar}
+            alt=""
+            className="h-24 w-24 rounded-full object-cover ring-4 ring-white"
+          />
         ) : (
           <Avatar name={nick} color={colorForName(nick)} size={96} />
         )}
         <span className="absolute right-0 bottom-0 flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-ola-primary text-white">
-          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden="true">
+          <svg
+            viewBox="0 0 24 24"
+            className="h-4 w-4"
+            fill="currentColor"
+            aria-hidden="true"
+          >
             <path d="M9 3 7.17 5H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.17L15 3H9zm3 5a5 5 0 1 1 0 10 5 5 0 0 1 0-10z" />
           </svg>
         </span>
       </button>
-      {uploading ? <span className="mt-2 text-xs text-black/54">{t('common.loading')}</span> : null}
-      <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleChange} />
+      {uploading ? (
+        <span className="mt-2 text-xs text-black/54">
+          {t('common.loading')}
+        </span>
+      ) : null}
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleChange}
+      />
       {cropSrc && (
         <ImageCropOverlay
           src={cropSrc}
@@ -117,7 +169,13 @@ function AvatarPicker({ avatar, nick, uploading, onPick }: AvatarPickerProps) {
   );
 }
 
-function GenderSelect({ value, onChange }: { value: Gender; onChange: (gender: Gender) => void }) {
+function GenderSelect({
+  value,
+  onChange,
+}: {
+  value: Gender;
+  onChange: (gender: Gender) => void;
+}) {
   const { t } = useTranslation();
   return (
     <div className="flex gap-2">
@@ -132,7 +190,9 @@ function GenderSelect({ value, onChange }: { value: Gender; onChange: (gender: G
               : 'border-black/12 text-black/54'
           }`}
         >
-          {option === 'male' ? t('profile.genderMale') : t('profile.genderFemale')}
+          {option === 'male'
+            ? t('profile.genderMale')
+            : t('profile.genderFemale')}
           <img
             src={option === 'male' ? maleIcon : femaleIcon}
             alt=""
@@ -158,7 +218,10 @@ export function EditProfileMePage({ onClose }: { onClose: () => void }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [uploadingCover, setUploadingCover] = useState(false);
-  const [coverPreview, setCoverPreview] = useState<{ url: string; file: File } | null>(null);
+  const [coverPreview, setCoverPreview] = useState<{
+    url: string;
+    file: File;
+  } | null>(null);
   const [passwordOpen, setPasswordOpen] = useState(false);
   const [verifyOpen, setVerifyOpen] = useState(false);
   const coverInputRef = useRef<HTMLInputElement>(null);
@@ -176,7 +239,9 @@ export function EditProfileMePage({ onClose }: { onClose: () => void }) {
     async (file: File) => {
       setUploadingCover(true);
       try {
-        const { url } = await UserService.uploadAvatar(await compressImageForUpload(file));
+        const { url } = await UserService.uploadAvatar(
+          await compressImageForUpload(file)
+        );
         await UserService.updateMe({ coverPhoto: url });
         await refreshUser();
         toast.success(t('profileEdit.coverUpdated'));
@@ -206,7 +271,8 @@ export function EditProfileMePage({ onClose }: { onClose: () => void }) {
 
   function validate(): string | null {
     if (!fullName.trim()) return t('profileEdit.fullnameRequired');
-    if (phone.trim() && !PHONE_PATTERN.test(phone.trim())) return t('profileEdit.phoneInvalid');
+    if (phone.trim() && !PHONE_PATTERN.test(phone.trim()))
+      return t('profileEdit.phoneInvalid');
     return null;
   }
 
@@ -214,7 +280,9 @@ export function EditProfileMePage({ onClose }: { onClose: () => void }) {
     if (uploading) return;
     setUploading(true);
     try {
-      const result = await UserService.uploadAvatar(await compressImageForUpload(file));
+      const result = await UserService.uploadAvatar(
+        await compressImageForUpload(file)
+      );
       setAvatar(result.url);
       toast.success(t('profileEdit.avatarUpdated'));
     } catch {
@@ -246,7 +314,8 @@ export function EditProfileMePage({ onClose }: { onClose: () => void }) {
       toast.success(t('profileEdit.saved'));
       onClose();
     } catch (err) {
-      const message = err instanceof ApiError ? err.message : t('profileEdit.saveError');
+      const message =
+        err instanceof ApiError ? err.message : t('profileEdit.saveError');
       setError(message);
       toast.error(message);
       setSaving(false);
@@ -262,11 +331,18 @@ export function EditProfileMePage({ onClose }: { onClose: () => void }) {
           onClick={() => onClose()}
           className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-white/15"
         >
-          <svg viewBox="0 0 24 24" className="h-6 w-6" fill="currentColor" aria-hidden="true">
+          <svg
+            viewBox="0 0 24 24"
+            className="h-6 w-6"
+            fill="currentColor"
+            aria-hidden="true"
+          >
             <path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
           </svg>
         </button>
-        <span className="flex-1 truncate text-lg font-medium">{t('profileEdit.title')}</span>
+        <span className="flex-1 truncate text-lg font-medium">
+          {t('profileEdit.title')}
+        </span>
         <button
           type="button"
           onClick={() => setPasswordOpen(true)}
@@ -289,7 +365,11 @@ export function EditProfileMePage({ onClose }: { onClose: () => void }) {
             aria-label={t('profile.changeCover')}
             className="absolute right-2 bottom-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/40 disabled:opacity-60"
           >
-            <img src={cameraIcon} alt="" className="h-5 w-5 object-contain brightness-0 invert" />
+            <img
+              src={cameraIcon}
+              alt=""
+              className="h-5 w-5 object-contain brightness-0 invert"
+            />
           </button>
           {uploadingCover && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/30 text-sm text-white">
@@ -321,11 +401,18 @@ export function EditProfileMePage({ onClose }: { onClose: () => void }) {
 
         <div className="p-4">
           {error ? (
-            <div className="mb-4 rounded bg-[#e34545]/10 px-3 py-2 text-sm text-[#e34545]">{error}</div>
+            <div className="mb-4 rounded bg-[#e34545]/10 px-3 py-2 text-sm text-[#e34545]">
+              {error}
+            </div>
           ) : null}
 
           <div className="-mt-12">
-            <AvatarPicker avatar={avatar} nick={nick} uploading={uploading} onPick={uploadAvatar} />
+            <AvatarPicker
+              avatar={avatar}
+              nick={nick}
+              uploading={uploading}
+              onPick={uploadAvatar}
+            />
           </div>
 
           <Field label={t('profileEdit.fullnameLabel')}>
@@ -368,7 +455,11 @@ export function EditProfileMePage({ onClose }: { onClose: () => void }) {
                 {t('verifyEmail.fieldLabel')}
                 <EmailStatusIcon
                   verified={!!user.emailVerified}
-                  label={user.emailVerified ? t('verifyEmail.verified') : t('verifyEmail.unverified')}
+                  label={
+                    user.emailVerified
+                      ? t('verifyEmail.verified')
+                      : t('verifyEmail.unverified')
+                  }
                 />
               </span>
             }
@@ -410,7 +501,10 @@ export function EditProfileMePage({ onClose }: { onClose: () => void }) {
         </button>
       </div>
 
-      <ChangePasswordDialog open={passwordOpen} onClose={() => setPasswordOpen(false)} />
+      <ChangePasswordDialog
+        open={passwordOpen}
+        onClose={() => setPasswordOpen(false)}
+      />
       <VerifyEmailDialog
         open={verifyOpen}
         initialEmail={user.email ?? ''}

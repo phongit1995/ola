@@ -12,7 +12,9 @@ export function isCopyableText(message: RoomMessage): boolean {
 
 export function replyExcerpt(t: TFunction, message: RoomMessage): string {
   if (message.type === 'image') return t('room.replyImage');
-  return kulImageForText(message.content) != null ? t('room.replySticker') : message.content;
+  return kulImageForText(message.content) != null
+    ? t('room.replySticker')
+    : message.content;
 }
 
 export interface RoomMessageAbilities {

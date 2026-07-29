@@ -13,7 +13,9 @@ export function kulToken(index: number): string {
   return `[kul:${index}]`;
 }
 
-export function kulImageForText(text: string | undefined | null): string | null {
+export function kulImageForText(
+  text: string | undefined | null
+): string | null {
   if (text == null) return null;
   const match = text.trim().match(KUL_TOKEN);
   if (match == null) return null;

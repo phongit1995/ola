@@ -47,7 +47,11 @@ export function PenWinBurst({ amount }: { amount: number }) {
 
       <span className="pen-reward-float absolute left-1/2 top-[40%] flex items-center gap-1.5 whitespace-nowrap text-4xl font-extrabold italic text-[#46e06a] drop-shadow-[0_3px_8px_rgba(0,0,0,0.7)]">
         +{formatKen(amount)}
-        <img src={penAssets.kenIcon} alt="" className="h-8 w-8 object-contain" />
+        <img
+          src={penAssets.kenIcon}
+          alt=""
+          className="h-8 w-8 object-contain"
+        />
       </span>
     </div>
   );

@@ -14,15 +14,24 @@ const KEN_TX_META = {
   VIP_PACKAGE: { icon: '👑', labelKey: 'ken.historyScreen.types.VIP_PACKAGE' },
   VIP_ICON: { icon: '👑', labelKey: 'ken.historyScreen.types.VIP_ICON' },
   ADMIN_GRANT: { icon: '➕', labelKey: 'ken.historyScreen.types.ADMIN_GRANT' },
-  ADMIN_DEDUCT: { icon: '➖', labelKey: 'ken.historyScreen.types.ADMIN_DEDUCT' },
+  ADMIN_DEDUCT: {
+    icon: '➖',
+    labelKey: 'ken.historyScreen.types.ADMIN_DEDUCT',
+  },
   REWARD: { icon: '🏆', labelKey: 'ken.historyScreen.types.REWARD' },
   EGG_OPEN: { icon: '🥚', labelKey: 'ken.historyScreen.types.EGG_OPEN' },
   TOPUP: { icon: '💰', labelKey: 'ken.historyScreen.types.TOPUP' },
   REFUND: { icon: '↩️', labelKey: 'ken.historyScreen.types.REFUND' },
   GIFT_SENT: { icon: '🎁', labelKey: 'ken.historyScreen.types.GIFT_SENT' },
-  GIFT_RECEIVED: { icon: '🎁', labelKey: 'ken.historyScreen.types.GIFT_RECEIVED' },
+  GIFT_RECEIVED: {
+    icon: '🎁',
+    labelKey: 'ken.historyScreen.types.GIFT_RECEIVED',
+  },
   TRANSFER_IN: { icon: '📥', labelKey: 'ken.historyScreen.types.TRANSFER_IN' },
-  TRANSFER_OUT: { icon: '📤', labelKey: 'ken.historyScreen.types.TRANSFER_OUT' },
+  TRANSFER_OUT: {
+    icon: '📤',
+    labelKey: 'ken.historyScreen.types.TRANSFER_OUT',
+  },
   PEN_SHOOT: { icon: '⚽', labelKey: 'ken.historyScreen.types.PEN_SHOOT' },
   PEN_CATCH: { icon: '🧤', labelKey: 'ken.historyScreen.types.PEN_CATCH' },
   PEN_WIN: { icon: '🏆', labelKey: 'ken.historyScreen.types.PEN_WIN' },
@@ -31,11 +40,17 @@ const KEN_TX_META = {
   CLAN_CREATE: { icon: '🛡️', labelKey: 'ken.historyScreen.types.CLAN_CREATE' },
 } as const satisfies Record<KenTxType, { icon: string; labelKey: string }>;
 
-const KEN_TX_META_FALLBACK = { icon: '🪙', labelKey: 'ken.historyScreen.types.UNKNOWN' } as const;
+const KEN_TX_META_FALLBACK = {
+  icon: '🪙',
+  labelKey: 'ken.historyScreen.types.UNKNOWN',
+} as const;
 
 const TABS: {
   key: KenHistoryTab;
-  labelKey: 'ken.historyScreen.tabAll' | 'ken.historyScreen.tabCredit' | 'ken.historyScreen.tabDebit';
+  labelKey:
+    | 'ken.historyScreen.tabAll'
+    | 'ken.historyScreen.tabCredit'
+    | 'ken.historyScreen.tabDebit';
 }[] = [
   { key: 'all', labelKey: 'ken.historyScreen.tabAll' },
   { key: 'credit', labelKey: 'ken.historyScreen.tabCredit' },
@@ -64,7 +79,11 @@ function TransactionRow({ row }: { row: KenHistoryRow }) {
         )}
       </div>
       <div className="shrink-0 text-right">
-        <div className={`text-sm font-semibold ${credit ? 'text-[#2e7d32]' : 'text-[#e34545]'}`}>
+        <div
+          className={`text-sm font-semibold ${
+            credit ? 'text-[#2e7d32]' : 'text-[#e34545]'
+          }`}
+        >
           {credit ? '+' : '−'}
           {formatKen(row.amount)}
         </div>
@@ -89,7 +108,9 @@ export function KenHistorySection() {
 
   return (
     <section className="mt-3">
-      <div className="mb-1 px-3 text-xs font-medium text-black/45">{t('ken.history')}</div>
+      <div className="mb-1 px-3 text-xs font-medium text-black/45">
+        {t('ken.history')}
+      </div>
 
       <div className="mx-2 flex gap-0.5 rounded-sm border border-black/12 bg-white p-0.5 text-sm">
         {TABS.map((item) => (
@@ -98,7 +119,9 @@ export function KenHistorySection() {
             type="button"
             onClick={() => setTab(item.key)}
             className={`flex-1 rounded-sm py-1.5 ${
-              tab === item.key ? 'bg-ola-primary/10 font-semibold text-ola-primary' : 'text-black/54'
+              tab === item.key
+                ? 'bg-ola-primary/10 font-semibold text-ola-primary'
+                : 'text-black/54'
             }`}
           >
             {t(item.labelKey)}
@@ -111,7 +134,9 @@ export function KenHistorySection() {
           <Spinner size={28} />
         </div>
       ) : isEmpty ? (
-        <p className="py-10 text-center text-sm text-black/45">{t('ken.historyScreen.empty')}</p>
+        <p className="py-10 text-center text-sm text-black/45">
+          {t('ken.historyScreen.empty')}
+        </p>
       ) : (
         <>
           {section.groups.map((group) => (
@@ -120,8 +145,8 @@ export function KenHistorySection() {
                 {group.dayLabel === 'today'
                   ? t('ken.historyScreen.today')
                   : group.dayLabel === 'yesterday'
-                    ? t('ken.historyScreen.yesterday')
-                    : group.dateText}
+                  ? t('ken.historyScreen.yesterday')
+                  : group.dateText}
               </div>
               <div className="mx-2 overflow-hidden rounded-sm border border-black/12 bg-white">
                 {group.rows.map((row, index) => (
@@ -143,7 +168,12 @@ export function KenHistorySection() {
                 onClick={() => load(tab, section.page - 1)}
                 className="flex h-8 w-8 items-center justify-center rounded-sm border border-black/12 bg-white text-black/70 disabled:opacity-40"
               >
-                <svg viewBox="0 0 24 24" className="h-4 w-4 rotate-180" fill="currentColor" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  className="h-4 w-4 rotate-180"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
                   <path d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z" />
                 </svg>
               </button>
@@ -157,7 +187,12 @@ export function KenHistorySection() {
                 onClick={() => load(tab, section.page + 1)}
                 className="flex h-8 w-8 items-center justify-center rounded-sm border border-black/12 bg-white text-black/70 disabled:opacity-40"
               >
-                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  className="h-4 w-4"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
                   <path d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z" />
                 </svg>
               </button>

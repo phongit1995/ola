@@ -26,7 +26,9 @@ export function MeTabBar({ active, onChange }: MeTabBarProps) {
             <img
               src={isActive ? tab.iconActive : tab.icon}
               alt=""
-              className={`h-6 w-6 object-contain ${'invert' in tab && tab.invert ? 'brightness-0 invert' : ''}`}
+              className={`h-6 w-6 object-contain ${
+                'invert' in tab && tab.invert ? 'brightness-0 invert' : ''
+              }`}
             />
           </button>
         );

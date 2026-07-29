@@ -102,7 +102,9 @@ export function ChangeUserImageDialog({
     if (!file || saving) return;
     setSaving(true);
     try {
-      const uploaded = await UserService.uploadAvatar(await compressImageForUpload(file));
+      const uploaded = await UserService.uploadAvatar(
+        await compressImageForUpload(file)
+      );
       await UserService.updateMe(buildUpdate(uploaded.url));
       if (postToMe) {
         await MeService.create({
@@ -144,7 +146,11 @@ export function ChangeUserImageDialog({
       title={texts.title}
       footer={
         <>
-          <DialogButton variant="green" onClick={save} disabled={saving || !file}>
+          <DialogButton
+            variant="green"
+            onClick={save}
+            disabled={saving || !file}
+          >
             {saving ? texts.saving : texts.save}
           </DialogButton>
           <DialogButton variant="default" onClick={close} disabled={saving}>

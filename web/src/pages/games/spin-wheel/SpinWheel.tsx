@@ -1,7 +1,12 @@
 import { useRef } from 'react';
 import type { WheelPlayerSegment } from '@app-types';
 import { SPIN_DURATION_MS, segmentAngle } from './spinWheel.constants';
-import { pointerUrl, wheelCenterUrl, wheelLogoUrl, wheelOuterRingUrl } from './spinWheelAssets';
+import {
+  pointerUrl,
+  wheelCenterUrl,
+  wheelLogoUrl,
+  wheelOuterRingUrl,
+} from './spinWheelAssets';
 import { usePointerTick } from './usePointerTick';
 import { WheelFace } from './WheelFace';
 import { WheelLabels } from './WheelLabels';
@@ -13,7 +18,12 @@ interface SpinWheelProps {
   onSettle: () => void;
 }
 
-export function SpinWheel({ segments, rotation, spinning, onSettle }: SpinWheelProps) {
+export function SpinWheel({
+  segments,
+  rotation,
+  spinning,
+  onSettle,
+}: SpinWheelProps) {
   const angle = segmentAngle(segments.length);
   const wheelRef = useRef<HTMLDivElement>(null);
   const pointerRef = useRef<HTMLImageElement>(null);
@@ -47,7 +57,11 @@ export function SpinWheel({ segments, rotation, spinning, onSettle }: SpinWheelP
       >
         <WheelFace segments={segments} angle={angle} />
         <WheelLabels segments={segments} angle={angle} />
-        <img src={wheelOuterRingUrl} alt="" className="absolute inset-0 h-full w-full" />
+        <img
+          src={wheelOuterRingUrl}
+          alt=""
+          className="absolute inset-0 h-full w-full"
+        />
       </div>
       <div
         className="absolute left-1/2 top-1/2 z-10 flex aspect-square w-[26%] -translate-x-1/2 -translate-y-1/2 items-center justify-center bg-contain bg-center bg-no-repeat"

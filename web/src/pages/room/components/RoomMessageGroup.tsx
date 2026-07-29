@@ -15,7 +15,11 @@ import {
 } from '@lib';
 import { useMediaViewerStore } from '@/store/mediaViewerStore';
 import type { RoomReplySnapshot } from '@app-types';
-import type { BubblePosition, GroupedMessage, MessageGroup } from '../messageGroups';
+import type {
+  BubblePosition,
+  GroupedMessage,
+  MessageGroup,
+} from '../messageGroups';
 import { OTHER_CORNERS, OWN_CORNERS } from '../constants';
 
 interface RoomMessageGroupProps {
@@ -41,8 +45,8 @@ function QuoteBlock({ replyTo, isOwn, onQuoteClick }: QuoteBlockProps) {
   const excerpt = isImage
     ? t('room.replyImage')
     : kulImageForText(replyTo.excerpt) != null
-      ? t('room.replySticker')
-      : replyTo.excerpt;
+    ? t('room.replySticker')
+    : replyTo.excerpt;
   return (
     <button
       type="button"
@@ -59,12 +63,22 @@ function QuoteBlock({ replyTo, isOwn, onQuoteClick }: QuoteBlockProps) {
           isOwn ? 'text-white/90' : 'text-black/60'
         }`}
       >
-        {replyTo.senderName != null && replyTo.senderName !== '' ? `@${replyTo.senderName}` : ''}
+        {replyTo.senderName != null && replyTo.senderName !== ''
+          ? `@${replyTo.senderName}`
+          : ''}
       </span>
       <span
-        className={`flex items-center gap-1 text-xs ${isOwn ? 'text-white/75' : 'text-black/45'}`}
+        className={`flex items-center gap-1 text-xs ${
+          isOwn ? 'text-white/75' : 'text-black/45'
+        }`}
       >
-        {isImage && <img src={photoIcon} alt="" className="h-3.5 w-3.5 shrink-0 object-contain" />}
+        {isImage && (
+          <img
+            src={photoIcon}
+            alt=""
+            className="h-3.5 w-3.5 shrink-0 object-contain"
+          />
+        )}
         <span className="line-clamp-2">
           <SmileyText text={excerpt} />
         </span>
@@ -106,7 +120,10 @@ function RoomBubble({
 
   const openViewer = useMediaViewerStore((state) => state.openViewer);
   const kul = kulImageForText(message.content);
-  const isImage = message.type === 'image' && message.imageUrl != null && message.imageUrl !== '';
+  const isImage =
+    message.type === 'image' &&
+    message.imageUrl != null &&
+    message.imageUrl !== '';
   const corners = isOwn ? OWN_CORNERS[position] : OTHER_CORNERS[position];
   const bubbleClass = isOwn
     ? `w-fit max-w-full break-words bg-[#7cb342] px-3.5 py-2 text-base text-white ${corners}`
@@ -117,7 +134,9 @@ function RoomBubble({
       <img
         src={message.imageUrl}
         alt=""
-        className={`max-h-44 w-auto max-w-52 rounded-lg object-cover ${uploading || failed ? 'opacity-60' : ''}`}
+        className={`max-h-44 w-auto max-w-52 rounded-lg object-cover ${
+          uploading || failed ? 'opacity-60' : ''
+        }`}
       />
       {uploading && (
         <span className="absolute inset-0 flex items-center justify-center">
@@ -150,7 +169,11 @@ function RoomBubble({
   ) : (
     <div className={bubbleClass}>
       {message.replyTo != null && (
-        <QuoteBlock replyTo={message.replyTo} isOwn={isOwn} onQuoteClick={onQuoteClick} />
+        <QuoteBlock
+          replyTo={message.replyTo}
+          isOwn={isOwn}
+          onQuoteClick={onQuoteClick}
+        />
       )}
       {content}
     </div>
@@ -195,14 +218,20 @@ function ReactionChipsRow({
     <button
       type="button"
       onClick={() => onShowReactions?.(message.id)}
-      className={`relative z-10 -mt-2 flex flex-wrap gap-1 ${isOwn ? 'justify-end self-end' : 'self-start'}`}
+      className={`relative z-10 -mt-2 flex flex-wrap gap-1 ${
+        isOwn ? 'justify-end self-end' : 'self-start'
+      }`}
     >
       {chips.map((chip) => (
         <span
           key={chip.type}
           className="flex items-center gap-1 rounded-full bg-white py-0.5 pl-1 pr-1.5 shadow-[0_1px_3px_rgba(0,0,0,0.12)] ring-1 ring-black/5"
         >
-          <img src={chip.image} alt={chip.type} className="h-4 w-4 object-contain" />
+          <img
+            src={chip.image}
+            alt={chip.type}
+            className="h-4 w-4 object-contain"
+          />
           <span className="text-[11px] font-medium leading-none text-black/55 tabular-nums">
             {chip.count}
           </span>
@@ -226,12 +255,15 @@ function RoomMessageGroupComponent({
   const { isOwn, senderName } = group;
   const onMention = (nick: string) => onOpenProfile?.(nick, colorForName(nick));
   const time = formatClockHM(group.messages[0]!.createdAt);
-  const openSender = () => onOpenProfile?.(senderName, colorForName(senderName));
+  const openSender = () =>
+    onOpenProfile?.(senderName, colorForName(senderName));
   const lastIndex = group.messages.length - 1;
 
   return (
     <div className="flex w-full flex-col gap-0.5">
-      {group.showTime && <span className="text-center text-xs text-black/26">{time}</span>}
+      {group.showTime && (
+        <span className="text-center text-xs text-black/26">{time}</span>
+      )}
       {isOwn ? (
         <span className="mr-12 flex max-w-[80%] items-center gap-1 self-end text-sm text-black/54">
           <span className="truncate">{senderName}</span>
@@ -247,7 +279,9 @@ function RoomMessageGroupComponent({
       )}
       <div
         className={`flex items-start gap-2 ${
-          isOwn ? 'max-w-[80%] flex-row-reverse self-end' : 'max-w-[85%] self-start'
+          isOwn
+            ? 'max-w-[80%] flex-row-reverse self-end'
+            : 'max-w-[85%] self-start'
         }`}
       >
         {isOwn ? (
@@ -259,7 +293,11 @@ function RoomMessageGroupComponent({
             <VipAvatar typeId={group.senderVipTypeId} className="h-8 w-8" />
           </button>
         )}
-        <div className={`flex w-fit min-w-0 flex-col gap-0.5 ${isOwn ? 'items-end' : ''}`}>
+        <div
+          className={`flex w-fit min-w-0 flex-col gap-0.5 ${
+            isOwn ? 'items-end' : ''
+          }`}
+        >
           {group.messages.map((message, index) => {
             const bubble = (
               <RoomBubble
@@ -297,7 +335,11 @@ function RoomMessageGroupComponent({
                 ) : (
                   bubble
                 )}
-                <ReactionChipsRow message={message} isOwn={isOwn} onShowReactions={onShowReactions} />
+                <ReactionChipsRow
+                  message={message}
+                  isOwn={isOwn}
+                  onShowReactions={onShowReactions}
+                />
               </div>
             );
           })}

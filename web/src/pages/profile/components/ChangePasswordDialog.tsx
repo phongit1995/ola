@@ -27,13 +27,25 @@ function PasswordField({
 }) {
   return (
     <div>
-      <input type="password" autoComplete="off" placeholder={placeholder} className={FIELD_CLASS} {...field} />
+      <input
+        type="password"
+        autoComplete="off"
+        placeholder={placeholder}
+        className={FIELD_CLASS}
+        {...field}
+      />
       {error && <p className="mt-1 text-xs text-[#e34545]">{error}</p>}
     </div>
   );
 }
 
-export function ChangePasswordDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+export function ChangePasswordDialog({
+  open,
+  onClose,
+}: {
+  open: boolean;
+  onClose: () => void;
+}) {
   const { t } = useTranslation();
   const [submitting, setSubmitting] = useState(false);
   const {
@@ -57,12 +69,16 @@ export function ChangePasswordDialog({ open, onClose }: { open: boolean; onClose
   async function onSubmit(data: ChangePasswordForm) {
     setSubmitting(true);
     try {
-      await AuthService.changePassword({ currentPassword: data.current, newPassword: data.next });
+      await AuthService.changePassword({
+        currentPassword: data.current,
+        newPassword: data.next,
+      });
       toast.success(t('changePassword.success'));
       reset();
       onClose();
     } catch (err) {
-      const wrongCurrent = err instanceof ApiError && /current password/i.test(err.message);
+      const wrongCurrent =
+        err instanceof ApiError && /current password/i.test(err.message);
       const message = wrongCurrent
         ? t('changePassword.errCurrentWrong')
         : t('changePassword.errGeneric');
@@ -84,26 +100,45 @@ export function ChangePasswordDialog({ open, onClose }: { open: boolean; onClose
           <DialogButton type="button" onClick={close} disabled={submitting}>
             {t('common.cancel')}
           </DialogButton>
-          <DialogButton type="submit" form={FORM_ID} variant="green" disabled={submitting}>
+          <DialogButton
+            type="submit"
+            form={FORM_ID}
+            variant="green"
+            disabled={submitting}
+          >
             {t('changePassword.submit')}
           </DialogButton>
         </>
       }
     >
-      <form id={FORM_ID} onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-3">
+      <form
+        id={FORM_ID}
+        onSubmit={handleSubmit(onSubmit)}
+        className="flex flex-col gap-3"
+      >
         <PasswordField
           placeholder={t('changePassword.currentPlaceholder')}
           error={errors.current?.message}
-          field={register('current', { required: t('changePassword.errCurrentRequired') })}
+          field={register('current', {
+            required: t('changePassword.errCurrentRequired'),
+          })}
         />
         <PasswordField
           placeholder={t('changePassword.newPlaceholder')}
           error={errors.next?.message}
           field={register('next', {
             required: t('changePassword.errNewRequired'),
-            minLength: { value: PASSWORD_MIN, message: t('changePassword.errNewMin', { min: PASSWORD_MIN }) },
-            maxLength: { value: PASSWORD_MAX, message: t('changePassword.errNewMax', { max: PASSWORD_MAX }) },
-            validate: (value) => value !== getValues('current') || t('changePassword.errSameAsOld'),
+            minLength: {
+              value: PASSWORD_MIN,
+              message: t('changePassword.errNewMin', { min: PASSWORD_MIN }),
+            },
+            maxLength: {
+              value: PASSWORD_MAX,
+              message: t('changePassword.errNewMax', { max: PASSWORD_MAX }),
+            },
+            validate: (value) =>
+              value !== getValues('current') ||
+              t('changePassword.errSameAsOld'),
           })}
         />
         <PasswordField
@@ -111,7 +146,9 @@ export function ChangePasswordDialog({ open, onClose }: { open: boolean; onClose
           error={errors.confirm?.message}
           field={register('confirm', {
             required: t('changePassword.errConfirmRequired'),
-            validate: (value) => value === getValues('next') || t('changePassword.errConfirmMismatch'),
+            validate: (value) =>
+              value === getValues('next') ||
+              t('changePassword.errConfirmMismatch'),
           })}
         />
       </form>

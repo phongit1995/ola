@@ -39,14 +39,22 @@ export function PeerProfileCard({
     years >= 1
       ? t('chat.joinedOlaYears', { n: years })
       : months >= 1
-        ? t('chat.joinedOlaMonths', { n: months })
-        : days >= 1
-          ? t('chat.joinedOlaDays', { n: days })
-          : t('chat.joinedOlaToday');
+      ? t('chat.joinedOlaMonths', { n: months })
+      : days >= 1
+      ? t('chat.joinedOlaDays', { n: days })
+      : t('chat.joinedOlaToday');
   const genderIcon = profile.gender === 'female' ? femaleIcon : maleIcon;
   const avatarUrl = profile.avatar ?? avatar ?? '';
 
-  const avatarEl = <Avatar name={name} color={color} src={avatarUrl} size={56} rounded={false} />;
+  const avatarEl = (
+    <Avatar
+      name={name}
+      color={color}
+      src={avatarUrl}
+      size={56}
+      rounded={false}
+    />
+  );
 
   return (
     <div className="-mx-2 mt-2 border-y border-black/12 bg-white">
@@ -56,7 +64,11 @@ export function PeerProfileCard({
       >
         <div className="flex min-h-32 items-end gap-2 bg-white/60 p-2">
           {avatarUrl !== '' && onShowAvatar != null ? (
-            <button type="button" onClick={onShowAvatar} className="leading-none">
+            <button
+              type="button"
+              onClick={onShowAvatar}
+              className="leading-none"
+            >
               {avatarEl}
             </button>
           ) : (
@@ -71,10 +83,20 @@ export function PeerProfileCard({
                 className="min-w-0 truncate text-base text-black/87"
                 fullNameClassName="text-black/54"
               />
-              {profile.verified && <img src={checkedIcon} alt="" className="h-3 w-3 object-contain" />}
+              {profile.verified && (
+                <img
+                  src={checkedIcon}
+                  alt=""
+                  className="h-3 w-3 object-contain"
+                />
+              )}
             </div>
             <div className="mt-1 flex items-center gap-1 text-xs text-black/54">
-              <img src={genderIcon} alt="" className="h-3.5 w-3.5 shrink-0 object-contain" />
+              <img
+                src={genderIcon}
+                alt=""
+                className="h-3.5 w-3.5 shrink-0 object-contain"
+              />
               <span className="truncate">{joinedText}</span>
             </div>
             <p className="mt-1 truncate text-xs text-black/54">
@@ -84,7 +106,9 @@ export function PeerProfileCard({
               {t('chat.antiCount', { n: profile.antiCount ?? 0 })}
             </p>
             {profile.bio != null && profile.bio !== '' && (
-              <p className="mt-2 line-clamp-3 text-sm text-black/87">{profile.bio}</p>
+              <p className="mt-2 line-clamp-3 text-sm text-black/87">
+                {profile.bio}
+              </p>
             )}
           </div>
         </div>

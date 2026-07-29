@@ -27,7 +27,11 @@ export interface AppItem {
 }
 
 export const APP_ITEMS: AppItem[] = [
-  { icon: iconNotify, titleKey: 'home.apps.notifications', app: 'notifications' },
+  {
+    icon: iconNotify,
+    titleKey: 'home.apps.notifications',
+    app: 'notifications',
+  },
   { icon: iconEgg, titleKey: 'home.apps.egg', overlay: 'egg' },
   { icon: iconPen, titleKey: 'home.apps.pen', overlay: 'pen' },
   { icon: iconWheel, titleKey: 'home.apps.wheel', overlay: 'wheel' },
@@ -48,14 +52,51 @@ export const APP_ITEMS: AppItem[] = [
 ];
 
 export const MOCK_VENUES: Venue[] = [
-  { id: '1', name: 'Highlands Coffee', distance: '120 m', visits: 342, address: '12 Nguyễn Huệ, Q.1', cover: 'linear-gradient(135deg,#8d6e63,#4e342e)' },
-  { id: '2', name: 'Vincom Center', distance: '450 m', visits: 1280, address: '72 Lê Thánh Tôn, Q.1', cover: 'linear-gradient(135deg,#90a4ae,#37474f)' },
-  { id: '3', name: 'Công viên 23/9', distance: '1,2 km', visits: 560, address: 'Phạm Ngũ Lão, Q.1', cover: 'linear-gradient(135deg,#aed581,#558b2f)' },
-  { id: '4', name: 'Nhà thờ Đức Bà', distance: '1,5 km', visits: 2104, address: '1 Công xã Paris, Q.1', cover: 'linear-gradient(135deg,#ffb74d,#e65100)' },
-  { id: '5', name: 'Phố đi bộ Bùi Viện', distance: '1,8 km', visits: 980, address: 'Bùi Viện, Q.1', cover: 'linear-gradient(135deg,#ba68c8,#6a1b9a)' },
+  {
+    id: '1',
+    name: 'Highlands Coffee',
+    distance: '120 m',
+    visits: 342,
+    address: '12 Nguyễn Huệ, Q.1',
+    cover: 'linear-gradient(135deg,#8d6e63,#4e342e)',
+  },
+  {
+    id: '2',
+    name: 'Vincom Center',
+    distance: '450 m',
+    visits: 1280,
+    address: '72 Lê Thánh Tôn, Q.1',
+    cover: 'linear-gradient(135deg,#90a4ae,#37474f)',
+  },
+  {
+    id: '3',
+    name: 'Công viên 23/9',
+    distance: '1,2 km',
+    visits: 560,
+    address: 'Phạm Ngũ Lão, Q.1',
+    cover: 'linear-gradient(135deg,#aed581,#558b2f)',
+  },
+  {
+    id: '4',
+    name: 'Nhà thờ Đức Bà',
+    distance: '1,5 km',
+    visits: 2104,
+    address: '1 Công xã Paris, Q.1',
+    cover: 'linear-gradient(135deg,#ffb74d,#e65100)',
+  },
+  {
+    id: '5',
+    name: 'Phố đi bộ Bùi Viện',
+    distance: '1,8 km',
+    visits: 980,
+    address: 'Bùi Viện, Q.1',
+    cover: 'linear-gradient(135deg,#ba68c8,#6a1b9a)',
+  },
 ];
 
 export const KEN_LOW_THRESHOLD = 10_000;
 export const MIN_AMOUNT = 10_000;
 export const STEP_AMOUNT = 1_000;
-export const PRESET_AMOUNTS = [10_000, 20_000, 50_000, 100_000, 200_000, 500_000];
+export const PRESET_AMOUNTS = [
+  10_000, 20_000, 50_000, 100_000, 200_000, 500_000,
+];

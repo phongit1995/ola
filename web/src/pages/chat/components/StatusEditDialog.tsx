@@ -32,7 +32,9 @@ export function StatusEditDialog({ open, onClose }: StatusEditDialogProps) {
     if (!file || uploading) return;
     setUploading(true);
     try {
-      const result = await UserService.uploadAvatar(await compressImageForUpload(file));
+      const result = await UserService.uploadAvatar(
+        await compressImageForUpload(file)
+      );
       setImageUrl(result.url);
     } catch {
       toast.error(t('avatar.error'));
@@ -54,7 +56,8 @@ export function StatusEditDialog({ open, onClose }: StatusEditDialogProps) {
       toast.success(t('statusDialog.saved'));
       onClose();
     } catch (err) {
-      const message = err instanceof ApiError ? err.message : t('statusDialog.saveError');
+      const message =
+        err instanceof ApiError ? err.message : t('statusDialog.saveError');
       toast.error(message);
       setSaving(false);
     }
@@ -70,7 +73,11 @@ export function StatusEditDialog({ open, onClose }: StatusEditDialogProps) {
           <DialogButton onClick={onClose} disabled={saving}>
             {t('common.cancel')}
           </DialogButton>
-          <DialogButton variant="green" onClick={save} disabled={saving || uploading}>
+          <DialogButton
+            variant="green"
+            onClick={save}
+            disabled={saving || uploading}
+          >
             {t('statusDialog.save')}
           </DialogButton>
         </>
@@ -112,8 +119,8 @@ export function StatusEditDialog({ open, onClose }: StatusEditDialogProps) {
               {uploading
                 ? t('common.loading')
                 : imageUrl !== ''
-                  ? t('statusDialog.photoHint')
-                  : t('statusDialog.photoHintFirst')}
+                ? t('statusDialog.photoHint')
+                : t('statusDialog.photoHintFirst')}
             </span>
           </button>
         </div>

@@ -140,7 +140,13 @@ export function EggScene({ textures, hint, play }: EggSceneProps) {
           align: 'center',
           wordWrap: true,
           wordWrapWidth: size.w - 2 * (RELOAD_MARGIN + RELOAD_SIZE) - 16,
-          dropShadow: { color: '#000000', blur: 3, distance: 1, alpha: 0.6, angle: 1.57 },
+          dropShadow: {
+            color: '#000000',
+            blur: 3,
+            distance: 1,
+            alpha: 0.6,
+            angle: 1.57,
+          },
         }}
       />
       <pixiText
@@ -153,7 +159,9 @@ export function EggScene({ textures, hint, play }: EggSceneProps) {
         cursor="pointer"
         onPointerTap={toggleMute}
       />
-      {winReward && <EggWinPanel result={winReward} width={size.w} height={size.h} />}
+      {winReward && (
+        <EggWinPanel result={winReward} width={size.w} height={size.h} />
+      )}
     </pixiContainer>
   );
 }

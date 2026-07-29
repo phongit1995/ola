@@ -32,5 +32,11 @@ export function VipIcon({
       />
     );
   }
-  return <img src={url} alt={alt} className={`${shape}${className} shrink-0 object-contain`} />;
+  return (
+    <img
+      src={url}
+      alt={alt}
+      className={`${shape}${className} shrink-0 object-contain`}
+    />
+  );
 }

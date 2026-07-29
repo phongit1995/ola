@@ -40,12 +40,26 @@ export function MeCommentSheet({
     [onCommentDelta, post.id]
   );
 
-  const { comments, total, loading, error, submitting, add, remove, like, replyTarget, setReplyTarget } =
-    useMeComments(post.id, { onDelta: handleCommentDelta });
+  const {
+    comments,
+    total,
+    loading,
+    error,
+    submitting,
+    add,
+    remove,
+    like,
+    replyTarget,
+    setReplyTarget,
+  } = useMeComments(post.id, { onDelta: handleCommentDelta });
 
-  const replyingToUsername = replyTarget != null ? replyTarget.author?.username ?? null : null;
+  const replyingToUsername =
+    replyTarget != null ? replyTarget.author?.username ?? null : null;
 
-  const formatTime = useMemo(() => createTimeFormatter(i18n.language), [i18n.language]);
+  const formatTime = useMemo(
+    () => createTimeFormatter(i18n.language),
+    [i18n.language]
+  );
 
   useEffect(() => {
     const id = requestAnimationFrame(() => setShown(true));
@@ -90,7 +104,9 @@ export function MeCommentSheet({
               </div>
             )}
             {!loading && !error && comments.length === 0 && (
-              <div className="py-8 text-center text-sm text-black/54">{t('me.commentEmpty')}</div>
+              <div className="py-8 text-center text-sm text-black/54">
+                {t('me.commentEmpty')}
+              </div>
             )}
             {!loading &&
               !error &&
@@ -118,7 +134,9 @@ export function MeCommentSheet({
           submitting={submitting}
           onSubmit={add}
           autoFocus={autoFocusInput}
-          initialDraft={replyingToUsername != null ? `@${replyingToUsername} ` : ''}
+          initialDraft={
+            replyingToUsername != null ? `@${replyingToUsername} ` : ''
+          }
           replyingTo={replyingToUsername}
           onCancelReply={() => setReplyTarget(null)}
         />

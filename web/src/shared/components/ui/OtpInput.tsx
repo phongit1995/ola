@@ -9,7 +9,13 @@ interface OtpInputProps {
   autoFocus?: boolean;
 }
 
-export function OtpInput({ value, onChange, length = 6, disabled = false, autoFocus = false }: OtpInputProps) {
+export function OtpInput({
+  value,
+  onChange,
+  length = 6,
+  disabled = false,
+  autoFocus = false,
+}: OtpInputProps) {
   const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
 
   function focusAt(index: number) {
@@ -35,7 +41,10 @@ export function OtpInput({ value, onChange, length = 6, disabled = false, autoFo
     if (index < length - 1) focusAt(index + 1);
   }
 
-  function handleKeyDown(index: number, event: KeyboardEvent<HTMLInputElement>) {
+  function handleKeyDown(
+    index: number,
+    event: KeyboardEvent<HTMLInputElement>
+  ) {
     if (event.key === 'Backspace' && !value[index] && index > 0) {
       event.preventDefault();
       setDigit(index - 1, '');
@@ -49,7 +58,10 @@ export function OtpInput({ value, onChange, length = 6, disabled = false, autoFo
 
   function handlePaste(event: ClipboardEvent<HTMLInputElement>) {
     event.preventDefault();
-    const digits = event.clipboardData.getData('text').replace(/\D/g, '').slice(0, length);
+    const digits = event.clipboardData
+      .getData('text')
+      .replace(/\D/g, '')
+      .slice(0, length);
     if (!digits) return;
     onChange(digits);
     focusAt(digits.length >= length ? length - 1 : digits.length);

@@ -26,7 +26,9 @@ export function PostContent({ content, onMention, leading }: PostContentProps) {
       <div className="min-w-0 flex-1">
         <p
           ref={contentRef}
-          className={`text-sm leading-relaxed whitespace-pre-wrap text-black/87 ${expanded ? '' : 'line-clamp-5'}`}
+          className={`text-sm leading-relaxed whitespace-pre-wrap text-black/87 ${
+            expanded ? '' : 'line-clamp-5'
+          }`}
         >
           {renderRichText(content, onMention)}
         </p>

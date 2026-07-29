@@ -16,7 +16,11 @@ export function SmileyGrid({ onPick }: SmileyGridProps) {
           onClick={() => onPick(smiley.code)}
           className="flex h-9 items-center justify-center rounded hover:bg-gray-100"
         >
-          <img src={smiley.image} alt="" className="h-6 w-auto object-contain" />
+          <img
+            src={smiley.image}
+            alt=""
+            className="h-6 w-auto object-contain"
+          />
         </button>
       ))}
     </div>

@@ -32,7 +32,11 @@ function ReceiverRow({ receiver }: { receiver: TradingVipReceiver }) {
   );
 }
 
-export function TradingVipDialog({ open, onClose, receiver }: TradingVipDialogProps) {
+export function TradingVipDialog({
+  open,
+  onClose,
+  receiver,
+}: TradingVipDialogProps) {
   const { t } = useTranslation();
   const [step, setStep] = useState<'select' | 'confirm'>('select');
   const [loading, setLoading] = useState(true);
@@ -45,7 +49,8 @@ export function TradingVipDialog({ open, onClose, receiver }: TradingVipDialogPr
     let active = true;
     VipService.store({ limit: 100 })
       .then((res) => {
-        if (active) setVips(res.items.filter((item) => !item.isUsing && !item.isLocked));
+        if (active)
+          setVips(res.items.filter((item) => !item.isUsing && !item.isLocked));
       })
       .catch(() => undefined)
       .finally(() => {
@@ -78,7 +83,10 @@ export function TradingVipDialog({ open, onClose, receiver }: TradingVipDialogPr
     }
     setSubmitting(true);
     try {
-      await VipService.transferIcon(selected.instanceId, { toUserId: receiver.id, password });
+      await VipService.transferIcon(selected.instanceId, {
+        toUserId: receiver.id,
+        password,
+      });
       toast.success(t('chat.tradingVipSuccess', { name: receiver.name }));
       onClose();
     } catch (error) {
@@ -103,26 +111,41 @@ export function TradingVipDialog({ open, onClose, receiver }: TradingVipDialogPr
         <DialogButton onClick={() => setStep('select')} disabled={submitting}>
           {t('chat.transferKenEdit')}
         </DialogButton>
-        <DialogButton variant="green" onClick={() => void submitTransfer()} disabled={submitting}>
+        <DialogButton
+          variant="green"
+          onClick={() => void submitTransfer()}
+          disabled={submitting}
+        >
           {t('chat.tradingVipOk')}
         </DialogButton>
       </>
     ) : null;
 
   return (
-    <Dialog open={open} onClose={onClose} title={t('chat.tradingVipTitle')} footer={footer}>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      title={t('chat.tradingVipTitle')}
+      footer={footer}
+    >
       {step === 'select' ? (
         <div className="flex flex-col gap-1 px-1 py-1">
-          <span className="text-base text-black/54">{t('chat.tradingVipReceiverLabel')}</span>
+          <span className="text-base text-black/54">
+            {t('chat.tradingVipReceiverLabel')}
+          </span>
           <ReceiverRow receiver={receiver} />
 
-          <span className="mt-4 text-base text-black/87">{t('chat.tradingVipSelectLabel')}</span>
+          <span className="mt-4 text-base text-black/87">
+            {t('chat.tradingVipSelectLabel')}
+          </span>
           {loading ? (
             <div className="flex justify-center py-6">
               <Spinner size={24} tone="muted" />
             </div>
           ) : vips.length === 0 ? (
-            <p className="mt-2 text-sm text-black/54">{t('chat.tradingVipEmpty')}</p>
+            <p className="mt-2 text-sm text-black/54">
+              {t('chat.tradingVipEmpty')}
+            </p>
           ) : (
             <div className="mt-2 grid max-h-56 grid-cols-4 gap-2 overflow-y-auto">
               {vips.map((vip) => (
@@ -143,18 +166,26 @@ export function TradingVipDialog({ open, onClose, receiver }: TradingVipDialogPr
         </div>
       ) : (
         <div className="flex flex-col gap-1 px-1 py-1">
-          <span className="text-base text-black/54">{t('chat.tradingVipReceiverLabel')}</span>
+          <span className="text-base text-black/54">
+            {t('chat.tradingVipReceiverLabel')}
+          </span>
           <ReceiverRow receiver={receiver} />
 
-          <span className="mt-4 text-base text-black/54">{t('chat.tradingVipSelectLabel')}</span>
+          <span className="mt-4 text-base text-black/54">
+            {t('chat.tradingVipSelectLabel')}
+          </span>
           {selected != null && (
             <div className="mt-2 flex items-center gap-2">
               <VipIcon typeId={selected.typeId} className="h-10 w-10" />
-              <span className="text-sm font-semibold text-black/87">{vipName(selected.typeId)}</span>
+              <span className="text-sm font-semibold text-black/87">
+                {vipName(selected.typeId)}
+              </span>
             </div>
           )}
 
-          <span className="mt-4 text-base text-black/87">{t('chat.tradingVipPasswordLabel')}</span>
+          <span className="mt-4 text-base text-black/87">
+            {t('chat.tradingVipPasswordLabel')}
+          </span>
           <input
             type="password"
             autoFocus

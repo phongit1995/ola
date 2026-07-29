@@ -37,7 +37,11 @@ export function PenShotList({
     >
       <header className="flex items-center px-3 py-1.5 text-white">
         <span className="flex items-center gap-1.5 text-[11px] font-bold tracking-wide">
-          <img src={penAssets.shotListIcon} alt="" className="h-3.5 w-3.5 object-contain" />
+          <img
+            src={penAssets.shotListIcon}
+            alt=""
+            className="h-3.5 w-3.5 object-contain"
+          />
           {t('penGame.waitingTitle')}
         </span>
       </header>
@@ -73,7 +77,9 @@ export function PenShotList({
                 >
                   <span className="flex min-w-0 items-center gap-1.5">
                     <VipBadge typeId={shot.shooter?.vipTypeId} />
-                    <span className="truncate text-sm text-white/85">@{username}</span>
+                    <span className="truncate text-sm text-white/85">
+                      @{username}
+                    </span>
                   </span>
                   <span className="flex items-center gap-1 text-[11px] font-semibold text-[#ffd54f]">
                     <img
@@ -103,7 +109,13 @@ export function PenShotList({
       </div>
 
       <div className="shrink-0 py-1">
-        <PenPagination page={page} pageCount={pageCount} loading={loading ?? false} onPage={onPage} className="" />
+        <PenPagination
+          page={page}
+          pageCount={pageCount}
+          loading={loading ?? false}
+          onPage={onPage}
+          className=""
+        />
       </div>
     </section>
   );

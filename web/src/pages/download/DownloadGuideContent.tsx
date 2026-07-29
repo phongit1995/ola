@@ -13,8 +13,11 @@ import { CopyIcon, PhoneIcon, ShieldIcon, WarningIcon } from './platformIcons';
 export function DownloadGuideContent() {
   const { t } = useTranslation();
   const { platform, isInAppBrowser } = useDevicePlatform();
-  const detected: GuidePlatform | null = platform === 'desktop' ? null : platform;
-  const [activeTab, setActiveTab] = useState<GuidePlatform>(detected ?? 'android');
+  const detected: GuidePlatform | null =
+    platform === 'desktop' ? null : platform;
+  const [activeTab, setActiveTab] = useState<GuidePlatform>(
+    detected ?? 'android'
+  );
   const pageUrl = `${window.location.origin}${ROUTES.downloadApp}`;
 
   async function handleCopyPageUrl() {
@@ -46,7 +49,11 @@ export function DownloadGuideContent() {
       )}
 
       <section className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
-        <PlatformTabs active={activeTab} detected={detected} onChange={setActiveTab} />
+        <PlatformTabs
+          active={activeTab}
+          detected={detected}
+          onChange={setActiveTab}
+        />
         {activeTab === 'android' ? (
           <AndroidGuide isCurrentDevice={detected === 'android'} />
         ) : (
@@ -86,7 +93,9 @@ export function DownloadGuideContent() {
           <ShieldIcon className="h-5 w-5 shrink-0 text-ola-primary" />
           <h2 className="text-sm font-bold">{t('download.safetyTitle')}</h2>
         </div>
-        <p className="mt-1.5 text-xs leading-relaxed text-black/55">{t('download.safety')}</p>
+        <p className="mt-1.5 text-xs leading-relaxed text-black/55">
+          {t('download.safety')}
+        </p>
       </section>
     </div>
   );

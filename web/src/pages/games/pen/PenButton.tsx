@@ -34,7 +34,13 @@ export function PenButton({
       style={bgImage(bg)}
       className={`flex items-center justify-center ${gapClassName} bg-center bg-no-repeat font-bold text-white drop-shadow transition active:scale-95 disabled:opacity-60 ${className}`}
     >
-      {icon != null && <img src={icon} alt="" className={`shrink-0 object-contain ${iconClassName}`} />}
+      {icon != null && (
+        <img
+          src={icon}
+          alt=""
+          className={`shrink-0 object-contain ${iconClassName}`}
+        />
+      )}
       {label != null && <span className={labelClassName}>{label}</span>}
     </button>
   );

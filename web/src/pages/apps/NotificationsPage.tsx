@@ -1,8 +1,20 @@
-import { useEffect, useMemo, useState, type ReactNode, type UIEvent } from 'react';
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+  type UIEvent,
+} from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ParseKeys } from 'i18next';
 import { toast, colorForName, createTimeFormatter } from '@lib';
-import { ScreenHeader, FullScreenOverlay, Avatar, Spinner, ConfirmDialog } from '@components';
+import {
+  ScreenHeader,
+  FullScreenOverlay,
+  Avatar,
+  Spinner,
+  ConfirmDialog,
+} from '@components';
 import { MarriageService, RelationshipService } from '@services';
 import { useAppNotificationStore } from '@ola/shared/stores/appNotificationStore';
 import { useFriendsStore } from '@/store/friendsStore';
@@ -55,7 +67,10 @@ export function NotificationsPage({ onClose }: { onClose: () => void }) {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [proposalAction, setProposalAction] = useState<ProposalAction>(null);
 
-  const formatTime = useMemo(() => createTimeFormatter(i18n.language), [i18n.language]);
+  const formatTime = useMemo(
+    () => createTimeFormatter(i18n.language),
+    [i18n.language]
+  );
 
   useEffect(() => {
     void load().then(() => markAllRead());
@@ -99,7 +114,9 @@ export function NotificationsPage({ onClose }: { onClose: () => void }) {
     void runAction(item, async () => {
       if (kind === 'accept') {
         await MarriageService.accept(refId);
-        toast.success(t('marriage.acceptedToast', { nick: item.actor?.username ?? '' }));
+        toast.success(
+          t('marriage.acceptedToast', { nick: item.actor?.username ?? '' })
+        );
       } else {
         await MarriageService.reject(refId);
       }
@@ -117,7 +134,11 @@ export function NotificationsPage({ onClose }: { onClose: () => void }) {
             disabled={busyId != null}
             onClick={() => respondFriendRequest(item, true)}
           >
-            <img src={icAddSmall} alt="" className="mr-1 h-3 w-3 object-contain" />
+            <img
+              src={icAddSmall}
+              alt=""
+              className="mr-1 h-3 w-3 object-contain"
+            />
             {t('notify.addFriend')}
           </RowButton>
           <RowButton
@@ -157,39 +178,63 @@ export function NotificationsPage({ onClose }: { onClose: () => void }) {
     <FullScreenOverlay>
       <ScreenHeader title={t('notify.title')} onBack={onClose} />
 
-      <div className="flex-1 overflow-y-auto bg-[#d5d5d5]" onScroll={handleScroll}>
+      <div
+        className="flex-1 overflow-y-auto bg-[#d5d5d5]"
+        onScroll={handleScroll}
+      >
         {loading && items.length === 0 ? (
           <div className="flex justify-center py-10">
             <Spinner size={24} />
           </div>
         ) : items.length === 0 ? (
-          <div className="py-16 text-center text-sm text-black/54">{t('notify.empty')}</div>
+          <div className="py-16 text-center text-sm text-black/54">
+            {t('notify.empty')}
+          </div>
         ) : (
           <ul>
             {items.map((item) => {
               const config = KIND_CONFIG[item.type];
               const name = item.actor?.fullName || item.actor?.username || '';
-              const message = config != null ? t(config.messageKey) : item.preview ?? '';
+              const message =
+                config != null ? t(config.messageKey) : item.preview ?? '';
               return (
                 <li key={item.id} className="bg-white/80">
                   <div className="flex min-h-[72px] items-start p-4">
-                    <Avatar name={name} src={item.actor?.avatar} color={colorForName(name)} />
+                    <Avatar
+                      name={name}
+                      src={item.actor?.avatar}
+                      color={colorForName(name)}
+                    />
                     <div className="ml-4 min-w-0 flex-1">
                       {name !== '' && (
-                        <p className="truncate text-base font-bold text-black/87">{name}</p>
+                        <p className="truncate text-base font-bold text-black/87">
+                          {name}
+                        </p>
                       )}
-                      <p className="mt-1 text-sm leading-snug text-black/87">{message}</p>
-                      {config != null && item.preview != null && item.preview !== '' && (
-                        <p className="mt-0.5 truncate text-sm text-black/54">{item.preview}</p>
-                      )}
+                      <p className="mt-1 text-sm leading-snug text-black/87">
+                        {message}
+                      </p>
+                      {config != null &&
+                        item.preview != null &&
+                        item.preview !== '' && (
+                          <p className="mt-0.5 truncate text-sm text-black/54">
+                            {item.preview}
+                          </p>
+                        )}
 
                       {renderActions(item)}
 
                       <div className="mt-1 flex items-center gap-1">
                         {config != null && (
-                          <img src={config.icon} alt="" className="h-[18px] w-[18px] shrink-0 object-contain" />
+                          <img
+                            src={config.icon}
+                            alt=""
+                            className="h-[18px] w-[18px] shrink-0 object-contain"
+                          />
                         )}
-                        <span className="text-xs text-black/54">{formatTime(item.createdAt)}</span>
+                        <span className="text-xs text-black/54">
+                          {formatTime(item.createdAt)}
+                        </span>
                       </div>
                     </div>
                     {busyId === item.id && <Spinner size={16} />}
@@ -207,10 +252,18 @@ export function NotificationsPage({ onClose }: { onClose: () => void }) {
         title={t('marriage.boxTitle')}
         message={
           proposalAction?.kind === 'deny'
-            ? t('marriage.confirmDeny', { nick: proposalAction?.item.actor?.username ?? '' })
-            : t('marriage.confirmAccept', { nick: proposalAction?.item.actor?.username ?? '' })
+            ? t('marriage.confirmDeny', {
+                nick: proposalAction?.item.actor?.username ?? '',
+              })
+            : t('marriage.confirmAccept', {
+                nick: proposalAction?.item.actor?.username ?? '',
+              })
         }
-        confirmLabel={proposalAction?.kind === 'deny' ? t('marriage.deny') : t('marriage.accept')}
+        confirmLabel={
+          proposalAction?.kind === 'deny'
+            ? t('marriage.deny')
+            : t('marriage.accept')
+        }
         cancelLabel={t('marriage.no')}
         danger={proposalAction?.kind === 'deny'}
         onConfirm={confirmProposal}

@@ -13,7 +13,8 @@ export function isUrlToken(part: string): boolean {
 export function renderUrlToken(part: string, key: number): ReactNode {
   const trailingMatch = part.match(URL_TRAILING_PUNCTUATION);
   const trailing = trailingMatch == null ? '' : trailingMatch[0];
-  const url = trailing === '' ? part : part.slice(0, part.length - trailing.length);
+  const url =
+    trailing === '' ? part : part.slice(0, part.length - trailing.length);
   const href = url.startsWith('www.') ? `https://${url}` : url;
   return (
     <span key={key}>

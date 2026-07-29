@@ -1,6 +1,13 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Avatar, ListOptionDialog, SearchIcon, VipAvatar, VipIcon, type ListOption } from '@components';
+import {
+  Avatar,
+  ListOptionDialog,
+  SearchIcon,
+  VipAvatar,
+  VipIcon,
+  type ListOption,
+} from '@components';
 import { isVipActive, activeVipTypeId, colorForName } from '@lib';
 import type { AuthUser, Relationship } from '@app-types';
 import type { Contact } from '../interface';
@@ -89,26 +96,71 @@ export function ContactList({
     const term = query.trim().toLowerCase();
     if (term === '') return contacts;
     return contacts.filter(
-      (c) => c.name.toLowerCase().includes(term) || (c.fullName ?? '').toLowerCase().includes(term),
+      (c) =>
+        c.name.toLowerCase().includes(term) ||
+        (c.fullName ?? '').toLowerCase().includes(term)
     );
   }, [contacts, query]);
 
   const sections = useMemo(() => {
-    const pick = (predicate: (c: Contact) => boolean) => filtered.filter(predicate);
+    const pick = (predicate: (c: Contact) => boolean) =>
+      filtered.filter(predicate);
     return [
-      { key: 'birthday', label: t('chat.sectionBirthday'), highlight: false, items: pick((c) => c.group === 'birthday') },
-      { key: 'new', label: t('chat.sectionNew'), highlight: true, items: pick((c) => c.group === 'new') },
-      { key: 'utility', label: t('chat.sectionUtility'), highlight: false, items: pick((c) => c.group === 'utility') },
-      { key: 'online', label: t('chat.sectionOnline'), highlight: false, items: pick((c) => c.group === 'friend' && c.online) },
-      { key: 'friend', label: t('chat.sectionFriend'), highlight: false, items: pick((c) => c.group === 'friend' && !c.online) },
+      {
+        key: 'birthday',
+        label: t('chat.sectionBirthday'),
+        highlight: false,
+        items: pick((c) => c.group === 'birthday'),
+      },
+      {
+        key: 'new',
+        label: t('chat.sectionNew'),
+        highlight: true,
+        items: pick((c) => c.group === 'new'),
+      },
+      {
+        key: 'utility',
+        label: t('chat.sectionUtility'),
+        highlight: false,
+        items: pick((c) => c.group === 'utility'),
+      },
+      {
+        key: 'online',
+        label: t('chat.sectionOnline'),
+        highlight: false,
+        items: pick((c) => c.group === 'friend' && c.online),
+      },
+      {
+        key: 'friend',
+        label: t('chat.sectionFriend'),
+        highlight: false,
+        items: pick((c) => c.group === 'friend' && !c.online),
+      },
     ].filter((section) => section.items.length > 0);
   }, [filtered, t]);
 
   const menuOptions: ListOption[] = [
-    { key: 'view', label: t('chat.menuViewMe'), onSelect: () => onComingSoon?.() },
-    { key: 'alias', label: t('chat.changeAlias'), onSelect: () => onComingSoon?.() },
-    { key: 'delete', label: t('dialog.delete'), danger: true, onSelect: () => onComingSoon?.() },
-    { key: 'block', label: t('chat.menuBlock'), onSelect: () => onComingSoon?.() },
+    {
+      key: 'view',
+      label: t('chat.menuViewMe'),
+      onSelect: () => onComingSoon?.(),
+    },
+    {
+      key: 'alias',
+      label: t('chat.changeAlias'),
+      onSelect: () => onComingSoon?.(),
+    },
+    {
+      key: 'delete',
+      label: t('dialog.delete'),
+      danger: true,
+      onSelect: () => onComingSoon?.(),
+    },
+    {
+      key: 'block',
+      label: t('chat.menuBlock'),
+      onSelect: () => onComingSoon?.(),
+    },
   ];
 
   return (
@@ -135,16 +187,29 @@ export function ContactList({
                 onClick={onComingSoon}
                 className="block w-full rounded border border-[#ff8f00] bg-white px-3 py-2 text-left"
               >
-                <span className="block text-sm font-medium text-ola-accent">{t('chat.vipBannerTitle')}</span>
-                <span className="block text-xs text-black/54">{t('chat.vipBannerSub')}</span>
+                <span className="block text-sm font-medium text-ola-accent">
+                  {t('chat.vipBannerTitle')}
+                </span>
+                <span className="block text-xs text-black/54">
+                  {t('chat.vipBannerSub')}
+                </span>
               </button>
             </div>
           )}
           <div className="flex min-h-[72px] items-center gap-2 px-4 py-2">
-            <button type="button" onClick={onAccountMenu} aria-label={t('chat.myAccount')} className="shrink-0">
+            <button
+              type="button"
+              onClick={onAccountMenu}
+              aria-label={t('chat.myAccount')}
+              className="shrink-0"
+            >
               <VipAvatar typeId={meVipTypeId} />
             </button>
-            <button type="button" onClick={onEditStatus} className="min-w-0 flex-1 text-left">
+            <button
+              type="button"
+              onClick={onEditStatus}
+              className="min-w-0 flex-1 text-left"
+            >
               <span
                 className={`block truncate text-base italic ${
                   hasStatus ? 'text-black/87' : 'text-black/26'
@@ -159,7 +224,11 @@ export function ContactList({
               aria-label={t('chat.myStatusImage')}
               className="shrink-0"
             >
-              <img src={hasBioImage ? me.bioImage! : snapPicIcon} alt="" className="h-9 w-9 object-cover" />
+              <img
+                src={hasBioImage ? me.bioImage! : snapPicIcon}
+                alt=""
+                className="h-9 w-9 object-cover"
+              />
             </button>
           </div>
         </div>
@@ -172,19 +241,32 @@ export function ContactList({
           className="flex w-full items-center gap-3 border-b border-black/12 bg-white/80 px-4 py-2 text-left"
         >
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ola-primary">
-            <img src={addFriendIcon} alt="" className="h-6 w-6 object-contain brightness-0 invert" />
+            <img
+              src={addFriendIcon}
+              alt=""
+              className="h-6 w-6 object-contain brightness-0 invert"
+            />
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block text-base text-black/87">{t('chat.friendRequests')}</span>
+            <span className="block text-base text-black/87">
+              {t('chat.friendRequests')}
+            </span>
             <span className="mt-1 flex items-center gap-2">
               {requests.slice(0, 3).map((relationship) => {
                 const requester = relationship.requester;
                 const name = requester?.fullName || requester?.username || '';
-                const vipTypeId = activeVipTypeId(requester?.vipUsed, requester?.vipEndTime);
+                const vipTypeId = activeVipTypeId(
+                  requester?.vipUsed,
+                  requester?.vipEndTime
+                );
                 return (
                   <span key={relationship.id} className="relative block">
                     {requester?.avatar ? (
-                      <img src={requester.avatar} alt="" className="h-7 w-7 rounded object-cover" />
+                      <img
+                        src={requester.avatar}
+                        alt=""
+                        className="h-7 w-7 rounded object-cover"
+                      />
                     ) : (
                       <Avatar
                         name={name}
@@ -220,11 +302,18 @@ export function ContactList({
           <PeopleIcon />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-base text-black/87">{t('chat.suggestFriends')}</span>
+          <span className="block text-base text-black/87">
+            {t('chat.suggestFriends')}
+          </span>
           <span className="mt-1 flex items-center gap-2">
             {SUGGESTED_FRIENDS.slice(0, 3).map((friend) => (
               <span key={friend.name} className="block overflow-hidden rounded">
-                <Avatar name={friend.name} color={friend.color} size={28} rounded={false} />
+                <Avatar
+                  name={friend.name}
+                  color={friend.color}
+                  size={28}
+                  rounded={false}
+                />
               </span>
             ))}
           </span>

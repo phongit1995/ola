@@ -46,7 +46,11 @@ export function ChangeAvatarScreen({ open, onClose }: ChangeAvatarScreenProps) {
           aria-label={t('avatar.title')}
         >
           {shown ? (
-            <img src={shown} alt="" className="h-28 w-28 rounded-full object-cover" />
+            <img
+              src={shown}
+              alt=""
+              className="h-28 w-28 rounded-full object-cover"
+            />
           ) : (
             <Avatar name={nick} color={colorForName(nick)} size={112} />
           )}

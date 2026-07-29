@@ -39,7 +39,9 @@ export function TextField({
         />
       </div>
       {error && (
-        <p className="px-1 pt-1 text-xs font-medium text-white italic">{error}</p>
+        <p className="px-1 pt-1 text-xs font-medium text-white italic">
+          {error}
+        </p>
       )}
     </div>
   );

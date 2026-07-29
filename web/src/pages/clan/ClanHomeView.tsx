@@ -44,7 +44,11 @@ function PreviewRow({ icon, text, onClick }: PreviewRowProps) {
     </>
   );
   if (onClick == null) {
-    return <div className="mt-1 flex items-center gap-1 text-xs text-[#636363]">{content}</div>;
+    return (
+      <div className="mt-1 flex items-center gap-1 text-xs text-[#636363]">
+        {content}
+      </div>
+    );
   }
   return (
     <button
@@ -133,7 +137,9 @@ export function ClanHomeView({ onClose, onOpenClan }: ClanHomeViewProps) {
   }
 
   const takenVisible =
-    result != null && !result.available && normalizeClanHandle(name) === result.name;
+    result != null &&
+    !result.available &&
+    normalizeClanHandle(name) === result.name;
   const availableVisible = result != null && result.available && freshCheck;
   const preview = takenVisible ? result.clan : undefined;
 
@@ -178,7 +184,9 @@ export function ClanHomeView({ onClose, onOpenClan }: ClanHomeViewProps) {
                   rounded={false}
                 />
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-base text-black/87">#{clan.handle}</span>
+                  <span className="block truncate text-base text-black/87">
+                    #{clan.handle}
+                  </span>
                   <span className="block text-xs text-black/54">
                     {clanRoleLabel(clan.myRole ?? 'member')} ·{' '}
                     {t('clan.membersCount', { count: clan.memberCount })}
@@ -197,7 +205,11 @@ export function ClanHomeView({ onClose, onOpenClan }: ClanHomeViewProps) {
         footer={
           <>
             {availableVisible && (
-              <DialogButton variant="green" onClick={() => setConfirmOpen(true)} disabled={creating}>
+              <DialogButton
+                variant="green"
+                onClick={() => setConfirmOpen(true)}
+                disabled={creating}
+              >
                 {t('clan.create')}
               </DialogButton>
             )}
@@ -234,12 +246,16 @@ export function ClanHomeView({ onClose, onOpenClan }: ClanHomeViewProps) {
           </p>
         )}
         {availableVisible && (
-          <p className="mt-2 text-xs font-bold text-blue-700 italic">{t('clan.nameAvailable')}</p>
+          <p className="mt-2 text-xs font-bold text-blue-700 italic">
+            {t('clan.nameAvailable')}
+          </p>
         )}
 
         {preview != null && (
           <div className="mt-3 rounded-md border border-black/12 bg-white p-4">
-            <div className="text-center text-sm font-bold text-black/87">#{preview.handle}</div>
+            <div className="text-center text-sm font-bold text-black/87">
+              #{preview.handle}
+            </div>
             {preview.owner != null && preview.owner !== '' && (
               <PreviewRow
                 icon={CLAN_ROLE_ICONS.owner}
@@ -265,7 +281,10 @@ export function ClanHomeView({ onClose, onOpenClan }: ClanHomeViewProps) {
               icon={memberIcon}
               text={t('clan.membersCount', { count: preview.memberCount })}
             />
-            <PreviewRow icon={visitIcon} text={t('clan.visits', { count: preview.visitCount })} />
+            <PreviewRow
+              icon={visitIcon}
+              text={t('clan.visits', { count: preview.visitCount })}
+            />
             <button
               type="button"
               onClick={() => openClan(preview.handle)}

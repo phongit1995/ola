@@ -13,7 +13,12 @@ import { EGG_START_KEN } from './eggGame.constants';
 
 function BackIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="h-6 w-6" fill="currentColor" aria-hidden="true">
+    <svg
+      viewBox="0 0 24 24"
+      className="h-6 w-6"
+      fill="currentColor"
+      aria-hidden="true"
+    >
       <path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
     </svg>
   );
@@ -48,7 +53,8 @@ export function EggGamePage({ onClose }: EggGamePageProps) {
       suppressKenSync: false,
     });
     const off = SocketService.on<{ ken?: number }>('KEN_UPDATED', (data) => {
-      if (typeof data?.ken === 'number') useEggGameStore.getState().syncKen(data.ken);
+      if (typeof data?.ken === 'number')
+        useEggGameStore.getState().syncKen(data.ken);
     });
     return () => {
       off();
@@ -104,14 +110,25 @@ export function EggGamePage({ onClose }: EggGamePageProps) {
               onClick={() => setGiftsOpen(true)}
               className="flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5 font-semibold text-white hover:bg-white/25"
             >
-              <img src={giftIconUrl} alt="" className="h-4 w-4 object-contain" />
+              <img
+                src={giftIconUrl}
+                alt=""
+                className="h-4 w-4 object-contain"
+              />
               {t('eggGame.gifts.title')}
             </button>
           </footer>
         </div>
       </div>
-      <EggHistoryDialog open={historyOpen} onClose={() => setHistoryOpen(false)} />
-      <EggGiftDialog open={giftsOpen} packId={packId} onClose={() => setGiftsOpen(false)} />
+      <EggHistoryDialog
+        open={historyOpen}
+        onClose={() => setHistoryOpen(false)}
+      />
+      <EggGiftDialog
+        open={giftsOpen}
+        packId={packId}
+        onClose={() => setGiftsOpen(false)}
+      />
     </FullScreenOverlay>
   );
 }

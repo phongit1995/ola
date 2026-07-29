@@ -33,7 +33,10 @@ export function RoomChatOverlay({ visible }: { visible: boolean }) {
   return (
     <div className={visible ? '' : 'hidden'}>
       {joinStatus === 'joined' ? (
-        <RoomChatView visible={visible} onClose={() => setPendingQuit(activeRoom)} />
+        <RoomChatView
+          visible={visible}
+          onClose={() => setPendingQuit(activeRoom)}
+        />
       ) : (
         <RoomJoiningOverlay status={joinStatus} onClose={exitRoom} />
       )}

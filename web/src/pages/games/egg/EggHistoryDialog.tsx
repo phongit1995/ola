@@ -32,7 +32,9 @@ function useOutcomeLabel() {
       }
       if (item.isSuperLucky) {
         return {
-          text: t('eggGame.history.superLucky', { reward: item.rewardLabel ?? '' }),
+          text: t('eggGame.history.superLucky', {
+            reward: item.rewardLabel ?? '',
+          }),
           tone: 'win',
           vipTypeId: item.vipTypeId,
         };
@@ -70,25 +72,33 @@ export function EggHistoryDialog({ open, onClose }: EggHistoryDialogProps) {
   const [filter, setFilter] = useState<EggDrawHistoryFilter>('all');
 
   const outcomeLabel = useOutcomeLabel();
-  const formatTime = useMemo(() => createTimeFormatter(i18n.language), [i18n.language]);
+  const formatTime = useMemo(
+    () => createTimeFormatter(i18n.language),
+    [i18n.language]
+  );
 
-  const loadPage = useCallback(async (offset: number, outcome: EggDrawHistoryFilter) => {
-    setLoading(true);
-    setError(false);
-    if (offset === 0) {
-      setItems([]);
-      setTotal(0);
-    }
-    try {
-      const result = await EggService.listDraws(PAGE_SIZE, offset, outcome);
-      setTotal(result.total);
-      setItems((prev) => (offset === 0 ? result.items : [...prev, ...result.items]));
-    } catch {
-      setError(true);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const loadPage = useCallback(
+    async (offset: number, outcome: EggDrawHistoryFilter) => {
+      setLoading(true);
+      setError(false);
+      if (offset === 0) {
+        setItems([]);
+        setTotal(0);
+      }
+      try {
+        const result = await EggService.listDraws(PAGE_SIZE, offset, outcome);
+        setTotal(result.total);
+        setItems((prev) =>
+          offset === 0 ? result.items : [...prev, ...result.items]
+        );
+      } catch {
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
   useEffect(() => {
     if (!open) return;
@@ -103,8 +113,18 @@ export function EggHistoryDialog({ open, onClose }: EggHistoryDialogProps) {
       open={open}
       onClose={onClose}
       title={t('eggGame.history.title')}
-      icon={<img src={historyIconUrl} alt="" className="h-5 w-5 opacity-60 filter-[invert(1)]" />}
-      footer={<DialogButton onClick={onClose}>{t('eggGame.history.close')}</DialogButton>}
+      icon={
+        <img
+          src={historyIconUrl}
+          alt=""
+          className="h-5 w-5 opacity-60 filter-[invert(1)]"
+        />
+      }
+      footer={
+        <DialogButton onClick={onClose}>
+          {t('eggGame.history.close')}
+        </DialogButton>
+      }
     >
       <div className="mb-2 flex gap-1.5">
         {FILTERS.map((f) => (
@@ -125,22 +145,33 @@ export function EggHistoryDialog({ open, onClose }: EggHistoryDialogProps) {
       </div>
       <div className="max-h-[60vh] min-h-30 overflow-y-auto">
         {error ? (
-          <p className="py-6 text-center text-[#9a2b20]">{t('eggGame.error')}</p>
+          <p className="py-6 text-center text-[#9a2b20]">
+            {t('eggGame.error')}
+          </p>
         ) : items.length === 0 && loading ? (
           <div className="flex h-30 items-center justify-center">
             <Spinner />
           </div>
         ) : items.length === 0 ? (
-          <p className="py-6 text-center text-[#8a8a8c]">{t('eggGame.history.empty')}</p>
+          <p className="py-6 text-center text-[#8a8a8c]">
+            {t('eggGame.history.empty')}
+          </p>
         ) : (
           <ul className="divide-y divide-[#eceaea]">
             {items.map((item) => {
               const outcome = outcomeLabel(item);
               return (
-                <li key={item.id} className="flex items-center justify-between gap-3 py-2">
+                <li
+                  key={item.id}
+                  className="flex items-center justify-between gap-3 py-2"
+                >
                   <div className="flex min-w-0 items-center gap-1.5">
                     {outcome.vipTypeId != null ? (
-                      <VipIcon typeId={outcome.vipTypeId} className="h-5 w-5" rounded />
+                      <VipIcon
+                        typeId={outcome.vipTypeId}
+                        className="h-5 w-5"
+                        rounded
+                      />
                     ) : outcome.iconUrl ? (
                       <img
                         src={outcome.iconUrl}
@@ -159,8 +190,12 @@ export function EggHistoryDialog({ open, onClose }: EggHistoryDialogProps) {
                     </p>
                   </div>
                   <div className="shrink-0 text-right">
-                    <p className="text-xs text-[#9a9a9c]">{formatTime(item.createdAt)}</p>
-                    <p className="text-xs text-[#c0392b]">-{item.kenCost} KEN</p>
+                    <p className="text-xs text-[#9a9a9c]">
+                      {formatTime(item.createdAt)}
+                    </p>
+                    <p className="text-xs text-[#c0392b]">
+                      -{item.kenCost} KEN
+                    </p>
                   </div>
                 </li>
               );

@@ -362,7 +362,9 @@ export function ArcadeOverlay() {
   return (
     <>
       <div
-        className={`absolute inset-0 z-50 bg-[#0f0f23] ${minimized ? 'invisible' : ''}`}
+        className={`absolute inset-0 z-50 bg-[#0f0f23] ${
+          minimized ? 'invisible' : ''
+        }`}
       >
         <button
           type="button"
