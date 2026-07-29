@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"ola-chat-server/internal/constants"
+	"ola-chat-server/internal/media"
 	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
@@ -14,7 +15,7 @@ import (
 )
 
 const (
-	maxAudioWaveformSamples = 64
+	maxAudioWaveformSamples = constants.MaxAudioWaveformSamples
 	maxClientMessageIDBytes = 64
 )
 
@@ -319,7 +320,7 @@ func (ctrl *Controller) SendAudioMessage(c *gin.Context) (interface{}, error) {
 	if err != nil {
 		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid duration")
 	}
-	if err := validateAudioDuration(duration); err != nil {
+	if err := media.ValidateDuration(duration); err != nil {
 		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid duration")
 	}
 
@@ -328,7 +329,7 @@ func (ctrl *Controller) SendAudioMessage(c *gin.Context) (interface{}, error) {
 		if err := json.Unmarshal([]byte(raw), &waveform); err != nil {
 			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid waveform")
 		}
-		if err := validateAudioWaveform(waveform, maxAudioWaveformSamples); err != nil {
+		if err := media.ValidateWaveform(waveform, maxAudioWaveformSamples); err != nil {
 			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid waveform")
 		}
 	}

@@ -16,6 +16,7 @@ import (
 	"ola-chat-server/internal/constants"
 	conversationEvents "ola-chat-server/internal/domain/conversation"
 	messageEvents "ola-chat-server/internal/domain/message"
+	"ola-chat-server/internal/media"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/conversation"
 	"ola-chat-server/internal/modules/relationships"
@@ -246,50 +247,14 @@ func isAllowedImageMime(mime string) bool {
 	return false
 }
 
-func isAllowedAudioMime(mime string) bool {
-	base := mime
-	if idx := strings.Index(base, ";"); idx >= 0 {
-		base = strings.TrimSpace(base[:idx])
-	}
-	for _, m := range constants.AllowedAudioMimes {
-		if strings.EqualFold(m, base) {
-			return true
-		}
-	}
-	return false
-}
-
-func pickAudioExtension(mime, originalName string) string {
-	base := mime
-	if idx := strings.Index(base, ";"); idx >= 0 {
-		base = strings.TrimSpace(base[:idx])
-	}
-	switch strings.ToLower(base) {
-	case "audio/webm":
-		return ".webm"
-	case "audio/mp4", "audio/x-m4a", "audio/aac":
-		return ".m4a"
-	case "audio/mpeg":
-		return ".mp3"
-	case "audio/wav", "audio/x-wav":
-		return ".wav"
-	case "audio/ogg":
-		return ".ogg"
-	}
-	if ext := strings.ToLower(filepath.Ext(originalName)); ext != "" {
-		return ext
-	}
-	return ".bin"
-}
-
 func (s *Service) SendAudioMessage(ctx context.Context, userID, conversationID uuid.UUID, fileHeader *multipart.FileHeader, duration float64, waveform []float64, replyToID *uuid.UUID, clientMsgID string) (*MessageResponse, error) {
-	if err := validateAudioDuration(duration); err != nil {
+	if err := media.ValidateDuration(duration); err != nil {
 		return nil, err
 	}
 	if duration > constants.MaxAudioDurationSeconds {
 		return nil, fmt.Errorf("%w: max %d seconds", ErrInvalidMetadata, constants.MaxAudioDurationSeconds)
 	}
-	if err := validateAudioWaveform(waveform, maxAudioWaveformSamples); err != nil {
+	if err := media.ValidateWaveform(waveform, maxAudioWaveformSamples); err != nil {
 		return nil, err
 	}
 	if err := s.ensureMessageAccess(userID, conversationID); err != nil {
@@ -349,18 +314,18 @@ func (s *Service) uploadAudioFile(ctx context.Context, userID, conversationID uu
 	}
 
 	declaredMime := fileHeader.Header.Get("Content-Type")
-	finalMime, err := detectAudioMime(data, declaredMime)
+	finalMime, err := media.DetectAudioMime(data, declaredMime)
 	if err != nil {
 		return nil, "", err
 	}
-	if err := validateAudioPayloadSize(int64(len(data)), duration); err != nil {
+	if err := media.ValidatePayloadSize(int64(len(data)), duration); err != nil {
 		return nil, "", err
 	}
-	if err := validateMeasuredAudioDuration(data, finalMime, duration, constants.MaxAudioDurationSeconds); err != nil {
+	if err := media.ValidateMeasuredDuration(data, finalMime, duration, constants.MaxAudioDurationSeconds); err != nil {
 		return nil, "", err
 	}
 
-	ext := pickAudioExtension(finalMime, fileHeader.Filename)
+	ext := media.PickAudioExtension(finalMime, fileHeader.Filename)
 	safeName := fmt.Sprintf("audio%s", ext)
 	folder := fmt.Sprintf("%s/%s/%s", constants.UploadFolderMessages, conversationID.String(), time.Now().Format(constants.UploadDateLayout))
 
@@ -392,16 +357,16 @@ func validateAudioMetadata(metadata string, isManagedURL func(string) bool) erro
 	if isManagedURL == nil || !isManagedURL(meta.URL) {
 		return fmt.Errorf("%w: audio URL is not managed storage", ErrInvalidMetadata)
 	}
-	if !isAllowedAudioMime(meta.MimeType) {
+	if !media.IsAllowedAudioMime(meta.MimeType) {
 		return fmt.Errorf("%w: mimeType %s", ErrInvalidMetadata, meta.MimeType)
 	}
-	if err := validateAudioDuration(meta.Duration); err != nil {
+	if err := media.ValidateDuration(meta.Duration); err != nil {
 		return err
 	}
 	if meta.Duration > constants.MaxAudioDurationSeconds {
 		return fmt.Errorf("%w: invalid duration", ErrInvalidMetadata)
 	}
-	if err := validateAudioWaveform(meta.Waveform, maxAudioWaveformSamples); err != nil {
+	if err := media.ValidateWaveform(meta.Waveform, maxAudioWaveformSamples); err != nil {
 		return err
 	}
 	return nil

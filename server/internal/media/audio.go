@@ -1,9 +1,13 @@
-package message
+package media
 
 import (
+	"bytes"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"math"
+	"ola-chat-server/internal/constants"
+	"path/filepath"
 	"strings"
 
 	"github.com/gabriel-vasile/mimetype"
@@ -14,27 +18,78 @@ const (
 	audioContainerOverhead = 256 * 1024
 )
 
-func baseMime(value string) string {
+var (
+	ErrUnsupportedAudio = errors.New("unsupported audio type")
+	ErrInvalidAudio     = errors.New("invalid audio")
+)
+
+var webMVideoCodecIDs = []string{
+	"V_VP8",
+	"V_VP9",
+	"V_AV1",
+	"V_MPEG1",
+	"V_MPEG2",
+	"V_MPEG4",
+	"V_MPEGH",
+	"V_THEORA",
+	"V_REAL",
+	"V_QUICKTIME",
+	"V_DIRAC",
+	"V_PRORES",
+	"V_UNCOMPRESSED",
+	"V_MS/VFW/FOURCC",
+}
+
+func BaseMime(value string) string {
 	if idx := strings.Index(value, ";"); idx >= 0 {
 		value = value[:idx]
 	}
 	return strings.ToLower(strings.TrimSpace(value))
 }
 
-func validateAudioDuration(duration float64) error {
+func IsAllowedAudioMime(mime string) bool {
+	base := BaseMime(mime)
+	for _, m := range constants.AllowedAudioMimes {
+		if strings.EqualFold(m, base) {
+			return true
+		}
+	}
+	return false
+}
+
+func PickAudioExtension(mime, originalName string) string {
+	switch BaseMime(mime) {
+	case "audio/webm":
+		return ".webm"
+	case "audio/mp4", "audio/x-m4a", "audio/aac":
+		return ".m4a"
+	case "audio/mpeg":
+		return ".mp3"
+	case "audio/wav", "audio/x-wav":
+		return ".wav"
+	case "audio/ogg":
+		return ".ogg"
+	}
+	if ext := strings.ToLower(filepath.Ext(originalName)); ext != "" {
+		return ext
+	}
+	return ".bin"
+}
+
+func ValidateDuration(duration float64) error {
 	if math.IsNaN(duration) || math.IsInf(duration, 0) || duration <= 0 {
-		return fmt.Errorf("%w: invalid duration", ErrInvalidMetadata)
+		return fmt.Errorf("%w: invalid duration", ErrInvalidAudio)
 	}
 	return nil
 }
 
-func validateAudioWaveform(waveform []float64, maxSamples int) error {
+func ValidateWaveform(waveform []float64, maxSamples int) error {
 	if len(waveform) > maxSamples {
-		return fmt.Errorf("%w: invalid waveform", ErrInvalidMetadata)
+		return fmt.Errorf("%w: invalid waveform", ErrInvalidAudio)
 	}
 	for _, sample := range waveform {
 		if math.IsNaN(sample) || math.IsInf(sample, 0) || sample < 0 || sample > 1 {
-			return fmt.Errorf("%w: invalid waveform", ErrInvalidMetadata)
+			return fmt.Errorf("%w: invalid waveform", ErrInvalidAudio)
 		}
 	}
 	return nil
@@ -42,9 +97,9 @@ func validateAudioWaveform(waveform []float64, maxSamples int) error {
 
 // The multipart Content-Type is untrusted; WebM and generic MP4 containers
 // also need evidence that they contain audio and no video track.
-func detectAudioMime(data []byte, declared string) (string, error) {
-	declared = baseMime(declared)
-	detected := baseMime(mimetype.Detect(data).String())
+func DetectAudioMime(data []byte, declared string) (string, error) {
+	declared = BaseMime(declared)
+	detected := BaseMime(mimetype.Detect(data).String())
 
 	switch detected {
 	case "video/webm", "audio/webm":
@@ -76,34 +131,37 @@ func detectAudioMime(data []byte, declared string) (string, error) {
 	return "", fmt.Errorf("%w: declared=%s detected=%s", ErrUnsupportedAudio, declared, detected)
 }
 
-func validateAudioPayloadSize(size int64, duration float64) error {
-	if err := validateAudioDuration(duration); err != nil {
+func ValidatePayloadSize(size int64, duration float64) error {
+	if err := ValidateDuration(duration); err != nil {
 		return err
 	}
 	maximum := int64(math.Ceil(duration))*maxAudioBytesPerSecond + audioContainerOverhead
 	if size > maximum {
-		return fmt.Errorf("%w: duration does not match payload size", ErrInvalidMetadata)
+		return fmt.Errorf("%w: duration does not match payload size", ErrInvalidAudio)
 	}
 	return nil
 }
 
-func validateMeasuredAudioDuration(data []byte, mime string, reported, maximum float64) error {
+func ValidateMeasuredDuration(data []byte, mime string, reported, maximum float64) error {
 	actual, ok := measureAudioDuration(data, mime)
 	if !ok {
 		return nil
 	}
-	if actual <= 0 || actual > maximum {
-		return fmt.Errorf("%w: measured duration out of range", ErrInvalidMetadata)
+	if actual <= 0 {
+		return fmt.Errorf("%w: measured duration out of range", ErrInvalidAudio)
 	}
 	tolerance := math.Max(1.25, actual*0.05)
+	if actual > maximum+tolerance {
+		return fmt.Errorf("%w: measured duration out of range", ErrInvalidAudio)
+	}
 	if math.Abs(actual-reported) > tolerance {
-		return fmt.Errorf("%w: duration does not match audio", ErrInvalidMetadata)
+		return fmt.Errorf("%w: duration does not match audio", ErrInvalidAudio)
 	}
 	return nil
 }
 
 func measureAudioDuration(data []byte, mime string) (float64, bool) {
-	switch baseMime(mime) {
+	switch BaseMime(mime) {
 	case "audio/wav", "audio/x-wav":
 		return measureWAVDuration(data)
 	case "audio/mp4", "audio/x-m4a":
@@ -171,156 +229,44 @@ func measureMP4Duration(data []byte, depth int) (float64, bool) {
 	return 0, false
 }
 
+// A zero mvhd duration means "unknown" (fragmented MP4 writes it that way),
+// not "zero seconds".
 func mp4MovieHeaderDuration(payload []byte) (float64, bool) {
 	if len(payload) < 20 {
 		return 0, false
 	}
+	var timescale uint32
+	var duration uint64
 	if payload[0] == 1 {
 		if len(payload) < 32 {
 			return 0, false
 		}
-		timescale := binary.BigEndian.Uint32(payload[20:24])
-		duration := binary.BigEndian.Uint64(payload[24:32])
-		if timescale == 0 || duration == 0 {
-			return 0, false
-		}
-		return float64(duration) / float64(timescale), true
+		timescale = binary.BigEndian.Uint32(payload[20:24])
+		duration = binary.BigEndian.Uint64(payload[24:32])
+	} else {
+		timescale = binary.BigEndian.Uint32(payload[12:16])
+		duration = uint64(binary.BigEndian.Uint32(payload[16:20]))
 	}
-	timescale := binary.BigEndian.Uint32(payload[12:16])
-	duration := binary.BigEndian.Uint32(payload[16:20])
 	if timescale == 0 || duration == 0 {
 		return 0, false
 	}
 	return float64(duration) / float64(timescale), true
 }
 
+// Matching only full CodecID strings: a bare "V_" probe would hit compressed
+// audio payloads by chance and reject most real recordings.
 func isAudioOnlyWebM(data []byte) bool {
-	hasAudio, hasVideo := scanWebMTrackTypes(data)
-	return hasAudio && !hasVideo
-}
-
-func scanWebMTrackTypes(data []byte) (hasAudio, hasVideo bool) {
-	for offset := 0; offset < len(data); {
-		id, payloadStart, payloadEnd, next, ok := readEBMLElement(data, offset)
-		if !ok {
-			return false, false
+	hasAudioCodec := bytes.Contains(data, []byte("A_OPUS")) ||
+		bytes.Contains(data, []byte("A_VORBIS"))
+	if !hasAudioCodec {
+		return false
+	}
+	for _, codec := range webMVideoCodecIDs {
+		if bytes.Contains(data, []byte(codec)) {
+			return false
 		}
-		if id == 0x18538067 {
-			return scanWebMSegment(data[payloadStart:payloadEnd])
-		}
-		offset = next
 	}
-	return false, false
-}
-
-func scanWebMSegment(data []byte) (hasAudio, hasVideo bool) {
-	for offset := 0; offset < len(data); {
-		id, payloadStart, payloadEnd, next, ok := readEBMLElement(data, offset)
-		if !ok {
-			return hasAudio, hasVideo
-		}
-		if id == 0x1654AE6B {
-			audio, video := scanWebMTracks(data[payloadStart:payloadEnd])
-			hasAudio = hasAudio || audio
-			hasVideo = hasVideo || video
-		}
-		if hasAudio && hasVideo {
-			return true, true
-		}
-		offset = next
-	}
-	return hasAudio, hasVideo
-}
-
-func scanWebMTracks(data []byte) (hasAudio, hasVideo bool) {
-	for offset := 0; offset < len(data); {
-		id, payloadStart, payloadEnd, next, ok := readEBMLElement(data, offset)
-		if !ok {
-			return hasAudio, hasVideo
-		}
-		if id == 0xAE {
-			switch webMTrackType(data[payloadStart:payloadEnd]) {
-			case 1:
-				hasVideo = true
-			case 2:
-				hasAudio = true
-			}
-		}
-		offset = next
-	}
-	return hasAudio, hasVideo
-}
-
-func webMTrackType(data []byte) uint64 {
-	for offset := 0; offset < len(data); {
-		id, payloadStart, payloadEnd, next, ok := readEBMLElement(data, offset)
-		if !ok {
-			return 0
-		}
-		if id == 0x83 {
-			return readEBMLUnsigned(data[payloadStart:payloadEnd])
-		}
-		offset = next
-	}
-	return 0
-}
-
-func readEBMLElement(data []byte, offset int) (id uint64, payloadStart, payloadEnd, next int, ok bool) {
-	id, idLength, _, ok := readEBMLVInt(data, offset, 4, true)
-	if !ok {
-		return 0, 0, 0, 0, false
-	}
-	size, sizeLength, unknownSize, ok := readEBMLVInt(data, offset+idLength, 8, false)
-	if !ok {
-		return 0, 0, 0, 0, false
-	}
-	payloadStart = offset + idLength + sizeLength
-	if unknownSize {
-		payloadEnd = len(data)
-	} else {
-		if size > uint64(len(data)-payloadStart) {
-			return 0, 0, 0, 0, false
-		}
-		payloadEnd = payloadStart + int(size)
-	}
-	return id, payloadStart, payloadEnd, payloadEnd, true
-}
-
-func readEBMLVInt(data []byte, offset, maxLength int, keepMarker bool) (value uint64, length int, allOnes bool, ok bool) {
-	if offset < 0 || offset >= len(data) || data[offset] == 0 {
-		return 0, 0, false, false
-	}
-	marker := byte(0x80)
-	length = 1
-	for length <= maxLength && data[offset]&marker == 0 {
-		marker >>= 1
-		length++
-	}
-	if length > maxLength || offset+length > len(data) {
-		return 0, 0, false, false
-	}
-	value = uint64(data[offset])
-	if !keepMarker {
-		value = uint64(data[offset] & (marker - 1))
-	}
-	for index := 1; index < length; index++ {
-		value = value<<8 | uint64(data[offset+index])
-	}
-	if !keepMarker {
-		allOnes = value == (uint64(1)<<uint(7*length))-1
-	}
-	return value, length, allOnes, true
-}
-
-func readEBMLUnsigned(data []byte) uint64 {
-	if len(data) == 0 || len(data) > 8 {
-		return 0
-	}
-	var value uint64
-	for _, item := range data {
-		value = value<<8 | uint64(item)
-	}
-	return value
+	return true
 }
 
 func isAudioOnlyMP4(data []byte) bool {

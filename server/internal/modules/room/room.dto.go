@@ -90,33 +90,44 @@ type RoomReactor struct {
 }
 
 type RoomMessageResponse struct {
-	ID           string                   `json:"id"`
-	RoomID       string                   `json:"roomId"`
-	SenderID     string                   `json:"senderId"`
-	SenderName   string                   `json:"senderName,omitempty"`
-	SenderAvatar string                   `json:"senderAvatar,omitempty"`
-	SenderGender string                   `json:"senderGender,omitempty"`
-	SenderVip    *string                  `json:"senderVip,omitempty"`
-	SenderVipEnd *string                  `json:"senderVipEnd,omitempty"`
-	Type         string                   `json:"type,omitempty"`
-	Content      string                   `json:"content"`
-	ImageURL     string                   `json:"imageUrl,omitempty"`
-	CreatedAt    string                   `json:"createdAt"`
-	ReplyTo      *RoomReplySnapshot       `json:"replyTo,omitempty"`
-	Reactions    map[string][]RoomReactor `json:"reactions,omitempty"`
-	ClientMsgID  string                   `json:"clientMsgId,omitempty"`
+	ID            string                   `json:"id"`
+	RoomID        string                   `json:"roomId"`
+	SenderID      string                   `json:"senderId"`
+	SenderName    string                   `json:"senderName,omitempty"`
+	SenderAvatar  string                   `json:"senderAvatar,omitempty"`
+	SenderGender  string                   `json:"senderGender,omitempty"`
+	SenderVip     *string                  `json:"senderVip,omitempty"`
+	SenderVipEnd  *string                  `json:"senderVipEnd,omitempty"`
+	Type          string                   `json:"type,omitempty"`
+	Content       string                   `json:"content"`
+	ImageURL      string                   `json:"imageUrl,omitempty"`
+	AudioURL      string                   `json:"audioUrl,omitempty"`
+	AudioDuration float64                  `json:"audioDuration,omitempty"`
+	AudioWaveform []float64                `json:"audioWaveform,omitempty"`
+	AudioMimeType string                   `json:"audioMimeType,omitempty"`
+	AudioSize     int64                    `json:"audioSize,omitempty"`
+	CreatedAt     string                   `json:"createdAt"`
+	ReplyTo       *RoomReplySnapshot       `json:"replyTo,omitempty"`
+	Reactions     map[string][]RoomReactor `json:"reactions,omitempty"`
+	ClientMsgID   string                   `json:"clientMsgId,omitempty"`
 }
 
 type storedRoomMessage struct {
-	ID        string                   `json:"id"`
-	RoomID    string                   `json:"roomId"`
-	SenderID  string                   `json:"senderId"`
-	Type      string                   `json:"type,omitempty"`
-	Content   string                   `json:"content"`
-	ImageURL  string                   `json:"imageUrl,omitempty"`
-	CreatedAt string                   `json:"createdAt"`
-	ReplyTo   *RoomReplySnapshot       `json:"replyTo,omitempty"`
-	Reactions map[string][]RoomReactor `json:"reactions,omitempty"`
+	ID            string                   `json:"id"`
+	RoomID        string                   `json:"roomId"`
+	SenderID      string                   `json:"senderId"`
+	Type          string                   `json:"type,omitempty"`
+	Content       string                   `json:"content"`
+	ImageURL      string                   `json:"imageUrl,omitempty"`
+	AudioURL      string                   `json:"audioUrl,omitempty"`
+	AudioDuration float64                  `json:"audioDuration,omitempty"`
+	AudioWaveform []float64                `json:"audioWaveform,omitempty"`
+	AudioMimeType string                   `json:"audioMimeType,omitempty"`
+	AudioSize     int64                    `json:"audioSize,omitempty"`
+	CreatedAt     string                   `json:"createdAt"`
+	ReplyTo       *RoomReplySnapshot       `json:"replyTo,omitempty"`
+	Reactions     map[string][]RoomReactor `json:"reactions,omitempty"`
+	ClientMsgID   string                   `json:"clientMsgId,omitempty"`
 }
 
 type RoomMessagesListResponse struct {

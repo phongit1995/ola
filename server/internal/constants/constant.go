@@ -85,6 +85,8 @@ const (
 	CacheKeyRoomUserConn        = "ROOM:%s:USER:%s:CONN"
 	CacheKeyRoomMsgIndex        = "ROOM:%s:MSG_INDEX"
 	CacheKeyRoomMsgData         = "ROOM:%s:MSG"
+	CacheKeyRoomClientMessage   = "ROOM:%s:USER:%s:CLIENT_MSG:%s"
+	CacheKeyRoomMediaUploadLock = "LOCK:ROOM_MEDIA_UPLOAD:%s:%s:%s"
 	CacheKeyRoomJoinTicket      = "ROOM:JOIN_TICKET:%s"
 	CacheKeyVipPackages         = "VIP:PACKAGES:ACTIVE"
 	CacheKeyEggPacks            = "EGG:PACKS:ENABLED"
@@ -266,6 +268,8 @@ const (
 	MaxAdminImageUploadSize      = 5 * 1024 * 1024
 	MaxAudioUploadSize           = 10 * 1024 * 1024
 	MaxAudioDurationSeconds      = 300
+	MaxRoomAudioDurationSeconds  = 60
+	MaxAudioWaveformSamples      = 64
 	UploadFolderMessages         = "messages"
 	UploadFolderRooms            = "rooms"
 	UploadFolderPosts            = "posts"

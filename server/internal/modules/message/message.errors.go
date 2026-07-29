@@ -3,6 +3,7 @@ package message
 import (
 	"errors"
 	"net/http"
+	"ola-chat-server/internal/media"
 	"ola-chat-server/internal/modules/conversation"
 )
 
@@ -13,7 +14,6 @@ var (
 	ErrMediaRequiresUpload = errors.New("media messages must use an upload endpoint")
 	ErrNotMember           = errors.New("user is not a member of this conversation")
 	ErrUnsupportedImage    = errors.New("unsupported image type")
-	ErrUnsupportedAudio    = errors.New("unsupported audio type")
 	ErrDecodeImage         = errors.New("failed to decode image")
 	ErrInvalidMetadata     = errors.New("invalid message metadata")
 	ErrMaxReactions        = errors.New("max reaction types per user reached")
@@ -30,7 +30,7 @@ func httpStatusForError(err error) int {
 		return http.StatusConflict
 	case errors.Is(err, ErrNotMember), errors.Is(err, conversation.ErrBlocked), errors.Is(err, conversation.ErrNotAllowedToMessage), errors.Is(err, conversation.ErrDirectRecipientUnavailable):
 		return http.StatusForbidden
-	case errors.Is(err, ErrUnsupportedImage), errors.Is(err, ErrUnsupportedAudio), errors.Is(err, ErrDecodeImage), errors.Is(err, ErrInvalidMetadata), errors.Is(err, ErrMediaRequiresUpload), errors.Is(err, ErrMaxReactions), errors.Is(err, ErrReplyNotFound):
+	case errors.Is(err, ErrUnsupportedImage), errors.Is(err, media.ErrUnsupportedAudio), errors.Is(err, media.ErrInvalidAudio), errors.Is(err, ErrDecodeImage), errors.Is(err, ErrInvalidMetadata), errors.Is(err, ErrMediaRequiresUpload), errors.Is(err, ErrMaxReactions), errors.Is(err, ErrReplyNotFound):
 		return http.StatusBadRequest
 	}
 	return http.StatusInternalServerError
