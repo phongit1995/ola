@@ -7,14 +7,25 @@ import type {
   KenUpdatedEvent,
 } from '../types/realtime/ken.type';
 import { useAuthStore } from './authStore';
+import {
+  markKenRealtimeUpdate,
+  resyncKenBalance,
+} from './kenResync.state';
 import { useKenTreasureStore } from './kenTreasureStore';
 import { claimRealtimeRegistration } from './realtimeRegistration.state';
+
+export { resyncKenBalance } from './kenResync.state';
 
 export function registerKenRealtime() {
   if (!claimRealtimeRegistration('ken')) return;
 
+  SocketService.onReconnect(() => {
+    void resyncKenBalance();
+  });
+
   SocketService.on<KenUpdatedEvent>(KEN_SOCKET_EVENTS.updated, (data) => {
     if (typeof data?.ken !== 'number') return;
+    markKenRealtimeUpdate();
     const { user, setUser } = useAuthStore.getState();
     if (!user) return;
     if (data.ken > (user.ken ?? 0)) playKenCreditSound();

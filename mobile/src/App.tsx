@@ -13,6 +13,7 @@ import { authTokens, toast } from '@ola/shared/lib';
 import { SocketService } from '@ola/shared/services';
 import { useAuthStore } from '@ola/shared/stores/authStore';
 import { useChatStore } from '@ola/shared/stores/chat/chatStore';
+import { resyncKenBalance } from '@ola/shared/stores/kenRealtime';
 import { useSettingsStore } from '@ola/shared/stores/settingsStore';
 import { RootNavigator } from './navigation/RootNavigator';
 import { AppFontProvider } from './components/AppFontProvider';
@@ -72,11 +73,21 @@ export default function App() {
     initTelemetry();
     if (!__DEV__) void checkForOtaUpdate();
     setOnUnauthorized(clearSession);
+    const resumeSession = () => {
+      SocketService.ensureAlive();
+      void resyncKenBalance();
+    };
     const appStateSubscription = AppState.addEventListener('change', (state) => {
-      if (state === 'active') SocketService.ensureAlive();
+      if (state === 'active') resumeSession();
     });
+    let hasNetworkState = false;
+    let wasOnline = false;
     const unsubscribeNetInfo = NetInfo.addEventListener((state) => {
-      if (state.isConnected === true) SocketService.ensureAlive();
+      const isOnline =
+        state.isConnected === true && state.isInternetReachable !== false;
+      if (hasNetworkState && isOnline && !wasOnline) resumeSession();
+      hasNetworkState = true;
+      wasOnline = isOnline;
     });
     void useAuthStore.getState().refreshUser();
     return () => {
