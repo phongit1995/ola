@@ -8,7 +8,9 @@ const EggGamePage = lazy(() =>
   import('./egg/EggGamePage').then((m) => ({ default: m.EggGamePage }))
 );
 const SpinWheelGamePage = lazy(() =>
-  import('./spin-wheel/SpinWheelGamePage').then((m) => ({ default: m.SpinWheelGamePage }))
+  import('./spin-wheel/SpinWheelGamePage').then((m) => ({
+    default: m.SpinWheelGamePage,
+  }))
 );
 
 export function GameOverlay() {

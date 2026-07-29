@@ -63,11 +63,11 @@ function classifyMicrophoneError(error: unknown): VoiceRecorderError {
     error instanceof DOMException
       ? error.name
       : typeof error === 'object' &&
-          error != null &&
-          'name' in error &&
-          typeof error.name === 'string'
-        ? error.name
-        : '';
+        error != null &&
+        'name' in error &&
+        typeof error.name === 'string'
+      ? error.name
+      : '';
 
   if (
     name === 'NotAllowedError' ||

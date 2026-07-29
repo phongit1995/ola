@@ -4,7 +4,10 @@ import { toast, formatKen } from '@lib';
 import { ScreenHeader, FullScreenOverlay } from '@components';
 import { useAuthStore } from '@/store/authStore';
 import { useAppOverlayStore } from '@/store/appOverlayStore';
-import { selectTopupEnabled, useTopupConfigStore } from '@/store/topupConfigStore';
+import {
+  selectTopupEnabled,
+  useTopupConfigStore,
+} from '@/store/topupConfigStore';
 import { TransferKenDialog } from '@/pages/chat/components/TransferKenDialog';
 import { KenHistorySection } from './KenHistorySection';
 import { KEN_LOW_THRESHOLD } from './constants';
@@ -12,7 +15,14 @@ import { KEN_LOW_THRESHOLD } from './constants';
 function KenCoin({ className = 'h-[18px] w-[18px]' }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
-      <circle cx="12" cy="12" r="10" fill="#ffca28" stroke="#f9a825" strokeWidth="1.5" />
+      <circle
+        cx="12"
+        cy="12"
+        r="10"
+        fill="#ffca28"
+        stroke="#f9a825"
+        strokeWidth="1.5"
+      />
       <text
         x="12"
         y="16"
@@ -41,7 +51,9 @@ function RowAction({ icon, label, onClick }: RowActionProps) {
       onClick={onClick}
       className="flex h-9 w-full items-center px-2 text-left text-sm text-black/87 active:bg-black/5"
     >
-      <span className="mr-2.5 flex h-[18px] w-[18px] items-center justify-center">{icon}</span>
+      <span className="mr-2.5 flex h-[18px] w-[18px] items-center justify-center">
+        {icon}
+      </span>
       {label}
     </button>
   );
@@ -89,11 +101,19 @@ export function KenStorePage({ onClose }: { onClose: () => void }) {
 
           {topupEnabled && (
             <>
-              <RowAction icon={<KenCoin />} label={t('ken.purchase')} onClick={() => pushOverlay('kenBuy')} />
+              <RowAction
+                icon={<KenCoin />}
+                label={t('ken.purchase')}
+                onClick={() => pushOverlay('kenBuy')}
+              />
               <div className="mx-2 h-px bg-black/12" />
             </>
           )}
-          <RowAction icon={<KenCoin />} label={t('ken.transfer')} onClick={() => setTransferOpen(true)} />
+          <RowAction
+            icon={<KenCoin />}
+            label={t('ken.transfer')}
+            onClick={() => setTransferOpen(true)}
+          />
         </div>
 
         <KenHistorySection />
@@ -109,7 +129,9 @@ export function KenStorePage({ onClose }: { onClose: () => void }) {
         </button>
       </div>
 
-      {transferOpen && <TransferKenDialog open onClose={() => setTransferOpen(false)} />}
+      {transferOpen && (
+        <TransferKenDialog open onClose={() => setTransferOpen(false)} />
+      )}
     </FullScreenOverlay>
   );
 }

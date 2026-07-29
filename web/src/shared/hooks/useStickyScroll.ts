@@ -45,7 +45,8 @@ export function useStickyScroll({
     }
 
     if (prependAnchorRef.current != null) {
-      element.scrollTop = element.scrollTop + element.scrollHeight - prependAnchorRef.current;
+      element.scrollTop =
+        element.scrollTop + element.scrollHeight - prependAnchorRef.current;
       prependAnchorRef.current = null;
     } else if (enabled && lastId !== lastIdRef.current && stickyRef.current) {
       element.scrollTop = element.scrollHeight;
@@ -58,19 +59,28 @@ export function useStickyScroll({
     if (element == null) return;
     function scrollToBottomIfPinned() {
       const target = scrollRef.current;
-      if (target != null && stickyRef.current && prependAnchorRef.current == null) {
+      if (
+        target != null &&
+        stickyRef.current &&
+        prependAnchorRef.current == null
+      ) {
         target.scrollTop = target.scrollHeight;
       }
     }
     element.addEventListener('load', scrollToBottomIfPinned, true);
-    return () => element.removeEventListener('load', scrollToBottomIfPinned, true);
+    return () =>
+      element.removeEventListener('load', scrollToBottomIfPinned, true);
   }, []);
 
   useEffect(() => {
     const viewport = window.visualViewport;
     function repinBottom() {
       const element = scrollRef.current;
-      if (element != null && stickyRef.current && prependAnchorRef.current == null) {
+      if (
+        element != null &&
+        stickyRef.current &&
+        prependAnchorRef.current == null
+      ) {
         element.scrollTop = element.scrollHeight;
       }
     }
@@ -82,14 +92,22 @@ export function useStickyScroll({
   const handleScroll = useCallback(() => {
     const element = scrollRef.current;
     if (element == null || !enabled) return;
-    const distanceFromBottom = element.scrollHeight - element.scrollTop - element.clientHeight;
+    const distanceFromBottom =
+      element.scrollHeight - element.scrollTop - element.clientHeight;
     stickyRef.current = distanceFromBottom < bottomThreshold;
     savedScrollTopRef.current = element.scrollTop;
     if (element.scrollTop <= loadMoreAtTop && hasMore && !loadingMore) {
       prependAnchorRef.current = element.scrollHeight;
       onLoadMore();
     }
-  }, [enabled, hasMore, loadingMore, onLoadMore, bottomThreshold, loadMoreAtTop]);
+  }, [
+    enabled,
+    hasMore,
+    loadingMore,
+    onLoadMore,
+    bottomThreshold,
+    loadMoreAtTop,
+  ]);
 
   const pin = useCallback(() => {
     stickyRef.current = true;
@@ -101,7 +119,8 @@ export function useStickyScroll({
 
   const scrollToBottomIfPinned = useCallback(() => {
     const element = scrollRef.current;
-    if (element != null && stickyRef.current) element.scrollTop = element.scrollHeight;
+    if (element != null && stickyRef.current)
+      element.scrollTop = element.scrollHeight;
   }, []);
 
   return { scrollRef, handleScroll, pin, unpin, scrollToBottomIfPinned };

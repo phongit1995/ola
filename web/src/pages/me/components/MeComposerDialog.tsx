@@ -1,8 +1,18 @@
 import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Dialog, DialogButton, SmileyInput, type SmileyInputHandle } from '@components';
+import {
+  Dialog,
+  DialogButton,
+  SmileyInput,
+  type SmileyInputHandle,
+} from '@components';
 import { useOutsideClick } from '@hooks';
-import { ATTACH_BUTTONS, MAX_IMAGES, PRIVACY_OPTIONS, type AttachButtonKey } from '../constants';
+import {
+  ATTACH_BUTTONS,
+  MAX_IMAGES,
+  PRIVACY_OPTIONS,
+  type AttachButtonKey,
+} from '../constants';
 import { type ComposedCheckIn } from './ComposerCheckInPanel';
 import { ComposerPreview } from './ComposerPreview';
 import { ComposerAttachPanels } from './ComposerAttachPanels';
@@ -40,18 +50,25 @@ export function MeComposerDialog({
   privacyOptions,
 }: MeComposerDialogProps) {
   const { t } = useTranslation();
-  const options = privacyOptions != null && privacyOptions.length > 0 ? privacyOptions : PRIVACY_OPTIONS;
+  const options =
+    privacyOptions != null && privacyOptions.length > 0
+      ? privacyOptions
+      : PRIVACY_OPTIONS;
   const defaultPrivacy =
     initial != null && options.includes(initial.visibility)
       ? initial.visibility
-      : (options[0] ?? 'public');
+      : options[0] ?? 'public';
   const [content, setContent] = useState(initial?.content ?? '');
   const [privacy, setPrivacy] = useState<PostVisibility>(defaultPrivacy);
   const [photos, setPhotos] = useState<PickedPhoto[]>(() =>
     (initial?.imageUrls ?? []).map((url) => ({ url }))
   );
-  const [checkIn, setCheckIn] = useState<ComposedCheckIn | null>(initial?.checkIn ?? null);
-  const [sticker, setSticker] = useState<string | null>(initial?.sticker ?? null);
+  const [checkIn, setCheckIn] = useState<ComposedCheckIn | null>(
+    initial?.checkIn ?? null
+  );
+  const [sticker, setSticker] = useState<string | null>(
+    initial?.sticker ?? null
+  );
   const [panel, setPanel] = useState<AttachPanel>(null);
   const [submitting, setSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -100,7 +117,9 @@ export function MeComposerDialog({
     setPhotos((current) => {
       const room = MAX_IMAGES - current.length;
       if (room <= 0) return current;
-      const added = files.slice(0, room).map((file) => ({ url: URL.createObjectURL(file), file }));
+      const added = files
+        .slice(0, room)
+        .map((file) => ({ url: URL.createObjectURL(file), file }));
       return [...current, ...added];
     });
   }
@@ -134,8 +153,12 @@ export function MeComposerDialog({
     setSubmitting(true);
     const ok = await onPost({
       content: text,
-      files: photos.filter((photo) => photo.file != null).map((photo) => photo.file as File),
-      imageUrls: photos.filter((photo) => photo.file == null).map((photo) => photo.url),
+      files: photos
+        .filter((photo) => photo.file != null)
+        .map((photo) => photo.file as File),
+      imageUrls: photos
+        .filter((photo) => photo.file == null)
+        .map((photo) => photo.url),
       checkIn,
       sticker,
       visibility: privacy,
@@ -169,7 +192,9 @@ export function MeComposerDialog({
           {t('me.privacyTo')}
           <select
             value={privacy}
-            onChange={(event) => setPrivacy(event.target.value as PostVisibility)}
+            onChange={(event) =>
+              setPrivacy(event.target.value as PostVisibility)
+            }
             className="rounded border border-black/12 px-2 py-1 text-black/87 outline-none"
           >
             {options.map((option) => (
@@ -213,7 +238,11 @@ export function MeComposerDialog({
               }`}
             >
               {'icon' in button ? (
-                <img src={button.icon} alt="" className="h-6 w-6 object-contain" />
+                <img
+                  src={button.icon}
+                  alt=""
+                  className="h-6 w-6 object-contain"
+                />
               ) : (
                 <span className="text-2xl leading-none">{button.glyph}</span>
               )}

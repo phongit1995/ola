@@ -20,7 +20,7 @@ import { RoomComposerBar, type RoomComposerHandle } from './RoomComposerBar';
 import { RoomReactionsDialog } from './RoomReactionsDialog';
 import { RoomReactionNotice } from './RoomReactionNotice';
 import { RoomReactionBalloons } from './RoomReactionBalloons';
-import type { RoomChatStatus } from '@/store/roomChatStore';
+import type { RoomAudioSendResult, RoomChatStatus } from '@ola/shared/types';
 import { useRoomFilterStore } from '@ola/shared/stores/roomFilterStore';
 
 interface RoomMessagesTabProps {
@@ -34,7 +34,13 @@ interface RoomMessagesTabProps {
   replyTarget: RoomMessage | null;
   onSend: (content: string) => Promise<void>;
   onSendImage: (file: File) => Promise<void>;
+  onSendAudio: (
+    file: Blob,
+    duration: number,
+    waveform: number[]
+  ) => Promise<RoomAudioSendResult>;
   onResendImage: (id: string) => void;
+  onResendAudio: (id: string) => void;
   onLoadMore: () => void;
   onOpenProfile?: (nick: string, color: string) => void;
   onSetReplyTarget: (message: RoomMessage) => void;
@@ -54,7 +60,9 @@ export function RoomMessagesTab({
   replyTarget,
   onSend,
   onSendImage,
+  onSendAudio,
   onResendImage,
+  onResendAudio,
   onLoadMore,
   onOpenProfile,
   onSetReplyTarget,
@@ -72,25 +80,32 @@ export function RoomMessagesTab({
   } | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<RoomMessage | null>(null);
   const [blockTarget, setBlockTarget] = useState<RoomMessage | null>(null);
-  const [reactionsTargetId, setReactionsTargetId] = useState<string | null>(null);
+  const [reactionsTargetId, setReactionsTargetId] = useState<string | null>(
+    null
+  );
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const composerRef = useRef<RoomComposerHandle>(null);
   const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const messageById = useMemo(() => new Map(messages.map((item) => [item.id, item])), [messages]);
-  const { scrollRef, handleScroll, pin, unpin, scrollToBottomIfPinned } = useStickyScroll({
-    count: messages.length,
-    lastId: messages[messages.length - 1]?.id ?? null,
-    hasMore,
-    loadingMore,
-    onLoadMore,
-    enabled: active && visible,
-    loadMoreAtTop: 80,
-  });
+  const messageById = useMemo(
+    () => new Map(messages.map((item) => [item.id, item])),
+    [messages]
+  );
+  const { scrollRef, handleScroll, pin, unpin, scrollToBottomIfPinned } =
+    useStickyScroll({
+      count: messages.length,
+      lastId: messages[messages.length - 1]?.id ?? null,
+      hasMore,
+      loadingMore,
+      onLoadMore,
+      enabled: active && visible,
+      loadMoreAtTop: 80,
+    });
 
   useEffect(() => {
     return () => {
-      if (highlightTimerRef.current != null) clearTimeout(highlightTimerRef.current);
+      if (highlightTimerRef.current != null)
+        clearTimeout(highlightTimerRef.current);
     };
   }, []);
 
@@ -98,7 +113,10 @@ export function RoomMessagesTab({
     scrollToBottomIfPinned();
   }, [active, visible, scrollToBottomIfPinned]);
 
-  const quickMention = useCallback((name: string) => composerRef.current?.insertMention(name), []);
+  const quickMention = useCallback(
+    (name: string) => composerRef.current?.insertMention(name),
+    []
+  );
 
   useEffect(() => {
     if (replyTarget != null) composerRef.current?.focus();
@@ -112,11 +130,16 @@ export function RoomMessagesTab({
     [messageById]
   );
 
-  const showReactions = useCallback((id: string) => setReactionsTargetId(id), []);
+  const showReactions = useCallback(
+    (id: string) => setReactionsTargetId(id),
+    []
+  );
 
   const scrollToMessage = useCallback(
     (id: string) => {
-      const element = scrollRef.current?.querySelector(`[data-message-id="${CSS.escape(id)}"]`);
+      const element = scrollRef.current?.querySelector(
+        `[data-message-id="${CSS.escape(id)}"]`
+      );
       if (element == null) {
         toast.error(t('room.replyNotFound'));
         return;
@@ -124,8 +147,12 @@ export function RoomMessagesTab({
       unpin();
       element.scrollIntoView({ behavior: 'smooth', block: 'center' });
       setHighlightedId(id);
-      if (highlightTimerRef.current != null) clearTimeout(highlightTimerRef.current);
-      highlightTimerRef.current = setTimeout(() => setHighlightedId(null), 1500);
+      if (highlightTimerRef.current != null)
+        clearTimeout(highlightTimerRef.current);
+      highlightTimerRef.current = setTimeout(
+        () => setHighlightedId(null),
+        1500
+      );
     },
     [t, unpin, scrollRef]
   );
@@ -179,12 +206,18 @@ export function RoomMessagesTab({
   const feed = useMemo(() => {
     const blocked = new Set(blockedUserIds);
     const visible =
-      blocked.size === 0 ? messages : messages.filter((item) => !blocked.has(item.senderId));
+      blocked.size === 0
+        ? messages
+        : messages.filter((item) => !blocked.has(item.senderId));
     return buildRoomFeed(visible, currentUserId);
   }, [messages, currentUserId, blockedUserIds]);
 
   return (
-    <div className={`relative flex flex-1 flex-col overflow-hidden ${active ? '' : 'hidden'}`}>
+    <div
+      className={`relative flex flex-1 flex-col overflow-hidden ${
+        active ? '' : 'hidden'
+      }`}
+    >
       <RoomReactionNotice />
       <RoomReactionBalloons />
       {status !== 'joined' && (
@@ -199,7 +232,9 @@ export function RoomMessagesTab({
         className="flex flex-1 flex-col gap-2 overflow-y-auto p-3"
       >
         {loadingMore && (
-          <div className="shrink-0 py-1 text-center text-xs text-black/40">{t('common.loading')}</div>
+          <div className="shrink-0 py-1 text-center text-xs text-black/40">
+            {t('common.loading')}
+          </div>
         )}
         {feed.map((item) =>
           item.kind === 'date' ? (
@@ -215,6 +250,7 @@ export function RoomMessagesTab({
               onQuoteClick={scrollToMessage}
               onShowReactions={showReactions}
               onResendImage={onResendImage}
+              onResendAudio={onResendAudio}
             />
           )
         )}
@@ -223,9 +259,15 @@ export function RoomMessagesTab({
       {replyTarget != null && (
         <div className="flex shrink-0 items-center gap-2 border-t border-black/12 bg-black/3 px-3 py-1.5">
           <span className="h-8 w-0.5 shrink-0 rounded bg-ola-primary" />
-          {replyTarget.type === 'image' && replyTarget.imageUrl != null && replyTarget.imageUrl !== '' && (
-            <img src={replyTarget.imageUrl} alt="" className="h-8 w-8 shrink-0 rounded object-cover" />
-          )}
+          {replyTarget.type === 'image' &&
+            replyTarget.imageUrl != null &&
+            replyTarget.imageUrl !== '' && (
+              <img
+                src={replyTarget.imageUrl}
+                alt=""
+                className="h-8 w-8 shrink-0 rounded object-cover"
+              />
+            )}
           <span className="min-w-0 flex-1">
             <span className="block truncate text-xs font-semibold text-ola-primary">
               {t('room.replyingTo', { name: replyTarget.senderName ?? '' })}
@@ -251,6 +293,7 @@ export function RoomMessagesTab({
         onBeforeSend={pin}
         onSendText={onSend}
         onSendImage={onSendImage}
+        onSendAudio={onSendAudio}
       />
 
       {actionTarget != null && (
@@ -266,7 +309,9 @@ export function RoomMessagesTab({
       <RoomReactionsDialog
         open={reactionsTargetId != null}
         reactions={
-          reactionsTargetId != null ? messageById.get(reactionsTargetId)?.reactions : undefined
+          reactionsTargetId != null
+            ? messageById.get(reactionsTargetId)?.reactions
+            : undefined
         }
         onClose={() => setReactionsTargetId(null)}
       />
@@ -282,7 +327,9 @@ export function RoomMessagesTab({
           const target = deleteTarget;
           setDeleteTarget(null);
           if (target != null) {
-            onDeleteMessage(target.id).catch(() => toast.error(t('common.error')));
+            onDeleteMessage(target.id).catch(() =>
+              toast.error(t('common.error'))
+            );
           }
         }}
         onCancel={() => setDeleteTarget(null)}
@@ -292,7 +339,9 @@ export function RoomMessagesTab({
         open={blockTarget != null}
         danger
         title={t('room.blockTitle')}
-        message={t('room.blockConfirm', { name: blockTarget?.senderName ?? '' })}
+        message={t('room.blockConfirm', {
+          name: blockTarget?.senderName ?? '',
+        })}
         confirmLabel={t('room.actionBlock')}
         cancelLabel={t('dialog.cancel')}
         onConfirm={() => {

@@ -25,7 +25,10 @@ function withCacheBuster(url: string): string {
 
 async function downloadImage(url: string) {
   try {
-    const res = await fetch(withCacheBuster(url), { mode: 'cors', cache: 'no-store' });
+    const res = await fetch(withCacheBuster(url), {
+      mode: 'cors',
+      cache: 'no-store',
+    });
     if (!res.ok) throw new Error('fetch failed');
     const blob = await res.blob();
     const objectUrl = URL.createObjectURL(blob);
@@ -49,11 +52,11 @@ export function MediaViewer({ photos, index, onClose }: MediaViewerProps) {
 
   const next = useCallback(
     () => setCurrent((c) => (c + 1) % photos.length),
-    [photos.length],
+    [photos.length]
   );
   const prev = useCallback(
     () => setCurrent((c) => (c - 1 + photos.length) % photos.length),
-    [photos.length],
+    [photos.length]
   );
 
   useEffect(() => {
@@ -107,8 +110,19 @@ export function MediaViewer({ photos, index, onClose }: MediaViewerProps) {
           }}
           className="rounded-full p-2 hover:bg-white/15"
         >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M12 3v12m0 0l-4-4m4 4l4-4" strokeLinecap="round" strokeLinejoin="round" />
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path
+              d="M12 3v12m0 0l-4-4m4 4l4-4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
             <path d="M5 21h14" strokeLinecap="round" />
           </svg>
         </button>
@@ -118,7 +132,14 @@ export function MediaViewer({ photos, index, onClose }: MediaViewerProps) {
           onClick={onClose}
           className="rounded-full p-2 hover:bg-white/15"
         >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
             <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
           </svg>
         </button>
@@ -135,8 +156,19 @@ export function MediaViewer({ photos, index, onClose }: MediaViewerProps) {
             }}
             className="absolute top-1/2 left-2 z-10 -translate-y-1/2 rounded-full bg-white/10 p-2 text-white hover:bg-white/20"
           >
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M15 6l-6 6 6 6" strokeLinecap="round" strokeLinejoin="round" />
+            <svg
+              width="26"
+              height="26"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path
+                d="M15 6l-6 6 6 6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
           </button>
           <button
@@ -148,8 +180,19 @@ export function MediaViewer({ photos, index, onClose }: MediaViewerProps) {
             }}
             className="absolute top-1/2 right-2 z-10 -translate-y-1/2 rounded-full bg-white/10 p-2 text-white hover:bg-white/20"
           >
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M9 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
+            <svg
+              width="26"
+              height="26"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path
+                d="M9 6l6 6-6 6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
           </button>
         </>

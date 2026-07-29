@@ -14,7 +14,12 @@ export interface Venue {
 
 function ArrowIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="h-6 w-6 text-black/30" fill="currentColor" aria-hidden="true">
+    <svg
+      viewBox="0 0 24 24"
+      className="h-6 w-6 text-black/30"
+      fill="currentColor"
+      aria-hidden="true"
+    >
       <path d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z" />
     </svg>
   );
@@ -45,15 +50,21 @@ export function NearbyPlacesPage({ onClose }: { onClose: () => void }) {
                   style={{ background: venue.cover }}
                 />
                 <span className="ml-2 flex min-w-0 flex-1 flex-col justify-between">
-                  <span className="truncate text-base font-bold text-black/87">{venue.name}</span>
+                  <span className="truncate text-base font-bold text-black/87">
+                    {venue.name}
+                  </span>
                   <span className="flex items-center gap-1 text-sm">
-                    <span className="text-[#7a7a7a]">{t('nearby.distance')}</span>
+                    <span className="text-[#7a7a7a]">
+                      {t('nearby.distance')}
+                    </span>
                     <span className="text-[#5b9bd5]">{venue.distance}</span>
                     <span className="truncate text-black/54">
                       · {t('nearby.checkedIn', { count: venue.visits })}
                     </span>
                   </span>
-                  <span className="truncate text-xs italic text-black/54">{venue.address}</span>
+                  <span className="truncate text-xs italic text-black/54">
+                    {venue.address}
+                  </span>
                 </span>
                 <span className="flex shrink-0 items-center">
                   <ArrowIcon />

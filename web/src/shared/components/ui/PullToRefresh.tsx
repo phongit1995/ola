@@ -12,7 +12,11 @@ interface PullToRefreshProps {
   children: ReactNode;
 }
 
-export function PullToRefresh({ onRefresh, className, children }: PullToRefreshProps) {
+export function PullToRefresh({
+  onRefresh,
+  className,
+  children,
+}: PullToRefreshProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const startY = useRef<number | null>(null);
   const pullRef = useRef(0);
@@ -28,7 +32,8 @@ export function PullToRefresh({ onRefresh, className, children }: PullToRefreshP
   function onTouchStart(event: TouchEvent<HTMLDivElement>) {
     const el = scrollRef.current;
     if (el == null || refreshing) return;
-    startY.current = el.scrollTop <= 0 ? (event.touches[0]?.clientY ?? null) : null;
+    startY.current =
+      el.scrollTop <= 0 ? event.touches[0]?.clientY ?? null : null;
   }
 
   function onTouchMove(event: TouchEvent<HTMLDivElement>) {
@@ -87,7 +92,10 @@ export function PullToRefresh({ onRefresh, className, children }: PullToRefreshP
         <Spinner size={24} />
       </div>
       <div
-        className={cn('flex min-h-full flex-col', snapping && 'transition-transform duration-200')}
+        className={cn(
+          'flex min-h-full flex-col',
+          snapping && 'transition-transform duration-200'
+        )}
         style={{ transform: `translateY(${pull}px)` }}
         onTransitionEnd={() => setSnapping(false)}
       >

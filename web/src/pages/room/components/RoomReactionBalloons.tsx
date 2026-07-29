@@ -62,7 +62,9 @@ export function RoomReactionBalloons() {
           src={balloon.image}
           alt=""
           onAnimationEnd={() =>
-            setBalloons((current) => current.filter((item) => item.id !== balloon.id))
+            setBalloons((current) =>
+              current.filter((item) => item.id !== balloon.id)
+            )
           }
           className="animate-room-balloon absolute object-contain"
           style={

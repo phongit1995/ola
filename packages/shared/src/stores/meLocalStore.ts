@@ -1,28 +1,14 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import {
+  MAX_BLOCKED_AUTHORS,
+  MAX_HIDDEN_POSTS,
+  MAX_VIEWED_PROFILES,
+} from '../constants/me';
 import { sharedPersistStorage } from '../platform/persistStorage';
+import type { MeLocalState } from '../types/client/meLocal.type';
 
-export interface ViewedProfile {
-  id: string;
-  username: string;
-  fullName?: string;
-  avatar?: string;
-  vipTypeId?: number | null;
-}
-
-const MAX_VIEWED_PROFILES = 30;
-const MAX_HIDDEN_POSTS = 500;
-const MAX_BLOCKED_AUTHORS = 500;
-
-interface MeLocalState {
-  hiddenPostIds: string[];
-  blockedAuthorIds: string[];
-  viewedProfiles: ViewedProfile[];
-  hidePost: (id: string) => void;
-  blockAuthor: (authorId: string) => void;
-  recordViewedProfile: (profile: ViewedProfile) => void;
-  clearViewedProfiles: () => void;
-}
+export type { ViewedProfile } from '../types/client/meLocal.type';
 
 export const useMeLocalStore = create<MeLocalState>()(
   persist(

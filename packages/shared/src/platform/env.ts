@@ -1,22 +1,20 @@
-export type SocketTransport = 'websocket' | 'polling';
+import type {
+  SharedEnv,
+  SocketTransport,
+} from '../types/platform.type';
+import {
+  getCurrentEnv,
+  setCurrentEnv,
+} from './platformRuntime.state';
 
-export interface SharedEnv {
-  apiUrl: string;
-  apiTimeout: number;
-  apiGuardSecret: string;
-  socketUrl: string;
-  socketTransports?: SocketTransport[];
-  geoapifyKey: string;
-  isDev: boolean;
-}
-
-let current: SharedEnv | null = null;
+export type { SharedEnv, SocketTransport } from '../types/platform.type';
 
 export function configureEnv(value: SharedEnv): void {
-  current = value;
+  setCurrentEnv(value);
 }
 
 function requireEnv(): SharedEnv {
+  const current = getCurrentEnv();
   if (current == null) {
     throw new Error('Shared env is not configured. Call configureEnv() at app bootstrap.');
   }

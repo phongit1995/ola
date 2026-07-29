@@ -40,19 +40,21 @@ export function VoiceWaveformBars({
           tone === 'recording'
             ? 'bg-ola-primary'
             : tone === 'outgoing'
-              ? played
-                ? 'bg-white'
-                : 'bg-white/45'
-              : played
-                ? 'bg-ola-primary'
-                : tone === 'preview'
-                  ? 'bg-black/15'
-                  : 'bg-black/20';
+            ? played
+              ? 'bg-white'
+              : 'bg-white/45'
+            : played
+            ? 'bg-ola-primary'
+            : tone === 'preview'
+            ? 'bg-black/15'
+            : 'bg-black/20';
 
         return (
           <span
             key={index}
-            className={`${fluid ? 'w-[3px]' : 'w-[2px]'} shrink-0 rounded-full ${color}`}
+            className={`${
+              fluid ? 'w-[3px]' : 'w-[2px]'
+            } shrink-0 rounded-full ${color}`}
             style={{ height: `${voiceWaveformBarHeight(level)}px` }}
           />
         );

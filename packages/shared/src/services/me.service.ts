@@ -1,8 +1,9 @@
-import { http } from '../api';
-import { appendUploadFile, type UploadFile } from '../lib/upload';
-import { API_PATH } from '../config';
+import { http } from '../api/http';
+import { appendUploadFile } from '../lib/upload';
+import type { UploadFile } from '../types/client/upload.type';
+import { API_PATH } from '../config/api';
+import type { MessageResult } from '../types/api/auth.type';
 import type {
-  MessageResult,
   Post,
   PostComment,
   PostCommentListResult,
@@ -20,7 +21,7 @@ import type {
   UploadImagesResult,
   MeNotificationListResult,
   MeNotificationUnreadResult,
-} from '../types';
+} from '../types/api/me.type';
 
 export class MeService {
   static feed(params: FeedCursorParams = {}): Promise<MeFeedResult> {

@@ -4,8 +4,9 @@ import { ConfirmDialog } from '@components';
 import { toast } from '@lib';
 import { RoomChatView } from './components/RoomChatView';
 import { RoomJoiningOverlay } from './components/RoomJoiningOverlay';
-import { useRoomChatStore, type ActiveRoom } from '@/store/roomChatStore';
+import { useRoomChatStore } from '@/store/roomChatStore';
 import { useRoomListStore } from '@ola/shared/stores/roomListStore';
+import type { ActiveRoom } from '@ola/shared/types';
 
 export function RoomChatOverlay({ visible }: { visible: boolean }) {
   const { t } = useTranslation();
@@ -33,7 +34,10 @@ export function RoomChatOverlay({ visible }: { visible: boolean }) {
   return (
     <div className={visible ? '' : 'hidden'}>
       {joinStatus === 'joined' ? (
-        <RoomChatView visible={visible} onClose={() => setPendingQuit(activeRoom)} />
+        <RoomChatView
+          visible={visible}
+          onClose={() => setPendingQuit(activeRoom)}
+        />
       ) : (
         <RoomJoiningOverlay status={joinStatus} onClose={exitRoom} />
       )}

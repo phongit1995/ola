@@ -5,8 +5,8 @@ import pauseMediaIcon from '@/assets/icons/chat/ic_pause_media.png';
 import playMediaGrayIcon from '@/assets/icons/chat/ic_play_media_gray.png';
 import pauseMediaGrayIcon from '@/assets/icons/chat/ic_pause_media_gray.png';
 import { formatDuration, toast } from '@lib';
+import { useUploadPreviewLease } from '@hooks';
 import { VoiceWaveformBars } from './VoiceWaveformBars';
-import { useUploadPreviewLease } from './useUploadPreviewLease';
 
 interface VoiceBubbleProps {
   url?: string;
@@ -69,7 +69,7 @@ export function VoiceBubble({
     const total =
       Number.isFinite(el.duration) && el.duration > 0
         ? el.duration
-        : (durationSec ?? 0);
+        : durationSec ?? 0;
     if (total <= 0) return;
     el.currentTime = total * ratio;
     setProgress(ratio);
@@ -147,7 +147,7 @@ export function VoiceBubble({
           const total =
             Number.isFinite(el.duration) && el.duration > 0
               ? el.duration
-              : (durationSec ?? 0);
+              : durationSec ?? 0;
           setCurrentTime(el.currentTime);
           setProgress(total > 0 ? Math.min(1, el.currentTime / total) : 0);
         }}

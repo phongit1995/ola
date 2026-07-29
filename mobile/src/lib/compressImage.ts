@@ -1,5 +1,5 @@
 import ImageResizer from '@bam.tech/react-native-image-resizer';
-import type { NativeUploadFile } from '@ola/shared/lib';
+import type { NativeUploadFile } from '@ola/shared/types';
 import { MAX_UPLOAD_BYTES } from '@ola/shared/constants';
 
 const MAX_DIMENSION = 1920;

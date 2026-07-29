@@ -27,7 +27,8 @@ interface AppOverlayState {
 
 export const useAppOverlayStore = create<AppOverlayState>((set) => ({
   stack: [],
-  push: (kind, mode) => set((state) => ({ stack: [...state.stack, { kind, mode }] })),
+  push: (kind, mode) =>
+    set((state) => ({ stack: [...state.stack, { kind, mode }] })),
   back: () => set((state) => ({ stack: state.stack.slice(0, -1) })),
   reset: () => set({ stack: [] }),
 }));

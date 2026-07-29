@@ -2,7 +2,10 @@ import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Spinner } from '@components';
 import type { PenLeaderboardPeriod } from '@app-types';
-import { PEN_LEADERBOARD_PAGE, usePenLeaderboardStore } from '@/store/penLeaderboardStore';
+import {
+  PEN_LEADERBOARD_PAGE,
+  usePenLeaderboardStore,
+} from '@/store/penLeaderboardStore';
 import { penLeaderboardAssets, penShootAssets } from './penAssets';
 import { bgImage } from './penUi';
 import { PenPagination } from './PenPagination';
@@ -32,7 +35,10 @@ export function PenLeaderboardModal({ onClose }: PenLeaderboardModalProps) {
 
   const rows = items ?? [];
   const pageCount = Math.max(1, Math.ceil(rows.length / PEN_LEADERBOARD_PAGE));
-  const paged = rows.slice(page * PEN_LEADERBOARD_PAGE, (page + 1) * PEN_LEADERBOARD_PAGE);
+  const paged = rows.slice(
+    page * PEN_LEADERBOARD_PAGE,
+    (page + 1) * PEN_LEADERBOARD_PAGE
+  );
 
   const tabs: { key: PenLeaderboardPeriod; label: string }[] = [
     { key: 'day', label: t('penGame.leaderboard.topDay') },
@@ -51,7 +57,11 @@ export function PenLeaderboardModal({ onClose }: PenLeaderboardModalProps) {
         <div className="flex shrink-0 items-center gap-2 px-3 pb-4 pt-5 text-white">
           <span className="h-9 w-9 shrink-0" />
           <span className="flex min-w-0 flex-1 items-center justify-center gap-2">
-            <img src={penLeaderboardAssets.cup} alt="" className="h-8 w-auto shrink-0 object-contain" />
+            <img
+              src={penLeaderboardAssets.cup}
+              alt=""
+              className="h-8 w-auto shrink-0 object-contain"
+            />
             <span className="whitespace-nowrap text-xl font-extrabold italic tracking-wider drop-shadow @md:text-2xl">
               {t('penGame.leaderboard.title')}
             </span>
@@ -63,7 +73,11 @@ export function PenLeaderboardModal({ onClose }: PenLeaderboardModalProps) {
             style={bgImage(penShootAssets.closeBtn)}
             className="flex h-9 w-9 shrink-0 items-center justify-center bg-no-repeat transition active:scale-95"
           >
-            <img src={penShootAssets.closeIcon} alt="" className="h-4 w-4 object-contain" />
+            <img
+              src={penShootAssets.closeIcon}
+              alt=""
+              className="h-4 w-4 object-contain"
+            />
           </button>
         </div>
 
@@ -77,7 +91,9 @@ export function PenLeaderboardModal({ onClose }: PenLeaderboardModalProps) {
                 onClick={() => setPeriod(item.key)}
                 style={bgImage(penLeaderboardAssets.tab)}
                 className={`flex-1 whitespace-nowrap bg-no-repeat py-3 text-sm font-extrabold tracking-wide text-white transition active:scale-95 ${
-                  active ? 'drop-shadow-[0_0_6px_rgba(58,160,255,0.6)]' : 'opacity-40 saturate-50'
+                  active
+                    ? 'drop-shadow-[0_0_6px_rgba(58,160,255,0.6)]'
+                    : 'opacity-40 saturate-50'
                 }`}
               >
                 {item.label}
@@ -90,9 +106,13 @@ export function PenLeaderboardModal({ onClose }: PenLeaderboardModalProps) {
           className="grid shrink-0 items-center gap-2 border-y border-white/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-[#7cc4ff]"
           style={{ gridTemplateColumns: GRID_COLS }}
         >
-          <span className="text-center">{t('penGame.leaderboard.colRank')}</span>
+          <span className="text-center">
+            {t('penGame.leaderboard.colRank')}
+          </span>
           <span>{t('penGame.leaderboard.colPlayer')}</span>
-          <span className="text-right">{t('penGame.leaderboard.colKenWon')}</span>
+          <span className="text-right">
+            {t('penGame.leaderboard.colKenWon')}
+          </span>
         </div>
 
         <div className="pen-scroll flex h-112.5 flex-col overflow-y-auto">

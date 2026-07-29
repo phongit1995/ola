@@ -1,10 +1,13 @@
-import { http } from '../api';
-import { appendUploadFile, type UploadFile } from '../lib/upload';
-import { API_PATH } from '../config';
+import { http } from '../api/http';
+import { appendUploadFile } from '../lib/upload';
+import type { UploadFile } from '../types/client/upload.type';
+import { API_PATH } from '../config/api';
 import type {
   AuthUser,
   UpdateProfileRequest,
   UploadAvatarResult,
+} from '../types/api/auth.type';
+import type {
   PublicProfile,
   KissResult,
   FollowResult,
@@ -13,7 +16,7 @@ import type {
   SearchUsersResult,
   VisitorListParams,
   VisitorListResult,
-} from '../types';
+} from '../types/api/user.type';
 
 export class UserService {
   static me(): Promise<AuthUser> {

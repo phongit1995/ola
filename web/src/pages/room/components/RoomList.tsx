@@ -43,8 +43,12 @@ function SpecialRow({
           {icon}
         </span>
         <span className="min-w-0 flex-1 pl-2">
-          <span className="block truncate text-base text-black/87">{title}</span>
-          <span className="mt-1 block truncate text-sm text-black/54">{subtitle}</span>
+          <span className="block truncate text-base text-black/87">
+            {title}
+          </span>
+          <span className="mt-1 block truncate text-sm text-black/54">
+            {subtitle}
+          </span>
         </span>
       </button>
     </li>
@@ -90,7 +94,13 @@ export function RoomList({
       */}
       {showQuickJoin && (
         <SpecialRow
-          icon={<img src={autoJoinIcon} alt="" className="h-12 w-12 object-contain" />}
+          icon={
+            <img
+              src={autoJoinIcon}
+              alt=""
+              className="h-12 w-12 object-contain"
+            />
+          }
           title={t('room.quickJoin')}
           subtitle={t('room.quickJoinDesc')}
           onClick={onQuickJoin}

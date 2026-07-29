@@ -13,22 +13,30 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import { FlashList } from '@shopify/flash-list';
 import { useStickyBottomList } from '@hooks/useStickyBottomList';
 import type { ReactionType, RoomMessage } from '@ola/shared/types';
-import type { NativeUploadFile } from '@ola/shared/lib';
+import type { NativeUploadFile } from '@ola/shared/types';
 import { createDateFormatter } from '@ola/shared/lib';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { useRoomFilterStore } from '@ola/shared/stores/roomFilterStore';
 import { ChatText as Text } from '@components/ui/ChatText';
 import { RichTextView } from '@components/ui/RichTextView';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
-import { buildRoomFeed, type GroupedMessage, type RoomFeedItem } from '../messageGroups';
+import {
+  buildRoomFeed,
+  type GroupedMessage,
+  type RoomFeedItem,
+} from '../messageGroups';
 import { replyExcerpt, roomMessageAbilities } from '../roomMessageView';
 import { RoomBubbleBody, RoomMessageGroup } from './RoomMessageGroup';
 import { RoomComposerBar, type RoomComposerHandle } from './RoomComposerBar';
 import { RoomReactionNotice } from './RoomReactionNotice';
 import { RoomReactionBalloons } from './RoomReactionBalloons';
-import { MessageActionSheet, type AnchorRect, type MessageSheetAction } from './MessageActionSheet';
+import {
+  MessageActionSheet,
+  type AnchorRect,
+  type MessageSheetAction,
+} from './MessageActionSheet';
 import { RoomReactionsDialog } from './RoomReactionsDialog';
-import type { RoomChatStatus } from '@ola/shared/stores/roomChatStore';
+import type { RoomAudioSendResult, RoomChatStatus } from '@ola/shared/types';
 
 const replyActionIcon = require('@assets/icons/me/ic_action_reply_gray.png');
 const deleteActionIcon = require('@assets/icons/chat/ic_menu_delete.png');
@@ -44,7 +52,13 @@ interface RoomMessagesTabProps {
   replyTarget: RoomMessage | null;
   onSend: (content: string) => Promise<void>;
   onSendImage: (file: NativeUploadFile) => Promise<void>;
+  onSendAudio: (
+    file: NativeUploadFile,
+    duration: number,
+    waveform: number[],
+  ) => Promise<RoomAudioSendResult>;
   onResendImage: (messageId: string) => void;
+  onResendAudio: (messageId: string) => void;
   onLoadMore: () => void;
   onOpenProfile?: (nick: string, color: string) => void;
   onOpenUser?: (userId: string) => void;
@@ -65,7 +79,9 @@ export function RoomMessagesTab({
   replyTarget,
   onSend,
   onSendImage,
+  onSendAudio,
   onResendImage,
+  onResendAudio,
   onLoadMore,
   onOpenProfile,
   onOpenUser,
@@ -76,9 +92,9 @@ export function RoomMessagesTab({
 }: RoomMessagesTabProps) {
   const { t } = useTranslation();
   const { width: windowWidth } = useWindowDimensions();
-  const pushToast = useToastStore((s) => s.push);
-  const blockedUserIds = useRoomFilterStore((s) => s.blockedUserIds);
-  const blockUser = useRoomFilterStore((s) => s.blockUser);
+  const pushToast = useToastStore(s => s.push);
+  const blockedUserIds = useRoomFilterStore(s => s.blockedUserIds);
+  const blockUser = useRoomFilterStore(s => s.blockUser);
   const [actionTarget, setActionTarget] = useState<{
     message: RoomMessage;
     anchor: AnchorRect;
@@ -87,11 +103,14 @@ export function RoomMessagesTab({
   } | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<RoomMessage | null>(null);
   const [blockTarget, setBlockTarget] = useState<RoomMessage | null>(null);
-  const [reactionsTargetId, setReactionsTargetId] = useState<string | null>(null);
+  const [reactionsTargetId, setReactionsTargetId] = useState<string | null>(
+    null,
+  );
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
-  const pendingSheetDialogRef = useRef<
-    { kind: 'delete' | 'block'; target: RoomMessage } | null
-  >(null);
+  const pendingSheetDialogRef = useRef<{
+    kind: 'delete' | 'block';
+    target: RoomMessage;
+  } | null>(null);
   const pendingBlockCommitRef = useRef<RoomMessage | null>(null);
   const {
     listRef,
@@ -115,15 +134,22 @@ export function RoomMessagesTab({
   const [foregroundEpoch, setForegroundEpoch] = useState(0);
 
   const canSend = status === 'joined';
-  const dateFormatter = useMemo(() => createDateFormatter(language), [language]);
+  const dateFormatter = useMemo(
+    () => createDateFormatter(language),
+    [language],
+  );
   const feed = useMemo(() => {
     const blocked = new Set(blockedUserIds);
     const visible =
-      blocked.size === 0 ? messages : messages.filter((item) => !blocked.has(item.senderId));
+      blocked.size === 0
+        ? messages
+        : messages.filter(item => !blocked.has(item.senderId));
     return buildRoomFeed(visible, currentUserId);
   }, [messages, currentUserId, blockedUserIds]);
-  const messageById = useMemo(() => new Map(messages.map((item) => [item.id, item])), [messages]);
-
+  const messageById = useMemo(
+    () => new Map(messages.map(item => [item.id, item])),
+    [messages],
+  );
 
   const [rendered, setRendered] = useState(active);
   useEffect(() => {
@@ -135,13 +161,13 @@ export function RoomMessagesTab({
   }, [active, rendered, requestScrollToBottom]);
 
   useEffect(() => {
-    const subscription = AppState.addEventListener('change', (nextState) => {
+    const subscription = AppState.addEventListener('change', nextState => {
       if (nextState !== 'active') {
         wasStuckBeforeBackgroundRef.current = isStuckToBottom();
         return;
       }
       if (!active || !rendered) return;
-      setForegroundEpoch((value) => value + 1);
+      setForegroundEpoch(value => value + 1);
       listRef.current?.recomputeViewableItems();
       if (wasStuckBeforeBackgroundRef.current) requestScrollToBottom();
     });
@@ -172,32 +198,47 @@ export function RoomMessagesTab({
   }, [blockUser, pushToast, t]);
 
   const handleLongPressMessage = useCallback(
-    (id: string, anchor: AnchorRect, grouped: GroupedMessage, isOwn: boolean) => {
+    (
+      id: string,
+      anchor: AnchorRect,
+      grouped: GroupedMessage,
+      isOwn: boolean,
+    ) => {
       const message = messageById.get(id);
       if (message != null) {
         suspendRef.current = true;
         setActionTarget({ message, anchor, grouped, isOwn });
       }
     },
-    [messageById, suspendRef]
+    [messageById, suspendRef],
   );
 
   const scrollToMessage = useCallback(
     (id: string) => {
       const index = feed.findIndex(
-        (item) => item.kind === 'group' && item.messages.some((message) => message.id === id)
+        item =>
+          item.kind === 'group' &&
+          item.messages.some(message => message.id === id),
       );
       if (index < 0) {
         pushToast('error', t('room.replyNotFound'));
         return;
       }
       unstick();
-      listRef.current?.scrollToIndex({ index, animated: true, viewPosition: 0.5 });
+      listRef.current?.scrollToIndex({
+        index,
+        animated: true,
+        viewPosition: 0.5,
+      });
       setHighlightedId(id);
-      if (highlightTimerRef.current != null) clearTimeout(highlightTimerRef.current);
-      highlightTimerRef.current = setTimeout(() => setHighlightedId(null), 1500);
+      if (highlightTimerRef.current != null)
+        clearTimeout(highlightTimerRef.current);
+      highlightTimerRef.current = setTimeout(
+        () => setHighlightedId(null),
+        1500,
+      );
     },
-    [feed, pushToast, t, listRef, unstick]
+    [feed, pushToast, t, listRef, unstick],
   );
 
   function copyMessage(content: string) {
@@ -280,6 +321,7 @@ export function RoomMessagesTab({
             onQuoteClick={scrollToMessage}
             onShowReactions={setReactionsTargetId}
             onResendImage={onResendImage}
+            onResendAudio={onResendAudio}
           />
         </View>
       ),
@@ -293,7 +335,8 @@ export function RoomMessagesTab({
       scrollToMessage,
       setReactionsTargetId,
       onResendImage,
-    ]
+      onResendAudio,
+    ],
   );
 
   return (
@@ -303,7 +346,9 @@ export function RoomMessagesTab({
       {status !== 'joined' && (
         <View className="bg-black/5 py-1.5">
           <Text className="text-center text-sm text-ola-ink-soft">
-            {status === 'connecting' ? t('room.connecting') : t('room.joinError')}
+            {status === 'connecting'
+              ? t('room.connecting')
+              : t('room.joinError')}
           </Text>
         </View>
       )}
@@ -315,36 +360,39 @@ export function RoomMessagesTab({
           return false;
         }}
       >
-      {rendered && (
-      <FlashList
-        ref={listRef}
-        data={feed}
-        extraData={foregroundEpoch}
-        keyExtractor={(item) => item.key}
-        getItemType={(item) => item.kind}
-        drawDistance={1500}
-        maintainVisibleContentPosition={{
-          startRenderingFromBottom: true,
-        }}
-        onScroll={handleScroll}
-        onScrollBeginDrag={onScrollBeginDrag}
-        onScrollEndDrag={onScrollEndDrag}
-        onMomentumScrollBegin={onMomentumScrollBegin}
-        onMomentumScrollEnd={onMomentumScrollEnd}
-        scrollEventThrottle={16}
-        contentContainerClassName="p-3"
-        onContentSizeChange={onContentSizeChange}
-        onLayout={onListLayout}
-        ListHeaderComponent={
-          loadingMore ? (
-            <Text className="py-1 text-center text-xs" style={{ color: 'rgba(0,0,0,0.4)' }}>
-              {t('common.loading')}
-            </Text>
-          ) : null
-        }
-        renderItem={renderItem}
-      />
-      )}
+        {rendered && (
+          <FlashList
+            ref={listRef}
+            data={feed}
+            extraData={foregroundEpoch}
+            keyExtractor={item => item.key}
+            getItemType={item => item.kind}
+            drawDistance={1500}
+            maintainVisibleContentPosition={{
+              startRenderingFromBottom: true,
+            }}
+            onScroll={handleScroll}
+            onScrollBeginDrag={onScrollBeginDrag}
+            onScrollEndDrag={onScrollEndDrag}
+            onMomentumScrollBegin={onMomentumScrollBegin}
+            onMomentumScrollEnd={onMomentumScrollEnd}
+            scrollEventThrottle={16}
+            contentContainerClassName="p-3"
+            onContentSizeChange={onContentSizeChange}
+            onLayout={onListLayout}
+            ListHeaderComponent={
+              loadingMore ? (
+                <Text
+                  className="py-1 text-center text-xs"
+                  style={{ color: 'rgba(0,0,0,0.4)' }}
+                >
+                  {t('common.loading')}
+                </Text>
+              ) : null
+            }
+            renderItem={renderItem}
+          />
+        )}
       </View>
 
       {replyTarget != null && (
@@ -354,7 +402,10 @@ export function RoomMessagesTab({
         >
           <View className="h-8 w-0.5 rounded bg-ola-primary" />
           <View className="min-w-0 flex-1">
-            <Text numberOfLines={1} className="text-xs font-semibold text-ola-primary">
+            <Text
+              numberOfLines={1}
+              className="text-xs font-semibold text-ola-primary"
+            >
               {t('room.replyingTo', { name: replyTarget.senderName ?? '' })}
             </Text>
             <RichTextView
@@ -371,9 +422,7 @@ export function RoomMessagesTab({
             onPress={onClearReplyTarget}
             className="h-7 w-7 items-center justify-center rounded-full"
           >
-            <Text className="text-lg text-ola-ink-soft">
-              ×
-            </Text>
+            <Text className="text-lg text-ola-ink-soft">×</Text>
           </Pressable>
         </View>
       )}
@@ -384,6 +433,7 @@ export function RoomMessagesTab({
         onBeforeSend={pinOnNextContent}
         onSendText={onSend}
         onSendImage={onSendImage}
+        onSendAudio={onSendAudio}
       />
 
       <MessageActionSheet
@@ -391,7 +441,11 @@ export function RoomMessagesTab({
         anchor={actionTarget?.anchor ?? null}
         preview={
           actionTarget != null ? (
-            <View style={{ alignSelf: actionTarget.isOwn ? 'flex-end' : 'flex-start' }}>
+            <View
+              style={{
+                alignSelf: actionTarget.isOwn ? 'flex-end' : 'flex-start',
+              }}
+            >
               <RoomBubbleBody
                 message={actionTarget.grouped}
                 isOwn={actionTarget.isOwn}
@@ -402,14 +456,18 @@ export function RoomMessagesTab({
           ) : null
         }
         actions={actionTarget != null ? sheetActions(actionTarget.message) : []}
-        showReactions={actionTarget != null && actionTarget.message.senderId !== currentUserId}
-        onReact={(type) => {
+        showReactions={
+          actionTarget != null &&
+          actionTarget.message.senderId !== currentUserId
+        }
+        onReact={type => {
           if (actionTarget != null) onReact(actionTarget.message.id, type);
         }}
         onClose={() => {
           suspendRef.current = false;
           setActionTarget(null);
-          if (Platform.OS !== 'ios') requestAnimationFrame(openPendingSheetDialog);
+          if (Platform.OS !== 'ios')
+            requestAnimationFrame(openPendingSheetDialog);
         }}
         onDismiss={openPendingSheetDialog}
       />
@@ -417,7 +475,9 @@ export function RoomMessagesTab({
       <RoomReactionsDialog
         visible={reactionsTargetId != null}
         reactions={
-          reactionsTargetId != null ? messageById.get(reactionsTargetId)?.reactions : undefined
+          reactionsTargetId != null
+            ? messageById.get(reactionsTargetId)?.reactions
+            : undefined
         }
         onClose={() => setReactionsTargetId(null)}
       />
@@ -433,7 +493,9 @@ export function RoomMessagesTab({
           const target = deleteTarget;
           setDeleteTarget(null);
           if (target != null) {
-            onDeleteMessage(target.id).catch(() => pushToast('error', t('common.error')));
+            onDeleteMessage(target.id).catch(() =>
+              pushToast('error', t('common.error')),
+            );
           }
         }}
         onCancel={() => setDeleteTarget(null)}
@@ -443,7 +505,9 @@ export function RoomMessagesTab({
         visible={blockTarget != null}
         danger
         title={t('room.blockTitle')}
-        message={t('room.blockConfirm', { name: blockTarget?.senderName ?? '' })}
+        message={t('room.blockConfirm', {
+          name: blockTarget?.senderName ?? '',
+        })}
         confirmLabel={t('room.actionBlock')}
         cancelLabel={t('dialog.cancel')}
         onConfirm={() => {
@@ -451,7 +515,8 @@ export function RoomMessagesTab({
           setBlockTarget(null);
           if (target != null) {
             pendingBlockCommitRef.current = target;
-            if (Platform.OS !== 'ios') requestAnimationFrame(commitPendingBlock);
+            if (Platform.OS !== 'ios')
+              requestAnimationFrame(commitPendingBlock);
           }
         }}
         onCancel={() => {

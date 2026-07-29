@@ -34,7 +34,11 @@ function ReceiverRow({ receiver }: { receiver: TransferVipDaysReceiver }) {
   );
 }
 
-export function TransferVipDaysDialog({ open, onClose, receiver }: TransferVipDaysDialogProps) {
+export function TransferVipDaysDialog({
+  open,
+  onClose,
+  receiver,
+}: TransferVipDaysDialogProps) {
   const { t } = useTranslation();
   const balance = useAuthStore((s) => s.user?.ken ?? 0);
   const setUser = useAuthStore((s) => s.setUser);
@@ -78,7 +82,11 @@ export function TransferVipDaysDialog({ open, onClose, receiver }: TransferVipDa
   }
 
   async function submitGift() {
-    if (selected == null || receiver.username == null || receiver.username === '') {
+    if (
+      selected == null ||
+      receiver.username == null ||
+      receiver.username === ''
+    ) {
       toast.error(t('chat.actionError'));
       return;
     }
@@ -88,11 +96,18 @@ export function TransferVipDaysDialog({ open, onClose, receiver }: TransferVipDa
     }
     setSubmitting(true);
     try {
-      const result = await VipService.giftPackage(selected.id, receiver.username, password);
+      const result = await VipService.giftPackage(
+        selected.id,
+        receiver.username,
+        password
+      );
       const current = useAuthStore.getState().user;
       if (current != null) setUser({ ...current, ken: result.kenBalance });
       toast.success(
-        t('chat.transferVipDaysSuccess', { days: result.days, name: receiver.name }),
+        t('chat.transferVipDaysSuccess', {
+          days: result.days,
+          name: receiver.name,
+        })
       );
       onClose();
     } catch (error) {
@@ -112,7 +127,9 @@ export function TransferVipDaysDialog({ open, onClose, receiver }: TransferVipDa
   }
 
   const title =
-    step === 'confirm' ? t('chat.transferVipDaysConfirmTitle') : t('chat.transferVipDaysTitle');
+    step === 'confirm'
+      ? t('chat.transferVipDaysConfirmTitle')
+      : t('chat.transferVipDaysTitle');
 
   const footer =
     step === 'select' ? (
@@ -124,7 +141,11 @@ export function TransferVipDaysDialog({ open, onClose, receiver }: TransferVipDa
         <DialogButton onClick={() => setStep('select')} disabled={submitting}>
           {t('chat.transferVipDaysEdit')}
         </DialogButton>
-        <DialogButton variant="green" onClick={() => void submitGift()} disabled={submitting}>
+        <DialogButton
+          variant="green"
+          onClick={() => void submitGift()}
+          disabled={submitting}
+        >
           {t('chat.transferVipDaysOk')}
         </DialogButton>
       </>
@@ -141,13 +162,17 @@ export function TransferVipDaysDialog({ open, onClose, receiver }: TransferVipDa
       {step === 'select' ? (
         <div className="flex flex-col gap-1 px-1 py-1">
           <div className="flex items-center justify-center gap-2 text-lg font-bold">
-            <span className="text-black/54">{t('chat.transferVipDaysBalance')}</span>
+            <span className="text-black/54">
+              {t('chat.transferVipDaysBalance')}
+            </span>
             <span className="text-black/87">
               {formatKen(balance)} {t('chat.transferKenUnit')}
             </span>
           </div>
           <div className="my-2 h-px bg-black/12" />
-          <span className="text-base text-black/87">{t('chat.transferVipDaysReceiverLabel')}</span>
+          <span className="text-base text-black/87">
+            {t('chat.transferVipDaysReceiverLabel')}
+          </span>
           <ReceiverRow receiver={receiver} />
           <span className="mt-4 text-base text-black/87">
             {t('chat.transferVipDaysSelectLabel')}
@@ -168,7 +193,8 @@ export function TransferVipDaysDialog({ open, onClose, receiver }: TransferVipDa
             >
               {packages.map((item) => (
                 <option key={item.id} value={item.id}>
-                  {item.name} · {t('chat.transferVipDaysDayUnit', { days: item.days })} ·{' '}
+                  {item.name} ·{' '}
+                  {t('chat.transferVipDaysDayUnit', { days: item.days })} ·{' '}
                   {formatKen(item.kenPrice)} {t('chat.transferKenUnit')}
                 </option>
               ))}
@@ -177,7 +203,9 @@ export function TransferVipDaysDialog({ open, onClose, receiver }: TransferVipDa
         </div>
       ) : (
         <div className="flex flex-col gap-1 px-1 py-1">
-          <span className="text-base text-black/54">{t('chat.transferVipDaysReceiverLabel')}</span>
+          <span className="text-base text-black/54">
+            {t('chat.transferVipDaysReceiverLabel')}
+          </span>
           <UserRow
             name={receiver.name}
             username={receiver.username}

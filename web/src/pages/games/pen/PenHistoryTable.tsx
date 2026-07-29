@@ -44,7 +44,10 @@ export function PenHistoryTable({
             {header}
           </div>
 
-          <div className="flex flex-col" style={{ minHeight: `${minHeight}px` }}>
+          <div
+            className="flex flex-col"
+            style={{ minHeight: `${minHeight}px` }}
+          >
             {loading ? (
               <div className="flex flex-1 items-center justify-center">
                 <Spinner />
@@ -60,7 +63,12 @@ export function PenHistoryTable({
         </div>
       </div>
 
-      <PenPagination page={page} pageCount={pageCount} loading={loading} onPage={onPage} />
+      <PenPagination
+        page={page}
+        pageCount={pageCount}
+        loading={loading}
+        onPage={onPage}
+      />
 
       {footer}
     </section>

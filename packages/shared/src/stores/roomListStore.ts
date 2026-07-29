@@ -1,29 +1,12 @@
 import { create } from 'zustand';
 import i18n from 'i18next';
-import { RoomService } from '../services';
-import { toast } from '../lib';
-import type { BrowseRoomsParams, Room } from '../types';
-
-interface RoomListState {
-  rooms: Room[];
-  total: number;
-  loading: boolean;
-  error: string | null;
-  loaded: boolean;
-  fetchRooms: (params?: BrowseRoomsParams, options?: { silent?: boolean }) => Promise<void>;
-  reset: () => void;
-}
-
-const initialState = {
-  rooms: [] as Room[],
-  total: 0,
-  loading: false,
-  error: null as string | null,
-  loaded: false,
-};
+import { toast } from '../lib/toast';
+import { RoomService } from '../services/room.service';
+import type { RoomListState } from '../types/client/room.type';
+import { initialRoomListState } from './roomList.state';
 
 export const useRoomListStore = create<RoomListState>((set) => ({
-  ...initialState,
+  ...initialRoomListState,
   fetchRooms: async (params, options) => {
     const silent = options?.silent ?? false;
     if (!silent) set({ loading: true, error: null });
@@ -38,5 +21,5 @@ export const useRoomListStore = create<RoomListState>((set) => ({
       if (!silent) toast.error(i18n.t('room.loadError'));
     }
   },
-  reset: () => set({ ...initialState }),
+  reset: () => set({ ...initialRoomListState }),
 }));

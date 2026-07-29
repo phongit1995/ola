@@ -13,7 +13,11 @@ interface AddContactDialogProps {
   onOpenProfile?: (target: { username: string; color: string }) => void;
 }
 
-export function AddContactDialog({ open, onClose, onOpenProfile }: AddContactDialogProps) {
+export function AddContactDialog({
+  open,
+  onClose,
+  onOpenProfile,
+}: AddContactDialogProps) {
   const { t } = useTranslation();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<UserSearchResult[]>([]);
@@ -69,11 +73,21 @@ export function AddContactDialog({ open, onClose, onOpenProfile }: AddContactDia
 
   function relationButton(user: UserSearchResult) {
     const busy = busyId === user.id;
-    if (acceptedIds.includes(user.id) || user.relationship === RELATIONSHIP_STATUS.friend) {
-      return <ActionButton disabled>{t('chat.alreadyFriendShort')}</ActionButton>;
+    if (
+      acceptedIds.includes(user.id) ||
+      user.relationship === RELATIONSHIP_STATUS.friend
+    ) {
+      return (
+        <ActionButton disabled>{t('chat.alreadyFriendShort')}</ActionButton>
+      );
     }
-    if (sentIds.includes(user.id) || user.relationship === RELATIONSHIP_STATUS.pendingOutgoing) {
-      return <ActionButton disabled>{t('chat.friendRequestSentShort')}</ActionButton>;
+    if (
+      sentIds.includes(user.id) ||
+      user.relationship === RELATIONSHIP_STATUS.pendingOutgoing
+    ) {
+      return (
+        <ActionButton disabled>{t('chat.friendRequestSentShort')}</ActionButton>
+      );
     }
     if (user.relationship === RELATIONSHIP_STATUS.pendingIncoming) {
       return (
@@ -95,7 +109,8 @@ export function AddContactDialog({ open, onClose, onOpenProfile }: AddContactDia
     );
   }
 
-  const emptyMessage = query.trim() === '' ? t('chat.addContactHint') : t('chat.addContactEmpty');
+  const emptyMessage =
+    query.trim() === '' ? t('chat.addContactHint') : t('chat.addContactEmpty');
 
   return (
     <UserListDialog
@@ -110,7 +125,9 @@ export function AddContactDialog({ open, onClose, onOpenProfile }: AddContactDia
       loading={loading}
       loadingText={t('common.loading')}
       isEmpty={results.length === 0}
-      empty={<p className="py-6 text-center text-sm text-black/54">{emptyMessage}</p>}
+      empty={
+        <p className="py-6 text-center text-sm text-black/54">{emptyMessage}</p>
+      }
     >
       {results.map((user) => (
         <li key={user.id}>
@@ -122,7 +139,11 @@ export function AddContactDialog({ open, onClose, onOpenProfile }: AddContactDia
             online={user.isOnline}
             onClick={
               onOpenProfile != null
-                ? () => onOpenProfile({ username: user.username, color: colorForName(user.username) })
+                ? () =>
+                    onOpenProfile({
+                      username: user.username,
+                      color: colorForName(user.username),
+                    })
                 : undefined
             }
             trailing={relationButton(user)}

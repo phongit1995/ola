@@ -13,11 +13,26 @@ import { useTranslation } from 'react-i18next';
 export type TabKey = 'chat' | 'room' | 'me' | 'rss' | 'apps';
 
 const TABS = [
-  { key: 'chat', labelKey: 'home.tabChat', icon: iconMessage, iconActive: iconMessageActive },
-  { key: 'room', labelKey: 'home.tabRoom', icon: iconRoom, iconActive: iconRoomActive },
+  {
+    key: 'chat',
+    labelKey: 'home.tabChat',
+    icon: iconMessage,
+    iconActive: iconMessageActive,
+  },
+  {
+    key: 'room',
+    labelKey: 'home.tabRoom',
+    icon: iconRoom,
+    iconActive: iconRoomActive,
+  },
   { key: 'me', labelKey: 'home.tabMe', icon: iconMe, iconActive: iconMeActive },
   // { key: 'rss', labelKey: 'home.tabRss', icon: iconRss, iconActive: iconRssActive },
-  { key: 'apps', labelKey: 'home.tabApps', icon: iconApps, iconActive: iconAppsActive },
+  {
+    key: 'apps',
+    labelKey: 'home.tabApps',
+    icon: iconApps,
+    iconActive: iconAppsActive,
+  },
 ] as const;
 
 interface BottomTabBarProps {
@@ -27,7 +42,12 @@ interface BottomTabBarProps {
   dots?: Partial<Record<TabKey, boolean>>;
 }
 
-export function BottomTabBar({ active, onChange, badges, dots }: BottomTabBarProps) {
+export function BottomTabBar({
+  active,
+  onChange,
+  badges,
+  dots,
+}: BottomTabBarProps) {
   const { t } = useTranslation();
   return (
     <nav className="flex border-t border-[#a0a0a0] bg-white">

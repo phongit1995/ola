@@ -1,42 +1,22 @@
 import { create } from 'zustand';
-import { formatClockHM, formatDateDMY, toApiError, toast } from '../lib';
-import { KenService } from '../services';
-import type { KenTransaction } from '../types';
+import { KEN_HISTORY_PAGE_SIZE } from '../constants/ken';
+import { toApiError } from '../lib/apiError';
+import { formatClockHM, formatDateDMY } from '../lib/datetime';
+import { toast } from '../lib/toast';
+import { KenService } from '../services/ken.service';
+import type { KenTransaction } from '../types/api/ken.type';
+import type {
+  KenHistoryGroup,
+  KenHistoryState,
+} from '../types/client/kenHistory.type';
+import { createEmptyKenHistorySections } from './kenHistory.state';
 
-export const KEN_HISTORY_PAGE = 20;
-
-export type KenHistoryTab = 'all' | 'credit' | 'debit';
-
-export interface KenHistoryRow extends KenTransaction {
-  timeText: string;
-}
-
-export interface KenHistoryGroup {
-  key: string;
-  dayLabel: 'today' | 'yesterday' | null;
-  dateText: string;
-  rows: KenHistoryRow[];
-}
-
-interface KenHistorySection {
-  items: KenTransaction[];
-  groups: KenHistoryGroup[];
-  total: number;
-  page: number;
-  loading: boolean;
-}
-
-interface KenHistoryState {
-  sections: Record<KenHistoryTab, KenHistorySection>;
-  load: (tab: KenHistoryTab, page: number) => Promise<void>;
-  reset: () => void;
-}
-
-const emptySection: KenHistorySection = { items: [], groups: [], total: 0, page: 0, loading: false };
-
-function emptySections(): Record<KenHistoryTab, KenHistorySection> {
-  return { all: { ...emptySection }, credit: { ...emptySection }, debit: { ...emptySection } };
-}
+export { KEN_HISTORY_PAGE_SIZE as KEN_HISTORY_PAGE } from '../constants/ken';
+export type {
+  KenHistoryGroup,
+  KenHistoryRow,
+  KenHistoryTab,
+} from '../types/client/kenHistory.type';
 
 function dayKey(date: Date): string {
   return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
@@ -65,7 +45,7 @@ function groupByDay(items: KenTransaction[]): KenHistoryGroup[] {
 }
 
 export const useKenHistoryStore = create<KenHistoryState>((set, get) => ({
-  sections: emptySections(),
+  sections: createEmptyKenHistorySections(),
   load: async (tab, page) => {
     if (get().sections[tab].loading) return;
     set((state) => ({
@@ -73,8 +53,8 @@ export const useKenHistoryStore = create<KenHistoryState>((set, get) => ({
     }));
     try {
       const res = await KenService.history({
-        limit: KEN_HISTORY_PAGE,
-        offset: page * KEN_HISTORY_PAGE,
+        limit: KEN_HISTORY_PAGE_SIZE,
+        offset: page * KEN_HISTORY_PAGE_SIZE,
         ...(tab === 'all' ? {} : { direction: tab }),
       });
       set((state) => ({
@@ -90,5 +70,5 @@ export const useKenHistoryStore = create<KenHistoryState>((set, get) => ({
       toast.error(toApiError(e).message);
     }
   },
-  reset: () => set({ sections: emptySections() }),
+  reset: () => set({ sections: createEmptyKenHistorySections() }),
 }));

@@ -18,7 +18,11 @@ function CommentLikerStack({ likers }: { likers: PostAuthor[] }) {
           className="inline-flex overflow-hidden rounded-full ring-2 ring-white"
         >
           <Avatar
-            name={liker.fullName != null && liker.fullName !== '' ? liker.fullName : liker.username}
+            name={
+              liker.fullName != null && liker.fullName !== ''
+                ? liker.fullName
+                : liker.username
+            }
             src={liker.avatar}
             color={colorForName(liker.username)}
             size={18}
@@ -42,7 +46,12 @@ interface MeCommentItemProps {
 
 function TrashIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden="true">
+    <svg
+      viewBox="0 0 24 24"
+      className="h-4 w-4"
+      fill="currentColor"
+      aria-hidden="true"
+    >
       <path d="M9 3h6l1 2h4v2H4V5h4l1-2ZM6 9h12l-1 11a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1L6 9Z" />
     </svg>
   );
@@ -71,8 +80,17 @@ function MeCommentItemComponent({
     <>
       <div className="mx-2 mb-2 rounded-xl bg-white px-3 py-2.5 shadow-[0_1px_2px_rgba(0,0,0,0.10)]">
         <div className="flex items-start gap-2.5">
-          <button type="button" onClick={() => onOpenProfile?.(name, color)} className="shrink-0">
-            <Avatar name={name} src={comment.author?.avatar} color={color} size={36} />
+          <button
+            type="button"
+            onClick={() => onOpenProfile?.(name, color)}
+            className="shrink-0"
+          >
+            <Avatar
+              name={name}
+              src={comment.author?.avatar}
+              color={color}
+              size={36}
+            />
           </button>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
@@ -96,7 +114,9 @@ function MeCommentItemComponent({
               )}
             </div>
             <p className="mt-0.5 text-sm leading-relaxed whitespace-pre-wrap break-words text-black/87">
-              {renderRichText(comment.content, (nick) => onOpenProfile?.(nick, colorForName(nick)))}
+              {renderRichText(comment.content, (nick) =>
+                onOpenProfile?.(nick, colorForName(nick))
+              )}
             </p>
             <div className="mt-1.5 flex items-center gap-4">
               {onReply != null && (
@@ -105,7 +125,11 @@ function MeCommentItemComponent({
                   onClick={() => onReply(comment)}
                   className="flex items-center gap-1 text-xs font-medium text-black/45 transition-colors hover:text-ola-primary"
                 >
-                  <img src={replyIcon} alt="" className="h-5 w-5 object-contain" />
+                  <img
+                    src={replyIcon}
+                    alt=""
+                    className="h-5 w-5 object-contain"
+                  />
                   {t('me.reply')}
                 </button>
               )}

@@ -4,10 +4,16 @@ interface PresenceBadgeProps {
   className?: string;
 }
 
-export function PresenceBadge({ icon, tone = 'primary', className = '' }: PresenceBadgeProps) {
+export function PresenceBadge({
+  icon,
+  tone = 'primary',
+  className = '',
+}: PresenceBadgeProps) {
   if (icon == null || icon === '') {
     return (
-      <span className={`h-3 w-3 rounded-full border-2 border-white bg-ola-primary ${className}`} />
+      <span
+        className={`h-3 w-3 rounded-full border-2 border-white bg-ola-primary ${className}`}
+      />
     );
   }
   if (tone === 'white') {

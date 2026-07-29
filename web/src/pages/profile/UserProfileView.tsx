@@ -20,8 +20,16 @@ export function UserProfileView({
   z = 40,
 }: UserProfileViewProps) {
   const { t } = useTranslation();
-  const { profile, userId, loading, notFound, relationship, actions, secondary, postActions } =
-    useUserProfile(username, color);
+  const {
+    profile,
+    userId,
+    loading,
+    notFound,
+    relationship,
+    actions,
+    secondary,
+    postActions,
+  } = useUserProfile(username, color);
 
   if (profile && !loading) {
     return (
@@ -46,7 +54,9 @@ export function UserProfileView({
         {loading ? (
           <Spinner size={32} />
         ) : (
-          <p className="text-sm text-black/54">{notFound ? t('profile.notFound') : ''}</p>
+          <p className="text-sm text-black/54">
+            {notFound ? t('profile.notFound') : ''}
+          </p>
         )}
       </div>
     </FullScreenOverlay>

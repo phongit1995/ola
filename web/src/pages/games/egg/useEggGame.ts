@@ -53,7 +53,8 @@ export function useEggGame() {
       toast.info(t('eggGame.outOfKen'));
       return null;
     }
-    if (!state.muted && useSettingsStore.getState().settings.soundGame) playSmashSound();
+    if (!state.muted && useSettingsStore.getState().settings.soundGame)
+      playSmashSound();
     state.beginSmash();
 
     const packId = activePack.id;
@@ -79,5 +80,14 @@ export function useEggGame() {
     })();
   }, [activePack, draw, applyResult, showWin, t]);
 
-  return { ken, totalWin, cost, packId: activePack?.id ?? null, muted, packsStatus, play, toggleMute };
+  return {
+    ken,
+    totalWin,
+    cost,
+    packId: activePack?.id ?? null,
+    muted,
+    packsStatus,
+    play,
+    toggleMute,
+  };
 }

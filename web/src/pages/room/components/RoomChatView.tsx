@@ -5,7 +5,10 @@ import groupMessageIcon from '@/assets/icons/room/ic_notify_new_chat_group_messa
 import filterIcon from '@/assets/icons/room/ic_filter_unselected.png';
 import { useRoomChatStore } from '@/store/roomChatStore';
 import { useAuthStore } from '@/store/authStore';
-import { useRoomFilterStore, memberMatchesFilter } from '@ola/shared/stores/roomFilterStore';
+import {
+  useRoomFilterStore,
+  memberMatchesFilter,
+} from '@ola/shared/stores/roomFilterStore';
 import { ScreenHeader, FullScreenOverlay } from '@components';
 import type { ReactionType } from '@app-types';
 import { RoomTabBar, type RoomTabItem } from './RoomTabBar';
@@ -35,23 +38,34 @@ export function RoomChatView({ visible, onClose }: RoomChatViewProps) {
   const messagesUnread = useRoomChatStore((state) => state.messagesUnread);
   const setActiveTab = useRoomChatStore((state) => state.setActiveTab);
   const sendMessage = useRoomChatStore((state) => state.sendMessage);
-  const setRoomForeground = useRoomChatStore((state) => state.setRoomForeground);
+  const setRoomForeground = useRoomChatStore(
+    (state) => state.setRoomForeground
+  );
   const hasMore = useRoomChatStore((state) => state.hasMore);
   const loadingMore = useRoomChatStore((state) => state.loadingMore);
   const loadMoreMessages = useRoomChatStore((state) => state.loadMoreMessages);
   const replyTarget = useRoomChatStore((state) => state.replyTarget);
   const setReplyTarget = useRoomChatStore((state) => state.setReplyTarget);
   const clearReplyTarget = useRoomChatStore((state) => state.clearReplyTarget);
-  const reactToRoomMessage = useRoomChatStore((state) => state.reactToRoomMessage);
-  const deleteRoomMessage = useRoomChatStore((state) => state.deleteRoomMessage);
+  const reactToRoomMessage = useRoomChatStore(
+    (state) => state.reactToRoomMessage
+  );
+  const deleteRoomMessage = useRoomChatStore(
+    (state) => state.deleteRoomMessage
+  );
   const sendImage = useRoomChatStore((state) => state.sendImage);
+  const sendAudio = useRoomChatStore((state) => state.sendAudio);
   const resendRoomImage = useRoomChatStore((state) => state.resendRoomImage);
+  const resendRoomAudio = useRoomChatStore((state) => state.resendRoomAudio);
   const handleReact = useCallback(
-    (messageId: string, type: ReactionType) => void reactToRoomMessage(messageId, type),
+    (messageId: string, type: ReactionType) =>
+      void reactToRoomMessage(messageId, type),
     [reactToRoomMessage]
   );
   const currentUserId = useAuthStore((state) => state.user?.id) ?? '';
-  const [profileTarget, setProfileTarget] = useState<ProfileTarget | null>(null);
+  const [profileTarget, setProfileTarget] = useState<ProfileTarget | null>(
+    null
+  );
   const [filterOpen, setFilterOpen] = useState(false);
   const filters = useRoomFilterStore((state) => state.filters);
   const setFilters = useRoomFilterStore((state) => state.setFilters);
@@ -70,7 +84,11 @@ export function RoomChatView({ visible, onClose }: RoomChatViewProps) {
   }, []);
 
   const tabs: RoomTabItem[] = [
-    { key: 'members', icon: addFriendIcon, label: `${t('room.tabMembers')} (${memberCount})` },
+    {
+      key: 'members',
+      icon: addFriendIcon,
+      label: `${t('room.tabMembers')} (${memberCount})`,
+    },
     {
       key: 'messages',
       icon: groupMessageIcon,
@@ -108,7 +126,9 @@ export function RoomChatView({ visible, onClose }: RoomChatViewProps) {
         replyTarget={replyTarget}
         onSend={sendMessage}
         onSendImage={sendImage}
+        onSendAudio={sendAudio}
         onResendImage={(id) => void resendRoomImage(id)}
+        onResendAudio={(id) => void resendRoomAudio(id)}
         onLoadMore={loadMoreMessages}
         onOpenProfile={openProfile}
         onSetReplyTarget={setReplyTarget}
@@ -128,7 +148,9 @@ export function RoomChatView({ visible, onClose }: RoomChatViewProps) {
           username={profileTarget.username}
           color={profileTarget.color}
           onClose={() => setProfileTarget(null)}
-          onOpenFriend={(friend) => setProfileTarget({ username: friend.name, color: friend.color })}
+          onOpenFriend={(friend) =>
+            setProfileTarget({ username: friend.name, color: friend.color })
+          }
         />
       )}
 

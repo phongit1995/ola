@@ -1,4 +1,8 @@
-import { useRef, type PointerEvent as ReactPointerEvent, type MouseEvent as ReactMouseEvent } from 'react';
+import {
+  useRef,
+  type PointerEvent as ReactPointerEvent,
+  type MouseEvent as ReactMouseEvent,
+} from 'react';
 
 const LONG_PRESS_MS = 450;
 const MOVE_THRESHOLD = 10;

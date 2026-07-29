@@ -1,5 +1,5 @@
 import type { TFunction } from 'i18next';
-import type { RelationshipStatus } from '../types';
+import type { RelationshipStatus } from '../types/api/user.type';
 
 export function chatFriendActionLabel(
   t: TFunction,

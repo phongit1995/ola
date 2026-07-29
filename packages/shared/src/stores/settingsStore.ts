@@ -1,17 +1,9 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { SettingsService } from '../services';
-import { DEFAULT_USER_SETTINGS } from '../types';
-import type { UserSettings, UpdateSettingsRequest } from '../types';
+import { DEFAULT_USER_SETTINGS } from '../constants/settings';
+import { SettingsService } from '../services/settings.service';
+import type { SettingsState } from '../types/client/settings.type';
 import { sharedPersistStorage } from '../platform/persistStorage';
-
-interface SettingsState {
-  settings: UserSettings;
-  loaded: boolean;
-  hydrate: () => Promise<void>;
-  update: (patch: UpdateSettingsRequest) => Promise<boolean>;
-  reset: () => void;
-}
 
 export const useSettingsStore = create<SettingsState>()(
   persist(

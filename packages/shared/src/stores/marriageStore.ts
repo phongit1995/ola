@@ -1,61 +1,27 @@
 import { create } from 'zustand';
-import { colorForName } from '../lib';
-import {
-  MarriageService,
-  type DiaryEntryResult,
-  type MarriageUserBrief,
-  type ProposalItem,
-} from '../services';
+import { colorForName } from '../lib/avatarColor';
+import { MarriageService } from '../services/marriage.service';
+import type {
+  DiaryEntryResult,
+  MarriageUserBrief,
+  ProposalItem,
+} from '../types/api/marriage.type';
+import type {
+  DiaryEntry,
+  MarriageState,
+  PendingProposal,
+  SentProposal,
+  Spouse,
+} from '../types/client/marriage.type';
 import { useAuthStore } from './authStore';
 
-export type MarriageStatus = 'single' | 'married';
-
-export interface Spouse {
-  nick: string;
-  name: string;
-  avatarColor: string;
-  avatarUrl?: string;
-}
-
-export interface DiaryEntry {
-  id: string;
-  author: 'me' | 'spouse';
-  content: string;
-  createdAt: number;
-}
-
-export interface PendingProposal {
-  id: string;
-  fromNick: string;
-  fromName: string;
-  avatarColor: string;
-  message: string;
-}
-
-export interface SentProposal {
-  id: string;
-  toNick: string;
-  message: string;
-  createdAt: number;
-}
-
-interface MarriageState {
-  loading: boolean;
-  loaded: boolean;
-  status: MarriageStatus;
-  spouse: Spouse | null;
-  marriedSince: number | null;
-  diary: DiaryEntry[];
-  pendingProposals: PendingProposal[];
-  sentProposals: SentProposal[];
-  load: () => Promise<void>;
-  propose: (addresseeId: string, message: string) => Promise<void>;
-  cancelSent: (id: string) => Promise<void>;
-  acceptProposal: (id: string) => Promise<void>;
-  denyProposal: (id: string) => Promise<void>;
-  divorce: () => Promise<void>;
-  writeBox: (content: string) => Promise<void>;
-}
+export type {
+  DiaryEntry,
+  MarriageStatus,
+  PendingProposal,
+  SentProposal,
+  Spouse,
+} from '../types/client/marriage.type';
 
 function mapSpouse(s: MarriageUserBrief): Spouse {
   return {

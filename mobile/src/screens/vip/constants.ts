@@ -1,4 +1,4 @@
-import type { BuyVipMode } from '@ola/shared/lib';
+import type { BuyVipMode } from '@ola/shared/types';
 
 export const DEFAULT_VIP_ID = 4;
 

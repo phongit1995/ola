@@ -1,5 +1,5 @@
 import type { AxiosError, AxiosInstance } from 'axios';
-import { env } from '../../config';
+import { env } from '../../config/env';
 
 export function registerLoggingInterceptor(http: AxiosInstance): void {
   if (!env.isDev) {

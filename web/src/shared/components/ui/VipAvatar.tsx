@@ -8,5 +8,7 @@ interface VipAvatarProps {
 
 export function VipAvatar({ typeId, className = 'h-10 w-10' }: VipAvatarProps) {
   const src = typeId != null ? vipIconUrl(typeId) : smileyIcon;
-  return <img src={src} alt="" className={`${className} shrink-0 object-contain`} />;
+  return (
+    <img src={src} alt="" className={`${className} shrink-0 object-contain`} />
+  );
 }

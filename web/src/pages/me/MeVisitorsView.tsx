@@ -10,16 +10,19 @@ interface MeVisitorsViewProps {
 
 export function MeVisitorsView({ onClose }: MeVisitorsViewProps) {
   const { t } = useTranslation();
-  const [profileTarget, setProfileTarget] = useState<{ username: string; color: string } | null>(
-    null
-  );
+  const [profileTarget, setProfileTarget] = useState<{
+    username: string;
+    color: string;
+  } | null>(null);
 
   return (
     <FullScreenOverlay>
       <ScreenHeader title={t('me.tabVisitors')} onBack={onClose} />
       <MeVisitorsList
         className="flex-1"
-        onOpenProfile={(nick, color) => setProfileTarget({ username: nick, color })}
+        onOpenProfile={(nick, color) =>
+          setProfileTarget({ username: nick, color })
+        }
       />
 
       {profileTarget != null && (
@@ -28,7 +31,9 @@ export function MeVisitorsView({ onClose }: MeVisitorsViewProps) {
           username={profileTarget.username}
           color={profileTarget.color}
           onClose={() => setProfileTarget(null)}
-          onOpenFriend={(friend) => setProfileTarget({ username: friend.name, color: friend.color })}
+          onOpenFriend={(friend) =>
+            setProfileTarget({ username: friend.name, color: friend.color })
+          }
         />
       )}
     </FullScreenOverlay>

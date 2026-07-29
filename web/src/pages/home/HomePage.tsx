@@ -25,7 +25,9 @@ import {
 import { ACTIVE_TAB_KEY, PANELS } from './constants';
 
 const DownloadGuideOverlay = lazy(() =>
-  import('../download/DownloadGuideOverlay').then((m) => ({ default: m.DownloadGuideOverlay }))
+  import('../download/DownloadGuideOverlay').then((m) => ({
+    default: m.DownloadGuideOverlay,
+  }))
 );
 
 function readStoredTab(): TabKey {
@@ -41,7 +43,9 @@ function rollDownloadFabVisible(): boolean {
 export function HomePage() {
   const [tab, setTab] = useState<TabKey>(readStoredTab);
   const roomUnread = useRoomChatStore((state) => state.hasUnread);
-  const chatUnread = useChatStore((state) => totalUnreadOf(state.conversations));
+  const chatUnread = useChatStore((state) =>
+    totalUnreadOf(state.conversations)
+  );
   const notifUnread = useAppNotificationStore((state) => state.unreadCount);
   const ActivePanel = PANELS[tab];
   const authReady = useAuthStore((state) => state.authReady);

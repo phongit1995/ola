@@ -1,14 +1,11 @@
 import type { InitOptions } from 'i18next';
-import vi from './locales/vi.json';
-import en from './locales/en.json';
+import {
+  i18nResources,
+  SUPPORTED_LANGUAGES,
+} from './i18n.constants';
 
-export const SUPPORTED_LANGUAGES = ['vi', 'en'] as const;
-export type Language = (typeof SUPPORTED_LANGUAGES)[number];
-
-export const i18nResources = {
-  vi: { translation: vi },
-  en: { translation: en },
-} as const;
+export type { Language } from '../types/i18n.type';
+export { i18nResources, SUPPORTED_LANGUAGES } from './i18n.constants';
 
 export function createI18nOptions(overrides?: Partial<InitOptions>): InitOptions {
   return {

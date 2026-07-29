@@ -1,31 +1,15 @@
 import { create } from 'zustand';
-import { toApiError, toast } from '../lib';
-import { PenService } from '../services';
-import type { PenLeaderboardEntry, PenLeaderboardPeriod } from '../types';
+import { toApiError } from '../lib/apiError';
+import { toast } from '../lib/toast';
+import { PenService } from '../services/pen.service';
+import type { PenLeaderboardState } from '../types/client/pen.type';
+import { initialPenLeaderboardState } from './penLeaderboard.state';
 import { withPenVip } from './penVip';
 
-export const PEN_LEADERBOARD_PAGE = 10;
-
-interface PenLeaderboardState {
-  period: PenLeaderboardPeriod;
-  page: number;
-  loading: boolean;
-  cache: Partial<Record<PenLeaderboardPeriod, PenLeaderboardEntry[]>>;
-  setPeriod: (period: PenLeaderboardPeriod) => void;
-  setPage: (page: number) => void;
-  load: (period: PenLeaderboardPeriod) => Promise<void>;
-  reset: () => void;
-}
-
-const initial = {
-  period: 'day' as PenLeaderboardPeriod,
-  page: 0,
-  loading: false,
-  cache: {},
-};
+export { PEN_LEADERBOARD_PAGE_SIZE as PEN_LEADERBOARD_PAGE } from '../constants/pen';
 
 export const usePenLeaderboardStore = create<PenLeaderboardState>((set, get) => ({
-  ...initial,
+  ...initialPenLeaderboardState,
   setPeriod: (period) => {
     set({ period, page: 0 });
     void get().load(period);
@@ -43,5 +27,5 @@ export const usePenLeaderboardStore = create<PenLeaderboardState>((set, get) => 
       toast.error(toApiError(e).message);
     }
   },
-  reset: () => set({ ...initial, cache: {} }),
+  reset: () => set({ ...initialPenLeaderboardState, cache: {} }),
 }));

@@ -29,7 +29,10 @@ const MENU_ITEM_HEIGHT = 38;
 const MENU_PADDING = 8;
 const MENU_GAP = 6;
 
-function ReactionBar({ onReact, onClose }: Pick<MessageActionSheetProps, 'onReact' | 'onClose'>) {
+function ReactionBar({
+  onReact,
+  onClose,
+}: Pick<MessageActionSheetProps, 'onReact' | 'onClose'>) {
   return (
     <div className="flex items-center gap-0.5 rounded-full bg-white px-2 py-1.5 shadow-[0_8px_28px_rgba(0,0,0,0.18)]">
       {REACTION_ORDER.map((type) => (
@@ -42,7 +45,11 @@ function ReactionBar({ onReact, onClose }: Pick<MessageActionSheetProps, 'onReac
           }}
           className="flex h-9 w-9 items-center justify-center rounded-full transition-transform duration-150 hover:-translate-y-1 hover:scale-[1.3] active:scale-110"
         >
-          <img src={REACTION_IMAGE[type]} alt={type} className="h-6 w-6 object-contain" />
+          <img
+            src={REACTION_IMAGE[type]}
+            alt={type}
+            className="h-6 w-6 object-contain"
+          />
         </button>
       ))}
     </div>
@@ -59,20 +66,35 @@ function alignsRight(anchor: DOMRect): boolean {
 }
 
 function popupHeight(actionCount: number, withBar: boolean): number {
-  const menu = actionCount > 0 ? MENU_PADDING + actionCount * MENU_ITEM_HEIGHT : 0;
+  const menu =
+    actionCount > 0 ? MENU_PADDING + actionCount * MENU_ITEM_HEIGHT : 0;
   if (!withBar) return menu;
   if (menu === 0) return BAR_HEIGHT;
   return BAR_HEIGHT + MENU_GAP + menu;
 }
 
-function anchoredStyle(anchor: DOMRect, actionCount: number, withBar: boolean): CSSProperties {
-  const refWidth = Math.min(withBar ? BAR_WIDTH : MENU_WIDTH, window.innerWidth - POPUP_MARGIN * 2);
+function anchoredStyle(
+  anchor: DOMRect,
+  actionCount: number,
+  withBar: boolean
+): CSSProperties {
+  const refWidth = Math.min(
+    withBar ? BAR_WIDTH : MENU_WIDTH,
+    window.innerWidth - POPUP_MARGIN * 2
+  );
 
   const height = popupHeight(actionCount, withBar);
   const spaceBelow = window.innerHeight - anchor.bottom - POPUP_MARGIN;
-  const placeBelow = spaceBelow >= height + POPUP_GAP || spaceBelow >= anchor.top - POPUP_MARGIN;
-  const rawTop = placeBelow ? anchor.bottom + POPUP_GAP : anchor.top - POPUP_GAP - height;
-  const top = clamp(rawTop, POPUP_MARGIN, window.innerHeight - POPUP_MARGIN - height);
+  const placeBelow =
+    spaceBelow >= height + POPUP_GAP || spaceBelow >= anchor.top - POPUP_MARGIN;
+  const rawTop = placeBelow
+    ? anchor.bottom + POPUP_GAP
+    : anchor.top - POPUP_GAP - height;
+  const top = clamp(
+    rawTop,
+    POPUP_MARGIN,
+    window.innerHeight - POPUP_MARGIN - height
+  );
 
   if (alignsRight(anchor)) {
     const right = clamp(
@@ -82,11 +104,21 @@ function anchoredStyle(anchor: DOMRect, actionCount: number, withBar: boolean): 
     );
     return { right, top };
   }
-  const left = clamp(anchor.left, POPUP_MARGIN, window.innerWidth - POPUP_MARGIN - refWidth);
+  const left = clamp(
+    anchor.left,
+    POPUP_MARGIN,
+    window.innerWidth - POPUP_MARGIN - refWidth
+  );
   return { left, top };
 }
 
-function ActionMenuButton({ action, onClose }: { action: MessageSheetAction; onClose: () => void }) {
+function ActionMenuButton({
+  action,
+  onClose,
+}: {
+  action: MessageSheetAction;
+  onClose: () => void;
+}) {
   return (
     <button
       type="button"
@@ -98,7 +130,9 @@ function ActionMenuButton({ action, onClose }: { action: MessageSheetAction; onC
         action.destructive ? 'text-ola-error' : 'text-black/87'
       }`}
     >
-      {action.icon != null && <img src={action.icon} alt="" className="h-4 w-4 object-contain" />}
+      {action.icon != null && (
+        <img src={action.icon} alt="" className="h-4 w-4 object-contain" />
+      )}
       {action.label}
     </button>
   );
@@ -116,7 +150,9 @@ function AnchoredPopup({
   return (
     <div className="fixed inset-0 z-[120]" onClick={onClose}>
       <div
-        className={`animate-ola-menu-in absolute flex flex-col gap-1.5 ${alignRight ? 'items-end' : 'items-start'}`}
+        className={`animate-ola-menu-in absolute flex flex-col gap-1.5 ${
+          alignRight ? 'items-end' : 'items-start'
+        }`}
         style={anchoredStyle(anchor, actions.length, showReactions)}
         onClick={(event) => event.stopPropagation()}
       >
@@ -124,7 +160,11 @@ function AnchoredPopup({
         {actions.length > 0 && (
           <div className="min-w-40 overflow-hidden rounded-xl bg-white py-1 shadow-[0_8px_28px_rgba(0,0,0,0.18)]">
             {actions.map((action) => (
-              <ActionMenuButton key={action.key} action={action} onClose={onClose} />
+              <ActionMenuButton
+                key={action.key}
+                action={action}
+                onClose={onClose}
+              />
             ))}
           </div>
         )}
@@ -133,11 +173,19 @@ function AnchoredPopup({
   );
 }
 
-function BottomSheet({ actions, onReact, onClose, showReactions = true }: MessageActionSheetProps) {
+function BottomSheet({
+  actions,
+  onReact,
+  onClose,
+  showReactions = true,
+}: MessageActionSheetProps) {
   const { t } = useTranslation();
 
   return (
-    <div className="fixed inset-0 z-[120] flex flex-col justify-end" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-[120] flex flex-col justify-end"
+      onClick={onClose}
+    >
       <div className="absolute inset-0 bg-black/40" />
       <div
         className="relative mx-auto w-full max-w-md rounded-t-2xl bg-white pb-[env(safe-area-inset-bottom)]"
@@ -162,7 +210,13 @@ function BottomSheet({ actions, onReact, onClose, showReactions = true }: Messag
                 action.destructive ? 'text-ola-error' : 'text-black/87'
               }`}
             >
-              {action.icon != null && <img src={action.icon} alt="" className="h-5 w-5 object-contain" />}
+              {action.icon != null && (
+                <img
+                  src={action.icon}
+                  alt=""
+                  className="h-5 w-5 object-contain"
+                />
+              )}
               {action.label}
             </button>
           ))}
@@ -181,7 +235,10 @@ function BottomSheet({ actions, onReact, onClose, showReactions = true }: Messag
 
 export function MessageActionSheet(props: MessageActionSheetProps) {
   if (props.anchor != null) {
-    return createPortal(<AnchoredPopup {...props} anchor={props.anchor} />, document.body);
+    return createPortal(
+      <AnchoredPopup {...props} anchor={props.anchor} />,
+      document.body
+    );
   }
   return createPortal(<BottomSheet {...props} />, portalRoot());
 }

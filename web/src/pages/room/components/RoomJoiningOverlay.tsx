@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import type { RoomChatStatus } from '@/store/roomChatStore';
+import type { RoomChatStatus } from '@ola/shared/types';
 import { Spinner } from '@components';
 
 interface RoomJoiningOverlayProps {
@@ -7,7 +7,10 @@ interface RoomJoiningOverlayProps {
   onClose: () => void;
 }
 
-export function RoomJoiningOverlay({ status, onClose }: RoomJoiningOverlayProps) {
+export function RoomJoiningOverlay({
+  status,
+  onClose,
+}: RoomJoiningOverlayProps) {
   const { t } = useTranslation();
   const isError = status === 'error';
 

@@ -24,10 +24,17 @@ export function meSelfLiker(): MePost['topLikers'][number] | undefined {
 
 type MeLiker = MePost['topLikers'][number];
 
-function withSelfLiker(post: MePost, nowLiked: boolean, self?: MeLiker): MePost['topLikers'] {
+function withSelfLiker(
+  post: MePost,
+  nowLiked: boolean,
+  self?: MeLiker
+): MePost['topLikers'] {
   if (self == null) return post.topLikers;
   if (nowLiked && !post.liked) {
-    return [self, ...post.topLikers.filter((liker) => liker.name !== self.name)].slice(0, 3);
+    return [
+      self,
+      ...post.topLikers.filter((liker) => liker.name !== self.name),
+    ].slice(0, 3);
   }
   if (!nowLiked && post.liked) {
     return post.topLikers.filter((liker) => liker.name !== self.name);
@@ -35,13 +42,28 @@ function withSelfLiker(post: MePost, nowLiked: boolean, self?: MeLiker): MePost[
   return post.topLikers;
 }
 
-export function applyMeReaction(post: MePost, type: PostReaction, self?: MeLiker): MePost {
+export function applyMeReaction(
+  post: MePost,
+  type: PostReaction,
+  self?: MeLiker
+): MePost {
   if (type === 'like') {
     const topLikers = withSelfLiker(post, !post.liked, self);
     if (post.liked) {
-      return { ...post, liked: false, likes: Math.max(0, post.likes - 1), topLikers };
+      return {
+        ...post,
+        liked: false,
+        likes: Math.max(0, post.likes - 1),
+        topLikers,
+      };
     }
-    return { ...post, liked: true, disliked: false, likes: post.likes + 1, topLikers };
+    return {
+      ...post,
+      liked: true,
+      disliked: false,
+      likes: post.likes + 1,
+      topLikers,
+    };
   }
   const topLikers = withSelfLiker(post, false, self);
   if (post.disliked) return { ...post, disliked: false };
@@ -54,7 +76,10 @@ export function applyMeReaction(post: MePost, type: PostReaction, self?: MeLiker
   };
 }
 
-export function toMePost(post: Post, formatTime: (iso: string) => string): MePost {
+export function toMePost(
+  post: Post,
+  formatTime: (iso: string) => string
+): MePost {
   const author = post.author?.username ?? '';
   const checkIn = post.checkIn
     ? {

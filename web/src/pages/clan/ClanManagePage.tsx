@@ -34,12 +34,22 @@ interface ManageRowProps {
   onEdit?: () => void;
 }
 
-function ManageRow({ label, value, emptyText, editable, onEdit }: ManageRowProps) {
+function ManageRow({
+  label,
+  value,
+  emptyText,
+  editable,
+  onEdit,
+}: ManageRowProps) {
   const body = (
     <>
       <span className="block text-xs text-black/54">{label}</span>
       <span className="mt-1 flex items-center gap-2">
-        <span className={`flex-1 truncate text-sm ${value !== '' ? 'text-black/87' : 'text-ola-error'}`}>
+        <span
+          className={`flex-1 truncate text-sm ${
+            value !== '' ? 'text-black/87' : 'text-ola-error'
+          }`}
+        >
           {value !== '' ? value : emptyText}
         </span>
         {editable && (
@@ -54,18 +64,30 @@ function ManageRow({ label, value, emptyText, editable, onEdit }: ManageRowProps
     return <div className="px-2 py-3">{body}</div>;
   }
   return (
-    <button type="button" onClick={onEdit} className="block w-full px-2 py-3 text-left active:bg-black/5">
+    <button
+      type="button"
+      onClick={onEdit}
+      className="block w-full px-2 py-3 text-left active:bg-black/5"
+    >
       {body}
     </button>
   );
 }
 
-export function ClanManagePage({ clanId, onClose, onOpenMembers, onOpenBans }: ClanManagePageProps) {
+export function ClanManagePage({
+  clanId,
+  onClose,
+  onOpenMembers,
+  onOpenBans,
+}: ClanManagePageProps) {
   const { t } = useTranslation();
   const [clan, setClan] = useState<Clan | null>(null);
   const [roleDialog, setRoleDialog] = useState<RoleKind | null>(null);
   const [roleNick, setRoleNick] = useState('');
-  const [revokeRole, setRevokeRole] = useState<{ role: RoleKind; username: string } | null>(null);
+  const [revokeRole, setRevokeRole] = useState<{
+    role: RoleKind;
+    username: string;
+  } | null>(null);
   const [policyOpen, setPolicyOpen] = useState(false);
   const [publicPostConfirm, setPublicPostConfirm] = useState(false);
   const [verifyDialog, setVerifyDialog] = useState<VerifyKind | null>(null);
@@ -94,7 +116,10 @@ export function ClanManagePage({ clanId, onClose, onOpenMembers, onOpenBans }: C
 
   function openRoleDialog(role: RoleKind) {
     if (clan == null) return;
-    setRoleNick((role === 'deputy' ? clan.deputy?.username : clan.ambassador?.username) ?? '');
+    setRoleNick(
+      (role === 'deputy' ? clan.deputy?.username : clan.ambassador?.username) ??
+        ''
+    );
     setRoleDialog(role);
   }
 
@@ -102,7 +127,9 @@ export function ClanManagePage({ clanId, onClose, onOpenMembers, onOpenBans }: C
     if (clan == null || roleDialog == null || busy) return;
     const nick = roleNick.trim().replace(/^@/, '');
     const currentHolder =
-      roleDialog === 'deputy' ? clan.deputy?.username : clan.ambassador?.username;
+      roleDialog === 'deputy'
+        ? clan.deputy?.username
+        : clan.ambassador?.username;
     if (nick === '') {
       setRoleDialog(null);
       if (currentHolder != null && currentHolder !== '') {
@@ -112,7 +139,10 @@ export function ClanManagePage({ clanId, onClose, onOpenMembers, onOpenBans }: C
     }
     setBusy(true);
     try {
-      await ClanService.assignRole(clan.id, { username: nick, role: roleDialog });
+      await ClanService.assignRole(clan.id, {
+        username: nick,
+        role: roleDialog,
+      });
       toast.success(t('clan.assignSuccess', { username: nick }));
       setRoleDialog(null);
       await reload();
@@ -171,10 +201,14 @@ export function ClanManagePage({ clanId, onClose, onOpenMembers, onOpenBans }: C
     try {
       if (verifyDialog === 'verify') {
         await ClanService.verify(clan.id, nick);
-        toast.success(t('clan.verifySuccess', { username: nick, name: clan.handle }));
+        toast.success(
+          t('clan.verifySuccess', { username: nick, name: clan.handle })
+        );
       } else {
         await ClanService.unverify(clan.id, nick);
-        toast.success(t('clan.unverifySuccess', { username: nick, name: clan.handle }));
+        toast.success(
+          t('clan.unverifySuccess', { username: nick, name: clan.handle })
+        );
       }
       setVerifyDialog(null);
       setVerifyNick('');
@@ -185,15 +219,20 @@ export function ClanManagePage({ clanId, onClose, onOpenMembers, onOpenBans }: C
     }
   }
 
-  const policyOptions: ListOption[] = ([0, 1, 2, 4, 3] as ClanPolicy[]).map((policy) => ({
-    key: String(policy),
-    label: (clan?.policy === policy ? '✓ ' : '') + clanPolicyLabel(policy),
-    onSelect: () => void submitPolicy(policy),
-  }));
+  const policyOptions: ListOption[] = ([0, 1, 2, 4, 3] as ClanPolicy[]).map(
+    (policy) => ({
+      key: String(policy),
+      label: (clan?.policy === policy ? '✓ ' : '') + clanPolicyLabel(policy),
+      onSelect: () => void submitPolicy(policy),
+    })
+  );
 
   return (
     <FullScreenOverlay>
-      <ScreenHeader title={clan != null ? `#${clan.handle}` : t('clan.manage')} onBack={onClose} />
+      <ScreenHeader
+        title={clan != null ? `#${clan.handle}` : t('clan.manage')}
+        onBack={onClose}
+      />
       {clan == null ? (
         <div className="flex flex-1 items-center justify-center">
           <Spinner size={28} />
@@ -233,7 +272,9 @@ export function ClanManagePage({ clanId, onClose, onOpenMembers, onOpenBans }: C
             />
             <div className="h-px bg-black/12" />
             <div className="flex items-center px-2 py-3">
-              <span className="flex-1 text-sm text-black/87">{t('clan.memberPublicPost')}</span>
+              <span className="flex-1 text-sm text-black/87">
+                {t('clan.memberPublicPost')}
+              </span>
               <button
                 type="button"
                 role="switch"
@@ -288,7 +329,9 @@ export function ClanManagePage({ clanId, onClose, onOpenMembers, onOpenBans }: C
               className="flex w-full items-center justify-between px-4 py-3 text-sm text-black/87 active:bg-black/5"
             >
               {t('clan.members')}
-              <span className="text-black/54">{clan.memberCount.toLocaleString()}</span>
+              <span className="text-black/54">
+                {clan.memberCount.toLocaleString()}
+              </span>
             </button>
             <div className="h-px bg-black/12" />
             <button
@@ -306,10 +349,18 @@ export function ClanManagePage({ clanId, onClose, onOpenMembers, onOpenBans }: C
       <Dialog
         open={roleDialog != null}
         onClose={() => setRoleDialog(null)}
-        title={roleDialog === 'deputy' ? t('clan.roleDeputy') : t('clan.roleAmbassador')}
+        title={
+          roleDialog === 'deputy'
+            ? t('clan.roleDeputy')
+            : t('clan.roleAmbassador')
+        }
         footer={
           <>
-            <DialogButton variant="green" onClick={() => void submitRole()} disabled={busy}>
+            <DialogButton
+              variant="green"
+              onClick={() => void submitRole()}
+              disabled={busy}
+            >
               {t('dialog.accept')}
             </DialogButton>
             <DialogButton variant="default" onClick={() => setRoleDialog(null)}>
@@ -334,8 +385,10 @@ export function ClanManagePage({ clanId, onClose, onOpenMembers, onOpenBans }: C
           revokeRole == null
             ? ''
             : revokeRole.role === 'deputy'
-              ? t('clan.revokeConfirmDeputy', { username: revokeRole.username })
-              : t('clan.revokeConfirmAmbassador', { username: revokeRole.username })
+            ? t('clan.revokeConfirmDeputy', { username: revokeRole.username })
+            : t('clan.revokeConfirmAmbassador', {
+                username: revokeRole.username,
+              })
         }
         confirmLabel={t('dialog.yes')}
         cancelLabel={t('dialog.no')}
@@ -365,7 +418,11 @@ export function ClanManagePage({ clanId, onClose, onOpenMembers, onOpenBans }: C
       <Dialog
         open={verifyDialog != null}
         onClose={() => setVerifyDialog(null)}
-        title={verifyDialog === 'unverify' ? t('clan.unverifyMember') : t('clan.verifyMember')}
+        title={
+          verifyDialog === 'unverify'
+            ? t('clan.unverifyMember')
+            : t('clan.verifyMember')
+        }
         footer={
           <>
             <DialogButton
@@ -375,7 +432,10 @@ export function ClanManagePage({ clanId, onClose, onOpenMembers, onOpenBans }: C
             >
               {t('dialog.accept')}
             </DialogButton>
-            <DialogButton variant="default" onClick={() => setVerifyDialog(null)}>
+            <DialogButton
+              variant="default"
+              onClick={() => setVerifyDialog(null)}
+            >
               {t('dialog.cancel')}
             </DialogButton>
           </>

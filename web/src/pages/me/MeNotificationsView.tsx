@@ -5,11 +5,20 @@ import { colorForName, createTimeFormatter, toast } from '@lib';
 import { MeService } from '@services';
 import { useMeNotificationStore } from '@ola/shared/stores/meNotificationStore';
 import { useMeFeedStore } from '@ola/shared/stores/meFeedStore';
-import type { MeNotification, MeNotificationType, PostReaction } from '@app-types';
+import type {
+  MeNotification,
+  MeNotificationType,
+  PostReaction,
+} from '@app-types';
 import likeIcon from '@/assets/icons/notify/ic_notification_like.png';
 import commentIcon from '@/assets/icons/notify/ic_notification_comment.png';
 import mentionIcon from '@/assets/icons/notify/ic_notification_mention.png';
-import { toMePost, applyMeReaction, meSelfLiker, reconcileMeLikers } from './mappers';
+import {
+  toMePost,
+  applyMeReaction,
+  meSelfLiker,
+  reconcileMeLikers,
+} from './mappers';
 import type { MePost } from './types';
 import { MeCommentSheet } from './components/MeCommentSheet';
 import { UserProfileView } from '../profile/UserProfileView';
@@ -35,11 +44,15 @@ export function MeNotificationsView({ onClose }: MeNotificationsViewProps) {
 
   const [openPost, setOpenPost] = useState<MePost | null>(null);
   const [openingId, setOpeningId] = useState<string | null>(null);
-  const [profileTarget, setProfileTarget] = useState<{ username: string; color: string } | null>(
-    null,
-  );
+  const [profileTarget, setProfileTarget] = useState<{
+    username: string;
+    color: string;
+  } | null>(null);
 
-  const formatTime = useMemo(() => createTimeFormatter(i18n.language), [i18n.language]);
+  const formatTime = useMemo(
+    () => createTimeFormatter(i18n.language),
+    [i18n.language]
+  );
 
   function labelFor(type: MeNotificationType): string {
     if (type === 'comment') return t('me.notifComment');
@@ -83,7 +96,9 @@ export function MeNotificationsView({ onClose }: MeNotificationsViewProps) {
   }
 
   function adjustCommentCount(postId: string, delta: number) {
-    setOpenPost((prev) => (prev == null ? prev : { ...prev, comments: prev.comments + delta }));
+    setOpenPost((prev) =>
+      prev == null ? prev : { ...prev, comments: prev.comments + delta }
+    );
     useMeFeedStore.getState().adjustCommentCount(postId, delta);
   }
 
@@ -97,7 +112,9 @@ export function MeNotificationsView({ onClose }: MeNotificationsViewProps) {
             <Spinner size={24} />
           </div>
         ) : items.length === 0 ? (
-          <div className="py-16 text-center text-sm text-black/54">{t('me.notifEmpty')}</div>
+          <div className="py-16 text-center text-sm text-black/54">
+            {t('me.notifEmpty')}
+          </div>
         ) : (
           <ul>
             {items.map((item) => {
@@ -110,20 +127,35 @@ export function MeNotificationsView({ onClose }: MeNotificationsViewProps) {
                     onClick={() => openNotification(item)}
                     className="flex w-full items-start gap-3 p-4 text-left active:bg-black/5"
                   >
-                    <Avatar name={name} src={item.actor?.avatar} color={colorForName(name)} />
+                    <Avatar
+                      name={name}
+                      src={item.actor?.avatar}
+                      color={colorForName(name)}
+                    />
                     <div className="min-w-0 flex-1">
                       <p className="text-sm leading-snug text-black/87">
                         <span className="font-bold">{name}</span>{' '}
                         {labelFor(item.type)}
                       </p>
-                      {(item.type === 'comment' || item.type === 'comment_like') && item.preview != null && item.preview !== '' && (
-                        <p className="mt-0.5 truncate text-sm text-black/54">{item.preview}</p>
-                      )}
+                      {(item.type === 'comment' ||
+                        item.type === 'comment_like') &&
+                        item.preview != null &&
+                        item.preview !== '' && (
+                          <p className="mt-0.5 truncate text-sm text-black/54">
+                            {item.preview}
+                          </p>
+                        )}
                       <div className="mt-1 flex items-center gap-1">
                         {icon != null && (
-                          <img src={icon} alt="" className="h-4 w-4 object-contain" />
+                          <img
+                            src={icon}
+                            alt=""
+                            className="h-4 w-4 object-contain"
+                          />
                         )}
-                        <span className="text-xs text-black/45">{formatTime(item.createdAt)}</span>
+                        <span className="text-xs text-black/45">
+                          {formatTime(item.createdAt)}
+                        </span>
                       </div>
                     </div>
                     {openingId === item.id && <Spinner size={16} />}
@@ -142,7 +174,9 @@ export function MeNotificationsView({ onClose }: MeNotificationsViewProps) {
           onClose={() => setOpenPost(null)}
           onToggleLike={(id) => toggleReaction(id, 'like')}
           onToggleDislike={(id) => toggleReaction(id, 'dislike')}
-          onOpenProfile={(nick, color) => setProfileTarget({ username: nick, color })}
+          onOpenProfile={(nick, color) =>
+            setProfileTarget({ username: nick, color })
+          }
           onCommentDelta={adjustCommentCount}
         />
       )}
@@ -154,7 +188,9 @@ export function MeNotificationsView({ onClose }: MeNotificationsViewProps) {
           username={profileTarget.username}
           color={profileTarget.color}
           onClose={() => setProfileTarget(null)}
-          onOpenFriend={(friend) => setProfileTarget({ username: friend.name, color: friend.color })}
+          onOpenFriend={(friend) =>
+            setProfileTarget({ username: friend.name, color: friend.color })
+          }
         />
       )}
     </FullScreenOverlay>

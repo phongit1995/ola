@@ -8,7 +8,13 @@ import { KUL_IMAGES } from '@lib';
 import { SmileyGrid } from './SmileyGrid';
 import { EmojiGrid } from './EmojiGrid';
 
-function InsertPanel({ onBackspace, children }: { onBackspace?: () => void; children: ReactNode }) {
+function InsertPanel({
+  onBackspace,
+  children,
+}: {
+  onBackspace?: () => void;
+  children: ReactNode;
+}) {
   return (
     <div className="flex h-full flex-col">
       <div className="flex-1 overflow-y-auto">{children}</div>
@@ -23,7 +29,11 @@ function InsertPanel({ onBackspace, children }: { onBackspace?: () => void; chil
             title="backspace"
             className="flex h-full w-12 items-center justify-center"
           >
-            <img src={backspaceIcon} alt="" className="h-5 w-5 object-contain" />
+            <img
+              src={backspaceIcon}
+              alt=""
+              className="h-5 w-5 object-contain"
+            />
           </button>
         </div>
       )}
@@ -31,7 +41,13 @@ function InsertPanel({ onBackspace, children }: { onBackspace?: () => void; chil
   );
 }
 
-export function SmileyPanel({ onPick, onBackspace }: { onPick: (code: string) => void; onBackspace?: () => void }) {
+export function SmileyPanel({
+  onPick,
+  onBackspace,
+}: {
+  onPick: (code: string) => void;
+  onBackspace?: () => void;
+}) {
   return (
     <InsertPanel onBackspace={onBackspace}>
       <SmileyGrid onPick={onPick} />
@@ -39,7 +55,13 @@ export function SmileyPanel({ onPick, onBackspace }: { onPick: (code: string) =>
   );
 }
 
-export function EmojiPanel({ onPick, onBackspace }: { onPick: (token: string) => void; onBackspace?: () => void }) {
+export function EmojiPanel({
+  onPick,
+  onBackspace,
+}: {
+  onPick: (token: string) => void;
+  onBackspace?: () => void;
+}) {
   return (
     <InsertPanel onBackspace={onBackspace}>
       <EmojiGrid onPick={onPick} />
@@ -47,7 +69,11 @@ export function EmojiPanel({ onPick, onBackspace }: { onPick: (token: string) =>
   );
 }
 
-export function KulPanel({ onSendKul }: { onSendKul: (index: number) => void }) {
+export function KulPanel({
+  onSendKul,
+}: {
+  onSendKul: (index: number) => void;
+}) {
   return (
     <div className="grid grid-cols-6 gap-1 p-2">
       {KUL_IMAGES.map((image, index) => (
@@ -57,7 +83,11 @@ export function KulPanel({ onSendKul }: { onSendKul: (index: number) => void }) 
           onClick={() => onSendKul(index + 1)}
           className="flex aspect-square items-center justify-center rounded-lg hover:bg-gray-100"
         >
-          <img src={image} alt="" className="max-h-full max-w-full object-contain" />
+          <img
+            src={image}
+            alt=""
+            className="max-h-full max-w-full object-contain"
+          />
         </button>
       ))}
     </div>
@@ -70,12 +100,24 @@ interface SmileyGroupPanelProps {
   onBackspace?: () => void;
 }
 
-export function SmileyGroupPanel({ onPick, onSendKul, onBackspace }: SmileyGroupPanelProps) {
+export function SmileyGroupPanel({
+  onPick,
+  onSendKul,
+  onBackspace,
+}: SmileyGroupPanelProps) {
   const { t } = useTranslation();
   const [sub, setSub] = useState<'emoji' | 'smiley' | 'kul'>('smiley');
   const subTabs = [
-    { key: 'emoji' as const, label: t('chat.attachTabEmoji'), icon: emojiTabIcon },
-    { key: 'smiley' as const, label: t('chat.attachTabSmiley'), icon: smileyTabIcon },
+    {
+      key: 'emoji' as const,
+      label: t('chat.attachTabEmoji'),
+      icon: emojiTabIcon,
+    },
+    {
+      key: 'smiley' as const,
+      label: t('chat.attachTabSmiley'),
+      icon: smileyTabIcon,
+    },
     { key: 'kul' as const, label: t('chat.attachTabKul'), icon: kulTabIcon },
   ];
   return (
@@ -96,16 +138,24 @@ export function SmileyGroupPanel({ onPick, onSendKul, onBackspace }: SmileyGroup
               <img
                 src={tab.icon}
                 alt=""
-                className={`h-6 w-6 object-contain transition-opacity ${isActive ? 'opacity-100' : 'opacity-60'}`}
+                className={`h-6 w-6 object-contain transition-opacity ${
+                  isActive ? 'opacity-100' : 'opacity-60'
+                }`}
               />
-              {isActive && <span className="absolute inset-x-0 bottom-0 h-0.5 bg-ola-primary" />}
+              {isActive && (
+                <span className="absolute inset-x-0 bottom-0 h-0.5 bg-ola-primary" />
+              )}
             </button>
           );
         })}
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto border-t border-black/12">
-        {sub === 'emoji' && <EmojiPanel onPick={onPick} onBackspace={onBackspace} />}
-        {sub === 'smiley' && <SmileyPanel onPick={onPick} onBackspace={onBackspace} />}
+        {sub === 'emoji' && (
+          <EmojiPanel onPick={onPick} onBackspace={onBackspace} />
+        )}
+        {sub === 'smiley' && (
+          <SmileyPanel onPick={onPick} onBackspace={onBackspace} />
+        )}
         {sub === 'kul' && <KulPanel onSendKul={onSendKul} />}
       </div>
     </div>

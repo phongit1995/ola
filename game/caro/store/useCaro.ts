@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { ARCADE_ATTENTION_REASON } from '@ola/shared/types';
+import { ARCADE_ATTENTION_REASON } from '@ola/shared/constants';
 import {
   bridge,
   GAME_ERROR_CODE,

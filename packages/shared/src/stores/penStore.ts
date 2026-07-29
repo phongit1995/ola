@@ -1,21 +1,15 @@
 import { create } from 'zustand';
-import { toApiError, toast } from '../lib';
-import { PenService } from '../services';
-import type { PenShotView } from '../types';
+import { PEN_SHOTS_PAGE_SIZE } from '../constants/pen';
+import { toApiError } from '../lib/apiError';
+import { toast } from '../lib/toast';
+import { PenService } from '../services/pen.service';
+import type { PenState } from '../types/client/pen.type';
 import { mapPenShot } from './penVip';
 
-export const PEN_SHOTS_PAGE = 10;
-export const PEN_SHOTS_PAGE_MOBILE = 12;
-
-interface PenState {
-  shots: PenShotView[];
-  loading: boolean;
-  page: number;
-  total: number;
-  pageSize: number;
-  loadShots: (page?: number) => Promise<void>;
-  setPageSize: (size: number) => void;
-}
+export {
+  PEN_SHOTS_MOBILE_PAGE_SIZE as PEN_SHOTS_PAGE_MOBILE,
+  PEN_SHOTS_PAGE_SIZE as PEN_SHOTS_PAGE,
+} from '../constants/pen';
 
 export const usePenStore = create<PenState>((set, get) => ({
   shots: [],
@@ -25,7 +19,7 @@ export const usePenStore = create<PenState>((set, get) => ({
   pageSize: 0,
   loadShots: async (page) => {
     const target = page ?? get().page;
-    const limit = get().pageSize || PEN_SHOTS_PAGE;
+    const limit = get().pageSize || PEN_SHOTS_PAGE_SIZE;
     set({ loading: true });
     try {
       const res = await PenService.listOpenShots({

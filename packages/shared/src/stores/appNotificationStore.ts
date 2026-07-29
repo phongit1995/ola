@@ -1,31 +1,10 @@
 import { create } from 'zustand';
 import i18n from 'i18next';
-import { NotificationService } from '../services';
-import { toast } from '../lib';
-import type { AppNotification } from '../types';
-
-const PAGE_SIZE = 30;
-
-interface AppNotificationIncoming {
-  notification?: AppNotification | null;
-  removedId?: string | null;
-  unreadCount: number;
-}
-
-interface AppNotificationState {
-  items: AppNotification[];
-  unreadCount: number;
-  loading: boolean;
-  loadingMore: boolean;
-  hasMore: boolean;
-  nextCursor: string | null;
-  load: () => Promise<void>;
-  loadMore: () => Promise<void>;
-  markAllRead: () => Promise<void>;
-  refreshUnread: () => Promise<void>;
-  handleIncoming: (payload: AppNotificationIncoming) => void;
-  removeLocal: (id: string) => void;
-}
+import { NOTIFICATION_PAGE_SIZE } from '../constants/notification';
+import { toast } from '../lib/toast';
+import { NotificationService } from '../services/notification.service';
+import type { AppNotification } from '../types/api/notification.type';
+import type { AppNotificationState } from '../types/client/notification.type';
 
 function dedupe(items: AppNotification[]): AppNotification[] {
   const seen = new Set<string>();
@@ -46,7 +25,7 @@ export const useAppNotificationStore = create<AppNotificationState>((set, get) =
   load: async () => {
     set({ loading: true });
     try {
-      const result = await NotificationService.list({ limit: PAGE_SIZE });
+      const result = await NotificationService.list({ limit: NOTIFICATION_PAGE_SIZE });
       set({
         items: result.items,
         unreadCount: result.unreadCount,
@@ -64,7 +43,10 @@ export const useAppNotificationStore = create<AppNotificationState>((set, get) =
     if (loadingMore || !hasMore || nextCursor == null) return;
     set({ loadingMore: true });
     try {
-      const result = await NotificationService.list({ limit: PAGE_SIZE, cursor: nextCursor });
+      const result = await NotificationService.list({
+        limit: NOTIFICATION_PAGE_SIZE,
+        cursor: nextCursor,
+      });
       set({
         items: dedupe([...items, ...result.items]),
         unreadCount: result.unreadCount,

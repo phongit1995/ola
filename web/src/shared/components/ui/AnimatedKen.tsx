@@ -84,7 +84,13 @@ export function AnimatedKen({
       <b className={numberClassName} style={numberStyle}>
         {formatKen(display)}
       </b>
-      {showIcon && <img src={kenIconUrl} alt="KEN" className={`block shrink-0 ${iconClassName}`} />}
+      {showIcon && (
+        <img
+          src={kenIconUrl}
+          alt="KEN"
+          className={`block shrink-0 ${iconClassName}`}
+        />
+      )}
     </span>
   );
 }

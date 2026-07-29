@@ -11,7 +11,9 @@ interface BlockedListDialogProps {
 }
 
 function blockedName(relationship: Relationship): string {
-  return relationship.addressee?.fullName || relationship.addressee?.username || '';
+  return (
+    relationship.addressee?.fullName || relationship.addressee?.username || ''
+  );
 }
 
 export function BlockedListDialog({ open, onClose }: BlockedListDialogProps) {
@@ -57,7 +59,11 @@ export function BlockedListDialog({ open, onClose }: BlockedListDialogProps) {
       title={t('chat.menuBlockList')}
       loading={loading}
       isEmpty={items.length === 0}
-      empty={<p className="py-2 text-center text-black/54">{t('chat.blockListEmpty')}</p>}
+      empty={
+        <p className="py-2 text-center text-black/54">
+          {t('chat.blockListEmpty')}
+        </p>
+      }
       divided={false}
       listMaxHeightClass="max-h-80"
     >

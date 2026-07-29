@@ -1,10 +1,6 @@
-export interface VietQrImageParams {
-  bankBin: string;
-  accountNumber: string;
-  amount?: number;
-  memo?: string;
-  accountName?: string;
-}
+import type { VietQrImageParams } from '../types/lib.type';
+
+export type { VietQrImageParams } from '../types/lib.type';
 
 export function normalizeTransferMemo(raw: string): string {
   return raw

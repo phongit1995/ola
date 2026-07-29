@@ -1,5 +1,5 @@
 import type { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
-import { env } from '../../config';
+import { env } from '../../config/env';
 import { signApiGuard } from '../apiGuardSigner';
 
 function stripQuery(url: string): string {

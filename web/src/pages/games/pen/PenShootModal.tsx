@@ -11,7 +11,9 @@ import {
   type PenDirLayout,
 } from './penModalParts';
 
-const QUICK_BETS = [1000, 2000, 5000, 10000, 20000, 50000, 100000, 200000, 500000];
+const QUICK_BETS = [
+  1000, 2000, 5000, 10000, 20000, 50000, 100000, 200000, 500000,
+];
 
 const SHOOT_DIR_LAYOUT: PenDirLayout = {
   buttonAspect: 'aspect-[1116/1332]',
@@ -74,18 +76,25 @@ export function PenShootModal({
     >
       <PenKenRow ken={ken} onTopUp={onTopUp} />
 
-      <p className="mt-[3%] text-base font-semibold text-white/90">{t('penGame.chooseDirection')}</p>
+      <p className="mt-[3%] text-base font-semibold text-white/90">
+        {t('penGame.chooseDirection')}
+      </p>
 
       <PenDirectionPicker
         value={direction}
         onSelect={setDirection}
         selected={penShootAssets.dir.selected}
         unselected={penShootAssets.dir.unselected}
-        center={{ left: penShootAssets.panelBall, right: penShootAssets.panelBall }}
+        center={{
+          left: penShootAssets.panelBall,
+          right: penShootAssets.panelBall,
+        }}
         layout={SHOOT_DIR_LAYOUT}
       />
 
-      <p className="mt-[2%] text-base font-semibold text-white/90">{t('penGame.kenAmount')}</p>
+      <p className="mt-[2%] text-base font-semibold text-white/90">
+        {t('penGame.kenAmount')}
+      </p>
 
       <label
         className={`mt-[2%] flex w-[72%] cursor-text items-center gap-2 rounded-xl border bg-black/20 px-4 py-1.5 ${

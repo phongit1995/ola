@@ -1,12 +1,6 @@
 import { create } from 'zustand';
-import { MiniGameService } from '../services';
-import type { MiniGame } from '../types';
-
-interface ArcadeState {
-  games: MiniGame[];
-  loaded: boolean;
-  fetchGames: () => Promise<void>;
-}
+import { MiniGameService } from '../services/miniGame.service';
+import type { ArcadeState } from '../types/client/arcade.type';
 
 export const useArcadeStore = create<ArcadeState>((set, get) => ({
   games: [],

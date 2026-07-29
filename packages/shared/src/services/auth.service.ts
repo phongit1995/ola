@@ -1,7 +1,8 @@
-import { getApi, http } from '../api';
-import { API_PATH } from '../config';
-import { authTokens } from '../lib';
-import { getDeviceInfo } from '../platform';
+import { getApi } from '../api/axios';
+import { http } from '../api/http';
+import { API_PATH } from '../config/api';
+import { authTokens } from '../lib/tokenStorage';
+import { getDeviceInfo } from '../platform/deviceInfo';
 import type {
   AuthResult,
   ChangePasswordRequest,
@@ -14,7 +15,7 @@ import type {
   RegisterResult,
   SendVerifyEmailRequest,
   SendVerifyEmailResult,
-} from '../types';
+} from '../types/api/auth.type';
 
 export class AuthService {
   static async login(payload: LoginRequest): Promise<AuthResult> {

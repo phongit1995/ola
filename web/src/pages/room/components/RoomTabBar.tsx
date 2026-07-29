@@ -1,4 +1,4 @@
-import type { RoomTab } from '@/store/roomChatStore';
+import type { RoomTab } from '@ola/shared/types';
 
 export interface RoomTabItem {
   key: RoomTab;
@@ -29,12 +29,18 @@ export function RoomTabBar({ tabs, activeTab, onSelect }: RoomTabBarProps) {
           >
             <span>{tab.label}</span>
             <span className="relative">
-              <img src={tab.icon} alt="" className="h-5 w-5 object-contain brightness-0 invert" />
+              <img
+                src={tab.icon}
+                alt=""
+                className="h-5 w-5 object-contain brightness-0 invert"
+              />
               {tab.indicator && (
                 <span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full border-2 border-ola-primary bg-ola-accent animate-blink" />
               )}
             </span>
-            {active && <span className="absolute inset-x-0 bottom-0 h-0.5 bg-white" />}
+            {active && (
+              <span className="absolute inset-x-0 bottom-0 h-0.5 bg-white" />
+            )}
           </button>
         );
       })}

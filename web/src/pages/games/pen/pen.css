@@ -116,27 +116,21 @@
 }
 
 .pen-screen .pen-cur-ball {
-  cursor:
-    url('../../../assets/games/pen/ball-cursor.png') 12 12,
-    pointer;
+  cursor: url('../../../assets/games/pen/ball-cursor.png') 12 12, pointer;
 }
 
 .pen-screen .pen-cur-glove {
-  cursor:
-    url('../../../assets/games/pen/glove-cursor.png') 12 12,
-    pointer;
+  cursor: url('../../../assets/games/pen/glove-cursor.png') 12 12, pointer;
 }
 
 .pen-panel {
   border: 2px solid transparent;
   border-radius: 34px;
-  background:
-    linear-gradient(180deg, #001641 0%, #001238 52%, #00102d 100%) padding-box,
+  background: linear-gradient(180deg, #001641 0%, #001238 52%, #00102d 100%)
+      padding-box,
     linear-gradient(180deg, #5e93c2 0%, #b6dcef 45%, #2a98c2 100%) border-box;
-  box-shadow:
-    0 0 3px rgba(140, 200, 235, 0.35),
-    0 0 16px 1px rgba(28, 85, 195, 0.38),
-    0 0 44px rgba(18, 64, 180, 0.3),
+  box-shadow: 0 0 3px rgba(140, 200, 235, 0.35),
+    0 0 16px 1px rgba(28, 85, 195, 0.38), 0 0 44px rgba(18, 64, 180, 0.3),
     inset 0 0 0 1.5px rgba(12, 90, 215, 0.4),
     inset 0 0 16px rgba(0, 38, 125, 0.4);
 }

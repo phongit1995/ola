@@ -23,9 +23,17 @@ export function WheelLabels({ segments, angle }: WheelLabelsProps) {
             style={labelStyle(index, angle)}
           >
             {visual.vipTypeId != null ? (
-              <VipIcon typeId={visual.vipTypeId} className="h-auto w-[56%] drop-shadow-md" rounded />
+              <VipIcon
+                typeId={visual.vipTypeId}
+                className="h-auto w-[56%] drop-shadow-md"
+                rounded
+              />
             ) : visual.icon != null ? (
-              <img src={visual.icon} alt="" className={`${visual.iconClass} drop-shadow-md`} />
+              <img
+                src={visual.icon}
+                alt=""
+                className={`${visual.iconClass} drop-shadow-md`}
+              />
             ) : null}
             <span
               className="mt-0.5 block text-[12px] font-extrabold"

@@ -1,6 +1,5 @@
-import type { Post, PostAuthor, PostReaction } from '../types';
-
-const TOP_LIKERS_LIMIT = 3;
+import { FEED_TOP_LIKERS_LIMIT } from '../constants/feed';
+import type { Post, PostAuthor, PostReaction } from '../types/api/me.type';
 
 function applyTopLikers(
   likers: PostAuthor[] | undefined,
@@ -10,7 +9,10 @@ function applyTopLikers(
 ): PostAuthor[] {
   const current = likers ?? [];
   if (nowLike && !wasLike) {
-    return [self, ...current.filter((u) => u.id !== self.id)].slice(0, TOP_LIKERS_LIMIT);
+    return [self, ...current.filter((u) => u.id !== self.id)].slice(
+      0,
+      FEED_TOP_LIKERS_LIMIT
+    );
   }
   if (!nowLike && wasLike) {
     return current.filter((u) => u.id !== self.id);

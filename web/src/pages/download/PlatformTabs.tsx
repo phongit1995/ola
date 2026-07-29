@@ -9,10 +9,18 @@ interface PlatformTabsProps {
   onChange: (platform: GuidePlatform) => void;
 }
 
-export function PlatformTabs({ active, detected, onChange }: PlatformTabsProps) {
+export function PlatformTabs({
+  active,
+  detected,
+  onChange,
+}: PlatformTabsProps) {
   const { t } = useTranslation();
 
-  const tabs: { key: GuidePlatform; label: string; icon: typeof AndroidIcon }[] = [
+  const tabs: {
+    key: GuidePlatform;
+    label: string;
+    icon: typeof AndroidIcon;
+  }[] = [
     { key: 'android', label: t('download.android.name'), icon: AndroidIcon },
     { key: 'ios', label: t('download.ios.name'), icon: AppleIcon },
   ];
@@ -29,7 +37,9 @@ export function PlatformTabs({ active, detected, onChange }: PlatformTabsProps) 
             aria-selected={selected}
             onClick={() => onChange(key)}
             className={`relative flex flex-1 items-center justify-center gap-2 py-3.5 text-sm font-semibold transition-colors ${
-              selected ? 'bg-ola-primary/6 text-ola-primary-dark' : 'text-black/45'
+              selected
+                ? 'bg-ola-primary/6 text-ola-primary-dark'
+                : 'text-black/45'
             }`}
           >
             <Icon className="h-5 w-5 shrink-0" />

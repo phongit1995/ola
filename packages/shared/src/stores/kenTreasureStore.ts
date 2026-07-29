@@ -1,35 +1,22 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import i18n from 'i18next';
-import { KenTreasureService } from '../services';
-import { toast } from '../lib';
-import { playKenChestSound } from '../platform';
+import { KEN_TREASURE_OPEN_ANIMATION_MS } from '../constants/ken';
+import { toast } from '../lib/toast';
+import { playKenChestSound } from '../platform/sound';
 import { sharedPersistStorage } from '../platform/persistStorage';
+import { KenTreasureService } from '../services/kenTreasure.service';
+import type {
+  KenTreasureChest,
+  KenTreasurePositionState,
+  KenTreasureState,
+} from '../types/client/kenTreasure.type';
 import { useAuthStore } from './authStore';
 
-export type KenTreasurePhase = 'closed' | 'opening' | 'result';
-
-const OPEN_ANIM_MS = 1000;
-
-interface KenTreasureResult {
-  isEmpty: boolean;
-  kenAmount: number;
-}
-
-export interface KenTreasureChest {
-  id: string;
-  expiresAt: string;
-  phase: KenTreasurePhase;
-  result: KenTreasureResult | null;
-}
-
-interface KenTreasureState {
-  chests: Record<string, KenTreasureChest>;
-  show: (payload: { id: string; expiresAt: string }) => void;
-  open: (id: string) => Promise<void>;
-  dismiss: (id: string) => void;
-  reset: () => void;
-}
+export type {
+  KenTreasureChest,
+  KenTreasurePhase,
+} from '../types/client/kenTreasure.type';
 
 function hasActiveModal(chests: Record<string, KenTreasureChest>): boolean {
   return Object.values(chests).some((c) => c.phase === 'opening' || c.phase === 'result');
@@ -65,7 +52,9 @@ export const useKenTreasureStore = create<KenTreasureState>((set, get) => ({
     set((state) => ({ chests: patchChests(state.chests, id, { phase: 'opening' }) }));
     const [result] = await Promise.all([
       KenTreasureService.open(id).catch(() => null),
-      new Promise<void>((resolve) => setTimeout(() => resolve(), OPEN_ANIM_MS)),
+      new Promise<void>((resolve) =>
+        setTimeout(() => resolve(), KEN_TREASURE_OPEN_ANIMATION_MS)
+      ),
     ]);
     const current = get().chests[id];
     if (!current || current.phase !== 'opening') return;
@@ -91,12 +80,6 @@ export const useKenTreasureStore = create<KenTreasureState>((set, get) => ({
     }),
   reset: () => set({ chests: {} }),
 }));
-
-interface KenTreasurePositionState {
-  x: number;
-  y: number;
-  setPosition: (x: number, y: number) => void;
-}
 
 export const useKenTreasurePositionStore = create<KenTreasurePositionState>()(
   persist(

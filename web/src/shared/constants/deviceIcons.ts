@@ -6,7 +6,13 @@ import deviceWinphone from '@/assets/icons/chat/ic_device_type_winphone.png';
 
 export type DeviceType = 'phone' | 'pc' | 'apple' | 'android' | 'winphone';
 
-export const DEVICE_TYPES: DeviceType[] = ['phone', 'pc', 'apple', 'android', 'winphone'];
+export const DEVICE_TYPES: DeviceType[] = [
+  'phone',
+  'pc',
+  'apple',
+  'android',
+  'winphone',
+];
 
 export const DEVICE_ALIASES: Record<string, DeviceType> = {
   ios: 'apple',

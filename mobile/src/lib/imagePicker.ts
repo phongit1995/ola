@@ -1,7 +1,7 @@
 import { launchImageLibrary } from 'react-native-image-picker';
 import ImageCropPicker from 'react-native-image-crop-picker';
 import { toast } from '@ola/shared/lib';
-import type { NativeUploadFile } from '@ola/shared/lib';
+import type { NativeUploadFile } from '@ola/shared/types';
 import { MIN_IMAGE_SOURCE } from '@ola/shared/constants';
 import { compressImageForUpload } from './compressImage';
 

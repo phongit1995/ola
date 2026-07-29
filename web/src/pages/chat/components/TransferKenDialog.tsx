@@ -39,14 +39,21 @@ function toReceiver(user: UserSearchResult): TransferKenReceiver {
   };
 }
 
-export function TransferKenDialog({ open, onClose, receiver }: TransferKenDialogProps) {
+export function TransferKenDialog({
+  open,
+  onClose,
+  receiver,
+}: TransferKenDialogProps) {
   const { t } = useTranslation();
   const myId = useAuthStore((s) => s.user?.id ?? '');
   const balance = useAuthStore((s) => s.user?.ken ?? 0);
   const setUser = useAuthStore((s) => s.setUser);
 
-  const [step, setStep] = useState<Step>(receiver != null ? 'input' : 'recipient');
-  const [pickedReceiver, setPickedReceiver] = useState<TransferKenReceiver | null>(null);
+  const [step, setStep] = useState<Step>(
+    receiver != null ? 'input' : 'recipient'
+  );
+  const [pickedReceiver, setPickedReceiver] =
+    useState<TransferKenReceiver | null>(null);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<UserSearchResult[]>([]);
   const [searching, setSearching] = useState(false);
@@ -102,11 +109,15 @@ export function TransferKenDialog({ open, onClose, receiver }: TransferKenDialog
       return;
     }
     if (amount < KEN_TRANSFER_MIN) {
-      toast.error(t('chat.transferKenErrMin', { min: formatKen(KEN_TRANSFER_MIN) }));
+      toast.error(
+        t('chat.transferKenErrMin', { min: formatKen(KEN_TRANSFER_MIN) })
+      );
       return;
     }
     if (amount > KEN_TRANSFER_MAX) {
-      toast.error(t('chat.transferKenErrMax', { max: formatKen(KEN_TRANSFER_MAX) }));
+      toast.error(
+        t('chat.transferKenErrMax', { max: formatKen(KEN_TRANSFER_MAX) })
+      );
       return;
     }
     if (amount > balance) {
@@ -124,10 +135,16 @@ export function TransferKenDialog({ open, onClose, receiver }: TransferKenDialog
     }
     setSubmitting(true);
     try {
-      const result = await KenService.transfer({ toUserId: activeReceiver.id, amount, password });
+      const result = await KenService.transfer({
+        toUserId: activeReceiver.id,
+        amount,
+        password,
+      });
       const current = useAuthStore.getState().user;
       if (current != null) setUser({ ...current, ken: result.kenBalance });
-      toast.success(t('chat.transferKenSuccess', { name: activeReceiver.name }));
+      toast.success(
+        t('chat.transferKenSuccess', { name: activeReceiver.name })
+      );
       onClose();
     } catch (error) {
       const apiError = toApiError(error);
@@ -145,7 +162,10 @@ export function TransferKenDialog({ open, onClose, receiver }: TransferKenDialog
     }
   }
 
-  const title = step === 'confirm' ? t('chat.transferKenConfirmTitle') : t('chat.transferKenTitle');
+  const title =
+    step === 'confirm'
+      ? t('chat.transferKenConfirmTitle')
+      : t('chat.transferKenTitle');
 
   const footer =
     step === 'recipient' ? undefined : step === 'input' ? (
@@ -157,7 +177,11 @@ export function TransferKenDialog({ open, onClose, receiver }: TransferKenDialog
         <DialogButton onClick={() => setStep('input')} disabled={submitting}>
           {t('chat.transferKenEdit')}
         </DialogButton>
-        <DialogButton variant="green" onClick={() => void submitTransfer()} disabled={submitting}>
+        <DialogButton
+          variant="green"
+          onClick={() => void submitTransfer()}
+          disabled={submitting}
+        >
           {t('chat.transferKenOk')}
         </DialogButton>
       </>
@@ -173,7 +197,9 @@ export function TransferKenDialog({ open, onClose, receiver }: TransferKenDialog
     >
       {step === 'recipient' ? (
         <div className="flex flex-col gap-1 px-1 py-1">
-          <span className="text-base text-black/87">{t('chat.transferKenReceiver')}</span>
+          <span className="text-base text-black/87">
+            {t('chat.transferKenReceiver')}
+          </span>
           <input
             autoFocus
             type="text"
@@ -185,9 +211,13 @@ export function TransferKenDialog({ open, onClose, receiver }: TransferKenDialog
           {query.trim() !== '' && (
             <div className="mt-2 max-h-56 overflow-y-auto rounded border border-black/12">
               {searching ? (
-                <p className="py-3 text-center text-sm text-black/54">{t('common.loading')}</p>
+                <p className="py-3 text-center text-sm text-black/54">
+                  {t('common.loading')}
+                </p>
               ) : results.length === 0 ? (
-                <p className="py-3 text-center text-sm text-black/54">{t('chat.composeSearchEmpty')}</p>
+                <p className="py-3 text-center text-sm text-black/54">
+                  {t('chat.composeSearchEmpty')}
+                </p>
               ) : (
                 <ul className="divide-y divide-black/8 px-2">
                   {results.map((item) => (
@@ -210,14 +240,18 @@ export function TransferKenDialog({ open, onClose, receiver }: TransferKenDialog
       ) : step === 'input' ? (
         <div className="flex flex-col gap-1 px-1 py-1">
           <div className="flex items-center justify-center gap-2 text-lg font-bold">
-            <span className="text-black/54">{t('chat.transferKenBalance')}</span>
+            <span className="text-black/54">
+              {t('chat.transferKenBalance')}
+            </span>
             <span className="text-black/87">
               {formatKen(balance)} {t('chat.transferKenUnit')}
             </span>
           </div>
           <div className="my-2 h-px bg-black/12" />
           <div className="flex items-center justify-between">
-            <span className="text-base text-black/87">{t('chat.transferKenReceiver')}</span>
+            <span className="text-base text-black/87">
+              {t('chat.transferKenReceiver')}
+            </span>
             {receiver == null && (
               <button
                 type="button"
@@ -236,34 +270,44 @@ export function TransferKenDialog({ open, onClose, receiver }: TransferKenDialog
               color={activeReceiver?.color ?? '#999'}
             />
           </div>
-          <span className="mt-4 text-base text-black/87">{t('chat.transferKenAmountLabel')}</span>
+          <span className="mt-4 text-base text-black/87">
+            {t('chat.transferKenAmountLabel')}
+          </span>
           <input
             ref={amountInputRef}
             autoFocus
             inputMode="numeric"
             value={displayAmount}
-            onChange={(event) => setAmountDigits(onlyDigits(event.target.value))}
+            onChange={(event) =>
+              setAmountDigits(onlyDigits(event.target.value))
+            }
             placeholder={t('chat.transferKenAmountPlaceholder')}
             className="mt-1 w-full rounded border border-black/12 px-3 py-2 text-base text-black/87 outline-none focus:border-ola-primary"
           />
         </div>
       ) : (
         <div className="flex flex-col gap-1 px-1 py-1">
-          <span className="text-base text-black/54">{t('chat.transferKenReceiver')}</span>
+          <span className="text-base text-black/54">
+            {t('chat.transferKenReceiver')}
+          </span>
           <UserRow
             name={activeReceiver?.name ?? ''}
             username={activeReceiver?.username}
             avatar={activeReceiver?.avatar}
             color={activeReceiver?.color ?? '#999'}
           />
-          <span className="mt-4 text-base text-black/54">{t('chat.transferKenConfirmAmountLabel')}</span>
+          <span className="mt-4 text-base text-black/54">
+            {t('chat.transferKenConfirmAmountLabel')}
+          </span>
           <p className="mt-2 text-lg font-bold text-black/87">
             {formatKen(amount)} {t('chat.transferKenUnit')}
           </p>
           <p className="mt-3 rounded-lg border border-ola-error/30 bg-ola-error/5 px-3 py-2.5 text-center text-sm font-semibold text-ola-error/80">
             {t('chat.transferKenWarning')}
           </p>
-          <span className="mt-4 text-base text-black/87">{t('chat.transferKenPassword')}</span>
+          <span className="mt-4 text-base text-black/87">
+            {t('chat.transferKenPassword')}
+          </span>
           <input
             type="password"
             autoFocus

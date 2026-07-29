@@ -1,10 +1,17 @@
 import { useEffect, useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 import { useTranslation } from 'react-i18next';
-import { Avatar, ConfirmDialog, SearchIcon, Spinner, VipIcon } from '@components';
+import {
+  Avatar,
+  ConfirmDialog,
+  SearchIcon,
+  Spinner,
+  VipIcon,
+} from '@components';
 import { activeVipTypeId, colorForName, toast } from '@lib';
 import { UserService } from '@services';
-import { useMeLocalStore, type ViewedProfile } from '@/store/meLocalStore';
+import { useMeLocalStore } from '@/store/meLocalStore';
+import type { ViewedProfile } from '@ola/shared/types';
 import { CLOSE_ANIMATION_MS } from '../constants';
 
 interface MeRightDrawerProps {
@@ -21,7 +28,9 @@ export function MeRightDrawer({ onClose, onOpenProfile }: MeRightDrawerProps) {
   const [confirmClear, setConfirmClear] = useState(false);
 
   const viewedProfiles = useMeLocalStore((state) => state.viewedProfiles);
-  const clearViewedProfiles = useMeLocalStore((state) => state.clearViewedProfiles);
+  const clearViewedProfiles = useMeLocalStore(
+    (state) => state.clearViewedProfiles
+  );
 
   useEffect(() => {
     const id = requestAnimationFrame(() => setShown(true));
@@ -98,8 +107,14 @@ export function MeRightDrawer({ onClose, onOpenProfile }: MeRightDrawerProps) {
 
         {!searching && viewedProfiles.length > 0 && (
           <div className="flex shrink-0 items-center justify-between bg-white px-4 py-2">
-            <span className="text-xs text-black/54">{t('me.recentlyViewed')}</span>
-            <button type="button" onClick={() => setConfirmClear(true)} className="text-xs text-black/54">
+            <span className="text-xs text-black/54">
+              {t('me.recentlyViewed')}
+            </span>
+            <button
+              type="button"
+              onClick={() => setConfirmClear(true)}
+              className="text-xs text-black/54"
+            >
               {t('me.clearHistory')}
             </button>
           </div>
@@ -115,14 +130,22 @@ export function MeRightDrawer({ onClose, onOpenProfile }: MeRightDrawerProps) {
               <MeDrawerEmpty message={t('me.searchEmpty')} />
             ) : (
               results.map((profile) => (
-                <MeProfileRow key={profile.id} profile={profile} onOpen={openProfile} />
+                <MeProfileRow
+                  key={profile.id}
+                  profile={profile}
+                  onOpen={openProfile}
+                />
               ))
             )
           ) : viewedProfiles.length === 0 ? (
             <MeDrawerEmpty message={t('me.searchHistoryEmpty')} />
           ) : (
             viewedProfiles.map((profile) => (
-              <MeProfileRow key={profile.id} profile={profile} onOpen={openProfile} />
+              <MeProfileRow
+                key={profile.id}
+                profile={profile}
+                onOpen={openProfile}
+              />
             ))
           )}
         </div>
@@ -168,14 +191,23 @@ function MeProfileRow({ profile, onOpen }: MeProfileRowProps) {
       onClick={() => onOpen(profile)}
       className="flex h-12 w-full items-center gap-2 px-2 text-left hover:bg-ola-primary-light"
     >
-      <Avatar name={title} color={colorForName(profile.username)} src={profile.avatar} size={32} />
+      <Avatar
+        name={title}
+        color={colorForName(profile.username)}
+        src={profile.avatar}
+        size={32}
+      />
       <span className="flex min-w-0 flex-1 flex-col justify-center">
         <span className="flex min-w-0 items-center gap-1">
           <VipIcon typeId={profile.vipTypeId} />
-          <span className="min-w-0 truncate text-base text-black/87">{title}</span>
+          <span className="min-w-0 truncate text-base text-black/87">
+            {title}
+          </span>
         </span>
         {hasFullName && (
-          <span className="min-w-0 truncate text-xs text-black/54">@{profile.username}</span>
+          <span className="min-w-0 truncate text-xs text-black/54">
+            @{profile.username}
+          </span>
         )}
       </span>
     </button>

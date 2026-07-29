@@ -1,6 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { toast, formatKen, formatVnd, buildVietQrImageUrl, fillMemoTemplate } from '@lib';
+import {
+  toast,
+  formatKen,
+  formatVnd,
+  buildVietQrImageUrl,
+  fillMemoTemplate,
+} from '@lib';
 import { ScreenHeader, FullScreenOverlay } from '@components';
 import { useAuthStore } from '@/store/authStore';
 import { useTopupConfigStore } from '@/store/topupConfigStore';
@@ -19,7 +25,9 @@ function CopyRow({ label, value }: { label: string; value: string }) {
     <div className="flex items-center border-b border-black/8 py-2 last:border-b-0">
       <div className="min-w-0 flex-1">
         <span className="block text-xs text-black/54">{label}</span>
-        <span className="block truncate text-sm font-medium text-black/87">{value}</span>
+        <span className="block truncate text-sm font-medium text-black/87">
+          {value}
+        </span>
       </div>
       <button
         type="button"
@@ -53,17 +61,21 @@ export function BuyKenPage({ onClose }: { onClose: () => void }) {
 
   const amount =
     customText == null
-      ? (selectedPreset ?? presetAmounts[0] ?? minAmount)
+      ? selectedPreset ?? presetAmounts[0] ?? minAmount
       : customText === ''
-        ? 0
-        : Number(customText);
+      ? 0
+      : Number(customText);
   const isValid = amount >= minAmount && amount % stepAmount === 0;
   const kenAmount = amount * kenPerVnd;
   const balance = user?.ken ?? 0;
 
   const memo = useMemo(
-    () => fillMemoTemplate(bank?.memoTemplate || '@{username}', user?.username ?? ''),
-    [bank?.memoTemplate, user?.username],
+    () =>
+      fillMemoTemplate(
+        bank?.memoTemplate || '@{username}',
+        user?.username ?? ''
+      ),
+    [bank?.memoTemplate, user?.username]
   );
 
   const qrImageUrl = useMemo(() => {
@@ -109,7 +121,9 @@ export function BuyKenPage({ onClose }: { onClose: () => void }) {
         ) : (
           <>
             <div className="mx-2 rounded-sm border border-black/12 bg-white p-3">
-              <span className="text-xs text-black/54">{t('ken.buy.chooseAmount')}</span>
+              <span className="text-xs text-black/54">
+                {t('ken.buy.chooseAmount')}
+              </span>
               <div className="mt-2 grid grid-cols-3 gap-2">
                 {presetAmounts.map((value) => (
                   <button
@@ -127,7 +141,9 @@ export function BuyKenPage({ onClose }: { onClose: () => void }) {
                 ))}
               </div>
 
-              <span className="mt-3 block text-xs text-black/54">{t('ken.buy.customLabel')}</span>
+              <span className="mt-3 block text-xs text-black/54">
+                {t('ken.buy.customLabel')}
+              </span>
               <input
                 type="text"
                 inputMode="numeric"
@@ -141,7 +157,9 @@ export function BuyKenPage({ onClose }: { onClose: () => void }) {
               />
 
               <div className="mt-3 flex items-center">
-                <span className="text-sm text-black/54">{t('ken.buy.receive')}</span>
+                <span className="text-sm text-black/54">
+                  {t('ken.buy.receive')}
+                </span>
                 <span className="ml-2 flex-1 text-lg font-bold text-ola-accent">
                   {formatKen(isValid ? kenAmount : 0)} KEN
                 </span>
@@ -170,7 +188,11 @@ export function BuyKenPage({ onClose }: { onClose: () => void }) {
                     {qrImageUrl != null && (
                       <div className="mt-3 flex justify-center">
                         <div className="rounded border border-black/12 bg-white p-2">
-                          <img src={qrImageUrl} alt="VietQR" className="h-56 w-56 object-contain" />
+                          <img
+                            src={qrImageUrl}
+                            alt="VietQR"
+                            className="h-56 w-56 object-contain"
+                          />
                         </div>
                       </div>
                     )}
@@ -185,7 +207,10 @@ export function BuyKenPage({ onClose }: { onClose: () => void }) {
                           </span>
                         </div>
                       )}
-                      <CopyRow label={t('ken.buy.accountNumberLabel')} value={bank.accountNumber} />
+                      <CopyRow
+                        label={t('ken.buy.accountNumberLabel')}
+                        value={bank.accountNumber}
+                      />
                       {bank.accountName !== '' && (
                         <div className="border-b border-black/8 py-2">
                           <span className="block text-xs text-black/54">
@@ -196,10 +221,14 @@ export function BuyKenPage({ onClose }: { onClose: () => void }) {
                           </span>
                         </div>
                       )}
-                      {memo !== '' && <CopyRow label={t('ken.buy.memoLabel')} value={memo} />}
+                      {memo !== '' && (
+                        <CopyRow label={t('ken.buy.memoLabel')} value={memo} />
+                      )}
                     </div>
                     <div className="mt-3 text-center">
-                      <span className="block text-xs text-black/54">{t('ken.buy.amountLabel')}</span>
+                      <span className="block text-xs text-black/54">
+                        {t('ken.buy.amountLabel')}
+                      </span>
                       <span className="block text-lg font-bold text-black/87">
                         {formatVnd(amount)}đ
                       </span>

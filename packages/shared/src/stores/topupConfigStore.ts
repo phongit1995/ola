@@ -1,13 +1,8 @@
 import { create } from 'zustand';
-import { toApiError, toast } from '../lib';
-import { SettingsService } from '../services';
-import type { TopupConfigResult } from '../types';
-
-interface TopupConfigState {
-  config: TopupConfigResult | null;
-  loading: boolean;
-  load: () => Promise<void>;
-}
+import { toApiError } from '../lib/apiError';
+import { toast } from '../lib/toast';
+import { SettingsService } from '../services/settings.service';
+import type { TopupConfigState } from '../types/client/settings.type';
 
 export const useTopupConfigStore = create<TopupConfigState>((set, get) => ({
   config: null,

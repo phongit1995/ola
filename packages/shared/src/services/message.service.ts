@@ -1,23 +1,24 @@
-import { http } from '../api';
-import { appendUploadFile, uploadFileMimeType, type UploadFile } from '../lib/upload';
-import { API_PATH } from '../config';
+import { http } from '../api/http';
+import {
+  appendUploadFile,
+  audioUploadFilename,
+  uploadFileMimeType,
+} from '../lib/upload';
+import { API_PATH } from '../config/api';
+import { AUDIO_UPLOAD_TIMEOUT_MS } from '../constants/upload';
 import type {
   GetMessagesParams,
   Message,
-  MessageResult,
   MessagesListResult,
   ReactionType,
+  SendAudioOptions,
   SendDirectMessageRequest,
   SendMessageRequest,
-} from '../types';
+} from '../types/api/chat.type';
+import type { MessageResult } from '../types/api/auth.type';
+import type { UploadFile } from '../types/client/upload.type';
 
-export interface SendAudioOptions {
-  clientMsgId?: string;
-  replyToId?: string;
-  waveform?: number[];
-}
-
-const AUDIO_UPLOAD_TIMEOUT_MS = 120_000;
+export type { SendAudioOptions } from '../types/api/chat.type';
 
 export class MessageService {
   static list(conversationId: string, params: GetMessagesParams = {}): Promise<MessagesListResult> {
@@ -50,8 +51,7 @@ export class MessageService {
     options: SendAudioOptions = {}
   ): Promise<Message> {
     const form = new FormData();
-    const ext = uploadFileMimeType(file).includes('mp4') ? 'm4a' : 'webm';
-    appendUploadFile(form, 'file', file, `voice.${ext}`);
+    appendUploadFile(form, 'file', file, audioUploadFilename(uploadFileMimeType(file)));
     form.append('conversationId', conversationId);
     form.append('duration', String(duration));
     if (options.clientMsgId != null) form.append('clientMsgId', options.clientMsgId);

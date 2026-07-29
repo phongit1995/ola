@@ -8,7 +8,12 @@ interface QuickCommentBarProps {
   onClose: () => void;
 }
 
-export function QuickCommentBar({ contextLabel, submitting, onSubmit, onClose }: QuickCommentBarProps) {
+export function QuickCommentBar({
+  contextLabel,
+  submitting,
+  onSubmit,
+  onClose,
+}: QuickCommentBarProps) {
   const { t } = useTranslation();
 
   return (
@@ -23,10 +28,16 @@ export function QuickCommentBar({ contextLabel, submitting, onSubmit, onClose }:
         {contextLabel != null && (
           <div className="flex items-center gap-2 border-t border-black/12 bg-white/95 px-3 py-1.5 text-xs text-black/54">
             <span className="shrink-0">{t('me.commentingOn')}</span>
-            <span className="min-w-0 flex-1 truncate text-black/87">{contextLabel}</span>
+            <span className="min-w-0 flex-1 truncate text-black/87">
+              {contextLabel}
+            </span>
           </div>
         )}
-        <MeCommentComposer submitting={submitting} onSubmit={onSubmit} autoFocus />
+        <MeCommentComposer
+          submitting={submitting}
+          onSubmit={onSubmit}
+          autoFocus
+        />
       </div>
     </>
   );

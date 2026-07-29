@@ -38,8 +38,16 @@ function LikerStack({ likers }: { likers: MePost['topLikers'] }) {
   return (
     <span className="flex -space-x-1.5">
       {likers.map((liker, index) => (
-        <span key={index} className="inline-flex overflow-hidden rounded-full ring-2 ring-white">
-          <Avatar name={liker.name} src={liker.avatar ?? undefined} color={liker.color} size={18} />
+        <span
+          key={index}
+          className="inline-flex overflow-hidden rounded-full ring-2 ring-white"
+        >
+          <Avatar
+            name={liker.name}
+            src={liker.avatar ?? undefined}
+            color={liker.color}
+            size={18}
+          />
         </span>
       ))}
     </span>
@@ -48,7 +56,13 @@ function LikerStack({ likers }: { likers: MePost['topLikers'] }) {
 
 function PinIcon({ className, title }: { className?: string; title?: string }) {
   return (
-    <svg viewBox="0 0 24 24" className={className} fill="currentColor" role="img" aria-label={title}>
+    <svg
+      viewBox="0 0 24 24"
+      className={className}
+      fill="currentColor"
+      role="img"
+      aria-label={title}
+    >
       <path d="M16 9V4h1c.55 0 1-.45 1-1s-.45-1-1-1H7c-.55 0-1 .45-1 1s.45 1 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z" />
     </svg>
   );
@@ -81,7 +95,9 @@ function MePostCardComponent({
   const openViewer = useMediaViewerStore((s) => s.openViewer);
   const [likeAnim, setLikeAnim] = useState<'in' | 'out' | null>(null);
   const [dislikeAnim, setDislikeAnim] = useState<'in' | 'out' | null>(null);
-  const [fly, setFly] = useState<{ x: number; y: number; id: number } | null>(null);
+  const [fly, setFly] = useState<{ x: number; y: number; id: number } | null>(
+    null
+  );
   const likeIconRef = useRef<HTMLImageElement>(null);
   const flySeq = useRef(0);
   const hasComments = post.comments > 0;
@@ -103,7 +119,11 @@ function MePostCardComponent({
       if (icon != null) {
         const rect = icon.getBoundingClientRect();
         flySeq.current += 1;
-        setFly({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2, id: flySeq.current });
+        setFly({
+          x: rect.left + rect.width / 2,
+          y: rect.top + rect.height / 2,
+          id: flySeq.current,
+        });
       }
       playLikeSound();
     }
@@ -123,7 +143,11 @@ function MePostCardComponent({
           onClick={() => onOpenProfile?.(post.author, post.color)}
           className="flex min-w-0 flex-1 items-start gap-4 text-left"
         >
-          <Avatar name={post.author} src={post.avatar ?? undefined} color={post.color} />
+          <Avatar
+            name={post.author}
+            src={post.avatar ?? undefined}
+            color={post.color}
+          />
           <span className="min-w-0 flex-1">
             <span className="flex items-center gap-1">
               <UserName
@@ -133,7 +157,10 @@ function MePostCardComponent({
                 fullNameClassName="text-black/54"
               />
               {post.pinned && (
-                <PinIcon className="h-3.5 w-3.5 shrink-0 text-ola-primary" title={t('me.pinned')} />
+                <PinIcon
+                  className="h-3.5 w-3.5 shrink-0 text-ola-primary"
+                  title={t('me.pinned')}
+                />
               )}
               {post.clanHandle != null && post.clanHandle !== '' && (
                 <span
@@ -154,7 +181,9 @@ function MePostCardComponent({
                 </span>
               )}
             </span>
-            <span className="mt-0.5 block text-xs text-black/54">{post.time}</span>
+            <span className="mt-0.5 block text-xs text-black/54">
+              {post.time}
+            </span>
           </span>
         </button>
         <button
@@ -183,7 +212,9 @@ function MePostCardComponent({
         }
       />
 
-      {post.checkIn != null && <CheckInCard checkIn={post.checkIn} label={t('me.postMenu')} />}
+      {post.checkIn != null && (
+        <CheckInCard checkIn={post.checkIn} label={t('me.postMenu')} />
+      )}
 
       {post.photos != null && post.photos.length > 0 && (
         <MediaGrid
@@ -198,7 +229,9 @@ function MePostCardComponent({
           disabled={!hasComments}
           onClick={() => onOpenComments?.(post.id)}
           className={`flex-1 text-left ${
-            hasComments ? 'cursor-pointer hover:text-black/87 hover:underline' : 'cursor-default'
+            hasComments
+              ? 'cursor-pointer hover:text-black/87 hover:underline'
+              : 'cursor-default'
           }`}
         >
           {t('me.commentCount', { count: post.comments })}
@@ -218,7 +251,9 @@ function MePostCardComponent({
           ) : (
             <span className="ml-2 flex items-center gap-1">
               <LikerStack likers={post.topLikers} />
-              <span>{t('me.likeCount', { value: formatLikeCount(post.likes) })}</span>
+              <span>
+                {t('me.likeCount', { value: formatLikeCount(post.likes) })}
+              </span>
             </span>
           ))}
       </div>

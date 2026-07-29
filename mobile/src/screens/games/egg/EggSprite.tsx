@@ -12,8 +12,8 @@ import {
   SMASH_TAIL_HIT,
   SMASH_TAIL_MISS,
   TICK_MS,
-  type Nest,
 } from '@ola/shared/lib';
+import type { Nest } from '@ola/shared/types';
 import { EGG_FRAMES, frameSize } from './eggAssets';
 import type { SmashOutcome, SmashStarter } from './useEggGame';
 

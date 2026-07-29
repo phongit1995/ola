@@ -1,30 +1,10 @@
 import { create } from 'zustand';
 import i18n from 'i18next';
-import { MeService } from '../services';
-import { toast } from '../lib';
-import type { MeNotification } from '../types';
-
-const PAGE_SIZE = 30;
-
-interface MeNotificationIncoming {
-  notification?: MeNotification | null;
-  removedId?: string | null;
-  unreadCount: number;
-}
-
-interface MeNotificationState {
-  items: MeNotification[];
-  unreadCount: number;
-  loading: boolean;
-  loadingMore: boolean;
-  hasMore: boolean;
-  nextCursor: string | null;
-  load: () => Promise<void>;
-  loadMore: () => Promise<void>;
-  markAllRead: () => Promise<void>;
-  refreshUnread: () => Promise<void>;
-  handleIncoming: (payload: MeNotificationIncoming) => void;
-}
+import { NOTIFICATION_PAGE_SIZE } from '../constants/notification';
+import { toast } from '../lib/toast';
+import { MeService } from '../services/me.service';
+import type { MeNotification } from '../types/api/me.type';
+import type { MeNotificationState } from '../types/client/notification.type';
 
 function dedupe(items: MeNotification[]): MeNotification[] {
   const seen = new Set<string>();
@@ -45,7 +25,7 @@ export const useMeNotificationStore = create<MeNotificationState>((set, get) => 
   load: async () => {
     set({ loading: true });
     try {
-      const result = await MeService.notifications({ limit: PAGE_SIZE });
+      const result = await MeService.notifications({ limit: NOTIFICATION_PAGE_SIZE });
       set({
         items: result.items,
         unreadCount: result.unreadCount,
@@ -63,7 +43,10 @@ export const useMeNotificationStore = create<MeNotificationState>((set, get) => 
     if (loadingMore || !hasMore || nextCursor == null) return;
     set({ loadingMore: true });
     try {
-      const result = await MeService.notifications({ limit: PAGE_SIZE, cursor: nextCursor });
+      const result = await MeService.notifications({
+        limit: NOTIFICATION_PAGE_SIZE,
+        cursor: nextCursor,
+      });
       set({
         items: dedupe([...items, ...result.items]),
         unreadCount: result.unreadCount,

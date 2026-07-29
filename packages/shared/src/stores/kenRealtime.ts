@@ -1,29 +1,44 @@
-import { SocketService } from '../services';
+import { KEN_SOCKET_EVENTS } from '../constants/socket';
+import { SocketService } from '../services/socket.service';
 import { playKenCreditSound } from '../platform/sound';
+import type {
+  KenChestAvailableEvent,
+  KenChestClosedEvent,
+  KenUpdatedEvent,
+} from '../types/realtime/ken.type';
 import { useAuthStore } from './authStore';
+import {
+  markKenRealtimeUpdate,
+  resyncKenBalance,
+} from './kenResync.state';
 import { useKenTreasureStore } from './kenTreasureStore';
+import { claimRealtimeRegistration } from './realtimeRegistration.state';
 
-let registered = false;
+export { resyncKenBalance } from './kenResync.state';
 
 export function registerKenRealtime() {
-  if (registered) return;
-  registered = true;
+  if (!claimRealtimeRegistration('ken')) return;
 
-  SocketService.on<{ ken?: number }>('KEN_UPDATED', (data) => {
+  SocketService.onReconnect(() => {
+    void resyncKenBalance();
+  });
+
+  SocketService.on<KenUpdatedEvent>(KEN_SOCKET_EVENTS.updated, (data) => {
     if (typeof data?.ken !== 'number') return;
+    markKenRealtimeUpdate();
     const { user, setUser } = useAuthStore.getState();
     if (!user) return;
     if (data.ken > (user.ken ?? 0)) playKenCreditSound();
     setUser({ ...user, ken: data.ken });
   });
 
-  SocketService.on<{ id: string; expiresAt: string }>('KEN_CHEST_AVAILABLE', (data) => {
+  SocketService.on<KenChestAvailableEvent>(KEN_SOCKET_EVENTS.chestAvailable, (data) => {
     if (!useAuthStore.getState().user) return;
     if (data?.id && data.expiresAt)
       useKenTreasureStore.getState().show({ id: data.id, expiresAt: data.expiresAt });
   });
 
-  SocketService.on<{ id: string }>('KEN_CHEST_CLOSED', (data) => {
+  SocketService.on<KenChestClosedEvent>(KEN_SOCKET_EVENTS.chestClosed, (data) => {
     const state = useKenTreasureStore.getState();
     const chest = data?.id ? state.chests[data.id] : undefined;
     if (chest && chest.phase === 'closed') state.dismiss(data.id);

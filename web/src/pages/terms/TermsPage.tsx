@@ -11,7 +11,9 @@ interface TermsSection {
 export function TermsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const sections = t('terms.sections', { returnObjects: true }) as unknown as TermsSection[];
+  const sections = t('terms.sections', {
+    returnObjects: true,
+  }) as unknown as TermsSection[];
 
   return (
     <div className="min-h-full bg-[#f0f7f0] font-sans text-gray-800">
@@ -31,14 +33,20 @@ export function TermsPage() {
               alt="Ola"
               className="mx-auto mb-3 h-16 w-16 rounded-2xl shadow-lg"
             />
-            <h1 className="text-xl font-bold tracking-wide text-white">{t('terms.title')}</h1>
-            <p className="mt-1.5 text-[13px] text-white/85">{t('terms.subtitle')}</p>
+            <h1 className="text-xl font-bold tracking-wide text-white">
+              {t('terms.title')}
+            </h1>
+            <p className="mt-1.5 text-[13px] text-white/85">
+              {t('terms.subtitle')}
+            </p>
           </div>
         </div>
       </header>
 
       <main className="mx-auto max-w-2xl px-4 pt-6 pb-14">
-        <p className="mb-4 text-center text-xs text-[#5a7a5d]">{t('terms.updated')}</p>
+        <p className="mb-4 text-center text-xs text-[#5a7a5d]">
+          {t('terms.updated')}
+        </p>
 
         <div className="mb-4 rounded-xl border border-[#ffd54f] bg-[#fff8e1] px-4 py-3.5 text-[13px] text-[#6d4c00]">
           <strong>{t('terms.noticeLabel')}</strong> {t('terms.notice')}

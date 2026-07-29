@@ -49,29 +49,48 @@ export function ForgotPasswordPage() {
         >
           {t('common.cancel')}
         </button>
-        <span className="flex-1 text-center text-lg font-medium">{t('forgot.title')}</span>
+        <span className="flex-1 text-center text-lg font-medium">
+          {t('forgot.title')}
+        </span>
         <LanguageSwitcher />
       </header>
 
-      <img src={olaLogo} alt="Ola" className="my-3 mt-6 h-14 w-14 object-contain" />
+      <img
+        src={olaLogo}
+        alt="Ola"
+        className="my-3 mt-6 h-14 w-14 object-contain"
+      />
 
       {submitted ? (
         <div className="mt-2 w-full max-w-md rounded-sm bg-white p-5 text-center shadow-[0_1px_4px_rgba(0,0,0,.24),0_0_2px_rgba(0,0,0,.12)]">
-          <p className="text-base font-medium text-black/87">{t('forgot.doneTitle')}</p>
+          <p className="text-base font-medium text-black/87">
+            {t('forgot.doneTitle')}
+          </p>
           <p className="mt-2 text-sm text-black/54">{t('forgot.doneDesc')}</p>
         </div>
       ) : (
         <>
-          <p className="w-full max-w-md px-1 text-sm text-white/90">{t('forgot.desc')}</p>
+          <p className="w-full max-w-md px-1 text-sm text-white/90">
+            {t('forgot.desc')}
+          </p>
           <TextField
             label={t('forgot.usernameLabel')}
             placeholder={t('forgot.usernamePlaceholder')}
             error={errors.username?.message}
             field={register('username', {
               required: t('forgot.errUsernameRequired'),
-              minLength: { value: USERNAME_MIN, message: t('forgot.errUsernameRequired') },
-              maxLength: { value: USERNAME_MAX, message: t('forgot.errUsernameRequired') },
-              pattern: { value: USERNAME_PATTERN, message: t('forgot.errUsernameFormat') },
+              minLength: {
+                value: USERNAME_MIN,
+                message: t('forgot.errUsernameRequired'),
+              },
+              maxLength: {
+                value: USERNAME_MAX,
+                message: t('forgot.errUsernameRequired'),
+              },
+              pattern: {
+                value: USERNAME_PATTERN,
+                message: t('forgot.errUsernameFormat'),
+              },
             })}
             showClear={!!username}
             onClear={() => setValue('username', '', { shouldValidate: true })}

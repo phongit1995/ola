@@ -1,0 +1,2 @@
+export const KEN_HISTORY_PAGE_SIZE = 20;
+export const KEN_TREASURE_OPEN_ANIMATION_MS = 1_000;

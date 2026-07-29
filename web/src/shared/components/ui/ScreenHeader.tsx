@@ -3,7 +3,12 @@ import { useTranslation } from 'react-i18next';
 
 function BackIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="h-6 w-6" fill="currentColor" aria-hidden="true">
+    <svg
+      viewBox="0 0 24 24"
+      className="h-6 w-6"
+      fill="currentColor"
+      aria-hidden="true"
+    >
       <path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
     </svg>
   );
@@ -72,7 +77,9 @@ export function ScreenHeader({
               <span className="truncate text-xs text-white/70">{subtitle}</span>
             </span>
           ) : (
-            <span className="min-w-0 truncate text-lg font-medium">{title}</span>
+            <span className="min-w-0 truncate text-lg font-medium">
+              {title}
+            </span>
           )}
         </button>
       ) : (

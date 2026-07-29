@@ -9,7 +9,13 @@ import { SubmitButton } from '@components/form/SubmitButton';
 import { LanguageSwitcher } from '@components/LanguageSwitcher';
 import { Spinner } from '@components';
 import { AuthService } from '@services';
-import { ApiError, resolveAuthError, USERNAME_MAX, USERNAME_PATTERN, toast } from '@lib';
+import {
+  ApiError,
+  resolveAuthError,
+  USERNAME_MAX,
+  USERNAME_PATTERN,
+  toast,
+} from '@lib';
 import { USERNAME_MIN } from './constants';
 
 interface RegisterForm {
@@ -46,7 +52,10 @@ export function RegisterPage() {
     setLoading(true);
     setSubmitError(null);
     try {
-      await AuthService.register({ username: data.username, password: data.password });
+      await AuthService.register({
+        username: data.username,
+        password: data.password,
+      });
       toast.success(t('register.success'));
       navigate(ROUTES.login);
     } catch (err) {
@@ -84,7 +93,11 @@ export function RegisterPage() {
         <LanguageSwitcher />
       </header>
 
-      <img src={olaLogo} alt="Ola" className="my-3 mt-6 h-14 w-14 object-contain" />
+      <img
+        src={olaLogo}
+        alt="Ola"
+        className="my-3 mt-6 h-14 w-14 object-contain"
+      />
 
       <TextField
         label={t('register.usernameLabel')}
@@ -92,9 +105,18 @@ export function RegisterPage() {
         error={errors.username?.message}
         field={register('username', {
           required: t('register.errUsernameRequired'),
-          minLength: { value: USERNAME_MIN, message: t('register.errUsernameMin') },
-          maxLength: { value: USERNAME_MAX, message: t('register.errUsernameMax') },
-          pattern: { value: USERNAME_PATTERN, message: t('register.errUsernameFormat') },
+          minLength: {
+            value: USERNAME_MIN,
+            message: t('register.errUsernameMin'),
+          },
+          maxLength: {
+            value: USERNAME_MAX,
+            message: t('register.errUsernameMax'),
+          },
+          pattern: {
+            value: USERNAME_PATTERN,
+            message: t('register.errUsernameFormat'),
+          },
         })}
         showClear={!!username}
         onClear={() => setValue('username', '', { shouldValidate: true })}
@@ -107,8 +129,14 @@ export function RegisterPage() {
         error={errors.password?.message}
         field={register('password', {
           required: t('register.errPasswordRequired'),
-          minLength: { value: PASSWORD_MIN, message: t('register.errPasswordMin') },
-          maxLength: { value: PASSWORD_MAX, message: t('register.errPasswordMax') },
+          minLength: {
+            value: PASSWORD_MIN,
+            message: t('register.errPasswordMin'),
+          },
+          maxLength: {
+            value: PASSWORD_MAX,
+            message: t('register.errPasswordMax'),
+          },
         })}
         showClear={!!password}
         onClear={() => setValue('password', '', { shouldValidate: true })}

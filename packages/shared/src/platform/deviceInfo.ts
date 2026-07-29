@@ -1,52 +1,48 @@
 import { randomUuid } from '../lib/randomUuid';
+import { DEVICE_ID_STORAGE_KEY } from '../constants/storage';
+import type {
+  DeviceInfoPayload,
+  DeviceInfoPort,
+} from '../types/platform.type';
 import { getKeyValueStorage } from './keyValueStorage';
+import {
+  getCachedDeviceId,
+  getCurrentDeviceInfo,
+  setCachedDeviceId,
+  setCurrentDeviceInfo,
+} from './platformRuntime.state';
 
-export interface DeviceInfoPayload {
-  deviceName: string;
-  platform: string;
-  deviceId: string;
-  appVersion: string;
-}
-
-export interface DeviceInfoPort {
-  platform: string;
-  appVersion: string;
-  deviceName?: string;
-  deviceId?: string;
-}
-
-const DEVICE_ID_KEY = 'ola.deviceId';
-
-let current: DeviceInfoPort | null = null;
-let cachedDeviceId: string | null = null;
+export type { DeviceInfoPayload, DeviceInfoPort } from '../types/platform.type';
 
 export function configureDeviceInfo(port: DeviceInfoPort): void {
-  current = port;
+  setCurrentDeviceInfo(port);
 }
 
 function persistedDeviceId(): string {
+  const cachedDeviceId = getCachedDeviceId();
   if (cachedDeviceId != null) {
     return cachedDeviceId;
   }
   try {
     const storage = getKeyValueStorage();
-    const existing = storage.getItem(DEVICE_ID_KEY);
+    const existing = storage.getItem(DEVICE_ID_STORAGE_KEY);
     if (existing != null && existing !== '') {
-      cachedDeviceId = existing;
+      setCachedDeviceId(existing);
       return existing;
     }
     const generated = randomUuid();
-    storage.setItem(DEVICE_ID_KEY, generated);
-    cachedDeviceId = generated;
+    storage.setItem(DEVICE_ID_STORAGE_KEY, generated);
+    setCachedDeviceId(generated);
     return generated;
   } catch {
-    cachedDeviceId = randomUuid();
-    return cachedDeviceId;
+    const fallback = randomUuid();
+    setCachedDeviceId(fallback);
+    return fallback;
   }
 }
 
 export function getDeviceInfo(): DeviceInfoPayload {
-  const port = current;
+  const port = getCurrentDeviceInfo();
   const explicitId = port?.deviceId;
   const deviceId =
     explicitId != null && explicitId !== '' ? explicitId : persistedDeviceId();

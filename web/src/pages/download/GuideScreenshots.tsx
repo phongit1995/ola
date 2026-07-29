@@ -31,7 +31,9 @@ export function GuideScreenshots({ shots }: { shots: Screenshot[] }) {
               loading="lazy"
               className="h-48 w-auto rounded-lg border border-black/10 object-contain"
             />
-            <span className="mt-1 block text-center text-[11px] text-black/45">{shot.label}</span>
+            <span className="mt-1 block text-center text-[11px] text-black/45">
+              {shot.label}
+            </span>
           </button>
         ))}
       </div>

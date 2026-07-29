@@ -1,13 +1,13 @@
-import { http } from '../api';
-import { API_PATH } from '../config';
+import { http } from '../api/http';
+import { API_PATH } from '../config/api';
+import type { MessageResult } from '../types/api/auth.type';
 import type {
   FriendListParams,
   FriendListResult,
-  MessageResult,
   Relationship,
   RelationshipListResult,
   RespondAction,
-} from '../types';
+} from '../types/api/relationship.type';
 
 export class RelationshipService {
   static friends(params: FriendListParams = {}): Promise<FriendListResult> {

@@ -1,12 +1,12 @@
-import { http } from '../api';
-import { API_PATH } from '../config';
+import { http } from '../api/http';
+import { API_PATH } from '../config/api';
 import type {
   EggDrawHistoryFilter,
   EggDrawHistoryResult,
   EggDrawResult,
   EggGiftListResult,
   EggPackListResult,
-} from '../types';
+} from '../types/api/egg.type';
 
 export class EggService {
   static listPacks(): Promise<EggPackListResult> {

@@ -1,9 +1,18 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dialog, DialogButton, Spinner, VipIcon } from '@components';
-import { cn, createTimeFormatter, formatDateDMY, formatKen, vipName } from '@lib';
+import {
+  cn,
+  createTimeFormatter,
+  formatDateDMY,
+  formatKen,
+  vipName,
+} from '@lib';
 import { VipService } from '@services';
-import type { VipPurchaseHistoryItem, VipTransferHistoryItem } from '@app-types';
+import type {
+  VipPurchaseHistoryItem,
+  VipTransferHistoryItem,
+} from '@app-types';
 import { useAuthStore } from '@/store/authStore';
 
 const PAGE_SIZE = 20;
@@ -25,7 +34,9 @@ const SOURCE_KEYS = [
 type SourceKey = (typeof SOURCE_KEYS)[number];
 
 function sourceKeyOf(source: string): SourceKey | 'other' {
-  return (SOURCE_KEYS as readonly string[]).includes(source) ? (source as SourceKey) : 'other';
+  return (SOURCE_KEYS as readonly string[]).includes(source)
+    ? (source as SourceKey)
+    : 'other';
 }
 
 function iconTypeIdOf(packageName: string): number | null {
@@ -48,7 +59,10 @@ export function VipHistoryDialog({ open, onClose }: VipHistoryDialogProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
-  const formatTime = useMemo(() => createTimeFormatter(i18n.language), [i18n.language]);
+  const formatTime = useMemo(
+    () => createTimeFormatter(i18n.language),
+    [i18n.language]
+  );
 
   const loadPage = useCallback(async (offset: number, target: HistoryTab) => {
     setLoading(true);
@@ -60,13 +74,23 @@ export function VipHistoryDialog({ open, onClose }: VipHistoryDialogProps) {
     }
     try {
       if (target === 'purchases') {
-        const result = await VipService.getHistory({ limit: PAGE_SIZE, offset });
+        const result = await VipService.getHistory({
+          limit: PAGE_SIZE,
+          offset,
+        });
         setTotal(result.total);
-        setPurchases((prev) => (offset === 0 ? result.items : [...prev, ...result.items]));
+        setPurchases((prev) =>
+          offset === 0 ? result.items : [...prev, ...result.items]
+        );
       } else {
-        const result = await VipService.getTransfers({ limit: PAGE_SIZE, offset });
+        const result = await VipService.getTransfers({
+          limit: PAGE_SIZE,
+          offset,
+        });
         setTotal(result.total);
-        setTransfers((prev) => (offset === 0 ? result.items : [...prev, ...result.items]));
+        setTransfers((prev) =>
+          offset === 0 ? result.items : [...prev, ...result.items]
+        );
       }
     } catch {
       setError(true);
@@ -90,7 +114,11 @@ export function VipHistoryDialog({ open, onClose }: VipHistoryDialogProps) {
       open={open}
       onClose={onClose}
       title={t('vip.historyDialog.title')}
-      footer={<DialogButton onClick={onClose}>{t('vip.historyDialog.close')}</DialogButton>}
+      footer={
+        <DialogButton onClick={onClose}>
+          {t('vip.historyDialog.close')}
+        </DialogButton>
+      }
     >
       <div className="mb-2 flex gap-1.5">
         {TABS.map((key) => (
@@ -102,10 +130,14 @@ export function VipHistoryDialog({ open, onClose }: VipHistoryDialogProps) {
               'rounded-full px-3 py-1 text-xs font-medium transition-colors',
               tab === key
                 ? 'bg-ola-primary text-white'
-                : 'bg-[#efefef] text-[#5a5a5a] hover:bg-[#e4e4e4]',
+                : 'bg-[#efefef] text-[#5a5a5a] hover:bg-[#e4e4e4]'
             )}
           >
-            {t(key === 'purchases' ? 'vip.historyDialog.tabPurchases' : 'vip.historyDialog.tabTransfers')}
+            {t(
+              key === 'purchases'
+                ? 'vip.historyDialog.tabPurchases'
+                : 'vip.historyDialog.tabTransfers'
+            )}
           </button>
         ))}
       </div>
@@ -117,25 +149,40 @@ export function VipHistoryDialog({ open, onClose }: VipHistoryDialogProps) {
             <Spinner />
           </div>
         ) : items.length === 0 ? (
-          <p className="py-6 text-center text-[#8a8a8c]">{t('vip.historyDialog.empty')}</p>
+          <p className="py-6 text-center text-[#8a8a8c]">
+            {t('vip.historyDialog.empty')}
+          </p>
         ) : tab === 'purchases' ? (
           <ul className="divide-y divide-[#eceaea]">
             {purchases.map((item) => {
               const iconTypeId = iconTypeIdOf(item.packageName);
               return (
-                <li key={item.id} className="flex items-center justify-between gap-3 py-2">
+                <li
+                  key={item.id}
+                  className="flex items-center justify-between gap-3 py-2"
+                >
                   <div className="flex min-w-0 items-center gap-2">
                     {iconTypeId != null && (
-                      <VipIcon typeId={iconTypeId} className="h-8 w-8" rounded />
+                      <VipIcon
+                        typeId={iconTypeId}
+                        className="h-8 w-8"
+                        rounded
+                      />
                     )}
                     <div className="min-w-0">
                       <p className="truncate font-medium text-black/87">
-                        {iconTypeId != null ? vipName(iconTypeId) : item.packageName}
+                        {iconTypeId != null
+                          ? vipName(iconTypeId)
+                          : item.packageName}
                       </p>
                       <p className="truncate text-xs text-black/54">
-                        {t(`vip.historyDialog.source.${sourceKeyOf(item.source)}`)}
+                        {t(
+                          `vip.historyDialog.source.${sourceKeyOf(item.source)}`
+                        )}
                         {item.days > 0 &&
-                          ` · ${t('vip.historyDialog.until', { date: formatDateDMY(item.vipEndTime) })}`}
+                          ` · ${t('vip.historyDialog.until', {
+                            date: formatDateDMY(item.vipEndTime),
+                          })}`}
                       </p>
                     </div>
                   </div>
@@ -145,7 +192,9 @@ export function VipHistoryDialog({ open, onClose }: VipHistoryDialogProps) {
                         {t('vip.historyDialog.days', { count: item.days })}
                       </p>
                     )}
-                    <p className="text-xs text-[#9a9a9c]">{formatTime(item.createdAt)}</p>
+                    <p className="text-xs text-[#9a9a9c]">
+                      {formatTime(item.createdAt)}
+                    </p>
                     <p className="text-xs text-[#c0392b]">
                       {item.kenPrice > 0
                         ? `-${formatKen(item.kenPrice)} KEN`
@@ -161,9 +210,16 @@ export function VipHistoryDialog({ open, onClose }: VipHistoryDialogProps) {
             {transfers.map((item) => {
               const sent = item.fromUserId === myId;
               return (
-                <li key={item.id} className="flex items-center justify-between gap-3 py-2">
+                <li
+                  key={item.id}
+                  className="flex items-center justify-between gap-3 py-2"
+                >
                   <div className="flex min-w-0 items-center gap-2">
-                    <VipIcon typeId={item.vipIconId} className="h-8 w-8" rounded />
+                    <VipIcon
+                      typeId={item.vipIconId}
+                      className="h-8 w-8"
+                      rounded
+                    />
                     <div className="min-w-0">
                       <p className="truncate font-medium text-black/87">
                         {vipName(item.vipIconId)}
@@ -171,16 +227,22 @@ export function VipHistoryDialog({ open, onClose }: VipHistoryDialogProps) {
                       <p
                         className={cn(
                           'truncate text-xs',
-                          sent ? 'text-[#c0392b]' : 'text-[#1f8a3b]',
+                          sent ? 'text-[#c0392b]' : 'text-[#1f8a3b]'
                         )}
                       >
                         {sent
-                          ? t('vip.historyDialog.sentTo', { name: item.toUsername })
-                          : t('vip.historyDialog.receivedFrom', { name: item.fromUsername })}
+                          ? t('vip.historyDialog.sentTo', {
+                              name: item.toUsername,
+                            })
+                          : t('vip.historyDialog.receivedFrom', {
+                              name: item.fromUsername,
+                            })}
                       </p>
                     </div>
                   </div>
-                  <p className="shrink-0 text-xs text-[#9a9a9c]">{formatTime(item.createdAt)}</p>
+                  <p className="shrink-0 text-xs text-[#9a9a9c]">
+                    {formatTime(item.createdAt)}
+                  </p>
                 </li>
               );
             })}

@@ -1,40 +1,39 @@
 import { io, type Socket } from 'socket.io-client';
-import { env } from '../config';
-import { ensureFreshToken, refreshAccessToken, signApiGuard } from '../api';
-import { ApiError, authTokens } from '../lib';
-import { getDeviceInfo } from '../platform';
+import { signApiGuard } from '../api/apiGuardSigner';
+import {
+  ensureFreshToken,
+  refreshAccessToken,
+} from '../api/interceptors/refreshTokenInterceptor';
+import { env } from '../config/env';
+import {
+  SOCKET_AUTH_CONNECT_ERROR_MESSAGES,
+  SOCKET_ENVELOPE_EVENT,
+  SOCKET_FORCE_LOGOUT_EVENT,
+  SOCKET_GUARD_PATH,
+  SOCKET_PING_EVENT,
+  SOCKET_PING_INTERVAL_MS,
+  SOCKET_SESSION_REPLACED_EVENT,
+  SOCKET_STALE_SILENCE_MS,
+} from '../constants/socket';
+import { ApiError } from '../lib/apiError';
+import { authTokens } from '../lib/tokenStorage';
+import { getDeviceInfo } from '../platform/deviceInfo';
+import type {
+  ConnectionStatusListener,
+  ConnectionStatus,
+  EnvelopeHandler,
+  ForceLogoutHandler,
+  ForceLogoutData,
+  ReconnectHandler,
+  SessionReplacedHandler,
+  SessionReplacedData,
+} from '../types/realtime/socket.type';
 
-const SOCKET_GUARD_PATH = '/socket.io/';
-
-const ENVELOPE_EVENT = 'message';
-const PING_EVENT = 'ping';
-const PING_INTERVAL_MS = 60_000;
-const STALE_SILENCE_MS = 30_000;
-const SESSION_REPLACED_EVENT = 'SESSION_REPLACED';
-const FORCE_LOGOUT_EVENT = 'FORCE_LOGOUT';
-const AUTH_CONNECT_ERRORS = new Set([
-  'Unauthorized',
-  'session revoked',
-  'access_token is required',
-]);
-
-type EnvelopeHandler = (data: unknown) => void;
-type ReconnectHandler = () => void;
-
-export type ConnectionStatus = 'offline' | 'connected' | 'reconnecting';
-type ConnectionStatusListener = () => void;
-
-export interface SessionReplacedData {
-  reason?: string;
-}
-
-type SessionReplacedHandler = (data: SessionReplacedData) => void;
-
-export interface ForceLogoutData {
-  reason?: string;
-}
-
-type ForceLogoutHandler = (data: ForceLogoutData) => void;
+export type {
+  ConnectionStatus,
+  ForceLogoutData,
+  SessionReplacedData,
+} from '../types/realtime/socket.type';
 
 export class SocketService {
   private static socket: Socket | null = null;
@@ -65,20 +64,20 @@ export class SocketService {
       transports: env.socketTransports,
       autoConnect: false,
     });
-    socket.on(ENVELOPE_EVENT, (envelope: { type?: string; data?: unknown }) => {
+    socket.on(SOCKET_ENVELOPE_EVENT, (envelope: { type?: string; data?: unknown }) => {
       if (envelope?.type == null) return;
       this.listeners.get(envelope.type)?.forEach((handler) => handler(envelope.data));
     });
-    socket.on(SESSION_REPLACED_EVENT, (data: SessionReplacedData) => {
+    socket.on(SOCKET_SESSION_REPLACED_EVENT, (data: SessionReplacedData) => {
       this.sessionReplacedHandler?.(data ?? {});
     });
-    socket.on(FORCE_LOGOUT_EVENT, (data: ForceLogoutData) => {
+    socket.on(SOCKET_FORCE_LOGOUT_EVENT, (data: ForceLogoutData) => {
       this.handleForceLogout(data ?? {});
     });
     socket.on('connect', () => this.handleConnect());
     socket.on('disconnect', () => this.handleDisconnect());
     socket.on('connect_error', (error) => {
-      if (AUTH_CONNECT_ERRORS.has(error.message)) {
+      if (SOCKET_AUTH_CONNECT_ERROR_MESSAGES.includes(error.message)) {
         void this.recoverAuth();
         return;
       }
@@ -99,7 +98,7 @@ export class SocketService {
       socket.connect();
       return;
     }
-    if (Date.now() - this.lastServerPingAt > STALE_SILENCE_MS) this.forceReconnect();
+    if (Date.now() - this.lastServerPingAt > SOCKET_STALE_SILENCE_MS) this.forceReconnect();
   }
 
   static forceReconnect(): void {
@@ -204,8 +203,8 @@ export class SocketService {
   private static startHeartbeat(): void {
     this.stopHeartbeat();
     this.pingTimer = setInterval(() => {
-      if (this.socket?.connected) this.socket.emit(PING_EVENT);
-    }, PING_INTERVAL_MS);
+      if (this.socket?.connected) this.socket.emit(SOCKET_PING_EVENT);
+    }, SOCKET_PING_INTERVAL_MS);
   }
 
   private static stopHeartbeat(): void {

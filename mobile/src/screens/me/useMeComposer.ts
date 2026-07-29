@@ -4,8 +4,12 @@ import { Keyboard } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { useMeFeedStore } from '@ola/shared/stores/meFeedStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
-import type { NativeUploadFile } from '@ola/shared/lib';
-import type { CreatePostRequest, Post, PostVisibility } from '@ola/shared/types';
+import type {
+  CreatePostRequest,
+  NativeUploadFile,
+  Post,
+  PostVisibility,
+} from '@ola/shared/types';
 import { EDIT_WINDOW_MS } from '@ola/shared/constants';
 import type { ChatComposerHandle } from '@components/ChatComposer';
 import { findActionIcon } from '@lib/checkInActions';

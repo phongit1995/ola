@@ -7,12 +7,8 @@ import {
 } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ensureFreshToken } from '@ola/shared/api';
-import {
-  ARCADE_BRIDGE_EVENT,
-  ARCADE_BRIDGE_SOURCE,
-  type ArcadeBridgeMessage,
-  type ArcadeKenUpdatedData,
-} from '@ola/shared/types';
+import { ARCADE_BRIDGE_EVENT, ARCADE_BRIDGE_SOURCE } from '@ola/shared/constants';
+import type { ArcadeBridgeMessage, ArcadeKenUpdatedData } from '@ola/shared/types';
 import { Avatar } from '@components';
 import { colorForName } from '@lib';
 import { useAuthStore } from '@/store/authStore';
@@ -362,7 +358,9 @@ export function ArcadeOverlay() {
   return (
     <>
       <div
-        className={`absolute inset-0 z-50 bg-[#0f0f23] ${minimized ? 'invisible' : ''}`}
+        className={`absolute inset-0 z-50 bg-[#0f0f23] ${
+          minimized ? 'invisible' : ''
+        }`}
       >
         <button
           type="button"

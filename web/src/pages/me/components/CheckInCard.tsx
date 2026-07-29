@@ -13,18 +13,26 @@ export function CheckInCard({ checkIn, label }: CheckInCardProps) {
   const hasAction = action !== '';
   const actionIcon = checkIn.actionIcon?.trim() ?? '';
   const hasCoords = checkIn.lat != null && checkIn.lng != null;
-  const mapLink = hasCoords ? GeoService.mapLink(checkIn.lat!, checkIn.lng!) : '';
+  const mapLink = hasCoords
+    ? GeoService.mapLink(checkIn.lat!, checkIn.lng!)
+    : '';
 
   const primary = hasAction ? `${actionIcon} ${action}`.trim() : checkIn.name;
   const secondary = hasAction ? checkIn.name : address;
 
   const inner = (
     <>
-      <img src={checkInIcon} alt="" className="h-7 w-7 shrink-0 object-contain" />
+      <img
+        src={checkInIcon}
+        alt=""
+        className="h-7 w-7 shrink-0 object-contain"
+      />
       <span className="min-w-0 flex-1">
         <span className="block truncate text-sm text-black/87">{primary}</span>
         {secondary !== '' && (
-          <span className="block truncate text-xs text-black/54">{secondary}</span>
+          <span className="block truncate text-xs text-black/54">
+            {secondary}
+          </span>
         )}
       </span>
       {hasCoords && <span className="shrink-0 text-lg text-black/40">›</span>}

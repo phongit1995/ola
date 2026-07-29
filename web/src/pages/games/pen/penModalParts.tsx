@@ -40,8 +40,14 @@ export function PenModalShell({
       >
         <div className="absolute inset-0 flex flex-col items-center px-[8%] pt-[4%] pb-[4%] text-white">
           <div className="flex items-center justify-center gap-2">
-            <img src={titleIcon} alt="" className={`w-auto object-contain ${titleIconClassName}`} />
-            <span className="text-3xl font-extrabold italic tracking-wider drop-shadow">{title}</span>
+            <img
+              src={titleIcon}
+              alt=""
+              className={`w-auto object-contain ${titleIconClassName}`}
+            />
+            <span className="text-3xl font-extrabold italic tracking-wider drop-shadow">
+              {title}
+            </span>
           </div>
 
           <button
@@ -71,7 +77,9 @@ export function PenKenRow({ ken, onTopUp }: PenKenRowProps) {
   return (
     <div className="mt-[3%] flex items-center gap-2 rounded-xl bg-black/30 px-3 py-1.5">
       <img src={penAssets.kenIcon} alt="KEN" className="h-6 w-6 shrink-0" />
-      <span className="min-w-[68px] text-center text-xl font-bold">{formatVnd(ken)}</span>
+      <span className="min-w-[68px] text-center text-xl font-bold">
+        {formatVnd(ken)}
+      </span>
       <button
         type="button"
         aria-label={t('penGame.topUp')}
@@ -79,7 +87,11 @@ export function PenKenRow({ ken, onTopUp }: PenKenRowProps) {
         style={bgImage(penAssets.plusBtn)}
         className="flex h-8 w-8 items-center justify-center bg-no-repeat transition active:scale-95"
       >
-        <img src={penAssets.plusIcon} alt="" className="h-3.5 w-3.5 object-contain" />
+        <img
+          src={penAssets.plusIcon}
+          alt=""
+          className="h-3.5 w-3.5 object-contain"
+        />
       </button>
     </div>
   );
@@ -127,7 +139,9 @@ export function PenDirectionPicker({
         const active = value === dir;
         const skin = active ? selected : unselected;
         const left = dir === 'left';
-        const label = left ? t('penGame.directionLeft') : t('penGame.directionRight');
+        const label = left
+          ? t('penGame.directionLeft')
+          : t('penGame.directionRight');
         return (
           <button
             key={dir}
@@ -140,12 +154,16 @@ export function PenDirectionPicker({
             <img
               src={left ? skin.arrowLeft : skin.arrowRight}
               alt=""
-              className={`pointer-events-none absolute -translate-y-1/2 object-contain ${layout.arrowClassName} ${left ? layout.arrowInset.left : layout.arrowInset.right}`}
+              className={`pointer-events-none absolute -translate-y-1/2 object-contain ${
+                layout.arrowClassName
+              } ${left ? layout.arrowInset.left : layout.arrowInset.right}`}
             />
             <img
               src={left ? center.left : center.right}
               alt=""
-              className={`pointer-events-none absolute -translate-y-1/2 object-contain ${layout.centerClassName} ${left ? layout.centerInset.left : layout.centerInset.right}`}
+              className={`pointer-events-none absolute -translate-y-1/2 object-contain ${
+                layout.centerClassName
+              } ${left ? layout.centerInset.left : layout.centerInset.right}`}
             />
             {skin.mark != null && (
               <img

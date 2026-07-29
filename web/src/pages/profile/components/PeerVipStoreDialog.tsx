@@ -15,7 +15,11 @@ type LoadState = 'loading' | 'private' | 'error' | 'ready';
 
 const PAGE_SIZE = 100;
 
-export function PeerVipStoreDialog({ userId, name, onClose }: PeerVipStoreDialogProps) {
+export function PeerVipStoreDialog({
+  userId,
+  name,
+  onClose,
+}: PeerVipStoreDialogProps) {
   const { t } = useTranslation();
   const [items, setItems] = useState<VipIconInstance[]>([]);
   const [total, setTotal] = useState(0);
@@ -33,7 +37,9 @@ export function PeerVipStoreDialog({ userId, name, onClose }: PeerVipStoreDialog
       })
       .catch((err) => {
         if (!active) return;
-        setState(err instanceof ApiError && err.status === 403 ? 'private' : 'error');
+        setState(
+          err instanceof ApiError && err.status === 403 ? 'private' : 'error'
+        );
       });
     return () => {
       active = false;
@@ -58,13 +64,11 @@ export function PeerVipStoreDialog({ userId, name, onClose }: PeerVipStoreDialog
   }
 
   return (
-    <Dialog
-      open
-      onClose={onClose}
-      showClose
-      title={t('vip.storeOf', { name })}
-    >
-      <div className="max-h-[60vh] min-h-[120px] overflow-y-auto" onScroll={handleScroll}>
+    <Dialog open onClose={onClose} showClose title={t('vip.storeOf', { name })}>
+      <div
+        className="max-h-[60vh] min-h-[120px] overflow-y-auto"
+        onScroll={handleScroll}
+      >
         {state === 'loading' ? (
           <div className="flex h-28 items-center justify-center text-sm text-black/54">
             {t('common.loading')}
@@ -89,7 +93,10 @@ export function PeerVipStoreDialog({ userId, name, onClose }: PeerVipStoreDialog
             ) : (
               <div className="grid grid-cols-4 gap-2 pb-1">
                 {items.map((icon) => (
-                  <div key={icon.instanceId} className="flex flex-col items-center gap-1">
+                  <div
+                    key={icon.instanceId}
+                    className="flex flex-col items-center gap-1"
+                  >
                     <div
                       className={
                         icon.isUsing
@@ -97,11 +104,18 @@ export function PeerVipStoreDialog({ userId, name, onClose }: PeerVipStoreDialog
                           : 'p-0.5'
                       }
                     >
-                      <VipIcon typeId={icon.typeId} size={48} rounded alt={vipName(icon.typeId)} />
+                      <VipIcon
+                        typeId={icon.typeId}
+                        size={48}
+                        rounded
+                        alt={vipName(icon.typeId)}
+                      />
                     </div>
                     <span
                       className={`w-full truncate text-center text-[11px] ${
-                        icon.isUsing ? 'font-bold text-ola-primary' : 'text-black/54'
+                        icon.isUsing
+                          ? 'font-bold text-ola-primary'
+                          : 'text-black/54'
                       }`}
                     >
                       {vipName(icon.typeId)}

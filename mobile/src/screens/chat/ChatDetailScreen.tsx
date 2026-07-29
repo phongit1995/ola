@@ -24,9 +24,8 @@ import {
   colorForName,
   isSameDay,
   parseMessageMetadata,
-  type NativeUploadFile,
 } from '@ola/shared/lib';
-import type { Message, ReactionType } from '@ola/shared/types';
+import type { Message, NativeUploadFile, ReactionType } from '@ola/shared/types';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';
@@ -53,11 +52,11 @@ import { ChatInputBar, type ChatInputBarHandle } from './components/ChatInputBar
 import { ChatBubble, ChatMessageRow } from './components/ChatMessageRow';
 import { ChatReactionBalloons } from './components/ChatReactionBalloons';
 import { AttachmentBar, type AttachPanelTab } from './components/AttachmentBar';
-import { VoicePreviewBar } from './components/VoicePreviewBar';
+import { VoicePreviewBar } from '@components/chat/voice/VoicePreviewBar';
 import {
   VoiceRecorderControl,
   type VoiceRecorderControlHandle,
-} from './components/VoiceRecorderControl';
+} from '@components/chat/voice/VoiceRecorderControl';
 import { TradingVipDialog } from './components/TradingVipDialog';
 import { TransferVipDaysDialog } from './components/TransferVipDaysDialog';
 import { PeerProfileCard } from './components/PeerProfileCard';

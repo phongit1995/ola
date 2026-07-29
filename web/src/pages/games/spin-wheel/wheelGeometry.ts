@@ -14,7 +14,7 @@ export {
 export type {
   WheelPoint as Point,
   WheelDividerLine as DividerLine,
-} from '@ola/shared/lib';
+} from '@ola/shared/types';
 
 export function labelStyle(index: number, angle: number): CSSProperties {
   const point = wheelPolar(index * angle, WHEEL_LABEL_RADIUS);

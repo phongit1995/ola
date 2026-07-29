@@ -47,11 +47,11 @@ import { MessageRow } from './MessageRow';
 import { TransferKenDialog } from './TransferKenDialog';
 import { TradingVipDialog } from './TradingVipDialog';
 import { TransferVipDaysDialog } from './TransferVipDaysDialog';
-import { VoicePreviewBar } from './VoicePreviewBar';
+import { VoicePreviewBar } from '@components/chat/voice/VoicePreviewBar';
 import {
   VoiceRecorderControl,
   type VoiceRecorderControlHandle,
-} from './VoiceRecorderControl';
+} from '@components/chat/voice/VoiceRecorderControl';
 import { PeerProfileCard } from './PeerProfileCard';
 import { UserProfileView } from '../../profile/UserProfileView';
 import { useMediaViewerStore } from '@/store/mediaViewerStore';
@@ -290,7 +290,9 @@ export function ChatConversationView({
     const sourceConversationId = useChatStore.getState().currentConversationId;
     setPendingAudio(null);
     void sendAudio(audio.blob, audio.duration, audio.waveform).catch(() => {
-      if (useChatStore.getState().currentConversationId === sourceConversationId) {
+      if (
+        useChatStore.getState().currentConversationId === sourceConversationId
+      ) {
         setPendingAudio((current) => current ?? audio);
       }
     });
@@ -538,8 +540,8 @@ export function ChatConversationView({
           peerTyping
             ? t('chat.typing', { name })
             : online
-              ? t('chat.statusActive')
-              : (lastActiveText ?? '')
+            ? t('chat.statusActive')
+            : lastActiveText ?? ''
         }
         onBack={onClose}
         left={<Avatar name={name} color={color} src={avatar} size={32} />}

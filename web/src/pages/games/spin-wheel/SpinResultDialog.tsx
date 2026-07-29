@@ -45,7 +45,9 @@ export function SpinResultDialog({ result, onClose }: SpinResultDialogProps) {
     }
     if (isVipDaysKind(result.segmentKind)) {
       return {
-        icon: <img src={rewardVipDaysUrl} alt="" className={REWARD_ICON_CLASS} />,
+        icon: (
+          <img src={rewardVipDaysUrl} alt="" className={REWARD_ICON_CLASS} />
+        ),
         label: t('wheelGame.vipDays', { n: result.vipDays ?? 0 }),
         labelClass: 'text-2xl',
       };
@@ -74,14 +76,22 @@ export function SpinResultDialog({ result, onClose }: SpinResultDialogProps) {
         style={{ aspectRatio: '1086 / 1448' }}
         onClick={(event) => event.stopPropagation()}
       >
-        <img src={resultPopupFrameUrl} alt="" className="absolute inset-0 h-full w-full" />
+        <img
+          src={resultPopupFrameUrl}
+          alt=""
+          className="absolute inset-0 h-full w-full"
+        />
         <button
           type="button"
           onClick={onClose}
           aria-label={t('wheelGame.close')}
           className="absolute right-[1%] top-[4%] z-10 h-11 w-11 active:scale-95"
         >
-          <img src={resultCloseFrameUrl} alt="" className="absolute inset-0 h-full w-full" />
+          <img
+            src={resultCloseFrameUrl}
+            alt=""
+            className="absolute inset-0 h-full w-full"
+          />
           <img
             src={resultCloseMarkUrl}
             alt=""
@@ -93,7 +103,9 @@ export function SpinResultDialog({ result, onClose }: SpinResultDialogProps) {
         </div>
         <div className="absolute inset-x-0 top-[45%] flex flex-col items-center gap-2 px-8">
           {reward.icon}
-          <span className={`${reward.labelClass} font-extrabold text-[#e0348b]`}>
+          <span
+            className={`${reward.labelClass} font-extrabold text-[#e0348b]`}
+          >
             {reward.label}
           </span>
         </div>

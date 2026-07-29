@@ -6,7 +6,13 @@ interface AvatarProps {
   rounded?: boolean;
 }
 
-export function Avatar({ name, color, size = 40, src, rounded = true }: AvatarProps) {
+export function Avatar({
+  name,
+  color,
+  size = 40,
+  src,
+  rounded = true,
+}: AvatarProps) {
   const shape = rounded ? 'rounded-full' : 'rounded-none';
   if (src != null && src !== '') {
     return (

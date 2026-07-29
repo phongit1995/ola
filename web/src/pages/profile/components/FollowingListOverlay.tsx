@@ -17,7 +17,13 @@ interface FollowingListOverlayProps {
   title?: string;
 }
 
-export function FollowingListOverlay({ userId, kind, onSelect, onClose, title }: FollowingListOverlayProps) {
+export function FollowingListOverlay({
+  userId,
+  kind,
+  onSelect,
+  onClose,
+  title,
+}: FollowingListOverlayProps) {
   const { t } = useTranslation();
   const [rows, setRows] = useState<ProfileFriend[]>([]);
   const [total, setTotal] = useState(0);
@@ -79,7 +85,11 @@ export function FollowingListOverlay({ userId, kind, onSelect, onClose, title }:
 
   return (
     <FullScreenOverlay z={50}>
-      <ScreenHeader title={title ?? t('profile.following')} onBack={onClose} align="center" />
+      <ScreenHeader
+        title={title ?? t('profile.following')}
+        onBack={onClose}
+        align="center"
+      />
       <div ref={scrollRef} className="flex-1 overflow-y-auto bg-white">
         {loading && (
           <div className="flex justify-center py-6">

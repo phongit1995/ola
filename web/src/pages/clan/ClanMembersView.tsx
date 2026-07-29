@@ -14,7 +14,12 @@ import { colorForName, toast } from '@lib';
 import { ClanService } from '@services';
 import type { Clan, ClanMember } from '@app-types';
 import { UserProfileView } from '../profile/UserProfileView';
-import { CLAN_ROLE_ICONS, clanErrorText, clanRoleLabel, isClanStaff } from './clanHelpers';
+import {
+  CLAN_ROLE_ICONS,
+  clanErrorText,
+  clanRoleLabel,
+  isClanStaff,
+} from './clanHelpers';
 
 interface ClanMembersViewProps {
   clanId: string;
@@ -53,7 +58,10 @@ export function ClanMembersView({ clanId, onClose }: ClanMembersViewProps) {
 
   useEffect(() => {
     let active = true;
-    Promise.all([ClanService.get(clanId), ClanService.members(clanId, { limit: PAGE_SIZE, offset: 0 })])
+    Promise.all([
+      ClanService.get(clanId),
+      ClanService.members(clanId, { limit: PAGE_SIZE, offset: 0 }),
+    ])
       .then(([clanResult, memberResult]) => {
         if (!active) return;
         setClan(clanResult);
@@ -92,12 +100,18 @@ export function ClanMembersView({ clanId, onClose }: ClanMembersViewProps) {
       if (member.verified) {
         await ClanService.unverify(clanId, member.user.username);
         toast.success(
-          t('clan.unverifySuccess', { username: member.user.username, name: clan?.handle ?? '' })
+          t('clan.unverifySuccess', {
+            username: member.user.username,
+            name: clan?.handle ?? '',
+          })
         );
       } else {
         await ClanService.verify(clanId, member.user.username);
         toast.success(
-          t('clan.verifySuccess', { username: member.user.username, name: clan?.handle ?? '' })
+          t('clan.verifySuccess', {
+            username: member.user.username,
+            name: clan?.handle ?? '',
+          })
         );
       }
       await loadFirst();
@@ -131,7 +145,9 @@ export function ClanMembersView({ clanId, onClose }: ClanMembersViewProps) {
             ? [
                 {
                   key: 'verify',
-                  label: menuTarget.verified ? t('clan.unverifyMember') : t('clan.verifyMember'),
+                  label: menuTarget.verified
+                    ? t('clan.unverifyMember')
+                    : t('clan.verifyMember'),
                   onSelect: () => void toggleVerify(menuTarget),
                 },
               ]
@@ -163,16 +179,24 @@ export function ClanMembersView({ clanId, onClose }: ClanMembersViewProps) {
               return (
                 <div
                   key={`${username}-${index}`}
-                  className={`flex items-center gap-3 px-4 py-3 ${index > 0 ? 'border-t border-black/12' : ''}`}
+                  className={`flex items-center gap-3 px-4 py-3 ${
+                    index > 0 ? 'border-t border-black/12' : ''
+                  }`}
                 >
                   <button
                     type="button"
-                    onClick={() => username !== '' && setProfileTarget(username)}
+                    onClick={() =>
+                      username !== '' && setProfileTarget(username)
+                    }
                     className="flex min-w-0 flex-1 items-center gap-3 text-left"
                   >
                     <Avatar
                       name={username}
-                      src={member.user?.avatar !== '' ? member.user?.avatar : undefined}
+                      src={
+                        member.user?.avatar !== ''
+                          ? member.user?.avatar
+                          : undefined
+                      }
                       color={colorForName(username)}
                       size={40}
                     />
@@ -198,16 +222,18 @@ export function ClanMembersView({ clanId, onClose }: ClanMembersViewProps) {
                       </span>
                     </span>
                   </button>
-                  {staff && member.role !== 'owner' && (owner || bannable(member)) && (
-                    <button
-                      type="button"
-                      aria-label={t('clan.manage')}
-                      onClick={() => setMenuTarget(member)}
-                      className="px-2 py-1 text-lg text-black/54"
-                    >
-                      ⋯
-                    </button>
-                  )}
+                  {staff &&
+                    member.role !== 'owner' &&
+                    (owner || bannable(member)) && (
+                      <button
+                        type="button"
+                        aria-label={t('clan.manage')}
+                        onClick={() => setMenuTarget(member)}
+                        className="px-2 py-1 text-lg text-black/54"
+                      >
+                        ⋯
+                      </button>
+                    )}
                 </div>
               );
             })}
@@ -227,7 +253,11 @@ export function ClanMembersView({ clanId, onClose }: ClanMembersViewProps) {
 
       <ListOptionDialog
         open={menuTarget != null}
-        title={menuTarget?.user?.username != null ? `@${menuTarget.user.username}` : ''}
+        title={
+          menuTarget?.user?.username != null
+            ? `@${menuTarget.user.username}`
+            : ''
+        }
         options={menuOptions}
         onClose={() => setMenuTarget(null)}
       />
@@ -235,7 +265,9 @@ export function ClanMembersView({ clanId, onClose }: ClanMembersViewProps) {
       <ConfirmDialog
         open={banTarget != null}
         title={t('clan.banUser')}
-        message={t('clan.banConfirm', { username: banTarget?.user?.username ?? '' })}
+        message={t('clan.banConfirm', {
+          username: banTarget?.user?.username ?? '',
+        })}
         confirmLabel={t('dialog.accept')}
         cancelLabel={t('dialog.cancel')}
         danger

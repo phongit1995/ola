@@ -13,7 +13,9 @@ interface Particle {
   maxLife: number;
 }
 
-const COLORS = [0xffd54f, 0xff6f61, 0x4fc3f7, 0x81c784, 0xba68c8, 0xfff176, 0xff8a65];
+const COLORS = [
+  0xffd54f, 0xff6f61, 0x4fc3f7, 0x81c784, 0xba68c8, 0xfff176, 0xff8a65,
+];
 const GRAVITY = 520;
 const PER_BURST = 64;
 const VOLLEY_NORMAL = 3;
@@ -46,9 +48,18 @@ function spawnBurst(out: Particle[], cx: number, cy: number) {
   }
 }
 
-function spawnVolley(out: Particle[], width: number, height: number, count: number) {
+function spawnVolley(
+  out: Particle[],
+  width: number,
+  height: number,
+  count: number
+) {
   for (let b = 0; b < count; b += 1) {
-    spawnBurst(out, width * (0.16 + Math.random() * 0.68), height * (0.14 + Math.random() * 0.4));
+    spawnBurst(
+      out,
+      width * (0.16 + Math.random() * 0.68),
+      height * (0.14 + Math.random() * 0.4)
+    );
   }
 }
 
@@ -75,7 +86,12 @@ export function Fireworks({ active, big, width, height }: FireworksProps) {
     activeRef.current = active;
     if (!active) return;
     const { width: w, height: h, big: superLucky } = paramsRef.current;
-    spawnVolley(particlesRef.current, w, h, superLucky ? VOLLEY_SUPER : VOLLEY_NORMAL);
+    spawnVolley(
+      particlesRef.current,
+      w,
+      h,
+      superLucky ? VOLLEY_SUPER : VOLLEY_NORMAL
+    );
     gapTimerRef.current = superLucky ? GAP_SUPER : GAP_NORMAL;
   }, [active]);
 
@@ -92,7 +108,12 @@ export function Fireworks({ active, big, width, height }: FireworksProps) {
       } else {
         gapTimerRef.current -= dt;
         if (gapTimerRef.current <= 0) {
-          spawnVolley(particles, w, h, superLucky ? VOLLEY_SUPER : VOLLEY_NORMAL);
+          spawnVolley(
+            particles,
+            w,
+            h,
+            superLucky ? VOLLEY_SUPER : VOLLEY_NORMAL
+          );
         }
       }
     }
@@ -121,7 +142,10 @@ export function Fireworks({ active, big, width, height }: FireworksProps) {
     g.clear();
     for (let i = 0; i < particles.length; i += 1) {
       const p = particles[i]!;
-      g.circle(p.x, p.y, p.r).fill({ color: p.color, alpha: Math.max(0, p.life / p.maxLife) });
+      g.circle(p.x, p.y, p.r).fill({
+        color: p.color,
+        alpha: Math.max(0, p.life / p.maxLife),
+      });
     }
   });
 

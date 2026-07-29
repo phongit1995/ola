@@ -1,33 +1,11 @@
 import { create } from 'zustand';
-import { RelationshipService } from '../services';
-import type { Friend, Relationship } from '../types';
+import { RelationshipService } from '../services/relationship.service';
+import type { FriendsState } from '../types/client/friends.type';
 import { registerOnLogout } from './authStore';
-
-interface FriendsState {
-  friends: Friend[];
-  requests: Relationship[];
-  loaded: boolean;
-  loading: boolean;
-  requestsLoaded: boolean;
-  requestsLoading: boolean;
-  loadFriends: () => Promise<boolean>;
-  ensureFriends: () => void;
-  loadRequests: () => void;
-  removeRequest: (id: string) => void;
-  reset: () => void;
-}
-
-const initialState = {
-  friends: [] as Friend[],
-  requests: [] as Relationship[],
-  loaded: false,
-  loading: false,
-  requestsLoaded: false,
-  requestsLoading: false,
-};
+import { initialFriendsState } from './friends.state';
 
 export const useFriendsStore = create<FriendsState>((set, get) => ({
-  ...initialState,
+  ...initialFriendsState,
   loadFriends: async () => {
     set({ loading: true });
     try {
@@ -52,7 +30,7 @@ export const useFriendsStore = create<FriendsState>((set, get) => ({
       .finally(() => set({ requestsLoading: false }));
   },
   removeRequest: (id) => set((state) => ({ requests: state.requests.filter((item) => item.id !== id) })),
-  reset: () => set({ ...initialState }),
+  reset: () => set({ ...initialFriendsState }),
 }));
 
 registerOnLogout(() => useFriendsStore.getState().reset());

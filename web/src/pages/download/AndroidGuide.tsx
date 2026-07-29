@@ -4,9 +4,15 @@ import { ActionLink, DownloadGuideBody } from './DownloadGuideBody';
 import { CopyableValue } from './CopyableValue';
 import { DownloadIcon } from './platformIcons';
 
-export function AndroidGuide({ isCurrentDevice }: { isCurrentDevice: boolean }) {
+export function AndroidGuide({
+  isCurrentDevice,
+}: {
+  isCurrentDevice: boolean;
+}) {
   const { t } = useTranslation();
-  const steps = t('download.android.steps', { returnObjects: true }) as unknown as string[];
+  const steps = t('download.android.steps', {
+    returnObjects: true,
+  }) as unknown as string[];
 
   return (
     <DownloadGuideBody

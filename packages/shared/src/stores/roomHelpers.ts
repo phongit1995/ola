@@ -1,5 +1,5 @@
-import { activeVipTypeId } from '../lib';
-import type { RoomMember, RoomMessage } from '../types';
+import { activeVipTypeId } from '../lib/vip';
+import type { RoomMember, RoomMessage, RoomReplySnapshot } from '../types/api/room.type';
 import { useAuthStore } from './authStore';
 
 export function toRecord(value: unknown): Record<string, unknown> | null {
@@ -40,6 +40,49 @@ export function buildOptimisticRoomImage(
     content: '',
     imageUrl: previewUrl,
     createdAt: new Date().toISOString(),
+    status: 'uploading',
+  });
+}
+
+export function roomReplySnapshotOf(message: RoomMessage): RoomReplySnapshot {
+  return {
+    messageId: message.id,
+    senderId: message.senderId,
+    senderName: message.senderName,
+    excerpt: message.content,
+    type: message.type,
+    imageUrl: message.imageUrl,
+  };
+}
+
+export function buildOptimisticRoomAudio(
+  roomId: string,
+  clientMsgId: string,
+  previewUrl: string,
+  duration: number,
+  waveform: number[],
+  mimeType: string,
+  replyTo?: RoomReplySnapshot
+): RoomMessage {
+  const user = useAuthStore.getState().user;
+  return withSenderVip({
+    id: clientMsgId,
+    clientMsgId,
+    roomId,
+    senderId: user?.id ?? '',
+    senderName: user?.fullName ?? user?.username,
+    senderAvatar: user?.avatar,
+    senderGender: user?.gender,
+    senderVip: user?.vipUsed,
+    senderVipEnd: user?.vipEndTime,
+    type: 'audio',
+    content: '',
+    audioUrl: previewUrl,
+    audioDuration: duration,
+    audioWaveform: waveform,
+    audioMimeType: mimeType,
+    createdAt: new Date().toISOString(),
+    replyTo,
     status: 'uploading',
   });
 }
@@ -107,9 +150,7 @@ export function mergeRoomMessageSnapshot(
     coveredIds.has(message.id) ||
     (message.clientMsgId != null && coveredClientMsgIds.has(message.clientMsgId));
 
-  const overlapsHistory = messages.some(
-    (message) => !isPending(message) && isCovered(message)
-  );
+  const overlapsHistory = messages.some((message) => !isPending(message) && isCovered(message));
   if (!overlapsHistory) return sortRoomMessagesByTime([...pending, ...sent]);
 
   const snapshotTimes = snapshot

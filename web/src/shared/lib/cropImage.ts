@@ -26,7 +26,11 @@ export async function getCroppedImageFile(
   fileName = 'cover.jpg'
 ): Promise<File> {
   const image = await loadImage(src);
-  const box = rotatedBoundingBox(image.naturalWidth, image.naturalHeight, rotation);
+  const box = rotatedBoundingBox(
+    image.naturalWidth,
+    image.naturalHeight,
+    rotation
+  );
 
   const rotated = document.createElement('canvas');
   rotated.width = Math.round(box.width);

@@ -1,7 +1,4 @@
-interface CryptoLike {
-  randomUUID?: () => string;
-  getRandomValues?: (array: Uint8Array) => Uint8Array;
-}
+import type { CryptoLike } from '../types/lib.type';
 
 export function randomUuid(): string {
   const cryptoObject = (globalThis as { crypto?: CryptoLike }).crypto;

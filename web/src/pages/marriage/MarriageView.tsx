@@ -28,7 +28,11 @@ export function MarriageView({ onBack }: MarriageViewProps) {
 
   return (
     <FullScreenOverlay>
-      <ScreenHeader title={t('marriage.title')} onBack={onBack} align="center" />
+      <ScreenHeader
+        title={t('marriage.title')}
+        onBack={onBack}
+        align="center"
+      />
       <main className="min-h-0 flex-1 overflow-y-auto bg-white">
         {!loaded && loading ? (
           <div className="flex h-full items-center justify-center text-sm text-black/50">

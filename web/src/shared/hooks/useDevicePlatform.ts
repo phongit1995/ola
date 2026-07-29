@@ -2,9 +2,13 @@ import { useMemo } from 'react';
 
 export type DevicePlatform = 'android' | 'ios' | 'desktop';
 
-const IN_APP_BROWSER_PATTERN = /FBAN|FBAV|FB_IAB|FBIOS|Instagram|Zalo|MicroMessenger|Line\/|TikTok/i;
+const IN_APP_BROWSER_PATTERN =
+  /FBAN|FBAV|FB_IAB|FBIOS|Instagram|Zalo|MicroMessenger|Line\/|TikTok/i;
 
-function detectPlatform(userAgent: string, touchPoints: number): DevicePlatform {
+function detectPlatform(
+  userAgent: string,
+  touchPoints: number
+): DevicePlatform {
   if (/android/i.test(userAgent)) return 'android';
   if (/iphone|ipad|ipod/i.test(userAgent)) return 'ios';
   if (/macintosh/i.test(userAgent) && touchPoints > 1) return 'ios';

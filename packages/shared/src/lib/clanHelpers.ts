@@ -1,10 +1,10 @@
 import i18n from 'i18next';
 import { toApiError } from './apiError';
-import type { Clan, ClanPolicy, ClanRole } from '../types';
+import type { Clan, ClanPolicy, ClanRole } from '../types/api/clan.type';
 
 const translate = i18n.t.bind(i18n) as (key: string, options?: Record<string, unknown>) => string;
 
-export const CLAN_HANDLE_PATTERN = /^[a-z0-9]{5,32}$/;
+export * from './clanHelpers.constants';
 
 export function normalizeClanHandle(input: string): string {
   return input.trim().replace(/^#/, '').toLowerCase();

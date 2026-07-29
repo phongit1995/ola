@@ -4,7 +4,8 @@ import { ActivityIndicator, Animated, BackHandler, FlatList, Image, Pressable, T
 import { UserService } from '@ola/shared/services';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { activeVipTypeId, colorForName } from '@ola/shared/lib';
-import { useMeLocalStore, type ViewedProfile } from '@store/meLocalStore';
+import { useMeLocalStore } from '@store/meLocalStore';
+import type { ViewedProfile } from '@ola/shared/types';
 import { Avatar } from '@components/ui/Avatar';
 import { VipBadge } from '@components/ui/VipBadge';
 import { ConfirmDialog } from '@components/ui/ConfirmDialog';

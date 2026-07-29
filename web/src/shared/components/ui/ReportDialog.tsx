@@ -29,7 +29,11 @@ export function ReportDialog({ onClose }: ReportDialogProps) {
       footer={
         <>
           <DialogButton onClick={onClose}>{t('dialog.cancel')}</DialogButton>
-          <DialogButton variant="green" disabled={reason == null} onClick={submit}>
+          <DialogButton
+            variant="green"
+            disabled={reason == null}
+            onClick={submit}
+          >
             {t('report.send')}
           </DialogButton>
         </>
@@ -53,7 +57,9 @@ export function ReportDialog({ onClose }: ReportDialogProps) {
                   selected ? 'border-ola-primary' : 'border-black/30'
                 }`}
               >
-                {selected && <span className="h-2.5 w-2.5 rounded-full bg-ola-primary" />}
+                {selected && (
+                  <span className="h-2.5 w-2.5 rounded-full bg-ola-primary" />
+                )}
               </span>
               {t(item.labelKey)}
             </button>

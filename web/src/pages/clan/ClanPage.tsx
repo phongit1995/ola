@@ -1,6 +1,18 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ChangeEvent,
+} from 'react';
 import { useTranslation } from 'react-i18next';
-import { ConfirmDialog, FullScreenOverlay, ScreenHeader, Spinner } from '@components';
+import {
+  ConfirmDialog,
+  FullScreenOverlay,
+  ScreenHeader,
+  Spinner,
+} from '@components';
 import type { ListOption } from '@components';
 import {
   colorForName,
@@ -18,11 +30,21 @@ import { useClanStore } from '@ola/shared/stores/clanStore';
 import { useAuthStore } from '@/store/authStore';
 import { useMeLocalStore } from '@/store/meLocalStore';
 import { ImageCropEditor } from '@components';
-import { MeComposerDialog, type ComposedPost } from '../me/components/MeComposerDialog';
+import {
+  MeComposerDialog,
+  type ComposedPost,
+} from '../me/components/MeComposerDialog';
 import { MeFeedList } from '../me/components/MeFeedList';
 import { MePostCard } from '../me/components/MePostCard';
-import { MePostInteractions, type MePostSource } from '../me/MePostInteractions';
-import { composedToImages, composedToPayload, composedToUpdatePayload } from '../me/composer';
+import {
+  MePostInteractions,
+  type MePostSource,
+} from '../me/MePostInteractions';
+import {
+  composedToImages,
+  composedToPayload,
+  composedToUpdatePayload,
+} from '../me/composer';
 import { toMePost } from '../me/mappers';
 import type { MePost } from '../me/types';
 import {
@@ -67,7 +89,11 @@ function InfoRow({ icon, text, onClick }: InfoRowProps) {
     </>
   );
   if (onClick == null) {
-    return <div className="mt-2 ml-4 flex items-center gap-1.5 text-xs text-black/54">{body}</div>;
+    return (
+      <div className="mt-2 ml-4 flex items-center gap-1.5 text-xs text-black/54">
+        {body}
+      </div>
+    );
   }
   return (
     <button
@@ -80,7 +106,13 @@ function InfoRow({ icon, text, onClick }: InfoRowProps) {
   );
 }
 
-export function ClanPage({ handle, id, onClose, onOpenManage, onOpenMembers }: ClanPageProps) {
+export function ClanPage({
+  handle,
+  id,
+  onClose,
+  onOpenManage,
+  onOpenMembers,
+}: ClanPageProps) {
   const { t, i18n } = useTranslation();
   const meId = useAuthStore((s) => s.user?.id ?? null);
   const hiddenPostIds = useMeLocalStore((s) => s.hiddenPostIds);
@@ -93,9 +125,10 @@ export function ClanPage({ handle, id, onClose, onOpenManage, onOpenMembers }: C
   const [composerOpen, setComposerOpen] = useState(false);
   const [leaveConfirm, setLeaveConfirm] = useState(false);
   const [staffConfirm, setStaffConfirm] = useState<StaffConfirm | null>(null);
-  const [imageEdit, setImageEdit] = useState<{ field: 'avatar' | 'cover'; src: string } | null>(
-    null
-  );
+  const [imageEdit, setImageEdit] = useState<{
+    field: 'avatar' | 'cover';
+    src: string;
+  } | null>(null);
   const [imageUploading, setImageUploading] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
@@ -107,11 +140,17 @@ export function ClanPage({ handle, id, onClose, onOpenManage, onOpenMembers }: C
   const feedError = useClanFeedStore((s) => s.error);
   const feedNextCursor = useClanFeedStore((s) => s.nextCursor);
 
-  const formatTime = useMemo(() => createTimeFormatter(i18n.language), [i18n.language]);
+  const formatTime = useMemo(
+    () => createTimeFormatter(i18n.language),
+    [i18n.language]
+  );
 
   const loadClan = useCallback(async (): Promise<Clan | null> => {
     try {
-      const loaded = handle != null ? await ClanService.byHandle(handle) : await ClanService.get(id ?? '');
+      const loaded =
+        handle != null
+          ? await ClanService.byHandle(handle)
+          : await ClanService.get(id ?? '');
       setClan(loaded);
       setLoadError(null);
       return loaded;
@@ -123,7 +162,8 @@ export function ClanPage({ handle, id, onClose, onOpenManage, onOpenMembers }: C
 
   useEffect(() => {
     let active = true;
-    const request = handle != null ? ClanService.byHandle(handle) : ClanService.get(id ?? '');
+    const request =
+      handle != null ? ClanService.byHandle(handle) : ClanService.get(id ?? '');
     request
       .then((loaded) => {
         if (!active) return;
@@ -141,7 +181,10 @@ export function ClanPage({ handle, id, onClose, onOpenManage, onOpenMembers }: C
   }, [handle, id]);
 
   const refreshAll = useCallback(async () => {
-    const loaded = handle != null ? await ClanService.byHandle(handle) : await ClanService.get(id ?? '');
+    const loaded =
+      handle != null
+        ? await ClanService.byHandle(handle)
+        : await ClanService.get(id ?? '');
     setClan(loaded);
     setLoadError(null);
     await useClanFeedStore.getState().refresh(loaded.id);
@@ -149,15 +192,16 @@ export function ClanPage({ handle, id, onClose, onOpenManage, onOpenMembers }: C
 
   const pinnedPost = useMemo(
     () =>
-      feedPinned != null && isPostVisible(feedPinned, hiddenPostIds, blockedAuthorIds)
+      feedPinned != null &&
+      isPostVisible(feedPinned, hiddenPostIds, blockedAuthorIds)
         ? toMePost(feedPinned, formatTime)
         : null,
     [feedPinned, formatTime, hiddenPostIds, blockedAuthorIds]
   );
   const listPosts = useMemo(
     () =>
-      filterVisiblePosts(feedPosts, hiddenPostIds, blockedAuthorIds).map((post) =>
-        toMePost(post, formatTime)
+      filterVisiblePosts(feedPosts, hiddenPostIds, blockedAuthorIds).map(
+        (post) => toMePost(post, formatTime)
       ),
     [feedPosts, formatTime, hiddenPostIds, blockedAuthorIds]
   );
@@ -178,9 +222,17 @@ export function ClanPage({ handle, id, onClose, onOpenManage, onOpenMembers }: C
     async (postId: string, draft: ComposedPost): Promise<boolean> => {
       try {
         const store = useClanFeedStore.getState();
-        const raw = store.posts.find((item) => item.id === postId) ?? store.pinned;
-        const images = await composedToImages(draft, 'existingFirst', raw?.images ?? []);
-        const updated = await MeService.update(postId, { ...composedToUpdatePayload(draft), images });
+        const raw =
+          store.posts.find((item) => item.id === postId) ?? store.pinned;
+        const images = await composedToImages(
+          draft,
+          'existingFirst',
+          raw?.images ?? []
+        );
+        const updated = await MeService.update(postId, {
+          ...composedToUpdatePayload(draft),
+          images,
+        });
         useClanFeedStore.getState().syncPost(updated);
         toast.success(t('me.editSuccess'));
         return true;
@@ -212,7 +264,12 @@ export function ClanPage({ handle, id, onClose, onOpenManage, onOpenMembers }: C
         const prepared = await compressImagesForUpload(draft.files);
         const created = await useClanFeedStore
           .getState()
-          .createPost(clan.id, composedToPayload(draft), prepared, draft.imageUrls);
+          .createPost(
+            clan.id,
+            composedToPayload(draft),
+            prepared,
+            draft.imageUrls
+          );
         return created != null;
       } catch (error) {
         toast.error(clanErrorText(error));
@@ -227,7 +284,10 @@ export function ClanPage({ handle, id, onClose, onOpenManage, onOpenMembers }: C
     try {
       const updated = await ClanService.join(clan.id);
       setClan(updated);
-      useClanStore.getState().refreshMine().catch(() => undefined);
+      useClanStore
+        .getState()
+        .refreshMine()
+        .catch(() => undefined);
     } catch (error) {
       toast.error(clanErrorText(error));
     }
@@ -239,7 +299,10 @@ export function ClanPage({ handle, id, onClose, onOpenManage, onOpenMembers }: C
     try {
       const updated = await ClanService.leave(clan.id);
       setClan(updated);
-      useClanStore.getState().refreshMine().catch(() => undefined);
+      useClanStore
+        .getState()
+        .refreshMine()
+        .catch(() => undefined);
     } catch (error) {
       toast.error(clanErrorText(error));
     }
@@ -285,7 +348,10 @@ export function ClanPage({ handle, id, onClose, onOpenManage, onOpenMembers }: C
     }
   }
 
-  function pickImage(event: ChangeEvent<HTMLInputElement>, field: 'avatar' | 'cover') {
+  function pickImage(
+    event: ChangeEvent<HTMLInputElement>,
+    field: 'avatar' | 'cover'
+  ) {
     const file = event.target.files?.[0];
     event.target.value = '';
     if (file == null) return;
@@ -324,7 +390,10 @@ export function ClanPage({ handle, id, onClose, onOpenManage, onOpenMembers }: C
     const items: ListOption[] = [
       {
         key: 'clanPin',
-        label: clan.meTopPostId === post.id ? t('clan.unpinPost') : t('clan.pinPost'),
+        label:
+          clan.meTopPostId === post.id
+            ? t('clan.unpinPost')
+            : t('clan.pinPost'),
         onSelect: () => void togglePinTop(post),
       },
     ];
@@ -354,7 +423,10 @@ export function ClanPage({ handle, id, onClose, onOpenManage, onOpenMembers }: C
   if (clan == null) {
     return (
       <FullScreenOverlay>
-        <ScreenHeader title={handle != null ? `#${handle}` : t('clan.title')} onBack={onClose} />
+        <ScreenHeader
+          title={handle != null ? `#${handle}` : t('clan.title')}
+          onBack={onClose}
+        />
         <div className="flex flex-1 items-center justify-center px-8 text-center">
           {loadError != null ? (
             <p className="text-sm text-black/54">{loadError}</p>
@@ -386,10 +458,12 @@ export function ClanPage({ handle, id, onClose, onOpenManage, onOpenMembers }: C
     staffConfirm == null
       ? ''
       : staffConfirm.type === 'deletePost'
-        ? t('clan.deletePostConfirm')
-        : staffConfirm.type === 'deleteByUser'
-          ? t('clan.deletePostsByUserConfirm', { username: staffConfirm.post.author })
-          : t('clan.banConfirm', { username: staffConfirm.post.author });
+      ? t('clan.deletePostConfirm')
+      : staffConfirm.type === 'deleteByUser'
+      ? t('clan.deletePostsByUserConfirm', {
+          username: staffConfirm.post.author,
+        })
+      : t('clan.banConfirm', { username: staffConfirm.post.author });
 
   return (
     <FullScreenOverlay>
@@ -405,7 +479,11 @@ export function ClanPage({ handle, id, onClose, onOpenManage, onOpenMembers }: C
               <div className="relative">
                 <div className="aspect-2/1 w-full overflow-hidden bg-ola-primary-darker">
                   {clan.cover != null && clan.cover !== '' && (
-                    <img src={clan.cover} alt="" className="h-full w-full object-cover" />
+                    <img
+                      src={clan.cover}
+                      alt=""
+                      className="h-full w-full object-cover"
+                    />
                   )}
                 </div>
                 {isOwner && (
@@ -415,13 +493,21 @@ export function ClanPage({ handle, id, onClose, onOpenManage, onOpenMembers }: C
                     onClick={() => coverInputRef.current?.click()}
                     className="absolute right-1 bottom-1 rounded bg-black/38 p-1.5"
                   >
-                    <img src={cameraIcon} alt="" className="h-4 w-4 object-contain" />
+                    <img
+                      src={cameraIcon}
+                      alt=""
+                      className="h-4 w-4 object-contain"
+                    />
                   </button>
                 )}
                 <div className="absolute bottom-2 left-2 bg-white p-1 pb-1.5 shadow-[0_1px_3px_rgba(0,0,0,0.24)]">
                   <div className="relative h-24 w-24 overflow-hidden bg-[#eceff1]">
                     {clan.avatar != null && clan.avatar !== '' && (
-                      <img src={clan.avatar} alt="" className="h-full w-full object-cover" />
+                      <img
+                        src={clan.avatar}
+                        alt=""
+                        className="h-full w-full object-cover"
+                      />
                     )}
                     {isOwner && (
                       <button
@@ -430,14 +516,20 @@ export function ClanPage({ handle, id, onClose, onOpenManage, onOpenMembers }: C
                         onClick={() => avatarInputRef.current?.click()}
                         className="absolute right-0.5 bottom-0.5 rounded bg-black/38 p-1"
                       >
-                        <img src={cameraIcon} alt="" className="h-3.5 w-3.5 object-contain" />
+                        <img
+                          src={cameraIcon}
+                          alt=""
+                          className="h-3.5 w-3.5 object-contain"
+                        />
                       </button>
                     )}
                   </div>
                 </div>
               </div>
 
-              <div className="py-2 text-center text-2xl text-black/54">#{clan.handle}</div>
+              <div className="py-2 text-center text-2xl text-black/54">
+                #{clan.handle}
+              </div>
               <div className="mx-4 h-px bg-black/12" />
 
               <div className="flex px-2 py-2">
@@ -448,7 +540,11 @@ export function ClanPage({ handle, id, onClose, onOpenManage, onOpenMembers }: C
                       onClick={() => setLeaveConfirm(true)}
                       className="flex flex-1 flex-col items-center gap-1 py-1 text-xs text-ola-primary"
                     >
-                      <img src={followingIcon} alt="" className="h-5 object-contain" />
+                      <img
+                        src={followingIcon}
+                        alt=""
+                        className="h-5 object-contain"
+                      />
                       {t('clan.following')}
                     </button>
                   ) : (
@@ -458,7 +554,11 @@ export function ClanPage({ handle, id, onClose, onOpenManage, onOpenMembers }: C
                       disabled={clan.policy === 3 || clan.isBanned}
                       className="flex flex-1 flex-col items-center gap-1 py-1 text-xs text-black/26 disabled:opacity-50"
                     >
-                      <img src={followIcon} alt="" className="h-5 object-contain" />
+                      <img
+                        src={followIcon}
+                        alt=""
+                        className="h-5 object-contain"
+                      />
                       {t('clan.follow')}
                     </button>
                   ))}
@@ -468,7 +568,11 @@ export function ClanPage({ handle, id, onClose, onOpenManage, onOpenMembers }: C
                     onClick={() => onOpenManage(clan.id)}
                     className="flex flex-1 flex-col items-center gap-1 py-1 text-xs text-black/26"
                   >
-                    <img src={manageIcon} alt="" className="h-5 object-contain" />
+                    <img
+                      src={manageIcon}
+                      alt=""
+                      className="h-5 object-contain"
+                    />
                     {t('clan.manage')}
                   </button>
                 )}
@@ -491,7 +595,9 @@ export function ClanPage({ handle, id, onClose, onOpenManage, onOpenMembers }: C
                 <span className="text-xl font-bold text-black">
                   {clan.memberCount.toLocaleString()}
                 </span>
-                <span className="ml-1 text-xs text-black/54">{t('clan.members')}</span>
+                <span className="ml-1 text-xs text-black/54">
+                  {t('clan.members')}
+                </span>
               </button>
 
               <div className="ml-4 text-xs text-black/54">
@@ -501,14 +607,24 @@ export function ClanPage({ handle, id, onClose, onOpenManage, onOpenMembers }: C
                 <InfoRow
                   icon={CLAN_ROLE_ICONS.owner}
                   text={`@${clan.owner.username}`}
-                  onClick={() => handlers.onOpenProfile(clan.owner!.username, colorForName(clan.owner!.username))}
+                  onClick={() =>
+                    handlers.onOpenProfile(
+                      clan.owner!.username,
+                      colorForName(clan.owner!.username)
+                    )
+                  }
                 />
               )}
               {clan.deputy != null && (
                 <InfoRow
                   icon={CLAN_ROLE_ICONS.deputy}
                   text={`@${clan.deputy.username}`}
-                  onClick={() => handlers.onOpenProfile(clan.deputy!.username, colorForName(clan.deputy!.username))}
+                  onClick={() =>
+                    handlers.onOpenProfile(
+                      clan.deputy!.username,
+                      colorForName(clan.deputy!.username)
+                    )
+                  }
                 />
               )}
               {clan.ambassador != null && (
@@ -516,7 +632,10 @@ export function ClanPage({ handle, id, onClose, onOpenManage, onOpenMembers }: C
                   icon={CLAN_ROLE_ICONS.ambassador}
                   text={`@${clan.ambassador.username}`}
                   onClick={() =>
-                    handlers.onOpenProfile(clan.ambassador!.username, colorForName(clan.ambassador!.username))
+                    handlers.onOpenProfile(
+                      clan.ambassador!.username,
+                      colorForName(clan.ambassador!.username)
+                    )
                   }
                 />
               )}
@@ -524,12 +643,16 @@ export function ClanPage({ handle, id, onClose, onOpenManage, onOpenMembers }: C
                 icon={policyIcon}
                 text={
                   clanPolicyLabel(clan.policy) +
-                  (clan.memberPublicPost ? ` · ${t('clan.memberPublicPost')}` : '')
+                  (clan.memberPublicPost
+                    ? ` · ${t('clan.memberPublicPost')}`
+                    : '')
                 }
               />
             </div>
 
-            <h2 className="px-4 pt-1 pb-2 text-base text-black/87">{t('clan.postedTitle')}</h2>
+            <h2 className="px-4 pt-1 pb-2 text-base text-black/87">
+              {t('clan.postedTitle')}
+            </h2>
 
             {feedLoading ? (
               <div className="flex justify-center py-10">
@@ -569,7 +692,9 @@ export function ClanPage({ handle, id, onClose, onOpenManage, onOpenMembers }: C
                     loadingMore={feedLoadingMore}
                     hasMore={feedNextCursor != null}
                     emptyText={t('clan.emptyFeed')}
-                    onLoadMore={() => void useClanFeedStore.getState().loadMore()}
+                    onLoadMore={() =>
+                      void useClanFeedStore.getState().loadMore()
+                    }
                     onToggleLike={handlers.onToggleLike}
                     onToggleDislike={handlers.onToggleDislike}
                     onOpenProfile={handlers.onOpenProfile}
@@ -607,7 +732,9 @@ export function ClanPage({ handle, id, onClose, onOpenManage, onOpenMembers }: C
       <ConfirmDialog
         open={staffConfirm != null}
         title={
-          staffConfirm?.type === 'ban' ? t('clan.banUser') : t('clan.deletePost')
+          staffConfirm?.type === 'ban'
+            ? t('clan.banUser')
+            : t('clan.deletePost')
         }
         message={staffConfirmText}
         confirmLabel={t('dialog.accept')}
@@ -617,8 +744,20 @@ export function ClanPage({ handle, id, onClose, onOpenManage, onOpenMembers }: C
         onConfirm={() => void runStaffConfirm()}
       />
 
-      <input ref={avatarInputRef} type="file" accept="image/*" hidden onChange={(e) => pickImage(e, 'avatar')} />
-      <input ref={coverInputRef} type="file" accept="image/*" hidden onChange={(e) => pickImage(e, 'cover')} />
+      <input
+        ref={avatarInputRef}
+        type="file"
+        accept="image/*"
+        hidden
+        onChange={(e) => pickImage(e, 'avatar')}
+      />
+      <input
+        ref={coverInputRef}
+        type="file"
+        accept="image/*"
+        hidden
+        onChange={(e) => pickImage(e, 'cover')}
+      />
 
       {imageEdit != null && (
         <ImageCropEditor

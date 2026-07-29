@@ -21,11 +21,9 @@
   --animate-ken-fade-in: ken-fade-in 0.25s ease-out;
   --animate-reaction-notice: reaction-notice 2.5s ease-out forwards;
   --animate-room-balloon: room-balloon 2.2s ease-out both;
-  --font-sans:
-    Roboto, 'Helvetica Neue', ui-sans-serif, system-ui, -apple-system,
+  --font-sans: Roboto, 'Helvetica Neue', ui-sans-serif, system-ui, -apple-system,
     'Segoe UI', Arial, sans-serif;
-  --font-game:
-    'Baloo 2', Roboto, ui-sans-serif, system-ui, sans-serif;
+  --font-game: 'Baloo 2', Roboto, ui-sans-serif, system-ui, sans-serif;
 }
 
 @font-face {
@@ -183,16 +181,30 @@
     opacity: 1;
   }
   30% {
-    transform: translate3d(var(--balloon-sway), calc(var(--balloon-rise) * -0.3), 0) scale(1);
+    transform: translate3d(
+        var(--balloon-sway),
+        calc(var(--balloon-rise) * -0.3),
+        0
+      )
+      scale(1);
   }
   60% {
     opacity: 0.95;
-    transform: translate3d(calc(var(--balloon-sway) * -0.5), calc(var(--balloon-rise) * -0.6), 0)
+    transform: translate3d(
+        calc(var(--balloon-sway) * -0.5),
+        calc(var(--balloon-rise) * -0.6),
+        0
+      )
       scale(1.05);
   }
   100% {
     opacity: 0;
-    transform: translate3d(var(--balloon-drift), calc(var(--balloon-rise) * -1), 0) scale(1.12);
+    transform: translate3d(
+        var(--balloon-drift),
+        calc(var(--balloon-rise) * -1),
+        0
+      )
+      scale(1.12);
   }
 }
 

@@ -23,7 +23,9 @@ export function ConversationList({
   onDelete,
 }: ConversationListProps) {
   const { t } = useTranslation();
-  const [pendingDelete, setPendingDelete] = useState<ConversationView | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<ConversationView | null>(
+    null
+  );
   const [deleteArchived, setDeleteArchived] = useState(false);
 
   function requestDelete(conversation: ConversationView) {
@@ -32,7 +34,8 @@ export function ConversationList({
   }
 
   function confirmDelete() {
-    if (pendingDelete != null) onDelete(pendingDelete.id, { clearMessages: deleteArchived });
+    if (pendingDelete != null)
+      onDelete(pendingDelete.id, { clearMessages: deleteArchived });
     setPendingDelete(null);
   }
 
@@ -56,7 +59,9 @@ export function ConversationList({
         open={pendingDelete != null}
         danger
         title={t('dialog.deleteConvTitle')}
-        message={t('dialog.deleteConvMessage', { name: pendingDelete?.name ?? '' })}
+        message={t('dialog.deleteConvMessage', {
+          name: pendingDelete?.name ?? '',
+        })}
         confirmLabel={t('dialog.delete')}
         cancelLabel={t('dialog.cancel')}
         checkboxLabel={t('dialog.deleteArchived')}
@@ -75,17 +80,21 @@ interface ConversationRowProps {
   onRequestDelete: (view: ConversationView) => void;
 }
 
-function ConversationRow({ view, onSelect, onRequestDelete }: ConversationRowProps) {
+function ConversationRow({
+  view,
+  onSelect,
+  onRequestDelete,
+}: ConversationRowProps) {
   const { t } = useTranslation();
   const unread = view.unread > 0;
   const hasPreview = view.preview !== '' || view.previewIsSticker;
   const previewPrefix = !hasPreview
     ? ''
     : view.fromMe
-      ? `${t('chat.youPrefix')}: `
-      : view.isGroup && view.senderName
-        ? `${view.senderName}: `
-        : '';
+    ? `${t('chat.youPrefix')}: `
+    : view.isGroup && view.senderName
+    ? `${view.senderName}: `
+    : '';
   const [offset, setOffset] = useState(0);
   const startX = useRef<number | null>(null);
   const swiped = useRef(false);
@@ -142,11 +151,17 @@ function ConversationRow({ view, onSelect, onRequestDelete }: ConversationRowPro
         >
           <span className="relative shrink-0">
             <Avatar name={view.name} color={view.color} src={view.avatar} />
-            {view.online && <PresenceBadge className="absolute right-0 bottom-0" />}
+            {view.online && (
+              <PresenceBadge className="absolute right-0 bottom-0" />
+            )}
           </span>
           <span className="min-w-0 flex-1">
             <span className="flex items-center justify-between gap-2">
-              <span className={`truncate text-base text-black/87 ${unread ? 'font-bold' : ''}`}>
+              <span
+                className={`truncate text-base text-black/87 ${
+                  unread ? 'font-bold' : ''
+                }`}
+              >
                 {view.title}
               </span>
               <span
@@ -162,7 +177,11 @@ function ConversationRow({ view, onSelect, onRequestDelete }: ConversationRowPro
                 {previewPrefix}
                 {view.previewIsSticker ? (
                   <span className="inline-flex items-center gap-1 align-middle">
-                    <img src={kulIcon} alt="" className="h-4 w-4 object-contain" />
+                    <img
+                      src={kulIcon}
+                      alt=""
+                      className="h-4 w-4 object-contain"
+                    />
                     {t('chat.stickerPreview')}
                   </span>
                 ) : (
@@ -172,9 +191,18 @@ function ConversationRow({ view, onSelect, onRequestDelete }: ConversationRowPro
               {view.fromMe &&
                 hasPreview &&
                 (view.seen ? (
-                  <Avatar name={view.name} color={view.color} src={view.avatar} size={16} />
+                  <Avatar
+                    name={view.name}
+                    color={view.color}
+                    src={view.avatar}
+                    size={16}
+                  />
                 ) : (
-                  <img src={sentIcon} alt="" className="h-3.5 w-3.5 shrink-0 object-contain opacity-60" />
+                  <img
+                    src={sentIcon}
+                    alt=""
+                    className="h-3.5 w-3.5 shrink-0 object-contain opacity-60"
+                  />
                 ))}
             </span>
           </span>

@@ -33,18 +33,35 @@ export function UserRow({
   const content = (
     <>
       <span className="relative shrink-0">
-        <Avatar name={name} color={color} src={avatar} size={40} rounded={rounded} />
-        {online && <PresenceBadge icon={deviceIcon} className="absolute right-0 bottom-0" />}
+        <Avatar
+          name={name}
+          color={color}
+          src={avatar}
+          size={40}
+          rounded={rounded}
+        />
+        {online && (
+          <PresenceBadge
+            icon={deviceIcon}
+            className="absolute right-0 bottom-0"
+          />
+        )}
       </span>
       {layout === 'inline' ? (
         <span className="min-w-0 flex-1">
-          <UserName name={name} fullName={fullName} fullNameClassName="text-black/54" />
+          <UserName
+            name={name}
+            fullName={fullName}
+            fullNameClassName="text-black/54"
+          />
         </span>
       ) : (
         <span className="min-w-0 flex-1">
           <span className="block truncate text-base text-black/87">{name}</span>
           {username != null && username !== '' && (
-            <span className="block truncate text-xs text-black/54">@{username}</span>
+            <span className="block truncate text-xs text-black/54">
+              @{username}
+            </span>
           )}
         </span>
       )}

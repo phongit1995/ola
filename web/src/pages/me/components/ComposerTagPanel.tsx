@@ -43,7 +43,9 @@ export function ComposerTagPanel({ onMention }: ComposerTagPanelProps) {
             <Spinner />
           </div>
         ) : filtered.length === 0 ? (
-          <p className="py-4 text-center text-sm text-black/54">{t('me.tagEmpty')}</p>
+          <p className="py-4 text-center text-sm text-black/54">
+            {t('me.tagEmpty')}
+          </p>
         ) : (
           filtered.map((friend) => {
             const fullName = friend.fullName?.trim();

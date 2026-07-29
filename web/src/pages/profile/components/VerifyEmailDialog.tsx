@@ -33,12 +33,19 @@ function messageKey(err: unknown): VerifyEmailErrorKey {
   if (msg.includes('wait')) return 'verifyEmail.errCooldown';
   if (msg.includes('already exists')) return 'verifyEmail.errTaken';
   if (msg.includes('too many')) return 'verifyEmail.errTooMany';
-  if (msg.includes('expired') || msg.includes('invalid verification request')) return 'verifyEmail.errCodeExpired';
-  if (msg.includes('invalid verification code')) return 'verifyEmail.errCodeInvalid';
+  if (msg.includes('expired') || msg.includes('invalid verification request'))
+    return 'verifyEmail.errCodeExpired';
+  if (msg.includes('invalid verification code'))
+    return 'verifyEmail.errCodeInvalid';
   return 'verifyEmail.errGeneric';
 }
 
-export function VerifyEmailDialog({ open, initialEmail, onClose, onVerified }: VerifyEmailDialogProps) {
+export function VerifyEmailDialog({
+  open,
+  initialEmail,
+  onClose,
+  onVerified,
+}: VerifyEmailDialogProps) {
   const { t } = useTranslation();
   const [step, setStep] = useState<'email' | 'code'>('email');
   const [email, setEmail] = useState(initialEmail);
@@ -105,7 +112,9 @@ export function VerifyEmailDialog({ open, initialEmail, onClose, onVerified }: V
     try {
       const result = await AuthService.confirmVerifyEmail({ verifyId, code });
       if (result.vipRewardDays != null && result.vipRewardDays > 0) {
-        toast.success(t('verifyEmail.rewardToast', { days: result.vipRewardDays }));
+        toast.success(
+          t('verifyEmail.rewardToast', { days: result.vipRewardDays })
+        );
       } else {
         toast.success(t('verifyEmail.success'));
       }
@@ -131,7 +140,12 @@ export function VerifyEmailDialog({ open, initialEmail, onClose, onVerified }: V
             <DialogButton type="button" onClick={close} disabled={submitting}>
               {t('common.cancel')}
             </DialogButton>
-            <DialogButton type="button" variant="green" onClick={sendCode} disabled={submitting}>
+            <DialogButton
+              type="button"
+              variant="green"
+              onClick={sendCode}
+              disabled={submitting}
+            >
               {t('verifyEmail.sendCode')}
             </DialogButton>
           </>
@@ -154,7 +168,9 @@ export function VerifyEmailDialog({ open, initialEmail, onClose, onVerified }: V
     >
       {step === 'email' ? (
         <div className="flex flex-col gap-2">
-          <label className="text-xs text-black/54">{t('verifyEmail.emailLabel')}</label>
+          <label className="text-xs text-black/54">
+            {t('verifyEmail.emailLabel')}
+          </label>
           <input
             type="email"
             inputMode="email"
@@ -168,11 +184,20 @@ export function VerifyEmailDialog({ open, initialEmail, onClose, onVerified }: V
         </div>
       ) : (
         <div className="flex flex-col gap-3">
-          <p className="text-xs text-black/54">{t('verifyEmail.codeSentTo', { email })}</p>
-          <OtpInput value={code} onChange={setCode} disabled={submitting} autoFocus />
+          <p className="text-xs text-black/54">
+            {t('verifyEmail.codeSentTo', { email })}
+          </p>
+          <OtpInput
+            value={code}
+            onChange={setCode}
+            disabled={submitting}
+            autoFocus
+          />
           <div className="flex justify-center">
             {cooldown > 0 ? (
-              <span className="text-xs text-black/40">{t('verifyEmail.resendIn', { seconds: cooldown })}</span>
+              <span className="text-xs text-black/40">
+                {t('verifyEmail.resendIn', { seconds: cooldown })}
+              </span>
             ) : (
               <button
                 type="button"

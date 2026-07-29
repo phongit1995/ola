@@ -1,4 +1,9 @@
-import { useEffect, useRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
+import {
+  useEffect,
+  useRef,
+  type ButtonHTMLAttributes,
+  type ReactNode,
+} from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { cn, portalRoot } from '@lib';
@@ -46,7 +51,8 @@ export function Dialog({
       }}
       onClick={(event) => {
         if (!dismissOnBackdrop) return;
-        if (event.target === event.currentTarget && backdropDownRef.current) onClose();
+        if (event.target === event.currentTarget && backdropDownRef.current)
+          onClose();
       }}
       className="fixed inset-0 z-[110] grid place-items-center bg-black/60 p-4"
     >
@@ -90,9 +96,7 @@ export function Dialog({
         <div className="m-2 min-h-[50px] text-sm leading-relaxed text-[#616163]">
           {children}
         </div>
-        {footer != null && (
-          <div className="flex gap-2 px-1 pb-2">{footer}</div>
-        )}
+        {footer != null && <div className="flex gap-2 px-1 pb-2">{footer}</div>}
       </div>
     </div>,
     portalRoot()

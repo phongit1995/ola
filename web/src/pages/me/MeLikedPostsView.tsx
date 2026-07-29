@@ -25,7 +25,10 @@ export function MeLikedPostsView({ onClose }: MeLikedPostsViewProps) {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const formatTime = useMemo(() => createTimeFormatter(i18n.language), [i18n.language]);
+  const formatTime = useMemo(
+    () => createTimeFormatter(i18n.language),
+    [i18n.language]
+  );
 
   useEffect(() => {
     let active = true;
@@ -44,11 +47,13 @@ export function MeLikedPostsView({ onClose }: MeLikedPostsViewProps) {
     };
   }, [t]);
 
-  const { toggleReaction, adjustCommentCount, deletePost } = usePostListActions({
-    posts,
-    setPosts,
-    keepOnlyLiked: true,
-  });
+  const { toggleReaction, adjustCommentCount, deletePost } = usePostListActions(
+    {
+      posts,
+      setPosts,
+      keepOnlyLiked: true,
+    }
+  );
 
   const editPost = useEditMePost(posts, setPosts);
 
@@ -78,7 +83,9 @@ export function MeLikedPostsView({ onClose }: MeLikedPostsViewProps) {
                 <Spinner size={28} />
               </div>
             ) : mePosts.length === 0 ? (
-              <p className="px-6 py-10 text-center text-sm text-black/45">{t('me.likedEmpty')}</p>
+              <p className="px-6 py-10 text-center text-sm text-black/45">
+                {t('me.likedEmpty')}
+              </p>
             ) : (
               mePosts.map((post) => (
                 <MePostCard

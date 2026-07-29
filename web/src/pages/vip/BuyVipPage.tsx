@@ -1,7 +1,17 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 import { useTranslation } from 'react-i18next';
-import { toast, formatKen, colorForName, vipBuyErrorText, vipConfirmMessage, vipPackageLabel, vipById, vipName, type BuyVipMode } from '@lib';
+import {
+  toast,
+  formatKen,
+  colorForName,
+  vipBuyErrorText,
+  vipConfirmMessage,
+  vipPackageLabel,
+  vipById,
+  vipName,
+} from '@lib';
+import type { BuyVipMode } from '@ola/shared/types';
 import {
   ScreenHeader,
   FullScreenOverlay,
@@ -13,7 +23,11 @@ import {
 } from '@components';
 import type { ListOption } from '@components';
 import { VipService, UserService } from '@services';
-import type { VipIconCatalogItem, VipPackageItem, UserSearchResult } from '@app-types';
+import type {
+  VipIconCatalogItem,
+  VipPackageItem,
+  UserSearchResult,
+} from '@app-types';
 import { useAuthStore } from '@/store/authStore';
 
 const MOCK_KEN_BALANCE = 12_345;
@@ -43,7 +57,12 @@ const MODE_TAB = {
 
 function ChevronIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5 text-black/40" fill="currentColor" aria-hidden="true">
+    <svg
+      viewBox="0 0 24 24"
+      className="h-5 w-5 text-black/40"
+      fill="currentColor"
+      aria-hidden="true"
+    >
       <path d="M7 10l5 5 5-5z" />
     </svg>
   );
@@ -64,12 +83,20 @@ interface VipPickerDialogProps {
   onClose: () => void;
 }
 
-function VipPickerDialog({ open, selectedKey, items, onSelect, onClose }: VipPickerDialogProps) {
+function VipPickerDialog({
+  open,
+  selectedKey,
+  items,
+  onSelect,
+  onClose,
+}: VipPickerDialogProps) {
   const { t } = useTranslation();
   return (
     <Dialog open={open} onClose={onClose} title={t('vip.buy.pickVipTitle')}>
       {items.length === 0 ? (
-        <div className="py-8 text-center text-sm text-black/54">{t('vip.buy.shopEmpty')}</div>
+        <div className="py-8 text-center text-sm text-black/54">
+          {t('vip.buy.shopEmpty')}
+        </div>
       ) : (
         <div className="grid max-h-[60vh] grid-cols-3 gap-1 overflow-y-auto sm:grid-cols-4">
           {items.map((item) => (
@@ -81,7 +108,9 @@ function VipPickerDialog({ open, selectedKey, items, onSelect, onClose }: VipPic
                 onClose();
               }}
               className={`flex flex-col items-center gap-1 rounded p-2 active:bg-black/5 ${
-                item.key === selectedKey ? 'bg-ola-primary/10 ring-1 ring-ola-primary' : ''
+                item.key === selectedKey
+                  ? 'bg-ola-primary/10 ring-1 ring-ola-primary'
+                  : ''
               }`}
             >
               <VipIcon typeId={item.typeId} size={44} />
@@ -101,7 +130,13 @@ function VipPickerDialog({ open, selectedKey, items, onSelect, onClose }: VipPic
   );
 }
 
-export function BuyVipPage({ mode: initialMode = 'buy', onClose }: { mode?: BuyVipMode; onClose: () => void }) {
+export function BuyVipPage({
+  mode: initialMode = 'buy',
+  onClose,
+}: {
+  mode?: BuyVipMode;
+  onClose: () => void;
+}) {
   const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const setUser = useAuthStore((s) => s.setUser);
@@ -112,9 +147,13 @@ export function BuyVipPage({ mode: initialMode = 'buy', onClose }: { mode?: BuyV
   const [selectedShopId, setSelectedShopId] = useState('');
   const [selectedPackageId, setSelectedPackageId] = useState('');
   const [receiver, setReceiver] = useState('');
-  const [receiverUser, setReceiverUser] = useState<UserSearchResult | null>(null);
+  const [receiverUser, setReceiverUser] = useState<UserSearchResult | null>(
+    null
+  );
   const [receiverQuery, setReceiverQuery] = useState('');
-  const [receiverResults, setReceiverResults] = useState<UserSearchResult[]>([]);
+  const [receiverResults, setReceiverResults] = useState<UserSearchResult[]>(
+    []
+  );
   const [receiverSearching, setReceiverSearching] = useState(false);
   const [vipPickerOpen, setVipPickerOpen] = useState(false);
   const [packagePickerOpen, setPackagePickerOpen] = useState(false);
@@ -191,7 +230,7 @@ export function BuyVipPage({ mode: initialMode = 'buy', onClose }: { mode?: BuyV
         name: vipName(c.vipTypeId),
         price: c.kenPrice,
       })),
-    [catalog],
+    [catalog]
   );
 
   const selectedShopItem = catalog.find((c) => c.id === selectedShopId);
@@ -199,7 +238,8 @@ export function BuyVipPage({ mode: initialMode = 'buy', onClose }: { mode?: BuyV
   const selectedKey = selectedShopId;
   const selectedVip = vipById(displayVipId);
 
-  const selectedPackage = packages.find((p) => p.id === selectedPackageId) ?? null;
+  const selectedPackage =
+    packages.find((p) => p.id === selectedPackageId) ?? null;
   const kenBalance = user?.ken ?? MOCK_KEN_BALANCE;
 
   function handlePickVip(item: PickerItem) {
@@ -312,12 +352,19 @@ export function BuyVipPage({ mode: initialMode = 'buy', onClose }: { mode?: BuyV
       }
       setPurchasing(true);
       try {
-        const result = await VipService.giftIcon(selectedShopId, receiver.trim(), giftPassword);
+        const result = await VipService.giftIcon(
+          selectedShopId,
+          receiver.trim(),
+          giftPassword
+        );
         if (user) setUser({ ...user, ken: result.kenBalance });
         await refreshUser();
         setConfirmOpen(false);
         toast.success(
-          t('vip.buy.giftedVip', { name: selectedVip?.name ?? '', receiver: result.receiverUsername }),
+          t('vip.buy.giftedVip', {
+            name: selectedVip?.name ?? '',
+            receiver: result.receiverUsername,
+          })
         );
         onClose();
       } catch (error) {
@@ -339,11 +386,20 @@ export function BuyVipPage({ mode: initialMode = 'buy', onClose }: { mode?: BuyV
       }
       setPurchasing(true);
       try {
-        const result = await VipService.giftPackage(selectedPackageId, receiver.trim(), giftPassword);
+        const result = await VipService.giftPackage(
+          selectedPackageId,
+          receiver.trim(),
+          giftPassword
+        );
         if (user) setUser({ ...user, ken: result.kenBalance });
         await refreshUser();
         setConfirmOpen(false);
-        toast.success(t('vip.buy.gifted', { days: result.days, name: result.receiverUsername }));
+        toast.success(
+          t('vip.buy.gifted', {
+            days: result.days,
+            name: result.receiverUsername,
+          })
+        );
         onClose();
       } catch (error) {
         toast.info(vipBuyErrorText(t, error));
@@ -378,7 +434,9 @@ export function BuyVipPage({ mode: initialMode = 'buy', onClose }: { mode?: BuyV
               type="button"
               onClick={() => changeMode(item)}
               className={`flex-1 rounded-full px-2 py-1.5 text-xs font-medium transition-colors ${
-                mode === item ? 'bg-ola-primary text-white' : 'bg-black/5 text-black/60'
+                mode === item
+                  ? 'bg-ola-primary text-white'
+                  : 'bg-black/5 text-black/60'
               }`}
             >
               {t(MODE_TAB[item])}
@@ -388,7 +446,9 @@ export function BuyVipPage({ mode: initialMode = 'buy', onClose }: { mode?: BuyV
 
         <div className="mt-2 bg-white px-4 py-3">
           <div className="flex items-center">
-            <span className="text-sm text-black/54">{t('vip.buy.balance')}</span>
+            <span className="text-sm text-black/54">
+              {t('vip.buy.balance')}
+            </span>
             <span className="ml-2 text-lg font-bold text-ola-primary">
               {formatKen(kenBalance)} KEN
             </span>
@@ -397,7 +457,9 @@ export function BuyVipPage({ mode: initialMode = 'buy', onClose }: { mode?: BuyV
 
         {showReceiver && (
           <div className="mt-2 bg-white px-4 py-3">
-            <span className="text-xs text-black/54">{t('vip.buy.receiverLabel')}</span>
+            <span className="text-xs text-black/54">
+              {t('vip.buy.receiverLabel')}
+            </span>
             {receiverUser != null ? (
               <div className="mt-1 flex items-center rounded border border-black/12 pr-1 pl-2">
                 <div className="min-w-0 flex-1">
@@ -415,7 +477,12 @@ export function BuyVipPage({ mode: initialMode = 'buy', onClose }: { mode?: BuyV
                   aria-label={t('common.cancel')}
                   className="ml-1 shrink-0 rounded-full p-1.5 text-black/40 active:bg-black/5"
                 >
-                  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" aria-hidden="true">
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="h-5 w-5"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
                     <path d="M18.3 5.71 12 12l6.3 6.29-1.41 1.42L10.59 13.4 4.29 19.7 2.88 18.3 9.17 12 2.88 5.71 4.29 4.29l6.3 6.3 6.3-6.3z" />
                   </svg>
                 </button>
@@ -425,14 +492,18 @@ export function BuyVipPage({ mode: initialMode = 'buy', onClose }: { mode?: BuyV
                 <input
                   type="text"
                   value={receiverQuery}
-                  onChange={(event) => handleReceiverQueryChange(event.target.value)}
+                  onChange={(event) =>
+                    handleReceiverQueryChange(event.target.value)
+                  }
                   placeholder={t('vip.buy.receiverHint')}
                   className="mt-1 w-full rounded border border-black/12 bg-white px-3 py-2 text-sm text-black/87 outline-none placeholder:text-black/38 focus:border-ola-primary"
                 />
                 {receiverQuery.trim() !== '' && (
                   <div className="mt-2 max-h-56 overflow-y-auto rounded border border-black/12">
                     {receiverSearching ? (
-                      <p className="py-3 text-center text-sm text-black/54">{t('common.loading')}</p>
+                      <p className="py-3 text-center text-sm text-black/54">
+                        {t('common.loading')}
+                      </p>
                     ) : receiverResults.length === 0 ? (
                       <p className="py-3 text-center text-sm text-black/54">
                         {t('chat.composeSearchEmpty')}
@@ -462,7 +533,9 @@ export function BuyVipPage({ mode: initialMode = 'buy', onClose }: { mode?: BuyV
 
         {showVipSelect && (
           <div className="mt-2 bg-white px-4 py-3">
-            <span className="text-xs text-black/54">{t('vip.buy.selectVip')}</span>
+            <span className="text-xs text-black/54">
+              {t('vip.buy.selectVip')}
+            </span>
             <button
               type="button"
               onClick={() => setVipPickerOpen(true)}
@@ -470,7 +543,9 @@ export function BuyVipPage({ mode: initialMode = 'buy', onClose }: { mode?: BuyV
             >
               <VipIcon typeId={displayVipId} size={40} />
               <span className="h-9 w-px bg-black/12" />
-              <span className="flex-1 truncate text-sm text-black/87">{selectedVip?.name}</span>
+              <span className="flex-1 truncate text-sm text-black/87">
+                {selectedVip?.name}
+              </span>
               {selectedShopItem != null && (
                 <span className="text-sm font-medium text-ola-primary">
                   {formatKen(selectedShopItem.kenPrice)} KEN
@@ -483,14 +558,18 @@ export function BuyVipPage({ mode: initialMode = 'buy', onClose }: { mode?: BuyV
 
         {showPackage && (
           <div className="mt-2 bg-white px-4 py-3">
-            <span className="text-xs text-black/54">{t('vip.buy.choosePackage')}</span>
+            <span className="text-xs text-black/54">
+              {t('vip.buy.choosePackage')}
+            </span>
             <button
               type="button"
               onClick={() => setPackagePickerOpen(true)}
               className="mt-1 flex w-full items-center rounded border border-black/12 px-3 py-2 text-left active:bg-black/5"
             >
               <span className="flex-1 text-sm text-black/87">
-                {selectedPackage ? vipPackageLabel(t, selectedPackage) : t('vip.buy.packagesEmpty')}
+                {selectedPackage
+                  ? vipPackageLabel(t, selectedPackage)
+                  : t('vip.buy.packagesEmpty')}
               </span>
               <ChevronIcon />
             </button>
@@ -499,7 +578,9 @@ export function BuyVipPage({ mode: initialMode = 'buy', onClose }: { mode?: BuyV
 
         {showReceiver && receiverUser != null && (
           <div className="mt-2 bg-white px-4 py-3">
-            <span className="text-xs text-black/54">{t('vip.buy.passwordLabel')}</span>
+            <span className="text-xs text-black/54">
+              {t('vip.buy.passwordLabel')}
+            </span>
             <input
               type="password"
               value={giftPassword}

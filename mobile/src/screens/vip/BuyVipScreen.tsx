@@ -1,7 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { formatKen, vipPackageLabel, type BuyVipMode } from '@ola/shared/lib';
+import { formatKen, vipPackageLabel } from '@ola/shared/lib';
+import type { BuyVipMode } from '@ola/shared/types';
 import type { RootStackParamList } from '@navigation/types';
 import { ROOT_ROUTES } from '@navigation/routes';
 import { KeyboardView } from '@components/KeyboardView';

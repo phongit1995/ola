@@ -1,22 +1,46 @@
-import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, Keyboard, Pressable, ScrollView, View } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
-import type { NativeUploadFile } from '@ola/shared/lib';
+import type { NativeUploadFile, RoomAudioSendResult } from '@ola/shared/types';
+import { useRoomChatStore } from '@ola/shared/stores/roomChatStore';
 import { useToastStore } from '@ola/shared/stores/toastStore';
 import { kulToken } from '@lib/kul';
 import { pastedImageFile } from '@lib/imagePicker';
 import { compressImageForUpload, ImageTooLargeError } from '@lib/compressImage';
-import { ChatComposer, type ChatComposerHandle } from '@components/ChatComposer';
+import {
+  ChatComposer,
+  type ChatComposerHandle,
+} from '@components/ChatComposer';
 import { ChatText as Text } from '@components/ui/ChatText';
 import { CHAT_MAX_FONT_SIZE_MULTIPLIER } from '@constants';
 import { useLastKeyboardHeight } from '@hooks/useKeyboardHeight';
-import { SmileyKulPanel, SMILEY_PANEL_MIN_CONTENT_HEIGHT } from './SmileyKulPanel';
+import type { VoiceRecording } from '@hooks/useVoiceRecorder';
+import {
+  deleteTemporaryVoiceFile,
+  deleteTemporaryVoiceFileAfterUiUpdate,
+} from '@lib/temporaryVoiceFile';
+import { VoicePreviewBar } from '@components/chat/voice/VoicePreviewBar';
+import {
+  VoiceRecorderControl,
+  type VoiceRecorderControlHandle,
+} from '@components/chat/voice/VoiceRecorderControl';
+import {
+  SmileyKulPanel,
+  SMILEY_PANEL_MIN_CONTENT_HEIGHT,
+} from './SmileyKulPanel';
 
 const likeIcon = require('@assets/icons/chat/smiley/smiley_35.png');
 const smileyIcon = require('@assets/icons/chat/ic_smiley.png');
 const smileyIconActive = require('@assets/icons/chat/ic_smiley_selected.png');
 const photoIcon = require('@assets/icons/chat/ic_local.png');
+const voiceIcon = require('@assets/icons/chat/ic_voice.png');
 
 export interface RoomComposerHandle {
   focus: () => void;
@@ -35,125 +59,231 @@ interface RoomComposerBarProps {
   onBeforeSend: () => void;
   onSendText: (content: string) => Promise<void>;
   onSendImage: (file: NativeUploadFile) => Promise<void>;
+  onSendAudio: (
+    file: NativeUploadFile,
+    duration: number,
+    waveform: number[],
+  ) => Promise<RoomAudioSendResult>;
 }
 
-export const RoomComposerBar = forwardRef<RoomComposerHandle, RoomComposerBarProps>(
-  function RoomComposerBarInner({ disabled, onBeforeSend, onSendText, onSendImage }, ref) {
-    const { t } = useTranslation();
-    const pushToast = useToastStore((s) => s.push);
-    const [draft, setDraft] = useState('');
-    const [panelOpen, setPanelOpen] = useState(false);
-    const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
-    const composerRef = useRef<ChatComposerHandle>(null);
-    const imageIdRef = useRef(0);
-    const lastKeyboardHeight = useLastKeyboardHeight();
-    const panelContentHeight = Math.max(SMILEY_PANEL_MIN_CONTENT_HEIGHT, lastKeyboardHeight - 44);
+export const RoomComposerBar = forwardRef<
+  RoomComposerHandle,
+  RoomComposerBarProps
+>(function RoomComposerBarInner(
+  { disabled, onBeforeSend, onSendText, onSendImage, onSendAudio },
+  ref,
+) {
+  const { t } = useTranslation();
+  const pushToast = useToastStore(s => s.push);
+  const [draft, setDraft] = useState('');
+  const [panelOpen, setPanelOpen] = useState(false);
+  const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
+  const [pendingAudio, setPendingAudio] = useState<VoiceRecording | null>(null);
+  const [voiceRecording, setVoiceRecording] = useState(false);
+  const composerRef = useRef<ChatComposerHandle>(null);
+  const voiceRecorderRef = useRef<VoiceRecorderControlHandle>(null);
+  const pendingAudioRef = useRef<VoiceRecording | null>(null);
+  const mountedRef = useRef(true);
+  const imageIdRef = useRef(0);
+  const lastKeyboardHeight = useLastKeyboardHeight();
+  const panelContentHeight = Math.max(
+    SMILEY_PANEL_MIN_CONTENT_HEIGHT,
+    lastKeyboardHeight - 44,
+  );
 
-    function togglePanel() {
-      if (panelOpen) {
-        setPanelOpen(false);
-        return;
-      }
-      Keyboard.dismiss();
-      setPanelOpen(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      const audio = pendingAudioRef.current;
+      pendingAudioRef.current = null;
+      if (audio != null) void deleteTemporaryVoiceFile(audio.file.uri);
+    };
+  }, []);
+
+  function togglePanel() {
+    if (panelOpen) {
+      setPanelOpen(false);
+      return;
     }
+    Keyboard.dismiss();
+    setPanelOpen(true);
+  }
 
-    function insertMention(name: string) {
-      setDraft((current) => {
-        const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const alreadyTagged = new RegExp(`@${escaped}(?![\\p{L}\\p{N}_])`, 'iu');
-        if (alreadyTagged.test(current)) return current;
-        const prefix = current === '' || current.endsWith(' ') ? current : `${current} `;
-        return `${prefix}@${name} `;
+  function insertMention(name: string) {
+    setDraft(current => {
+      const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const alreadyTagged = new RegExp(`@${escaped}(?![\\p{L}\\p{N}_])`, 'iu');
+      if (alreadyTagged.test(current)) return current;
+      const prefix =
+        current === '' || current.endsWith(' ') ? current : `${current} `;
+      return `${prefix}@${name} `;
+    });
+  }
+
+  useImperativeHandle(ref, () => ({
+    focus: () => composerRef.current?.focus(),
+    insertMention,
+    closePanel: () => setPanelOpen(false),
+  }));
+
+  async function sendText(text: string) {
+    const trimmed = text.trim();
+    if (trimmed === '' || disabled) return;
+    onBeforeSend();
+    setDraft('');
+    try {
+      await onSendText(trimmed);
+    } catch {
+      setDraft(trimmed);
+      pushToast('error', t('room.sendError'));
+    }
+  }
+
+  async function queueImageFile(uri: string, file: NativeUploadFile) {
+    try {
+      const prepared = await compressImageForUpload(file);
+      imageIdRef.current += 1;
+      const id = String(imageIdRef.current);
+      setPendingImages(current => [...current, { id, uri, file: prepared }]);
+    } catch (err) {
+      pushToast(
+        'error',
+        err instanceof ImageTooLargeError
+          ? t('chat.imageTooLarge')
+          : t('room.sendError'),
+      );
+    }
+  }
+
+  async function pickImages() {
+    if (disabled) return;
+    const keyboardWasVisible = Keyboard.isVisible();
+    const result = await launchImageLibrary({
+      mediaType: 'photo',
+      selectionLimit: 0,
+    });
+    if (keyboardWasVisible)
+      requestAnimationFrame(() => composerRef.current?.focus());
+    if (result.didCancel) return;
+    const assets = result.assets ?? [];
+    if (assets.length === 0) {
+      if (result.errorCode != null) pushToast('error', t('room.sendError'));
+      return;
+    }
+    for (const asset of assets) {
+      if (asset.uri == null) continue;
+      await queueImageFile(asset.uri, {
+        uri: asset.uri,
+        name: asset.fileName ?? 'photo.jpg',
+        type: asset.type ?? 'image/jpeg',
       });
     }
+  }
 
-    useImperativeHandle(ref, () => ({
-      focus: () => composerRef.current?.focus(),
-      insertMention,
-      closePanel: () => setPanelOpen(false),
-    }));
+  function removePendingImage(id: string) {
+    setPendingImages(current => current.filter(image => image.id !== id));
+  }
 
-    async function sendText(text: string) {
-      const trimmed = text.trim();
-      if (trimmed === '' || disabled) return;
-      onBeforeSend();
-      setDraft('');
+  function addPastedImage(uri: string) {
+    if (disabled) return;
+    void queueImageFile(uri, pastedImageFile(uri));
+  }
+
+  function clearPendingImages() {
+    setPendingImages([]);
+  }
+
+  async function sendPendingImages() {
+    const images = pendingImages;
+    if (images.length === 0 || disabled) return;
+    onBeforeSend();
+    setPendingImages([]);
+    setPanelOpen(false);
+    for (const image of images) {
       try {
-        await onSendText(trimmed);
+        await onSendImage(image.file);
       } catch {
-        setDraft(trimmed);
         pushToast('error', t('room.sendError'));
       }
     }
+  }
 
-    async function queueImageFile(uri: string, file: NativeUploadFile) {
-      try {
-        const prepared = await compressImageForUpload(file);
-        imageIdRef.current += 1;
-        const id = String(imageIdRef.current);
-        setPendingImages((current) => [...current, { id, uri, file: prepared }]);
-      } catch (err) {
-        pushToast(
-          'error',
-          err instanceof ImageTooLargeError ? t('chat.imageTooLarge') : t('room.sendError')
-        );
-      }
-    }
+  function showPendingAudio(recording: VoiceRecording) {
+    pendingAudioRef.current = recording;
+    setPendingAudio(recording);
+  }
 
-    async function pickImages() {
-      if (disabled) return;
-      const keyboardWasVisible = Keyboard.isVisible();
-      const result = await launchImageLibrary({ mediaType: 'photo', selectionLimit: 0 });
-      if (keyboardWasVisible) requestAnimationFrame(() => composerRef.current?.focus());
-      if (result.didCancel) return;
-      const assets = result.assets ?? [];
-      if (assets.length === 0) {
-        if (result.errorCode != null) pushToast('error', t('room.sendError'));
+  function discardPendingAudio() {
+    const audio = pendingAudioRef.current;
+    pendingAudioRef.current = null;
+    setPendingAudio(null);
+    if (audio != null) deleteTemporaryVoiceFileAfterUiUpdate(audio.file.uri);
+  }
+
+  async function sendPendingAudio() {
+    const audio = pendingAudioRef.current;
+    if (audio == null || disabled) return;
+    pendingAudioRef.current = null;
+    setPendingAudio(null);
+    setPanelOpen(false);
+    onBeforeSend();
+    try {
+      const result = await onSendAudio(
+        audio.file,
+        audio.duration,
+        audio.waveform,
+      );
+      if (result === 'sent') {
+        deleteTemporaryVoiceFileAfterUiUpdate(audio.file.uri);
         return;
       }
-      for (const asset of assets) {
-        if (asset.uri == null) continue;
-        await queueImageFile(asset.uri, {
-          uri: asset.uri,
-          name: asset.fileName ?? 'photo.jpg',
-          type: asset.type ?? 'image/jpeg',
-        });
+      const retryable = useRoomChatStore
+        .getState()
+        .messages.some(
+          message =>
+            message.type === 'audio' &&
+            message.status === 'failed' &&
+            message.audioUrl === audio.file.uri,
+        );
+      if (!retryable) void deleteTemporaryVoiceFile(audio.file.uri);
+    } catch {
+      if (mountedRef.current) {
+        showPendingAudio(audio);
+      } else {
+        void deleteTemporaryVoiceFile(audio.file.uri);
       }
     }
+  }
 
-    function removePendingImage(id: string) {
-      setPendingImages((current) => current.filter((image) => image.id !== id));
-    }
+  const isTyping = draft.trim() !== '';
 
-    function addPastedImage(uri: string) {
-      if (disabled) return;
-      void queueImageFile(uri, pastedImageFile(uri));
-    }
-
-    function clearPendingImages() {
-      setPendingImages([]);
-    }
-
-    async function sendPendingImages() {
-      const images = pendingImages;
-      if (images.length === 0 || disabled) return;
-      onBeforeSend();
-      setPendingImages([]);
-      setPanelOpen(false);
-      for (const image of images) {
-        try {
-          await onSendImage(image.file);
-        } catch {
-          pushToast('error', t('room.sendError'));
-        }
-      }
-    }
-
-    const isTyping = draft.trim() !== '';
-
-    return (
-      <View className="bg-white">
+  return (
+    <View className="bg-white">
+      {pendingAudio != null && (
+        <VoicePreviewBar
+          uri={pendingAudio.file.uri}
+          duration={pendingAudio.duration}
+          waveform={pendingAudio.waveform}
+          onSend={() => void sendPendingAudio()}
+          onDiscard={discardPendingAudio}
+        />
+      )}
+      {pendingAudio == null && (
+        <VoiceRecorderControl
+          ref={voiceRecorderRef}
+          onRecorded={recording => {
+            showPendingAudio(recording);
+            setVoiceRecording(false);
+            setPanelOpen(false);
+          }}
+          onRecordingChange={recording => {
+            setVoiceRecording(recording);
+            if (recording) setPanelOpen(false);
+          }}
+        />
+      )}
+      {!voiceRecording && pendingAudio == null && (
         <View
           className="flex-row items-center gap-1 bg-white px-2 py-2"
           style={{ borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.12)' }}
@@ -175,7 +305,30 @@ export const RoomComposerBar = forwardRef<RoomComposerHandle, RoomComposerBarPro
             className="h-9 w-9 items-center justify-center"
             style={{ opacity: 0.6 }}
           >
-            <Image source={photoIcon} style={{ width: 24, height: 24 }} resizeMode="contain" />
+            <Image
+              source={photoIcon}
+              style={{ width: 24, height: 24 }}
+              resizeMode="contain"
+            />
+          </Pressable>
+          <Pressable
+            onPress={() => {
+              Keyboard.dismiss();
+              setPanelOpen(false);
+              voiceRecorderRef.current?.start();
+            }}
+            disabled={disabled || pendingImages.length > 0}
+            accessibilityLabel={t('chat.voiceTapStart')}
+            className="h-9 w-9 items-center justify-center"
+            style={{
+              opacity: disabled || pendingImages.length > 0 ? 0.3 : 0.6,
+            }}
+          >
+            <Image
+              source={voiceIcon}
+              style={{ width: 24, height: 24 }}
+              resizeMode="contain"
+            />
           </Pressable>
           {pendingImages.length > 0 ? (
             <ScrollView
@@ -184,7 +337,7 @@ export const RoomComposerBar = forwardRef<RoomComposerHandle, RoomComposerBarPro
               className="min-h-9 flex-1"
               contentContainerClassName="items-center gap-2 px-1 py-1"
             >
-              {pendingImages.map((image) => (
+              {pendingImages.map(image => (
                 <View key={image.id} className="relative">
                   <Image
                     source={{ uri: image.uri }}
@@ -194,7 +347,11 @@ export const RoomComposerBar = forwardRef<RoomComposerHandle, RoomComposerBarPro
                   <Pressable
                     onPress={() => removePendingImage(image.id)}
                     className="absolute h-5 w-5 items-center justify-center rounded-full"
-                    style={{ top: -6, right: -6, backgroundColor: 'rgba(0,0,0,0.6)' }}
+                    style={{
+                      top: -6,
+                      right: -6,
+                      backgroundColor: 'rgba(0,0,0,0.6)',
+                    }}
                   >
                     <Text className="text-xs leading-none text-white">×</Text>
                   </Pressable>
@@ -233,18 +390,23 @@ export const RoomComposerBar = forwardRef<RoomComposerHandle, RoomComposerBarPro
               disabled={disabled}
               className="h-9 items-center justify-center rounded-full bg-ola-primary px-4 active:opacity-90"
             >
-              <Text className="text-sm font-semibold text-white">{t('chat.send')}</Text>
+              <Text className="text-sm font-semibold text-white">
+                {t('chat.send')}
+              </Text>
             </Pressable>
           ) : isTyping ? (
             <Pressable
               onPress={() => {
                 void sendText(draft);
-                if (!panelOpen) requestAnimationFrame(() => composerRef.current?.focus());
+                if (!panelOpen)
+                  requestAnimationFrame(() => composerRef.current?.focus());
               }}
               disabled={disabled}
               className="h-9 items-center justify-center rounded-full bg-ola-primary px-4 active:opacity-90"
             >
-              <Text className="text-sm font-semibold text-white">{t('chat.send')}</Text>
+              <Text className="text-sm font-semibold text-white">
+                {t('chat.send')}
+              </Text>
             </Pressable>
           ) : (
             <Pressable
@@ -253,23 +415,27 @@ export const RoomComposerBar = forwardRef<RoomComposerHandle, RoomComposerBarPro
               disabled={disabled}
               className="h-9 w-9 items-center justify-center"
             >
-              <Image source={likeIcon} style={{ width: 28, height: 28 }} resizeMode="contain" />
+              <Image
+                source={likeIcon}
+                style={{ width: 28, height: 28 }}
+                resizeMode="contain"
+              />
             </Pressable>
           )}
         </View>
+      )}
 
-        {panelOpen && !disabled && (
-          <SmileyKulPanel
-            contentHeight={panelContentHeight}
-            onPickEmoji={(code) => composerRef.current?.insertCode(code, true)}
-            onBackspace={() => composerRef.current?.backspace()}
-            onSendKul={(index) => {
-              void sendText(kulToken(index));
-              setPanelOpen(false);
-            }}
-          />
-        )}
-      </View>
-    );
-  }
-);
+      {panelOpen && !disabled && !voiceRecording && pendingAudio == null && (
+        <SmileyKulPanel
+          contentHeight={panelContentHeight}
+          onPickEmoji={code => composerRef.current?.insertCode(code, true)}
+          onBackspace={() => composerRef.current?.backspace()}
+          onSendKul={index => {
+            void sendText(kulToken(index));
+            setPanelOpen(false);
+          }}
+        />
+      )}
+    </View>
+  );
+});

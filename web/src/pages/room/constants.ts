@@ -3,7 +3,14 @@ import type { RoomFilters } from './types';
 
 export const ROOM_CAPACITY = 200;
 
-export const ROOM_COLORS = ['#ef5350', '#ec407a', '#5c6bc0', '#26a69a', '#7e57c2', '#ffa726'];
+export const ROOM_COLORS = [
+  '#ef5350',
+  '#ec407a',
+  '#5c6bc0',
+  '#26a69a',
+  '#7e57c2',
+  '#ffa726',
+];
 
 export const OWN_CORNERS: Record<BubblePosition, string> = {
   single: 'rounded-2xl',
@@ -25,4 +32,7 @@ export const FILTER_KEYS = [
   { key: 'female', labelKey: 'room.filterFemale' },
   { key: 'male', labelKey: 'room.filterMale' },
   { key: 'flexible', labelKey: 'room.filterFlexible' },
-] as const satisfies ReadonlyArray<{ key: keyof RoomFilters; labelKey: string }>;
+] as const satisfies ReadonlyArray<{
+  key: keyof RoomFilters;
+  labelKey: string;
+}>;

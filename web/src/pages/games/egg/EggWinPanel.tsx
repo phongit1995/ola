@@ -13,8 +13,17 @@ const BTN_H = 42;
 const ICON_BOX = 88;
 const APPEAR_MS = 220;
 
-const TITLE_STYLE = { fontSize: 20, fontWeight: 'bold' as const, fill: 0x5e3c20, align: 'center' as const };
-const BTN_LABEL_STYLE = { fontSize: 16, fontWeight: 'bold' as const, fill: 0xffffff };
+const TITLE_STYLE = {
+  fontSize: 20,
+  fontWeight: 'bold' as const,
+  fill: 0x5e3c20,
+  align: 'center' as const,
+};
+const BTN_LABEL_STYLE = {
+  fontSize: 16,
+  fontWeight: 'bold' as const,
+  fill: 0xffffff,
+};
 
 function rewardIconUrl(result: EggDrawResult): string | null {
   if (result.categoryType === 'ken') return kenCoinUrl;
@@ -91,16 +100,21 @@ export function EggWinPanel({ result, width, height }: EggWinPanelProps) {
     [btnW]
   );
 
-  const title = result.isSuperLucky ? t('eggGame.winModal.superTitle') : t('eggGame.winModal.title');
+  const title = result.isSuperLucky
+    ? t('eggGame.winModal.superTitle')
+    : t('eggGame.winModal.title');
   const label =
     result.categoryType === 'ken' && result.kenAmount
       ? t('eggGame.winModal.ken', { ken: result.kenAmount })
       : result.categoryType === 'vip_days' && result.vipDays
-        ? t('eggGame.winModal.vipDays', { days: result.vipDays })
-        : (result.rewardLabel ?? t('eggGame.winModal.defaultLabel'));
+      ? t('eggGame.winModal.vipDays', { days: result.vipDays })
+      : result.rewardLabel ?? t('eggGame.winModal.defaultLabel');
 
   const iconScale = iconTex
-    ? Math.min(ICON_BOX / (iconTex.width || ICON_BOX), ICON_BOX / (iconTex.height || ICON_BOX))
+    ? Math.min(
+        ICON_BOX / (iconTex.width || ICON_BOX),
+        ICON_BOX / (iconTex.height || ICON_BOX)
+      )
     : 1;
 
   return (
@@ -108,7 +122,13 @@ export function EggWinPanel({ result, width, height }: EggWinPanelProps) {
       <pixiGraphics draw={drawBackdrop} eventMode="static" />
       <pixiContainer ref={setCard} x={width / 2} y={height / 2}>
         <pixiGraphics draw={drawCard} eventMode="static" />
-        <pixiText text={title} anchor={{ x: 0.5, y: 0.5 }} x={0} y={-CARD_H / 2 + 32} style={TITLE_STYLE} />
+        <pixiText
+          text={title}
+          anchor={{ x: 0.5, y: 0.5 }}
+          x={0}
+          y={-CARD_H / 2 + 32}
+          style={TITLE_STYLE}
+        />
         {iconTex && (
           <pixiSprite
             texture={iconTex}

@@ -2,9 +2,10 @@ import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
-import { GeoService, type GeoVenue } from '@ola/shared/services';
+import { GeoService } from '@ola/shared/services';
+import type { CheckInAction, GeoVenue } from '@ola/shared/types';
 import { useToastStore } from '@ola/shared/stores/toastStore';
-import { CHECK_IN_ACTIONS, type CheckInAction } from '@lib/checkInActions';
+import { CHECK_IN_ACTIONS } from '@lib/checkInActions';
 
 const checkInIcon = require('@assets/icons/me/ic_check_in.png');
 

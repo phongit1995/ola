@@ -13,7 +13,12 @@ interface MeLikersDialogProps {
   onOpenProfile?: (nick: string, color: string) => void;
 }
 
-export function MeLikersDialog({ postId, commentId, onClose, onOpenProfile }: MeLikersDialogProps) {
+export function MeLikersDialog({
+  postId,
+  commentId,
+  onClose,
+  onOpenProfile,
+}: MeLikersDialogProps) {
   const { t } = useTranslation();
   const [likers, setLikers] = useState<PostAuthor[]>([]);
   const [total, setTotal] = useState(0);
@@ -27,7 +32,10 @@ export function MeLikersDialog({ postId, commentId, onClose, onOpenProfile }: Me
   const loadPage = useCallback(
     (offset: number) =>
       commentId != null
-        ? MeService.commentLikers(postId, commentId, { limit: PAGE_SIZE, offset })
+        ? MeService.commentLikers(postId, commentId, {
+            limit: PAGE_SIZE,
+            offset,
+          })
         : MeService.likers(postId, { limit: PAGE_SIZE, offset }),
     [postId, commentId]
   );
@@ -106,7 +114,9 @@ export function MeLikersDialog({ postId, commentId, onClose, onOpenProfile }: Me
       open
       onClose={onClose}
       showClose
-      title={total > 0 ? t('me.likersCount', { count: total }) : t('me.likersTitle')}
+      title={
+        total > 0 ? t('me.likersCount', { count: total }) : t('me.likersTitle')
+      }
     >
       <div ref={scrollRef} className="max-h-80 min-h-15 overflow-y-auto">
         {loading && (
@@ -115,18 +125,25 @@ export function MeLikersDialog({ postId, commentId, onClose, onOpenProfile }: Me
           </div>
         )}
         {!loading && error && (
-          <div className="py-6 text-center text-sm text-ola-error">{t('me.likersError')}</div>
+          <div className="py-6 text-center text-sm text-ola-error">
+            {t('me.likersError')}
+          </div>
         )}
         {!loading && !error && likers.length === 0 && (
-          <div className="py-6 text-center text-sm text-black/54">{t('me.likersEmpty')}</div>
+          <div className="py-6 text-center text-sm text-black/54">
+            {t('me.likersEmpty')}
+          </div>
         )}
         {!loading &&
           !error &&
           likers.map((user) => {
-            const isSelf = user.isSelf === true || user.relationship?.status === 'self';
-            const isFriend = user.isFriend === true || user.relationship?.status === 'friend';
+            const isSelf =
+              user.isSelf === true || user.relationship?.status === 'self';
+            const isFriend =
+              user.isFriend === true || user.relationship?.status === 'friend';
             const sent =
-              requested[user.id] === true || user.relationship?.status === 'pending_outgoing';
+              requested[user.id] === true ||
+              user.relationship?.status === 'pending_outgoing';
             return (
               <div
                 key={user.id}
@@ -151,7 +168,9 @@ export function MeLikersDialog({ postId, commentId, onClose, onOpenProfile }: Me
                         : user.username}
                     </span>
                     {user.fullName != null && user.fullName !== '' && (
-                      <span className="truncate text-sm text-black/45">@{user.username}</span>
+                      <span className="truncate text-sm text-black/45">
+                        @{user.username}
+                      </span>
                     )}
                   </span>
                 </button>

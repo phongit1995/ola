@@ -1,10 +1,7 @@
-import { http } from '../api';
-import { API_PATH } from '../config';
-import type {
-  Conversation,
-  ConversationsListResult,
-  MessageResult,
-} from '../types';
+import { http } from '../api/http';
+import { API_PATH } from '../config/api';
+import type { MessageResult } from '../types/api/auth.type';
+import type { Conversation, ConversationsListResult } from '../types/api/chat.type';
 
 export class ConversationService {
   static list(limit = 50): Promise<ConversationsListResult> {

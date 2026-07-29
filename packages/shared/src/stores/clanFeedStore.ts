@@ -1,40 +1,18 @@
 import { create } from 'zustand';
 import i18n from 'i18next';
-import { ClanService, MeService } from '../services';
-import { toast, type UploadFile } from '../lib';
-import type { CreatePostRequest, Post, PostReaction } from '../types';
+import { CLAN_FEED_PAGE_SIZE } from '../constants/feed';
+import { toast } from '../lib/toast';
+import { ClanService } from '../services/clan.service';
+import { MeService } from '../services/me.service';
+import type { Post } from '../types/api/me.type';
+import type { ClanFeedState } from '../types/client/clan.type';
 import { applyPostReaction, reconcileTopLikers } from './postHelpers';
 import { registerOnLogout } from './authStore';
 import { selfLiker } from './selfLiker';
-
-interface ClanFeedState {
-  clanId: string | null;
-  pinned: Post | null;
-  posts: Post[];
-  loading: boolean;
-  loadingMore: boolean;
-  error: string | null;
-  nextCursor: string | null;
-  reacting: Set<string>;
-  load: (clanId: string) => Promise<void>;
-  refresh: (clanId: string) => Promise<void>;
-  loadMore: () => Promise<void>;
-  toggleReaction: (id: string, type: PostReaction) => Promise<void>;
-  createPost: (
-    clanId: string,
-    payload: CreatePostRequest,
-    files: UploadFile[],
-    imageUrls: string[]
-  ) => Promise<Post | null>;
-  removePost: (id: string) => void;
-  removePostsByAuthor: (authorId: string) => void;
-  syncPost: (post: Post) => void;
-  setPinned: (post: Post | null) => void;
-  adjustCommentCount: (id: string, delta: number) => void;
-  reset: () => void;
-}
-
-const FEED_PAGE_SIZE = 20;
+import {
+  currentClanFeedRequestId,
+  nextClanFeedRequestId,
+} from './feedRequest.state';
 
 function replacePost(posts: Post[], updated: Post): Post[] {
   return posts.map((post) => (post.id === updated.id ? updated : post));
@@ -47,8 +25,6 @@ function errorMessage(error: unknown): string {
   return 'unknown error';
 }
 
-let feedRequestId = 0;
-
 export const useClanFeedStore = create<ClanFeedState>((set, get) => ({
   clanId: null,
   pinned: null,
@@ -59,11 +35,11 @@ export const useClanFeedStore = create<ClanFeedState>((set, get) => ({
   nextCursor: null,
   reacting: new Set(),
   load: async (clanId) => {
-    const requestId = ++feedRequestId;
+    const requestId = nextClanFeedRequestId();
     set({ clanId, loading: true, error: null, pinned: null, posts: [], nextCursor: null });
     try {
-      const result = await ClanService.posts(clanId, { limit: FEED_PAGE_SIZE });
-      if (requestId !== feedRequestId) return;
+      const result = await ClanService.posts(clanId, { limit: CLAN_FEED_PAGE_SIZE });
+      if (requestId !== currentClanFeedRequestId()) return;
       set({
         pinned: result.pinned ?? null,
         posts: result.items,
@@ -71,15 +47,15 @@ export const useClanFeedStore = create<ClanFeedState>((set, get) => ({
         loading: false,
       });
     } catch (error) {
-      if (requestId !== feedRequestId) return;
+      if (requestId !== currentClanFeedRequestId()) return;
       set({ loading: false, error: errorMessage(error) });
     }
   },
   refresh: async (clanId) => {
-    const requestId = ++feedRequestId;
+    const requestId = nextClanFeedRequestId();
     try {
-      const result = await ClanService.posts(clanId, { limit: FEED_PAGE_SIZE });
-      if (requestId !== feedRequestId) return;
+      const result = await ClanService.posts(clanId, { limit: CLAN_FEED_PAGE_SIZE });
+      if (requestId !== currentClanFeedRequestId()) return;
       set({
         clanId,
         pinned: result.pinned ?? null,
@@ -89,28 +65,28 @@ export const useClanFeedStore = create<ClanFeedState>((set, get) => ({
         error: null,
       });
     } catch (error) {
-      if (requestId !== feedRequestId) return;
+      if (requestId !== currentClanFeedRequestId()) return;
       throw error;
     }
   },
   loadMore: async () => {
     const { clanId, nextCursor, loading, loadingMore } = get();
     if (clanId == null || nextCursor == null || loading || loadingMore) return;
-    const requestId = feedRequestId;
+    const requestId = currentClanFeedRequestId();
     set({ loadingMore: true });
     try {
       const result = await ClanService.posts(clanId, {
-        limit: FEED_PAGE_SIZE,
+        limit: CLAN_FEED_PAGE_SIZE,
         cursor: nextCursor,
       });
-      if (requestId !== feedRequestId) return;
+      if (requestId !== currentClanFeedRequestId()) return;
       set((state) => ({
         posts: [...state.posts, ...result.items],
         nextCursor: result.nextCursor ?? null,
         loadingMore: false,
       }));
     } catch (error) {
-      if (requestId !== feedRequestId) return;
+      if (requestId !== currentClanFeedRequestId()) return;
       console.error('load more clan feed failed', error);
       set({ loadingMore: false });
     }
@@ -207,7 +183,7 @@ export const useClanFeedStore = create<ClanFeedState>((set, get) => ({
     }));
   },
   reset: () => {
-    feedRequestId += 1;
+    nextClanFeedRequestId();
     set({
       clanId: null,
       pinned: null,

@@ -7,8 +7,8 @@ function MembersBadge({ members }: { members: number }) {
     members >= 200
       ? 'text-ola-accent'
       : members >= 100
-        ? 'text-black/54'
-        : 'text-black/26';
+      ? 'text-black/54'
+      : 'text-black/26';
   return (
     <span className={`flex shrink-0 items-center gap-1 text-sm ${color}`}>
       <img src={membersIcon} alt="" className="h-4 w-4 object-contain" />
@@ -50,8 +50,12 @@ export function RoomRow({ room, joined, onEnter }: RoomRowProps) {
           </span>
         )}
         <span className="min-w-0 flex-1 pl-2">
-          <span className="block truncate text-base text-black/87">{room.title}</span>
-          <span className="mt-1 block truncate text-sm text-black/54">{room.subtitle}</span>
+          <span className="block truncate text-base text-black/87">
+            {room.title}
+          </span>
+          <span className="mt-1 block truncate text-sm text-black/54">
+            {room.subtitle}
+          </span>
         </span>
       </button>
       <MembersBadge members={room.members} />

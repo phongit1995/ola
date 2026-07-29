@@ -1,28 +1,27 @@
-export interface SoundPort {
-  playMessage(): void;
-  playRoomTag(): void;
-  playKenChest(): void;
-  playKenCredit(): void;
-}
+import type { SoundPort } from '../types/platform.type';
+import {
+  getCurrentSound,
+  setCurrentSound,
+} from './platformRuntime.state';
 
-let current: SoundPort | null = null;
+export type { SoundPort } from '../types/platform.type';
 
 export function configureSound(port: SoundPort): void {
-  current = port;
+  setCurrentSound(port);
 }
 
 export function playMessageSound(): void {
-  current?.playMessage();
+  getCurrentSound()?.playMessage();
 }
 
 export function playRoomTagSound(): void {
-  current?.playRoomTag();
+  getCurrentSound()?.playRoomTag();
 }
 
 export function playKenChestSound(): void {
-  current?.playKenChest();
+  getCurrentSound()?.playKenChest();
 }
 
 export function playKenCreditSound(): void {
-  current?.playKenCredit();
+  getCurrentSound()?.playKenCredit();
 }

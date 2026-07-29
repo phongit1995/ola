@@ -1,12 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
-import type { CSSProperties, PointerEvent as ReactPointerEvent, ReactNode } from 'react';
+import type {
+  CSSProperties,
+  PointerEvent as ReactPointerEvent,
+  ReactNode,
+} from 'react';
 import { useTranslation } from 'react-i18next';
 import { kenTreasureAssets, openingFrames } from './kenTreasureAssets';
 import {
   useKenTreasureStore,
   useKenTreasurePositionStore,
-  type KenTreasureChest,
 } from './kenTreasureStore';
+import type { KenTreasureChest } from '@ola/shared/types';
 
 const goldTextStyle: CSSProperties = {
   color: '#ffe27a',
@@ -33,7 +37,10 @@ function formatCountdown(ms: number): string {
   const total = Math.max(0, Math.ceil(ms / 1000));
   const minutes = Math.floor(total / 60);
   const seconds = total % 60;
-  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(
+    2,
+    '0'
+  )}`;
 }
 
 function useRemaining(expiresAt: string | null, onExpire: () => void): number {
@@ -110,14 +117,22 @@ function ChestPanel({
   const dragRef = useRef<DragState | null>(null);
 
   function handlePointerDown(e: ReactPointerEvent<HTMLDivElement>) {
-    dragRef.current = { startX: e.clientX, startY: e.clientY, baseX: x, baseY: y };
+    dragRef.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      baseX: x,
+      baseY: y,
+    };
     e.currentTarget.setPointerCapture(e.pointerId);
   }
 
   function handlePointerMove(e: ReactPointerEvent<HTMLDivElement>) {
     const drag = dragRef.current;
     if (!drag) return;
-    setPosition(drag.baseX + e.clientX - drag.startX, drag.baseY + e.clientY - drag.startY);
+    setPosition(
+      drag.baseX + e.clientX - drag.startX,
+      drag.baseY + e.clientY - drag.startY
+    );
   }
 
   function handlePointerUp(e: ReactPointerEvent<HTMLDivElement>) {
@@ -130,7 +145,12 @@ function ChestPanel({
     <div
       className={`relative ${widthClassName} animate-ken-pop-in [filter:drop-shadow(0_10px_24px_rgba(0,0,0,.45))]`}
     >
-      <img src={backgroundSrc} alt="" draggable={false} className="w-full select-none" />
+      <img
+        src={backgroundSrc}
+        alt=""
+        draggable={false}
+        className="w-full select-none"
+      />
       <img
         src={kenTreasureAssets.crown}
         alt=""
@@ -146,7 +166,12 @@ function ChestPanel({
           style={{ backgroundImage: `url(${kenTreasureAssets.buttonClose})` }}
           className="absolute -right-1 top-0 z-20 flex aspect-square w-[13%] items-center justify-center bg-contain bg-center bg-no-repeat transition active:scale-90"
         >
-          <img src={kenTreasureAssets.closeX} alt="" draggable={false} className="w-1/2 select-none" />
+          <img
+            src={kenTreasureAssets.closeX}
+            alt=""
+            draggable={false}
+            className="w-1/2 select-none"
+          />
         </button>
       )}
       {children}
@@ -169,7 +194,9 @@ function ChestPanel({
   return (
     <div
       className="absolute bottom-16 right-4 z-[80] cursor-grab touch-none select-none active:cursor-grabbing"
-      style={{ transform: `translate(${x - stackIndex * STACK_OFFSET_PX}px, ${y}px)` }}
+      style={{
+        transform: `translate(${x - stackIndex * STACK_OFFSET_PX}px, ${y}px)`,
+      }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
@@ -205,7 +232,11 @@ function ResultView({
       </div>
 
       <img
-        src={isEmpty ? kenTreasureAssets.resultChestEmpty : kenTreasureAssets.resultChestWin}
+        src={
+          isEmpty
+            ? kenTreasureAssets.resultChestEmpty
+            : kenTreasureAssets.resultChestWin
+        }
         alt=""
         draggable={false}
         className="pointer-events-none absolute left-1/2 top-[13%] w-[46%] -translate-x-1/2 select-none"
@@ -224,7 +255,12 @@ function ResultView({
 
       {!isEmpty && (
         <div className="absolute left-1/2 top-[68%] w-[78%] -translate-x-1/2">
-          <img src={kenTreasureAssets.resultKenCount} alt="" draggable={false} className="w-full select-none" />
+          <img
+            src={kenTreasureAssets.resultKenCount}
+            alt=""
+            draggable={false}
+            className="w-full select-none"
+          />
           <img
             src={kenTreasureAssets.resultKenCoin}
             alt=""
@@ -247,7 +283,10 @@ function ResultView({
         style={{ backgroundImage: `url(${kenTreasureAssets.resultClose})` }}
         className="absolute bottom-[6%] left-1/2 flex aspect-[1214/355] w-[56%] -translate-x-1/2 translate-y-1/2 items-center justify-center bg-contain bg-center bg-no-repeat transition active:scale-95"
       >
-        <span className="text-xl font-extrabold uppercase leading-none" style={whiteTextStyle}>
+        <span
+          className="text-xl font-extrabold uppercase leading-none"
+          style={whiteTextStyle}
+        >
           {t('kenTreasure.close')}
         </span>
       </button>
@@ -255,7 +294,13 @@ function ResultView({
   );
 }
 
-function ClosedChestPanel({ chest, stackIndex }: { chest: KenTreasureChest; stackIndex: number }) {
+function ClosedChestPanel({
+  chest,
+  stackIndex,
+}: {
+  chest: KenTreasureChest;
+  stackIndex: number;
+}) {
   const { t } = useTranslation();
   const openChest = useKenTreasureStore((s) => s.open);
   const dismiss = useKenTreasureStore((s) => s.dismiss);
@@ -283,7 +328,12 @@ function ClosedChestPanel({ chest, stackIndex }: { chest: KenTreasureChest; stac
       />
 
       <div className="absolute left-1/2 top-[68%] w-[56%] -translate-x-1/2">
-        <img src={kenTreasureAssets.frameTime} alt="" draggable={false} className="w-full select-none" />
+        <img
+          src={kenTreasureAssets.frameTime}
+          alt=""
+          draggable={false}
+          className="w-full select-none"
+        />
         <div className="absolute left-[-8%] top-1/2 w-[26%] -translate-y-1/2">
           <img
             src={kenTreasureAssets.buttonHourglass}
@@ -307,7 +357,10 @@ function ClosedChestPanel({ chest, stackIndex }: { chest: KenTreasureChest; stac
         style={{ backgroundImage: `url(${kenTreasureAssets.frameOpen})` }}
         className="absolute bottom-[7%] left-1/2 flex aspect-[1214/355] w-[54%] -translate-x-1/2 translate-y-1/2 items-center justify-center bg-contain bg-center bg-no-repeat transition active:scale-95"
       >
-        <span className="text-sm font-extrabold uppercase leading-none" style={whiteTextStyle}>
+        <span
+          className="text-sm font-extrabold uppercase leading-none"
+          style={whiteTextStyle}
+        >
           {t('kenTreasure.open')}
         </span>
       </button>
@@ -322,7 +375,9 @@ export function KenTreasureOverlay() {
   const list = Object.values(chests);
   if (list.length === 0) return null;
 
-  const active = list.find((c) => c.phase === 'opening' || c.phase === 'result');
+  const active = list.find(
+    (c) => c.phase === 'opening' || c.phase === 'result'
+  );
   const closed = list.filter((c) => c.phase === 'closed');
 
   return (
@@ -332,7 +387,11 @@ export function KenTreasureOverlay() {
       ))}
       {active?.phase === 'opening' && <OpeningChest key={active.id} />}
       {active?.phase === 'result' && (
-        <ResultView key={active.id} result={active.result} onClose={() => dismiss(active.id)} />
+        <ResultView
+          key={active.id}
+          result={active.result}
+          onClose={() => dismiss(active.id)}
+        />
       )}
     </>
   );

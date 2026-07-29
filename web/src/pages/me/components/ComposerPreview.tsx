@@ -28,7 +28,11 @@ export function ComposerPreview({
     <>
       {sticker != null && stickerImage(sticker) != null && (
         <div className="relative mt-2 rounded-md border border-black/12 p-2 pr-20">
-          <img src={stickerImage(sticker) ?? ''} alt="" className="h-16 w-16 object-contain" />
+          <img
+            src={stickerImage(sticker) ?? ''}
+            alt=""
+            className="h-16 w-16 object-contain"
+          />
           <button
             type="button"
             onClick={onRemoveSticker}
@@ -42,14 +46,20 @@ export function ComposerPreview({
       {checkIn != null && (
         <div className="relative mt-2 rounded-md border border-black/12 p-2 pr-20 text-sm text-black/54">
           <div className="flex items-center gap-2">
-            <img src={checkInIcon} alt="" className="h-7 w-7 shrink-0 object-contain" />
+            <img
+              src={checkInIcon}
+              alt=""
+              className="h-7 w-7 shrink-0 object-contain"
+            />
             <span className="min-w-0 flex-1">
               {(checkIn.action ?? '') !== '' && (
                 <span className="block truncate text-black/87">
                   {checkIn.actionIcon} {checkIn.action}
                 </span>
               )}
-              <span className="block truncate text-xs text-black/40">{checkIn.name}</span>
+              <span className="block truncate text-xs text-black/40">
+                {checkIn.name}
+              </span>
             </span>
           </div>
           <button
@@ -69,7 +79,11 @@ export function ComposerPreview({
               key={photo.url}
               className="relative h-20 w-20 shrink-0 overflow-hidden rounded-md border border-black/12"
             >
-              <img src={photo.url} alt="" className="h-full w-full object-cover" />
+              <img
+                src={photo.url}
+                alt=""
+                className="h-full w-full object-cover"
+              />
               <button
                 type="button"
                 aria-label={t('me.removePhoto')}
@@ -83,7 +97,9 @@ export function ComposerPreview({
         </div>
       )}
 
-      {maxReached && <p className="mt-1 text-xs text-black/40">{t('me.maxImages')}</p>}
+      {maxReached && (
+        <p className="mt-1 text-xs text-black/40">{t('me.maxImages')}</p>
+      )}
     </>
   );
 }

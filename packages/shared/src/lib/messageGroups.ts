@@ -1,41 +1,18 @@
-import type { RoomMessage, RoomMessageStatus, RoomReactor, RoomReplySnapshot } from '../types';
+import { ROOM_MESSAGE_GROUP_GAP_MS } from '../constants/room';
+import type { RoomMessage, RoomReplySnapshot } from '../types/api/room.type';
+import type {
+  BubblePosition,
+  PendingMessageGroup,
+  RoomFeedItem,
+} from '../types/client/roomFeed.type';
 
-const GROUP_GAP_MS = 5 * 60 * 1000;
-
-export type BubblePosition = 'single' | 'first' | 'middle' | 'last';
-
-export interface GroupedMessage {
-  id: string;
-  key: string;
-  content: string;
-  type?: 'text' | 'image';
-  imageUrl?: string;
-  createdAt: string;
-  position: BubblePosition;
-  replyTo?: RoomReplySnapshot;
-  reactions?: Record<string, RoomReactor[]>;
-  status?: RoomMessageStatus;
-}
-
-export interface MessageGroup {
-  kind: 'group';
-  key: string;
-  isOwn: boolean;
-  senderId: string;
-  senderName: string;
-  senderAvatar?: string;
-  senderVipTypeId?: number | null;
-  showTime: boolean;
-  messages: GroupedMessage[];
-}
-
-export interface DateSeparator {
-  kind: 'date';
-  key: string;
-  createdAt: string;
-}
-
-export type RoomFeedItem = MessageGroup | DateSeparator;
+export type {
+  BubblePosition,
+  DateSeparator,
+  GroupedMessage,
+  MessageGroup,
+  RoomFeedItem,
+} from '../types/client/roomFeed.type';
 
 function renderKey(message: RoomMessage): string {
   return message.clientMsgId ?? message.id;
@@ -54,15 +31,6 @@ function bubblePosition(count: number, index: number): BubblePosition {
   return 'middle';
 }
 
-interface PendingGroup {
-  isOwn: boolean;
-  senderId: string;
-  senderName: string;
-  senderAvatar?: string;
-  senderVipTypeId?: number | null;
-  raw: RoomMessage[];
-}
-
 function resolveReplySnapshot(
   reply: RoomReplySnapshot | undefined,
   byId: Map<string, RoomMessage>
@@ -78,7 +46,7 @@ function resolveReplySnapshot(
 export function buildRoomFeed(messages: RoomMessage[], currentUserId: string): RoomFeedItem[] {
   const byId = new Map(messages.map((message) => [message.id, message]));
   const items: RoomFeedItem[] = [];
-  let pending: PendingGroup | null = null;
+  let pending: PendingMessageGroup | null = null;
   let lastDay = '';
   let lastTime = 0;
   let lastShownMinute = -1;
@@ -109,6 +77,10 @@ export function buildRoomFeed(messages: RoomMessage[], currentUserId: string): R
         content: message.content,
         type: message.type,
         imageUrl: message.imageUrl,
+        audioUrl: message.audioUrl,
+        audioDuration: message.audioDuration,
+        audioWaveform: message.audioWaveform,
+        audioMimeType: message.audioMimeType,
         createdAt: message.createdAt,
         position: bubblePosition(count, index),
         replyTo: resolveReplySnapshot(message.replyTo, byId),
@@ -135,7 +107,7 @@ export function buildRoomFeed(messages: RoomMessage[], currentUserId: string): R
     const sameGroup =
       pending != null &&
       pending.senderId === message.senderId &&
-      gap <= GROUP_GAP_MS &&
+      gap <= ROOM_MESSAGE_GROUP_GAP_MS &&
       message.replyTo == null;
 
     if (sameGroup && pending != null) {

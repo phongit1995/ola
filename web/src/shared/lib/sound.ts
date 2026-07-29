@@ -24,7 +24,10 @@ function createSoundPlayer(url: string, gate?: keyof UserSettings) {
 }
 
 export const playKenChestSound = createSoundPlayer(kenChestUrl, 'soundGame');
-export const playKenShotFailSound = createSoundPlayer(kenShotFailUrl, 'soundGame');
+export const playKenShotFailSound = createSoundPlayer(
+  kenShotFailUrl,
+  'soundGame'
+);
 export const playKenCreditSound = createSoundPlayer(kenCreditUrl, 'soundKen');
 export const playMessageSound = createSoundPlayer(messageUrl, 'notifSound');
 export const playRoomTagSound = createSoundPlayer(roomTagUrl, 'notifSound');

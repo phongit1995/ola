@@ -8,7 +8,10 @@ import { useMeLocalStore } from '@/store/meLocalStore';
 import type { RelationshipInfo } from '@app-types';
 import { MePostCard } from '../me/components/MePostCard';
 import { MeComposerDialog } from '../me/components/MeComposerDialog';
-import { MePostInteractions, type MePostSource } from '../me/MePostInteractions';
+import {
+  MePostInteractions,
+  type MePostSource,
+} from '../me/MePostInteractions';
 import { ProfileCard } from './components/ProfileCard';
 import { ProfileMediaStore } from './components/ProfileMediaStore';
 import { ProfileFollowing } from './components/ProfileFollowing';
@@ -56,7 +59,9 @@ export function ProfilePage({
   const [followersOpen, setFollowersOpen] = useState(false);
   const [vipStoreOpen, setVipStoreOpen] = useState(false);
 
-  const posts = secondary.posts.filter((post) => !hiddenPostIds.includes(post.id));
+  const posts = secondary.posts.filter(
+    (post) => !hiddenPostIds.includes(post.id)
+  );
 
   const source: MePostSource = {
     posts,
@@ -83,15 +88,25 @@ export function ProfilePage({
           onPostMe={() => setComposerOpen(true)}
           onUpdateInfo={() => setEditOpen(true)}
           onViewVipStore={() => setVipStoreOpen(true)}
-          onOpenUser={(nick) => onOpenFriend({ name: nick, color: colorForName(nick) })}
+          onOpenUser={(nick) =>
+            onOpenFriend({ name: nick, color: colorForName(nick) })
+          }
           onOpenFollowers={() => setFollowersOpen(true)}
         />
-        {secondary.media.length > 0 && <ProfileMediaStore media={secondary.media} />}
+        {secondary.media.length > 0 && (
+          <ProfileMediaStore media={secondary.media} />
+        )}
         {secondary.following.length > 0 && (
-          <ProfileFollowing userId={userId} following={secondary.following} onSelect={onOpenFriend} />
+          <ProfileFollowing
+            userId={userId}
+            following={secondary.following}
+            onSelect={onOpenFriend}
+          />
         )}
 
-        <h3 className="mx-4 mt-2 mb-1 text-base font-medium text-black/87">{t('profile.mePosts')}</h3>
+        <h3 className="mx-4 mt-2 mb-1 text-base font-medium text-black/87">
+          {t('profile.mePosts')}
+        </h3>
         <MePostInteractions source={source}>
           {(handlers) =>
             secondary.loading && posts.length === 0 ? (
@@ -124,7 +139,11 @@ export function ProfilePage({
           onClick={actions.message}
           className="absolute right-4 bottom-4 flex h-14 w-14 items-center justify-center rounded-full bg-ola-primary shadow-lg"
         >
-          <img src={composeIcon} alt="" className="h-6 w-6 object-contain brightness-0 invert" />
+          <img
+            src={composeIcon}
+            alt=""
+            className="h-6 w-6 object-contain brightness-0 invert"
+          />
         </button>
       )}
 

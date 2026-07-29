@@ -1,12 +1,7 @@
 import axios from 'axios';
 import type { TFunction } from 'i18next';
-import type { ApiErrorBody } from '../types';
-
-interface ApiErrorMeta {
-  traceId?: string;
-  path?: string;
-  code?: string;
-}
+import type { ApiErrorBody } from '../types/api/common.type';
+import type { ApiErrorMeta } from '../types/lib.type';
 
 export class ApiError extends Error {
   readonly status: number;

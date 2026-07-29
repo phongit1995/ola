@@ -77,7 +77,12 @@ export function RoomPanel() {
           onClick={refresh}
           className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-white/15"
         >
-          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" aria-hidden="true">
+          <svg
+            viewBox="0 0 24 24"
+            className="h-5 w-5"
+            fill="currentColor"
+            aria-hidden="true"
+          >
             <path d="M17.65 6.35A8 8 0 1 0 19.73 14h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
           </svg>
         </button>

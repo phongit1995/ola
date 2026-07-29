@@ -9,7 +9,11 @@ interface ProfileFollowingProps {
   onSelect: (friend: ProfileFriend) => void;
 }
 
-export function ProfileFollowing({ userId, following, onSelect }: ProfileFollowingProps) {
+export function ProfileFollowing({
+  userId,
+  following,
+  onSelect,
+}: ProfileFollowingProps) {
   const { t } = useTranslation();
   const [showAll, setShowAll] = useState(false);
 
@@ -22,7 +26,9 @@ export function ProfileFollowing({ userId, following, onSelect }: ProfileFollowi
           className="flex w-full items-center justify-between px-4 py-2 transition-colors hover:bg-black/5 active:bg-black/5"
         >
           <h3 className="text-base text-black/87">{t('profile.following')}</h3>
-          <span className="text-sm text-black/38">{t('profile.viewAll')} ›</span>
+          <span className="text-sm text-black/38">
+            {t('profile.viewAll')} ›
+          </span>
         </button>
         <div className="grid grid-cols-5 gap-1 px-2">
           {following.slice(0, 5).map((friend) => (
@@ -33,9 +39,16 @@ export function ProfileFollowing({ userId, following, onSelect }: ProfileFollowi
               className="relative aspect-square overflow-hidden"
             >
               {friend.avatar ? (
-                <img src={friend.avatar} alt="" className="h-full w-full object-cover" />
+                <img
+                  src={friend.avatar}
+                  alt=""
+                  className="h-full w-full object-cover"
+                />
               ) : (
-                <span className="flex h-full w-full items-center justify-center text-2xl font-medium text-white" style={{ backgroundColor: friend.color }}>
+                <span
+                  className="flex h-full w-full items-center justify-center text-2xl font-medium text-white"
+                  style={{ backgroundColor: friend.color }}
+                >
                   {friend.name.charAt(0).toUpperCase()}
                 </span>
               )}

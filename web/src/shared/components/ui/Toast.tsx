@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { cn, portalRoot } from '@lib';
-import { useToastStore, type ToastItem, type ToastType } from '@/store/toastStore';
+import { useToastStore } from '@/store/toastStore';
+import type { ToastItem, ToastType } from '@ola/shared/types';
 
 const AUTO_DISMISS_MS = 3000;
 
@@ -11,7 +12,13 @@ const toastStyles: Record<ToastType, string> = {
   info: 'bg-black/80 text-white',
 };
 
-function ToastRow({ toast, onDismiss }: { toast: ToastItem; onDismiss: (id: number) => void }) {
+function ToastRow({
+  toast,
+  onDismiss,
+}: {
+  toast: ToastItem;
+  onDismiss: (id: number) => void;
+}) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {

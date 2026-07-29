@@ -19,8 +19,13 @@ export function useEditMePost(
       try {
         const existing = posts.find((item) => item.id === id)?.images ?? [];
         const images = await composedToImages(draft, 'existingFirst', existing);
-        const updated = await MeService.update(id, { ...composedToUpdatePayload(draft), images });
-        setPosts((current) => current.map((item) => (item.id === id ? updated : item)));
+        const updated = await MeService.update(id, {
+          ...composedToUpdatePayload(draft),
+          images,
+        });
+        setPosts((current) =>
+          current.map((item) => (item.id === id ? updated : item))
+        );
         useMeFeedStore.getState().syncPost(updated);
         toast.success(t('me.editSuccess'));
         return true;

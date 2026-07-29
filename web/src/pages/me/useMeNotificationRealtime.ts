@@ -14,10 +14,13 @@ export function useMeNotificationRealtime() {
   const userId = useAuthStore((s) => s.user?.id ?? null);
 
   useEffect(() => {
-    return SocketService.on<MeNotificationIncoming>('ME_NOTIFICATION', (data) => {
-      if (data?.notification == null && data?.removedId == null) return;
-      useMeNotificationStore.getState().handleIncoming(data);
-    });
+    return SocketService.on<MeNotificationIncoming>(
+      'ME_NOTIFICATION',
+      (data) => {
+        if (data?.notification == null && data?.removedId == null) return;
+        useMeNotificationStore.getState().handleIncoming(data);
+      }
+    );
   }, []);
 
   useEffect(() => {

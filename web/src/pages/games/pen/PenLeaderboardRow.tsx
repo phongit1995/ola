@@ -21,7 +21,8 @@ interface PenLeaderboardRowProps {
 
 export function PenLeaderboardRow({ entry }: PenLeaderboardRowProps) {
   const name = entry.user.username;
-  const medal = entry.rank <= 3 ? penLeaderboardAssets.medals[entry.rank - 1] : null;
+  const medal =
+    entry.rank <= 3 ? penLeaderboardAssets.medals[entry.rank - 1] : null;
 
   return (
     <li
@@ -30,20 +31,30 @@ export function PenLeaderboardRow({ entry }: PenLeaderboardRowProps) {
     >
       <span className="flex justify-center">
         {medal ? (
-          <img src={medal} alt={`#${entry.rank}`} className="h-8 w-8 object-contain" />
+          <img
+            src={medal}
+            alt={`#${entry.rank}`}
+            className="h-8 w-8 object-contain"
+          />
         ) : entry.rank <= 10 ? (
           <span
-            className={`bg-linear-to-b ${RANK_GRADIENTS[entry.rank - 4]} bg-clip-text text-lg font-extrabold text-transparent`}
+            className={`bg-linear-to-b ${
+              RANK_GRADIENTS[entry.rank - 4]
+            } bg-clip-text text-lg font-extrabold text-transparent`}
           >
             {entry.rank}
           </span>
         ) : (
-          <span className="text-lg font-extrabold text-white/90">{entry.rank}</span>
+          <span className="text-lg font-extrabold text-white/90">
+            {entry.rank}
+          </span>
         )}
       </span>
       <span className="flex min-w-0 items-center gap-2">
         <VipBadge typeId={entry.user.vipTypeId} />
-        <span className="truncate text-sm font-medium text-white/90">@{name}</span>
+        <span className="truncate text-sm font-medium text-white/90">
+          @{name}
+        </span>
       </span>
       <span className="flex items-center justify-end gap-1.5 text-sm font-extrabold text-[#ffd54f]">
         {formatKen(entry.profit)}

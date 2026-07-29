@@ -2,7 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import smileyIcon from '@/assets/icons/chat/ic_smiley.png';
 import { useAuthStore } from '@/store/authStore';
-import { Avatar, ComposerSmileyPanel, SmileyInput, type SmileyInputHandle } from '@components';
+import {
+  Avatar,
+  ComposerSmileyPanel,
+  SmileyInput,
+  type SmileyInputHandle,
+} from '@components';
 import { useOutsideClick } from '@hooks';
 import { colorForName } from '@lib';
 
@@ -63,14 +68,26 @@ export function MeCommentComposer({
             onClick={onCancelReply}
             className="shrink-0 rounded-full p-1 text-black/45 hover:text-ola-error"
           >
-            <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+            <svg
+              viewBox="0 0 24 24"
+              className="h-3.5 w-3.5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              aria-hidden="true"
+            >
               <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
             </svg>
           </button>
         </div>
       )}
       <div className="flex shrink-0 items-end gap-2 border-t border-black/12 bg-white px-3 py-2">
-        <Avatar name={myName} src={me?.avatar} color={colorForName(myName)} size={36} />
+        <Avatar
+          name={myName}
+          src={me?.avatar}
+          color={colorForName(myName)}
+          size={36}
+        />
         <SmileyInput
           ref={composerRef}
           value={draft}

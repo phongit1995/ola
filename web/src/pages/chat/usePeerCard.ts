@@ -2,7 +2,11 @@ import { useState } from 'react';
 import { hidePeerCard, isPeerCardHidden } from '@lib';
 import type { RelationshipStatus } from '@app-types';
 
-const STRANGER_STATUSES: RelationshipStatus[] = ['none', 'pending_outgoing', 'pending_incoming'];
+const STRANGER_STATUSES: RelationshipStatus[] = [
+  'none',
+  'pending_outgoing',
+  'pending_incoming',
+];
 
 interface UsePeerCardArgs {
   peerId: string;
@@ -33,7 +37,9 @@ export function usePeerCard({
 }: UsePeerCardArgs) {
   const [hiddenFor, setHiddenFor] = useState(() => initialHiddenFor(peerId));
   const [trackedPeerId, setTrackedPeerId] = useState(peerId);
-  const [anchor, setAnchor] = useState<{ peerId: string; id: string } | null>(null);
+  const [anchor, setAnchor] = useState<{ peerId: string; id: string } | null>(
+    null
+  );
 
   if (trackedPeerId !== peerId) {
     setTrackedPeerId(peerId);
@@ -43,10 +49,19 @@ export function usePeerCard({
 
   const hidden = peerId !== '' && hiddenFor === peerId;
   const isStranger =
-    hasProfile && !blocked && !hidden && blockStatus != null && STRANGER_STATUSES.includes(blockStatus);
+    hasProfile &&
+    !blocked &&
+    !hidden &&
+    blockStatus != null &&
+    STRANGER_STATUSES.includes(blockStatus);
   const sizeAllowsCard = (!hasMore && messageCount < 10) || peerCardRoll;
 
-  if (isStranger && sizeAllowsCard && messagesReady && (anchor == null || anchor.peerId !== peerId)) {
+  if (
+    isStranger &&
+    sizeAllowsCard &&
+    messagesReady &&
+    (anchor == null || anchor.peerId !== peerId)
+  ) {
     setAnchor({ peerId, id: lastMessageId ?? '' });
   }
 

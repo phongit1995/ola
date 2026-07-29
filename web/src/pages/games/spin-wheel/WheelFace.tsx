@@ -1,6 +1,12 @@
 import type { WheelPlayerSegment } from '@app-types';
 import { segmentTheme } from './spinWheel.constants';
-import { CENTER, SLICE_RADIUS, VIEWBOX, dividerLine, slicePath } from './wheelGeometry';
+import {
+  CENTER,
+  SLICE_RADIUS,
+  VIEWBOX,
+  dividerLine,
+  slicePath,
+} from './wheelGeometry';
 
 interface WheelFaceProps {
   segments: WheelPlayerSegment[];
@@ -9,7 +15,10 @@ interface WheelFaceProps {
 
 export function WheelFace({ segments, angle }: WheelFaceProps) {
   return (
-    <svg viewBox={`0 0 ${VIEWBOX} ${VIEWBOX}`} className="absolute inset-0 h-full w-full">
+    <svg
+      viewBox={`0 0 ${VIEWBOX} ${VIEWBOX}`}
+      className="absolute inset-0 h-full w-full"
+    >
       <defs>
         {segments.map((segment, index) => {
           const theme = segmentTheme(index);
@@ -45,10 +54,24 @@ export function WheelFace({ segments, angle }: WheelFaceProps) {
         </linearGradient>
       </defs>
       {segments.map((segment, index) => (
-        <path key={segment.id} d={slicePath(index, angle)} fill={`url(#wheel-grad-${index})`} />
+        <path
+          key={segment.id}
+          d={slicePath(index, angle)}
+          fill={`url(#wheel-grad-${index})`}
+        />
       ))}
-      <circle cx={CENTER} cy={CENTER} r={SLICE_RADIUS} fill="url(#wheel-shade)" />
-      <circle cx={CENTER} cy={CENTER} r={SLICE_RADIUS} fill="url(#wheel-gloss)" />
+      <circle
+        cx={CENTER}
+        cy={CENTER}
+        r={SLICE_RADIUS}
+        fill="url(#wheel-shade)"
+      />
+      <circle
+        cx={CENTER}
+        cy={CENTER}
+        r={SLICE_RADIUS}
+        fill="url(#wheel-gloss)"
+      />
       {segments.map((segment, index) => {
         const line = dividerLine(index, angle);
         return (

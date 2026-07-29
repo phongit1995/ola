@@ -1,15 +1,12 @@
-import { env } from '../config';
+import { env } from '../config/env';
+import {
+  GEOAPIFY_NEARBY_CATEGORIES,
+  GEOAPIFY_PLACES_URL,
+  GEOAPIFY_REVERSE_URL,
+} from '../constants/geo';
+import type { GeoFeature, GeoVenue } from '../types/api/geo.type';
 
-export interface GeoVenue {
-  name: string;
-  address: string;
-  lat: number;
-  lng: number;
-}
-
-const PLACES_URL = 'https://api.geoapify.com/v2/places';
-const REVERSE_URL = 'https://api.geoapify.com/v1/geocode/reverse';
-const NEARBY_CATEGORIES = 'catering,commercial,leisure,tourism,accommodation,education,office';
+export type { GeoVenue } from '../types/api/geo.type';
 
 export class GeoService {
   static get enabled(): boolean {
@@ -19,13 +16,13 @@ export class GeoService {
   static async nearby(lat: number, lng: number): Promise<GeoVenue[]> {
     if (!this.enabled) return [];
     const params = new URLSearchParams({
-      categories: NEARBY_CATEGORIES,
+      categories: GEOAPIFY_NEARBY_CATEGORIES,
       filter: `circle:${lng},${lat},1500`,
       bias: `proximity:${lng},${lat}`,
       limit: '24',
       apiKey: env.geoapifyKey,
     });
-    const res = await fetch(`${PLACES_URL}?${params.toString()}`);
+    const res = await fetch(`${GEOAPIFY_PLACES_URL}?${params.toString()}`);
     if (!res.ok) throw new Error(`geoapify places ${res.status}`);
     const json = (await res.json()) as { features?: GeoFeature[] };
     const seen = new Set<string>();
@@ -52,7 +49,7 @@ export class GeoService {
       lon: String(lng),
       apiKey: env.geoapifyKey,
     });
-    const res = await fetch(`${REVERSE_URL}?${params.toString()}`);
+    const res = await fetch(`${GEOAPIFY_REVERSE_URL}?${params.toString()}`);
     if (!res.ok) throw new Error(`geoapify reverse ${res.status}`);
     const json = (await res.json()) as { features?: GeoFeature[] };
     const p = json.features?.[0]?.properties;
@@ -64,16 +61,4 @@ export class GeoService {
   static mapLink(lat: number, lng: number): string {
     return `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
   }
-}
-
-interface GeoFeature {
-  properties: {
-    name?: string;
-    street?: string;
-    formatted?: string;
-    address_line1?: string;
-    address_line2?: string;
-    lat: number;
-    lon: number;
-  };
 }

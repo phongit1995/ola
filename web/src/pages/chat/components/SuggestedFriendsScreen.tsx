@@ -1,6 +1,11 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActionButton, Avatar, FullScreenOverlay, ScreenHeader } from '@components';
+import {
+  ActionButton,
+  Avatar,
+  FullScreenOverlay,
+  ScreenHeader,
+} from '@components';
 import { toast } from '@lib';
 import { SUGGESTED_FRIENDS } from '../data';
 import type { SuggestedFriend } from '../interface';
@@ -10,11 +15,14 @@ interface SuggestedFriendsScreenProps {
   onClose: () => void;
 }
 
-export function SuggestedFriendsScreen({ onClose }: SuggestedFriendsScreenProps) {
+export function SuggestedFriendsScreen({
+  onClose,
+}: SuggestedFriendsScreenProps) {
   const { t } = useTranslation();
   const [list, setList] = useState<SuggestedFriend[]>(SUGGESTED_FRIENDS);
 
-  const remove = (name: string) => setList((prev) => prev.filter((friend) => friend.name !== name));
+  const remove = (name: string) =>
+    setList((prev) => prev.filter((friend) => friend.name !== name));
 
   const addFriend = (friend: SuggestedFriend) => {
     toast.success(t('chat.friendRequestSent'));
@@ -29,7 +37,11 @@ export function SuggestedFriendsScreen({ onClose }: SuggestedFriendsScreenProps)
 
   return (
     <FullScreenOverlay position="absolute">
-      <ScreenHeader title={t('chat.suggestFriends')} onBack={onClose} align="center" />
+      <ScreenHeader
+        title={t('chat.suggestFriends')}
+        onBack={onClose}
+        align="center"
+      />
 
       {list.length > 0 && (
         <div className="shrink-0 border-b border-black/12 bg-white/80 p-2">
@@ -45,7 +57,9 @@ export function SuggestedFriendsScreen({ onClose }: SuggestedFriendsScreenProps)
 
       <div className="flex-1 overflow-y-auto">
         {list.length === 0 ? (
-          <p className="px-4 py-10 text-center text-sm text-black/54">{t('chat.suggestEmpty')}</p>
+          <p className="px-4 py-10 text-center text-sm text-black/54">
+            {t('chat.suggestEmpty')}
+          </p>
         ) : (
           <ul>
             {list.map((friend) => (
@@ -55,8 +69,14 @@ export function SuggestedFriendsScreen({ onClose }: SuggestedFriendsScreenProps)
               >
                 <Avatar name={friend.name} color={friend.color} size={56} />
                 <div className="min-w-0 flex-1">
-                  <span className="block truncate text-base text-black/87">{friend.name}</span>
-                  <ActionButton variant="filled" onClick={() => addFriend(friend)} className="mt-1">
+                  <span className="block truncate text-base text-black/87">
+                    {friend.name}
+                  </span>
+                  <ActionButton
+                    variant="filled"
+                    onClick={() => addFriend(friend)}
+                    className="mt-1"
+                  >
                     {t('chat.menuMakeFriend')}
                   </ActionButton>
                 </div>

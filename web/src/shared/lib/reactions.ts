@@ -1,7 +1,14 @@
 import type { ReactionType } from '@app-types';
 import { smileyImageForCode } from './chatSmiley';
 
-export const REACTION_ORDER: ReactionType[] = ['LIKE', 'LOVE', 'HAHA', 'WOW', 'SAD', 'ANGRY'];
+export const REACTION_ORDER: ReactionType[] = [
+  'LIKE',
+  'LOVE',
+  'HAHA',
+  'WOW',
+  'SAD',
+  'ANGRY',
+];
 
 const REACTION_SMILEY_CODES = ['(y)', '<3', ':-))', ':-O', ':-(', ':-<'];
 
@@ -19,7 +26,9 @@ export interface ReactionChip {
   count: number;
 }
 
-export function reactionChips(reactions?: Record<string, readonly unknown[]>): ReactionChip[] {
+export function reactionChips(
+  reactions?: Record<string, readonly unknown[]>
+): ReactionChip[] {
   if (reactions == null) return [];
   return Object.entries(reactions)
     .filter(([, users]) => users.length > 0)

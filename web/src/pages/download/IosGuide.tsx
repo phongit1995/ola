@@ -15,7 +15,9 @@ const STEP_SHOTS = [shot1, shot2, shot3, shot4, shot5, shot6];
 
 export function IosGuide({ isCurrentDevice }: { isCurrentDevice: boolean }) {
   const { t } = useTranslation();
-  const steps = t('download.ios.steps', { returnObjects: true }) as unknown as string[];
+  const steps = t('download.ios.steps', {
+    returnObjects: true,
+  }) as unknown as string[];
   const shots = STEP_SHOTS.map((src, index) => ({
     src,
     label: t('download.stepLabel', { index: index + 1 }),

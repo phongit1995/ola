@@ -24,20 +24,32 @@ function GenderIcon({ gender }: { gender: RoomMember['gender'] }) {
   );
 }
 
-export function RoomMembersTab({ members, active, onOpenProfile }: RoomMembersTabProps) {
+export function RoomMembersTab({
+  members,
+  active,
+  onOpenProfile,
+}: RoomMembersTabProps) {
   const { t } = useTranslation();
   const openViewer = useMediaViewerStore((s) => s.openViewer);
 
   return (
-    <div className={`relative flex-1 overflow-y-auto bg-white ${active ? '' : 'hidden'}`}>
+    <div
+      className={`relative flex-1 overflow-y-auto bg-white ${
+        active ? '' : 'hidden'
+      }`}
+    >
       {members.length === 0 ? (
-        <p className="px-4 py-6 text-center text-sm text-black/54">{t('room.noMembers')}</p>
+        <p className="px-4 py-6 text-center text-sm text-black/54">
+          {t('room.noMembers')}
+        </p>
       ) : (
         <ul>
           {members.map((member) => {
             const color = colorForName(member.username);
             const subName =
-              member.fullName && member.fullName !== '' && member.fullName !== member.username
+              member.fullName &&
+              member.fullName !== '' &&
+              member.fullName !== member.username
                 ? member.fullName
                 : null;
             return (
@@ -49,7 +61,10 @@ export function RoomMembersTab({ members, active, onOpenProfile }: RoomMembersTa
                 >
                   <GenderIcon gender={member.gender} />
                   <span className="relative h-10 w-10 shrink-0">
-                    <VipAvatar typeId={member.vipTypeId} className="h-10 w-10" />
+                    <VipAvatar
+                      typeId={member.vipTypeId}
+                      className="h-10 w-10"
+                    />
                     <PresenceBadge
                       icon={DEVICE_ICONS[normalizeDevice(member.deviceType)]}
                       className="absolute -right-0.5 -bottom-0.5"
@@ -65,7 +80,9 @@ export function RoomMembersTab({ members, active, onOpenProfile }: RoomMembersTa
                       />
                     </span>
                     {member.bio ? (
-                      <span className="truncate text-xs text-black/54">{member.bio}</span>
+                      <span className="truncate text-xs text-black/54">
+                        {member.bio}
+                      </span>
                     ) : null}
                   </div>
                   {member.bioImage != null && member.bioImage !== '' && (

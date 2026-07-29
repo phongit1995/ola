@@ -1,11 +1,11 @@
-import { http } from '../api';
-import { API_PATH } from '../config';
+import { http } from '../api/http';
+import { API_PATH } from '../config/api';
 import type {
   KenHistoryParams,
   KenHistoryResult,
   TransferKenRequest,
   TransferKenResult,
-} from '../types';
+} from '../types/api/ken.type';
 
 export class KenService {
   static transfer(body: TransferKenRequest): Promise<TransferKenResult> {

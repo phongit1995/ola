@@ -6,24 +6,42 @@ import { PenService } from '@services';
 import type { PenSide } from '@app-types';
 import { useAuthStore } from '@/store/authStore';
 import { PEN_HISTORY_PAGE, usePenHistoryStore } from '@/store/penHistoryStore';
-import type { PenHistorySection as SectionRole } from '@/store/penHistoryStore';
+import type { PenHistorySection as SectionRole } from '@ola/shared/types';
 import { penAssets, penHistoryAssets } from './penAssets';
 import { PenHistoryTable } from './PenHistoryTable';
-import { toHistoryRow, type PenHistoryOutcome, type PenHistoryRowView } from './penHistory';
+import {
+  toHistoryRow,
+  type PenHistoryOutcome,
+  type PenHistoryRowView,
+} from './penHistory';
 
 const ROW_GRID = 'grid items-center gap-1';
 const GRID_COLS = '1.6fr 1fr 0.8fr 1.7fr';
 
 function BanIcon({ className = 'h-4 w-4' }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
+    <svg
+      viewBox="0 0 24 24"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      aria-hidden="true"
+    >
       <circle cx="12" cy="12" r="9" />
       <path d="M5.6 5.6l12.8 12.8" />
     </svg>
   );
 }
 
-function DirectionLabel({ verb, side }: { verb: 'shoot' | 'catch'; side: PenSide }) {
+function DirectionLabel({
+  verb,
+  side,
+}: {
+  verb: 'shoot' | 'catch';
+  side: PenSide;
+}) {
   const { t } = useTranslation();
   const left = side === 'left';
   const label =
@@ -32,16 +50,28 @@ function DirectionLabel({ verb, side }: { verb: 'shoot' | 'catch'; side: PenSide
         ? t('penGame.hist.catchLeft')
         : t('penGame.hist.catchRight')
       : left
-        ? t('penGame.hist.shootLeft')
-        : t('penGame.hist.shootRight');
+      ? t('penGame.hist.shootLeft')
+      : t('penGame.hist.shootRight');
   return (
-    <span className={`flex items-center gap-0.5 text-[10px] font-semibold ${left ? 'text-[#46e06a]' : 'text-[#3aa0ff]'}`}>
+    <span
+      className={`flex items-center gap-0.5 text-[10px] font-semibold ${
+        left ? 'text-[#46e06a]' : 'text-[#3aa0ff]'
+      }`}
+    >
       {label} {left ? '←' : '→'}
     </span>
   );
 }
 
-function ResultCell({ outcome, amount, onCancel }: { outcome: PenHistoryOutcome; amount: number; onCancel?: () => void }) {
+function ResultCell({
+  outcome,
+  amount,
+  onCancel,
+}: {
+  outcome: PenHistoryOutcome;
+  amount: number;
+  onCancel?: () => void;
+}) {
   const { t } = useTranslation();
   if (outcome === 'pending') {
     if (onCancel == null) return null;
@@ -68,7 +98,11 @@ function ResultCell({ outcome, amount, onCancel }: { outcome: PenHistoryOutcome;
   const win = outcome === 'win';
   return (
     <span className="flex items-center justify-end">
-      <span className={`whitespace-nowrap text-[11px] font-bold ${win ? 'text-[#46e06a]' : 'text-[#ff5b5b]'}`}>
+      <span
+        className={`whitespace-nowrap text-[11px] font-bold ${
+          win ? 'text-[#46e06a]' : 'text-[#ff5b5b]'
+        }`}
+      >
         {win ? '+' : '-'}
         {formatVnd(Math.abs(amount))} {t('penGame.hist.ken')}
       </span>
@@ -87,19 +121,30 @@ function PenHistoryRow({
 }) {
   const { t } = useTranslation();
   return (
-    <li className={`${ROW_GRID} border-b border-white/5 px-1.5 py-1.5`} style={{ gridTemplateColumns: GRID_COLS }}>
+    <li
+      className={`${ROW_GRID} border-b border-white/5 px-1.5 py-1.5`}
+      style={{ gridTemplateColumns: GRID_COLS }}
+    >
       <span className="flex min-w-0 items-center gap-1.5">
         {row.opponent != null ? (
           <>
             <VipBadge typeId={row.opponent.vipTypeId} className="h-6 w-6" />
             <span className="flex min-w-0 flex-col leading-tight">
-              <span className="truncate text-xs text-white/90">@{row.opponent.username}</span>
-              {row.side != null && <DirectionLabel verb={verb} side={row.side} />}
+              <span className="truncate text-xs text-white/90">
+                @{row.opponent.username}
+              </span>
+              {row.side != null && (
+                <DirectionLabel verb={verb} side={row.side} />
+              )}
             </span>
           </>
         ) : row.outcome === 'pending' ? (
           <span className="flex items-center gap-1 text-[11px] font-semibold text-[#ffd23f]">
-            <img src={penHistoryAssets.clockYellow} alt="" className="h-4 w-4 object-contain" />
+            <img
+              src={penHistoryAssets.clockYellow}
+              alt=""
+              className="h-4 w-4 object-contain"
+            />
             {t('penGame.hist.pending')}
           </span>
         ) : (
@@ -121,7 +166,9 @@ function PenHistoryRow({
         <ResultCell
           outcome={row.outcome}
           amount={row.amount}
-          onCancel={row.outcome === 'pending' ? () => onCancel(row.id) : undefined}
+          onCancel={
+            row.outcome === 'pending' ? () => onCancel(row.id) : undefined
+          }
         />
       </span>
     </li>
@@ -134,7 +181,11 @@ interface PenHistorySectionProps {
   userId?: string;
 }
 
-export function PenHistorySection({ section, opponentLabel, userId }: PenHistorySectionProps) {
+export function PenHistorySection({
+  section,
+  opponentLabel,
+  userId,
+}: PenHistorySectionProps) {
   const { t } = useTranslation();
   const state = usePenHistoryStore((s) => s.sections[section]);
   const load = usePenHistoryStore((s) => s.load);
@@ -149,7 +200,10 @@ export function PenHistorySection({ section, opponentLabel, userId }: PenHistory
 
   const verb = section === 'shoot' ? 'catch' : 'shoot';
   const pageCount = Math.max(1, Math.ceil(state.total / PEN_HISTORY_PAGE));
-  const emptyText = section === 'shoot' ? t('penGame.hist.emptyShot') : t('penGame.hist.emptyCatch');
+  const emptyText =
+    section === 'shoot'
+      ? t('penGame.hist.emptyShot')
+      : t('penGame.hist.emptyCatch');
 
   const handleCancel = async () => {
     if (cancelId == null || cancelling) return;

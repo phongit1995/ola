@@ -1,4 +1,4 @@
-import type { Post } from '../types';
+import type { Post } from '../types/api/me.type';
 
 function visible(post: Post, hidden: Set<string>, blocked: Set<string>): boolean {
   if (hidden.has(post.id)) return false;
