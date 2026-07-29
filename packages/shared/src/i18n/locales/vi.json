@@ -1108,6 +1108,97 @@
       }
     ]
   },
+  "download": {
+    "back": "‹ Quay lại",
+    "title": "Tải ứng dụng Ola",
+    "subtitle": "Cài Ola trên điện thoại để nhận thông báo tin nhắn ngay lập tức, nghe gọi và chơi game mượt hơn.",
+    "settingsRow": "Tải ứng dụng Ola",
+    "fab": "Tải app Ola",
+    "hideFab": "Ẩn nút tải app",
+    "loginLink": "Tải ứng dụng Ola cho điện thoại",
+    "yourDevice": "Thiết bị của bạn",
+    "stepsTitle": "Các bước cài đặt",
+    "copyLink": "Sao chép link trang này",
+    "copied": "Đã sao chép link trang tải app",
+    "inAppTitle": "Hãy mở bằng Chrome hoặc Safari",
+    "inAppMessage": "Trình duyệt bên trong Facebook, Messenger hay Zalo thường chặn tải file. Bạn sao chép link rồi dán vào Chrome (Android) hoặc Safari (iPhone) để tải được app.",
+    "openOnPhone": "Mở trang này trên điện thoại",
+    "openOnPhoneHint": "Bạn đang dùng máy tính. Nhập địa chỉ bên dưới vào trình duyệt trên điện thoại để tải app.",
+    "android": {
+      "name": "Android",
+      "channel": "Cài bằng file APK",
+      "action": "Tải file APK",
+      "size": "Dung lượng {{size}}",
+      "steps": [
+        "Nhấn “Tải file APK” (khoảng 56 MB, nên dùng Wi-Fi). File nằm trên Google Drive của Ola nên có thể mất vài giây mới bắt đầu tải.",
+        "Chrome hiện cảnh báo “Loại tệp này có thể gây hại cho thiết bị” — chọn “Vẫn tải xuống”.",
+        "Mở file vừa tải. Nếu máy báo không được phép cài ứng dụng không rõ nguồn gốc, chọn “Cài đặt” rồi bật quyền cho Chrome hoặc trình quản lý tệp.",
+        "Play Protect có thể hiện “Không rõ ứng dụng” — chọn “Vẫn cài đặt”.",
+        "Chờ cài xong, mở Ola và đăng nhập bằng tài khoản của bạn."
+      ],
+      "note": "Các cảnh báo trên là bình thường với file APK cài ngoài Google Play. Bản Ola ở trang này do chính chúng tôi phát hành.",
+      "folderAction": "Mở thư mục Google Drive",
+      "linkLabel": "Link tải file APK",
+      "linkHint": "Dán link này vào Chrome nếu nút tải phía trên không chạy.",
+      "folderLinkLabel": "Link thư mục Google Drive"
+    },
+    "ios": {
+      "name": "iPhone / iPad",
+      "channel": "Cài qua TestFlight",
+      "action": "Mở lời mời TestFlight",
+      "installTestflight": "Cài TestFlight từ App Store",
+      "steps": [
+        "Cài ứng dụng TestFlight của Apple từ App Store (miễn phí). TestFlight là app của Apple dành cho việc thử app trước khi lên App Store; nếu bị hỏi đăng nhập thì dùng luôn tài khoản iCloud của bạn.",
+        "Mở TestFlight lần đầu, ở màn “Chào mừng đến TestFlight” nhấn “Tiếp tục”.",
+        "Quay lại trang này, nhấn “Mở lời mời TestFlight”, rồi nhấn “Cài đặt” ở trang Ola - Chat trong TestFlight.",
+        "Ở màn “Từ nhà phát triển”, nhấn “Tiếp”.",
+        "Ở màn “Chia sẻ phản hồi”, nhấn “Bắt đầu kiểm tra”.",
+        "Ola mở lên, bạn đăng nhập bằng tài khoản của mình là xong."
+      ],
+      "note": "Mỗi bản TestFlight có hiệu lực 90 ngày. Khi hết hạn, bạn mở TestFlight và cập nhật lại bản mới nhất.",
+      "codeLabel": "Mã lời mời TestFlight",
+      "codeHint": "Mở TestFlight → Redeem (Sử dụng mã) → dán mã này nếu link lời mời không mở được.",
+      "linkLabel": "Link lời mời TestFlight"
+    },
+    "faqTitle": "Xử lý sự cố",
+    "faq": [
+      {
+        "question": "Nhấn tải nhưng không có gì xảy ra?",
+        "answer": "Bạn đang mở trang bằng trình duyệt trong Facebook/Zalo — loại trình duyệt này chặn tải file. Hãy sao chép link trang và mở bằng Chrome hoặc Safari."
+      },
+      {
+        "question": "Máy báo không cài được ứng dụng không rõ nguồn gốc?",
+        "answer": "Vào Cài đặt → Ứng dụng → chọn trình duyệt bạn dùng để tải → bật “Cho phép cài ứng dụng từ nguồn này”, rồi mở lại file APK."
+      },
+      {
+        "question": "Play Protect báo ứng dụng có thể gây hại?",
+        "answer": "Đây là cảnh báo mặc định cho mọi file APK cài ngoài Google Play, chọn “Vẫn cài đặt” là được. Chỉ cần chắc chắn bạn tải file từ đúng link hiển thị ở trang này."
+      },
+      {
+        "question": "Link tải APK báo lỗi hoặc không tải được?",
+        "answer": "File APK đang đặt trên Google Drive nên khi quá nhiều người tải cùng lúc Google có thể tạm chặn. Bạn thử lại sau ít phút, hoặc nhấn “Mở thư mục Google Drive” rồi tự chọn file APK mới nhất trong thư mục."
+      },
+      {
+        "question": "TestFlight báo lời mời hết chỗ hoặc đã hết hạn?",
+        "answer": "Số lượng người thử nghiệm có giới hạn. Bạn thử lại sau hoặc dùng bản web trong lúc chờ."
+      },
+      {
+        "question": "Cập nhật app thế nào?",
+        "answer": "Android: tải file APK mới ở trang này rồi cài lên bản cũ, dữ liệu vẫn giữ nguyên. iPhone: mở TestFlight và nhấn Update."
+      },
+      {
+        "question": "Cài app có mất dữ liệu tài khoản không?",
+        "answer": "Không. Tin nhắn và thông tin tài khoản được lưu trên hệ thống Ola, bạn đăng nhập ở thiết bị nào cũng thấy đầy đủ."
+      }
+    ],
+    "safetyTitle": "Chỉ tải Ola từ trang chính thức",
+    "safety": "Ola không bao giờ nhờ bạn tải file cài đặt từ tin nhắn lạ, nhóm Zalo hay Facebook. File từ nguồn khác có thể bị chèn mã độc để chiếm tài khoản của bạn.",
+    "useWeb": "Tiếp tục dùng bản web",
+    "stepLabel": "Bước {{index}}",
+    "screenshotsTitle": "Ảnh minh hoạ các bước",
+    "closePreview": "Đóng ảnh",
+    "copiedToClipboard": "Đã sao chép"
+  },
   "notify": {
     "title": "Thông báo",
     "comingSoon": "Tính năng đang được phát triển",

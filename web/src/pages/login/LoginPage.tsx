@@ -175,6 +175,14 @@ export function LoginPage() {
         </button>
       </div>
 
+      <button
+        type="button"
+        onClick={() => navigate(ROUTES.downloadApp)}
+        className="w-full max-w-md pb-3 text-center text-sm text-white/80 underline decoration-white/40"
+      >
+        {t('download.loginLink')}
+      </button>
+
       <div className="w-full max-w-md pb-4 text-right text-[9px] text-white/70">
         {t('login.version')}: {APP_VERSION}
       </div>

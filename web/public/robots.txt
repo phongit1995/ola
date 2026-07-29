@@ -1,6 +1,7 @@
 User-agent: *
 Allow: /$
 Allow: /gioi-thieu
+Allow: /tai-app
 Allow: /dieu-khoan
 Disallow: /
 

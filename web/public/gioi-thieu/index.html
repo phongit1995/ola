@@ -89,6 +89,14 @@
               },
               {
                 "@type": "Question",
+                "name": "Tải app Ola về điện thoại thế nào?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Máy Android tải file APK từ trang https://olachat.net/tai-app rồi cài trực tiếp. iPhone và iPad cài qua ứng dụng TestFlight của Apple, mở lời mời của Ola rồi nhấn Install."
+                }
+              },
+              {
+                "@type": "Question",
                 "name": "Làm sao để bắt đầu chat trên Ola Chat?",
                 "acceptedAnswer": {
                   "@type": "Answer",
@@ -409,6 +417,11 @@
         font-size: 14px;
         color: var(--muted);
       }
+      details p a {
+        color: var(--primary-dark);
+        font-weight: 600;
+        text-decoration: underline;
+      }
       .final {
         text-align: center;
         background: linear-gradient(160deg, var(--primary), var(--primary-dark));
@@ -477,6 +490,7 @@
           <div class="cta">
             <a class="btn btn-primary" href="/register">Đăng ký miễn phí</a>
             <a class="btn btn-outline" href="/login">Đăng nhập</a>
+            <a class="btn btn-outline" href="/tai-app">Tải app cho điện thoại</a>
           </div>
           <div class="stats">
             <span class="pill">100% miễn phí</span>
@@ -618,6 +632,36 @@
         </section>
 
         <section class="block">
+          <p class="eyebrow">Tải ứng dụng</p>
+          <h2>Cài Ola trên điện thoại</h2>
+          <p class="section-lead">
+            Ola có bản cho Android (file APK) và iPhone/iPad (qua TestFlight). Trang tải app hướng
+            dẫn từng bước, kể cả cách xử lý các cảnh báo hiện ra khi cài đặt.
+          </p>
+          <div class="grid">
+            <article class="card">
+              <div class="ic">🤖</div>
+              <h3>Android — file APK</h3>
+              <p>
+                Tải file APK rồi cài trực tiếp trên máy. Chrome và Play Protect có thể hiện cảnh báo
+                vì app được cài ngoài Google Play — bạn chọn tiếp tục là xong.
+              </p>
+            </article>
+            <article class="card">
+              <div class="ic">🍎</div>
+              <h3>iPhone / iPad — TestFlight</h3>
+              <p>
+                Cài ứng dụng TestFlight của Apple, mở lời mời của Ola rồi nhấn Install. Mỗi bản
+                TestFlight dùng được 90 ngày, hết hạn thì cập nhật lại.
+              </p>
+            </article>
+          </div>
+          <div class="cta">
+            <a class="btn btn-primary" href="/tai-app">Xem hướng dẫn tải app</a>
+          </div>
+        </section>
+
+        <section class="block alt">
           <p class="eyebrow">Câu hỏi thường gặp</p>
           <h2>FAQ về Ola Chat</h2>
           <details open>
@@ -632,6 +676,14 @@
             <p>
               Ola Chat hoạt động trên trình duyệt web, điện thoại Android và iOS, giúp bạn trò chuyện
               liền mạch trên mọi thiết bị.
+            </p>
+          </details>
+          <details>
+            <summary>Tải app Ola về điện thoại thế nào?</summary>
+            <p>
+              Máy Android tải file APK rồi cài trực tiếp, iPhone và iPad cài qua ứng dụng TestFlight
+              của Apple. Hướng dẫn từng bước, kèm cách xử lý cảnh báo khi cài đặt, có ở
+              <a href="/tai-app">trang tải ứng dụng Ola</a>.
             </p>
           </details>
           <details>
@@ -669,6 +721,7 @@
           <a href="/">Trang chủ</a>
           <a href="/login">Đăng nhập</a>
           <a href="/register">Đăng ký</a>
+          <a href="/tai-app">Tải ứng dụng</a>
           <a href="/dieu-khoan">Điều khoản sử dụng</a>
         </div>
         <p>© 2026 Ola Chat — Mạng xã hội chat, kết bạn, trò chuyện online miễn phí.</p>

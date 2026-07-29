@@ -5,6 +5,7 @@ import { toast } from '@lib';
 import { VipService } from '@services';
 import type { UserSettings } from '@app-types';
 import { useSettingsStore } from '@/store/settingsStore';
+import { useDownloadGuideStore } from '@/store/downloadGuideStore';
 import iconPrivacy from '@/assets/icons/settings/icon-privacy.webp';
 import iconNotification from '@/assets/icons/settings/icon-notification.webp';
 import iconAppearance from '@/assets/icons/settings/icon-appearance.webp';
@@ -20,6 +21,22 @@ function ImageIcon() {
   return (
     <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden="true">
       <path d="M21 5v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2ZM5 19h14l-4.5-6-3.5 4.5-2.5-3L5 19Zm3.5-8.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z" />
+    </svg>
+  );
+}
+
+function AppDownloadIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4.5 w-4.5" fill="currentColor" aria-hidden="true">
+      <path d="M5 20h14v-2H5v2ZM19 9h-4V3H9v6H5l7 7 7-7Z" />
+    </svg>
+  );
+}
+
+function ChevronRightIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" aria-hidden="true">
+      <path d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41Z" />
     </svg>
   );
 }
@@ -102,6 +119,7 @@ function SettingsCard({
 
 export function SettingsPage({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();
+  const openDownloadGuide = useDownloadGuideStore((s) => s.open);
   const settings = useSettingsStore((s) => s.settings);
   const update = useSettingsStore((s) => s.update);
   const [draft, setDraft] = useState(settings);
@@ -275,6 +293,22 @@ export function SettingsPage({ onClose }: { onClose: () => void }) {
             </button>
           </SettingRow>
         </SettingsCard>
+
+        <button
+          type="button"
+          onClick={openDownloadGuide}
+          className="flex w-full items-center gap-2.5 rounded-2xl bg-white px-4 py-3.5 shadow-sm ring-1 ring-black/5"
+        >
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-ola-primary/10 text-ola-primary">
+            <AppDownloadIcon />
+          </span>
+          <span className="min-w-0 flex-1 text-left text-sm font-semibold text-black/80">
+            {t('download.settingsRow')}
+          </span>
+          <span className="shrink-0 text-black/30">
+            <ChevronRightIcon />
+          </span>
+        </button>
 
         <p className="pt-2 pb-4 text-center text-xs text-black/40">{t('settings.appVersion')}</p>
       </div>
