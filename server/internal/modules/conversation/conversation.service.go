@@ -26,6 +26,7 @@ type Service struct {
 	userCache      *userModule.CacheService
 	userSettingSvc *usersetting.Service
 	relRepo        *relationships.Repository
+	relSvc         BlockChecker
 	db             *gorm.DB
 	kafkaProducer  *kafka.Producer
 	presence       *websocket.PresenceService
@@ -38,6 +39,7 @@ func NewService(
 	userCache *userModule.CacheService,
 	userSettingSvc *usersetting.Service,
 	relRepo *relationships.Repository,
+	relSvc *relationships.Service,
 	db *gorm.DB,
 	kafkaProducer *kafka.Producer,
 	presence *websocket.PresenceService,
@@ -49,6 +51,7 @@ func NewService(
 		userCache:      userCache,
 		userSettingSvc: userSettingSvc,
 		relRepo:        relRepo,
+		relSvc:         relSvc,
 		db:             db,
 		kafkaProducer:  kafkaProducer,
 		presence:       presence,
@@ -232,6 +235,9 @@ func userDisplayName(u *models.User) string {
 func (s *Service) CreateDirectConversation(user1ID, user2ID uuid.UUID) (*ConversationResponse, error) {
 	if user1ID == user2ID {
 		return nil, fmt.Errorf("cannot create conversation with yourself")
+	}
+	if err := BlockIfUsersBlocked(s.relSvc, user1ID, user2ID); err != nil {
+		return nil, err
 	}
 
 	user1, err := s.userCache.GetUserCache(user1ID, true)
@@ -960,12 +966,9 @@ func (s *Service) AutoUnhideOnNewMessage(userID, conversationID uuid.UUID, messa
 }
 
 func (s *Service) SendTypingIndicator(userID, conversationID uuid.UUID, isTyping bool) error {
-	if isTyping {
-		if s.cache.IsTypingRateLimited(userID, conversationID) {
-			s.logger.Debugw("Typing indicator rate limited", "user_id", userID, "conversation_id", conversationID)
-			return nil
-		}
-		s.cache.SetTypingRateLimit(userID, conversationID)
+	conv, err := s.GetConversationByIDCached(conversationID)
+	if err != nil {
+		return fmt.Errorf("failed to get conversation: %w", err)
 	}
 
 	members, err := s.GetMembersCached(conversationID)
@@ -975,6 +978,17 @@ func (s *Service) SendTypingIndicator(userID, conversationID uuid.UUID, isTyping
 
 	if !requireActiveMember(members, userID) {
 		return fmt.Errorf("user is not a member of this conversation")
+	}
+	if err := EnsureDirectInteractionAllowed(s.relSvc, conv, members, userID); err != nil {
+		return err
+	}
+
+	if isTyping {
+		if s.cache.IsTypingRateLimited(userID, conversationID) {
+			s.logger.Debugw("Typing indicator rate limited", "user_id", userID, "conversation_id", conversationID)
+			return nil
+		}
+		s.cache.SetTypingRateLimit(userID, conversationID)
 	}
 
 	u, err := s.userCache.GetUserCache(userID, true)

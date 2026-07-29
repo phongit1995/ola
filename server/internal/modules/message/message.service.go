@@ -12,11 +12,11 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
-	"net/url"
 	"ola-chat-server/internal/config"
 	"ola-chat-server/internal/constants"
 	conversationEvents "ola-chat-server/internal/domain/conversation"
 	messageEvents "ola-chat-server/internal/domain/message"
+	"ola-chat-server/internal/media"
 	"ola-chat-server/internal/models"
 	"ola-chat-server/internal/modules/conversation"
 	"ola-chat-server/internal/modules/relationships"
@@ -46,6 +46,7 @@ type Service struct {
 	userCache      *userModule.CacheService
 	userSettingSvc *usersetting.Service
 	relRepo        *relationships.Repository
+	relSvc         conversation.BlockChecker
 	db             *gorm.DB
 	kafkaProducer  *kafka.Producer
 	s3             *services.S3Service
@@ -54,7 +55,7 @@ type Service struct {
 	logger         *zap.SugaredLogger
 }
 
-func NewService(repo *Repository, cache *CacheService, convRepo *conversation.Repository, convCache *conversation.CacheService, userCache *userModule.CacheService, userSettingSvc *usersetting.Service, relRepo *relationships.Repository, db *gorm.DB, kafkaProducer *kafka.Producer, s3 *services.S3Service, redis *services.CacheService, cfg *config.Config, logger *zap.SugaredLogger) *Service {
+func NewService(repo *Repository, cache *CacheService, convRepo *conversation.Repository, convCache *conversation.CacheService, userCache *userModule.CacheService, userSettingSvc *usersetting.Service, relRepo *relationships.Repository, relSvc *relationships.Service, db *gorm.DB, kafkaProducer *kafka.Producer, s3 *services.S3Service, redis *services.CacheService, cfg *config.Config, logger *zap.SugaredLogger) *Service {
 	return &Service{
 		repo:           repo,
 		cache:          cache,
@@ -63,6 +64,7 @@ func NewService(repo *Repository, cache *CacheService, convRepo *conversation.Re
 		userCache:      userCache,
 		userSettingSvc: userSettingSvc,
 		relRepo:        relRepo,
+		relSvc:         relSvc,
 		db:             db,
 		kafkaProducer:  kafkaProducer,
 		s3:             s3,
@@ -72,42 +74,126 @@ func NewService(repo *Repository, cache *CacheService, convRepo *conversation.Re
 	}
 }
 
+func (s *Service) ensureMessageAccess(userID, conversationID uuid.UUID) error {
+	conv, err := s.getConversationByIDCached(conversationID)
+	if err != nil {
+		return fmt.Errorf("conversation not found: %w", err)
+	}
+	members, err := s.getMembersCached(conversationID)
+	if err != nil {
+		return fmt.Errorf("failed to get members: %w", err)
+	}
+	if !isActiveMember(members, userID) {
+		return ErrNotMember
+	}
+	return conversation.EnsureDirectInteractionAllowed(s.relSvc, conv, members, userID)
+}
+
+func (s *Service) cachedIdempotentMessage(senderID, conversationID uuid.UUID, messageType, clientMsgID string) (*MessageResponse, error) {
+	if clientMsgID == "" {
+		return nil, nil
+	}
+	existing, err := s.cache.GetMessageByClientMsgID(senderID, clientMsgID)
+	if err != nil || existing == nil {
+		return nil, nil
+	}
+	if existing.ConversationID != conversationID.String() || existing.Type != messageType {
+		return nil, fmt.Errorf("%w: client message ID already used", ErrInvalidMetadata)
+	}
+	return existing, nil
+}
+
+func (s *Service) acquireMediaUpload(senderID, conversationID uuid.UUID, messageType, clientMsgID string) (*MessageResponse, func(), error) {
+	noRelease := func() {}
+	existing, err := s.cachedIdempotentMessage(senderID, conversationID, messageType, clientMsgID)
+	if err != nil || existing != nil || clientMsgID == "" {
+		return existing, noRelease, err
+	}
+
+	lockKey := fmt.Sprintf("media-upload:%s:%s", senderID.String(), clientMsgID)
+	lockToken := uuid.NewString()
+	acquired, err := s.redis.SetNX(lockKey, lockToken, constants.CacheTTLMediaUploadLock*time.Second)
+	if err != nil {
+		return nil, noRelease, fmt.Errorf("failed to acquire media upload lock: %w", err)
+	}
+	if !acquired {
+		existing, existingErr := s.cachedIdempotentMessage(senderID, conversationID, messageType, clientMsgID)
+		if existingErr != nil || existing != nil {
+			return existing, noRelease, existingErr
+		}
+		return nil, noRelease, ErrMessageInProgress
+	}
+
+	release := func() {
+		if _, err := s.redis.DeleteIfValue(lockKey, lockToken); err != nil {
+			s.logger.Warnw("Failed to release media upload lock", "key", lockKey, "error", err)
+		}
+	}
+	existing, err = s.cachedIdempotentMessage(senderID, conversationID, messageType, clientMsgID)
+	if err != nil || existing != nil {
+		release()
+		return existing, noRelease, err
+	}
+	return nil, release, nil
+}
+
+func (s *Service) cleanupUploadedObject(objectName string) {
+	if objectName == "" || s.s3 == nil {
+		return
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := s.s3.DeleteFile(ctx, objectName); err != nil {
+		s.logger.Warnw("Failed to clean up uploaded media", "object", objectName, "error", err)
+	}
+}
+
 func (s *Service) SendImageMessage(ctx context.Context, userID, conversationID uuid.UUID, fileHeader *multipart.FileHeader, clientMsgID string) (*MessageResponse, error) {
-	meta, err := s.uploadImageFile(ctx, userID, conversationID, fileHeader)
+	if err := s.ensureMessageAccess(userID, conversationID); err != nil {
+		return nil, err
+	}
+	existing, release, err := s.acquireMediaUpload(userID, conversationID, constants.MessageTypeImage, clientMsgID)
+	if err != nil {
+		return nil, err
+	}
+	if existing != nil {
+		return existing, nil
+	}
+	defer release()
+
+	meta, objectName, err := s.uploadImageFile(ctx, userID, conversationID, fileHeader)
 	if err != nil {
 		return nil, err
 	}
 	metaJSON, err := json.Marshal(meta)
 	if err != nil {
+		s.cleanupUploadedObject(objectName)
 		return nil, fmt.Errorf("failed to marshal image metadata: %w", err)
 	}
-	return s.SendMessage(userID, conversationID, constants.MessageTypeImage, "", string(metaJSON), nil, clientMsgID)
+	response, err := s.SendMessage(userID, conversationID, constants.MessageTypeImage, "", string(metaJSON), nil, clientMsgID)
+	if err != nil {
+		s.cleanupUploadedObject(objectName)
+		return nil, err
+	}
+	if response.Metadata != string(metaJSON) {
+		s.cleanupUploadedObject(objectName)
+	}
+	return response, nil
 }
 
-func (s *Service) uploadImageFile(ctx context.Context, userID, conversationID uuid.UUID, fileHeader *multipart.FileHeader) (*ImageMetadata, error) {
+func (s *Service) uploadImageFile(ctx context.Context, userID, conversationID uuid.UUID, fileHeader *multipart.FileHeader) (*ImageMetadata, string, error) {
 	if fileHeader.Size > constants.MaxImageUploadSize {
-		return nil, fmt.Errorf("%w: max %d bytes", ErrFileTooLarge, constants.MaxImageUploadSize)
-	}
-
-	if _, err := s.getConversationByIDCached(conversationID); err != nil {
-		return nil, fmt.Errorf("conversation not found: %w", err)
-	}
-	members, err := s.getMembersCached(conversationID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get members: %w", err)
-	}
-	if !isActiveMember(members, userID) {
-		return nil, ErrNotMember
+		return nil, "", fmt.Errorf("%w: max %d bytes", ErrFileTooLarge, constants.MaxImageUploadSize)
 	}
 
 	rateKey := fmt.Sprintf(constants.CacheKeyRateLimitUpload, userID.String())
 	if err := s.checkRateLimit(rateKey, constants.RateLimitUploadWindowSeconds, constants.RateLimitUploadMaxRequests); err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
 	file, err := fileHeader.Open()
 	if err != nil {
-		return nil, fmt.Errorf("failed to open file: %w", err)
+		return nil, "", fmt.Errorf("failed to open file: %w", err)
 	}
 	defer file.Close()
 
@@ -116,21 +202,21 @@ func (s *Service) uploadImageFile(ctx context.Context, userID, conversationID uu
 	head = head[:n]
 	detectedMime := http.DetectContentType(head)
 	if !isAllowedImageMime(detectedMime) {
-		return nil, fmt.Errorf("%w: %s", ErrUnsupportedImage, detectedMime)
+		return nil, "", fmt.Errorf("%w: %s", ErrUnsupportedImage, detectedMime)
 	}
 
 	rest, err := io.ReadAll(file)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read file: %w", err)
+		return nil, "", fmt.Errorf("failed to read file: %w", err)
 	}
 	fullData := append(head, rest...)
 	if int64(len(fullData)) > constants.MaxImageUploadSize {
-		return nil, ErrFileTooLarge
+		return nil, "", ErrFileTooLarge
 	}
 
 	cfg, _, err := image.DecodeConfig(bytes.NewReader(fullData))
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrDecodeImage, err)
+		return nil, "", fmt.Errorf("%w: %v", ErrDecodeImage, err)
 	}
 
 	ext := pickExtension(detectedMime, fileHeader.Filename)
@@ -139,7 +225,7 @@ func (s *Service) uploadImageFile(ctx context.Context, userID, conversationID uu
 
 	upload, err := s.s3.UploadFile(ctx, &multipartFileReader{Reader: bytes.NewReader(fullData), size: int64(len(fullData))}, safeName, folder)
 	if err != nil {
-		return nil, fmt.Errorf("failed to upload to storage: %w", err)
+		return nil, "", fmt.Errorf("failed to upload to storage: %w", err)
 	}
 
 	return &ImageMetadata{
@@ -149,7 +235,7 @@ func (s *Service) uploadImageFile(ctx context.Context, userID, conversationID uu
 		Width:    cfg.Width,
 		Height:   cfg.Height,
 		FileName: filepath.Base(fileHeader.Filename),
-	}, nil
+	}, upload.PublicID, nil
 }
 
 func isAllowedImageMime(mime string) bool {
@@ -161,116 +247,91 @@ func isAllowedImageMime(mime string) bool {
 	return false
 }
 
-func isAllowedAudioMime(mime string) bool {
-	base := mime
-	if idx := strings.Index(base, ";"); idx >= 0 {
-		base = strings.TrimSpace(base[:idx])
-	}
-	for _, m := range constants.AllowedAudioMimes {
-		if strings.EqualFold(m, base) {
-			return true
-		}
-	}
-	return false
-}
-
-func pickAudioExtension(mime, originalName string) string {
-	base := mime
-	if idx := strings.Index(base, ";"); idx >= 0 {
-		base = strings.TrimSpace(base[:idx])
-	}
-	switch strings.ToLower(base) {
-	case "audio/webm":
-		return ".webm"
-	case "audio/mp4", "audio/x-m4a", "audio/aac":
-		return ".m4a"
-	case "audio/mpeg":
-		return ".mp3"
-	case "audio/wav", "audio/x-wav":
-		return ".wav"
-	case "audio/ogg":
-		return ".ogg"
-	}
-	if ext := strings.ToLower(filepath.Ext(originalName)); ext != "" {
-		return ext
-	}
-	return ".bin"
-}
-
 func (s *Service) SendAudioMessage(ctx context.Context, userID, conversationID uuid.UUID, fileHeader *multipart.FileHeader, duration float64, waveform []float64, replyToID *uuid.UUID, clientMsgID string) (*MessageResponse, error) {
-	if duration <= 0 {
-		return nil, fmt.Errorf("%w: duration required", ErrInvalidMetadata)
+	if err := media.ValidateDuration(duration); err != nil {
+		return nil, err
 	}
 	if duration > constants.MaxAudioDurationSeconds {
 		return nil, fmt.Errorf("%w: max %d seconds", ErrInvalidMetadata, constants.MaxAudioDurationSeconds)
 	}
+	if err := media.ValidateWaveform(waveform, maxAudioWaveformSamples); err != nil {
+		return nil, err
+	}
+	if err := s.ensureMessageAccess(userID, conversationID); err != nil {
+		return nil, err
+	}
+	existing, release, err := s.acquireMediaUpload(userID, conversationID, constants.MessageTypeAudio, clientMsgID)
+	if err != nil {
+		return nil, err
+	}
+	if existing != nil {
+		return existing, nil
+	}
+	defer release()
 
-	meta, err := s.uploadAudioFile(ctx, userID, conversationID, fileHeader, duration, waveform)
+	meta, objectName, err := s.uploadAudioFile(ctx, userID, conversationID, fileHeader, duration, waveform)
 	if err != nil {
 		return nil, err
 	}
 	metaJSON, err := json.Marshal(meta)
 	if err != nil {
+		s.cleanupUploadedObject(objectName)
 		return nil, fmt.Errorf("failed to marshal audio metadata: %w", err)
 	}
-	return s.SendMessage(userID, conversationID, constants.MessageTypeAudio, "", string(metaJSON), replyToID, clientMsgID)
+	response, err := s.SendMessage(userID, conversationID, constants.MessageTypeAudio, "", string(metaJSON), replyToID, clientMsgID)
+	if err != nil {
+		s.cleanupUploadedObject(objectName)
+		return nil, err
+	}
+	if response.Metadata != string(metaJSON) {
+		s.cleanupUploadedObject(objectName)
+	}
+	return response, nil
 }
 
-func (s *Service) uploadAudioFile(ctx context.Context, userID, conversationID uuid.UUID, fileHeader *multipart.FileHeader, duration float64, waveform []float64) (*AudioMetadata, error) {
+func (s *Service) uploadAudioFile(ctx context.Context, userID, conversationID uuid.UUID, fileHeader *multipart.FileHeader, duration float64, waveform []float64) (*AudioMetadata, string, error) {
 	if fileHeader.Size > constants.MaxAudioUploadSize {
-		return nil, fmt.Errorf("%w: max %d bytes", ErrFileTooLarge, constants.MaxAudioUploadSize)
-	}
-
-	if _, err := s.getConversationByIDCached(conversationID); err != nil {
-		return nil, fmt.Errorf("conversation not found: %w", err)
-	}
-	members, err := s.getMembersCached(conversationID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get members: %w", err)
-	}
-	if !isActiveMember(members, userID) {
-		return nil, ErrNotMember
+		return nil, "", fmt.Errorf("%w: max %d bytes", ErrFileTooLarge, constants.MaxAudioUploadSize)
 	}
 
 	rateKey := fmt.Sprintf(constants.CacheKeyRateLimitUpload, userID.String())
 	if err := s.checkRateLimit(rateKey, constants.RateLimitUploadWindowSeconds, constants.RateLimitUploadMaxRequests); err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
 	file, err := fileHeader.Open()
 	if err != nil {
-		return nil, fmt.Errorf("failed to open file: %w", err)
+		return nil, "", fmt.Errorf("failed to open file: %w", err)
 	}
 	defer file.Close()
 
 	data, err := io.ReadAll(file)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read file: %w", err)
+		return nil, "", fmt.Errorf("failed to read file: %w", err)
 	}
 	if int64(len(data)) > constants.MaxAudioUploadSize {
-		return nil, ErrFileTooLarge
+		return nil, "", ErrFileTooLarge
 	}
 
 	declaredMime := fileHeader.Header.Get("Content-Type")
-	detectedMime := http.DetectContentType(data)
-	if strings.EqualFold(strings.TrimSpace(strings.SplitN(detectedMime, ";", 2)[0]), "video/mp4") {
-		detectedMime = "audio/mp4"
+	finalMime, err := media.DetectAudioMime(data, declaredMime)
+	if err != nil {
+		return nil, "", err
 	}
-	finalMime := declaredMime
-	if !isAllowedAudioMime(finalMime) {
-		finalMime = detectedMime
+	if err := media.ValidatePayloadSize(int64(len(data)), duration); err != nil {
+		return nil, "", err
 	}
-	if !isAllowedAudioMime(finalMime) {
-		return nil, fmt.Errorf("%w: %s", ErrUnsupportedImage, finalMime)
+	if err := media.ValidateMeasuredDuration(data, finalMime, duration, constants.MaxAudioDurationSeconds); err != nil {
+		return nil, "", err
 	}
 
-	ext := pickAudioExtension(finalMime, fileHeader.Filename)
+	ext := media.PickAudioExtension(finalMime, fileHeader.Filename)
 	safeName := fmt.Sprintf("audio%s", ext)
 	folder := fmt.Sprintf("%s/%s/%s", constants.UploadFolderMessages, conversationID.String(), time.Now().Format(constants.UploadDateLayout))
 
 	upload, err := s.s3.UploadFile(ctx, &multipartFileReader{Reader: bytes.NewReader(data), size: int64(len(data))}, safeName, folder)
 	if err != nil {
-		return nil, fmt.Errorf("failed to upload to storage: %w", err)
+		return nil, "", fmt.Errorf("failed to upload to storage: %w", err)
 	}
 
 	return &AudioMetadata{
@@ -279,10 +340,10 @@ func (s *Service) uploadAudioFile(ctx context.Context, userID, conversationID uu
 		Size:     int64(len(data)),
 		Duration: duration,
 		Waveform: waveform,
-	}, nil
+	}, upload.PublicID, nil
 }
 
-func validateAudioMetadata(metadata string) error {
+func validateAudioMetadata(metadata string, isManagedURL func(string) bool) error {
 	if strings.TrimSpace(metadata) == "" {
 		return fmt.Errorf("%w: required", ErrInvalidMetadata)
 	}
@@ -293,11 +354,20 @@ func validateAudioMetadata(metadata string) error {
 	if meta.URL == "" {
 		return fmt.Errorf("%w: url required", ErrInvalidMetadata)
 	}
-	if !isAllowedAudioMime(meta.MimeType) {
+	if isManagedURL == nil || !isManagedURL(meta.URL) {
+		return fmt.Errorf("%w: audio URL is not managed storage", ErrInvalidMetadata)
+	}
+	if !media.IsAllowedAudioMime(meta.MimeType) {
 		return fmt.Errorf("%w: mimeType %s", ErrInvalidMetadata, meta.MimeType)
 	}
-	if meta.Duration <= 0 || meta.Duration > constants.MaxAudioDurationSeconds {
+	if err := media.ValidateDuration(meta.Duration); err != nil {
+		return err
+	}
+	if meta.Duration > constants.MaxAudioDurationSeconds {
 		return fmt.Errorf("%w: invalid duration", ErrInvalidMetadata)
+	}
+	if err := media.ValidateWaveform(meta.Waveform, maxAudioWaveformSamples); err != nil {
+		return err
 	}
 	return nil
 }
@@ -325,7 +395,7 @@ func (r *multipartFileReader) Close() error { return nil }
 
 var _ multipart.File = (*multipartFileReader)(nil)
 
-func validateImageMetadata(metadata string, allowedHosts []string) error {
+func validateImageMetadata(metadata string, isManagedURL func(string) bool) error {
 	if strings.TrimSpace(metadata) == "" {
 		return fmt.Errorf("%w: required", ErrInvalidMetadata)
 	}
@@ -336,24 +406,11 @@ func validateImageMetadata(metadata string, allowedHosts []string) error {
 	if meta.URL == "" {
 		return fmt.Errorf("%w: url required", ErrInvalidMetadata)
 	}
+	if isManagedURL == nil || !isManagedURL(meta.URL) {
+		return fmt.Errorf("%w: image URL is not managed storage", ErrInvalidMetadata)
+	}
 	if !isAllowedImageMime(meta.MimeType) {
 		return fmt.Errorf("%w: mimeType %s", ErrInvalidMetadata, meta.MimeType)
-	}
-	if len(allowedHosts) > 0 {
-		u, err := url.Parse(meta.URL)
-		if err != nil {
-			return fmt.Errorf("%w: %v", ErrInvalidMetadata, err)
-		}
-		ok := false
-		for _, h := range allowedHosts {
-			if strings.EqualFold(u.Host, h) {
-				ok = true
-				break
-			}
-		}
-		if !ok {
-			return fmt.Errorf("%w: host %s not allowed", ErrInvalidMetadata, u.Host)
-		}
 	}
 	return nil
 }
@@ -469,12 +526,15 @@ func audioPreviewText() string {
 	return "🎵 Audio"
 }
 
-func validateMessageContent(messageType, content, metadata string) error {
+func (s *Service) validateMessageContent(messageType, content, metadata string) error {
+	isManagedURL := func(rawURL string) bool {
+		return s.s3 != nil && s.s3.IsManagedURL(rawURL)
+	}
 	switch messageType {
 	case constants.MessageTypeImage:
-		return validateImageMetadata(metadata, nil)
+		return validateImageMetadata(metadata, isManagedURL)
 	case constants.MessageTypeAudio:
-		return validateAudioMetadata(metadata)
+		return validateAudioMetadata(metadata, isManagedURL)
 	case constants.MessageTypeText:
 		if strings.TrimSpace(content) == "" {
 			return fmt.Errorf("content required for text message")
@@ -497,6 +557,9 @@ func previewForType(messageType, content string) string {
 func (s *Service) SendDirectMessage(senderID, recipientID uuid.UUID, messageType, content, metadata, clientMsgID string) (*MessageResponse, error) {
 	if senderID == recipientID {
 		return nil, fmt.Errorf("cannot send direct message to yourself")
+	}
+	if err := conversation.BlockIfUsersBlocked(s.relSvc, senderID, recipientID); err != nil {
+		return nil, err
 	}
 
 	userA, userB := senderID, recipientID
@@ -661,15 +724,8 @@ func (s *Service) createFullDirectConversation(conversationID, userA, userB, cre
 }
 
 func (s *Service) SendMessage(senderID, conversationID uuid.UUID, messageType, content, metadata string, replyToID *uuid.UUID, clientMsgID string) (*MessageResponse, error) {
-	if clientMsgID != "" {
-		if existing, err := s.cache.GetMessageByClientMsgID(senderID, clientMsgID); err == nil && existing != nil {
-			s.logger.Infow("Idempotent send: returning existing message",
-				"client_msg_id", clientMsgID, "message_id", existing.ID)
-			return existing, nil
-		}
-	}
-
-	if _, err := s.getConversationByIDCached(conversationID); err != nil {
+	conv, err := s.getConversationByIDCached(conversationID)
+	if err != nil {
 		return nil, fmt.Errorf("conversation not found: %w", err)
 	}
 
@@ -681,8 +737,21 @@ func (s *Service) SendMessage(senderID, conversationID uuid.UUID, messageType, c
 	if !isActiveMember(members, senderID) {
 		return nil, ErrNotMember
 	}
+	if err := conversation.EnsureDirectInteractionAllowed(s.relSvc, conv, members, senderID); err != nil {
+		return nil, err
+	}
 
-	if err := validateMessageContent(messageType, content, metadata); err != nil {
+	if clientMsgID != "" {
+		if existing, err := s.cachedIdempotentMessage(senderID, conversationID, messageType, clientMsgID); err != nil {
+			return nil, err
+		} else if existing != nil {
+			s.logger.Infow("Idempotent send: returning existing message",
+				"client_msg_id", clientMsgID, "message_id", existing.ID)
+			return existing, nil
+		}
+	}
+
+	if err := s.validateMessageContent(messageType, content, metadata); err != nil {
 		return nil, err
 	}
 
@@ -1149,13 +1218,19 @@ func (s *Service) UpdateMessage(userID uuid.UUID, conversationIDStr, messageIDSt
 		return nil, fmt.Errorf("content cannot be empty")
 	}
 
-	// Check membership
+	conv, err := s.getConversationByIDCached(conversationID)
+	if err != nil {
+		return nil, fmt.Errorf("conversation not found: %w", err)
+	}
 	members, err := s.getMembersCached(conversationID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to check conversation membership: %w", err)
 	}
 	if !isMember(members, userID) {
 		return nil, ErrNotMember
+	}
+	if err := conversation.EnsureDirectInteractionAllowed(s.relSvc, conv, members, userID); err != nil {
+		return nil, err
 	}
 
 	// Update message in ScyllaDB
@@ -1613,12 +1688,19 @@ func (s *Service) ToggleReaction(ctx context.Context, userID, conversationID uui
 		return nil, fmt.Errorf("invalid message ID: %w", err)
 	}
 
+	conv, err := s.getConversationByIDCached(conversationID)
+	if err != nil {
+		return nil, fmt.Errorf("conversation not found: %w", err)
+	}
 	members, err := s.getMembersCached(conversationID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get members: %w", err)
 	}
 	if !isActiveMember(members, userID) {
 		return nil, ErrNotMember
+	}
+	if err := conversation.EnsureDirectInteractionAllowed(s.relSvc, conv, members, userID); err != nil {
+		return nil, err
 	}
 
 	rateKey := fmt.Sprintf(constants.CacheKeyRateLimitReaction, userID.String())

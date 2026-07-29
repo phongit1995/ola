@@ -5,10 +5,7 @@ import pauseMediaIcon from '@/assets/icons/chat/ic_pause_media.png';
 import playMediaGrayIcon from '@/assets/icons/chat/ic_play_media_gray.png';
 import pauseMediaGrayIcon from '@/assets/icons/chat/ic_pause_media_gray.png';
 import { formatDuration, toast } from '@lib';
-import {
-  VoiceWaveformBars,
-  VOICE_WAVEFORM_WIDTH_CLASS,
-} from './VoiceWaveformBars';
+import { VoiceWaveformBars } from './VoiceWaveformBars';
 import { useUploadPreviewLease } from './useUploadPreviewLease';
 
 interface VoiceBubbleProps {
@@ -107,7 +104,7 @@ export function VoiceBubble({
         type="button"
         onClick={seek}
         aria-label={t('chat.voiceSeek')}
-        className={`relative flex h-7 ${VOICE_WAVEFORM_WIDTH_CLASS} shrink-0 items-center justify-center`}
+        className="relative flex h-7 min-w-0 flex-1 items-center justify-center"
       >
         <VoiceWaveformBars
           waveform={waveform}
@@ -117,7 +114,7 @@ export function VoiceBubble({
         />
       </button>
       <span
-        className={`relative shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${badgeClass}`}
+        className={`relative shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium tabular-nums ${badgeClass}`}
       >
         {playing || currentTime > 0
           ? formatDuration(Math.floor(currentTime))

@@ -13,6 +13,9 @@ const ForgotPasswordPage = lazy(() =>
 const TermsPage = lazy(() =>
   import('@/pages/terms/TermsPage').then((m) => ({ default: m.TermsPage }))
 );
+const DownloadAppPage = lazy(() =>
+  import('@/pages/download/DownloadAppPage').then((m) => ({ default: m.DownloadAppPage }))
+);
 const HomePage = lazy(() => import('@/pages/home/HomePage').then((m) => ({ default: m.HomePage })));
 
 export function AppRouter() {
@@ -53,6 +56,7 @@ export function AppRouter() {
             }
           />
           <Route path={ROUTES.terms} element={<TermsPage />} />
+          <Route path={ROUTES.downloadApp} element={<DownloadAppPage />} />
           <Route path="*" element={<Navigate to={ROUTES.home} replace />} />
         </Routes>
       </Suspense>

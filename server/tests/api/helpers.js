@@ -36,6 +36,46 @@ async function req(method, path, body, token) {
   return { status: res.status, body: json }
 }
 
+async function reqForm(method, path, form, token) {
+  const headers = {}
+  if (token) headers['Authorization'] = `Bearer ${token}`
+  const res = await fetch(`${BASE}${path}`, { method, headers, body: form })
+  const text = await res.text()
+  let json
+  try { json = JSON.parse(text) } catch { json = text }
+  return { status: res.status, body: json }
+}
+
+function silentWav(durationSeconds = 1, sampleRate = 8000) {
+  const samples = Math.max(1, Math.round(durationSeconds * sampleRate))
+  const dataSize = samples * 2
+  const wav = Buffer.alloc(44 + dataSize)
+  wav.write('RIFF', 0)
+  wav.writeUInt32LE(36 + dataSize, 4)
+  wav.write('WAVE', 8)
+  wav.write('fmt ', 12)
+  wav.writeUInt32LE(16, 16)
+  wav.writeUInt16LE(1, 20)
+  wav.writeUInt16LE(1, 22)
+  wav.writeUInt32LE(sampleRate, 24)
+  wav.writeUInt32LE(sampleRate * 2, 28)
+  wav.writeUInt16LE(2, 32)
+  wav.writeUInt16LE(16, 34)
+  wav.write('data', 36)
+  wav.writeUInt32LE(dataSize, 40)
+  return wav
+}
+
+function audioForm(conversationId, clientMsgId) {
+  const form = new FormData()
+  form.append('conversationId', conversationId)
+  form.append('duration', '1')
+  form.append('waveform', JSON.stringify([0.08, 0.2, 0.4, 0.2, 0.08]))
+  form.append('clientMsgId', clientMsgId)
+  form.append('file', new Blob([silentWav()], { type: 'audio/wav' }), 'voice.wav')
+  return form
+}
+
 // Unwrap ApiResponse.data (Go server wraps all responses in { success, data, ... })
 function data(r) {
   return r.body?.data ?? r.body
@@ -137,7 +177,8 @@ const is2xx = (status) => status >= 200 && status < 300
 
 module.exports = {
   BASE, WS_BASE,
-  ok, section, req, data, sleep, is2xx,
+  ok, section, req, reqForm, data, sleep, is2xx,
+  silentWav, audioForm,
   uniqueUsername, uniqueEmail, randomPassword, registerUser, createUserSet,
   envInt,
   summary, counts, reset,

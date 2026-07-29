@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  smoothVoiceLevel,
+  createVoiceLevelTracker,
   summarizeVoiceWaveform,
+  voiceDbFromAmplitude,
+  voiceLevelsFromDecibels,
+  VOICE_METERING_INTERVAL_MS,
   VOICE_MIN_LEVEL,
   VOICE_RECORDING_BAR_COUNT,
 } from '@ola/shared/lib';
@@ -91,9 +94,8 @@ export function useVoiceRecorder(
   const waveformRef = useRef<number[]>(
     Array.from({ length: VOICE_RECORDING_BAR_COUNT }, () => VOICE_MIN_LEVEL)
   );
-  const waveformSamplesRef = useRef<number[]>([]);
-  const peakLevelRef = useRef(0.04);
-  const smoothedLevelRef = useRef(VOICE_MIN_LEVEL);
+  const decibelSamplesRef = useRef<number[]>([]);
+  const levelTrackerRef = useRef(createVoiceLevelTracker());
 
   const recorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -140,9 +142,8 @@ export function useVoiceRecorder(
           void context.resume().catch(() => undefined);
         const analyser = context.createAnalyser();
         const source = context.createMediaStreamSource(stream);
-        analyser.fftSize = 256;
-        analyser.smoothingTimeConstant = 0.75;
-        const samples = new Uint8Array(analyser.fftSize);
+        analyser.fftSize = 4096;
+        const samples = new Float32Array(analyser.fftSize);
         source.connect(analyser);
         audioContextRef.current = context;
         audioSourceRef.current = source;
@@ -150,32 +151,14 @@ export function useVoiceRecorder(
         lastLevelUpdateRef.current = 0;
 
         const measure = (now: number) => {
-          analyser.getByteTimeDomainData(samples);
-          if (now - lastLevelUpdateRef.current >= 80) {
+          if (now - lastLevelUpdateRef.current >= VOICE_METERING_INTERVAL_MS) {
+            analyser.getFloatTimeDomainData(samples);
             let sum = 0;
-            for (const sample of samples) {
-              const normalized = (sample - 128) / 128;
-              sum += normalized * normalized;
-            }
+            for (const sample of samples) sum += sample * sample;
             const rms = Math.sqrt(sum / samples.length);
-            const signal = Math.max(0, rms - 0.012);
-            peakLevelRef.current = Math.max(
-              0.04,
-              signal,
-              peakLevelRef.current * 0.96
-            );
-            const normalized = Math.min(1, signal / peakLevelRef.current);
-            const targetLevel =
-              signal === 0
-                ? VOICE_MIN_LEVEL
-                : VOICE_MIN_LEVEL +
-                  Math.sqrt(normalized) * (1 - VOICE_MIN_LEVEL);
-            const nextLevel = smoothVoiceLevel(
-              smoothedLevelRef.current,
-              targetLevel
-            );
-            smoothedLevelRef.current = nextLevel;
-            waveformSamplesRef.current.push(nextLevel);
+            const decibels = voiceDbFromAmplitude(rms);
+            decibelSamplesRef.current.push(decibels);
+            const nextLevel = levelTrackerRef.current(decibels);
             const nextWaveform = [...waveformRef.current.slice(1), nextLevel];
             waveformRef.current = nextWaveform;
             setWaveform(nextWaveform);
@@ -289,7 +272,9 @@ export function useVoiceRecorder(
           ? {
               blob,
               duration,
-              waveform: summarizeVoiceWaveform(waveformSamplesRef.current),
+              waveform: summarizeVoiceWaveform(
+                voiceLevelsFromDecibels(decibelSamplesRef.current)
+              ),
             }
           : null;
         cleanup();
@@ -312,9 +297,10 @@ export function useVoiceRecorder(
         () => VOICE_MIN_LEVEL
       );
       waveformRef.current = emptyWaveform;
-      waveformSamplesRef.current = [];
-      peakLevelRef.current = 0.04;
-      smoothedLevelRef.current = VOICE_MIN_LEVEL;
+      decibelSamplesRef.current = [];
+      levelTrackerRef.current = createVoiceLevelTracker(
+        VOICE_METERING_INTERVAL_MS
+      );
       setWaveform(emptyWaveform);
       setIsRecording(true);
       setElapsedMs(0);

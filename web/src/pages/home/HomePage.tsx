@@ -1,7 +1,8 @@
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, lazy, useEffect, useState } from 'react';
 import { SocketService } from '@services';
 import { BottomTabBar, type TabKey } from '@components/BottomTabBar';
 import { KenBalanceBadge } from '@components';
+import { useDevicePlatform } from '@hooks';
 import { useAppNotificationStore } from '@ola/shared/stores/appNotificationStore';
 import { totalUnreadOf } from '@ola/shared/stores/chat/chatHelpers';
 import { useAuthStore } from '@/store/authStore';
@@ -15,11 +16,26 @@ import { RoomChatOverlay } from '../room/RoomChatOverlay';
 import { AppOverlay } from '../apps/AppOverlay';
 import { ClanOverlayHost } from '../clan/ClanOverlayHost';
 import { useClanOverlayStore } from '@/store/clanOverlayStore';
+import { useDownloadGuideStore } from '@/store/downloadGuideStore';
+import { DownloadFab } from '../download/DownloadFab';
+import {
+  DOWNLOAD_FAB_DISMISSED_KEY,
+  DOWNLOAD_FAB_REAPPEAR_CHANCE,
+} from '../download/constants';
 import { ACTIVE_TAB_KEY, PANELS } from './constants';
+
+const DownloadGuideOverlay = lazy(() =>
+  import('../download/DownloadGuideOverlay').then((m) => ({ default: m.DownloadGuideOverlay }))
+);
 
 function readStoredTab(): TabKey {
   const stored = sessionStorage.getItem(ACTIVE_TAB_KEY);
   return stored != null && stored in PANELS ? (stored as TabKey) : 'chat';
+}
+
+function rollDownloadFabVisible(): boolean {
+  if (localStorage.getItem(DOWNLOAD_FAB_DISMISSED_KEY) !== '1') return true;
+  return Math.random() < DOWNLOAD_FAB_REAPPEAR_CHANCE;
 }
 
 export function HomePage() {
@@ -34,10 +50,21 @@ export function HomePage() {
   const appActive = useAppOverlayStore((state) => state.stack.length > 0);
   const clanActive = useClanOverlayStore((state) => state.stack.length > 0);
   const hideKenBadge = gameActive || appActive || clanActive;
+  const { isStandalone } = useDevicePlatform();
+  const guideOpen = useDownloadGuideStore((state) => state.visible);
+  const openGuide = useDownloadGuideStore((state) => state.open);
+  const closeGuide = useDownloadGuideStore((state) => state.close);
+  const [fabVisible, setFabVisible] = useState(rollDownloadFabVisible);
+  const downloadFabMounted = fabVisible && !isStandalone;
 
   function changeTab(next: TabKey) {
     sessionStorage.setItem(ACTIVE_TAB_KEY, next);
     setTab(next);
+  }
+
+  function dismissFab() {
+    localStorage.setItem(DOWNLOAD_FAB_DISMISSED_KEY, '1');
+    setFabVisible(false);
   }
 
   useEffect(() => {
@@ -58,6 +85,13 @@ export function HomePage() {
           <ActivePanel />
         </Suspense>
         <RoomChatOverlay visible={tab === 'room'} />
+        {downloadFabMounted && (
+          <DownloadFab
+            hidden={hideKenBadge || guideOpen}
+            onOpen={openGuide}
+            onDismiss={dismissFab}
+          />
+        )}
       </div>
 
       <BottomTabBar
@@ -71,6 +105,12 @@ export function HomePage() {
       <GameOverlay />
       <AppOverlay />
       <ClanOverlayHost />
+
+      {guideOpen && (
+        <Suspense fallback={null}>
+          <DownloadGuideOverlay onClose={closeGuide} />
+        </Suspense>
+      )}
     </div>
   );
 }

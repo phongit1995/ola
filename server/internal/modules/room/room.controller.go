@@ -1,21 +1,39 @@
 package room
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
+	"ola-chat-server/internal/constants"
+	"ola-chat-server/internal/media"
 	"ola-chat-server/internal/utils"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
 
-func roomImageHTTPStatus(err error) int {
+const maxRoomClientMessageIDBytes = 64
+
+func roomClientMessageID(c *gin.Context) (string, error) {
+	clientMsgID := c.PostForm("clientMsgId")
+	if len(clientMsgID) > maxRoomClientMessageIDBytes {
+		return "", utils.NewHTTPError(http.StatusBadRequest, "invalid client message ID")
+	}
+	return clientMsgID, nil
+}
+
+func roomMediaHTTPStatus(err error) int {
 	switch {
 	case errors.Is(err, ErrRoomFileTooLarge):
 		return http.StatusRequestEntityTooLarge
 	case errors.Is(err, ErrRoomUploadRateLimit):
 		return http.StatusTooManyRequests
-	case errors.Is(err, ErrRoomUnsupportedImage), errors.Is(err, ErrRoomDecodeImage):
+	case errors.Is(err, ErrRoomMessageInProgress):
+		return http.StatusConflict
+	case errors.Is(err, ErrRoomUnsupportedImage), errors.Is(err, ErrRoomDecodeImage),
+		errors.Is(err, media.ErrUnsupportedAudio), errors.Is(err, media.ErrInvalidAudio),
+		errors.Is(err, ErrRoomClientMessageUsed):
 		return http.StatusBadRequest
 	}
 	return utils.HTTPStatusFromError(err)
@@ -175,15 +193,88 @@ func (ctrl *Controller) SendRoomImageMessage(c *gin.Context) (interface{}, error
 	if err != nil {
 		return nil, utils.NewHTTPError(http.StatusBadRequest, "missing file")
 	}
-	clientMsgID := c.PostForm("clientMsgId")
+	clientMsgID, err := roomClientMessageID(c)
+	if err != nil {
+		return nil, err
+	}
 
 	resp, err := ctrl.service.SendImageMessage(c.Request.Context(), userID, id, fileHeader, clientMsgID)
 	if err != nil {
 		ctrl.logger.Errorw("Failed to send room image message", "error", err)
-		status := roomImageHTTPStatus(err)
+		status := roomMediaHTTPStatus(err)
 		msg := err.Error()
 		if status == http.StatusInternalServerError {
 			msg = "failed to send image message"
+		}
+		return nil, utils.NewHTTPError(status, msg)
+	}
+	return resp, nil
+}
+
+// SendRoomAudioMessage godoc
+// @Summary      Send a voice message to a room (must have joined via socket)
+// @Description  Upload a voice recording and create a message of type=audio in one call (≤60s)
+// @Tags         room
+// @Accept       multipart/form-data
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "Room ID"
+// @Param        file formData file true "Audio file"
+// @Param        duration formData number true "Duration in seconds"
+// @Param        waveform formData string false "JSON array of normalized levels"
+// @Param        replyToId formData string false "Message ID being replied to"
+// @Param        clientMsgId formData string false "Idempotency key"
+// @Success      201  {object}  utils.BaseResponse[RoomMessageResponse]
+// @Failure      400  {object}  utils.APIError
+// @Failure      401  {object}  utils.APIError
+// @Failure      403  {object}  utils.APIError
+// @Failure      413  {object}  utils.APIError
+// @Failure      429  {object}  utils.APIError
+// @Router       /rooms/{id}/messages/audio [post]
+func (ctrl *Controller) SendRoomAudioMessage(c *gin.Context) (interface{}, error) {
+	userID, err := utils.RequireUserID(c)
+	if err != nil {
+		return nil, err
+	}
+	id, err := utils.ParseUUIDParam(c, "id", "invalid room id")
+	if err != nil {
+		return nil, err
+	}
+	fileHeader, err := c.FormFile("file")
+	if err != nil {
+		return nil, utils.NewHTTPError(http.StatusBadRequest, "missing file")
+	}
+
+	duration, err := strconv.ParseFloat(c.PostForm("duration"), 64)
+	if err != nil {
+		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid duration")
+	}
+	if err := media.ValidateDuration(duration); err != nil {
+		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid duration")
+	}
+
+	var waveform []float64
+	if raw := c.PostForm("waveform"); raw != "" {
+		if err := json.Unmarshal([]byte(raw), &waveform); err != nil {
+			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid waveform")
+		}
+		if err := media.ValidateWaveform(waveform, constants.MaxAudioWaveformSamples); err != nil {
+			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid waveform")
+		}
+	}
+
+	clientMsgID, err := roomClientMessageID(c)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := ctrl.service.SendAudioMessage(c.Request.Context(), userID, id, fileHeader, duration, waveform, c.PostForm("replyToId"), clientMsgID)
+	if err != nil {
+		ctrl.logger.Errorw("Failed to send room audio message", "error", err)
+		status := roomMediaHTTPStatus(err)
+		msg := err.Error()
+		if status == http.StatusInternalServerError {
+			msg = "failed to send audio message"
 		}
 		return nil, utils.NewHTTPError(status, msg)
 	}

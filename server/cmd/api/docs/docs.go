@@ -8753,7 +8753,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Upload an image and create a message of type=image in one call (≤2MB jpeg/png/gif/webp)",
+                "description": "Upload an image and create a message of type=image in one call (≤3MB jpeg/png/gif/webp)",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -10324,7 +10324,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Upload an image and create a message of type=image in one call (≤2MB jpeg/png/gif/webp)",
+                "description": "Upload an image and create a message of type=image in one call (≤3MB jpeg/png/gif/webp)",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -23512,6 +23512,10 @@ const docTemplate = `{
         "ola-chat-server_internal_utils.APIError": {
             "type": "object",
             "properties": {
+                "code": {
+                    "type": "string",
+                    "example": "MESSAGE_BLOCKED"
+                },
                 "error": {
                     "type": "string",
                     "example": "validation error"

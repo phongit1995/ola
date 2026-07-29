@@ -5,12 +5,14 @@ import type { ApiErrorBody } from '../types';
 interface ApiErrorMeta {
   traceId?: string;
   path?: string;
+  code?: string;
 }
 
 export class ApiError extends Error {
   readonly status: number;
   readonly traceId?: string;
   readonly path?: string;
+  readonly code?: string;
 
   constructor(status: number, message: string, meta?: ApiErrorMeta) {
     super(message);
@@ -18,6 +20,7 @@ export class ApiError extends Error {
     this.status = status;
     this.traceId = meta?.traceId;
     this.path = meta?.path;
+    this.code = meta?.code;
   }
 }
 
@@ -33,6 +36,7 @@ export function toApiError(error: unknown): ApiError {
     return new ApiError(status, message, {
       traceId: body?.traceId,
       path: body?.path,
+      code: body?.code,
     });
   }
 

@@ -6,6 +6,7 @@ export interface IApiResponse<T> {
   path: string;
   data: T;
   error?: string;
+  code?: string;
 }
 
 export interface ApiErrorBody {
@@ -15,4 +16,5 @@ export interface ApiErrorBody {
   timestamp?: string;
   path?: string;
   error: string;
+  code?: string;
 }

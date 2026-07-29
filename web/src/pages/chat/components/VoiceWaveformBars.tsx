@@ -6,7 +6,6 @@ import {
 } from '@ola/shared/lib';
 
 export const VOICE_WAVEFORM_BAR_COUNT = VOICE_MESSAGE_BAR_COUNT;
-export const VOICE_WAVEFORM_WIDTH_CLASS = 'w-[86px]';
 
 interface VoiceWaveformBarsProps {
   waveform?: number[];
@@ -33,11 +32,7 @@ export function VoiceWaveformBars({
   return (
     <span
       aria-hidden="true"
-      className={`flex h-7 shrink-0 items-center overflow-hidden ${
-        fluid
-          ? 'w-full justify-between'
-          : `${VOICE_WAVEFORM_WIDTH_CLASS} justify-center gap-[2px]`
-      }`}
+      className="flex h-7 w-full items-center justify-between overflow-hidden"
     >
       {bars.map((level, index) => {
         const played = (index + 1) / bars.length <= progress;

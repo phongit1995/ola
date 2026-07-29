@@ -294,6 +294,7 @@
     "blockedByMe": "You blocked this person. Unblock to send messages.",
     "blockedByThem": "You can't message this person.",
     "sendErrFriendsOnly": "This user only accepts messages from friends.",
+    "sendErrBlocked": "You can't interact while either person has blocked the other.",
     "attachPickImage": "Choose a photo",
     "actionEdit": "Edit message",
     "actionDelete": "Delete message",
@@ -1106,6 +1107,97 @@
         ]
       }
     ]
+  },
+  "download": {
+    "back": "‹ Back",
+    "title": "Get the Ola app",
+    "subtitle": "Install Ola on your phone for instant message alerts, voice calls and smoother games.",
+    "settingsRow": "Get the Ola app",
+    "fab": "Get Ola app",
+    "hideFab": "Hide the download button",
+    "loginLink": "Get the Ola app for your phone",
+    "yourDevice": "Your device",
+    "stepsTitle": "Installation steps",
+    "copyLink": "Copy this page link",
+    "copied": "Download page link copied",
+    "inAppTitle": "Please open in Chrome or Safari",
+    "inAppMessage": "Browsers inside Facebook, Messenger or Zalo usually block file downloads. Copy the link and paste it into Chrome (Android) or Safari (iPhone) to get the app.",
+    "openOnPhone": "Open this page on your phone",
+    "openOnPhoneHint": "You are on a computer. Type the address below into your phone browser to download the app.",
+    "android": {
+      "name": "Android",
+      "channel": "Install from an APK file",
+      "action": "Download APK file",
+      "size": "Size {{size}}",
+      "steps": [
+        "Tap “Download APK file” (about 56 MB, Wi-Fi recommended). The file is hosted on Ola Google Drive, so it may take a few seconds to start.",
+        "Chrome warns “This type of file can harm your device” — choose “Download anyway”.",
+        "Open the downloaded file. If your phone says installing unknown apps is not allowed, tap “Settings” and allow installs from Chrome or your file manager.",
+        "Play Protect may show “Unknown app” — choose “Install anyway”.",
+        "Wait for the install to finish, then open Ola and sign in."
+      ],
+      "note": "These warnings are normal for APK files installed outside Google Play. The build on this page is published by us.",
+      "folderAction": "Open the Google Drive folder",
+      "linkLabel": "APK download link",
+      "linkHint": "Paste this link into Chrome if the button above does not work.",
+      "folderLinkLabel": "Google Drive folder link"
+    },
+    "ios": {
+      "name": "iPhone / iPad",
+      "channel": "Install via TestFlight",
+      "action": "Open TestFlight invite",
+      "installTestflight": "Install TestFlight from the App Store",
+      "steps": [
+        "Install Apple TestFlight from the App Store (free). TestFlight is Apple own app for trying builds before they reach the App Store; if it asks you to sign in, use your iCloud account.",
+        "Open TestFlight for the first time and tap “Continue” on the “Welcome to TestFlight” screen.",
+        "Come back to this page, tap “Open TestFlight invite”, then tap “Install” on the Ola - Chat page inside TestFlight.",
+        "On the “From the developer” screen, tap “Next”.",
+        "On the “Share feedback” screen, tap “Start Testing”.",
+        "Ola opens up — sign in with your account and you are done."
+      ],
+      "note": "Each TestFlight build stays valid for 90 days. When it expires, open TestFlight and update to the latest build.",
+      "codeLabel": "TestFlight invite code",
+      "codeHint": "Open TestFlight → Redeem → paste this code if the invite link will not open.",
+      "linkLabel": "TestFlight invite link"
+    },
+    "faqTitle": "Troubleshooting",
+    "faq": [
+      {
+        "question": "Nothing happens when I tap download?",
+        "answer": "You are viewing this page in the Facebook or Zalo in-app browser, which blocks downloads. Copy the page link and open it in Chrome or Safari."
+      },
+      {
+        "question": "My phone refuses to install apps from unknown sources?",
+        "answer": "Go to Settings → Apps → pick the browser you downloaded with → turn on “Allow app installs from this source”, then open the APK again."
+      },
+      {
+        "question": "Play Protect says the app may be harmful?",
+        "answer": "That is the default warning for any APK installed outside Google Play, so choose “Install anyway”. Just make sure you downloaded the file from the link shown on this page."
+      },
+      {
+        "question": "The APK link fails or will not download?",
+        "answer": "The APK is hosted on Google Drive, which can temporarily block downloads when too many people fetch it at once. Try again in a few minutes, or tap “Open the Google Drive folder” and pick the newest APK file yourself."
+      },
+      {
+        "question": "TestFlight says the invite is full or expired?",
+        "answer": "Tester slots are limited. Try again later, or use the web version while you wait."
+      },
+      {
+        "question": "How do I update the app?",
+        "answer": "Android: download the new APK from this page and install it over the old one — your data stays. iPhone: open TestFlight and tap Update."
+      },
+      {
+        "question": "Will installing the app lose my account data?",
+        "answer": "No. Messages and account details are stored on Ola servers, so everything is there on any device you sign in from."
+      }
+    ],
+    "safetyTitle": "Only download Ola from the official site",
+    "safety": "Ola will never ask you to download an installer from a stranger message, a Zalo group or Facebook. Files from other sources can be repackaged with malware to take over your account.",
+    "useWeb": "Keep using the web version",
+    "stepLabel": "Step {{index}}",
+    "screenshotsTitle": "Step-by-step screenshots",
+    "closePreview": "Close image",
+    "copiedToClipboard": "Copied"
   },
   "notify": {
     "title": "Notifications",

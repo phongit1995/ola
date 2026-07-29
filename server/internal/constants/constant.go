@@ -67,6 +67,7 @@ const (
 	CacheKeyMessage             = "MESSAGE:%s:DETAIL"
 	CacheKeyMessageList         = "CONVERSATION:%s:MESSAGES"
 	CacheKeyRelationship        = "RELATIONSHIP:%s:DETAIL"
+	CacheKeyRelationshipBlock   = "RELATIONSHIP:BLOCK:%s:%s"
 	CacheKeyRelationshipList    = "USER:%s:RELATIONSHIPS"
 	CacheKeyFriendList          = "USER:%s:FRIENDS"
 	CacheKeyUnreadCount         = "CONVERSATION:%s:USER:%s:UNREAD"
@@ -84,6 +85,8 @@ const (
 	CacheKeyRoomUserConn        = "ROOM:%s:USER:%s:CONN"
 	CacheKeyRoomMsgIndex        = "ROOM:%s:MSG_INDEX"
 	CacheKeyRoomMsgData         = "ROOM:%s:MSG"
+	CacheKeyRoomClientMessage   = "ROOM:%s:USER:%s:CLIENT_MSG:%s"
+	CacheKeyRoomMediaUploadLock = "LOCK:ROOM_MEDIA_UPLOAD:%s:%s:%s"
 	CacheKeyRoomJoinTicket      = "ROOM:JOIN_TICKET:%s"
 	CacheKeyVipPackages         = "VIP:PACKAGES:ACTIVE"
 	CacheKeyEggPacks            = "EGG:PACKS:ENABLED"
@@ -184,13 +187,15 @@ const (
 	CacheTTLHiddenConversations = 1800
 	CacheTTLMessage             = 3600
 	CacheTTLMessageList         = 300
-	CacheTTLRelationship        = 3600
+	CacheTTLRelationship        = 86400
+	CacheTTLRelationshipAllowed = 300
 	CacheTTLFriendList          = 60
 	CacheTTLUnreadCount         = 2592000
 	CacheTTLRateLimit           = 60
 	CacheTTLOTP                 = 300
 	CacheTTLPasswordResetToken  = 1800
 	CacheTTLClientMsgIDDedup    = 300
+	CacheTTLMediaUploadLock     = 150
 	CacheTTLLastRead            = 31536000
 	CacheTTLClearedMarker       = 31536000
 	CacheTTLVipPackages         = 3600
@@ -263,6 +268,8 @@ const (
 	MaxAdminImageUploadSize      = 5 * 1024 * 1024
 	MaxAudioUploadSize           = 10 * 1024 * 1024
 	MaxAudioDurationSeconds      = 300
+	MaxRoomAudioDurationSeconds  = 60
+	MaxAudioWaveformSamples      = 64
 	UploadFolderMessages         = "messages"
 	UploadFolderRooms            = "rooms"
 	UploadFolderPosts            = "posts"

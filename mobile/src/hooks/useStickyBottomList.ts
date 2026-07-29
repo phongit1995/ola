@@ -38,6 +38,13 @@ export function useStickyBottomList<T>() {
     []
   );
 
+  const isUserInteracting = useCallback(
+    () => draggingRef.current || momentumRef.current,
+    []
+  );
+
+  const isStuckToBottom = useCallback(() => stickRef.current, []);
+
   const onListLayout = useCallback(
     (event: LayoutChangeEvent) => {
       viewportHeightRef.current = event.nativeEvent.layout.height;
@@ -65,10 +72,10 @@ export function useStickyBottomList<T>() {
     if (layoutMeasurement.height <= 0) return;
     contentHeightRef.current = contentSize.height;
     viewportHeightRef.current = layoutMeasurement.height;
-    if (settlingRef.current) return;
+    if (settlingRef.current || !isUserInteracting()) return;
     const distanceFromBottom = contentSize.height - contentOffset.y - layoutMeasurement.height;
     stickRef.current = distanceFromBottom < STICK_THRESHOLD;
-  }, []);
+  }, [isUserInteracting]);
 
   const onScrollBeginDrag = useCallback(() => {
     draggingRef.current = true;
@@ -131,5 +138,7 @@ export function useStickyBottomList<T>() {
     pinOnNextContent,
     requestScrollToBottom,
     unstick,
+    isUserInteracting,
+    isStuckToBottom,
   };
 }

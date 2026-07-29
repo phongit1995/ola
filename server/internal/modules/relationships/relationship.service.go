@@ -124,6 +124,55 @@ func NewService(repo *Repository, presence *websocket.PresenceService, cache *se
 	}
 }
 
+func relationshipBlockCacheKey(userID1, userID2 uuid.UUID) string {
+	if bytes.Compare(userID1[:], userID2[:]) > 0 {
+		userID1, userID2 = userID2, userID1
+	}
+	return fmt.Sprintf(constants.CacheKeyRelationshipBlock, userID1.String(), userID2.String())
+}
+
+func relationshipBlockCacheTTL(blocked bool) time.Duration {
+	if blocked {
+		return constants.CacheTTLRelationship * time.Second
+	}
+	return constants.CacheTTLRelationshipAllowed * time.Second
+}
+
+func (s *Service) IsBlockedEither(userID1, userID2 uuid.UUID) (bool, error) {
+	key := relationshipBlockCacheKey(userID1, userID2)
+	if s.cache != nil {
+		var blocked bool
+		if err := s.cache.Get(key, &blocked); err == nil {
+			return blocked, nil
+		}
+	}
+
+	blocked, err := s.repo.IsBlockedEither(userID1, userID2)
+	if err != nil {
+		return false, err
+	}
+
+	if s.cache != nil {
+		if _, err := s.cache.SetNX(key, blocked, relationshipBlockCacheTTL(blocked)); err != nil {
+			s.logger.Warnw("Failed to cache blocked relationship", "user_id_1", userID1, "user_id_2", userID2, "error", err.Error())
+		}
+	}
+	return blocked, nil
+}
+
+func (s *Service) setBlockedEitherCache(userID1, userID2 uuid.UUID, blocked bool) {
+	if s.cache == nil {
+		return
+	}
+	key := relationshipBlockCacheKey(userID1, userID2)
+	if err := s.cache.Set(key, blocked, relationshipBlockCacheTTL(blocked)); err != nil {
+		s.logger.Warnw("Failed to update blocked relationship cache", "user_id_1", userID1, "user_id_2", userID2, "blocked", blocked, "error", err.Error())
+		if deleteErr := s.cache.Delete(key); deleteErr != nil {
+			s.logger.Warnw("Failed to invalidate blocked relationship cache", "user_id_1", userID1, "user_id_2", userID2, "error", deleteErr.Error())
+		}
+	}
+}
+
 func (s *Service) SendFriendRequest(requesterID, addresseeID uuid.UUID) (*RelationshipResponse, error) {
 	if requesterID == addresseeID {
 		return nil, errors.New("cannot send friend request to yourself")
@@ -477,6 +526,7 @@ func (s *Service) BlockUser(blockerID, blockedID uuid.UUID) (*RelationshipRespon
 	if err != nil {
 		return nil, err
 	}
+	s.setBlockedEitherCache(blockerID, blockedID, true)
 	s.invalidateFriendList(blockerID, blockedID)
 	return result, nil
 }
@@ -521,6 +571,7 @@ func (s *Service) UnblockUser(relationshipID, userID uuid.UUID) error {
 		return err
 	}
 
+	s.setBlockedEitherCache(blockerID, blockedID, false)
 	s.invalidateFriendList(blockerID, blockedID)
 
 	s.logger.Infow("User unblocked successfully",
@@ -642,14 +693,14 @@ func (s *Service) getFriendBase(userID uuid.UUID) ([]FriendResponse, error) {
 
 func (s *Service) buildFriendBase(u *models.User, actionedAt *time.Time) FriendResponse {
 	friend := FriendResponse{
-		ID:         u.ID.String(),
-		Username:   u.Username,
-		Email:      u.Email,
-		Avatar:     u.Avatar,
-		FullName:   u.FullName,
-		Bio:        u.Bio,
-		BioImage:   u.BioImage,
-		VipUsed:    u.VipUsed,
+		ID:       u.ID.String(),
+		Username: u.Username,
+		Email:    u.Email,
+		Avatar:   u.Avatar,
+		FullName: u.FullName,
+		Bio:      u.Bio,
+		BioImage: u.BioImage,
+		VipUsed:  u.VipUsed,
 	}
 	if u.DateOfBirth != nil {
 		friend.DateOfBirth = u.DateOfBirth.Format("2006-01-02")

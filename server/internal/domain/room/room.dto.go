@@ -29,12 +29,17 @@ type RoomMessageData struct {
 	SenderGender string             `json:"senderGender,omitempty"`
 	SenderVip    *string            `json:"senderVip,omitempty"`
 	SenderVipEnd *string            `json:"senderVipEnd,omitempty"`
-	Type         string             `json:"type,omitempty"`
-	Content      string             `json:"content"`
-	ImageURL     string             `json:"imageUrl,omitempty"`
-	CreatedAt    string             `json:"createdAt"`
-	ReplyTo      *RoomReplySnapshot `json:"replyTo,omitempty"`
-	ClientMsgID  string             `json:"clientMsgId,omitempty"`
+	Type          string             `json:"type,omitempty"`
+	Content       string             `json:"content"`
+	ImageURL      string             `json:"imageUrl,omitempty"`
+	AudioURL      string             `json:"audioUrl,omitempty"`
+	AudioDuration float64            `json:"audioDuration,omitempty"`
+	AudioWaveform []float64          `json:"audioWaveform,omitempty"`
+	AudioMimeType string             `json:"audioMimeType,omitempty"`
+	AudioSize     int64              `json:"audioSize,omitempty"`
+	CreatedAt     string             `json:"createdAt"`
+	ReplyTo       *RoomReplySnapshot `json:"replyTo,omitempty"`
+	ClientMsgID   string             `json:"clientMsgId,omitempty"`
 }
 
 type RoomMessageCreatedEvent struct {

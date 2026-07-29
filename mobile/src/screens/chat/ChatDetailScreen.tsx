@@ -163,6 +163,7 @@ export function ChatDetailScreen({ navigation, route }: Props) {
     onMomentumScrollEnd,
     pinOnNextContent,
     unstick,
+    isUserInteracting,
   } = useStickyBottomList<Message>();
   const composerRef = useRef<ChatInputBarHandle>(null);
   const voiceRecorderRef = useRef<VoiceRecorderControlHandle>(null);
@@ -225,7 +226,9 @@ export function ChatDetailScreen({ navigation, route }: Props) {
 
   function handleScroll(event: NativeSyntheticEvent<NativeScrollEvent>) {
     onScroll(event);
-    if (event.nativeEvent.contentOffset.y < 80 && hasMore) void loadMoreMessages();
+    if (isUserInteracting() && event.nativeEvent.contentOffset.y < 80 && hasMore) {
+      void loadMoreMessages();
+    }
   }
 
   async function send(text: string) {
@@ -660,6 +663,19 @@ export function ChatDetailScreen({ navigation, route }: Props) {
               .then(sent => {
                 if (sent) {
                   deleteTemporaryVoiceFileAfterUiUpdate(audio.file.uri);
+                  return;
+                }
+                const retryable = useChatStore
+                  .getState()
+                  .messages.some(
+                    message =>
+                      message.type === 'audio' &&
+                      message.status === 'failed' &&
+                      parseMessageMetadata(message.metadata).url ===
+                        audio.file.uri,
+                  );
+                if (!retryable) {
+                  void deleteTemporaryVoiceFile(audio.file.uri);
                 }
               })
               .catch(() => {

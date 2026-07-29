@@ -2,11 +2,11 @@ package message
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
 	"strconv"
 
-	"ola-chat-server/internal/modules/conversation"
+	"ola-chat-server/internal/constants"
+	"ola-chat-server/internal/media"
 	"ola-chat-server/internal/utils"
 
 	"github.com/gin-gonic/gin"
@@ -14,7 +14,25 @@ import (
 	"go.uber.org/zap"
 )
 
-const maxAudioWaveformSamples = 64
+const (
+	maxAudioWaveformSamples = constants.MaxAudioWaveformSamples
+	maxClientMessageIDBytes = 64
+)
+
+func multipartClientMessageID(c *gin.Context) (string, error) {
+	clientMsgID := c.PostForm("clientMsgId")
+	if len(clientMsgID) > maxClientMessageIDBytes {
+		return "", utils.NewHTTPError(http.StatusBadRequest, "invalid client message ID")
+	}
+	return clientMsgID, nil
+}
+
+func validateJSONMessageType(messageType string) error {
+	if messageType == constants.MessageTypeImage || messageType == constants.MessageTypeAudio {
+		return ErrMediaRequiresUpload
+	}
+	return nil
+}
 
 type Controller struct {
 	service *Service
@@ -26,6 +44,19 @@ func NewController(service *Service, logger *zap.SugaredLogger) *Controller {
 		service: service,
 		logger:  logger.Named("[message_controller]"),
 	}
+}
+
+func (ctrl *Controller) messageHTTPError(err error, fallback, logMessage string) *utils.HTTPError {
+	status := httpStatusForError(err)
+	message := err.Error()
+	if status == http.StatusInternalServerError {
+		message = fallback
+		ctrl.logger.Errorw(logMessage, "error", err)
+	}
+	if code := errorCodeForError(err); code != "" {
+		return utils.NewHTTPErrorWithCode(status, message, code)
+	}
+	return utils.NewHTTPError(status, message)
 }
 
 // SendMessage godoc
@@ -52,6 +83,9 @@ func (ctrl *Controller) SendMessage(c *gin.Context) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+	if err := validateJSONMessageType(req.Type); err != nil {
+		return nil, ctrl.messageHTTPError(err, "invalid message type", "Invalid JSON message type")
+	}
 
 	conversationID, err := uuid.Parse(req.ConversationID)
 	if err != nil {
@@ -69,8 +103,7 @@ func (ctrl *Controller) SendMessage(c *gin.Context) (interface{}, error) {
 
 	message, err := ctrl.service.SendMessage(userID, conversationID, req.Type, req.Content, req.Metadata, replyToID, req.ClientMsgID)
 	if err != nil {
-		ctrl.logger.Errorw("Failed to send message", "error", err)
-		return nil, utils.NewHTTPError(httpStatusForError(err), err.Error())
+		return nil, ctrl.messageHTTPError(err, "failed to send message", "Failed to send message")
 	}
 
 	return message, nil
@@ -99,6 +132,9 @@ func (ctrl *Controller) SendDirectMessage(c *gin.Context) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+	if err := validateJSONMessageType(req.Type); err != nil {
+		return nil, ctrl.messageHTTPError(err, "invalid message type", "Invalid direct JSON message type")
+	}
 
 	recipientID, err := uuid.Parse(req.RecipientID)
 	if err != nil {
@@ -111,11 +147,7 @@ func (ctrl *Controller) SendDirectMessage(c *gin.Context) (interface{}, error) {
 
 	message, err := ctrl.service.SendDirectMessage(userID, recipientID, req.Type, req.Content, req.Metadata, req.ClientMsgID)
 	if err != nil {
-		if errors.Is(err, conversation.ErrNotAllowedToMessage) {
-			return nil, utils.NewHTTPError(http.StatusForbidden, err.Error())
-		}
-		ctrl.logger.Errorw("Failed to send direct message", "error", err)
-		return nil, utils.NewHTTPError(http.StatusInternalServerError, "failed to send message")
+		return nil, ctrl.messageHTTPError(err, "failed to send message", "Failed to send direct message")
 	}
 
 	return message, nil
@@ -195,8 +227,7 @@ func (ctrl *Controller) UpdateMessage(c *gin.Context) (interface{}, error) {
 
 	message, err := ctrl.service.UpdateMessage(userID, conversationID, messageID, req.Content)
 	if err != nil {
-		ctrl.logger.Errorw("Failed to update message", "error", err)
-		return nil, utils.NewHTTPError(http.StatusInternalServerError, "failed to update message")
+		return nil, ctrl.messageHTTPError(err, "failed to update message", "Failed to update message")
 	}
 
 	return message, nil
@@ -235,17 +266,14 @@ func (ctrl *Controller) SendImageMessage(c *gin.Context) (interface{}, error) {
 		return nil, utils.NewHTTPError(http.StatusBadRequest, "missing file")
 	}
 
-	clientMsgID := c.PostForm("clientMsgId")
+	clientMsgID, err := multipartClientMessageID(c)
+	if err != nil {
+		return nil, err
+	}
 
 	result, err := ctrl.service.SendImageMessage(c.Request.Context(), userID, conversationID, fileHeader, clientMsgID)
 	if err != nil {
-		ctrl.logger.Errorw("Failed to send image message", "error", err)
-		status := httpStatusForError(err)
-		msg := err.Error()
-		if status == http.StatusInternalServerError {
-			msg = "failed to send image message"
-		}
-		return nil, utils.NewHTTPError(status, msg)
+		return nil, ctrl.messageHTTPError(err, "failed to send image message", "Failed to send image message")
 	}
 
 	return result, nil
@@ -289,7 +317,10 @@ func (ctrl *Controller) SendAudioMessage(c *gin.Context) (interface{}, error) {
 
 	durationStr := c.PostForm("duration")
 	duration, err := strconv.ParseFloat(durationStr, 64)
-	if err != nil || duration <= 0 {
+	if err != nil {
+		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid duration")
+	}
+	if err := media.ValidateDuration(duration); err != nil {
 		return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid duration")
 	}
 
@@ -298,7 +329,7 @@ func (ctrl *Controller) SendAudioMessage(c *gin.Context) (interface{}, error) {
 		if err := json.Unmarshal([]byte(raw), &waveform); err != nil {
 			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid waveform")
 		}
-		if len(waveform) > maxAudioWaveformSamples {
+		if err := media.ValidateWaveform(waveform, maxAudioWaveformSamples); err != nil {
 			return nil, utils.NewHTTPError(http.StatusBadRequest, "invalid waveform")
 		}
 	}
@@ -312,17 +343,14 @@ func (ctrl *Controller) SendAudioMessage(c *gin.Context) (interface{}, error) {
 		replyToID = &parsed
 	}
 
-	clientMsgID := c.PostForm("clientMsgId")
+	clientMsgID, err := multipartClientMessageID(c)
+	if err != nil {
+		return nil, err
+	}
 
 	result, err := ctrl.service.SendAudioMessage(c.Request.Context(), userID, conversationID, fileHeader, duration, waveform, replyToID, clientMsgID)
 	if err != nil {
-		ctrl.logger.Errorw("Failed to send audio message", "error", err)
-		status := httpStatusForError(err)
-		msg := err.Error()
-		if status == http.StatusInternalServerError {
-			msg = "failed to send audio message"
-		}
-		return nil, utils.NewHTTPError(status, msg)
+		return nil, ctrl.messageHTTPError(err, "failed to send audio message", "Failed to send audio message")
 	}
 
 	return result, nil
@@ -363,13 +391,7 @@ func (ctrl *Controller) ToggleReaction(c *gin.Context) (interface{}, error) {
 
 	result, err := ctrl.service.ToggleReaction(c.Request.Context(), userID, conversationID, messageID, req.Type)
 	if err != nil {
-		ctrl.logger.Errorw("Failed to toggle reaction", "error", err)
-		status := httpStatusForError(err)
-		msg := err.Error()
-		if status == http.StatusInternalServerError {
-			msg = "failed to toggle reaction"
-		}
-		return nil, utils.NewHTTPError(status, msg)
+		return nil, ctrl.messageHTTPError(err, "failed to toggle reaction", "Failed to toggle reaction")
 	}
 	return result, nil
 }

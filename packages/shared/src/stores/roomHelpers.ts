@@ -83,6 +83,52 @@ export function reconcileRoomServerMessage(
   return next;
 }
 
+function sortRoomMessagesByTime(messages: RoomMessage[]): RoomMessage[] {
+  return messages
+    .map((message, index) => ({ message, index, createdAt: Date.parse(message.createdAt) }))
+    .sort((left, right) => left.createdAt - right.createdAt || left.index - right.index)
+    .map(({ message }) => message);
+}
+
+export function mergeRoomMessageSnapshot(
+  messages: RoomMessage[],
+  snapshot: RoomMessage[]
+): RoomMessage[] {
+  const isPending = (message: RoomMessage) =>
+    message.status === 'uploading' || message.status === 'failed';
+  const pending = messages.filter(isPending);
+  const sent = snapshot.map((message) => ({ ...message, status: 'sent' as const }));
+
+  const coveredIds = new Set(snapshot.map((message) => message.id));
+  const coveredClientMsgIds = new Set(
+    snapshot.map((message) => message.clientMsgId).filter((id) => id != null)
+  );
+  const isCovered = (message: RoomMessage) =>
+    coveredIds.has(message.id) ||
+    (message.clientMsgId != null && coveredClientMsgIds.has(message.clientMsgId));
+
+  const overlapsHistory = messages.some(
+    (message) => !isPending(message) && isCovered(message)
+  );
+  if (!overlapsHistory) return sortRoomMessagesByTime([...pending, ...sent]);
+
+  const snapshotTimes = snapshot
+    .map((message) => Date.parse(message.createdAt))
+    .filter((time) => Number.isFinite(time));
+  const oldestCovered = Math.min(...snapshotTimes);
+  const newestCovered = Math.max(...snapshotTimes);
+
+  const survivesSnapshot = (message: RoomMessage): boolean => {
+    if (isCovered(message)) return false;
+    if (isPending(message)) return true;
+    const createdAt = Date.parse(message.createdAt);
+    if (!Number.isFinite(createdAt)) return true;
+    return createdAt < oldestCovered || createdAt > newestCovered;
+  };
+
+  return sortRoomMessagesByTime([...messages.filter(survivesSnapshot), ...sent]);
+}
+
 function contentMentionsName(content: string, name: string | undefined): boolean {
   if (name == null || name.trim() === '') return false;
   const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');

@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"mime/multipart"
+	"net/url"
 	"ola-chat-server/internal/config"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -135,6 +137,42 @@ func (s *S3Service) UploadFile(ctx context.Context, file multipart.File, filenam
 		PublicID:  objectName,
 		Format:    strings.TrimPrefix(ext, "."),
 	}, nil
+}
+
+// Callers must only pass object names produced by this service.
+func (s *S3Service) DeleteFile(ctx context.Context, objectName string) error {
+	objectName = strings.TrimSpace(objectName)
+	if objectName == "" || path.IsAbs(objectName) || strings.Contains(objectName, "..") {
+		return fmt.Errorf("invalid object name")
+	}
+	if err := s.client.RemoveObject(ctx, s.bucket, objectName, minio.RemoveObjectOptions{}); err != nil {
+		return fmt.Errorf("failed to delete object: %w", err)
+	}
+	return nil
+}
+
+// Media message metadata must never make clients fetch an arbitrary
+// third-party URL.
+func (s *S3Service) IsManagedURL(rawURL string) bool {
+	base, err := url.Parse(strings.TrimRight(s.publicURL, "/") + "/" + s.bucket + "/")
+	if err != nil {
+		return false
+	}
+	target, err := url.Parse(rawURL)
+	if err != nil || target.User != nil || target.Fragment != "" {
+		return false
+	}
+	if target.Scheme != "http" && target.Scheme != "https" {
+		return false
+	}
+	basePath := strings.TrimRight(base.Path, "/") + "/"
+	if path.Clean(target.Path) != target.Path {
+		return false
+	}
+	return strings.EqualFold(target.Scheme, base.Scheme) &&
+		strings.EqualFold(target.Host, base.Host) &&
+		strings.HasPrefix(target.Path, basePath) &&
+		len(target.Path) > len(basePath)
 }
 
 func getFileSize(file multipart.File) (int64, error) {

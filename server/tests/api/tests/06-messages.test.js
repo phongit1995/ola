@@ -1,5 +1,5 @@
 'use strict'
-const { ok, section, req, data, sleep, summary, createUserSet, is2xx } = require('../helpers')
+const { ok, section, req, reqForm, data, sleep, summary, createUserSet, is2xx, audioForm } = require('../helpers')
 
 // NOTE: server currently returns 500 (instead of 403/400) for some auth/validation
 // failures — marked with [BUG] below for future fixes.
@@ -42,11 +42,42 @@ async function main() {
   ok('bob 2nd msg → 2xx', is2xx(r.status))
   const msgB2 = data(r)?.id
 
+  // Media must go through the authenticated upload endpoint. Otherwise the
+  // recipient's client could be forced to fetch an arbitrary third-party URL.
+  r = await req('POST', '/messages', {
+    conversationId: convId,
+    type: 'audio',
+    metadata: JSON.stringify({
+      url: 'https://evil.example/track.m4a',
+      mimeType: 'audio/mp4',
+      duration: 1,
+    }),
+  }, alice.token)
+  ok(
+    'JSON audio URL bypass returns upload-endpoint error',
+    r.status === 400 && r.body?.error === 'media messages must use an upload endpoint'
+  )
+
+  const audioClientMsgId = `audio-${Date.now()}`
+  r = await reqForm('POST', '/messages/audio', audioForm(convId, audioClientMsgId), alice.token)
+  ok('alice uploads voice message -> 2xx', is2xx(r.status))
+  const audioMessage = data(r)
+  const audioMetadata = JSON.parse(audioMessage?.metadata || '{}')
+  ok('voice response type=audio', audioMessage?.type === 'audio')
+  ok('voice response has managed URL', /^https?:\/\//.test(audioMetadata.url || ''))
+  ok('voice duration preserved', audioMetadata.duration === 1)
+
+  r = await reqForm('POST', '/messages/audio', audioForm(convId, audioClientMsgId), alice.token)
+  const retriedAudio = data(r)
+  ok('voice retry is idempotent', is2xx(r.status) && retriedAudio?.id === audioMessage?.id)
+  ok('voice retry reuses stored object', JSON.parse(retriedAudio?.metadata || '{}').url === audioMetadata.url)
+
   // ── History ───────────────────────────────────────────────────────────────
   r = await req('GET', `/messages/${convId}`, undefined, alice.token)
   ok('get history → 200', r.status === 200)
   const hist = data(r)
   ok('history is array', Array.isArray(hist?.messages))
+  ok('voice message persisted', (hist?.messages ?? []).some(m => m.id === audioMessage?.id && m.type === 'audio'))
   ok('≥ 4 messages', (hist?.messages?.length ?? 0) >= 4)
   ok('sorted ascending', (hist?.messages ?? []).every((m, i) =>
     i === 0 || m.createdAt >= hist.messages[i-1].createdAt

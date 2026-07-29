@@ -2,17 +2,73 @@ export const VOICE_RECORDING_BAR_COUNT = 30;
 export const VOICE_MESSAGE_BAR_COUNT = 22;
 export const VOICE_MIN_LEVEL = 0.08;
 
-const METERING_FLOOR_DB = -60;
+export const VOICE_SILENCE_DB = -100;
+export const VOICE_METERING_INTERVAL_MS = 100;
 
-export function voiceLevelFromMetering(metering: number | undefined): number {
-  if (metering == null || !Number.isFinite(metering)) return VOICE_MIN_LEVEL;
-  const normalized = Math.min(1, Math.max(0, (metering - METERING_FLOOR_DB) / -METERING_FLOOR_DB));
-  return VOICE_MIN_LEVEL + Math.sqrt(normalized) * (1 - VOICE_MIN_LEVEL);
-}
+const LEVEL_DRIFT_DB_PER_SECOND = 1.5;
+const LEVEL_FLOOR_FALL_DB_PER_SECOND = 6;
+const LEVEL_MIN_SPAN_DB = 18;
 
 export function smoothVoiceLevel(previous: number, next: number): number {
   const weight = next > previous ? 0.72 : 0.28;
   return previous + (next - previous) * weight;
+}
+
+export function voiceDbFromAmplitude(amplitude: number): number {
+  if (!Number.isFinite(amplitude) || amplitude <= 0) return VOICE_SILENCE_DB;
+  return Math.max(VOICE_SILENCE_DB, Math.min(0, 20 * Math.log10(amplitude)));
+}
+
+export function createVoiceLevelTracker(
+  intervalMs = VOICE_METERING_INTERVAL_MS
+): (decibels: number | undefined) => number {
+  const seconds = Math.max(1, intervalMs) / 1000;
+  const driftDb = LEVEL_DRIFT_DB_PER_SECOND * seconds;
+  const floorFallDb = LEVEL_FLOOR_FALL_DB_PER_SECOND * seconds;
+  let floor: number | null = null;
+  let peak: number | null = null;
+  let level = VOICE_MIN_LEVEL;
+
+  return (decibels) => {
+    if (decibels == null || !Number.isFinite(decibels) || decibels <= VOICE_SILENCE_DB) {
+      level = smoothVoiceLevel(level, VOICE_MIN_LEVEL);
+      return level;
+    }
+    if (floor == null) {
+      floor = decibels;
+    } else if (decibels < floor) {
+      floor = Math.max(decibels, floor - floorFallDb);
+    } else {
+      floor = Math.min(decibels, floor + driftDb);
+    }
+    peak = peak == null ? decibels : Math.max(decibels, peak - driftDb);
+    const span = Math.max(LEVEL_MIN_SPAN_DB, peak - floor);
+    const normalized = Math.min(1, Math.max(0, (decibels - floor) / span));
+    level = smoothVoiceLevel(level, VOICE_MIN_LEVEL + normalized * (1 - VOICE_MIN_LEVEL));
+    return level;
+  };
+}
+
+function decibelPercentile(sorted: number[], ratio: number): number {
+  const index = Math.min(sorted.length - 1, Math.max(0, Math.round((sorted.length - 1) * ratio)));
+  return sorted[index] ?? VOICE_SILENCE_DB;
+}
+
+export function voiceLevelsFromDecibels(samples: number[]): number[] {
+  const isAudible = (sample: number) => Number.isFinite(sample) && sample > VOICE_SILENCE_DB;
+  const audible = samples.filter(isAudible);
+  if (audible.length === 0) return samples.map(() => VOICE_MIN_LEVEL);
+
+  const sorted = [...audible].sort((left, right) => left - right);
+  const floor = decibelPercentile(sorted, 0.05);
+  const peak = Math.max(decibelPercentile(sorted, 0.95), floor + LEVEL_MIN_SPAN_DB);
+  const span = peak - floor;
+
+  return samples.map((sample) => {
+    if (!isAudible(sample)) return VOICE_MIN_LEVEL;
+    const normalized = Math.min(1, Math.max(0, (sample - floor) / span));
+    return VOICE_MIN_LEVEL + normalized * (1 - VOICE_MIN_LEVEL);
+  });
 }
 
 export function voiceWaveformBarHeight(level: number): number {

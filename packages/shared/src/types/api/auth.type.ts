@@ -11,7 +11,7 @@ export interface AuthUser {
   id: string;
   username: string;
   email: string;
-  emailVerified?: boolean;
+  emailVerified: boolean;
   avatar?: string;
   coverPhoto?: string;
   phone?: string;

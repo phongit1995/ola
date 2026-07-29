@@ -97,8 +97,14 @@ func (r *Repository) SetEmailVerified(userID uuid.UUID, email string) (bool, err
 		return true, nil
 	}
 
-	err := r.db.Model(&models.User{}).
+	res = r.db.Model(&models.User{}).
 		Where("id = ?", userID).
-		Updates(fields).Error
-	return false, err
+		Updates(fields)
+	if res.Error != nil {
+		return false, res.Error
+	}
+	if res.RowsAffected == 0 {
+		return false, gorm.ErrRecordNotFound
+	}
+	return false, nil
 }
