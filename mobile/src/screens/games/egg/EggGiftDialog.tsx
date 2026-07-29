@@ -1,7 +1,15 @@
 import { useEffect, useState } from 'react';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Image, Pressable, ScrollView, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Image,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+  useWindowDimensions,
+} from 'react-native';
 import { EGG_GIFT_FIXTURE, formatKen, vipName } from '@ola/shared/lib';
 import { EggService } from '@ola/shared/services';
 import type { EggCategoryKind, EggGiftReward, EggGiftSection } from '@ola/shared/types';
@@ -74,9 +82,11 @@ function RewardIcon({ type, reward }: { type: EggCategoryKind; reward: EggGiftRe
 
 export function EggGiftDialog({ packId, onClose }: EggGiftDialogProps) {
   const { t } = useTranslation();
+  const { height: windowHeight } = useWindowDimensions();
   const [sections, setSections] = useState<EggGiftSection[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const scrollMaxHeight = Math.min(500, Math.max(120, windowHeight - 114));
 
   useEffect(() => {
     let alive = true;
@@ -112,7 +122,7 @@ export function EggGiftDialog({ packId, onClose }: EggGiftDialogProps) {
   }, [packId]);
 
   return (
-    <Dialog visible onClose={onClose} bare maxWidth={448}>
+    <Dialog visible onClose={onClose} avoidKeyboard={false} bare maxWidth={448}>
       <View style={{ paddingTop: 30 }}>
         <View
           style={{
@@ -128,7 +138,15 @@ export function EggGiftDialog({ packId, onClose }: EggGiftDialogProps) {
             elevation: 8,
           }}
         >
-          <ScrollView style={{ maxHeight: 500, minHeight: 160 }}>
+          <ScrollView
+            nestedScrollEnabled
+            showsVerticalScrollIndicator
+            style={{
+              maxHeight: scrollMaxHeight,
+              minHeight: Math.min(160, scrollMaxHeight),
+            }}
+            contentContainerStyle={{ paddingBottom: 4 }}
+          >
             {error ? (
               <Text className="py-8 text-center text-sm" style={{ color: '#9a2b20' }}>
                 {t('eggGame.error')}
