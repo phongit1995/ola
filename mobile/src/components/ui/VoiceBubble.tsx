@@ -55,6 +55,7 @@ export function VoiceBubble({
   const loadingRef = useRef(false);
   const leasedUriRef = useRef<string | null>(null);
   const currentTimeRef = useRef(0);
+  const loadTokenRef = useRef(0);
   const [playing, setPlaying] = useState(false);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -92,8 +93,11 @@ export function VoiceBubble({
       soundRef.current = null;
       leasedUriRef.current = null;
       loadingRef.current = false;
+      // Huỷ luôn lượt load đang bay: callback của nó sẽ không được phát nữa.
+      loadTokenRef.current += 1;
       if (sound != null) {
-        sound.stop(() => sound.release());
+        // Native release() dừng và gỡ player khỏi pool trong cùng một lệnh.
+        sound.release();
       }
       if (leasedUri != null) releaseTemporaryVoiceFile(leasedUri);
       deactivateVoicePlayback(playbackOwnerRef.current);
@@ -194,11 +198,15 @@ export function VoiceBubble({
     errorShownRef.current = false;
     loadingRef.current = true;
     setLoading(true);
+    // Nhận quyền phát ngay từ lúc bắt đầu load, không đợi load xong: bấm ghi âm
+    // giữa chừng thì releaseVoicePlayback() mới thấy và huỷ được lượt này.
+    activateVoicePlayback(playbackOwnerRef.current, releaseForReplacement);
+    const loadToken = ++loadTokenRef.current;
     const sourceUrl = url;
     retainTemporaryVoiceFile(sourceUrl);
     const sound = new Sound(sourceUrl, undefined, error => {
       loadingRef.current = false;
-      if (!mountedRef.current) {
+      if (!mountedRef.current || loadToken !== loadTokenRef.current) {
         sound.release();
         releaseTemporaryVoiceFile(sourceUrl);
         return;
@@ -208,6 +216,7 @@ export function VoiceBubble({
         soundRef.current = null;
         sound.release();
         releaseTemporaryVoiceFile(sourceUrl);
+        deactivateVoicePlayback(playbackOwnerRef.current);
         reportPlaybackError();
         return;
       }

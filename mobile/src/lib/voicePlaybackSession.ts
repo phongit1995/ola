@@ -20,3 +20,11 @@ export function activateVoicePlayback(
 export function deactivateVoicePlayback(owner: PlaybackOwner): void {
   if (activePlayback?.owner === owner) activePlayback = null;
 }
+
+// Ghi âm phải giải phóng hẳn playback đang hoạt động, không chỉ pause: không để
+// audio phát vào mic và không giữ player cũ qua lần đổi audio route trên iOS.
+export function releaseVoicePlayback(): void {
+  const previous = activePlayback;
+  activePlayback = null;
+  previous?.release();
+}
