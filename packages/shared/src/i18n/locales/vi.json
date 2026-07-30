@@ -381,7 +381,7 @@
     "attachRecordCancelTip": "Di chuyển ngón tay ra vùng Ghi âm để hủy",
     "voiceReleaseCancel": "Thả ra để huỷ",
     "voiceMicDenied": "Cần quyền micro để ghi âm.",
-    "voiceMicUnsupported": "Trình duyệt này không hỗ trợ ghi âm.",
+    "voiceMicUnsupported": "Trình duyệt này không hỗ trợ ghi âm MP4/AAC.",
     "voiceMicInsecure": "Ghi âm chỉ hoạt động trên kết nối HTTPS.",
     "voiceMicNotFound": "Không tìm thấy micro trên thiết bị.",
     "voiceMicUnavailable": "Micro đang bận hoặc không thể sử dụng.",

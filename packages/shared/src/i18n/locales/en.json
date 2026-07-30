@@ -381,7 +381,7 @@
     "attachRecordCancelTip": "To cancel, drag your finger out of Record",
     "voiceReleaseCancel": "Release to cancel",
     "voiceMicDenied": "Microphone access is needed to record.",
-    "voiceMicUnsupported": "This browser does not support audio recording.",
+    "voiceMicUnsupported": "This browser does not support MP4/AAC audio recording.",
     "voiceMicInsecure": "Audio recording requires a secure HTTPS connection.",
     "voiceMicNotFound": "No microphone was found on this device.",
     "voiceMicUnavailable": "The microphone is busy or unavailable.",
