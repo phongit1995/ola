@@ -315,11 +315,6 @@ export function GameBoard() {
             <img src={assetSrc('icKen')} alt="" />
           </div>
         )}
-        {touchSelectedIdx != null && (
-          <div className="touch-move-hint" role="status">
-            Chạm lại ô đã chọn để đánh
-          </div>
-        )}
         <div
           id="board-clip"
           ref={clipRef}
