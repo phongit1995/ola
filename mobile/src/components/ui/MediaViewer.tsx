@@ -128,7 +128,13 @@ function ZoomablePage({
     <GestureDetector gesture={gesture}>
       <View style={{ width, height, overflow: 'hidden' }} className="items-center justify-center">
         <Animated.View style={[{ width, height }, animatedStyle]}>
-          <CachedImage uri={uri} style={{ width, height }} resizeMode="contain" />
+          <CachedImage
+            uri={uri}
+            style={{ width, height }}
+            resizeMode="contain"
+            showLoader
+            loadingIndicatorColor="#ffffff"
+          />
         </Animated.View>
       </View>
     </GestureDetector>
